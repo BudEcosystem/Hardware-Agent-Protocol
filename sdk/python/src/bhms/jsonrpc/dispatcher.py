@@ -84,6 +84,7 @@ class Server:
                  max_page_size: int = 100, max_wait_ms: int = 30_000, strict: bool = False,
                  drain_timeout: float = 10.0) -> None:
         self.drain_timeout = drain_timeout
+        self._detached: dict[asyncio.Task[None], RequestContext] = {}  # this server's detached handler tasks
         self._cancellable: set[str] = {"subscriptions/listen", "operations/wait"}
         self.server_info = server_info
         self.capabilities: dict[str, Any] = {
@@ -201,6 +202,7 @@ class Server:
         """A started server session for ``transport`` (not tracked in :attr:`sessions`)."""
         session_kw.setdefault("cancellable", self.is_cancellable)
         session_kw.setdefault("drain_timeout", self.drain_timeout)
+        session_kw.setdefault("registry", self._detached)
         return Session(transport, role="server", handler=self.dispatch, **session_kw).start()
 
     async def handle_connection(self, transport: Transport, **session_kw: Any) -> None:
@@ -222,7 +224,7 @@ class Server:
     async def close(self) -> None:
         """Close every live connection (in-flight requests are abandoned, BHMS-TRN-005)."""
         await asyncio.gather(*(s.close() for s in list(self.sessions)))
-        await drain_detached(self.drain_timeout)  # handlers detached by connections that already dropped
+        await drain_detached(self._detached, self.drain_timeout)  # handlers detached by connections that already dropped
 
 
 async def _wire_stream(stream: AsyncIterator[Any]) -> AsyncIterator[Notification | Complete]:

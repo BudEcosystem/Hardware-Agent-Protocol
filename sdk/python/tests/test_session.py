@@ -737,3 +737,54 @@ async def test_session_over_tcp_and_websocket(tmp_path):
         assert all(x["peer"] == kind for x in results)
         await client.close()
         await listener.close()
+
+
+async def test_close_after_peer_disconnect_still_waits_for_the_detached_handler(rig):
+    finished = asyncio.Event()
+
+    async def handler(ctx):
+        await asyncio.sleep(0.5)
+        finished.set()
+        return {"resultType": "complete"}
+
+    r = await rig(handler, server_kw={"drain_timeout": 5.0})
+    task = asyncio.create_task(r.client.request("actions/invoke", {}))
+    await asyncio.sleep(0.1)
+    await r.client.close()  # disconnect
+    await asyncio.sleep(0.1)  # the server has read EOF and torn down on its own
+    assert r.server.closed and r.server.detached == 1 and not finished.is_set()
+    await asyncio.gather(r.server.close(), r.server.close())  # repeated/concurrent calls all wait for the drain
+    assert finished.is_set() and r.server.detached == 0
+    await asyncio.gather(task, return_exceptions=True)
+
+
+async def test_detached_registry_is_per_server_not_process_wide(tmp_path):
+    from bhms.jsonrpc.dispatcher import Server
+
+    release = asyncio.Event()
+
+    async def slow(params, ctx):
+        await release.wait()
+        return {}
+
+    servers = []
+    for name in ("a", "b"):
+        s = Server(server_info={"name": name, "version": "1"}, drain_timeout=0.1)
+        s.register("x-test/slow", slow)
+        s._listener = await tr.serve_unix(str(tmp_path / f"{name}.sock"), s.handle_connection)
+        servers.append(s)
+    from bhms.client.client import Client
+
+    ca = await Client.connect(f"unix:{tmp_path}/a.sock")
+    with pytest.raises(BhmsError):
+        await ca.request("x-test/slow", {}, timeout=0.1)
+    await asyncio.sleep(0.05)
+    assert len(servers[0]._detached) == 1 and len(servers[1]._detached) == 0
+    start = asyncio.get_running_loop().time()
+    await servers[1].close()  # nothing of its own to wait for: returns at once, no log about server a's handler
+    assert asyncio.get_running_loop().time() - start < 0.05
+    release.set()
+    await ca.close()
+    for s in servers:
+        await s.close()
+        await s._listener.close()

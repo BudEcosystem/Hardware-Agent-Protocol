@@ -12,14 +12,14 @@ One class serves both roles of spec/bhms/02-transports.md:
   tracked by the session; ``close()`` waits for detached tasks up to ``drain_timeout`` and logs survivors. Only streaming
   handlers and methods for which the ``cancellable`` predicate is true (e.g. ``operations/wait``) are really cancelled. A handler
   returns a result ``dict``, or an *async iterator* yielding :class:`Notification` items and finally a
-  :class:`Complete`; the iterator form is how ``subscriptions/listen`` is served. no response is sent after a cancellation
+  :class:`Complete`; the iterator form is how ``subscriptions/listen`` is served. No response is sent after a cancellation
   (BHMS-LIF-051).
 
 Mechanics: messages are parsed with orjson only (schema/pydantic validation belongs to the dispatcher and
 client above); a malformed frame is answered ``-32700`` and an oversize or batch frame ``-32600`` with
 ``id: null`` and the session keeps going (BHMS-TRN-002/004); the outbound queue is bounded (a slow peer blocks the
-producer instead of growing memory) and a client stream never blocks the read loop; ``close()`` cancels in-flight handlers (BHMS-TRN-005), flushes
-the queue and fails pending requests with :class:`~bhms.transport.base.TransportClosed`.
+producer instead of growing memory) and a client stream never blocks the read loop; ``close()`` abandons in-flight handlers (detaching them, see
+above; BHMS-TRN-005), flushes the queue, waits for detached handlers and fails pending requests with :class:`~bhms.transport.base.TransportClosed`.
 
 The only BHMS-specific behaviour here is stream tagging: notifications and the final result of a stream
 carry ``_meta["bhms/subscriptionId"]`` equal to the request id (BHMS-LIF-041, BHMS-LIF-044).
@@ -240,8 +240,9 @@ class Session:
         outbound_queue_size: bound of the outbound queue; producers wait when it is full (backpressure).
         default_timeout: seconds a client request waits when ``timeout`` is not given (None: wait forever).
         max_inflight_requests: server limit of concurrently handled requests; beyond it ``BUSY``.
-        stream_queue_size: client-side buffer per stream; a consumer that stops reading eventually stalls the
-            connection's read loop, which stalls the server's sends (end-to-end backpressure).
+        stream_queue_size: client-side buffer per stream. The read loop never blocks on it: a consumer that falls
+            more than this many messages behind gets :class:`StreamOverflow` (slow-consumer policy is the server's,
+            BHMS-LIF-043).
         flush_timeout: seconds :meth:`close` waits for the outbound queue to drain (and for the transport to close
             before it is aborted).
         cancellable: ``method -> bool``; handlers of methods for which it is true (and every streaming handler) are
@@ -249,6 +250,7 @@ class Session:
         drain_timeout: seconds :meth:`close` waits for detached handlers to finish; survivors are logged, never
             cancelled.
         subscription_queue_size: server-side bound of the per-subscription queue (BHMS-LIF-043).
+        registry: dict shared by the sessions of one server to track detached handler tasks (default: private).
     """
 
     def __init__(self, transport: Transport, *, role: str, handler: Handler | None = None,
@@ -256,7 +258,8 @@ class Session:
                  default_timeout: float | None = 30.0, max_inflight_requests: int = 16384,
                  stream_queue_size: int = 1024, flush_timeout: float = 5.0,
                  cancellable: Callable[[str], bool] | None = None, drain_timeout: float = 10.0,
-                 subscription_queue_size: int = 1024) -> None:
+                 subscription_queue_size: int = 1024,
+                 registry: dict[asyncio.Task[None], RequestContext] | None = None) -> None:
         if role not in ("client", "server"):
             raise ValueError("role must be 'client' or 'server'")
         self._transport = transport
@@ -281,6 +284,8 @@ class Session:
         self._writer: asyncio.Task[None] | None = None
         self._background: set[asyncio.Task[Any]] = set()
         self._closing = False
+        self._close_task: asyncio.Future[None] | None = None
+        self._registry = registry if registry is not None else {}
         self._closed = asyncio.Event()
 
     # ------------------------------------------------------------------ lifecycle
@@ -318,15 +323,21 @@ class Session:
         await self._closed.wait()
 
     async def close(self) -> None:
-        """Graceful shutdown: abandon in-flight requests, flush queued output, close the transport. Idempotent."""
-        if self._closing:
-            await self._closed.wait()
-            return
+        """Graceful shutdown: abandon in-flight requests, flush queued output, close the transport, then wait up to
+        ``drain_timeout`` for detached handlers. Idempotent; concurrent and repeated calls (also after the peer already
+        disconnected) all wait for the same drain. Worst-case duration: flush_timeout + transport close + drain_timeout."""
+        if self._close_task is None:
+            self._close_task = asyncio.ensure_future(self._do_close())
+        await asyncio.shield(self._close_task)
+
+    async def _do_close(self) -> None:
+        """One shared shutdown for every ``close()`` caller; also drains after a peer-initiated teardown."""
         self._closing = True
         await self._abandon_handlers()
-        with contextlib.suppress(asyncio.TimeoutError):
-            await asyncio.wait_for(self._outbox.join(), self._flush_timeout)
-        await self._teardown(TransportClosed("session closed"))
+        if not self._closed.is_set():
+            with contextlib.suppress(asyncio.TimeoutError):
+                await asyncio.wait_for(self._outbox.join(), self._flush_timeout)
+            await self._teardown(TransportClosed("session closed"))
         await self.drain(self.drain_timeout)
 
     async def drain(self, timeout: float) -> None:
@@ -336,7 +347,7 @@ class Session:
             return
         _, running = await asyncio.wait(tasks, timeout=timeout)
         for task in running:
-            ctx = _DETACHED.get(task)
+            ctx = self._registry.get(task)
             log.warning("handler for %s (request %r) still running %.1f s after its request was abandoned; left "
                         "detached because it may be physical work", ctx.method if ctx else "?",
                         ctx.id if ctx else "?", timeout)
@@ -364,13 +375,13 @@ class Session:
             return task
         del self._handlers[request_id], self._ctx[request_id]
         self._detached.add(task)
-        _DETACHED[task] = ctx
+        self._registry[task] = ctx
         task.add_done_callback(self._forget)
         return None
 
     def _forget(self, task: asyncio.Task[None]) -> None:
         self._detached.discard(task)
-        _DETACHED.pop(task, None)
+        self._registry.pop(task, None)
 
     async def _abandon_handlers(self) -> None:
         cancelled = [t for t in (self._abandon(i) for i in list(self._handlers)) if t is not None]
@@ -767,18 +778,14 @@ class Session:
         await self._respond(ctx.id, final)
 
 
-_DETACHED: dict[asyncio.Task[None], RequestContext] = {}
-"""Every handler task abandoned by a client or a disconnect and still running (strong references; see Session)."""
-
-
-async def drain_detached(timeout: float) -> None:
-    """Wait up to ``timeout`` s for every detached handler of every session; log the survivors, never cancel them."""
-    tasks = set(_DETACHED)
+async def drain_detached(registry: dict[asyncio.Task[None], RequestContext], timeout: float) -> None:
+    """Wait up to ``timeout`` s for the detached handlers in ``registry`` (one server's); log survivors, never cancel."""
+    tasks = {task for task in registry if not task.done()}
     if not tasks:
         return
     _, running = await asyncio.wait(tasks, timeout=timeout)
     for task in running:
-        ctx = _DETACHED.get(task)
+        ctx = registry.get(task)
         log.warning("handler for %s (request %r) is still running after the %.1f s drain; left detached",
                     ctx.method if ctx else "?", ctx.id if ctx else "?", timeout)
 
