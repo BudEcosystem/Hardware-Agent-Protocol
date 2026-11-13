@@ -15,7 +15,6 @@ import secrets
 import subprocess
 import sys
 import tempfile
-from pathlib import Path
 
 from common import ROOT, SDK_PY, Context, invoke_stats, timed
 from bhms.client.client import Client
