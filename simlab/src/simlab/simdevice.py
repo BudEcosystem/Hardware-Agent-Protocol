@@ -92,12 +92,16 @@ class TwinHost:
             if event == "cleared":
                 self.device.report_alive()
 
-    def measure(self, name: str, value: float, sigma: float = 0.0) -> float:
-        """A modelled sensor reading: ``value`` plus Gaussian noise from this sensor's own generator."""
+    def check_sensor(self, name: str) -> None:
+        """Raise ``SensorFault`` when the sensor cannot produce a reading (disconnected or unpowered)."""
         if self.world.faults.active(self.target, "sensor_disconnect"):
             raise SensorFault(f"{self.target}: sensor {name} is disconnected")
         if not self.powered():
             raise SensorFault(f"{self.target}: no power")
+
+    def measure(self, name: str, value: float, sigma: float = 0.0) -> float:
+        """A modelled sensor reading: ``value`` plus Gaussian noise from this sensor's own generator."""
+        self.check_sensor(name)
         return value + (float(self.world.rng_for(f"{self.target}.{name}").normal(0.0, sigma)) if sigma else 0.0)
 
     # ------------------------------------------------------------------ actions
@@ -109,15 +113,16 @@ class TwinHost:
                               effect="none", hint="restore power, then retry")
         self.log.begin(ctx.operation_id)
 
-    async def elapse(self, ctx: ActionContext, seconds: float) -> bool:
-        """Let ``seconds`` of world time pass. Returns True if cancelled early; raises ``PowerLost`` on a power cut."""
+    async def elapse(self, ctx: ActionContext, seconds: float, *, chunk_s: float = _CHUNK_S) -> bool:
+        """Let ``seconds`` of world time pass, checking for cancel and power every ``chunk_s``. Returns True if
+        cancelled early; raises ``PowerLost`` on a power cut."""
         deadline = self.world.time_s + seconds
         while self.world.time_s < deadline - 1e-9:
             if ctx.cancelled.is_set():
                 return True
             if not self.powered():
                 raise PowerLost(f"{self.target} lost power")
-            await self.world.until(min(deadline, self.world.time_s + _CHUNK_S))
+            await self.world.until(min(deadline, self.world.time_s + chunk_s))
         return ctx.cancelled.is_set()
 
     @staticmethod

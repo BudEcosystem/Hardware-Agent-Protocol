@@ -139,6 +139,15 @@ class Ledger:
             self.world.record("ledger", "air_aspirated", {"src": list(src), "volume_ul": shortfall}, cause)
         return TransferResult(moved, shortfall, spilled)
 
+    def discard(self, container_id: str, well: str, cause: str | None) -> float:
+        """Throw a well's contents away (a discarded tip's liquid); returns the volume discarded (``discarded``)."""
+        state = self._well(container_id, well)
+        volume = state.volume_ul
+        state.volume_ul, state.solutes = 0.0, {}
+        if volume > 0:
+            self.world.record("ledger", "discarded", {"well": [container_id, well], "volume_ul": volume}, cause)
+        return volume
+
     # ------------------------------------------------------------------ locations
 
     def location(self, container_id: str) -> str:

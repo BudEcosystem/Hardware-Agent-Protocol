@@ -124,6 +124,7 @@ class World:
         self.dt = float(self.model.opt.timestep)
         self._steps = 0
         self._effects: list[Effect] = []
+        self._effect_listeners: list[Callable[[Effect], None]] = []
         self._rngs: dict[str, np.random.Generator] = {}
         self._controllers: dict[int, Callable[[World], None]] = {}
         self._controller_ids = itertools.count()
@@ -236,7 +237,13 @@ class World:
         effect = Effect(len(self._effects), round(self.time_s, 9), device, kind, dict(detail or {}), cause)
         self._effects.append(effect)
         self.faults.on_effect(effect)
+        for listener in self._effect_listeners:
+            listener(effect)
         return effect
+
+    def on_effect(self, listener: Callable[[Effect], None]) -> None:
+        """Call ``listener(effect)`` after every recorded effect (models that must notice a change when it happens)."""
+        self._effect_listeners.append(listener)
 
     def effect_log(self) -> list[Effect]:
         return list(self._effects)
