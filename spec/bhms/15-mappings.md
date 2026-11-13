@@ -11,7 +11,7 @@ example in the gateway journal) or refuse.
 |---|---|---|---|
 | JSON-RPC 2.0, stateless requests, `_meta` per request | Same model (`io.modelcontextprotocol/*` keys) | Version per request, client info, trace context | — |
 | `server/discover` | `server/discover` | Versions, identity, capabilities, instructions | BHMS `epoch`, `limits`, `principal` have no MCP field |
-| `subscriptions/listen` + ack | `subscriptions/listen` + ack | Opt-in filters, subscription id tagging, graceful end | Observation rate floors, event replay cursor (`after`) |
+| `subscriptions/listen` + ack | `subscriptions/listen` + ack | Opt-in filters, subscription id tagging, server end by listen result | Observation rate floors, event replay cursor (`after`), `endReason`; BHMS servers never send `notifications/cancelled` |
 | `notifications/cancelled` | same | Request abandonment | MCP has no notion that the underlying work continues; BHMS states it (BHMS-LIF-050) |
 | Device actions | Tools (via the 8 agent tools, §12) | Input schema, one-line summary, structured result, refusal hint | Per-action `effect`, `idempotency`, lease and evidence metadata appear only in `bhms_describe` content; MCP tool annotations are hints, not enforcement |
 | Operation (durable, keyed) | Tool call result (`tasks` extension for long work) | Operation id and state in structured content | Durability, idempotent replay and `unknown` are BHMS-side guarantees; an MCP client that drops the call loses only its view |

@@ -13,7 +13,7 @@ Params:
 | `deviceId` | string | yes | |
 | `action` | string | yes | Action name |
 | `arguments` | object | yes | Valid against the action's `input` (`{}` when it takes none) |
-| `operationKey` | string, 1–128 chars of `[A-Za-z0-9._:~-]` | no | Idempotency key (§6.4) |
+| `operationKey` | string, 1–128 chars of `[A-Za-z0-9._:~-]`, not starting with `d-` | no | Idempotency key (§6.4) |
 | `leaseId` | string | when `requiresLease` | A current lease covering the action's `resources` |
 | `deadlineMs` | integer ≥ 1 | no | Latest completion, relative to acceptance |
 | `waitMs` | integer ≥ 0 | no (default 0) | Hold the response until the operation settles or this elapses |
@@ -90,7 +90,11 @@ remains `accepted`.
 **BHMS-OPS-004** Once an operation has reached `dispatching`, a transport error,
 timeout, lost reply or process crash MUST result in `unknown` (or a state proven
 by device evidence), never `failed` with `mayHaveActed: false` and never
-`completed` without completion evidence.
+`completed` without completion evidence. Every transition into `unknown` MUST
+carry `error.bhmsCode: "DEADLINE_EXCEEDED"` with `mayHaveActed: true` and
+`retry: "after-reconcile"`, whatever the cause (lost reply, link loss, server
+restart, endpoint epoch change); `error.message` states the cause. One code lets
+clients treat every unknown outcome the same way.
 
 **BHMS-OPS-005** An operation may leave `unknown` only through a `reconciliation`
 history entry that names its evidence (a device query, a compact replay-ring
@@ -120,9 +124,12 @@ The **intent** of a request is the object
 `{method, deviceId, action, arguments, deadlineMs?, require?, descriptionDigest?}`
 for `actions/invoke` and `{method, digest, arguments, deadlineMs?}` for
 `programs/run` (where `digest` is the program digest, also for inline programs),
-and where `arguments` are as sent with exact-unit quantity objects replaced by their
-values and absent members omitted. `requestDigest` is the BHMS digest of the
-intent. `leaseId`, `waitMs`, `operationKey` and `_meta` are not part of it.
+and where `arguments` are exactly as sent (quantity objects are kept as sent, so a
+retry must repeat the arguments verbatim) and absent members are omitted.
+`requestDigest` is the BHMS digest of the intent. `leaseId`, `waitMs`,
+`operationKey` and `_meta` are not part of it. The intent is computed from the
+request alone, without the device description, so the key lookup needs no
+resolution or authorization step (BHMS-OPS-033).
 
 **BHMS-OPS-030** For each principal, a server MUST map an `operationKey` to at most
 one operation. A request whose key exists with the same `requestDigest` MUST
@@ -136,9 +143,14 @@ and MUST NOT create or modify any operation.
 **BHMS-OPS-032** Concurrent requests with the same principal and key MUST produce
 exactly one operation; all of them return it.
 
-**BHMS-OPS-033** A server MUST look up the key after authentication and
-authorization and before any other admission check, so that a retry of an
-admitted request succeeds even if its lease has since expired.
+**BHMS-OPS-033** A server MUST look up `(principal, operationKey)` immediately
+after validating the params shape and authenticating the principal, before
+resolving the device or action, authorizing, checking the description pin,
+arguments, leases or device state. The lookup is gated only by the principal's
+visibility of its own operations (BHMS-OPS-062), which scope revocation does not
+remove. A retry of an admitted request therefore returns the existing operation
+even after its lease expired, a scope was revoked, or the description changed
+or dropped the action.
 
 **BHMS-OPS-034** A server with `capabilities.operations.durable: true` MUST retain
 key mappings and operation records for at least `keyRetentionS` seconds
@@ -153,29 +165,48 @@ Clients that may retry MUST send their own key.
 
 **BHMS-OPS-036** A client MUST NOT reuse an `operationKey` for a different intent,
 and MUST NOT reuse any key after `keyRetentionS` has passed since its first use.
+*This is a documented weakening of HMS* (§1.4): HMS keeps a server-side
+replay-namespace floor so that a forgotten key can never become a new
+operation; BHMS v0.1 replaces that floor with this client obligation plus a
+minimum retention of 24 h. A client that violates it after the window may cause
+a second effect. Servers SHOULD retain keys longer than `keyRetentionS` when
+storage allows.
+
+**BHMS-OPS-037** Keys starting with `d-` are reserved for derived program-step
+keys and keys starting with `g-` for gateways forwarding on behalf of their
+clients (BHMS-AUTH-014). A server MUST refuse a client key starting with `d-`
+with `INVALID_ARGUMENT`, `field: "operationKey"`; it MAY refuse `g-` keys from
+principals not configured as gateways. Clients other than gateways MUST NOT use
+either prefix.
 
 ## 6.5 Admission
 
 Admission order for `actions/invoke` (and, per step, for programs):
 
-1. Validate `_meta` and the params shape (`INVALID_ARGUMENT`).
-2. Resolve the device: unknown or unreadable → `UNKNOWN_DEVICE`; unknown action →
+1. Validate `_meta` and the params shape (`INVALID_ARGUMENT`); the principal is
+   already authenticated by the transport (BHMS-SEC-001).
+2. Key lookup (§6.4): an existing key returns its operation (`replayed: true`) or
+   `KEY_CONFLICT`, and admission ends here.
+3. Resolve the device: unknown or unreadable → `UNKNOWN_DEVICE`; unknown action →
    `UNKNOWN_ACTION`.
-3. Authorize (`UNAUTHORIZED`) — §7.4.
-4. Key lookup (§6.4).
+4. Authorize (`UNAUTHORIZED`) — §7.4.
 5. Pin check: `descriptionDigest` differs from current → `STALE`.
 6. Validate arguments against `input` and the principal's effective envelope
    (`INVALID_ARGUMENT`, `OUT_OF_RANGE`, `UNIT_MISMATCH`).
 7. `require` check (`UNSUPPORTED`).
 8. Lease check: `LEASE_REQUIRED`, `LEASE_EXPIRED`, `LEASE_CONFLICT`, `FENCED`.
-9. State check: device reachable (`DEVICE_UNAVAILABLE`), preconditions and
-   freshness (`STALE`), unresolved `unknown` operations on the same resources
+9. State check: device reachable (`DEVICE_UNAVAILABLE`), `requiresFresh`
+   observations (`STALE`, BHMS-OBS-030), unresolved `unknown` operations on the same resources
    (`STALE`), capacity (`BUSY`).
 10. Durably record `accepted`; return or wait.
 
-**BHMS-OPS-040** Steps 1–9 MUST complete before an operation is created; a refusal
-in them MUST be a JSON-RPC error with `mayHaveActed: false` and MUST NOT create an
-operation.
+**BHMS-OPS-040** Steps 1–9 MUST complete before an operation is created. A refusal
+in steps 1 and 3–9 concerns a request with no existing operation for its key
+(step 2 would have answered otherwise), so it MUST be a JSON-RPC error with
+`mayHaveActed: false` and MUST NOT create an operation. `KEY_CONFLICT` (step 2)
+MUST carry the existing `operationId` and `mayHaveActed` equal to that
+operation's `error.mayHaveActed`, or `true` if it reached `dispatching` and has no
+error.
 
 **BHMS-OPS-041** Checks that depend on time (lease validity and fence, deadline,
 device reachability, preconditions) MUST be repeated immediately before dispatch.
@@ -185,8 +216,11 @@ error and `effect: "none"`.
 **BHMS-OPS-042** While an operation whose action has `effect` other than `none`
 is `unknown`, the server MUST refuse new operations that use any of its resources
 with `STALE` naming that `operationId`, until the operation is reconciled, a
-`stop` of the device returns `outcome: "confirmed"`, or the device reports a new
-epoch (a reset that purged its work).
+`stop` of the device returns `outcome: "confirmed"`, or the device *proves* an
+epoch change that purged its work: a persistent epoch counter that advanced
+(BHMS-CMP-020) or an accepted new session, which requires no active operation
+(BHMS-CMP-023). A re-established connection, a gateway restart or an endpoint
+that cannot prove its epoch (no `PERSISTENT_EPOCH`) MUST NOT lift the inhibition.
 
 ## 6.6 Cancellation
 
@@ -260,8 +294,9 @@ observed.
 | After the device finished, before the result is durable | `unknown`, then reconciled |
 | After the result is durable, before the reply | The stored operation is returned to a retry with the key |
 
-**BHMS-OPS-080** On restart a server MUST move every operation found in
-`dispatching` or `running` to `unknown` (with `mayHaveActed: true`) before
+**BHMS-OPS-080** On restart a server MUST move every action operation found in
+`dispatching` or `running` to `unknown` (error per BHMS-OPS-004), and settle
+program operations per BHMS-PRG-017, before
 answering any request that could touch the same resources, and SHOULD then
 attempt reconciliation.
 

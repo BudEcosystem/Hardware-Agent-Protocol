@@ -37,7 +37,7 @@ MUST be refused with `INVALID_ARGUMENT` naming the index (`resources[2]`).
 renewing or releasing it as another principal MUST fail with `LEASE_CONFLICT`.
 
 **BHMS-LSE-006** Lease expiry MUST be evaluated on the server's monotonic clock.
-Renewing an `expired` lease MUST fail with `LEASE_EXPIRED`; renewing a `revoked`
+Renewing an `expired` or `released` lease MUST fail with `LEASE_EXPIRED`; renewing a `revoked`
 lease MUST fail with `FENCED`. Releasing a lease that is not `active` MUST return
 it unchanged.
 
@@ -49,9 +49,16 @@ it unchanged.
 **BHMS-LSE-010** For an action with `requiresLease: true`, the server MUST check at
 admission and again immediately before dispatch that `leaseId` is `active`, is
 held by the caller, covers every resource of the action, and that its fence is
-not lower than the highest fence issued for any of those resources. Failures are
-`LEASE_REQUIRED` (missing), `LEASE_EXPIRED`, `LEASE_CONFLICT` (not the caller's
-or not covering) or `FENCED` (superseded).
+not lower than the highest fence issued for any of those resources. Failures,
+consistent with BHMS-LSE-006 and BHMS-LSE-007:
+
+| Lease condition | Code |
+|---|---|
+| `leaseId` absent | `LEASE_REQUIRED` |
+| `expired`, `released` or unknown `leaseId` | `LEASE_EXPIRED` |
+| `revoked` (by `stop` or policy) | `FENCED` |
+| `active` but its fence is below a resource's highest fence | `FENCED` |
+| held by another principal, or not covering every resource | `LEASE_CONFLICT` |
 
 **BHMS-LSE-011** A server that forwards work to another enforcement point (an
 upstream server, a BHMS-Compact endpoint) MUST forward the fence so that the
@@ -60,7 +67,7 @@ that device and say so with `capabilities.gateway`.
 
 **BHMS-LSE-012** When a lease expires or is revoked while an operation admitted
 under it is running, the server MUST apply the action's `onLeaseLoss`:
-`finish` — let it complete and record the result; `stop` — request cancellation
+`finish` — let it complete and record the result; `cancel` — request cancellation
 and end it per §6.6; `hold` — command the device to hold its current state and end
 the operation `failed` with `LEASE_EXPIRED`. No new operation and no new program
 step MAY start under that lease.

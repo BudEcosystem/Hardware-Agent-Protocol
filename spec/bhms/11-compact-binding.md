@@ -165,7 +165,8 @@ A field with `scale` carries the integer `round(value / scale)` on the wire and
 denotes `wire × scale` in JSON.
 
 **BHMS-CMP-010** A gateway MUST refuse, with `INVALID_ARGUMENT` before sending
-anything, a value whose `value / scale` is not within 1e-9 (relative) of an
+anything (normally already caught by the mirrored `multipleOf` and bounds of
+BHMS-DEV-071), a value whose `value / scale` is not within 1e-9 (relative) of an
 integer, an integer outside the field type's range (`OUT_OF_RANGE`), or an `f32`
 value whose binary32 conversion differs from it by more than 1e-6 × max(1, |value|).
 It MUST NOT round, clamp or truncate silently.
@@ -175,22 +176,32 @@ MUST NOT derive them from name order.
 
 ## 11.5 Sessions and epochs
 
-**BHMS-CMP-020** An endpoint MUST choose a non-zero boot epoch that differs from
-every earlier epoch: from a persistent boot counter incremented before any
-effect is possible (flag `PERSISTENT_EPOCH`), or else the gateway MUST treat every
-HELLO as a new epoch.
+**BHMS-CMP-020** An endpoint SHOULD derive its non-zero boot epoch from a
+persistent boot counter incremented before any effect is possible, and then MUST
+set `PERSISTENT_EPOCH`. An endpoint without one MUST clear `PERSISTENT_EPOCH`;
+its epoch may repeat after a reboot, so its session check cannot detect a reset.
+For such an endpoint the gateway MUST treat every HELLO as a possible reset
+(BHMS-CMP-022 applies even when the epoch value is unchanged) and MUST NOT treat
+the HELLO as proof that old work was purged (BHMS-OPS-042).
 
 **BHMS-CMP-021** An endpoint MUST refuse every control frame except `HELLO_REQ`
 and `STOP` whose session differs from its current epoch with `SESSION_MISMATCH`
 and without effect.
 
-**BHMS-CMP-022** When the epoch changes, the gateway MUST mark every operation
-dispatched in the old epoch and not yet terminal as `unknown` (unless a RESULT
-already settled it), emit `device.epoch`, and MUST NOT re-send any of them.
+**BHMS-CMP-022** When the epoch changes (or, for an endpoint without
+`PERSISTENT_EPOCH`, on every HELLO), the gateway MUST mark every operation
+dispatched before it and not yet terminal as `unknown` (error per
+BHMS-OPS-004, unless a RESULT already settled it), emit `device.epoch`, and MUST
+NOT re-send any of them. Only a `PERSISTENT_EPOCH` endpoint whose epoch value
+advanced, or an accepted `NEW_SESSION` (BHMS-CMP-023), proves that old work was
+purged and lifts the inhibition of BHMS-OPS-042.
 
 **BHMS-CMP-023** `NEW_SESSION` MUST increment the epoch (persistently when
 `PERSISTENT_EPOCH`), clear the ring and reset `lastHandle` to 0; an endpoint with
-an active operation MUST ignore the flag and report its current epoch.
+an active operation MUST ignore the flag and report its current epoch. A HELLO
+answering a `NEW_SESSION` request with an epoch different from the one reported
+just before is an *accepted new session*: the endpoint asserts it has no active
+operation.
 
 ## 11.6 Operation handles and the replay ring
 
@@ -209,13 +220,19 @@ acting; if it is ≤ `lastHandle` and not in the ring, reply `HANDLE_UNKNOWN`
 without acting; otherwise treat it as new and set `lastHandle` to it.
 
 **BHMS-CMP-033** A gateway MAY retransmit an INVOKE (same handle, identical
-payload) after a missing reply. On `HANDLE_UNKNOWN` it MUST leave the operation
+payload) after a missing reply **only to an endpoint with `PERSISTENT_EPOCH`**
+and only while no HELLO has reported a different epoch since the first send. To
+an endpoint without `PERSISTENT_EPOCH` it MUST NOT retransmit an INVOKE: after a
+silent reboot to the same epoch value, the retransmit would carry a matching
+session and a handle above the reset `lastHandle` and would execute again; the
+gateway uses QUERY instead. On `HANDLE_UNKNOWN` it MUST leave the operation
 `unknown`; it MUST NOT allocate a new handle for the same operation.
 
 **BHMS-CMP-034** After a gateway restart the gateway MUST send `HELLO_REQ`; if the
 epoch is unchanged it MUST `QUERY` each operation recorded as `dispatching`,
 `running` or `unknown` and reconcile from STATUS/RESULT, keeping `unknown` on
-`HANDLE_UNKNOWN`.
+`HANDLE_UNKNOWN`. An endpoint MUST answer QUERY for a handle that is not in its
+ring (including one above `lastHandle`) with `HANDLE_UNKNOWN`, never by acting.
 
 **BHMS-CMP-035** An endpoint MUST send RESULT exactly once per handle unprompted,
 and again in answer to QUERY or a retransmitted INVOKE.

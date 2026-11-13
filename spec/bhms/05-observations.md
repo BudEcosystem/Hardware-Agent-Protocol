@@ -90,6 +90,12 @@ authorized for that effect.
 
 ## 5.4 Freshness for decisions
 
-**BHMS-OBS-030** A server MUST NOT admit an action whose declared precondition
-depends on a measured state when the observation it would use is `stale`,
-`invalid` or `unknown`; it MUST refuse with `STALE` naming the property.
+**BHMS-OBS-030** For every entry `{property, maxAgeMs}` of an action's
+`requiresFresh` (§4.4), the server MUST, at admission and again immediately
+before dispatch (BHMS-OPS-041), hold an observation of that property with
+`quality: "valid"` and `ageMs ≤ maxAgeMs`, acquiring a fresh one when needed and
+permitted (a `transaction` property is acquired under the action's own
+authority and lease). Otherwise it MUST refuse with `STALE`,
+`field: "requiresFresh[i]"`, `bound: {"property": …, "maxAgeMs": …}`, and a hint
+naming the property and its current quality and age. Free-text
+`preconditions` MUST NOT be used for this decision (BHMS-SEC-020).

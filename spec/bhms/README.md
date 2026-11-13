@@ -66,12 +66,12 @@ advertised by `server/discover` (BHMS-LIF-020).
 | `operations/list` | core | `{deviceId?, state?, parentOperationId?, cursor?, limit?}` → `{operations, nextCursor?}` | 06 |
 | `operations/cancel` | core | `{operationId, reason?}` → `{operation}` | 06 |
 | `stop` | core | `{deviceIds \| scope: "all", reason, waitMs?}` → `{stops: DeviceStop[]}` | 07 |
-| `subscriptions/listen` | core | `{notifications}` → stream of notifications, then `{}` on graceful end | 03 |
+| `subscriptions/listen` | core | `{notifications}` → stream of notifications, then `{endReason}` when the server ends it | 03 |
 | `leases/acquire` | `leases` | `{resources, ttlMs, waitMs?}` → `{lease}` | 07 |
 | `leases/renew` | `leases` | `{leaseId, ttlMs}` → `{lease}` | 07 |
 | `leases/release` | `leases` | `{leaseId}` → `{lease}` | 07 |
 | `events/read` | `events` | `{after?, limit?, deviceId?, types?}` → `{events, cursor, gap}` | 09 |
-| `programs/run` | `programs` | `{program \| digest, arguments, operationKey?, leaseId?, waitMs?}` → `{operation, replayed}` | 08 |
+| `programs/run` | `programs` | `{program \| digest, arguments, operationKey?, leaseId?, deadlineMs?, waitMs?}` → `{operation, replayed}` | 08 |
 | `programs/register` | `programs.registry` | `{program}` → `{info: ProgramInfo}` | 08 |
 | `programs/get` | `programs.registry` | `{digest}` → `{program, info}` | 08 |
 | `programs/list` | `programs.registry` | `{cursor?, limit?}` → `{programs: ProgramInfo[], nextCursor?}` | 08 |
@@ -88,7 +88,7 @@ Every request's `params` carries `_meta` with `bhms/protocolVersion`.
 | `notifications/operation` | server → client | `subscriptions/listen` (`operations`) | 06 |
 | `notifications/observation` | server → client | `subscriptions/listen` (`observations`) | 05 |
 | `notifications/event` | server → client | `subscriptions/listen` (`events`) | 09 |
-| `notifications/cancelled` | both | client: abandon a request; server: end a subscription | 03 |
+| `notifications/cancelled` | client → server | Abandon an in-flight request (including a subscription) | 03 |
 
 ## Conventions
 

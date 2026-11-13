@@ -67,7 +67,9 @@ characters and MUST carry the BHMS result as structured content (MCP
 
 **BHMS-AGT-011** A summary MUST state units for every quantity, the operation's
 `state` and `effect` for operation results, and `quality`, `evidence` and age for
-observations. It MUST NOT say "done", "success" or "stopped" for an operation
+observations. When the result has `replayed: true` the summary MUST contain the
+word "replayed" (for example `… op-7f3a replayed: completed …`), so a model knows
+it did not act again. It MUST NOT say "done", "success" or "stopped" for an operation
 that is not `completed` or a stop that is not `confirmed`.
 
 **BHMS-AGT-012** Device-provided text (names, descriptions, messages) MUST appear in
@@ -119,6 +121,14 @@ acquire a lease on exactly the needed resources (waitMs 0), renew it while the
 operation is not settled, and release it when the operation settles. A
 `LEASE_CONFLICT` MUST become a refusal whose hint says the resource is in use and
 when the blocking lease expires.
+
+**BHMS-AGT-041** When the model supplies `operation_key`, the bridge MUST first
+send `actions/invoke` (or `programs/run`) **without** `leaseId`. Because the key
+lookup precedes the lease check (BHMS-OPS-033), a retry of an existing operation
+returns it (`replayed: true`) even while the bridge's own lease for the original
+call is still held — acquiring first would hit `LEASE_CONFLICT` (BHMS-LSE-002).
+Only on `LEASE_REQUIRED` does the bridge acquire the lease (BHMS-AGT-040) and
+resend the identical request with the same key and the `leaseId`.
 
 ## 12.6 Function-tool adapters
 

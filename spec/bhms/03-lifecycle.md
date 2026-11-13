@@ -192,14 +192,23 @@ longer may see.
 It MUST bound its per-subscription queue; when a slow client overflows it, the
 server MUST drop the oldest observation notifications first, MUST NOT drop
 operation notifications for terminal states, and MUST end the subscription
-(`notifications/cancelled` then the listen result) rather than block device
-work.
+with `endReason: "overflow"` (BHMS-LIF-044) rather than block device work.
 
-**BHMS-LIF-044** A subscription ends when the client sends
-`notifications/cancelled` for its id or closes the stream, when the transport
-closes, or when the server ends it. A server ending a subscription SHOULD send
-the listen result `{resultType: "complete", _meta: {"bhms/subscriptionId": id}}`
-and MUST send nothing further on it.
+**BHMS-LIF-044** A subscription ends in exactly one of three ways: the client
+sends `notifications/cancelled` for its id or closes its stream (the server then
+sends nothing more, BHMS-LIF-051); the transport closes; or the server ends it.
+A server MUST end a subscription only by sending the listen result
+`{resultType: "complete", endReason, _meta: {"bhms/subscriptionId": id}}` and MUST
+send nothing further on it. `endReason` is one of:
+
+| `endReason` | Meaning | Client action |
+|---|---|---|
+| `shutdown` | The server is stopping or restarting | Reconnect later and listen again with `events.after` |
+| `overflow` | The client did not keep up (BHMS-LIF-043) | Read state with `operations/get`/`events/read`, then listen again |
+| `unauthorized` | The principal's credentials or `read` scope were revoked | Do not listen again without new authority |
+
+A transport close without a listen result is an abrupt end; the client MAY
+reconnect.
 
 **BHMS-LIF-045** Subscription state MUST NOT outlive the listen request. After a
 reconnect the client MUST send a new `subscriptions/listen`; it SHOULD pass the
@@ -224,8 +233,9 @@ finished request MUST ignore it. After honouring a cancellation it SHOULD NOT
 send a response for that request; a client MUST ignore a response that arrives
 after it cancelled.
 
-**BHMS-LIF-052** A server MUST send `notifications/cancelled` only to end a
-`subscriptions/listen` it is tearing down.
+**BHMS-LIF-052** A server MUST NOT send `notifications/cancelled`; it is a
+client-to-server notification only. (Unlike MCP, a server ends a subscription
+solely with the listen result, BHMS-LIF-044.)
 
 **BHMS-LIF-053** Clients SHOULD apply a timeout to every request and cancel it
 when the timeout passes. A timeout on `actions/invoke` means "outcome not yet

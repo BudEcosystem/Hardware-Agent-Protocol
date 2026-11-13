@@ -116,8 +116,9 @@ Description members:
 | `maxDurationMs` | integer ≥ 1 | yes | Enforced upper bound on execution |
 | `requiresLease` | bool | yes | Whether `leaseId` is required |
 | `resources` | string[] | yes | Resources the action uses (subset of device `resources`) |
-| `onLeaseLoss` | `finish` \| `stop` \| `hold` | no (default `finish`) | Behaviour of a running operation whose lease expires or is revoked |
-| `preconditions` | string ≤ 500 | no | Untrusted text describing required state |
+| `onLeaseLoss` | `finish` \| `cancel` \| `hold` | no (default `finish`) | Behaviour of a running operation whose lease expires or is revoked |
+| `requiresFresh` | `[{property, maxAgeMs}]` | no | Machine-checked freshness preconditions: each named property of this device must have a `valid` observation no older than `maxAgeMs` at admission and dispatch (BHMS-OBS-030) |
+| `preconditions` | string ≤ 500 | no | Untrusted text describing required state; never machine-checked |
 | `compact` | `CompactActionLayout` | no | Byte layout on a BHMS-Compact endpoint (§11) |
 
 Effect classes:
@@ -156,6 +157,9 @@ resource.
 **BHMS-DEV-033** Actions with `effect: "hazardous"` SHOULD declare
 `requiresLease: true`.
 
+**BHMS-DEV-034** Every `requiresFresh[i].property` MUST name a property of the same
+device, and the list MUST NOT name a property twice.
+
 ## 4.5 Schemas, units and arguments
 
 `input`, `output` and property `schema` are JSON Schema 2020-12 documents with
@@ -166,10 +170,13 @@ these BHMS rules:
 URI outside the schema itself, and servers MUST NOT dereference remote
 references.
 
-**BHMS-DEV-041** Every `number` or `integer` schema that denotes a physical
-quantity MUST carry `x-bhms-unit` with a case-sensitive UCUM code, and SHOULD
-carry `minimum` and `maximum`. Dimensionless ratios use `"1"`, percentages
-`"%"`. A coordinate value MAY carry `x-bhms-frame` naming its frame.
+**BHMS-DEV-041** Every `number` or `integer` schema in an action `input` or
+`output`, a property `schema`, an event `data` schema and a program `input` MUST
+carry `x-bhms-unit` with a case-sensitive UCUM code — counts, indices and other
+dimensionless numbers use `"1"`, percentages `"%"` — so that every numeric
+observation and argument has a unit (BHMS-OBS-005). Physical quantities SHOULD
+also carry `minimum` and `maximum`. A coordinate value MAY carry `x-bhms-frame`
+naming its frame.
 
 **BHMS-DEV-042** Units SHOULD come from the BHMS unit registry below. A client
 MUST NOT convert a unit that is not in the registry.
@@ -258,6 +265,19 @@ part of the description and therefore of its digest.
 `CompactField = {name, type, scale?}`; `CompactValue = {index, type, scale?}`;
 `type` ∈ `u8, i8, u16, i16, u32, i32, f32, bool`. Semantics are in §11.4.
 
-**BHMS-DEV-070** Every `CompactField.name` in `args` MUST name a member of the
-action's `input`, every required input member MUST have a field, and `index`
-values MUST be unique per device among actions and among properties.
+**BHMS-DEV-070** The `args` of a compact layout MUST map every member of the
+action's `input` exactly once (a fixed-width frame cannot omit a member), and
+every mapped member MUST be either `required` or declare a `default`, which the
+gateway applies and records (BHMS-DEV-044). Every `result` field MUST name a
+member of `output`. `index` values MUST be unique per device among actions and
+among properties.
+
+**BHMS-DEV-071** A compact field with `scale` MUST be mirrored in the
+description: the corresponding `input` member (and, for result fields, the
+`output` member; for properties, the property `schema`) MUST declare
+`multipleOf` equal to `scale`, and its `minimum`/`maximum` MUST lie inside the
+field type's range times `scale`. This makes every gateway refusal under
+BHMS-CMP-010 predictable from the description. Because decimal steps such as 0.1
+are not exact in binary floating point, BHMS validators MUST evaluate
+`multipleOf` with a relative tolerance of 1e-9 (or exact decimal arithmetic),
+the same tolerance as BHMS-CMP-010.

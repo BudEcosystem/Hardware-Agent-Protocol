@@ -34,7 +34,8 @@ direct server except through declared capabilities (`capabilities.gateway`).
    per-connection session. Everything that must outlive a request — operations,
    leases, cursors, subscriptions' scope — is named by an explicit id that the
    server mints and the client passes back.
-3. **Honest physical semantics never weaken for convenience.**
+3. **Honest physical semantics never weaken for convenience** (the few v0.1
+   weakenings relative to HMS are listed in §1.4).
    A transport acknowledgement is not completion. A lost reply after dispatch
    becomes `unknown`, never success or failure. A missing measurement is
    `invalid`, never zero. Unsupported means refuse. Cancellation is a request, not
@@ -63,10 +64,17 @@ direct server except through declared capabilities (`capabilities.gateway`).
 BHMS carries forward the HMS execution semantics (operation states and evidence,
 idempotency and crash windows, cancellation versus stop) from the HMS research
 drafts (`spec/02-execution.md`, `spec/12-io-driver-boundary.md`) and the HMS
-conformance matrix (`docs/conformance-plan.md`). Where BHMS simplifies HMS — for
-example one server-wide fence counter instead of per-resource authority
-generations — the simplification is stated where it occurs and never weakens a
-guarantee that a conforming server claims.
+conformance matrix (`docs/conformance-plan.md`). Where BHMS simplifies HMS, the
+simplification is stated where it occurs. Most simplifications keep the HMS
+guarantee (one server-wide fence counter is still monotonic per resource). The
+following are **deliberate weakenings** in v0.1, each a candidate for a later
+version:
+
+| Weakening | HMS | BHMS v0.1 | Where |
+|---|---|---|---|
+| Key retention | Server-side replay-namespace floor: a forgotten key can never become a new operation | Client obligation not to reuse a key after `keyRetentionS` (≥ 24 h) | BHMS-OPS-036 |
+| Intent pins | Intent digest includes binding generation, calibration revision and endpoint session | Intent includes only the optional `descriptionDigest`; calibration changes are covered only if they change the description | BHMS-OPS-030, BHMS-DEV-023 |
+| Clock domains | Every timestamp names a clock domain and epoch with uncertainty | UTC timestamps plus a conservative `ageMs`; no clock-uncertainty field | BHMS-OBS-003 |
 
 ## 1.5 Conventions
 

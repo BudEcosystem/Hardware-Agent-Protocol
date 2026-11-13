@@ -51,7 +51,8 @@ secrets, tokens or the identity of another principal in any error member.
 **BHMS-ERR-004** `mayHaveActed` MUST be `true` whenever a device may have acted
 because of the request (for example a dispatch that timed out), and MUST be
 `false` only when the server knows no command reached a device. Admission
-refusals (BHMS-OPS-040) are always `false`.
+refusals of requests without an existing operation are always `false`;
+`KEY_CONFLICT` takes the existing operation's value (BHMS-OPS-040).
 
 **BHMS-ERR-005** A server MAY override a code's default `retry` only to a more
 conservative class (`backoff` → `after-reconcile` → `never`), except that it MAY
@@ -81,7 +82,7 @@ contain `bhmsCode`.
 | `DEVICE_UNAVAILABLE` | -32010 | backoff | Device offline or unreachable |
 | `UNAUTHORIZED` | -32011 | never | The principal lacks the scope |
 | `BUSY` | -32012 | backoff | Device or server saturated |
-| `DEADLINE_EXCEEDED` | -32013 | after-reconcile | A deadline or duration bound passed; the outcome may be unknown |
+| `DEADLINE_EXCEEDED` | -32013 | after-reconcile | A deadline or duration bound passed, or a reply was lost; the code of every operation that becomes `unknown` (BHMS-OPS-004) |
 | `INTERNAL` | -32014 | never | Server bug |
 | `UNSUPPORTED_VERSION` | -32015 | never | Protocol version not served; `bound` lists supported versions |
 | `UNVERIFIED` | -32016 | after-reconcile | Required measured evidence was absent or contradicted the effect |

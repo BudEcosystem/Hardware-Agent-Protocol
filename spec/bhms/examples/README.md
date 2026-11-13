@@ -1,11 +1,13 @@
 # BHMS examples
 
-Every file here is one JSON object with exactly three members:
+Every valid example is one JSON object with exactly three members; an invalid
+example has a fourth, `expect`:
 
 ```json
 {
   "$comment": "what the example shows, or why it is invalid (citing the requirement)",
   "against": "#/$defs/<Definition>",
+  "expect": {"path": "/params/_meta", "keyword": "required", "message": "'bhms/protocolVersion'"},
   "message": { "...": "the JSON value being tested" }
 }
 ```
@@ -21,8 +23,12 @@ Every file here is one JSON object with exactly three members:
   JSON.
 - **Invalid examples** are named `invalid-<what>.json`. Each MUST fail validation
   against `against` (and the pydantic model MUST reject it). `$comment` says why,
-  naming the requirement ID where one applies. An invalid example is invalid for
-  exactly the stated reason: everything else in it is taken from a valid example.
+  naming the requirement ID where one applies. `expect` locks that reason: among
+  the JSON Schema validation errors (including nested `oneOf`/`anyOf` context
+  errors) there MUST be one whose instance location is the JSON Pointer `path`
+  (`""` is the root), whose failing keyword is `keyword`, and — when `message` is
+  given — whose error message contains that text. Everything else in an invalid
+  example is taken from a valid example.
 
 File names:
 

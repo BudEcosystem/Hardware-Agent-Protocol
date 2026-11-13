@@ -48,7 +48,7 @@ depends on the registry.
     "required": ["start", "steps"],
     "properties": {
       "start": {"type": "number", "x-bhms-unit": "um", "minimum": 0, "maximum": 5000},
-      "steps": {"type": "integer", "minimum": 1, "maximum": 50}
+      "steps": {"type": "integer", "x-bhms-unit": "1", "minimum": 1, "maximum": 50}
     }
   },
   "maxDurationMs": 120000,
@@ -101,6 +101,16 @@ Variables are: program inputs, `saveAs` names (an `invoke` saves the action
 0-based integers) and, inside a `waitUntil` predicate only, `observed` (the
 latest observation).
 
+**Scope.** Inputs and `saveAs` names share one program-wide namespace. A
+`saveAs` inside a `repeat` body is one definition that is reassigned on every
+iteration: later steps of the same iteration see this iteration's value, and
+after the `repeat` the variable holds the value from the last iteration (a
+`repeat` always runs at least once, BHMS-PRG-003). A `saveAs` is visible only to
+steps after it in document order (including steps after its enclosing
+`repeat`), never to earlier steps of the next iteration before it is reassigned.
+A repeat index (`as`) is visible only inside its own body. `observed` is visible
+only inside its `waitUntil` predicate.
+
 `deviceId`, `action` and `property` are always literals, so devices, resources
 and durations are known before the run.
 
@@ -122,9 +132,11 @@ devices, actions or properties; references to undefined variables or variables
 defined later; a variable name defined twice (including shadowing an input);
 predicates nested deeper than 4; and any limit of §8.1 exceeded.
 
-**BHMS-PRG-003** A `repeat.times` reference MUST name an integer input whose
-schema `maximum` is at most `maxRepeat`; validation MUST use that maximum for
-worst-case calculations.
+**BHMS-PRG-003** A `repeat.times` reference MUST name a required integer input
+whose schema `minimum` is at least 1 and `maximum` at most `maxRepeat`;
+validation MUST use that maximum for worst-case calculations. (An input that
+allows 0 is refused, so every `repeat` body runs at least once and variables
+saved inside it are always defined after it.)
 
 **BHMS-PRG-004** The server MUST compute the worst-case duration as the sum, over
 the flattened steps with repeats multiplied out, of the per-kind durations in
@@ -184,9 +196,24 @@ child was dispatched, `unknown` if any child is `unknown`, `verified` if every
 effectful child is `verified`, and `unverified` otherwise. Its `result` is the
 evaluated `output` (or `{}`).
 
-**BHMS-PRG-017** A crash during a program MUST leave the program operation
-`unknown` when its current child is `unknown`; the server MUST NOT resume the
-program after restart.
+**BHMS-PRG-017** A server MUST NOT resume a program after a restart. On restart,
+after children have been handled per BHMS-OPS-080, each program operation that
+was not settled MUST be settled from its step history:
+
+- if no step had started (`accepted`), the program becomes `rejected` with
+  `INTERNAL` and `mayHaveActed: false`;
+- if a child is `unknown`, the program becomes `unknown` (error per
+  BHMS-OPS-004);
+- otherwise (a crash between steps, or the current child is terminal) the program
+  ends `failed` with `INTERNAL`, message "server restarted during the program",
+  `mayHaveActed: true` if any effectful child was dispatched, and a hint naming
+  the last completed step (`stepIndex`). It never ends `completed` after a
+  restart, because saved variables and `output` are not durable in v0.1.
+
+When the `unknown` children of an `unknown` program are all reconciled, the
+server MUST settle the program the same way (a `reconciliation` entry, then
+`failed` with `INTERNAL`). A program therefore never stays `unknown` longer than
+its unknown children.
 
 ## 8.5 Methods
 
