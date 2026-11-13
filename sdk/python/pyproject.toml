@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "bhms"
+version = "0.1.0"
+description = "BHMS (Bud HMS): a JSON-RPC 2.0 protocol for AI agents operating physical devices"
+requires-python = ">=3.11"
+dependencies = [
+  "orjson",
+  "pydantic>=2",
+  "websockets",
+  "typer",
+  "rich",
+  "jsonschema",
+  "rfc8785",
+]
+
+[project.optional-dependencies]
+mcp = ["mcp>=1.26"]
+sim = []
+openai = []
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

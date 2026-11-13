@@ -1,0 +1,78 @@
+import pytest
+
+from bhms.protocol.errors import CODES, RETRY_VALUES, BhmsError, from_jsonrpc
+
+ORDER = [
+    "INVALID_ARGUMENT", "OUT_OF_RANGE", "UNIT_MISMATCH", "UNKNOWN_DEVICE", "UNKNOWN_ACTION",
+    "UNSUPPORTED", "LEASE_REQUIRED", "LEASE_CONFLICT", "LEASE_EXPIRED", "FENCED", "KEY_CONFLICT",
+    "STALE", "DEVICE_UNAVAILABLE", "UNAUTHORIZED", "BUSY", "DEADLINE_EXCEEDED", "INTERNAL",
+]
+
+
+def test_table_complete_and_ordered():
+    assert list(CODES) == ORDER
+
+
+def test_numeric_codes():
+    for c in ("INVALID_ARGUMENT", "OUT_OF_RANGE", "UNIT_MISMATCH"):
+        assert CODES[c].number == -32602
+    rest = [CODES[c].number for c in ORDER[3:]]
+    assert rest == list(range(-32001, -32001 - 14, -1))
+    assert len(set(rest)) == len(rest)
+    assert all(-32020 <= n <= -32001 for n in rest)
+
+
+def test_default_retry_values_valid_and_sensible():
+    assert all(s.retry in RETRY_VALUES for s in CODES.values())
+    assert BhmsError("DEVICE_UNAVAILABLE", "x").retry == "backoff"
+    assert BhmsError("BUSY", "x").retry == "backoff"
+    assert BhmsError("INTERNAL", "x").retry == "never"
+    assert BhmsError("STALE", "x").retry == "after-reconcile"
+
+
+@pytest.mark.parametrize("code", ORDER)
+def test_round_trip_every_code(code):
+    e = BhmsError(code, "msg", field="params.x", bound={"max": 5}, may_have_acted=True,
+                  retry="same-key", hint="do it")
+    wire = e.to_jsonrpc()
+    assert wire["code"] == CODES[code].number
+    assert wire["message"] == "msg"
+    assert wire["data"] == {"bhmsCode": code, "field": "params.x", "bound": {"max": 5},
+                            "mayHaveActed": True, "retry": "same-key", "hint": "do it"}
+    back = from_jsonrpc(wire)
+    assert back.to_jsonrpc() == wire
+    assert (back.code, back.field, back.bound, back.may_have_acted, back.retry, back.hint) == (
+        code, "params.x", {"max": 5}, True, "same-key", "do it")
+
+
+def test_optional_fields_omitted():
+    data = BhmsError("BUSY", "m").to_jsonrpc()["data"]
+    assert data == {"bhmsCode": "BUSY", "mayHaveActed": False, "retry": "backoff", "hint": ""}
+
+
+def test_unknown_code_rejected():
+    with pytest.raises(ValueError, match="NOPE"):
+        BhmsError("NOPE", "x")
+    with pytest.raises(ValueError, match="NOPE"):
+        from_jsonrpc({"code": -32001, "message": "m", "data": {"bhmsCode": "NOPE", "mayHaveActed": False,
+                                                              "retry": "never", "hint": ""}})
+
+
+def test_invalid_retry_rejected():
+    with pytest.raises(ValueError, match="retry"):
+        BhmsError("BUSY", "x", retry="sometimes")
+
+
+def test_from_jsonrpc_requires_bhms_data():
+    with pytest.raises(ValueError, match="bhmsCode"):
+        from_jsonrpc({"code": -32000, "message": "m"})
+
+
+def test_from_jsonrpc_rejects_mismatched_number():
+    with pytest.raises(ValueError, match="-32001"):
+        from_jsonrpc({"code": -32005, "message": "m", "data": {"bhmsCode": "UNKNOWN_DEVICE"}})
+
+
+def test_is_exception():
+    with pytest.raises(BhmsError, match="boom"):
+        raise BhmsError("INTERNAL", "boom")
