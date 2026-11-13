@@ -603,7 +603,7 @@ class Session:
             aclose = getattr(stream, "aclose", None)
             if aclose is not None:
                 await aclose()
-        final = {**final, "_meta": {**final.get("_meta", {}), SUBSCRIPTION_KEY: ctx.id}}
+        final = {"resultType": "complete", **final, "_meta": {**final.get("_meta", {}), SUBSCRIPTION_KEY: ctx.id}}
         await self._respond(ctx.id, final)
 
 

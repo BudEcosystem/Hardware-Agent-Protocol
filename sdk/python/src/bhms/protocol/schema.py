@@ -88,3 +88,21 @@ def validate(def_name: str, obj: Any) -> None:
     raise BhmsError("INVALID_ARGUMENT", message, field=pointer[:512], bound=None,
                     hint=f"schema keyword {error.validator!r} failed; see spec/bhms/schema/bhms.schema.json "
                          f"$defs/{def_name}"[:2000])
+
+
+def from_pydantic_error(exc: Any, *, what: str = "params") -> BhmsError:
+    """Map a ``pydantic.ValidationError`` to ``INVALID_ARGUMENT`` naming the first offending member.
+
+    ``field`` is the spec's path form (``arguments.position``, ``resources[2]``): dotted members, ``[i]``
+    indexes; pydantic's internal union/function markers are skipped.
+    """
+    first = exc.errors(include_url=False)[0]
+    field = ""
+    for part in first["loc"]:
+        if isinstance(part, int):
+            field += f"[{part}]"
+        elif not any(c in part for c in "[()"):
+            field += f".{part}" if field else part
+    message = f"{what}{'.' + field if field else ''}: {first['msg']}"[:500]
+    return BhmsError("INVALID_ARGUMENT", message, field=field[:512],
+                     hint=f"fix {field or what} ({first['type']}); see spec/bhms/schema/bhms.schema.json"[:2000])
