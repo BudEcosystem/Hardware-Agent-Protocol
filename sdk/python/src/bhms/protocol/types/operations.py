@@ -60,6 +60,7 @@ class Operation(_Wire):
     program_digest: Optional[Digest] = None
     parent_operation_id: Optional[ServerId] = None
     arguments: dict[str, Any]
+    admitted_arguments: Optional[dict[str, Any]] = None
     request_digest: Digest
     state: OperationState
     cancel: CancelInfo

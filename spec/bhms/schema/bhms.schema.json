@@ -2959,7 +2959,12 @@
           "$ref": "#/$defs/ServerId"
         },
         "arguments": {
-          "type": "object"
+          "type": "object",
+          "description": "Arguments exactly as sent (the requestDigest input)."
+        },
+        "admittedArguments": {
+          "type": "object",
+          "description": "Arguments as admitted (defaults applied, quantity objects replaced by values); present only when they differ from arguments."
         },
         "requestDigest": {
           "$ref": "#/$defs/Digest"

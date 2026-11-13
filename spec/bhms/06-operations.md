@@ -34,7 +34,8 @@ was returned for the same key.
 | `deviceId`, `action` | string | for `action` | |
 | `programDigest` | string | for `program` | |
 | `parentOperationId` | string | no | The program operation that created this step operation |
-| `arguments` | object | yes | Arguments as admitted (defaults applied, quantities normalised) |
+| `arguments` | object | yes | Arguments exactly as sent (the input of `requestDigest`, §6.4) |
+| `admittedArguments` | object | no | Arguments as admitted (defaults applied, quantity objects replaced by their values); present only when they differ from `arguments` |
 | `requestDigest` | string | yes | Digest of the intent (§6.4) |
 | `state` | `OperationState` | yes | §6.3 |
 | `cancel` | `{state, reason?, requestedAt?}` | yes | §6.6 |

@@ -213,8 +213,10 @@ admission and MUST NOT coerce, round, clamp or default a value the client sent:
 a wrong type or unknown member is `INVALID_ARGUMENT`; a violated `minimum`,
 `maximum`, `exclusiveMinimum`, `exclusiveMaximum`, `minLength`, `maxLength`,
 `minItems`, `maxItems` or `enum` is `OUT_OF_RANGE` with `bound` set to the
-violated keyword(s) and value(s). Defaults declared in the schema MAY be applied
-to *absent* members and MUST be recorded in the operation's `arguments`.
+violated keyword(s) and value(s). A `multipleOf` violation is `INVALID_ARGUMENT`
+with `bound: {"multipleOf": …}` (as BHMS-CMP-010). Defaults declared in the schema MAY
+be applied to *absent* members and MUST then be recorded in the operation's
+`admittedArguments` (§6.2); `arguments` keeps the request exactly as sent.
 
 ## 4.6 Properties
 
