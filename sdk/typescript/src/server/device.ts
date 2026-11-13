@@ -197,7 +197,14 @@ export class Device {
   readonly capabilities: string[];
   readonly tags: string[];
   readonly resources: string[];
-  readonly name: string;
+  /** The display name; reassigning it takes effect with the next {@link invalidate}. */
+  name: string;
+  /**
+   * A last transformation of the description that is served, applied after validation and the digest (so it may produce
+   * what validation would refuse). For test devices that serve hostile or inconsistent descriptions on purpose; the hook is
+   * responsible for the digest it returns. Call {@link invalidate} when its inputs change.
+   */
+  describeHook?: (description: DeviceDescription) => DeviceDescription;
   stopSpec?: StopSpec;
   holdHandler?: () => Promise<void> | void;
   reconcileHandler?: (op: Record<string, unknown>) => Promise<Reconciled | undefined> | Reconciled | undefined;
@@ -346,8 +353,9 @@ export class Device {
     if (canonical(this.summary("unknown", description)).length > SUMMARY_HARD_LIMIT) {
       throw new DescriptionError(`device ${this.deviceId}: summary exceeds ${SUMMARY_HARD_LIMIT} bytes (BHMS-DEV-011); shorten name, summary or tags`);
     }
-    this.cached = description;
-    return description;
+    const served = this.describeHook ? this.describeHook(description) : description;
+    this.cached = served;
+    return served;
   }
 
   private check(body: Record<string, unknown>): void {

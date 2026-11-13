@@ -307,3 +307,52 @@ export function validateDef(name: string, value: unknown): void {
     hint: `fix ${field || "the value"} (schema keyword ${issue.keyword}); see spec/bhms/schema/bhms.schema.json $defs/${name}`,
   });
 }
+
+const SCHEMA_CHILD = ["items", "additionalProperties", "not", "if", "then", "else", "contains", "propertyNames", "unevaluatedItems", "unevaluatedProperties"];
+const SCHEMA_MAP = ["properties", "patternProperties", "$defs", "definitions", "dependentSchemas"];
+const SCHEMA_LIST = ["allOf", "anyOf", "oneOf", "prefixItems"];
+
+const isPlainObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
+
+/** Python `repr` of a short string, so the wording matches the reference implementation byte for byte. */
+function pyRepr(text: string): string {
+  const quote = text.includes("'") && !text.includes('"') ? '"' : "'";
+  const body = text.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t");
+  return quote + (quote === "'" ? body.replace(/'/g, "\\'") : body) + quote;
+}
+
+/**
+ * Why an embedded schema must not be validated or served, or `undefined` (BHMS-SEC-021): nesting deeper than `maxDepth`
+ * subschemas (the root is depth 1), more than `maxNodes` subschemas (objects only), or a `$ref` that leaves the document
+ * (a validator must never fetch). Iterative and linear in the number of subschemas, so the check itself is bounded.
+ *
+ * Identical to the reference `bhms.protocol.schema.schema_bounds_problem`: same keyword sets, same depth and count
+ * semantics at the exact boundaries (32 levels pass, 33 fail; 10 000 subschemas pass, 10 001 fail), same wording.
+ *
+ * Thread-safety: pure.
+ */
+export function schemaBoundsProblem(schema: unknown, options: { maxDepth?: number; maxNodes?: number } = {}): string | undefined {
+  const maxDepth = options.maxDepth ?? 32;
+  const maxNodes = options.maxNodes ?? 10_000;
+  const stack: Array<[unknown, number]> = [[schema, 1]];
+  let nodes = 0;
+  for (let top = stack.pop(); top !== undefined; top = stack.pop()) {
+    const [node, depth] = top;
+    if (!isPlainObject(node)) continue;
+    nodes += 1;
+    if (depth > maxDepth) return `it nests subschemas deeper than ${maxDepth} levels`;
+    if (nodes > maxNodes) return `it has more than ${maxNodes} subschemas`;
+    const ref = node.$ref;
+    if (typeof ref === "string" && !ref.startsWith("#")) return `it has a $ref (${pyRepr([...ref].slice(0, 80).join(""))}) that leaves the document; schemas are never fetched`;
+    for (const key of SCHEMA_CHILD) if (key in node) stack.push([node[key], depth + 1]);
+    for (const key of SCHEMA_MAP) {
+      const members = node[key];
+      if (isPlainObject(members)) for (const child of Object.values(members)) stack.push([child, depth + 1]);
+    }
+    for (const key of SCHEMA_LIST) {
+      const members = node[key];
+      if (Array.isArray(members)) for (const child of members) stack.push([child, depth + 1]);
+    }
+  }
+  return undefined;
+}

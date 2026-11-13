@@ -335,7 +335,8 @@ test("cancel: queued ops cancel without effect, running ops confirm, unsupported
     const pulse = (await c.actionsInvoke("axis-1", "pulse", { count: 1 }, { waitMs: 1000 })).operation;
     assert.equal((await c.operationsCancel(pulse.operationId)).operation.state, "completed");
     const other = await r.connect({ principal: "other", scopes: ["read", "invoke:*/*"] });
-    await assert.rejects(other.operationsCancel(pulse.operationId), code("INVALID_ARGUMENT", (e) => e.field === "operationId"), "invisible to others");
+    await assert.rejects(other.operationsCancel(pulse.operationId), code("UNAUTHORIZED", (e) => e.field === "operationId"), "BHMS-OPS-054: only the creator or admin cancels");
+    await assert.rejects(other.operationsCancel("op-" + "0".repeat(24)), code("INVALID_ARGUMENT", (e) => e.field === "operationId"), "an unknown id is INVALID_ARGUMENT (BHMS-OPS-062)");
     await assert.rejects(other.operationsGet(pulse.operationId), code("INVALID_ARGUMENT"));
   } finally { await r.close(); }
 });
@@ -433,7 +434,17 @@ test("stop: confirmed with evidence, cancels queued and running work, unknown de
     await assert.rejects(reader.stop("nope", { deviceIds: ["axis-1"] }), code("UNAUTHORIZED"));
     const globbed = await r.connect({ principal: "g", scopes: ["read", "stop:pump-*"] });
     assert.equal((await globbed.stop("ok", { deviceIds: ["pump-1"] })).stops[0].outcome, "unsupported");
-    await assert.rejects(globbed.stop("no", { deviceIds: ["axis-1"] }), code("UNAUTHORIZED"));
+    // a device outside the stop pattern is a per-device failure (nothing stopped there), not a failure of the whole request
+    const refused = (await globbed.stop("no", { deviceIds: ["axis-1"] })).stops[0];
+    assert.equal(refused.outcome, "failed");
+    assert.equal(refused.error?.bhmsCode, "UNAUTHORIZED");
+    // stop is a scope of its own (BHMS-SEC-040): without `read` it still stops what it names, and learns nothing about the rest
+    const stopper = await r.connect({ principal: "stopper", scopes: ["stop"] });
+    assert.equal((await stopper.stop("only stop", { deviceIds: ["pump-1"] })).stops[0].outcome, "unsupported");
+    const hidden = (await stopper.stop("ghost", { deviceIds: ["ghost-1"] })).stops[0];
+    assert.equal(hidden.error?.bhmsCode, "UNKNOWN_DEVICE");
+    const nobody = await r.connect({ principal: "nobody", scopes: [] });
+    await assert.rejects(nobody.stop("none", { deviceIds: ["axis-1"] }), code("UNAUTHORIZED"));
   } finally { await r.close(); }
 });
 

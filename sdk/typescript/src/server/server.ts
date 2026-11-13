@@ -43,7 +43,7 @@ import { loadSchema, validateDef } from "../schema.js";
 import { listenUnix, type Listener } from "../transport/socket.js";
 import { stdioServerTransport } from "../transport/stdio.js";
 import { listenWebSocket, type WsListener } from "../transport/websocket.js";
-import { Principal, defaultPolicy, type Policy } from "./authority.js";
+import { Principal, PolicyTable, defaultPolicy, tokenDigest, type Policy, type PolicyDocument } from "./authority.js";
 import { Device, DescriptionError, type DeviceOptions } from "./device.js";
 import { EventLog } from "./events.js";
 import { Executor } from "./executor.js";
@@ -67,6 +67,12 @@ export interface DeviceServerOptions {
   /** `"memory"` for a non-durable store (new epoch every start), or a custom {@link Store}. Default: durable journal. */
   store?: "memory" | Store;
   policy?: Policy;
+  /**
+   * Serve several principals from a policy document (`{"principals": {name: {tokens, scopes, bounds?}}}`): bearer tokens over
+   * WebSocket resolve to the named principals, the server advertises `capabilities.authority` when the policy is
+   * multi-principal, and {@link DeviceServer.setPolicy} replaces it at run time. Takes precedence over `policy`.
+   */
+  policyDocument?: PolicyDocument;
   /** Bearer token granting `admin` over WebSocket (default `$BHMS_TOKEN`). */
   token?: string;
   /** How long keys and settled operations are kept (>= 86 400, BHMS-OPS-034). */
@@ -138,7 +144,10 @@ function waitError(field: string, value: number, max: number): BhmsError {
 
 export class DeviceServer {
   readonly devices = new Map<string, Device>();
-  readonly policy: Policy;
+  /** The principal of a peer under the current policy; replaced as a whole by {@link setPolicy}. */
+  policy: Policy;
+  /** The current policy table when the server was given a `policyDocument`. */
+  table?: PolicyTable;
   readonly sessions = new Set<Session>();
   readonly deviceListeners = new Set<() => void>();
   readonly closingController = new AbortController();
@@ -172,8 +181,35 @@ export class DeviceServer {
     this.programLimits = { ...DEFAULT_PROGRAM_LIMITS, ...options.programLimits };
     const token = options.token ?? process.env.BHMS_TOKEN;
     this.opts.token = token;
-    const base = options.policy ?? defaultPolicy;
-    this.policy = base;
+    this.policy = options.policy ?? defaultPolicy;
+    if (options.policyDocument) this.adoptTable(options.policyDocument);
+  }
+
+  /** Install a policy table; a configured bearer token stays an `admin` principal `token` (it is never lost by a reload). */
+  private adoptTable(doc: PolicyDocument): void {
+    const principals = { ...doc.principals };
+    if (this.opts.token && !("token" in principals)) principals.token = { tokens: [tokenDigest(this.opts.token)], scopes: ["admin"] };
+    const table = new PolicyTable({ principals });
+    this.table = table;
+    this.policy = (peer) => table.principalFor(peer);
+  }
+
+  /**
+   * Replace the policy with a new document: bounds that widen a device bound or name unknown actions are refused (the old
+   * policy stays, BHMS-SEC-011); otherwise the new policy governs every later request at once (BHMS-SEC-012), leases of a
+   * principal that lost the `lease` scope are revoked (BHMS-AUTH-013), `policy.changed` is recorded and subscriptions
+   * re-check their principal. Operations already admitted continue.
+   */
+  setPolicy(doc: PolicyDocument): void {
+    const before = this.table?.principals ?? [];
+    new PolicyTable(doc).checkBounds((id) => this.devices.get(id)?.description());
+    this.adoptTable(doc);
+    if (!this.started) return;
+    for (const old of before) {
+      const now = this.table!.principals.find((p) => p.id === old.id);
+      if (old.has("lease") && !now?.has("lease")) this.leases.revokePrincipal(old.id);
+    }
+    this.events.append("policy.changed", { message: "the authorization policy changed" });
   }
 
   // ------------------------------------------------------------------------------------------------ declaration
@@ -229,6 +265,7 @@ export class DeviceServer {
   async start(): Promise<void> {
     if (this.started) return;
     for (const dev of this.devices.values()) dev.description(); // fail fast on invalid declarations
+    this.table?.checkBounds((id) => this.devices.get(id)?.description()); // a policy never widens a device bound (BHMS-SEC-011)
     this.store = this.openStore();
     await this.store.acquire?.();
     const loaded = this.store.load();
@@ -295,8 +332,10 @@ export class DeviceServer {
       throw new RangeError("TCP carries no credential, so a server will not serve it (BHMS-SEC-001); use unix:<path> or ws://127.0.0.1:<port> with a bearer token");
     } else if (url.startsWith("ws://")) {
       const u = new URL(url);
-      this.ensureToken();
-      listener = await listenWebSocket(u.hostname.replace(/^\[|\]$/g, ""), Number(u.port || 80), (t) => { this.serve(t); }, { token: this.opts.token, maxMessageBytes: this.opts.maxMessageBytes });
+      if (!this.table) this.ensureToken();
+      listener = await listenWebSocket(u.hostname.replace(/^\[|\]$/g, ""), Number(u.port || 80), (t) => { this.serve(t); },
+        this.table ? { verifyToken: (token) => this.table!.byToken(token) !== undefined, maxMessageBytes: this.opts.maxMessageBytes }
+          : { token: this.opts.token, maxMessageBytes: this.opts.maxMessageBytes });
     } else {
       throw new RangeError(`unsupported url ${JSON.stringify(url)}; use stdio, unix:<path> or ws://127.0.0.1:<port>`);
     }
@@ -410,6 +449,7 @@ export class DeviceServer {
       leases: { minTtlMs: o.leaseMinTtlMs, maxTtlMs: o.leaseMaxTtlMs, maxWaitMs: o.leaseMaxWaitMs },
       events: { retentionS: o.eventRetentionS, maxPageSize: o.maxPageSize },
       ...(this.programs ? { programs: { registry: true, limits: this.programLimits } } : {}),
+      ...(this.table?.authorityCapability() ? { authority: this.table.authorityCapability() } : {}),
       ...(Object.keys(this.extensionInfo).length > 0 ? { extensions: this.extensionInfo } : {}),
     };
   }
@@ -528,7 +568,7 @@ export class DeviceServer {
       }
       case "operations/cancel": {
         const rec = this.journal.get(p.operationId as string);
-        if (!rec || (rec.principal !== principal.id && !principal.operationsAll && !principal.admin)) {
+        if (!rec) {
           throw new BhmsError("INVALID_ARGUMENT", `no operation ${JSON.stringify(p.operationId)}`, { field: "operationId", hint: "use an operationId returned to you" });
         }
         if (rec.principal !== principal.id && !principal.admin) {
@@ -598,25 +638,20 @@ export class DeviceServer {
    */
   async stop(principal: Principal, p: { deviceIds?: string[]; scope?: "all"; reason: string; waitMs?: number }): Promise<DeviceStop[]> {
     if (!principal.hasAnyStop) throw new BhmsError("UNAUTHORIZED", "stop needs the stop scope", { hint: "missing scope stop (or stop:<deviceGlob>)" });
-    const ids = p.scope === "all" ? [...this.devices.keys()].sort() : [...(p.deviceIds ?? [])];
-    if (p.scope === "all" && !principal.has("stop")) throw new BhmsError("UNAUTHORIZED", "scope all needs the unrestricted stop scope", { hint: "missing scope stop" });
-    for (const id of ids) {
-      if (this.devices.has(id) && principal.canRead && !principal.canStop(id)) {
-        throw new BhmsError("UNAUTHORIZED", `the principal may not stop ${id}`, { field: "deviceIds", hint: `missing scope stop or stop:${id}` });
-      }
-    }
+    // scope "all" is every device the principal may stop (a `stop:<glob>` holder stops the devices it names)
+    const ids = p.scope === "all" ? [...this.devices.keys()].sort().filter((id) => principal.canStop(id)) : [...new Set(p.deviceIds ?? [])];
     const degraded = !this.journalHealthy;
     type Pending = { id: string; dev?: Device; done?: Promise<"done" | "failed">; stop: DeviceStop; failure?: unknown };
     const pending: Pending[] = [];
     for (const id of ids) {
       const dev = this.devices.get(id);
-      if (!dev || !principal.canRead) {
-        pending.push({
-          id, stop: {
-            deviceId: id, outcome: "failed", evidence: "none", canceledOperations: [], revokedLeases: [],
-            error: new BhmsError("UNKNOWN_DEVICE", `no device ${JSON.stringify(id)}`, { hint: "devices/list shows the devices you can stop" }).toOperationError(),
-          },
-        });
+      if (!dev || !principal.canStop(id)) {
+        // stop is its own scope: a principal without `read` may still stop what its scope names (BHMS-SEC-040); it learns
+        // nothing about devices it can neither read nor stop (BHMS-DEV-010)
+        const refusal = dev && principal.canRead
+          ? new BhmsError("UNAUTHORIZED", `you may not stop ${id}`, { field: "deviceIds", hint: `missing scope stop or stop:${id}; nothing was stopped on this device` })
+          : new BhmsError("UNKNOWN_DEVICE", `no device ${JSON.stringify(id)}`, { hint: "nothing was stopped on this device; check the id and your stop scope" });
+        pending.push({ id, stop: { deviceId: id, outcome: "failed", evidence: "none", canceledOperations: [], revokedLeases: [], error: refusal.toOperationError() } });
         continue;
       }
       // 1. dispatch the stop procedure (its first step runs now, before any bookkeeping)

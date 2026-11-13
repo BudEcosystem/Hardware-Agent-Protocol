@@ -238,6 +238,26 @@ export class LeaseManager {
     return hit;
   }
 
+  /** Revoke the active leases of a principal whose `lease` scope was removed (BHMS-AUTH-013); their resources' fence rises. */
+  revokePrincipal(principal: string): Lease[] {
+    const hit = [...this.leases.values()].filter((l) => this.refresh(l).state === "active" && l.principal === principal);
+    if (hit.length === 0) return hit;
+    let fence: number;
+    try {
+      fence = this.nextFence();
+    } catch {
+      fence = ++this.fenceCounter;
+    }
+    for (const l of hit) {
+      for (const r of l.resources) this.resourceFence.set(r, Math.max(this.resourceFence.get(r) ?? 0, fence));
+      l.state = "revoked";
+      if (l.timer) clearTimeout(l.timer);
+      this.onEnd(l, "revoked");
+    }
+    this.wake();
+    return hit;
+  }
+
   close(): void {
     for (const l of this.leases.values()) if (l.timer) clearTimeout(l.timer);
     this.wake();
