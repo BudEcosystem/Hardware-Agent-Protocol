@@ -1,0 +1,105 @@
+{
+ "result": {
+  "devices=1000 unknown=0": {
+   "devices": 1000,
+   "unknown_expected": 0,
+   "journal_bytes": 9136512,
+   "to_ready_s": 0.714,
+   "to_first_response_s": 0.715,
+   "unknown_after": 0,
+   "load": {
+    "before": {
+     "load1": 14.39306640625,
+     "load5": 16.0595703125,
+     "load15": 15.62548828125,
+     "t": 1794594342.0700793
+    },
+    "after": {
+     "load1": 14.39306640625,
+     "load5": 16.0595703125,
+     "load15": 15.62548828125,
+     "t": 1794594343.0064878
+    }
+   }
+  },
+  "devices=10 unknown=10": {
+   "devices": 10,
+   "unknown_expected": 10,
+   "journal_bytes": 514816,
+   "to_ready_s": 0.172,
+   "to_first_response_s": 0.173,
+   "unknown_after": 10,
+   "load": {
+    "before": {
+     "load1": 14.39306640625,
+     "load5": 16.0595703125,
+     "load15": 15.62548828125,
+     "t": 1794594343.256356
+    },
+    "after": {
+     "load1": 14.39306640625,
+     "load5": 16.0595703125,
+     "load15": 15.62548828125,
+     "t": 1794594343.593246
+    }
+   }
+  },
+  "devices=100 unknown=100": {
+   "devices": 100,
+   "unknown_expected": 100,
+   "journal_bytes": 4329936,
+   "to_ready_s": 0.227,
+   "to_first_response_s": 0.228,
+   "unknown_after": 100,
+   "load": {
+    "before": {
+     "load1": 13.880859375,
+     "load5": 15.92529296875,
+     "load15": 15.58447265625,
+     "t": 1794594344.0420752
+    },
+    "after": {
+     "load1": 13.880859375,
+     "load5": 15.92529296875,
+     "load15": 15.58447265625,
+     "t": 1794594344.4767866
+    }
+   }
+  },
+  "devices=1000 unknown=1000": {
+   "devices": 1000,
+   "unknown_expected": 1000,
+   "journal_bytes": 48245720,
+   "to_ready_s": 0.748,
+   "to_first_response_s": 0.749,
+   "unknown_after": 1000,
+   "load": {
+    "before": {
+     "load1": 13.880859375,
+     "load5": 15.92529296875,
+     "load15": 15.58447265625,
+     "t": 1794594347.2281332
+    },
+    "after": {
+     "load1": 13.880859375,
+     "load5": 15.92529296875,
+     "load15": 15.58447265625,
+     "t": 1794594348.216036
+    }
+   }
+  }
+ },
+ "seconds": 7.0,
+ "load_around": {
+  "before": [
+   14.39306640625,
+   16.0595703125,
+   15.62548828125
+  ],
+  "after": [
+   13.880859375,
+   15.92529296875,
+   15.58447265625
+  ]
+ }
+}

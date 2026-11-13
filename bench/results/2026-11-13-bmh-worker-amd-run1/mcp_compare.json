@@ -1,0 +1,16 @@
+{
+ "error": "  + Exception Group Traceback (most recent call last):\n  |   File \"/home/jithin/hms-lab/repo-bench/bench/run.py\", line 93, in main\n  |     result = await module.run(ctx)\n  |              ^^^^^^^^^^^^^^^^^^^^^\n  |   File \"/home/jithin/hms-lab/repo-bench/bench/scenarios/mcp_compare.py\", line 49, in run\n  |     async with stdio_client(params) as (read, write), ClientSession(read, write) as session:\n  |   File \"/home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/contextlib.py\", line 231, in __aexit__\n  |     await self.gen.athrow(value)\n  |   File \"/home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/mcp/client/stdio.py\", line 201, in stdio_client\n  |     async with anyio.create_task_group() as tg:\n  |                ^^^^^^^^^^^^^^^^^^^^^^^^^\n  |   File \"/home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/anyio/_backends/_asyncio.py\", line 871, in __aexit__\n  |     raise BaseExceptionGroup(\n  | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)\n  +-+---------------- 1 ----------------\n    | Exception Group Traceback (most recent call last):\n    |   File \"/home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/mcp/client/stdio.py\", line 205, in stdio_client\n    |     yield read_stream, write_stream\n    |   File \"/home/jithin/hms-lab/repo-bench/bench/scenarios/mcp_compare.py\", line 49, in run\n    |     async with stdio_client(params) as (read, write), ClientSession(read, write) as session:\n    |   File \"/home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/mcp/client/session.py\", line 514, in __aexit__\n    |     result = await self._task_group.__aexit__(exc_type, exc_val, exc_tb)\n    |              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n    |   File \"/home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/anyio/_backends/_asyncio.py\", line 871, in __aexit__\n    |     raise BaseExceptionGroup(\n    | ExceptionGroup: unhandled errors in a TaskGroup (1 sub-exception)\n    +-+---------------- 1 ----------------\n      | Traceback (most recent call last):\n      |   File \"/home/jithin/hms-lab/repo-bench/bench/scenarios/mcp_compare.py\", line 61, in run\n      |     await bridged(-10**6)  # first call fetches and caches the description\n      |     ^^^^^^^^^^^^^^^^^^^^^\n      |   File \"/home/jithin/hms-lab/repo-bench/bench/scenarios/mcp_compare.py\", line 57, in bridged\n      |     if res.isError:\n      |        ^^^^^^^^^^^\n      |   File \"/home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/pydantic/main.py\", line 1110, in __getattr__\n      |     raise AttributeError(f'{type(self).__name__!r} object has no attribute {item!r}')\n      | AttributeError: 'CallToolResult' object has no attribute 'isError'. Did you mean: 'is_error'?\n      +------------------------------------\n",
+ "seconds": 3.6,
+ "load_around": {
+  "before": [
+   13.48974609375,
+   15.81005859375,
+   15.548828125
+  ],
+  "after": [
+   13.48974609375,
+   15.81005859375,
+   15.548828125
+  ]
+ }
+}

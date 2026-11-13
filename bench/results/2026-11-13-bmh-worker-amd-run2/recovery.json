@@ -1,0 +1,105 @@
+{
+ "result": {
+  "devices=1000 unknown=0": {
+   "devices": 1000,
+   "unknown_expected": 0,
+   "journal_bytes": 9136512,
+   "to_ready_s": 0.725,
+   "to_first_response_s": 0.726,
+   "unknown_after": 0,
+   "load": {
+    "before": {
+     "load1": 13.5712890625,
+     "load5": 14.6962890625,
+     "load15": 15.14990234375,
+     "t": 1794594525.1701932
+    },
+    "after": {
+     "load1": 13.5712890625,
+     "load5": 14.6962890625,
+     "load15": 15.14990234375,
+     "t": 1794594526.015369
+    }
+   }
+  },
+  "devices=10 unknown=10": {
+   "devices": 10,
+   "unknown_expected": 10,
+   "journal_bytes": 514816,
+   "to_ready_s": 0.18,
+   "to_first_response_s": 0.181,
+   "unknown_after": 10,
+   "load": {
+    "before": {
+     "load1": 13.5712890625,
+     "load5": 14.6962890625,
+     "load15": 15.14990234375,
+     "t": 1794594526.2597008
+    },
+    "after": {
+     "load1": 13.5712890625,
+     "load5": 14.6962890625,
+     "load15": 15.14990234375,
+     "t": 1794594526.7627733
+    }
+   }
+  },
+  "devices=100 unknown=100": {
+   "devices": 100,
+   "unknown_expected": 100,
+   "journal_bytes": 4329936,
+   "to_ready_s": 0.232,
+   "to_first_response_s": 0.233,
+   "unknown_after": 100,
+   "load": {
+    "before": {
+     "load1": 13.5712890625,
+     "load5": 14.6962890625,
+     "load15": 15.14990234375,
+     "t": 1794594527.2344472
+    },
+    "after": {
+     "load1": 13.5712890625,
+     "load5": 14.6962890625,
+     "load15": 15.14990234375,
+     "t": 1794594527.7408416
+    }
+   }
+  },
+  "devices=1000 unknown=1000": {
+   "devices": 1000,
+   "unknown_expected": 1000,
+   "journal_bytes": 48245720,
+   "to_ready_s": 0.758,
+   "to_first_response_s": 0.759,
+   "unknown_after": 1000,
+   "load": {
+    "before": {
+     "load1": 13.60595703125,
+     "load5": 14.6845703125,
+     "load15": 15.1435546875,
+     "t": 1794594530.765929
+    },
+    "after": {
+     "load1": 13.60595703125,
+     "load5": 14.6845703125,
+     "load15": 15.1435546875,
+     "t": 1794594531.6405883
+    }
+   }
+  }
+ },
+ "seconds": 7.2,
+ "load_around": {
+  "before": [
+   13.5712890625,
+   14.6962890625,
+   15.14990234375
+  ],
+  "after": [
+   13.60595703125,
+   14.6845703125,
+   15.1435546875
+  ]
+ }
+}

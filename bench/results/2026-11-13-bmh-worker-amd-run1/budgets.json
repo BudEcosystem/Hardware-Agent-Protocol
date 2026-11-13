@@ -1,0 +1,114 @@
+[
+ {
+  "budget": "B1 durable invoke (dispatch, unix, waitMs=0) p50",
+  "limit": "<= 2.31 ms (fsync p50 1.31 + 1)",
+  "measured": "2.12 ms",
+  "pass": true,
+  "detail": "overhead above fsync: 0.81 ms"
+ },
+ {
+  "budget": "B1 durable invoke (dispatch, unix, waitMs=0) p99",
+  "limit": "<= 11.53 ms (5 x 2.31)",
+  "measured": "5.03 ms",
+  "pass": true,
+  "detail": "host fsync p99 is 2.13 ms"
+ },
+ {
+  "budget": "B1 durable invoke (dispatch, unix, waitMs=1000) p50",
+  "limit": "<= 2.31 ms (fsync p50 1.31 + 1)",
+  "measured": "2.47 ms",
+  "pass": false,
+  "detail": "overhead above fsync: 1.16 ms"
+ },
+ {
+  "budget": "B1 durable invoke (dispatch, unix, waitMs=1000) p99",
+  "limit": "<= 11.53 ms (5 x 2.31)",
+  "measured": "5.72 ms",
+  "pass": true,
+  "detail": "host fsync p99 is 2.13 ms"
+ },
+ {
+  "budget": "B2 non-durable invoke (process, unix, waitMs=0) p50",
+  "limit": "<= 1.00 ms",
+  "measured": "0.33 ms",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "budget": "B2 non-durable invoke (process, unix, waitMs=1000) p50",
+  "limit": "<= 1.00 ms",
+  "measured": "0.36 ms",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "budget": "B2 non-durable invoke (memory, unix, waitMs=0) p50",
+  "limit": "<= 1.00 ms",
+  "measured": "0.32 ms",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "budget": "B2 non-durable invoke (memory, unix, waitMs=1000) p50",
+  "limit": "<= 1.00 ms",
+  "measured": "0.28 ms",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "budget": "B3 gateway lists 1000 upstreams correctly",
+  "limit": "10000 devices, each once, in order",
+  "measured": "10000 devices, start 3.44 s",
+  "pass": true,
+  "detail": "ordering and uniqueness are asserted by the gateway test suite and by B4's paging pass"
+ },
+ {
+  "budget": "B4 devices/list 10,000 devices (unix, limit 100) per page",
+  "limit": "<= 50 ms (p99), complete and ordered",
+  "measured": "p99 0.9 ms, max 1.0 ms, p50 0.6 ms",
+  "pass": true,
+  "detail": "every device listed once in order: True"
+ },
+ {
+  "budget": "B4 devices/list 10,000 devices (unix, limit 500) per page",
+  "limit": "<= 50 ms (p99), complete and ordered",
+  "measured": "p99 8.3 ms, max 8.3 ms, p50 3.2 ms",
+  "pass": true,
+  "detail": "every device listed once in order: True"
+ },
+ {
+  "budget": "B4 devices/list 10,000 devices (http, limit 100) per page",
+  "limit": "<= 50 ms (p99), complete and ordered",
+  "measured": "p99 1.6 ms, max 10.0 ms, p50 0.9 ms",
+  "pass": true,
+  "detail": "every device listed once in order: True"
+ },
+ {
+  "budget": "B4 devices/list 10,000 devices (http, limit 500) per page",
+  "limit": "<= 50 ms (p99), complete and ordered",
+  "measured": "p99 20.0 ms, max 20.0 ms, p50 4.5 ms",
+  "pass": true,
+  "detail": "every device listed once in order: True"
+ },
+ {
+  "budget": "B4 devices/list 10,000 devices (gateway_scale, unix, limit 100) per page",
+  "limit": "<= 50 ms (p99)",
+  "measured": "p99 0.7 ms, max 0.7 ms, p50 0.7 ms",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "budget": "B4 devices/list 10,000 devices (gateway_scale, unix, limit 500) per page",
+  "limit": "<= 50 ms (p99)",
+  "measured": "p99 9.0 ms, max 9.0 ms, p50 3.4 ms",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "budget": "B5 compact typical invoke frame (native pty)",
+  "limit": "<= 64 bytes",
+  "measured": "37 bytes (request [35, 36, 37], reply [31, 32, 34])",
+  "pass": true,
+  "detail": ""
+ }
+]
