@@ -575,6 +575,7 @@ class Router:
             calls[namespace] = asyncio.get_running_loop().create_task(up.call(
                 "stop", {"deviceIds": [e.upstream_id for e in entries], "reason": params.reason, "waitMs": wait_ms},
                 priority=True, trace=trace, timeout=deadline))
+        await asyncio.sleep(0)  # the requests are on their way before any bookkeeping (BHMS-AUTH-021)
         degraded = self._stop_bookkeeping([e for es in groups.values() for e in es], params.reason, results)
         if calls:
             await asyncio.wait(list(calls.values()), timeout=deadline)
@@ -592,8 +593,11 @@ class Router:
         """The gateway's own part of BHMS-AUTH-021: record the stop on its operations, revoke its leases."""
         gw = self.gateway
         degraded = False
+        covering = {e.device_id: [lease.lease_id for lease in gw.leases.manager.active()
+                                  if set(e.resources) & set(lease.resources)] for e in entries}
+        gw.leases.manager.revoke_covering({r for e in entries for r in e.resources})
         for entry in entries:
-            revoked = [lease.lease_id for lease in gw.leases.manager.revoke_covering(entry.resources)]
+            revoked = covering[entry.device_id]  # a cross-device lease is reported on every device it covered
             canceled: list[str] = []
             requested: list[str] = []
             for rec in gw.journal.live():
