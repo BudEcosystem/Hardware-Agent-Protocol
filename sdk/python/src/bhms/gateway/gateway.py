@@ -40,9 +40,11 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import gc
 import logging
 import signal
 import ssl as ssl_module
+from collections import deque
 from typing import Any
 
 from bhms.gateway.catalog import Catalog, gateway_id
@@ -55,6 +57,7 @@ from bhms.gateway.router import Router
 from bhms.gateway.upstreams import Upstream, UpstreamHooks
 from bhms.jsonrpc.dispatcher import Server as RpcServer
 from bhms.jsonrpc.session import RequestContext
+from bhms.protocol import schema
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.authority import Authenticator, Policy, Principal
 from bhms.runtime.events import EventLog
@@ -104,6 +107,10 @@ class Gateway:
         self._closing: asyncio.Event | None = None
         self._journal_ok = True
         self._flusher: asyncio.Task[None] | None = None
+        self._validator: asyncio.Task[None] | None = None
+        self._unvalidated: deque[tuple[str, str]] = deque()  # (device id, upstream digest) awaiting schema validation
+        self._wake_validator = asyncio.Event()
+        self._validating = False
         self.observations: GatewayObservations
         self.subscriptions: GatewaySubscriptions
         self.leases: GatewayLeases
@@ -143,6 +150,7 @@ class Gateway:
             self.rpc = self._make_rpc()
             self._started = True
             self._flusher = asyncio.get_running_loop().create_task(self._flush_cursors(), name="bhms-gateway-cursors")
+            self._validator = asyncio.get_running_loop().create_task(self._validate_loop(), name="bhms-gateway-validate")
         except BaseException:
             await self._teardown()
             raise
@@ -170,10 +178,11 @@ class Gateway:
         return rpc
 
     async def _teardown(self) -> None:
-        if self._flusher is not None:
-            self._flusher.cancel()
-            await asyncio.gather(self._flusher, return_exceptions=True)
-            self._flusher = None
+        for task in (self._flusher, self._validator):
+            if task is not None:
+                task.cancel()
+                await asyncio.gather(task, return_exceptions=True)
+        self._flusher = self._validator = None
         self._flush_now()
         for attr in ("router", "observations"):
             part = getattr(self, attr, None)
@@ -254,6 +263,10 @@ class Gateway:
         with contextlib.suppress(NotImplementedError, RuntimeError, AttributeError):
             loop.add_signal_handler(signal.SIGHUP, self._sighup)
         try:
+            # A gateway serving ten thousand devices holds hundreds of thousands of long-lived objects; a generation-2
+            # collection over them pauses the loop for ~200 ms. They never die, so move them out of the collector's way.
+            gc.collect()
+            gc.freeze()
             stdio = False
             for url in self.config.listen:
                 if url == "stdio":
@@ -364,8 +377,49 @@ class Gateway:
             self.router.spawn(self.leases.release_orphans(up.name))
 
     def upstream_catalog(self, up: Upstream) -> None:
-        if self.catalog.replace_upstream(up.name, up.descriptions, up.summaries) and self._started:
-            self.subscriptions.devices_changed()
+        known = {e.device_id: e.upstream_description["digest"] for e in self.catalog.entries_of(up.name)}
+        if self.catalog.replace_upstream(up.name, up.descriptions, up.summaries):
+            for uid, description in up.descriptions.items():
+                device_id = gateway_id(up.name, uid)
+                if known.get(device_id) != description["digest"] and device_id in self.catalog:
+                    self._unvalidated.append((device_id, description["digest"]))
+            self._wake_validator.set()
+            if self._started:
+                self.subscriptions.devices_changed()
+
+    async def wait_validated(self, timeout: float = 300.0) -> bool:
+        """Wait until every served description has been schema-validated; False on timeout."""
+        deadline = asyncio.get_running_loop().time() + timeout
+        while self._unvalidated or self._validating:
+            if asyncio.get_running_loop().time() > deadline:
+                return False
+            await asyncio.sleep(0.05)
+        return True
+
+    async def _validate_loop(self) -> None:
+        """Validate every newly served description against the schema (BHMS-SEC-021), one at a time, yielding to the
+        event loop between descriptions; a device whose description is invalid stops being served."""
+        while True:
+            while not self._unvalidated:
+                self._wake_validator.clear()
+                await self._wake_validator.wait()
+            device_id, upstream_digest = self._unvalidated.popleft()
+            self._validating = True
+            entry = self.catalog.get(device_id)
+            if entry is None or entry.upstream_description["digest"] != upstream_digest:
+                self._validating = False
+                continue
+            try:
+                schema.validate("DeviceDescription", entry.upstream_description)
+            except BhmsError as exc:
+                log.error("not serving %s: its description is not a valid DeviceDescription at %s: %s",
+                          device_id, exc.field or "/", exc.message)
+                self.catalog.drop(device_id)
+                self.record("device.degraded", severity="error", device_id=device_id,
+                            message="the upstream's description is invalid and the device is no longer served")
+                self.subscriptions.devices_changed()
+            self._validating = False
+            await asyncio.sleep(0)
 
     def upstream_notification(self, up: Upstream, method: str, params: dict[str, Any]) -> None:
         if method == "notifications/operation":

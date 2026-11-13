@@ -196,6 +196,13 @@ class Catalog:
             self.version += 1
         return changed
 
+    def drop(self, device_id: str) -> None:
+        """Stop serving one device (its description turned out to be invalid)."""
+        entry = self._entries.get(device_id)
+        if entry is not None:
+            self._remove(entry)
+            self.version += 1
+
     def _add(self, entry: CatalogEntry) -> None:
         self._entries[entry.device_id] = entry
         bisect.insort(self._ids, entry.device_id)

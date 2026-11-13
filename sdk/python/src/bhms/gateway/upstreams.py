@@ -36,7 +36,6 @@ from typing import Any
 from bhms.client.client import Client, open_transport
 from bhms.gateway.config import UpstreamConfig
 from bhms.jsonrpc.session import ClientStream
-from bhms.protocol import schema
 from bhms.protocol.canonical import digest
 from bhms.protocol.errors import BhmsError
 from bhms.protocol.types import to_wire
@@ -407,16 +406,14 @@ class Upstream:
 
 
 def _description_problem(description: dict[str, Any], expected_id: str) -> str | None:
-    """Why a description must not be served, or None (BHMS-SEC-022, BHMS-DEV-021)."""
+    """Why a description must not be served, or None (BHMS-SEC-022, BHMS-DEV-021). Full schema validation (milliseconds
+    per description) runs afterwards in the background (:meth:`bhms.gateway.gateway.Gateway._validate_loop`), so a start-up
+    with ten thousand devices is not spent in a validator."""
     if description.get("deviceId") != expected_id:
         return f"it describes {description.get('deviceId')!r}, not {expected_id!r}"
     body = {k: v for k, v in description.items() if k != "digest"}
     if digest(body) != description.get("digest"):
         return "its digest does not match its content"
-    try:
-        schema.validate("DeviceDescription", description)
-    except BhmsError as exc:
-        return f"it is not a valid DeviceDescription: {exc.field or '/'}: {exc.message}"[:300]
     return None
 
 

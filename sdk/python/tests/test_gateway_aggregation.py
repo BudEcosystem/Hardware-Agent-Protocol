@@ -173,6 +173,37 @@ async def test_upstream_with_a_wrong_digest_is_not_served(tmp_path):  # BHMS-SEC
     await srv.close()
 
 
+async def test_a_schema_invalid_description_stops_being_served(tmp_path):  # BHMS-SEC-021, SEC-022
+    from helpers.devices import build
+
+    from bhms.jsonrpc.dispatcher import Server as RpcServer  # noqa: F401
+    from bhms.transport import serve_unix
+
+    srv, _ = build(tmp_path / "bad", name="bad")
+    await srv.start()
+    good = srv.devices["axis-1"].description()
+    broken = {k: v for k, v in good.items() if k not in ("digest", "safety")}  # a required member is missing
+    broken["digest"] = digest(broken)  # ... but the digest is right for what is served
+    async def serve_broken(params, ctx):
+        return {"description": broken}
+
+    async def list_broken(params, ctx):
+        return {"devices": [{**srv.devices["axis-1"].summary("online"), "digest": broken["digest"]}]}
+
+    srv.rpc.register("devices/describe", serve_broken)
+    srv.rpc.register("devices/list", list_broken)
+    listener = await serve_unix(str(tmp_path / "bad.sock"), srv.rpc.handle_connection)
+    config = GatewayConfig(id="gw", state_dir=tmp_path / "gw", connect_wait_ms=3000, principals={},
+                           upstreams=(UpstreamConfig(name="bad", url=f"unix:{tmp_path}/bad.sock"),))
+    async with Gateway(config, memory=True) as gateway:
+        assert await gateway.wait_validated(10)
+        assert gateway.catalog.get("bad/axis-1") is None  # served for a moment, then withdrawn
+        events = gateway.events.read(after=None, limit=10, device_id=None, types=["device.degraded"])[0]
+        assert [e["deviceId"] for e in events] == ["bad/axis-1"]
+    await listener.close()
+    await srv.close()
+
+
 # --------------------------------------------------------------------------- configuration
 
 
