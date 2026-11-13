@@ -409,7 +409,7 @@ async def test_connect_url_forms(scheme, tmp_path):
 
 
 async def test_connect_rejects_unknown_url_forms_and_closes_on_failure(tmp_path):
-    for bad in ("http://x", "tcp://nohost", "tcp://:80", "carrier-pigeon:x"):
+    for bad in ("gopher://x", "tcp://nohost", "tcp://:80", "carrier-pigeon:x"):
         with pytest.raises(ValueError):
             await Client.connect(bad)
     with pytest.raises(OSError):

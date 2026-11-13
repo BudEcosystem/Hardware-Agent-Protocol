@@ -32,7 +32,7 @@ from pathlib import Path
 from bhms import DeviceServer, Range
 from bhms.client.client import Client
 from bhms.gateway import Gateway, GatewayConfig, UpstreamConfig
-from bhms.testing.gateway_fleet import build_light_fleet
+from bhms.testing.gateway_fleet import build_light_fleet, gateway_uid_policy
 
 
 def rss_mb() -> float:
@@ -118,7 +118,7 @@ async def fanin(args: argparse.Namespace, tmp: Path) -> dict:
 
 
 async def overhead(args: argparse.Namespace, tmp: Path) -> dict:
-    srv = DeviceServer("bench-up", store=None, programs=False)
+    srv = DeviceServer("bench-up", store=None, programs=False, policy=gateway_uid_policy())
     dev = srv.device("dev-1", resources=["dev-1"])
     dev.report_alive()
 

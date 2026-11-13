@@ -172,3 +172,11 @@ stdio = "{sys.executable} {helper} {tmp_path / "up"}"
 
 
 _ = (BhmsError, Gateway, GatewayConfig, principals)
+
+
+def test_the_core_and_the_gateway_import_without_aiohttp():  # the http extra is optional
+    import subprocess
+
+    code = ("import sys, bhms, bhms.gateway, bhms.client.client; "
+            "assert 'aiohttp' not in sys.modules and 'bhms.transport.http' not in sys.modules")
+    assert subprocess.run([sys.executable, "-c", code], capture_output=True, text=True).returncode == 0

@@ -6,6 +6,7 @@ Numbers behind the Task 5 report come from ``benchmarks/gateway_scale.py``; thes
 from __future__ import annotations
 
 import asyncio
+import gc
 import statistics
 import time
 
@@ -55,6 +56,8 @@ async def test_ten_thousand_devices_page_within_50_ms(tmp_path):  # the Task 5 s
     try:
         assert len(gateway.catalog) == 10_000
         assert await gateway.wait_validated(300)
+        gc.collect()
+        gc.freeze()  # what Gateway.serve does: no 200 ms generation-2 pause over the start-up heap
         for limit in (100, 500):
             cursor, samples = None, []
             for _ in range(10_000 // limit):
@@ -64,13 +67,14 @@ async def test_ten_thousand_devices_page_within_50_ms(tmp_path):  # the Task 5 s
                 cursor = page.next_cursor
             assert cursor is None
             ordered = sorted(samples)
-            # p95, not max: a generation-2 garbage collection over a big heap can take 200 ms (Gateway.serve freezes
+            # second-largest, not max: a generation-2 garbage collection over a big heap can take 200 ms (Gateway.serve freezes
             # the start-up heap to avoid it; this test process does not)
-            assert statistics.median(samples) < 50 and ordered[int(len(ordered) * 0.95)] < 50, (limit, samples)
+            assert statistics.median(samples) < 50 and ordered[-2] < 50, (limit, samples)
         started = time.perf_counter()  # a filtered scan over all 10,000 (worst case: the filter matches the last device)
         hit = await client.devices_list(filter={"text": "Device 99 of 99"}, limit=500)
         assert hit.devices and (time.perf_counter() - started) * 1000 < 200
     finally:
+        gc.unfreeze()
         await client.close()
         await gateway.close()
         await fleet.close()
@@ -82,8 +86,7 @@ async def test_events_fan_in_from_a_thousand_upstreams_without_a_device_filter(t
     try:
         async with await client.subscribe(events={}) as sub:
             for _ in range(100):
-                if all(up.event_cursor_dirty is False for up in gateway.upstreams.values()) and \
-                        all(s.subscribers for s in fleet):
+                if all(s.subscribers for s in fleet):
                     break
                 await asyncio.sleep(0.05)
             started = time.perf_counter()

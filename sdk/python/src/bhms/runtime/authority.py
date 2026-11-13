@@ -200,7 +200,7 @@ class Policy:
                 if peer.uid in entry.uids:
                     return entry.principal
             if self.trust_same_uid and peer.uid == os.getuid():
-                return Principal(f"uid:{peer.uid}", ("admin",), gateway=True)
+                return Principal(f"uid:{peer.uid}", ("admin",))
             return None
         if peer.kind in ("ws", "http"):
             return self.by_token(peer.token)

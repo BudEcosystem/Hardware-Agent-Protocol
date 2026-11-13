@@ -23,6 +23,7 @@ Thread-safety: one event loop.
 from __future__ import annotations
 
 import asyncio
+import os
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -31,6 +32,7 @@ from bhms.gateway.config import UpstreamConfig
 from bhms.jsonrpc.dispatcher import Server as RpcServer
 from bhms.jsonrpc.session import Notification
 from bhms.protocol.canonical import digest
+from bhms.runtime.authority import Policy
 from bhms.testing.memory import connect_in_process
 
 
@@ -68,6 +70,11 @@ def _connector(server: Any):
     return connect
 
 
+def gateway_uid_policy() -> Policy:
+    """Upstream policy for a gateway in this process: this uid is the gateway (may use ``g-`` keys) and admin."""
+    return Policy({"gateway": {"uids": [os.getuid()], "scopes": ["admin"], "gateway": True}})
+
+
 def _declare(device) -> None:
     state = {"n": 0.0}
 
@@ -85,7 +92,7 @@ async def build_fleet(upstreams: int, *, devices_per: int = 10) -> Fleet:
     """Start ``upstreams`` device servers with ``devices_per`` devices each."""
     fleet = Fleet(devices_per=devices_per)
     for i in range(upstreams):
-        srv = DeviceServer(f"fleet-{i}", store=None, programs=False)
+        srv = DeviceServer(f"fleet-{i}", store=None, programs=False, policy=gateway_uid_policy())
         for j in range(devices_per):
             device = srv.device(f"d{j}", name=f"Device {j} of {i}", description="A simulated fleet device.",
                                 capabilities=["bhms.fleet.sim"], tags=["fleet"], resources=[f"d{j}"])

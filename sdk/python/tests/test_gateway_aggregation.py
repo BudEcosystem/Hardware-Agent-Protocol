@@ -14,7 +14,7 @@ from bhms.gateway import ConfigError, Gateway, GatewayConfig, UpstreamConfig, lo
 from bhms.protocol import schema
 from bhms.protocol.canonical import digest
 from bhms.protocol.errors import BhmsError
-from helpers.gateway_rig import rig
+from helpers.gateway_rig import gateway_policy, rig
 
 
 async def test_aggregates_two_upstreams_with_the_same_device_id(tmp_path):  # BHMS-DEV-002
@@ -140,7 +140,7 @@ async def test_upstream_down_marks_devices_offline_and_recovers(tmp_path):
         # it comes back: the gateway reconnects by itself
         from helpers.devices import build
 
-        r.servers["a"], r.axes["a"] = build(tmp_path / "a", name="up-a")
+        r.servers["a"], r.axes["a"] = build(tmp_path / "a", name="up-a", policy=gateway_policy())
         r.listeners["a"] = await r.servers["a"].listen(f"unix:{tmp_path}/a.sock")
         for _ in range(100):
             statuses = {d.device_id: d.status for d in (await client.devices_list()).devices}
@@ -148,6 +148,8 @@ async def test_upstream_down_marks_devices_offline_and_recovers(tmp_path):
                 break
             await asyncio.sleep(0.1)
         assert statuses["a/axis-1"] == "online"
+        types = [(e.type, e.device_id) for e in (await client.events_read(types=["device.offline", "device.online"])).events]
+        assert types == [("device.offline", "a/axis-1"), ("device.online", "a/axis-1")]
 
 
 async def test_upstream_with_a_wrong_digest_is_not_served(tmp_path):  # BHMS-SEC-022

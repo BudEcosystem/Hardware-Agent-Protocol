@@ -11,11 +11,16 @@ from typing import Any
 
 from bhms.client.client import Client
 from bhms.gateway import Gateway, GatewayConfig, UpstreamConfig
-from bhms.runtime.authority import token_digest
+from bhms.runtime.authority import Policy, token_digest
 from bhms.testing.conformance_device import build as conformance_build
 from helpers.devices import Axis, build
 
 UID = os.getuid()
+
+
+def gateway_policy() -> Policy:
+    """The upstream's policy: this uid is the gateway (may use g- keys, BHMS-OPS-037) and admin."""
+    return Policy({"gateway": {"uids": [UID], "scopes": ["admin"], "gateway": True}})
 TOKENS = {"agent-b": "tok-b", "admin": "tok-admin", "stopper": "tok-stop"}
 
 
@@ -72,9 +77,9 @@ async def rig(tmp_path: Path, names: tuple[str, ...] = ("a", "b"), *, principals
     servers, axes, listeners = {}, {}, {}
     for name in names:
         if conformance:
-            srv, axis = conformance_build(state_dir=str(tmp_path / name), **(devices_kw or {}))
+            srv, axis = conformance_build(state_dir=str(tmp_path / name), policy=gateway_policy(), **(devices_kw or {}))
         else:
-            srv, axis = build(tmp_path / name, name=f"up-{name}", **(devices_kw or {}))
+            srv, axis = build(tmp_path / name, name=f"up-{name}", policy=gateway_policy(), **(devices_kw or {}))
         path = str(tmp_path / f"{name}.sock")
         listeners[name] = await srv.listen(f"unix:{path}")
         servers[name], axes[name] = srv, axis

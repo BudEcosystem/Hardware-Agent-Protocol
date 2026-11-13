@@ -106,7 +106,6 @@ class Gateway:
         self._started = False
         self._closing: asyncio.Event | None = None
         self._journal_ok = True
-        self._flusher: asyncio.Task[None] | None = None
         self._validator: asyncio.Task[None] | None = None
         self._unvalidated: deque[tuple[str, str]] = deque()  # (device id, upstream digest) awaiting schema validation
         self._wake_validator = asyncio.Event()
@@ -149,7 +148,6 @@ class Gateway:
             self.policy.check_loadable(self.catalog)  # BHMS-SEC-011
             self.rpc = self._make_rpc()
             self._started = True
-            self._flusher = asyncio.get_running_loop().create_task(self._flush_cursors(), name="bhms-gateway-cursors")
             self._validator = asyncio.get_running_loop().create_task(self._validate_loop(), name="bhms-gateway-validate")
         except BaseException:
             await self._teardown()
@@ -178,12 +176,11 @@ class Gateway:
         return rpc
 
     async def _teardown(self) -> None:
-        for task in (self._flusher, self._validator):
+        for task in (self._validator,):
             if task is not None:
                 task.cancel()
                 await asyncio.gather(task, return_exceptions=True)
-        self._flusher = self._validator = None
-        self._flush_now()
+        self._validator = None
         for attr in ("router", "observations"):
             part = getattr(self, attr, None)
             if part is not None:
@@ -425,9 +422,15 @@ class Gateway:
         if method == "notifications/operation":
             self.router.on_operation_notification(up, params["operation"])
         elif method == "notifications/event":
-            self.ingest_event(up, params["event"])
+            event = params["event"]
+            try:
+                with self.store.transaction():  # the event and the cursor it came from commit together: no duplicate
+                    self._ingest(up, event)     # after a restart, no gap
+                    self.store.meta_set(f"cursor:{up.name}", event["cursor"])
+            except StoreError as exc:
+                self.journal_failed(exc)
 
-    def ingest_event(self, up: Upstream, event: dict[str, Any]) -> None:
+    def _ingest(self, up: Upstream, event: dict[str, Any]) -> None:
         """Re-record an upstream event in the gateway's log with the gateway's ids and cursor (see
         :mod:`bhms.gateway.listen`)."""
         kind = event["type"]
@@ -442,26 +445,10 @@ class Gateway:
             mapped = self.leases.gateway_lease_of(data.get("leaseId", ""))
             data = {**data, "leaseId": mapped} if mapped else {k: v for k, v in data.items() if k != "leaseId"}
         device = event.get("deviceId")
-        self.record(kind, severity=event.get("severity", "info"),
-                    device_id=gateway_id(up.name, device) if device else None, operation_id=gateway_op,
-                    message=event.get("message"), data=data or None)
+        self.events.append(kind, severity=event.get("severity", "info"),
+                           device_id=gateway_id(up.name, device) if device else None, operation_id=gateway_op,
+                           message=event.get("message"), data=data or None)
 
-    async def _flush_cursors(self) -> None:
-        while True:
-            await asyncio.sleep(1.0)
-            self._flush_now()
-
-    def _flush_now(self) -> None:
-        dirty = [up for up in self.upstreams.values() if up.event_cursor_dirty and up.event_cursor]
-        if not dirty or getattr(self, "store", None) is None:
-            return
-        try:
-            with self.store.transaction():
-                for up in dirty:
-                    self.store.meta_set(f"cursor:{up.name}", up.event_cursor or "")
-                    up.event_cursor_dirty = False
-        except StoreError as exc:
-            self.journal_failed(exc)
 
 
 def _parse(url: str, *, default_path: str) -> tuple[str, str, int, str]:

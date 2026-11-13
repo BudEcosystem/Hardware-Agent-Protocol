@@ -87,7 +87,6 @@ class Upstream:
         self.summaries: dict[str, dict[str, Any]] = {}
         self.descriptions: dict[str, dict[str, Any]] = {}
         self.event_cursor = event_cursor
-        self.event_cursor_dirty = False
         self.connections = 0
         self.timeouts = 0
         self._queue: asyncio.Queue[_Queued] = asyncio.Queue(cfg.queue_size)
@@ -340,7 +339,7 @@ class Upstream:
                 if method == "notifications/event":
                     cursor = (params.get("event") or {}).get("cursor")
                     if cursor:
-                        self.event_cursor, self.event_cursor_dirty = cursor, True
+                        self.event_cursor = cursor
                 self.hooks.notification(self, method, params)
         finally:
             await stream.cancel()

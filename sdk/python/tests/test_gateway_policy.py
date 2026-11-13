@@ -14,7 +14,7 @@ from bhms.client.client import Client
 from bhms.gateway import Gateway, GatewayConfig
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.authority import Policy, token_digest
-from helpers.gateway_rig import TOKENS, UID, principals, rig
+from helpers.gateway_rig import TOKENS, UID, gateway_policy, principals, rig
 
 
 async def wait_for_device(client, device_id):
@@ -183,3 +183,47 @@ async def test_every_policy_refusal_names_its_rule(tmp_path):  # DX: the brief
                 await call()
             refusals.append(rule_of(exc.value))
         assert refusals == ["scope:invoke", "bounds:target", "scope:lease", "scope:stop", "scope:operations"]
+
+
+async def test_reload_policy_from_the_file_applies_at_once(tmp_path):  # BHMS-SEC-012 (SIGHUP)
+    from bhms.gateway import load_config
+    from helpers.devices import build
+
+    srv, _ = build(tmp_path / "up", name="up", policy=gateway_policy())
+    await srv.listen(f"unix:{tmp_path}/up.sock")
+    file = tmp_path / "gw.toml"
+
+    def write(scopes: str) -> None:
+        file.write_text(f'''
+[gateway]
+id = "reload"
+state_dir = "state"
+[[upstream]]
+name = "a"
+url = "unix:{tmp_path}/up.sock"
+[principals.agent]
+uids = [{UID}]
+scopes = {scopes}
+''')
+
+    write('["read", "invoke:*/*"]')
+    gateway = Gateway(load_config(file))
+    await gateway.start()
+    listener = await gateway.listen(f"unix:{tmp_path}/gw.sock")
+    try:
+        async with await Client.connect(f"unix:{tmp_path}/gw.sock") as client:
+            assert (await client.actions_invoke("a/axis-1", "move_to", {"target": 1}, operation_key="1",
+                                                wait_ms=2000)).operation.state == "completed"
+            write('["read"]')
+            gateway.reload_policy()
+            with pytest.raises(BhmsError) as exc:
+                await client.actions_invoke("a/axis-1", "move_to", {"target": 2}, operation_key="2")
+            assert exc.value.code == "UNAUTHORIZED"
+            write('["read", "bogus-scope"]')
+            with pytest.raises(Exception):  # an invalid file is rejected and the current policy stays
+                gateway.reload_policy()
+            assert (await client.devices_list()).devices
+    finally:
+        await listener.close()
+        await gateway.close()
+        await srv.close()
