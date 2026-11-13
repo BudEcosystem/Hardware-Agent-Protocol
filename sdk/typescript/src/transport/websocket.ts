@@ -98,14 +98,18 @@ function bearerOk(req: IncomingMessage, token: string): boolean {
   return a.length === b.length && timingSafeEqual(a, b);
 }
 
-/** Listen for WebSocket clients. `token` makes the bearer check mandatory (required off loopback, BHMS-TRN-031). */
+/**
+ * Listen for WebSocket clients. `token` makes the bearer check mandatory (required off loopback, BHMS-TRN-031); the peer is
+ * then `ws:token` with `scopes` (default `admin`). `verifyToken` replaces that single-token check with the caller's own
+ * (e.g. a policy table): the peer carries the presented token so the server can resolve its principal per request.
+ */
 export async function listenWebSocket(
   host: string,
   port: number,
   onTransport: (t: Transport) => void,
-  options: { token?: string; scopes?: string[]; maxMessageBytes?: number; path?: string } = {},
+  options: { token?: string; verifyToken?: (token: string) => boolean; scopes?: string[]; maxMessageBytes?: number; path?: string } = {},
 ): Promise<WsListener> {
-  if (!LOOPBACK.has(host) && !options.token) {
+  if (!LOOPBACK.has(host) && !options.token && !options.verifyToken) {
     throw new RangeError(`refusing to listen on ${host} without a bearer token (BHMS-TRN-031)`);
   }
   const { WebSocketServer } = await loadWs();
@@ -118,14 +122,25 @@ export async function listenWebSocket(
   });
   http.on("upgrade", (req: IncomingMessage, socket: Duplex, head: Buffer) => {
     if (options.path && req.url !== options.path) { socket.write("HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n"); socket.destroy(); return; }
-    if (options.token && !bearerOk(req, options.token)) {
+    const bearer = /^Bearer (.+)$/.exec(req.headers.authorization ?? "")?.[1];
+    if (options.verifyToken ? !(bearer !== undefined && options.verifyToken(bearer)) : options.token && !bearerOk(req, options.token)) {
       socket.write("HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Bearer\r\nConnection: close\r\n\r\n");
+      socket.destroy();
+      return;
+    }
+    // BHMS-TRN-030: the bhms subprotocol is required; an upgrade that does not offer it is refused at the handshake
+    const offered = String(req.headers["sec-websocket-protocol"] ?? "").split(",").map((p) => p.trim());
+    if (!offered.includes(SUBPROTOCOL)) {
+      socket.write("HTTP/1.1 400 Bad Request\r\nConnection: close\r\n\r\n");
       socket.destroy();
       return;
     }
     wss.handleUpgrade(req, socket, head, (ws) => {
       if (ws.protocol !== SUBPROTOCOL) { ws.close(1002, "subprotocol bhms required"); return; }
-      const peer: Peer = { principal: options.token ? "ws:token" : "ws:loopback", kind: "ws", scopes: options.scopes ?? ["admin"] };
+      // with `verifyToken` the server's policy maps the bearer token to a principal on every request, so the peer carries it
+      const peer: Peer = options.verifyToken
+        ? { principal: "ws:token", kind: "ws", token: bearer }
+        : { principal: options.token ? "ws:token" : "ws:loopback", kind: "ws", scopes: options.scopes ?? ["admin"] };
       onTransport(new WsTransport(ws, peer, max));
     });
   });

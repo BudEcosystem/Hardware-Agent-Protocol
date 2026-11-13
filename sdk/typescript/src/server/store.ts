@@ -17,6 +17,7 @@
  *
  * Thread-safety: single event loop; all calls are synchronous.
  */
+import { spawn } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
 import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, realpathSync, renameSync, unlinkSync, writeSync } from "node:fs";
 import net from "node:net";
@@ -128,8 +129,40 @@ export const TERMINAL: ReadonlySet<string> = new Set(["completed", "failed", "ca
 
 export type LockMode = "auto" | "path";
 
+/** Exit status `flock(1)` returns for a lock that somebody else holds (not a status of `sh` or `cat`). */
+const FLOCK_BUSY = 75;
+
 /**
- * The exclusive lock on a journal: a listening socket whose name is derived from the journal's real path, held open for as
+ * Linux: a kernel `flock(2)` on `<journal>.lock`, held by a small `flock(1)` helper process that lives exactly as long as
+ * this process keeps its stdin pipe open. Node has no flock binding, and the alternative (a listening socket) makes a stdio
+ * server a listener, which BHMS-SEC-003 forbids. The kernel drops the lock when the helper exits, and the helper exits when
+ * the pipe closes: on `release()` and also when this process dies by SIGKILL, so no stale state exists and a reused pid is
+ * irrelevant. Returns `undefined` when `flock(1)` is not installed (the caller falls back to the socket lock).
+ */
+async function acquireFlock(journalPath: string): Promise<(() => Promise<void>) | undefined> {
+  const lockFile = `${journalPath}.lock`;
+  const child = spawn("flock", ["-n", "-E", String(FLOCK_BUSY), lockFile, "sh", "-c", "echo held; exec cat"], { stdio: ["pipe", "pipe", "ignore"] });
+  const outcome = await new Promise<"held" | "busy" | "missing" | "failed">((resolve) => {
+    child.once("error", (e: NodeJS.ErrnoException) => resolve(e.code === "ENOENT" ? "missing" : "failed"));
+    child.once("exit", (code) => resolve(code === FLOCK_BUSY ? "busy" : "failed"));
+    child.stdout.once("data", () => resolve("held"));
+  });
+  if (outcome === "missing") return undefined;
+  if (outcome === "busy") throw new StoreError(`the journal ${journalPath} is in use by another server; one server owns a state directory`);
+  if (outcome === "failed") throw new StoreError(`cannot lock the journal ${journalPath} (flock helper failed)`);
+  child.unref();
+  (child.stdin as unknown as { unref(): void }).unref();
+  (child.stdout as unknown as { unref(): void }).unref();
+  let released: Promise<void> | undefined;
+  return () => released ??= new Promise<void>((resolve) => {
+    if (child.exitCode !== null || child.signalCode !== null) { resolve(); return; }
+    child.once("exit", () => resolve());
+    child.stdin.end();
+  });
+}
+
+/**
+ * The exclusive lock on a journal (macOS, other Unix, Windows, or Linux without `flock(1)`): a listening socket whose name is derived from the journal's real path, held open for as
  * long as the store is. The kernel frees it when the holder dies (SIGKILL, power loss, pid reuse in a container are all
  * harmless), and `bind` is atomic, so two simultaneous starters cannot both win.
  *
@@ -140,6 +173,10 @@ export type LockMode = "auto" | "path";
  *   very takeover window on such systems could in theory both win (documented limit; Linux and Windows have no such window).
  */
 async function acquireLock(journalPath: string, mode: LockMode): Promise<() => Promise<void>> {
+  if (process.platform === "linux" && mode === "auto") {
+    const held = await acquireFlock(journalPath);
+    if (held) return held;
+  }
   const hash = createHash("sha256").update(realpathSync(dirname(journalPath)) + "/" + basename(journalPath)).digest("hex").slice(0, 24);
   let name: string;
   let file: string | undefined;
