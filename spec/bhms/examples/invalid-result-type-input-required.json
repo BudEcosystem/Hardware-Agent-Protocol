@@ -1,6 +1,10 @@
 {
   "$comment": "Only resultType complete exists in this version (BHMS-LIF-012).",
   "against": "#/$defs/DevicesListResponse",
+  "expect": {
+    "path": "/result/resultType",
+    "keyword": "const"
+  },
   "message": {
     "jsonrpc": "2.0",
     "id": 2,

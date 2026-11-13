@@ -1,6 +1,10 @@
 {
   "$comment": "The summary is one line (BHMS-AGT-010).",
   "against": "#/$defs/AgentFunctionResult",
+  "expect": {
+    "path": "/summary",
+    "keyword": "pattern"
+  },
   "message": {
     "summary": "line one\nline two",
     "data": {}

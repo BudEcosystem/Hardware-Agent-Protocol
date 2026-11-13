@@ -1,6 +1,11 @@
 {
   "$comment": "params lacks _meta (BHMS-LIF-011).",
   "against": "#/$defs/DevicesListRequest",
+  "expect": {
+    "path": "/params",
+    "keyword": "required",
+    "message": "'_meta'"
+  },
   "message": {
     "jsonrpc": "2.0",
     "id": 1,

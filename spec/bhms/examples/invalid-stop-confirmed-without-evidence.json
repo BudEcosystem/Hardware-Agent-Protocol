@@ -1,6 +1,10 @@
 {
   "$comment": "A confirmed stop needs reported or measured evidence (BHMS-AUTH-022).",
   "against": "#/$defs/DeviceStop",
+  "expect": {
+    "path": "/evidence",
+    "keyword": "enum"
+  },
   "message": {
     "deviceId": "pump-1",
     "outcome": "confirmed",

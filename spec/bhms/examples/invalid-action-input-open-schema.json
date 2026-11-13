@@ -1,6 +1,11 @@
 {
   "$comment": "Action input must be a closed object schema (BHMS-DEV-040).",
   "against": "#/$defs/ActionDescription",
+  "expect": {
+    "path": "/input",
+    "keyword": "required",
+    "message": "'additionalProperties'"
+  },
   "message": {
     "description": "Dispense a volume at a rate. Stops early on over-pressure.",
     "input": {
@@ -20,7 +25,8 @@
       "properties": {
         "dispensed": {
           "type": "number",
-          "x-bhms-unit": "uL"
+          "x-bhms-unit": "uL",
+          "multipleOf": 0.1
         }
       }
     },
@@ -38,6 +44,12 @@
       "pump-1/plunger"
     ],
     "onLeaseLoss": "finish",
+    "requiresFresh": [
+      {
+        "property": "pressure",
+        "maxAgeMs": 1000
+      }
+    ],
     "preconditions": "Syringe loaded and primed.",
     "compact": {
       "index": 0,

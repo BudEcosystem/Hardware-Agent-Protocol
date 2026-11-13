@@ -1,6 +1,10 @@
 {
   "$comment": "A server supports at least one version.",
   "against": "#/$defs/DiscoverResult",
+  "expect": {
+    "path": "/supportedVersions",
+    "keyword": "minItems"
+  },
   "message": {
     "resultType": "complete",
     "supportedVersions": [],

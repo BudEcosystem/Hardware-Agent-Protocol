@@ -1,6 +1,11 @@
 {
   "$comment": "unknown operations carry error (BHMS-OPS-009).",
   "against": "#/$defs/Operation",
+  "expect": {
+    "path": "",
+    "keyword": "required",
+    "message": "'error'"
+  },
   "message": {
     "operationId": "op-19c2",
     "operationKey": "focus-scan-3",

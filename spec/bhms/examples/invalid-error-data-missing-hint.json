@@ -1,6 +1,11 @@
 {
   "$comment": "hint is required (BHMS-ERR-001).",
   "against": "#/$defs/JSONRPCErrorResponse",
+  "expect": {
+    "path": "/error/data",
+    "keyword": "required",
+    "message": "'hint'"
+  },
   "message": {
     "jsonrpc": "2.0",
     "id": 9,

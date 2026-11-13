@@ -1,6 +1,10 @@
 {
   "$comment": "Fences start at 1 (BHMS-LSE-003).",
   "against": "#/$defs/Lease",
+  "expect": {
+    "path": "/fence",
+    "keyword": "minimum"
+  },
   "message": {
     "leaseId": "lease-12",
     "resources": [

@@ -7,9 +7,10 @@ from typing import Annotated, Any, Literal, Optional
 from pydantic import Field, model_validator
 
 from bhms.protocol.types._base import (
-    SETTLED_STATES, BhmsErrorCode, CancelState, CompletionEvidence, Cursor, DeviceId, Digest, EffectCertainty,
-    EventType, Name, NonNegInt, NotificationMeta, OperationError, OperationKey, OperationState, PosInt, RequestId,
-    ResourceId, ResultType, ServerId, SubscriptionMeta, Time, _bounded_int, _Params, _Result, _text, _Wire,
+    SETTLED_STATES, BhmsErrorCode, CancelState, ClientOperationKey, CompletionEvidence, Cursor, DeviceId, Digest,
+    EffectCertainty, EventType, Name, NonNegInt, NotificationMeta, OperationError, OperationKey, OperationState,
+    PosInt, RequestId, ResourceId, ResultType, ServerId, SubscriptionMeta, Time, _bounded_int, _Params, _Result,
+    _text, _Wire,
 )
 from bhms.protocol.types.devices import Observation
 
@@ -102,7 +103,7 @@ class ActionsInvokeParams(_Params):
     device_id: DeviceId
     action: Name
     arguments: dict[str, Any]
-    operation_key: Optional[OperationKey] = None
+    operation_key: Optional[ClientOperationKey] = None
     lease_id: Optional[ServerId] = None
     deadline_ms: Optional[PosInt] = None
     wait_ms: Optional[NonNegInt] = None
@@ -235,8 +236,11 @@ class SubscriptionsListenParams(_Params):
 
 
 class SubscriptionsListenResult(_Wire):
+    """Sent only when the server ends the subscription (BHMS-LIF-044)."""
+
     result_type: ResultType
     meta: SubscriptionMeta = Field(alias="_meta")
+    end_reason: Literal["shutdown", "overflow", "unauthorized"]
 
 
 # --------------------------------------------------------------------------- leases

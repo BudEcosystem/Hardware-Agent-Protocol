@@ -1,0 +1,90 @@
+{
+  "$comment": "onLeaseLoss values are finish, cancel and hold (07 7.3).",
+  "against": "#/$defs/ActionDescription",
+  "expect": {
+    "path": "/onLeaseLoss",
+    "keyword": "enum"
+  },
+  "message": {
+    "description": "Dispense a volume at a rate. Stops early on over-pressure.",
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "volume"
+      ],
+      "properties": {
+        "volume": {
+          "type": "number",
+          "x-bhms-unit": "uL",
+          "minimum": 1,
+          "maximum": 1000,
+          "multipleOf": 0.1
+        },
+        "rate": {
+          "type": "number",
+          "x-bhms-unit": "uL/min",
+          "minimum": 1,
+          "maximum": 500,
+          "default": 100
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dispensed"
+      ],
+      "properties": {
+        "dispensed": {
+          "type": "number",
+          "x-bhms-unit": "uL",
+          "multipleOf": 0.1
+        }
+      }
+    },
+    "effect": "irreversible",
+    "idempotency": "relative",
+    "cancel": "supported",
+    "completionEvidence": "measured",
+    "verifiedBy": [
+      "dispensed_volume"
+    ],
+    "typicalDurationMs": 2000,
+    "maxDurationMs": 60000,
+    "requiresLease": true,
+    "resources": [
+      "pump-1/plunger"
+    ],
+    "onLeaseLoss": "stop",
+    "requiresFresh": [
+      {
+        "property": "pressure",
+        "maxAgeMs": 1000
+      }
+    ],
+    "preconditions": "Syringe loaded and primed.",
+    "compact": {
+      "index": 0,
+      "args": [
+        {
+          "name": "volume",
+          "type": "u16",
+          "scale": 0.1
+        },
+        {
+          "name": "rate",
+          "type": "u16"
+        }
+      ],
+      "result": [
+        {
+          "name": "dispensed",
+          "type": "u16",
+          "scale": 0.1
+        }
+      ]
+    }
+  }
+}

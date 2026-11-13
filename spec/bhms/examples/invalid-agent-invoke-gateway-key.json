@@ -1,0 +1,16 @@
+{
+  "$comment": "Models may not use the reserved g- (gateway) prefix (BHMS-OPS-037).",
+  "against": "#/$defs/AgentInvokeInput",
+  "expect": {
+    "path": "/operation_key",
+    "keyword": "pattern"
+  },
+  "message": {
+    "device_id": "pump-1",
+    "action": "dispense",
+    "arguments": {
+      "volume": 50
+    },
+    "operation_key": "g-abc"
+  }
+}

@@ -4,13 +4,13 @@ from __future__ import annotations
 
 from typing import Annotated, Any, Literal, Optional
 
-from pydantic import Field, model_validator
+from pydantic import AfterValidator, Field, model_validator
 
 from bhms.protocol.types._base import (
     CapabilityId, CompactType, CompletionEvidence, Cursor, DeviceId, DeviceStatus, Digest, EffectClass, EventType,
     EvidenceKind, Extensions, Idempotency, Implementation, JsonSchema, Name, NonNegInt, ObjectSchema, PositiveNumber,
-    PosInt, ProtocolVersion, Quality, ResourceId, Scope, Tag, Time, _bounded_int, _Params, _pattern, _Result, _text,
-    _Wire,
+    PosInt, ProtocolVersion, Quality, ResourceId, Scope, Tag, Time, _bounded_int, _check_numeric_unit, _Params,
+    _pattern, _Result, _text, _Wire,
 )
 
 
@@ -168,7 +168,7 @@ class CompactValue(_Wire):
 
 class PropertyDescription(_Wire):
     description: _text(1000)
-    schema_: JsonSchema = Field(alias="schema")
+    schema_: Annotated[JsonSchema, AfterValidator(_check_numeric_unit)] = Field(alias="schema")
     evidence: EvidenceKind
     observable: bool
     max_rate_hz: Optional[PositiveNumber] = None
@@ -176,6 +176,11 @@ class PropertyDescription(_Wire):
     requires_lease: Optional[bool] = None
     resources: Optional[list[ResourceId]] = None
     compact: Optional[CompactValue] = None
+
+
+class FreshnessRequirement(_Wire):
+    property: Name
+    max_age_ms: NonNegInt
 
 
 class ActionDescription(_Wire):
@@ -191,7 +196,8 @@ class ActionDescription(_Wire):
     max_duration_ms: PosInt
     requires_lease: bool
     resources: list[ResourceId]
-    on_lease_loss: Optional[Literal["finish", "stop", "hold"]] = None
+    on_lease_loss: Optional[Literal["finish", "cancel", "hold"]] = None
+    requires_fresh: Optional[Annotated[list[FreshnessRequirement], Field(max_length=16)]] = None
     preconditions: Optional[_text(500)] = None
     compact: Optional[CompactActionLayout] = None
 

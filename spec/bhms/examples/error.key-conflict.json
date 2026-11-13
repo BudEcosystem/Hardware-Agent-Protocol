@@ -11,7 +11,7 @@
         "bhmsCode": "KEY_CONFLICT",
         "field": "operationKey",
         "operationId": "op-7f3a",
-        "mayHaveActed": false,
+        "mayHaveActed": true,
         "retry": "never",
         "hint": "use a new operationKey for a new intent; op-7f3a holds the original"
       }

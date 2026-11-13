@@ -1,0 +1,25 @@
+{
+  "$comment": "Every numeric property schema carries x-bhms-unit (BHMS-DEV-041).",
+  "against": "#/$defs/PropertyDescription",
+  "expect": {
+    "path": "/schema",
+    "keyword": "required",
+    "message": "'x-bhms-unit'"
+  },
+  "message": {
+    "description": "Line pressure upstream of the needle.",
+    "schema": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 500
+    },
+    "evidence": "measured",
+    "observable": true,
+    "maxRateHz": 50,
+    "readEffect": "none",
+    "compact": {
+      "index": 1,
+      "type": "f32"
+    }
+  }
+}

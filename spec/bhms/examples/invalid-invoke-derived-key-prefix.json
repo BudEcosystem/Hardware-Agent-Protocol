@@ -1,0 +1,28 @@
+{
+  "$comment": "Keys starting with d- are reserved for derived program-step keys (BHMS-OPS-037).",
+  "against": "#/$defs/ActionsInvokeRequest",
+  "expect": {
+    "path": "/params/operationKey",
+    "keyword": "pattern"
+  },
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 5,
+    "method": "actions/invoke",
+    "params": {
+      "_meta": {
+        "bhms/protocolVersion": "2026-11-13",
+        "bhms/clientInfo": {
+          "name": "bhms-cli",
+          "version": "0.1.0"
+        }
+      },
+      "deviceId": "pump-1",
+      "action": "dispense",
+      "arguments": {
+        "volume": 50
+      },
+      "operationKey": "d-0123456789"
+    }
+  }
+}

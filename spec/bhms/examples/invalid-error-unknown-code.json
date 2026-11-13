@@ -1,11 +1,15 @@
 {
   "$comment": "bhmsCode must be one of the defined codes (BHMS-ERR-010).",
   "against": "#/$defs/JSONRPCErrorResponse",
+  "expect": {
+    "path": "/error/data/bhmsCode",
+    "keyword": "enum"
+  },
   "message": {
     "jsonrpc": "2.0",
     "id": 9,
     "error": {
-      "code": -32018,
+      "code": -32001,
       "message": "x",
       "data": {
         "bhmsCode": "EXPLODED",

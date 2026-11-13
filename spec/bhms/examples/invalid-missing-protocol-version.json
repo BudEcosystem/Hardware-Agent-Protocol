@@ -1,6 +1,11 @@
 {
   "$comment": "_meta lacks bhms/protocolVersion (BHMS-LIF-011).",
   "against": "#/$defs/DevicesListRequest",
+  "expect": {
+    "path": "/params/_meta",
+    "keyword": "required",
+    "message": "'bhms/protocolVersion'"
+  },
   "message": {
     "jsonrpc": "2.0",
     "id": 1,

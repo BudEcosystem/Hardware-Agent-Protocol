@@ -1,6 +1,10 @@
 {
   "$comment": "repeat.times is at most 1000 (08 8.1).",
   "against": "#/$defs/RepeatStep",
+  "expect": {
+    "path": "/times",
+    "keyword": "maximum"
+  },
   "message": {
     "kind": "repeat",
     "times": 1001,

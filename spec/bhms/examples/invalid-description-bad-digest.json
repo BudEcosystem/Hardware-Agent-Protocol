@@ -1,6 +1,10 @@
 {
   "$comment": "digest is sha256: plus 64 lowercase hex digits (BHMS-DEV-021).",
   "against": "#/$defs/DeviceDescription",
+  "expect": {
+    "path": "/digest",
+    "keyword": "pattern"
+  },
   "message": {
     "deviceId": "pump-1",
     "name": "Syringe pump 1",
@@ -27,7 +31,8 @@
           "type": "number",
           "x-bhms-unit": "uL",
           "minimum": 0,
-          "maximum": 6000
+          "maximum": 6000,
+          "multipleOf": 0.1
         },
         "evidence": "measured",
         "observable": true,
@@ -71,7 +76,8 @@
               "type": "number",
               "x-bhms-unit": "uL",
               "minimum": 1,
-              "maximum": 1000
+              "maximum": 1000,
+              "multipleOf": 0.1
             },
             "rate": {
               "type": "number",
@@ -91,7 +97,8 @@
           "properties": {
             "dispensed": {
               "type": "number",
-              "x-bhms-unit": "uL"
+              "x-bhms-unit": "uL",
+              "multipleOf": 0.1
             }
           }
         },
@@ -109,6 +116,12 @@
           "pump-1/plunger"
         ],
         "onLeaseLoss": "finish",
+        "requiresFresh": [
+          {
+            "property": "pressure",
+            "maxAgeMs": 1000
+          }
+        ],
         "preconditions": "Syringe loaded and primed.",
         "compact": {
           "index": 0,
@@ -140,7 +153,8 @@
           "type": "object",
           "properties": {
             "sizeUl": {
-              "type": "number"
+              "type": "number",
+              "x-bhms-unit": "uL"
             }
           }
         }

@@ -1,6 +1,11 @@
 {
   "$comment": "BHMS codes carry data with bhmsCode, mayHaveActed, retry and hint (BHMS-ERR-001).",
   "against": "#/$defs/JSONRPCErrorResponse",
+  "expect": {
+    "path": "/error",
+    "keyword": "required",
+    "message": "'data'"
+  },
   "message": {
     "jsonrpc": "2.0",
     "id": 9,

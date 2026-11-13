@@ -15,7 +15,7 @@
           "liquid"
         ],
         "status": "online",
-        "digest": "sha256:5399cb6f8b10dd022b6c01c571c4aea195f20bebbd82b82a84027d0e760e9c24",
+        "digest": "sha256:c498c6ff0d43e3c5a6b8a3fbf6e92cd9cf08617de6be1529eefd58c43dd783f0",
         "actions": [
           "dispense"
         ],
@@ -27,7 +27,7 @@
     ],
     "programs": [
       {
-        "digest": "sha256:85e36d7ad99536f3857125838338bb8768e51182304fe54668309864f5b6f3df",
+        "digest": "sha256:d664364d3cd14a395cafacdb45248dfe1e911e0704fe27c06e7a1f40a35d1dc2",
         "name": "focus_scan",
         "description": "Step the focus axis and record the position at each step.",
         "input": {
@@ -46,6 +46,7 @@
             },
             "steps": {
               "type": "integer",
+              "x-bhms-unit": "1",
               "minimum": 1,
               "maximum": 50
             }

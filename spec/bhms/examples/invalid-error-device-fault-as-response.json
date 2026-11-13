@@ -1,6 +1,10 @@
 {
   "$comment": "DEVICE_FAULT describes admitted work and appears only inside an operation (BHMS-ERR-012).",
   "against": "#/$defs/JSONRPCErrorResponse",
+  "expect": {
+    "path": "/error/data/bhmsCode",
+    "keyword": "not"
+  },
   "message": {
     "jsonrpc": "2.0",
     "id": 9,

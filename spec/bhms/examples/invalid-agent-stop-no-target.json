@@ -1,6 +1,10 @@
 {
   "$comment": "bhms_stop needs device_ids or all.",
   "against": "#/$defs/AgentStopInput",
+  "expect": {
+    "path": "",
+    "keyword": "oneOf"
+  },
   "message": {
     "reason": "x"
   }

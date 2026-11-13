@@ -1,6 +1,11 @@
 {
   "$comment": "Agent tool inputs are snake_case (12 12.1).",
   "against": "#/$defs/AgentInvokeInput",
+  "expect": {
+    "path": "",
+    "keyword": "additionalProperties",
+    "message": "'deviceId'"
+  },
   "message": {
     "deviceId": "pump-1",
     "action": "dispense",

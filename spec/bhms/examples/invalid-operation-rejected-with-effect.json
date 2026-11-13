@@ -1,6 +1,10 @@
 {
   "$comment": "Rejected operations have effect none (BHMS-OPS-006).",
   "against": "#/$defs/Operation",
+  "expect": {
+    "path": "/effect",
+    "keyword": "const"
+  },
   "message": {
     "operationId": "op-19c2",
     "operationKey": "focus-scan-3",

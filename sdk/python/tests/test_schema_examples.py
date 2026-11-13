@@ -63,7 +63,8 @@ def test_examples_exist_and_follow_convention():
     assert len(VALID) > 50 and len(INVALID) > 20
     for path in EXAMPLES:
         body = _load(path)
-        assert set(body) == {"$comment", "against", "message"}, path.name
+        expected = {"$comment", "against", "message"} | ({"expect"} if path in INVALID else set())
+        assert set(body) == expected, path.name
         assert body["$comment"].strip(), path.name
         assert _def_name(body["against"]) in SCHEMA["$defs"], path.name
 
@@ -79,18 +80,51 @@ def test_valid_example_validates_and_round_trips(path: Path):
     assert canonical(types.dump(name, model)) == canonical(message)
 
 
+def _all_errors(errors):
+    for error in errors:
+        yield error
+        yield from _all_errors(error.context or [])
+
+
+def _pointer(error) -> str:
+    return "".join(f"/{part}" for part in error.absolute_path)
+
+
 @pytest.mark.parametrize("path", INVALID, ids=lambda p: p.name)
-def test_invalid_example_is_rejected(path: Path):
+def test_invalid_example_is_rejected_for_the_labelled_reason(path: Path):
     body = _load(path)
-    assert not _validator(body["against"]).is_valid(body["message"]), f"schema accepted {path.name}"
+    errors = list(_validator(body["against"]).iter_errors(body["message"]))
+    assert errors, f"schema accepted {path.name}"
+    expect = body["expect"]
+    assert set(expect) <= {"path", "keyword", "message"}
+    found = [(_pointer(e), e.validator, e.message) for e in _all_errors(errors)]
+    assert any(p == expect["path"] and k == expect["keyword"] and expect.get("message", "") in m
+               for p, k, m in found), f"{path.name}: expected {expect}, got {found}"
     with pytest.raises(ValidationError):
         types.parse(_def_name(body["against"]), body["message"])
+
+
+def _member_names(signature: str) -> set[str]:
+    """Member names in a README signature such as `{deviceId, filter?, scope: "all"}` (types and literals dropped)."""
+    signature = re.sub(r'"[^"]*"', "", signature.replace("\\|", ","))
+    signature = re.sub(r":\s*[A-Z][A-Za-z]*(\[\])?", "", signature)
+    return set(re.findall(r"[A-Za-z_][A-Za-z0-9_]*", signature))
 
 
 def test_every_spec_method_is_in_the_schema_and_types():
     readme = (SPEC / "README.md").read_text()
     rows = _markdown_table(readme, "Methods")
     spec_methods = {row[0].strip("`"): (row[1]) for row in rows}
+    for row in rows:
+        method = row[0].strip("`")
+        params_sig, result_sig = (part.strip() for part in row[2].split("→", 1))
+        params_def = SCHEMA["$defs"][_def_name(SCHEMA["x-bhms-methods"][method]["params"])]
+        assert _member_names(params_sig) == set(params_def["properties"]) - {"_meta"}, method
+        result_def = SCHEMA["$defs"][_def_name(SCHEMA["x-bhms-methods"][method]["result"])]
+        result_members = set(result_def["properties"]) - {"_meta", "resultType"}
+        braces = re.findall(r"`(\{[^`]*\})`", result_sig)
+        assert braces, method
+        assert _member_names(braces[-1]) == result_members, method
     assert spec_methods, "method table not found"
     assert set(spec_methods) == set(SCHEMA["x-bhms-methods"])
     assert set(spec_methods) == set(types.METHODS)

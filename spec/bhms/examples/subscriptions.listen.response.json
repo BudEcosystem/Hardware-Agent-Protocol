@@ -1,11 +1,12 @@
 {
-  "$comment": "Graceful end of the subscription (server shutdown).",
+  "$comment": "The server ended the subscription because it is shutting down (BHMS-LIF-044).",
   "against": "#/$defs/SubscriptionsListenResponse",
   "message": {
     "jsonrpc": "2.0",
     "id": "sub-1",
     "result": {
       "resultType": "complete",
+      "endReason": "shutdown",
       "_meta": {
         "bhms/subscriptionId": "sub-1"
       }

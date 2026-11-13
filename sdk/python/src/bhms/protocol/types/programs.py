@@ -7,9 +7,9 @@ from typing import Annotated, Any, Literal, Optional, Union
 from pydantic import Field, model_validator
 
 from bhms.protocol.types._base import (
-    Cursor, DeviceId, DeviceStatus, Digest, EffectClass, Name, NonNegInt, ObjectSchema, OperationError,
-    OperationKey, PosInt, ProtocolVersion, Reference, ResourceId, Scope, ServerId, Tag, VariableName, _bounded_int,
-    _Params, _pattern, _Plain, _Result, _text, _Wire,
+    AgentOperationKey, ClientOperationKey, Cursor, DeviceId, DeviceStatus, Digest, EffectClass, Name, NonNegInt,
+    ObjectSchema, OperationError, PosInt, ProtocolVersion, Reference, ResourceId, Scope, ServerId, Tag, VariableName,
+    _bounded_int, _Params, _pattern, _Plain, _Result, _text, _Wire,
 )
 from bhms.protocol.types.devices import DeviceSummary
 from bhms.protocol.types.operations import Operation
@@ -131,7 +131,7 @@ class ProgramsRunParams(_Params):
     program: Optional[Program] = None
     digest: Optional[Digest] = None
     arguments: dict[str, Any]
-    operation_key: Optional[OperationKey] = None
+    operation_key: Optional[ClientOperationKey] = None
     lease_id: Optional[ServerId] = None
     deadline_ms: Optional[PosInt] = None
     wait_ms: Optional[NonNegInt] = None
@@ -226,7 +226,7 @@ class AgentInvokeInput(_Plain):
     device_id: DeviceId
     action: Name
     arguments: dict[str, Any]
-    operation_key: Optional[OperationKey] = None
+    operation_key: Optional[AgentOperationKey] = None
     wait_ms: Optional[AgentWait] = None
     require_verified: Optional[bool] = None
 
@@ -257,7 +257,7 @@ class AgentRunProgramInput(_Plain):
     program: Optional[Program] = None
     program_digest: Optional[Digest] = None
     arguments: dict[str, Any]
-    operation_key: Optional[OperationKey] = None
+    operation_key: Optional[AgentOperationKey] = None
     wait_ms: Optional[AgentWait] = None
 
     @model_validator(mode="after")

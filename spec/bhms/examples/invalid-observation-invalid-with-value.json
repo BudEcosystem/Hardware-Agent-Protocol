@@ -1,6 +1,10 @@
 {
   "$comment": "A missing measurement is null, never zero (BHMS-OBS-001).",
   "against": "#/$defs/Observation",
+  "expect": {
+    "path": "/value",
+    "keyword": "type"
+  },
   "message": {
     "value": 0,
     "unit": "uL",

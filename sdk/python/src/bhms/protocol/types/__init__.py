@@ -86,7 +86,7 @@ _NOTIFICATION_TABLE: tuple[tuple[str, str, str], ...] = (
     ("notifications/operation", "Operation", "server-to-client"),
     ("notifications/observation", "Observation", "server-to-client"),
     ("notifications/event", "Event", "server-to-client"),
-    ("notifications/cancelled", "Cancelled", "both"),
+    ("notifications/cancelled", "Cancelled", "client-to-server"),
 )
 
 METHODS: dict[str, MethodSpec] = {}
@@ -113,13 +113,15 @@ for _method, _base, _direction in _NOTIFICATION_TABLE:
 
 _DEF_NAMES = (
     "RequestId", "ProtocolVersion", "Time", "Digest", "DeviceId", "ResourceId", "Name", "EventType", "CapabilityId",
-    "Tag", "OperationKey", "Cursor", "ServerId", "VariableName", "Reference", "ExtensionKey", "Extensions",
+    "Tag", "OperationKey", "ClientOperationKey", "AgentOperationKey", "NumericUnitRule", "Cursor", "ServerId",
+    "VariableName", "Reference", "ExtensionKey", "Extensions",
     "JsonSchema", "ObjectSchema", "Implementation", "ClientCapabilities", "ResultType", "RequestMeta", "ResultMeta",
     "SubscriptionMeta", "NotificationMeta", "BhmsErrorCode", "RetryClass", "ErrorData", "OperationError",
     "ErrorObject", "JSONRPCRequest", "JSONRPCNotification", "JSONRPCResultResponse", "JSONRPCErrorResponse",
     "ProgramLimits", "ServerCapabilities", "Limits", "Scope", "Principal", "DeviceStatus", "EffectClass",
     "Idempotency", "EvidenceKind", "CompletionEvidence", "DeviceSummary", "DevicesListFilter", "CompactType",
-    "CompactField", "CompactActionLayout", "CompactValue", "PropertyDescription", "ActionDescription",
+    "CompactField", "CompactActionLayout", "CompactValue", "PropertyDescription", "FreshnessRequirement",
+    "ActionDescription",
     "EventTypeDescription", "SafetyDescription", "DeviceIdentity", "DeviceDescription", "Quality", "Observation",
     "OperationState", "CancelState", "EffectCertainty", "CancelInfo", "OperationEvidence", "Requirement", "Progress",
     "HistoryEntry", "Operation", "DeviceStop", "SubscriptionFilter", "RefusedFilter", "Lease", "Event", "Predicate",

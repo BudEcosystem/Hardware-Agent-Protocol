@@ -1,6 +1,11 @@
 {
   "$comment": "params are closed; an authority claim is an unknown member (BHMS-LIF-015, BHMS-SEC-030).",
   "against": "#/$defs/ActionsInvokeRequest",
+  "expect": {
+    "path": "/params",
+    "keyword": "additionalProperties",
+    "message": "'authorized'"
+  },
   "message": {
     "jsonrpc": "2.0",
     "id": 5,

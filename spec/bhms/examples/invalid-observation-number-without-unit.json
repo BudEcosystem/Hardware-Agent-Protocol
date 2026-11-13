@@ -1,6 +1,11 @@
 {
   "$comment": "Numeric values carry their unit (BHMS-OBS-005).",
   "against": "#/$defs/Observation",
+  "expect": {
+    "path": "",
+    "keyword": "required",
+    "message": "'unit'"
+  },
   "message": {
     "value": 101.3,
     "evidence": "measured",

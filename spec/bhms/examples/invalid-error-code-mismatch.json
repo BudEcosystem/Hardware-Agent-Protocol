@@ -1,6 +1,11 @@
 {
   "$comment": "OUT_OF_RANGE must use -32602 (BHMS-ERR-001).",
   "against": "#/$defs/JSONRPCErrorResponse",
+  "expect": {
+    "path": "/error/code",
+    "keyword": "const",
+    "message": "-32602"
+  },
   "message": {
     "jsonrpc": "2.0",
     "id": 9,

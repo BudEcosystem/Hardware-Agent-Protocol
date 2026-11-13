@@ -1,6 +1,11 @@
 {
   "$comment": "stop requires a reason.",
   "against": "#/$defs/StopRequest",
+  "expect": {
+    "path": "/params",
+    "keyword": "required",
+    "message": "'reason'"
+  },
   "message": {
     "jsonrpc": "2.0",
     "id": 10,

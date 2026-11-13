@@ -1,0 +1,19 @@
+{
+  "$comment": "A server ends a subscription only with a listen result that names endReason (BHMS-LIF-044).",
+  "against": "#/$defs/SubscriptionsListenResponse",
+  "expect": {
+    "path": "/result",
+    "keyword": "required",
+    "message": "'endReason'"
+  },
+  "message": {
+    "jsonrpc": "2.0",
+    "id": "sub-1",
+    "result": {
+      "resultType": "complete",
+      "_meta": {
+        "bhms/subscriptionId": "sub-1"
+      }
+    }
+  }
+}

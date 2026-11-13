@@ -8,7 +8,7 @@
       "resultType": "complete",
       "programs": [
         {
-          "digest": "sha256:85e36d7ad99536f3857125838338bb8768e51182304fe54668309864f5b6f3df",
+          "digest": "sha256:d664364d3cd14a395cafacdb45248dfe1e911e0704fe27c06e7a1f40a35d1dc2",
           "name": "focus_scan",
           "description": "Step the focus axis and record the position at each step.",
           "input": {
@@ -27,6 +27,7 @@
               },
               "steps": {
                 "type": "integer",
+                "x-bhms-unit": "1",
                 "minimum": 1,
                 "maximum": 50
               }

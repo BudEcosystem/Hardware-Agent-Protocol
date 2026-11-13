@@ -8,7 +8,7 @@ from typing import Annotated, Any, ClassVar, Literal, Optional, Union
 from pydantic import AfterValidator, BaseModel, ConfigDict, Field, StringConstraints, TypeAdapter, model_validator
 from pydantic.alias_generators import to_camel
 
-from bhms.protocol.errors import CODES, RETRY_VALUES
+from bhms.protocol.errors import CODES, OPERATION_ONLY_CODES, RETRY_VALUES
 
 
 # --------------------------------------------------------------------------- base
@@ -89,6 +89,8 @@ EventType = _pattern(r"^[a-z][a-z0-9_]*(\.[a-z0-9_]+)*$", max_length=64)
 CapabilityId = _pattern(r"^[a-z][a-z0-9-]*(\.[a-z0-9-]+)+$", max_length=128)
 Tag = _text(64, 1)
 OperationKey = _pattern(r"^[A-Za-z0-9._:~-]{1,128}$")
+ClientOperationKey = _pattern(r"^(?!d-)[A-Za-z0-9._:~-]{1,128}$")  # d- reserved (BHMS-OPS-037)
+AgentOperationKey = _pattern(r"^(?![dg]-)[A-Za-z0-9._:~-]{1,128}$")  # d-, g- reserved for servers
 Cursor = _text(512, 1)
 ServerId = _text(128, 1)
 VariableName = _pattern(r"^[a-z_][A-Za-z0-9_]{0,63}$")
@@ -103,9 +105,29 @@ PosInt = _bounded_int(ge=1)
 PositiveNumber = Annotated[float, Field(gt=0)]
 
 
+def _check_numeric_unit(value: Any) -> Any:
+    """BHMS-DEV-041: a schema of type number/integer carries x-bhms-unit (schema def NumericUnitRule)."""
+    if isinstance(value, dict) and value.get("type") in ("number", "integer"):
+        unit = value.get("x-bhms-unit")
+        if not isinstance(unit, str) or not unit:
+            raise ValueError('a number or integer schema must carry "x-bhms-unit" (use "1" for dimensionless)')
+    return value
+
+
+NumericUnitRule = Annotated[Any, AfterValidator(_check_numeric_unit)]
+
+
 def _check_object_schema(value: dict[str, Any]) -> dict[str, Any]:
     if value.get("type") != "object" or value.get("additionalProperties") is not False:
         raise ValueError('must be a closed object schema: {"type": "object", "additionalProperties": false, ...}')
+    members = value.get("properties", {})
+    if not isinstance(members, dict):
+        raise ValueError("properties must be an object")
+    for name, member in members.items():
+        try:
+            _check_numeric_unit(member)
+        except ValueError as exc:
+            raise ValueError(f"member {name!r}: {exc}") from None
     return value
 
 
@@ -230,8 +252,6 @@ class OperationError(_Wire):
 
 
 _BHMS_NUMBERS = frozenset(spec.number for spec in CODES.values())
-# Codes that describe what happened while acting: never JSON-RPC errors (BHMS-ERR-012).
-OPERATION_ONLY_CODES: frozenset[str] = frozenset({"DEVICE_FAULT", "UNVERIFIED"})
 
 
 class ErrorObject(_Wire):

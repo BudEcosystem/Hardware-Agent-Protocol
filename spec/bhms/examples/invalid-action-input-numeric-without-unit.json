@@ -1,0 +1,78 @@
+{
+  "$comment": "Every numeric input member carries x-bhms-unit (BHMS-DEV-041).",
+  "against": "#/$defs/ActionDescription",
+  "expect": {
+    "path": "/input/properties/volume",
+    "keyword": "required",
+    "message": "'x-bhms-unit'"
+  },
+  "message": {
+    "description": "Dispense a volume at a rate. Stops early on over-pressure.",
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "volume": {
+          "type": "number",
+          "maximum": 1000
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dispensed"
+      ],
+      "properties": {
+        "dispensed": {
+          "type": "number",
+          "x-bhms-unit": "uL",
+          "multipleOf": 0.1
+        }
+      }
+    },
+    "effect": "irreversible",
+    "idempotency": "relative",
+    "cancel": "supported",
+    "completionEvidence": "measured",
+    "verifiedBy": [
+      "dispensed_volume"
+    ],
+    "typicalDurationMs": 2000,
+    "maxDurationMs": 60000,
+    "requiresLease": true,
+    "resources": [
+      "pump-1/plunger"
+    ],
+    "onLeaseLoss": "finish",
+    "requiresFresh": [
+      {
+        "property": "pressure",
+        "maxAgeMs": 1000
+      }
+    ],
+    "preconditions": "Syringe loaded and primed.",
+    "compact": {
+      "index": 0,
+      "args": [
+        {
+          "name": "volume",
+          "type": "u16",
+          "scale": 0.1
+        },
+        {
+          "name": "rate",
+          "type": "u16"
+        }
+      ],
+      "result": [
+        {
+          "name": "dispensed",
+          "type": "u16",
+          "scale": 0.1
+        }
+      ]
+    }
+  }
+}

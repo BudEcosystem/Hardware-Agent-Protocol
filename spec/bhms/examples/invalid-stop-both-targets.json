@@ -1,6 +1,10 @@
 {
   "$comment": "stop takes exactly one of deviceIds or scope (07 7.5).",
   "against": "#/$defs/StopRequest",
+  "expect": {
+    "path": "/params",
+    "keyword": "oneOf"
+  },
   "message": {
     "jsonrpc": "2.0",
     "id": 10,

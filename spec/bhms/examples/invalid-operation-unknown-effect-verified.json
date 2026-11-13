@@ -1,6 +1,10 @@
 {
   "$comment": "An unknown operation's effect is unknown (BHMS-OPS-004).",
   "against": "#/$defs/Operation",
+  "expect": {
+    "path": "/effect",
+    "keyword": "const"
+  },
   "message": {
     "operationId": "op-19c2",
     "operationKey": "focus-scan-3",

@@ -176,7 +176,7 @@
     "notifications/cancelled": {
       "params": "#/$defs/CancelledNotificationParams",
       "notification": "#/$defs/CancelledNotification",
-      "direction": "both"
+      "direction": "client-to-server"
     }
   },
   "x-bhms-errors": {
@@ -365,6 +365,44 @@
       "description": "Idempotency key.",
       "pattern": "^[A-Za-z0-9._:~-]{1,128}$"
     },
+    "ClientOperationKey": {
+      "type": "string",
+      "description": "Idempotency key sent by a client; the d- prefix is reserved for derived keys (BHMS-OPS-037).",
+      "pattern": "^(?!d-)[A-Za-z0-9._:~-]{1,128}$"
+    },
+    "AgentOperationKey": {
+      "type": "string",
+      "description": "Idempotency key chosen by a model; d- and g- prefixes are reserved (BHMS-OPS-037).",
+      "pattern": "^(?![dg]-)[A-Za-z0-9._:~-]{1,128}$"
+    },
+    "NumericUnitRule": {
+      "description": "A schema whose type is number or integer must carry x-bhms-unit (BHMS-DEV-041).",
+      "if": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "enum": [
+              "number",
+              "integer"
+            ]
+          }
+        },
+        "required": [
+          "type"
+        ]
+      },
+      "then": {
+        "required": [
+          "x-bhms-unit"
+        ],
+        "properties": {
+          "x-bhms-unit": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
     "Cursor": {
       "type": "string",
       "description": "Opaque server-minted cursor.",
@@ -418,6 +456,12 @@
         },
         "additionalProperties": {
           "const": false
+        },
+        "properties": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/$defs/NumericUnitRule"
+          }
         }
       },
       "required": [
@@ -2099,7 +2143,14 @@
           "maxLength": 1000
         },
         "schema": {
-          "$ref": "#/$defs/JsonSchema"
+          "allOf": [
+            {
+              "$ref": "#/$defs/JsonSchema"
+            },
+            {
+              "$ref": "#/$defs/NumericUnitRule"
+            }
+          ]
         },
         "evidence": {
           "$ref": "#/$defs/EvidenceKind"
@@ -2138,6 +2189,24 @@
         "evidence",
         "observable",
         "readEffect"
+      ],
+      "additionalProperties": false
+    },
+    "FreshnessRequirement": {
+      "type": "object",
+      "description": "A machine-checked freshness precondition (BHMS-OBS-030).",
+      "properties": {
+        "property": {
+          "$ref": "#/$defs/Name"
+        },
+        "maxAgeMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "property",
+        "maxAgeMs"
       ],
       "additionalProperties": false
     },
@@ -2199,9 +2268,16 @@
           "type": "string",
           "enum": [
             "finish",
-            "stop",
+            "cancel",
             "hold"
           ]
+        },
+        "requiresFresh": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FreshnessRequirement"
+          },
+          "maxItems": 16
         },
         "preconditions": {
           "type": "string",
@@ -3070,7 +3146,7 @@
           "type": "object"
         },
         "operationKey": {
-          "$ref": "#/$defs/OperationKey"
+          "$ref": "#/$defs/ClientOperationKey"
         },
         "leaseId": {
           "$ref": "#/$defs/ServerId"
@@ -3842,18 +3918,28 @@
     },
     "SubscriptionsListenResult": {
       "type": "object",
-      "description": "Graceful end of a subscription.",
+      "description": "The server ended the subscription (BHMS-LIF-044).",
       "properties": {
         "resultType": {
           "$ref": "#/$defs/ResultType"
         },
         "_meta": {
           "$ref": "#/$defs/SubscriptionMeta"
+        },
+        "endReason": {
+          "type": "string",
+          "enum": [
+            "shutdown",
+            "overflow",
+            "unauthorized"
+          ],
+          "description": "Why the server ended the subscription."
         }
       },
       "required": [
         "resultType",
-        "_meta"
+        "_meta",
+        "endReason"
       ],
       "additionalProperties": false
     },
@@ -4810,7 +4896,7 @@
           "type": "object"
         },
         "operationKey": {
-          "$ref": "#/$defs/OperationKey"
+          "$ref": "#/$defs/ClientOperationKey"
         },
         "leaseId": {
           "$ref": "#/$defs/ServerId"
@@ -5566,7 +5652,7 @@
           "description": "Arguments per the action's input schema; numbers in the declared unit, or {value, unit}."
         },
         "operation_key": {
-          "$ref": "#/$defs/OperationKey",
+          "$ref": "#/$defs/AgentOperationKey",
           "description": "Optional idempotency key. Reuse the same key with identical arguments to retry safely."
         },
         "wait_ms": {
@@ -5672,7 +5758,7 @@
           "type": "object"
         },
         "operation_key": {
-          "$ref": "#/$defs/OperationKey",
+          "$ref": "#/$defs/AgentOperationKey",
           "description": "Optional idempotency key. Reuse the same key with identical arguments to retry safely."
         },
         "wait_ms": {

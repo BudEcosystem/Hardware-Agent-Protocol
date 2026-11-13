@@ -1,6 +1,10 @@
 {
   "$comment": "bhms/ keys are reserved; bhms/admin is not defined (BHMS-LIF-016).",
   "against": "#/$defs/RequestMeta",
+  "expect": {
+    "path": "",
+    "keyword": "anyOf"
+  },
   "message": {
     "bhms/protocolVersion": "2026-11-13",
     "bhms/admin": true

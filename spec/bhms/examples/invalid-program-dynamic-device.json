@@ -1,6 +1,10 @@
 {
   "$comment": "deviceId is always a literal, so resources are known before the run (08 8.2).",
   "against": "#/$defs/InvokeStep",
+  "expect": {
+    "path": "/deviceId",
+    "keyword": "pattern"
+  },
   "message": {
     "kind": "invoke",
     "deviceId": "${target}",

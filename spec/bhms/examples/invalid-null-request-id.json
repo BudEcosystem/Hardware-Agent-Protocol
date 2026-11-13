@@ -1,6 +1,10 @@
 {
   "$comment": "Request ids must not be null (BHMS-LIF-010).",
   "against": "#/$defs/DevicesListRequest",
+  "expect": {
+    "path": "/id",
+    "keyword": "type"
+  },
   "message": {
     "jsonrpc": "2.0",
     "id": null,
