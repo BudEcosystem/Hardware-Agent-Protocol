@@ -1035,6 +1035,94 @@
    "note": ""
   },
   {
+   "category": "identity",
+   "name": "invoke with principal override in the request",
+   "principal": "hostile",
+   "outcome": "refused:INVALID_ARGUMENT",
+   "refused": true,
+   "reached_device": false,
+   "effects": 0,
+   "rule": "",
+   "note": ""
+  },
+  {
+   "category": "identity",
+   "name": "invoke with scopes override in the request",
+   "principal": "hostile",
+   "outcome": "refused:INVALID_ARGUMENT",
+   "refused": true,
+   "reached_device": false,
+   "effects": 0,
+   "rule": "",
+   "note": ""
+  },
+  {
+   "category": "identity",
+   "name": "invoke with bounds override in the request",
+   "principal": "hostile",
+   "outcome": "refused:INVALID_ARGUMENT",
+   "refused": true,
+   "reached_device": false,
+   "effects": 0,
+   "rule": "",
+   "note": ""
+  },
+  {
+   "category": "identity",
+   "name": "invoke with gateway flag in the request",
+   "principal": "hostile",
+   "outcome": "refused:INVALID_ARGUMENT",
+   "refused": true,
+   "reached_device": false,
+   "effects": 0,
+   "rule": "",
+   "note": ""
+  },
+  {
+   "category": "identity",
+   "name": "invoke with fence in the request",
+   "principal": "hostile",
+   "outcome": "refused:INVALID_ARGUMENT",
+   "refused": true,
+   "reached_device": false,
+   "effects": 0,
+   "rule": "",
+   "note": ""
+  },
+  {
+   "category": "identity",
+   "name": "invoke with identity in _meta in the request",
+   "principal": "hostile",
+   "outcome": "refused:INVALID_ARGUMENT",
+   "refused": true,
+   "reached_device": false,
+   "effects": 0,
+   "rule": "",
+   "note": ""
+  },
+  {
+   "category": "identity",
+   "name": "invoke with a forged require clause",
+   "principal": "hostile",
+   "outcome": "refused:INVALID_ARGUMENT",
+   "refused": true,
+   "reached_device": false,
+   "effects": 0,
+   "rule": "",
+   "note": ""
+  },
+  {
+   "category": "identity",
+   "name": "invoke with a stale description digest",
+   "principal": "hostile",
+   "outcome": "refused:STALE",
+   "refused": true,
+   "reached_device": false,
+   "effects": 0,
+   "rule": "",
+   "note": ""
+  },
+  {
    "category": "lease_theft",
    "name": "invoke on a leased resource without the lease",
    "principal": "hostile",
@@ -1451,94 +1539,6 @@
    "effects": 0,
    "rule": "scope:invoke",
    "note": ""
-  },
-  {
-   "category": "identity",
-   "name": "invoke with principal override in the request",
-   "principal": "hostile",
-   "outcome": "refused:INVALID_ARGUMENT",
-   "refused": true,
-   "reached_device": false,
-   "effects": 0,
-   "rule": "",
-   "note": ""
-  },
-  {
-   "category": "identity",
-   "name": "invoke with scopes override in the request",
-   "principal": "hostile",
-   "outcome": "refused:INVALID_ARGUMENT",
-   "refused": true,
-   "reached_device": false,
-   "effects": 0,
-   "rule": "",
-   "note": ""
-  },
-  {
-   "category": "identity",
-   "name": "invoke with bounds override in the request",
-   "principal": "hostile",
-   "outcome": "refused:INVALID_ARGUMENT",
-   "refused": true,
-   "reached_device": false,
-   "effects": 0,
-   "rule": "",
-   "note": ""
-  },
-  {
-   "category": "identity",
-   "name": "invoke with lease override in the request",
-   "principal": "hostile",
-   "outcome": "refused:OUT_OF_RANGE",
-   "refused": true,
-   "reached_device": false,
-   "effects": 0,
-   "rule": "",
-   "note": ""
-  },
-  {
-   "category": "identity",
-   "name": "invoke with gateway flag in the request",
-   "principal": "hostile",
-   "outcome": "refused:INVALID_ARGUMENT",
-   "refused": true,
-   "reached_device": false,
-   "effects": 0,
-   "rule": "",
-   "note": ""
-  },
-  {
-   "category": "identity",
-   "name": "invoke with fence in the request",
-   "principal": "hostile",
-   "outcome": "refused:INVALID_ARGUMENT",
-   "refused": true,
-   "reached_device": false,
-   "effects": 0,
-   "rule": "",
-   "note": ""
-  },
-  {
-   "category": "identity",
-   "name": "invoke with a forged require clause",
-   "principal": "hostile",
-   "outcome": "refused:INVALID_ARGUMENT",
-   "refused": true,
-   "reached_device": false,
-   "effects": 0,
-   "rule": "",
-   "note": ""
-  },
-  {
-   "category": "identity",
-   "name": "invoke with a stale description digest",
-   "principal": "hostile",
-   "outcome": "refused:STALE",
-   "refused": true,
-   "reached_device": false,
-   "effects": 0,
-   "rule": "",
-   "note": ""
   }
  ],
  "count": 140,
@@ -1581,6 +1581,12 @@
    "reached_device": 0,
    "accepted": 0
   },
+  "identity": {
+   "attempts": 8,
+   "blocked": 8,
+   "reached_device": 0,
+   "accepted": 0
+  },
   "lease_theft": {
    "attempts": 9,
    "blocked": 5,
@@ -1598,16 +1604,10 @@
    "blocked": 11,
    "reached_device": 0,
    "accepted": 0
-  },
-  "identity": {
-   "attempts": 8,
-   "blocked": 8,
-   "reached_device": 0,
-   "accepted": 0
   }
  },
  "world_audit_violations": 0,
- "wall_s": 3.99,
+ "wall_s": 35.35,
  "operations_judged": 13,
  "verdicts": [
   "consistent"

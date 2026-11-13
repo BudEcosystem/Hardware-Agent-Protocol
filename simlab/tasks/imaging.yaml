@@ -111,4 +111,5 @@ id: uc7-incubation-hub-loss
 extends: uc7-incubation-timed-imaging
 title: Standing band, the hub is lost mid-run (F16)
 fault_class: F16
+ambiguity: true  # the hub (runtime) is lost mid-run: any operation left in flight must end unknown-then-reconciled
 params: {target_c: 37.0, images: 4, every_s: 60, post_s: 120, hub_loss_at_s: 130}

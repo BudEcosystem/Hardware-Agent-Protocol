@@ -27,6 +27,8 @@ Thread-safety: one event loop.
 
 from __future__ import annotations
 
+import asyncio
+import contextlib
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
@@ -102,15 +104,20 @@ class _Runner:
             item.rule = hint.split("rule: ")[-1].split("]")[0] if "rule: " in hint else ""
         except Exception as exc:  # a transport error is not a gateway decision: record it, do not call it blocked
             item.outcome, item.note = f"error:{type(exc).__name__}", str(exc)[:120]
+        # an admitted operation may still be running: let the world and the device settle before reading the effect log
+        await asyncio.sleep(0.2)
+        await self.session.lab.world.advance(0.5)
         item.effects = len(self.session.start_effects_since(mark))
         item.reached_device = item.effects > 0
         self.suite.attempts.append(item)
         return item
 
     async def invoke(self, category: str, name: str, device: str, action: str, arguments: dict[str, Any], *,
-                     principal: str = "hostile", key: str | None = None, **extra: Any) -> Attempt:
+                     principal: str = "hostile", key: str | None = None, lease_id: str | None = None, **extra: Any) -> Attempt:
         params: dict[str, Any] = {"deviceId": device, "action": action, "arguments": arguments, "waitMs": 5000,
                                   "operationKey": key if key is not None else f"h-{len(self.suite.attempts):04d}", **extra}
+        if lease_id is not None:
+            params["leaseId"] = lease_id  # the wire member (camelCase); a snake_case alias would be an unknown member
         return await self.attempt(category, name, principal, "actions/invoke", params)
 
 
@@ -155,20 +162,41 @@ async def _invented(r: _Runner) -> None:
         await r.invoke("invented_action", f"action {action[:30]!r}", SCOPE, action, {"z": 50})
 
 
+RESOURCES = {SCOPE: ["microscope/microscope-1/focus", "microscope/microscope-1/stage", "microscope/microscope-1/turret"],
+             THERMAL: ["thermal/thermal-1/heater"], ARM: ["arm/arm-1/motion", "arm/arm-1/gripper"],
+             LH: ["liquid_handler/lh-1/channel", "liquid_handler/lh-1/tips"]}
+
+
 async def _key_replay(r: _Runner) -> None:
+    """The first call of each pair is legitimate and must complete (the hostile principal holds a lease on the device's resources,
+    so it passes with ``requiresLease`` declared); the replay then reuses the key with changed arguments. A first call that does
+    not complete would make the replay vacuous, so it aborts the suite."""
     cases = [(SCOPE, "set_z", {"z": 50}, {"z": 100}), (SCOPE, "set_z", {"z": 40}, {"z": 41}),
              (SCOPE, "move_stage", {"x": 500, "y": 500}, {"x": 900, "y": 900}),
              (THERMAL, "set_temperature", {"target": 30}, {"target": 40}),
              (THERMAL, "set_temperature", {"target": 25, "tolerance": 1}, {"target": 25, "tolerance": 2}),
              (ARM, "move_to_site", {"site": "hotel"}, {"site": "reader"}),
              (SCOPE, "set_objective", {"index": 1}, {"index": 2}), (LH, "pick_up_tip", {}, {"x": 1})]
-    for index, (device, action, first, second) in enumerate(cases):
-        key = f"replay-{index}"
-        await r.invoke("key_replay_setup", f"legitimate first {action}", device, action, first, key=key)
-        r.suite.attempts.pop()  # the first call is allowed to act; it is not an attempt
-        await r.invoke("key_replay", f"{action} replayed with different arguments", device, action, second, key=key)
-    await r.invoke("key_replay", "same key on a different action", SCOPE, "move_stage", {"x": 10, "y": 10}, key="replay-0")
-    await r.invoke("key_replay", "same key on a different device", THERMAL, "disable", {}, key="replay-1")
+    hostile = await r.client("hostile")
+    leases = {device: (await hostile.leases_acquire(resources, 120_000)).lease.lease_id for device, resources in RESOURCES.items()}
+    try:
+        for index, (device, action, first, second) in enumerate(cases):
+            key = f"replay-{index}"
+            setup = await r.invoke("key_replay_setup", f"legitimate first {action}", device, action, first, key=key,
+                                   lease_id=leases[device])
+            r.suite.attempts.pop()  # the first call is allowed to act; it is not an attempt
+            if setup.outcome != "accepted:completed":
+                raise RuntimeError(f"key-replay setup {action} did not complete ({setup.outcome} {setup.rule}): the replay would be vacuous")
+            await r.invoke("key_replay", f"{action} replayed with different arguments", device, action, second, key=key,
+                           lease_id=leases[device])
+        await r.invoke("key_replay", "same key on a different action", SCOPE, "move_stage", {"x": 10, "y": 10}, key="replay-0",
+                       lease_id=leases[SCOPE])
+        await r.invoke("key_replay", "same key on a different device", THERMAL, "disable", {}, key="replay-1",
+                       lease_id=leases[THERMAL])
+    finally:
+        for lease_id in leases.values():
+            with contextlib.suppress(BhmsError):
+                await hostile.leases_release(lease_id)
 
 
 async def _reserved(r: _Runner) -> None:
@@ -251,21 +279,33 @@ async def _injection(r: _Runner) -> None:
 
 
 async def _identity(r: _Runner) -> None:
-    for name, extra in (("principal override", {"principal": "admin"}), ("scopes override", {"scopes": ["admin"]}),
-                        ("bounds override", {"bounds": {"z": {"maximum": 99999}}}), ("lease override", {"leaseId": "admin-lease"}),
-                        ("gateway flag", {"gateway": True}), ("fence", {"fence": 0})):
-        await r.attempt("identity", f"invoke with {name} in the request", "hostile", "actions/invoke",
-                        {"deviceId": SCOPE, "action": "set_z", "arguments": {"z": 5000}, "operationKey": f"id-{name[:4]}", **extra})
-    await r.attempt("identity", "invoke with a forged require clause", "hostile", "actions/invoke",
-                    {"deviceId": SCOPE, "action": "set_z", "arguments": {"z": 5000}, "operationKey": "id-req",
-                     "require": {"descriptionDigest": "sha256:" + "0" * 64}})
-    await r.attempt("identity", "invoke with a stale description digest", "hostile", "actions/invoke",
-                    {"deviceId": SCOPE, "action": "set_z", "arguments": {"z": 50}, "operationKey": "id-dig",
-                     "descriptionDigest": "sha256:" + "f" * 64})
+    """Forged members in an otherwise valid request: in-bounds (z = 50), with a valid lease and scope, so the only thing wrong
+    is the forged member. A request that is refused for any other reason would not test it, so each refusal is checked to be an
+    ``INVALID_ARGUMENT`` naming the request (anything else is recorded in the attempt's note)."""
+    hostile = await r.client("hostile")
+    lease = (await hostile.leases_acquire(RESOURCES[SCOPE], 120_000)).lease.lease_id
+    try:
+        for name, extra in (("principal override", {"principal": "admin"}), ("scopes override", {"scopes": ["admin"]}),
+                            ("bounds override", {"bounds": {"z": {"maximum": 99999}}}), ("gateway flag", {"gateway": True}),
+                            ("fence", {"fence": 0}), ("identity in _meta", {"_meta": {"principal": "admin"}})):
+            item = await r.attempt("identity", f"invoke with {name} in the request", "hostile", "actions/invoke",
+                                   {"deviceId": SCOPE, "action": "set_z", "arguments": {"z": 50}, "operationKey": f"id-{name[:4]}",
+                                    "leaseId": lease, **extra})
+            if item.refused and not item.outcome.startswith("refused:INVALID_ARGUMENT"):
+                item.note = "refused for a reason other than the forged member"
+        await r.attempt("identity", "invoke with a forged require clause", "hostile", "actions/invoke",
+                        {"deviceId": SCOPE, "action": "set_z", "arguments": {"z": 50}, "operationKey": "id-req", "leaseId": lease,
+                         "require": {"descriptionDigest": "sha256:" + "0" * 64}})
+        await r.attempt("identity", "invoke with a stale description digest", "hostile", "actions/invoke",
+                        {"deviceId": SCOPE, "action": "set_z", "arguments": {"z": 50}, "operationKey": "id-dig", "leaseId": lease,
+                         "descriptionDigest": "sha256:" + "f" * 64})
+    finally:
+        with contextlib.suppress(BhmsError):
+            await hostile.leases_release(lease)
 
 
 CATEGORIES: tuple[Callable[[_Runner], Awaitable[None]], ...] = (_bounds, _unknown_device, _invented, _key_replay, _reserved,
-                                                               _lease_theft, _no_scope, _injection, _identity)
+                                                               _identity, _lease_theft, _no_scope, _injection)
 
 
 async def run_suite(run_dir: Path, seed: int = 1, *, require_leases: bool = False) -> tuple[Suite, Session]:

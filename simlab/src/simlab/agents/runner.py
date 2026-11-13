@@ -24,6 +24,7 @@ import json
 import os
 import sys
 import time
+from types import SimpleNamespace
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 from typing import Any
@@ -105,11 +106,42 @@ class SpendLedger:
             handle.write(f"{label}\t{tokens}\n")
 
 
-def _llm_client(agent: str) -> Any:
+class _Endpoint:
+    def __init__(self, meter: MeteredLLM, call: Any) -> None:
+        self._meter, self._call = meter, call
+
+    async def create(self, **kwargs: Any) -> Any:
+        response = await self._call(**kwargs)
+        self._meter.add(response)
+        return response
+
+
+class MeteredLLM:
+    """The OpenAI SDK client behind ``run_agent`` with a token meter: every response's usage is added to ``tokens`` as it arrives,
+    so a run that times out, is cancelled or raises still has its spend recorded (the ledger is written from ``tokens`` in a
+    ``finally``, not from the finished ``AgentRun``)."""
+
+    def __init__(self, inner: Any) -> None:
+        self.inner, self.tokens = inner, 0
+        self.responses = _Endpoint(self, inner.responses.create)
+        self.chat = SimpleNamespace(completions=_Endpoint(self, inner.chat.completions.create))
+
+    def add(self, response: Any) -> None:
+        usage = getattr(response, "usage", None) or {}
+        get = (lambda k: usage.get(k)) if isinstance(usage, dict) else (lambda k: getattr(usage, k, None))
+        self.tokens += int(get("input_tokens") or get("prompt_tokens") or 0) + int(get("output_tokens") or get("completion_tokens") or 0)
+
+    async def close(self) -> None:
+        await self.inner.close()
+
+
+def _llm_client(agent: str) -> MeteredLLM:
     from openai import AsyncOpenAI
+
+    from bhms.bridges.openai_tools import load_api_key
     if agent == "local":
-        return AsyncOpenAI(base_url=os.environ.get("SIMLAB_LOCAL_URL", LOCAL_URL), api_key="local", timeout=600.0)
-    return None  # run_agent builds its own from the key file
+        return MeteredLLM(AsyncOpenAI(base_url=os.environ.get("SIMLAB_LOCAL_URL", LOCAL_URL), api_key="local", timeout=600.0))
+    return MeteredLLM(AsyncOpenAI(api_key=load_api_key()))  # the key goes to the SDK client only
 
 
 async def run_task(task: Task, agent: str, seed: int, out: Path, *, ledger: SpendLedger | None = None,
@@ -132,15 +164,28 @@ async def run_task(task: Task, agent: str, seed: int, out: Path, *, ledger: Spen
             await prepare_facility(session, task, ha)
         mark = session.effect_mark()
         lossy = any(f["kind"] == "reply_loss" for f in task.faults)
-        trace = TracingClient(await session.connect("agent", lossy=lossy))
+        resilient = None
+        if agent == "scripted" and any(f["kind"] in ("reply_loss", "power_loss") for f in task.faults):
+            from simlab.agents.drills import ResilientClient  # an agent runtime that retries by key and waits for reconciliation
+            resilient = ResilientClient(session, [])
+            await resilient.connect()
+            trace = resilient.client
+        else:
+            trace = TracingClient(await session.connect("agent", lossy=lossy))
         hub = asyncio.create_task(_hub_loss(session, task)) if task.params.get("hub_loss_at_s") else None
         try:
             limit = float(task.params.get("agent_timeout_s", 120.0 if agent == "scripted" else 900.0))
             try:
                 if agent == "scripted":
-                    final = await asyncio.wait_for(baseline.SCRIPTS[task.scripted](session, trace, task, seed), limit)
+                    final = await asyncio.wait_for(baseline.SCRIPTS[task.scripted](session, resilient or trace, task, seed), limit)
                 else:
-                    run = await asyncio.wait_for(_run_llm(task, agent, seed, trace, ledger, budget), limit)
+                    llm = _llm_client(agent)
+                    try:
+                        run = await asyncio.wait_for(_run_llm(task, agent, seed, trace, ledger, budget, llm), limit)
+                    finally:  # spend is recorded even when the run times out or raises
+                        if ledger is not None and agent != "local":
+                            ledger.add(f"{task.id}/{agent}/seed{seed}", llm.tokens)
+                        await llm.close()
                     final = parse_final(run.final_text)
             except asyncio.TimeoutError:
                 final = Final("unknown", {"detail": f"the agent did not finish in {limit:.0f} s"})
@@ -167,8 +212,6 @@ async def run_task(task: Task, agent: str, seed: int, out: Path, *, ledger: Spen
             {"success": outcome.success, **outcome.detail}, metrics.detail,
             [{**asdict(j), "verdict": j.verdict.value, "principal": who} for j, who in judged],
             [asdict(s) for s in run.steps] if run else [])
-    if run is not None and ledger is not None and agent != "local":
-        ledger.add(f"{task.id}/{agent}/seed{seed}", run.tokens)
     (run_dir.parent / f"seed{seed}.json").write_text(json.dumps(asdict(record), indent=1, default=str))
     return record
 
@@ -187,22 +230,20 @@ async def bench_note(client: Any) -> str:
     return " The devices on this bench are: " + ", ".join(sorted(ids)) + " (bhms_find with no text lists them)."
 
 
-async def _run_llm(task: Task, agent: str, seed: int, client: Any, ledger: SpendLedger | None, budget: int | None) -> Any:
+async def _run_llm(task: Task, agent: str, seed: int, client: Any, ledger: SpendLedger | None, budget: int | None,
+                   llm: MeteredLLM) -> Any:
     cap = budget or task.budget_tokens
     if agent != "local" and ledger is not None:
         cap = min(cap, ledger.remaining())
         if cap < 5_000:
             raise RuntimeError(f"the spend cap is reached ({ledger.spent()} of {ledger.cap} tokens)")
     bridge = AgentBridge(client)
-    llm = _llm_client(agent)
     try:
         prompt = task.full_prompt(seed) + await bench_note(client)
         return await run_agent(bridge, agent if agent != "local" else "qwen3-4b-instruct-2507", prompt, cap,
                                api=APIS[agent], llm=llm, max_steps=task.max_steps, max_output_tokens=4000)
     finally:
         await bridge.aclose()
-        if llm is not None:
-            await llm.close()
 
 
 def summary_line(r: RunRecord) -> str:

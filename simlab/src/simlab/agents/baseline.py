@@ -26,6 +26,13 @@ FRESH_FRAME_S = 0.05  # a fresh frame is dated by the camera at capture; scripte
 FINE_UM_PER_REV = 100.0  # the scope's documented fine-focus travel per revolution
 
 
+def _status_of(failure: str) -> str:
+    """``unknown`` when the step that stopped the script ended with an operation whose outcome is unknown (the runtime says so in
+    the failure text: ``<step>: unknown: ...``), ``failed`` otherwise: a script must not call an unresolved operation a plain
+    failure (that would be silent ambiguity)."""
+    return "unknown" if ": unknown:" in failure else "failed"
+
+
 def device_ids(task: Task) -> tuple[str, str, str, str]:
     """Arm, scope, handler and reader ids as the gateway serves them (separate servers, or one ``cell`` server)."""
     if "cell" in task.devices:
@@ -45,7 +52,7 @@ async def script_uc1(session: Any, client: Client, task: Task, seed: int) -> Fin
             frames.append((await scope.snap()).frame_id)
         return Final("done", {"plane_um": focus.z_um, "frames": frames, "detail": "coarse then fine sweep"})
     except StepFailed as exc:
-        return Final("failed", {"detail": str(exc)})
+        return Final(_status_of(str(exc)), {"detail": str(exc)})
 
 
 async def script_uc2(session: Any, client: Client, task: Task, seed: int) -> Final:
@@ -109,14 +116,14 @@ async def script_uc3(session: Any, client: Client, task: Task, seed: int) -> Fin
         z = await settle(best)
         return Final("done", {"plane_um": z, "slip_detected": slip, "detail": "fine-knob sweep with encoder feedback"})
     except StepFailed as exc:
-        return Final("failed", {"detail": str(exc), "slip_detected": slip})
+        return Final(_status_of(str(exc)), {"detail": str(exc), "slip_detected": slip})
 
 
 async def script_uc4(session: Any, client: Client, task: Task, seed: int) -> Final:
     report = await load_and_image(BhmsArm(client, ARM), BhmsScope(client, SCOPE))
     if report.status == "ok":
         return Final("done", {"frames": report.frames, "detail": "slide loaded, imaged, returned"})
-    return Final("failed", {"detail": f"{report.status}: {report.detail}"})
+    return Final(_status_of(report.detail), {"detail": f"{report.status}: {report.detail}"})
 
 
 async def script_uc5(session: Any, client: Client, task: Task, seed: int) -> Final:
@@ -143,7 +150,7 @@ async def script_uc5(session: Any, client: Client, task: Task, seed: int) -> Fin
         wells = [f"A{c}" for c in range(1, 7)]
         read = (await reader.invoke("read_absorbance", {"wavelength": 560, "wells": wells})).result
     except StepFailed as exc:
-        return Final("failed", {"detail": str(exc)})
+        return Final(_status_of(str(exc)), {"detail": str(exc)})
     volumes = [100.0] * 5 + [200.0]
     eps = extinction("dye", 560.0)
     conc = [round(max(0.0, (a - BLANK_A) / (eps * v * 1e-3 / WELL_AREA_CM2)), 4)
@@ -169,7 +176,7 @@ async def script_uc7(session: Any, client: Client, task: Task, seed: int) -> Fin
             except StepFailed as exc:
                 gaps.append({"index": index, "reason": str(exc)[:80]})
     except StepFailed as exc:
-        return Final("failed", {"frames": frames, "gaps": gaps or [{"reason": str(exc)[:80]}], "detail": str(exc)})
+        return Final(_status_of(str(exc)), {"frames": frames, "gaps": gaps or [{"reason": str(exc)[:80]}], "detail": str(exc)})
     return Final("done" if not gaps else "failed", {"frames": frames, "gaps": gaps, "detail": "timed imaging under a held band"})
 
 
@@ -240,4 +247,4 @@ async def script_adv(session: Any, client: Client, task: Task, seed: int) -> Fin
 
 
 SCRIPTS: dict[str, Any] = {"adv": script_adv, "uc11": script_uc11, "uc1": script_uc1, "uc2": script_uc2, "uc3": script_uc3, "uc4": script_uc4, "uc5": script_uc5,
-                           "uc7": script_uc7, "uc10": script_uc4}
+                           "uc7": script_uc7}

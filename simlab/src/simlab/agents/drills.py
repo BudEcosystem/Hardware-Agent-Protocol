@@ -14,10 +14,13 @@ a motion is caught mid-way):
 
 ``power_cut``    the device loses power (F3) and gets it back 3 s later;
 ``partition``    the reply of the operation is lost after the effect happened (F2/F16: the agent must re-ask by key);
-``runtime_kill`` the gateway is killed and restarted on its state directory (F4); the agent must reconnect and re-ask;
+``runtime_kill`` the gateway is closed (``Gateway.close()``, a *graceful* shutdown, not SIGKILL) and a new one started on the same
+                state directory (F4): it settles what was in flight as ``unknown`` and reconciles; the agent must reconnect and re-ask;
 ``hand_move``    a person takes the plate or slide away (F9/F14).
 
-The agent under drill is the deterministic baseline script behind ``ResilientClient``, which does what the agent bridge does for
+Silent ambiguity is measured from the operation records and the agent's own final status (``metrics._ambiguity``); the harness
+no longer rewrites an unresolved status to ``unknown`` (the baseline scripts say ``unknown`` themselves when the failing
+operation was unknown). The agent under drill is the deterministic baseline script behind ``ResilientClient``, which does what the agent bridge does for
 a model: a key on every invoke, the same key on every retry, reconnect after a lost link, a bounded wait for an ``unknown``
 operation to be reconciled, and a stop (never a blind second attempt) when it stays unknown or the effect is partial.
 
@@ -69,23 +72,29 @@ class ResilientClient:
     async def actions_invoke(self, device_id: str, action: str, arguments: dict[str, Any], **kw: Any) -> Any:
         key = f"drill-{uuid.uuid4().hex[:16]}"
         kw.pop("operation_key", None)
-        for attempt in range(5):
+        unavailable = 0
+        for attempt in range(40):  # five real attempts plus however many times the device was unavailable
             try:
                 result = await asyncio.wait_for(self.client.actions_invoke(device_id, action, arguments, operation_key=key, **kw), 60)
             except (TimeoutError, asyncio.TimeoutError, TransportClosed, ConnectionError, OSError):
-                if attempt == 4:
+                if attempt >= 4 + unavailable:
                     raise
                 await self._reconnect()
                 continue  # the same key: the runtime answers with the operation it already has (BHMS-OPS-030)
             except BhmsError as exc:
-                if exc.code in ("BUSY", "STALE") and attempt < 4:
+                if exc.code in ("BUSY", "STALE") and attempt < 4 + unavailable:
                     await asyncio.sleep(0.3)
+                    continue
+                if exc.code == "DEVICE_UNAVAILABLE" and not exc.may_have_acted and unavailable < 30:
+                    unavailable += 1  # nothing happened (the refusal proves it): wait for the device, then ask again, same key
+                    await asyncio.sleep(0.5)
                     continue
                 raise
             op = result.operation
             deadline = time.monotonic() + RECONCILE_WAIT_S
             while op.state in ("unknown", "dispatching", "running", "admitted", "queued") and time.monotonic() < deadline:
                 try:
+                    await asyncio.sleep(0.25)  # an unknown operation is "settled" for operations/wait: do not spin on it
                     op = (await asyncio.wait_for(self.client.operations_wait(op.operation_id, 2000), 10)).operation
                 except (TimeoutError, asyncio.TimeoutError, TransportClosed, ConnectionError, OSError):
                     await self._reconnect()
@@ -150,6 +159,14 @@ def _install(session: Session, kind: str, step: int, fired: dict[str, Any]) -> N
     world.on_effect(on_effect)
 
 
+async def _time_passes(world: Any) -> None:
+    """In a stepped world time only moves while a device works, so a power cut that "ends after 3 s" would never end while the
+    agent waits. Real time keeps passing: advance the world 0.5 s every 0.2 s of wall time while a drill runs."""
+    while True:
+        await asyncio.sleep(0.2)
+        await world.advance(0.5)
+
+
 def _clear_later(world: Any, fault_id: str, at: float) -> None:
     """Restore the fault's cause (power) once the world clock passes ``at``."""
     handle: dict[str, int] = {}
@@ -173,12 +190,13 @@ async def run_drill(flow: str, kind: str, step: int, out: Path, seed: int = 1) -
         client = ResilientClient(session, [])
         await client.connect()
         _install(session, kind, step, fired)
+        passing = asyncio.create_task(_time_passes(lab.world)) if kind == "power_cut" else None
         try:
             final = await asyncio.wait_for(baseline.SCRIPTS[task.scripted](session, client, task, seed), 180)
         except (asyncio.TimeoutError, TimeoutError, BhmsError, TransportClosed, ConnectionError, OSError) as exc:
             final = Final("unknown", {"detail": f"{type(exc).__name__}: {str(exc)[:120]}"})
-        if client.unresolved and final.status in ("done", "failed"):
-            final = Final("unknown", {**final.data, "detail": f"unresolved: {client.unresolved[0]}"})
+        if passing is not None:
+            passing.cancel()
         outcome = CHECKS[task.check](lab, session, task, final)
         metrics = compute(session, task, final, outcome, client.client, mark)
         zero_ok = not any(metrics.zero.values())

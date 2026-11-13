@@ -148,13 +148,12 @@ async def run_pat(task: Task, agent: str, seed: int, out: Path, *, ledger: Spend
                 run = await run_agent(bridge, agent if agent != "local" else "qwen3-4b-instruct-2507", prompt + PROTOCOL + await bench_note(client), cap,
                                       api=APIS[agent], llm=llm, max_steps=task.max_steps, max_output_tokens=4000)
             finally:
-                if llm is not None:
-                    await llm.close()
+                if ledger is not None and agent != "local":
+                    ledger.add(f"{task.id}/{agent}/seed{seed}/{label}", llm.tokens)  # recorded even if the phase raises
+                await llm.close()
             for key, value in (("input", run.input_tokens), ("output", run.output_tokens), ("requests", run.requests),
                                ("steps", len(run.steps))):
                 llm_tokens[key] += value
-            if ledger is not None and agent != "local":
-                ledger.add(f"{task.id}/{agent}/seed{seed}/{label}", run.tokens)
             phases.append({"phase": label, "model_calls": run.requests, "tool_calls": len(run.steps), "tokens": run.tokens,
                            "stopped": run.stopped})
             return parse_final(run.final_text)
