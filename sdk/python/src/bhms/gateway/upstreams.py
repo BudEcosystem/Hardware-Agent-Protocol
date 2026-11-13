@@ -124,6 +124,9 @@ class Upstream:
         client, self.client = self.client, None
         if client is not None:
             await client.close()
+        closer = getattr(self.cfg.connector, "aclose", None)  # a connector that owns something (a compact bridge's link)
+        if closer is not None:
+            await closer()
         while not self._queue.empty():
             self._queue.get_nowait().future.cancel()
 

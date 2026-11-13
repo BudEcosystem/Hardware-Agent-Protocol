@@ -175,6 +175,7 @@ class CompactBridge:
         self.digest8 = cp.digest8_of(self.sidecar)
         self.device_id: str = self.sidecar["deviceId"]
         self.prefix = f"compact/{self.device_id}/"
+        self.state_dir = Path(state_dir) if state_dir is not None else None
         options: dict[str, Any] = {"state_dir": state_dir} if state_dir is not None else {"store": None}
         self.server = DeviceServer(f"compact-{name}", policy=gateway_policy(), programs=False, **options)
         self.device: Device | None = None
@@ -207,6 +208,8 @@ class CompactBridge:
         if self._started:
             return
         self._started = True
+        if self.state_dir is not None:
+            self.state_dir.mkdir(parents=True, exist_ok=True)
         await self.server.start()
         self.server.journal.on_settled.append(self._settled)
         self._runner = asyncio.get_running_loop().create_task(self._run(), name=f"bhms-compact-{self.name}")
@@ -938,4 +941,36 @@ class CompactUpstream:
         await self.bridge.close()
 
 
-__all__ = ["CompactBridge", "CompactUpstream", "Info", "LinkEvent", "OutcomeUnknown", "Timing", "advanced", "gateway_policy"]
+_TIMING_KEYS = {"reply_timeout_ms": "reply", "poll_interval_ms": "poll", "probe_interval_ms": "probe",
+                "hello_timeout_ms": "hello", "stop_confirm_ms": "stop_confirm"}
+COMPACT_KEYS = frozenset({"type", "port", "baud", "sidecar", "retries", "probe_misses", *_TIMING_KEYS})
+
+
+def upstream_from_config(name: str, entry: dict[str, Any], base: Path, state_dir: Path) -> CompactUpstream:
+    """The connector of an ``[[upstream]]`` with ``type = "compact"`` (see :mod:`bhms.gateway.config`). Raises ``ValueError``
+    naming the key at fault."""
+    where = f"upstream {name!r}"
+    for key in ("port", "sidecar"):
+        if not isinstance(entry.get(key), str) or not entry[key]:
+            raise ValueError(f"{where}: type = \"compact\" needs {key} (a string)")
+    for key in ("stdio", "url", "token_env", "token_file", "env"):
+        if key in entry:
+            raise ValueError(f"{where}: {key} does not apply to type = \"compact\" (the device is reached through port)")
+    timing: dict[str, Any] = {attr: float(entry[key]) / 1000 for key, attr in _TIMING_KEYS.items() if key in entry}
+    for key in ("retries", "probe_misses"):
+        if key in entry:
+            timing[key] = int(entry[key])
+    port = entry["port"]
+    if port.startswith("unix:") and not port[5:].startswith(("/", "//")):
+        port = f"unix:{base / port[5:]}"
+    sidecar = Path(entry["sidecar"]).expanduser()
+    sidecar = sidecar if sidecar.is_absolute() else base / sidecar
+    try:
+        bridge = CompactBridge(name, port, sidecar, baud=int(entry.get("baud", 115200)), state_dir=state_dir / "compact",
+                               timing=Timing(**timing))
+    except (OSError, ValueError, KeyError) as exc:
+        raise ValueError(f"{where}: sidecar {sidecar}: {exc}") from None
+    return CompactUpstream(bridge)
+
+
+__all__ = ["COMPACT_KEYS", "CompactBridge", "CompactUpstream", "upstream_from_config", "Info", "LinkEvent", "OutcomeUnknown", "Timing", "advanced", "gateway_policy"]

@@ -249,6 +249,17 @@ class Wire:
         for direction in list(self._held):
             self.release(direction)
 
+    @staticmethod
+    def frame_for(message: Any, session: int, *, channel: int = cp.CHANNEL, kind: int = cp.CONTROL, sequence: int = 0) -> bytes:
+        """The wire bytes of ``message`` in an ``HM`` frame (for :meth:`inject`: a frame nobody on the line sent)."""
+        payload = message if isinstance(message, bytes) else message.encode()
+        return hm_frame.encode(hm_frame.Frame(kind, channel, session, sequence, payload))
+
+    def inject(self, direction: str, data: bytes) -> None:
+        """Put raw bytes on the line toward ``direction`` (line noise, a foreign frame): neither side's parser may be
+        confused by them."""
+        self._write(direction, data)
+
     async def sever(self) -> None:
         """Pull the cable on the gateway side: the bridge sees end of stream and reconnects."""
         self._connected.clear()

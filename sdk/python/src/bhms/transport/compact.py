@@ -774,7 +774,8 @@ def _frame_module() -> Any:
 
 
 class CompactLink:
-    """Frames and unframes compact payloads over a :class:`ByteStream`.
+    """Frames and unframes compact payloads over a :class:`ByteStream` (``role="endpoint"`` plays the MCU: it receives
+    control frames and gateway messages, for scripted test endpoints).
 
     ``send`` encodes with ``protocol/serial/frame.py`` and writes at once (it never waits, so a STOP is on the wire before
     anything queued behind it could be). Received bytes go through the reused ``Decoder``; a frame is delivered only when
@@ -783,7 +784,10 @@ class CompactLink:
     next flag to resynchronise. ``tx_seq`` is the per-direction diagnostic counter (reset it on a new epoch).
     """
 
-    def __init__(self, stream: ByteStream, *, max_pending: int = 1024) -> None:
+    def __init__(self, stream: ByteStream, *, max_pending: int = 1024, role: str = "gateway") -> None:
+        if role not in ("gateway", "endpoint"):
+            raise ValueError("role is gateway or endpoint")
+        self.role = role
         self.stream = stream
         self.frame = _frame_module()
         self.decoder = self.frame.Decoder()
@@ -863,7 +867,8 @@ class CompactLink:
         if frame.channel != CHANNEL:
             self.stats["other-channel"] += 1
             return
-        if frame.kind not in (STATUS_KIND, TELEMETRY):
+        kinds = (STATUS_KIND, TELEMETRY) if self.role == "gateway" else (CONTROL,)
+        if frame.kind not in kinds:
             self.stats["wrong-kind"] += 1
             return
         try:
@@ -871,7 +876,8 @@ class CompactLink:
         except CompactError:
             self.stats["malformed"] += 1
             return
-        if message.__class__ in (HelloReq, Invoke, Cancel, Read, Stop, Query):
+        from_gateway = message.__class__ in (HelloReq, Invoke, Cancel, Read, Stop, Query)
+        if from_gateway != (self.role == "endpoint"):
             self.stats["wrong-direction"] += 1
             return
         self.stats["rx"] += 1

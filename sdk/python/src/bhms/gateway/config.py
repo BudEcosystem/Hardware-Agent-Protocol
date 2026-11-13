@@ -15,10 +15,21 @@ key it concerns, never at the first request::
     # url = "unix:/run/pump.sock"      # or connect to a running server (ws://host:port needs token_env)
     # token_env = "PUMP_TOKEN"
 
+    [[upstream]]                       # a microcontroller speaking BHMS-Compact over serial (spec 11), served by a bridge
+    name = "arm"
+    type = "compact"
+    port = "/dev/ttyACM0"              # or pty:/dev/pts/N, unix:<path>, tcp://host:port
+    baud = 115200
+    sidecar = "arm.sidecar.json"       # the full DeviceDescription with compact layouts; its digest must match the board's HELLO
+    # reply_timeout_ms, retries, poll_interval_ms, probe_interval_ms, hello_timeout_ms: link timing (see compact_bridge)
+
     [principals.lab-agent]             # GatewayPolicy: tokens are sha256 digests, never plaintext (BHMS-SEC-002)
     tokens = ["sha256:<hex of the token>"]
     scopes = ["read", "lease", "invoke:bench/*/*"]   # <deviceGlob>/<actionGlob>, split at the last "/"
     bounds = {"bench/stage-z/move_to" = {target = {maximum = 100}}}
+
+A ``type = "compact"`` upstream is a :class:`~bhms.gateway.compact_bridge.CompactBridge` in the gateway's process (its journal is
+``<state_dir>/compact/<name>.sqlite3``); see ``examples/bhms/compact-gateway.toml``.
 
 Every ``[gateway]`` key has a default; see :class:`GatewayConfig`. :func:`load_config` reads a file,
 :meth:`GatewayConfig.from_dict` an already-parsed table (tests, embedding).
@@ -160,7 +171,7 @@ class GatewayConfig:
         if "listen" in section:
             section["listen"] = tuple(_listen(item, base) for item in section["listen"])
         timeout = int(section.get("upstream_timeout_ms", 10_000))
-        upstreams = tuple(_upstream(entry, base, timeout) for entry in document.get("upstream", []))
+        upstreams = tuple(_upstream(entry, base, timeout, section["state_dir"]) for entry in document.get("upstream", []))
         return cls(upstreams=upstreams, principals=dict(document.get("principals", {})), source=source, **section)
 
 
@@ -182,14 +193,27 @@ def _expand(text: str, base: Path, *, quote: bool = True) -> str:
     return text.replace("{python}", wrap(sys.executable)).replace("{config_dir}", wrap(str(base)))
 
 
-def _upstream(entry: dict[str, Any], base: Path, default_timeout_ms: int) -> UpstreamConfig:
+def _upstream(entry: dict[str, Any], base: Path, default_timeout_ms: int, state_dir: Path) -> UpstreamConfig:
     entry = {"timeout_ms": default_timeout_ms, **entry}
     where = f"upstream {entry.get('name', '?')!r}"
     known = {"name", "stdio", "url", "token_env", "token_file", "timeout_ms", "queue_size", "max_inflight",
              "health_interval_ms", "health_timeout_ms", "env", "cwd"}
+    if "type" in entry:
+        from bhms.gateway.compact_bridge import COMPACT_KEYS, upstream_from_config
+
+        if entry["type"] != "compact":
+            raise ConfigError(f"{where}: type must be \"compact\" (stdio and url upstreams need no type), got {entry['type']!r}")
+        known |= COMPACT_KEYS
     bad = set(entry) - known
     if bad:
         raise ConfigError(f"{where}: unknown key(s) {sorted(bad)}; known: {sorted(known)}")
+    if entry.get("type") == "compact":
+        try:
+            connector = upstream_from_config(entry.get("name", "?"), entry, base, state_dir)
+        except ValueError as exc:
+            raise ConfigError(str(exc)) from None
+        common = {k: v for k, v in entry.items() if k in known - COMPACT_KEYS - {"stdio", "url", "token_env", "token_file", "env"}}
+        return UpstreamConfig(connector=connector, **common)
     token = None
     if "token_env" in entry:
         token = os.environ.get(entry.pop("token_env"))
