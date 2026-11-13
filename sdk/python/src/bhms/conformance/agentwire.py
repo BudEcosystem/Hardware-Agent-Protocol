@@ -118,6 +118,10 @@ class AgentWire:
         except asyncio.TimeoutError:
             self.process.kill()
             await self.process.wait()
+        transport = getattr(self.process, "_transport", None)
+        if transport is not None:
+            with contextlib.suppress(Exception):
+                transport.close()
         if self._reader is not None:
             self._reader.cancel()
             with contextlib.suppress(asyncio.CancelledError, Exception):

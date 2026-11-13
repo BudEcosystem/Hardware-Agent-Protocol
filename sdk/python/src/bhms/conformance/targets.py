@@ -43,6 +43,15 @@ BUILTINS = ("conformance-device", "conformance-device:stdio", "conformance-devic
             "gateway", "gateway:stdio", "gateway:http", "agent-bridge", "mcp:<bridge command>")
 
 
+def _release(process: asyncio.subprocess.Process) -> None:
+    """Close the event loop's transport of a finished child so that no ResourceWarning outlives the run (a killed child's
+    transport is otherwise left to the garbage collector)."""
+    transport = getattr(process, "_transport", None)
+    if transport is not None:
+        with contextlib.suppress(Exception):
+            transport.close()
+
+
 class TargetError(Exception):
     """The target cannot be resolved or started (printed as a message, never a traceback)."""
 
@@ -232,6 +241,7 @@ class Target:
         if kill and process is not None and process.returncode is None:
             process.kill()
             await process.wait()
+            _release(process)
         with contextlib.suppress(Exception):
             await base.close()
         self._base = None
@@ -249,6 +259,7 @@ class Target:
         except asyncio.TimeoutError:
             process.kill()
             await process.wait()
+        _release(process)
 
     def server_pid(self) -> int | None:
         """The process id of the server the runner started (None when it did not start it)."""
