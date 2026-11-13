@@ -57,6 +57,15 @@ def _multiple_of(validator: Any, divisor: Any, instance: Any, schema: dict[str, 
 _Validator = validators.extend(Draft202012Validator, {"multipleOf": _multiple_of})
 
 
+def compile_schema(schema: dict[str, Any] | bool) -> Draft202012Validator:
+    """A validator for an embedded JSON Schema (an action ``input``/``output``, a property ``schema``).
+
+    Uses the same DEV-071 ``multipleOf`` tolerance as the message validators. The schema is used as given; callers
+    check BHMS-DEV-040/041 rules separately (``bhms.server.validation.check_units``).
+    """
+    return _Validator(schema)
+
+
 @lru_cache(maxsize=None)
 def validator(def_name: str) -> Draft202012Validator:
     """Cached validator for ``$defs/<def_name>`` (KeyError if the definition does not exist)."""
