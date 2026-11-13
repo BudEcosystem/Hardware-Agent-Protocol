@@ -25,7 +25,7 @@ def scope_lab(seed: int = 1, *, with_slide_on_stage: bool = True, specimen_z_um:
 
 def inject_drop_during_next_carry(world: World, delay_s: float = 0.3) -> str:
     """Arm a drop of the plate that fires ``delay_s`` into the next move made while the plate is in the gripper."""
-    return world.faults.inject(Fault("plate", "drop_object", OnEvent("move_started", "arm"),
+    return world.faults.inject(Fault("plate", "drop_object", OnEvent("move_started"),
                                      {"require_location": "in_gripper", "delay_s": delay_s}))
 
 

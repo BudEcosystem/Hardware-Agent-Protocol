@@ -20,10 +20,15 @@ import hashlib
 import math
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
+from bhms.server.context import DeviceFault
+from bhms.server.decorators import Range
+from bhms.server.server import DeviceServer
 from simlab import imaging
+from simlab.simdevice import PowerLost, TwinHost, make_server
 from simlab.world import World
 
 STAGE_SITE = "microscope_stage"
@@ -69,6 +74,7 @@ class Frame:
     specimen_present: bool
     stale: bool
     sharpness: float
+    captured_s: float
 
 
 class FrameStore:
@@ -164,8 +170,9 @@ class MicroscopeTwin:
             raise ValueError(f"z {um} um is outside {lo}..{hi} um")
         now = self.world.time_s
         start = self._z.at(now)
-        duration = abs(um - start) / Z_SPEED_UM_S
-        self._z = Ramp(now, now + duration, start, um)
+        end = um - self._knob_z_um()  # the drive servos the focus axis (encoder after the knobs) to ``um``
+        duration = abs(end - start) / Z_SPEED_UM_S
+        self._z = Ramp(now, now + duration, start, end)
         self.world.record(self.device, "z_move", {"from_um": round(start, 6), "to_um": um}, cause)
         return duration
 
@@ -189,6 +196,12 @@ class MicroscopeTwin:
         self.world.record(self.device, "objective_changed", {"index": index,
                                                              "magnification": imaging.OBJECTIVES[index]}, cause)
         return duration
+
+    def freeze(self) -> None:
+        """Stop every axis where it is now (the stop procedure)."""
+        now = self.world.time_s
+        z, x, y = self._z.at(now), self._x.at(now), self._y.at(now)
+        self._z, self._x, self._y = Ramp(now, now, z, z), Ramp(now, now, x, x), Ramp(now, now, y, y)
 
     def set_z(self, um: float, cause: str | None = None) -> None:
         self.world.step(self.begin_z(um, cause))
@@ -219,7 +232,7 @@ class MicroscopeTwin:
         if faults.active(CAMERA, "stale_camera") and self._last_frame is not None:
             last = self._last_frame
             frame = Frame(frame_id, last.pixels, last.z_um, last.x_um, last.y_um, last.objective, last.exposure_ms,
-                          last.specimen_present, True, last.sharpness)
+                          last.specimen_present, True, last.sharpness, last.captured_s)
         else:
             specimen = self._specimen(slide) if slide else None
             plane = self.specimen_z_um()
@@ -227,7 +240,7 @@ class MicroscopeTwin:
                                           magnification=self.magnification, exposure_ms=exposure_ms,
                                           rng=self.world.rng_for(CAMERA))
             frame = Frame(frame_id, pixels, z, x, y, self.magnification, exposure_ms, slide is not None, False,
-                          imaging.sharpness(pixels))
+                          imaging.sharpness(pixels), self.world.time_s)
             self._last_frame = frame
         self.frames.save(frame)
         self.world.record(self.device, "image_captured", {
@@ -239,3 +252,114 @@ class MicroscopeTwin:
     def snap(self, exposure_ms: float = DEFAULT_EXPOSURE_MS, cause: str | None = None) -> np.ndarray:
         """The pixels of a new frame (see ``capture``)."""
         return self.capture(exposure_ms, cause).pixels
+
+
+# ---------------------------------------------------------------------------------------------------- BHMS server
+
+Z_ENCODER_SIGMA_UM = 0.02
+XY_ENCODER_SIGMA_UM = 0.1
+Z_TOLERANCE_UM = 0.25
+XY_TOLERANCE_UM = 1.0
+
+
+def build_server(world: World, scope: MicroscopeTwin | None = None, *, state_dir: str | Path | None,
+                 durability: str = "process", name: str = "simlab-microscope", device_id: str = "microscope-1",
+                 **kw: Any) -> tuple[DeviceServer, MicroscopeTwin]:
+    """The motorized microscope as a BHMS device server.
+
+    Evidence: ``z_position`` and ``xy_position`` are ``measured`` by encoders on the focus axis and the stage *after*
+    the knobs, so a human turning a knob is visible as a changed reading with no operation behind it (F9); the turret
+    ``objective`` is ``reported``. ``snap`` returns a frame id, intensity statistics, the focus score and the camera's
+    own capture time next to its current time: a frozen camera (F6) keeps returning an old frame, and its capture time
+    betrays it. Frames are saved by the scope's frame store.
+    """
+    scope = scope or MicroscopeTwin(world, device=device_id)
+    srv = make_server(world, name, state_dir=state_dir, durability=durability, title="SimLab microscope", **kw)
+    dev = srv.device(device_id, name="Motorized microscope",
+                     capabilities=["bhms.microscope", "bhms.axis.linear", "bhms.camera"],
+                     resources=[f"{device_id}/focus", f"{device_id}/stage", f"{device_id}/turret"],
+                     tags=["simlab", "microscope"],
+                     description="Upright microscope with motorized focus, XY stage, objective turret and a camera; "
+                                 "images the slide on its stage.",
+                     identity={"manufacturer": "SimLab", "model": "microscope twin", "firmwareVersion": "1"})
+    host = TwinHost(world, dev)
+
+    @dev.property(unit="um", evidence="measured", max_rate_hz=20)
+    def z_position() -> float:
+        """Focus axis position (um) from its encoder, including any manual knob turns."""
+        return host.measure("z", scope.true_z_um(), Z_ENCODER_SIGMA_UM)
+
+    @dev.property(evidence="measured", max_rate_hz=20)
+    def xy_position() -> {"x": "um", "y": "um"}:  # noqa: F821
+        """Stage position (um) from the stage encoders, including any manual knob turns."""
+        x, y = scope.true_xy_um()
+        return {"x": host.measure("x", x, XY_ENCODER_SIGMA_UM), "y": host.measure("y", y, XY_ENCODER_SIGMA_UM)}
+
+    @dev.property(unit="1", evidence="reported")
+    def objective_magnification() -> float:
+        """Magnification of the objective in the optical path."""
+        return float(scope.magnification)
+
+    async def move(ctx, seconds: float, what: str) -> None:
+        """Let a motion run; a cancel or a power cut stops the axes where they are."""
+        try:
+            cancelled = await host.elapse(ctx, seconds)
+        except PowerLost:
+            scope.freeze()
+            raise
+        if cancelled:
+            scope.freeze()
+            raise host.canceled(ctx, f"stopped while moving {what}")
+
+    @dev.action(effect="reversible", idempotency="absolute", completion_evidence="measured",
+                verified_by=["z_position"], cancel="supported", max_duration_ms=10_000, typical_duration_ms=500,
+                resources=[f"{device_id}/focus"])
+    async def set_z(ctx, z: Range(0, 200, unit="um")) -> {"z_um": "um"}:  # noqa: F821
+        """Move the focus axis to an absolute position (um)."""
+        host.begin(ctx)
+        await move(ctx, scope.begin_z(z, cause=ctx.operation_id), "focus")
+        reading = await ctx.verify("z_position", lambda v: abs(v - z) <= Z_TOLERANCE_UM)
+        return host.log.end(ctx.operation_id, {"z_um": round(reading if reading is not None else -1.0, 4)})
+
+    @dev.action(effect="reversible", idempotency="absolute", completion_evidence="measured",
+                verified_by=["xy_position"], cancel="supported", max_duration_ms=10_000, typical_duration_ms=500,
+                resources=[f"{device_id}/stage"])
+    async def move_stage(ctx, x: Range(0, 2047, unit="um"), y: Range(0, 2047, unit="um")) -> {"x_um": "um", "y_um": "um"}:  # noqa: F821
+        """Move the stage to an absolute XY position (um)."""
+        host.begin(ctx)
+        await move(ctx, scope.begin_xy(x, y, cause=ctx.operation_id), "the stage")
+        reading = await ctx.verify("xy_position", lambda v: abs(v["x"] - x) <= XY_TOLERANCE_UM
+                                   and abs(v["y"] - y) <= XY_TOLERANCE_UM)
+        got = reading or {"x": -1.0, "y": -1.0}
+        return host.log.end(ctx.operation_id, {"x_um": round(got["x"], 3), "y_um": round(got["y"], 3)})
+
+    @dev.action(effect="reversible", idempotency="absolute", completion_evidence="reported", cancel="unsupported",
+                max_duration_ms=5000, typical_duration_ms=1000, resources=[f"{device_id}/turret"])
+    async def set_objective(ctx, index: Range(0, 3, unit="1", integer=True)) -> {"magnification": "1"}:  # noqa: F821
+        """Rotate the turret to objective ``index`` (0..3 = 4x, 10x, 20x, 40x)."""
+        host.begin(ctx)
+        await move(ctx, scope.begin_objective(index, cause=ctx.operation_id), "the turret")
+        return host.log.end(ctx.operation_id, {"magnification": float(scope.magnification)})
+
+    @dev.action(effect="none", idempotency="relative", completion_evidence="reported", cancel="unsupported",
+                max_duration_ms=5000, typical_duration_ms=100)
+    async def snap(ctx, exposure_ms: Range(1, 500, unit="ms") = 20) -> {  # noqa: F821
+            "frame_id": str, "mean_counts": "1", "focus_score": "1", "captured_at_s": "s", "device_time_s": "s"}:
+        """Capture a frame and store it. ``captured_at_s`` is the camera's capture time; compare it with
+        ``device_time_s``: a frozen camera returns an old frame."""
+        host.begin(ctx)
+        await move(ctx, exposure_ms / 1000.0, "exposing")
+        try:
+            frame = scope.capture(float(exposure_ms), cause=ctx.operation_id)
+        except CameraUnavailable as exc:
+            raise DeviceFault(str(exc), proof="the camera produced no frame", effect="none") from exc
+        return host.log.end(ctx.operation_id, {
+            "frame_id": frame.frame_id, "mean_counts": round(float(frame.pixels.mean()), 3),
+            "focus_score": round(frame.sharpness, 3), "captured_at_s": round(frame.captured_s, 6),
+            "device_time_s": round(world.time_s, 6)})
+
+    @dev.on_stop(evidence="reported", max_duration_ms=100)
+    async def halt(ctx: Any) -> None:
+        scope.freeze()
+
+    return srv, scope

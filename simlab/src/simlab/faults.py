@@ -30,6 +30,7 @@ Thread-safety: owned by one world.
 from __future__ import annotations
 
 import itertools
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
@@ -72,6 +73,7 @@ class FaultPlane:
         self._ids = itertools.count(1)
         self._pending: dict[str, tuple[Fault, float | None]] = {}  # id -> (fault, fire time once triggered)
         self._active: dict[str, Fault] = {}
+        self._listeners: list[Callable[[str, Fault], None]] = []
 
     def inject(self, fault: Fault) -> str:
         """Arm a fault; returns its id."""
@@ -85,12 +87,21 @@ class FaultPlane:
 
     def clear(self, fault_id: str) -> None:
         """Remove a fault (pending or active); a persistent fault's consequences end, one-shot ones are not undone."""
-        fault = self._active.pop(fault_id, None) or (self._pending.pop(fault_id, (None, None))[0])
+        was_active = self._active.pop(fault_id, None)
+        fault = was_active or (self._pending.pop(fault_id, (None, None))[0])
         if fault is None:
             raise KeyError(f"no fault {fault_id!r}")
+        if was_active is not None:
+            for listener in self._listeners:
+                listener("cleared", fault)
         if fault.kind == "joint_stall":
             self.world.record("world", "joint_released", {"joint": fault.target}, None)
         self.world.record("fault", "fault_cleared", {"id": fault_id, "target": fault.target, "kind": fault.kind}, None)
+
+    def subscribe(self, listener: Callable[[str, Fault], None]) -> None:
+        """Call ``listener("active" | "cleared", fault)`` when a persistent fault starts or ends (twins use it to
+        report power loss as device status)."""
+        self._listeners.append(listener)
 
     def active(self, target: str, kind: str) -> bool:
         """Whether a persistent fault of ``kind`` is active on ``target`` (twins consult this)."""
@@ -131,6 +142,8 @@ class FaultPlane:
         world = self.world
         if fault.kind in PERSISTENT:
             self._active[fault_id] = fault
+            for listener in self._listeners:
+                listener("active", fault)
         if fault.kind == "drop_object":
             if world.ledger.location(fault.target) == "lost":
                 return
