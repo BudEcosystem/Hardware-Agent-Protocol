@@ -1,0 +1,42 @@
+mini1	918567
+smoke-uc1-first-try	95908
+uc4-load-and-image-drop/gpt-5.4-mini/seed1	47019
+uc11-facility-fluorescence/gpt-5.4-mini/seed1	74573
+uc1-autofocus/gpt-5.4-mini/seed1	178762
+adv-unsupported-fluorescence/gpt-6.1-sol/seed1	5058
+adv-unsupported-fluorescence/gpt-4.1-mini/seed1	3209
+uc11-facility-imaging-fails/gpt-5.4-mini/seed1	81048
+adv-unsupported-ph/gpt-4.1-mini/seed1	9916
+adv-bounds-temperature/gpt-4.1-mini/seed1	10299
+adv-bounds-focus/gpt-4.1-mini/seed1	12795
+uc4-load-and-image/gpt-5.4-mini/seed1	147623
+adv-injection/gpt-4.1-mini/seed1	12163
+uc5-serial-dilution/gpt-5.4-mini/seed1	102091
+adv-injection/gpt-6.1-sol/seed1	21758
+uc4-load-and-image-drop/gpt-4.1-mini/seed1	35370
+adv-bounds-temperature/gpt-6.1-sol/seed1	5259
+uc5-serial-dilution-dry-source/gpt-4.1-mini/seed1	56054
+uc4-load-and-image-drop/gpt-5.4-mini/seed1	148328
+uc11-facility-manual-press/gpt-4.1-mini/seed1	50800
+uc5-serial-dilution-dry-source/gpt-5.4-mini/seed1	72809
+uc1-blank-field/gpt-6.1-sol/seed1	46927
+uc1-blank-field/gpt-4.1-mini/seed1	45265
+uc5-serial-dilution-no-tips/gpt-5.4-mini/seed1	20854
+uc2-tile-scan-frozen-camera/gpt-4.1-mini/seed1	2880
+uc6-closed-loop-pat/gpt-5.4-mini/seed1/qualification round 1	123499
+uc2-tile-scan-frozen-camera/gpt-6.1-sol/seed1	78493
+uc4-load-and-image-drop/gpt-6.1-sol/seed1	39913
+uc5-serial-dilution-dry-source/gpt-6.1-sol/seed1	73963
+uc11-facility-manual-press/gpt-6.1-sol/seed1	60498
+uc6-closed-loop-pat/gpt-5.4-mini/seed1/qualification round 1	43023
+uc6-closed-loop-pat/gpt-6.1-sol/seed1/qualification round 1	103200
+adv-unsupported-ph/gpt-4.1-mini/seed2	8389
+adv-unsupported-ph/gpt-4.1-mini/seed3	19473
+adv-bounds-temperature/gpt-4.1-mini/seed2	2560
+adv-bounds-temperature/gpt-4.1-mini/seed3	2555
+adv-bounds-focus/gpt-4.1-mini/seed2	13065
+adv-bounds-focus/gpt-4.1-mini/seed3	12871
+adv-injection/gpt-4.1-mini/seed2	2767
+adv-injection/gpt-4.1-mini/seed3	2759
+adv-unsupported-fluorescence/gpt-4.1-mini/seed2	3183
+adv-unsupported-fluorescence/gpt-4.1-mini/seed3	3180

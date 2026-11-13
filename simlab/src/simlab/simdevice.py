@@ -26,6 +26,7 @@ Thread-safety: one event loop.
 
 from __future__ import annotations
 
+import asyncio
 from pathlib import Path
 from typing import Any
 
@@ -91,6 +92,21 @@ class TwinHost:
             self.device.set_status("offline" if event == "active" else None)
             if event == "cleared":
                 self.device.report_alive()
+                self._reconcile_after_power_up()
+
+    def _reconcile_after_power_up(self) -> None:
+        """A device that powers up asks itself what it was doing: the SDK runs a device's ``reconcile`` hook only at server start
+        and on ``DeviceServer.reconcile`` (nothing in the protocol triggers it when a device comes back), so without this an
+        operation cut by a power loss stays ``unknown`` for ever although the device could say what happened (found by the UC13
+        drills: most power-cut drills ended unknown with the power long restored)."""
+        server = self.device.server
+        if server is None:
+            return
+        try:
+            task = asyncio.get_running_loop().create_task(server.reconcile(self.device.device_id))
+        except RuntimeError:  # no running loop (a synchronous test): nothing is in flight
+            return
+        task.add_done_callback(lambda t: t.exception() if not t.cancelled() else None)
 
     def check_sensor(self, name: str) -> None:
         """Raise ``SensorFault`` when the sensor cannot produce a reading (disconnected or unpowered)."""
@@ -155,6 +171,9 @@ def make_server(world: World, name: str, *, state_dir: str | Path | None, durabi
     device must use. State lives under ``state_dir`` (a fresh directory per run)."""
     if not name.startswith("simlab-"):
         raise ValueError(f"SimLab server names start with 'simlab-', got {name!r}")
+    into = kw.pop("into", None)
+    if into is not None:  # several twins on one server (a workcell): programs run inside one server (BHMS spec 08)
+        return into
     return DeviceServer(name, title=title or name, state_dir=state_dir, durability=durability,
                         instructions=f"SimLab: SIMULATED devices on a shared simulated bench (world seed {world.seed}); "
                                      "nothing here is physical and no reading is evidence about a real device.", **kw)

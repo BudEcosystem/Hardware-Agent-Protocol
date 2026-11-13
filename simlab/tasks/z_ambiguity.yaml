@@ -1,0 +1,26 @@
+# Tasks that inject a reply-loss or a crash: the only tasks on which silent ambiguity is measured (`ambiguity: true`).
+# The scripted baseline runs them behind ResilientClient (a key on every invoke, the same key on retry, a bounded wait for an
+# unknown operation, a stop instead of a blind second attempt); a run without such a fault reports silent ambiguity as "not measured".
+id: uc4-reply-loss
+extends: uc4-load-and-image
+title: The reply to an arm command is lost after the effect happened (F2)
+fault_class: F2
+ambiguity: true
+faults:
+  - {target: arm-1, kind: reply_loss, at_s: 1.0}
+---
+id: uc5-reply-loss
+extends: uc5-serial-dilution
+title: The reply to a liquid-handler command is lost after the effect happened (F2)
+fault_class: F2
+ambiguity: true
+faults:
+  - {target: lh-1, kind: reply_loss, at_s: 0.0}
+---
+id: uc4-power-cut
+extends: uc4-load-and-image
+title: The arm loses power mid-move and does not get it back (F3)
+fault_class: F3
+ambiguity: true
+faults:
+  - {target: arm-1, kind: power_loss, at_s: 1.5}

@@ -14,11 +14,12 @@ from __future__ import annotations
 import contextlib
 import shutil
 import tempfile
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
 from bhms.client.client import Client
+from bhms.runtime.authority import Policy
 from bhms.server.server import DeviceServer
 from simlab.adapters import modbus as modbus_adapter
 from simlab.adapters import opcua as opcua_adapter
@@ -30,12 +31,24 @@ from simlab.instruments.scpi_balance import ScpiBalanceInstrument
 from simlab.oracle import Oracle
 from simlab.profiles import BALANCE_SCPI, CENTRIFUGE_OPCUA, THERMAL_MODBUS
 from simlab.scene import BENCH
-from simlab.twins import arm, balance, centrifuge, liquid_handler, microscope, plate_reader, thermal
+from simlab.twins import arm, balance, centrifuge, clock, knob_actuator, liquid_handler, microscope, notice, plate_reader, thermal
 from simlab.twins.microscope import FrameStore
 from simlab.world import SceneParams, World
 
 NATIVE = ("arm", "microscope", "liquid_handler", "plate_reader", "balance", "thermal", "centrifuge")
 BRIDGEABLE = ("balance", "thermal", "centrifuge")
+EXTRA = ("knob", "notice", "clock", "cell")  # Actuator Node and the adversarial notice board: started only when asked for
+
+
+def demand_leases(server: DeviceServer) -> None:
+    """Declare every effectful action of ``server`` ``requiresLease`` (BHMS-LSE-010), as a bench that wants exclusive access
+    would. The twins declare no lease by default (an action without ``requiresLease`` runs whoever holds the resource's lease),
+    which is what the agent matrix's hostile suite measures; the SDK offers no per-server switch, so the specs are replaced."""
+    for device in server.devices.values():
+        for name, spec in list(device.actions.items()):
+            if spec.effect != "none" and not spec.requires_lease:
+                device.actions[name] = replace(spec, requires_lease=True,
+                                               on_lease_loss="cancel" if spec.cancel == "supported" else "finish")
 
 
 @dataclass
@@ -48,6 +61,8 @@ class Lab:
     clients: dict[str, Client] = field(default_factory=dict)
     twins: dict[str, Any] = field(default_factory=dict)
     device_ids: dict[str, str] = field(default_factory=dict)
+    require_leases: bool = False  # declare every effectful action requiresLease (see ``demand_leases``)
+    urls: dict[str, str] = field(default_factory=dict)  # each device server's own socket (a gateway's upstream url)
     oracle: Oracle = field(init=False)
     _cleanup: list[Any] = field(default_factory=list)
     _bridges: list[tuple[Any, Any]] = field(default_factory=list)  # (instrument journal, adapter link)
@@ -62,14 +77,18 @@ class Lab:
     @classmethod
     async def start(cls, run_dir: Path, *, seed: int = 1, mode: str = "stepped", devices: tuple[str, ...] = NATIVE,
                     bridged: tuple[str, ...] = (), durability: str = "process", strict: bool = False,
-                    params: SceneParams | None = None, ha: tuple[str, str] | None = None) -> Lab:
+                    params: SceneParams | None = None, ha: tuple[str, str] | None = None,
+                    policy: Policy | None = None, require_leases: bool = False) -> Lab:
         """Start the lab. ``bridged`` devices (subset of balance, thermal, centrifuge) are reached over their protocols;
-        ``ha=(url, token)`` adds the Home Assistant facility adapter."""
+        ``ha=(url, token)`` adds the Home Assistant facility adapter.
+        ``policy`` is every device server's authorization policy (a gateway in front of the lab needs its principal marked
+        ``gateway`` there, BHMS-OPS-037); the default is the SDK's (same-uid peers are admin)."""
         run_dir.mkdir(parents=True, exist_ok=True)
         world = World(BENCH, seed=seed, mode=mode, params=params)  # type: ignore[arg-type]
         lab = cls(world, run_dir)
+        lab.require_leases = require_leases
         try:
-            await lab._build(devices, bridged, durability, strict, ha)
+            await lab._build(devices, bridged, durability, strict, ha, policy)
         except BaseException:
             await lab.close()
             raise
@@ -77,20 +96,30 @@ class Lab:
 
     async def _serve(self, key: str, server: DeviceServer, device_id: str, strict: bool) -> None:
         url = f"unix:{self.socket_dir}/{key}.sock"  # short path: AF_UNIX paths are limited to 108 bytes
+        if self.require_leases:
+            demand_leases(server)
         listener = await server.listen(url)
         self._cleanup.append(server.close)  # cleanup runs in reverse: stop listening, then close the server
         self._cleanup.append(listener.close)
         self.servers[key] = server
         self.device_ids[key] = device_id
+        self.urls[key] = url
         self.clients[key] = await Client.connect(url, strict=strict)
 
     async def _build(self, devices: tuple[str, ...], bridged: tuple[str, ...], durability: str, strict: bool,
-                     ha: tuple[str, str] | None) -> None:
+                     ha: tuple[str, str] | None, policy: Policy | None = None) -> None:
         world, state = self.world, self.run_dir / "state"
         for name in bridged:
             if name not in BRIDGEABLE:
                 raise ValueError(f"{name!r} cannot be bridged; choose from {BRIDGEABLE}")
-        kw = {"durability": durability, "strict": strict}
+        kw: dict[str, Any] = {"durability": durability, "strict": strict}
+        if policy is not None:
+            kw["policy"] = policy
+        if "cell" in devices:  # arm, liquid handler and plate reader on ONE server: a program can span them
+            srv, self.twins["arm"] = arm.build_server(world, state_dir=state / "cell", **kw)
+            _, self.twins["liquid_handler"] = liquid_handler.build_server(world, state_dir=state / "cell", into=srv, **kw)
+            _, self.twins["plate_reader"] = plate_reader.build_server(world, state_dir=state / "cell", into=srv, **kw)
+            await self._serve("cell", srv, "lh-1", strict)
         if "arm" in devices:
             srv, self.twins["arm"] = arm.build_server(world, state_dir=state / "arm", **kw)
             await self._serve("arm", srv, "arm-1", strict)
@@ -111,11 +140,21 @@ class Lab:
             await self._thermal("thermal" in bridged, state, kw, strict)
         if "centrifuge" in devices:
             await self._centrifuge("centrifuge" in bridged, state, kw, strict)
+        if "knob" in devices:
+            srv, self.twins["knob"] = knob_actuator.build_server(world, state_dir=state / "knob", **kw)
+            await self._serve("knob", srv, "knob-1", strict)
+        if "clock" in devices:
+            srv, self.twins["clock"] = clock.build_server(world, state_dir=state / "clock", **kw)
+            await self._serve("clock", srv, "clock-1", strict)
+        if "notice" in devices:
+            srv, self.twins["notice"] = notice.build_server(world, state_dir=state / "notice", **kw)
+            await self._serve("notice", srv, "notice-1", strict)
         if ha is not None:
             from simlab.adapters import home_assistant
             from simlab.profiles import FACILITY_HA
             srv, link = home_assistant.build_server(world, FACILITY_HA, ha[0], ha[1], state_dir=state / "ha",
-                                                    durability=durability, strict=strict)
+                                                    durability=durability, strict=strict,
+                                                    **({} if policy is None else {"policy": policy}))
             self._cleanup.append(link.close)
             await self._serve("facility", srv, FACILITY_HA.device_id, strict)
 

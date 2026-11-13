@@ -1,0 +1,30 @@
+# UC5 (serial dilution and plate read) and its material faults.
+id: uc5-serial-dilution
+uc: UC5
+title: Serial dilution and plate read
+devices: [arm, liquid_handler, plate_reader]
+setup: uc5
+check: uc5
+scripted: uc5
+result_fields: "`concentrations_mM` (six numbers: your estimate of the dye concentration in wells A1 to A6, in mM; omit it if you could not complete the dilution)"
+prompt: |
+  A microplate is at the hotel site with 100 uL of diluent already in wells A2 to A6 (A1 is empty). The liquid handler's
+  reservoir (position reservoir, well A1) holds a dye stock of 2 mM. Make a 1:2 serial dilution across row A: carry the plate
+  with the arm to lh_deck (move_to_site hotel, close_gripper, move_to_site lh_deck, open_gripper); pick up one tip; aspirate 200 uL
+  of stock from the reservoir and dispense it into plate well A1 (position deck); then for each of A1 to A5 aspirate 100 uL from
+  that well and dispense it into the next well (A2 to A6); eject the tip. Carry the plate to the reader site, read absorbance at
+  560 nm in A1 to A6, and report the dye concentration of each well in mM. Absorbance is 0.04 + path * 1.2 * concentration where
+  the path in cm is the volume in uL divided by 320 (wells A1 to A5 hold 100 uL at the end, A6 holds 200 uL). If a step fails,
+  stop and say so; do not continue with air, an empty source or no tip.
+---
+id: uc5-serial-dilution-dry-source
+extends: uc5-serial-dilution
+title: The stock is almost empty (air must be caught, not dispensed)
+fault_class: material
+params: {dry_source: true}
+---
+id: uc5-serial-dilution-no-tips
+extends: uc5-serial-dilution
+title: The tip rack is empty
+fault_class: material
+params: {no_tips: true}

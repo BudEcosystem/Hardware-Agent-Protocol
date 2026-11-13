@@ -35,7 +35,7 @@ MOVE_S = 1.0
 RATE_UL_S = 100.0
 TIP_CAPACITY_UL = 200.0
 TIPS_IN_RACK = 96
-VOLUME_SIGMA_UL = 0.2
+VOLUME_SIGMA_UL = 0.2  # the sensor can read a little above a full tip: result ranges allow +5 uL (found by the agent matrix, Task 11)
 VOLUME_TOLERANCE_UL = 1.0
 
 
@@ -188,8 +188,8 @@ def build_server(world: World, handler: LiquidHandlerTwin | None = None, *, stat
                 resources=[f"{device_id}/channel"])
     async def aspirate(ctx, position: OneOf(*POSITIONS), well: Text(pattern=WELL_PATTERN),  # noqa: F821
                        volume: Range(0.5, TIP_CAPACITY_UL, unit="uL")  # noqa: F821
-                       ) -> {"aspirated": Range(0, TIP_CAPACITY_UL, unit="uL", nullable=True),  # noqa: F821
-                             "air": Range(0, TIP_CAPACITY_UL, unit="uL", nullable=True)}:  # noqa: F821
+                       ) -> {"aspirated": Range(0, TIP_CAPACITY_UL + 5.0, unit="uL", nullable=True),  # noqa: F821
+                             "air": Range(0, TIP_CAPACITY_UL + 5.0, unit="uL", nullable=True)}:  # noqa: F821
         """Aspirate ``volume`` uL from a well. Fails with a device fault when the tip sensor sees less than was asked
         (the well was short: air was aspirated)."""
         host.begin(ctx)
@@ -213,7 +213,7 @@ def build_server(world: World, handler: LiquidHandlerTwin | None = None, *, stat
                 resources=[f"{device_id}/channel"])
     async def dispense(ctx, position: OneOf(*POSITIONS), well: Text(pattern=WELL_PATTERN),  # noqa: F821
                        volume: Range(0.5, TIP_CAPACITY_UL, unit="uL")  # noqa: F821
-                       ) -> {"dispensed": Range(0, TIP_CAPACITY_UL, unit="uL", nullable=True)}:  # noqa: F821
+                       ) -> {"dispensed": Range(0, TIP_CAPACITY_UL + 5.0, unit="uL", nullable=True)}:  # noqa: F821
         """Dispense ``volume`` uL from the tip into a well. The tip sensor confirms the tip emptied by that much; where
         the liquid went (a full well spills) is not visible to the device."""
         host.begin(ctx)
