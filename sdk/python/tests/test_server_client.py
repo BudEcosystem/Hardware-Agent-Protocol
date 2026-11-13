@@ -251,12 +251,8 @@ async def test_extension_methods_and_name_validation(make_env):
 
 async def test_result_without_result_type_from_a_buggy_server_is_refused(make_env):
     env = await make_env()
-    t = await tr.connect_unix(env.path)
-    c = Client(Session(t, role="client").start())
-    # talk to a raw handler that omits resultType by bypassing the dispatcher
-    await c.session.close()
 
-    async def bad_handler(ctx):
+    async def bad_handler(ctx):  # a server that bypasses the dispatcher and omits resultType
         return {"devices": []}
 
     async def on_t(tp):

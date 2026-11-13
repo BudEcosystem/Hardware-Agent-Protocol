@@ -333,19 +333,16 @@ class Session:
         task.add_done_callback(self._background.discard)
 
     async def _write_loop(self) -> None:
-        try:
-            while True:
-                data = await self._outbox.get()
-                try:
-                    await self._transport.send(data)
-                except (TransportClosed, OSError) as exc:
-                    log.debug("send failed: %s", exc)
-                    self._outbox.task_done()
-                    await self._teardown(TransportClosed(str(exc)))
-                    return
+        while True:
+            data = await self._outbox.get()
+            try:
+                await self._transport.send(data)
+            except (TransportClosed, OSError) as exc:
+                log.debug("send failed: %s", exc)
                 self._outbox.task_done()
-        except asyncio.CancelledError:
-            raise
+                await self._teardown(TransportClosed(str(exc)))
+                return
+            self._outbox.task_done()
 
     def _send_cancel(self, request_id: int, reason: str | None) -> None:
         params: dict[str, Any] = {"requestId": request_id}

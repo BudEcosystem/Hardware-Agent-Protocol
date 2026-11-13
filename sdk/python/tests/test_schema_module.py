@@ -1,6 +1,5 @@
 """bhms.protocol.schema: packaged bytes, per-def validators, DEV-071 tolerant multipleOf."""
 
-import json
 from pathlib import Path
 
 import pytest

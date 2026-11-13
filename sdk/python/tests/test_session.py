@@ -1,7 +1,6 @@
 """JSON-RPC session over real Unix sockets (plus a fake transport for queue mechanics)."""
 
 import asyncio
-import contextlib
 import logging
 
 import orjson
