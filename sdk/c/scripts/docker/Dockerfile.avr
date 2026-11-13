@@ -1,0 +1,9 @@
+# AVR toolchain + simavr for the BHMS-Compact target tests (ubuntu:24.04 packages:
+# gcc-avr 7.3, avr-libc 2.0, arduino-core-avr 1.8.6, simavr 1.6).
+FROM ubuntu:24.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update -qq && apt-get install -y -qq --no-install-recommends \
+      gcc-avr avr-libc binutils-avr arduino-core-avr simavr libsimavr-dev libelf-dev \
+      gcc libc6-dev pkg-config python3 ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+WORKDIR /work

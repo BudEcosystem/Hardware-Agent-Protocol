@@ -285,3 +285,10 @@ BHMS-CMP-010 predictable from the description. Because decimal steps such as 0.1
 are not exact in binary floating point, BHMS validators MUST evaluate
 `multipleOf` with a relative tolerance of 1e-9 (or exact decimal arithmetic),
 the same tolerance as BHMS-CMP-010.
+A compact field of an integer wire type (`u8`, `i8`, `u16`, `i16`, `u32`, `i32`)
+without `scale` carries the value unchanged, so its mirrored schema MUST be
+`type: "integer"` or declare `multipleOf: 1`, with `minimum` and `maximum` inside
+the type's range; a bare `number` schema would admit fractions the wire cannot
+carry. A `bool` field mirrors `type: "boolean"`; an `f32` field mirrors `number`.
+A description that omits this mirroring is invalid, so a gateway never has to
+round a value (BHMS-CMP-010).

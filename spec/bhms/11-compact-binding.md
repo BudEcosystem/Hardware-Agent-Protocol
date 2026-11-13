@@ -233,6 +233,15 @@ epoch is unchanged it MUST `QUERY` each operation recorded as `dispatching`,
 `running` or `unknown` and reconcile from STATUS/RESULT, keeping `unknown` on
 `HANDLE_UNKNOWN`. An endpoint MUST answer QUERY for a handle that is not in its
 ring (including one above `lastHandle`) with `HANDLE_UNKNOWN`, never by acting.
+QUERY reconciles only operations dispatched in the current incarnation: every
+STATUS, RESULT and ERROR frame carries the endpoint's current boot epoch in its
+frame `session`, a QUERY whose session is not the current epoch is refused with
+`SESSION_MISMATCH` (BHMS-CMP-021) in a frame stamped with the current epoch, and
+the gateway MUST therefore record the epoch of each operation at dispatch and MUST
+NOT QUERY an operation dispatched in an earlier epoch (it is `unknown`,
+BHMS-CMP-022). On an endpoint without `PERSISTENT_EPOCH` a QUERY after a silent
+reboot to the same epoch value finds an empty ring and is answered
+`HANDLE_UNKNOWN`, which keeps the operation `unknown`.
 
 **BHMS-CMP-035** An endpoint MUST send RESULT exactly once per handle unprompted,
 and again in answer to QUERY or a retransmitted INVOKE.
@@ -296,3 +305,42 @@ bytes):
 
 These bytes were produced with `protocol/serial/frame.py` and are the first
 compact test vectors for Task 9.
+
+## 11.11 Endpoint behaviours fixed by the reference library (informative)
+
+`sdk/c` (BHMS-Compact C library, Task 9a) settled the points the layouts leave
+open; other endpoints should match them so one gateway handles all of them.
+
+- **Refusals consume nothing, but the fence is judged first.** An INVOKE answered
+  with an ERROR other than `HANDLE_UNKNOWN`, `SESSION_MISMATCH` and
+  `HANDLE_CONFLICT` neither advances `lastHandle` nor occupies a ring entry; the
+  same handle may be retried. Check order for a new handle: ring replay,
+  `HANDLE_UNKNOWN`, action index, exact argument length (`MALFORMED`), fence
+  (`FENCED`, `LEASE_REQUIRED`), then the floor is raised to the fence and
+  the largest fence seen is recorded, then `INHIBITED`, start TTL (`EXPIRED`,
+  measured from the first byte of the frame at the endpoint), argument decoding
+  and local limits (`OUT_OF_RANGE` or, for a `bool` byte other than 0/1,
+  `MALFORMED`; `detail` is the argument index) and `BUSY`. So a refusal after the
+  fence check still fences older lease holders (BHMS-CMP-040), while a frame
+  refused before it (bad handle, action or length) never touches fence state.
+  `UNKNOWN_ACTION` and `UNKNOWN_PROPERTY` put the bad index in `detail`. A
+  non-finite `f32` argument is `OUT_OF_RANGE`.
+- **Fence saturation.** The floor and the largest fence seen are u32 and saturate
+  at `0xFFFFFFFF`. After a STOP that follows fence `0xFFFFFFFF` the floor stays
+  there: only that fence value is admitted for the rest of the epoch, so a
+  gateway MUST start a new session (BHMS-CMP-041) before its fences approach 2^32.
+- **Replies and unsolicited frames.** Replies to a control frame use kind 02. An
+  operation that finishes later (after `STATUS running`) sends its RESULT, and
+  progress STATUS frames, as kind 03. A `HELLO_REQ` whose compact version is not 1
+  is answered `ERROR UNSUPPORTED` with `detail = 1`.
+- **Stop.** The first `STOP_ACK` is sent before the RESULT (kind 03, `canceled`)
+  of each operation the stop ended; its `canceled` count says how many follow.
+  A hardware stop input asserting sends the same sequence with the ack as
+  kind 03 and, while it is asserted, INVOKE answers `INHIBITED`.
+- **Epoch counter.** An erased cell (`0xFFFFFFFF`) counts as 0; the incremented
+  epoch skips 0. `PERSISTENT_EPOCH` is advertised only when the stored counter
+  was read successfully and the new value was durably stored; an unreadable
+  counter (the epoch may repeat) or a failed store clears it for that boot, and
+  it is not regained by a later `NEW_SESSION`.
+- **Sequence.** The endpoint frame counter restarts at 0 with each epoch,
+  including a `NEW_SESSION` (its HELLO is sequence 0).
