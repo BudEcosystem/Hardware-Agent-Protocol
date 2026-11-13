@@ -4,10 +4,14 @@
   "description": "BHMS TypeScript SDK: JSON-RPC session, client, device server, durable operation store, transports.",
   "type": "module",
   "license": "Apache-2.0",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
-  "bin": { "bhms-conformance-device": "dist/src/testing/conformanceDevice.js" },
+  "bin": {
+    "bhms-conformance-device": "dist/src/testing/conformanceDevice.js"
+  },
   "scripts": {
     "gen-types": "node scripts/gen-types.mjs",
     "build": "tsc -p tsconfig.json",
@@ -15,6 +19,10 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.0",
+    "@types/ws": "^8.18.2",
     "typescript": "^5.4.0"
+  },
+  "optionalDependencies": {
+    "ws": "^8.23.0"
   }
 }
