@@ -82,5 +82,6 @@ Each step is also a plain script: `cad/build.py`, `cad/check_meshes.py`,
 Load `sim/bhms_arm.xml`; it has the gripper. Variants `bhms_arm_<tool>.xml`
 carry the other tools. Actuator, joint and sensor names match the
 firmware's joint names (`base_yaw`, `shoulder_pitch`, …). Tool TCPs are the
-`tcp` site. Keyframe `home` is the pose the controller reaches after
-calibration.
+`tcp` site. Keyframe `home` (yaw 0°, shoulder 30°, elbow 90°, wrist 45°, roll 0°) is the pose the
+controller reaches after calibration and the rest pose for a normal stop; it satisfies
+all joint and coupled limits.

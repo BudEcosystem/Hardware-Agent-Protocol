@@ -4,7 +4,7 @@
  "seed": 20261113,
  "sweep_step_deg": 5.0,
  "checks": {
-  "named_and_sweeps": 1386,
+  "named_and_sweeps": 1392,
   "random": 10000,
   "boundary": 1800
  },

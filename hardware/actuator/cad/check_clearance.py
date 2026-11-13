@@ -164,6 +164,7 @@ def poses(p) -> list[tuple[str, dict[str, float]]]:
         out.append((f"{j.name}=lower", {j.name: j.lower_deg}))
         out.append((f"{j.name}=upper", {j.name: j.upper_deg}))
     out += [
+        ("home_rest", {"shoulder_pitch": 30.0, "elbow_pitch": 90.0, "wrist_pitch": 45.0}),
         ("reach_forward", {"shoulder_pitch": 90.0, "elbow_pitch": 0.0, "wrist_pitch": 0.0}),
         ("table_pick_near", {"shoulder_pitch": 15.0, "elbow_pitch": 122.0, "wrist_pitch": 40.0}),
         ("table_pick_far", {"shoulder_pitch": 55.0, "elbow_pitch": 95.0, "wrist_pitch": 30.0}),

@@ -214,7 +214,7 @@ J2.3 ESTOP_SENSE ── contact B (NC) ── J2.4 GND          (status to GPIO8
 * **The arm falls when the rail drops.** There is no brake on any joint,
   and the gear trains are not self-locking. Firmware must not use the
   E-stop as a normal stop: before cutting SERVO_EN deliberately (shutdown,
-  fault), move to the rest pose (shoulder ≤ 90°, elbow 90°, forearm on the
+  fault), move to the rest pose (home: yaw 0°, shoulder 30°, elbow 90°, wrist 45°, roll 0°; forearm on the
   support) at reduced speed, then disable. Report `estop` as "arm may have
   moved: re-home before use" and never assume the pose after a rail cut.
 * After the rail returns, every servo has rebooted. Before torque-enabling

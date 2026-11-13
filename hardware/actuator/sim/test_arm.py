@@ -14,6 +14,8 @@
    pitch limits (forearm: shoulder+elbow, tool: shoulder+elbow+wrist) produce no contact between the forearm/wrist/flange/tool
    and the static base/turret; a pose outside the coupled limits
    (wrist_curl) does, proving the collision pairs are live.
+2d. Named poses: the home keyframe, every gravity-hold pose and every pick waypoint satisfy all
+   joint ranges and coupled limits.
 3. Pick and place a 50 g cube with the parallel gripper by contact
    (friction) grasp - no weld - from (0.24, 0) to (0.18, 0.16) m.
 
@@ -42,7 +44,7 @@ SPEED_TOL = 1.03  # measured peak speed / datasheet limit
 ARM_JOINTS = ["base_yaw", "shoulder_pitch", "elbow_pitch", "wrist_pitch", "wrist_roll"]
 HOLD_POSES = {
     "horizontal_reach": {"shoulder_pitch": 90.0, "elbow_pitch": 0.0, "wrist_pitch": 0.0},
-    "home": {"shoulder_pitch": 0.0, "elbow_pitch": 90.0, "wrist_pitch": 90.0},
+    "home": {"shoulder_pitch": 30.0, "elbow_pitch": 90.0, "wrist_pitch": 45.0},  # = gen_mjcf.HOME_ARM = rest pose
     "forward_45": {"base_yaw": 60.0, "shoulder_pitch": 45.0, "elbow_pitch": 45.0, "wrist_pitch": 0.0},
     "folded_back": {"base_yaw": -90.0, "shoulder_pitch": -15.0, "elbow_pitch": 120.0, "wrist_pitch": -45.0},
     "rear_limit": {"base_yaw": 0.0, "shoulder_pitch": -20.0, "elbow_pitch": 60.0, "wrist_pitch": 0.0},
@@ -126,10 +128,8 @@ def speed_limit(path: Path) -> dict:
     return out
 
 
-def keepout(path: Path, require_curl: bool = True, n: int = 400, seed: int = 7) -> dict:
-    """Contact between keepout geoms (forearm..tool) and static geoms
-    (base, turret) at random in-limit poses, inside and outside the coupled limit."""
-    model = mujoco.MjModel.from_xml_path(str(path))
+def coupled_limits(model: mujoco.MjModel) -> list:
+    """[(name, joints, lo_deg, hi_deg)] from the model's coupled_<name>_* custom data."""
     limits = []
     for i in range(model.ntext):
         name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_TEXT, i)
@@ -139,6 +139,42 @@ def keepout(path: Path, require_curl: bool = True, n: int = 400, seed: int = 7) 
             lo, hi = (float(x) for x in model.numeric(name[: -len("_joints")] + "_deg").data)
             limits.append((name[: -len("_joints")], joints, lo, hi))
     assert limits, "no coupled limits in the model"
+    return limits
+
+
+def pose_violations(model: mujoco.MjModel, pose_deg: dict[str, float]) -> list[str]:
+    """Joint-range and coupled-limit violations of a pose (missing joints = 0 deg)."""
+    out = []
+    for jn in ARM_JOINTS:
+        lo, hi = (math.degrees(float(x)) for x in model.jnt_range[model.joint(jn).id])
+        v = pose_deg.get(jn, 0.0)
+        if not lo - 1e-6 <= v <= hi + 1e-6:
+            out.append(f"{jn} {v:.1f} outside [{lo:.1f}, {hi:.1f}]")
+    for name, joints, lo, hi in coupled_limits(model):
+        v = sum(pose_deg.get(j, 0.0) for j in joints)
+        if not lo - 1e-6 <= v <= hi + 1e-6:
+            out.append(f"{name} {v:.1f} outside [{lo:.1f}, {hi:.1f}]")
+    return out
+
+
+def named_poses_check(path: Path, plan_deg: dict) -> dict:
+    """Every named pose used by the tests (home keyframe, gravity-hold poses, pick waypoints)
+    must satisfy all joint and coupled limits."""
+    model = mujoco.MjModel.from_xml_path(str(path))
+    poses = dict(HOLD_POSES)
+    key = model.key("home")
+    poses["home keyframe"] = {jn: math.degrees(float(key.qpos[model.joint(jn).qposadr[0]])) for jn in ARM_JOINTS}
+    for name, deg in plan_deg.items():
+        poses[f"pick {name}"] = dict(zip(ARM_JOINTS, deg))
+    res = {name: pose_violations(model, pose) for name, pose in poses.items()}
+    return {"poses": {k: {"violations": v, "pass": not v} for k, v in res.items()}, "pass": not any(res.values())}
+
+
+def keepout(path: Path, require_curl: bool = True, n: int = 400, seed: int = 7) -> dict:
+    """Contact between keepout geoms (forearm..tool) and static geoms
+    (base, turret) at random in-limit poses, inside and outside the coupled limit."""
+    model = mujoco.MjModel.from_xml_path(str(path))
+    limits = coupled_limits(model)
     cls_static = {g for g in range(model.ngeom) if (model.geom_contype[g] & 4) and model.geom_conaffinity[g] & 8}
     cls_keep = {g for g in range(model.ngeom) if model.geom_contype[g] & 8}
     rng = random.Random(seed)
@@ -341,8 +377,10 @@ def main() -> int:
     report["keepout"] = keepout(HERE / "bhms_arm.xml")
     report["keepout_other_tools"] = {t: keepout(HERE / f"bhms_arm_{t}.xml", require_curl=False) for t in ("knob_turner", "button_presser", "slider_pusher")}
     report["pick_and_place"] = pick_and_place(HERE / "scene_pick.xml")
+    report["named_poses"] = named_poses_check(HERE / "bhms_arm.xml", report["pick_and_place"]["plan_deg"])
     report["pass"] = bool(report["gravity_hold"]["pass"] and report["pick_and_place"]["pass"] and report["speed_limit"]["pass"]
-                          and report["keepout"]["pass"] and all(v["pass"] for v in report["keepout_other_tools"].values()))
+                          and report["keepout"]["pass"] and all(v["pass"] for v in report["keepout_other_tools"].values())
+                          and report["named_poses"]["pass"])
     (RESULTS / "sim_results.json").write_text(json.dumps(report, indent=1))
     for name, r in report["gravity_hold"]["poses"].items():
         print(f"hold {name:17s} max err {r['max_abs_error_deg']:.3f} deg  max util "
@@ -356,6 +394,8 @@ def main() -> int:
     for t, r in report["keepout_other_tools"].items():
         print(f"keepout {t}: {r['contacts_inside_limit']}/{r['samples_inside_limit']} inside, wrist_curl contact "
               f"{r['wrist_curl_30_100_100_contacts']}  {'PASS' if r['pass'] else 'FAIL'}")
+    for name, r in report["named_poses"]["poses"].items():
+        print(f"limits {name:22s} {'PASS' if r['pass'] else 'FAIL ' + '; '.join(r['violations'])}")
     pp = report["pick_and_place"]
     print(f"pick&place xy err {pp['xy_error_m'] * 1000:.1f} mm, lift {pp['lift_z_m']:.3f} m, slip {pp['carry_slip_m'] * 1000:.1f} mm "
           f"{'PASS' if pp['pass'] else 'FAIL'}")

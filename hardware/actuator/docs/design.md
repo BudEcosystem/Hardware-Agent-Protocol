@@ -329,8 +329,9 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
   3.1 N·m, so the arm drops under gravity and can hit the table, the
   workpiece or a hand. What to do:
   * Treat the E-stop as an emergency measure, not a normal stop. For a
-    normal stop, drive the arm to the rest pose first (shoulder 90° or
-    less, elbow 90°, forearm resting on the support) and then cut power.
+    normal stop, drive the arm to the rest pose first (home: yaw 0°, shoulder 30°, elbow
+    90°, wrist 45°, roll 0°, forearm resting on the support) and then cut
+    power.
   * Place a soft stop (foam block or table surface) under the forearm
     rest pose so the fall from any pose ends within about 100 mm.
   * Keep hands, faces and fragile objects out of the swept volume
@@ -422,8 +423,10 @@ setting was not raised to 0.5 mm. Re-check the page before ordering.
     absolute at power-up (single-turn encoder). With 3:1 that allows at
     most 120° of joint range, so the shoulder range is −20 … +95° (115°,
     345° of servo travel). The arm can no longer lean back more than 20°
-    behind the vertical; the stowed pose uses the elbow instead (the home
-    keyframe is shoulder 90°, elbow 90°).
+    behind the vertical; the stowed pose uses the elbow instead (the home /
+    rest pose is yaw 0°, shoulder 30°, elbow 90°, wrist 45°, roll 0°: forearm
+    pitch 120°, hairpin 135°, tool pitch 165°, inside every joint and coupled
+    limit; `sim/test_arm.py` checks it).
   * The elbow is 2:1: 130° × 2 = 260°.
   * Belt drives were rejected because they add tensioners and length.
   * Rejected for the R13 payload: a dual-STS3215 shoulder (second drive

@@ -289,7 +289,9 @@ def build(asm: dict, tool: str, scene: bool = False) -> ET.ElementTree:
     return ET.ElementTree(root)
 
 
-HOME_ARM = [0.0, 0.0, math.radians(90.0), math.radians(90.0), 0.0]  # upper arm up, forearm forward, tool down
+# Home = rest pose (E-stop/shutdown park, docs/design.md section 9): shoulder 30, elbow 90, wrist 45 deg.
+# Forearm pitch 120, hairpin 135, tool pitch 165: inside every joint and coupled limit.
+HOME_ARM = [0.0, math.radians(30.0), math.radians(90.0), math.radians(45.0), 0.0]
 
 
 def home_qpos(tool: str) -> list[float]:

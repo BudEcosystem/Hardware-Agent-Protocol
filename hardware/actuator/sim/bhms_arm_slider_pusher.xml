@@ -165,6 +165,6 @@
   <actuatorfrc name="wrist_roll_torque" actuator="wrist_roll" />
  </sensor>
  <keyframe>
-  <key name="home" qpos="0 0 1.5708 1.5708 0" ctrl="0 0 1.5708 1.5708 0" />
+  <key name="home" qpos="0 0.523599 1.5708 0.785398 0" ctrl="0 0.523599 1.5708 0.785398 0" />
  </keyframe>
 </mujoco>
