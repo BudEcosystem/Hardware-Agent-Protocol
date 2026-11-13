@@ -8,7 +8,6 @@ import os
 import signal
 import subprocess
 import sys
-import time
 from pathlib import Path
 
 import pytest
@@ -17,7 +16,7 @@ from bhms.client.client import Client
 from bhms.gateway import Gateway, GatewayConfig, UpstreamConfig
 from bhms.gateway.upstreams import Upstream
 from bhms.protocol.errors import BhmsError
-from bhms.runtime.authority import Policy, token_digest
+from bhms.runtime.authority import Policy
 from bhms.runtime.store import StoreError
 from bhms.testing.gateway_fleet import build_light_fleet
 from bhms.transport.base import TransportClosed
@@ -332,5 +331,3 @@ async def test_settled_operations_leave_the_upstream_index(tmp_path):
         await asyncio.sleep(0.1)
         assert r.gateway.router.by_upstream == {}
 
-
-_ = (time, token_digest)

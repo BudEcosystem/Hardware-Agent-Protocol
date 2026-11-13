@@ -39,6 +39,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
+import time
 from collections import OrderedDict
 from typing import TYPE_CHECKING, Any
 
@@ -88,6 +89,12 @@ class Router:
     def __init__(self, gateway: Gateway) -> None:
         self.gateway = gateway
         self.by_upstream: dict[tuple[str, str], str] = {}  # (namespace, upstream operationId) -> gateway operationId
+        # Recently settled operations stay resolvable (a stop reply names operations the upstream's own notification just
+        # settled); the map is bounded.
+        self._settled_ids: OrderedDict[tuple[str, str], str] = OrderedDict()
+        self._forwarding: set[tuple[str, str]] = set()  # (principal, key) of forwards awaiting the upstream's answer
+        self._orphans: dict[tuple[str, str], list[str]] = {}  # pending rows a failed record left, by resources
+        self._retry_at: dict[str, float] = {}
         self._early: OrderedDict[tuple[str, str], dict[str, Any]] = OrderedDict()  # notifications seen before indexing
         self.unknown: dict[str, OperationRecord] = {}
         self._reconciling: dict[str, asyncio.Future[None]] = {}
@@ -101,6 +108,7 @@ class Router:
         journal = self.gateway.journal
         journal.on_unknown.append(self._became_unknown)
         journal.listeners.append(self._changed)
+        journal.on_discard.append(lambda rec: self.unknown.pop(rec.id, None))
         for rec in journal.unknown_operations():
             self.unknown[rec.id] = rec
         for row in journal.store.operations_in_states(["dispatching", "running", "unknown"]):
@@ -226,7 +234,16 @@ class Router:
             async with gw.journal.admission(principal.id, key):
                 existing = gw.journal.lookup_key(principal.id, key)  # BHMS-OPS-033: before any policy check
                 if existing is None:  # a forward whose answer was never recorded is the operation (BHMS-OPS-003)
-                    existing = gw.journal.convert_pending(principal.id, key)
+                    try:
+                        existing = gw.journal.convert_pending(principal.id, key)
+                    except StoreError as exc:
+                        gw.journal_failed(exc)
+                        raise BhmsError("BUSY", "the gateway's journal cannot be written; the earlier forward of this "
+                                        "key cannot be recorded yet", retry="same-key",
+                                        hint="retry with the same operationKey shortly (gateway rule: isolation:journal)"
+                                        ) from None
+                    if existing is not None:
+                        self._orphans.pop((principal.id, key), None)
                 if existing is not None:
                     if existing.op["requestDigest"] != digest:
                         raise key_conflict_error(existing, key)
@@ -301,40 +318,59 @@ class Router:
                       arguments=raw["arguments"], device_id=entry.device_id, action=params.action, private=private,
                       require=raw.get("require"), lease_id=lease_id, fence=fence, deadline_ns=deadline_ns,
                       admitted=admitted)
-        try:  # the intent is durable before anything is sent (BHMS-OPS-003)
-            gw.journal.pending_put(principal.id, key, common)
-        except StoreError as exc:
-            gw.journal_failed(exc)
-            raise BhmsError("BUSY", "the gateway's journal cannot be written; nothing was sent", retry="same-key",
-                            hint="retry with the same operationKey (gateway rule: isolation:journal)") from None
-        cause = None
+        return await self._forward(principal, key, up, forward, common, resources, ctx)
+
+    async def _forward(self, principal: Principal, key: str, up: Upstream, forward: dict[str, Any],
+                       common: dict[str, Any], resources: tuple[str, ...], ctx: RequestContext) -> OperationRecord:
+        """Write the pending row, send, and record the answer (or its absence); see the module docstring."""
+        gw = self.gateway
+        slot = (principal.id, key)
+        self._forwarding.add(slot)
         try:
-            reply = await up.call("actions/invoke", forward, trace=trace_of(ctx))
-        except BhmsError as exc:
-            if not exc.may_have_acted:
-                with contextlib.suppress(StoreError):
-                    gw.journal.pending_delete(principal.id, key)
-                raise _upstream_refusal(up, exc) from None  # refused before anything was created: no operation (OPS-040)
-            cause = f"upstream {up.name}: {exc.message}"
-        except (TransportClosed, asyncio.TimeoutError) as exc:
-            cause = f"the connection to upstream {up.name} failed while forwarding ({type(exc).__name__}): {exc}"
-        try:
-            if cause is not None:
-                return gw.journal.admit_in_doubt(cause=cause, **common)
-            rec = gw.journal.admit_forwarded(upstream_op=reply["operation"], **common)
-            self.index(rec)
-            return rec
-        except StoreError as exc:
-            gw.journal_failed(exc)  # the pending row stays: a retry or a restart turns it into an unknown operation
-            raise BhmsError("INTERNAL", "the gateway could not record an operation the upstream accepted",
-                            may_have_acted=True, retry="same-key",
-                            hint="retry with the same operationKey: the gateway then finds its pending record and "
-                                 "reconciles with the upstream") from None
+            try:  # the intent is durable before anything is sent (BHMS-OPS-003)
+                gw.journal.pending_put(principal.id, key, common)
+            except StoreError as exc:
+                gw.journal_failed(exc)
+                raise BhmsError("BUSY", "the gateway's journal cannot be written; nothing was sent", retry="same-key",
+                                hint="retry with the same operationKey (gateway rule: isolation:journal)") from None
+            cause = None
+            try:
+                reply = await up.call("actions/invoke", forward, trace=trace_of(ctx))
+            except BhmsError as exc:
+                if not exc.may_have_acted:
+                    with contextlib.suppress(StoreError):
+                        gw.journal.pending_delete(principal.id, key)
+                    raise _upstream_refusal(up, exc) from None  # refused before anything was created: no operation (OPS-040)
+                cause = f"upstream {up.name}: {exc.message}"
+            except (TransportClosed, asyncio.TimeoutError) as exc:
+                cause = f"the connection to upstream {up.name} failed while forwarding ({type(exc).__name__}): {exc}"
+            try:
+                if cause is not None:
+                    return gw.journal.admit_in_doubt(cause=cause, **common)
+                rec = gw.journal.admit_forwarded(upstream_op=reply["operation"], **common)
+                self.index(rec)
+                return rec
+            except StoreError as exc:
+                gw.journal_failed(exc)  # the pending row stays: the loop, a retry or a restart makes it an unknown operation
+                self._orphans[slot] = list(resources)
+                raise BhmsError("INTERNAL", "the gateway could not record an operation the upstream accepted",
+                                may_have_acted=True, retry="same-key",
+                                hint="retry with the same operationKey: the gateway then finds its pending record and "
+                                     "reconciles with the upstream") from None
+        finally:
+            self._forwarding.discard(slot)
 
     def _check_inhibition(self, resources: tuple[str, ...]) -> None:
         needed = set(resources)
         if not needed:
             return
+        for slot, held in self._orphans.items():  # a forward the journal could not record yet is as unknown as any other
+            if needed.intersection(held):
+                raise refusal("STALE", "isolation:unknown-operation",
+                              "an earlier forward on the same resources has no recorded answer yet",
+                              field="operationKey",
+                              hint="the gateway is turning it into an unknown operation as soon as its journal is "
+                                   "writable; retry later (BHMS-OPS-042)")
         for rec in self.unknown.values():
             if rec.private.get("effectClass", "none") != "none" and not rec.private.get("inhibitionLifted") \
                     and needed.intersection(rec.resources):
@@ -435,6 +471,11 @@ class Router:
         if early is not None:
             self._apply(rec, early, "notification")
 
+    def gateway_operation_id(self, namespace: str, upstream_operation_id: str) -> str | None:
+        """The gateway's id for an upstream operation, also for one that has just settled."""
+        key = (namespace, upstream_operation_id)
+        return self.by_upstream.get(key) or self._settled_ids.get(key)
+
     def on_operation_notification(self, up: Upstream, operation: dict[str, Any]) -> None:
         key = (up.name, operation.get("operationId"))
         gid = self.by_upstream.get(key)
@@ -457,8 +498,12 @@ class Router:
     def _changed(self, rec: OperationRecord, wire: dict[str, Any]) -> None:
         if wire["state"] != "unknown":
             self.unknown.pop(rec.id, None)
-        if rec.terminal and rec.private.get("upstreamOperationId"):  # settled: late notifications need no mapping
-            self.by_upstream.pop((rec.private["upstream"], rec.private["upstreamOperationId"]), None)
+        if rec.terminal and rec.private.get("upstreamOperationId"):  # settled: the active map no longer needs it
+            key = (rec.private["upstream"], rec.private["upstreamOperationId"])
+            if self.by_upstream.pop(key, None) is not None:
+                self._settled_ids[key] = rec.id
+                while len(self._settled_ids) > 4096:
+                    self._settled_ids.popitem(last=False)
 
     def upstream_lost(self, up: Upstream, cause: str) -> None:
         """Operations in flight on ``up`` become ``unknown`` (BHMS-OPS-004)."""
@@ -478,9 +523,29 @@ class Router:
             with contextlib.suppress(asyncio.TimeoutError):
                 await asyncio.wait_for(self._reconcile_kick.wait(), 0.5 if self.unknown else 2.0)
             self._reconcile_kick.clear()
+            self._convert_orphans()
+            now = time.monotonic()
             for rec in list(self.unknown.values()):
-                if self.gateway.upstreams[rec.private["upstream"]].available:
+                if self.gateway.upstreams[rec.private["upstream"]].available and now >= self._retry_at.get(rec.id, 0.0):
                     await self.reconcile(rec)
+
+    def _convert_orphans(self) -> None:
+        """Turn pending rows a failed record left behind into ``unknown`` operations once the journal is writable
+        (the same idea as the device server's ``flush_unsettled``): their resources stay inhibited until then."""
+        gw = self.gateway
+        for slot in list(self._orphans):
+            if slot in self._forwarding:
+                continue
+            try:
+                gw.require_journal()  # probes the store when it was marked unwritable
+            except BhmsError:
+                return
+            try:
+                gw.journal.convert_pending(*slot)
+            except StoreError as exc:
+                gw.journal_failed(exc)
+                return
+            del self._orphans[slot]
 
     async def _refresh(self, rec: OperationRecord, timeout: float = 3.0) -> None:
         if not rec.terminal:
@@ -527,15 +592,21 @@ class Router:
                 self._apply(rec, reply["operation"], "operations/cancel")
             return before != (rec.state, rec.op["effect"], rec.op["cancel"]["state"])
         except BhmsError as exc:
-            if rec.private.get("upstreamOperationId") is None and not exc.may_have_acted and exc.code not in (
-                    "BUSY", "DEVICE_UNAVAILABLE") and rec.state == "unknown":
-                # The re-sent request was refused before the upstream created anything: that is proof of no effect.
-                error = exc.to_operation_error()
-                with contextlib.suppress(StoreError):
-                    gw.journal.transition(
-                        rec, "failed", error=error, effect="none", kind="reconciliation",
-                        detail=f"upstream {up.name} refused the re-sent request before creating an operation: "
-                               f"{exc.code}", proof=f"upstream {up.name} answered {exc.code} with mayHaveActed false")
+            if rec.private.get("upstreamOperationId") is None and rec.state == "unknown":
+                mapped = _upstream_refusal(up, exc)
+                if not exc.may_have_acted and exc.code in _AFTER_KEY_LOOKUP:
+                    # A refusal the upstream issues only after its key lookup found nothing (BHMS-OPS-033, §6.5 steps 3-9):
+                    # proof that the request was never admitted there.
+                    with contextlib.suppress(StoreError):
+                        gw.journal.transition(
+                            rec, "failed", error=exc.to_operation_error(), effect="none", kind="reconciliation",
+                            detail=f"upstream {up.name} refused the re-sent request after its key lookup found nothing: "
+                                   f"{exc.code}", proof=f"upstream {up.name} answered {exc.code} with mayHaveActed false")
+                else:  # refused before the key lookup (authentication, shape, reserved key) or transiently: no proof
+                    self._retry_at[rec.id] = time.monotonic() + 30.0
+                    self._note_unreconcilable(rec, f"the upstream refused the re-send ({mapped.code}: {mapped.message}); a "
+                                                   "refusal before its key lookup proves nothing, so the outcome stays "
+                                                   "unknown")
             elif exc.field == "operationId":
                 self._note_unreconcilable(rec, "the upstream does not know this operation any more (its journal was "
                                                f"lost or pruned): {exc.message}")
@@ -668,10 +739,11 @@ class Router:
         for rec in gw.journal.live():  # one pass over the live operations, one query for the unknown ones
             if rec.op.get("deviceId") in wanted and rec.state in ("dispatching", "running", "unknown"):
                 live_by_device.setdefault(rec.op["deviceId"], []).append(rec)
-        unknown_by_device: dict[str, list[str]] = {}
-        for row in gw.journal.store.operations_in_states(["unknown"]):
-            if row.record.get("deviceId") in wanted:
-                unknown_by_device.setdefault(row.record["deviceId"], []).append(row.id)
+        for row in gw.journal.store.operations_in_states(["unknown"]):  # unknown operations are not "live": one query
+            device = row.record.get("deviceId")
+            rec = gw.journal.get(row.id) if device in wanted else None
+            if rec is not None and rec not in live_by_device.get(device, ()):
+                live_by_device.setdefault(device, []).append(rec)
         for entry in entries:
             revoked = covering[entry.device_id]  # a cross-device lease is reported on every device it covered
             canceled: list[str] = []
@@ -685,7 +757,6 @@ class Router:
                     degraded = True
                     gw.journal_failed(exc)
                 requested.append(rec.id)
-            requested += [op_id for op_id in unknown_by_device.get(entry.device_id, ()) if op_id not in requested]
             results[entry.device_id] = {"deviceId": entry.device_id, "canceledOperations": canceled,
                                         "revokedLeases": revoked, **({"cancelRequestedOperations": requested}
                                                                      if requested else {})}
@@ -704,10 +775,12 @@ class Router:
                 mine = results[entry.device_id]
                 merged = {**stop, "deviceId": entry.device_id}
                 for member in ("canceledOperations", "cancelRequestedOperations"):
-                    ids = [self.by_upstream[(namespace, uid)] for uid in stop.get(member, [])
-                           if (namespace, uid) in self.by_upstream]
+                    ids = [gid for uid in stop.get(member, [])
+                           if (gid := self.gateway_operation_id(namespace, uid)) is not None]
                     mine_ids = mine.get(member, []) if member == "cancelRequestedOperations" else []
                     combined = list(dict.fromkeys([*ids, *mine_ids]))
+                    if member == "cancelRequestedOperations":  # an operation moved to canceled is not merely requested
+                        combined = [i for i in combined if i not in merged.get("canceledOperations", ())]
                     if combined or member == "canceledOperations":
                         merged[member] = combined
                     else:
@@ -790,6 +863,12 @@ class Router:
     async def listen(self, params: Any, ctx: RequestContext) -> Any:
         principal = self.gateway.auth.authenticate(ctx)
         return self.gateway.subscriptions.listen(principal, params, ctx)
+
+
+# Refusals an upstream issues only after looking up the operationKey (spec 06 §6.5 step 2 precedes steps 3-9); a refusal
+# that can also come from step 1 (INVALID_ARGUMENT, UNAUTHORIZED authentication, UNSUPPORTED capability gating) is not here.
+_AFTER_KEY_LOOKUP = frozenset({"UNKNOWN_DEVICE", "UNKNOWN_ACTION", "OUT_OF_RANGE", "UNIT_MISMATCH", "STALE",
+                               "LEASE_REQUIRED", "LEASE_EXPIRED", "LEASE_CONFLICT", "FENCED"})
 
 
 def _upstream_refusal(up: Upstream, exc: BhmsError) -> BhmsError:

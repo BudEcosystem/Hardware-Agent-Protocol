@@ -9,8 +9,10 @@
   ``text/event-stream`` whose events each carry one JSON-RPC message and end with the listen result (BHMS-TRN-041);
 * closing the response stream is the request's cancellation signal: the server treats a disconnect exactly like
   ``notifications/cancelled`` — the request is abandoned and nothing durable is cancelled (BHMS-TRN-042, BHMS-TRN-005);
-* ``notifications/cancelled`` may also be ``POST``ed and is answered ``202`` without a body (BHMS-TRN-043); it is matched to the
-  in-flight request of the same credential and id;
+* ``notifications/cancelled`` may also be ``POST``ed and is answered ``202`` without a body (BHMS-TRN-043). It names the
+  exchange it targets in the ``BHMS-Exchange`` header, an unguessable id the server returns in the headers of the response
+  stream it concerns; a cancel without it, or with another request's id, is ignored. Two clients that share a token (or a
+  NAT address) therefore cannot cancel each other's requests;
 * the principal is the bearer token (BHMS-SEC-001): a missing or unknown token is HTTP 401 (``WWW-Authenticate: Bearer``)
   except for ``server/discover``, which is answered without a principal; a non-loopback bind needs TLS (BHMS-SEC-004); on
   a loopback bind the ``Host`` header must name loopback (DNS-rebinding guard). Bodies over ``max_message_bytes`` are
@@ -38,6 +40,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import secrets
 import ssl as ssl_module
 from collections.abc import Callable
 from typing import Any
@@ -59,6 +62,7 @@ from bhms.transport.stream import Listener, is_loopback
 DEFAULT_PATH = "/bhms"
 VERSION_HEADER = "BHMS-Protocol-Version"
 METHOD_HEADER = "BHMS-Method"
+EXCHANGE_HEADER = "BHMS-Exchange"
 KEEPALIVE_S = 15.0
 _LOOPBACK_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
@@ -85,6 +89,7 @@ class HttpExchange(Transport):
     response writer. A cancellation can be injected with :meth:`feed`."""
 
     OUTGOING_BOUND = 16
+    request_id: Any = None
 
     def __init__(self, peer: Peer, max_message_bytes: int) -> None:
         self.peer = peer
@@ -94,6 +99,7 @@ class HttpExchange(Transport):
         # per-subscription overflow policy (BHMS-LIF-043: drop observations, end with endReason overflow) engage.
         self.outgoing: asyncio.Queue[bytes | None] = asyncio.Queue(self.OUTGOING_BOUND)
         self._closed = False
+        self.exchange_id = secrets.token_urlsafe(16)  # the capability a client needs to cancel this exchange (TRN-043)
 
     def feed(self, data: bytes) -> None:
         self._incoming.put_nowait(data)
@@ -144,7 +150,7 @@ async def serve_http(host: str, port: int, rpc: RpcServer, *, authenticate: Call
     if not is_loopback(host) and (ssl is None or authenticate is None):
         raise ValueError(f"refusing to serve HTTP on {host!r} without TLS and bearer authentication (BHMS-SEC-004): "
                          "pass ssl= and authenticate=, or bind 127.0.0.1")
-    inflight: dict[tuple[str, str], HttpExchange] = {}
+    by_exchange: dict[str, HttpExchange] = {}
     exchanges: set[HttpExchange] = set()
     closers: set[asyncio.Task[None]] = set()
     loopback_only = is_loopback(host)
@@ -171,10 +177,12 @@ async def serve_http(host: str, port: int, rpc: RpcServer, *, authenticate: Call
         who = f"{token or 'anonymous'}@{request.remote}"
         if isinstance(message, dict) and method == "notifications/cancelled" and "id" not in message:
             target = (message.get("params") or {}).get("requestId")
-            exchange = inflight.get((who, repr(target)))
-            if exchange is not None:
+            exchange = by_exchange.get(request.headers.get(EXCHANGE_HEADER, ""))
+            if exchange is not None and exchange.request_id == target:  # only the holder of the exchange id may cancel
                 exchange.feed(body)
-            return web.Response(status=202)
+                await asyncio.sleep(0)
+                await exchange.close()  # nothing more is sent after a cancel (BHMS-LIF-051): end the response stream
+            return web.Response(status=202)  # an unknown or foreign exchange is ignored (BHMS-LIF-051)
         if isinstance(message, dict) and method is not None and "id" not in message:
             return web.Response(status=202)  # no other client notification exists; nothing to deliver (BHMS-LIF-014)
         return await _exchange(request, body, message, token, who)
@@ -185,17 +193,17 @@ async def serve_http(host: str, port: int, rpc: RpcServer, *, authenticate: Call
         exchange = HttpExchange(peer, max_message_bytes)
         session = rpc.session_for(exchange)
         request_id = message.get("id") if isinstance(message, dict) else None
-        slot = (who, repr(request_id))
+        exchange.request_id = request_id
         exchanges.add(exchange)
-        if request_id is not None:
-            inflight[slot] = exchange
+        by_exchange[exchange.exchange_id] = exchange
         streaming = isinstance(message, dict) and message.get("method") == "subscriptions/listen"
         response: web.StreamResponse | None = None
         abandoned = False
         try:
             exchange.feed(body)
             if streaming:
-                response = web.StreamResponse(headers={"Content-Type": "text/event-stream", "Cache-Control": "no-store"})
+                response = web.StreamResponse(headers={"Content-Type": "text/event-stream", "Cache-Control": "no-store",
+                                                         EXCHANGE_HEADER: exchange.exchange_id})
                 await response.prepare(request)
             while True:
                 try:
@@ -229,8 +237,7 @@ async def serve_http(host: str, port: int, rpc: RpcServer, *, authenticate: Call
             raise
         finally:
             exchanges.discard(exchange)
-            if inflight.get(slot) is exchange:
-                del inflight[slot]
+            by_exchange.pop(exchange.exchange_id, None)
             if abandoned:  # the handler was cancelled: do not hold it up for detached handlers to drain
                 closer = asyncio.get_running_loop().create_task(_close(session, exchange))
                 closers.add(closer)
@@ -317,6 +324,7 @@ class HttpClientTransport(Transport):
         self._ssl = ssl
         self._inbox: asyncio.Queue[bytes | None] = asyncio.Queue()
         self._posts: dict[Any, asyncio.Task[None]] = {}
+        self._exchange_ids: dict[Any, str] = {}
         self._closed = False
 
     def _headers(self, message: dict[str, Any]) -> dict[str, str]:
@@ -341,15 +349,18 @@ class HttpClientTransport(Transport):
             post = self._posts.pop(target, None)
             if post is not None:
                 post.cancel()  # closing the response stream is the cancellation signal (BHMS-TRN-042)
-            asyncio.get_running_loop().create_task(self._notify(data, message))
+            asyncio.get_running_loop().create_task(self._notify(data, message, self._exchange_ids.pop(target, None)))
             return
         task = asyncio.get_running_loop().create_task(self._post(request_id, data, message))
         self._posts[request_id] = task
         task.add_done_callback(lambda t, rid=request_id: self._posts.pop(rid, None) if self._posts.get(rid) is t else None)
 
-    async def _notify(self, data: bytes, message: dict[str, Any]) -> None:
+    async def _notify(self, data: bytes, message: dict[str, Any], exchange_id: str | None) -> None:
+        headers = self._headers(message)
+        if exchange_id:
+            headers[EXCHANGE_HEADER] = exchange_id
         with contextlib.suppress(Exception):
-            async with self._http.post(self.url, data=data, headers=self._headers(message), ssl=self._ssl):
+            async with self._http.post(self.url, data=data, headers=headers, ssl=self._ssl):
                 pass
 
     async def _post(self, request_id: Any, data: bytes, message: dict[str, Any]) -> None:
@@ -357,6 +368,8 @@ class HttpClientTransport(Transport):
             async with self._http.post(self.url, data=data, headers=self._headers(message), ssl=self._ssl) as response:
                 kind = response.content_type
                 if kind == "text/event-stream":
+                    if EXCHANGE_HEADER in response.headers:
+                        self._exchange_ids[request_id] = response.headers[EXCHANGE_HEADER]
                     await self._read_events(response)
                 else:
                     body = await response.read()

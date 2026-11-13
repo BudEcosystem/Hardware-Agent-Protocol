@@ -85,7 +85,14 @@ as `notifications/cancelled` (and therefore MUST NOT cancel the underlying
 operation, BHMS-TRN-005).
 
 **BHMS-TRN-043** Notifications sent by the client (only `notifications/cancelled`)
-MUST be POSTed and answered with HTTP 202 and no body.
+MUST be POSTed and answered with HTTP 202 and no body. HTTP has no session, so a
+POSTed cancel can only name its target through an exchange identifier: a server
+that streams a response (`text/event-stream`) MUST return an unguessable
+`BHMS-Exchange` header on it, and honours a `notifications/cancelled` only when it
+carries that header and its `requestId` is that exchange's request; any other
+cancel is acknowledged with 202 and ignored (BHMS-LIF-051), so clients that share
+a credential or an address cannot cancel each other's requests. Closing the
+response stream remains the primary cancellation signal (BHMS-TRN-042).
 
 There is no stream resumption: a broken response stream loses that request, and
 the client re-issues it with a new JSON-RPC id. Because operations are durable

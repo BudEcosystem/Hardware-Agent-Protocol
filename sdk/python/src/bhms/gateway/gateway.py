@@ -438,7 +438,7 @@ class Gateway:
         if kind == "policy.changed":
             return  # the upstream's policy is not the gateway's
         op_id = event.get("operationId")
-        gateway_op = self.router.by_upstream.get((up.name, op_id)) if op_id else None
+        gateway_op = self.router.gateway_operation_id(up.name, op_id) if op_id else None
         if kind == "operation.state" and gateway_op is None:
             return  # an operation the gateway did not forward is not this gateway's to report
         data = event.get("data")

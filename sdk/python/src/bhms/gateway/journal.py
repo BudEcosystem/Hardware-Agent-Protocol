@@ -35,8 +35,10 @@ Thread-safety: one event loop.
 from __future__ import annotations
 
 import base64
+import contextlib
 import hashlib
 import logging
+from collections.abc import Iterator
 from typing import Any
 
 import orjson
@@ -67,6 +69,12 @@ class ForwardJournal(Journal):
     def _pending_key(principal: str, key: str) -> str:
         return f"pending:{principal}\n{key}"
 
+    def __init__(self, *args: Any, **kw: Any) -> None:
+        super().__init__(*args, **kw)
+        self.on_discard: list[Any] = []  # called with each record a failed unit of work created
+        self._deferred = None
+        self._unit_records = []
+
     def pending_put(self, principal: str, key: str, request: dict[str, Any]) -> None:
         """Durably record the intent to forward ``request`` (everything :meth:`admit_in_doubt` needs) before sending."""
         with self.store.transaction(barrier=True):
@@ -82,12 +90,46 @@ class ForwardJournal(Journal):
     def pending_all(self) -> dict[str, dict[str, Any]]:
         return {k: orjson.loads(v) for k, v in self.store.meta_prefix("pending:").items() if v}
 
+    @contextlib.contextmanager
+    def _unit(self) -> Iterator[None]:
+        """One atomic unit of journal work. Listeners hear about its changes only after the commit, and if it fails the
+        records it created are dropped from memory (``on_discard`` tells the owner), so a rolled-back admission leaves no
+        phantom operation behind."""
+        self._deferred: list[tuple[OperationRecord, dict[str, Any]]] | None = []
+        self._unit_records: list[OperationRecord] = []
+        try:
+            with self.store.transaction():
+                yield
+        except BaseException:
+            for rec in self._unit_records:
+                self._live.pop(rec.id, None)
+                self._recent.pop(rec.id, None)
+                for hook in self.on_discard:
+                    hook(rec)
+            self._deferred = None
+            raise
+        deferred, self._deferred = self._deferred, None
+        for rec, wire in deferred:
+            super()._notify(rec, wire)
+
+    def _notify(self, rec: OperationRecord, wire: dict[str, Any] | None = None) -> None:
+        if getattr(self, "_deferred", None) is not None:
+            self._deferred.append((rec, wire if wire is not None else rec.wire()))
+        else:
+            super()._notify(rec, wire)
+
+    def create(self, **kw: Any) -> OperationRecord:
+        rec = super().create(**kw)
+        if getattr(self, "_deferred", None) is not None:
+            self._unit_records.append(rec)
+        return rec
+
     def convert_pending(self, principal: str, key: str) -> OperationRecord | None:
         """Turn a pending forward into an ``unknown`` operation (the answer was never recorded); None if there is none."""
         request = self.pending_get(principal, key)
         if request is None:
             return None
-        with self.store.transaction():
+        with self._unit():
             rec = self._record(**request)
             self.link_lost(rec, f"the gateway has no recorded answer from upstream {rec.private.get('upstream')} for "
                                 "this forward; the upstream may have acted and is asked to reconcile")
@@ -119,7 +161,7 @@ class ForwardJournal(Journal):
     def admit_forwarded(self, *, upstream_op: dict[str, Any], **request: Any) -> OperationRecord:
         """Record an operation the upstream admitted, in the state the upstream reports; the pending row goes away in
         the same transaction."""
-        with self.store.transaction():
+        with self._unit():
             rec = self._record(**request)
             self.mirror(rec, upstream_op, source="forward reply")
             self.pending_delete(request["principal"], request["key"])
@@ -128,7 +170,7 @@ class ForwardJournal(Journal):
     def admit_in_doubt(self, *, cause: str, **request: Any) -> OperationRecord:
         """Record a forward whose answer was lost: the operation is ``unknown`` (BHMS-OPS-004) and is reconciled by
         re-sending the same upstream key once the upstream answers."""
-        with self.store.transaction():
+        with self._unit():
             rec = self._record(**request)
             self.link_lost(rec, cause)
             self.pending_delete(request["principal"], request["key"])

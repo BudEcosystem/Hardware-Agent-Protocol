@@ -412,6 +412,8 @@ def _description_problem(description: dict[str, Any], expected_id: str) -> str |
     """Why a description must not be served, or None (BHMS-SEC-022, BHMS-DEV-021). Full schema validation (milliseconds
     per description) runs afterwards in the background (:meth:`bhms.gateway.gateway.Gateway._validate_loop`), so a start-up
     with ten thousand devices is not spent in a validator."""
+    if not isinstance(description, dict):
+        return "it is not a JSON object"
     if description.get("deviceId") != expected_id:
         return f"it describes {description.get('deviceId')!r}, not {expected_id!r}"
     for member, kind in (("actions", dict), ("properties", dict), ("resources", list), ("capabilities", list),
