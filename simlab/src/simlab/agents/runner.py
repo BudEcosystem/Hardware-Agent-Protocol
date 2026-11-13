@@ -165,7 +165,7 @@ async def run_task(task: Task, agent: str, seed: int, out: Path, *, ledger: Spen
             {"success": outcome.success, **outcome.detail}, metrics.detail,
             [{**asdict(j), "verdict": j.verdict.value, "principal": who} for j, who in judged],
             [asdict(s) for s in run.steps] if run else [])
-    if run is not None and ledger is not None:
+    if run is not None and ledger is not None and agent != "local":
         ledger.add(f"{task.id}/{agent}/seed{seed}", run.tokens)
     (run_dir.parent / f"seed{seed}.json").write_text(json.dumps(asdict(record), indent=1, default=str))
     return record
@@ -178,6 +178,13 @@ async def _hub_loss(session: Session, task: Task) -> None:
     await session.kill_hub()
 
 
+async def bench_note(client: Any) -> str:
+    """The device ids on this bench, as an operator's briefing would list them. Without it the first model run showed that
+    ``bhms_find`` with a descriptive text answers "0 devices" and a model then reports ``cannot_do`` (SDK finding, see the report)."""
+    ids = [device.device_id for device in (await client.devices_list()).devices]
+    return " The devices on this bench are: " + ", ".join(sorted(ids)) + " (bhms_find with no text lists them)."
+
+
 async def _run_llm(task: Task, agent: str, seed: int, client: Any, ledger: SpendLedger | None, budget: int | None) -> Any:
     cap = budget or task.budget_tokens
     if agent != "local" and ledger is not None:
@@ -187,7 +194,8 @@ async def _run_llm(task: Task, agent: str, seed: int, client: Any, ledger: Spend
     bridge = AgentBridge(client)
     llm = _llm_client(agent)
     try:
-        return await run_agent(bridge, agent if agent != "local" else "qwen3-4b-instruct-2507", task.full_prompt(seed), cap,
+        prompt = task.full_prompt(seed) + await bench_note(client)
+        return await run_agent(bridge, agent if agent != "local" else "qwen3-4b-instruct-2507", prompt, cap,
                                api=APIS[agent], llm=llm, max_steps=task.max_steps, max_output_tokens=4000)
     finally:
         await bridge.aclose()
@@ -208,19 +216,20 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seeds", default="1", help="comma-separated seeds")
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--task-dir", type=Path, default=TASK_DIR)
+    parser.add_argument("--ledger", type=Path, default=None, help="OpenAI token ledger shared by every invocation (default: OUT/spend.tsv)")
     parser.add_argument("--budget", type=int, default=None, help="per-run token ceiling (default: the task's)")
     args = parser.parse_args(argv)
     tasks = load_tasks(args.task_dir)
-    wanted = list(tasks) if args.tasks == "all" else [
-        t for spec in args.tasks.split(",") for t in tasks if t == spec or t.startswith(spec)]
-    ledger = SpendLedger(args.out / "spend.tsv")
+    wanted = list(tasks) if args.tasks == "all" else list(dict.fromkeys(
+        t for spec in args.tasks.split(",") for t in tasks if t == spec or t.startswith(spec)))
+    ledger = SpendLedger(args.ledger or args.out / "spend.tsv")
     failures = 0
     for task_id in wanted:
         for seed in (int(s) for s in args.seeds.split(",")):
             record = asyncio.run(run_task(tasks[task_id], args.agent, seed, args.out, ledger=ledger, budget=args.budget))
             print(summary_line(record), flush=True)
             failures += int(any(record.zero.values()))
-    print(f"tokens spent so far (all invocations sharing {args.out}): {ledger.spent()} of {ledger.cap}")
+    print(f"OpenAI tokens spent so far (all invocations sharing {ledger.path}): {ledger.spent()} of {ledger.cap}")
     return 1 if failures else 0
 
 

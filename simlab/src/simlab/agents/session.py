@@ -77,6 +77,8 @@ class Session:
     run_dir: Path
     clients: list[Client] = field(default_factory=list)
     lossy: dict[str, LossyClient] = field(default_factory=dict)
+    lost_replies: list[dict[str, Any]] = field(default_factory=list)  # every reply a reply_loss fault dropped (all clients)
+    config: Any = None
     _listeners: list[Any] = field(default_factory=list)
     caller_rules: dict[tuple[str, str], Any] = field(default_factory=dict)
     direct: list[str] = field(default_factory=list)  # lab servers an agent reached directly (programs/* is not offered by a gateway)
@@ -116,6 +118,7 @@ class Session:
             await lab.close()
             raise
         session = cls(lab, gateway, "", run_dir)
+        session.config = config
         listener = await gateway.listen("ws://127.0.0.1:0")
         session._listeners.append(listener)
         session.ws_url = f"ws://127.0.0.1:{listener.address[1]}"
@@ -182,6 +185,16 @@ class Session:
     def start_effects_since(self, mark: int) -> list[Effect]:
         return [e for e in self.lab.world.effect_log()[mark:] if e.kind != "fault_injected" and is_start(e.kind)]
 
+    async def restart_hub(self) -> None:
+        """Crash and restart the runtime (F4): the gateway dies, a new one starts on the same state directory (it settles what
+        the crash left in flight as ``unknown`` and reconciles), listening on a new port; clients must reconnect."""
+        await self.kill_hub()
+        self.gateway = Gateway(self.config)
+        await self.gateway.start()
+        listener = await self.gateway.listen("ws://127.0.0.1:0")
+        self._listeners.append(listener)
+        self.ws_url = f"ws://127.0.0.1:{listener.address[1]}"
+
     async def kill_hub(self) -> None:
         """Hub loss (F16): the gateway and its listeners go away at once; the devices behind it keep running."""
         await self._bounded(self.gateway.close())
@@ -219,7 +232,7 @@ class _GatewayLossy(LossyClient):
 
     def __init__(self, client: Client, world: Any, session: Session) -> None:
         super().__init__(client, world)
-        self.lost: list[dict[str, Any]] = []
+        self.lost = session.lost_replies
 
     async def actions_invoke(self, device_id: str, action: str, arguments: dict[str, Any], **kw: Any) -> Any:
         result = await self._client.actions_invoke(device_id, action, arguments, **kw)

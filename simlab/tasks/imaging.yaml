@@ -8,10 +8,12 @@ check: uc1
 scripted: uc1
 result_fields: "`plane_um` (the focus plane you chose, in um) and `frames` (the frame ids of your three z-stack images, in order)"
 prompt: |
-  A slide with a specimen is on the microscope stage. Find the focus plane of the specimen: do a coarse sweep of the focus
-  axis over 20 to 80 um in 10 um steps, then a fine sweep of 1 um steps around the best coarse position, scoring each
-  position by the focus_score of a snapped frame. Then acquire a three-frame z-stack at the chosen plane minus 1 um, the
-  plane, and the plane plus 1 um. The focus axis is currently at 20 um.
+  A slide with a specimen is on the microscope stage. Find the focus plane of the specimen. Coarse sweep: set the focus axis to
+  25, 40, 55 and 70 um and snap a frame at each, noting its focus_score. Fine sweep: around the best coarse position, snap at
+  that position minus 4, minus 2, plus 0, plus 2 and plus 4 um (clamped to 20..80) and take the sharpest as the plane. If the
+  sharpest coarse score is not clearly higher than the others (less than 1.5 times the lowest) there is no specimen to focus on.
+  Then acquire a three-frame z-stack at the chosen plane minus 1 um, the plane, and the plane plus 1 um. The focus axis is
+  currently at 20 um.
 ---
 id: uc1-blank-field
 extends: uc1-autofocus

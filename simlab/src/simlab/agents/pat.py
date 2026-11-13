@@ -35,7 +35,7 @@ from bhms.bridges.openai_tools import run_agent
 from bhms.client.client import Client
 from simlab.agents.baseline import BhmsArm, Recorder, StepFailed
 from simlab.agents.metrics import TracingClient, compute
-from simlab.agents.runner import APIS, RunRecord, SpendLedger, _llm_client
+from simlab.agents.runner import APIS, RunRecord, SpendLedger, _llm_client, bench_note
 from simlab.agents.session import Session
 from simlab.agents.tasks import PROTOCOL, Final, Task, parse_final
 from simlab.agents.usecases import SETUPS, Outcome, unknown_dye_mm
@@ -144,7 +144,7 @@ async def run_pat(task: Task, agent: str, seed: int, out: Path, *, ledger: Spend
             cap = min(budget or task.budget_tokens, ledger.remaining() if ledger else task.budget_tokens)
             llm = _llm_client(agent)
             try:
-                run = await run_agent(bridge, agent if agent != "local" else "qwen3-4b-instruct-2507", prompt + PROTOCOL, cap,
+                run = await run_agent(bridge, agent if agent != "local" else "qwen3-4b-instruct-2507", prompt + PROTOCOL + await bench_note(client), cap,
                                       api=APIS[agent], llm=llm, max_steps=task.max_steps, max_output_tokens=4000)
             finally:
                 if llm is not None:

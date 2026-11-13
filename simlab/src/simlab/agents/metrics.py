@@ -40,9 +40,9 @@ class TracingClient:
     TRACED = ("actions_invoke", "operations_get", "operations_wait", "operations_list", "operations_cancel",
               "properties_read", "devices_describe", "devices_list", "programs_run", "leases_acquire", "stop")
 
-    def __init__(self, client: Any) -> None:
+    def __init__(self, client: Any, calls: list[dict[str, Any]] | None = None) -> None:
         self._client = client
-        self.calls: list[dict[str, Any]] = []
+        self.calls: list[dict[str, Any]] = calls if calls is not None else []
 
     def __getattr__(self, name: str) -> Any:
         target = getattr(self._client, name)
@@ -85,7 +85,7 @@ def _doubled_causes(session: Session) -> list[str]:
 
 def _ambiguity(session: Session, task: Task, final: Final, trace: TracingClient | None) -> dict[str, Any]:
     """What was ambiguous in this run and whether the agent followed it up (see the module docstring)."""
-    lost = list(session.lossy["agent"].lost) if "agent" in session.lossy else []
+    lost = list(session.lost_replies)
     followed = 0
     for item in lost:
         for call in (trace.calls if trace else []):
