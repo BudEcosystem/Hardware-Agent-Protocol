@@ -90,11 +90,10 @@ async def stalled_upstream(c: Context) -> None:
         results = await asyncio.gather(*(timed(d) for d in devices))
         fast = [r for r in results if r[1] and r[2] < 1.5]
         c.expect(fast, f"no request was answered quickly while one upstream was stalled: {results}")
-        async with c.fresh_wire() as wire:
-            for device in devices:
-                answered = await asyncio.wait_for(wire.request("devices/describe", {"deviceId": device}), 4.0)
-                c.expect(answered.ok or answered.code in ("DEVICE_UNAVAILABLE", "BUSY"),
-                         f"a stalled upstream must give DEVICE_UNAVAILABLE or BUSY, not {answered.describe()}")
+        for device in devices:  # on the same connection: a new connection to a stdio gateway would be a new gateway process
+            answered = await asyncio.wait_for(c.call("devices/describe", {"deviceId": device}), 4.0)
+            c.expect(answered.ok or answered.code in ("DEVICE_UNAVAILABLE", "BUSY"),
+                     f"a stalled upstream must give DEVICE_UNAVAILABLE or BUSY, not {answered.describe()}")
     finally:
         os.kill(victim, signal.SIGCONT)
     deadline = time.monotonic() + 30  # a later answer to a liveness probe restores the upstream; the next checks need it
