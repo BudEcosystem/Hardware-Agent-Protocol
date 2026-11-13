@@ -796,7 +796,8 @@ class Router:
                 except StoreError as exc:
                     degraded = True
                     gw.journal_failed(exc)
-                requested.append(rec.id)
+                if not rec.terminal:  # one that settled before this ran keeps its stop entry, but nothing was asked of it
+                    requested.append(rec.id)
             results[entry.device_id] = {"deviceId": entry.device_id, "canceledOperations": canceled,
                                         "revokedLeases": revoked, **({"cancelRequestedOperations": requested}
                                                                      if requested else {})}
