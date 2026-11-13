@@ -20,7 +20,8 @@ enum {
     kToolDischargeMs = 60u, /* >= 50 ms before the unlocking roll */
     kToolOpTimeoutMs = 5000u,
     kStallMs = 250u,
-    kGoalWraps = 100 /* write_arm_goals: the goal would wrap through the encoder boundary */
+    kGoalWraps = 100, /* write_arm_goals: the goal would wrap through the encoder boundary */
+    kReleaseDropStep = 5 /* release from a latched fault: torque off immediately, no park move */
 };
 #define kSettleTolDeg 2.0f
 #define kFollowErrDeg 15.0f   /* measured pose may trail the commanded waypoint by at most this */
@@ -86,6 +87,7 @@ static void finish(arm *a, uint8_t status, uint8_t fault, uint8_t measured, floa
         if (status == ARM_DONE_COMPLETED) { /* moved back inside the limits: the latch clears */
             a->limit_latched = 0;
             a->limit_ref = a->guard_last = 0.0f;
+            a->retry_valid = 0;
             a->fault_code = ARM_FAULT_NONE;
         } else if (a->limit_latched) {
             a->state = ARM_ST_FAULT;
@@ -248,8 +250,16 @@ static float cached_excess(const arm *a) {
 static void trip(arm *a, uint8_t fault, uint8_t limit_code) {
     int frozen = write_freeze_at_measured(a);
     float ex = cached_excess(a);
-    if (!a->limit_latched) a->limit_ref = ex; /* the reference is the first latch; retries never raise it */
+    a->limit_ref = ex; /* re-baseline to where the arm rests now, so an improving move stays possible */
     a->guard_last = ex;
+    if (a->recovering && (a->op == ARM_OP_MOVE || a->op == ARM_OP_HOME) &&
+        (fault == ARM_FAULT_LIMIT || fault == ARM_FAULT_DISPLACED)) {
+        /* A recovery goal that made the measured pose WORSE (a jammed joint): do not accept the very
+         * same goal again until something improved, so a client's retry loop cannot ratchet outward. */
+        memcpy(a->retry_goal, a->q_goal.q, sizeof a->retry_goal);
+        a->retry_ex = ex;
+        a->retry_valid = 1;
+    }
     if (!frozen) fault = ARM_FAULT_BUS; /* the hold could not be confirmed on the bus: say so */
     if (a->op == ARM_OP_GRIP || a->op == ARM_OP_TURN || a->op == ARM_OP_PRESS)
         a->freeze_servo = (uint8_t)(1u + tool_servo_index(a->tool_id)); /* stop the tool as well */
@@ -551,13 +561,15 @@ static void traj_start(arm *a, const arm_pose *goal, uint32_t pct, arm_op_kind k
     a->recovering = (a->state == ARM_ST_FAULT && a->limit_latched) ? 1u : 0u;
     sync_cmd_to_measured(a, now);
     {
-        /* Starting outside a limit (moved by hand, pushed): only a move back inside is allowed, so
-         * the measured-pose limit check is off for this motion; the waypoint check still keeps it
-         * from getting worse and the following-error bound still applies. */
+        /* Starting outside a limit (moved by hand, pushed) is a recovery too. The measured-pose guard
+         * stays ON: it trips when the excess grows by more than the band beyond the BEST value reached
+         * in this motion (the baseline is the measured excess now), and the waypoint check and the
+         * following-error bound apply as usual. */
         arm_pose m;
         if (fresh_pose(a, &m, now, 0, 0) && arm_check_pose(&m, -kMeasSlackDeg) != ARM_LIMIT_NONE)
             a->recovering = 1;
     }
+    if (a->recovering) a->limit_ref = a->guard_last = cached_excess(a);
     a->q_start = a->q_cmd;
     a->q_goal = *goal;
     for (j = 0; j < ARM_NUM_JOINTS; ++j) {
@@ -673,6 +685,7 @@ static void pose_guard(arm *a, uint32_t now) {
     if (!a->torque_on || !arm_servos_powered(a)) return;
     if (a->state != ARM_ST_READY && a->state != ARM_ST_MOVING && a->state != ARM_ST_FAULT) return;
     if (a->op == ARM_OP_ENABLE || a->op == ARM_OP_CALIBRATE) return;
+    if (a->op == ARM_OP_RELEASE && a->op_step == kReleaseDropStep) return;
     if (!fresh_pose(a, &m, now, 0, 0)) return;
     ex = arm_pose_excess(&m, &code);
     fault = (a->op == ARM_OP_MOVE || a->op == ARM_OP_HOME || a->op == ARM_OP_RELEASE) ? ARM_FAULT_LIMIT
@@ -686,6 +699,21 @@ static void pose_guard(arm *a, uint32_t now) {
 }
 
 static void move_step(arm *a, uint32_t now) {
+    if (a->op == ARM_OP_RELEASE && a->op_step == kReleaseDropStep) {
+        if (write_torque(a, 0) == STSB_OK) {
+            a->torque_on = 0;
+            a->limit_latched = 0;
+            a->limit_ref = a->guard_last = 0.0f;
+            a->retry_valid = 0;
+            a->pose_unknown = 1; /* the arm falls: re-home before use */
+            a->state = ARM_ST_PARKED;
+            finish(a, ARM_DONE_COMPLETED, 0, 1, 0, 0, 0);
+            a->state = ARM_ST_PARKED;
+        } else if (++a->cfg_retry >= 5u) {
+            finish(a, ARM_DONE_FAILED, ARM_FAULT_BUS, 0, 0, 0, 0);
+        }
+        return;
+    }
     motion_guard(a, now);
     if (a->op == ARM_OP_NONE) return;
     if (a->traj_active) {
@@ -813,6 +841,7 @@ static void enable_step(arm *a, uint32_t now) {
         a->pose_unknown = 0;
         a->limit_latched = 0;
         a->limit_ref = a->guard_last = 0.0f;
+        a->retry_valid = 0;
         a->watchdog_reset = 0; /* a successful enable acknowledges the reset */
         a->fault_code = ARM_FAULT_NONE;
         a->state = ARM_ST_READY;
@@ -1222,10 +1251,6 @@ static arm_refusal gate_motion_ex(const arm *a, uint8_t *detail, int allow_recov
     case ARM_ST_FAULT:
         if (allow_recover && a->limit_latched && !a->pwr.hard_fault && a->torque_on &&
             arm_servos_powered(a)) {
-            if (cached_excess(a) > a->limit_ref + kWorsenBandDeg) {
-                *detail = ARM_WHY_RECOVERY_WORSE; /* it has been pushed further out since: not by us */
-                return ARM_REFUSE_INHIBITED;
-            }
             break;
         }
         *detail = a->pwr.hard_fault ? ARM_WHY_HARD_FAULT : ARM_WHY_FAULT;
@@ -1247,6 +1272,43 @@ static arm_refusal gate_motion_ex(const arm *a, uint8_t *detail, int allow_recov
 }
 
 static arm_refusal gate_motion(const arm *a, uint8_t *detail) { return gate_motion_ex(a, detail, 0); }
+
+/* Recovery goals are judged from the CURRENT measured pose, by direction: along the straight
+ * joint-space path to the goal the limit excess must not increase (limits are convex, so a goal inside
+ * them always satisfies this; the check keeps that true if a non-convex limit is ever added), and the
+ * exact goal that last made the pose worse is refused until the pose has improved. */
+static arm_refusal recovery_goal_ok(const arm *a, const arm_pose *goal, uint8_t *detail) {
+    arm_pose m, p;
+    uint8_t c;
+    unsigned j, k;
+    float ex0;
+    for (j = 0; j < ARM_NUM_JOINTS; ++j) {
+        if (!a->sv[j].valid) {
+            *detail = ARM_WHY_FAULT; /* no measurement, no judgement */
+            return ARM_REFUSE_INHIBITED;
+        }
+        m.q[j] = a->sv[j].pos_deg;
+    }
+    ex0 = arm_pose_excess(&m, &c);
+    for (k = 1; k <= 8u; ++k) {
+        float s = (float)k / 8.0f;
+        for (j = 0; j < ARM_NUM_JOINTS; ++j) p.q[j] = m.q[j] + s * (goal->q[j] - m.q[j]);
+        if (arm_pose_excess(&p, &c) > ex0 + 0.05f) {
+            *detail = ARM_WHY_RECOVERY_WORSE;
+            return ARM_REFUSE_INHIBITED;
+        }
+    }
+    if (a->retry_valid && ex0 >= a->retry_ex - 0.5f) {
+        int same = 1;
+        for (j = 0; j < ARM_NUM_JOINTS; ++j)
+            if (fabsf(goal->q[j] - a->retry_goal[j]) > 0.5f) same = 0;
+        if (same) {
+            *detail = ARM_WHY_RETRY_NO_PROGRESS;
+            return ARM_REFUSE_INHIBITED;
+        }
+    }
+    return ARM_OK;
+}
 
 arm_refusal arm_cmd_enable(arm *a, uint8_t *detail) {
     uint32_t now = a->hw->millis(a->hw->ctx);
@@ -1362,6 +1424,10 @@ arm_refusal arm_cmd_move(arm *a, const float q[ARM_NUM_JOINTS], uint8_t speed_pc
     r = gate_motion_ex(a, detail, 1);
     if (r != ARM_OK) return r;
     memcpy(goal.q, q, sizeof goal.q);
+    if (a->state == ARM_ST_FAULT) {
+        r = recovery_goal_ok(a, &goal, detail);
+        if (r != ARM_OK) return r;
+    }
     traj_start(a, &goal, speed_pct, ARM_OP_MOVE, a->hw->millis(a->hw->ctx));
     return ARM_OK;
 }
@@ -1375,6 +1441,10 @@ arm_refusal arm_cmd_home(arm *a, uint8_t speed_pct, uint8_t *detail) {
         return ARM_REFUSE_RANGE;
     }
     memcpy(goal.q, kArmRestPose, sizeof goal.q);
+    if (a->state == ARM_ST_FAULT) {
+        r = recovery_goal_ok(a, &goal, detail);
+        if (r != ARM_OK) return r;
+    }
     traj_start(a, &goal, speed_pct > kHomeSpeedCapPct ? kHomeSpeedCapPct : speed_pct, ARM_OP_HOME,
                a->hw->millis(a->hw->ctx));
     return ARM_OK;
@@ -1393,7 +1463,20 @@ arm_refusal arm_cmd_hold(arm *a, uint8_t *detail) {
 
 arm_refusal arm_cmd_release(arm *a, uint8_t *detail) {
     arm_pose goal;
-    arm_refusal r = gate_motion(a, detail);
+    arm_refusal r;
+    if (a->state == ARM_ST_FAULT && a->limit_latched && a->torque_on && !a->pwr.hard_fault &&
+        arm_servos_powered(a)) {
+        /* An operator-controlled exit from a latched limit/following fault: the arm cannot be parked
+         * (it is jammed, displaced or lagging), so torque goes off at once and the arm FALLS. */
+        *detail = ARM_WHY_NONE;
+        if (a->op != ARM_OP_NONE) return ARM_REFUSE_BUSY;
+        a->op = ARM_OP_RELEASE;
+        a->op_step = kReleaseDropStep;
+        a->cfg_retry = 0;
+        a->recovering = 0;
+        return ARM_OK;
+    }
+    r = gate_motion(a, detail);
     if (r != ARM_OK) return r;
     /* The arm falls when torque goes away: park it at the rest pose first, slowly. */
     memcpy(goal.q, kArmRestPose, sizeof goal.q);

@@ -36,7 +36,7 @@ FAULTS = ("1 estop, 2 estop_fault_contact_A_or_Q2, 3 servo_rail_fault, 4 overcur
 WHY = ("1 estop_latched, 2 estop_pressed, 3 hard_fault, 4 fault, 5 not_enabled, 6 parked, "
        "7 no_actuator_power, 8 no_tool, 9 wrong_tool, 10 tool_not_ready, 11 tool_mounted, "
        "12 tool_reserved, 13 power_sense, 14 stopping, 15 not_calibrated, 16 overtemp, "
-       "17 not_disabled, 18 recovery_worse")
+       "17 not_disabled, 18 recovery_worse, 19 retry_no_progress")
 LIMITS = ("detail 0..4 = joint range of base_yaw, shoulder_pitch, elbow_pitch, wrist_pitch, "
           "wrist_roll; 16 = coupled forearm_pitch (shoulder+elbow <= 175 deg), "
           "17 = hairpin (elbow+wrist_pitch <= 165 deg), 18 = tool_pitch "
@@ -201,7 +201,8 @@ def build_actions():
     release = action(
         "Release torque on the five arm joints. The arm first moves to the rest pose at 25 % speed so it "
         "settles on the support (the gear trains are not self-locking), then torque is disabled and the "
-        "arm is parked. Needs an explicit enable afterwards.",
+        "arm is parked. While a limit/following/displacement fault is latched the park move is skipped: "
+        "torque goes off at once and THE ARM DROPS, so support it first. Needs an explicit enable afterwards.",
         {}, {}, "hazardous", "idempotent", "supported", "measured", 90000, True, ["bhms-arm/joints"],
         [], [], verified=pos, typical=5000, pre="Arm state ready.")
     enable = action(

@@ -352,17 +352,37 @@ all five joints (each sample at most 200 ms old) are checked:
 
 On a violation the firmware writes goal = the freshly read position for every joint (up to three
 attempts; if the freeze write cannot be confirmed the fault becomes 11 `bus_collision`), stops a tool
-servo that was moving, ends the operation and **latches**. A latched arm keeps holding and accepts
-only `hold` (already frozen: acknowledged), `enable`, and a `move_joints`/`home` back inside the
-limits. Recovery is monotonic: the latch remembers the measured excess (degrees beyond the worst
-limit) at the first fault and the excess may only shrink; the first sample more than 1 deg worse than
-that reference freezes again with the same fault, and while the arm sits more than 1 deg worse a new
-recovery move is refused (INHIBITED, reason 18). A client that re-sends the same move to a jammed
-joint therefore cannot ratchet the arm outward (it gains at most about 1 deg once); it must free the
-joint, `release_torque` is unavailable while latched, so `enable` or a power cycle is the way out. A
-completed recovery move clears the latch. A new motion starts from the measured pose when it differs
-from the last command by more than 2 deg. `move_error_deg` reports the real worst error also for a
-failed move.
+servo that was moving, ends the operation and **latches** ("recovery-only"). A latched arm keeps
+holding and accepts exactly these ways out, none of which needs a power cycle:
+
+* `move_joints` / `home` to a goal inside the limits. It is judged from the CURRENT measured pose: the
+  limit excess must not increase along the straight joint-space path (limits are convex, so any goal
+  inside them passes; the check is kept as a defence), and the exact goal that last made the measured
+  pose worse is refused (INHIBITED, reason 19) until the pose has improved, so a client's retry loop
+  cannot ratchet the arm outward. While it runs, the guard trips again when the measured excess exceeds
+  the BEST value reached in this motion by more than 1 deg (the baseline is the excess at the start,
+  and every trip re-baselines to where the arm rests). A completed recovery move clears the latch.
+* `release_torque` (lease, hazardous): the arm cannot be parked from a jam or a displacement, so torque
+  goes off at once and **the arm drops: support it first**. The arm is then parked (rail on, torque
+  off, `pose_unknown`), and an `enable` after it is the normal path.
+* `enable`: if the measured pose is inside the 3 deg margin it re-energises normally. If it is outside,
+  the enable fails (fault 12, pose limit) and the arm stays in this same latched recovery-only state
+  (rail on, torque on), which accepts the improving move above. It never cuts the rail.
+* `hold` is acknowledged (the arm is already frozen). Everything else is refused (INHIBITED).
+
+**Overshoot bound (honest).** The guard sees a violation on the next telemetry sample of the joint (each
+joint about every 25 ms) and trips when the excess is more than the band (1 deg; 4 deg slack when
+unlatched) beyond its baseline. The arm therefore ends up resting past the baseline by the band plus
+what the joint travels in one sample period: measured 1.1-2.6 deg in the simulator for the
+shoulder/elbow jam at up to 100 % speed; the worst case by arithmetic is the band plus joint speed times
+about 30 ms: shoulder 1 + 2.7, elbow 1 + 4, wrist pitch 1 + 8 deg. The servo-side angle windows (§3.1) add
+a second layer: a joint pushed past its window is pulled back toward the window edge by the servo
+itself while the goal is frozen at the measured pose (seen in the simulator), so a displaced arm may
+drift back inside the joint range on its own; that is intended and not an error. The 1 deg band, 4 deg
+slack, 15 deg following-error bound and the 200 ms sample age are simulator-chosen values and are
+**to be verified on the hardware** with real servo latency and encoder noise. `move_error_deg` reports
+the real worst error also for a failed move; a new motion starts from the measured pose when it
+differs from the last command by more than 2 deg.
 
 ### 9.2 Servo status error bits, temperature
 
@@ -410,8 +430,9 @@ property `watchdog_reset` is true and `fault_code` reads 19 until the next succe
 both (and nothing else does); `pose_unknown` is true. Only a reset armed by the firmware's own watchdog
 counts: a BOOTSEL/UF2 reboot is not reported as fault 19. Bus writes are time-bounded (3 ms) so nothing spins with interrupts off; a
 flash sector erase takes tens of ms (worst case about 400 ms): the epoch/calibration store brackets every
-erase with hooks that stretch the watchdog to 1000 ms and restore 250 ms afterwards (also if the erase
-fails); erases happen only with the rail off.
+erase with hooks that stretch the watchdog to 2500 ms and restore 250 ms afterwards (also if the erase
+fails): `flash_safe_execute` may itself wait up to 1000 ms for the lockout and the erase itself takes up to
+about 400 ms. Erases happen only with the rail off.
 
 ### 9.6 Fault and refusal codes added
 
@@ -425,4 +446,5 @@ fails); erases happen only with the rail off.
 | 22 | measured pose outside a limit while holding or in a tool operation (displaced) |
 
 Refusal reasons (ERROR.detail on INHIBITED/PRECONDITION): 15 not calibrated, 16 over-temperature,
-17 not disabled (calibrate needs rail off), 18 recovery would worsen (the arm is further out than at the fault).
+17 not disabled (calibrate needs rail off), 18 recovery goal would worsen the limit excess along its path, 19 the same
+recovery goal already made the pose worse and nothing has improved since.

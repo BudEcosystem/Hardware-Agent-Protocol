@@ -980,7 +980,7 @@
       "typicalDurationMs": 10
     },
     "release_torque": {
-      "description": "Release torque on the five arm joints. The arm first moves to the rest pose at 25 % speed so it settles on the support (the gear trains are not self-locking), then torque is disabled and the arm is parked. Needs an explicit enable afterwards.",
+      "description": "Release torque on the five arm joints. The arm first moves to the rest pose at 25 % speed so it settles on the support (the gear trains are not self-locking), then torque is disabled and the arm is parked. While a limit/following/displacement fault is latched the park move is skipped: torque goes off at once and THE ARM DROPS, so support it first. Needs an explicit enable afterwards.",
       "input": {
         "type": "object",
         "additionalProperties": false,

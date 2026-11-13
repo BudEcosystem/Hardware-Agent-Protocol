@@ -633,7 +633,7 @@ static void test_jammed_joint_is_caught_on_the_measured_pose(void) {
     {
         uint8_t dd = 0;
         CHECK(arm_cmd_tool_mount(&t.a, &dd) == ARM_REFUSE_INHIBITED);
-        CHECK(arm_cmd_release(&t.a, &dd) == ARM_REFUSE_INHIBITED);
+        CHECK(arm_cmd_grip(&t.a, 10, 5, &dd) == ARM_REFUSE_INHIBITED);
     }
 }
 
@@ -930,14 +930,30 @@ static void retry_scenario(uint8_t pct) {
         arm_refusal r = move(&t, 0, 45, 125, 0, 0, pct, &d);
         if (r != ARM_OK) {
             ++refused;
-            CHECK(r == ARM_REFUSE_INHIBITED && d == ARM_WHY_RECOVERY_WORSE);
+            CHECK(r == ARM_REFUSE_INHIBITED && (d == ARM_WHY_RETRY_NO_PROGRESS || d == ARM_WHY_RECOVERY_WORSE));
         }
         run(&t, 700);
         CHECK(t.a.state == ARM_ST_FAULT && t.a.torque_on);
     }
-    CHECK(g_max_excess <= e0 + 3.0f); /* the original probe reached +38 deg */
-    CHECK(refused >= 6);              /* after the first worsening nothing else is accepted */
+    /* Documented bound (INTERFACE.md 9.1): the 1 deg band plus what the joint travels during one telemetry
+     * period. The sim measures 1.1-2.6 deg; the unguarded firmware reached +38 deg after 8 retries. */
+    CHECK(g_max_excess <= e0 + 4.0f);
+    CHECK(refused >= 1); /* the goal that made the pose worse is not accepted again */
     t.hook = 0;
+    /* No lockout: a move that IMPROVES the measured pose is still accepted, and it never makes the
+     * excess worse than where it started (within the band) while it runs. */
+    {
+        float start = true_excess(&t);
+        arm_refusal r = move(&t, 0, 90, 60, 0, 0, pct, &d);
+        CHECK(r == ARM_OK);
+        g_max_excess = 0.0f;
+        t.hook = excess_hook;
+        CHECK(run_until_idle(&t, 12000));
+        t.hook = 0;
+        CHECK(g_max_excess <= start + 1.0f);
+        CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY && !t.a.limit_latched);
+        CHECK(true_excess(&t) == 0.0f && fabsf(joint_deg(&t, ARM_J_ELBOW) - 60.0f) < 2.5f);
+    }
 }
 
 static void test_retrying_a_jammed_move_does_not_ratchet(void) {
@@ -1045,6 +1061,58 @@ static void test_knob_range_includes_the_mount_offset(void) {
     CHECK(arm_cmd_turn(&t.a, 500, 10, &d) == ARM_OK);
 }
 
+/* The way out of a latched fault: an improving move, release_torque (the arm drops), enable from
+ * outside the margin keeps the arm in recovery-only. Never a lockout. */
+static void latch_by_displacement(tb *t) {
+    uint8_t d = 0;
+    bring_up(t);
+    CHECK(move(t, 0, 80, 90, 0, 0, 100, &d) == ARM_OK && run_until_idle(t, 12000));
+    sim_rig_place(&t->rig, 2, nominal_raw(ARM_J_SHOULDER, 97.0f));
+    run(t, 100);
+    CHECK(t->a.state == ARM_ST_FAULT && t->a.limit_latched);
+}
+
+static void test_no_lockout_after_a_tripped_recovery(void) {
+    tb t;
+    uint8_t d = 0;
+    /* The reviewer's case: a recovery that trips once (jammed shoulder), then improving moves, home and
+     * release_torque must all remain possible. */
+    bring_up(&t);
+    CHECK(move(&t, 0, 90, 60, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+    sim_rig_jam(&t.rig, 2);
+    run(&t, 60);
+    CHECK(move(&t, 0, 45, 125, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 3000));
+    CHECK(move(&t, 0, 45, 125, 0, 0, 100, &d) == ARM_OK); /* one retry: trips, re-baselines */
+    CHECK(run_until_idle(&t, 3000) && t.a.state == ARM_ST_FAULT);
+    CHECK(move(&t, 0, 45, 125, 0, 0, 100, &d) == ARM_REFUSE_INHIBITED && d == ARM_WHY_RETRY_NO_PROGRESS);
+    CHECK(move(&t, 0, 90, 80, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000)); /* improving */
+    CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY);
+    /* A latch from holding: home (improving) is accepted too. */
+    latch_by_displacement(&t);
+    CHECK(arm_cmd_home(&t.a, 100, &d) == ARM_OK && run_until_idle(&t, 30000));
+    CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY && true_excess(&t) == 0.0f);
+
+    /* release_torque while latched: the arm cannot be parked, torque goes off at once. */
+    latch_by_displacement(&t);
+    CHECK(arm_cmd_release(&t.a, &d) == ARM_OK);
+    CHECK(run_until_idle(&t, 1000));
+    CHECK(t.done.kind == ARM_OP_RELEASE && t.done.status == ARM_DONE_COMPLETED);
+    CHECK(t.a.state == ARM_ST_PARKED && !t.a.torque_on && !t.a.limit_latched && t.a.pose_unknown);
+    CHECK(sim_rig_reg8(&t.rig, 1, STS_REG_TORQUE_ENABLE) == 0 && t.rig.servo_en_pin);
+    CHECK(move(&t, 0, 60, 60, 0, 0, 100, &d) == ARM_REFUSE_PRECONDITION && d == ARM_WHY_PARKED);
+
+    /* enable from outside the 3 deg margin: it fails (fault 12) and the arm stays in the latched,
+     * recovery-only state, which accepts the improving move and ends READY. */
+    latch_by_displacement(&t);
+    CHECK(arm_cmd_enable(&t.a, &d) == ARM_OK && run_until_idle(&t, 5000));
+    CHECK(t.done.status == ARM_DONE_FAILED && t.done.fault == ARM_FAULT_LIMIT);
+    CHECK(t.a.state == ARM_ST_FAULT && t.a.limit_latched && t.a.torque_on && t.rig.servo_en_pin);
+    CHECK(arm_cmd_tool_mount(&t.a, &d) == ARM_REFUSE_INHIBITED); /* recovery-only: nothing else */
+    CHECK(move(&t, 0, 60, 60, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+    CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY);
+    CHECK(true_excess(&t) == 0.0f && fabsf(joint_deg(&t, ARM_J_SHOULDER) - 60.0f) < 2.5f);
+}
+
 int main(void) {
     test_boot_states();
     test_enable_sequence();
@@ -1079,5 +1147,6 @@ int main(void) {
     test_freeze_write_is_retried_and_reported();
     test_overtemperature_fault_clears_and_watchdog_report_clears();
     test_knob_range_includes_the_mount_offset();
+    test_no_lockout_after_a_tripped_recovery();
     TEST_FINISH("test_arm");
 }

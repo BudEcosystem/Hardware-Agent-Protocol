@@ -78,7 +78,8 @@ enum {
     ARM_WHY_NOT_CALIBRATED = 15, /* joint zero offsets unknown: run `calibrate` */
     ARM_WHY_OVERTEMP = 16,       /* a joint servo is at or above 70 C */
     ARM_WHY_NOT_DISABLED = 17,   /* calibrate needs the rail off and the arm resting */
-    ARM_WHY_RECOVERY_WORSE = 18  /* displaced further than at the fault: free the arm, or release torque */
+    ARM_WHY_RECOVERY_WORSE = 18, /* the goal's straight-line path would increase the measured limit excess */
+    ARM_WHY_RETRY_NO_PROGRESS = 19 /* the same recovery goal already made the pose worse and nothing improved since */
 };
 
 typedef struct {
@@ -138,7 +139,9 @@ typedef struct arm {
     uint8_t recovering;
     uint8_t servo_err_id, servo_err_bits;
     float last_move_err;
-    float limit_ref, guard_last; /* measured excess at the latch / at the last freeze (degrees) */
+    float limit_ref, guard_last; /* best measured excess of the current recovery / excess at the last freeze (deg) */
+    float retry_goal[ARM_NUM_JOINTS], retry_ex; /* the last recovery goal that made the pose worse */
+    uint8_t retry_valid;
     arm_cal cal_new;
     uint32_t stop_t0;
 
