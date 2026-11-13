@@ -329,9 +329,19 @@ class World:
                 "knobs": {n: [round(t.output, 9), round(t.slip_offset, 9)] for n, t in sorted(self.knobs.items())},
                 "faults": self.faults.snapshot()}
 
-    def digest(self) -> str:
-        """SHA-256 (``sha256:<hex>``) of the canonical snapshot and effect log (the shared canonicalizer)."""
-        log = [[e.seq, e.time_s, e.device, e.kind, e.detail, e.cause] for e in self._effects]
+    def digest(self, *, anonymize_causes: bool = False) -> str:
+        """SHA-256 (``sha256:<hex>``) of the canonical snapshot and effect log (the shared canonicalizer).
+
+        ``anonymize_causes`` replaces each cause by the order in which it first appears: BHMS operation ids are unique per
+        run, so a run through BHMS is reproducible only up to the naming of its operations."""
+        names: dict[str, str] = {}
+
+        def cause(effect: Effect) -> str | None:
+            if not anonymize_causes or effect.cause is None:
+                return effect.cause
+            return names.setdefault(effect.cause, f"c{len(names)}")
+
+        log = [[e.seq, e.time_s, e.device, e.kind, e.detail, cause(e)] for e in self._effects]
         return canonical_digest({"snapshot": self.snapshot(), "effects": log})
 
     # ------------------------------------------------------------------ rendering
