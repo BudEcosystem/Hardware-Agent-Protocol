@@ -39,6 +39,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
+from collections import OrderedDict
 from typing import TYPE_CHECKING, Any
 
 from bhms.gateway.catalog import CatalogEntry
@@ -89,6 +90,7 @@ class Router:
     def __init__(self, gateway: Gateway) -> None:
         self.gateway = gateway
         self.by_upstream: dict[tuple[str, str], str] = {}  # (namespace, upstream operationId) -> gateway operationId
+        self._early: OrderedDict[tuple[str, str], dict[str, Any]] = OrderedDict()  # notifications seen before indexing
         self.unknown: dict[str, OperationRecord] = {}
         self._reconciling: dict[str, asyncio.Future[None]] = {}
         self._tasks: set[asyncio.Task[Any]] = set()
@@ -311,7 +313,9 @@ class Router:
         try:
             if cause is not None:
                 return gw.journal.admit_in_doubt(cause=cause, **common)
-            return gw.journal.admit_forwarded(upstream_op=reply["operation"], **common)
+            rec = gw.journal.admit_forwarded(upstream_op=reply["operation"], **common)
+            self.index(rec)
+            return rec
         except StoreError as exc:
             gw.journal_failed(exc)
             raise BhmsError("INTERNAL", "the gateway could not record an operation the upstream accepted",
@@ -409,15 +413,29 @@ class Router:
         except StoreError as exc:
             gw.journal_failed(exc)
             return
+        self.index(rec)
+
+    def index(self, rec: OperationRecord) -> None:
+        """Remember which upstream operation ``rec`` is, and apply the newest notification that arrived before that."""
         uid = rec.private.get("upstreamOperationId")
-        if uid:
-            self.by_upstream[(rec.private["upstream"], uid)] = rec.id
+        if not uid:
+            return
+        key = (rec.private["upstream"], uid)
+        self.by_upstream[key] = rec.id
+        early = self._early.pop(key, None)
+        if early is not None:
+            self._apply(rec, early, "notification")
 
     def on_operation_notification(self, up: Upstream, operation: dict[str, Any]) -> None:
-        gid = self.by_upstream.get((up.name, operation.get("operationId")))
+        key = (up.name, operation.get("operationId"))
+        gid = self.by_upstream.get(key)
         rec = self.gateway.journal.get(gid) if gid else None
         if rec is not None:
             self._apply(rec, operation, "notification")
+            return
+        self._early[key] = operation  # the answer to the forward has not been recorded yet
+        while len(self._early) > 1024:
+            self._early.popitem(last=False)
 
     def _became_unknown(self, rec: OperationRecord) -> None:
         self.unknown[rec.id] = rec
