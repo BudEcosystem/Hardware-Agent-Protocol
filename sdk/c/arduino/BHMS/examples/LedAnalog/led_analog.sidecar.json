@@ -1,0 +1,56 @@
+{
+  "deviceId": "bench-led",
+  "name": "Bench LED board",
+  "description": "An Arduino with a status LED and one analog input on A0, speaking BHMS-Compact.",
+  "capabilities": ["bhms.io.gpio"],
+  "tags": ["bench-a"],
+  "resources": ["bench-led/led"],
+  "identity": {"manufacturer": "Bud Labs", "model": "LedAnalog", "firmwareVersion": "1.0.0"},
+  "properties": {
+    "analog0": {
+      "description": "Raw 10-bit ADC reading of pin A0.",
+      "schema": {"type": "integer", "x-bhms-unit": "1", "minimum": 0, "maximum": 1023},
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {"index": 0, "type": "u16"}
+    }
+  },
+  "actions": {
+    "led_set": {
+      "description": "Switch the status LED on or off. Returns how many times the LED was written since boot.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["on"],
+        "properties": {"on": {"type": "boolean"}}
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["writes"],
+        "properties": {"writes": {"type": "integer", "x-bhms-unit": "1", "minimum": 0, "maximum": 255}}
+      },
+      "effect": "reversible",
+      "idempotency": "idempotent",
+      "cancel": "unsupported",
+      "completionEvidence": "reported",
+      "typicalDurationMs": 5,
+      "maxDurationMs": 100,
+      "requiresLease": false,
+      "resources": ["bench-led/led"],
+      "onLeaseLoss": "finish",
+      "compact": {
+        "index": 0,
+        "args": [{"name": "on", "type": "bool"}],
+        "result": [{"name": "writes", "type": "u8"}]
+      }
+    }
+  },
+  "safety": {
+    "stop": "unsupported",
+    "stopEvidence": "none",
+    "onDisconnect": "unknown",
+    "summary": "The LED stays in its last state; the board has no stop input."
+  }
+}

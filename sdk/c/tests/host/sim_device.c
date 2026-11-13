@@ -1,0 +1,57 @@
+/* Native twin of examples/LedAnalog: the same device (digest, one LED action,
+ * one analog property) as a host process speaking BHMS-Compact on stdin/stdout.
+ * It lets tests/host/test_e2e.py run unchanged against native code (under
+ * ASan/UBSan) and against the AVR firmware in simavr.
+ *
+ *   sim_device [--epoch FILE] [--analog N]
+ * LED changes are reported on stderr as "LED 0|1". */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "bhms.h"
+#include "bhms_hal_posix.h"
+
+static uint8_t g_writes;
+static uint16_t g_analog = 0x155;
+
+static uint8_t led_run(void *u, const bhms_value *a, bhms_call *c) {
+    (void)u;
+    fprintf(stderr, "LED %u\n", (unsigned)a[0].u);
+    fflush(stderr);
+    c->results[0].u = ++g_writes;
+    return BHMS_RUN_DONE;
+}
+
+static uint8_t adc_read(void *u, uint8_t fresh, bhms_value *v, bhms_sample *m) {
+    (void)u; (void)fresh; (void)m;
+    v->u = g_analog;
+    return BHMS_Q_VALID;
+}
+
+BHMS_FIELDS(led_in) = {BHMS_BOOL()};
+BHMS_FIELDS(led_out) = {BHMS_U8()};
+static const bhms_action kActions[] BHMS_PROGMEM = {
+    BHMS_ACTION(led_run, 0, 0, BHMS_FIELDS_REF(led_in), BHMS_FIELDS_REF(led_out))};
+static const bhms_property kProps[] BHMS_PROGMEM = {BHMS_PROPERTY(adc_read, BHMS_U16)};
+/* Must equal the digest8 of examples/LedAnalog/led_analog.sidecar.json. */
+static const bhms_device kDev = {
+    {0x23, 0x8a, 0xe3, 0x9c, 0xeb, 0xf1, 0x18, 0x8c}, 0, kActions, 1, kProps, 1, 0, 0};
+
+int main(int argc, char **argv) {
+    const char *epoch_path = NULL;
+    bhms_posix px;
+    bhms_endpoint ep;
+    int i;
+    for (i = 1; i + 1 < argc; i += 2) {
+        if (strcmp(argv[i], "--epoch") == 0) epoch_path = argv[i + 1];
+        else if (strcmp(argv[i], "--analog") == 0) g_analog = (uint16_t)atoi(argv[i + 1]);
+        else return 2;
+    }
+    bhms_posix_init(&px, 0, 1, epoch_path);
+    if (bhms_init(&ep, &kDev, &px.hal) != BHMS_OK) return 3;
+    for (;;) {
+        (void)bhms_posix_wait(&px, 5);
+        bhms_poll(&ep);
+    }
+}
