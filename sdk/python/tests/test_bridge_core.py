@@ -284,9 +284,9 @@ async def test_stop_reports_each_device_and_only_claims_confirmed(rig):
     srv, sim, client, bridge = rig
     stop = await bridge.call("bhms_stop", {"all": True, "reason": "test"})
     check_result("bhms_stop", stop)
-    assert "axis-1 confirmed" in stop.summary and "pump-1 unsupported" in stop.summary and "stopped" not in stop.summary.split("(")[0]
+    assert "pump-1 unsupported" in stop.summary and "1 confirmed" in stop.summary and "stopped" not in stop.summary
     one = await bridge.call("bhms_stop", {"device_ids": ["axis-1"], "reason": "again"})
-    assert one.summary.startswith("stop: axis-1 confirmed")
+    assert one.summary.startswith("stop: 1 confirmed") and "axis-1 confirmed" in one.summary
     missing = await bridge.call("bhms_stop", {"device_ids": ["ghost"], "reason": "x"})
     assert missing.is_error
 
@@ -595,3 +595,61 @@ async def test_a_changed_description_is_refused_and_the_cache_is_dropped(tmp_pat
         await bridge.aclose()
         await client.close()
         await srv.close()
+
+
+async def test_transaction_properties_keep_their_retained_sample_after_an_effect(rig):  # BHMS-OBS-006, OBS-011
+    srv, sim, client, bridge = rig
+    first = await bridge.call("bhms_read", {"device_id": "axis-1", "property": "fifo", "fresh": True})
+    assert first.error is None and (await counter_of(client, "fifo_reads")) == 1
+    for action, args in (("move_to", {"position": 10}), ("pulse", {"count": 1})):
+        assert not (await bridge.call("bhms_invoke", {"device_id": "axis-1", "action": action, "arguments": args})).is_error
+        raw = await client.properties_read("axis-1", "fifo")  # no lease, no fresh: the retained sample, not LEASE_REQUIRED
+        assert raw.observation.value == 1
+        default = await bridge.call("bhms_read", {"device_id": "axis-1", "property": "fifo"})
+        assert default.error is None and "fifo = 1" in default.summary
+        assert await counter_of(client, "fifo_reads") == 1  # no unrequested device transaction
+
+
+async def test_a_default_read_without_a_retained_sample_does_not_take_a_lease_for_a_transaction(rig):
+    srv, sim, client, bridge = rig
+    result = await bridge.call("bhms_read", {"device_id": "axis-1", "property": "fifo"})
+    assert result.error["bhmsCode"] == "LEASE_REQUIRED" and await counter_of(client, "fifo_reads") == 0
+    assert bridge.stats.leases_acquired == 0
+
+
+async def counter_of(client, name):
+    return (await client.request("x-conformance/counters"))[name]
+
+
+async def test_a_conflict_with_the_bridges_own_lease_says_so(rig):
+    srv, sim, client, bridge = rig
+    await client.request("x-conformance/inject", {"fault": "hang_next"})
+    first = await bridge.call("bhms_invoke", {"device_id": "pump-1", "action": "dispense", "arguments": {"volume": 5},
+                                              "operation_key": "own-1", "wait_ms": 10})
+    assert first.data["operation"]["state"] in ("dispatching", "running")
+    second = await bridge.call("bhms_invoke", {"device_id": "pump-1", "action": "dispense", "arguments": {"volume": 6},
+                                               "operation_key": "own-2", "wait_ms": 10})
+    assert second.error["bhmsCode"] == "LEASE_CONFLICT" and "your own earlier operation still holds it" in second.error["hint"]
+    assert "bhms_operation" in second.error["hint"] and "another principal" not in second.error["hint"]
+    await client.stop("t", scope="all")
+
+
+async def test_a_malformed_program_is_refused_with_the_failing_step_path_and_the_grammar(rig):  # R19
+    srv, sim, client, bridge = rig
+    good = {"bhmsProgram": "2026-11-13", "name": "go", "description": "d", "input": {
+        "type": "object", "additionalProperties": False, "properties": {}}, "maxDurationMs": 10000,
+        "steps": [{"kind": "invoke", "deviceId": "axis-1", "action": "move_to", "arguments": {"position": 1}}]}
+    cases = [({**good, "steps": [{"kind": "invoke", "deviceId": "axis-1", "action": "move_to"}]}, "program.steps[0]", "arguments"),
+             ({**good, "steps": [good["steps"][0], {"kind": "repeat", "times": 2, "steps": [{"kind": "sleep"}]}]},
+              "program.steps[1].steps[0]", "durationMs"),
+             ({**good, "name": "Bad Name"}, "program.name", "does not match"),
+             ({**good, "steps": [{"kind": "zap"}]}, "program.steps[0]", "known kind")]
+    before = (await client.request("x-conformance/counters"))["counter"]
+    for program, field, needle in cases:
+        result = await bridge.call("bhms_run_program", {"program": program, "arguments": {}})
+        assert result.error["bhmsCode"] == "INVALID_ARGUMENT" and result.error["field"] == field, result.error
+        assert needle in result.error["message"] and "bhms://grammar/program" in result.error["hint"]
+        assert '"kind":"invoke"' in result.error["hint"] and result.summary.startswith(f"Refused: {field}")
+    ok = await bridge.call("bhms_run_program", {"program": good, "arguments": {}, "operation_key": "inline-1"})
+    assert ok.error is None and ok.data["operation"]["state"] == "completed"
+    assert (await client.request("x-conformance/counters"))["counter"] == before + 1  # only the valid one acted

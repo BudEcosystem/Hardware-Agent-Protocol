@@ -1,0 +1,78 @@
+{
+ "description": "RFC 8785 (JCS) vectors for BHMS digests: digest = sha256: + hex(sha256(canonical)). The runner recomputes digest with its own canonicaliser and compares.",
+ "vectors": [
+  {
+   "name": "object-key-order",
+   "value": {
+    "b": 1,
+    "a": [
+     3,
+     2,
+     1
+    ],
+    "c": {
+     "z": null,
+     "y": true
+    }
+   },
+   "canonical": "{\"a\":[3,2,1],\"b\":1,\"c\":{\"y\":true,\"z\":null}}",
+   "digest": "sha256:abebfca918a9c06d400778d9ef17e4f437dcee8676e2d9ab95561c8202191bea"
+  },
+  {
+   "name": "unicode-and-escapes",
+   "value": {
+    "s": "café   \"q\" \\ \n"
+   },
+   "canonical": "{\"s\":\"café   \\\"q\\\" \\\\ \\n\"}",
+   "digest": "sha256:034f1336af2c5fd3991662d8158f9756edec7a7519b8335c569652218986ff20"
+  },
+  {
+   "name": "numbers",
+   "value": {
+    "n": [
+     0,
+     -0.0,
+     1.5,
+     1e+21,
+     1e-07,
+     100,
+     0.1
+    ]
+   },
+   "canonical": "{\"n\":[0,0,1.5,1e+21,1e-7,100,0.1]}",
+   "digest": "sha256:7f3ff8d610b242294f405acccf49e3797a033912bf6c90a334297c909cb9a7b5"
+  },
+  {
+   "name": "empty",
+   "value": {},
+   "canonical": "{}",
+   "digest": "sha256:44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+  },
+  {
+   "name": "nested-arrays",
+   "value": [
+    [],
+    [
+     {}
+    ],
+    [
+     [
+      1
+     ]
+    ]
+   ],
+   "canonical": "[[],[{}],[[1]]]",
+   "digest": "sha256:d20e9bd1e2ec424cb3572510489e26db394b8c08c52178cb3d6c05702e30e4ad"
+  },
+  {
+   "name": "sort-by-utf16",
+   "value": {
+    "😀": 1,
+    "￿": 2,
+    "a": 3
+   },
+   "canonical": "{\"a\":3,\"😀\":1,\"￿\":2}",
+   "digest": "sha256:92a98ee3f7f8f30bd80c9d464a68ad47d46e0da2bc7da9c2b5a391e15fd1b4ff"
+  }
+ ]
+}

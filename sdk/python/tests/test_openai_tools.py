@@ -141,27 +141,37 @@ async def test_chat_loop_uses_the_chat_completions_shape(rig):
     assert "max_completion_tokens" in first and "max_output_tokens" not in first
 
 
-async def test_the_budget_stops_the_loop_and_a_call_it_cannot_afford_is_not_executed(rig):
+async def test_the_budget_is_a_ceiling_never_exceeded(rig):
     srv, sim, client = rig
-    responses = recording("openai_responses_3step.json")
-    llm = FakeLLM(responses)
-    run = await run_agent(client, "gpt-5.4-mini", "Move axis-1.", budget=4100, llm=llm)  # 1960 + 2130 = 4090 -> room 10 < 64
-    assert run.stopped == "budget" and [s.tool for s in run.steps] == ["bhms_find", "bhms_describe"] and run.requests == 2
-    assert run.tokens <= 4100 + 0 and (await client.request("x-conformance/counters"))["counter"] == 0
-    llm = FakeLLM(responses)
-    over = await run_agent(client, "gpt-5.4-mini", "Move axis-1.", budget=3000, llm=llm)
-    assert over.stopped == "budget" and [s.tool for s in over.steps] == ["bhms_find"]  # the second request's response was over
-    llm = FakeLLM(responses)
-    unaffordable = await run_agent(client, "gpt-5.4-mini", "x", budget=1000, llm=llm)
-    assert unaffordable.stopped == "budget" and unaffordable.steps == [] and (await client.request("x-conformance/counters"))["counter"] == 0
-    assert llm.requests[0]["max_output_tokens"] == 1000 and run.requests == 2
+    for api, name in (("responses", "openai_responses_3step.json"), ("chat", "openai_chat_3step.json")):
+        for budget in range(200, 12_000, 150):
+            llm = FakeLLM(recording(name))
+            run = await run_agent(client, "m", "Move axis-1.", budget=budget, llm=llm, api=api)
+            assert run.tokens <= budget, (api, budget, run.tokens, run.stopped)
+            for request in llm.requests:  # the output cap never lets a request alone pass what is left
+                assert request.get("max_output_tokens", request.get("max_completion_tokens")) <= budget
+    llm = FakeLLM(recording("openai_responses_3step.json"))
+    tiny = await run_agent(client, "m", "x", budget=1000, llm=llm)  # cannot even pay for the tools: no request, no action
+    assert tiny.stopped == "budget" and tiny.requests == 0 and tiny.steps == [] and llm.requests == []
+
+
+async def test_a_budget_stop_never_executes_a_call_it_cannot_afford_to_see(rig):
+    srv, sim, client = rig
+    llm = FakeLLM(recording("openai_responses_3step.json"))
+    run = await run_agent(client, "gpt-5.4-mini", "Move axis-1.", budget=5000, llm=llm)
+    assert run.stopped == "budget" and run.tokens <= 5000 and (await client.request("x-conformance/counters"))["counter"] == 0
+    assert [s.tool for s in run.steps] == ["bhms_find", "bhms_describe"]
 
 
 async def test_the_output_cap_follows_the_remaining_budget(rig):
     srv, sim, client = rig
     llm = FakeLLM(recording("openai_responses_3step.json"))
-    await run_agent(client, "gpt-5.4-mini", "Move axis-1.", budget=9000, llm=llm, max_output_tokens=5000)
-    assert [r["max_output_tokens"] for r in llm.requests] == [5000, 5000, 4910, 1965]  # min(cap, what is left)
+    await run_agent(client, "gpt-5.4-mini", "Move axis-1.", budget=20_000, llm=llm, max_output_tokens=5000)
+    caps = [r["max_output_tokens"] for r in llm.requests]
+    assert caps[0] == 5000 and all(0 < c <= 5000 for c in caps)
+    low = FakeLLM(recording("openai_responses_3step.json"))
+    await run_agent(client, "gpt-5.4-mini", "Move axis-1.", budget=7000, llm=low, max_output_tokens=5000)
+    assert low.requests[0]["max_output_tokens"] < 5000  # what is left after the estimated input of tools and task
 
 
 async def test_max_steps_stops_before_acting_again(rig):

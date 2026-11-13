@@ -155,3 +155,9 @@ rule in the tool description (`bhms_stop`: `device_ids` or `all`; `bhms_run_prog
 `program` or `program_digest`) and enforces it itself, refusing a call that gives
 none or both before any request (BHMS-AGT-021). Both bridges publish the identical
 flattened schema.
+
+A bridge MAY publish a large free-form member (`program`) as `{"type": "object"}` with a pointer to its
+grammar, provided the grammar is available on demand (the MCP resource `bhms://grammar/program`, and in every
+refusal of a malformed program) and the bridge validates the member itself against the normative schema, refusing
+before any request with the failing path (`program.steps[1].arguments`). The reference bridge's eight definitions
+total 1,344 tokens (o200k_base) with the program grammar on demand, against 2,760 inlined.

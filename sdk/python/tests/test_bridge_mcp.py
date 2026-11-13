@@ -120,7 +120,7 @@ async def test_round_trip_find_describe_read_invoke_replay_and_stop():
                                                   "wait_ms": 0})
         assert g(op, "structuredContent")["operation"]["state"] == "completed"
         stop = await s.call_tool("bhms_stop", {"all": True, "reason": "mcp test"})
-        assert (await text_of(stop)).startswith("stop: axis-1 confirmed") and not g(stop, "isError")
+        assert (await text_of(stop)).startswith("stop not confirmed on 1 of 2 devices") and not g(stop, "isError")
         schema.validate("StopResult", g(stop, "structuredContent"))
 
 
@@ -145,8 +145,10 @@ async def test_refusals_are_is_error_with_the_hint_and_structured_error():  # AG
 async def test_devices_are_resources_with_full_descriptions():
     async with _open() as (s, _):
         listed = (await s.list_resources()).resources
-        assert [str(r.uri) for r in listed] == ["bhms://device/axis-1", "bhms://device/pump-1"]
-        assert all(g(r, "mimeType") == "application/json" and r.name for r in listed)
+        assert [str(r.uri) for r in listed] == ["bhms://device/axis-1", "bhms://device/pump-1", "bhms://grammar/program"]
+        assert all(g(r, "mimeType") == "application/json" for r in listed[:2]) and all(r.name for r in listed)
+        grammar = (await s.read_resource("bhms://grammar/program")).contents[0].text
+        assert grammar.startswith("BHMS program") and '"kind":"invoke"' in grammar
         content = (await s.read_resource("bhms://device/pump-1")).contents[0]
         description = json.loads(content.text)
         schema.validate("DeviceDescription", description)

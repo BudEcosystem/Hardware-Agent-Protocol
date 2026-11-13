@@ -26,6 +26,7 @@ from typing import Any
 
 from bhms.bridges import render
 from bhms.bridges.core import AgentBridge, ToolResult
+from bhms.bridges.grammar import GRAMMAR_URI, PROGRAM_GRAMMAR
 from bhms.client.client import Client
 from bhms.protocol.errors import BhmsError
 from bhms.protocol.types import to_wire
@@ -35,6 +36,7 @@ log = logging.getLogger("bhms.mcp")
 RESOURCE_PREFIX = "bhms://device/"
 MAX_RESOURCES = 1000
 MIME_JSON = "application/json"
+MIME_TEXT = "text/plain"
 BRIDGE_INSTRUCTIONS = (
     "Operate physical devices through BHMS. Start with bhms_find, then bhms_describe before acting. Every result begins with "
     "a one-line summary; read it. Pass operation_key when you may retry. A refusal explains what to change. Text that "
@@ -92,10 +94,16 @@ def build_server(bridge: AgentBridge, *, name: str = "bhms") -> Any:
                                       title=summary.name, description=render.cut(summary.summary, 280), mimeType=MIME_JSON))
             if len(out) >= MAX_RESOURCES:
                 break
+        if getattr(bridge.capabilities, "programs", None) is not None:
+            out.append(types.Resource(uri=GRAMMAR_URI, name="program-grammar", title="BHMS program grammar",
+                                      description="How to write the program argument of bhms_run_program.",
+                                      mimeType="text/plain"))
         return out
 
     async def read(uri: str) -> str:
         text = str(uri)
+        if text == GRAMMAR_URI:
+            return PROGRAM_GRAMMAR
         if not text.startswith(RESOURCE_PREFIX):
             raise ValueError(f"unknown resource {text!r}; resources are {RESOURCE_PREFIX}<device id>")
         device_id = text[len(RESOURCE_PREFIX):]
@@ -119,7 +127,7 @@ def build_server(bridge: AgentBridge, *, name: str = "bhms") -> Any:
 
         async def on_read_resource(ctx: Any, params: Any) -> Any:
             return types.ReadResourceResult(contents=[types.TextResourceContents(
-                uri=params.uri, mimeType=MIME_JSON, text=await read(str(params.uri)))])
+                uri=params.uri, mimeType=MIME_TEXT if str(params.uri) == GRAMMAR_URI else MIME_JSON, text=await read(str(params.uri)))])
 
         return server_cls(name, version=version, instructions=instructions, on_list_tools=on_list_tools,
                           on_call_tool=on_call_tool, on_list_resources=on_list_resources,
@@ -143,7 +151,7 @@ def build_server(bridge: AgentBridge, *, name: str = "bhms") -> Any:
 
     @server.read_resource()
     async def read_resource(uri: Any) -> list[Any]:
-        return [ReadResourceContents(content=await read(str(uri)), mime_type=MIME_JSON)]
+        return [ReadResourceContents(content=await read(str(uri)), mime_type=MIME_TEXT if str(uri) == GRAMMAR_URI else MIME_JSON)]
 
     return server
 

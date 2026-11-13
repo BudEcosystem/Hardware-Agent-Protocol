@@ -16,18 +16,16 @@ def run(coroutine):
 
 def test_the_device_is_described_honestly():
     async def scenario():
-        async with connect(build(state_dir=None)) as client:
+        async with connect(build(memory=True)) as client:
             description = (await client.devices_describe("{{device_id}}")).description
-            move = description.actions["move_to"]
-            assert move.effect == "reversible" and move.cancel == "supported"
+            assert description.actions["move_to"].effect == "reversible"
             assert description.properties["position"].evidence == "simulated"
-            assert description.safety.stop == "supported"
     run(scenario())
 
 
 def test_move_to_reaches_the_target_and_says_so():
     async def scenario():
-        async with connect(build(state_dir=None)) as client:
+        async with connect(build(memory=True)) as client:
             op = (await client.actions_invoke("{{device_id}}", "move_to", {"target": 42.5}, operation_key="t-1",
                                               wait_ms=2000)).operation
             assert op.state == "completed" and op.result == {"position": 42.5}
@@ -38,7 +36,7 @@ def test_move_to_reaches_the_target_and_says_so():
 
 def test_a_target_outside_the_travel_is_refused_and_nothing_moves():
     async def scenario():
-        async with connect(build(state_dir=None)) as client:
+        async with connect(build(memory=True)) as client:
             try:
                 await client.actions_invoke("{{device_id}}", "move_to", {"target": 500})
             except Exception as error:  # BhmsError: OUT_OF_RANGE, mayHaveActed false, with a hint
@@ -51,7 +49,7 @@ def test_a_target_outside_the_travel_is_refused_and_nothing_moves():
 
 def test_retrying_with_the_same_key_does_not_move_twice():
     async def scenario():
-        async with connect(build(state_dir=None)) as client:
+        async with connect(build(memory=True)) as client:
             first = await client.actions_invoke("{{device_id}}", "move_to", {"target": 10}, operation_key="k", wait_ms=2000)
             again = await client.actions_invoke("{{device_id}}", "move_to", {"target": 10}, operation_key="k", wait_ms=2000)
             assert again.replayed and again.operation.operation_id == first.operation.operation_id

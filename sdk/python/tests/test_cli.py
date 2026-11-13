@@ -153,7 +153,7 @@ async def test_stop_needs_devices_or_all_and_reports_honestly(device_url):
     assert (await invoke("stop", "-u", device_url)).exit_code == 2
     assert (await invoke("stop", "-u", device_url, "axis-1", "--all")).exit_code == 2
     result = await invoke("stop", "-u", device_url, "--all", "--reason", "test run")
-    assert result.exit_code == 0 and "axis-1 confirmed" in result.output and "pump-1 unsupported" in result.output
+    assert result.exit_code == 0 and "stop not confirmed on 1 of 2 devices (1 unsupported)" in result.output and "pump-1 unsupported" in result.output
 
 
 async def test_doctor_checks_the_environment_and_a_live_target(device_url):
@@ -200,6 +200,7 @@ async def test_new_scaffolds_a_server_and_a_test_that_pass_immediately(tmp_path)
     assert result.exit_code == 0 and "created" in result.output
     project = tmp_path / "demo"
     assert {p.name for p in project.iterdir()} == {"server.py", "test_server.py", "README.md"}
+    assert len([ln for ln in (project / "server.py").read_text().splitlines() if ln.strip()]) <= 22  # R20: the DX bar
     env = {**os.environ, "BHMS_STATE_DIR": str(tmp_path / "state"), "PYTHONDONTWRITEBYTECODE": "1"}
     tests = subprocess.run([sys.executable, "-m", "pytest", "-q", "-p", "no:cacheprovider", "-W", "error", str(project)],
                            env=env, capture_output=True, text=True, timeout=120, cwd=project)
@@ -246,3 +247,45 @@ def test_percentiles_are_nearest_rank():
     data = [float(i) for i in range(1, 101)]
     assert (percentile(data, 50), percentile(data, 95), percentile(data, 99), percentile(data, 100)) == (50.0, 95.0, 99.0, 100.0)
     assert percentile([7.0], 99) == 7.0
+
+
+async def test_every_command_in_the_scaffold_readme_works(tmp_path):
+    """The README's commands, run as written (first argument = target), must work: no 'unexpected extra argument'."""
+    assert (await invoke("new", "demo", "--dir", str(tmp_path))).exit_code == 0
+    project = tmp_path / "demo"
+    readme = (project / "README.md").read_text()
+    block = readme.split("```")[1]
+    env = {"BHMS_STATE_DIR": str(tmp_path / "state")}
+    ran = []
+    for line in block.splitlines():
+        command = line.split("#")[0].strip()
+        if not command.startswith("bhms "):
+            continue
+        words = command.split()[1:]
+        if words[0] in ("dev", "mcp"):
+            continue  # interactive / long-running: covered by the pty and MCP tests
+        result = await invoke(*[str(project / w) if w == "server.py" else w for w in words], env=env)
+        assert result.exit_code == 0, (command, result.output)
+        ran.append(words[0])
+    assert ran == ["ls", "call"]
+    # target-first works for every one-shot command, and a device id is never mistaken for a target
+    target = str(project / "server.py")
+    for words in (["describe", target, "demo-stage"], ["read", target, "demo-stage", "position"], ["ops", target],
+                  ["stop", target, "--all"]):
+        assert (await invoke(*words, env=env)).exit_code == 0, words
+    unix = await invoke("describe", "demo-stage", env={"BHMS_URL": target, **env})  # id first: the target comes from BHMS_URL
+    assert unix.exit_code == 0 and "move_to" in unix.output
+
+
+def test_the_installed_console_script_works(tmp_path):
+    import shutil
+
+    exe = shutil.which("bhms")
+    if exe is None:
+        pytest.skip("the bhms console script is not installed (pip install -e sdk/python)")
+    out = subprocess.run([exe, "--help"], capture_output=True, text=True, timeout=60)
+    assert out.returncode == 0 and "Usage: bhms" in out.stdout
+    assert subprocess.run([exe, "new", "cs", "--dir", str(tmp_path)], capture_output=True, text=True, timeout=60).returncode == 0
+    ls = subprocess.run([exe, "ls", str(tmp_path / "cs" / "server.py")], capture_output=True, text=True, timeout=60,
+                        env={**os.environ, "BHMS_STATE_DIR": str(tmp_path / "st")})
+    assert ls.returncode == 0 and "cs-stage" in ls.stdout, ls.stdout + ls.stderr

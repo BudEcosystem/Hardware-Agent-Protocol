@@ -26,6 +26,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from bhms.bridges import render
+from bhms.bridges.grammar import GRAMMAR_URI, check_program
 from bhms.client.client import Client
 from bhms.protocol import schema
 from bhms.protocol.errors import BhmsError
@@ -53,8 +54,14 @@ _ANNOTATIONS: dict[str, dict[str, bool]] = {
 }
 _EXACTLY_ONE = {
     "bhms_stop": ("device_ids", "all", "Give exactly one of device_ids or all."),
-    "bhms_run_program": ("program", "program_digest", "Give exactly one of program or program_digest."),
+    "bhms_run_program": ("program", "program_digest", "Give exactly one of program or program_digest. "
+                         f"The program grammar is the resource {GRAMMAR_URI} and comes with any refusal of a malformed program."),
 }
+_PROGRAM_PROPERTY = {"type": "object", "description": f"A bounded BHMS program. Grammar: {GRAMMAR_URI}; a malformed program is "
+                     "refused with the failing step path and the grammar."}
+_MINIMAL_PROGRAM = {"bhmsProgram": "2026-11-13", "name": "p", "description": "p", "input": {
+    "type": "object", "additionalProperties": False, "properties": {}}, "maxDurationMs": 1,
+    "steps": [{"kind": "sleep", "durationMs": 1}]}
 _NOTES = {"bhms_read": f"Without max_age_ms the bridge asks for a reading at most {READ_MAX_AGE_MS} ms old."}
 
 
@@ -138,6 +145,9 @@ def input_schema_for(tool: str) -> dict[str, Any]:
     used = set()
     out = _inline(copy.deepcopy(defs[name]), defs, (name,), shared, used, {})
     out.pop("oneOf", None)
+    if tool == "bhms_run_program":  # R19: the grammar is on demand, not in every request
+        out["properties"]["program"] = dict(_PROGRAM_PROPERTY)
+        used = set()
     bodies: dict[str, Any] = {}
     pending = sorted(used)
     while pending:  # shared bodies may refer to other shared definitions
@@ -264,7 +274,7 @@ class AgentBridge:
     def _refuse(self, exc: BhmsError, tool: str, arguments: dict[str, Any]) -> ToolResult:
         self.stats.refusals += 1
         error = exc.to_operation_error()
-        if exc.code == "LEASE_CONFLICT":
+        if exc.code == "LEASE_CONFLICT" and "your own earlier operation" not in error["hint"]:
             error["hint"] = ("that resource is in use by another principal; " + error["hint"]).strip()[:2000]
         elif exc.code == "DEADLINE_EXCEEDED" and exc.may_have_acted and tool in ("bhms_invoke", "bhms_run_program"):
             key = arguments.get("operation_key")
@@ -292,8 +302,9 @@ class AgentBridge:
                 raise BhmsError("INVALID_ARGUMENT", f"give exactly one of {first} or {second}"
                                 + (", not both" if len(given) == 2 else ""), field=first, bound=[first, second],
                                 hint=f"send {first} or {second}, for example {_example_call(name)}")
+        checked = {**arguments, "program": _MINIMAL_PROGRAM} if name == "bhms_run_program" and "program" in arguments else arguments
         try:
-            schema.validate(spec, arguments)
+            schema.validate(spec, checked)
         except BhmsError as exc:
             pointer = exc.field or ""
             raise BhmsError("INVALID_ARGUMENT", _short(exc.message), field=pointer.lstrip("/").replace("/", "."),
@@ -373,8 +384,8 @@ class AgentBridge:
         try:
             return await self.client.properties_read(device, prop, **kw)
         except BhmsError as exc:
-            if exc.code != "LEASE_REQUIRED":
-                raise
+            if exc.code != "LEASE_REQUIRED" or not (kw.get("fresh") or kw.get("max_age_ms") is not None):
+                raise  # a default read never starts a device transaction on its own (BHMS-OBS-011)
             desc = await self.description(device)
             spec = (desc.get("properties") or {}).get(prop) or {}
             resources = spec.get("resources") or desc.get("resources") or []
@@ -440,6 +451,8 @@ class AgentBridge:
 
     async def _bhms_run_program(self, args: dict[str, Any]) -> ToolResult:
         key, wait_ms = args.get("operation_key"), self._wait(args)
+        if "program" in args:
+            check_program(args["program"])  # before any request: the refusal names the failing step (R19)
         resources: list[str] = []
         if "program_digest" in args:
             try:
@@ -495,7 +508,14 @@ class AgentBridge:
         return max(lo, min(hi, self.lease_ttl_ms))
 
     async def _acquire(self, resources: list[str]) -> Any:
-        acquired = await self.client.leases_acquire(resources, self._ttl(), wait_ms=0)
+        try:
+            acquired = await self.client.leases_acquire(resources, self._ttl(), wait_ms=0)
+        except BhmsError as exc:
+            if exc.code == "LEASE_CONFLICT" and any(set(resources) & set(h.resources) for h in self._held.values()):
+                raise BhmsError("LEASE_CONFLICT", exc.message, field=exc.field, bound=exc.bound,
+                                hint="your own earlier operation still holds it: wait for it with bhms_operation (or "
+                                     f"cancel it), then retry; {exc.hint}"[:2000]) from None
+            raise
         self.stats.leases_acquired += 1
         lease = acquired.lease
         self._held[lease.lease_id] = _Held(lease.lease_id, list(resources))

@@ -51,8 +51,9 @@ property schema's `x-bhms-unit`.
 device, the server MUST NOT afterwards return, as the retained observation of one of
 that device's properties that it can acquire on demand, a sample acquired before the
 operation settled; the next read without `maxAgeMs` or `fresh` acquires a new one.
-(Properties the device only publishes keep their latest sample: its age says how old
-it is.)
+(Properties the device only publishes, and properties with `readEffect: "transaction"`,
+keep their latest sample: its age says how old it is; a plain read of a transaction
+property stays a retained read, BHMS-OBS-011.)
 
 ## 5.2 `properties/read`
 

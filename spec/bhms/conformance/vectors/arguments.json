@@ -1,0 +1,399 @@
+{
+ "description": "Argument vectors for the conformance device (axis-1 / pump-1). `refused`: the server must answer a JSON-RPC error with expect.code (one code or a list), naming expect.field, with a bound member `expect.bound` when given, mayHaveActed false, and must create no operation and move the device-side counter by zero. `accepted`: the request is admitted and completes; expect.admitted (when not null) is the admittedArguments member.",
+ "refused": [
+  {
+   "name": "move_to above maximum",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": 200.1
+   },
+   "expect": {
+    "code": "OUT_OF_RANGE",
+    "field": "arguments.position",
+    "bound": "maximum"
+   }
+  },
+  {
+   "name": "move_to one ulp above maximum",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": 200.00000000000003
+   },
+   "expect": {
+    "code": "OUT_OF_RANGE",
+    "field": "arguments.position",
+    "bound": "maximum"
+   }
+  },
+  {
+   "name": "move_to below minimum",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": -0.1
+   },
+   "expect": {
+    "code": "OUT_OF_RANGE",
+    "field": "arguments.position",
+    "bound": "minimum"
+   }
+  },
+  {
+   "name": "move_to string for number",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": "5"
+   },
+   "expect": {
+    "code": "INVALID_ARGUMENT",
+    "field": "arguments.position"
+   }
+  },
+  {
+   "name": "move_to null",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": null
+   },
+   "expect": {
+    "code": "INVALID_ARGUMENT",
+    "field": "arguments.position"
+   }
+  },
+  {
+   "name": "move_to boolean",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": true
+   },
+   "expect": {
+    "code": "INVALID_ARGUMENT",
+    "field": "arguments.position"
+   }
+  },
+  {
+   "name": "move_to quantity in a convertible unit",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": {
+     "value": 5,
+     "unit": "m"
+    }
+   },
+   "expect": {
+    "code": "UNIT_MISMATCH",
+    "field": "arguments.position"
+   }
+  },
+  {
+   "name": "move_to quantity in an incompatible unit",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": {
+     "value": 5,
+     "unit": "s"
+    }
+   },
+   "expect": {
+    "code": "UNIT_MISMATCH",
+    "field": "arguments.position"
+   }
+  },
+  {
+   "name": "move_to quantity without unit",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": {
+     "value": 5
+    }
+   },
+   "expect": {
+    "code": "INVALID_ARGUMENT",
+    "field": "arguments.position"
+   }
+  },
+  {
+   "name": "move_to not a multiple of the step",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": 5.05
+   },
+   "expect": {
+    "code": [
+     "INVALID_ARGUMENT",
+     "OUT_OF_RANGE"
+    ],
+    "field": "arguments.position"
+   }
+  },
+  {
+   "name": "move_to missing required member",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {},
+   "expect": {
+    "code": "INVALID_ARGUMENT",
+    "field": "arguments.position"
+   }
+  },
+  {
+   "name": "move_to unknown member",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": 5,
+    "extra": 1
+   },
+   "expect": {
+    "code": "INVALID_ARGUMENT",
+    "field": "arguments.extra"
+   }
+  },
+  {
+   "name": "pulse fractional integer",
+   "device": "axis-1",
+   "action": "pulse",
+   "arguments": {
+    "count": 5.5
+   },
+   "expect": {
+    "code": "INVALID_ARGUMENT",
+    "field": "arguments.count"
+   }
+  },
+  {
+   "name": "pulse string for integer",
+   "device": "axis-1",
+   "action": "pulse",
+   "arguments": {
+    "count": "5"
+   },
+   "expect": {
+    "code": "INVALID_ARGUMENT",
+    "field": "arguments.count"
+   }
+  },
+  {
+   "name": "pulse below minimum",
+   "device": "axis-1",
+   "action": "pulse",
+   "arguments": {
+    "count": 0
+   },
+   "expect": {
+    "code": "OUT_OF_RANGE",
+    "field": "arguments.count",
+    "bound": "minimum"
+   }
+  },
+  {
+   "name": "pulse above maximum",
+   "device": "axis-1",
+   "action": "pulse",
+   "arguments": {
+    "count": 101
+   },
+   "expect": {
+    "code": "OUT_OF_RANGE",
+    "field": "arguments.count",
+    "bound": "maximum"
+   }
+  },
+  {
+   "name": "slow_move above maximum",
+   "device": "axis-1",
+   "action": "slow_move",
+   "arguments": {
+    "duration_ms": 60001
+   },
+   "expect": {
+    "code": "OUT_OF_RANGE",
+    "field": "arguments.duration_ms",
+    "bound": "maximum"
+   }
+  },
+  {
+   "name": "clamp above maximum (validated before the lease check)",
+   "device": "axis-1",
+   "action": "clamp",
+   "arguments": {
+    "force": 100.0001
+   },
+   "expect": {
+    "code": "OUT_OF_RANGE",
+    "field": "arguments.force",
+    "bound": "maximum"
+   }
+  },
+  {
+   "name": "dispense above maximum",
+   "device": "pump-1",
+   "action": "dispense",
+   "arguments": {
+    "volume": 1000.1
+   },
+   "expect": {
+    "code": "OUT_OF_RANGE",
+    "field": "arguments.volume",
+    "bound": "maximum"
+   }
+  },
+  {
+   "name": "dispense below minimum",
+   "device": "pump-1",
+   "action": "dispense",
+   "arguments": {
+    "volume": 0.9
+   },
+   "expect": {
+    "code": "OUT_OF_RANGE",
+    "field": "arguments.volume",
+    "bound": "minimum"
+   }
+  },
+  {
+   "name": "dispense wrong type",
+   "device": "pump-1",
+   "action": "dispense",
+   "arguments": {
+    "volume": "lots"
+   },
+   "expect": {
+    "code": "INVALID_ARGUMENT",
+    "field": "arguments.volume"
+   }
+  },
+  {
+   "name": "authority claim: authorized",
+   "device": "axis-1",
+   "action": "pulse",
+   "arguments": {
+    "count": 1,
+    "authorized": true
+   },
+   "expect": {
+    "code": "INVALID_ARGUMENT",
+    "field": "arguments.authorized"
+   }
+  },
+  {
+   "name": "authority claim: override",
+   "device": "axis-1",
+   "action": "pulse",
+   "arguments": {
+    "count": 1,
+    "override": true
+   },
+   "expect": {
+    "code": "INVALID_ARGUMENT",
+    "field": "arguments.override"
+   }
+  },
+  {
+   "name": "authority claim: force",
+   "device": "axis-1",
+   "action": "pulse",
+   "arguments": {
+    "count": 1,
+    "force": true
+   },
+   "expect": {
+    "code": "INVALID_ARGUMENT",
+    "field": "arguments.force"
+   }
+  },
+  {
+   "name": "authority claim: principal",
+   "device": "axis-1",
+   "action": "pulse",
+   "arguments": {
+    "count": 1,
+    "principal": "admin"
+   },
+   "expect": {
+    "code": "INVALID_ARGUMENT",
+    "field": "arguments.principal"
+   }
+  },
+  {
+   "name": "unknown action",
+   "device": "axis-1",
+   "action": "no_such_action",
+   "arguments": {},
+   "expect": {
+    "code": "UNKNOWN_ACTION"
+   }
+  }
+ ],
+ "accepted": [
+  {
+   "name": "quantity in the declared unit is accepted and unwrapped",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": {
+     "value": 5,
+     "unit": "mm"
+    }
+   },
+   "expect": {
+    "admitted": {
+     "position": 5
+    }
+   }
+  },
+  {
+   "name": "lower bound is accepted",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": 0
+   },
+   "expect": {
+    "admitted": null
+   }
+  },
+  {
+   "name": "upper bound is accepted",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": 200
+   },
+   "expect": {
+    "admitted": null
+   }
+  },
+  {
+   "name": "step tolerance: 50.1 is a multiple of 0.1",
+   "device": "axis-1",
+   "action": "move_to",
+   "arguments": {
+    "position": 50.1
+   },
+   "expect": {
+    "admitted": null
+   }
+  },
+  {
+   "name": "integer bounds are accepted",
+   "device": "axis-1",
+   "action": "pulse",
+   "arguments": {
+    "count": 100
+   },
+   "expect": {
+    "admitted": null
+   }
+  }
+ ]
+}

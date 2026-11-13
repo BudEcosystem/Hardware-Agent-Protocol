@@ -321,74 +321,85 @@ def _result_text(result: Any, output: Any) -> str:
     return "" if result is None else with_unit(result, None)
 
 
-def _error_parts(error: dict[str, Any]) -> tuple[str, str]:
+def _error_text(error: dict[str, Any]) -> tuple[str, str]:
+    """(code and message, hint). The message is the flexible part: it is cut, never the protected clauses."""
     message = clean(error.get("message", ""))
     if error.get("bhmsCode") in ("DEVICE_FAULT", "INTERNAL"):
         message = quote(message, 120)
     code = error.get("bhmsCode", "ERROR")
-    text = code + (f" ({OUTCOME_UNKNOWN})" if error.get("mayHaveActed") else "")  # first: must survive truncation
-    return (f"{text}: {message}" if message else text), clean(error.get("hint", ""))
+    return (f"{code}: {message}" if message else code), clean(error.get("hint", ""))
 
 
 def summarize_operation(op: dict[str, Any], *, replayed: bool = False, description: dict[str, Any] | None = None,
                         keyed: bool = True, show_key: bool = False, wait_hint: bool = True) -> str:
     """``pump-1.dispense op-7f3a completed: dispensed 50 uL (effect verified, 2.1 s)``.
 
-    States the operation's ``state`` and ``effect``; ``replayed`` adds the word (AGT-011); ``keyed=False`` appends
-    ``(not retry-safe: no operation_key)`` (AGT-030); an unsettled operation says how to keep waiting (AGT-032).
+    Protected, never truncated: the subject's operation id, ``state``, ``replayed`` (AGT-011), ``effect``, the phrase
+    "outcome unknown \u2014 check before retrying" for a failure that may have acted or an unknown operation (AGT-020) and
+    ``(not retry-safe: no operation_key)`` (AGT-030). Only result values, the error message and the hint are cut.
     """
     state, effect, op_id = op.get("state"), op.get("effect", "unknown"), op.get("operationId")
     if op.get("kind") == "program":
         subject = f"program {str(op.get('programDigest', ''))[7:19]}"
     else:
         subject = f"{op.get('deviceId')}.{op.get('action')}"
-    head = f"{subject} {op_id} replayed: {state}" if replayed else f"{subject} {op_id} {state}:"
-    suffix = "" if keyed or not show_key else "(not retry-safe: no operation_key)"
+    err = op.get("error") or {}
     took = op_duration_ms(op)
-    tail = f"effect {effect}" + (f", {duration(took)}" if took is not None and state in SETTLED else "")
+    clauses = f"effect {effect}" + (f", {duration(took)}" if took is not None and state in SETTLED else "")
+    unknown = state == "unknown" or (state in ("failed", "rejected") and bool(err.get("mayHaveActed")))
+    if unknown:
+        clauses += f"; {OUTCOME_UNKNOWN}"
+    if state == "canceled":
+        clauses += f", cancel {(op.get('cancel') or {}).get('state', 'none')}"
+    suffix = f"({clauses})" + ("" if keyed or not show_key else " (not retry-safe: no operation_key)")
+    colon = "" if replayed else ":"
+    state_text = f"replayed: {state}" if replayed else state
+    fixed = len(f" {op_id} {state_text}{colon}") + len(suffix) + 1
+    subject = cut(subject, 48 if fixed < 120 else 24)
+    head = f"{subject} {op_id} {state_text}{colon}"
     body, nxt = "", ""
-    err = op.get("error")
     if state == "completed":
         output = ((description or {}).get("actions", {}).get(op.get("action"), {}) or {}).get("output")
         body = _result_text(op.get("result"), output)
-        body = f"{body} " if body else ""
-        text = compose(head, f"{body}({tail})", suffix=suffix)
     elif state in ("failed", "rejected"):
-        what, hint = _error_parts(err) if err else (state, "")
-        text = compose(head, f"{what} (effect {effect}).", f"Next: {hint}" if hint else "", suffix)
+        body, hint = _error_text(err) if err else (state, "")
+        nxt = f"Next: {hint}" if hint else ""
     elif state == "unknown":
-        hint = clean((err or {}).get("hint", "")) or "reconcile with bhms_operation before acting again"
-        text = compose(head, f"{OUTCOME_UNKNOWN} (effect {effect}).", f"Next: {hint}", suffix)
-    elif state == "canceled":
-        text = compose(head, f"(effect {effect}, cancel {(op.get('cancel') or {}).get('state', 'none')})", suffix=suffix)
-    else:  # accepted, dispatching, running
+        hint = clean(err.get("hint", "")) or "reconcile with bhms_operation before acting again"
+        nxt = f"Next: {hint}"
+    elif state not in ("canceled",):  # accepted, dispatching, running
         prog = (op.get("progress") or {}).get("fraction")
-        where = f"{int(prog * 100)}% " if isinstance(prog, (int, float)) else ""
-        waited = f"after {duration(took)} " if took else ""
-        body = f"{where}{waited}(effect {effect})"
+        body = f"{int(prog * 100)}%" if isinstance(prog, (int, float)) else ""
         nxt = f'call bhms_operation(operation_id="{op_id}", wait_ms=30000)' if wait_hint else ""
-        text = compose(f"{subject} {op_id} " + (f"replayed: {state}" if replayed else state), body, nxt, suffix,
-                       next_first=True)
-    return text
+        return compose(head, body, nxt, suffix, next_first=True)
+    return compose(head, body, nxt, suffix)
 
 
 def summarize_stop(stops: list[dict[str, Any]]) -> str:
-    """``stop: arm-1 confirmed, pump-1 initiated (2 operations canceled)``; never claims more than ``confirmed``."""
+    """Counts first, then every device that is *not* confirmed, then the confirmed ones as far as they fit.
+
+    ``stop: 12 confirmed (3 operations canceled): ...`` or ``stop not confirmed on 1 of 13 devices (1 failed, 12
+    confirmed) ...``. It never says "stopped" for a device whose stop is not ``confirmed`` (BHMS-AGT-011).
+    """
     if not stops:
-        return "stop: no device matched; nothing was stopped"
-    parts = []
-    canceled = 0
+        return "stop: no device matched; nothing was confirmed"
+    canceled = sum(len(s.get("canceledOperations") or []) for s in stops)
+    counts: dict[str, int] = {}
     for s in stops:
-        outcome = s.get("outcome")
-        word = {"unsupported": "unsupported (nothing physical stopped)", "failed": "FAILED"}.get(outcome, outcome)
-        parts.append(f"{s.get('deviceId')} {word}")
-        canceled += len(s.get("canceledOperations") or [])
-    nxt = ""
-    if any(s.get("outcome") in ("initiated", "failed") for s in stops):
-        nxt = "Next: initiated/failed devices are not confirmed stopped; check them with bhms_read"
-    elif any(s.get("outcome") == "unsupported" for s in stops):
-        nxt = "Next: unsupported devices only had operations canceled; stop them by other means"
-    return compose("stop: " + ", ".join(parts), f"({canceled} operation{'s' if canceled != 1 else ''} canceled)", nxt)
+        counts[s.get("outcome", "?")] = counts.get(s.get("outcome", "?"), 0) + 1
+    words = {"unsupported": "unsupported (no physical stop)", "failed": "FAILED"}
+    rest = [s for s in stops if s.get("outcome") != "confirmed"]
+    ordered = rest + [s for s in stops if s.get("outcome") == "confirmed"]
+    listing = ", ".join(f"{s.get('deviceId')} {words.get(s.get('outcome'), s.get('outcome'))}" for s in ordered)
+    tally = ", ".join(f"{n} {k}" for k, n in sorted(counts.items()) if k != "confirmed")
+    suffix = f"({canceled} operation{'s' if canceled != 1 else ''} canceled)"
+    if not rest:
+        return compose(f"stop: {len(stops)} confirmed", listing, "", suffix)
+    nxt = "Next: check them with bhms_read or stop again"
+    if all(s.get("outcome") == "unsupported" for s in rest):
+        nxt = "Next: stop them by other means"
+    return compose(f"stop not confirmed on {len(rest)} of {len(stops)} devices ({tally}):", listing, nxt, suffix,
+                   next_first=True)
 
 
 def summarize_find(devices: list[dict[str, Any]], programs: list[dict[str, Any]] | None, next_cursor: str | None) -> str:
