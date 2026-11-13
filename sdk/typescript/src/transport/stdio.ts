@@ -14,7 +14,7 @@ import type { Transport } from "../jsonrpc/session.js";
 
 /** The server end on this process's stdin/stdout. The parent process is `admin`. */
 export function stdioServerTransport(maxMessageBytes?: number): Transport {
-  return new LineTransport(process.stdin, process.stdout, { principal: "stdio:parent", kind: "stdio", scopes: ["admin"] }, maxMessageBytes);
+  return new LineTransport(process.stdin, process.stdout, { principal: "stdio", kind: "stdio", scopes: ["admin"] }, maxMessageBytes);
 }
 
 export interface SpawnedServer {
