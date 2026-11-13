@@ -1,0 +1,57 @@
+# A BHMS gateway in front of three example device servers, runnable with one command:
+#
+#     python -m bhms.gateway examples/bhms/gateway.toml          (add -v for INFO logs)
+#
+# It spawns the three upstreams over stdio (and restarts them if they die), serves them as bench/stage-z, pump/pump-1 and
+# thermo/thermo-1 on a Unix socket, WebSocket and Streamable HTTP, and enforces the principals below.
+#
+#     python - <<'PY'
+#     import asyncio
+#     from bhms.client.client import Client
+#     async def main():
+#         async with await Client.connect("ws://127.0.0.1:8765", token="demo-agent-token") as c:
+#             async for d in c.iter_devices():
+#                 print(d.device_id, d.status)
+#     asyncio.run(main())
+#     PY
+#
+# Tokens are never stored here, only their sha256: python -c "from bhms.runtime.authority import token_digest as t; print(t('my-token'))"
+# SIGHUP re-reads [principals] and applies it to new admissions at once.
+
+[gateway]
+id = "example-gateway"          # identity in the deterministic upstream idempotency keys (BHMS-AUTH-014)
+state_dir = "state"             # the forwarding journal and fences; relative paths are relative to this file
+listen = ["unix:gateway.sock", "ws://127.0.0.1:8765", "http://127.0.0.1:8766/bhms"]
+upstream_timeout_ms = 10000     # every call to an upstream is bounded (BHMS-SEC-061)
+trust_same_uid = false          # a Unix-socket peer is admin only if a principal below names its uid
+instructions = "Example bench: a stage, a syringe pump and a thermometer. Lease pump/pump-1/plunger before dispensing."
+
+[[upstream]]
+name = "bench"                  # device ids become bench/<deviceId>
+stdio = "{python} {config_dir}/../../sdk/python/examples/bench_stage.py"
+env = { BHMS_STATE_DIR = "{config_dir}/state/bench" }
+
+[[upstream]]
+name = "pump"
+stdio = "{python} {config_dir}/pump_server.py"
+env = { BHMS_STATE_DIR = "{config_dir}/state/pump" }
+
+[[upstream]]
+name = "thermo"
+stdio = "{python} {config_dir}/thermo_server.py"
+env = { BHMS_STATE_DIR = "{config_dir}/state/thermo" }
+
+[principals.agent]              # token: demo-agent-token  (an AI agent: may act, cannot stop or see others' operations)
+tokens = ["sha256:b83e3e191f2acfe2c3c27f2079c5c13ea8409e9abbf31b671d421d80bbc847c9"]
+# invoke:<deviceGlob>/<actionGlob> splits at the LAST "/", so for namespaced ids "bench/*/*" means any action of any bench device.
+scopes = ["read", "lease", "invoke:bench/*/*", "invoke:pump/*/*"]
+# Narrowing only: the agent sees (in devices/describe) and is held to a maximum of 100 um; the device allows 200.
+bounds = { "bench/stage-z/move_to" = { target = { maximum = 100 } }, "pump/pump-1/dispense" = { volume = { maximum = 100 } } }
+
+[principals.operator]           # token: demo-operator-token
+tokens = ["sha256:61112491d046c3f6f8ab801f170d9b2d0c734a17ceff60dee92123fb507cfc3f"]
+scopes = ["admin"]
+
+[principals.safety]             # token: demo-safety-token  (can only stop devices: BHMS-SEC-040)
+tokens = ["sha256:988c164237e81eaf362e40d1f1460972ea47c71196060a32691bf0c489c472a4"]
+scopes = ["stop"]

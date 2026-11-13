@@ -175,8 +175,11 @@ def _listen(item: str, base: Path) -> str:
     return item
 
 
-def _expand(command: str, base: Path) -> str:
-    return command.replace("{python}", shlex.quote(sys.executable)).replace("{config_dir}", shlex.quote(str(base)))
+def _expand(text: str, base: Path, *, quote: bool = True) -> str:
+    """Expand ``{python}`` (this interpreter) and ``{config_dir}`` (the directory of the configuration file); shell-quoted
+    for command lines, verbatim for environment values."""
+    wrap = shlex.quote if quote else str
+    return text.replace("{python}", wrap(sys.executable)).replace("{config_dir}", wrap(str(base)))
 
 
 def _upstream(entry: dict[str, Any], base: Path, default_timeout_ms: int) -> UpstreamConfig:
@@ -198,6 +201,8 @@ def _upstream(entry: dict[str, Any], base: Path, default_timeout_ms: int) -> Ups
         entry["stdio"] = _expand(entry["stdio"], base)
     if "url" in entry and entry["url"].startswith("unix:") and not entry["url"][5:].startswith(("/", "//")):
         entry["url"] = f"unix:{base / entry['url'][5:]}"
+    if "env" in entry:
+        entry["env"] = {k: _expand(str(v), base, quote=False) for k, v in entry["env"].items()}
     entry.setdefault("cwd", str(base))
     return UpstreamConfig(token=token, **entry)
 
