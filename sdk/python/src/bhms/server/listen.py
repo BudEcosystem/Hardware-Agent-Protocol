@@ -176,7 +176,7 @@ class Subscriptions:
         everything = bool(ops.all)
 
         def on_change(rec: OperationRecord, wire: dict[str, Any]) -> None:
-            if rec.principal != principal.id and not principal.admin:
+            if rec.principal != principal.id and not principal.operations_all:
                 return
             if everything or rec.id in ids or wire.get("deviceId") in devices or \
                     (rec.op.get("parentOperationId") in ids):

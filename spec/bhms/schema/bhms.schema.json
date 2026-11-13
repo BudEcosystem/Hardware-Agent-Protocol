@@ -1687,7 +1687,7 @@
     "Scope": {
       "type": "string",
       "description": "Authorization scope (07-leases-and-authority.md 7.4).",
-      "pattern": "^(read|lease|stop|admin|programs:run|programs:register|invoke:.+|stop:.+)$"
+      "pattern": "^(read|lease|stop|admin|operations:read|programs:run|programs:register|invoke:.+|stop:.+)$"
     },
     "Principal": {
       "type": "object",

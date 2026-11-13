@@ -26,11 +26,31 @@ def _limit(requested: int | None, maximum: int, default: int = 100) -> int:
     return min(requested or min(default, maximum), maximum)
 
 
-def _capability_matches(pattern: str, capabilities: tuple[str, ...]) -> bool:
+def _capability_matches(pattern: str, capabilities: tuple[str, ...] | list[str]) -> bool:
     if pattern.endswith(".*"):
         prefix = pattern[:-1]
         return any(c.startswith(prefix) for c in capabilities)
     return pattern in capabilities
+
+
+def summary_matches(flt: Any, summary: dict[str, Any], status: str) -> bool:
+    """Whether a ``DeviceSummary`` satisfies a ``devices/list`` filter (capability, tag, status, free text).
+
+    Shared by :class:`~bhms.server.server.DeviceServer` and the gateway so both filter identically.
+    """
+    if flt is None:
+        return True
+    if flt.capability is not None and not _capability_matches(flt.capability, summary["capabilities"]):
+        return False
+    if flt.tag is not None and flt.tag not in summary["tags"]:
+        return False
+    if flt.status is not None and flt.status != status:
+        return False
+    if flt.text is not None:
+        needle = flt.text.casefold()
+        if not any(needle in h.casefold() for h in (summary["name"], summary["summary"], *summary["tags"])):
+            return False
+    return True
 
 
 def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one closure per method, registered together
@@ -45,25 +65,14 @@ def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one clo
             return {"devices": []}  # BHMS-DEV-010: nothing reveals hidden devices
         limit = _limit(params.limit, srv.max_page_size)
         after = decode_cursor("d", params.cursor) if params.cursor is not None else None
-        flt = params.filter
         matches = []
         for dev in sorted(srv.devices.values(), key=lambda d: d.device_id):
             if after is not None and dev.device_id <= after:
                 continue
             status = dev.status
             summary = dev.summary(status)
-            if flt is not None:
-                if flt.capability is not None and not _capability_matches(flt.capability, dev.capabilities):
-                    continue
-                if flt.tag is not None and flt.tag not in dev.tags:
-                    continue
-                if flt.status is not None and flt.status != status:
-                    continue
-                if flt.text is not None:
-                    needle = flt.text.casefold()
-                    haystack = [summary["name"], summary["summary"], *summary["tags"]]
-                    if not any(needle in h.casefold() for h in haystack):
-                        continue
+            if not summary_matches(params.filter, summary, status):
+                continue
             matches.append(summary)
             if len(matches) > limit:
                 break
@@ -112,7 +121,7 @@ def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one clo
 
     async def operations_list(params: Any, ctx: RequestContext) -> dict[str, Any]:
         principal = srv.authenticate(ctx)
-        page, cursor = srv.journal.list(principal=None if principal.admin else principal.id,
+        page, cursor = srv.journal.list(principal=None if principal.operations_all else principal.id,
                                         limit=_limit(params.limit, srv.max_page_size), after=params.cursor,
                                         device_id=params.device_id, state=params.state,
                                         parent_id=params.parent_operation_id)
@@ -217,4 +226,4 @@ def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one clo
         rpc.register(method, handler, cancellable=True if method == "leases/acquire" else None)
 
 
-__all__ = ["register"]
+__all__ = ["register", "summary_matches"]

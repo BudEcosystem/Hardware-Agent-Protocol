@@ -188,7 +188,7 @@ class ArgumentValidator:
         if errors:
             raise self._refusal(errors, admitted)
         if bounds:
-            self._check_envelope(admitted, bounds)
+            self.check_envelope(admitted, bounds)
         if self._has_defaults:
             missing = {k: copy.deepcopy(m["default"]) for k, m in self._members.items()
                        if isinstance(m, dict) and "default" in m and k not in admitted}
@@ -244,7 +244,9 @@ class ArgumentValidator:
         return BhmsError("INVALID_ARGUMENT", f"{path}: {error.message}"[:500], field=path,
                          hint=f"fix {name}{_expectation(node)}"[:2000])
 
-    def _check_envelope(self, admitted: dict[str, Any], bounds: dict[str, dict[str, Any]]) -> None:
+    def check_envelope(self, admitted: dict[str, Any], bounds: dict[str, dict[str, Any]]) -> None:
+        """Refuse a value outside the effective envelope of device bounds and the principal's policy ``bounds``
+        (``OUT_OF_RANGE`` with the effective bound, BHMS-AUTH-010); :meth:`admit` calls it after schema validation."""
         for member, limits in bounds.items():
             if member not in admitted:
                 continue

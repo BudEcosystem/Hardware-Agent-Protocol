@@ -36,11 +36,14 @@ import hashlib
 import hmac
 import os
 import re
+import weakref
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import Any
 
 from bhms.protocol import types
+from bhms.protocol.errors import BhmsError
 from bhms.transport.base import Peer
 
 
@@ -81,6 +84,11 @@ class Principal:
     @property
     def can_read(self) -> bool:
         return self.has("read")
+
+    @property
+    def operations_all(self) -> bool:
+        """Whether the principal sees every principal's operations (``admin`` or ``operations:read``, §7.4)."""
+        return self.admin or "operations:read" in self.scopes
 
     def can_invoke(self, device_id: str, name: str, capabilities: tuple[str, ...] | list[str],
                    hazardous: bool = False) -> bool:
@@ -153,7 +161,7 @@ class Policy:
                                   Principal(name, tuple(parsed.scopes), bounds, gateway)))
         self._entries = tuple(entries)
         self.trust_same_uid = trust_same_uid
-        self.stdio = Principal("stdio", stdio_scopes)
+        self.stdio = Principal("stdio", stdio_scopes, gateway=True)  # a launching gateway may use g- keys (OPS-037)
 
     @classmethod
     def from_document(cls, document: dict[str, Any], **kw: Any) -> Policy:
@@ -192,21 +200,24 @@ class Policy:
                 if peer.uid in entry.uids:
                     return entry.principal
             if self.trust_same_uid and peer.uid == os.getuid():
-                return Principal(f"uid:{peer.uid}", ("admin",))
+                return Principal(f"uid:{peer.uid}", ("admin",), gateway=True)
             return None
-        if peer.kind == "ws":
+        if peer.kind in ("ws", "http"):
             return self.by_token(peer.token)
         return None
 
-    def check_bounds(self, describe: Any) -> None:
+    def check_bounds(self, describe: Any, *, allow_unknown: bool = False) -> None:
         """Reject bounds that would widen a device bound (BHMS-SEC-011); ``describe(device_id)`` returns a
-        description or None. Bounds for unknown devices/actions are rejected too."""
+        description or None. Bounds for unknown devices/actions are rejected too, unless ``allow_unknown`` (a gateway
+        whose upstream has not been described yet; the effective envelope is an intersection, so it never widens)."""
         from bhms.server.validation import effective_bounds
 
         for principal in self.principals:
             for key, members in principal.bounds.items():
                 device_id, _, action = key.rpartition("/")
                 desc = describe(device_id)
+                if desc is None and allow_unknown:
+                    continue
                 if desc is None or action not in desc["actions"]:
                     raise ValueError(f"policy bounds for {principal.id!r} name unknown action {key!r}")
                 schema = desc["actions"][action]["input"].get("properties", {})
@@ -227,4 +238,37 @@ class Policy:
                     effective_bounds(node, bound)  # validates the shape
 
 
-__all__ = ["STDIO_PRINCIPAL", "Policy", "Principal", "glob_match", "token_digest"]
+class Authenticator:
+    """Resolves and caches the principal of each connection from the *current* policy (BHMS-SEC-001).
+
+    A server and a gateway both own one: ``authenticate(ctx)`` is what every handler calls first; ``reset()`` drops the
+    cache when the policy changes so that new requests follow it at once (BHMS-SEC-012).
+    """
+
+    def __init__(self, policy: Callable[[], Policy]) -> None:
+        self._policy = policy
+        self._principals: weakref.WeakKeyDictionary[Any, Principal | None] = weakref.WeakKeyDictionary()
+
+    def principal_of(self, ctx: Any) -> Principal | None:
+        """The principal of ``ctx.session`` (None when its transport carries no valid credential)."""
+        session = ctx.session
+        if session in self._principals:
+            return self._principals[session]
+        found = self._policy().resolve(ctx.peer)
+        self._principals[session] = found
+        return found
+
+    def authenticate(self, ctx: Any) -> Principal:
+        """The request's principal, or ``UNAUTHORIZED`` when the transport carries no valid credential."""
+        found = self.principal_of(ctx)
+        if found is None:
+            raise BhmsError("UNAUTHORIZED", "this connection carries no valid credential",
+                            hint="connect over stdio or a permitted Unix socket, or present a bearer token "
+                                 "(BHMS-SEC-001)")
+        return found
+
+    def reset(self) -> None:
+        self._principals.clear()
+
+
+__all__ = ["STDIO_PRINCIPAL", "Authenticator", "Policy", "Principal", "glob_match", "token_digest"]

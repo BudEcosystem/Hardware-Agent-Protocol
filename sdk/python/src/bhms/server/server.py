@@ -46,14 +46,13 @@ import re
 import secrets
 import signal
 import ssl as ssl_module
-import weakref
 from pathlib import Path
 from typing import Any
 
 from bhms.jsonrpc.dispatcher import Server as RpcServer
-from bhms.jsonrpc.session import RequestContext, Session
+from bhms.jsonrpc.session import RequestContext
 from bhms.protocol.errors import BhmsError
-from bhms.runtime.authority import Policy, Principal, token_digest
+from bhms.runtime.authority import Authenticator, Policy, Principal, token_digest
 from bhms.runtime.events import EventLog
 from bhms.runtime.leases import Lease, LeaseManager
 from bhms.runtime.observations import ObservationHub
@@ -131,7 +130,7 @@ class DeviceServer:
         self.devices: dict[str, Device] = {}
         self._started = False
         self._closing: asyncio.Event | None = None  # set by close(); ends subscriptions with endReason shutdown
-        self._principals: weakref.WeakKeyDictionary[Session, Principal | None] = weakref.WeakKeyDictionary()
+        self.auth = Authenticator(lambda: self.policy)
         self._journal_ok = True
         self._listeners: list[Any] = []
         self._extensions: dict[str, dict[str, Any]] = {}
@@ -288,7 +287,7 @@ class DeviceServer:
             return
         self.token = secrets.token_urlsafe(24)
         self.policy = _with_admin_token(self.policy, self.token)
-        self._principals.clear()
+        self.auth.reset()
         self.state_dir.mkdir(parents=True, exist_ok=True)
         path = self.state_dir / f"{self.name}.token"
         fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
@@ -355,21 +354,11 @@ class DeviceServer:
     # ------------------------------------------------------------------ authority
 
     def principal_of(self, ctx: RequestContext) -> Principal | None:
-        session = ctx.session
-        if session in self._principals:
-            return self._principals[session]
-        found = self.policy.resolve(ctx.peer)
-        self._principals[session] = found
-        return found
+        return self.auth.principal_of(ctx)
 
     def authenticate(self, ctx: RequestContext) -> Principal:
         """The request's principal, or ``UNAUTHORIZED`` when the transport carries no valid credential."""
-        found = self.principal_of(ctx)
-        if found is None:
-            raise BhmsError("UNAUTHORIZED", "this connection carries no valid credential",
-                            hint="connect over stdio or a permitted Unix socket, or present a bearer token "
-                                 "(BHMS-SEC-001)")
-        return found
+        return self.auth.authenticate(ctx)
 
     def set_policy(self, policy: Policy) -> None:
         """Replace the policy; takes effect for new admissions at once and is recorded (BHMS-SEC-012)."""
@@ -378,7 +367,7 @@ class DeviceServer:
             policy = _with_admin_token(policy, self.token)
         before = {p.id: p for p in self.policy.principals}
         self.policy = policy
-        self._principals.clear()
+        self.auth.reset()
         for principal_id, old in before.items():
             now = next((p for p in policy.principals if p.id == principal_id), None)
             if old.has("lease") and (now is None or not now.has("lease")):
@@ -439,7 +428,7 @@ class DeviceServer:
     def operation_for(self, principal: Principal, op_id: str) -> OperationRecord:
         """An operation the principal may see, else ``INVALID_ARGUMENT`` (BHMS-OPS-062)."""
         rec = self.journal.get(op_id)
-        if rec is None or (rec.principal != principal.id and not principal.admin):
+        if rec is None or (rec.principal != principal.id and not principal.operations_all):
             raise BhmsError("INVALID_ARGUMENT", f"no operation {op_id!r} is visible to you", field="operationId",
                             hint="use an operationId returned to you (operations/list shows yours)")
         return rec

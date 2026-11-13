@@ -234,7 +234,16 @@ class LeaseManager:
     def revoke_covering(self, resources: Iterable[str], *, reason: str = "stop") -> list[Lease]:
         """Revoke every active lease covering any of ``resources`` and raise their fences (BHMS-AUTH-021)."""
         wanted = set(resources)
-        revoked = [lease for lease in self.active() if wanted.intersection(lease.resources)]
+        return self._revoke([lease for lease in self.active() if wanted.intersection(lease.resources)])
+
+    def revoke(self, lease_id: str) -> Lease | None:
+        """Revoke one active lease (a gateway whose upstream lease was lost) and raise the fence of its resources;
+        None when it is unknown or not active."""
+        lease = self.get(lease_id)
+        revoked = self._revoke([lease]) if lease is not None and lease.state == "active" else []
+        return revoked[0] if revoked else None
+
+    def _revoke(self, revoked: list[Lease]) -> list[Lease]:
         if not revoked:
             return []
         try:

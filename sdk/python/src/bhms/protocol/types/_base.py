@@ -99,7 +99,7 @@ ExtensionKey = _pattern(r"^(?!bhms/)[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)*/[A-Za-z0
 Extensions = dict[ExtensionKey, dict[str, Any]]
 JsonSchema = Union[dict[str, Any], bool]
 ResultType = Literal["complete"]
-Scope = _pattern(r"^(read|lease|stop|admin|programs:run|programs:register|invoke:.+|stop:.+)$")
+Scope = _pattern(r"^(read|lease|stop|admin|operations:read|programs:run|programs:register|invoke:.+|stop:.+)$")
 NonNegInt = _bounded_int(ge=0)
 PosInt = _bounded_int(ge=1)
 PositiveNumber = Annotated[float, Field(gt=0)]
