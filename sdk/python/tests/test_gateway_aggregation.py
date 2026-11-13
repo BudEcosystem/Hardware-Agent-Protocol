@@ -184,7 +184,8 @@ async def test_a_schema_invalid_description_stops_being_served(tmp_path):  # BHM
     srv, _ = build(tmp_path / "bad", name="bad")
     await srv.start()
     good = srv.devices["axis-1"].description()
-    broken = {k: v for k, v in good.items() if k not in ("digest", "safety")}  # a required member is missing
+    broken = {k: v for k, v in good.items() if k != "digest"}
+    broken["name"] = 123  # structurally fine, but not a string: only the schema validator notices
     broken["digest"] = digest(broken)  # ... but the digest is right for what is served
     async def serve_broken(params, ctx):
         return {"description": broken}

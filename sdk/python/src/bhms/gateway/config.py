@@ -17,7 +17,7 @@ key it concerns, never at the first request::
 
     [principals.lab-agent]             # GatewayPolicy: tokens are sha256 digests, never plaintext (BHMS-SEC-002)
     tokens = ["sha256:<hex of the token>"]
-    scopes = ["read", "lease", "invoke:bench/*"]
+    scopes = ["read", "lease", "invoke:bench/*/*"]   # <deviceGlob>/<actionGlob>, split at the last "/"
     bounds = {"bench/stage-z/move_to" = {target = {maximum = 100}}}
 
 Every ``[gateway]`` key has a default; see :class:`GatewayConfig`. :func:`load_config` reads a file,
@@ -97,7 +97,7 @@ class GatewayConfig:
     """The gateway's settings; every field has a default except ``upstreams`` and ``principals``.
 
     ``principals`` is a ``GatewayPolicy`` document's ``principals`` table (tokens as ``sha256:`` digests).
-    ``durability`` is the store mode of :mod:`bhms.runtime.store` (``dispatch``: fsync before every forward).
+    ``durability`` is the store mode of :mod:`bhms.runtime.store` (``dispatch``: fsync before every dispatch, which for a gateway is the pending-forward row written before an invoke is sent).
     ``trust_same_uid`` grants ``admin`` to Unix-socket peers with the gateway's uid that no principal names.
     """
 

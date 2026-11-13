@@ -180,14 +180,15 @@ class Catalog:
                 continue
             try:
                 served = gateway_description(namespace, description)
-            except ValueError as exc:
-                log.error("not serving %s: %s", device_id, exc)
+                entry = CatalogEntry(device_id, namespace, upstream_id, description, summary, served,
+                                     tuple(served["resources"]))
+                self._all_resources(entry)
+            except (ValueError, KeyError, TypeError, AttributeError) as exc:
+                log.error("not serving %s: its description is malformed (%s: %s)", device_id, type(exc).__name__, exc)
                 if existing is not None:
                     self._remove(existing)
                     changed = True
                 continue
-            entry = CatalogEntry(device_id, namespace, upstream_id, description, summary, served,
-                                 tuple(served["resources"]))
             if existing is not None:
                 self._remove(existing)
             self._add(entry)

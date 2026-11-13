@@ -270,16 +270,15 @@ async def test_gateway_restart_resends_the_same_upstream_key(tmp_path, monkeypat
         assert r.axes["a"].commands["move_to"] == 1 and UID >= 0
 
 
-async def test_cancelling_an_in_doubt_operation_is_recorded_and_forwarded_after_reconcile(tmp_path, monkeypatch):  # OPS-053
+async def test_cancelling_an_in_doubt_operation_is_recorded_and_not_resent(tmp_path, monkeypatch):  # OPS-053
     from bhms.gateway.upstreams import Upstream
 
     original = Upstream.call
-    lose = {"on": True}
 
     async def lossy(self, method, params, **kw):
         result = await original(self, method, params, **kw)
-        if method == "actions/invoke" and lose["on"]:
-            raise asyncio.TimeoutError()
+        if method == "actions/invoke":
+            raise asyncio.TimeoutError()  # the upstream acted; the answer was lost
         return result
 
     monkeypatch.setattr(Upstream, "call", lossy)
@@ -289,11 +288,7 @@ async def test_cancelling_an_in_doubt_operation_is_recorded_and_forwarded_after_
         assert op.state == "unknown"
         asked = (await client.operations_cancel(op.operation_id, reason="changed my mind")).operation
         assert asked.cancel.state == "requested"  # recorded although it cannot be forwarded yet
-        lose["on"] = False
-        for _ in range(200):
-            got = (await client.operations_get(op.operation_id)).operation
-            if got.state == "canceled":
-                break
-            await asyncio.sleep(0.05)
-        assert got.state == "canceled" and got.cancel.state == "confirmed"
-        assert r.axes["a"].commands["slow"] == 1  # the same key: one execution, then cancelled
+        await asyncio.sleep(1.2)
+        got = (await client.operations_get(op.operation_id)).operation
+        assert got.state == "unknown" and got.cancel.state == "requested"  # never re-sent after a cancel (fix round 1)
+        assert r.axes["a"].commands["slow"] == 1

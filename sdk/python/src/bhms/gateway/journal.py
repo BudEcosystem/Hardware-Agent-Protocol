@@ -9,8 +9,13 @@ The gateway is a BHMS server, so the operations it admits are ordinary records o
   the gateway's identity, the client principal and the client's key, so a restarted gateway re-sends the *same* upstream
   key and the upstream deduplicates (BHMS-OPS-030); two principals (or two gateways) sending the same client key cannot
   collide.
-* :meth:`ForwardJournal.admit` — the intent is durable in the ``dispatching`` state (a barrier commit) *before* anything
-  is sent upstream (BHMS-OPS-003), together with the exact upstream request, so an in-doubt forward can be re-sent verbatim.
+* :meth:`ForwardJournal.pending_put` — the intent is durable (a barrier commit) *before* anything is sent upstream
+  (BHMS-OPS-003): a private *pending-forward* row keyed by ``(principal, client key)`` with the exact upstream request, the
+  derived upstream key, the upstream's epoch and the resources. It is deleted when the upstream refuses before creating
+  anything (BHMS-OPS-040: refusals create no operation), promoted to the visible operation in the same transaction as the
+  answer is recorded (:meth:`admit_forwarded` / :meth:`admit_in_doubt`), and converted to an ``unknown`` operation by
+  :meth:`convert_pending` when a same-key retry or a restart finds it (BHMS-OPS-033, BHMS-OPS-080). So a crash between send
+  and answer leaves an operation (``unknown``, resources inhibited) that is reconciled by re-sending the same upstream key.
 * :meth:`ForwardJournal.mirror` — applies an upstream operation snapshot to the gateway's record along the legal
   transitions of §6.3 only: ``accepted`` upstream (queued) is ``dispatching`` here, ``rejected`` upstream is ``failed`` with
   proof of no effect (a dispatched operation cannot be ``rejected``), a stale snapshot never regresses a state, and
@@ -34,6 +39,8 @@ import hashlib
 import logging
 from typing import Any
 
+import orjson
+
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.operations import InvalidTransition, Journal, OperationRecord, unknown_error
 
@@ -54,29 +61,77 @@ def upstream_key(gateway_id: str, principal: str, client_key: str) -> str:
 class ForwardJournal(Journal):
     """The journal of forwarded operations; see the module docstring."""
 
+    # ------------------------------------------------------------------ pending forwards
+
+    @staticmethod
+    def _pending_key(principal: str, key: str) -> str:
+        return f"pending:{principal}\n{key}"
+
+    def pending_put(self, principal: str, key: str, request: dict[str, Any]) -> None:
+        """Durably record the intent to forward ``request`` (everything :meth:`admit_in_doubt` needs) before sending."""
+        with self.store.transaction(barrier=True):
+            self.store.meta_set(self._pending_key(principal, key), orjson.dumps(request).decode())
+
+    def pending_get(self, principal: str, key: str) -> dict[str, Any] | None:
+        raw = self.store.meta_get(self._pending_key(principal, key))
+        return orjson.loads(raw) if raw else None
+
+    def pending_delete(self, principal: str, key: str) -> None:
+        self.store.meta_delete(self._pending_key(principal, key))
+
+    def pending_all(self) -> dict[str, dict[str, Any]]:
+        return {k: orjson.loads(v) for k, v in self.store.meta_prefix("pending:").items() if v}
+
+    def convert_pending(self, principal: str, key: str) -> OperationRecord | None:
+        """Turn a pending forward into an ``unknown`` operation (the answer was never recorded); None if there is none."""
+        request = self.pending_get(principal, key)
+        if request is None:
+            return None
+        with self.store.transaction():
+            rec = self._record(**request)
+            self.link_lost(rec, f"the gateway has no recorded answer from upstream {rec.private.get('upstream')} for "
+                                "this forward; the upstream may have acted and is asked to reconcile")
+            self.pending_delete(principal, key)
+        return rec
+
+    def convert_all_pending(self) -> list[OperationRecord]:
+        """After a restart: every forward that has no recorded answer becomes an ``unknown`` operation."""
+        out = []
+        for stored in self.store.meta_prefix("pending:"):
+            principal, _, key = stored[len("pending:"):].partition("\n")
+            rec = self.convert_pending(principal, key)
+            if rec is not None:
+                out.append(rec)
+        return out
+
     def _record(self, *, principal: str, key: str, key_origin: str, request_digest: str, arguments: dict[str, Any],
                 device_id: str, action: str, private: dict[str, Any], require: dict[str, Any] | None,
                 lease_id: str | None, fence: int | None, deadline_ns: int | None,
                 admitted: dict[str, Any] | None) -> OperationRecord:
         """Record a request the gateway has forwarded: ``accepted`` then ``dispatching`` (the command left for the
-        upstream), without fsync barriers — the deterministic upstream key, not this record, is what makes a lost
-        record harmless (see the module docstring)."""
+        upstream). The durable intent is the pending-forward row written (with a barrier) before sending; this record
+        replaces it in one transaction, so no barrier is needed here."""
         return self.create(principal=principal, key=key, key_origin=key_origin, kind="action",
                            request_digest=request_digest, arguments=arguments, private=private, device_id=device_id,
                            action=action, admitted=admitted, require=require, lease_id=lease_id, fence=fence,
                            deadline_ns=deadline_ns, dispatch=True, barrier=False)
 
     def admit_forwarded(self, *, upstream_op: dict[str, Any], **request: Any) -> OperationRecord:
-        """Record an operation the upstream admitted, in the state the upstream reports."""
-        rec = self._record(**request)
-        self.mirror(rec, upstream_op, source="forward reply")
+        """Record an operation the upstream admitted, in the state the upstream reports; the pending row goes away in
+        the same transaction."""
+        with self.store.transaction():
+            rec = self._record(**request)
+            self.mirror(rec, upstream_op, source="forward reply")
+            self.pending_delete(request["principal"], request["key"])
         return rec
 
     def admit_in_doubt(self, *, cause: str, **request: Any) -> OperationRecord:
         """Record a forward whose answer was lost: the operation is ``unknown`` (BHMS-OPS-004) and is reconciled by
         re-sending the same upstream key once the upstream answers."""
-        rec = self._record(**request)
-        self.link_lost(rec, cause)
+        with self.store.transaction():
+            rec = self._record(**request)
+            self.link_lost(rec, cause)
+            self.pending_delete(request["principal"], request["key"])
         return rec
 
     # ------------------------------------------------------------------ mirroring

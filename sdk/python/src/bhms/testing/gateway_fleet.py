@@ -124,6 +124,7 @@ class LightUpstream:
         self.rpc.register("devices/list", self._list)
         self.rpc.register("devices/describe", self._describe)
         self.rpc.register("subscriptions/listen", self._listen)
+        self.rpc.register("stop", self._stop)
 
     async def _list(self, params: Any, ctx: Any) -> dict[str, Any]:
         ids = sorted(self.descriptions)
@@ -137,6 +138,11 @@ class LightUpstream:
 
     async def _describe(self, params: Any, ctx: Any) -> dict[str, Any]:
         return {"description": self.descriptions[params.device_id]}
+
+    async def _stop(self, params: Any, ctx: Any) -> dict[str, Any]:
+        ids = sorted(self.descriptions) if params.scope == "all" else list(params.device_ids)
+        return {"stops": [{"deviceId": i, "outcome": "unsupported", "evidence": "none", "canceledOperations": [],
+                           "revokedLeases": []} for i in ids]}
 
     async def _listen(self, params: Any, ctx: Any) -> Any:
         return self._stream()

@@ -59,6 +59,7 @@ from bhms.transport.stream import Listener, is_loopback
 DEFAULT_PATH = "/bhms"
 VERSION_HEADER = "BHMS-Protocol-Version"
 METHOD_HEADER = "BHMS-Method"
+KEEPALIVE_S = 15.0
 _LOOPBACK_HOSTS = {"localhost", "127.0.0.1", "::1"}
 
 
@@ -83,11 +84,15 @@ class HttpExchange(Transport):
     """One POST as a transport: the request body is the only incoming message; outgoing messages are queued for the
     response writer. A cancellation can be injected with :meth:`feed`."""
 
+    OUTGOING_BOUND = 16
+
     def __init__(self, peer: Peer, max_message_bytes: int) -> None:
         self.peer = peer
         self.max_message_bytes = max_message_bytes
         self._incoming: asyncio.Queue[bytes | None] = asyncio.Queue()
-        self.outgoing: asyncio.Queue[bytes | None] = asyncio.Queue()
+        # Bounded: when the HTTP client reads slowly the session's writer blocks here, so the session's outbox and the
+        # per-subscription overflow policy (BHMS-LIF-043: drop observations, end with endReason overflow) engage.
+        self.outgoing: asyncio.Queue[bytes | None] = asyncio.Queue(self.OUTGOING_BOUND)
         self._closed = False
 
     def feed(self, data: bytes) -> None:
@@ -96,7 +101,9 @@ class HttpExchange(Transport):
     async def send(self, data: bytes) -> None:
         if self._closed:
             raise TransportClosed("exchange closed")
-        self.outgoing.put_nowait(data)
+        await self.outgoing.put(data)
+        if self._closed:
+            raise TransportClosed("exchange closed")
 
     async def receive(self) -> bytes:
         item = await self._incoming.get()
@@ -108,15 +115,18 @@ class HttpExchange(Transport):
         if not self._closed:
             self._closed = True
             self._incoming.put_nowait(None)
+            while not self.outgoing.empty():  # unblock a writer waiting on a full queue
+                self.outgoing.get_nowait()
             self.outgoing.put_nowait(None)
 
 
 class HttpListener(Listener):
     """A running Streamable HTTP endpoint (``address`` is ``(host, port)``)."""
 
-    def __init__(self, runner: web.AppRunner, address: tuple[str, int]) -> None:
+    def __init__(self, runner: web.AppRunner, address: tuple[str, int], exchanges: set[HttpExchange]) -> None:
         super().__init__(None, address)
         self._runner = runner
+        self.exchanges = exchanges  # live POSTs (for diagnostics and tests)
 
     async def close(self) -> None:
         await self._runner.cleanup()
@@ -135,6 +145,7 @@ async def serve_http(host: str, port: int, rpc: RpcServer, *, authenticate: Call
         raise ValueError(f"refusing to serve HTTP on {host!r} without TLS and bearer authentication (BHMS-SEC-004): "
                          "pass ssl= and authenticate=, or bind 127.0.0.1")
     inflight: dict[tuple[str, str], HttpExchange] = {}
+    exchanges: set[HttpExchange] = set()
     closers: set[asyncio.Task[None]] = set()
     loopback_only = is_loopback(host)
 
@@ -157,7 +168,7 @@ async def serve_http(host: str, port: int, rpc: RpcServer, *, authenticate: Call
             problem = _header_problem(request, message)
             if problem is not None:
                 return _json(_bhms_error(message.get("id"), problem), 400)
-        who = token or request.remote or "anonymous"
+        who = f"{token or 'anonymous'}@{request.remote}"
         if isinstance(message, dict) and method == "notifications/cancelled" and "id" not in message:
             target = (message.get("params") or {}).get("requestId")
             exchange = inflight.get((who, repr(target)))
@@ -175,6 +186,7 @@ async def serve_http(host: str, port: int, rpc: RpcServer, *, authenticate: Call
         session = rpc.session_for(exchange)
         request_id = message.get("id") if isinstance(message, dict) else None
         slot = (who, repr(request_id))
+        exchanges.add(exchange)
         if request_id is not None:
             inflight[slot] = exchange
         streaming = isinstance(message, dict) and message.get("method") == "subscriptions/listen"
@@ -186,7 +198,12 @@ async def serve_http(host: str, port: int, rpc: RpcServer, *, authenticate: Call
                 response = web.StreamResponse(headers={"Content-Type": "text/event-stream", "Cache-Control": "no-store"})
                 await response.prepare(request)
             while True:
-                data = await exchange.outgoing.get()
+                try:
+                    data = await asyncio.wait_for(exchange.outgoing.get(), KEEPALIVE_S if streaming else None)
+                except asyncio.TimeoutError:
+                    assert response is not None
+                    await response.write(b": keep-alive\n\n")  # keeps proxies from closing an idle stream
+                    continue
                 if data is None:
                     break
                 final = _is_final(data, request_id)
@@ -211,6 +228,7 @@ async def serve_http(host: str, port: int, rpc: RpcServer, *, authenticate: Call
                 await asyncio.sleep(0)
             raise
         finally:
+            exchanges.discard(exchange)
             if inflight.get(slot) is exchange:
                 del inflight[slot]
             if abandoned:  # the handler was cancelled: do not hold it up for detached handlers to drain
@@ -233,7 +251,7 @@ async def serve_http(host: str, port: int, rpc: RpcServer, *, authenticate: Call
     await site.start()
     sockets = site._server.sockets  # type: ignore[union-attr]
     bound = sockets[0].getsockname()
-    return HttpListener(runner, (bound[0], bound[1]))
+    return HttpListener(runner, (bound[0], bound[1]), exchanges)
 
 
 async def _close(session: Any, exchange: HttpExchange) -> None:

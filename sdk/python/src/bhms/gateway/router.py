@@ -50,8 +50,7 @@ from bhms.jsonrpc.dispatcher import Server as RpcServer
 from bhms.jsonrpc.session import RequestContext
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.authority import Principal
-from bhms.runtime.operations import (OperationRecord, intent_digest, iso, key_conflict_error, now_ns, server_key,
-                                     unknown_error)
+from bhms.runtime.operations import (OperationRecord, intent_digest, key_conflict_error, now_ns, server_key)
 from bhms.runtime.store import StoreError
 from bhms.server.handlers import summary_matches
 from bhms.server.server import decode_cursor, encode_cursor
@@ -63,7 +62,6 @@ if TYPE_CHECKING:
 log = logging.getLogger("bhms.gateway.router")
 
 _TRACE_KEYS = ("traceparent", "tracestate")
-NOT_SENT = (BhmsError,)
 
 
 def trace_of(ctx: RequestContext) -> dict[str, Any] | None:
@@ -227,6 +225,8 @@ class Router:
         else:
             async with gw.journal.admission(principal.id, key):
                 existing = gw.journal.lookup_key(principal.id, key)  # BHMS-OPS-033: before any policy check
+                if existing is None:  # a forward whose answer was never recorded is the operation (BHMS-OPS-003)
+                    existing = gw.journal.convert_pending(principal.id, key)
                 if existing is not None:
                     if existing.op["requestDigest"] != digest:
                         raise key_conflict_error(existing, key)
@@ -301,12 +301,20 @@ class Router:
                       arguments=raw["arguments"], device_id=entry.device_id, action=params.action, private=private,
                       require=raw.get("require"), lease_id=lease_id, fence=fence, deadline_ns=deadline_ns,
                       admitted=admitted)
+        try:  # the intent is durable before anything is sent (BHMS-OPS-003)
+            gw.journal.pending_put(principal.id, key, common)
+        except StoreError as exc:
+            gw.journal_failed(exc)
+            raise BhmsError("BUSY", "the gateway's journal cannot be written; nothing was sent", retry="same-key",
+                            hint="retry with the same operationKey (gateway rule: isolation:journal)") from None
         cause = None
         try:
             reply = await up.call("actions/invoke", forward, trace=trace_of(ctx))
         except BhmsError as exc:
             if not exc.may_have_acted:
-                raise  # refused before anything was created: a JSON-RPC error, no operation (BHMS-OPS-040)
+                with contextlib.suppress(StoreError):
+                    gw.journal.pending_delete(principal.id, key)
+                raise _upstream_refusal(up, exc) from None  # refused before anything was created: no operation (OPS-040)
             cause = f"upstream {up.name}: {exc.message}"
         except (TransportClosed, asyncio.TimeoutError) as exc:
             cause = f"the connection to upstream {up.name} failed while forwarding ({type(exc).__name__}): {exc}"
@@ -317,10 +325,11 @@ class Router:
             self.index(rec)
             return rec
         except StoreError as exc:
-            gw.journal_failed(exc)
+            gw.journal_failed(exc)  # the pending row stays: a retry or a restart turns it into an unknown operation
             raise BhmsError("INTERNAL", "the gateway could not record an operation the upstream accepted",
                             may_have_acted=True, retry="same-key",
-                            hint="retry with the same operationKey: the upstream returns the same operation") from None
+                            hint="retry with the same operationKey: the gateway then finds its pending record and "
+                                 "reconciles with the upstream") from None
 
     def _check_inhibition(self, resources: tuple[str, ...]) -> None:
         needed = set(resources)
@@ -418,7 +427,7 @@ class Router:
     def index(self, rec: OperationRecord) -> None:
         """Remember which upstream operation ``rec`` is, and apply the newest notification that arrived before that."""
         uid = rec.private.get("upstreamOperationId")
-        if not uid:
+        if not uid or rec.terminal:
             return
         key = (rec.private["upstream"], uid)
         self.by_upstream[key] = rec.id
@@ -448,6 +457,8 @@ class Router:
     def _changed(self, rec: OperationRecord, wire: dict[str, Any]) -> None:
         if wire["state"] != "unknown":
             self.unknown.pop(rec.id, None)
+        if rec.terminal and rec.private.get("upstreamOperationId"):  # settled: late notifications need no mapping
+            self.by_upstream.pop((rec.private["upstream"], rec.private["upstreamOperationId"]), None)
 
     def upstream_lost(self, up: Upstream, cause: str) -> None:
         """Operations in flight on ``up`` become ``unknown`` (BHMS-OPS-004)."""
@@ -495,6 +506,9 @@ class Router:
             if uid is not None:
                 reply = await up.call("operations/get", {"operationId": uid}, timeout=timeout)
                 self._apply(rec, reply["operation"], "operations/get")
+            elif (why := self._no_resend_reason(rec)) is not None:
+                self._note_unreconcilable(rec, why)
+                return False
             elif up.epoch == rec.private.get("upstreamEpoch"):
                 # The forward was in doubt. The upstream's epoch is unchanged, so its journal survived and the same
                 # upstream key returns the operation it already created (BHMS-OPS-030) instead of a second one.
@@ -513,7 +527,16 @@ class Router:
                 self._apply(rec, reply["operation"], "operations/cancel")
             return before != (rec.state, rec.op["effect"], rec.op["cancel"]["state"])
         except BhmsError as exc:
-            if exc.field == "operationId":
+            if rec.private.get("upstreamOperationId") is None and not exc.may_have_acted and exc.code not in (
+                    "BUSY", "DEVICE_UNAVAILABLE") and rec.state == "unknown":
+                # The re-sent request was refused before the upstream created anything: that is proof of no effect.
+                error = exc.to_operation_error()
+                with contextlib.suppress(StoreError):
+                    gw.journal.transition(
+                        rec, "failed", error=error, effect="none", kind="reconciliation",
+                        detail=f"upstream {up.name} refused the re-sent request before creating an operation: "
+                               f"{exc.code}", proof=f"upstream {up.name} answered {exc.code} with mayHaveActed false")
+            elif exc.field == "operationId":
                 self._note_unreconcilable(rec, "the upstream does not know this operation any more (its journal was "
                                                f"lost or pruned): {exc.message}")
             else:
@@ -526,6 +549,17 @@ class Router:
             del self._reconciling[rec.id]
             done.set_result(None)
         return False
+
+    def _no_resend_reason(self, rec: OperationRecord) -> str | None:
+        """Why an in-doubt forward must not be re-sent now (it could start work its owner no longer wants), or None."""
+        if rec.private.get("cancelRequested") or rec.op["cancel"]["state"] != "none":
+            return "a cancellation was requested, so the forward is not re-sent; the outcome stays unknown"
+        if any(h["kind"] == "stop" for h in self.gateway.journal.history(rec)):
+            return "a stop covered this operation, so the forward is not re-sent; the outcome stays unknown"
+        deadline = rec.private.get("deadlineNs")
+        if deadline is not None and now_ns() > deadline:
+            return "the operation's deadline has passed, so the forward is not re-sent; the outcome stays unknown"
+        return None
 
     def _note_unreconcilable(self, rec: OperationRecord, why: str) -> None:
         if rec.private.get("unreconcilable") == why:
@@ -588,12 +622,14 @@ class Router:
         deadline = wait_ms / 1000 + gw.config.stop_deadline_ms / 1000
         trace = trace_of(ctx)
         calls: dict[str, asyncio.Task[dict[str, Any]]] = {}
+        queued: dict[str, asyncio.Event] = {}
         for namespace, entries in groups.items():  # every upstream at once, bypassing queues (BHMS-AUTH-020)
             up = gw.upstreams[namespace]
+            queued[namespace] = asyncio.Event()
             calls[namespace] = asyncio.get_running_loop().create_task(up.call(
                 "stop", {"deviceIds": [e.upstream_id for e in entries], "reason": params.reason, "waitMs": wait_ms},
-                priority=True, trace=trace, timeout=deadline))
-        await asyncio.sleep(0)  # the requests are on their way before any bookkeeping (BHMS-AUTH-021)
+                priority=True, trace=trace, timeout=deadline, queued=queued[namespace]))
+        await self._handed_over(calls, queued)  # every request is on the wire before any bookkeeping (BHMS-AUTH-021)
         degraded = self._stop_bookkeeping([e for es in groups.values() for e in es], params.reason, results)
         if calls:
             await asyncio.wait(list(calls.values()), timeout=deadline)
@@ -607,6 +643,19 @@ class Router:
             out.append(result)
         return {"stops": out}
 
+    async def _handed_over(self, calls: dict[str, asyncio.Task[dict[str, Any]]], queued: dict[str, asyncio.Event]) -> None:
+        """Wait until each upstream's stop request has been handed to its transport (or cannot be: the call failed)."""
+        async def one(namespace: str) -> None:
+            waiter = asyncio.ensure_future(queued[namespace].wait())
+            await asyncio.wait({waiter, calls[namespace]}, timeout=1.0, return_when=asyncio.FIRST_COMPLETED)
+            waiter.cancel()
+            client = self.gateway.upstreams[namespace].client
+            if queued[namespace].is_set() and client is not None:
+                with contextlib.suppress(asyncio.TimeoutError, TransportClosed):
+                    await asyncio.wait_for(client.session.flushed(), 1.0)
+
+        await asyncio.gather(*(one(ns) for ns in calls))
+
     def _stop_bookkeeping(self, entries: list[CatalogEntry], reason: str, results: dict[str, dict[str, Any]]) -> bool:
         """The gateway's own part of BHMS-AUTH-021: record the stop on its operations, revoke its leases."""
         gw = self.gateway
@@ -614,23 +663,29 @@ class Router:
         covering = {e.device_id: [lease.lease_id for lease in gw.leases.manager.active()
                                   if set(e.resources) & set(lease.resources)] for e in entries}
         gw.leases.manager.revoke_covering({r for e in entries for r in e.resources})
+        wanted = {e.device_id for e in entries}
+        live_by_device: dict[str, list[OperationRecord]] = {}
+        for rec in gw.journal.live():  # one pass over the live operations, one query for the unknown ones
+            if rec.op.get("deviceId") in wanted and rec.state in ("dispatching", "running", "unknown"):
+                live_by_device.setdefault(rec.op["deviceId"], []).append(rec)
+        unknown_by_device: dict[str, list[str]] = {}
+        for row in gw.journal.store.operations_in_states(["unknown"]):
+            if row.record.get("deviceId") in wanted:
+                unknown_by_device.setdefault(row.record["deviceId"], []).append(row.id)
         for entry in entries:
             revoked = covering[entry.device_id]  # a cross-device lease is reported on every device it covered
             canceled: list[str] = []
             requested: list[str] = []
-            for rec in gw.journal.live():
-                if rec.op.get("deviceId") == entry.device_id and rec.state in ("dispatching", "running", "unknown"):
-                    try:
-                        gw.journal.annotate(rec, "stop", f"stop: {reason}")
-                        if rec.op["cancel"]["state"] in ("none", "refused"):
-                            gw.journal.set_cancel(rec, "requested", reason=f"stop: {reason}")
-                    except StoreError as exc:
-                        degraded = True
-                        gw.journal_failed(exc)
-                    requested.append(rec.id)
-            for row in gw.journal.store.operations_in_states(["unknown"]):
-                if row.record.get("deviceId") == entry.device_id and row.id not in requested:
-                    requested.append(row.id)
+            for rec in live_by_device.get(entry.device_id, ()):
+                try:
+                    gw.journal.annotate(rec, "stop", f"stop: {reason}")
+                    if rec.op["cancel"]["state"] in ("none", "refused"):
+                        gw.journal.set_cancel(rec, "requested", reason=f"stop: {reason}")
+                except StoreError as exc:
+                    degraded = True
+                    gw.journal_failed(exc)
+                requested.append(rec.id)
+            requested += [op_id for op_id in unknown_by_device.get(entry.device_id, ()) if op_id not in requested]
             results[entry.device_id] = {"deviceId": entry.device_id, "canceledOperations": canceled,
                                         "revokedLeases": revoked, **({"cancelRequestedOperations": requested}
                                                                      if requested else {})}
@@ -737,10 +792,19 @@ class Router:
         return self.gateway.subscriptions.listen(principal, params, ctx)
 
 
+def _upstream_refusal(up: Upstream, exc: BhmsError) -> BhmsError:
+    """The upstream's refusal, except that a refused ``g-`` key (BHMS-OPS-037) is a configuration error to name."""
+    if exc.code == "INVALID_ARGUMENT" and exc.field == "operationKey":
+        return BhmsError("INTERNAL", f"upstream {up.name!r} refuses the gateway's forwarded keys (g- prefix): it does not "
+                         "treat this gateway as a gateway", may_have_acted=False,
+                         hint=f"configure the principal this gateway connects as to {up.name!r} with gateway = true in "
+                              f"that upstream's policy, then retry (gateway rule: config:upstream-gateway-principal)")
+    return exc
+
+
 def _wait_error(field: str, value: int, limit: int) -> BhmsError:
     return refusal("OUT_OF_RANGE", "limits:max-wait", f"{field} {value} is above limits.maxWaitMs {limit}", field=field,
                    bound={"maximum": limit}, hint=f"send {field} of at most {limit} and wait again if needed")
 
 
 __all__ = ["Router", "trace_of"]
-_ = (iso, unknown_error)

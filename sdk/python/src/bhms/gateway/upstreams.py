@@ -148,7 +148,7 @@ class Upstream:
     # ------------------------------------------------------------------ calls
 
     async def call(self, method: str, params: dict[str, Any], *, timeout: float | None = None, priority: bool = False,
-                   trace: dict[str, Any] | None = None) -> dict[str, Any]:
+                   trace: dict[str, Any] | None = None, queued: asyncio.Event | None = None) -> dict[str, Any]:
         """Send ``method`` upstream and return its result object.
 
         ``params`` excludes ``_meta`` (added here with the protocol version, the gateway's client info and ``trace`` —
@@ -162,7 +162,7 @@ class Upstream:
             raise self.unavailable()
         seconds = timeout if timeout is not None else self.cfg.timeout_ms / 1000
         if priority:
-            return await self._send(client, method, params, seconds, trace)
+            return await self._send(client, method, params, seconds, trace, queued)
         if not self._slots.locked() and self._queue.empty():
             async with self._slots:
                 return await self._send(client, method, params, seconds, trace)
@@ -177,13 +177,13 @@ class Upstream:
         return await future
 
     async def _send(self, client: Client, method: str, params: dict[str, Any], seconds: float,
-                    trace: dict[str, Any] | None) -> dict[str, Any]:
+                    trace: dict[str, Any] | None, queued: asyncio.Event | None = None) -> dict[str, Any]:
         meta = {"bhms/protocolVersion": client.version, "bhms/clientInfo": client.client_info}
         if trace:
             meta.update(trace)
         started = time.perf_counter()
         try:
-            return await client.session.request(method, {"_meta": meta, **params}, timeout=seconds)
+            return await client.session.request(method, {"_meta": meta, **params}, timeout=seconds, queued=queued)
         except BhmsError as exc:
             if exc.code == "DEADLINE_EXCEEDED" and exc.may_have_acted and method != "server/discover":
                 self.timeouts += 1
@@ -369,7 +369,11 @@ class Upstream:
                 params["cursor"] = cursor
             page = await self._send(client, "devices/list", params, self.cfg.timeout_ms / 1000, None)
             for summary in page["devices"]:
-                summaries[summary["deviceId"]] = summary
+                if isinstance(summary, dict) and isinstance(summary.get("deviceId"), str) and \
+                        isinstance(summary.get("digest"), str):
+                    summaries[summary["deviceId"]] = summary
+                else:
+                    log.error("upstream %s: ignoring a malformed device summary", self.name)
             cursor = page.get("nextCursor")
             if not cursor:
                 break
@@ -410,6 +414,12 @@ def _description_problem(description: dict[str, Any], expected_id: str) -> str |
     with ten thousand devices is not spent in a validator."""
     if description.get("deviceId") != expected_id:
         return f"it describes {description.get('deviceId')!r}, not {expected_id!r}"
+    for member, kind in (("actions", dict), ("properties", dict), ("resources", list), ("capabilities", list),
+                         ("safety", dict)):
+        if not isinstance(description.get(member), kind):
+            return f"its {member} member is missing or is not a {kind.__name__}"
+    if not all(isinstance(a, dict) and isinstance(a.get("input"), dict) for a in description["actions"].values()):
+        return "an action has no input schema"
     body = {k: v for k, v in description.items() if k != "digest"}
     if digest(body) != description.get("digest"):
         return "its digest does not match its content"

@@ -135,6 +135,7 @@ class Gateway:
             self.router = Router(self)
             self.subscriptions = GatewaySubscriptions(self)  # type: ignore[arg-type]
             self.journal.recover_forwarded()  # BHMS-OPS-080: before any request is answered
+            self.journal.convert_all_pending()  # forwards whose answer was never recorded are unknown operations
             self.store.prune_operations(["completed", "failed", "canceled", "rejected"],
                                         _ns_ago(cfg.key_retention_s))
             self.events.prune()

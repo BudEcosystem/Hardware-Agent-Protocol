@@ -199,11 +199,15 @@ BHMS-DEV-002, BHMS-LSE-011, BHMS-LSE-013, BHMS-AUTH-014 and BHMS-SEC-022/061:
 - *Descriptions.* The gateway serves its own description of a device: ids prefixed, the principal's narrowed bounds written
   into the input schemas (an empty envelope removes the action, BHMS-AUTH-011), and the digest recomputed over those bytes
   (BHMS-DEV-021), so the description (and `descriptionDigest` pin) differ per principal that has bounds.
-- *Operations.* A refusal by the gateway or by the upstream before it created anything creates no operation (BHMS-OPS-040).
-  The gateway records an operation once the upstream answered, or — when no answer arrived — as `unknown` (BHMS-OPS-004),
-  keeping the upstream request and the upstream's epoch; it reconciles by re-sending the **same** upstream request only while
-  the upstream's epoch is unchanged (BHMS-OPS-081). The gateway mirrors the upstream along the legal transitions of §6.3: an
-  upstream `accepted` is `dispatching` at the gateway, and an upstream `rejected` becomes `failed` with `effect: "none"`.
+- *Operations.* A refusal by the gateway or by the upstream before it created anything creates no visible operation
+  (BHMS-OPS-040). Before it sends, the gateway durably records the intent (BHMS-OPS-003): a pending-forward record keyed
+  by `(principal, operationKey)` holding the upstream request, the derived key, the upstream's epoch and the resources. A
+  refusal deletes it; the upstream's answer promotes it to the operation; a record found without an answer (a retry with the
+  same key, or a restart) becomes an `unknown` operation (BHMS-OPS-004, BHMS-OPS-080) whose resources are inhibited
+  (BHMS-OPS-042). The gateway reconciles by re-sending the **same** upstream request only while the upstream's epoch is
+  unchanged (BHMS-OPS-081) and never after a cancellation was requested, a stop covered the operation, or its deadline passed.
+  The gateway mirrors the upstream along the legal transitions of §6.3: an upstream `accepted` is `dispatching` at the
+  gateway, and an upstream `rejected` becomes `failed` with `effect: "none"`.
 - *Leases.* The gateway lease is arbitrated at the gateway; the upstream leases are held for it, in ascending resource order,
   before it is granted, and the upstream's own lease id and fence are what is forwarded (BHMS-LSE-011, BHMS-LSE-013).
 - *Stop.* Fanned out to every upstream at once on a path that bypasses queues and concurrency limits; a device whose upstream

@@ -486,7 +486,12 @@ class Session:
                             field="", bound=exc.limit,
                             hint="send less data per request; the server's limits.maxMessageBytes is the bound") from None
 
-    async def request(self, method: str, params: Any, *, timeout: float | None = None) -> dict[str, Any]:
+    async def flushed(self) -> None:
+        """Return when every message queued so far has been handed to the transport."""
+        await self._outbox.join()
+
+    async def request(self, method: str, params: Any, *, timeout: float | None = None,
+                      queued: asyncio.Event | None = None) -> dict[str, Any]:
         """Send a request and return its result object.
 
         Raises ``BhmsError`` / :class:`JsonRpcError` for an error response, ``BhmsError(DEADLINE_EXCEEDED,
@@ -503,6 +508,8 @@ class Session:
         try:
             async with asyncio.timeout(limit):
                 await self._enqueue(data)
+                if queued is not None:
+                    queued.set()  # the request is in the outbox: :meth:`flushed` now covers it
                 return await future
         except TimeoutError:
             self._send_cancel(request_id, "timeout")
