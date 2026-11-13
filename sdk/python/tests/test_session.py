@@ -435,7 +435,7 @@ async def test_server_side_overflow_ends_with_overflow_and_other_requests_keep_f
     t.inbox.put_nowait(b'{"jsonrpc":"2.0","id":2,"method":"ping","params":{}}')
     for _ in range(300):
         await asyncio.sleep(0.01)
-        if any(m.get("id") == 1 for m in t.sent):
+        if any(m.get("id") == 1 for m in t.sent) and any(m.get("id") == 2 for m in t.sent):
             break
     ids = [m.get("id") for m in t.sent if "id" in m]
     assert 2 in ids and 1 in ids

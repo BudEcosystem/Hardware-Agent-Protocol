@@ -13,7 +13,7 @@
         "operationId": "op-7f3a",
         "mayHaveActed": true,
         "retry": "never",
-        "hint": "use a new operationKey for a new intent; op-7f3a holds the original"
+        "hint": "inspect op-7f3a with operations/get first: it may be the same intent sent in a different form; use a new operationKey only for a genuinely new intent"
       }
     }
   }
