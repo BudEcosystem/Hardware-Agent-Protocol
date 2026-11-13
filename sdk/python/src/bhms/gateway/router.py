@@ -723,6 +723,11 @@ class Router:
                 groups.setdefault(entry.namespace, []).append(entry)
         deadline = wait_ms / 1000 + gw.config.stop_deadline_ms / 1000
         trace = trace_of(ctx)
+        stopping = {e.device_id for es in groups.values() for e in es}
+        # the operations this stop touches, noted before anything is sent: the upstream may settle some of them (and tell us)
+        # before the bookkeeping below runs, and they still get their stop history entry (BHMS-AUTH-021)
+        snapshot = [rec for rec in gw.journal.live() if rec.op.get("deviceId") in stopping
+                    and rec.state in ("accepted", "dispatching", "running", "unknown")]
         calls: dict[str, asyncio.Task[dict[str, Any]]] = {}
         queued: dict[str, asyncio.Event] = {}
         for namespace, entries in groups.items():  # every upstream at once, bypassing queues (BHMS-AUTH-020)
@@ -732,7 +737,7 @@ class Router:
                 "stop", {"deviceIds": [e.upstream_id for e in entries], "reason": params.reason, "waitMs": wait_ms},
                 priority=True, trace=trace, timeout=deadline, queued=queued[namespace]))
         await self._handed_over(calls, queued)  # every request is on the wire before any bookkeeping (BHMS-AUTH-021)
-        degraded = self._stop_bookkeeping([e for es in groups.values() for e in es], params.reason, results)
+        degraded = self._stop_bookkeeping([e for es in groups.values() for e in es], params.reason, results, snapshot)
         if calls:
             await asyncio.wait(list(calls.values()), timeout=deadline)
         for namespace, task in calls.items():
@@ -758,7 +763,8 @@ class Router:
 
         await asyncio.gather(*(one(ns) for ns in calls))
 
-    def _stop_bookkeeping(self, entries: list[CatalogEntry], reason: str, results: dict[str, dict[str, Any]]) -> bool:
+    def _stop_bookkeeping(self, entries: list[CatalogEntry], reason: str, results: dict[str, dict[str, Any]],
+                          snapshot: list[OperationRecord] = ()) -> bool:
         """The gateway's own part of BHMS-AUTH-021: record the stop on its operations, revoke its leases."""
         gw = self.gateway
         degraded = False
@@ -769,6 +775,9 @@ class Router:
         live_by_device: dict[str, list[OperationRecord]] = {}
         for rec in gw.journal.live():  # one pass over the live operations, one query for the unknown ones
             if rec.op.get("deviceId") in wanted and rec.state in ("accepted", "dispatching", "running", "unknown"):
+                live_by_device.setdefault(rec.op["deviceId"], []).append(rec)
+        for rec in snapshot:
+            if rec not in live_by_device.get(rec.op["deviceId"], ()):
                 live_by_device.setdefault(rec.op["deviceId"], []).append(rec)
         for row in gw.journal.store.operations_in_states(["unknown"]):  # unknown operations are not "live": one query
             device = row.record.get("deviceId")
@@ -782,7 +791,7 @@ class Router:
             for rec in live_by_device.get(entry.device_id, ()):
                 try:
                     gw.journal.annotate(rec, "stop", f"stop: {reason}")
-                    if rec.op["cancel"]["state"] in ("none", "refused"):
+                    if not rec.terminal and rec.op["cancel"]["state"] in ("none", "refused"):
                         gw.journal.set_cancel(rec, "requested", reason=f"stop: {reason}")
                 except StoreError as exc:
                     degraded = True
