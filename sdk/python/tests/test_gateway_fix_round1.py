@@ -217,9 +217,9 @@ async def test_every_stop_request_is_on_the_wire_before_the_bookkeeping(tmp_path
     seen = {}
     original = gateway.router._stop_bookkeeping
 
-    def watch(entries, reason, results):
+    def watch(entries, reason, results, *rest):
         seen["unsent"] = sum(up.client.session._outbox._unfinished_tasks for up in gateway.upstreams.values())
-        return original(entries, reason, results)
+        return original(entries, reason, results, *rest)
 
     gateway.router._stop_bookkeeping = watch
     try:
