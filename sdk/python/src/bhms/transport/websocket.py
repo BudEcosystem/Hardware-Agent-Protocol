@@ -14,7 +14,7 @@ from typing import Any
 
 from websockets.asyncio.client import connect as _ws_connect
 from websockets.asyncio.server import serve as _ws_serve
-from websockets.exceptions import ConnectionClosed, WebSocketException
+from websockets.exceptions import ConnectionClosed
 
 from bhms.transport.base import (DEFAULT_MAX_MESSAGE_BYTES, FrameTooLarge, Peer, Transport, TransportClosed,
                                  check_message_limit)
@@ -61,7 +61,7 @@ class WebSocketTransport(Transport):
         self._closed = True
         try:
             await self._ws.close()
-        except (WebSocketException, OSError):
+        except Exception:  # noqa: BLE001 - close() never raises; websockets can fail oddly on an aborted socket
             pass
 
 
