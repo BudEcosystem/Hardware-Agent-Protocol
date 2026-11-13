@@ -13,7 +13,7 @@ dependencies = [
   "numpy",
   "pymodbus==3.8.6",
   "asyncua",
-  "mcp>=1.26",
+  "mcp>=2,<3",
   "websockets",
 ]
 

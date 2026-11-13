@@ -6,6 +6,7 @@ the simulator; the instruments in ``simlab.instruments`` implement the same docu
 
 from __future__ import annotations
 
+from simlab.adapters.home_assistant import Entity, HomeAssistantProfile
 from simlab.adapters.modbus import ModbusProfile, Register
 from simlab.adapters.opcua import Argument, Method, OpcUaProfile, Variable
 from simlab.adapters.scpi import Command, Query, ScpiProfile
@@ -64,5 +65,17 @@ BALANCE_SCPI = ScpiProfile(
     commands=(
         Command("tare", "TARE", "Zero the display against the present reading.",
                 preconditions="read stable first: taring a settling display leaves a wrong zero"),
+    ),
+)
+
+FACILITY_HA = HomeAssistantProfile(
+    device_id="facility-1", name="Facility (Home Assistant)",
+    description="Lab facility lights, a switch and ambient sensors served by a Home Assistant instance.",
+    entities=(
+        Entity("light.bed_light", "bench light"),
+        Entity("light.kitchen_lights", "room lights"),
+        Entity("switch.decorative_lights", "indicator beacon"),
+        Entity("sensor.outside_temperature", "ambient temperature", unit="Cel", minimum=-60.0, maximum=60.0),
+        Entity("sensor.outside_humidity", "ambient relative humidity", unit="%", minimum=0.0, maximum=100.0),
     ),
 )
