@@ -22,7 +22,7 @@ async def run(ctx: Context) -> dict:
         for sync in ("fdatasync", "fsync"):
             for size in (600, 4096):
                 samples = fsync_samples(ctx.state_root, n, size=size, sync=sync)
-                out[f"{sync}_{size}B"] = stats_ms(samples, sum(samples) / 1000)
+                out[f"{sync}_{size}B"] = stats_ms(samples, sum(samples) / 1000, label=f"fsync__{sync}_{size}B")
         invoke_roundtrip = load_sdk_benchmark("invoke_roundtrip")
         out["sqlite_wal_commit"] = {}
         with tempfile.TemporaryDirectory(dir=ctx.state_root) as tmp:

@@ -28,7 +28,8 @@ async def cell(ctx: Context, transport: str, durability: str, wait_ms: int, n: i
 
             row: dict = {}
             with timed(row):
-                row.update(await invoke_stats(call, n, 1, warmup=ctx.n(30, 200)))
+                row.update(await invoke_stats(call, n, 1, warmup=ctx.n(30, 200),
+                                           label=f"invoke__{transport}_{durability}_waitMs{wait_ms}"))
             return row
 
 

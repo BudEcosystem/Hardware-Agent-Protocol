@@ -38,7 +38,7 @@ PING_SERVER = BENCH / "servers" / "ping_server.py"
 TOKEN = "bench-token"
 
 __all__ = ["Context", "ServerProc", "measure", "summarize", "load_sdk_benchmark", "environment", "fsync_samples", "spawn_server",
-           "load_probe", "timed", "stats_ms"]
+           "load_probe", "timed", "stats_ms", "record", "SAMPLES"]
 
 
 def load_sdk_benchmark(name: str) -> ModuleType:
@@ -67,8 +67,22 @@ class Context:
         return quick if self.quick else full
 
 
-def stats_ms(samples: list[float], elapsed_s: float, failures: int = 0) -> dict[str, float | int]:
-    """``bhms bench``'s summary, rounded for the JSON files."""
+SAMPLES: dict[str, list[float]] = {}
+
+
+def record(label: str, samples: list[float]) -> None:
+    """Keep the raw per-sample latencies (ms, in arrival order) of one cell; ``run.py`` writes them gzipped to ``samples/``."""
+    key, n = label, 1
+    while key in SAMPLES:
+        n += 1
+        key = f"{label}#{n}"
+    SAMPLES[key] = [round(x, 4) for x in samples]
+
+
+def stats_ms(samples: list[float], elapsed_s: float, failures: int = 0, label: str | None = None) -> dict[str, float | int]:
+    """``bhms bench``'s summary, rounded for the JSON files; with ``label`` the raw samples are kept (see :func:`record`)."""
+    if label:
+        record(label, samples)
     return {k: (round(v, 4) if isinstance(v, float) else v) for k, v in summarize(samples, elapsed_s, failures).items()}
 
 
@@ -214,14 +228,15 @@ def token_for(target: str) -> str | None:
     return TOKEN if target.startswith("ws://") else None
 
 
-async def invoke_stats(call: Callable[[int], Any], n: int, concurrency: int, warmup: int = 100) -> dict[str, float | int]:
+async def invoke_stats(call: Callable[[int], Any], n: int, concurrency: int, warmup: int = 100,
+                       label: str | None = None) -> dict[str, float | int]:
     """Warm up, then measure ``call(i)`` ``n`` times with ``concurrency`` in flight (``bhms bench``'s loop)."""
     if warmup:
         await measure(lambda i: call(-1 - i), warmup, concurrency)
     samples, elapsed, failures = await measure(call, n, concurrency)
     if not samples:
         raise RuntimeError("every call failed")
-    return stats_ms(samples, elapsed, failures)
+    return stats_ms(samples, elapsed, failures, label)
 
 
 def dump(path: Path, data: Any) -> None:

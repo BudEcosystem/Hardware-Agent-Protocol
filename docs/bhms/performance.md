@@ -1,67 +1,84 @@
 # BHMS performance
 
-Measured 2026-11-13 against `feat/bhms` at 73974f8 (Python SDK, gateway, TypeScript SDK, C compact library), with the harness in
+Measured 2026-11-13 and revised after review (fix round 1) against `feat/bhms` at 73974f8 (Python SDK, gateway, TypeScript SDK, C compact library), with the harness in
 [`bench/`](../../bench/README.md). Raw JSON for every number below is in `bench/results/`. This document states each budget
 (Ruling R12, revised) with its measured number, shows the misses, and says what is and is not known about why.
 
 ## Verdict
 
-BHMS is fast enough for its job on the AMD machine and the budgets are met there with thin margins on the durable path; the
-durable path is bound by the disk's `fsync`, the non-durable path by CPython, and both scale to the hardware's limit rather
-than collapsing. Concretely:
+BHMS meets its throughput and scale budgets and misses its latency budgets as a *reliable* property. The durable path is bound by
+the disk's `fsync`, the non-durable path by CPython; both scale to the hardware's limit rather than collapsing. Concretely:
 
-* **Durable invoke is fsync plus about 0.5 ms** when the machine is quiet (1.8 ms against a 1.3 ms fsync). The B1 budget
-  (p50 <= fsync + 1 ms) is therefore met with 0.5 ms to spare, and **was missed in 2 of 3 full runs** once the shared host
-  was busy (run 1: waitMs=1000 p50 2.47 ms against 2.31 ms; run 3, load 25: both waits). It is a pass only on a quiet machine.
-  On the developer workstation (fsync 3.0 ms, slower and loaded CPU) it is a miss by 1 ms.
-* **Non-durable invoke** (process mode, or no store at all) is 0.17 to 0.45 ms on the AMD machine: B2 passes with a large
-  margin there, and **misses on the workstation** (1.4 to 1.7 ms) where the same Python runs about 6x slower.
-* **One fsync per intent caps durable throughput at about 550 operations per second**, however many clients there are
-  (100 clients: 555 ops/s, p50 179 ms). Non-durable throughput with 100 clients is 3,600 to 6,100 ops/s. This is the one clear
-  scalability gap; group commit (Ruling R12) is the fix and is the first item for 12b.
-* The gateway lists 1,000 upstreams / 10,000 devices correctly, pages them in under 25 ms per page over unix and HTTP (p99), and
-  starts in 3.2 s. Event fan-in through 1,000 upstream streams runs at 13 to 17 thousand events per second.
-* A compact invoke is 35 to 37 bytes on the wire (reply 31 to 34): well inside 64 bytes. Over simavr at 115200 baud the round
-  trip is 7.2 ms, of which 6.2 ms is the arithmetic wire time.
+* **B1 (durable invoke p50 <= floor + 1 ms, p99 <= 5x that): FAIL as a standing budget.** Over four full runs on the AMD machine it
+  passes in 2 of 4 (runs 2 and 4, load 12 to 16) and fails in 2 of 4 (run 1, load 15 to 18, by 0.16 ms; run 3, load 25, both waits),
+  under *either* floor (the host `fdatasync` p50, 1.30 ms, or the measured SQLite WAL `synchronous=FULL` commit p50, 1.39 to 1.50 ms).
+  Durable invoke is the floor plus about 0.5 ms when the host is quiet (1.8 ms), so the 1.0 ms allowance leaves 0.5 ms of margin
+  that a busy shared host removes. It passes only on the quietest runs (run 1, at load 15 to 18, already missed). On the developer workstation (fsync 3.0 ms,
+  slower loaded CPU) it fails by 1 ms.
+* **B2 (non-durable p50 <= 1 ms): PASS on the AMD machine in 4 of 4 runs** (0.21 to 0.45 ms; no-store 0.17 to 0.32 ms) and **FAIL on
+  the workstation** (1.4 to 1.7 ms), where the same Python runs about 6x slower per call.
+* **One fsync per intent caps durable throughput at about 550 operations per second**, however many clients there are (100 clients:
+  546 to 576 ops/s, p50 164 to 182 ms in a closed loop). Non-durable throughput with 100 clients is 3,600 to 6,100 ops/s. This is the
+  one clear scalability gap; group commit (Ruling R12) is the fix and is the first item for 12b.
+* **Open-loop tail at a given load** (Poisson arrivals, latency from the scheduled arrival): durable invokes at 50% of capacity
+  (about 280/s) have p50 4 to 10 ms but **p99 211 to 313 ms**; at 90% p99 40 to 229 ms. The tail is dominated by rare 90 to 300 ms
+  stalls of the durable path that every arrival during the stall queues behind (see Tail latency).
+* The gateway lists 1,000 upstreams / 10,000 devices correctly (asserted: each device once, in code-point order), pages them in under
+  27 ms per page (p99) over unix and HTTP, and starts in 3.2 to 3.7 s. Event fan-in through 1,000 upstream streams runs at 13 to 17
+  thousand events per second. These are single-event-loop CPU tests, not connection tests.
+* A compact invoke is 35 to 37 bytes on the wire (reply 31 to 34): well inside 64 bytes. Over simavr at 115200 baud the round trip is
+  7.2 ms, of which 6.2 ms is the arithmetic wire time.
 
 ## Budgets: pass or fail with the measured number
 
-Primary run: `bench/results/2026-11-13-bmh-worker-amd-run2/` (full sizes, quietest of three). Host `fsync` latency on that
-filesystem: **p50 1.30 ms, p99 1.49 ms** (`fdatasync` after appending 600 bytes, 3,000 samples; raw SQLite WAL commit with
-`synchronous=FULL` p50 1.51 ms).
+Runs on the AMD machine, `bench/results/2026-11-13-bmh-worker-amd-run1` .. `run4`. Run 4 (full sizes, load 11 to 12 during the invoke
+scenario) is the run whose tables are published below and whose **raw per-sample data is committed** (`run4/samples/*.json.gz`, one file
+per latency cell, arrival order). Runs 1 to 3 predate the sample dump and are kept as they were. Host `fsync` on that filesystem
+(run 4): **`fdatasync` p50 1.30 ms, p99 1.53 ms; SQLite WAL FULL commit p50 1.39 ms, p99 1.50 ms**.
 
-| id | budget | run 2 (AMD, load 14) | verdict | run 1 / run 3 (same machine) | workstation (quick sizes) |
-|---|---|---|---|---|---|
-| B1 | durable invoke p50 <= fsync + 1 ms, p99 <= 5x that (`dispatch`, unix, one client) | waitMs=0: p50 **1.79** vs limit 2.30, p99 3.00 vs 11.51; waitMs=1000: p50 **1.80**, p99 2.95 | **PASS** | run 1 (load 14-18, fsync 1.31): waitMs=0 p50 2.12 PASS; waitMs=1000 p50 **2.47 vs 2.31 FAIL**; p99 pass. Run 3 (load 25, fsync 1.56, limit 2.56): waitMs=0 p50 **3.37 FAIL**, waitMs=1000 p50 **2.70 FAIL**; p99 10.0 / 9.1 vs 12.8 pass | fsync 2.99: p50 **5.05 / 5.02 vs 3.99 FAIL** (2.0 ms above fsync); p99 10.8 / 8.6 vs 19.9 pass |
-| B2 | non-durable "process" mode p50 <= 1 ms | process: **0.21** (waitMs=0), **0.26** (waitMs=1000); memory (no store): 0.17 / 0.19 | **PASS** | run 1: 0.33 / 0.36 PASS; run 3 (load 25): 0.38 / 0.45 PASS | process **1.41 / 1.69 FAIL**; memory 1.43 / 1.37 FAIL |
-| B3 | gateway with 1,000 upstreams lists correctly | 1,000 upstreams x 10 devices = 10,000 devices, each once and in order, start 3.21 s | **PASS** | PASS in all runs (start 3.2 to 3.4 s) | 100 upstreams (quick): PASS |
-| B4 | `devices/list` over 10,000 devices pages in <= 50 ms | unix limit 100: p99 **0.9** ms; limit 500: p99 **9.0** ms; HTTP limit 100: p99 1.9 ms (max 12.1); HTTP limit 500: p99 **22.4** ms | **PASS** | PASS in all runs | unix 500: p99 24.2 ms; HTTP 500: p99 34.2 ms: PASS |
-| B5 | compact typical invoke frame <= 64 bytes | request 35 to 37 bytes, reply 31 to 34 bytes (largest 37) | **PASS** | identical | identical |
-
-How B1 and B2 are judged (`bench/budgets.py`): B1 on a fresh server process per cell, one client, an action that returns at
-once, 1,000 samples after warm-up, against the `fdatasync` p50 measured in the same run on the same filesystem; B2 on the same
-cells with `durability="process"` and with `store=None`. "Lists correctly" (B3) is the gateway reporting every device
-(10,000) after start-up, plus the full-catalog paging pass of B4 asserting that every device appears exactly once in sorted
-order. Every row of these verdicts is in `budgets.json` of each run directory.
-
-The honest reading of B1: the budget leaves 1.0 ms for everything that is not the disk. CPython needs about 0.5 ms on a
-fast core, so the margin is 0.5 ms, and a single contended fsync or a descheduled event loop on a shared host consumes it. On
-a slower or busier core the Python overhead alone exceeds 1.0 ms and the budget cannot be met without removing work from the
-path (see the proposals). B1 and B2 are CPU-bound budgets stated as if they were disk-bound.
-
-### Variance across the three AMD runs
-
-The machine is shared (load average 12 to 27 on 32 cores; the harness pinned 8 cores each time, but memory bandwidth, the NVMe
-and the ext4 journal are shared). Same code, same sizes:
-
-| quantity | run 1 | run 2 | run 3 |
+| id | budget | verdict | evidence |
 |---|---|---|---|
-| load1 around the invoke scenario | 15 to 18 | 14 to 16 | 26 to 27 |
-| host fdatasync p50 / p99 (ms) | 1.31 / 2.13 | 1.30 / 1.49 | 1.56 / 5.64 |
-| dispatch waitMs=0 p50 / p99 (ms) | 2.12 / 5.03 | 1.79 / 3.00 | 3.37 / 10.01 |
-| dispatch waitMs=1000 p50 / p99 (ms) | 2.47 / 5.72 | 1.80 / 2.95 | 2.70 / 9.06 |
-| process waitMs=0 p50 (ms) | 0.33 | 0.21 | 0.38 |
-| max latency, dispatch (ms) | 213 / 155 | 126 / 17 | 224 / 165 |
+| B1 | durable invoke p50 <= floor + 1 ms, p99 <= 5x that (`dispatch`, unix, one client, waitMs 0 and 1000), under the fdatasync floor and under the SQLite FULL commit floor | **FAIL under both floors: 2 of 4 runs pass** (pass only on the quietest runs) | table below; run 4 alone: p50 1.80 / 1.81 ms vs limits 2.30 (fdatasync) and 2.39 (SQLite FULL), p99 3.13 / 4.13 vs 11.5 / 11.9: PASS |
+| B2 | non-durable "process" mode p50 <= 1 ms | **PASS on AMD (4 of 4 runs); FAIL on the workstation** | AMD run 4: process 0.21 (waitMs=0), 0.24 (waitMs=1000); memory (no store) 0.17 / 0.19. Workstation (quick sizes): process 1.41 / 1.69, memory 1.43 / 1.37 |
+| B3 | gateway with 1,000 upstreams lists correctly | **PASS** (run 4) | the paged catalog equals the expected 10,000 ids `u<i>/d<j>` exactly, in code-point order: listed 10000, unique True, ordered True, equals expected True; start 3.66 s. Asserted in `budgets.py` from `scenarios/gateway.py`'s `listing` |
+| B4 | `devices/list` over 10,000 devices pages in <= 50 ms | **PASS** | run 4 p99 per page: gateway_scale unix limit 100 0.9 ms, 500 11.6 ms; gateway_http unix 100 1.2 ms, 500 10.5 ms; HTTP 100 2.0 ms (max 19.9), HTTP 500 26.1 ms. Workstation worst: HTTP 500 p99 34.2 ms |
+| B5 | compact typical invoke frame <= 64 bytes | **PASS** | request 35 to 37 bytes, reply 31 to 34 bytes (largest 37) |
+
+### B1 across runs (recomputed from the raw JSON by `bench/aggregate.py`)
+
+| run | load1 (invoke scenario) | fdatasync p50 | SQLite FULL p50 | dispatch w0 p50 / p99 | dispatch w1000 p50 / p99 | B1 vs fdatasync | B1 vs SQLite FULL | B2 (process) |
+|---|---|---:|---:|---|---|---|---|---|
+| run1 | 15 to 18 | 1.31 | 1.40 | 2.12 / 5.03 | 2.47 / 5.72 | FAIL (w1000 p50) | FAIL (w1000 p50) | PASS |
+| run2 | 16 to 14 | 1.30 | 1.50 | 1.79 / 3.00 | 1.80 / 2.95 | PASS | PASS | PASS |
+| run3 | 26 to 26 | 1.56 | 1.50 | 3.37 / 10.01 | 2.70 / 9.06 | FAIL (w0 p50, w1000 p50) | FAIL (w0 p50, w1000 p50) | PASS |
+| run4 | 12 to 12 | 1.30 | 1.39 | 1.80 / 3.13 | 1.81 / 4.13 | PASS | PASS | PASS |
+
+* B1 under the fdatasync floor: **FAIL**, 2 of 4 runs pass (run2, run4; load1 16-14, 12-12).
+* B1 under the SQLite FULL commit floor: **FAIL**, 2 of 4 runs pass (run2, run4; load1 16-14, 12-12).
+* B2 (process mode, p50 <= 1 ms): 4 of 4 runs pass.
+
+A run passes under a floor when all four cells (waitMs 0 and 1000, p50 and p99) pass. Workstation (quick, fsync 2.99 ms, load 12): FAIL, p50
+5.05 / 5.02 ms vs 3.99 ms (2.0 ms above the fsync); p99 passes.
+
+How B1 and B2 are judged (`bench/budgets.py`): a fresh server process per cell, one client, an action that returns at once, 1,000 samples
+after warm-up, against the floor measured in the same run on the same filesystem; B2 on the same cells with `durability="process"` and with
+`store=None`. B1 and B2 are CPU-bound budgets stated as if they were disk-bound: CPython needs about 0.5 ms on a fast core, so the
+margin is 0.5 ms, and a single contended fsync or a descheduled event loop on a shared host consumes it. On a slower or busier core the
+Python overhead alone exceeds 1.0 ms (see the proposals). Every verdict is in `budgets.json` of each run directory.
+
+### Variance across the four AMD runs
+
+The machine is shared (load average 11 to 27 on 32 cores). Client, server and harness all run on the same 8 pinned cores
+(`taskset`); the NVMe, the ext4 journal and memory bandwidth are shared with other tenants. Same code, same sizes:
+
+| quantity | run 1 | run 2 | run 3 | run 4 |
+|---|---|---|---|---|
+| load1 around the invoke scenario | 15 to 18 | 16 to 14 | 26 | 12 |
+| host fdatasync p50 / p99 (ms) | 1.31 / 2.13 | 1.30 / 1.49 | 1.56 / 5.64 | 1.30 / 1.53 |
+| dispatch waitMs=0 p50 / p99 (ms) | 2.12 / 5.03 | 1.79 / 3.00 | 3.37 / 10.01 | 1.80 / 3.13 |
+| dispatch waitMs=1000 p50 / p99 (ms) | 2.47 / 5.72 | 1.80 / 2.95 | 2.70 / 9.06 | 1.81 / 4.13 |
+| process waitMs=0 p50 (ms) | 0.33 | 0.21 | 0.38 | 0.21 |
+| max latency, dispatch w0 / w1000 (ms) | 213 / 155 | 126 / 17 | 224 / 165 | 18 / 88 |
 
 Run 1 also includes one harness defect: its `mcp_compare` scenario failed (`CallToolResult` has `is_error` in mcp 2.x, not
 `isError`); the harness was fixed before runs 2 and 3. The run-1 directory is kept unedited, as evidence of the variance.
@@ -72,7 +89,7 @@ AMD machine (`ssh bmh-worker`): AMD RYZEN AI MAX+ PRO 395 (HP Z2 Mini G1a), 32 l
 7.3.0-9, Python 3.12.16, Node v20.20.1 (user-space tarball under `~/hms-lab/node`, 28 MB), `mcp` 2.3.0, websockets 17.4, aiohttp
 3.14.5, pydantic 2.14.3. State directory on `/dev/nvme0n1p6` ext4 `rw,relatime` (not tmpfs: the fsync cost is the point). Each
 run: `nice -n 10 taskset -c <8 least-busy CPUs>`; the CPU list is in each `environment.json`. Load average is recorded before and
-after every measurement (`load1` column); the whole machine was at load 12 to 27 throughout.
+after every measurement (`load1` column); the whole machine was at load 11 to 27 throughout.
 
 Workstation (comparison, no installs): Intel Core i7-10700KF, 16 logical CPUs, Ubuntu 24.04, kernel 7.0.0-42, Python 3.12.3,
 Node v20.20.1 (nvm), ext4 `noatime` on NVMe, load 11 to 15 (the desk machine was busy). `--quick` sizes only (100 samples per
@@ -81,18 +98,22 @@ latency cell), so percentiles beyond p95 are coarse there.
 Sizes: `--full` is 1,000 sequential samples per invoke cell after 200 warm-up, 2,000 to 5,000 operations per concurrency cell,
 200 events per fan-out cell, 1,000 upstreams for the gateway. Client and server are separate processes everywhere except the
 `gateway*` scenarios, which follow Task 5's benchmark and run the gateway, its in-process light upstreams and the client on one
-event loop (so they measure the gateway's CPU cost, not 1,000 real peers).
+event loop (so they measure the gateway's CPU cost, not 1,000 real peers: single-event-loop CPU tests, not connection tests). The gateway scenarios imported unchanged from `sdk/python/benchmarks/gateway_scale.py` report summaries only (no per-sample data); the same paging and invokes are re-measured with raw samples in `gateway_http`. The `RSS +` figures of that scenario are peak-RSS deltas and read 0.0 when an earlier scenario in the same process already peaked higher (run 4); runs 1 to 3 show +221 MB.
+
+Closed-loop concurrency (the `concurrency` scenario): each client sends its next invoke only after the previous answer, so the
+latencies there are service time plus queueing behind the other clients in a closed loop, not the tail an open arrival process
+produces; the `openloop` scenario below measures that.
 
 Percentiles are nearest-rank (`bhms.cli.bench.summarize`, the same code as `bhms bench`). Failures are counted, never dropped:
 every cell below had 0 failures.
 
 ## Scenarios
 
-`bench/scenarios/`: `fsync`, `transports`, `invoke`, `concurrency`, `gateway` (Task 5's `gateway_scale.py` imported as is),
+`bench/scenarios/`: `fsync`, `transports`, `invoke`, `concurrency`, `openloop`, `gateway` (Task 5's `gateway_scale.py` imported as is),
 `gateway_http`, `subscription`, `recovery`, `compact`, `mcp_compare`, `ts_vs_py`. `bench/README.md` describes each. Run:
 `python bench/run.py --quick` or `--full`.
 
-## Results (run 2)
+## Results (run 4, samples committed)
 
 Columns are samples, p50, p95, p99, max in milliseconds, operations per second, and the load average at the start and end of the
 measurement.
@@ -101,105 +122,114 @@ measurement.
 
 | case | n | p50 ms | p95 ms | p99 ms | max ms | ops/s | load1 |
 |---|---:|---:|---:|---:|---:|---:|---|
-| fdatasync 600B | 3000 | 1.30 | 1.41 | 1.49 | 35.36 | 745 | 12.3->14.1 |
-| fsync 600B | 3000 | 1.30 | 1.41 | 1.50 | 14.79 | 746 | 12.3->14.1 |
-| fdatasync 4096B | 3000 | 1.31 | 1.41 | 1.50 | 9.21 | 741 | 12.3->14.1 |
-| fsync 4096B | 3000 | 1.40 | 2.02 | 3.20 | 8.85 | 681 | 12.3->14.1 |
+| fdatasync 600B | 3000 | 1.30 | 1.41 | 1.53 | 58.55 | 732 | 12.4->12.3 |
+| fsync 600B | 3000 | 1.30 | 1.41 | 1.49 | 9.02 | 750 | 12.4->12.3 |
+| fdatasync 4096B | 3000 | 1.31 | 1.41 | 1.50 | 27.68 | 736 | 12.4->12.3 |
+| fsync 4096B | 3000 | 1.30 | 1.41 | 1.49 | 8.92 | 744 | 12.4->12.3 |
 
-SQLite WAL commit (600 B row): NORMAL p50 0.0042 ms / p99 0.0134; FULL p50 1.505 ms / p99 4.6154.
+SQLite WAL commit (600 B row): NORMAL p50 0.0039 ms / p99 0.0123; FULL p50 1.3866 ms / p99 1.5024.
 
 ### Transports, ping only
 
 | case | n | p50 ms | p95 ms | p99 ms | max ms | ops/s | load1 |
 |---|---:|---:|---:|---:|---:|---:|---|
-| unix sequential | 5000 | 0.05 | 0.08 | 0.09 | 1.24 | 18194 | 14.1->14.1 |
-| tcp sequential | 5000 | 0.06 | 0.09 | 0.12 | 3.15 | 14952 | 14.1->15.8 |
-| websocket sequential | 5000 | 0.11 | 0.14 | 0.16 | 3.37 | 9041 | 15.8->15.8 |
-| stdio sequential | 5000 | 0.06 | 0.09 | 0.14 | 2.90 | 16321 | 15.8->15.8 |
+| unix sequential | 5000 | 0.03 | 0.03 | 0.06 | 0.61 | 34612 | 12.3->12.3 |
+| tcp sequential | 5000 | 0.03 | 0.04 | 0.06 | 0.17 | 31437 | 12.3->12.2 |
+| websocket sequential | 5000 | 0.04 | 0.06 | 0.09 | 0.25 | 22240 | 12.2->12.2 |
+| stdio sequential | 5000 | 0.03 | 0.04 | 0.08 | 0.26 | 29942 | 12.2->12.2 |
 
-Pipelined (256 in flight): unix 33651/s, tcp 27589/s, websocket 30833/s, stdio 90987/s
+Pipelined (256 in flight): unix 120842/s, tcp 131139/s, websocket 75635/s, stdio 162708/s
 
 ### `actions/invoke`, one client, sequential
 
 | case | n | p50 ms | p95 ms | p99 ms | max ms | ops/s | load1 |
 |---|---:|---:|---:|---:|---:|---:|---|
-| unix/full/waitMs=0 | 1000 | 3.21 | 3.81 | 4.59 | 21.32 | 302 | 15.8->15.4 |
-| unix/full/waitMs=1000 | 1000 | 3.18 | 3.55 | 4.38 | 18.27 | 307 | 15.4->14.8 |
-| unix/dispatch/waitMs=0 | 1000 | 1.79 | 2.01 | 3.00 | 125.57 | 506 | 14.8->14.1 |
-| unix/dispatch/waitMs=1000 | 1000 | 1.80 | 2.12 | 2.95 | 17.47 | 535 | 14.1->14.1 |
-| unix/process/waitMs=0 | 1000 | 0.21 | 0.39 | 0.51 | 17.45 | 3881 | 14.1->14.1 |
-| unix/process/waitMs=1000 | 1000 | 0.26 | 0.46 | 0.59 | 15.96 | 3232 | 14.1->14.1 |
-| unix/memory/waitMs=0 | 1000 | 0.17 | 0.31 | 0.45 | 15.23 | 4709 | 13.8->13.8 |
-| unix/memory/waitMs=1000 | 1000 | 0.19 | 0.36 | 0.52 | 18.15 | 4223 | 13.8->13.8 |
-| ws/dispatch/waitMs=0 | 1000 | 1.86 | 2.31 | 2.97 | 19.39 | 516 | 13.8->13.8 |
-| ws/dispatch/waitMs=1000 | 1000 | 1.89 | 2.46 | 3.12 | 125.72 | 466 | 13.8->13.9 |
-| ws/memory/waitMs=0 | 1000 | 0.31 | 0.48 | 0.56 | 31.23 | 2787 | 13.9->13.9 |
-| ws/memory/waitMs=1000 | 1000 | 0.32 | 0.48 | 0.58 | 31.84 | 2672 | 13.9->13.9 |
-| stdio/dispatch/waitMs=0 | 1000 | 2.05 | 2.61 | 3.37 | 168.07 | 440 | 13.9->14.0 |
-| stdio/dispatch/waitMs=1000 | 1000 | 1.97 | 2.96 | 4.70 | 125.27 | 388 | 14.0->14.0 |
-| stdio/memory/waitMs=0 | 1000 | 0.17 | 0.29 | 0.43 | 14.61 | 4993 | 14.0->14.0 |
-| stdio/memory/waitMs=1000 | 1000 | 0.19 | 0.29 | 0.41 | 22.78 | 4446 | 13.5->13.5 |
+| unix/full/waitMs=0 | 1000 | 3.20 | 3.83 | 4.28 | 20.41 | 303 | 12.2->11.9 |
+| unix/full/waitMs=1000 | 1000 | 3.35 | 4.00 | 5.32 | 89.91 | 281 | 11.9->11.9 |
+| unix/dispatch/waitMs=0 | 1000 | 1.80 | 2.13 | 3.13 | 17.60 | 534 | 11.9->11.9 |
+| unix/dispatch/waitMs=1000 | 1000 | 1.81 | 2.28 | 4.13 | 88.27 | 500 | 11.9->12.1 |
+| unix/process/waitMs=0 | 1000 | 0.21 | 0.33 | 0.45 | 16.63 | 3992 | 12.1->12.1 |
+| unix/process/waitMs=1000 | 1000 | 0.24 | 0.40 | 0.53 | 26.55 | 3433 | 12.1->12.1 |
+| unix/memory/waitMs=0 | 1000 | 0.17 | 0.26 | 0.41 | 23.93 | 4866 | 12.1->12.1 |
+| unix/memory/waitMs=1000 | 1000 | 0.19 | 0.31 | 0.50 | 22.30 | 4266 | 12.1->12.1 |
+| ws/dispatch/waitMs=0 | 1000 | 1.84 | 2.18 | 2.88 | 21.60 | 525 | 12.1->12.0 |
+| ws/dispatch/waitMs=1000 | 1000 | 1.88 | 2.18 | 2.86 | 136.78 | 485 | 12.0->12.0 |
+| ws/memory/waitMs=0 | 1000 | 0.22 | 0.37 | 0.51 | 22.95 | 3760 | 12.0->12.0 |
+| ws/memory/waitMs=1000 | 1000 | 0.23 | 0.41 | 0.60 | 23.41 | 3417 | 12.0->12.0 |
+| stdio/dispatch/waitMs=0 | 1000 | 1.79 | 2.03 | 3.08 | 120.84 | 518 | 11.9->11.9 |
+| stdio/dispatch/waitMs=1000 | 1000 | 1.78 | 2.15 | 3.00 | 20.87 | 537 | 11.9->11.9 |
+| stdio/memory/waitMs=0 | 1000 | 0.17 | 0.26 | 0.37 | 17.68 | 5094 | 11.6->11.6 |
+| stdio/memory/waitMs=1000 | 1000 | 0.18 | 0.29 | 0.46 | 15.46 | 4625 | 11.6->11.6 |
 
 ### Concurrent clients (`waitMs=1000`, unix)
 
 | case | n | p50 ms | p95 ms | p99 ms | max ms | ops/s | load1 |
 |---|---:|---:|---:|---:|---:|---:|---|
-| dispatch/same-device/1 | 2000 | 1.83 | 2.18 | 3.08 | 201.49 | 466 | 13.5->13.1 |
-| dispatch/same-device/10 | 2000 | 17.16 | 20.67 | 26.10 | 35.57 | 564 | 13.1->13.1 |
-| dispatch/same-device/100 | 2000 | 178.51 | 187.26 | 188.41 | 199.08 | 555 | 13.2->13.1 |
-| dispatch/spread/10 | 2000 | 16.26 | 17.71 | 24.28 | 32.92 | 604 | 13.1->13.1 |
-| dispatch/spread/100 | 2000 | 167.03 | 176.77 | 474.75 | 481.90 | 546 | 12.7->12.7 |
-| process/same-device/1 | 5000 | 0.24 | 0.40 | 0.53 | 44.81 | 3539 | 12.8->12.8 |
-| process/same-device/10 | 5000 | 2.04 | 2.35 | 3.08 | 22.35 | 4739 | 12.8->12.8 |
-| process/same-device/100 | 5000 | 27.15 | 30.20 | 33.82 | 39.94 | 3641 | 12.8->12.8 |
-| process/spread/10 | 5000 | 1.56 | 2.17 | 2.63 | 27.31 | 5990 | 12.8->12.8 |
-| process/spread/100 | 5000 | 14.90 | 21.32 | 51.36 | 52.32 | 6110 | 12.8->12.8 |
+| dispatch/same-device/1 | 2000 | 1.81 | 2.14 | 2.93 | 74.90 | 517 | 11.6->11.6 |
+| dispatch/same-device/10 | 2000 | 17.27 | 19.22 | 40.66 | 116.45 | 553 | 11.6->11.6 |
+| dispatch/same-device/100 | 2000 | 182.09 | 192.11 | 196.29 | 196.89 | 546 | 11.4->11.4 |
+| dispatch/spread/10 | 2000 | 16.15 | 17.89 | 24.49 | 32.51 | 606 | 11.4->11.7 |
+| dispatch/spread/100 | 2000 | 163.77 | 243.02 | 260.44 | 263.12 | 576 | 11.7->11.5 |
+| process/same-device/1 | 5000 | 0.23 | 0.36 | 0.51 | 18.79 | 3871 | 11.5->11.5 |
+| process/same-device/10 | 5000 | 1.98 | 2.19 | 2.81 | 17.70 | 4933 | 11.5->11.1 |
+| process/same-device/100 | 5000 | 27.06 | 31.21 | 35.19 | 39.81 | 3636 | 11.1->11.1 |
+| process/spread/10 | 5000 | 1.48 | 1.85 | 2.23 | 19.08 | 6441 | 11.1->11.1 |
+| process/spread/100 | 5000 | 14.97 | 19.79 | 53.91 | 54.21 | 6094 | 11.1->11.3 |
+
+### Open-loop latency (Poisson arrivals at a fixed offered rate; latency from the scheduled arrival)
+
+| case | offered/s | achieved/s | n (failed) | p50 ms | p95 ms | p99 ms | max ms | load1 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|
+| dispatch 50% of capacity (capacity 560/s) | 280 | 285 | 4280 (0) | 3.99 | 98.27 | 211.08 | 304.46 | 11.3->10.8 |
+| dispatch 90% of capacity (capacity 560/s) | 504 | 509 | 7644 (0) | 7.57 | 27.80 | 40.37 | 97.89 | 10.8->10.7 |
+| process 50% of capacity (capacity 6485/s) | 3243 | 1658 | 48850 (0) | 1284.46 | 13016.19 | 14014.26 | 14826.87 | 11.1->14.0 |
+| process 90% of capacity (capacity 6485/s) | 5837 | 101 | 13781 (74084) | 66956.85 | 106535.27 | 107167.40 | 107627.92 | 14.0->22.2 |
 
 ### Gateway, 1000 upstreams x 10 devices (in-process upstreams)
 
-start 3.21 s, background validation 2.69 s, RSS +220.6 MB; devices 10000.
+start 3.66 s, background validation 2.8 s, RSS +0.0 MB; devices 10000.
 
 | paging | n | p50 ms | p95 ms | p99 ms | max ms |
 |---|---:|---:|---:|---:|---:|
-| limit_100_ms | 100 | 0.636 | 0.669 | 0.689 | 0.689 |
-| limit_500_ms | 20 | 3.352 | 10.653 | 10.653 | 10.653 |
+| limit_100_ms | 100 | 0.693 | 0.793 | 0.885 | 0.885 |
+| limit_500_ms | 20 | 5.507 | 11.607 | 11.607 | 11.607 |
 
-Event fan-in: 5000 events from 1000 upstream streams in 0.374 s = 13370/s; latency under the burst p50 314.921 / p99 361.373 / max 362.495 ms; +5.8 MB.
+Event fan-in: 5000 events from 1000 upstream streams in 0.323 s = 15483/s; latency under the burst p50 266.992 / p99 311.083 / max 311.733 ms; +0.0 MB.
 
 | invoke via | n | p50 ms | p95 ms | p99 ms | max ms | overhead p50 ms |
 |---|---:|---:|---:|---:|---:|---:|
-| direct_wait0 | 1000 | 0.188 | 0.283 | 0.334 | 9.37 | - |
-| direct_wait1000 | 1000 | 0.211 | 0.329 | 0.394 | 1.078 | - |
-| gateway_process_wait0 | 1000 | 0.531 | 0.831 | 0.943 | 2.046 | 0.343 |
-| gateway_process_wait1000 | 1000 | 0.6 | 0.695 | 0.878 | 1.324 | 0.389 |
-| gateway_dispatch_wait0 | 1000 | 2.262 | 3.007 | 4.654 | 11.128 | 2.074 |
-| gateway_dispatch_wait1000 | 1000 | 2.385 | 3.214 | 4.469 | 10.557 | 2.174 |
+| direct_wait0 | 1000 | 0.189 | 0.253 | 0.353 | 6.103 | - |
+| direct_wait1000 | 1000 | 0.214 | 0.317 | 0.425 | 0.981 | - |
+| gateway_process_wait0 | 1000 | 0.576 | 0.845 | 1.048 | 1.882 | 0.387 |
+| gateway_process_wait1000 | 1000 | 0.655 | 0.962 | 1.339 | 2.334 | 0.441 |
+| gateway_dispatch_wait0 | 1000 | 2.339 | 3.076 | 3.865 | 10.449 | 2.15 |
+| gateway_dispatch_wait1000 | 1000 | 3.014 | 6.826 | 11.159 | 19.836 | 2.8 |
 
 ### Gateway over unix versus Streamable HTTP (10001 devices)
 
 | case | n | p50 ms | p95 ms | p99 ms | max ms | ops/s | load1 |
 |---|---:|---:|---:|---:|---:|---:|---|
-| unix devices_list_limit_100 | 303 | 0.66 | 0.76 | 0.91 | 0.92 | 1496 | 12.8->12.8 |
-| unix devices_list_limit_500 | 63 | 3.59 | 5.91 | 9.02 | 9.02 | 266 | 12.8->12.8 |
-| unix invoke_waitMs_0 | 500 | 0.45 | 0.52 | 0.56 | 0.98 | 2174 | 12.8->12.8 |
-| unix invoke_waitMs_1000 | 500 | 0.54 | 0.61 | 0.67 | 1.25 | 1822 | 12.8->12.8 |
-| http devices_list_limit_100 | 303 | 0.96 | 1.28 | 1.86 | 12.13 | 943 | 12.8->13.6 |
-| http devices_list_limit_500 | 63 | 5.41 | 7.33 | 22.44 | 22.44 | 166 | 12.8->13.6 |
-| http invoke_waitMs_0 | 500 | 0.80 | 0.97 | 1.32 | 1.60 | 1203 | 12.8->13.6 |
-| http invoke_waitMs_1000 | 500 | 0.89 | 1.11 | 1.55 | 22.70 | 1028 | 12.8->13.6 |
+| unix devices_list_limit_100 | 303 | 0.77 | 1.10 | 1.17 | 1.19 | 1194 | 20.3->20.3 |
+| unix devices_list_limit_500 | 63 | 4.07 | 7.03 | 10.50 | 10.50 | 236 | 20.3->20.3 |
+| unix invoke_waitMs_0 | 500 | 0.47 | 0.56 | 0.70 | 1.07 | 2056 | 20.3->20.3 |
+| unix invoke_waitMs_1000 | 500 | 0.57 | 0.69 | 0.92 | 1.30 | 1700 | 20.3->20.3 |
+| http devices_list_limit_100 | 303 | 1.00 | 1.53 | 2.02 | 19.93 | 843 | 20.3->19.9 |
+| http devices_list_limit_500 | 63 | 5.11 | 9.92 | 26.05 | 26.05 | 163 | 20.3->19.9 |
+| http invoke_waitMs_0 | 500 | 0.82 | 1.01 | 1.37 | 1.77 | 1175 | 20.3->19.9 |
+| http invoke_waitMs_1000 | 500 | 0.91 | 1.13 | 1.57 | 30.29 | 999 | 20.3->19.9 |
 
 ### Subscription fan-out (1 event stream to N listeners)
 
 | case | n | p50 ms | p95 ms | p99 ms | max ms | ops/s | load1 |
 |---|---:|---:|---:|---:|---:|---:|---|
-| listeners=1 delivery | 200 | 1.91 | 2.22 | 3.01 | 3.73 | 511 | 13.6->13.6 |
-| listeners=1 slowest listener | 200 | 1.91 | 2.22 | 3.01 | 3.73 | 511 | 13.6->13.6 |
-| listeners=10 delivery | 2000 | 2.09 | 2.91 | 3.58 | 84.98 | 3802 | 13.6->13.6 |
-| listeners=10 slowest listener | 200 | 2.14 | 2.95 | 3.59 | 84.98 | 380 | 13.6->13.6 |
-| listeners=50 delivery | 10000 | 2.85 | 5.27 | 6.31 | 10.91 | 13772 | 13.6->13.6 |
-| listeners=50 slowest listener | 200 | 3.04 | 5.59 | 6.54 | 10.91 | 275 | 13.6->13.6 |
-| listeners=100 delivery | 20000 | 5.07 | 7.54 | 8.77 | 62.33 | 15970 | 13.6->13.6 |
-| listeners=100 slowest listener | 200 | 5.91 | 8.29 | 9.13 | 62.33 | 160 | 13.6->13.6 |
+| listeners=1 delivery | 200 | 2.17 | 2.50 | 2.94 | 4.83 | 454 | 19.9->19.9 |
+| listeners=1 slowest listener | 200 | 2.17 | 2.50 | 2.94 | 4.83 | 454 | 19.9->19.9 |
+| listeners=10 delivery | 2000 | 2.23 | 3.03 | 3.70 | 4.48 | 4171 | 19.9->19.9 |
+| listeners=10 slowest listener | 200 | 2.29 | 3.10 | 3.70 | 4.48 | 417 | 19.9->19.9 |
+| listeners=50 delivery | 10000 | 4.42 | 6.11 | 7.48 | 96.22 | 9263 | 19.9->19.8 |
+| listeners=50 slowest listener | 200 | 4.88 | 6.72 | 7.48 | 96.22 | 185 | 19.9->19.8 |
+| listeners=100 delivery | 20000 | 5.09 | 7.85 | 8.86 | 10.22 | 16530 | 19.8->19.8 |
+| listeners=100 slowest listener | 200 | 5.74 | 8.83 | 9.48 | 10.22 | 165 | 19.8->19.8 |
 
 Deliveries lost: listeners=1: 0, listeners=10: 0, listeners=50: 0, listeners=100: 0
 
@@ -207,41 +237,43 @@ Deliveries lost: listeners=1: 0, listeners=10: 0, listeners=50: 0, listeners=100
 
 | case | journal bytes | to ready s | to first response s | unknown after |
 |---|---:|---:|---:|---:|
-| devices=1000 unknown=0 | 9136512 | 0.725 | 0.726 | 0 |
-| devices=10 unknown=10 | 514816 | 0.18 | 0.181 | 10 |
-| devices=100 unknown=100 | 4329936 | 0.232 | 0.233 | 100 |
-| devices=1000 unknown=1000 | 48245720 | 0.758 | 0.759 | 1000 |
+| devices=1000 unknown=0 | 9136512 | 0.756 | 0.757 | 0 |
+| devices=10 unknown=10 | 514816 | 0.233 | 0.235 | 10 |
+| devices=100 unknown=100 | 4329936 | 0.257 | 0.258 | 100 |
+| devices=1000 unknown=1000 | 48245720 | 0.755 | 0.756 | 1000 |
 
 ### BHMS-Compact
 
 | target | op | n | p50 ms | p95 ms | p99 ms | max ms |
 |---|---|---:|---:|---:|---:|---:|
-| native | invoke | 3000 | 0.042 | 0.0576 | 0.0714 | 0.9542 |
-| native | read | 1500 | 0.0424 | 0.06 | 0.0775 | 1.2897 |
-| simavr | invoke | 1000 | 7.1643 | 7.3202 | 8.8826 | 11.9772 |
-| simavr | read | 500 | 7.1948 | 7.5883 | 8.3569 | 9.9004 |
+| native | invoke | 3000 | 0.0408 | 0.049 | 0.0631 | 0.2258 |
+| native | read | 1500 | 0.041 | 0.049 | 0.0588 | 0.0682 |
+| simavr | invoke | 1000 | 7.1654 | 7.226 | 8.2137 | 9.9782 |
+| simavr | read | 500 | 7.1917 | 7.2547 | 7.6726 | 9.6887 |
 
 native: invoke request [35, 36, 37] bytes, reply [31, 32, 34], read frames [29, 30, 31, 40, 41, 42, 43], hello 48;
 
-simavr: invoke request [35, 36, 37] bytes, reply [31, 32, 34], read frames [29, 30, 40, 41, 42], hello 48; wire floor 6.163 ms at 115200 baud, p50 over floor 1.001 ms;
+simavr: invoke request [35, 36, 37] bytes, reply [31, 32, 34], read frames [29, 30, 40, 41, 42], hello 48; wire floor 6.163 ms at 115200 baud, p50 over floor 1.002 ms;
+
+(From `run4-compact-rerun`, the compact scenario re-run alone with raw samples; the main run-4 compact numbers are within 10%.)
 
 ### MCP bridge versus native client
 
 | case | n | p50 ms | p95 ms | p99 ms | max ms | ops/s | load1 |
 |---|---:|---:|---:|---:|---:|---:|---|
-| native | 1000 | 1.82 | 2.15 | 3.11 | 87.56 | 506 | 13.6->13.6 |
-| mcp_bridge | 1000 | 3.08 | 4.99 | 5.97 | 11.33 | 297 | 13.6->14.1 |
+| native | 1000 | 2.13 | 3.38 | 5.76 | 102.72 | 392 | 19.2->19.2 |
+| mcp_bridge | 1000 | 3.23 | 6.08 | 7.68 | 91.60 | 262 | 19.2->18.7 |
 
-Bridge overhead p50 1.267 ms; tool result text 82 bytes; `tools/list` 1.343 ms.
+Bridge overhead p50 1.098 ms; tool result text 82 bytes; `tools/list` 1.685 ms.
 
 ### TypeScript SDK server versus Python SDK server (`axis-1.pulse`, `waitMs=1000`, unix)
 
 | case | n | p50 ms | p95 ms | p99 ms | max ms | ops/s | load1 |
 |---|---:|---:|---:|---:|---:|---:|---|
-| python/durable | 1000 | 6.53 | 20.95 | 26.66 | 177.22 | 113 | 14.1->19.7 |
-| typescript/durable | 1000 | 11.07 | 17.58 | 22.94 | 140.50 | 85 | 19.7->25.9 |
-| python/memory | 1000 | 1.89 | 3.63 | 4.89 | 38.81 | 469 | 25.9->25.5 |
-| typescript/memory | 1000 | 2.15 | 4.75 | 6.61 | 8.56 | 414 | 25.5->25.5 |
+| python/durable | 1000 | 4.71 | 7.09 | 8.92 | 94.64 | 193 | 18.7->18.1 |
+| typescript/durable | 1000 | 6.08 | 7.51 | 9.60 | 90.71 | 159 | 18.1->17.7 |
+| python/memory | 1000 | 1.38 | 1.65 | 1.78 | 21.36 | 706 | 17.7->17.2 |
+| typescript/memory | 1000 | 1.42 | 1.63 | 1.75 | 2.31 | 711 | 17.2->17.2 |
 
 ## Workstation comparison (quick sizes, load 11 to 15)
 
@@ -271,42 +303,63 @@ Budget verdicts on the developer workstation (i7-10700KF, host fsync p50 2.99 ms
 
 ## What the numbers say
 
-* **Transports are not the cost.** Bare ping round trip is 0.05 ms (unix), 0.06 (tcp, stdio), 0.11 (websocket); pipelined
-  throughput 28 to 91 thousand requests per second. A non-durable invoke (0.17 to 0.26 ms) is a few times a ping, and the
-  durable invoke is the same across unix, websocket and stdio (1.79, 1.86, 2.05 ms): durability dominates, transport does not.
-* **Durability costs one fsync per fsync.** `full` (synchronous=FULL everywhere) 3.2 ms; `dispatch` (one barrier on the
+* **Transports are not the cost.** Bare ping round trip is 0.03 ms (unix, tcp, stdio) and 0.04 (websocket) in run 4 (0.05 to 0.11 in run 2); pipelined
+  throughput 76 to 163 thousand requests per second. A non-durable invoke (0.17 to 0.24 ms) is several times a ping, and the
+  durable invoke is the same across unix, websocket and stdio (1.80, 1.84, 1.79 ms): durability dominates, transport does not.
+* **Durability costs one fsync per fsync.** `full` (synchronous=FULL everywhere) 3.2 to 3.35 ms; `dispatch` (one barrier on the
   intent) 1.8 ms; `process` 0.21 ms; `memory` 0.17 ms. That is `fsyncs x 1.3 ms + 0.2 to 0.5 ms`. `dispatch` is already
   the minimum for "intent durable before dispatch" without batching.
-* **Concurrency.** Durable throughput is flat at 470 to 600 ops/s from 1 client to 100 (same device or spread over 100
+* **Concurrency.** Durable throughput is flat at 517 to 606 ops/s from 1 client to 100 (same device or spread over 100
   devices): the single journal serialises one fsync per intent, so latency grows linearly with clients (p50 1.8 ms at 1, 17 ms at
-  10, 179 ms at 100). Non-durable throughput scales until CPython's single event loop saturates: 3.5 to 4.7 thousand ops/s
-  on one device, 6.0 to 6.1 thousand ops/s spread over 100 devices; p50 at 100 clients is 15 to 27 ms.
-* **Gateway.** Over a process-mode journal the gateway adds 0.34 ms (waitMs=0) and 0.39 ms (waitMs=1000) to a direct
-  invoke (0.19 to 0.21 ms). With the default `dispatch` journal it adds **2.07 / 2.17 ms**: the gateway writes a
+  10, 164 to 182 ms at 100). Non-durable throughput scales until CPython's single event loop saturates: 3.6 to 4.9 thousand ops/s
+  on one device, 6.1 to 6.4 thousand ops/s spread over 100 devices; p50 at 100 clients is 15 to 27 ms.
+* **Gateway.** Over a process-mode journal the gateway adds 0.39 ms (waitMs=0) and 0.44 ms (waitMs=1000) to a direct
+  invoke (0.19 to 0.21 ms). With the default `dispatch` journal it adds **2.15 / 2.80 ms**: the gateway writes a
   pending-forward row with a barrier commit before sending (`gateway/journal.py`, `pending_put`), i.e. one fsync per forwarded
   invoke. (Task 5's report says the gateway needs no barrier; the code has one. In front of a durable device server this is two
   fsyncs per invoke end to end; that combination was not measured, see below.) Streamable HTTP adds 0.35 ms per invoke and
-  0.3 ms (limit 100) to 1.8 ms (limit 500) per `devices/list` page over the unix socket.
-* **Subscription fan-out** is linear and cheap: delivery latency (invoke to listener parse) p50 1.9 ms with 1 listener, 2.1 ms
-  with 10, 2.9 ms with 50 and 5.1 ms with 100 (p99 8.8 ms): about 0.03 ms per listener; no delivery lost in any cell.
+  0.2 ms (limit 100) to 1.0 ms (limit 500) per `devices/list` page over the unix socket (p50).
+* **Subscription fan-out** is linear and cheap: delivery latency (invoke to listener parse) p50 2.2 ms with 1 listener, 2.2 ms
+  with 10, 4.4 ms with 50 and 5.1 ms with 100 (p99 8.9 ms): about 0.03 ms per listener; no delivery lost in any cell.
 * **Crash recovery** is not the slow part of a restart. SIGKILL with 1,000 running operations on 1,000 devices, restart to first
-  response: 0.76 s against 0.73 s with no operations, so settling 1,000 operations to `unknown` costs about 30 ms. The
-  constant part is interpreter start, imports and declaring the devices (0.18 s for 10 devices). All N operations were
+  response: 0.756 s against 0.757 s with no operations (run 2: 0.76 vs 0.73), so settling 1,000 operations to `unknown` costs at most about 30 ms. The
+  constant part is interpreter start, imports and declaring the devices (0.23 s for 10 devices). All N operations were
   reported `unknown` afterwards (nothing lost, nothing invented). The journal holds 48 MB (database plus its
   uncheckpointed WAL) after 1,000 invokes on top of a 9 MB baseline, about 39 KB written per operation; this is the WAL's page-granular
   write amplification, and part of why disk time per invoke is what it is.
-* **Compact binding.** Native C endpoint over a pty: 0.042 ms p50 per invoke (0.041 to 0.042 over three runs). ATmega328P in
-  simavr, 115200 baud: 7.16 ms p50 per invoke and 7.19 ms per read, against a 6.16 ms wire-time floor for the 35-byte request
+* **Compact binding.** Native C endpoint over a pty: 0.041 ms p50 per invoke (0.041 to 0.045 over runs). ATmega328P in
+  simavr, 115200 baud: 7.17 ms p50 per invoke and 7.19 ms per read, against a 6.16 ms wire-time floor for the 35-byte request
   and 34-byte reply actually exchanged (10 bits per byte): the device and host add about 1.0 ms; the rest is the serial line.
-* **MCP versus native.** The MCP bridge (official `mcp` 2.3 client over stdio to `python -m bhms mcp`) takes 3.08 ms p50
-  against 1.82 ms native for the same durable action (+1.27 ms; run 3: 2.88 vs 1.80, +1.08 ms): an extra process hop, MCP
+* **MCP versus native.** The MCP bridge (official `mcp` 2.3 client over stdio to `python -m bhms mcp`) takes 3.23 ms p50
+  against 2.13 ms native for the same durable action (+1.10 ms, run 4 at load 19; run 2: 3.08 vs 1.82; run 3: 2.88 vs 1.80): an extra process hop, MCP
   framing both ways, argument validation and rendering. The agent receives 82 bytes of result text; `tools/list` is 1.3 ms.
 * **TypeScript versus Python server.** Same conformance-device action (`axis-1.pulse`, which itself holds 1 ms): without a store
-  they are equal (1.40 ms both in run 1; 1.62 vs 1.46 in run 3). With the default durable store the TypeScript server is about
-  1.4x slower (run 1: 3.92 Python, 5.68 TypeScript; run 3: 4.22 vs 5.72). Run 2's durable cell ran while the host load climbed from
+  they are equal (1.40 ms both in run 1; 1.38 vs 1.42 in run 4). With the default durable store the TypeScript server is about
+  1.3 to 1.5x slower (run 1: 3.92 Python, 5.68 TypeScript; run 3: 4.22 vs 5.72; run 4: 4.71 vs 6.08). Run 2's durable cell ran while the host load climbed from
   14 to 26 (python 6.5, typescript 11.1) and is not comparable. The TypeScript journal fsyncs every operation record
   (`store.ts` `writeOp` -> `append(..., true)`: accepted, dispatching, completed), where the Python server issues one barrier on the
   intent; that is consistent with the gap.
+
+### Open-loop latency at a fixed offered load
+
+`bench/scenarios/openloop.py`: Poisson arrivals at a fixed rate, 20 connections, 100 devices, latency measured from the scheduled arrival
+instant (no coordinated omission); the offered rate is a fraction of the closed-loop capacity measured just before. Run 4 (load 11) and
+a dispatch/process rerun of that scenario alone (`run4-openloop-rerun`, load 17 to 22, after a harness fix); samples in each `samples/`.
+
+| durability | run | offered / closed-loop capacity | achieved/s | p50 ms | p95 ms | p99 ms | max ms |
+|---|---|---|---:|---:|---:|---:|---:|
+| dispatch | run 4 | 280/s (50% of 560) | 285 | 3.99 | 98.3 | 211 | 304 |
+| dispatch | run 4 | 504/s (90%) | 509 | 7.57 | 27.8 | 40.4 | 97.9 |
+| dispatch | rerun | 264/s (50% of 528) | 268 | 9.69 | 227 | 313 | 389 |
+| dispatch | rerun | 475/s (90%) | 478 | 11.2 | 152 | 229 | 313 |
+| process | rerun | 159/s (10% of 1587) | 163 | 2.81 | 6.6 | 10.6 | 55.1 |
+| process | rerun | 317/s (20%) | 323 | 1.91 | 4.1 | 8.4 | 62.4 |
+
+Reading: at half of capacity the durable path's p50 is 4 to 10 ms (against 1.8 ms unloaded) and p99 is 200 to 300 ms: the rare
+90 to 300 ms stalls (Tail latency, below) hold arrivals that then queue. That tail is not visible in the closed-loop tables. The run-4
+`process` cells (50% and 90% of a 6.5k/s closed-loop capacity) are **invalid**: the single-process Python load generator reached only
+1.7k/s and then overflowed (74,084 failed arrivals at the 90% cell); they are kept in `run4/openloop.json` for transparency and
+superseded by the rerun at 10% and 20% (the rerun's closed-loop capacity, 1.6k/s, was itself depressed by host load 17 to 22).
 
 ## Profiles of the misses
 
@@ -343,15 +396,18 @@ met reliably on a slow or busy one.
 
 ### B2 (non-durable p50 <= 1 ms): passes on AMD, misses on the workstation
 
-On the AMD machine process-mode p50 is 0.21 to 0.45 ms (3 runs): a pass. The workstation misses (1.41 / 1.69 ms) because
+On the AMD machine process-mode p50 is 0.21 to 0.45 ms (4 runs): a pass. The workstation misses (1.41 / 1.69 ms) because
 the same code is about 6x slower per call on a loaded i7: it is a statement about the budget's hardware dependence, not a
 different code path. The profile above (client 0.24 ms of Python per call, server about 0.2 ms) is why a 1 ms budget cannot be
 promised on every CPU.
 
 ### Tail latency: the 100+ ms maxima
 
-The max of durable cells is 100 to 250 ms in almost every run (e.g. 125 ms, 168 ms, 213 ms), against a raw fsync max of 9 to 35 ms.
-`bench/scripts/tail_experiment.py` (3 rounds x 8,000 invokes x 3 variants, `tail_experiment.txt`) separates the causes:
+The max of durable cells is 90 to 250 ms in most runs (e.g. 126, 168, 213 ms; run 4: 88 ms), against a raw fsync max of 9 to 58 ms.
+Raw per-sample data: `bench/results/*/samples/` (one gzip JSON per cell) and `2026-11-13-bmh-worker-profiles/tail_samples/` (each
+round and variant below, with the logged GC pauses).
+`bench/scripts/tail_experiment.py` (3 rounds x 8,000 invokes x 3 variants) separates the causes. It was run twice: `tail_experiment.txt`
+(first run, summaries only) and `tail_experiment_run2.txt` (second run, on a busier host, raw samples committed in `tail_samples/`):
 
 * **A one-time generation-2 garbage collection in the server accounts for the stall near invoke #700**: with a GC callback
   logging pauses, every server run logged one gen-2 collection of 42 to 81 ms that freed about 29,000 objects (and a 20 to 37 ms
@@ -359,18 +415,21 @@ The max of durable cells is 100 to 250 ms in almost every run (e.g. 125 ms, 168 
   the stall at index ~492 disappears from the first-slow-index list in all three rounds.
 * The background WAL checkpointer is **not** the cause: with it effectively disabled the 100+ ms maxima remain (110, 203, 121
   ms).
-* Rare 100 to 250 ms stalls remain in every variant including `gc.freeze` (max 123, 108 ms). They are not GC, not the
+* Rare 100 to 250 ms stalls remain in every variant including `gc.freeze` (max 123, 108 ms; second run 88, 89, 91 ms). They are not GC, not the
   checkpointer, and not seen in a 3,000-sample raw fsync probe (max 35 ms); most likely the shared filesystem or the machine.
   **Cause not established.**
 
-p99 is unaffected (3.5 to 5 ms in all variants); 6 to 12 samples in 8,000 exceed 10 ms.
+First run: p99 3.5 to 5 ms in all variants and 6 to 12 of 8,000 invokes over 10 ms. Second run (host busier, raw samples committed):
+as shipped p99 5.2 to 8.8 ms with 13 to 43 invokes over 10 ms, checkpointer off 5.9 to 8.7 ms with 8 to 35, `gc.freeze` 4.0 to 6.7 ms
+with 8 to 20; the index-492 stall is present in all three as-shipped rounds and absent in all three `gc.freeze` rounds. Max stays 62 to 150 ms
+in every variant, including `gc.freeze`.
 
 ## Proposals for 12b (ordered by expected gain)
 
-1. **Group commit for concurrent intents (Ruling R12).** Evidence: durable throughput is 470 to 600 ops/s at 1, 10 and 100
-   clients (one fsync per intent); process mode does 3,500 to 6,100 ops/s with the same code. A commit window shared by every intent
+1. **Group commit for concurrent intents (Ruling R12).** Evidence: durable throughput is 517 to 606 ops/s at 1, 10 and 100
+   clients (one fsync per intent); process mode does 3,600 to 6,400 ops/s with the same code. A commit window shared by every intent
    admitted while the previous fsync runs should lift durable throughput with 100 clients on distinct devices from about 550
-   toward the process-mode ceiling (4,000 to 6,000 ops/s: roughly 7x to 11x) and cut p50 at 100 clients from 167 to 179 ms to about
+   toward the process-mode ceiling (4,000 to 6,000 ops/s: roughly 7x to 11x) and cut p50 at 100 clients from 164 to 182 ms to about
    15 to 30 ms. A single sequential client is unchanged (still one fsync, 1.8 ms). Caveat: operations on the *same* device execute
    one at a time and each needs its own intent durable before dispatch, so the same-device case stays near 550 ops/s unless intents of
    queued operations are made durable while the previous one runs (a semantic change: such an operation would recover as
@@ -385,9 +444,9 @@ p99 is unaffected (3.5 to 5 ms in all variants); 6 to 12 samples in 8,000 exceed
    transactions and the `PRAGMA synchronous` toggles (`Store._set_sync`, 2.1% of CPU) into one barrier transaction by keeping a
    second connection permanently at `synchronous=FULL` for barrier commits. Expected: 0.05 to 0.1 ms per invoke (about 5% of the
    durable p50, 25 to 40% of the non-fsync part); combines naturally with item 1.
-5. **Decide the gateway's barrier.** The gateway adds 2.07 ms in `dispatch` mode because of the pending-forward barrier, and the
+5. **Decide the gateway's barrier.** The gateway adds 2.15 to 2.8 ms in `dispatch` mode because of the pending-forward barrier, and the
    Task 5 report says none is needed. If a durable device sits behind it the intent is already durable at the device; dropping
-   the gateway barrier (keyed retry already reconciles, per the Task 5 design note) would take 2.07 ms to about 0.35 ms per invoke.
+   the gateway barrier (keyed retry already reconciles, per the Task 5 design note) would take 2.15 ms to about 0.4 ms per invoke.
    If it must stay, group commit (item 1) applies to it as well. Needs a spec decision, not just code.
 6. **TypeScript server: fsync only the intent.** `writeOp` fsyncs every operation record. Syncing only the `dispatching` record
    (as Python does) removes about two fsyncs per invoke: expected TypeScript durable p50 from about 5.7 ms toward 3 ms in the
@@ -400,6 +459,7 @@ p99 is unaffected (3.5 to 5 ms in all variants); 6 to 12 samples in 8,000 exceed
 
 * **Gateway with a durable journal in front of a durable device server** end to end (expected about two fsyncs per invoke):
   the `overhead` scenario uses a non-durable upstream so as to isolate the gateway; the combined cell was not added.
+* **Raw samples of the imported gateway_scale cells** (the SDK benchmark reports summaries only and `sdk/` was not modified); the equivalent paging and invokes are sampled in `gateway_http`.
 * **1,000 real upstream connections.** The 1,000-upstream numbers use Task 5's in-process light upstreams on one event loop
   (the gateway's CPU and memory cost, not socket and scheduler cost of 1,000 peers).
 * **TCP with a token.** `DeviceServer` refuses TCP (no credential on TCP), so TCP is measured only at the bare JSON-RPC level
@@ -428,5 +488,7 @@ python bench/scripts/profile_invoke.py --out DIR [--pyspy]   # profiles
 python bench/scripts/tail_experiment.py                      # GC / checkpointer tail attribution
 ```
 
-Result directories: `2026-11-13-bmh-worker-amd-run1` (load 14 to 18, mcp scenario failed on a harness defect since fixed),
-`...-run2` (primary), `...-run3` (load 25 at the start), `2026-11-13-workstation-quick`, `2026-11-13-bmh-worker-profiles`.
+Result directories (all `bench/results/2026-11-13-...`): `bmh-worker-amd-run1` (load 14 to 18, mcp scenario failed on a harness defect since fixed),
+`-run2`, `-run3` (load 25 at the start), `-run4` (published tables; raw samples in `samples/`), `-run4-openloop-rerun` (open-loop cells
+after the harness fix), `-run4-compact-rerun` (compact with raw samples), `workstation-quick`, `bmh-worker-profiles` (profiles and the tail
+experiments with raw samples). `python bench/aggregate.py <run dirs>` recomputes the B1/B2 aggregate verdict.

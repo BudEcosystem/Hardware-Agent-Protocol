@@ -52,8 +52,9 @@ async def cell(ctx: Context, listeners: int, events: int) -> dict:
                         await asyncio.sleep(0)
                 elapsed = time.perf_counter() - begin
             lost = sum(listeners - len(arrived.get(s, ())) for s in range(events))
-            row["delivery"] = stats_ms(latencies, elapsed)
-            row["slowest_listener_ms"] = stats_ms([(max(arrived[s]) - sent[s]) * 1000 for s in arrived], elapsed)
+            row["delivery"] = stats_ms(latencies, elapsed, label=f"subscription__{listeners}_delivery")
+            row["slowest_listener_ms"] = stats_ms([(max(arrived[s]) - sent[s]) * 1000 for s in arrived], elapsed,
+                                                   label=f"subscription__{listeners}_slowest")
             row["deliveries_lost"] = lost
         finally:
             for t in tasks:

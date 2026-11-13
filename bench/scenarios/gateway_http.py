@@ -75,7 +75,7 @@ async def run(ctx: Context) -> dict:
                         row[f"listed_correctly_limit_{limit}"] = (len(seen) == out["devices"] and seen == sorted(seen)
                                                                   and len(set(seen)) == len(seen))
                         samples = await page(client, limit, 3)
-                        row[f"devices_list_limit_{limit}"] = stats_ms(samples, sum(samples) / 1000)
+                        row[f"devices_list_limit_{limit}"] = stats_ms(samples, sum(samples) / 1000, label=f"gateway_http__{name}_list{limit}")
                     for wait_ms in (0, 1000):
                         lat: list[float] = []
                         for i in range(ctx.n(100, 500) + 50):
@@ -84,7 +84,7 @@ async def run(ctx: Context) -> dict:
                                                         wait_ms=wait_ms or None)
                             if i >= 50:
                                 lat.append((time.perf_counter() - started) * 1000)
-                        row[f"invoke_waitMs_{wait_ms}"] = stats_ms(lat, sum(lat) / 1000)
+                        row[f"invoke_waitMs_{wait_ms}"] = stats_ms(lat, sum(lat) / 1000, label=f"gateway_http__{name}_invoke{wait_ms}")
                 out[name] = row
         finally:
             for client in clients.values():

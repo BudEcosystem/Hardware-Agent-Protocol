@@ -18,7 +18,9 @@ from __future__ import annotations
 
 import argparse
 import asyncio
+import gzip
 import importlib
+import json
 import os
 import shutil
 import socket
@@ -32,9 +34,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "sdk" / "python" / "src"))  # always the checked-out SDK
 
 import budgets  # noqa: E402
+import common  # noqa: E402
 from common import Context, dump, environment  # noqa: E402
 
-ORDER = ["fsync", "transports", "invoke", "concurrency", "gateway", "gateway_http", "subscription", "recovery", "compact",
+ORDER = ["fsync", "transports", "invoke", "concurrency", "openloop", "gateway", "gateway_http", "subscription", "recovery", "compact",
          "mcp_compare", "ts_vs_py"]
 
 
@@ -99,6 +102,12 @@ async def main() -> int:
             entry["load_around"] = {"before": load_before, "after": os.getloadavg()}
             results[name] = entry
             dump(out_dir / f"{name}.json", entry)
+            samples_dir = out_dir / "samples"
+            for label, values in common.SAMPLES.items():
+                samples_dir.mkdir(exist_ok=True)
+                with gzip.open(samples_dir / f"{label.replace('/', '_')}.json.gz", "wt") as handle:
+                    json.dump({"unit": "ms", "order": "arrival", "samples": values}, handle)
+            common.SAMPLES.clear()
             print(f"   {name}: {'ERROR' if 'error' in entry else 'ok'} in {entry['seconds']} s, load {load_before[0]:.1f} -> {os.getloadavg()[0]:.1f}",
                   flush=True)
     records = budgets.evaluate(results, ctx.extra.get("fsync_p50_ms"), ctx.extra.get("fsync_p99_ms"))

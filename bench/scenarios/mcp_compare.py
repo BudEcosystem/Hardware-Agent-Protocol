@@ -42,7 +42,7 @@ async def run(ctx: Context) -> dict:
 
             row: dict = {}
             with timed(row):
-                row.update(await invoke_stats(native, n, 1, warmup=ctx.n(30, 100)))
+                row.update(await invoke_stats(native, n, 1, warmup=ctx.n(30, 100), label="mcp__native"))
             out["native"] = row
         env = {**os.environ, "PYTHONPATH": f"{SDK_PY / 'src'}{os.pathsep}{os.environ.get('PYTHONPATH', '')}"}
         params = StdioServerParameters(command=sys.executable, args=["-m", "bhms", "mcp", target], env=env)
@@ -61,7 +61,7 @@ async def run(ctx: Context) -> dict:
             await bridged(-10**6)  # first call fetches and caches the description
             row = {}
             with timed(row):
-                row.update(await invoke_stats(bridged, n, 1, warmup=ctx.n(30, 100)))
+                row.update(await invoke_stats(bridged, n, 1, warmup=ctx.n(30, 100), label="mcp__bridge"))
             row["result_text_bytes"] = sizes[-1]
             out["mcp_bridge"] = row
             started = time.perf_counter()

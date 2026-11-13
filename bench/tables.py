@@ -63,6 +63,16 @@ def main() -> None:
         print("\n#### Concurrent clients (`waitMs=1000`, unix)\n\n" + HEAD)
         for k, v in c["result"].items():
             print(lat(k, v))
+    ol = load(d, "openloop")
+    if ol and "result" in ol:
+        print("\n#### Open-loop latency (Poisson arrivals at a fixed offered rate; latency from the scheduled arrival)\n")
+        print("| case | offered/s | achieved/s | n (failed) | p50 ms | p95 ms | p99 ms | max ms | load1 |\n|---|---:|---:|---:|---:|---:|---:|---:|---|")
+        for mode, v in ol["result"].items():
+            for k, r in v.items():
+                if isinstance(r, dict):
+                    la = r["load"]
+                    print(f"| {mode} {k} (capacity {v['measured_capacity_per_s']}/s) | {r['offered_per_s']} | {r['achieved_per_s']} | {r['n']} ({r['failures']}) | {r['p50_ms']:.2f} | "
+                          f"{r['p95_ms']:.2f} | {r['p99_ms']:.2f} | {r['max_ms']:.2f} | {la['before']['load1']:.1f}->{la['after']['load1']:.1f} |")
     g = load(d, "gateway")
     if g and "result" in g:
         r = g["result"]

@@ -55,7 +55,8 @@ async def case(ctx: Context, sdk: str, memory: bool, n: int) -> dict:
 
                 row: dict = {}
                 with timed(row):
-                    row.update(await invoke_stats(call, n, 1, warmup=ctx.n(30, 200)))
+                    row.update(await invoke_stats(call, n, 1, warmup=ctx.n(30, 200),
+                                           label=f"ts_vs_py__{sdk}_{'memory' if memory else 'durable'}"))
                 return row
             finally:
                 await client.close()

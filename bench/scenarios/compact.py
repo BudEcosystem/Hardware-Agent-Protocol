@@ -86,7 +86,8 @@ def measure(cmd: list[str], n: int, baud: int | None, timeout: float) -> dict:
                 read_sizes.update((len(sent), len(wire)))
         finally:
             target.close()
-    out = {"invoke": summary(invoke_ms), "read": summary(read_ms), "invoke_request_bytes": sorted(invoke_sizes),
+    out = {"samples_ms": {"invoke": [round(x, 4) for x in invoke_ms], "read": [round(x, 4) for x in read_ms]},
+           "invoke": summary(invoke_ms), "read": summary(read_ms), "invoke_request_bytes": sorted(invoke_sizes),
            "invoke_reply_bytes": sorted(reply_sizes), "read_frame_bytes": sorted(read_sizes),
            "hello_bytes": len(hello), "typical_invoke_frame_bytes": max(invoke_sizes | reply_sizes),
            "frame_budget_bytes": INVOKE_FRAME_BUDGET_BYTES}
@@ -113,8 +114,14 @@ async def run(ctx) -> dict:  # noqa: ANN001 - bench.common.Context
     exe = build_native(ctx.state_root / "compact-build")
     n = ctx.n(500, 3000)
     out: dict = {"native": measure([str(exe), "--epoch", str(ctx.state_root / "compact-build" / "epoch.bin"), "--analog", "341"], n, None, 10.0)}
+    from common import record
+
+    for op, values in out["native"].pop("samples_ms").items():
+        record(f"compact__native_{op}", values)
     if ctx.simavr_cmd:  # path to a compact.py JSON produced inside the AVR container (see bench/README.md)
         out["simavr"] = json.loads(pathlib.Path(ctx.simavr_cmd).read_text())
+        for op, values in out["simavr"].pop("samples_ms", {}).items():
+            record(f"compact__simavr_{op}", values)
     return out
 
 

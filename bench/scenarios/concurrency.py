@@ -50,7 +50,8 @@ async def cell(ctx: Context, durability: str, clients: int, spread: bool, total:
                 begin = time.perf_counter()
                 await asyncio.gather(*(worker(j) for j in range(clients)))
                 elapsed = time.perf_counter() - begin
-            row.update(stats_ms(samples, elapsed, failures))
+            shape = "spread" if spread else "same"
+            row.update(stats_ms(samples, elapsed, failures, f"concurrency__{durability}_{shape}_{clients}"))
             row["clients"] = clients
             return row
         finally:

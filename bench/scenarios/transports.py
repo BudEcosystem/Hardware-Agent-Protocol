@@ -36,7 +36,7 @@ async def run(ctx: Context) -> dict:
                     row: dict = {}
                     with timed(row):
                         samples, elapsed, failures = await measure(ping, n, 1)
-                        row["sequential"] = stats_ms(samples, elapsed, failures)
+                        row["sequential"] = stats_ms(samples, elapsed, failures, f"transports__{name}")
                         total = n * 10
                         started = time.perf_counter()
                         _, _, failures = await measure(ping, total, window)
