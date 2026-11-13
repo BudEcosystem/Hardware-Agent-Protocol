@@ -6,7 +6,18 @@ ORDER = [
     "INVALID_ARGUMENT", "OUT_OF_RANGE", "UNIT_MISMATCH", "UNKNOWN_DEVICE", "UNKNOWN_ACTION",
     "UNSUPPORTED", "LEASE_REQUIRED", "LEASE_CONFLICT", "LEASE_EXPIRED", "FENCED", "KEY_CONFLICT",
     "STALE", "DEVICE_UNAVAILABLE", "UNAUTHORIZED", "BUSY", "DEADLINE_EXCEEDED", "INTERNAL",
+    "UNSUPPORTED_VERSION", "UNVERIFIED", "DEVICE_FAULT",
 ]
+
+# Literal numbers are pinned: they are wire contract (spec/bhms/10-errors.md).
+NUMBERS = {
+    "INVALID_ARGUMENT": -32602, "OUT_OF_RANGE": -32602, "UNIT_MISMATCH": -32602,
+    "UNKNOWN_DEVICE": -32001, "UNKNOWN_ACTION": -32002, "UNSUPPORTED": -32003,
+    "LEASE_REQUIRED": -32004, "LEASE_CONFLICT": -32005, "LEASE_EXPIRED": -32006, "FENCED": -32007,
+    "KEY_CONFLICT": -32008, "STALE": -32009, "DEVICE_UNAVAILABLE": -32010, "UNAUTHORIZED": -32011,
+    "BUSY": -32012, "DEADLINE_EXCEEDED": -32013, "INTERNAL": -32014, "UNSUPPORTED_VERSION": -32015,
+    "UNVERIFIED": -32016, "DEVICE_FAULT": -32017,
+}
 
 
 def test_table_complete_and_ordered():
@@ -16,8 +27,9 @@ def test_table_complete_and_ordered():
 def test_numeric_codes():
     for c in ("INVALID_ARGUMENT", "OUT_OF_RANGE", "UNIT_MISMATCH"):
         assert CODES[c].number == -32602
+    assert {c: s.number for c, s in CODES.items()} == NUMBERS
     rest = [CODES[c].number for c in ORDER[3:]]
-    assert rest == list(range(-32001, -32001 - 14, -1))
+    assert rest == list(range(-32001, -32001 - 17, -1))
     assert len(set(rest)) == len(rest)
     assert all(-32020 <= n <= -32001 for n in rest)
 
@@ -28,6 +40,9 @@ def test_default_retry_values_valid_and_sensible():
     assert BhmsError("BUSY", "x").retry == "backoff"
     assert BhmsError("INTERNAL", "x").retry == "never"
     assert BhmsError("STALE", "x").retry == "after-reconcile"
+    assert BhmsError("DEVICE_FAULT", "x").retry == "after-reconcile"
+    assert BhmsError("UNVERIFIED", "x").retry == "after-reconcile"
+    assert BhmsError("UNSUPPORTED_VERSION", "x").retry == "never"
 
 
 @pytest.mark.parametrize("code", ORDER)
@@ -43,6 +58,13 @@ def test_round_trip_every_code(code):
     assert back.to_jsonrpc() == wire
     assert (back.code, back.field, back.bound, back.may_have_acted, back.retry, back.hint) == (
         code, "params.x", {"max": 5}, True, "same-key", "do it")
+
+
+def test_operation_id_round_trip():
+    e = BhmsError("KEY_CONFLICT", "key reused", field="operationKey", operation_id="op-1")
+    wire = e.to_jsonrpc()
+    assert wire["data"]["operationId"] == "op-1"
+    assert from_jsonrpc(wire).operation_id == "op-1"
 
 
 def test_optional_fields_omitted():

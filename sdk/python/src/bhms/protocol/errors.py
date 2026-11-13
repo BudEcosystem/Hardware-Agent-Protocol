@@ -1,6 +1,7 @@
 """BHMS error model and the JSON-RPC code table.
 
-Wire form: ``{code, message, data: {bhmsCode, field?, bound?, mayHaveActed, retry, hint}}``.
+Wire form: ``{code, message, data: {bhmsCode, field?, bound?, operationId?, mayHaveActed, retry, hint}}``.
+Normative source: ``spec/bhms/10-errors.md``; the schema's ``x-bhms-errors`` map mirrors this table.
 
 Code table (JSON-RPC number, default ``retry``):
 
@@ -24,6 +25,9 @@ UNAUTHORIZED          -32011  never            principal lacks the scope
 BUSY                  -32012  backoff          device or server saturated
 DEADLINE_EXCEEDED     -32013  after-reconcile  outcome unknown; reconcile first
 INTERNAL              -32014  never            server bug
+UNSUPPORTED_VERSION   -32015  never            protocol version not served; bound lists versions
+UNVERIFIED            -32016  after-reconcile  required measured evidence absent or contradicts
+DEVICE_FAULT          -32017  after-reconcile  device reported a fault while acting
 ====================  ======  ===============  =====================================
 
 ``retry`` semantics: ``never`` (do not retry), ``same-key`` (retry with the same
@@ -54,6 +58,8 @@ def _build() -> dict[str, CodeSpec]:
         ("FENCED", "never"), ("KEY_CONFLICT", "never"), ("STALE", "after-reconcile"),
         ("DEVICE_UNAVAILABLE", "backoff"), ("UNAUTHORIZED", "never"), ("BUSY", "backoff"),
         ("DEADLINE_EXCEEDED", "after-reconcile"), ("INTERNAL", "never"),
+        ("UNSUPPORTED_VERSION", "never"), ("UNVERIFIED", "after-reconcile"),
+        ("DEVICE_FAULT", "after-reconcile"),
     ]
     out: dict[str, CodeSpec] = {}
     next_number = -32001
@@ -73,7 +79,8 @@ class BhmsError(Exception):
     """A protocol error. Names the field, the bound and a fix whenever known."""
 
     def __init__(self, code: str, message: str, *, field: str | None = None, bound: Any = None,
-                 may_have_acted: bool = False, retry: str | None = None, hint: str = "") -> None:
+                 operation_id: str | None = None, may_have_acted: bool = False,
+                 retry: str | None = None, hint: str = "") -> None:
         if code not in CODES:
             raise ValueError(f"unknown BHMS error code {code!r}; known codes: {', '.join(CODES)}")
         if retry is None:
@@ -85,6 +92,7 @@ class BhmsError(Exception):
         self.message = message
         self.field = field
         self.bound = bound
+        self.operation_id = operation_id
         self.may_have_acted = may_have_acted
         self.retry = retry
         self.hint = hint
@@ -95,6 +103,8 @@ class BhmsError(Exception):
             data["field"] = self.field
         if self.bound is not None:
             data["bound"] = self.bound
+        if self.operation_id is not None:
+            data["operationId"] = self.operation_id
         data.update(mayHaveActed=self.may_have_acted, retry=self.retry, hint=self.hint)
         return {"code": CODES[self.code].number, "message": self.message, "data": data}
 
@@ -111,5 +121,6 @@ def from_jsonrpc(err: dict[str, Any]) -> BhmsError:
     if number != CODES[code].number:
         raise ValueError(f"code {code} must use JSON-RPC number {CODES[code].number}, got {number}")
     return BhmsError(code, str(err.get("message", "")), field=data.get("field"),
-                     bound=data.get("bound"), may_have_acted=bool(data.get("mayHaveActed", False)),
+                     bound=data.get("bound"), operation_id=data.get("operationId"),
+                     may_have_acted=bool(data.get("mayHaveActed", False)),
                      retry=data.get("retry"), hint=str(data.get("hint", "")))

@@ -1,0 +1,276 @@
+# 6. Operations
+
+An **Operation** is the durable record of one physical intent: an action
+invocation or a program run. It is created at admission, never deleted within
+its retention window, and changes only by appending history.
+
+## 6.1 `actions/invoke`
+
+Params:
+
+| Member | Type | Required | Meaning |
+|---|---|---|---|
+| `deviceId` | string | yes | |
+| `action` | string | yes | Action name |
+| `arguments` | object | yes | Valid against the action's `input` (`{}` when it takes none) |
+| `operationKey` | string, 1–128 chars of `[A-Za-z0-9._:~-]` | no | Idempotency key (§6.4) |
+| `leaseId` | string | when `requiresLease` | A current lease covering the action's `resources` |
+| `deadlineMs` | integer ≥ 1 | no | Latest completion, relative to acceptance |
+| `waitMs` | integer ≥ 0 | no (default 0) | Hold the response until the operation settles or this elapses |
+| `require` | `{effect: "verified"}` | no | Demand measured verification of the effect |
+| `descriptionDigest` | string | no | The description the client planned against |
+
+Result: `{operation, replayed}` — `replayed` is `true` when an existing operation
+was returned for the same key.
+
+## 6.2 The Operation object
+
+| Member | Type | Required | Meaning |
+|---|---|---|---|
+| `operationId` | string | yes | Server-minted |
+| `operationKey` | string | yes | The client's key, or a server-generated one |
+| `keyOrigin` | `client` \| `server` \| `derived` | yes | `server`: generated because none was sent — **not retry-safe**; `derived`: a program step's key |
+| `kind` | `action` \| `program` | yes | |
+| `deviceId`, `action` | string | for `action` | |
+| `programDigest` | string | for `program` | |
+| `parentOperationId` | string | no | The program operation that created this step operation |
+| `arguments` | object | yes | Arguments as admitted (defaults applied, quantities normalised) |
+| `requestDigest` | string | yes | Digest of the intent (§6.4) |
+| `state` | `OperationState` | yes | §6.3 |
+| `cancel` | `{state, reason?, requestedAt?}` | yes | §6.6 |
+| `effect` | `none` \| `verified` \| `unverified` \| `unknown` | yes | What is known about the physical effect |
+| `evidence` | `{kind, observations?}` | no | Evidence behind `effect` (`kind`: `measured` \| `reported` \| `none`) |
+| `require` | `{effect}` | no | As requested |
+| `leaseId`, `fence` | string, integer | no | Lease and fence the operation was admitted under |
+| `deadlineAt` | time | no | Absolute deadline |
+| `result` | any | no | Present only when `completed`; valid against the action's `output` |
+| `error` | `OperationError` | no | Present when `failed`, `rejected` or `unknown` |
+| `progress` | `{stepsCompleted, stepsTotal}` | no | Programs |
+| `createdAt`, `updatedAt` | time | yes | |
+| `history` | `HistoryEntry[]` | no | Returned by `operations/get` and `operations/wait`; omitted in lists and notifications |
+
+`OperationError` is the error data of §10 plus `message`.
+`HistoryEntry = {seq, at, kind, state?, cancel?, effect?, detail?, stepIndex?, childOperationId?}`,
+`kind` ∈ `state`, `cancel`, `effect`, `evidence`, `reconciliation`, `correction`,
+`step`, `stop`, `lease`.
+
+## 6.3 States
+
+`state` ∈ `accepted`, `dispatching`, `running`, `completed`, `failed`,
+`canceled`, `rejected`, `unknown`.
+
+| State | Means | Allowed successors | Evidence required for the transition |
+|---|---|---|---|
+| `accepted` | Durably admitted; nothing sent to the device | `dispatching`, `rejected`, `canceled` | `dispatching`: durable dispatch record. `rejected`/`canceled`: proof no dispatch occurred |
+| `dispatching` | The command may have reached the device | `running`, `completed`, `failed`, `canceled`, `unknown` | Device or adapter evidence; a missing reply means `unknown` |
+| `running` | The device reported that it is executing | `completed`, `failed`, `canceled`, `unknown` | Completion evidence, a reported fault, an observed termination, or insufficient evidence |
+| `unknown` | The device may or may not have acted | `running`, `completed`, `failed`, `canceled` | Only a `reconciliation` history entry carrying new evidence |
+| `completed` | The action finished; `result` is set | none | |
+| `failed` | Known failure; partial effects recorded | none | |
+| `canceled` | A termination condition was observed after cancellation or before dispatch | none | |
+| `rejected` | Refused after admission and before dispatch; no effect | none | |
+
+`completed`, `failed`, `canceled` and `rejected` are **terminal**. Terminal
+states and `unknown` together are **settled**: a client waiting for an outcome
+stops waiting when an operation is settled.
+
+**BHMS-OPS-001** A server MUST change `state` only along the transitions in the
+table, and MUST append a history entry for every change of `state`,
+`cancel.state` or `effect`.
+
+**BHMS-OPS-002** A terminal state MUST NOT change. A later correction (for example
+evidence that contradicts a `completed` result) MUST be appended as a
+`correction` history entry without altering `state`, `result` or `effect`.
+
+**BHMS-OPS-003** A server MUST record `dispatching` durably *before* the command
+can reach the device. If it cannot write the record, it MUST NOT dispatch, and
+the operation becomes `rejected` (error `INTERNAL`, `mayHaveActed: false`) or
+remains `accepted`.
+
+**BHMS-OPS-004** Once an operation has reached `dispatching`, a transport error,
+timeout, lost reply or process crash MUST result in `unknown` (or a state proven
+by device evidence), never `failed` with `mayHaveActed: false` and never
+`completed` without completion evidence.
+
+**BHMS-OPS-005** An operation may leave `unknown` only through a `reconciliation`
+history entry that names its evidence (a device query, a compact replay-ring
+answer, a measurement). The prior `unknown` entry MUST remain in history.
+
+**BHMS-OPS-006** `rejected` and `canceled`-from-`accepted` operations MUST have
+`effect: "none"`. A `completed` operation MUST have `effect` `verified` only with
+`measured` evidence; with `reported` evidence it is `unverified`; for an action
+whose `effect` class is `none` it is `none`.
+
+**BHMS-OPS-007** When `require.effect` is `"verified"`, the server MUST refuse at
+admission with `UNSUPPORTED` if the action's `completionEvidence` is not
+`measured`, and MUST NOT mark the operation `completed` unless the effect is
+verified; otherwise it ends `failed` with error `UNVERIFIED` and
+`mayHaveActed: true`.
+
+**BHMS-OPS-008** `result` MUST be present exactly when `state` is `completed` and
+MUST validate against the action's `output` schema.
+
+**BHMS-OPS-009** `failed`, `rejected` and `unknown` operations MUST carry `error`.
+`error.mayHaveActed` MUST be `true` whenever the operation reached
+`dispatching`, unless device evidence proves no effect.
+
+## 6.4 Idempotency
+
+The **intent** of a request is the object
+`{method, deviceId, action, arguments, deadlineMs?, require?, descriptionDigest?}`
+for `actions/invoke` and `{method, digest, arguments, deadlineMs?}` for
+`programs/run` (where `digest` is the program digest, also for inline programs),
+and where `arguments` are as sent with exact-unit quantity objects replaced by their
+values and absent members omitted. `requestDigest` is the BHMS digest of the
+intent. `leaseId`, `waitMs`, `operationKey` and `_meta` are not part of it.
+
+**BHMS-OPS-030** For each principal, a server MUST map an `operationKey` to at most
+one operation. A request whose key exists with the same `requestDigest` MUST
+return the existing operation with `replayed: true` and MUST NOT dispatch
+anything, whatever the operation's state.
+
+**BHMS-OPS-031** A request whose key exists with a different `requestDigest` MUST
+be refused with `KEY_CONFLICT`, carrying `operationId` of the existing operation,
+and MUST NOT create or modify any operation.
+
+**BHMS-OPS-032** Concurrent requests with the same principal and key MUST produce
+exactly one operation; all of them return it.
+
+**BHMS-OPS-033** A server MUST look up the key after authentication and
+authorization and before any other admission check, so that a retry of an
+admitted request succeeds even if its lease has since expired.
+
+**BHMS-OPS-034** A server with `capabilities.operations.durable: true` MUST retain
+key mappings and operation records for at least `keyRetentionS` seconds
+(≥ 86 400) across restarts, and MUST keep the same `epoch` while it does. A
+server that loses that state MUST present a new `epoch`. A server with
+`durable: false` MUST present a new `epoch` on every start, and clients MUST
+treat its earlier operations as `unknown`.
+
+**BHMS-OPS-035** When `operationKey` is absent, the server MUST generate a unique
+key, set `keyOrigin: "server"`, and treat a re-sent request as a new operation.
+Clients that may retry MUST send their own key.
+
+**BHMS-OPS-036** A client MUST NOT reuse an `operationKey` for a different intent,
+and MUST NOT reuse any key after `keyRetentionS` has passed since its first use.
+
+## 6.5 Admission
+
+Admission order for `actions/invoke` (and, per step, for programs):
+
+1. Validate `_meta` and the params shape (`INVALID_ARGUMENT`).
+2. Resolve the device: unknown or unreadable → `UNKNOWN_DEVICE`; unknown action →
+   `UNKNOWN_ACTION`.
+3. Authorize (`UNAUTHORIZED`) — §7.4.
+4. Key lookup (§6.4).
+5. Pin check: `descriptionDigest` differs from current → `STALE`.
+6. Validate arguments against `input` and the principal's effective envelope
+   (`INVALID_ARGUMENT`, `OUT_OF_RANGE`, `UNIT_MISMATCH`).
+7. `require` check (`UNSUPPORTED`).
+8. Lease check: `LEASE_REQUIRED`, `LEASE_EXPIRED`, `LEASE_CONFLICT`, `FENCED`.
+9. State check: device reachable (`DEVICE_UNAVAILABLE`), preconditions and
+   freshness (`STALE`), unresolved `unknown` operations on the same resources
+   (`STALE`), capacity (`BUSY`).
+10. Durably record `accepted`; return or wait.
+
+**BHMS-OPS-040** Steps 1–9 MUST complete before an operation is created; a refusal
+in them MUST be a JSON-RPC error with `mayHaveActed: false` and MUST NOT create an
+operation.
+
+**BHMS-OPS-041** Checks that depend on time (lease validity and fence, deadline,
+device reachability, preconditions) MUST be repeated immediately before dispatch.
+A failure at that point makes the operation `rejected` with the corresponding
+error and `effect: "none"`.
+
+**BHMS-OPS-042** While an operation whose action has `effect` other than `none`
+is `unknown`, the server MUST refuse new operations that use any of its resources
+with `STALE` naming that `operationId`, until the operation is reconciled, a
+`stop` of the device returns `outcome: "confirmed"`, or the device reports a new
+epoch (a reset that purged its work).
+
+## 6.6 Cancellation
+
+`operations/cancel {operationId, reason?}` → `{operation}`.
+`cancel.state` ∈ `none`, `requested`, `acknowledged`, `refused`, `confirmed`.
+
+**BHMS-OPS-050** Cancelling an `accepted` operation MUST prevent dispatch and make
+it `canceled` with `cancel.state: "confirmed"` and `effect: "none"`.
+
+**BHMS-OPS-051** Cancelling an operation whose action declares
+`cancel: "unsupported"` MUST set `cancel.state: "refused"` (not an error) and
+MUST NOT change `state`.
+
+**BHMS-OPS-052** `acknowledged` MUST mean only that the device or adapter received
+the request. `state: "canceled"` with `cancel.state: "confirmed"` MUST be set
+only when a termination condition was observed. Completion or failure MAY win the
+race; a late acknowledgement MUST NOT overwrite a terminal state.
+
+**BHMS-OPS-053** Cancelling a settled-terminal operation MUST return it unchanged.
+Cancelling an `unknown` operation MUST record the request and forward it to the
+device when possible.
+
+**BHMS-OPS-054** Only the principal that created an operation, or one with the
+`admin` scope, MAY cancel it; others MUST receive `UNAUTHORIZED`. Cancellation
+MUST NOT require a lease.
+
+**BHMS-OPS-055** `canceled` MUST NOT be presented as "safe" or "at rest". A client
+that needs the device halted MUST use `stop`.
+
+## 6.7 Reading and waiting
+
+`operations/get {operationId}` and `operations/wait {operationId, timeoutMs}`
+return `{operation}` with `history`. `operations/list {deviceId?, state?,
+parentOperationId?, cursor?, limit?}` returns `{operations, nextCursor?}` without
+history.
+
+**BHMS-OPS-060** `operations/wait` MUST return as soon as the operation is
+settled, or when `timeoutMs` elapses, whichever is first. It MUST NOT return an
+error because the timeout elapsed. `timeoutMs` above `limits.maxWaitMs` MUST be
+refused with `OUT_OF_RANGE`.
+
+**BHMS-OPS-061** `waitMs` on `actions/invoke` and `programs/run` MUST behave like
+`operations/wait` after admission; a server MUST NOT fail an admitted operation
+because the response wait elapsed.
+
+**BHMS-OPS-062** An unknown or invisible `operationId` MUST be answered with
+`INVALID_ARGUMENT`, `field: "operationId"`. Operations are visible to the
+principal that created them and to principals with `admin`.
+
+**BHMS-OPS-063** An operation that a client has seen MUST remain retrievable with
+`operations/get` for at least `keyRetentionS` seconds after it settled.
+
+## 6.8 Deadlines and duration bounds
+
+**BHMS-OPS-070** If `deadlineAt` passes before dispatch, the operation MUST become
+`rejected` with `DEADLINE_EXCEEDED` and `mayHaveActed: false`.
+
+**BHMS-OPS-071** If `deadlineAt` or the action's `maxDurationMs` passes while the
+operation is `dispatching` or `running`, the server MUST request cancellation when
+the action supports it and MUST end the operation `failed` with
+`DEADLINE_EXCEEDED` and `mayHaveActed: true`, or `unknown` when termination is not
+observed.
+
+## 6.9 Crash windows
+
+| Crash point | Outcome after restart |
+|---|---|
+| Before `accepted` is durable | No operation; a retry with the key creates it |
+| After `accepted`, before `dispatching` | Rechecked per BHMS-OPS-041, then dispatched or `rejected` |
+| After `dispatching`, before any device reply | `unknown`, then reconciled when the device can be queried |
+| After the device finished, before the result is durable | `unknown`, then reconciled |
+| After the result is durable, before the reply | The stored operation is returned to a retry with the key |
+
+**BHMS-OPS-080** On restart a server MUST move every operation found in
+`dispatching` or `running` to `unknown` (with `mayHaveActed: true`) before
+answering any request that could touch the same resources, and SHOULD then
+attempt reconciliation.
+
+**BHMS-OPS-081** A server MUST NOT re-send to a device a command whose operation
+was `dispatching` or later, unless the device's own replay protection guarantees
+it will not act twice (for example the BHMS-Compact replay ring, §11.6).
+
+## 6.10 Operation notifications
+
+**BHMS-OPS-090** A server MUST deliver `notifications/operation` to matching
+subscriptions for every change of `state`, `cancel.state` or `effect`, with the
+operation (without `history`) as of that change, in change order per operation.
