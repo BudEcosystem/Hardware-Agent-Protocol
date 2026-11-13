@@ -1,0 +1,63 @@
+Modbus Specifications - Modbus Organization (https://www.modbus.org/modbus-specifications)
+citeturn42view0 [wordlim: 200] Crawled: today; Content type: text/html; Source: open({"ref_id":"https://www.modbus.org/modbus-specifications","lineno":null}); Total lines: 61
+L0: 【0†Skip to content】
+L1: 
+L2: # Specifications and Implementation Guides
+L3: 
+L4: ###### 【1†Modbus Protocol Specification 】
+L5: 
+L6: This document is the Modbus application protocol V1.1b3. It describes the function codes used within the framework of Modbus transactions.
+L7: ###### 【2†Modbus Security Protocol】
+L8: 
+L9: The Modbus Security protocol provides protection through the blending of Transport Layer Security (TLS) with the traditional Modbus protocol. TLS encapsulates Modbus packets to provide authentication and message-integrity protection. The new protocol also leverages X.509v3 digital certificates for authentication of the Server and Client. The new Modbus Security protocol uses port 802.
+L10: ###### 【3†Modbus Over Serial Line FOR LEGACY APPLICATIONS ONLY】
+L11: 
+L12: This is the obsolete Modbus specification from 1996. Use only to address legacy issues. Please do not use it for new implementations.
+L13: 
+L14: ###### 【4†Modbus Serial Line Protocol and Implementation Guide V1.02 】
+L15: 
+L16: Please use this for new Modbus implementations.
+L17: ###### 【5†Modbus TCP/IP】
+L18: The Modbus Messaging Implementation Guide version 1.0b was provided by Schneider Automation. The objective of this document is to provide reference information for software developers implementing the Modbus messaging service. This document gives an accurate and comprehensive description of a Modbus messaging service implementation. Its purpose is to facilitate interoperability between devices using the Modbus messaging service. The encoding for all Modbus function codes is not described in this document.
+L19: For this information please refer to the Modbus application protocol specification.
+L20:  The Modbus Messaging Implementation Guide contains three parts:
+L21: 
+L22:   * Overview of Modbus over TCP/IP
+L23:   * Functional description of a Modbus client, server and gateway implementation
+L24:   * Modbus implementation example that proposes the object model
+L25:   * Object Messaging Specification for the Modbus TCP Protocol
+L26: ###### 【6†Object Messaging Specification for the Modbus TCP Protocol】
+L27: 
+L28: An object messaging protocol for use with Modbus TCP, used as a component in the SEMI sensor bus Network Communication Standard (NCS).
+L29: 
+L30: ## Contact
+L31: 
+L32: 85 Swanson Road
+L33: Suite 135
+L34: Boxborough, Massachusetts 01719
+L35: United States
+L36: 
+L37: 978.250.9847
+L38: 
+L39: 【7†Association Management Software†www.noviams.com】
+L40: 
+L41: Copyright © 2026 - Modbus Organization. 【8†Legal】
+L42: 
+L43: ### Membership & Account Access
+L44: #### Need To Create An Account?
+L45: 
+L46: If you are already a member, please set up and log in to your member account by clicking "Create an Account" below. This option is also for current individual members and staff of company members who need to login, but do not have a user account set up.
+L47: 
+L48: Once logged in, you can:
+L49: 
+L50:   * Update Your Profile
+L51:   * Register for Events
+L52:   * View & Pay Invoices
+L53: 
+L54: 【9†Create an Account】
+L55: #### Applying for Membership?
+L56: Transform your automation capabilities by joining the Modbus Organization, the steward of the world's most widely adopted industrial communication protocol. Whether you're implementing new automation systems or optimizing existing infrastructure, membership provides the technical support, collaborative opportunities, and credibility boost your organization needs to stay competitive in today's interconnected industrial landscape.
+L57: Join thousands of companies worldwide who rely on Modbus Organization membership to accelerate their automation success—because in industrial communication, standards matter, and leadership makes the difference.
+L58: 
+L59: 
+L60: 【10†View Membership Information】

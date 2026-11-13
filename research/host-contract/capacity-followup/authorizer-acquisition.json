@@ -1,0 +1,68 @@
+[
+  {
+    "id": "authorizer",
+    "url": "https://sqlite.org/c3ref/set_authorizer.html",
+    "finalUrl": "https://sqlite.org/c3ref/set_authorizer.html",
+    "retrievedAt": "2026-11-08T01:34:37.683649+00:00",
+    "status": 200,
+    "headers": {
+      "Connection": "close",
+      "Date": "Sun, 08 Nov 2026 01:34:38 GMT",
+      "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+      "Cache-Control": "max-age=120",
+      "ETag": "\"m6ae24ec4s29e8\"",
+      "Content-type": "text/html; charset=utf-8",
+      "Content-length": "10728"
+    },
+    "rawPath": "raw/authorizer.html",
+    "rawBytes": 10728,
+    "rawSha256": "f4b43d68f5d827b768cd3a1cad8cfd2aa913e073be9d2498ec80b53cd8e32c02",
+    "textPath": "text/authorizer.txt",
+    "textBytes": 5397,
+    "textSha256": "bf96edcaa21bbb24499921c4b5f963213006eee93e47a78942b2580baf2ff89a",
+    "lines": 188,
+    "visuals": [
+      {
+        "kind": "img",
+        "source": "../images/sqlite370_banner.svg",
+        "identifier": null,
+        "text": ""
+      }
+    ],
+    "readingStatus": "acquired-not-yet-read",
+    "acquiredContentExecuted": false
+  },
+  {
+    "id": "authorizer-codes",
+    "url": "https://sqlite.org/c3ref/c_alter_table.html",
+    "finalUrl": "https://sqlite.org/c3ref/c_alter_table.html",
+    "retrievedAt": "2026-11-08T01:34:38.884661+00:00",
+    "status": 200,
+    "headers": {
+      "Connection": "close",
+      "Date": "Sun, 08 Nov 2026 01:34:39 GMT",
+      "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+      "Cache-Control": "max-age=120",
+      "ETag": "\"m6ae24ec4s20c0\"",
+      "Content-type": "text/html; charset=utf-8",
+      "Content-length": "8384"
+    },
+    "rawPath": "raw/authorizer-codes.html",
+    "rawBytes": 8384,
+    "rawSha256": "9aafe597f56ecb23a84b5d92b4125387239956e0e675d030cec4c4d0f870598c",
+    "textPath": "text/authorizer-codes.txt",
+    "textBytes": 4098,
+    "textSha256": "346aa5c77c5ebee28735f4244d573ae4c6b26e5b2b460c9d51287a0cc5422c16",
+    "lines": 84,
+    "visuals": [
+      {
+        "kind": "img",
+        "source": "../images/sqlite370_banner.svg",
+        "identifier": null,
+        "text": ""
+      }
+    ],
+    "readingStatus": "acquired-not-yet-read",
+    "acquiredContentExecuted": false
+  }
+]

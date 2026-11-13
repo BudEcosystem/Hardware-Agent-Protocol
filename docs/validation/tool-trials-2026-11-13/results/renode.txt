@@ -1,0 +1,9 @@
+Renode v1.17.0
+  build: 1.17.0+20261112git13591296b
+  build type: Release
+Usage:
+ - get: machine fieldName
+ - set: machine fieldName Value
+
+Renode is quitting
+[11:39:40.9620] [INFO] machine-0: Disposed.

@@ -1,0 +1,19 @@
+$ tsx scripts/build.ts --scope check
+run-gates: build:check running 3 gate(s) with 3 worker(s) from 16 available CPU(s).
+run-gates: start host aggregate check
+run-gates: start client aggregate check
+run-gates: start forge aggregate check
+run-gates: PASS forge aggregate check (8.90s)
+run-gates: PASS client aggregate check (18.65s)
+
+== FAILED host aggregate check (40.73s) ==
+command: tsc -p tsconfig.host.json
+outcome: exit 2
+packages/experimental/tool-hardware/tests/hms-compact.spec.ts(147,19): error TS2352: Conversion of type 'string | number | boolean | JsonValue[] | { [key: string]: JsonValue; } | null | undefined' to type 'Reply' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ [key: string]: JsonValue; }' is missing the following properties from type 'Reply': ok, result, attribution
+
+run-gates: 2 passed, 1 failed, 0 skipped in 40.73s.
+run-gates: unsuccessful gates:
+  - FAILED host aggregate check (40.73s, exit 2)
+    tsc -p tsconfig.host.json
+[ELIFECYCLE] Command failed with exit code 1.

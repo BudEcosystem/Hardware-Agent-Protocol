@@ -1,0 +1,56 @@
+{
+  "compilerFlagsApplied": false,
+  "compilerInvoked": false,
+  "fileCount": 9,
+  "files": [
+    {
+      "bytes": 55797,
+      "path": "Developer-Options.html",
+      "sha256": "eb4cd9c6bea8bb1084e1b7ac20f2e5b7b250048eee607b7dab07563cc1d11d6f"
+    },
+    {
+      "bytes": 33734,
+      "path": "Developer-Options.txt",
+      "sha256": "c1f95364af7030f035f9197cc98efd8dcf5271f85fe7558b34e8de6cadbfc849"
+    },
+    {
+      "bytes": 4504,
+      "path": "NOTES.md",
+      "sha256": "ef3e926537469b20d13d6c56958d1300c0194b125ff595e1b15bde2a7e8e3987"
+    },
+    {
+      "bytes": 178329,
+      "path": "Optimize-Options.html",
+      "sha256": "0821f161d088ce5a243e5c2af2d0a96314da3b50aab6810b9e61bda65bdff397"
+    },
+    {
+      "bytes": 133140,
+      "path": "Optimize-Options.txt",
+      "sha256": "bc4c4261dcd1458e25128652b138b55bb837e24313efa91890cc88108152c4ce"
+    },
+    {
+      "bytes": 1799,
+      "path": "README.md",
+      "sha256": "db00fbba9a3b39c5f5e8c9e53b911dcf265590ab3ce4520a44104ae34aff10ac"
+    },
+    {
+      "bytes": 3979,
+      "path": "acquire.py",
+      "sha256": "28db194cbe8901923be2a829886bba8e9017207abef7eb2c4b641364724d2dc0"
+    },
+    {
+      "bytes": 3008,
+      "path": "acquisition.json",
+      "sha256": "834e739bc56813f7f87442d1c9e25782dd52f166ce58207027933166ab9e78c8"
+    },
+    {
+      "bytes": 5611,
+      "path": "reading-ledger.json",
+      "sha256": "1dbf7d53d80d8728fb7eaf2464d58fe5c30eacc9553240c1dcda04b188d8ff95"
+    }
+  ],
+  "fullyReadChapters": 2,
+  "fullyReadExtractedBodyLines": 3438,
+  "status": "sealed-full-two-chapter-source-review",
+  "totalBytes": 419901
+}

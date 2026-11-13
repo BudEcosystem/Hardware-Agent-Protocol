@@ -1,0 +1,513 @@
+{
+  "schema_version": 1,
+  "reviewer": "HMS research agent /root/wot_full_read",
+  "completed_at_utc": "2026-11-05T22:00:47.464622+00:00",
+  "local_review_date": "2026-11-06",
+  "method": "Sequential bounded sed chunks read by the agent, followed by raw-HTML table checks and complete visual inspection of all figures. Full reading was not replaced by search, a summary or selected excerpts. Later technical claims are original synthesis.",
+  "sources": [
+    {
+      "id": "wot-td11",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/",
+      "raw_path": "research/protocols/raw/wot-td11.html",
+      "raw_sha256": "db4517d82699840edfcd331ab064b17de569e4f9568c18c3d27a40cb411cf856",
+      "text_path": "research/protocols/text/wot-td11.txt",
+      "text_sha256": "63f1e73fa019771a1e7c44b21bf9c5a0db34a929b59dfeffd1ffdd0df7419fc6",
+      "text_bytes": 293925,
+      "text_chars": 293266,
+      "logical_lines": 17373,
+      "ends_with_newline": false,
+      "reading_status": "read_full_document_text_and_figures",
+      "untruncated_read_line_intervals": [
+        [
+          1,
+          700
+        ],
+        [
+          701,
+          2200
+        ],
+        [
+          2201,
+          3000
+        ],
+        [
+          3001,
+          3400
+        ],
+        [
+          3401,
+          4200
+        ],
+        [
+          4201,
+          5500
+        ],
+        [
+          5501,
+          7300
+        ],
+        [
+          7301,
+          9300
+        ],
+        [
+          9301,
+          11000
+        ],
+        [
+          11001,
+          12900
+        ],
+        [
+          12901,
+          14500
+        ],
+        [
+          14501,
+          16000
+        ],
+        [
+          16001,
+          17372
+        ],
+        [
+          17373,
+          17373
+        ]
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Entire document extraction, all sections, examples, tables, appendices, change log, acknowledgments, normative and informative references, and generated backlinks. All document figures separately inspected. Linked references are not thereby fully read.",
+      "figures": [
+        {
+          "artifact_path": "research/protocols/wot-artifacts/td.png",
+          "status": "visually_inspected_complete",
+          "inspection_note": "PNG alpha composited onto white for legibility; SVG rendered locally with headless Chrome; original source bytes unchanged.",
+          "path": "research/protocols/wot-artifacts/td.png",
+          "sha256": "597e027257f197263a2b8a99ff8183cf763fca61e499e4d3656d2ac875a50746"
+        },
+        {
+          "artifact_path": "research/protocols/wot-artifacts/jsonschema.png",
+          "status": "visually_inspected_complete",
+          "inspection_note": "PNG alpha composited onto white for legibility; SVG rendered locally with headless Chrome; original source bytes unchanged.",
+          "path": "research/protocols/wot-artifacts/jsonschema.png",
+          "sha256": "24eb5330c68834f7a2f8225e19b97980eaa3630b838f8df1cf482d09b992b2d8"
+        },
+        {
+          "artifact_path": "research/protocols/wot-artifacts/wotsec.png",
+          "status": "visually_inspected_complete",
+          "inspection_note": "PNG alpha composited onto white for legibility; SVG rendered locally with headless Chrome; original source bytes unchanged.",
+          "path": "research/protocols/wot-artifacts/wotsec.png",
+          "sha256": "2ccb683cc7de9400ec2e20b2d207f16dc4cf3d046c9b08fd92d5c76319497f16"
+        },
+        {
+          "artifact_path": "research/protocols/wot-artifacts/hctl.png",
+          "status": "visually_inspected_complete",
+          "inspection_note": "PNG alpha composited onto white for legibility; SVG rendered locally with headless Chrome; original source bytes unchanged.",
+          "path": "research/protocols/wot-artifacts/hctl.png",
+          "sha256": "82ddcec7e9780a022e6df9a6e4b50defe2cde846adafd14a4789c18915ec2c9c"
+        },
+        {
+          "artifact_path": "research/protocols/wot-artifacts/thing_model_td.png",
+          "status": "visually_inspected_complete",
+          "inspection_note": "PNG alpha composited onto white for legibility; SVG rendered locally with headless Chrome; original source bytes unchanged.",
+          "path": "research/protocols/wot-artifacts/thing_model_td.png",
+          "sha256": "f03f02760af9a5d00e253f7f73c50e00b9907c183dce29627760ee82f23e0233"
+        },
+        {
+          "artifact_path": "research/protocols/wot-artifacts/tm_overwriting.png",
+          "status": "visually_inspected_complete",
+          "inspection_note": "PNG alpha composited onto white for legibility; SVG rendered locally with headless Chrome; original source bytes unchanged.",
+          "path": "research/protocols/wot-artifacts/tm_overwriting.png",
+          "sha256": "d652d97dc50546a16858832ff93a5ed617c714d067cf751cb3395c24bc220a3e"
+        }
+      ],
+      "truncation_recovery": {
+        "attempted_interval": [
+          2201,
+          4200
+        ],
+        "issue": "Initial tool display was truncated; that display alone was not counted as complete coverage.",
+        "replacement_untruncated_intervals": [
+          [
+            2201,
+            3000
+          ],
+          [
+            3001,
+            3400
+          ],
+          [
+            3401,
+            4200
+          ]
+        ],
+        "final_line_correction": "wc -l counts newline characters; last footer line 17373 was read separately after detecting missing terminal newline."
+      },
+      "raw_html_table_cross_checks": [
+        "PropertyAffordance Table 5",
+        "ActionAffordance Table 6",
+        "EventAffordance Table 7",
+        "VersionInfo Table 8",
+        "Form Tables 26-28"
+      ],
+      "coverage_ranges": [
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 1,
+          "end_line": 700,
+          "sha256": "33ec6e21e6bdd7c3f68a5331d198ec4ad716d1614b98070603a6add12215308f",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 701,
+          "end_line": 2200,
+          "sha256": "b19064479377e12d601160902d2f7e32e3f3d7290d217f731d83feb3042b5b10",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 2201,
+          "end_line": 3000,
+          "sha256": "22403b2b36e30e24d74cc5a9f21730267ec26a1f57623841f151b469853457aa",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 3001,
+          "end_line": 3400,
+          "sha256": "26ef95721326f84dd630c4e916e07bd14425831b0512a9ca864f2d9d5e2aecc3",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 3401,
+          "end_line": 4200,
+          "sha256": "015181c17092581bd9c8ddfe3d61ce3d741256df17eab67a3bee6d5704531c5a",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 4201,
+          "end_line": 5500,
+          "sha256": "6bf06fb7895a66286cfc202820e3088d46287897f625937b17d30d97559a505c",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 5501,
+          "end_line": 7300,
+          "sha256": "6a7966725342391a830bda8630bf9d600c1b57731ac65baebf165fc6a546ecce",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 7301,
+          "end_line": 9300,
+          "sha256": "3c3e299c1d47b58e7fa98540b01ec356ca28620056f8808476dda975ed1b14ea",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 9301,
+          "end_line": 11000,
+          "sha256": "d4c2883ebb26956146e9bcb76df6e8fc5602036d9f45219b103e1595f346a06a",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 11001,
+          "end_line": 12900,
+          "sha256": "0576173f9ee3f3bada218577fc2480288beaaef9cce9ca200ce1d798f7b8b740",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 12901,
+          "end_line": 14500,
+          "sha256": "8b3b8dcd786c608ec2acf26ab3b0432568bf21fc79e3754abcbae1f6fb6029c4",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 14501,
+          "end_line": 16000,
+          "sha256": "6e080293d9edad6c3781e32166085e2ca4eb908c16d7eb4d438d71dd8765d3fb",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 16001,
+          "end_line": 17372,
+          "sha256": "e79852c88adcf96d110fd4c7191f5de0392b8d2d5a3660d1f0df2628bb2f8cd3",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-td11.txt",
+          "start_line": 17373,
+          "end_line": 17373,
+          "sha256": "0e77e68ba5473d98840c3212f4a8cb801226494f1162c8001a9f4ed7b00cbaa8",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        }
+      ]
+    },
+    {
+      "id": "wot-discovery",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/",
+      "raw_path": "research/protocols/raw/wot-discovery.html",
+      "raw_sha256": "ce7a7aca5c931cac6d346c38f84a7eb5c5a371a53bcfd93e18ec554056a22937",
+      "text_path": "research/protocols/text/wot-discovery.txt",
+      "text_sha256": "7eea270b6bd28335181289dfb2b38b728c17054f146978cc9229e73b0739b106",
+      "text_bytes": 142879,
+      "text_chars": 142816,
+      "logical_lines": 5842,
+      "ends_with_newline": false,
+      "reading_status": "read_full_document_text_and_figures",
+      "untruncated_read_line_intervals": [
+        [
+          1,
+          1000
+        ],
+        [
+          1001,
+          2000
+        ],
+        [
+          2001,
+          3000
+        ],
+        [
+          3001,
+          4000
+        ],
+        [
+          4001,
+          5000
+        ],
+        [
+          5001,
+          5842
+        ]
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Entire document extraction, all sections, examples, tables, appendices, change log, acknowledgments, normative and informative references, and generated backlinks. All document figures separately inspected. Linked references are not thereby fully read.",
+      "figures": [
+        {
+          "artifact_path": "research/protocols/wot-artifacts/discovery-overview.png",
+          "status": "visually_inspected_complete",
+          "inspection_note": "PNG alpha composited onto white for legibility; SVG rendered locally with headless Chrome; original source bytes unchanged.",
+          "path": "research/protocols/wot-artifacts/discovery-overview.png",
+          "sha256": "2a460c1403c759e7ed83663c524ad0705fdf205618e859e0fa55a8acd7a120fc"
+        },
+        {
+          "artifact_path": "research/protocols/wot-artifacts/discovery-sequence-dnssd-thing.png",
+          "status": "visually_inspected_complete",
+          "inspection_note": "PNG alpha composited onto white for legibility; SVG rendered locally with headless Chrome; original source bytes unchanged.",
+          "path": "research/protocols/wot-artifacts/discovery-sequence-dnssd-thing.png",
+          "sha256": "79954f3a13d276545d0dc4f7b8057e4284301d5851061eae41e2710f9a74d59e"
+        },
+        {
+          "artifact_path": "research/protocols/wot-artifacts/discovery-sequence-dnssd-directory.png",
+          "status": "visually_inspected_complete",
+          "inspection_note": "PNG alpha composited onto white for legibility; SVG rendered locally with headless Chrome; original source bytes unchanged.",
+          "path": "research/protocols/wot-artifacts/discovery-sequence-dnssd-directory.png",
+          "sha256": "576e3e915fcc93d6e22c89efdc7cfb602632b16f053f642c748febbff5215f29"
+        },
+        {
+          "artifact_path": "research/protocols/wot-artifacts/discovery-exploration-class-diagram.svg",
+          "status": "visually_inspected_complete",
+          "inspection_note": "PNG alpha composited onto white for legibility; SVG rendered locally with headless Chrome; original source bytes unchanged.",
+          "path": "research/protocols/wot-artifacts/discovery-exploration-class-diagram.svg",
+          "sha256": "42c6bf7ede7e8a17c19b7f9820e6ed1cb266ce8d0dd33973ad1eb00ed40b233f"
+        },
+        {
+          "artifact_path": "research/protocols/wot-artifacts/discovery-discovery-class-diagram-ontology.svg",
+          "status": "visually_inspected_complete",
+          "inspection_note": "PNG alpha composited onto white for legibility; SVG rendered locally with headless Chrome; original source bytes unchanged.",
+          "path": "research/protocols/wot-artifacts/discovery-discovery-class-diagram-ontology.svg",
+          "sha256": "ef302ff046c4fe099970633e29c5dc2ebb4782348977d9455d2074a3739a4671"
+        }
+      ],
+      "raw_html_cross_checks": [
+        "All figure source locations",
+        "Appendix A pre element extracted without repairing $schema trailing-space defect"
+      ],
+      "coverage_ranges": [
+        {
+          "path": "research/protocols/text/wot-discovery.txt",
+          "start_line": 1,
+          "end_line": 1000,
+          "sha256": "28a33702facf3ce5d0cc5f4990a89c82d2583b9a9fd34c8523c9bcdfb7151aeb",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-discovery.txt",
+          "start_line": 1001,
+          "end_line": 2000,
+          "sha256": "df6fae2354ed17650f30270a173588857f8a68021dd61fc15620588a487da93f",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-discovery.txt",
+          "start_line": 2001,
+          "end_line": 3000,
+          "sha256": "d98e3f988228d903886660acc1b639987ce0bb7fe88961f9622c141f23159662",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-discovery.txt",
+          "start_line": 3001,
+          "end_line": 4000,
+          "sha256": "9fe340f8ea4ad37553739f170ac86ce44fc0329eb25dd43092c31c6c5a4af5c2",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-discovery.txt",
+          "start_line": 4001,
+          "end_line": 5000,
+          "sha256": "4e4fd8ced180991d6e3069cf2be7c98cbd319d7722d79474b49d8a5b1d176f1e",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        },
+        {
+          "path": "research/protocols/text/wot-discovery.txt",
+          "start_line": 5001,
+          "end_line": 5842,
+          "sha256": "bd084fa836e9ef78eb5db7cff79a8d5ddddd91131441fa61026539bddee74c28",
+          "hash_basis": "Exact archived UTF-8 bytes for inclusive logical lines, preserving line endings."
+        }
+      ]
+    }
+  ],
+  "artifact_manifest": "research/protocols/wot-artifacts/manifest.json",
+  "notes": "research/protocols/notes/wot-full-review.md",
+  "decision": "docs/wot-reuse-decision.md",
+  "not_completed_in_this_lane": [
+    "Full WoT Architecture 1.1 reading",
+    "Full WoT Binding Templates reading",
+    "Full JSON-LD specification reading",
+    "Full official TD JSON-LD context file reading",
+    "Full official TM validation schema reading",
+    "Every specification or paper cited by TD and Discovery",
+    "Behavioral conformance testing or physical implementation validation"
+  ],
+  "pdf_coverage": "Neither reviewed source is a PDF; their HTML figures are accounted separately. No claim about other PDF figures.",
+  "third_party_execution": "No implementation repository was run. Only source retrieval, parsing, hashing and local figure rendering were performed.",
+  "supersedes": {
+    "path": "research/protocols/manifest.json",
+    "source_ids": [
+      "wot-td11",
+      "wot-discovery"
+    ],
+    "fields": [
+      "reading_status",
+      "reading_scope"
+    ],
+    "reason": "The acquisition manifest recorded selected-section coverage before this full reading; this complete later coverage record supersedes those reading statuses without altering acquisition provenance."
+  },
+  "read_artifacts": [
+    {
+      "path": "research/protocols/wot-artifacts/td-schema-1.1.json",
+      "sha256": "fd44f319f94c6f16f66978860ef2f9f4e0e9fd7fc5835a2f3840b9cf2002e0f1",
+      "reading_status": "full_file_read",
+      "source_url": "https://www.w3.org/2022/wot/td-schema/v1.1"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/td-errata.html",
+      "sha256": "8040b2e6d4c6039200871fad2ccc3ee1778a14bd7f9031be96e13fd59d4c3ae6",
+      "reading_status": "full_extracted_text_read",
+      "source_url": "https://w3c.github.io/wot-thing-description/errata11.html"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/td.png",
+      "sha256": "597e027257f197263a2b8a99ff8183cf763fca61e499e4d3656d2ac875a50746",
+      "reading_status": "visually_inspected_complete",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/td.png"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/jsonschema.png",
+      "sha256": "24eb5330c68834f7a2f8225e19b97980eaa3630b838f8df1cf482d09b992b2d8",
+      "reading_status": "visually_inspected_complete",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/jsonschema.png"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/wotsec.png",
+      "sha256": "2ccb683cc7de9400ec2e20b2d207f16dc4cf3d046c9b08fd92d5c76319497f16",
+      "reading_status": "visually_inspected_complete",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/wotsec.png"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/hctl.png",
+      "sha256": "82ddcec7e9780a022e6df9a6e4b50defe2cde846adafd14a4789c18915ec2c9c",
+      "reading_status": "visually_inspected_complete",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/hctl.png"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/thing_model_td.png",
+      "sha256": "f03f02760af9a5d00e253f7f73c50e00b9907c183dce29627760ee82f23e0233",
+      "reading_status": "visually_inspected_complete",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/thing_model_td.png"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/tm_overwriting.png",
+      "sha256": "d652d97dc50546a16858832ff93a5ed617c714d067cf751cb3395c24bc220a3e",
+      "reading_status": "visually_inspected_complete",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/tm_overwriting.png"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/discovery-overview.png",
+      "sha256": "2a460c1403c759e7ed83663c524ad0705fdf205618e859e0fa55a8acd7a120fc",
+      "reading_status": "visually_inspected_complete",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/overview.png"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/discovery-sequence-dnssd-thing.png",
+      "sha256": "79954f3a13d276545d0dc4f7b8057e4284301d5851061eae41e2710f9a74d59e",
+      "reading_status": "visually_inspected_complete",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/sequence-dnssd-thing.png"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/discovery-sequence-dnssd-directory.png",
+      "sha256": "576e3e915fcc93d6e22c89efdc7cfb602632b16f053f642c748febbff5215f29",
+      "reading_status": "visually_inspected_complete",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/sequence-dnssd-directory.png"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/discovery-exploration-class-diagram.svg",
+      "sha256": "42c6bf7ede7e8a17c19b7f9820e6ed1cb266ce8d0dd33973ad1eb00ed40b233f",
+      "reading_status": "visually_inspected_complete",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/exploration-class-diagram.svg"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/discovery-discovery-class-diagram-ontology.svg",
+      "sha256": "ef302ff046c4fe099970633e29c5dc2ebb4782348977d9455d2074a3739a4671",
+      "reading_status": "visually_inspected_complete",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/discovery-class-diagram-ontology.svg"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/discovery-errata.html",
+      "sha256": "df6f2b10cf33eea1146807c18a6abaf3cd034c4886d45e535543f7448d99f18f",
+      "reading_status": "full_extracted_text_read",
+      "source_url": "https://w3c.github.io/wot-discovery/errata.html"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/discovery-extensions-schema-as-published.json",
+      "sha256": "6927391f328047151bfab484cc9c99ce4a2e7a57db577fce827ada188fa9a470",
+      "reading_status": "fully_read_as_part_of_document",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/#tdd-extensions-jsonschema"
+    }
+  ],
+  "archived_not_fully_read_artifacts": [
+    {
+      "path": "research/protocols/wot-artifacts/tm-schema-1.1.json",
+      "sha256": "6912708a0fa9966b51ae75f91951cf48a202d873023b8cba1b53ba4af51e92d3",
+      "reading_status": "archived_not_fully_read",
+      "source_url": "https://www.w3.org/2022/wot/tm-schema/v1.1"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/td-context-1.1.jsonld",
+      "sha256": "9298ddacce1d023e584dcd4b0e639baa228fb9fa8743dcad6d9c9c29db6ca069",
+      "reading_status": "archived_not_fully_read",
+      "source_url": "https://www.w3.org/2022/wot/td/v1.1"
+    }
+  ]
+}

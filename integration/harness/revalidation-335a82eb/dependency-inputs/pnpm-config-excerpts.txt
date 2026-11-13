@@ -1,0 +1,44 @@
+// Installed pnpm.mjs lines 179110-179125
+    init_lib3();
+    SIDE_EFFECTS_CACHE_REMOTE_ENV_STRINGS = [
+      ["keyId", "KEY_ID"],
+      ["builderId", "BUILDER_ID"],
+      ["imageDigest", "IMAGE_DIGEST"],
+      ["architectureBaseline", "ARCHITECTURE_BASELINE"],
+      ["privateKey", "PRIVATE_KEY"]
+    ];
+    SIDE_EFFECTS_CACHE_REMOTE_ENV_JSON = [
+      ["buildEnv", "BUILD_ENV"],
+      ["trustedKeys", "TRUSTED_KEYS"]
+    ];
+  }
+});
+
+// ../config/reader/lib/getConfig/envVars.js
+
+// Installed pnpm.mjs lines 181350-181363
+    AUDIT_LEVELS = /* @__PURE__ */ new Set(["info", "low", "moderate", "high", "critical"]);
+    VIRTUAL_STORE_TYPES = /* @__PURE__ */ new Set(["global", "project"]);
+  }
+});
+
+// ../config/reader/lib/getConfig/workspaceManifestSettings.js
+function addSettingsFromWorkspaceManifestToConfig(pnpmConfig, { trustedSource, configFromCliOpts, expandRequestDestinationEnv, projectManifest, skipSettings, workspaceManifest, workspaceDir }) {
+  const skipped = skipSettings;
+  const settingsFromManifest = getOptionsFromPnpmSettings(workspaceDir, workspaceManifest, { manifest: projectManifest, expandRequestDestinationEnv, trustedSource });
+  const sideEffectsCacheFromManifest = settingsFromManifest.sideEffectsCache;
+  const newSettings = Object.assign(settingsFromManifest, configFromCliOpts);
+  for (const [key, value] of Object.entries(newSettings)) {
+    if (!isCamelCase(key))
+      continue;
+
+// Installed pnpm.mjs lines 183110-183118
+  const globalDepsBuildConfig = extractAndRemoveDependencyBuildOptions(pnpmConfig);
+  const explicitlySetKeys = new Set(Object.keys(configFromCliOpts));
+  pnpmConfig.explicitlySetKeys = explicitlySetKeys;
+  pnpmConfig.cliOptions = cliOptions;
+  Object.assign(pnpmConfig, configFromCliOpts);
+  pnpmConfig.configDir = configDir;
+  const state = {
+    cliOptions,
+    configFromCliOpts,

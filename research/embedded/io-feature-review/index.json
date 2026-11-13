@@ -1,0 +1,82 @@
+{
+  "files": [
+    {
+      "bytes": 5884,
+      "path": "NOTES.md",
+      "sha256": "3345ddace35c53521c994aefa9d79249bdbd854e993c233a0d10a5303b31a681"
+    },
+    {
+      "bytes": 1888,
+      "path": "README.md",
+      "sha256": "09327b7d671acfee1e95b6f0e2d4da920a59eabf418d2ea6a16bc000fadd554b"
+    },
+    {
+      "bytes": 667,
+      "path": "provenance.json",
+      "sha256": "441a66d372ef9b7b30d1cf06fdb507dc7e06a8f0c589911673bd0f42b8640a28"
+    },
+    {
+      "bytes": 5984,
+      "path": "reading.json",
+      "sha256": "96ff3c7f589ba65a1b734291f86baf9ac5daff8a4aaf40c0cd25ce33afba528c"
+    },
+    {
+      "bytes": 4219,
+      "path": "source/AnalogInputFirmata.cpp",
+      "sha256": "a409025716045fa7e9bae1e12bc26823e1ee6babc204284462e405d222c93c58"
+    },
+    {
+      "bytes": 1406,
+      "path": "source/AnalogInputFirmata.h",
+      "sha256": "86776f8c77578f26c8e44130d7439ae88158f1d05f05766ef188db94b69fbe56"
+    },
+    {
+      "bytes": 1529,
+      "path": "source/AnalogOutputFirmata.cpp",
+      "sha256": "f6c930c5bb7e26ac7c6359b2e6f62968e3e6bfc386e98cabba6bfe7f8fc91656"
+    },
+    {
+      "bytes": 1564,
+      "path": "source/AnalogOutputFirmata.h",
+      "sha256": "5c1b41316588c98d8c2722fe4f3897709b6627ba8a63fb968aaa4858c6f38f40"
+    },
+    {
+      "bytes": 5725,
+      "path": "source/DigitalInputFirmata.cpp",
+      "sha256": "19bfefaa7c0d7c2566cd7403b162f29778982d77f88760e654a96e737bb2f24c"
+    },
+    {
+      "bytes": 1587,
+      "path": "source/DigitalInputFirmata.h",
+      "sha256": "45d3cdedf236fa3f88b768837459d108ec7bba319f92355cbe2d45845606e5b3"
+    },
+    {
+      "bytes": 3359,
+      "path": "source/DigitalOutputFirmata.cpp",
+      "sha256": "caad49d9b7182d848fd3f67b9995e38691be208a87d7aaf1f5049f7872140d06"
+    },
+    {
+      "bytes": 1307,
+      "path": "source/DigitalOutputFirmata.h",
+      "sha256": "7ad1b63a0b99f2d08fa6e7b18d47a2dc047a4e96955bb2cbd3d19daddc496809"
+    },
+    {
+      "bytes": 24356,
+      "path": "source/LICENSE.txt",
+      "sha256": "253ab592417971d406ea43868f05ea9987728549ad59c8c8a2b2efcce0c6993e"
+    },
+    {
+      "bytes": 139,
+      "path": "source/ServoFirmata.cpp",
+      "sha256": "c51a8b443d0b552557b1cd264d9525ba5c486105fdbdddccfde6274fab78b5f8"
+    },
+    {
+      "bytes": 3966,
+      "path": "source/ServoFirmata.h",
+      "sha256": "efe0d70dfc4f27d9b0440980c00c8d8a7898b41ab48c92566e99671939ad885a"
+    }
+  ],
+  "newlyFullyReadFiles": 10,
+  "newlyFullyReadLfLines": 804,
+  "upstreamCodeExecuted": false
+}

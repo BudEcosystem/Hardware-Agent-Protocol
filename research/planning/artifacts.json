@@ -1,0 +1,346 @@
+{
+  "created_at": "2026-11-05T22:42:37.664305+00:00",
+  "path_base": "repository_root",
+  "artifacts": [
+    {
+      "path": "research/planning/code-excerpts/code_as_policies-cell-005.txt",
+      "sha256": "b4f1d62b8f9b2b862facf77ac662a0b0e5f42c06863bb44f26c3485b01f94225",
+      "bytes": 7807
+    },
+    {
+      "path": "research/planning/code-excerpts/code_as_policies-cell-012.txt",
+      "sha256": "377a5deb351b4643bed8c76e1db5795ef031d7f8bebc8466e2e4ee1750b07c83",
+      "bytes": 3912
+    },
+    {
+      "path": "research/planning/code-excerpts/code_as_policies-cell-021.txt",
+      "sha256": "de46a64d6888bdc12b07b809a4d8370bf4e439ad7fa0a3c82f8619084980efe4",
+      "bytes": 2860
+    },
+    {
+      "path": "research/planning/code-excerpts/code_as_policies-cell-023.txt",
+      "sha256": "9adfce13f3afa9b2d4ddbd11ee027aa6a980ee72fccf183210a114ff6eaf664d",
+      "bytes": 1396
+    },
+    {
+      "path": "research/planning/code-excerpts/saycan-cell-041.txt",
+      "sha256": "463a48524e39d87a16eb9071b59e93711ccbf35ec89eb91cbc8fd85ac5ddb718",
+      "bytes": 2568
+    },
+    {
+      "path": "research/planning/code-excerpts/saycan-cell-043.txt",
+      "sha256": "48ca632a3ac5da14d493824e3e58c8731088340eae29fb7dfd97276d4eddd94c",
+      "bytes": 3022
+    },
+    {
+      "path": "research/planning/code-excerpts/saycan-cell-044.txt",
+      "sha256": "3da69dd77ae52ea70618c1d49770c40f6e1084e28d8c31ec017c12782209fc64",
+      "bytes": 1103
+    },
+    {
+      "path": "research/planning/code-excerpts/saycan-cell-049.txt",
+      "sha256": "6729238df0d286ad781bf54ddd0f4edb2bf7219352a1f5e2ca1a03e296b31fa8",
+      "bytes": 1484
+    },
+    {
+      "path": "research/planning/code-excerpts/saycan-cell-051.txt",
+      "sha256": "45307e1c007dd5a0ce2df3bcb05e038db1ae02ef175531703db76b2385beefc1",
+      "bytes": 2283
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p01.png",
+      "sha256": "ecee3b3f394da6e83f0f44e95928479f641c31af365af30d59d080f904511d3d",
+      "bytes": 954309
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p02.png",
+      "sha256": "72ea611481eab4b73d2d2395abd2051920917e3b8be4219e4f649f7cacfed7d4",
+      "bytes": 1018181
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p03.png",
+      "sha256": "596cc27b8221763e58c127087f617f1564fb7e1e745cdff0d8c93014d9e16eec",
+      "bytes": 749375
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p04.png",
+      "sha256": "cfd73a881e702c9f4d98f602dc65f0533a545a26bb91efd200464411fc945af7",
+      "bytes": 715679
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p05.png",
+      "sha256": "999c518bfafcbd313e2fa5df50c22cc5c407464951c7691e3e27f484326f7f75",
+      "bytes": 769823
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p06.png",
+      "sha256": "988bc1dee6fbf0ac2122fe14b432edfd56e7934a4bbdca589c84bc8edd9e05d8",
+      "bytes": 823688
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p07.png",
+      "sha256": "597ee8ffde79278c8f643c82b9f78d2d8f7e60f6ef1ba61efc0024d4dedfa49e",
+      "bytes": 960477
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p08.png",
+      "sha256": "2bbfc9f57b227b7b85cb6973dc8aa10f30f86bf294824082b0dbc8baffb53294",
+      "bytes": 90757
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p09.png",
+      "sha256": "bcbfd2c5f9a7ea91735c01723ea439e5dc60088668026d3866dea5e4782e5662",
+      "bytes": 721598
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p10.png",
+      "sha256": "d881576453236cd912dde6b7a9f3418f949e2ce353fd374352245b158e44f7fb",
+      "bytes": 665773
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p11.png",
+      "sha256": "07d38ddbee697c7a8b9472ff9c3378bcbab4067ada34e00e4e22c583df9de954",
+      "bytes": 596367
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p12.png",
+      "sha256": "bb2ac3a3319bf5b076aa267e94eec508c43d5d1fc745fc9fcf33de1a298e21ca",
+      "bytes": 665814
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p13.png",
+      "sha256": "e836883f6817ac435c046c59097599edc563078571073072d0748172a0f97623",
+      "bytes": 684424
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p14.png",
+      "sha256": "8d6f487723df210195f956d52d0b0757f3a7fe5c914cffbea7fb5cb619c0f763",
+      "bytes": 721165
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p15.png",
+      "sha256": "5d4d49995333140a2b8bf7902850ab4f41e55b892d2823c1c95ff00a0f23a42a",
+      "bytes": 667814
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p16.png",
+      "sha256": "c665e4583c19e43ca2e04ce530e0d364efa16e2044f2c5ebd6a67fa91888666c",
+      "bytes": 404296
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p01.png",
+      "sha256": "fd80cb4b82fc3ac32f5bb4fda13fa53cb15d8f24c9ab3cbd72f029aae67ac884",
+      "bytes": 582337
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p04.png",
+      "sha256": "2c5c0fef02a178c8c3e7d0ea1c4f5905c77cb52c89f42bd8ddda67e9662ee1e7",
+      "bytes": 676651
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p05.png",
+      "sha256": "5d9eb1e3c3223b73076fc2391cafbc181d547fabe053e79eb241bb3696bebb24",
+      "bytes": 511995
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p06.png",
+      "sha256": "cbc1bcd81b225c32f616b5312928cd339f2b306f557375b4acdffed1eab6c329",
+      "bytes": 657601
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p07.png",
+      "sha256": "23e15266a7120b97cc0ba3ced7b06cbbc061eb048ced1576c492ba8b0c79ab09",
+      "bytes": 830950
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p08.png",
+      "sha256": "27b6ef08cb7f4ea345508c13c296db3390658e3acdf62dacafbf1861e177aa12",
+      "bytes": 656304
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p09.png",
+      "sha256": "8e72c28d12676dd506d60dd6954ea354debec732b877d9b66e4d27abf9827c01",
+      "bytes": 494273
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p10.png",
+      "sha256": "f0e6c84ce74d0a4b89feec62e522e409c6d67b6b5d521ac99c4ca00feb09d73d",
+      "bytes": 557910
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p11.png",
+      "sha256": "b71239bc3e22290696e77934444a3a8bb3fc09321062d0ce45ba7cf03cc19444",
+      "bytes": 675989
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p20.png",
+      "sha256": "9ed706f7faa570b19e730a560925b5a3c03e79e767289f02c763667aa09e4ec3",
+      "bytes": 497772
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p21.png",
+      "sha256": "b166a284ec206e468463995e7f76f8c91532e4f8322a9b76e5ed8c459eb27a6d",
+      "bytes": 480180
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p22.png",
+      "sha256": "4c71d662126d1c25d0ad21c857f342f908397239ecb21a8dd2d76fd18b0b65e2",
+      "bytes": 456535
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p23.png",
+      "sha256": "08d39a6ba2cf4e29628e691c6da05300241aad3852200024968d5c6750c8b206",
+      "bytes": 498883
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p24.png",
+      "sha256": "8d3f904a2c8856a949295e0f5c511b2919314e61cf98b914901e7018a34ae641",
+      "bytes": 544119
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p25.png",
+      "sha256": "4e9b6ec5d9e56032281bbea10ca12a01cab94e24bf287e1a30ca5f03e4362944",
+      "bytes": 387122
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p26.png",
+      "sha256": "513d8d948ba4669d892dabf479961a57072761e9e81fac8b49683cdd2cf500c1",
+      "bytes": 369479
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p27.png",
+      "sha256": "079f3b12a5352b3c523f2a07e6c8544c974cfc04fa694c16a1a5a19588c78da7",
+      "bytes": 317474
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p28.png",
+      "sha256": "6ea7d830b357e4feba10d671c675f0c712b073eba3d171a940de895306e68843",
+      "bytes": 349173
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p29.png",
+      "sha256": "5e1dcf029d3323848fef0a5f268b92be8e577e08e8f4ab6e2aa15d17746a4c48",
+      "bytes": 217994
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p30.png",
+      "sha256": "8a7baec4cb5733aa9f34653db15240c428ea877279cae9f049fa2c338cd8c82c",
+      "bytes": 358472
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p31.png",
+      "sha256": "28511b54ace176d8e727bfe0605556932c9540d19000ed6973a2548abc166566",
+      "bytes": 640905
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p32.png",
+      "sha256": "2327fe2fa832341833e1b99ed62ab182887d9c2eae8d053fc97d95753cc3cecc",
+      "bytes": 687675
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p33.png",
+      "sha256": "886250fa53e896dc79ac2d256bd4a096eb5d1bfe9f95bb5eabf4af98b5440300",
+      "bytes": 650972
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p34.png",
+      "sha256": "07223aeac7059624227ab19e6a1f20b0dad9583c66c913c78c6b0b54e49ab1af",
+      "bytes": 687512
+    },
+    {
+      "path": "research/planning/raw/code-as-policies-project.html",
+      "sha256": "417ba914a2ae50bea9bfc95a6fee4188d32f62bbedf82c1ea6cb617359584e31",
+      "bytes": 46918
+    },
+    {
+      "path": "research/planning/raw/code-as-policies-v4.pdf",
+      "sha256": "e36857fa13746da031444ec59549e61204ca92d599b1d048ac1c55aaf1f6d0a3",
+      "bytes": 3200561
+    },
+    {
+      "path": "research/planning/raw/saycan-project.html",
+      "sha256": "efa67e52e79f4792d8e673ae04fffed3155037e8bb094d7ce3d3da7161993a90",
+      "bytes": 26548
+    },
+    {
+      "path": "research/planning/raw/saycan-v2.pdf",
+      "sha256": "48c22d36a044bbbd34e640beb1db4fb4ba57e74d97fefa0fb121d55c31282312",
+      "bytes": 12827088
+    },
+    {
+      "path": "research/planning/repos/code_as_policies/Experiment_ HumanEval Benchmark.ipynb",
+      "sha256": "ecb208580b25b73e93633eed83f538b1d10f5654158a234fb77a229c5ea60604",
+      "bytes": 31493
+    },
+    {
+      "path": "research/planning/repos/code_as_policies/Experiment_ Reactive Controllers on Toy Tasks.ipynb",
+      "sha256": "317185ed37cfd1c74e137fa5ec07588ec34a6cc97e9cbe6b339033568e2bc5a6",
+      "bytes": 239316
+    },
+    {
+      "path": "research/planning/repos/code_as_policies/Experiment_ Reasoning with Code vs Natural Language.ipynb",
+      "sha256": "8fb9ea5785e70144847e5c4fbc7e4b5438638863bffe685d0956363ee3d9faf7",
+      "bytes": 88957
+    },
+    {
+      "path": "research/planning/repos/code_as_policies/Experiment_ Robot Code-Gen Benchmark.ipynb",
+      "sha256": "75049ab584cda56a62dfff39f92c0783704a425a8bfb7f9a3379421bf52ae436",
+      "bytes": 288784
+    },
+    {
+      "path": "research/planning/repos/code_as_policies/Interactive_Demo.ipynb",
+      "sha256": "2306281e405b0642400c039dde01684fd200188821eb8cbf243d00b140d2eb72",
+      "bytes": 76446
+    },
+    {
+      "path": "research/planning/repos/code_as_policies/LMP Examples.ipynb",
+      "sha256": "7c7ee00edd80891032f36fa9e18f21661af43b15deaa4c860cbbca03e5c4c9b2",
+      "bytes": 35731
+    },
+    {
+      "path": "research/planning/repos/code_as_policies/README.md",
+      "sha256": "44c43d47213693848edd1969042e60d9061ac9955993771c41e54b9f7c426e2c",
+      "bytes": 2096
+    },
+    {
+      "path": "research/planning/repos/code_as_policies/coc_demo.ipynb",
+      "sha256": "9a89a95a7835cca9288ca7d5574636d97be948baeac3f7628f9f034c4eb4b88c",
+      "bytes": 30914
+    },
+    {
+      "path": "research/planning/repos/code_as_policies/lmpc_demo.ipynb",
+      "sha256": "1759f346b584824f6558a0e8c1a16a70917f440a19a7683572feffdc9ccb9759",
+      "bytes": 29037
+    },
+    {
+      "path": "research/planning/repos/saycan/README.md",
+      "sha256": "f93b2693d63459683b473b8ffb78a5927d1050ab95eb505131f3784d52210cff",
+      "bytes": 1987
+    },
+    {
+      "path": "research/planning/repos/saycan/SayCan-Robot-Pick-Place.ipynb",
+      "sha256": "5f1b975f43197af538867e6cb1864a2fea354fe4540668e8be20c37e682d626c",
+      "bytes": 139047
+    },
+    {
+      "path": "research/planning/text/code-as-policies-project.txt",
+      "sha256": "a16de07d15ab63e84a0c9788b378114ba68e1d350b416bab4943db78be81a52a",
+      "bytes": 6804
+    },
+    {
+      "path": "research/planning/text/code-as-policies-v4.txt",
+      "sha256": "d3b7cddccb2f913d670bfda3be7b1b035a4103fa0b761e242dc287c15c17be1d",
+      "bytes": 135178
+    },
+    {
+      "path": "research/planning/text/saycan-project.txt",
+      "sha256": "58daa00e69f1292a67b3dca53e7ac6b57108c10864896ead09b673e0965aef92",
+      "bytes": 12297
+    },
+    {
+      "path": "research/planning/text/saycan-v2.txt",
+      "sha256": "80d6c21e0c522ac0ae63f09f3133797035db36eb6b0a218cd2e7c9caf34b0f1f",
+      "bytes": 125338
+    }
+  ]
+}

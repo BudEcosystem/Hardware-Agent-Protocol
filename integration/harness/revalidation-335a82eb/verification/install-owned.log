@@ -1,0 +1,3 @@
+COMMAND: ['pnpm', 'install', '--frozen-lockfile', '--prefer-offline', '--ignore-scripts', '--force', '--store-dir=/home/bud/Desktop/bud/hms-harness-335a82eb/.task-state/pnpm-store', '--cache-dir=/home/bud/Desktop/bud/hms-harness-335a82eb/.task-state/pnpm-cache', '--state-dir=/home/bud/Desktop/bud/hms-harness-335a82eb/.task-state/pnpm-state', '--userconfig=/home/bud/Desktop/bud/hms-harness-335a82eb/.task-state/empty.npmrc']
+[ERROR] Unknown options: 'state-dir', 'userconfig'
+For help, run: pnpm help install

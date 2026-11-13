@@ -1,0 +1,48 @@
+{
+  "sources": [
+    {
+      "path": "text/memfd_create.txt",
+      "sha256": "c657fb57ab7db2fcb1f701bb20176d380817107c88c93141842a1e1bfe7a7b44",
+      "firstLfLine": 1,
+      "lastLfLine": 412,
+      "complete": true,
+      "surroundingTextRead": true
+    },
+    {
+      "path": "text/seals.txt",
+      "sha256": "7833fdaedebc4a0cbdc5576632845c5900dcd1cdc54ae2418bbddded2d936193",
+      "firstLfLine": 1,
+      "lastLfLine": 182,
+      "complete": true,
+      "surroundingTextRead": true
+    },
+    {
+      "path": "text/proc_pid_fd.txt",
+      "sha256": "2c00fefb638e17652f04cd9cc16c39d0cfaaab41ea7eb6ad206b13c1f4d14c2c",
+      "firstLfLine": 1,
+      "lastLfLine": 117,
+      "complete": true,
+      "surroundingTextRead": true
+    },
+    {
+      "path": "mfd_noexec.rst",
+      "sha256": "3294d8f1ec5bf0b241660bdfea4cb340ee9d0b9d35f8630f1e5686a5aec391a7",
+      "firstLfLine": 1,
+      "lastLfLine": 86,
+      "complete": true
+    },
+    {
+      "path": "installed-memfd.h",
+      "sha256": "d06dd37df2ad2df29391c38239c1af6944efef8dc4040ed41833169cd4c4a3c9",
+      "firstLfLine": 1,
+      "lastLfLine": 39,
+      "complete": true
+    }
+  ],
+  "totalLfLines": 836,
+  "decorativeImagesExcluded": true,
+  "technicalFigures": 0,
+  "linkedImplementationsRead": false,
+  "acquiredCodeExecuted": false,
+  "fullLocalSelectedTextCoverage": true
+}

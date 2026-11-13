@@ -1,0 +1,31 @@
+{
+  "reader": "primary agent",
+  "date": "2026-11-08",
+  "source": "https://sqlite.org/howtocorrupt.html",
+  "rawSha256": "e00709e3f37e95332d8e6df243510665e9cab1d7938d4fd85cbf5f47648a50bf",
+  "textSha256": "ce0d7055a46859859452f5425f59fdb83c35930a85deabf2a4f524c10fcd8a71",
+  "lines": 765,
+  "readRanges": [
+    [
+      1,
+      250
+    ],
+    [
+      251,
+      380
+    ],
+    [
+      381,
+      500
+    ],
+    [
+      501,
+      765
+    ]
+  ],
+  "coverage": "complete extracted prose",
+  "semanticDiagrams": 0,
+  "decorativeBannerInspected": false,
+  "acquiredCodeExecuted": false,
+  "note": "Truncated 251-500 output was reread in smaller complete ranges; linked source and bug reports remain separate backlog."
+}

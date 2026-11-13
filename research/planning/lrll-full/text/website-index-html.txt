@@ -1,0 +1,28 @@
+Academic Project Page
+Lifelong Robot Library Learning: Bootstrapping Composable and Generalizable Skills for Embodied Control with Language Models
+Georgios Tziafas
+,
+Hamidreza Kasaei
+,
+Interactive Robot Learning Lab
+University of Groningen
+International Conference on Robotics and Automation 2024
+(Under Construction)
+Paper
+Supplementary
+Code
+arXiv
+Abstract
+Large Language Models (LLMs) have emerged as a new paradigm for embodied reasoning and control, most recently by generating robot policy code that utilizes a custom library of vision and control primitive skills. However, prior arts fix their skills library and steer the LLM with carefully hand- crafted prompt engineering, limiting the agent to a stationary range of addressable tasks. In this work, we introduce LRLL, an LLM-based lifelong learning agent that continuously grows the robot skill library to tackle manipulation tasks of ever-growing complexity. LRLL achieves this with four novel contributions: 1) a soft memory module that allows dynamic storage and retrieval of past experiences to serve as context, 2) a self-guided exploration policy that proposes new tasks in simulation, 3) a skill abstractor that distills recent experiences into new library skills, and 4) a lifelong learning algorithm for enabling human users to bootstrap new skills with minimal online interaction. LRLL continuously transfers knowledge from the memory to the library, building composable, general and interpretable policies, while bypassing gradient-based optimization, thus relieving the learner from catastrophic forgetting. Empirical evaluation in a simulated tabletop environment shows that LRLL outperforms end-to-end and vanilla LLM approaches in the lifelong setup while learning skills that are transferable to the real world.
+BibTeX
+BibTex Code Here
+This page was built using the
+Academic Project Page Template
+which was adopted from the
+Nerfies
+project page.
+            You are free to borrow the of this website, we just ask that you link back to this page in the footer.
+This website is licensed under a
+Creative
+            Commons Attribution-ShareAlike 4.0 International License
+.

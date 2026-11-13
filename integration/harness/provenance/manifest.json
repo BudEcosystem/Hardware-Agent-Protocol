@@ -1,0 +1,19 @@
+{
+  "url": "https://raw.githubusercontent.com/pnpm/pnpm.io/main/versioned_docs/version-10.x/settings.md",
+  "fetched_at_utc": "2026-11-06T00:01:32.759214+00:00",
+  "raw_path": "pnpm-settings.raw.md",
+  "raw_sha256": "016e3f051855419f0e8b79e6ac803c3f71351333c0ca3b5b94a9b482161d72c9",
+  "excerpt_path": "pnpm-verifyDepsBeforeRun.md",
+  "excerpt_sha256": "067281fa138e07ff87fabb807a13da10cde69b8d65149dfef5e0caa0e6cb94a0",
+  "coverage": {
+    "status": "partial",
+    "read_lines_in_raw": [
+      1084,
+      1096
+    ],
+    "section": "verifyDepsBeforeRun",
+    "whole_document_read": false
+  },
+  "scope": "auxiliary integration dependency provenance; excluded from the core standards/source corpus",
+  "version_note": "version-10 documentation supports setting semantics; current pnpm11 default was not inferred from its version10 default"
+}

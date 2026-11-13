@@ -1,0 +1,98 @@
+Errata
+RFC Number
+Errata ID
+Status
+All/Any
+Verified+Reported
+Verified
+Reported
+Held for Document Update
+Rejected
+Area Acronym
+All/Any
+app
+art
+gen
+int
+ops
+rai
+rtg
+sec
+tsv
+wit
+Type
+All/Any
+Editorial
+Technical
+WG Acronym
+Submitter Name
+Stream
+All/Any
+IAB
+INDEPENDENT
+IRTF
+Legacy
+Editorial
+Date Submitted
+Presentation
+Table
+Full Records
+Submit
+Verified (1)
+RFC 8613
+inline-errata
+Source of RFC:
+core (wit)
+Errata-ID:
+8229
+Status:
+Verified
+Type:
+Editorial
+Reported By:
+Marco Tiloca
+Date Reported:
+2025-01-03
+Verified by:
+RFC Editor
+Date Verified:
+2025-01-03
+Section 7.3 says:
+Note that the message binding does not guarantee that a misbehaving
+server created the response before receiving the request, i.e., it
+does not verify server aliveness.
+It should say:
+Note that the message binding does not prevent a misbehaving
+server from creating the response before receiving the request, i.e.,
+OSCORE does not verify server aliveness.
+Notes:
+The original text should have said "does not guarantee that a misbehaving server did not create", so a negation was missing. The new text addresses that, using "prevent" instead of "guarantee" in order to avoid a double negation.
+Held for Document Update (1)
+RFC 8613
+inline-errata
+Source of RFC:
+core (wit)
+Errata-ID:
+8230
+Status:
+Held for Document Update
+Type:
+Technical
+Reported By:
+Marco Tiloca
+Date Reported:
+2025-01-03
+Held for Document Update by:
+Francesca Palombini
+Date Held for Document Update:
+2025-03-12
+Section 8.4 says:
+If either the decompression or the COSE message fails to decode,
+then go to 8.
+It should say:
+If the decompression fails, or the Recipient Context is
+unusable or invalid, or the COSE message fails to decode,
+then go to 8.
+Notes:
+There is currently no definition of "invalid" Security Context. Any later update on this can build on https://datatracker.ietf.org/doc/draft-ietf-core-oscore-key-limits/
+Report New Erratum

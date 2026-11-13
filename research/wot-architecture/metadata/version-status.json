@@ -1,0 +1,68 @@
+{
+  "verified_at_utc": "2026-11-06T01:38:32.217811+00:00",
+  "current_approved_baseline": {
+    "title": "Web of Things (WoT) Architecture 1.1",
+    "status": "W3C Recommendation",
+    "date": "2023-12-05",
+    "url": "https://www.w3.org/TR/2023/REC-wot-architecture11-20231205/"
+  },
+  "aliases_identical_to_versioned_source": true,
+  "existing_archive_raw_identical": true,
+  "baseline_prior_reading_status": "Existing protocols manifest not_read; earlier TD/Discovery full reading explicitly excluded Architecture. New text extraction retains original internal text-node line breaks, so its LF count differs from older normalized extraction.",
+  "editors_draft": {
+    "title": "Web of Things (WoT) Architecture 1.1",
+    "specStatus": "ED",
+    "shortName": "wot-architecture11",
+    "previousPublishDate": "2022-09-07",
+    "scope": "Only retained raw lines 1–70 configuration read; no claim of newer approved version or complete draft review."
+  },
+  "errata": {
+    "listed_count": 0,
+    "listed_latest_update": "2023-10-03",
+    "scope": "Entire static errata page read; linked issue tracker not comprehensively reviewed. Page refers to Thing Description repository in submission prose."
+  },
+  "source_pins": [
+    {
+      "id": "architecture-11-rec",
+      "raw_path": "research/wot-architecture/raw/architecture-11-rec.html",
+      "raw_sha256": "82aa73cba33f5098db0cde716bc66622bc3db25d531c4fd894b5eacfea34deb1",
+      "text_path": "research/wot-architecture/text/architecture-11-rec.txt",
+      "text_sha256": "99ba5fc61bf80fe9318077860ef0354ffb765733694adbb7289b29a52718af0f"
+    },
+    {
+      "id": "latest-alias",
+      "raw_path": "research/wot-architecture/raw/latest-alias.html",
+      "raw_sha256": "82aa73cba33f5098db0cde716bc66622bc3db25d531c4fd894b5eacfea34deb1",
+      "text_path": "research/wot-architecture/text/latest-alias.txt",
+      "text_sha256": "99ba5fc61bf80fe9318077860ef0354ffb765733694adbb7289b29a52718af0f"
+    },
+    {
+      "id": "latest-11-alias",
+      "raw_path": "research/wot-architecture/raw/latest-11-alias.html",
+      "raw_sha256": "82aa73cba33f5098db0cde716bc66622bc3db25d531c4fd894b5eacfea34deb1",
+      "text_path": "research/wot-architecture/text/latest-11-alias.txt",
+      "text_sha256": "99ba5fc61bf80fe9318077860ef0354ffb765733694adbb7289b29a52718af0f"
+    },
+    {
+      "id": "publication-history",
+      "raw_path": "research/wot-architecture/raw/publication-history.html",
+      "raw_sha256": "fb68c256d65038ba64284abd1ae423cab45d1c6cd89b3c54a413430163b2a717",
+      "text_path": "research/wot-architecture/text/publication-history.txt",
+      "text_sha256": "d6bc71c4302baad0bc352d0ec7c9e1f8f94d4840f8116a4844984afb925b9862"
+    },
+    {
+      "id": "errata-11",
+      "raw_path": "research/wot-architecture/raw/errata-11.html",
+      "raw_sha256": "d3ef549927f89e44a942a05bec5be3f2443f1054beaaa129c1ddf8a6c73da4ac",
+      "text_path": "research/wot-architecture/text/errata-11.txt",
+      "text_sha256": "c8bed6e7ec366626f601de17a6a0f09c882d34036664f9b5e69259f29b9bfc8f"
+    },
+    {
+      "id": "editors-draft",
+      "raw_path": "research/wot-architecture/raw/editors-draft.html",
+      "raw_sha256": "b5934e866e86bc72ebe401a187bf4bf24a2ce4bc261fff636164a609496bfb48",
+      "text_path": "research/wot-architecture/text/editors-draft.txt",
+      "text_sha256": "29e9ca7a1a22280974c1fb1698cb357adcb2065ce0a2c6962c20527afb309018"
+    }
+  ]
+}

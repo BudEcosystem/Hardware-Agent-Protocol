@@ -1,0 +1,83 @@
+{
+  "files": [
+    {
+      "path": "research/host-contract/sqlite-statement-cache/OBSERVATION.json",
+      "bytes": 36021,
+      "sha256": "5092a5da79560e8bf107931409e7064a68d1471c337ea5097a319de9e940937a"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/README.md",
+      "bytes": 3619,
+      "sha256": "eb5df9aa6d8234156dbb85091854511e9b47996f95c67f4fdecb12d4abbb53b7"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/acquire.py",
+      "bytes": 1697,
+      "sha256": "f25a729d61ba2853188d4ff936ae126e2dd3e5e1cad130556121e58085ef2871"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/acquisition.json",
+      "bytes": 3133,
+      "sha256": "8d93c6e77d6f1e75fa21333c03fb044b63afd521aea6bf022eccddaf643da637"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/extract.py",
+      "bytes": 3381,
+      "sha256": "e4aa34c19597404bae188457fd5690e29f70a52e53903d776b4f88d2fbe5bbd7"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/extraction.json",
+      "bytes": 4530,
+      "sha256": "472d8342afec951153ead03724ddf852d365cf6d2807717c1fec1f39eaf99449"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/extractor-origin.json",
+      "bytes": 219,
+      "sha256": "ac396afa45e6cd70c859f0ca413648e07d7ed2f80eed072045dd51f76f74cc7c"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/observe.py",
+      "bytes": 4424,
+      "sha256": "62279a392ba2dda4abe54324e5f74ef4536ec0ec53c40c5b21e991bf79df4c60"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/raw/cpython_statement.c",
+      "bytes": 5986,
+      "sha256": "eee3f2fda3f57f9ec3d2bd38022ee6d03687713911777956a024660b073e17fa"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/raw/prepare.html",
+      "bytes": 12409,
+      "sha256": "0c6af533f1144b27de08ce585cee6d60ad45c9b04436020619a44a410f3e2ba1"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/raw/statement_object.html",
+      "bytes": 9581,
+      "sha256": "9389d99c9dd5dde39a2382132f1a2c547c2c4a4893dc62309eaa754662441d7b"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/reading.json",
+      "bytes": 1916,
+      "sha256": "bf4ec7ee4d7f4c529188713b77e02bef2473eb096775672fe0c42d882e7fd7a7"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/text/cpython_statement.c",
+      "bytes": 5986,
+      "sha256": "eee3f2fda3f57f9ec3d2bd38022ee6d03687713911777956a024660b073e17fa"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/text/prepare.txt",
+      "bytes": 7044,
+      "sha256": "4587270661f0e2f39e00a3dde5e06289e939d340df4d404a8008a1aafa557c74"
+    },
+    {
+      "path": "research/host-contract/sqlite-statement-cache/text/statement_object.txt",
+      "bytes": 2497,
+      "sha256": "917f44e41d93cbe11aa2f99cfcff6a28127d1595699f836b459e9310f4e90fe6"
+    }
+  ],
+  "declaredTextFullRead": true,
+  "coveredLfLines": 477,
+  "physicalExecutionPerformed": false,
+  "cacheOptimizationQualified": false
+}

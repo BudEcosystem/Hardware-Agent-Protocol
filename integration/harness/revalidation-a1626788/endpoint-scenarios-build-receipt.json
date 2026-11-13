@@ -1,0 +1,233 @@
+{
+  "schema": "hms-endpoint-scenarios/1",
+  "recorded_at": "2026-11-06T01:33:56.213998+00:00",
+  "passed": true,
+  "scope": "Original C scenario callbacks through actual native framed pipes/socket, including ASan/UBSan; no host authority or target execution.",
+  "files": [
+    {
+      "path": "protocol/serial/frame.c",
+      "sha256": "4bb8120c648852d3205f743df308ded521d64639607c7926c493c7cb8bb2771f"
+    },
+    {
+      "path": "protocol/endpoint/endpoint.c",
+      "sha256": "19b6a357c02c48321da8a973d326cec7994628e871f437290e683ed6c68d748b"
+    },
+    {
+      "path": "protocol/endpoint/link.c",
+      "sha256": "30627d9406fd6d748f733f2f2bbce825755cdc9532137262f2ee812ac49fc151"
+    },
+    {
+      "path": "protocol/endpoint/scenario_fixture.c",
+      "sha256": "0bcf42c821339b6592d9c96eff9e415d01ac0fdcbf79f8eaaed201d771833f71"
+    },
+    {
+      "path": "tests/endpoint_scenarios_pipe.c",
+      "sha256": "1239c93c95e15e4afa5279180407b2f61b50d2bc6541dae960bbd2fc1446c596"
+    },
+    {
+      "path": "protocol/serial/frame.h",
+      "sha256": "29870e0821d724f39116f6f2ff81b4245bd9810680b235e45f116b11615ec7d7"
+    },
+    {
+      "path": "protocol/serial/frame.py",
+      "sha256": "34ead95e1392e99f37c85699fd1448ac10d7b5e8d0ec79b01952732eb6fd9180"
+    },
+    {
+      "path": "protocol/endpoint/endpoint.h",
+      "sha256": "4b4122760ff4073207b26d4ecef3702fdff7dd2ce00219656bc262df8910b817"
+    },
+    {
+      "path": "protocol/endpoint/link.h",
+      "sha256": "d3bae74a7e038f7102ec61ea466d47271583ece99f4d5b5ea0ae3c362492197a"
+    },
+    {
+      "path": "protocol/endpoint/scenario_fixture.h",
+      "sha256": "7048c4a908be2e2b4bf5cd01062fecd798bb4b2c85e8a833fafd7a727619320f"
+    },
+    {
+      "path": "protocol/endpoint/scenario-manifest.json",
+      "sha256": "f82db3e3066e987b7dbb702396a434d00cd1a7cec5af29f25a17791fc2219c4e"
+    },
+    {
+      "path": "hms/endpoint_wire.py",
+      "sha256": "6ada46b9b2591c52741bac6e592b2b3f83804fdab8c7bd637627afcc5db29322"
+    },
+    {
+      "path": "scripts/check_endpoint_scenarios.py",
+      "sha256": "8de9d7a7e14884693c068ca02ff04c9ca4070729ab842276d73193ee9937a609"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "artifacts/verification/endpoint-scenarios-build/endpoint-scenarios-pipe",
+      "sha256": "d80b3fddc3c2f2215ffa8ea7f5ae7f4b176ba9edc49c18264e5eca8f81da6a17"
+    },
+    {
+      "path": "artifacts/verification/endpoint-scenarios-build/endpoint-scenarios-pipe-traces.json",
+      "sha256": "2876f60995b0374ef73492bd110c250cac71f8377bb35e05b8a682f98514cc56"
+    },
+    {
+      "path": "artifacts/verification/endpoint-scenarios-build/endpoint-scenarios-pipe-asan",
+      "sha256": "38eef713f5f6d4a209b7f2cd57577b08b59ccce9b7fe14101b23a1f6ea76ded6"
+    },
+    {
+      "path": "artifacts/verification/endpoint-scenarios-build/endpoint-scenarios-pipe-asan-traces.json",
+      "sha256": "23dfc34107806de10c3c4ef179ddb863e6ffea245ce054bba428947af7fa5a4a"
+    }
+  ],
+  "compiler": {
+    "path": "/usr/bin/x86_64-linux-gnu-gcc-13",
+    "sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+    "version": "x86_64-linux-gnu-gcc-13 (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0"
+  },
+  "host": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
+  "plain_flags": [
+    "-std=c11",
+    "-g",
+    "-Wall",
+    "-Wextra",
+    "-Wconversion",
+    "-Werror",
+    "-Wvla",
+    "-fno-common",
+    "-O2"
+  ],
+  "sanitized_flags": [
+    "-std=c11",
+    "-g",
+    "-Wall",
+    "-Wextra",
+    "-Wconversion",
+    "-Werror",
+    "-Wvla",
+    "-fno-common",
+    "-O1",
+    "-fsanitize=address,undefined",
+    "-fno-omit-frame-pointer",
+    "-fno-pie",
+    "-no-pie"
+  ],
+  "commands": [
+    {
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-gcc-13",
+        "-std=c11",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Wconversion",
+        "-Werror",
+        "-Wvla",
+        "-fno-common",
+        "-O2",
+        "protocol/serial/frame.c",
+        "protocol/endpoint/endpoint.c",
+        "protocol/endpoint/link.c",
+        "protocol/endpoint/scenario_fixture.c",
+        "tests/endpoint_scenarios_pipe.c",
+        "-o",
+        "/home/bud/Desktop/bud/hms/artifacts/verification/endpoint-scenarios-build/endpoint-scenarios-pipe"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/usr/bin/x86_64-linux-gnu-gcc-13",
+        "-std=c11",
+        "-g",
+        "-Wall",
+        "-Wextra",
+        "-Wconversion",
+        "-Werror",
+        "-Wvla",
+        "-fno-common",
+        "-O1",
+        "-fsanitize=address,undefined",
+        "-fno-omit-frame-pointer",
+        "-fno-pie",
+        "-no-pie",
+        "protocol/serial/frame.c",
+        "protocol/endpoint/endpoint.c",
+        "protocol/endpoint/link.c",
+        "protocol/endpoint/scenario_fixture.c",
+        "tests/endpoint_scenarios_pipe.c",
+        "-o",
+        "/home/bud/Desktop/bud/hms/artifacts/verification/endpoint-scenarios-build/endpoint-scenarios-pipe-asan"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "results": [
+    {
+      "binary": "artifacts/verification/endpoint-scenarios-build/endpoint-scenarios-pipe",
+      "scenarios": 15,
+      "names": [
+        "three_scenarios_sequential_fixed_results",
+        "invalid_argument_encodings_leave_no_admission",
+        "utf8_scalar_and_exact_64_byte_identifiers",
+        "inspection_limit_checked_before_next_effect",
+        "duplicates_conflicts_and_result_acquisition_tick",
+        "queued_cancel",
+        "running_cancel_separate_quiescence",
+        "completion_wins_cancel",
+        "qualified_synthetic_reset_loses_receipt_not_external_count",
+        "malformed_driver_mode_4",
+        "malformed_driver_mode_5",
+        "malformed_driver_mode_7",
+        "late_callback_does_not_publish_backdated_success",
+        "runtime_cutoff_without_effect",
+        "duplex_socket_normal_clock"
+      ],
+      "passed": true
+    },
+    {
+      "binary": "artifacts/verification/endpoint-scenarios-build/endpoint-scenarios-pipe-asan",
+      "scenarios": 15,
+      "names": [
+        "three_scenarios_sequential_fixed_results",
+        "invalid_argument_encodings_leave_no_admission",
+        "utf8_scalar_and_exact_64_byte_identifiers",
+        "inspection_limit_checked_before_next_effect",
+        "duplicates_conflicts_and_result_acquisition_tick",
+        "queued_cancel",
+        "running_cancel_separate_quiescence",
+        "completion_wins_cancel",
+        "qualified_synthetic_reset_loses_receipt_not_external_count",
+        "malformed_driver_mode_4",
+        "malformed_driver_mode_5",
+        "malformed_driver_mode_7",
+        "late_callback_does_not_publish_backdated_success",
+        "runtime_cutoff_without_effect",
+        "duplex_socket_normal_clock"
+      ],
+      "passed": true
+    }
+  ],
+  "manifest_sha256": "f82db3e3066e987b7dbb702396a434d00cd1a7cec5af29f25a17791fc2219c4e",
+  "control_protocol": {
+    "size": 9,
+    "format": "u8 command + u64be argument; same-sized acknowledgment",
+    "commands": {
+      "1": "set clock + poll",
+      "2": "higher qualified synthetic boot; lose receipt, retain external synthetic values/counters",
+      "3": "set synthetic qualification flags; physical/stop flags refused",
+      "4": "dispatch count",
+      "5": "effect count",
+      "6": "mode 0..8, matching original fixture fault modes",
+      "7": "seed inspection count0..1000000 only with EMPTY slot"
+    }
+  },
+  "limitations": [
+    "No physical I/O, target binary, MCU emulator, acquired implementation, qualified NVM, independent stop or timing measurement.",
+    "Native process CLOCK_MONOTONIC shares the host rate; bounded clock mapping and authority still belong to the host adapter.",
+    "State/counters are synthetic process memory. Reset retention is a test observation, never physical durability.",
+    "Normal OS writes can block; this fixture is not an embedded service-bound or UART driver qualification.",
+    "Fixture tests bypass durable host admission. Runtime/CLI integration and crash recovery require their own receipts.",
+    "Firmware digest is an explicit synthetic label; exact executable/source hashes are recorded separately.",
+    "Canceled/failed work has no new result; only completed state commits produce the fixed12-byte sampleTick/value result."
+  ]
+}

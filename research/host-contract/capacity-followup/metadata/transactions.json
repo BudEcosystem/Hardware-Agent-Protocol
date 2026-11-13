@@ -1,0 +1,51 @@
+{
+  "id": "transactions",
+  "url": "https://sqlite.org/lang_transaction.html",
+  "finalUrl": "https://sqlite.org/lang_transaction.html",
+  "retrievedAt": "2026-11-08T01:23:44.488897+00:00",
+  "status": 200,
+  "headers": {
+    "Connection": "close",
+    "Date": "Sun, 08 Nov 2026 01:23:45 GMT",
+    "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+    "Cache-Control": "max-age=120",
+    "ETag": "\"m6ae24ec4s69bc\"",
+    "Content-type": "text/html; charset=utf-8",
+    "Content-length": "27068"
+  },
+  "rawPath": "raw/transactions.html",
+  "rawBytes": 27068,
+  "rawSha256": "b65dc308fd9e0ce471844c97366a4f5ad3a1f42833a3b19486ad7d6555a8e24e",
+  "textPath": "text/transactions.txt",
+  "textBytes": 8241,
+  "textSha256": "6a3bc15c4b9c07ad285d529a0d52b559ce433cac08892fe4341598d0c52e0b23",
+  "lines": 235,
+  "visuals": [
+    {
+      "kind": "img",
+      "source": "images/sqlite370_banner.svg",
+      "identifier": null,
+      "text": ""
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "identifier": null,
+      "text": "BEGIN EXCLUSIVE TRANSACTION DEFERRED IMMEDIATE"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "identifier": null,
+      "text": "COMMIT TRANSACTION END"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "identifier": null,
+      "text": "ROLLBACK TRANSACTION TO SAVEPOINT savepoint-name"
+    }
+  ],
+  "readingStatus": "acquired-not-yet-read",
+  "acquiredContentExecuted": false
+}

@@ -1,0 +1,85 @@
+{
+  "compiler_or_acquired_code_executed_for_diagnosis": false,
+  "files": [
+    {
+      "bytes": 288203,
+      "complete_functions_read": [
+        "for_each_path",
+        "add_to_obstack",
+        "xputenv",
+        "build_search_list",
+        "putenv_from_prefixes",
+        "access_check",
+        "file_at_path",
+        "find_a_file",
+        "find_file",
+        "driver::maybe_print_and_exit",
+        "driver::maybe_run_linker"
+      ],
+      "complete_relevant_macros_read": [
+        "PLUGIN_COND / LINK_PLUGIN_SPEC conditional definitions",
+        "LINK_COMMAND_SPEC"
+      ],
+      "full_file_read": false,
+      "lf_lines": 10181,
+      "path": "gcc.c",
+      "read_ranges_inclusive": [
+        [
+          932,
+          1087
+        ],
+        [
+          2465,
+          2806
+        ],
+        [
+          6987,
+          6999
+        ],
+        [
+          7825,
+          7998
+        ],
+        [
+          8210,
+          8303
+        ]
+      ],
+      "sha256": "be428a96f36f3660710f95f9b8d9a60a45376553d3cb4b4f6e44a0f8635b0781"
+    },
+    {
+      "bytes": 85238,
+      "complete_functions_read": [
+        "main"
+      ],
+      "excluded_scope": "Other collect2 helpers, downstream ld/plugin loader internals and downstream AVR patches are not qualified by this read.",
+      "full_file_read": false,
+      "lf_lines": 3060,
+      "path": "collect2.c",
+      "read_ranges_inclusive": [
+        [
+          825,
+          1825
+        ]
+      ],
+      "sha256": "06d046a5a596e58fba7f56515e3782f4d982ceb43da1b08b00c847eef2ebd77b"
+    },
+    {
+      "bytes": 6,
+      "full_file_read": true,
+      "lf_lines": 1,
+      "path": "BASE-VER",
+      "read_ranges_inclusive": [
+        [
+          1,
+          1
+        ]
+      ],
+      "sha256": "9e79064c749a37b2c33696623f132b91c29b5e941413dbfb13fa7851e2a53143",
+      "value": "7.3.0"
+    }
+  ],
+  "retained_acquisition": "acquisition.json",
+  "schema": "hms-primary-source-coverage/1",
+  "scope": "Official upstream GCC 7.3 release files; precise partial-file source reading, not downstream build-source identity or full GCC/linker qualification"
+}

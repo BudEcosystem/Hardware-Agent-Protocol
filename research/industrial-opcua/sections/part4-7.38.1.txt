@@ -1,0 +1,61 @@
+7.38.1 General
+
+A StatusCode in OPC UA is numerical value that is used to report the outcome of an operation performed by an OPC UA Server. This code may have associated diagnostic information that describes the status in more detail; however, the code by itself is intended to provide Client applications with enough information to make decisions on how to process the results of an OPC UA Service.
+
+The StatusCode is a 32-bit unsigned integer. The top 16 bits represent the numeric value of the code that shall be used for detecting specific errors or conditions. The bottom 16 bits are bit flags that contain additional information but do not affect the meaning of the StatusCode.
+
+All OPC UA Clients shall always check the StatusCode associated with a result before using it. Results that have an uncertain/warning status associated with them shall be used with care since these results might not be valid in all situations. Results with a bad/failed status shall never be used.
+
+OPC UA Servers should return good/success StatusCodes if the operation completed normally and the result is always valid. Different StatusCode values can provide additional information to the Client.
+
+OPC UA Servers should use uncertain/warning StatusCodes if they could not complete the operation in the manner requested by the Client, however, the operation did not fail entirely.
+
+The list of StatusCodes is managed by OPC UA. The complete list of StatusCodes is defined in OPC 10000-6. Servers shall not define their own StatusCodes. OPC UA companion working groups may request additional StatusCodes from the OPC Foundation to be added to the list in OPC 10000-6.
+
+The exact bit assignments are shown in Table 176.
+
+Table 176 - StatusCode bit assignments
+Field,Bit Range,Description
+Severity,30:31,"Indicates whether the StatusCode represents a good, bad or uncertain condition. These bits have the following meanings:
+
+Good Success,00,Indicates that the operation was successful and the associated results may be used.
+Uncertain Warning,01,Indicates that the operation was partially successful and that associated results might not be suitable for some purposes.
+Bad Failure,10,Indicates that the operation failed and any associated results cannot be used.
+Reserved,11,""Reserved for future use. All Clients should treat a StatusCode with this severity as """"Bad""""."""
+Reserved,29:29,Reserved for use in OPC UA application specific APIs. This bit shall always be zero on the wire but may be used by OPC UA application specific APIs for API specific status codes.
+Reserved,28:28,Reserved for future use. Shall always be zero.
+SubCode,16:27,The code is a numeric value assigned to represent different conditions. Each code has a symbolic name and a numeric value. All descriptions in the OPC UA specification refer to the symbolic name. OPC 10000-6 maps the symbolic names onto a numeric value.
+StructureChanged,15:15,"Indicates that the structure of the associated data value has changed since the last Notification. Clients should not process the data value unless they re-read the metadata.                        Servers shall set this bit if the DataTypeDefinition of the DataType used for a Variable changes. This bit is provided to warn Clients that parse complex data values that their parsing routines could fail because the serialized form of the data value has changed. This bit has meaning only for StatusCodes returned as part of a data change Notification or the HistoryRead. StatusCodes used in other contexts shall always set this bit to zero. The bit is set on one data change Notification per MonitoredItem that samples values at the time the structure change happened. If the data change notification with the bit set is deleted because of a queue overflow, the bit shall be set on the next data change notification in the queue."
+SemanticsChanged,14:14,"Indicates that the semantics of the associated data value have changed. Clients should not process the data value until they re-read the metadata associated with the Variable.                        Servers should set this bit if the metadata has changed in way that could cause application errors if the Client does not re-read the metadata. For example, a change to the engineering units could create problems if the Client uses the value to perform calculations.                        OPC 10000-8 defines the conditions where a Server shall set this bit for a DA Variable. Other specifications may define additional conditions. A Server may define other conditions that cause this bit to be set. This bit has meaning only for StatusCodes returned as part of a data change Notification or the HistoryRead. StatusCodes used in other contexts shall always set this bit to zero. The bit is set on one data change Notification per MonitoredItem that samples values at the time the semantic change happened. If the data change notification with the bit set is deleted because of a queue overflow, the bit shall be set on the next data change notification in the queue."
+Reserved,12:13,Reserved for future use. Shall always be zero.
+InfoType,10:11,"The type of information contained in the info bits. These bits have the following meanings:
+
+NotUsed,00,The info bits are not used and shall be set to zero.
+DataValue,01,The StatusCode and its info bits are associated with a data value returned from the Server. The info bits are defined in Table 177.
+Reserved,1X,Reserved for future use. The info bits shall be ignored."
+InfoBits,0:9,Additional information bits that qualify the StatusCode. The structure of these bits depends on the Info Type field.
+
+
+            Table 177 describes the structure of the InfoBits when the Info Type is set to DataValue (01).
+
+Table 177 - DataValue InfoBits
+Info Type,Bit Range,Description
+LimitBits,8:9,"The limit bits associated with the data value. The limits bits have the following meanings:
+
+Limit,Bits,Description
+None,00,The value is free to change.
+Low,01,The value is at the lower limit for the data source.
+High,10,The value is at the higher limit for the data source.
+Constant,11,The value is constant and cannot change."
+Overflow,7,"This bit shall only be set if the MonitoredItem queue size is greater than 1. If this bit is set, not every detected change has been returned since the Server's queue buffer for the MonitoredItem reached its limit and had to purge out data."
+Reserved,5:6,Reserved for future use. Shall always be zero.
+HistorianBits,0:4,"These bits are set only when reading historical data. They indicate where the data value came from and provide information that affects how the Client uses the data value. The historian bits have the following meaning:                        OPC 10000-11 describes how these bits are used in more detail.
+
+Raw,XXX00,A raw data value.
+Calculated,XXX01,A data value which was calculated.
+Interpolated,XXX10,A data value which was interpolated.
+Reserved,XXX11,Undefined.
+Partial,XX1XX,A data value which was calculated with an incomplete interval.
+Extra Data,X1XXX,A raw data value that hides other data at the same timestamp.
+Multi Value,1XXXX,Multiple values match the Aggregate criteria (i.e. multiple minimum values at different timestamps within the same interval)."
+

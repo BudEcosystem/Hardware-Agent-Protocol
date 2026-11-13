@@ -1,0 +1,11 @@
+{
+  "frozen_hms": 32,
+  "native_sources": 13,
+  "prior_overlay_packages": 31,
+  "new_tests": 2,
+  "prior_verification_sha256": "cb0cf5d84acf73237c3f6f4f014be9449ca534599f4a7c796b1bb5601ad2ebd7",
+  "prior_patch_sha256": "1d22255765e284a2fd0ba6770e57c1ea69ca8b2763f1bc8a349d157994c7262d",
+  "new_patch_sha256": "867fa72d8bdfcc2ff99e1dd037bfc899dbe49734bcd4fda9b1e2d664df7f12b5",
+  "recorded_at": "2026-11-06T02:15:42.867409+00:00",
+  "scope": "All frozen runtime/C input bytes, executable, new test sources/exported copies and31prior overlay package sources matched their pins after successful process teardown. Derived Python bytecode directories removed only after execution."
+}

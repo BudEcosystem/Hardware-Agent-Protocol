@@ -1,0 +1,40 @@
+{
+  "scope": "Complete 765-line extracted prose reading of official SQLite corruption/locking reference; linked works remain separate",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 1747,
+      "sha256": "e343a89627349540c0353feef18f23272505898c34568d82bbd9e4dfb81d21cb"
+    },
+    {
+      "path": "acquire.py",
+      "bytes": 2265,
+      "sha256": "b71edcb1795ddb6153888645552b52075fa51777380b674a0fd3d65ba9612c08"
+    },
+    {
+      "path": "acquisition.json",
+      "bytes": 1084,
+      "sha256": "794546f0bd12a439bbb4b5c0cf302e2ee83a96799a288d6ac74d0aa370e595c8"
+    },
+    {
+      "path": "metadata/corruption.json",
+      "bytes": 1014,
+      "sha256": "f8ed2530ae5c6b2cfa38335a66f95f22710068351e2af3b09ee4dd40792c607f"
+    },
+    {
+      "path": "raw/corruption.html",
+      "bytes": 46737,
+      "sha256": "e00709e3f37e95332d8e6df243510665e9cab1d7938d4fd85cbf5f47648a50bf"
+    },
+    {
+      "path": "reading.json",
+      "bytes": 717,
+      "sha256": "41f9e252b3fb583e1799848f3a26cec3937535921465d558de7c0a5f8672dd96"
+    },
+    {
+      "path": "text/corruption.txt",
+      "bytes": 34083,
+      "sha256": "ce0d7055a46859859452f5425f59fdb83c35930a85deabf2a4f524c10fcd8a71"
+    }
+  ]
+}

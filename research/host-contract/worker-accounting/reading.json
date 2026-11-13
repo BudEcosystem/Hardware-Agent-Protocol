@@ -1,0 +1,102 @@
+{
+  "scope": "Five retained document bodies; linked resources excluded",
+  "recordedUnixNs": 1794165335948041561,
+  "reviewer": "primary-agent",
+  "independentReview": false,
+  "totalLfLines": 1315,
+  "sources": [
+    {
+      "id": "linux-psi",
+      "rawSha256": "11c6b7129103b4547c31895cb1cfc0ff75b741c95a24bfcaeb01dece37b82692",
+      "textSha256": "11c6b7129103b4547c31895cb1cfc0ff75b741c95a24bfcaeb01dece37b82692",
+      "lfLines": 188,
+      "readRanges": [
+        [
+          1,
+          188
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "headingsAndSurroundingHtmlRead": false,
+      "technicalImages": 0,
+      "nontechnicalImagesExcluded": 0,
+      "linkedReferencesRead": false,
+      "acquiredCodeExecuted": false
+    },
+    {
+      "id": "linux-sched-stats",
+      "rawSha256": "6c80bd9a62d50aa37161d6d909dfeff8c460c3b949454bf4c093c211f6252335",
+      "textSha256": "6c80bd9a62d50aa37161d6d909dfeff8c460c3b949454bf4c093c211f6252335",
+      "lfLines": 205,
+      "readRanges": [
+        [
+          1,
+          205
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "headingsAndSurroundingHtmlRead": false,
+      "technicalImages": 0,
+      "nontechnicalImagesExcluded": 0,
+      "linkedReferencesRead": false,
+      "acquiredCodeExecuted": false
+    },
+    {
+      "id": "linux-getrusage",
+      "rawSha256": "ade816073a4c25f6d272fbf628d7bdf6d9a5b4ae76b29f1889cc01420220d523",
+      "textSha256": "5163e115a6f51430a64200b45e43a78a2dcd6983a4eb6631f47034a1a859c078",
+      "lfLines": 207,
+      "readRanges": [
+        [
+          1,
+          207
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "headingsAndSurroundingHtmlRead": true,
+      "technicalImages": 0,
+      "nontechnicalImagesExcluded": 2,
+      "linkedReferencesRead": false,
+      "acquiredCodeExecuted": false
+    },
+    {
+      "id": "linux-proc-pid-stat",
+      "rawSha256": "0f04d78946538fd84db1536845abeb236da51a04844989f34ea7ee7cb0b6700f",
+      "textSha256": "318abb8c2d792a36b4f243ebd994cb094595b2ea7773c85e1958a7786e3caf5c",
+      "lfLines": 330,
+      "readRanges": [
+        [
+          1,
+          330
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "headingsAndSurroundingHtmlRead": true,
+      "technicalImages": 0,
+      "nontechnicalImagesExcluded": 2,
+      "linkedReferencesRead": false,
+      "acquiredCodeExecuted": false
+    },
+    {
+      "id": "python312-resource",
+      "rawSha256": "caf900cf72a34dfc8c7c40b819add82ae75314e46ebee62a8110421561d0fc5d",
+      "textSha256": "caf900cf72a34dfc8c7c40b819add82ae75314e46ebee62a8110421561d0fc5d",
+      "lfLines": 385,
+      "readRanges": [
+        [
+          1,
+          385
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "headingsAndSurroundingHtmlRead": false,
+      "technicalImages": 0,
+      "nontechnicalImagesExcluded": 0,
+      "linkedReferencesRead": false,
+      "acquiredCodeExecuted": false
+    }
+  ],
+  "htmlStructureSha256": "e72c70fe12bd1b6dc4b2712cd876d4352fca7052d661337addff9aab5b1f1d29",
+  "imageExclusion": "TLPI book cover and StatCounter analytics pixel; no technical diagram or visual review claim",
+  "acquisitionManifestPreserved": true
+}

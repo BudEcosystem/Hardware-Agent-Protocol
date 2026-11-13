@@ -1,0 +1,95 @@
+{
+  "files": [
+    {
+      "bytes": 7314,
+      "path": "NOTES.md",
+      "sha256": "b03d724203648b83526466c1289af2e000e0e7a12a75dc65dbb0b03d2771a2ec"
+    },
+    {
+      "bytes": 2210,
+      "path": "README.md",
+      "sha256": "fc952f9a98029086c8304548e72b86295ad5a490abaf40c06ce2a98a8541d64f"
+    },
+    {
+      "bytes": 9623,
+      "path": "fuse2fs/fuse2fs.1.html",
+      "sha256": "b2884d4dcb7953e046f3c2464ae2dd129bdd0d43690c97e6d8159734ad421b2f"
+    },
+    {
+      "bytes": 4459,
+      "path": "fuse2fs/fuse2fs.1.txt",
+      "sha256": "31acd207cacc00207aac3f460c4f2189f3809d949a82fd14cb02b2e4412c9fc2"
+    },
+    {
+      "bytes": 138054,
+      "path": "fuse2fs/fuse2fs.c",
+      "sha256": "1cb6c5f608ab5ac34afc8829ab85a66cbb8bed341c8d07b68b9e0963b2e13f38"
+    },
+    {
+      "bytes": 5483,
+      "path": "installed/fsync.2",
+      "sha256": "431e8df828ce9b59635ea44b66a65ff8e25dbc85672587437f163553ba630929"
+    },
+    {
+      "bytes": 3792,
+      "path": "installed/posix_fallocate.3",
+      "sha256": "d49e1df81f0a33eccc03e110ddbbd2f50b6e38a090862aeea8f5887d64abcfb0"
+    },
+    {
+      "bytes": 3188,
+      "path": "installed/pread.2",
+      "sha256": "f60596b46bb106e1140b900ba99e784194ae31753d50a54d3647429d177f30ec"
+    },
+    {
+      "bytes": 1523,
+      "path": "littlefs/LICENSE.md",
+      "sha256": "0cb4ff1daf5fdc1359c6a6ee3116092f08fc100c9d58b1b77ab17bfd801f856d"
+    },
+    {
+      "bytes": 13676,
+      "path": "littlefs/README.md",
+      "sha256": "567ca1c81fa0fde6cc4230f010678fca4a0794ce9572d803dbbe2a1948bf2ac5"
+    },
+    {
+      "bytes": 1521,
+      "path": "littlefs-fuse/LICENSE.md",
+      "sha256": "9fd6d396541da2a949e9819817effcae34bb45b20ef8b070a998dcacf6d03e45"
+    },
+    {
+      "bytes": 5199,
+      "path": "littlefs-fuse/README.md",
+      "sha256": "20fe8fadb2f3677bf48d67fef4f85583e09f2f60ac6c657285f83764619df5ff"
+    },
+    {
+      "bytes": 18411,
+      "path": "littlefs-fuse/lfs_fuse.c",
+      "sha256": "9c240156859b2fb65bd9b5fe6ffe4ad89746ff1291fc552826f225d61eec03e7"
+    },
+    {
+      "bytes": 3148,
+      "path": "littlefs-fuse/lfs_fuse_bd.c",
+      "sha256": "c08b0cd8c973c2072e005df0a84833700599b73fb50c7ceecb2e00dc738f0790"
+    },
+    {
+      "bytes": 1108,
+      "path": "littlefs-fuse/lfs_fuse_bd.h",
+      "sha256": "f50dfd7bca397d367b3f886353a0594e45e643acc69d19691dc2b6d644da6f2d"
+    },
+    {
+      "bytes": 3764,
+      "path": "reading-coverage.json",
+      "sha256": "eb0acfce1accb80c9b048596d78b75a28310538ef62b69b915432805871b20a8"
+    },
+    {
+      "bytes": 3323,
+      "path": "sources.json",
+      "sha256": "9fcfed20214364674d9e1d62b9458d9c2d81400614ea80abf3e98c5491c2729e"
+    },
+    {
+      "bytes": 661,
+      "path": "web-supplement.json",
+      "sha256": "485968039cf33ce7eaec45d3c803a08991ad00543e21710c0970c02636479ded"
+    }
+  ],
+  "schema": "hms.retained-files/1"
+}

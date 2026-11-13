@@ -1,0 +1,34 @@
+6.7 Re-establishing connections
+
+After a Client establishes a connection to a Server and creates a Subscription, the Client monitors the connection status. Figure 36 shows the steps to connect a Client to a Server and the general logic for reconnect handling. Not all possible error scenarios are covered.
+
+The preferred mechanism for a Client to monitor the connection status is through the keep-alive of the Subscription. A Client should subscribe for the State Variable in the ServerStatus to detect shutdown or other failure states. If no Subscription is created or the Server does not support Subscriptions, the connection can be monitored by periodically reading the State Variable.
+
+[Figure: Figure 36 - Reconnect sequence]
+
+When a Client loses the connection to the Server, the goal is to reconnect without losing information. To do this the Client shall re-establish the connection by creating a new SecureChannel and activating the Session with the Service ActivateSession. If the OpenSecureChannel fails, the Client should delay the retry for a configurable time. The ActivateSession assigns the new SecureChannel to the existing Session and allows the Client to reuse the Session and Subscriptions in the Server. To re-establish the SecureChannel and activate the Session, the Client shall use the same security policy, application instance certificate and the same user credential used to create the original SecureChannel. This will result in the Client receiving data and event Notifications without losing information provided the queues in the MonitoredItems do not overflow.
+
+The Client shall only create a new Session if ActivateSession fails. TransferSubscriptions is used to transfer the Subscription to the new Session. If TransferSubscriptions fails, the Client needs to create a new Subscription.
+
+When the connection is lost, Publish responses may have been sent but not received by the Client.
+
+After re-establishing the connection the Client shall call Republish in a loop, starting with the next expected sequence number and incrementing the sequence number until the Server returns the status Bad_MessageNotAvailable. After receiving this status, the Client shall start sending Publish requests with the normal Publish handling. This sequence ensures that the lost NotificationMessages queued in the Server are not overwritten by new Publish responses.
+
+If the Client detects missing sequence numbers in the Publish and is not able to get the lost NotificationMessages through Republish, the Client should use the Method ResendData or should read the values of all data MonitoredItems to make sure the Client has the latest values for all MonitoredItems. ResendData allows the Client to resync its cache by receiving the current value for each MonitoredItem. The data should be sent in the next regular PublishingInterval.
+
+The Server Object provides a Method ResendData that initiates resending of all data monitored items in a Subscription. This Method is defined in OPC 10000-5. If this Method is called, subsequent Publish responses shall contain the current value for each data MonitoredItem in the Subscription where the MonitoringMode is set to Reporting. If a value is queued for a data MonitoredItem, the next value in the queue is sent in the Publish response. If no value is queued for a data MonitoredItem, the last value sent is repeated in the Publish response. The Server shall verify that the Method is called within the Session context of the Session that owns the Subscription.
+
+Independent of the detailed recovery strategy, the Client should make sure that it does not overwrite newer data in the Client with older values provided through Republish.
+
+If the Republish returns Bad_SubscriptionIdInvalid, then the Client needs to create a new Subscription.
+
+Re-establishing the connection by creating a new SecureChannel may be rejected, because of a new Server ApplicationInstanceCertificate or other security errors. OpenSecureChannel returns Bad_CertificateInvalid in the case of a new Server ApplicationInstance
+
+
+          Certificate. In case of security failures, the Client shall use the GetEndpoints Service to fetch the most up to date security information from the Server.
+
+If the Client ApplicationInstanceCertificate is updated, the Client shall create a new Session since the Session does not allow a update of the Client ApplicationInstanceCertificate. The Client shall try to transfer existing Subscriptions to the new Session. Transfer subscription shall be accepted by a Server even for Anonymous user if the Client does not change i.e. the ApplicationUri of the Client does not change and a secure connection is used.
+
+
+          OPC 10000-6 defines a reverse connect mechanism where the Server initiates the logical connection. All subsequent steps like creating a SecureChannel are initiated by the Client. In this scenario the Client is only able to initiate a reconnect if the Server initiates a new logical connection after a connection interruption. The Client side reconnect handling described in Figure 36 applies also to the reverse connect case. A Server is not able to actively check the connection status; therefore the Server shall initiate a new connection in a configurable interval, even if a connection to the Client is established. This ensures that an initiated connection is available for the reconnect handling in addition to other scenarios where the Client needs more than one connection.
+

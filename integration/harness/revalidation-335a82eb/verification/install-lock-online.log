@@ -1,0 +1,36 @@
+native/pact/packages/darwin-arm64        | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/pact/packages/darwin-x64          | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/pact/packages/linux-arm64         | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["linux"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/pact/packages/win32-x64           | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["win32"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/darwin-arm64      | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/darwin-x64        | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/linux-arm64       | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["linux"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+Scope: all 444 workspace projects
+[WARN] There are cyclic workspace dependencies: /home/bud/Desktop/bud/hms-harness-335a82eb/apps/cli, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/sdk/client; /home/bud/Desktop/bud/hms-harness-335a82eb/apps/web, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/test-support/client-runtime, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/bundle/web-app; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/api/gateway, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/api/remote-access; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/api/remotes, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/client/ui-plugin-manager, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/client/ui-sidebar, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/client/ui-workspace, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/client/ui-conversation; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/compaction/compaction-basic, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/compaction/compaction-image-offload; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/compaction/compaction-tool-result-pruner, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/llm/token-meter, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/llm/llm-retry, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/test-support/agent-loop-testkit, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/preset/agent-session, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/preset/agent-preset; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/core/agent-default-model, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/settings/settings; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/core/agent-loop, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/core/tools, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/sandbox/sandbox-policy, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/environment/environment, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/preset/agent-preset-registry; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/interaction/user-questions, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/session-query/session-query, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/todo/tool-todo; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/llm/llm-deepseek, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/llm/llm-deepseek-api-key; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/sandbox/sandbox-local, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/sandbox/sandbox-windows-acl; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/session/tool-working-directory, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/session/working-directory; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/ssh/fs-ssh, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/ssh/ssh; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/subagent/subagent-spawn-in-process, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/subagent/tool-subagent; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/work/work-executors, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/work/work-store; /home/bud/Desktop/bud/hms-harness-335a82eb/vendor/cordis, /home/bud/Desktop/bud/hms-harness-335a82eb/vendor/include
+? Verifying lockfile against supply-chain policies (1758 entries)...
+✓ Lockfile passes supply-chain policies (1758 entries in 10.3s)
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Progress: resolved 52, reused 0, downloaded 0, added 0
+Progress: resolved 73, reused 0, downloaded 0, added 0
+Progress: resolved 101, reused 0, downloaded 0, added 0
+Progress: resolved 124, reused 0, downloaded 0, added 0
+Progress: resolved 132, reused 1, downloaded 0, added 0
+Progress: resolved 155, reused 1, downloaded 0, added 0
+Progress: resolved 166, reused 1, downloaded 0, added 0
+Progress: resolved 185, reused 1, downloaded 0, added 0
+Progress: resolved 198, reused 1, downloaded 0, added 0
+Progress: resolved 199, reused 1, downloaded 0, added 0
+Progress: resolved 457, reused 1, downloaded 0, added 0
+Progress: resolved 615, reused 1, downloaded 0, added 0
+Progress: resolved 748, reused 1, downloaded 0, added 0
+Progress: resolved 805, reused 1, downloaded 0, added 0
+Progress: resolved 860, reused 1, downloaded 0, added 0
+Progress: resolved 1069, reused 1, downloaded 0, added 0
+Progress: resolved 1323, reused 1, downloaded 0, added 0
+Progress: resolved 1464, reused 1, downloaded 0, added 0
+Progress: resolved 1655, reused 1, downloaded 0, added 0
+Progress: resolved 1758, reused 1, downloaded 0, added 0
+[WARN] 11 deprecated subdependencies found: boolean@3.2.0, fstream@1.0.12, glob@7.2.3, inflight@1.0.6, lodash.isequal@4.5.0, node-domexception@1.0.0, prebuild-install@7.1.3, rimraf@2.6.3, tsconfck@3.1.6, uuid@8.3.2, whatwg-encoding@2.0.0
+Progress: resolved 1758, reused 1, downloaded 0, added 0, done
+
+Done in 47.6s using pnpm v11.28.5

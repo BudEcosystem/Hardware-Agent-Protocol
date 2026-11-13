@@ -1,0 +1,15 @@
+# Planning continuation source corpus
+
+Acquired 2026-11-06 (local time). This directory retains official Inner Monologue and VoxPoser PDFs, metadata, extracted text, page renders and ten selected VoxPoser source files. `manifest.jsonl` and `repos.json` preserve acquisition-time status; subsequent full-reading claims live in [the reading overlay](../reading-continuation-full.json). Analysis is in [planning-continuation.md](../../../docs/planning-continuation.md).
+
+There are 10 acquisition records: four PDFs and six metadata/project pages. The PDFs are Inner Monologue arXiv v1 (25 pages), published main paper (14), published supplement (11), and VoxPoser arXiv v2 (23). Every extracted LF-delimited line was read, including appendices, references and embedded prompt listings. Seventy-three page renders are retained; 31 pages containing substantive numbered figures/tables were visually inspected. Rendering a page alone is not a reading claim.
+
+The one repository snapshot pins `huangwl18/VoxPoser` commit `e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce`, tree `cf5cf3522a420d242010da73a231aee1abe80fd5`. All ten retained files were read completely. Unselected blobs, dependencies, project videos, interactive viewers and externally linked experimental prompts were not read or run. No acquired code was executed, and no robot or service account was contacted.
+
+All paths in manifests and reading overlays are repository-root relative. Raw/text SHA-256 hashes identify exact retained bytes. Reading chunk hashes use inclusive LF ranges, preserving existing newline terminators and any final unterminated formfeed. PDF formfeed is not a line separator. There are 20 complete reading records, 7,306 LF logical lines and 44 exact reading chunks.
+
+Run the original, standard-library-only integrity checker with `python3 -I -B research/planning/continuation/audit_continuation.py`. It verifies acquisition bytes, selected Git blobs, recursively reconstructs trees from complete retained metadata, and validates exact coverage and page-render hashes. Its `audit.json` output does not prove that a person/model understood a source, validate commit signatures, or establish robotic conformance.
+
+The root corpus auditor automatically discovers `research/planning/reading-continuation-full.json` and explicitly integrates the nested acquisition manifest, 73 artifact entries and recursive repository snapshot. It runs this checker freshly, verifies its `inputs`, and counts 10 acquisitions and one selected snapshot pin. This is not a Git checkout, a flat subtree or a whole-repository reading claim. The integration's fresh aggregate result is retained in `artifacts/verification/corpus-continuation-audit.json`.
+
+Version qualifications: the published Inner Monologue supplement identifies `text-davinci-002`, whereas arXiv v1 identifies InstructGPT-1.3B. Published main and supplement retain inconsistent injected-noise descriptions. Extracted hidden figure annotations must be distinguished from the actual rendered artwork. These issues and the released VoxPoser demo's differences from the experiments are documented in the analysis.

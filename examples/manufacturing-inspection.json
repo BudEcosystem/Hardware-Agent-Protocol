@@ -1,0 +1,84 @@
+{
+  "hms_draft": "0.1",
+  "id": "urn:bud:hms:example:manufacturing-inspection",
+  "title": "manufacturing-inspection",
+  "status": "design_example",
+  "profile": "P5",
+  "capabilities": [
+    "org.bud.manufacturing.inspection/0.1"
+  ],
+  "resources": [
+    "cell-zone"
+  ],
+  "observations": [
+    {
+      "id": "recipe",
+      "unit": "1",
+      "evidence_kind": "controller_measurement",
+      "max_age_ms": 100
+    }
+  ],
+  "actions": [
+    {
+      "id": "run_recipe",
+      "description": "Design example; values are synthetic and must not commission a physical device.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "recipe": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 3,
+            "enum": [
+              1,
+              2,
+              3
+            ]
+          }
+        },
+        "required": [
+          "recipe"
+        ],
+        "additionalProperties": false
+      },
+      "effect": "process",
+      "resources": [
+        "cell-zone"
+      ],
+      "max_duration_ms": 10000,
+      "cancel_behavior": "request_stop",
+      "disconnect_behavior": "finish_bounded_step",
+      "completion_evidence": "controller_completion",
+      "required_observations": [
+        "recipe"
+      ],
+      "parameters": {
+        "recipe": {
+          "quantity": {
+            "unit": "1",
+            "minimum": 1,
+            "maximum": 3
+          }
+        }
+      }
+    }
+  ],
+  "limits": [
+    {
+      "parameter": "run_recipe.recipe",
+      "bounds": {
+        "unit": "1",
+        "minimum": 1,
+        "maximum": 3
+      },
+      "enforcement": "gateway",
+      "evidence_ref": "unmeasured:synthetic-example"
+    }
+  ],
+  "calibration": {
+    "revision": "uncommissioned",
+    "status": "unmeasured",
+    "evidence_ref": "unmeasured:synthetic-example"
+  },
+  "notes": "Illustrates structure only. All numeric limits, time budgets and units are synthetic. No hardware supported or physical verification claimed."
+}

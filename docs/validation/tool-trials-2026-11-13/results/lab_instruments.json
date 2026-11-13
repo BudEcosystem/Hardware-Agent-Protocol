@@ -1,0 +1,43 @@
+Setting up the liquid handler.
+Picking up tips:
+pip#  resource             offset           tip type     max volume (µL)  fitting depth (mm)   tip length (mm)  filter    
+  p0: tips_tipspot_A1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p1: tips_tipspot_B1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p2: tips_tipspot_C1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p3: tips_tipspot_D1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p4: tips_tipspot_E1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p5: tips_tipspot_F1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p6: tips_tipspot_G1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p7: tips_tipspot_H1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+Aspirating:
+pip#  vol(ul)  resource             offset           flow rate  blowout    lld_z       
+  p0: 50.0     plate_well_A1        0,0,0            None       None       None       
+  p1: 50.0     plate_well_B1        0,0,0            None       None       None       
+  p2: 50.0     plate_well_C1        0,0,0            None       None       None       
+  p3: 50.0     plate_well_D1        0,0,0            None       None       None       
+  p4: 50.0     plate_well_E1        0,0,0            None       None       None       
+  p5: 50.0     plate_well_F1        0,0,0            None       None       None       
+  p6: 50.0     plate_well_G1        0,0,0            None       None       None       
+  p7: 50.0     plate_well_H1        0,0,0            None       None       None       
+Dispensing:
+pip#  vol(ul)  resource             offset           flow rate  blowout    lld_z       
+  p0: 50.0     plate_well_A2        0,0,0            None       None       None       
+  p1: 50.0     plate_well_B2        0,0,0            None       None       None       
+  p2: 50.0     plate_well_C2        0,0,0            None       None       None       
+  p3: 50.0     plate_well_D2        0,0,0            None       None       None       
+  p4: 50.0     plate_well_E2        0,0,0            None       None       None       
+  p5: 50.0     plate_well_F2        0,0,0            None       None       None       
+  p6: 50.0     plate_well_G2        0,0,0            None       None       None       
+  p7: 50.0     plate_well_H2        0,0,0            None       None       None       
+Dropping tips:
+pip#  resource             offset           tip type     max volume (µL)  fitting depth (mm)   tip length (mm)  filter    
+  p0: tips_tipspot_A1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p1: tips_tipspot_B1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p2: tips_tipspot_C1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p3: tips_tipspot_D1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p4: tips_tipspot_E1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p5: tips_tipspot_F1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p6: tips_tipspot_G1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+  p7: tips_tipspot_H1      0,0,0            HamiltonTip  1065             8                    95.1             Yes       
+Stopping the liquid handler.
+{"pylabrobot_liquid_handler": {"ok": true, "version": "0.2.2", "wells": 96, "tips": 96}, "bluesky_ophyd_scan": {"ok": true, "version": "1.16.0", "documents": 14, "events": 11}, "pyvisa_sim_scpi": {"ok": true, "resources": 20, "idn": "LSG Serial #1234"}, "pymodbus_tcp": {"ok": false, "error": "TypeError: 0 <= address < 65535", "tb": "lues=values, datatype=DataType.REGISTERS)\n  File \"<string>\", line 9, in __init__\n  File \"/home/jithin/hms-lab/venvs/lab/lib/python3.12/site-packages/pymodbus/simulator/simdata.py\", line 179, in __post_init__\n    self.__check_parameters()\n  File \"/home/jithin/hms-lab/venvs/lab/lib/python3.12/site-packages/pymodbus/simulator/simdata.py\", line 160, in __check_parameters\n    self.__check_simple()\n  File \"/home/jithin/hms-lab/venvs/lab/lib/python3.12/site-packages/pymodbus/simulator/simdata.py\", line 142, in __check_simple\n    raise TypeError(\"0 <= address < 65535\")\nTypeError: 0 <= address < 65535\n"}, "asyncua_opcua": {"ok": true, "version": "2.1.0", "method_ok": true, "position": 12.5}}

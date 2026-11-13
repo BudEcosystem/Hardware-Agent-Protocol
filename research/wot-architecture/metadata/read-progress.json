@@ -1,0 +1,122 @@
+{
+  "reviewer": "/root/home_bindings_read",
+  "untruncated_read_ranges": {
+    "architecture-11-rec": [
+      [
+        1,
+        1100
+      ],
+      [
+        1101,
+        2100
+      ],
+      [
+        2101,
+        3100
+      ],
+      [
+        3101,
+        4100
+      ],
+      [
+        4101,
+        5100
+      ],
+      [
+        5101,
+        6100
+      ],
+      [
+        6101,
+        7100
+      ],
+      [
+        7101,
+        8300
+      ],
+      [
+        8301,
+        8405
+      ]
+    ],
+    "errata-11": [
+      [
+        1,
+        79
+      ]
+    ],
+    "publication-history": [
+      [
+        1,
+        118
+      ]
+    ]
+  },
+  "selected_draft_raw_ranges": [
+    [
+      1,
+      70
+    ]
+  ],
+  "figures_visually_reviewed": [
+    "research/wot-architecture/renders/01-1.png",
+    "research/wot-architecture/renders/02-1.png",
+    "research/wot-architecture/renders/03-1.png",
+    "research/wot-architecture/renders/04-1.png",
+    "research/wot-architecture/renders/05-1.png",
+    "research/wot-architecture/renders/06-1.png",
+    "research/wot-architecture/renders/07-1.png",
+    "research/wot-architecture/renders/08-1.png",
+    "research/wot-architecture/renders/09-1.png",
+    "research/wot-architecture/renders/10-1.png",
+    "research/wot-architecture/renders/11-1.png",
+    "research/wot-architecture/renders/12-1.png",
+    "research/wot-architecture/renders/13-1.png",
+    "research/wot-architecture/renders/13-2.png",
+    "research/wot-architecture/renders/14-1.png",
+    "research/wot-architecture/renders/15-1.png",
+    "research/wot-architecture/renders/16-1.png",
+    "research/wot-architecture/renders/17-1.png",
+    "research/wot-architecture/renders/18-1.png",
+    "research/wot-architecture/renders/19-1.png",
+    "research/wot-architecture/renders/20-1.png",
+    "research/wot-architecture/renders/21-1.png",
+    "research/wot-architecture/renders/22-1.png",
+    "research/wot-architecture/renders/23-1.png",
+    "research/wot-architecture/renders/24-1.png",
+    "research/wot-architecture/renders/25-1.png",
+    "research/wot-architecture/renders/26-1.png",
+    "research/wot-architecture/renders/27-1.png",
+    "research/wot-architecture/renders/28-1.png",
+    "research/wot-architecture/renders/29-1.png",
+    "research/wot-architecture/renders/30-1.png",
+    "research/wot-architecture/renders/31-1.png",
+    "research/wot-architecture/renders/32-1.png",
+    "research/wot-architecture/renders/33-1.png",
+    "research/wot-architecture/renders/34-1.png",
+    "research/wot-architecture/renders/35-1.png",
+    "research/wot-architecture/renders/36-1.png",
+    "research/wot-architecture/renders/37-1.png",
+    "research/wot-architecture/renders/38-1.png",
+    "research/wot-architecture/renders/39-1.png",
+    "research/wot-architecture/renders/40-1.png"
+  ],
+  "contact_sheets_visually_reviewed": [
+    "research/wot-architecture/renders/sheet-01-05.png",
+    "research/wot-architecture/renders/sheet-06-10.png",
+    "research/wot-architecture/renders/sheet-11-14.png",
+    "research/wot-architecture/renders/sheet-15-20.png",
+    "research/wot-architecture/renders/sheet-24-28.png",
+    "research/wot-architecture/renders/sheet-29-34.png",
+    "research/wot-architecture/renders/sheet-35-40.png"
+  ],
+  "table_rows_read": [
+    9,
+    7
+  ],
+  "svg_embedded_label_counts": [
+    10,
+    14,
+    14
+  ]
+}

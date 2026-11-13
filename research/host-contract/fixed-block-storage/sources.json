@@ -1,0 +1,83 @@
+{
+  "littlefsCommit": "6cb4e86540eca0d9ba62500a298385c9d863c8be",
+  "wrapperCommit": "423fc8262965b02995fc891cf1eb6b94b281a07c",
+  "files": [
+    {
+      "path": "littlefs/README.md",
+      "url": "https://raw.githubusercontent.com/littlefs-project/littlefs/6cb4e86540eca0d9ba62500a298385c9d863c8be/README.md",
+      "bytes": 13676,
+      "lines": 342,
+      "sha256": "567ca1c81fa0fde6cc4230f010678fca4a0794ce9572d803dbbe2a1948bf2ac5"
+    },
+    {
+      "path": "littlefs/LICENSE.md",
+      "url": "https://raw.githubusercontent.com/littlefs-project/littlefs/6cb4e86540eca0d9ba62500a298385c9d863c8be/LICENSE.md",
+      "bytes": 1523,
+      "lines": 25,
+      "sha256": "0cb4ff1daf5fdc1359c6a6ee3116092f08fc100c9d58b1b77ab17bfd801f856d"
+    },
+    {
+      "path": "littlefs-fuse/README.md",
+      "url": "https://raw.githubusercontent.com/littlefs-project/littlefs-fuse/423fc8262965b02995fc891cf1eb6b94b281a07c/README.md",
+      "bytes": 5199,
+      "lines": 176,
+      "sha256": "20fe8fadb2f3677bf48d67fef4f85583e09f2f60ac6c657285f83764619df5ff"
+    },
+    {
+      "path": "littlefs-fuse/LICENSE.md",
+      "url": "https://raw.githubusercontent.com/littlefs-project/littlefs-fuse/423fc8262965b02995fc891cf1eb6b94b281a07c/LICENSE.md",
+      "bytes": 1521,
+      "lines": 25,
+      "sha256": "9fd6d396541da2a949e9819817effcae34bb45b20ef8b070a998dcacf6d03e45"
+    },
+    {
+      "path": "littlefs-fuse/lfs_fuse.c",
+      "url": "https://raw.githubusercontent.com/littlefs-project/littlefs-fuse/423fc8262965b02995fc891cf1eb6b94b281a07c/lfs_fuse.c",
+      "bytes": 18411,
+      "lines": 687,
+      "sha256": "9c240156859b2fb65bd9b5fe6ffe4ad89746ff1291fc552826f225d61eec03e7"
+    },
+    {
+      "path": "littlefs-fuse/lfs_fuse_bd.c",
+      "url": "https://raw.githubusercontent.com/littlefs-project/littlefs-fuse/423fc8262965b02995fc891cf1eb6b94b281a07c/lfs_fuse_bd.c",
+      "bytes": 3148,
+      "lines": 139,
+      "sha256": "c08b0cd8c973c2072e005df0a84833700599b73fb50c7ceecb2e00dc738f0790"
+    },
+    {
+      "path": "littlefs-fuse/lfs_fuse_bd.h",
+      "url": "https://raw.githubusercontent.com/littlefs-project/littlefs-fuse/423fc8262965b02995fc891cf1eb6b94b281a07c/lfs_fuse_bd.h",
+      "bytes": 1108,
+      "lines": 40,
+      "sha256": "f50dfd7bca397d367b3f886353a0594e45e643acc69d19691dc2b6d644da6f2d"
+    },
+    {
+      "path": "fuse2fs/fuse2fs.c",
+      "url": "https://kernel.googlesource.com/pub/scm/fs/ext2/e2fsprogs/+/d8e23af0b2dd87b3419d93fca1fef225011be253/misc/fuse2fs.c?format=TEXT",
+      "bytes": 138054,
+      "lines": 5841,
+      "sha256": "1cb6c5f608ab5ac34afc8829ab85a66cbb8bed341c8d07b68b9e0963b2e13f38"
+    },
+    {
+      "path": "installed/posix_fallocate.3",
+      "source": "/usr/share/man/man3/posix_fallocate.3.gz",
+      "bytes": 3792,
+      "lines": 181,
+      "sha256": "d49e1df81f0a33eccc03e110ddbbd2f50b6e38a090862aeea8f5887d64abcfb0"
+    },
+    {
+      "path": "installed/fsync.2",
+      "source": "/usr/share/man/man2/fsync.2.gz",
+      "bytes": 5483,
+      "lines": 200,
+      "sha256": "431e8df828ce9b59635ea44b66a65ff8e25dbc85672587437f163553ba630929"
+    },
+    {
+      "path": "installed/pread.2",
+      "source": "/usr/share/man/man2/pread.2.gz",
+      "bytes": 3188,
+      "lines": 146,
+      "sha256": "f60596b46bb106e1140b900ba99e784194ae31753d50a54d3647429d177f30ec"
+    }
+  ]
+}

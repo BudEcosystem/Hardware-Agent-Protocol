@@ -1,0 +1,27 @@
+{
+  "verified_at": "2026-11-06T22:37:58.551867+00:00",
+  "acquisitions": 10,
+  "repository_pins": 1,
+  "snapshot_files": 10,
+  "reconstructed_metadata_trees": 7,
+  "reading_records": 20,
+  "full_records": 20,
+  "coverage_chunks": 44,
+  "logical_lines": 7306,
+  "page_renders": 73,
+  "reviewed_page_renders": 31,
+  "hash_checks": 176,
+  "inputs": {
+    "research/planning/continuation/manifest.jsonl": "8fa1dbd003e20c59204495c3fec1674673c10cbbbe808eacb01d1745697d1ec7",
+    "research/planning/continuation/repos.json": "a66a1690ce0126f303019f10d05b516d6e2a80b23d439167c77bab17bb63d99c",
+    "research/planning/continuation/artifacts.json": "7b7ff0078949bef91462441575338ae6fee35a01f262f4c92c9d6f608c91164c",
+    "research/planning/reading-continuation-full.json": "7100935b62d36739547f9cef6b795de2f10fd595b7fe1ff689b94d1d00604542",
+    "research/planning/continuation/audit_continuation.py": "40a4d03483157abecc476d1348c78155c3d3bb086d746c249831a14721ebd000"
+  },
+  "limitations": [
+    "Reader attestations are not machine proof of reading or understanding.",
+    "Retained HTTPS commit metadata links the pinned commit to the tree; commit signatures were not independently verified.",
+    "Only selected repository blobs are retained/read; recursive metadata reconstruction is not whole-repository reading.",
+    "No acquired program executed; no robot, service account or device contacted."
+  ]
+}

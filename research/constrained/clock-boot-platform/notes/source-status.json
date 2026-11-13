@@ -1,0 +1,51 @@
+{
+  "checked_at": "2026-11-06T02:21:13.607732+00:00",
+  "official_sources": [
+    {
+      "id": "atmega328p-family-ds40002061b",
+      "revision": "B,09/2020, \u00a741.1",
+      "current_scope": "Current official family source discovered with current product documentation and errata; not automotive manual."
+    },
+    {
+      "id": "atmega-family-errata",
+      "revision": "C,04/2024, full document revision history read",
+      "url": "https://ww1.microchip.com/downloads/aemDocuments/documents/MCU08/ProductDocuments/Errata/ATmega48APA88APA168APA328P-SiliConErrataClarif-DS80000855.pdf"
+    },
+    {
+      "id": "avr101",
+      "revision": "2526A\u2013AVR\u201309/02",
+      "landing_url": "https://www.microchip.com/en-us/application-notes/an2526",
+      "landing_date_observed": "2019-05-15",
+      "note": "Landing date is not PDF revision."
+    },
+    {
+      "id": "rp2040-datasheet",
+      "build_date": "2025-02-20",
+      "build_version": "3184e62-clean",
+      "current_scope": "Current official datasheets URL redirects to retained Raspberry Pi asset; current SDK is separately newer."
+    },
+    {
+      "id": "pico-sdk-latest",
+      "version": "2.3.1",
+      "published_at": "2026-09-04T22:38:41Z",
+      "commit": "079c6f39023649b154152db30f1d781e884879bc",
+      "note": "API release says immutable=false; downloaded exact commit URLs and hashes are the pin. Archive asset listed in API was not downloaded or executed."
+    }
+  ],
+  "failed_acquisitions": [
+    {
+      "url": "https://www.microchip.com/en-us/product/ATMEGA328P",
+      "http_status": 403,
+      "raw_path": "research/constrained/clock-boot-platform/raw/atmega-product.html",
+      "sha256": "b985e59a24d9ed86807d0d5f0775672e1c17e41df7c945d7e5fde76a53c6c24e",
+      "bytes": 403,
+      "note": "Retained failed requests response; no local product-page full-read claim; page was inspected through web tool. Exact initial retrieval timestamp not retained."
+    }
+  ],
+  "limitations": [
+    "Large AVR PDF rejected by web parser; raw requests download succeeded and local Poppler extraction used.",
+    "No named RP2040 external flash part selected or qualified; page failure containment and endurance unresolved.",
+    "No acquired source or target executable was run.",
+    "Dependencies of six SDK files, boot ROM implementation, remaining manual chapters and automotive documents are not fully read."
+  ]
+}

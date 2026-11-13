@@ -1,0 +1,409 @@
+{
+  "reviewedAt": "2026-11-06",
+  "coverage": "research/microscopy-controller/coverage.json",
+  "acquisitionLedger": "research/microscopy-controller/acquisition.json",
+  "sourceSelection": "research/microscopy-controller/selected-files.json",
+  "note": "This inventory includes failed HTTP-response bodies, clearly labeled by acquisition status; they are not successful source acquisitions. Source-only git clones contain unread files; selected-files is authoritative for reading coverage.",
+  "files": [
+    {
+      "path": "research/microscopy-controller/figures/autofocus-02.png",
+      "sha256": "4e87a35a75029ca81930b09a78a50d66969fc7369d74df986aa9b052f8d01eb8",
+      "bytes": 324242
+    },
+    {
+      "path": "research/microscopy-controller/figures/autofocus-04.png",
+      "sha256": "64ef51b72748413f30ceaaa37298a5602984b448be822488bdc891266bec5aa7",
+      "bytes": 322310
+    },
+    {
+      "path": "research/microscopy-controller/figures/autofocus-05.png",
+      "sha256": "ff8b4942aed30c70970277053f808b8033ea9117e3c65d5284a8df714992e953",
+      "bytes": 275678
+    },
+    {
+      "path": "research/microscopy-controller/figures/autofocus-06.png",
+      "sha256": "5719f29026350d641a6e1d9fab2e775f784b1b3ef23f8ddff36be0911bde7cc2",
+      "bytes": 392044
+    },
+    {
+      "path": "research/microscopy-controller/figures/autofocus-07.png",
+      "sha256": "924962e1e6877a533bbd5802f5666b99c1cfcba3b8e3d5abdfe1c3e9a69b5984",
+      "bytes": 290774
+    },
+    {
+      "path": "research/microscopy-controller/figures/autofocus-09.png",
+      "sha256": "846b7a2452ea7e406939ca9e69f84e31190d82eb762ca83566ab16cb074b0c3f",
+      "bytes": 136085
+    },
+    {
+      "path": "research/microscopy-controller/figures/autofocus-10.png",
+      "sha256": "635e3fc62f98294d9ad51876aa128c24efd9ca4dc079759e1d100f6f7e78eba8",
+      "bytes": 955100
+    },
+    {
+      "path": "research/microscopy-controller/figures/autofocus-12.png",
+      "sha256": "2eef2487f404e47ffbdd586f9d6abb6099ab709ef36f3eb2c34f0e4163cf81a6",
+      "bytes": 144780
+    },
+    {
+      "path": "research/microscopy-controller/metadata/autofocus-arxiv-abstract.html",
+      "sha256": "1c09d5c722c133e3ee87b7394ab9b6bffe6bfc49a786b0252dd234a2c75686a7",
+      "bytes": 41011
+    },
+    {
+      "path": "research/microscopy-controller/metadata/gently-head.json",
+      "sha256": "37d8e2126bb932ddae5719e0105c22a009276a84e7b095cf22aeb388033ea832",
+      "bytes": 1267936
+    },
+    {
+      "path": "research/microscopy-controller/metadata/gently-release-commit.json",
+      "sha256": "2393664aaddcbfc7e0529db5a7b9032b9ce119ab80a1a010842e12ce44cdcea5",
+      "bytes": 8363
+    },
+    {
+      "path": "research/microscopy-controller/metadata/gently-releases.json",
+      "sha256": "68a48864a8b2fe02ea7f3eda36336b544bf236d0faefdf67ff969b4cfb9da202",
+      "bytes": 20937
+    },
+    {
+      "path": "research/microscopy-controller/metadata/gently-repository.json",
+      "sha256": "c7e6dff173b69748ea79e06b420a166e8fafdbf933062d27ac97f11bfbc3c7ad",
+      "bytes": 6445
+    },
+    {
+      "path": "research/microscopy-controller/metadata/openflexure-head.json",
+      "sha256": "2227c29b732f2ddd3e5dce5fc8f0e08de362e319ebf4570d33e2eeef6795bfc7",
+      "bytes": 888
+    },
+    {
+      "path": "research/microscopy-controller/metadata/openflexure-releases.json",
+      "sha256": "e708c18d8c6df8f205b51ed2a970bd9e6e3c349a13c410b5aaf2ae3d82a1b3ee",
+      "bytes": 30471
+    },
+    {
+      "path": "research/microscopy-controller/metadata/pysangaboard-head.json",
+      "sha256": "903fb70347769fab42fa9f97ef883b8c2922b6f183eb0245582350b20f4005a9",
+      "bytes": 845
+    },
+    {
+      "path": "research/microscopy-controller/metadata/sangaboard-firmware-current-head.json",
+      "sha256": "aac170d7c0eb7cd08d43f3ecd2a6422a8e7a84314aabcaf02ffb4e09a3ce1fa2",
+      "bytes": 802
+    },
+    {
+      "path": "research/microscopy-controller/metadata/sangaboard-firmware-current-releases.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "bytes": 2
+    },
+    {
+      "path": "research/microscopy-controller/metadata/sangaboard-firmware-head.json",
+      "sha256": "cab94e3c65da6f4f2b8d644eaf58967469d25a4761d17370c38feec6d56ccfdc",
+      "bytes": 35
+    },
+    {
+      "path": "research/microscopy-controller/metadata/sangaboard-firmware-releases.json",
+      "sha256": "cab94e3c65da6f4f2b8d644eaf58967469d25a4761d17370c38feec6d56ccfdc",
+      "bytes": 35
+    },
+    {
+      "path": "research/microscopy-controller/metadata/sangaboard-firmware-tags.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "bytes": 2
+    },
+    {
+      "path": "research/microscopy-controller/metadata/sangaboard-package.json",
+      "sha256": "4ce0f93d93ceef3fd4fd08297ea5aa27243c4a596372e075c9ed37943aee33f2",
+      "bytes": 21197
+    },
+    {
+      "path": "research/microscopy-controller/metadata/sangaboard-projects.json",
+      "sha256": "16d194c9592c40fd9d8af30151c1730bd311095d9d6e56cf60c132426f862956",
+      "bytes": 15254
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-backlash-html.html",
+      "sha256": "310363645ed0270926ac717ff3f89ab188b646f8bd79bdc8b9bae7e171a3f15a",
+      "bytes": 5458
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-backlash.txt",
+      "sha256": "fb8551a1f0b736100b2d9330f10ae3eab3362cd82f7e61502d7cd3835d97c964",
+      "bytes": 5557
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-error-html.html",
+      "sha256": "f8f8bbcdc8e62ceb3afcaa613e7e2f71bd59af8a6cb54f72ef3cf05e2fb65aa3",
+      "bytes": 5449
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-error.txt",
+      "sha256": "b6a5c76d8fd1c9a80ba1aa94eaff853d1ad4336816d2ca3e5f38a72798eb8186",
+      "bytes": 5527
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-halt-html.html",
+      "sha256": "be3c051b3b90ba2cc365341b08624949746ffd62c94334d4a912ba92b5115f67",
+      "bytes": 5446
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-halt.txt",
+      "sha256": "6216478820df61eec60296000b2dc0dd6ca3d34a04a8634f23b5c0e26a7c5a8e",
+      "bytes": 5524
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-joystick-html.html",
+      "sha256": "80427b6381f149ffcb704a8b4744d1b91e58243f9fdbeb0e56c1951ce4e1e972",
+      "bytes": 5458
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-joystick.txt",
+      "sha256": "bacff352d4147969d06f0ecf43cc0c0b18a70a689cc338f73eb8c2d0ad54aa22",
+      "bytes": 5557
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-pc-html.html",
+      "sha256": "5d6cf9340b132307172e7d829dd6777320a873f5153b0280ef7867ef26886642",
+      "bytes": 5440
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-pc.txt",
+      "sha256": "649c774e4359a82b74c114e25a7c1c1ce26d5d876e8d470189fa869049270092",
+      "bytes": 5518
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-rdstat-html.html",
+      "sha256": "367a618fbe9d553ab2c755ea130b8b596793f370bdad6d09f8ec06f58bf63b6d",
+      "bytes": 5452
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-rdstat.txt",
+      "sha256": "c88525b85be07a3e22fb5cdede3c771c7c35e3924aef97e121895da62f6886be",
+      "bytes": 5530
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-selected-web-render.json",
+      "sha256": "39bda59e7a4480f28d6502b171b324869272f63d74300220b5901abe78ac6158",
+      "bytes": 8501
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-setlow-html.html",
+      "sha256": "4e1d1f073c2b41044e1f15f60d52770eef6548253fc80266914aa2c76f1768b6",
+      "bytes": 5452
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-setlow.txt",
+      "sha256": "cbc37bb88e2500e2024fe78f6149265a8812faccdfbfa9a5c5786a61f949323e",
+      "bytes": 5530
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-setup-html.html",
+      "sha256": "14f27cdf057aa789b8ce81666d2e565b5a4a44b0614045808b3caab298fe9ac6",
+      "bytes": 5449
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-setup.txt",
+      "sha256": "73a87e0dea0657a1b6200e2d25e1a15f813cb070bdde1c727cdc711b8c9b846f",
+      "bytes": 5527
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-status-html.html",
+      "sha256": "89f328f477eb4c32a46dee2758434069ce534c81f4c1fd40ca47a2a6b666f866",
+      "bytes": 5452
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-status.txt",
+      "sha256": "e4a2adeb64aa148932f263b15b3e2e4b4557b583aac740226ab47ec0e598572e",
+      "bytes": 5530
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-where-html.html",
+      "sha256": "e3226d40ae0c947ae82a6a2ad1a2a4931ca37e7899b67ff69f8b2464282dad0e",
+      "bytes": 5449
+    },
+    {
+      "path": "research/microscopy-controller/raw/asi-where.txt",
+      "sha256": "045ad562ed20e69415f36898ce2562605b864894159e5acde41f93488bdb8947",
+      "bytes": 5527
+    },
+    {
+      "path": "research/microscopy-controller/raw/micromanager-asitiger.html",
+      "sha256": "aefdd78d09ac6052138a11641afa0fc355ac0e60d3671e662027baf0ea215edf",
+      "bytes": 23253
+    },
+    {
+      "path": "research/microscopy-controller/raw/picamera2-manual.pdf",
+      "sha256": "0c11befd680111b4e056a3f465303d62342eee65f57a89b2aadfd8b09e7377f7",
+      "bytes": 2915733
+    },
+    {
+      "path": "research/microscopy-controller/repos/pysangaboard/sangaboard/extensible_serial_instrument.py",
+      "sha256": "8f9881780a88045ac24533351fbb72de61e846a3cd7db2a9907993911f4ac8de",
+      "bytes": 22682
+    },
+    {
+      "path": "research/microscopy-controller/repos/pysangaboard/sangaboard/sangaboard.py",
+      "sha256": "23834ca71b38f4b5a238e102695e5266c67de4a2e13c3f2ae37fac0b62c6aa14",
+      "bytes": 19519
+    },
+    {
+      "path": "research/microscopy-controller/repos/sangaboard-firmware/README.md",
+      "sha256": "294cf76d51dc04dd38448d0953457bdbf6e6b4c7b601f62a3de46c355180d479",
+      "bytes": 2242
+    },
+    {
+      "path": "research/microscopy-controller/repos/sangaboard-firmware/src/config.h",
+      "sha256": "14495fbfd556d4bb53934a68ea1cc8c7df888bab48af52665a5af312f49142d6",
+      "bytes": 1068
+    },
+    {
+      "path": "research/microscopy-controller/repos/sangaboard-firmware/src/main.cpp",
+      "sha256": "73444b4264f6717ab33dee9d8233091b4d08f388ad609d2661f542fd54e566da",
+      "bytes": 7697
+    },
+    {
+      "path": "research/microscopy-controller/repos/sangaboard-firmware/src/modules/endstops/endstops.cpp",
+      "sha256": "bed83b0e4361a51bc6880c7e3dc9e8eecd1011904062cca384e27fcec3fbb694",
+      "bytes": 7852
+    },
+    {
+      "path": "research/microscopy-controller/repos/sangaboard-firmware/src/modules/stage/StepperF_alt.cpp",
+      "sha256": "47c52bf2250922c17eff8660a712267c8177c436ba5f62e74928fb43750c428f",
+      "bytes": 13459
+    },
+    {
+      "path": "research/microscopy-controller/repos/sangaboard-firmware/src/modules/stage/stage.cpp",
+      "sha256": "6912a19c567fca97dfda3418096bfad4173c46521f08c332907a8124f2784680",
+      "bytes": 10882
+    },
+    {
+      "path": "research/microscopy-controller/repos/sangaboard-firmware/test/test_blocking_moves.py",
+      "sha256": "e27ac4a5c367d99efe74a8aaddf285ad993b25f46dd74ad33508d32012842e8e",
+      "bytes": 799
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/gently/gently/analysis/focus_validation.py",
+      "sha256": "0bb83a907a9778430adc2eafb2f58735747a60f89b122e35e24fb2eef95c7d7d",
+      "bytes": 6066
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/gently/gently/hardware/dispim/device_layer.py",
+      "sha256": "d1565623e314a6315cef391c118d65b03d9e6ffad5080ca85fbe8d131f00c33b",
+      "bytes": 165567
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/gently/gently/hardware/dispim/devices/acquisition.py",
+      "sha256": "86c8fdc459dfd4413e0a54efe2baf553179c77e3fd27afd6794165b2080f6f44",
+      "bytes": 13467
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/gently/gently/hardware/dispim/devices/camera.py",
+      "sha256": "60d1bad4877777400e08bc0fe937024dbe147b1502fad46debc5630b98cea836",
+      "bytes": 15806
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/gently/gently/hardware/dispim/devices/stage.py",
+      "sha256": "52c306ba672ea5489589eeb17ab9de3ce823a989451d06d8c449b11dbea630fa",
+      "bytes": 16376
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/gently/tests/test_dispim_device_safety.py",
+      "sha256": "ad169dae293ce84eac79caa5c76e588729d1a8c934a9daa19c80ed9a311c9d0a",
+      "bytes": 33487
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/gently/tests/test_focus_validation.py",
+      "sha256": "7e4690e19dbd9556000f6eccbb9783c1e15405f1325162cb3167f8d472741465",
+      "bytes": 3468
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/autofocus.py",
+      "sha256": "2603b49a3a5aedd2e633b0ca703e720647111299b9eb47e23578fb1abb3da310",
+      "bytes": 41975
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/camera/__init__.py",
+      "sha256": "811a67aa7bbc2bb198cfe279177bf054466a0cda31b21af7c2412c3cbd2d7c2b",
+      "bytes": 37730
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/camera/picamera.py",
+      "sha256": "0784e86ad03fbbbfe7df3c92fc8a3f77e0a1cf7425c2fc71e07de4f8a31a7a55",
+      "bytes": 42826
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/camera_stage_mapping.py",
+      "sha256": "2684fdc33807047c642561151e2bb5da9a23cf46da11e650b31b21a055e4473c",
+      "bytes": 20419
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/scan_workflows.py",
+      "sha256": "5194889031e656506b375f09007da23768c4625c07c8ca98160b8096f5ab2fbc",
+      "bytes": 39851
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/smart_scan.py",
+      "sha256": "05a93e568f780c90e59d6af754e95e2000372d99a30ec34b3c0691eebc028adf",
+      "bytes": 34092
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/stage/__init__.py",
+      "sha256": "ba36c284ab5de1735d29460cda11e15e1255fa3521bab40517bd61d4c1f88f19",
+      "bytes": 22861
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/stage/sangaboard.py",
+      "sha256": "14616725d5e4bc43c551144665085483b5c25ddd7c5de97dbf45d5fc4458a490",
+      "bytes": 10621
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_autofocus.py",
+      "sha256": "4054cfee22461a0d8c75e4ccdd6e3cf34ee365d4d6d30ad6fe5b8912d495389b",
+      "bytes": 9989
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_base_camera.py",
+      "sha256": "0f231deee037456bcab0884ce5ea7ae94ab67d9cd79854d09c972f6e168958c8",
+      "bytes": 5252
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_camera_stage_mapping.py",
+      "sha256": "92df57369e47320400833203c2ecdf7eacacdd7b40f57cf2a5db726f07bdc236",
+      "bytes": 19203
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_metadata.py",
+      "sha256": "6c98f73322fdc8f617cd2b195c27ec516aae0f05eb5d944a3b2d397730a3cede",
+      "bytes": 6223
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_sangaboard.py",
+      "sha256": "ea7caf74a473e3a7aba17a8b5666e05d9202bd84aa1f38f82e8628f1aad3bb3a",
+      "bytes": 3030
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_scan_workflows.py",
+      "sha256": "262e974d4a1e2fb5efd047c7a43a5bc5c021c530f4591c8adfa0df64a6bb11b2",
+      "bytes": 20115
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_smart_scan.py",
+      "sha256": "8062ff16ce687b6e29a406c06ca2dd28795e37a50bdfff8c30d66ff97e674cea",
+      "bytes": 35787
+    },
+    {
+      "path": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_stage.py",
+      "sha256": "497aaed83afde15159738b817e520a826127749c2a5becec3861ed14900ee03d",
+      "bytes": 34213
+    },
+    {
+      "path": "research/microscopy-controller/text/micromanager-asitiger.txt",
+      "sha256": "f1b46facafde943844a4742d1039a23d25f9e8f545bf09a66d98cba47fcf23cd",
+      "bytes": 6701
+    },
+    {
+      "path": "research/microscopy-controller/text/picamera2-manual.txt",
+      "sha256": "cc41cbd6fa78c82a8f651c88c0338f3ce4cbc3d8d40d3c02b03cb0d1c5a1cb89",
+      "bytes": 283885
+    }
+  ]
+}

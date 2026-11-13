@@ -1,0 +1,325 @@
+{
+  "record_kind": "bounded_official_reference_reading_audit",
+  "path_base": "repository_root",
+  "reviewed_at": "2026-11-06T00:13:46.298214+00:00",
+  "method": "Sequential untruncated LF-addressed reading of the stated ranges. Selected sections are complete byte ranges within the official Markdown export. CSV tables read as text; figures separately inspected with view_image. Chunk hashes attest bytes, not comprehension. Raw XML/HTML retained for provenance and structural inspection, not claimed fully read. No acquired code or OPC endpoint executed.",
+  "coverage_hash_convention": "Inclusive LF-delimited byte ranges retaining existing LF terminators and any final unterminated bytes.",
+  "derived_profile_path": "docs/opcua-binding.md",
+  "sources": [
+    {
+      "id": "part4-markdown",
+      "url": "https://reference.opcfoundation.org/specs/OPC-10000-4/v1.05.07/t63916693122/download/markdown",
+      "raw_path": "research/industrial-opcua/raw/part4-markdown.md",
+      "text_path": "research/industrial-opcua/text/part4-markdown.txt",
+      "text_sha256": "63ced1c94c06a39a3e8e1d52d0e90281e611926a855b2c8ddb142f50b7f03215",
+      "raw_sha256": "63ced1c94c06a39a3e8e1d52d0e90281e611926a855b2c8ddb142f50b7f03215",
+      "line_count": 5827,
+      "text_bytes": 553846,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 65,
+          "bytes": 3294,
+          "sha256": "86994d031540f0df757ae15d061578a77b40c7a85cfac251384955a92b17c49c",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 196,
+          "end_line": 305,
+          "bytes": 9403,
+          "sha256": "6546e7a2b0c0e8d3aa5980c713169ca7e931d4b98d37bc38c5d96131eca343a4",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 609,
+          "end_line": 753,
+          "bytes": 16368,
+          "sha256": "325299baa494c197c24ef307f1b3c7070bc8da6a8a8ca4f9fd9b6f1c1e9504f3",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 754,
+          "end_line": 859,
+          "bytes": 16879,
+          "sha256": "8eb6c0d9bc42e1fa91cbfc30014843ce69cad00cbe1c0296c855d61c81026ed2",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 860,
+          "end_line": 989,
+          "bytes": 11866,
+          "sha256": "137e93b8a089140530131b71d226c98b440a113a62bf490f3851358571aed746",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1494,
+          "end_line": 1551,
+          "bytes": 5153,
+          "sha256": "3e4338c91221705bfba5f2ba4507265503b0362ccec3a09e533c849f1f5d078c",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1620,
+          "end_line": 1686,
+          "bytes": 8685,
+          "sha256": "f049c21f66077e308ca6f4a7cd60171eb295f08399e35af0cca787e403351731",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1733,
+          "end_line": 1819,
+          "bytes": 9362,
+          "sha256": "e04f8d3909ffacbacaa5ba7d7a24202517cfda663057a98d34506714ae26b879",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1822,
+          "end_line": 1930,
+          "bytes": 13856,
+          "sha256": "3a2eb17b3dc99f22469404bae2fed9cc88dd606a9a04f646b15a84d31226b31e",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 2210,
+          "end_line": 2373,
+          "bytes": 25082,
+          "sha256": "a007f7506058244a46dcf9483bd9d90cb3a7d6bec12cc40e92ac19c686486857",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 2374,
+          "end_line": 2496,
+          "bytes": 10933,
+          "sha256": "960fdbace1ecf38f821e1455b5cdc5ca4924e1f98db6f46886a98c6ba75e4a0c",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 2497,
+          "end_line": 2691,
+          "bytes": 15900,
+          "sha256": "b39cd0dd9cecad5f0cbb9c57881883798d0d656ec1911c9b984d9986236072a3",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3309,
+          "end_line": 3384,
+          "bytes": 8486,
+          "sha256": "41734145d690d78d31e732b3e73304dcb663488f6766bdba878c599da2ece29b",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3737,
+          "end_line": 3763,
+          "bytes": 2978,
+          "sha256": "50adfd635c1485971becaeff655c95b65344ec0e4ac801c526fa53f862a7cc44",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3774,
+          "end_line": 3841,
+          "bytes": 5863,
+          "sha256": "15203f455c2878d383534ef3d3977dccca27fd430e0c7ca6fe07a61244320fdf",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 4303,
+          "end_line": 4374,
+          "bytes": 6095,
+          "sha256": "6f6a09b8649e3964cb4e9d65b1147470c305b053bf2d1c2c67e2af541f647a13",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 4469,
+          "end_line": 4516,
+          "bytes": 5421,
+          "sha256": "13f91302e9314a07e54c9c01943860c5620db1828d5276f28cda65f8a6e0f59d",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 4577,
+          "end_line": 4637,
+          "bytes": 7233,
+          "sha256": "edb1dc3d392c8377e6a841a2e6391a8c5df6f379a31a272c06621da43e986155",
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_complete": false,
+      "coverage_gaps": [
+        [
+          66,
+          195
+        ],
+        [
+          306,
+          608
+        ],
+        [
+          990,
+          1493
+        ],
+        [
+          1552,
+          1619
+        ],
+        [
+          1687,
+          1732
+        ],
+        [
+          1820,
+          1821
+        ],
+        [
+          1931,
+          2209
+        ],
+        [
+          2692,
+          3308
+        ],
+        [
+          3385,
+          3736
+        ],
+        [
+          3764,
+          3773
+        ],
+        [
+          3842,
+          4302
+        ],
+        [
+          4375,
+          4468
+        ],
+        [
+          4517,
+          4576
+        ],
+        [
+          4638,
+          5827
+        ]
+      ],
+      "read_line_count": 1711,
+      "reading_status": "read_selected_full_sections",
+      "reading_scope": "Full selected Part4 sections listed in metadata/selected-sections.json plus lines 1-65 and the chapter 5 heading. Not whole Part4; remaining exact line gaps retained. Inline CSV tables read as text.",
+      "version": "1.05.07",
+      "publication_date": "2026-04-15",
+      "visual_scope": "16 separately retained figures visually inspected; not all Part4 figures."
+    },
+    {
+      "id": "part10-markdown",
+      "url": "https://reference.opcfoundation.org/specs/OPC-10000-10/v1.05.00/t63916693079/download/markdown",
+      "raw_path": "research/industrial-opcua/raw/part10-markdown.md",
+      "text_path": "research/industrial-opcua/text/part10-markdown.txt",
+      "text_sha256": "6b1ebe33e4bec2c83e862546505973354043f5ca2c23ba245b173a3ecb61b3c3",
+      "raw_sha256": "6b1ebe33e4bec2c83e862546505973354043f5ca2c23ba245b173a3ecb61b3c3",
+      "line_count": 1022,
+      "text_bytes": 63647,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 100,
+          "bytes": 4144,
+          "sha256": "b5254ec9ab4738d5e0df5aa78c0fac61be5d7994b68255804b08bb431feffdb8",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 101,
+          "end_line": 245,
+          "bytes": 12679,
+          "sha256": "5336df0f1d2134adf45a9aeaf274b2704779c7873d7e3e47840561cde87b89d2",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 246,
+          "end_line": 452,
+          "bytes": 11381,
+          "sha256": "905494af0a6835e63240213da528391086d2884da17c08e174721353bd53e0fa",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 453,
+          "end_line": 642,
+          "bytes": 12226,
+          "sha256": "681b541920a544f7c54e49c17e52d42d14140f02fa702afc8dd22c59ec64cac8",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 643,
+          "end_line": 850,
+          "bytes": 14052,
+          "sha256": "6dc63c14fc8a4f3d74ff0696856488ad9e00b06a21dbfe1e6ee93096ae9e23c0",
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 851,
+          "end_line": 1022,
+          "bytes": 9165,
+          "sha256": "159f2a1ae62cb6d30096eaa228a565f0dc74c4f6e492eb64e66696c4686c215a",
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_complete": true,
+      "coverage_gaps": [],
+      "read_line_count": 1022,
+      "reading_status": "read_full",
+      "reading_scope": "Entire available official Markdown export, including normative material, references, complete informative Annex A, and inline CSV tables. Not an authoritative PDF reading claim.",
+      "version": "1.05.00",
+      "publication_date": "2021-10-15",
+      "visual_scope": "All 15 figure image assets exposed in retained public HTML visually inspected. Referenced Figure 3 and Figure A.11 are absent from the available export; completeness of the authoritative publication is not established.",
+      "all_available_figure_assets_visually_reviewed": true,
+      "all_referenced_figures_available": false
+    },
+    {
+      "id": "part4-metadata",
+      "url": "https://reference.opcfoundation.org/specs/OPC-10000-4/",
+      "raw_path": "research/industrial-opcua/raw/part4-metadata.html",
+      "text_path": "research/industrial-opcua/text/part4-metadata.txt",
+      "text_sha256": "2a65e5aa0ac1d0736c22fa2dd380cb9ee426c3a095a404509c2257925683728b",
+      "raw_sha256": "0f2b0628766c133971fc28ba7c101e756f01c424d0cde1f885955a0ff08e5362",
+      "line_count": 51,
+      "text_bytes": 960,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 51,
+          "bytes": 960,
+          "sha256": "2a65e5aa0ac1d0736c22fa2dd380cb9ee426c3a095a404509c2257925683728b",
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_complete": true,
+      "coverage_gaps": [],
+      "read_line_count": 51,
+      "reading_status": "read_full",
+      "reading_scope": "Entire retained visible metadata text; HTML markup/scripts not fully read."
+    },
+    {
+      "id": "part10-metadata",
+      "url": "https://reference.opcfoundation.org/specs/OPC-10000-10/",
+      "raw_path": "research/industrial-opcua/raw/part10-metadata.html",
+      "text_path": "research/industrial-opcua/text/part10-metadata.txt",
+      "text_sha256": "2846a2ea8d39e76c97823540dd1a80950fd1972660d23c8f11d29890beae62cd",
+      "raw_sha256": "333209ccd07db85f1fa7b927357c62730f5b894342bf7b1c378e4a6d8386bd6c",
+      "line_count": 51,
+      "text_bytes": 966,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 51,
+          "bytes": 966,
+          "sha256": "2846a2ea8d39e76c97823540dd1a80950fd1972660d23c8f11d29890beae62cd",
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_complete": true,
+      "coverage_gaps": [],
+      "read_line_count": 51,
+      "reading_status": "read_full",
+      "reading_scope": "Entire retained visible metadata text; HTML markup/scripts not fully read."
+    }
+  ]
+}

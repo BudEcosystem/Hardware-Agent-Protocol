@@ -1,0 +1,809 @@
+{
+  "schema": "hms-reading-overlay-v1",
+  "review_date": "2026-11-07",
+  "scope": "Complete arXiv v2 LF text and selected visual corroboration; complete official project visible text; thirteen complete selected source files; selected metadata only. No full repository or dependency audit.",
+  "publisher_full_read": false,
+  "broader_review_complete": false,
+  "sources": [
+    {
+      "id": "voyager-arxiv-status",
+      "url": "https://arxiv.org/abs/2305.16291",
+      "final_url": "https://arxiv.org/abs/2305.16291",
+      "retrieved_at": "2026-11-06T19:12:28.666290+00:00",
+      "source_version": "arXiv status snapshot",
+      "raw_path": "research/planning/pat-learning/raw/voyager-arxiv-status.html",
+      "text_path": "research/planning/pat-learning/text/voyager-arxiv-status.txt",
+      "text_sha256": "42e09f2a37e0e58798a518f52ee735371dc2592724d4fab66370cad89fd52d56",
+      "raw_sha256": "92e5b80920776ab028c6e7f5e00d8c41e16631665bc22b56739118cbf43d71ea",
+      "source_kind": "primary_research_or_metadata",
+      "line_count": 228,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 71,
+          "sha256": "5e69ac3613519d682f686d25a57232ac6ef4cdd319102f270f2ff4672bcb3470"
+        }
+      ],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.31140350877192985,
+      "reading_status": "read_selected",
+      "note": "Selected metadata coverage; acquisition of remainder does not imply reading. Queued papers themselves are not acquired or read."
+    },
+    {
+      "id": "voyager-arxiv-v2",
+      "url": "https://arxiv.org/pdf/2305.16291v2",
+      "final_url": "https://arxiv.org/pdf/2305.16291v2",
+      "retrieved_at": "2026-11-06T19:12:28.915642+00:00",
+      "source_version": "arXiv:2305.16291v2, 2023-10-19",
+      "raw_path": "research/planning/pat-learning/raw/voyager-arxiv-v2.pdf",
+      "text_path": "research/planning/pat-learning/text/voyager-arxiv-v2.txt",
+      "text_sha256": "441d7642323ef89a655bfe379ee6a950586bdad3b8fd8848b3731303e199edd3",
+      "raw_sha256": "769a4e33ddeeb73870849232eece49afe882c2d146362e33917ccb432ba0efb8",
+      "source_kind": "primary_research_or_metadata",
+      "line_count": 2553,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 330,
+          "sha256": "388668f0df23c0b95cd4b4ed3f96149be1145079b62f7b769b9c14eeec7606eb"
+        },
+        {
+          "start_line": 331,
+          "end_line": 700,
+          "sha256": "034ec03ed2d619cd2621c78e59b02d89414bd3dcade10c793a4479e637f53e8b"
+        },
+        {
+          "start_line": 701,
+          "end_line": 1080,
+          "sha256": "278241912b6bfccc632257bc47e999ea9bbd0e54de5c0a03be51f5fe74091659"
+        },
+        {
+          "start_line": 1081,
+          "end_line": 1460,
+          "sha256": "3bbd34726bba4f8cd640ba69bdee012561e3c551e45d7c41c34cc6d69946dec1"
+        },
+        {
+          "start_line": 1461,
+          "end_line": 1850,
+          "sha256": "a7b5ef7e03e2cc4425dbe7cf4e0f047af20aa29d2b7e5eb10a07ec99409558b1"
+        },
+        {
+          "start_line": 1851,
+          "end_line": 2240,
+          "sha256": "7bc717294e8cdd880e5ab7d2369c3a11f51998ba95e433300750e35c19bed8ee"
+        },
+        {
+          "start_line": 2241,
+          "end_line": 2553,
+          "sha256": "c00977fda0be2c046aa664e41c2e111598c35db0a3d7eabbb2a132488f536fdd"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full LF text including final form-feed line, references and both appendices; all numbered figures/tables visually corroborated on selected pages. No publisher-final claim.",
+      "pdf_page_count": 42,
+      "all_pdf_pages_reviewed": false,
+      "reviewed_pdf_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        19,
+        21,
+        30,
+        32,
+        34,
+        38,
+        39,
+        41,
+        42
+      ]
+    },
+    {
+      "id": "voyager-commit",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/commits/55e45a880755d0c8c66ca7fb5fe7962ac8974f89",
+      "final_url": "https://api.github.com/repos/MineDojo/Voyager/commits/55e45a880755d0c8c66ca7fb5fe7962ac8974f89",
+      "retrieved_at": "2026-11-06T19:12:40.689575+00:00",
+      "source_version": "Official GitHub commit metadata",
+      "raw_path": "research/planning/pat-learning/raw/voyager-commit.json",
+      "text_path": "research/planning/pat-learning/text/voyager-commit.txt",
+      "text_sha256": "ee557cb7c9907487b5581a5565e04eea501ef194da8feee6e432bce4fc7d6ee7",
+      "raw_sha256": "60430c79ccdd38df722dba2d76515b73f40a85958bdfde2f9ff83773f568c4d7",
+      "source_kind": "primary_research_or_metadata",
+      "line_count": 106,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 48,
+          "sha256": "dfd6b7a3dc072ed9d06a17e5d995914000b534e55e727ca0af3e48de63569063"
+        }
+      ],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.4528301886792453,
+      "reading_status": "read_selected",
+      "note": "Selected metadata coverage; acquisition of remainder does not imply reading. Queued papers themselves are not acquired or read."
+    },
+    {
+      "id": "voyager-tree",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/55e45a880755d0c8c66ca7fb5fe7962ac8974f89?recursive=1",
+      "final_url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/55e45a880755d0c8c66ca7fb5fe7962ac8974f89?recursive=1",
+      "retrieved_at": "2026-11-06T19:12:41.228967+00:00",
+      "source_version": "Recursive tree at pinned commit",
+      "raw_path": "research/planning/pat-learning/raw/voyager-tree.json",
+      "text_path": "research/planning/pat-learning/text/voyager-tree.txt",
+      "text_sha256": "4d299192430a5cb31bb438d8ca19e2e76542c00871c8078a050ea0c47c91b2d2",
+      "raw_sha256": "531a592f278c8f6b608251c4208f002ae32b826e20a55cbcea6d954e6b7769fa",
+      "source_kind": "primary_research_or_metadata",
+      "line_count": 3929,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 24,
+          "sha256": "6e0829ab8f9f04b33db8f8413bc17609631a8f0ff8b22c0a54cf57790e8308b9"
+        }
+      ],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.006108424535505218,
+      "reading_status": "read_selected",
+      "note": "Selected metadata coverage; acquisition of remainder does not imply reading. Queued papers themselves are not acquired or read."
+    },
+    {
+      "id": "queue-lrll-status",
+      "url": "https://arxiv.org/abs/2406.18746",
+      "final_url": "https://arxiv.org/abs/2406.18746",
+      "retrieved_at": "2026-11-06T19:12:41.472655+00:00",
+      "source_version": "Queue-only metadata, paper not read",
+      "raw_path": "research/planning/pat-learning/raw/queue-lrll-status.html",
+      "text_path": "research/planning/pat-learning/text/queue-lrll-status.txt",
+      "text_sha256": "ee37cad7cdfcfc813a79e1f10730de9189556be0dc6ef8acfe7ae283b3879741",
+      "raw_sha256": "677f89ebb057523c2d56d7db624cb18bc6bb7b4bc894489c341d712d8ce55eb9",
+      "source_kind": "primary_research_or_metadata",
+      "line_count": 205,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 85,
+          "sha256": "4c7be1fb14c4c94d594605b20086db830044da92fc8741d92a72fc289a8c2c7a"
+        }
+      ],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.4146341463414634,
+      "reading_status": "read_selected",
+      "note": "Selected metadata coverage; acquisition of remainder does not imply reading. Queued papers themselves are not acquired or read."
+    },
+    {
+      "id": "queue-autoskill-status",
+      "url": "https://arxiv.org/abs/2603.01145",
+      "final_url": "https://arxiv.org/abs/2603.01145",
+      "retrieved_at": "2026-11-06T19:12:41.888369+00:00",
+      "source_version": "Queue-only metadata, paper not read",
+      "raw_path": "research/planning/pat-learning/raw/queue-autoskill-status.html",
+      "text_path": "research/planning/pat-learning/text/queue-autoskill-status.txt",
+      "text_sha256": "f1f02a0946affd749eebd5c349b34690469048af29f4d589ffbc4253354bccdd",
+      "raw_sha256": "d6e79f3e529a19b4cfac08be6fa977b04e4f4b32a8fbd562cc0628d53a3f60a6",
+      "source_kind": "primary_research_or_metadata",
+      "line_count": 221,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 85,
+          "sha256": "0942c0f15741102057d013745ddd4f25c0fa9698d27d3dcea07a7e7a3a6f2284"
+        }
+      ],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.38461538461538464,
+      "reading_status": "read_selected",
+      "note": "Selected metadata coverage; acquisition of remainder does not imply reading. Queued papers themselves are not acquired or read."
+    },
+    {
+      "id": "queue-skillpp-status",
+      "url": "https://arxiv.org/abs/2611.00544",
+      "final_url": "https://arxiv.org/abs/2611.00544",
+      "retrieved_at": "2026-11-06T19:12:42.329049+00:00",
+      "source_version": "Queue-only metadata, paper not read",
+      "raw_path": "research/planning/pat-learning/raw/queue-skillpp-status.html",
+      "text_path": "research/planning/pat-learning/text/queue-skillpp-status.txt",
+      "text_sha256": "f84ec9adacb8170f8c69952ddb5c85fbf7a42b0ad5c4e2163f0401f40a6847a9",
+      "raw_sha256": "4bc0706dd970c40b4d81a20f13498aef903d9e120597201f235168831af7b303",
+      "source_kind": "primary_research_or_metadata",
+      "line_count": 221,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 85,
+          "sha256": "6ca52d970e97cd92f8483298d36ffc5de39c5551cf74f717def30977bb2b633e"
+        }
+      ],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.38461538461538464,
+      "reading_status": "read_selected",
+      "note": "Selected metadata coverage; acquisition of remainder does not imply reading. Queued papers themselves are not acquired or read."
+    },
+    {
+      "id": "voyager-project-retry",
+      "url": "https://voyager.minedojo.org/index.html",
+      "final_url": "https://voyager.minedojo.org/index.html",
+      "retrieved_at": "2026-11-06T19:14:55.783261+00:00",
+      "source_version": "Official project page retry after root URL 503",
+      "raw_path": "research/planning/pat-learning/raw/voyager-project-retry.html",
+      "text_path": "research/planning/pat-learning/text/voyager-project-retry.txt",
+      "text_sha256": "bde3f3ff0a1f208f8e4b5e66a2847d3b949d0db662f1a92223c80900cd439899",
+      "raw_sha256": "cc6114d7b3d23354f280c3195d326500dd00c28aa3a51f4b2b11bc489a43858f",
+      "source_kind": "primary_research_or_metadata",
+      "line_count": 208,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 208,
+          "sha256": "bde3f3ff0a1f208f8e4b5e66a2847d3b949d0db662f1a92223c80900cd439899"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    },
+    {
+      "id": "repo-README-md",
+      "url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/README.md",
+      "final_url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/README.md",
+      "retrieved_at": "2026-11-06T19:15:28.691537+00:00",
+      "source_version": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89:README.md",
+      "raw_path": "research/planning/pat-learning/repository/repo-README-md.txt",
+      "text_path": "research/planning/pat-learning/text/repo-README-md.txt",
+      "text_sha256": "36fd5653c731f5b20189013f8552e77fefc182093f664288d6ce836e3efc111a",
+      "raw_sha256": "36fd5653c731f5b20189013f8552e77fefc182093f664288d6ce836e3efc111a",
+      "source_kind": "selected_repository_file",
+      "line_count": 164,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 164,
+          "sha256": "36fd5653c731f5b20189013f8552e77fefc182093f664288d6ce836e3efc111a"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    },
+    {
+      "id": "repo-voyager--voyager-py",
+      "url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/voyager.py",
+      "final_url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/voyager.py",
+      "retrieved_at": "2026-11-06T19:15:29.083487+00:00",
+      "source_version": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89:voyager/voyager.py",
+      "raw_path": "research/planning/pat-learning/repository/repo-voyager--voyager-py.txt",
+      "text_path": "research/planning/pat-learning/text/repo-voyager--voyager-py.txt",
+      "text_sha256": "4051b817ac3b044de12d456e03f162869715e675f5f8b2bd372491662710a59c",
+      "raw_sha256": "4051b817ac3b044de12d456e03f162869715e675f5f8b2bd372491662710a59c",
+      "source_kind": "selected_repository_file",
+      "line_count": 411,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 411,
+          "sha256": "4051b817ac3b044de12d456e03f162869715e675f5f8b2bd372491662710a59c"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    },
+    {
+      "id": "repo-voyager--agents--skill-py",
+      "url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/agents/skill.py",
+      "final_url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/agents/skill.py",
+      "retrieved_at": "2026-11-06T19:15:29.484403+00:00",
+      "source_version": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89:voyager/agents/skill.py",
+      "raw_path": "research/planning/pat-learning/repository/repo-voyager--agents--skill-py.txt",
+      "text_path": "research/planning/pat-learning/text/repo-voyager--agents--skill-py.txt",
+      "text_sha256": "1029c13a2857f55b66ca677a52bc8c60bcfe115c7a860c51acc7d8eab40e31bc",
+      "raw_sha256": "1029c13a2857f55b66ca677a52bc8c60bcfe115c7a860c51acc7d8eab40e31bc",
+      "source_kind": "selected_repository_file",
+      "line_count": 127,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 127,
+          "sha256": "1029c13a2857f55b66ca677a52bc8c60bcfe115c7a860c51acc7d8eab40e31bc"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    },
+    {
+      "id": "repo-voyager--agents--action-py",
+      "url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/agents/action.py",
+      "final_url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/agents/action.py",
+      "retrieved_at": "2026-11-06T19:15:29.880416+00:00",
+      "source_version": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89:voyager/agents/action.py",
+      "raw_path": "research/planning/pat-learning/repository/repo-voyager--agents--action-py.txt",
+      "text_path": "research/planning/pat-learning/text/repo-voyager--agents--action-py.txt",
+      "text_sha256": "6fd2966302b077566a2a38768a0a77eec898925352a4a1f34198fcae5d1c568e",
+      "raw_sha256": "6fd2966302b077566a2a38768a0a77eec898925352a4a1f34198fcae5d1c568e",
+      "source_kind": "selected_repository_file",
+      "line_count": 280,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 280,
+          "sha256": "6fd2966302b077566a2a38768a0a77eec898925352a4a1f34198fcae5d1c568e"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    },
+    {
+      "id": "repo-voyager--agents--critic-py",
+      "url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/agents/critic.py",
+      "final_url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/agents/critic.py",
+      "retrieved_at": "2026-11-06T19:15:30.296180+00:00",
+      "source_version": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89:voyager/agents/critic.py",
+      "raw_path": "research/planning/pat-learning/repository/repo-voyager--agents--critic-py.txt",
+      "text_path": "research/planning/pat-learning/text/repo-voyager--agents--critic-py.txt",
+      "text_sha256": "c915cf6be12307f878800c0e257fc7226f37e8ae35e226f570b73824cf08a81c",
+      "raw_sha256": "c915cf6be12307f878800c0e257fc7226f37e8ae35e226f570b73824cf08a81c",
+      "source_kind": "selected_repository_file",
+      "line_count": 138,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 138,
+          "sha256": "c915cf6be12307f878800c0e257fc7226f37e8ae35e226f570b73824cf08a81c"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    },
+    {
+      "id": "repo-voyager--agents--curriculum-py",
+      "url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/agents/curriculum.py",
+      "final_url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/agents/curriculum.py",
+      "retrieved_at": "2026-11-06T19:15:30.695813+00:00",
+      "source_version": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89:voyager/agents/curriculum.py",
+      "raw_path": "research/planning/pat-learning/repository/repo-voyager--agents--curriculum-py.txt",
+      "text_path": "research/planning/pat-learning/text/repo-voyager--agents--curriculum-py.txt",
+      "text_sha256": "faf58ae09c3cdd3322ab05155cab6196a7eedaa940d7fc5bb9096c0a1bdc4503",
+      "raw_sha256": "faf58ae09c3cdd3322ab05155cab6196a7eedaa940d7fc5bb9096c0a1bdc4503",
+      "source_kind": "selected_repository_file",
+      "line_count": 498,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 498,
+          "sha256": "faf58ae09c3cdd3322ab05155cab6196a7eedaa940d7fc5bb9096c0a1bdc4503"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    },
+    {
+      "id": "repo-voyager--prompts--skill-txt",
+      "url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/prompts/skill.txt",
+      "final_url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/prompts/skill.txt",
+      "retrieved_at": "2026-11-06T19:16:31.732075+00:00",
+      "source_version": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89:voyager/prompts/skill.txt",
+      "raw_path": "research/planning/pat-learning/repository/repo-voyager--prompts--skill-txt.txt",
+      "text_path": "research/planning/pat-learning/text/repo-voyager--prompts--skill-txt.txt",
+      "text_sha256": "e07a629e7ac85217c06e8f946f8ea6e0e39ed7eaefde0a1ce322c1fc9689459f",
+      "raw_sha256": "e07a629e7ac85217c06e8f946f8ea6e0e39ed7eaefde0a1ce322c1fc9689459f",
+      "source_kind": "selected_repository_file",
+      "line_count": 51,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 51,
+          "sha256": "e07a629e7ac85217c06e8f946f8ea6e0e39ed7eaefde0a1ce322c1fc9689459f"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    },
+    {
+      "id": "repo-voyager--prompts--action_template-txt",
+      "url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/prompts/action_template.txt",
+      "final_url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/prompts/action_template.txt",
+      "retrieved_at": "2026-11-06T19:16:32.581786+00:00",
+      "source_version": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89:voyager/prompts/action_template.txt",
+      "raw_path": "research/planning/pat-learning/repository/repo-voyager--prompts--action_template-txt.txt",
+      "text_path": "research/planning/pat-learning/text/repo-voyager--prompts--action_template-txt.txt",
+      "text_sha256": "258f90cd3e3be46d89df14f1c945802132aab256bdf812fd8fcf638d8fa1e46f",
+      "raw_sha256": "258f90cd3e3be46d89df14f1c945802132aab256bdf812fd8fcf638d8fa1e46f",
+      "source_kind": "selected_repository_file",
+      "line_count": 49,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 49,
+          "sha256": "258f90cd3e3be46d89df14f1c945802132aab256bdf812fd8fcf638d8fa1e46f"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    },
+    {
+      "id": "repo-voyager--prompts--critic-txt",
+      "url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/prompts/critic.txt",
+      "final_url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/prompts/critic.txt",
+      "retrieved_at": "2026-11-06T19:16:33.208056+00:00",
+      "source_version": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89:voyager/prompts/critic.txt",
+      "raw_path": "research/planning/pat-learning/repository/repo-voyager--prompts--critic-txt.txt",
+      "text_path": "research/planning/pat-learning/text/repo-voyager--prompts--critic-txt.txt",
+      "text_sha256": "423cec48db02a38a0c437bfbd06cb1f73b0b7ecb825d0644d660b6782d6222da",
+      "raw_sha256": "423cec48db02a38a0c437bfbd06cb1f73b0b7ecb825d0644d660b6782d6222da",
+      "source_kind": "selected_repository_file",
+      "line_count": 127,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 127,
+          "sha256": "423cec48db02a38a0c437bfbd06cb1f73b0b7ecb825d0644d660b6782d6222da"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    },
+    {
+      "id": "repo-voyager--prompts--curriculum_task_decomposition-txt",
+      "url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/prompts/curriculum_task_decomposition.txt",
+      "final_url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/prompts/curriculum_task_decomposition.txt",
+      "retrieved_at": "2026-11-06T19:16:33.791355+00:00",
+      "source_version": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89:voyager/prompts/curriculum_task_decomposition.txt",
+      "raw_path": "research/planning/pat-learning/repository/repo-voyager--prompts--curriculum_task_decomposition-txt.txt",
+      "text_path": "research/planning/pat-learning/text/repo-voyager--prompts--curriculum_task_decomposition-txt.txt",
+      "text_sha256": "a6d831c299dbe4c23eb038d2f1a42fe89aad9ad9ddca033df925995cc800c3e2",
+      "raw_sha256": "a6d831c299dbe4c23eb038d2f1a42fe89aad9ad9ddca033df925995cc800c3e2",
+      "source_kind": "selected_repository_file",
+      "line_count": 12,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 12,
+          "sha256": "a6d831c299dbe4c23eb038d2f1a42fe89aad9ad9ddca033df925995cc800c3e2"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    },
+    {
+      "id": "repo-voyager--env--bridge-py",
+      "url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/env/bridge.py",
+      "final_url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/env/bridge.py",
+      "retrieved_at": "2026-11-06T19:16:34.397011+00:00",
+      "source_version": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89:voyager/env/bridge.py",
+      "raw_path": "research/planning/pat-learning/repository/repo-voyager--env--bridge-py.txt",
+      "text_path": "research/planning/pat-learning/text/repo-voyager--env--bridge-py.txt",
+      "text_sha256": "391250a33ac1fd0e8ba64005636c6c39bfd198d56283c0d86c67c845a3f0e1ee",
+      "raw_sha256": "391250a33ac1fd0e8ba64005636c6c39bfd198d56283c0d86c67c845a3f0e1ee",
+      "source_kind": "selected_repository_file",
+      "line_count": 189,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 189,
+          "sha256": "391250a33ac1fd0e8ba64005636c6c39bfd198d56283c0d86c67c845a3f0e1ee"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    },
+    {
+      "id": "repo-voyager--env--mineflayer--index-js",
+      "url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/env/mineflayer/index.js",
+      "final_url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/env/mineflayer/index.js",
+      "retrieved_at": "2026-11-06T19:16:35.044269+00:00",
+      "source_version": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89:voyager/env/mineflayer/index.js",
+      "raw_path": "research/planning/pat-learning/repository/repo-voyager--env--mineflayer--index-js.txt",
+      "text_path": "research/planning/pat-learning/text/repo-voyager--env--mineflayer--index-js.txt",
+      "text_sha256": "fd37a747c7010def28ae41b16f3297e8d7446412c4a08a6566a5599e2a2eb40f",
+      "raw_sha256": "fd37a747c7010def28ae41b16f3297e8d7446412c4a08a6566a5599e2a2eb40f",
+      "source_kind": "selected_repository_file",
+      "line_count": 425,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 425,
+          "sha256": "fd37a747c7010def28ae41b16f3297e8d7446412c4a08a6566a5599e2a2eb40f"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    },
+    {
+      "id": "repo-voyager--env--mineflayer--lib--skillLoader-js",
+      "url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/env/mineflayer/lib/skillLoader.js",
+      "final_url": "https://raw.githubusercontent.com/MineDojo/Voyager/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager/env/mineflayer/lib/skillLoader.js",
+      "retrieved_at": "2026-11-06T19:16:35.825244+00:00",
+      "source_version": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89:voyager/env/mineflayer/lib/skillLoader.js",
+      "raw_path": "research/planning/pat-learning/repository/repo-voyager--env--mineflayer--lib--skillLoader-js.txt",
+      "text_path": "research/planning/pat-learning/text/repo-voyager--env--mineflayer--lib--skillLoader-js.txt",
+      "text_sha256": "bdadf8b13686413fa96a89a799fa336a24880acb30b101f48ce594542ce6cacf",
+      "raw_sha256": "bdadf8b13686413fa96a89a799fa336a24880acb30b101f48ce594542ce6cacf",
+      "source_kind": "selected_repository_file",
+      "line_count": 79,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 79,
+          "sha256": "bdadf8b13686413fa96a89a799fa336a24880acb30b101f48ce594542ce6cacf"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full selected source only; not its links/dependencies."
+    }
+  ],
+  "figures": [
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-01.png",
+      "sha256": "012675b4d9ea5ae21897cbc54c05fb63f7b0776f7250d55a4f53652b82485484",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 1,
+      "labels": [
+        "Figure 1"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 1 -l 1 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-01"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-02.png",
+      "sha256": "35babf6e406a218cc10316b086833fc9a174411741e8266cc5c105af0ca9109f",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 2,
+      "labels": [
+        "Figure 2"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 2 -l 2 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-02"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-03.png",
+      "sha256": "b919c25d72b0b6b760b06a3367833e53525c8815a03fea773629e03ece1f1c44",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 3,
+      "labels": [
+        "Figure 3"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 3 -l 3 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-03"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-04.png",
+      "sha256": "8979fdd0f6211fb259728c6855f41be0e2b29c113b1ae1b5517435d1d1133faa",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 4,
+      "labels": [
+        "Figure 4"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 4 -l 4 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-04"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-05.png",
+      "sha256": "f63245d558a6d0fc612ad35178b6eb6314c93c2fdebb1daf5fe3dad2f7fb1cfe",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 5,
+      "labels": [
+        "Figure 5"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 5 -l 5 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-05"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-06.png",
+      "sha256": "1ca8a761cd385ee47decedab78e32e7182ceff29f5442c9f40d73e5c307a22af",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 6,
+      "labels": [
+        "Figure 6"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 6 -l 6 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-06"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-07.png",
+      "sha256": "109b8177beab28c346f08c20dad54293343cf94c9d0dd31eb2d8d706c488e39f",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 7,
+      "labels": [
+        "Table 1",
+        "Figure 7"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 7 -l 7 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-07"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-08.png",
+      "sha256": "d1ec597a371849a5b98ba9974e01d66c6811c65f42f6f80e8fc6726270c79edd",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 8,
+      "labels": [
+        "Table 2",
+        "Figure 8"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 8 -l 8 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-08"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-09.png",
+      "sha256": "407b2f1fab3164ad94fa8cdc804acbb58cdd9e9d70bfb521e212fb0f7589ac25",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 9,
+      "labels": [
+        "Figure 9",
+        "Figure 10"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 9 -l 9 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-09"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-19.png",
+      "sha256": "7a3ba87f57f7e3b7af3951ba4e9b7f02b376890113bf330db10c5cda76cafc07",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 19,
+      "labels": [
+        "Pseudocode 1"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 19 -l 19 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-19"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-21.png",
+      "sha256": "3832e0e129832604d0c3a698ba53e652ac645c03d062252c33b9eab31eef1c42",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 21,
+      "labels": [
+        "Table A.1"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 21 -l 21 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-21"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-30.png",
+      "sha256": "0614006efbaecfa50cbc2681939cc626ad87d7ab8678060d87003147b080565d",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 30,
+      "labels": [
+        "Prompt 4 loop prohibition"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 30 -l 30 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-30"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-32.png",
+      "sha256": "01ac135d43aa7430a63070eaa5681d9f129611f1e3e28027178f3bd75c53b9bd",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 32,
+      "labels": [
+        "Skill example 1 stale local choice"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 32 -l 32 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-32"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-34.png",
+      "sha256": "88c9eec3e35bb2a1f6791d7a1e1f1ce28f38db81511fa24800d547c81269fb01",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 34,
+      "labels": [
+        "Skill example 5 unbounded retries"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 34 -l 34 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-34"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-38.png",
+      "sha256": "25fbefa924e7ebaaad53db6fc9f95a91c582baf2e1b45e47725f112b4d789c2b",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 38,
+      "labels": [
+        "Table A.2"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 38 -l 38 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-38"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-39.png",
+      "sha256": "db86809b54369fa1d7d7b693b603f8337e7b37c8def788c5324150cca963e884",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 39,
+      "labels": [
+        "Table A.3",
+        "Figure A.1"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 39 -l 39 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-39"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-41.png",
+      "sha256": "d92605778fce3561666182134c6a4e335fb077e019170b12cf2a1033688688d3",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 41,
+      "labels": [
+        "Figure A.2"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 41 -l 41 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-41"
+    },
+    {
+      "path": "research/planning/pat-learning/figures/arxiv-v2-page-42.png",
+      "sha256": "fa2d8d8270baf36549739bfa4cad86da21bb07e519bd460e81800740c5707119",
+      "source_id": "voyager-arxiv-v2",
+      "pdf_page": 42,
+      "labels": [
+        "Figure A.3",
+        "Table A.4",
+        "Figure A.4"
+      ],
+      "visual_review_status": "reviewed_figures_tables_or_selected_code",
+      "render_command": "pdftoppm -f 42 -l 42 -singlefile -scale-to 1600 -png raw/voyager-arxiv-v2.pdf figures/arxiv-v2-page-42"
+    }
+  ],
+  "integrity_files": [
+    {
+      "path": "research/planning/pat-learning/README.md",
+      "sha256": "24f4e1f87c993e04c5deeb32c54bd8877a8eb79aaafbc5265e3ebb4b03e4269f"
+    },
+    {
+      "path": "research/planning/pat-learning/manifest.jsonl",
+      "sha256": "4eb7e2908ac6a95abb217a5d9aa58f98928c68c0d105306edea3ce07e02e19a6"
+    },
+    {
+      "path": "research/planning/pat-learning/acquire.py",
+      "sha256": "fce5aae63428110fb5d1a98cbec652cce09eddb4e43504c0721b3fe488c9724a"
+    },
+    {
+      "path": "research/planning/pat-learning/build_reading.py",
+      "sha256": "75cb379777d63f99a7f75d22417e28a620df49fcdcc7fc97f9d0d3401400add3"
+    },
+    {
+      "path": "research/planning/pat-learning/verify.py",
+      "sha256": "a0da7fbce6f053a753897a29eb6fcaac7360a507ccc990d8aa9128c687899399"
+    },
+    {
+      "path": "research/planning/pat-learning/repository-pin.json",
+      "sha256": "9c49a6286f2a5fb809b81dbc4bdfc4ca397ca7e9567350c65a1524a598f9aacb"
+    },
+    {
+      "path": "research/planning/pat-learning/queue.json",
+      "sha256": "a6f2faf9d553a21fdff988f957a0a21dee2adca5bed0023e132f2eed316fa6e8"
+    },
+    {
+      "path": "research/planning/pat-learning/notes/critique.md",
+      "sha256": "3e7415856dc4f53f5434fba7c1b55d9da62cb2857953a69af57bbf55500697be"
+    },
+    {
+      "path": "research/planning/pat-learning/notes/figures.md",
+      "sha256": "6cc12ec842eaac9eb6292b22706874dcabb009475ee2dd20e64e2ee5d7def430"
+    }
+  ]
+}

@@ -1,0 +1,2137 @@
+{
+  "schema_version": 1,
+  "audited_at": "2026-11-05T22:49:16.062115+00:00",
+  "purpose": "Offline integrity and coverage audit of instrumentation research artifacts; no acquired code executed and no physical device I/O.",
+  "method": "Python standard-library SHA-256 over archived raw/text/image bytes; LF-only retained-byte line intervals; exact full-coverage and page-set equality; relative document link existence.",
+  "claim_limit": "Structural audit verifies artifact integrity and recorded coverage consistency, not that reading occurred, comprehension, native conformance, device behavior or hardware safety.",
+  "inputs": {
+    "research/instrumentation/manifest.json": "e0a56330165058fe8e000d4dae1ec0237199922935c550595ffca8d2fb5c7eeb",
+    "research/instrumentation/reading-instrumentation.json": "2769ec5e615fef2b5547f43b6e44bd5d6bb4ffe7dbaf43056c1af59519e3e725",
+    "research/instrumentation/figure-manifest.json": "45e8f619f06bffa9c19a59d15d1f191d7ccf889e2c3ca05835b603bf18cdca22"
+  },
+  "summary": {
+    "checks": 411,
+    "passed": 411,
+    "failed": 0,
+    "full_pdf_sources": 2,
+    "full_pdf_pages": 96,
+    "partial_pdf_sources": 2,
+    "total_reviewed_page_images": 110,
+    "contact_sheets": 25,
+    "enlarged_detail_images": 3
+  },
+  "checks": [
+    {
+      "kind": "raw_sha256",
+      "id": "modbus-application-v1.1b3",
+      "passed": true
+    },
+    {
+      "kind": "raw_byte_count",
+      "id": "modbus-application-v1.1b3",
+      "passed": true
+    },
+    {
+      "kind": "text_sha256",
+      "id": "modbus-application-v1.1b3",
+      "passed": true
+    },
+    {
+      "kind": "text_byte_count",
+      "id": "modbus-application-v1.1b3",
+      "passed": true
+    },
+    {
+      "kind": "raw_sha256",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true
+    },
+    {
+      "kind": "raw_byte_count",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true
+    },
+    {
+      "kind": "text_sha256",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true
+    },
+    {
+      "kind": "text_byte_count",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true
+    },
+    {
+      "kind": "raw_sha256",
+      "id": "scpi-99",
+      "passed": true
+    },
+    {
+      "kind": "raw_byte_count",
+      "id": "scpi-99",
+      "passed": true
+    },
+    {
+      "kind": "text_sha256",
+      "id": "scpi-99",
+      "passed": true
+    },
+    {
+      "kind": "text_byte_count",
+      "id": "scpi-99",
+      "passed": true
+    },
+    {
+      "kind": "raw_sha256",
+      "id": "scpi-provenance",
+      "passed": true
+    },
+    {
+      "kind": "raw_byte_count",
+      "id": "scpi-provenance",
+      "passed": true
+    },
+    {
+      "kind": "text_sha256",
+      "id": "scpi-provenance",
+      "passed": true
+    },
+    {
+      "kind": "text_byte_count",
+      "id": "scpi-provenance",
+      "passed": true
+    },
+    {
+      "kind": "raw_sha256",
+      "id": "ivi-specifications",
+      "passed": true
+    },
+    {
+      "kind": "raw_byte_count",
+      "id": "ivi-specifications",
+      "passed": true
+    },
+    {
+      "kind": "text_sha256",
+      "id": "ivi-specifications",
+      "passed": true
+    },
+    {
+      "kind": "text_byte_count",
+      "id": "ivi-specifications",
+      "passed": true
+    },
+    {
+      "kind": "raw_sha256",
+      "id": "modbus-serial-v1.02",
+      "passed": true
+    },
+    {
+      "kind": "raw_byte_count",
+      "id": "modbus-serial-v1.02",
+      "passed": true
+    },
+    {
+      "kind": "text_sha256",
+      "id": "modbus-serial-v1.02",
+      "passed": true
+    },
+    {
+      "kind": "text_byte_count",
+      "id": "modbus-serial-v1.02",
+      "passed": true
+    },
+    {
+      "kind": "raw_sha256",
+      "id": "modbus-specifications-web",
+      "passed": true
+    },
+    {
+      "kind": "raw_byte_count",
+      "id": "modbus-specifications-web",
+      "passed": true
+    },
+    {
+      "kind": "text_sha256",
+      "id": "modbus-specifications-web",
+      "passed": true
+    },
+    {
+      "kind": "text_byte_count",
+      "id": "modbus-specifications-web",
+      "passed": true
+    },
+    {
+      "kind": "lf_line_count",
+      "id": "modbus-application-v1.1b3",
+      "passed": true
+    },
+    {
+      "kind": "reading_raw_sha256",
+      "id": "modbus-application-v1.1b3",
+      "passed": true
+    },
+    {
+      "kind": "reading_text_sha256",
+      "id": "modbus-application-v1.1b3",
+      "passed": true
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "1-420"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "1-420"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "421-840"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "421-840"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "841-1260"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "841-1260"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "1261-1680"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "1261-1680"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "1681-2100"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "1681-2100"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "2101-2520"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "2101-2520"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "2521-2940"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "2521-2940"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "2941-3110"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-application-v1.1b3",
+      "passed": true,
+      "detail": "2941-3110"
+    },
+    {
+      "kind": "nonoverlapping_coverage",
+      "id": "modbus-application-v1.1b3",
+      "passed": true
+    },
+    {
+      "kind": "covered_line_count",
+      "id": "modbus-application-v1.1b3",
+      "passed": true
+    },
+    {
+      "kind": "full_or_partial_coverage_label",
+      "id": "modbus-application-v1.1b3",
+      "passed": true
+    },
+    {
+      "kind": "reading_visual_page_list",
+      "id": "modbus-application-v1.1b3",
+      "passed": true
+    },
+    {
+      "kind": "visual_full_or_partial_label",
+      "id": "modbus-application-v1.1b3",
+      "passed": true
+    },
+    {
+      "kind": "lf_line_count",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true
+    },
+    {
+      "kind": "reading_raw_sha256",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true
+    },
+    {
+      "kind": "reading_text_sha256",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true,
+      "detail": "1-420"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true,
+      "detail": "1-420"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true,
+      "detail": "421-840"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true,
+      "detail": "421-840"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true,
+      "detail": "841-1260"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true,
+      "detail": "841-1260"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true,
+      "detail": "1261-1680"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true,
+      "detail": "1261-1680"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true,
+      "detail": "1681-2100"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true,
+      "detail": "1681-2100"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true,
+      "detail": "2101-2528"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true,
+      "detail": "2101-2528"
+    },
+    {
+      "kind": "nonoverlapping_coverage",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true
+    },
+    {
+      "kind": "covered_line_count",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true
+    },
+    {
+      "kind": "full_or_partial_coverage_label",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true
+    },
+    {
+      "kind": "reading_visual_page_list",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true
+    },
+    {
+      "kind": "visual_full_or_partial_label",
+      "id": "modbus-tcp-guide-v1.0b",
+      "passed": true
+    },
+    {
+      "kind": "lf_line_count",
+      "id": "scpi-99",
+      "passed": true
+    },
+    {
+      "kind": "reading_raw_sha256",
+      "id": "scpi-99",
+      "passed": true
+    },
+    {
+      "kind": "reading_text_sha256",
+      "id": "scpi-99",
+      "passed": true
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "scpi-99",
+      "passed": true,
+      "detail": "1-260"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "scpi-99",
+      "passed": true,
+      "detail": "1-260"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "scpi-99",
+      "passed": true,
+      "detail": "261-597"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "scpi-99",
+      "passed": true,
+      "detail": "261-597"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "scpi-99",
+      "passed": true,
+      "detail": "598-970"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "scpi-99",
+      "passed": true,
+      "detail": "598-970"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "scpi-99",
+      "passed": true,
+      "detail": "2312-2655"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "scpi-99",
+      "passed": true,
+      "detail": "2312-2655"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "scpi-99",
+      "passed": true,
+      "detail": "26990-27185"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "scpi-99",
+      "passed": true,
+      "detail": "26990-27185"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "scpi-99",
+      "passed": true,
+      "detail": "29575-29760"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "scpi-99",
+      "passed": true,
+      "detail": "29575-29760"
+    },
+    {
+      "kind": "nonoverlapping_coverage",
+      "id": "scpi-99",
+      "passed": true
+    },
+    {
+      "kind": "covered_line_count",
+      "id": "scpi-99",
+      "passed": true
+    },
+    {
+      "kind": "full_or_partial_coverage_label",
+      "id": "scpi-99",
+      "passed": true
+    },
+    {
+      "kind": "reading_visual_page_list",
+      "id": "scpi-99",
+      "passed": true
+    },
+    {
+      "kind": "visual_full_or_partial_label",
+      "id": "scpi-99",
+      "passed": true
+    },
+    {
+      "kind": "lf_line_count",
+      "id": "scpi-provenance",
+      "passed": true
+    },
+    {
+      "kind": "reading_raw_sha256",
+      "id": "scpi-provenance",
+      "passed": true
+    },
+    {
+      "kind": "reading_text_sha256",
+      "id": "scpi-provenance",
+      "passed": true
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "scpi-provenance",
+      "passed": true,
+      "detail": "1-56"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "scpi-provenance",
+      "passed": true,
+      "detail": "1-56"
+    },
+    {
+      "kind": "nonoverlapping_coverage",
+      "id": "scpi-provenance",
+      "passed": true
+    },
+    {
+      "kind": "covered_line_count",
+      "id": "scpi-provenance",
+      "passed": true
+    },
+    {
+      "kind": "full_or_partial_coverage_label",
+      "id": "scpi-provenance",
+      "passed": true
+    },
+    {
+      "kind": "lf_line_count",
+      "id": "ivi-specifications",
+      "passed": true
+    },
+    {
+      "kind": "reading_raw_sha256",
+      "id": "ivi-specifications",
+      "passed": true
+    },
+    {
+      "kind": "reading_text_sha256",
+      "id": "ivi-specifications",
+      "passed": true
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "ivi-specifications",
+      "passed": true,
+      "detail": "1-292"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "ivi-specifications",
+      "passed": true,
+      "detail": "1-292"
+    },
+    {
+      "kind": "nonoverlapping_coverage",
+      "id": "ivi-specifications",
+      "passed": true
+    },
+    {
+      "kind": "covered_line_count",
+      "id": "ivi-specifications",
+      "passed": true
+    },
+    {
+      "kind": "full_or_partial_coverage_label",
+      "id": "ivi-specifications",
+      "passed": true
+    },
+    {
+      "kind": "lf_line_count",
+      "id": "modbus-serial-v1.02",
+      "passed": true
+    },
+    {
+      "kind": "reading_raw_sha256",
+      "id": "modbus-serial-v1.02",
+      "passed": true
+    },
+    {
+      "kind": "reading_text_sha256",
+      "id": "modbus-serial-v1.02",
+      "passed": true
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-serial-v1.02",
+      "passed": true,
+      "detail": "229-520"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-serial-v1.02",
+      "passed": true,
+      "detail": "229-520"
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-serial-v1.02",
+      "passed": true,
+      "detail": "521-540"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-serial-v1.02",
+      "passed": true,
+      "detail": "521-540"
+    },
+    {
+      "kind": "nonoverlapping_coverage",
+      "id": "modbus-serial-v1.02",
+      "passed": true
+    },
+    {
+      "kind": "covered_line_count",
+      "id": "modbus-serial-v1.02",
+      "passed": true
+    },
+    {
+      "kind": "full_or_partial_coverage_label",
+      "id": "modbus-serial-v1.02",
+      "passed": true
+    },
+    {
+      "kind": "reading_visual_page_list",
+      "id": "modbus-serial-v1.02",
+      "passed": true
+    },
+    {
+      "kind": "visual_full_or_partial_label",
+      "id": "modbus-serial-v1.02",
+      "passed": true
+    },
+    {
+      "kind": "lf_line_count",
+      "id": "modbus-specifications-web",
+      "passed": true
+    },
+    {
+      "kind": "reading_raw_sha256",
+      "id": "modbus-specifications-web",
+      "passed": true
+    },
+    {
+      "kind": "reading_text_sha256",
+      "id": "modbus-specifications-web",
+      "passed": true
+    },
+    {
+      "kind": "coverage_bounds",
+      "id": "modbus-specifications-web",
+      "passed": true,
+      "detail": "1-63"
+    },
+    {
+      "kind": "coverage_interval_sha256",
+      "id": "modbus-specifications-web",
+      "passed": true,
+      "detail": "1-63"
+    },
+    {
+      "kind": "nonoverlapping_coverage",
+      "id": "modbus-specifications-web",
+      "passed": true
+    },
+    {
+      "kind": "covered_line_count",
+      "id": "modbus-specifications-web",
+      "passed": true
+    },
+    {
+      "kind": "full_or_partial_coverage_label",
+      "id": "modbus-specifications-web",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-01.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-01.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-02.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-02.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-03.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-03.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-04.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-04.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-05.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-05.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-06.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-06.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-07.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-07.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-08.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-08.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-09.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-09.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-10.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-10.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-11.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-11.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-12.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-12.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-13.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-13.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-14.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-14.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-15.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-15.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-16.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-16.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-17.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-17.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-18.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-18.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-19.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-19.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-20.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-20.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-21.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-21.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-22.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-22.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-23.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-23.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-24.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-24.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-25.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-25.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-26.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-26.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-27.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-27.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-28.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-28.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-29.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-29.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-30.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-30.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-31.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-31.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-32.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-32.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-33.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-33.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-34.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-34.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-35.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-35.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-36.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-36.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-37.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-37.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-38.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-38.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-39.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-39.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-40.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-40.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-41.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-41.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-42.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-42.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-43.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-43.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-44.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-44.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-45.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-45.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-46.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-46.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-47.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-47.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-48.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-48.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-49.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-49.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-50.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3/page-50.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-01.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-01.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-02.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-02.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-03.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-03.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-04.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-04.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-05.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-05.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-06.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-06.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-07.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-07.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-08.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-08.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-09.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-09.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-10.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-10.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-11.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-11.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-12.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-12.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-13.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-13.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-14.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-14.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-15.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-15.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-16.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-16.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-17.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-17.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-18.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-18.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-19.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-19.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-20.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-20.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-21.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-21.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-22.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-22.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-23.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-23.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-24.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-24.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-25.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-25.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-26.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-26.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-27.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-27.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-28.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-28.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-29.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-29.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-30.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-30.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-31.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-31.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-32.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-32.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-33.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-33.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-34.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-34.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-35.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-35.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-36.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-36.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-37.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-37.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-38.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-38.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-39.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-39.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-40.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-40.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-41.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-41.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-42.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-42.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-43.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-43.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-44.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-44.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-45.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-45.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-46.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-46.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/scpi-99-page-50.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/scpi-99-page-50.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/scpi-99-page-51.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/scpi-99-page-51.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/scpi-99-page-52.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/scpi-99-page-52.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/scpi-99-page-53.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/scpi-99-page-53.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/scpi-99-page-54.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/scpi-99-page-54.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/scpi-99-page-55.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/scpi-99-page-55.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/scpi-99-page-56.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/scpi-99-page-56.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/scpi-99-page-57.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/scpi-99-page-57.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/scpi-99-page-517.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/scpi-99-page-517.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-serial-v1.02-page-7.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-serial-v1.02-page-7.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-serial-v1.02-page-8.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-serial-v1.02-page-8.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-serial-v1.02-page-9.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-serial-v1.02-page-9.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-serial-v1.02-page-10.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-serial-v1.02-page-10.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-serial-v1.02-page-11.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-serial-v1.02-page-11.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-01-04.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-01-04.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-05-08.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-05-08.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-09-12.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-09-12.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-13-16.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-13-16.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-17-20.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-17-20.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-21-24.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-21-24.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-25-28.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-25-28.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-29-32.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-29-32.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-33-36.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-33-36.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-37-40.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-37-40.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-41-44.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-41-44.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-45-48.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-45-48.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-49-50.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-application-v1.1b3-pages-49-50.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-01-04.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-01-04.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-05-08.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-05-08.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-09-12.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-09-12.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-13-16.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-13-16.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-17-20.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-17-20.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-21-24.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-21-24.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-25-28.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-25-28.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-29-32.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-29-32.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-33-36.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-33-36.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-37-40.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-37-40.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-41-44.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-41-44.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-45-46.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-45-46.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-page-38-detail.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-page-38-detail.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-page-39-detail.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-page-39-detail.png",
+      "passed": true
+    },
+    {
+      "kind": "image_sha256",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-page-41-detail.png",
+      "passed": true
+    },
+    {
+      "kind": "image_review_status",
+      "id": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-page-41-detail.png",
+      "passed": true
+    },
+    {
+      "kind": "local_doc_link",
+      "id": "docs/instrumentation-bindings.md",
+      "passed": true,
+      "detail": "../research/instrumentation/reading-instrumentation.json"
+    },
+    {
+      "kind": "local_doc_link",
+      "id": "docs/instrumentation-bindings.md",
+      "passed": true,
+      "detail": "../research/instrumentation/notes/instrumentation-review.md"
+    },
+    {
+      "kind": "local_doc_link",
+      "id": "research/instrumentation/notes/instrumentation-review.md",
+      "passed": true,
+      "detail": "../../../docs/instrumentation-bindings.md"
+    },
+    {
+      "kind": "local_doc_link",
+      "id": "research/instrumentation/notes/instrumentation-review.md",
+      "passed": true,
+      "detail": "../reading-instrumentation.json"
+    },
+    {
+      "kind": "local_doc_link",
+      "id": "research/instrumentation/notes/instrumentation-review.md",
+      "passed": true,
+      "detail": "../figure-manifest.json"
+    },
+    {
+      "kind": "local_doc_link",
+      "id": "research/instrumentation/notes/instrumentation-review.md",
+      "passed": true,
+      "detail": "../manifest.json"
+    },
+    {
+      "kind": "local_doc_link",
+      "id": "research/instrumentation/notes/instrumentation-review.md",
+      "passed": true,
+      "detail": "../audit.json"
+    }
+  ]
+}

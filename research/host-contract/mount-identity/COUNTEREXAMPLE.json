@@ -1,0 +1,29 @@
+{
+  "actualHostIOPerformed": false,
+  "actualKernelMountChanged": false,
+  "expectedTopMountIds": [
+    "9",
+    "100"
+  ],
+  "initialMountinfo": "9 1 8:1 /fixture /fixture rw - ext4 /dev/example rw\n",
+  "observedPins": [
+    [
+      8,
+      "ext4",
+      "9"
+    ],
+    [
+      8,
+      "ext4",
+      "9"
+    ]
+  ],
+  "pinComparisonDetectsChange": false,
+  "source": "fixed_block.reference.py",
+  "sourceSha256": "b5173152c5505934275b89a4c1c2e54f4bd4fa75b9a60b8e7f149bd3456b42db",
+  "stackedMountinfo": "9 1 8:1 /fixture /fixture rw - ext4 /dev/example rw\n100 9 8:1 /fixture /fixture rw - ext4 /dev/example rw\n",
+  "status": "counterexample-confirmed",
+  "substitutedFstat": true,
+  "substitutedProcFile": true,
+  "testSha256": "882cca216b342d17c4ba00368fca662db34eff7244a63dc52dd18dadc4e479c9"
+}

@@ -1,0 +1,71 @@
+{
+  "acquiredCodeExecuted": false,
+  "files": [
+    {
+      "bytes": 3486,
+      "path": "NOTES.md",
+      "sha256": "66e348744c0919ed858adaf2a9cf260195ff060b10fc7a64d1093c3b2ae6865d"
+    },
+    {
+      "bytes": 1960,
+      "path": "README.md",
+      "sha256": "4dee0007cf7a6530f54ce990f957b1eeae0dda57f9d90f02706909e2b050bc0c"
+    },
+    {
+      "bytes": 3047,
+      "path": "acquire.py",
+      "sha256": "96f07ed01e2dc8e39f28e42798890bd2a7c7ad155eb42ab8c367a348574a7107"
+    },
+    {
+      "bytes": 3752,
+      "path": "manifest.json",
+      "sha256": "499de8a5a35da515b32ae818b792d908052b39ee782866ebbd11f1fb1d438025"
+    },
+    {
+      "bytes": 17131,
+      "path": "raw/getpgrp.2.html",
+      "sha256": "69a6535022713b483ff702de41ac99ed85203329cc291c708064004ecea94be6"
+    },
+    {
+      "bytes": 18141,
+      "path": "raw/pidfd_open.2.html",
+      "sha256": "d34301a2f18869b774ad5c5dc3ef0e93988b903deb13bdc41cbbd60bce9c5bab"
+    },
+    {
+      "bytes": 16416,
+      "path": "raw/pidfd_send_signal.2.html",
+      "sha256": "ce2039f7e7ad77be2110b5d3281552e86ece0b5bda9197020a66b1df82c51246"
+    },
+    {
+      "bytes": 31979,
+      "path": "raw/waitid.2.html",
+      "sha256": "fe247c4fc91a2dafd978157a46fa2a91fa48b902e643d852e8352d78c4b32fd3"
+    },
+    {
+      "bytes": 1370,
+      "path": "reading.json",
+      "sha256": "538486bc0e2944eeed47a604bbd6495b234118c1c854d19edaccdd83283d38bc"
+    },
+    {
+      "bytes": 8456,
+      "path": "text/getpgrp.2.txt",
+      "sha256": "60e4ff19030b7f2e4543fa05cf75c9b5a71c7c579f63670a759f71462e427c24"
+    },
+    {
+      "bytes": 8840,
+      "path": "text/pidfd_open.2.txt",
+      "sha256": "975eed21c55ca67332f42ae715c7fd14562b7d627ff62b43308cb6849d59a375"
+    },
+    {
+      "bytes": 7974,
+      "path": "text/pidfd_send_signal.2.txt",
+      "sha256": "eb1cf55c32168033bb5d46b525ca3e59a10a20599e4560582f8e4e57fa3a92dd"
+    },
+    {
+      "bytes": 19419,
+      "path": "text/waitid.2.txt",
+      "sha256": "0dcb83bad162109dcf9ba31d9e5b09b4f8bb55321ea914a011be08b12ac2e9f9"
+    }
+  ],
+  "status": "sealed-source-review"
+}

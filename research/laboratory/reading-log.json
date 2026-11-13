@@ -1,0 +1,67 @@
+[
+  {
+    "source_id": "labop-paper",
+    "path": "research/laboratory/text/labop-paper.txt",
+    "sha256": "a15e8e905225c89fca70256542c944ac424bf1329dbbb8794b5362fd35fe8d5b",
+    "read_at": "2026-11-05T21:57:50.838593+00:00",
+    "reading_status": "full_extracted_text_read",
+    "line_count": 878,
+    "coverage": "Entire retained extracted text including references/appendices where present",
+    "notes_path": "research/laboratory/notes/labop-bluesky-review.md",
+    "figure_pages_inspected": [
+      5,
+      6,
+      9,
+      10,
+      11,
+      13,
+      14,
+      15,
+      17,
+      18
+    ],
+    "figure_scope": "All 12 numbered figures inspected at page renders; embedded illustrative screenshots limited by original figure resolution. Linked notebook and cited works not read as part of this paper.",
+    "line_definition": "LF-delimited addressable lines, including a final unterminated line; PDF formfeeds are not line breaks",
+    "coverage_ranges": [
+      {
+        "start_line": 1,
+        "end_line": 370,
+        "sha256": "1ca449ba19ec432606382eb3e1b5a8fdf4302103a23af9dac1d6b5a1241031a2"
+      },
+      {
+        "start_line": 371,
+        "end_line": 740,
+        "sha256": "1655452326bde9d54f057acf0259dd7a9c3e68e0c915bcdf1c52cce6bd9cbfb9"
+      },
+      {
+        "start_line": 741,
+        "end_line": 878,
+        "sha256": "9f3c8537ae41cb2dd7b1ffb3a14cc50a17042d1d0d8a1e14ecb70fc94d78770a"
+      }
+    ],
+    "coverage_complete": true,
+    "coverage_note": "Final formfeed checked separately during audit; original splitlines count898 corrected to878 LF-addressable lines."
+  },
+  {
+    "source_id": "bluesky-msg",
+    "path": "research/laboratory/text/bluesky-msg.txt",
+    "sha256": "1ca5a7776af410059ec0fa7f7ef37fd26bcb3a570b26eea59df6b267ba788165",
+    "read_at": "2026-11-05T21:57:50.838593+00:00",
+    "reading_status": "full_extracted_text_read",
+    "line_count": 862,
+    "coverage": "Entire retained extracted text including references/appendices where present",
+    "notes_path": "research/laboratory/notes/labop-bluesky-review.md",
+    "line_definition": "LF-delimited addressable lines, including a final unterminated line; PDF formfeeds are not line breaks"
+  },
+  {
+    "source_id": "bluesky-interruptions",
+    "path": "research/laboratory/text/bluesky-interruptions.txt",
+    "sha256": "4e797aab6dfeec03b80aa16b1af0630560e0023c388a911ac2638f862b0b6190",
+    "read_at": "2026-11-05T21:57:50.838593+00:00",
+    "reading_status": "full_extracted_text_read",
+    "line_count": 1293,
+    "coverage": "Entire retained extracted text including references/appendices where present",
+    "notes_path": "research/laboratory/notes/labop-bluesky-review.md",
+    "line_definition": "LF-delimited addressable lines, including a final unterminated line; PDF formfeeds are not line breaks"
+  }
+]

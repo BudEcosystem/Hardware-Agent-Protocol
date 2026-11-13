@@ -1,0 +1,512 @@
+{
+  "passed": true,
+  "command": "python3 -I -B research/wot-architecture/audit_wot_architecture.py",
+  "scope": "Offline byte integrity, independent HTML text reconstruction, complete reader-asserted LF coverage for one Recommendation and two status pages, selected draft configuration, exact table/heading/semantic-figure inventories, SVG label fidelity and figure-review assertions. Does not prove comprehension, normative conformance, interoperability, physical safety, complete editor-draft/bibliography/repository review or device execution.",
+  "acquisition_records": 6,
+  "figure_acquisition_records": 41,
+  "repository_pins": 0,
+  "file_hash_checks": 269,
+  "unique_verified_files": 117,
+  "reading_full_text_sources": 3,
+  "reading_partial_raw_sources": 1,
+  "reading_chunk_hashes": 11,
+  "reading_lines": 8602,
+  "selected_raw_chunk_hashes": 1,
+  "selected_raw_lines": 70,
+  "full_specifications": [
+    {
+      "id": "architecture-11-rec",
+      "lines": 8405,
+      "scope": "Sections 1–12 and appendices A–C, all two tables and 40 figures"
+    }
+  ],
+  "semantic_figures_visually_reviewed": 40,
+  "figure_assets_visually_reviewed": 41,
+  "svg_fallback_renders_with_complete_embedded_labels": 3,
+  "svg_source_defects_disclosed": [
+    "Figure 23 Operational label contains encoded mxGraphModel; supplied fallback labels truncate and can clip. No repair substituted."
+  ],
+  "table_count": 2,
+  "section_heading_count": 130,
+  "input_file_count": 119,
+  "input_files": [
+    {
+      "path": "docs/wot-architecture-binding.md",
+      "sha256": "20f813d267e29d9f5b8f7e2b320777ebf31ab09449fce66fc6bfbc31fb108575"
+    },
+    {
+      "path": "research/wot-architecture/acquire.py",
+      "sha256": "60fbf75c7c582d725e4f20e646f9fd23a1960b0fa9f4ad7ea5e1ceddc57b0593"
+    },
+    {
+      "path": "research/wot-architecture/audit_wot_architecture.py",
+      "sha256": "0d01e19b4661fbe387a06130d2a8f22d3a48287f5454c74df53c30c5b85c5c61"
+    },
+    {
+      "path": "research/wot-architecture/figures/01-1.png",
+      "sha256": "66d58ddbb2b650041249bb5da9fab2305a108090c6200bb958b6df96124ed5f5"
+    },
+    {
+      "path": "research/wot-architecture/figures/02-1.png",
+      "sha256": "848a0a24af8c63436ca18b1b00ecb9a82d592ffab7437afca47aa911cab835ab"
+    },
+    {
+      "path": "research/wot-architecture/figures/03-1.png",
+      "sha256": "dccd6369a85f0b993e679e51e12c09b50338db74d85fa47fa6b13d8c3fe215e2"
+    },
+    {
+      "path": "research/wot-architecture/figures/04-1.png",
+      "sha256": "5e97d4a129c36f4cab79f2f16b0c475495eae8381531ee74fdc79ceeef6e7c97"
+    },
+    {
+      "path": "research/wot-architecture/figures/05-1.png",
+      "sha256": "0425cf98b95f8b2db0b4644407b369855a94a7c43689057828fadf55adff14f7"
+    },
+    {
+      "path": "research/wot-architecture/figures/06-1.png",
+      "sha256": "a1f0b92a8b265d3d5ad4a460b10e1b93883cc300e769a3e8111a5c153a4674b4"
+    },
+    {
+      "path": "research/wot-architecture/figures/07-1.png",
+      "sha256": "ef45db242bf1d17436f12be64a4f64904ea2100a17b1b73a86e7f22484994b0d"
+    },
+    {
+      "path": "research/wot-architecture/figures/08-1.png",
+      "sha256": "470bd2801d87c033c833eedafef925be8d2ebb49bb3b825d692df19ba7c91b10"
+    },
+    {
+      "path": "research/wot-architecture/figures/09-1.png",
+      "sha256": "5e6cd7ff0d2354b5b2ef6735223255c41a9d3d3aacbb72b3bd28ca0dc24ea98f"
+    },
+    {
+      "path": "research/wot-architecture/figures/10-1.png",
+      "sha256": "1d27d288532ef3857c5754d079a6df4b31ab9046c92aabfa9924260272233955"
+    },
+    {
+      "path": "research/wot-architecture/figures/11-1.png",
+      "sha256": "6ff77eebf2ce9cc628050c31e8036a847882d1ce64755bec50f9c71267adfc1c"
+    },
+    {
+      "path": "research/wot-architecture/figures/12-1.png",
+      "sha256": "32fad3feeca6465984896a7b1ffc3d22707aa44413f66247c581f30de781c382"
+    },
+    {
+      "path": "research/wot-architecture/figures/13-1.png",
+      "sha256": "ed24a102526c38c263cbbc8e4de6a05c31d612aacf7fda391d4b0d8fda27363d"
+    },
+    {
+      "path": "research/wot-architecture/figures/13-2.png",
+      "sha256": "84209ad406f2e3de65e1a510c38b85b68aa1f11c29cee9050a3455d237eb8d0a"
+    },
+    {
+      "path": "research/wot-architecture/figures/14-1.png",
+      "sha256": "289b4530979acda75209e186467a2f1d7c7aaa18c6c3029526cc70aa3297b26f"
+    },
+    {
+      "path": "research/wot-architecture/figures/15-1.png",
+      "sha256": "5a90843be0d757214aede53ed51e74b390ba3259e698d31815e8aa268df2bdfe"
+    },
+    {
+      "path": "research/wot-architecture/figures/16-1.png",
+      "sha256": "135e333422afb42dc5fd9b05eb1f7fbce1d16bec646a1a8b11b6198eb2080d26"
+    },
+    {
+      "path": "research/wot-architecture/figures/17-1.png",
+      "sha256": "43d4767d766e434c0af0c492d8d8a97d8f7fd0188304ee89ecbe2aa9d2e608c4"
+    },
+    {
+      "path": "research/wot-architecture/figures/18-1.png",
+      "sha256": "a88f6d41b7b535cb8305a6c21af84e0573ccec4d090c6f22ea466f28b6163e5d"
+    },
+    {
+      "path": "research/wot-architecture/figures/19-1.png",
+      "sha256": "b66ad8ef0e044efbb3376879f4251d1f6e0ffd9d51be9cb7b5b19073ed56ba3a"
+    },
+    {
+      "path": "research/wot-architecture/figures/20-1.png",
+      "sha256": "272727f8af353f8775bee9dcd44721d6696318c630fae5ce2adcfe26bd86a2e9"
+    },
+    {
+      "path": "research/wot-architecture/figures/21-1.svg",
+      "sha256": "c3742a31d37212b0b75b662c055233de6b10df9ad0caae3d958e4def6cedcdc5"
+    },
+    {
+      "path": "research/wot-architecture/figures/22-1.svg",
+      "sha256": "8bb72f1d90605b46146a617c9a354e5b1e900674c600754c90eab0419b530093"
+    },
+    {
+      "path": "research/wot-architecture/figures/23-1.svg",
+      "sha256": "1e45659d218f8d20ffc0f5b026dd3bcbeab0cb3a0e04fc9083026f92878d6d95"
+    },
+    {
+      "path": "research/wot-architecture/figures/24-1.png",
+      "sha256": "4d16bc1d6f44391a63cdb979acaf00cd0996ecc101b5b1071ad6e52112aeeb20"
+    },
+    {
+      "path": "research/wot-architecture/figures/25-1.png",
+      "sha256": "a5ff77603dfb7046141759b2de8f94340d5a8ce96ddcb698863bbf251d4a5858"
+    },
+    {
+      "path": "research/wot-architecture/figures/26-1.png",
+      "sha256": "b65168942b154a070b7d8b1bf9c9827715d798494d4783a17fdbcb9cfb4c043f"
+    },
+    {
+      "path": "research/wot-architecture/figures/27-1.png",
+      "sha256": "b4f32b2e0313f798a3602b0e3c94aa8fd2e6a4c4fdb9226960ca2026f944a642"
+    },
+    {
+      "path": "research/wot-architecture/figures/28-1.png",
+      "sha256": "719aab3136320fc5b6ce5f8e2ae424b9875ab4c15bd16e67bc47c03f2b4da878"
+    },
+    {
+      "path": "research/wot-architecture/figures/29-1.png",
+      "sha256": "0d8dff1a90945d254dc599ecab373575a5b58b40b1dbf057af2a16ca74eb996a"
+    },
+    {
+      "path": "research/wot-architecture/figures/30-1.png",
+      "sha256": "0a1ad4f8bbc87956856e4178997b6de49c8453aee2f3c1c2fd09cc606c31d081"
+    },
+    {
+      "path": "research/wot-architecture/figures/31-1.png",
+      "sha256": "fd197a7789568818a86a0a1933a80b95eb3903f40dde253766f4d7dc246104b2"
+    },
+    {
+      "path": "research/wot-architecture/figures/32-1.png",
+      "sha256": "d79dc0e25cc489e1d0e1469797a929e18054f877c3e2c9f7d1715c9bb7a2b4ac"
+    },
+    {
+      "path": "research/wot-architecture/figures/33-1.png",
+      "sha256": "32dc03c9b9386a239d7762f45c282fc67c5c1193b41fbc71a54027dcfe1b463f"
+    },
+    {
+      "path": "research/wot-architecture/figures/34-1.png",
+      "sha256": "e39be84653ae1d3dc539e93f985527be20eb0e5ab6da4d7e66e1e36b0e390ab2"
+    },
+    {
+      "path": "research/wot-architecture/figures/35-1.png",
+      "sha256": "dd6e16e7105c67a3dbb7a446226e6620aaf9bda15d996b82ad5f940e528f00d8"
+    },
+    {
+      "path": "research/wot-architecture/figures/36-1.png",
+      "sha256": "90a01a347cb5dfd1dc6cf4aa1c9ed73ab7ce86be42d057a87ee14fa39d49a5e8"
+    },
+    {
+      "path": "research/wot-architecture/figures/37-1.png",
+      "sha256": "6f5d93d00a8a17d13fb37c1c6270822b030de6cb3298893a7ddcda4245753f5e"
+    },
+    {
+      "path": "research/wot-architecture/figures/38-1.png",
+      "sha256": "4f064cf7fd07e87386975b28efbae235aa9423445798e8cbb55768076973efcc"
+    },
+    {
+      "path": "research/wot-architecture/figures/39-1.png",
+      "sha256": "efdda98e0a1605f74013c0e95d7ea1f846fd4d29356047a1be658879f02f08f6"
+    },
+    {
+      "path": "research/wot-architecture/figures/40-1.png",
+      "sha256": "b01d0f8db2b44ad7442760ff4d6281c382f84d7f40cbd552846d7590d55737b9"
+    },
+    {
+      "path": "research/wot-architecture/integrity-ledger.json",
+      "sha256": "6104f240fb38d71407543fa7aed532ca52763d6845994272fb384a25127ae043"
+    },
+    {
+      "path": "research/wot-architecture/manifest.jsonl",
+      "sha256": "1920e9d4a579751470671ebd072fae20ad3a468e453a65111efd97b7c978fb43"
+    },
+    {
+      "path": "research/wot-architecture/metadata/audit-negative-checks.json",
+      "sha256": "d2ae0827108f65fc23cceb17cd6bdef44109f2558cf3bde4bed1d3dcc0e52acf"
+    },
+    {
+      "path": "research/wot-architecture/metadata/figure-inventory.json",
+      "sha256": "e9a8275bccb969cbf4291465141e14ffa5dda1359d580c022c6a35d330f1837d"
+    },
+    {
+      "path": "research/wot-architecture/metadata/figure-reviews.json",
+      "sha256": "1a10667d22bc3feb78ee5c6821cf36bcfecf038131fda501feb79e486405c224"
+    },
+    {
+      "path": "research/wot-architecture/metadata/read-progress.json",
+      "sha256": "9108f0c874f00a72144b8fa44eda28799e6327c794614f0e6058b4abac0b7342"
+    },
+    {
+      "path": "research/wot-architecture/metadata/render-environment.json",
+      "sha256": "0931a00e22a4dbfa0a0de1c29d1bea8f8ab7ffef21d5ed9108a62217da1bad18"
+    },
+    {
+      "path": "research/wot-architecture/metadata/render-inventory.json",
+      "sha256": "12fd0eb02d20ba52904adb28ed069f25ca0fffd69f6d301ed62f580e27ba6be2"
+    },
+    {
+      "path": "research/wot-architecture/metadata/section-inventory.json",
+      "sha256": "35325813389257700e15eebee593fb633c131a93a29d1662c72cfe83b0448312"
+    },
+    {
+      "path": "research/wot-architecture/metadata/svg-labels.json",
+      "sha256": "74aa703dd2f59780e0dc13fb897d86f680b554ad0fe821b14592e2d8cb757c31"
+    },
+    {
+      "path": "research/wot-architecture/metadata/table-inventory.json",
+      "sha256": "cce88c81d8dd85db2f348865453635b4aefd2e1ae69346a0a00f504bec2e7e16"
+    },
+    {
+      "path": "research/wot-architecture/metadata/version-status.json",
+      "sha256": "a78e84486d69c02c6a80c9c6ddb8daa13b2f4088d215da731d5a9ccca317c508"
+    },
+    {
+      "path": "research/wot-architecture/raw/architecture-11-rec.html",
+      "sha256": "82aa73cba33f5098db0cde716bc66622bc3db25d531c4fd894b5eacfea34deb1"
+    },
+    {
+      "path": "research/wot-architecture/raw/editors-draft.html",
+      "sha256": "b5934e866e86bc72ebe401a187bf4bf24a2ce4bc261fff636164a609496bfb48"
+    },
+    {
+      "path": "research/wot-architecture/raw/errata-11.html",
+      "sha256": "d3ef549927f89e44a942a05bec5be3f2443f1054beaaa129c1ddf8a6c73da4ac"
+    },
+    {
+      "path": "research/wot-architecture/raw/latest-11-alias.html",
+      "sha256": "82aa73cba33f5098db0cde716bc66622bc3db25d531c4fd894b5eacfea34deb1"
+    },
+    {
+      "path": "research/wot-architecture/raw/latest-alias.html",
+      "sha256": "82aa73cba33f5098db0cde716bc66622bc3db25d531c4fd894b5eacfea34deb1"
+    },
+    {
+      "path": "research/wot-architecture/raw/publication-history.html",
+      "sha256": "fb68c256d65038ba64284abd1ae423cab45d1c6cd89b3c54a413430163b2a717"
+    },
+    {
+      "path": "research/wot-architecture/reading-wot-architecture-full.json",
+      "sha256": "794aaf9156127ac050da0393da2504b309f6451009ecb1df68f5d8fbf13309bf"
+    },
+    {
+      "path": "research/wot-architecture/render.py",
+      "sha256": "00e7ae2542f3cde40b4285a8c90667afb050b77b16f56e9727304fa7d62f3566"
+    },
+    {
+      "path": "research/wot-architecture/renders/01-1.png",
+      "sha256": "3cad8cd35211b769955b7e6fce06fbbab428bdde75822708f645b82ce0338437"
+    },
+    {
+      "path": "research/wot-architecture/renders/02-1.png",
+      "sha256": "9236998d7de413103bdc56dba6d28358270686d7a2f54a4b92d9b26f996e60d2"
+    },
+    {
+      "path": "research/wot-architecture/renders/03-1.png",
+      "sha256": "d3262164b3c6a76662334e2b9b2fa7d7973ae55347f0f2f575aef990d50bccd8"
+    },
+    {
+      "path": "research/wot-architecture/renders/04-1.png",
+      "sha256": "749acebc517c370d9761bf392cf7bdba0e1323d31befdfc467885bf08c17f504"
+    },
+    {
+      "path": "research/wot-architecture/renders/05-1.png",
+      "sha256": "2544986d4fed496eab3c6eb9fd7fa58c9d26960ec7b6eb6a1e392a180b0d0471"
+    },
+    {
+      "path": "research/wot-architecture/renders/06-1.png",
+      "sha256": "ac43c2fa1733692b9ff10dcde9cf758cb3f2694e7e5ab547f3fa38cebc480b9a"
+    },
+    {
+      "path": "research/wot-architecture/renders/07-1.png",
+      "sha256": "f0b1ba7733e57da1211a9554cd1687c5fc7818048883dfa971b72b47bb117f47"
+    },
+    {
+      "path": "research/wot-architecture/renders/08-1.png",
+      "sha256": "e8018873fa76fbe5957b97fd8436b98f39dc2aa2cdec2b4ddbd866b526cbc4ef"
+    },
+    {
+      "path": "research/wot-architecture/renders/09-1.png",
+      "sha256": "31acd614707476a8092f4ba2373ac6696221bbcaba1321511f6f5f0a0b08f3a7"
+    },
+    {
+      "path": "research/wot-architecture/renders/10-1.png",
+      "sha256": "a5e3dc78f28d99d6133d3e3f8a63fb316c690fbd0e3d72db319bbf3e6149053b"
+    },
+    {
+      "path": "research/wot-architecture/renders/11-1.png",
+      "sha256": "ae7e7f8c288d205863243b6a202b95bf5550b9f3641a1e0fc63a84fa3eac1684"
+    },
+    {
+      "path": "research/wot-architecture/renders/12-1.png",
+      "sha256": "20b207cc1d925de05d5cbf5c19e99255e705f3f9521b7f52a9992cf595ce1f62"
+    },
+    {
+      "path": "research/wot-architecture/renders/13-1.png",
+      "sha256": "677a11ebd4334567d88a9b506a6bbe07d5113cd0699ee1c97062804cf0e32b65"
+    },
+    {
+      "path": "research/wot-architecture/renders/13-2.png",
+      "sha256": "7997594f9a21d84ff26b45060d1830da18d531b96348967eab4683b2ee3bcb5a"
+    },
+    {
+      "path": "research/wot-architecture/renders/14-1.png",
+      "sha256": "9c229d1712d706a8eef23f659420098a677f3a2b580f615c1927f20d78187dcf"
+    },
+    {
+      "path": "research/wot-architecture/renders/15-1.png",
+      "sha256": "71b1b38c9016e2e942ab1413ee13ca9d52b26f5bb16e7acb9e2af5bc0dbf0ad4"
+    },
+    {
+      "path": "research/wot-architecture/renders/16-1.png",
+      "sha256": "429f8efa0956bcf603872c9434be3b98464fdf70dd5bf8e6af56b892a9ea334a"
+    },
+    {
+      "path": "research/wot-architecture/renders/17-1.png",
+      "sha256": "c3c07c26358223d292674e0f94b7d23fc4600f237127ae77b27b12708ee0fe98"
+    },
+    {
+      "path": "research/wot-architecture/renders/18-1.png",
+      "sha256": "8b74a6831479ed43573e5f2c531eacb583598bf38bd9a03f341f37cc0f310119"
+    },
+    {
+      "path": "research/wot-architecture/renders/19-1.png",
+      "sha256": "94dd5561811c9c5f729a60828db9a0cc0a3ddaa25b9c23454d658060f4b00c15"
+    },
+    {
+      "path": "research/wot-architecture/renders/20-1.png",
+      "sha256": "f6f973a0f1f163eb22bb7c064ab66f4a8a123488b40819234f56bb9be60ea39a"
+    },
+    {
+      "path": "research/wot-architecture/renders/21-1.png",
+      "sha256": "9d13ea16f645386e8942ed5459af88016231a3aefe3b482c75d13e908df7c79e"
+    },
+    {
+      "path": "research/wot-architecture/renders/22-1.png",
+      "sha256": "def44e583bdabca4bc7580db5e62bdf7642ebd2bfd96bd61cd208f30a462cfee"
+    },
+    {
+      "path": "research/wot-architecture/renders/23-1.png",
+      "sha256": "24b28e933403f11c06dc7810bc3f07f1f128ff210ce1d70b1c5c466c5703adb9"
+    },
+    {
+      "path": "research/wot-architecture/renders/24-1.png",
+      "sha256": "d0c9e66672037efa8f0ec9ac0483cd11dbf126717a359dc8207526da340182c1"
+    },
+    {
+      "path": "research/wot-architecture/renders/25-1.png",
+      "sha256": "77b1b502dfb7c76ed43fefeb207d49f0f3aa255ad6b3d00436d01ee5eeb21ac9"
+    },
+    {
+      "path": "research/wot-architecture/renders/26-1.png",
+      "sha256": "652a9582bb0ac15eb9cd1f7c6773d183289f8da44feb3993e7d33f12e6399073"
+    },
+    {
+      "path": "research/wot-architecture/renders/27-1.png",
+      "sha256": "402aeda494433085f1ccbf6cd816addf7236a5fbafda6bfe76d37384fa1f1702"
+    },
+    {
+      "path": "research/wot-architecture/renders/28-1.png",
+      "sha256": "6417059b551c24306b3ae8ec12b6cc716f4965d435ffd9523e636059e01c7600"
+    },
+    {
+      "path": "research/wot-architecture/renders/29-1.png",
+      "sha256": "8509c9f89ad77296175bb897b471b6c1e8a02d562c194300ecc4fd1acfaa78bb"
+    },
+    {
+      "path": "research/wot-architecture/renders/30-1.png",
+      "sha256": "f593ed9e7f7d3c7c79a8b57f0e500b47b9406b2c34e14e246fc22017f7793244"
+    },
+    {
+      "path": "research/wot-architecture/renders/31-1.png",
+      "sha256": "2e9ed3db5e91ed9045c17ac223afd390c1b1bd9f1baf3a6d0de13507af1590f9"
+    },
+    {
+      "path": "research/wot-architecture/renders/32-1.png",
+      "sha256": "26899b16679b8ba8161005bfbd179bcd3e0579dd60b4902e7f7a10d6bbf97d17"
+    },
+    {
+      "path": "research/wot-architecture/renders/33-1.png",
+      "sha256": "dde693802efb083bff5527591ee26ff42921b8ca75b365a2075c6562b62bbe54"
+    },
+    {
+      "path": "research/wot-architecture/renders/34-1.png",
+      "sha256": "8cd7cfedb82c4172d1d0a58d73d5f6666eabc78f33963b963cffd7e48235c735"
+    },
+    {
+      "path": "research/wot-architecture/renders/35-1.png",
+      "sha256": "030bb5a648ee2e9c7e112429fadec7c178ed4eb6cd8fea8fa8db42c220dca1f6"
+    },
+    {
+      "path": "research/wot-architecture/renders/36-1.png",
+      "sha256": "533af4a2c1e65c084a15d440a1ffda099c24b900ea404dd98edef9e18681afc9"
+    },
+    {
+      "path": "research/wot-architecture/renders/37-1.png",
+      "sha256": "215072a81a0332b031307d0b355dc0777dff84374ab07c7563dbff89591f253a"
+    },
+    {
+      "path": "research/wot-architecture/renders/38-1.png",
+      "sha256": "256757fbee9e347c202f2a89822c74b0221b0e359d4a2e580ae853c606f7c76d"
+    },
+    {
+      "path": "research/wot-architecture/renders/39-1.png",
+      "sha256": "edb659e16bd0ea33c2fc22eda17989442c4dbc960655b20fce907b22c70fab7c"
+    },
+    {
+      "path": "research/wot-architecture/renders/40-1.png",
+      "sha256": "c533810d31dd4e3c4ec54c3c9f711fca05773d5261b096a97e401cda5a630851"
+    },
+    {
+      "path": "research/wot-architecture/renders/sheet-01-05.png",
+      "sha256": "688f70fa5d9dd996832d0c47a6a920622c516456048533b4429da5842fd7a837"
+    },
+    {
+      "path": "research/wot-architecture/renders/sheet-06-10.png",
+      "sha256": "dfca4aa7e9fc0eff2662d4fcbe789381fde9cc00927e9cada146ffd2ff471b73"
+    },
+    {
+      "path": "research/wot-architecture/renders/sheet-11-14.png",
+      "sha256": "3b0f9f5c187b08caa535baed81771bef151642449e1a9256ba40c0e880b63560"
+    },
+    {
+      "path": "research/wot-architecture/renders/sheet-15-20.png",
+      "sha256": "2cc19e189d49d9d404f8417db6df2e6949c2e53e6c10692fc601e2d9cb6f8609"
+    },
+    {
+      "path": "research/wot-architecture/renders/sheet-24-28.png",
+      "sha256": "ed4d04f684a76e2b8f672a9b7cf115b3dad4dd91a2c40839bcb8574abf1cb970"
+    },
+    {
+      "path": "research/wot-architecture/renders/sheet-29-34.png",
+      "sha256": "e7709ca80891cf4b8182777255e3856762d479eb5790e44e2793d811a2080413"
+    },
+    {
+      "path": "research/wot-architecture/renders/sheet-35-40.png",
+      "sha256": "0ac6a36cef36c776707eb7415f0e405c3950fa0b59e48a0fe83003baf9386a05"
+    },
+    {
+      "path": "research/wot-architecture/retain_review.py",
+      "sha256": "348d65ad095df1cb3e11616469b7aab3015578a83b10ed704cacc86e2cf658d3"
+    },
+    {
+      "path": "research/wot-architecture/text/architecture-11-rec.txt",
+      "sha256": "99ba5fc61bf80fe9318077860ef0354ffb765733694adbb7289b29a52718af0f"
+    },
+    {
+      "path": "research/wot-architecture/text/editors-draft.txt",
+      "sha256": "29e9ca7a1a22280974c1fb1698cb357adcb2065ce0a2c6962c20527afb309018"
+    },
+    {
+      "path": "research/wot-architecture/text/errata-11.txt",
+      "sha256": "c8bed6e7ec366626f601de17a6a0f09c882d34036664f9b5e69259f29b9bfc8f"
+    },
+    {
+      "path": "research/wot-architecture/text/latest-11-alias.txt",
+      "sha256": "99ba5fc61bf80fe9318077860ef0354ffb765733694adbb7289b29a52718af0f"
+    },
+    {
+      "path": "research/wot-architecture/text/latest-alias.txt",
+      "sha256": "99ba5fc61bf80fe9318077860ef0354ffb765733694adbb7289b29a52718af0f"
+    },
+    {
+      "path": "research/wot-architecture/text/publication-history.txt",
+      "sha256": "d6bc71c4302baad0bc352d0ec7c9e1f8f94d4840f8116a4844984afb925b9862"
+    }
+  ],
+  "acquired_code_executed": false,
+  "devices_contacted": false
+}

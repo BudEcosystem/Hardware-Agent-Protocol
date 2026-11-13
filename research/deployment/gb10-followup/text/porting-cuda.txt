@@ -1,0 +1,25 @@
+CUDA
+#
+GPUDirect RDMA
+#
+DGX Spark uses a unified memory architecture.
+On CUDA contexts the system memory returned by the pinned device memory allocators (e.g.
+cudaMalloc
+)
+cannot be coherently accessed by the CPU complex nor by I/O peripherals like PCI Express devices (e.g. the Mellanox NIC).
+Hence the GPUDirect RDMA technology is not supported, and the mechanisms for direct I/O based on that technology,
+for example nvidia-peermem (for DOCA-Host), dma-buf or GDRCopy, do not work.
+A compliant application should programmatically introspect the relevant platform capabilities,
+e.g. by querying
+CU_DEVICE_ATTRIBUTE_GPU_DIRECT_RDMA_SUPPORTED
+(related to nv-p2p kernel APIs)
+or
+CU_DEVICE_ATTRIBUTE_DMA_BUF_SUPPORT
+(related to dma-buf), and leverage an appropriate fallback.
+For example, for Linux RDMA applications based on the ib verbs library,
+we suggest to allocate the communication buffers with the
+cudaHostAlloc
+API and to register them
+with the
+ib_reg_mr function
+.

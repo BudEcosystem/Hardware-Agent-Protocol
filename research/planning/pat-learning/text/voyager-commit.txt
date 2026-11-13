@@ -1,0 +1,106 @@
+{
+  "sha": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89",
+  "node_id": "C_kwDOJnkcBtoAKDU1ZTQ1YTg4MDc1NWQwYzhjNjZjYTdmYjVmZTc5NjJhYzg5NzRmODk",
+  "commit": {
+    "author": {
+      "name": "xieleo5",
+      "email": "55373943+xieleo5@users.noreply.github.com",
+      "date": "2023-07-27T07:35:42Z"
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@github.com",
+      "date": "2023-07-27T07:35:42Z"
+    },
+    "message": "Merge pull request #116 from ImJohnDoe/main\n\nfixing version | new version of prismarine-block is incompatible",
+    "tree": {
+      "sha": "66d7d2d043c5da45e1f8174cf65f953a6a7254f8",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/66d7d2d043c5da45e1f8174cf65f953a6a7254f8"
+    },
+    "url": "https://api.github.com/repos/MineDojo/Voyager/git/commits/55e45a880755d0c8c66ca7fb5fe7962ac8974f89",
+    "comment_count": 0,
+    "verification": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsBcBAABCAAQBQJkwh5OCRBK7hj4Ov3rIwAAilAIAB9qDfjpTYJ0iF1qaTPgNocy\nRHJfpTBDBq3f0fw1fmbqSJpSvorlOYxLfl52RqpSMU/QAEWgB91tV3c5U1ILJvdM\nTJbMvPJPkshsgjC7ZXcqk1g7nrAh4kd0NOhSJeBrhnW84vYIpwM1rOPTyaUI5lW7\n0OJVMFWquUaBqy28CbExHnZ5O9sLK0drWuaJsB+mTpqxUAd2xL5sSA53MfgZTCUC\n6+nvThzKZdPVEBfwtU9b089U11mCuiE4xAz9VT7MoBAnfTUqqWCE0mCAQlM/VwbR\nFoYVKB3cEmgNGyMbU/mwk/uj5wiyZYzrHqfZ8//HG8o/0boJYQgeiwJc2z8cmYs=\n=s+XC\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree 66d7d2d043c5da45e1f8174cf65f953a6a7254f8\nparent f885a43a38ca98571f366df32f5d039e4d6bcf58\nparent f73b412841e56685ecc9ed9fd87aa43e1119a458\nauthor xieleo5 <55373943+xieleo5@users.noreply.github.com> 1690443342 -0400\ncommitter GitHub <noreply@github.com> 1690443342 -0400\n\nMerge pull request #116 from ImJohnDoe/main\n\nfixing version | new version of prismarine-block is incompatible",
+      "verified_at": "2024-01-16T19:59:59Z"
+    }
+  },
+  "url": "https://api.github.com/repos/MineDojo/Voyager/commits/55e45a880755d0c8c66ca7fb5fe7962ac8974f89",
+  "html_url": "https://github.com/MineDojo/Voyager/commit/55e45a880755d0c8c66ca7fb5fe7962ac8974f89",
+  "comments_url": "https://api.github.com/repos/MineDojo/Voyager/commits/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/comments",
+  "author": {
+    "login": "xieleo5",
+    "id": 55373943,
+    "node_id": "MDQ6VXNlcjU1MzczOTQz",
+    "avatar_url": "https://avatars.githubusercontent.com/u/55373943?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/xieleo5",
+    "html_url": "https://github.com/xieleo5",
+    "followers_url": "https://api.github.com/users/xieleo5/followers",
+    "following_url": "https://api.github.com/users/xieleo5/following{/other_user}",
+    "gists_url": "https://api.github.com/users/xieleo5/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/xieleo5/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/xieleo5/subscriptions",
+    "organizations_url": "https://api.github.com/users/xieleo5/orgs",
+    "repos_url": "https://api.github.com/users/xieleo5/repos",
+    "events_url": "https://api.github.com/users/xieleo5/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/xieleo5/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "committer": {
+    "login": "web-flow",
+    "id": 19864447,
+    "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+    "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/web-flow",
+    "html_url": "https://github.com/web-flow",
+    "followers_url": "https://api.github.com/users/web-flow/followers",
+    "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+    "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+    "organizations_url": "https://api.github.com/users/web-flow/orgs",
+    "repos_url": "https://api.github.com/users/web-flow/repos",
+    "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/web-flow/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "parents": [
+    {
+      "sha": "f885a43a38ca98571f366df32f5d039e4d6bcf58",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/commits/f885a43a38ca98571f366df32f5d039e4d6bcf58",
+      "html_url": "https://github.com/MineDojo/Voyager/commit/f885a43a38ca98571f366df32f5d039e4d6bcf58"
+    },
+    {
+      "sha": "f73b412841e56685ecc9ed9fd87aa43e1119a458",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/commits/f73b412841e56685ecc9ed9fd87aa43e1119a458",
+      "html_url": "https://github.com/MineDojo/Voyager/commit/f73b412841e56685ecc9ed9fd87aa43e1119a458"
+    }
+  ],
+  "stats": {
+    "total": 2,
+    "additions": 1,
+    "deletions": 1
+  },
+  "files": [
+    {
+      "sha": "9e389d268c3e7e09d3ad36a9668fbac7ac587397",
+      "filename": "voyager/env/mineflayer/package.json",
+      "status": "modified",
+      "additions": 1,
+      "deletions": 1,
+      "changes": 2,
+      "blob_url": "https://github.com/MineDojo/Voyager/blob/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager%2Fenv%2Fmineflayer%2Fpackage.json",
+      "raw_url": "https://github.com/MineDojo/Voyager/raw/55e45a880755d0c8c66ca7fb5fe7962ac8974f89/voyager%2Fenv%2Fmineflayer%2Fpackage.json",
+      "contents_url": "https://api.github.com/repos/MineDojo/Voyager/contents/voyager%2Fenv%2Fmineflayer%2Fpackage.json?ref=55e45a880755d0c8c66ca7fb5fe7962ac8974f89",
+      "patch": "@@ -22,7 +22,7 @@\n         \"mineflayer-tool\": \"^1.2.0\",\n         \"mocha\": \"^10.2.0\",\n         \"prismarine-biome\": \"^1.3.0\",\n-        \"prismarine-block\": \"^1.16.3\",\n+        \"prismarine-block\": \"=1.16.3\",\n         \"prismarine-entity\": \"^2.2.0\",\n         \"prismarine-item\": \"^1.12.1\",\n         \"prismarine-nbt\": \"^2.2.1\","
+    }
+  ]
+}

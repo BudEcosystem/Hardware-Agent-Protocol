@@ -1,0 +1,137 @@
+{
+  "selector": "article.bd-article",
+  "title": "Hardware Overview \u2014 DGX Spark User Guide",
+  "tables": [
+    {
+      "table": 1,
+      "rows": [
+        [
+          "Component",
+          "Specification"
+        ],
+        [
+          "GPU",
+          "NVIDIA Blackwell Architecture with 5th Generation Tensor Cores, 4th Generation RT Cores"
+        ],
+        [
+          "CPU",
+          "20-core Arm processor (10 Cortex-X925 + 10 Cortex-A725)"
+        ],
+        [
+          "Memory",
+          "128 GB LPDDR5x unified system memory, 256-bit interface, 4266 MHz, 273 GB/s bandwidth"
+        ],
+        [
+          "Storage",
+          "1 TB or 4 TB NVMe M.2 with self-encryption"
+        ],
+        [
+          "Network",
+          "1x RJ-45 (10 GbE), ConnectX-7 Smart NIC, Wi-Fi 7, Bluetooth 5.4"
+        ],
+        [
+          "Connectivity",
+          "4x USB Type-C, 1x HDMI 2.1a, HDMI multichannel audio"
+        ],
+        [
+          "Video Processing",
+          "1x NVENC, 1x NVDEC"
+        ]
+      ]
+    },
+    {
+      "table": 2,
+      "rows": [
+        [
+          "Specification",
+          "Value"
+        ],
+        [
+          "Ideal Operating Temperature",
+          "5\u00b0C to 30\u00b0C (41\u00b0F to 86\u00b0F)"
+        ],
+        [
+          "Operating Humidity",
+          "10% to 90% (non-condensing)"
+        ]
+      ]
+    }
+  ],
+  "images": [
+    {
+      "src": "_images/rear-panel.png",
+      "alt": "Rear panel ports and connectors of DGX Spark",
+      "srcset": null
+    }
+  ],
+  "article_links": [
+    {
+      "text": "#",
+      "href": "#hardware-overview"
+    },
+    {
+      "text": "#",
+      "href": "#system-overview"
+    },
+    {
+      "text": "#",
+      "href": "#component-descriptions"
+    },
+    {
+      "text": "#",
+      "href": "#id1"
+    },
+    {
+      "text": "#",
+      "href": "#physical-specifications"
+    },
+    {
+      "text": "#",
+      "href": "#form-factor"
+    },
+    {
+      "text": "#",
+      "href": "#environmental-requirements"
+    },
+    {
+      "text": "#",
+      "href": "#id2"
+    },
+    {
+      "text": "#",
+      "href": "#connectivity-and-i-o"
+    },
+    {
+      "text": "#",
+      "href": "#rear-panel"
+    },
+    {
+      "text": "",
+      "href": "_images/rear-panel.png"
+    },
+    {
+      "text": "#",
+      "href": "#performance-specifications"
+    },
+    {
+      "text": "#",
+      "href": "#compute-performance"
+    },
+    {
+      "text": "#",
+      "href": "#ai-ml-capabilities"
+    },
+    {
+      "text": "#",
+      "href": "#power-and-thermal-management"
+    },
+    {
+      "text": "#",
+      "href": "#power-requirements"
+    },
+    {
+      "text": "#",
+      "href": "#thermal-management"
+    }
+  ]
+}

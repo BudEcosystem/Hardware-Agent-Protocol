@@ -1,0 +1,9 @@
+{
+  "observations": [
+    "Official-primary web search and page open used for discovery/current status; web-tool opening www.rfc-editor.org/errata/rfc9177 returned Internal Error.",
+    "Direct HTTPS acquisition of that errata URL succeeded with a redirect to errata.rfc-editor.org/search/?rfc_number=9177&presentation=records; archived all-status result says no matching errata.",
+    "One web-tool cached CoRE view reported 2026-06-15 while the archived fresh direct HTML reports 2026-08-11. Allocation claims use retained CSV bytes, not cached search metadata.",
+    "The preexisting selected RFC TXT and new full-review TXT have identical SHA-256. Prior reading claim remains 1–200 only."
+  ],
+  "acquisition_manifest": "research/constrained/qblock-full/manifest.jsonl"
+}

@@ -1,0 +1,349 @@
+[
+  {
+    "id": "ha-contributors",
+    "repository": "https://github.com/home-assistant/contributors.home-assistant.io",
+    "ref": "main",
+    "commit": "abdc493f06647a69e8d64da62dd91b784273ac62",
+    "tree_sha": "04162e01e4b7827f1e42c0c4a31af8d12a859f5a",
+    "retrieved_at": "2026-11-05T22:59:32.822208+00:00",
+    "commit_metadata_path": "research/home/metadata/ha-contributors-commit.json",
+    "commit_metadata_sha256": "750509e60352bcd4a04a05bda42e0a6a64d0cc7836f208a72bfe110ab260ced9",
+    "tree_metadata_path": "research/home/metadata/ha-contributors-tree.json",
+    "tree_metadata_sha256": "b0fe772730f195d976b716a381afb6e4513ca23580e8dbefca64f86ed04f7f6a",
+    "scope": "Selected complete source files only; no whole-repository acquisition or reading claim. Acquired source not executed.",
+    "files": [
+      {
+        "path": "research/home/snapshots/ha-contributors/src/content/docs/core/internals/websocket-api.md",
+        "repository_path": "src/content/docs/core/internals/websocket-api.md",
+        "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/internals/websocket-api.md",
+        "git_blob_sha": "c7f6298d3a939380439e1c7468d11caee6a88e40",
+        "sha256": "f4cbe18717888d56e0c4ffefb9a44ca502bcb9bb72a56b8ed24572d5f3974ea0",
+        "bytes": 18243
+      },
+      {
+        "path": "research/home/snapshots/ha-contributors/src/content/docs/core/internals/rest-api.md",
+        "repository_path": "src/content/docs/core/internals/rest-api.md",
+        "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/internals/rest-api.md",
+        "git_blob_sha": "d4f20897dd7c6a04b9117074be82d9808ef7b69f",
+        "sha256": "3be37181c244785391e21e5e9237b2d420e61a5d6fc755294ee915fcfdd77d1d",
+        "bytes": 9034
+      },
+      {
+        "path": "research/home/snapshots/ha-contributors/src/content/docs/core/internals/states.md",
+        "repository_path": "src/content/docs/core/internals/states.md",
+        "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/internals/states.md",
+        "git_blob_sha": "614aa4bff6ebc8bf733e2b6fd43a1cf0704537ae",
+        "sha256": "5e040c792b2b5401fccdae6a0a79f813b689f8d79a30401ca06902e6fb2e1308",
+        "bytes": 4576
+      },
+      {
+        "path": "research/home/snapshots/ha-contributors/src/content/docs/core/internals/events.md",
+        "repository_path": "src/content/docs/core/internals/events.md",
+        "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/internals/events.md",
+        "git_blob_sha": "578079c4eca243b6eda68b96bf67f5307e18901b",
+        "sha256": "009908ecf96c5b0c82732a5cbc94ae3df2bd9ad9e43a49a9c4a1f11901dc58b5",
+        "bytes": 5901
+      },
+      {
+        "path": "research/home/snapshots/ha-contributors/src/content/docs/core/entities/state-updates.md",
+        "repository_path": "src/content/docs/core/entities/state-updates.md",
+        "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/entities/state-updates.md",
+        "git_blob_sha": "deb0b26cfc696e9898e26a6455a81e8658ea8e43",
+        "sha256": "a470b0e4a893862189a99ce4e58e0223d91633c60a96796fd94f20749a3964eb",
+        "bytes": 9161
+      },
+      {
+        "path": "research/home/snapshots/ha-contributors/src/content/docs/core/entities/state-attributes.md",
+        "repository_path": "src/content/docs/core/entities/state-attributes.md",
+        "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/entities/state-attributes.md",
+        "git_blob_sha": "67708cab562322549850cfe8077b74affe00aac8",
+        "sha256": "0fd855797d6119b19da769426137e612a68dbbadb2639be910f1f5e92c6e90d1",
+        "bytes": 6033
+      },
+      {
+        "path": "research/home/snapshots/ha-contributors/src/content/docs/core/integrations/fetching-data.md",
+        "repository_path": "src/content/docs/core/integrations/fetching-data.md",
+        "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/integrations/fetching-data.md",
+        "git_blob_sha": "3eb8d018e08fb42f1ed64c08caa9bc5511d24aa5",
+        "sha256": "3fe481a4116aaebe54db72860f9a920853f5fe11f60331ba82b569ba894c0fca",
+        "bytes": 9890
+      }
+    ]
+  },
+  {
+    "id": "ha-core",
+    "repository": "https://github.com/home-assistant/core",
+    "ref": "2026.11.0",
+    "commit": "74cf5a49c63ed8d4d87717844bf14f79c28c9cea",
+    "tree_sha": "530241f5976abdfbea2fa1fa51e0ddc7a4d42560",
+    "retrieved_at": "2026-11-05T22:59:35.548461+00:00",
+    "commit_metadata_path": "research/home/metadata/ha-core-commit.json",
+    "commit_metadata_sha256": "7e68d156ef482a42a791a0b473cf810faf3cc4ce8b4fec51f644b2bcc13bc8a0",
+    "tree_metadata_path": "research/home/metadata/ha-core-tree.json",
+    "tree_metadata_sha256": "de2cf8e9d20fe9a14cb410e369508bc21247d2d485c20b124ba5c95e51a5c55b",
+    "scope": "Selected complete source files only; no whole-repository acquisition or reading claim. Acquired source not executed.",
+    "files": [
+      {
+        "path": "research/home/snapshots/ha-core/homeassistant/components/websocket_api/commands.py",
+        "repository_path": "homeassistant/components/websocket_api/commands.py",
+        "url": "https://raw.githubusercontent.com/home-assistant/core/74cf5a49c63ed8d4d87717844bf14f79c28c9cea/homeassistant/components/websocket_api/commands.py",
+        "git_blob_sha": "03297e0820d912f98f3441476e00c96fdbfe53dc",
+        "sha256": "e161f3e2f75cfcc25e0ad66871a6d9c1740111f65cb194791926cf6f8494d443",
+        "bytes": 49520
+      },
+      {
+        "path": "research/home/snapshots/ha-core/homeassistant/components/websocket_api/connection.py",
+        "repository_path": "homeassistant/components/websocket_api/connection.py",
+        "url": "https://raw.githubusercontent.com/home-assistant/core/74cf5a49c63ed8d4d87717844bf14f79c28c9cea/homeassistant/components/websocket_api/connection.py",
+        "git_blob_sha": "e031b7c429bd6348c0a6957b4b0101896f59db5f",
+        "sha256": "abe7fc8e7fabc9a552bfb5b6df36117b42d0aa75b948064c1a384e42c608368c",
+        "bytes": 14289
+      },
+      {
+        "path": "research/home/snapshots/ha-core/homeassistant/components/api/__init__.py",
+        "repository_path": "homeassistant/components/api/__init__.py",
+        "url": "https://raw.githubusercontent.com/home-assistant/core/74cf5a49c63ed8d4d87717844bf14f79c28c9cea/homeassistant/components/api/__init__.py",
+        "git_blob_sha": "a66f75403c21c1dd64771713d60704502de0ee81",
+        "sha256": "ed3e5b3ac91a3bcf2e87d27b7e26579a420477747123b846c5cd019649045673",
+        "bytes": 18618
+      }
+    ]
+  },
+  {
+    "id": "ha-js-websocket",
+    "repository": "https://github.com/home-assistant/home-assistant-js-websocket",
+    "ref": "master",
+    "commit": "ad8031f63b996cccb9dc53633325c2039b030aee",
+    "tree_sha": "d4e244ef2f3d4d37c182a50bbc96c692a71b1319",
+    "retrieved_at": "2026-11-05T22:59:32.666890+00:00",
+    "commit_metadata_path": "research/home/metadata/ha-js-websocket-commit.json",
+    "commit_metadata_sha256": "4f19b5c03f7e5d5637f6fccc02d07da4992cf7c09cf080614dd03ef64e7cc43b",
+    "tree_metadata_path": "research/home/metadata/ha-js-websocket-tree.json",
+    "tree_metadata_sha256": "d38e9668fec2939c10604377f28db0ca5ab2e3eacf815ae8c5077c5fed0b0814",
+    "scope": "Selected complete source files only; no whole-repository acquisition or reading claim. Acquired source not executed.",
+    "files": [
+      {
+        "path": "research/home/snapshots/ha-js-websocket/lib/connection.ts",
+        "repository_path": "lib/connection.ts",
+        "url": "https://raw.githubusercontent.com/home-assistant/home-assistant-js-websocket/ad8031f63b996cccb9dc53633325c2039b030aee/lib/connection.ts",
+        "git_blob_sha": "e981bf41d136488bd686bb267e13db4307c359e8",
+        "sha256": "de1ea449caabc9ad9f364f6a93337b24131768793347c0ccbce35acdba2955f7",
+        "bytes": 17177
+      },
+      {
+        "path": "research/home/snapshots/ha-js-websocket/lib/entities.ts",
+        "repository_path": "lib/entities.ts",
+        "url": "https://raw.githubusercontent.com/home-assistant/home-assistant-js-websocket/ad8031f63b996cccb9dc53633325c2039b030aee/lib/entities.ts",
+        "git_blob_sha": "02a20e29cf439e469601cec8a0a02bd0d34628b6",
+        "sha256": "80d61d9204613b2fe58210779f374462d881c7cdfbc043b05179266eb3fedadf",
+        "bytes": 87
+      },
+      {
+        "path": "research/home/snapshots/ha-js-websocket/lib/collection.ts",
+        "repository_path": "lib/collection.ts",
+        "url": "https://raw.githubusercontent.com/home-assistant/home-assistant-js-websocket/ad8031f63b996cccb9dc53633325c2039b030aee/lib/collection.ts",
+        "git_blob_sha": "132f49cfa130d2c67681d78057b622920ed668c0",
+        "sha256": "7e66b3a0063a25a59b213b93e64b49e4f085132a3f007b92dcaca27729d8d3aa",
+        "bytes": 5105
+      },
+      {
+        "path": "research/home/snapshots/ha-js-websocket/lib/states.ts",
+        "repository_path": "lib/states.ts",
+        "url": "https://raw.githubusercontent.com/home-assistant/home-assistant-js-websocket/ad8031f63b996cccb9dc53633325c2039b030aee/lib/states.ts",
+        "git_blob_sha": "72a28482605d7ccf351c4a955b2c9bc3c98aa757",
+        "sha256": "7d5daac6f30a44b87faf1111b2dc9d5c51a9696b4f9ed2a193ac5a68e63b6e52",
+        "bytes": 5550
+      }
+    ]
+  },
+  {
+    "id": "esphome",
+    "repository": "https://github.com/esphome/esphome",
+    "ref": "2026.10.2",
+    "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+    "tree_sha": "26d0ec28423a6ef037d2d1918dfbaf1cc59b1aec",
+    "retrieved_at": "2026-11-05T22:59:33.306037+00:00",
+    "commit_metadata_path": "research/home/metadata/esphome-commit.json",
+    "commit_metadata_sha256": "123851a79c10ffe0ef65e282ca8c29f2e2d4574470ce4d44a8dc47646b6ccff4",
+    "tree_metadata_path": "research/home/metadata/esphome-tree.json",
+    "tree_metadata_sha256": "40e1f94b5a52c2d2e1dd46ba8853d3fbf44fbaf485d3a1f493ad8f83bc2e6420",
+    "scope": "Selected complete source files only; no whole-repository acquisition or reading claim. Acquired source not executed.",
+    "files": [
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/api/api.proto",
+        "repository_path": "esphome/components/api/api.proto",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api.proto",
+        "git_blob_sha": "8e9ff00f59cc1222aee591b76e05925d31fc0baa",
+        "sha256": "52d1831f8621c436dd15d8d19b6eaf6a632fe13e4bb00966f8b31dba39680917",
+        "bytes": 109589
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/api/api_connection.cpp",
+        "repository_path": "esphome/components/api/api_connection.cpp",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api_connection.cpp",
+        "git_blob_sha": "efa0beb55e1d0bb0d63710038ecb7971ea3cf1f4",
+        "sha256": "7c528db887aa3407bb157876644a6849d2ec7bcd66f82e99cd243f55a96178da",
+        "bytes": 120577
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/api/api_server.cpp",
+        "repository_path": "esphome/components/api/api_server.cpp",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api_server.cpp",
+        "git_blob_sha": "33869dd976e14a5a026ce95cfca60c40548b25a1",
+        "sha256": "04493ab169d14da679ede65e526cf00606d94fbbb51bc78ec37e23b7d6be758f",
+        "bytes": 33165
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/api/api_frame_helper.cpp",
+        "repository_path": "esphome/components/api/api_frame_helper.cpp",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api_frame_helper.cpp",
+        "git_blob_sha": "41d1230aaa6e54ba4121fb065188cf5031e0c75a",
+        "sha256": "0c02ac1f2453e1514918a5598543d5235c3e6ef62cdba5410e173174747cfc46",
+        "bytes": 8438
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/api/api_frame_helper_noise.cpp",
+        "repository_path": "esphome/components/api/api_frame_helper_noise.cpp",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api_frame_helper_noise.cpp",
+        "git_blob_sha": "21ef085c53f87c78db71649796535c75df6dd47e",
+        "sha256": "da2a2b90e94c2d95d7788c298cdfa60398573300ff80bf94998d121c172bb9dd",
+        "bytes": 22622
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/template/switch/template_switch.cpp",
+        "repository_path": "esphome/components/template/switch/template_switch.cpp",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/template/switch/template_switch.cpp",
+        "git_blob_sha": "729db370531292e1f74e0ce3ec2bf75e21dedee7",
+        "sha256": "07cf62381d68c282109fde4d2648e21d063c3abcd823a5e96eadbdcaffb305ee",
+        "bytes": 1630
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/time_based/cover/time_based_cover.cpp",
+        "repository_path": "esphome/components/time_based/cover/time_based_cover.cpp",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/time_based/cover/time_based_cover.cpp",
+        "git_blob_sha": "613b190cf3cca1f7921836f16e16118adf6df477",
+        "sha256": "2da9f80fa943d19c239744aa1d25b3bee93ba4e990b8f5f43fd48e378edb2f6b",
+        "bytes": 5713
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/noise/noise.cpp",
+        "repository_path": "esphome/components/noise/noise.cpp",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/noise/noise.cpp",
+        "git_blob_sha": "118bfb234fd0ca0a32f3d83c2a001ff0e247f882",
+        "sha256": "d4223d35aba6e33a3302d6167a4a6e4b932d21335020cfd1dca55b9601ebc755",
+        "bytes": 4247
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/noise/noise.h",
+        "repository_path": "esphome/components/noise/noise.h",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/noise/noise.h",
+        "git_blob_sha": "271a829944a7d0f89b150e7eeca2f0d022b32fcd",
+        "sha256": "dbff394147491c06e3b7960263c3f700b5dfb11353e7bb0d166d3f19e4a4ed0b",
+        "bytes": 4003
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/api/user_services.h",
+        "repository_path": "esphome/components/api/user_services.h",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/user_services.h",
+        "git_blob_sha": "3b17bdb7bcdeb6250617040be6bb6c863d590bfb",
+        "sha256": "ac9de89a33ba492733febb387b98488882d3d405f735580a16401078b3bbcdee",
+        "bytes": 13439
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/api/api_connection.h",
+        "repository_path": "esphome/components/api/api_connection.h",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api_connection.h",
+        "git_blob_sha": "9f784185b8367df15de9b7f2496526c99a2c8ceb",
+        "sha256": "20f1ece0371665fc9aacb4faa3275f0807bfe51a302ca9382cb54bc3ed86fa3b",
+        "bytes": 40291
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/api/subscribe_state.cpp",
+        "repository_path": "esphome/components/api/subscribe_state.cpp",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/subscribe_state.cpp",
+        "git_blob_sha": "09b5640d8acd1fbc0eff6c5a0f8536331d54d761",
+        "sha256": "d0a2ccb667b0c1dd18a715993f15f93e418a16879f9bc1e066def6ffa0506455",
+        "bytes": 2058
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/api/api_options.proto",
+        "repository_path": "esphome/components/api/api_options.proto",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api_options.proto",
+        "git_blob_sha": "8e8fa99833d1b3534a05f846553587fdd3263fd8",
+        "sha256": "1206b5d2bf815a2ad68c180a4dd5a0b42579e6b3f4fa55d389d80699d95ed20f",
+        "bytes": 6475
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/noise/noise_handshake.cpp",
+        "repository_path": "esphome/components/noise/noise_handshake.cpp",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/noise/noise_handshake.cpp",
+        "git_blob_sha": "15938f3aca1669c03d148e0e728ce89b391001e1",
+        "sha256": "24028b188e0d550ff61d8e6549ed55affbcb498d8d571e140fde7d81c5469432",
+        "bytes": 5386
+      },
+      {
+        "path": "research/home/snapshots/esphome/esphome/components/noise/noise_handshake.h",
+        "repository_path": "esphome/components/noise/noise_handshake.h",
+        "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/noise/noise_handshake.h",
+        "git_blob_sha": "ef556a26b00bb0d42666f97d6a91c54eaabf3547",
+        "sha256": "371abbe12dbc7bda3112fd8f69d3fd35375e7a682d2bd1d7adbd8b3012044963",
+        "bytes": 2875
+      }
+    ]
+  },
+  {
+    "id": "esphome-docs",
+    "repository": "https://github.com/esphome/esphome.io",
+    "ref": "current",
+    "commit": "4dad66388fb0b2b3591ba4bdfb46b3694125b3e5",
+    "tree_sha": "3a9d46e83456cd964857b0da23605859aee77b3c",
+    "retrieved_at": "2026-11-05T22:59:32.946528+00:00",
+    "commit_metadata_path": "research/home/metadata/esphome-docs-commit.json",
+    "commit_metadata_sha256": "fbfa367dcf73646de319e1bba4644e98b479e9ff8e056a7ace473e605175bbda",
+    "tree_metadata_path": "research/home/metadata/esphome-docs-tree.json",
+    "tree_metadata_sha256": "559b2da22a1fc219d114a26d91b20c0f33f039c6e6ad2557cc57f13411e0de88",
+    "scope": "Selected complete source files only; no whole-repository acquisition or reading claim. Acquired source not executed.",
+    "files": [
+      {
+        "path": "research/home/snapshots/esphome-docs/src/content/docs/components/api.mdx",
+        "repository_path": "src/content/docs/components/api.mdx",
+        "url": "https://raw.githubusercontent.com/esphome/esphome.io/4dad66388fb0b2b3591ba4bdfb46b3694125b3e5/src/content/docs/components/api.mdx",
+        "git_blob_sha": "87ca0c08651d20c631af43cecd21d5415dac8a35",
+        "sha256": "695716b2eb549d91ab382dae3d099e6a88fdab5441584572f60823396bd14f48",
+        "bytes": 42500
+      },
+      {
+        "path": "research/home/snapshots/esphome-docs/src/content/docs/automations/actions.mdx",
+        "repository_path": "src/content/docs/automations/actions.mdx",
+        "url": "https://raw.githubusercontent.com/esphome/esphome.io/4dad66388fb0b2b3591ba4bdfb46b3694125b3e5/src/content/docs/automations/actions.mdx",
+        "git_blob_sha": "b7c4f94e9d24f150df257ff0fbdaa0038262970e",
+        "sha256": "03e1bdeebdbcd366c2d90272fc492ee5c50f11347cbea2bb00f5b67f581a8d5f",
+        "bytes": 16319
+      },
+      {
+        "path": "research/home/snapshots/esphome-docs/src/content/docs/components/script.mdx",
+        "repository_path": "src/content/docs/components/script.mdx",
+        "url": "https://raw.githubusercontent.com/esphome/esphome.io/4dad66388fb0b2b3591ba4bdfb46b3694125b3e5/src/content/docs/components/script.mdx",
+        "git_blob_sha": "2b49b8dcc366cb206db1f02875d1ec538686ff91",
+        "sha256": "728278e8196a6eff0121f8fbba3f6a5b5ca643f2877ba5b4d15795cb1ba02b7a",
+        "bytes": 5612
+      },
+      {
+        "path": "research/home/snapshots/esphome-docs/src/content/docs/components/switch/template.mdx",
+        "repository_path": "src/content/docs/components/switch/template.mdx",
+        "url": "https://raw.githubusercontent.com/esphome/esphome.io/4dad66388fb0b2b3591ba4bdfb46b3694125b3e5/src/content/docs/components/switch/template.mdx",
+        "git_blob_sha": "b26e7861020c0a8e54044d51086e6eb7644456de",
+        "sha256": "eb30b106d7a5c6e36720ca340dbd6a112d0e5c85a9eb37556f04db8d2553d956",
+        "bytes": 3248
+      },
+      {
+        "path": "research/home/snapshots/esphome-docs/src/content/docs/components/cover/time_based.mdx",
+        "repository_path": "src/content/docs/components/cover/time_based.mdx",
+        "url": "https://raw.githubusercontent.com/esphome/esphome.io/4dad66388fb0b2b3591ba4bdfb46b3694125b3e5/src/content/docs/components/cover/time_based.mdx",
+        "git_blob_sha": "8fb5b118e443ea9df3f01e1982a8b670a1c37b3d",
+        "sha256": "0ca9596ba4bdffd184ed4bf2a0d8cb2bfc708bfa0d9f46c064fb5c5f06ade90c",
+        "bytes": 4129
+      }
+    ]
+  }
+]

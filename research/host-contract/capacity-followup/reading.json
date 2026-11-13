@@ -1,0 +1,206 @@
+{
+  "reader": "primary agent",
+  "date": "2026-11-08",
+  "sources": [
+    {
+      "id": "limits",
+      "url": "https://sqlite.org/limits.html",
+      "rawSha256": "0cdbd54a89169177c50efd15854e5c1e0df6fe1a0e0706234e034dd923e0503b",
+      "textSha256": "a68b766197ec7a6729d3c5d257755c0868347e378d11d2fbb4e91b456669f2a1",
+      "textLines": 362,
+      "readRanges": [
+        [
+          1,
+          170
+        ],
+        [
+          171,
+          362
+        ]
+      ],
+      "readLines": 362,
+      "coverage": "complete extracted text",
+      "inlineSyntaxDiagrams": 0,
+      "diagramTextRead": false,
+      "diagramGeometryInspected": false,
+      "decorativeBannerInspected": false,
+      "acquiredContentExecuted": false
+    },
+    {
+      "id": "transactions",
+      "url": "https://sqlite.org/lang_transaction.html",
+      "rawSha256": "b65dc308fd9e0ce471844c97366a4f5ad3a1f42833a3b19486ad7d6555a8e24e",
+      "textSha256": "6a3bc15c4b9c07ad285d529a0d52b559ce433cac08892fe4341598d0c52e0b23",
+      "textLines": 235,
+      "readRanges": [
+        [
+          1,
+          235
+        ]
+      ],
+      "readLines": 235,
+      "coverage": "complete extracted text",
+      "inlineSyntaxDiagrams": 3,
+      "diagramTextRead": true,
+      "diagramGeometryInspected": false,
+      "decorativeBannerInspected": false,
+      "acquiredContentExecuted": false
+    },
+    {
+      "id": "tempfiles",
+      "url": "https://sqlite.org/tempfiles.html",
+      "rawSha256": "b9c7f358075ecff93675207807188857377df0dc2b9052a46651de21acb84a79",
+      "textSha256": "b022154c4fa7b63749779761627f376ec49947e9160a68e11a3ff8d1ff7fcedf",
+      "textLines": 618,
+      "readRanges": [
+        [
+          1,
+          210
+        ],
+        [
+          211,
+          420
+        ],
+        [
+          421,
+          618
+        ]
+      ],
+      "readLines": 618,
+      "coverage": "complete extracted text",
+      "inlineSyntaxDiagrams": 0,
+      "diagramTextRead": false,
+      "diagramGeometryInspected": false,
+      "decorativeBannerInspected": false,
+      "acquiredContentExecuted": false
+    },
+    {
+      "id": "dbstat",
+      "url": "https://sqlite.org/dbstat.html",
+      "rawSha256": "2d2418abfc87570651dcd67b844865f9a283083361c5ab53ce2f23c6235a2240",
+      "textSha256": "2ec6498e87e013421e127bdb90562fc78546f6e9cda09f12ccd3aeed6304c09b",
+      "textLines": 194,
+      "readRanges": [
+        [
+          1,
+          194
+        ]
+      ],
+      "readLines": 194,
+      "coverage": "complete extracted text",
+      "inlineSyntaxDiagrams": 0,
+      "diagramTextRead": false,
+      "diagramGeometryInspected": false,
+      "decorativeBannerInspected": false,
+      "acquiredContentExecuted": false
+    },
+    {
+      "id": "pragmas",
+      "url": "https://sqlite.org/pragma.html",
+      "rawSha256": "af75d7d7ab00c29e6eea98618cb1259a3919c308af60a6173215bf9798706034",
+      "textSha256": "d0bb67f0235ce56a61f6803cfe38ff9b19f1a9fa82577a48d6b5f25317b3a38e",
+      "textLines": 2688,
+      "readRanges": [
+        [
+          1356,
+          1410
+        ],
+        [
+          1539,
+          1567
+        ],
+        [
+          1703,
+          1740
+        ],
+        [
+          2034,
+          2162
+        ]
+      ],
+      "readLines": 251,
+      "coverage": "selected sections",
+      "inlineSyntaxDiagrams": 3,
+      "diagramTextRead": false,
+      "diagramGeometryInspected": false,
+      "decorativeBannerInspected": false,
+      "acquiredContentExecuted": false
+    },
+    {
+      "id": "attach",
+      "url": "https://sqlite.org/lang_attach.html",
+      "rawSha256": "5ad54b7f4829c69c88f4bbf8b39c5b88e80740fc84a555ce9c23e5faf1e48138",
+      "textSha256": "7a48ecd5b49f987ae21b0b317429c5316990d2e7fe8bf1c8df5cbea2ebea0724",
+      "textLines": 517,
+      "readRanges": [
+        [
+          1,
+          180
+        ],
+        [
+          181,
+          360
+        ],
+        [
+          361,
+          517
+        ]
+      ],
+      "readLines": 517,
+      "coverage": "complete extracted text",
+      "inlineSyntaxDiagrams": 23,
+      "diagramTextRead": true,
+      "diagramGeometryInspected": false,
+      "decorativeBannerInspected": false,
+      "acquiredContentExecuted": false
+    },
+    {
+      "id": "authorizer",
+      "url": "https://sqlite.org/c3ref/set_authorizer.html",
+      "rawSha256": "f4b43d68f5d827b768cd3a1cad8cfd2aa913e073be9d2498ec80b53cd8e32c02",
+      "textSha256": "bf96edcaa21bbb24499921c4b5f963213006eee93e47a78942b2580baf2ff89a",
+      "textLines": 188,
+      "readRanges": [
+        [
+          1,
+          188
+        ]
+      ],
+      "readLines": 188,
+      "coverage": "complete extracted text",
+      "inlineSyntaxDiagrams": 0,
+      "diagramTextRead": false,
+      "diagramGeometryInspected": false,
+      "decorativeBannerInspected": false,
+      "acquiredContentExecuted": false
+    },
+    {
+      "id": "authorizer-codes",
+      "url": "https://sqlite.org/c3ref/c_alter_table.html",
+      "rawSha256": "9aafe597f56ecb23a84b5d92b4125387239956e0e675d030cec4c4d0f870598c",
+      "textSha256": "346aa5c77c5ebee28735f4244d573ae4c6b26e5b2b460c9d51287a0cc5422c16",
+      "textLines": 84,
+      "readRanges": [
+        [
+          1,
+          84
+        ]
+      ],
+      "readLines": 84,
+      "coverage": "complete extracted text",
+      "inlineSyntaxDiagrams": 0,
+      "diagramTextRead": false,
+      "diagramGeometryInspected": false,
+      "decorativeBannerInspected": false,
+      "acquiredContentExecuted": false
+    }
+  ],
+  "readLines": 2449,
+  "fullMediaReviewClaimed": false,
+  "remaining": [
+    "Other PRAGMA sections",
+    "Inline syntax-diagram geometry for transactions, ATTACH and PRAGMA",
+    "Linked references not covered by these pages"
+  ],
+  "note": "Earlier acquisition metadata records acquisition-time status; this separate receipt records subsequent reading. Truncated tool output was not counted until read again in bounded ranges."
+}

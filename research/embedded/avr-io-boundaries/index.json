@@ -1,0 +1,53 @@
+{
+  "files": [
+    {
+      "bytes": 5144,
+      "path": "README.md",
+      "sha256": "f4b9f7b121b625f5a40fcffb8ac5747799697b1df04f087eb155004aab48248a"
+    },
+    {
+      "bytes": 2243,
+      "path": "manifest.json",
+      "sha256": "40e63b0a005796c74a3843a61274017b6528f77637f3bb2f511eea2d6eec4e1a"
+    },
+    {
+      "bytes": 1692,
+      "path": "reading.json",
+      "sha256": "89e3b86bbc48fde4e5250c1e097d1b3334e1da92f2cc48653c60707558bbe76d"
+    },
+    {
+      "bytes": 7613,
+      "path": "source/cores/arduino/Arduino.h",
+      "sha256": "335f45c59532cd7df39ce1435fbf1abf8d503d42ac6085a92e0f2ff75f5fffac"
+    },
+    {
+      "bytes": 11951,
+      "path": "source/cores/arduino/wiring.c",
+      "sha256": "586bdf890ff6cd70d2a5457aef406517fff1113dcee51ea9f4f86cd54f8cc204"
+    },
+    {
+      "bytes": 7637,
+      "path": "source/cores/arduino/wiring_analog.c",
+      "sha256": "af985237cce8dcf22d1a1359bab6af274c780592feae73707c792c334ee63172"
+    },
+    {
+      "bytes": 4979,
+      "path": "source/cores/arduino/wiring_digital.c",
+      "sha256": "f56a12bb80e3179db3c4803a90b7c3c4ac6b14d4f23ababb121173ef0e27d26c"
+    },
+    {
+      "bytes": 2255,
+      "path": "source/cores/arduino/wiring_private.h",
+      "sha256": "c416d346d436f2ba55507ba867a0fd6bf8d261440194a237fa318e20c5617bdc"
+    },
+    {
+      "bytes": 6437,
+      "path": "source/variants/standard/pins_arduino.h",
+      "sha256": "d313845f9916c1f21c8ba9848d40806f5caab52529ad510e81b3f15318441631"
+    }
+  ],
+  "fullyReadFiles": 6,
+  "fullyReadLfLines": 1443,
+  "sourceExecuted": false,
+  "status": "sealed-source-review"
+}

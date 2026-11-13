@@ -1,0 +1,22 @@
+{
+  "id": "action_codes",
+  "requestedUrl": "https://www.sqlite.org/c3ref/c_alter_table.html",
+  "finalUrl": "https://www.sqlite.org/c3ref/c_alter_table.html",
+  "startedUtc": "2026-11-06T22:32:58.485928+00:00",
+  "completedUtc": "2026-11-06T22:33:00.240741+00:00",
+  "status": 200,
+  "headers": {
+    "Connection": "close",
+    "Date": "Fri, 06 Nov 2026 22:33:00 GMT",
+    "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+    "Cache-Control": "max-age=120",
+    "ETag": "\"m6ae24ec4s20c0\"",
+    "Content-type": "text/html; charset=utf-8",
+    "Content-length": "8384"
+  },
+  "maximumBytes": 1048576,
+  "bytes": 8384,
+  "sha256": "9aafe597f56ecb23a84b5d92b4125387239956e0e675d030cec4c4d0f870598c",
+  "complete": true,
+  "scope": "Raw page acquisition only; reading recorded separately."
+}

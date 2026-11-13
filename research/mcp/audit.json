@@ -1,0 +1,24 @@
+{
+  "verified_at": "2026-11-06T22:38:00.477207+00:00",
+  "acquisitions": 22,
+  "repository_pins": 1,
+  "snapshot_files": 22,
+  "reconstructed_metadata_trees": 362,
+  "reading_records": 22,
+  "full_records": 19,
+  "coverage_chunks": 31,
+  "read_lines": 5837,
+  "hash_checks": 46,
+  "limitations": [
+    "Coverage is reader-attested, not machine proof.",
+    "Selected repository blobs only; metadata reconstruction is not whole-repository reading.",
+    "HTTPS metadata links commit and tree; commit signature was not independently verified.",
+    "Generated JSON schema used for test validation; it was not read in full."
+  ],
+  "inputs": {
+    "research/mcp/manifest.jsonl": "fc7a8e0b4ae2d11fde6038df53b805afeb7cfc4a891f9114231485c8b258c534",
+    "research/mcp/pin.json": "46296c739d026286873302d5599a6a0ac37bd1858ffed59258f8afbfa09dd509",
+    "research/mcp/reading-mcp-full.json": "b688a88555ccb3ef92327777ba1955663e9a53f01831728e98ef55dd3f991335",
+    "research/mcp/audit_mcp.py": "0d7a39e16b3acaa68f2bd2b0027d7a9ab683e2502abeea72332509fae4925a9c"
+  }
+}

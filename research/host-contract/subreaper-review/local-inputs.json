@@ -1,0 +1,26 @@
+[
+  {
+    "originalPath": "/usr/include/x86_64-linux-gnu/sys/prctl.h",
+    "snapshotPath": "local-inputs/sys-prctl.h",
+    "bytes": 1795,
+    "sha256": "a76908ae4f9cc728b69720ede3630ed2df5462e85d03fe949b48f269ad3dade6",
+    "readRanges": [
+      [
+        1,
+        55
+      ]
+    ]
+  },
+  {
+    "originalPath": "/usr/include/linux/prctl.h",
+    "snapshotPath": "local-inputs/linux-prctl.h",
+    "bytes": 10671,
+    "sha256": "6feff68eef81225d5885ed3dd6e0644b6ec4881591e219041fcec87a67040e42",
+    "readRanges": [
+      [
+        158,
+        159
+      ]
+    ]
+  }
+]

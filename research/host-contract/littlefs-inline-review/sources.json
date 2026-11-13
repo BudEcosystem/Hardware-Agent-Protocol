@@ -1,0 +1,11 @@
+{
+  "acquisition": "copied from previously acquired and revalidated pinned source packet",
+  "retainedCopy": {
+    "bytes": 17620,
+    "path": "test_files.toml",
+    "sha256": "a8b6b0d9691c64650ec96842245fa9828d875411ee8aa25eaad64ac3678a23d2",
+    "url": "https://raw.githubusercontent.com/littlefs-project/littlefs/6cb4e86540eca0d9ba62500a298385c9d863c8be/tests/test_files.toml"
+  },
+  "sourceIndexSha256": "c149f635c72262102a1d5c2ff3f2fc08c56fc6dc1fc9a1306037114d1650fd0e",
+  "sourcePacket": "research/host-contract/littlefs-core"
+}

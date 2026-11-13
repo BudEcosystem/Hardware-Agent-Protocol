@@ -1,0 +1,346 @@
+{
+  "recorded_at_utc": "2026-11-06T01:59:38.274729+00:00",
+  "harness_base_commit": "335a82eb121ccefc4c4bee98fc523a76eb218c5c",
+  "isolated_worktree": "/home/bud/Desktop/bud/hms-harness-335a82eb",
+  "live_checkout_head_at_finish": "335a82eb121ccefc4c4bee98fc523a76eb218c5c",
+  "live_checkout_tracked_status_at_finish": "clean",
+  "node": "24.22.1",
+  "pnpm": "11.28.5",
+  "python": "3.12.3",
+  "platform": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
+  "harness_package_sources_sha256": {
+    "packages/experimental/hardware-hms/README.i18n.yaml": "609ee9a356b581a93bfcc1e8508b2f00ea5acf2e3b96861133fb7bcc11263dc9",
+    "packages/experimental/hardware-hms/README.md": "42970aaac8606025d2ff1e0ce1fe181872cec73bbae472ca18dd9c7cc67fe879",
+    "packages/experimental/hardware-hms/README.zh.md": "4f78534bc84f30db90f3516f976f96ffa30d0cb7d14d41bfea27c4bb98df9da1",
+    "packages/experimental/hardware-hms/package.json": "343c45f42559e3765d6a56221008c8971bd7ce99e4af5be1af0f945ce531a30b",
+    "packages/experimental/hardware-hms/src/bridge.ts": "e2e585d0e46f559aa1a73bda4523d3528671534c88be380608da6d699544ed21",
+    "packages/experimental/hardware-hms/src/index.ts": "14dc61db35c278142bbde2420871a4bb1ca960f319be3149a3bc83bbe00e670c",
+    "packages/experimental/hardware-hms/src/reply.ts": "a4f159d293d3f2ae23d9a8539d469e05bc48d44f7d66314167f9c18a96cb0245",
+    "packages/experimental/hardware-hms/tests/reply.spec.ts": "f496410aa1c61c6a949ba337e12ce70e402805c980311f30ec071e75016a262c",
+    "packages/experimental/hardware-hms/tsconfig.json": "003d7bc9e85db398b923bf9d81c160cb8e182cd228612d00ed31835ad9ffb8a0",
+    "packages/experimental/hardware-profile/README.i18n.yaml": "93a4cf317ae014e417256f7cb5f35f07fe38dbd80faa061344250fa8392411ff",
+    "packages/experimental/hardware-profile/README.md": "eb3380b15dd7e3ca94bdeb29720783aa2c992d3ae25441539ea440f31c0e6b99",
+    "packages/experimental/hardware-profile/README.zh.md": "55bd699ba8b991b552068214e3cdd839d0dd9918c10f1771efb7f81942fa1c94",
+    "packages/experimental/hardware-profile/cordis.patch.yml": "22cb1172e71100e884f819695b9958be4ea2153d9a36ef2a881993b8aff787bc",
+    "packages/experimental/hardware-profile/package.json": "94a2028dee9af534a0f4f012922c2243f75ebb43f9385295dddbe6c6a72745d1",
+    "packages/experimental/hardware-profile/src/index.ts": "34bc94fd4d74fe81b331a3e50f0ec99ad2b67e58d740fc6b82760d8e6d08d659",
+    "packages/experimental/hardware-profile/tsconfig.json": "7e86a9ae63aca473186b138ad589d9da22e4df8cfe64f2b74995d2726014d721",
+    "packages/experimental/hardware/README.i18n.yaml": "1c9b62b35901ed897bd2a0a4448dbb418e1351048020fa540ffa81f1b16da352",
+    "packages/experimental/hardware/README.md": "0271a6fb3a5d4b617eeddba9f57be322cb37e58a0120797a2eab723d84d93acb",
+    "packages/experimental/hardware/README.zh.md": "8fcf604db0eb773d260df74afc74dd31e2f425bafaa7b3296ba44434e21ae496",
+    "packages/experimental/hardware/package.json": "984321cc6aa9455a83c0e6ba6d3095691ab83c8ae9c437a3a4a9347644cfc79d",
+    "packages/experimental/hardware/src/index.ts": "109174fcf31dcfbf81235d404b3cf48da46623fef79247dc5d612a5acb28d715",
+    "packages/experimental/hardware/tsconfig.json": "88529d807e65457524c8ed8be5be3135a1420e818ce6c17ffb993f8bb76ce857",
+    "packages/experimental/tool-hardware/README.i18n.yaml": "21f5b6d280a815843659729845ef63af8d8aa325b07cb1460be77ca9c0dcf20e",
+    "packages/experimental/tool-hardware/README.md": "f99993ad601a0dc718c963c8f70345538723e506e6317b1028166f5dd502cd8a",
+    "packages/experimental/tool-hardware/README.zh.md": "bc311dc2b08511782611bfefb69f4e91fcfad87bf81bb932005787b6e13aa15c",
+    "packages/experimental/tool-hardware/package.json": "dc85b5768958b8e46decd5bb890f3afff2a993359639a69f19c16fa9e6d93ad2",
+    "packages/experimental/tool-hardware/src/index.ts": "74a64b90e2748af19c96fbe72571ddf2f5b5099c597aa4bf3d34a6ab759b3eca",
+    "packages/experimental/tool-hardware/src/output-schema.ts": "b87a234e35f9d4135b637a93b4b7377e5a86b6829b31563808de32a156a6e4db",
+    "packages/experimental/tool-hardware/tests/hms-integration.spec.ts": "e57a5ff1208f48c02111c10b3602e64c766ac3693ec3be21c3a5f257bab51958",
+    "packages/experimental/tool-hardware/tests/hms-sdk-profile.spec.ts": "9bb2294cf02f8fb7986d9ea3b8312a227bdff453877fe1c18e12a2bcce53175b",
+    "packages/experimental/tool-hardware/tsconfig.json": "e5e5f1f529d2c60a2dd33da08bbe677f918b325aa36f2bba843ee55d3857e25e"
+  },
+  "hms_inputs_sha256": {
+    "examples/wot/home-ventilation.json": "884dc170bbd459f9491f8805de0a1cc32c8130b0d5b7e2b3da57dd1dbfc61547",
+    "examples/wot/manufacturing-inspection.json": "e218faed52d118a85059b063203ae5cb145d093d4b1ec2721ccd230f20923ab1",
+    "examples/wot/microscope-focus.json": "4f6c60cd820a865942975b0835ac2ac4fd8391f2d01faae4988af6686a06f5e4",
+    "hms/__init__.py": "714fc1d320151a6b359191ace49a1831d94b81cdc949025ae7e9779ec401024c",
+    "hms/__main__.py": "8e5a0f5fb07c1c13ecac624178fbe23d706aae53cf60e4bca5afd6784c668b7a",
+    "hms/_vendor/__init__.py": "7ab04d709c532a727501797aac0d151cc68929478e33c25d382efcd6ffc0614d",
+    "hms/_vendor/rfc8785/__init__.py": "fa44927afd547caf7547247078bcf28863d1e69caf116d258c532b3f20ffd154",
+    "hms/_vendor/rfc8785/_impl.py": "c25bc3a046528482d53bee3487b837f31dd9c05f33e8f13288c7aab320932cec",
+    "hms/api_contracts.py": "7e148fc007ce12d55a741a4acf246fd80268ce47db450632f14ece27b1381ddc",
+    "hms/cli.py": "177d8a8acffa6f0538c6610bc6a442bcc508d41b694af57b59e85d35650e1784",
+    "hms/client.py": "e468b7d14ecfbd44308fab2a44c68655490b2e029c8def86868330f274ab9d46",
+    "hms/contracts.py": "e83689a9750b12eb0dabb73d8a152f4d32da7d1cedcade9d9999403b7f401f06",
+    "hms/demo.py": "d323811feddaad377e3de2e5accb8ad754d692681f26798c8ca039c207d2c2a2",
+    "hms/endpoint_binding.py": "4b76d8280a5c5ee8faa0ef653ec45d28651906884c8e3a9c487319fb8e14446a",
+    "hms/endpoint_transport.py": "b3ea79243ca32ef4d28d950cf45b596e1089eb1933ef39a6ea34415f78a1a10a",
+    "hms/endpoint_wire.py": "6ada46b9b2591c52741bac6e592b2b3f83804fdab8c7bd637627afcc5db29322",
+    "hms/ipc.py": "551a984237284126dc6c3601998c3975aeeb7a345436718f77cdd3a956074ffb",
+    "hms/journal.py": "e952cf3f5000768a7b05acfe4933d715b5cb0174b69ffa24e84e24b10ef97522",
+    "hms/mcp.py": "a6dd850149800066c21552f0f1cf9fa377e32e5ce3fe916a84b16e6e4fc13d13",
+    "hms/mcp_stdio.py": "34bbba15db2453d42d109a472f5fb2e2baeea4325f3f589cf156b5e49107c964",
+    "hms/projections.py": "233eb7c5f5432b11b54889e38258b0685fef21479c662ab198dfe518d1fc129b",
+    "hms/registry.py": "2cfc92658f6ca16ea3ee5f4836529a29e4d4cef8d6d206554d49cde8672bb79f",
+    "hms/runtime.py": "351f98f31add17721ba265787b3c79c4935a72e22122c57a6c2df2aedf9e061b",
+    "hms/simulator.py": "6af7cc9e178007f6f7e1c56889a96efb25fee1e3bb0d5af580ab21144d0cd356",
+    "hms/state_path.py": "3934b7c457c4a694a4e299fa03bba4268a72a4f825f95ddc22319a780278b1d6",
+    "integration/harness/generate_schemas.py": "1a3a4cf49a1e4b635fa6d6d7c8eeae041ff61549a9cd83141325b83aa0d3e6fb",
+    "protocol/serial/frame.py": "34ead95e1392e99f37c85699fd1448ac10d7b5e8d0ec79b01952732eb6fd9180",
+    "research/protocols/wot-artifacts/td-schema-1.1.json": "fd44f319f94c6f16f66978860ef2f9f4e0e9fd7fc5835a2f3840b9cf2002e0f1",
+    "schemas/device-description.schema.json": "67d0d8317df0d5e65b1416cd51e4788baa790bab1dbdf9a8c07374d26f22180a",
+    "schemas/invoke.schema.json": "ef6fa8c274c03eb176720a5f0d474b08fcbf22840af8f78270e6067f7056845a",
+    "schemas/local-api.schema.json": "313454429d8d4247dd41ab61e82480f174c7685f03f5a4b077f2ad94ad80705e",
+    "scripts/build_api_schema.py": "5156d0589614728159c5b87302bcefe7faf4af7b461a95f25ebf3fb98b243359"
+  },
+  "hms_inputs_snapshot_root": "hms-final-freeze-snapshot",
+  "hms_inputs_snapshot_scope": "All hms/**/*.py, schemas/*.json, protocol/**/*.py, examples/wot/*.json, pinned TD schema and exact schema generator scripts. Simulation integration does not execute compact C endpoint or MCP modules; listed for complete input provenance.",
+  "hms_inputs_stability": "All32 live HMS inputs and all32 snapshot copies matched before and after final test run; source stability receipt retained. Compact binding and MCP modules inventoried but not executed by native simulator tests.",
+  "patch_sha256": "1d22255765e284a2fd0ba6770e57c1ea69ca8b2763f1bc8a349d157994c7262d",
+  "patch_check": "git apply --cached --check against independent temporary index read-tree HEAD; passed",
+  "lockfile_sha256": "de55131f4421598a049f965228b3dff6123dac86443d999c9f655b43fd9d027c",
+  "package_changes_from_prior_overlay": [
+    {
+      "path": "packages/experimental/tool-hardware/package.json",
+      "old_sha256": "001b50571bb861da8d85f1b099679d9b3f700bf9ad8635229b2cff17780c18e2",
+      "new_sha256": "dc85b5768958b8e46decd5bb890f3afff2a993359639a69f19c16fa9e6d93ad2"
+    },
+    {
+      "path": "packages/experimental/tool-hardware/src/output-schema.ts",
+      "old_sha256": "69a0ff8855999b0a903a748d1ae0e371d60003219627254f904d09b0053cca89",
+      "new_sha256": "b87a234e35f9d4135b637a93b4b7377e5a86b6829b31563808de32a156a6e4db"
+    },
+    {
+      "path": "packages/experimental/tool-hardware/tests/hms-sdk-profile.spec.ts",
+      "old_sha256": null,
+      "new_sha256": "9bb2294cf02f8fb7986d9ea3b8312a227bdff453877fe1c18e12a2bcce53175b"
+    }
+  ],
+  "prior_overlay": {
+    "base_commit": "1f0762afd0ac9cf0a1a2e3ddb0861c0e3f7aaa44",
+    "directory": "integration/harness",
+    "retained_copy": "prior-evidence",
+    "preservation": "Previous overlay/worktree left unchanged. All26 prior HMS inputs match the28-file initial immutable snapshot; historical-input-check.json retains exact mapping. Original build_api_schema.py was not among those26 runtime inputs and was not archived by this lane."
+  },
+  "reconciliation": {
+    "original_patch_applied_cleanly": true,
+    "shared_files": "Upstream tsconfig and lockfile additions retained; current generated module graphs refreshed.127new importer lines cover four experimental packages, no dependency version churn.",
+    "production_change": "Generated method-result projection incorporates rejected_before_start, disputed and start_excluded from frozen root schema. Provider/service/tool runtime behavior unchanged.",
+    "sdk_change": "One2-case built SDK/profile test plus2workspace devDependencies; no shipped profile defaults modified."
+  },
+  "tests": {
+    "command": [
+      "node",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "packages/experimental/tool-hardware/tests/hms-integration.spec.ts",
+      "packages/experimental/hardware-hms/tests/reply.spec.ts",
+      "packages/experimental/tool-hardware/tests/hms-sdk-profile.spec.ts",
+      "--reporter=verbose"
+    ],
+    "environment": {
+      "HMS_ROOT": "/home/bud/Desktop/bud/hms/integration/harness/revalidation-335a82eb/hms-final-freeze-snapshot",
+      "HMS_CAPTURE": "/home/bud/Desktop/bud/hms/integration/harness/revalidation-335a82eb/final-session-capture.json",
+      "HMS_TIMINGS": "/home/bud/Desktop/bud/hms/integration/harness/revalidation-335a82eb/final-native-call-timings.jsonl",
+      "HMS_SDK_CAPTURE": "/home/bud/Desktop/bud/hms/integration/harness/revalidation-335a82eb/final-sdk-capture.jsonl"
+    },
+    "runner": "run-command.py",
+    "passed": 14,
+    "files": 3,
+    "skipped": 0,
+    "duration_seconds": 49.73,
+    "wrapper_elapsed_seconds": 50.895,
+    "coverage": [
+      "Actual Loader composition of experimental profile and clean disposal removes tools",
+      "Native all3 simulated scenarios: preparation, complete retained invocation, exact deliberate replay, operation reads, changed request KEY_CONFLICT",
+      "Simulation evidence remains physically unverified; physical_verified preparation refused",
+      "Explicit future-operation cancellation leaves mayHaveActed false",
+      "Actual Node PTC prepares, invokes, replays and reads operations; canonical nested facts survive tested Session projection",
+      "Actual AgentLoop keyless native tool turn and serialized Session reconstruction",
+      "Mocked drained provider at actual tool registry: typed cancellation uncertainty, late framework abort finalizer, before-dispatch distinction",
+      "Nine malformed/valid bridge carrier cases",
+      "Built budmh SDK profile through public BudMetaHarness API, keyless local plugin and real JSONL Session persistence",
+      "Work request replay returns settled item without another model call; changed task same requestId rejected",
+      "Normal settled-work close/reopen and work.resume return stored result; resumeSession then run exposes previous tool call in model history",
+      "Exact HMS replay across SDK reopen preserves operation/events and independent synthetic plant effect count1",
+      "Harness work cancellation and close leave actual accepted future HMS operation pending; explicit HMS cancellation leaves independent plant effect count0"
+    ],
+    "not_covered": [
+      "Per-agent or cross-UID authorization through native provider",
+      "Physical devices or verified physical effects",
+      "Transport loss after device acceptance",
+      "Interrupted active-work takeover or crash recovery",
+      "Model reasoning from restored history (script reads retained input directly)",
+      "Every persistence provider or PTC logging projection",
+      "Published package install/release acceptance",
+      "Admitted shipped-profile recorded-Session fixture",
+      "UI and complete repository test/gate set"
+    ],
+    "sdk_case_plant_results": [
+      {
+        "scenario": "work-replay-reopen",
+        "plant": {
+          "value": 55,
+          "effects": 1
+        }
+      },
+      {
+        "scenario": "work-cancel-is-not-hms-cancel",
+        "plant": {
+          "value": 0,
+          "effects": 0
+        }
+      }
+    ]
+  },
+  "checks": {
+    "build_artifacts": "PASS 7 gates, 0 failed, 0 skipped, 70.74s after final generated schema; command/log retained",
+    "build_check": "PASS 3 aggregate gates, 0 failed, 0 skipped, 46.17s after final generated schema; command/log retained",
+    "focused_oxlint": "PASS owned package source/tests",
+    "translation_pairing": "PASS 4 named English/Chinese package README pairs",
+    "built_exports_smoke": "PASS plain Node imports all 4 compiled package exports, no source resolver",
+    "schema_generation": "PASS byte-identical regeneration from final immutable HMS schema into temporary output; exact source hash313454429d8d4247dd41ab61e82480f174c7685f03f5a4b077f2ad94ad80705e",
+    "diff_whitespace": "git diff --cached --check HEAD; passed",
+    "post_test_sources": "PASS all 32 HMS inputs, 31 worktree package sources and 31 exported copies match recorded hashes",
+    "final_rerun_reason": "Host endpoint_binding disputed-cache correction changed one inventoried Python module only. Final14tests rerun with fresh immutable snapshot; TypeScript/schema unchanged, so full build receipts remain current."
+  },
+  "dependency_environment": {
+    "initial_failures": "Frozen offline install lacked policy metadata; two attempted flags unsupported; force/prefer-offline attempt ended143 after optional platform downloads. Logs retained, no pass claimed for these attempts.",
+    "final_lock_command": {
+      "created_at": "2026-11-06T01:36:16.778757+00:00",
+      "argv": [
+        "node",
+        "/home/bud/.local/share/pnpm/.tools/pnpm/11.28.5/node_modules/pnpm/bin/pnpm.mjs",
+        "install",
+        "--lockfile-only",
+        "--prefer-offline",
+        "--ignore-scripts",
+        "--no-frozen-lockfile"
+      ],
+      "cwd": "/home/bud/Desktop/bud/hms-harness-335a82eb",
+      "exit_code": 0,
+      "elapsed_seconds": 48.061,
+      "environment": "Credential names scrubbed; private XDG state/config/cache and pnpm store/cache/auth config; Node24.22.1 first in PATH; automatic pre-run install disabled after explicit installation."
+    },
+    "final_install_command": {
+      "created_at": "2026-11-06T01:37:41.522689+00:00",
+      "argv": [
+        "node",
+        "/home/bud/.local/share/pnpm/.tools/pnpm/11.28.5/node_modules/pnpm/bin/pnpm.mjs",
+        "install",
+        "--frozen-lockfile",
+        "--offline",
+        "--ignore-scripts"
+      ],
+      "cwd": "/home/bud/Desktop/bud/hms-harness-335a82eb",
+      "exit_code": 0,
+      "elapsed_seconds": 27.216,
+      "environment": "Credential names scrubbed; private XDG state/config/cache and pnpm store/cache/auth config; Node24.22.1 first in PATH; automatic pre-run install disabled after explicit installation."
+    },
+    "storage": "Copied dependency/store/cache into new owned worktree .task-state;394absolute old-worktree package links retargeted before install; final modules manifest points to owned store. No install/build in live checkout.",
+    "authentication": "Credential environment names scrubbed; private empty npm auth file and private XDG paths; only public metadata used.",
+    "pnpm_setting": "verify_deps_before_run=false after explicit successful installation; affects automatic install only. Selected installed-tool source review retained, not full-file review."
+  },
+  "run_history": [
+    {
+      "kind": "initial",
+      "hms_snapshot": "hms-initial-snapshot",
+      "input_manifest": "initial-hms-inputs.json",
+      "native_tests": 12,
+      "sdk_tests": 2,
+      "logs": [
+        "verification/initial-focused-tests.log",
+        "verification/initial-sdk-profile.log"
+      ],
+      "note": "Initial host API schema before the additive outcomes; full initial artifact/aggregate gates also passed."
+    },
+    {
+      "kind": "pre-endpoint-cache-fix",
+      "hms_snapshot": "hms-final-snapshot",
+      "input_manifest": "pre-endpoint-cache-fix-hms-inputs.json",
+      "tests": 14,
+      "log": "verification/pre-endpoint-cache-fix-focused-tests.log",
+      "note": "New generated schema; superseded host endpoint_binding bytes retained exactly, not deleted or silently rewritten."
+    },
+    {
+      "kind": "final",
+      "hms_snapshot": "hms-final-freeze-snapshot",
+      "input_manifest": "final-hms-inputs.json",
+      "tests": 14,
+      "log": "verification/final-focused-tests.log"
+    }
+  ],
+  "timings": {
+    "file": "final-native-call-timings.jsonl",
+    "sha256": "ee8f32fa0a17206051560be161e7c15f6572af3bebbfd0a1288823c11c1332ed",
+    "run_source_inputs": "final-hms-inputs.json",
+    "run_package_sources": "patch-inputs.json",
+    "read_samples_ms": [
+      1246.3867330000003,
+      1346.2964059999995,
+      1280.8906669999997
+    ],
+    "median_read_ms": 1280.8906669999997,
+    "all_call_samples": 23,
+    "scope": "Complete native tool calls on shared development host including Python startup/schema validation; final run only. Separate earlier diagnostic files retained.",
+    "claim": "Diagnostic samples only; no latency guarantee or comparative benchmark."
+  },
+  "session_capture_sha256": "6471a40e12ccfc36f93ab7a4cdf4736b1ed6363c184a6e7068d8ad0e55dd699c",
+  "sdk_capture_sha256": "d02c29cdde76296af7616942aa67d5c599f848635ef52e71d82464d8d6367d7e",
+  "session_capture_kind": "Raw keyless test receipts, not admitted shipped-profile fixtures",
+  "receipts_sha256": {
+    "verification/build-artifacts.command.json": "c8d47efe3a327f32775122a7c974b6daf39cd3725bdffa96bb1e6fa353b57331",
+    "verification/build-artifacts.log": "41b36eea5f727bf1fbda34530bf79e4bdfcd84d4eea98f0bcbd798454faaf8cd",
+    "verification/build-check.command.json": "461effc2634226e08605c88e36efbc4a2b7ecbedfbbabfa7cc41509602c26e8b",
+    "verification/build-check.log": "acd4fc3e1cf480f79d082541403e62ea65613fedab377e258e7b526988ae37e3",
+    "verification/built-exports.command.json": "df8568482401c82510b5818a276e99ad0862f60f49d14faa975e0c42f21abc89",
+    "verification/built-exports.log": "cce11b8d2bdba51387daefee5a112372e7eef88b8190f750456281b7a42c5ebf",
+    "verification/final-build-artifacts.command.json": "4c55c52958412de0e79af7016c2342ab66e6f6f99d25b5c229009c30198e1d6b",
+    "verification/final-build-artifacts.log": "7f3f7656a37cb55a621068a6b10145bbf7fc13280705d96679fc173448f70e1b",
+    "verification/final-build-check.command.json": "530e1b8d9a618eecbf9e6d21523a7f70c1defbc28a52602cddc64084fa2e4931",
+    "verification/final-build-check.log": "7e125a8fdda877251639c405ef16fcd6c3f54e8659662afceabe1c76bc4669d8",
+    "verification/final-built-artifacts.json": "5c8ee3d09544cc3dfe3f9c1615a536b851c9f8e47c5cbe5ead180b521ab432a9",
+    "verification/final-built-exports.command.json": "49e1e26e44bdc006d6381efa1f0ee2009a1aad14d18be5a048b00ddd01e22d83",
+    "verification/final-built-exports.log": "cce11b8d2bdba51387daefee5a112372e7eef88b8190f750456281b7a42c5ebf",
+    "verification/final-focused-tests.command.json": "c08d0807c24935194f84211cbef966f5a7ef90be790621969975981ceed0498d",
+    "verification/final-focused-tests.log": "e14cd2c5e42d9f97d69cc671354f0020e9eedf030520e98ca6c6675ca0c056b0",
+    "verification/final-lint.command.json": "c6eb1199006231ad589f10f74417446456da7614f871b37a163c27b7689688b8",
+    "verification/final-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "verification/final-schema-generation.json": "3d3d848ff90456486e63793288a209247cd232c1a246a6983cdaa005ed8eac03",
+    "verification/final-source-stability.json": "95da0507cbaac72c170ed0a35d7d01df425ac8ff7b29d0d46344c4208d28d301",
+    "verification/final-translation-pairing.command.json": "1b8e04c5bd3e8de88a2438df88abe0b7739e174c1e18cc7e252fabc7ab136e68",
+    "verification/final-translation-pairing.log": "822763a1e94a23341956bc5100f01cf90a7cfeb6742ea5184941c1fbaf89d017",
+    "verification/focused-lint-revised.command.json": "108ba50a3a9d84daf7fd45d950d1f382d103b554a06feb38bc6fe1b6ca0db7b3",
+    "verification/focused-lint-revised.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "verification/focused-lint.command.json": "91b18fd9ac6cce3056ad3a7504ce59cc6f5fad26adcf20785b2dc3d2c8fe968f",
+    "verification/focused-lint.log": "834f2d0490991f830a0a13271e771d69911e90d6e2e8f51e131460750f37ef26",
+    "verification/initial-focused-tests.command.json": "5f6410844db47152260dda98522103271583c3b867af670023c1094171121d54",
+    "verification/initial-focused-tests.log": "93000f9bc6f68692d0a3a7c734997eb146899604ae0b9f4ffa3799e4b38b4ee1",
+    "verification/initial-sdk-profile.command.json": "e8963fce22eafab5cfac4d62eac25896860298641b6c632163e579b95af1141c",
+    "verification/initial-sdk-profile.log": "61f0e3b3e394af58f2f9b4048c4e71fbf8f94d5e59f9ef88944a27d7fd837569",
+    "verification/install-frozen.command.json": "e73a4ef12973c4f1e6196c824fadfe3838d0dd1c6c79e45bdcd50cf3d89af087",
+    "verification/install-frozen.log": "507cba2925e18e903872b3c9b3210dd676aeef7b9182325b74f0a617304fec0a",
+    "verification/install-lock-online.command.json": "0f3776554ed1b63fc4b43c1772766ebaa30c5ebb15d8dbf746169f1ae388bb84",
+    "verification/install-lock-online.log": "c99a1f313defce4df02b04bd0804742f292db05cfd4920a65b238a68533e77be",
+    "verification/install-lock.command.json": "8d335d5df2daa88a1d0136e4c92660e4e0613001a279fc6baf38296e990f131d",
+    "verification/install-lock.log": "3edb32286e33533107b76797c791f3f4bda664f37d72588d21212cf94ab96e16",
+    "verification/install-owned-supported.log": "eec081f5587b6ab3c2a5b941367d1a22c6b78acbc9d21b06b6d55e5b8c91e44a",
+    "verification/install-owned.log": "7cbbbb6c3e5eee6d0c0d2810c53bf8d3c49fc28a26c3ffeb95c5b9dfcb1e8352",
+    "verification/install-private.log": "1f16e328fe9450509d92303fae2aef7562718d77dbab9259345fa9f47677cd99",
+    "verification/install.log": "ae448347e049c7bfdad29bf623476b5b1f06bdf225e11e0d589b94964271bd57",
+    "verification/module-graph.command.json": "ec5484f0d52622484b00d0c1a2460f3676d12d67f07c509678c8e852caead3ba",
+    "verification/module-graph.log": "a50fd25f164f30f05fe55ea27bfa3f9b965481bd9c3ee16088808e394a4329eb",
+    "verification/pre-endpoint-cache-fix-focused-tests.command.json": "041334c99a1ff907dd68c3fcba61e9ff4ad96fe22d279d532f84d76ff4aa65bd",
+    "verification/pre-endpoint-cache-fix-focused-tests.log": "49e33292dbc0c42738f120a3fd8f482608ba978856b11d01e3e35bbe80fcccf3",
+    "patch-inputs.json": "76112f24545b4cbef01754036b9a9958b8bef84ba2c3b201f3328228e533423e",
+    "final-hms-inputs.json": "ff850b897f2ab28485703e6d417cdc056962d60a6cdf4ddafe979d7e6fb863e1",
+    "initial-hms-inputs.json": "2026e70b6cc117b6e98f7d2ed7f46a594e493fe8bb10e620e6ab580e942874e5",
+    "historical-input-check.json": "e10022f262f3461da2b32629bd1d4d52f6f97d91aa3594ae2cc3cc90ef7403eb",
+    "pre-endpoint-cache-fix-archive.json": "a404f18e11e284cd8984536ce544dbe592fd79d69e7f16edcb6128aa2ed10354",
+    "pre-endpoint-cache-fix-hms-inputs.json": "77a75277705e472f56a256019d9aaa3af8e57ac0ff6d742cb29acaa82abaadf4",
+    "prior-evidence-pins.json": "8bb6773f86e394c58c5d3454d01b87c159bcba9ed3ac1c4f6c3dbdb254450b39",
+    "source-review.json": "509d790796ce56e4f0bf03ae441c28bdca1b75497d289264f9c6f38597beafb5",
+    "run-command.py": "6e03a02e2ca9c2b0eacdea082f17b8e3fd3856a1360caa9bb67ef219ef1e72f4",
+    "README.md": "abf41f79c065ce7ea022b39ac1f2d2e497f77437e798b226183f9d1974ad87b1",
+    "dependency-inputs/pnpm-config-review.json": "366ada6f7e02d0ccf22dc95b44e901c8ffba01e8dd15c2126da1d982f1a015aa",
+    "dependency-inputs/pnpm-config-excerpts.txt": "e084ca915911ce7a67f8a3987f29e4fc61bcb21ad39b1d55183f5fb60caaa5cb",
+    "initial-session-capture.json": "115a6c1923a435d46635c2ce45348425954e725918232c3f2b9bc2453866ad3e",
+    "initial-sdk-capture.jsonl": "49d8888ea7e23f7325173079b57a40249de68a79acccbada007071b4f56781ae",
+    "initial-native-call-timings.jsonl": "9bfdf63f571250f9b28875dd84e94a694267eef088628ac39149e1fb596a4a42",
+    "pre-endpoint-cache-fix-session-capture.json": "4929742a91384d32e648a7228e05df9e0bce1527b960eb2d373575967ebd1e07",
+    "pre-endpoint-cache-fix-sdk-capture.jsonl": "a95b47107cedc82dcda7e447e8cb50f8981f0dde9c039b6eb74eefcdae1298d3",
+    "pre-endpoint-cache-fix-native-call-timings.jsonl": "734fe836ca1193b548aac38574eac9838c59d07ad437b21da00b5b169555b72f",
+    "final-session-capture.json": "6471a40e12ccfc36f93ab7a4cdf4736b1ed6363c184a6e7068d8ad0e55dd699c",
+    "final-sdk-capture.jsonl": "d02c29cdde76296af7616942aa67d5c599f848635ef52e71d82464d8d6367d7e",
+    "final-native-call-timings.jsonl": "ee8f32fa0a17206051560be161e7c15f6572af3bebbfd0a1288823c11c1332ed"
+  },
+  "root_runtime_verification": {
+    "path": "artifacts/verification/local-runtime.json",
+    "sha256": "5070ce2c95ba0a00e756bfba943b928cdd087ef79226f27e7a8b82f5ad12338c",
+    "tests": 278,
+    "coverage": "Root-owned full local Python278-test receipt and traces, including compact host binding; separate from this14-test native Harness simulation run."
+  },
+  "terminal_status": "PASS local native/PTC/Loader/AgentLoop/Session and keyless built SDK/profile integration at335a82eb; full artifacts and aggregate build checks pass. Published/profile corpus release acceptance and interrupted active-work recovery remain unverified."
+}

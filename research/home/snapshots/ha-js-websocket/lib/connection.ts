@@ -1,0 +1,616 @@
+/**
+ * Connection that wraps a socket and provides an interface to interact with
+ * the Home Assistant websocket API.
+ */
+import * as messages from "./messages.js";
+import {
+  ERR_INVALID_AUTH,
+  ERR_CONNECTION_LOST,
+  isConnectionLost,
+} from "./errors.js";
+import { HassEvent, MessageBase } from "./types.js";
+import { HaWebSocket } from "./socket.js";
+import type { Auth } from "./auth.js";
+
+const DEBUG = false;
+
+const connectionLost = () =>
+  messages.error(ERR_CONNECTION_LOST, "Connection lost");
+
+export type ConnectionOptions = {
+  setupRetry: number;
+  auth?: Auth;
+  createSocket: (options: ConnectionOptions) => Promise<HaWebSocket>;
+  /**
+   * Milliseconds to wait for a socket to open before closing it, after which
+   * the configured retry policy applies. Only used by the built-in
+   * createSocket; a custom one has to implement its own timeout.
+   * Set to 0 to wait indefinitely. Defaults to 10000.
+   */
+  connectTimeout?: number;
+};
+
+export type ConnectionEventListener = (
+  conn: Connection,
+  eventData?: any,
+) => void;
+
+type Events = "ready" | "disconnected" | "reconnect-error";
+
+type WebSocketPongResponse = {
+  id: number;
+  type: "pong";
+};
+
+type WebSocketEventResponse = {
+  id: number;
+  type: "event";
+  event: HassEvent;
+};
+
+type WebSocketResultResponse = {
+  id: number;
+  type: "result";
+  success: true;
+  result: any;
+};
+
+type WebSocketResultErrorResponse = {
+  id: number;
+  type: "result";
+  success: false;
+  error: {
+    code: string;
+    message: string;
+  };
+};
+
+type WebSocketResponse =
+  | WebSocketPongResponse
+  | WebSocketEventResponse
+  | WebSocketResultResponse
+  | WebSocketResultErrorResponse;
+
+type SubscriptionUnsubscribe = () => Promise<void>;
+
+interface SubscribeEventCommmandInFlight<T> {
+  resolve: (result?: any) => void;
+  reject: (err: any) => void;
+  callback: (ev: T) => void;
+  subscribe: (() => Promise<SubscriptionUnsubscribe>) | undefined;
+  unsubscribe: SubscriptionUnsubscribe;
+}
+
+type CommandWithAnswerInFlight = {
+  resolve: (result?: any) => void;
+  reject: (err: any) => void;
+};
+
+type CommandInFlight =
+  SubscribeEventCommmandInFlight<any> | CommandWithAnswerInFlight;
+
+export class Connection {
+  options: ConnectionOptions;
+  commandId: number;
+  commands: Map<number, CommandInFlight>;
+  eventListeners: Map<string, ConnectionEventListener[]>;
+  closeRequested: boolean;
+  suspendReconnectPromise?: Promise<void>;
+
+  oldSubscriptions?: Map<number, CommandInFlight>;
+
+  // We use this to queue messages in flight for the first reconnect
+  // after the connection has been suspended.
+  _queuedMessages?: Array<{
+    resolve: (value?: unknown) => unknown;
+    reject?: (err: unknown) => unknown;
+  }>;
+
+  // Subscriptions requested while there is no socket wait here for the reconnect.
+  private _socketWaiters: Array<{
+    resolve: () => void;
+    reject: (err: unknown) => void;
+  }> = [];
+
+  // Set when reconnecting stopped on invalid auth, nothing will connect anymore.
+  private _reconnectFailed = false;
+
+  socket?: HaWebSocket;
+  /**
+   * Version string of the Home Assistant instance. Set to version of last connection while reconnecting.
+   */
+  // @ts-ignore: incorrectly claiming it's not set in constructor.
+  haVersion: string;
+
+  constructor(socket: HaWebSocket, options: ConnectionOptions) {
+    // connection options
+    //  - setupRetry: amount of ms to retry when unable to connect on initial setup
+    //  - createSocket: create a new Socket connection
+    this.options = options;
+    // id if next command to send
+    this.commandId = 2; // socket may send 1 at the start to enable features
+    // info about active subscriptions and commands in flight
+    this.commands = new Map();
+    // map of event listeners
+    this.eventListeners = new Map();
+    // true if a close is requested by the user
+    this.closeRequested = false;
+
+    this._setSocket(socket);
+  }
+
+  get connected() {
+    // Using conn.socket.OPEN instead of WebSocket for better node support
+    return (
+      this.socket !== undefined && this.socket.readyState == this.socket.OPEN
+    );
+  }
+
+  private _setSocket(socket: HaWebSocket) {
+    this.socket = socket;
+    this.haVersion = socket.haVersion;
+    socket.addEventListener("message", this._handleMessage);
+    socket.addEventListener("close", this._handleClose);
+
+    // Flush the queue first, sendMessage can't send with a command id while
+    // messages are queued, which resubscribing does.
+    const queuedMessages = this._queuedMessages;
+
+    if (queuedMessages) {
+      this._queuedMessages = undefined;
+      for (const queuedMsg of queuedMessages) {
+        queuedMsg.resolve();
+      }
+    }
+
+    const oldSubscriptions = this.oldSubscriptions;
+    if (oldSubscriptions) {
+      this.oldSubscriptions = undefined;
+      oldSubscriptions.forEach((info) => {
+        if ("subscribe" in info && info.subscribe) {
+          const resubscribed = info.subscribe();
+          // If resubscribing failed there is nothing to unsubscribe.
+          info.unsubscribe = () =>
+            resubscribed.then(
+              (unsub) => unsub(),
+              () => undefined,
+            );
+          // We need to settle this in case it wasn't settled yet,
+          // which happens when it was sent while the socket was closing.
+          resubscribed.then(
+            () => info.resolve(),
+            (err) => info.reject(err),
+          );
+        }
+      });
+    }
+
+    const socketWaiters = this._socketWaiters;
+    this._socketWaiters = [];
+    for (const waiter of socketWaiters) {
+      waiter.resolve();
+    }
+
+    this.fireEvent("ready");
+  }
+
+  addEventListener(eventType: Events, callback: ConnectionEventListener) {
+    let listeners = this.eventListeners.get(eventType);
+
+    if (!listeners) {
+      listeners = [];
+      this.eventListeners.set(eventType, listeners);
+    }
+
+    listeners.push(callback);
+  }
+
+  removeEventListener(eventType: Events, callback: ConnectionEventListener) {
+    const listeners = this.eventListeners.get(eventType);
+
+    if (!listeners) {
+      return;
+    }
+
+    const index = listeners.indexOf(callback);
+
+    if (index !== -1) {
+      listeners.splice(index, 1);
+    }
+  }
+
+  fireEvent(eventType: Events, eventData?: any) {
+    (this.eventListeners.get(eventType) || []).forEach((callback) =>
+      callback(this, eventData),
+    );
+  }
+
+  suspendReconnectUntil(suspendPromise: Promise<void>) {
+    this.suspendReconnectPromise = suspendPromise;
+  }
+
+  suspend() {
+    if (!this.suspendReconnectPromise) {
+      throw new Error("Suspend promise not set");
+    }
+    if (this.socket) {
+      this.socket.close();
+    }
+  }
+
+  /**
+   * Reconnect the websocket connection.
+   * @param force discard old socket instead of gracefully closing it.
+   */
+  reconnect(force = false) {
+    if (!this.socket) {
+      return;
+    }
+    if (!force) {
+      this.socket.close();
+      return;
+    }
+    this.socket.removeEventListener("message", this._handleMessage);
+    this.socket.removeEventListener("close", this._handleClose);
+    this.socket.close();
+    this._handleClose();
+  }
+
+  close() {
+    this.closeRequested = true;
+    if (this.socket) {
+      this.socket.close();
+    }
+    this._rejectWaiting();
+  }
+
+  /**
+   * Subscribe to a specific or all events.
+   *
+   * @param callback Callback  to be called when a new event fires
+   * @param eventType
+   * @returns promise that resolves to an unsubscribe function
+   */
+  async subscribeEvents<EventType>(
+    callback: (ev: EventType) => void,
+    eventType?: string,
+  ): Promise<SubscriptionUnsubscribe> {
+    return this.subscribeMessage(callback, messages.subscribeEvents(eventType));
+  }
+
+  ping() {
+    return this.sendMessagePromise(messages.ping());
+  }
+
+  sendMessage(message: MessageBase, commandId?: number): void {
+    if (!this.connected) {
+      throw ERR_CONNECTION_LOST;
+    }
+
+    if (DEBUG) {
+      console.log("Sending", message);
+    }
+
+    if (this._queuedMessages) {
+      if (commandId) {
+        throw new Error("Cannot queue with commandId");
+      }
+      this._queuedMessages.push({ resolve: () => this.sendMessage(message) });
+      return;
+    }
+
+    if (!commandId) {
+      commandId = this._genCmdId();
+    }
+    message.id = commandId;
+
+    this.socket!.send(JSON.stringify(message));
+  }
+
+  sendMessagePromise<Result>(message: MessageBase): Promise<Result> {
+    return new Promise((resolve, reject) => {
+      if (this._queuedMessages) {
+        this._queuedMessages!.push({
+          reject,
+          resolve: async () => {
+            try {
+              resolve(await this.sendMessagePromise(message));
+            } catch (err) {
+              reject(err);
+            }
+          },
+        });
+        return;
+      }
+
+      const commandId = this._genCmdId();
+      this.commands.set(commandId, { resolve, reject });
+      try {
+        this.sendMessage(message, commandId);
+      } catch (err) {
+        this.commands.delete(commandId);
+        reject(err === ERR_CONNECTION_LOST ? connectionLost() : err);
+      }
+    });
+  }
+
+  /**
+   * Call a websocket command that starts a subscription on the backend.
+   *
+   * @param message the message to start the subscription
+   * @param callback the callback to be called when a new item arrives
+   * @param [options.resubscribe] re-established a subscription after a reconnect. Defaults to true.
+   * @returns promise that resolves to an unsubscribe function
+   */
+  async subscribeMessage<Result>(
+    callback: (result: Result) => void,
+    subscribeMessage: MessageBase,
+    options?: {
+      resubscribe?: boolean;
+      preCheck?: () => boolean | Promise<boolean>;
+    },
+  ): Promise<SubscriptionUnsubscribe> {
+    if (!this._isUsable) {
+      await this._waitForSocket();
+    }
+
+    if (options?.preCheck) {
+      const precheck = await options.preCheck();
+      if (!precheck) {
+        throw new Error("Pre-check failed");
+      }
+      // The socket can have closed while running the pre-check.
+      if (!this._isUsable) {
+        await this._waitForSocket();
+      }
+    }
+
+    let info: SubscribeEventCommmandInFlight<Result>;
+
+    await new Promise((resolve, reject) => {
+      // Command ID that will be used
+      const commandId = this._genCmdId();
+
+      // We store unsubscribe on info object. That way we can overwrite it in case
+      // we get disconnected and we have to subscribe again.
+      info = {
+        resolve,
+        reject,
+        callback,
+        subscribe:
+          options?.resubscribe !== false
+            ? () => this.subscribeMessage(callback, subscribeMessage, options)
+            : undefined,
+        unsubscribe: async () => {
+          try {
+            if (this.connected && this.commands.get(commandId) === info) {
+              await this.sendMessagePromise(
+                messages.unsubscribeEvents(commandId),
+              );
+            }
+          } catch (err) {
+            // The backend drops all subscriptions of a connection when it closes.
+            if (!isConnectionLost(err)) {
+              throw err;
+            }
+          } finally {
+            if (this.commands.get(commandId) === info) {
+              this.commands.delete(commandId);
+            }
+            if (this.oldSubscriptions?.get(commandId) === info) {
+              this.oldSubscriptions.delete(commandId);
+            }
+          }
+        },
+      };
+      this.commands.set(commandId, info);
+      try {
+        this.sendMessage(subscribeMessage, commandId);
+      } catch (err) {
+        // Happens when the websocket is already closing.
+        // Don't have to handle the error, reconnect logic will pick it up.
+      }
+    });
+
+    return () => info.unsubscribe();
+  }
+
+  private _handleMessage = (event: MessageEvent) => {
+    let messageGroup: WebSocketResponse | WebSocketResponse[] = JSON.parse(
+      event.data,
+    );
+
+    if (!Array.isArray(messageGroup)) {
+      messageGroup = [messageGroup];
+    }
+
+    messageGroup.forEach((message) => {
+      if (DEBUG) {
+        console.log("Received", message);
+      }
+
+      const info = this.commands.get(message.id);
+
+      switch (message.type) {
+        case "event":
+          if (info) {
+            (info as SubscribeEventCommmandInFlight<any>).callback(
+              message.event,
+            );
+          } else {
+            console.warn(
+              `Received event for unknown subscription ${message.id}. Unsubscribing.`,
+            );
+            this.sendMessagePromise(
+              messages.unsubscribeEvents(message.id),
+            ).catch((err) => {
+              if (DEBUG) {
+                console.warn(
+                  ` Error unsubsribing from unknown subscription ${message.id}`,
+                  err,
+                );
+              }
+            });
+          }
+          break;
+
+        case "result":
+          // No info is fine. If just sendMessage is used, we did not store promise for result
+          if (info) {
+            if (message.success) {
+              info.resolve(message.result);
+
+              // Don't remove subscriptions.
+              if (!("subscribe" in info)) {
+                this.commands.delete(message.id);
+              }
+            } else {
+              info.reject(message.error);
+              this.commands.delete(message.id);
+            }
+          }
+          break;
+
+        case "pong":
+          if (info) {
+            info.resolve();
+            this.commands.delete(message.id);
+          } else {
+            console.warn(`Received unknown pong response ${message.id}`);
+          }
+          break;
+
+        default:
+          if (DEBUG) {
+            console.warn("Unhandled message", message);
+          }
+      }
+    });
+  };
+
+  private _handleClose = async () => {
+    const oldCommands = this.commands;
+
+    // reset to original state except haVersion
+    this.commandId = 1;
+    this.oldSubscriptions = this.commands;
+    this.commands = new Map();
+    this.socket = undefined;
+
+    // Reject in-flight sendMessagePromise requests
+    oldCommands.forEach((info) => {
+      // We don't cancel subscribeEvents commands in flight
+      // as we will be able to recover them. Rejecting an already
+      // established subscription is a no-op.
+      if (!("subscribe" in info) || !info.subscribe) {
+        info.reject(connectionLost());
+      }
+    });
+
+    if (this.closeRequested) {
+      this._rejectWaiting();
+      return;
+    }
+
+    this.fireEvent("disconnected");
+
+    // Disable setupRetry, we control it here with auto-backoff
+    const options = { ...this.options, setupRetry: 0 };
+
+    const reconnect = (tries: number) => {
+      setTimeout(
+        async () => {
+          if (this.closeRequested) {
+            this._rejectWaiting();
+            return;
+          }
+          if (DEBUG) {
+            console.log("Trying to reconnect");
+          }
+          let socket: HaWebSocket;
+          try {
+            socket = await options.createSocket(options);
+          } catch (err) {
+            if (this.closeRequested) {
+              this._rejectWaiting();
+              return;
+            }
+            this._rejectQueuedMessages();
+            if (err === ERR_INVALID_AUTH) {
+              this._reconnectFailed = true;
+              this._rejectWaiting();
+              this.fireEvent("reconnect-error", err);
+            } else {
+              reconnect(tries + 1);
+            }
+            return;
+          }
+          if (this.closeRequested) {
+            socket.close();
+            this._rejectWaiting();
+            return;
+          }
+          this._setSocket(socket);
+        },
+        Math.min(tries, 5) * 1000,
+      );
+    };
+
+    if (this.suspendReconnectPromise) {
+      await this.suspendReconnectPromise;
+      this.suspendReconnectPromise = undefined;
+      // For the first retry after suspend, we will queue up
+      // all messages.
+      this._queuedMessages = [];
+    }
+
+    reconnect(0);
+  };
+
+  private get _isUsable() {
+    return this.socket !== undefined && !this.closeRequested;
+  }
+
+  // Messages are only queued while there is no socket, so waiting for the
+  // socket also covers the queue.
+  private async _waitForSocket() {
+    while (!this._isUsable) {
+      if (this.closeRequested || this._reconnectFailed) {
+        throw connectionLost();
+      }
+      await new Promise<void>((resolve, reject) => {
+        this._socketWaiters.push({ resolve, reject });
+      });
+    }
+  }
+
+  private _rejectQueuedMessages() {
+    const queuedMessages = this._queuedMessages;
+    if (!queuedMessages) {
+      return;
+    }
+    this._queuedMessages = undefined;
+    for (const msg of queuedMessages) {
+      if (msg.reject) {
+        msg.reject(connectionLost());
+      }
+    }
+  }
+
+  // Nothing will connect anymore, don't leave callers hanging.
+  private _rejectWaiting() {
+    this._rejectQueuedMessages();
+    const socketWaiters = this._socketWaiters;
+    this._socketWaiters = [];
+    for (const waiter of socketWaiters) {
+      waiter.reject(connectionLost());
+    }
+    // Settle subscriptions that were in flight. Rejecting an already
+    // established subscription is a no-op.
+    this.oldSubscriptions?.forEach((info) => info.reject(connectionLost()));
+  }
+
+  private _genCmdId() {
+    return ++this.commandId;
+  }
+}

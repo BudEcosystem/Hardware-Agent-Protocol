@@ -1,0 +1,5 @@
+{
+  "selectedNewPackages": [],
+  "scopeViolations": [],
+  "note": "These four plain Host plugins are outside the configured Host/Client dependency-repair scope; the attempted manual configured-host classification was inapplicable."
+}

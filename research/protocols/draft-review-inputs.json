@@ -1,0 +1,25 @@
+{
+  "reviewed_at": "2026-11-05T21:46:49.135956+00:00",
+  "files": [
+    {
+      "path": "spec/00-scope.md",
+      "sha256": "04dc8bc9d9ae737e773a23c605b89ce40031736fe2e27e08f1289ae23767be46"
+    },
+    {
+      "path": "spec/01-architecture.md",
+      "sha256": "ca633a0a1b2925b78edbb6c9fe2bbcd59fe7dfaf2f5934c217c56b382e5278e1"
+    },
+    {
+      "path": "spec/02-execution.md",
+      "sha256": "a2271fb39fd4060147d02ad419891bd804b84b456b44877e65d752358d1b1bc9"
+    },
+    {
+      "path": "spec/03-registry-runtime.md",
+      "sha256": "46db2f26eade8b1045742d005ec31b7e256d78eec6620aaf31d4c1cb8f65172d"
+    },
+    {
+      "path": "spec/04-scenarios.md",
+      "sha256": "9d9e78ee184f0dca3f030a3365614d8fab453644dbdf45309ad6f9775eda7f29"
+    }
+  ]
+}

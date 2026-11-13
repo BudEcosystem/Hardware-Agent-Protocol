@@ -1,0 +1,16 @@
+{
+  "recorded_at": "2026-11-06T02:14:06.350142+00:00",
+  "harness_base_commit": "335a82eb121ccefc4c4bee98fc523a76eb218c5c",
+  "base_overlay_path": "integration/harness/revalidation-335a82eb/harness.patch",
+  "base_overlay_sha256": "1d22255765e284a2fd0ba6770e57c1ea69ca8b2763f1bc8a349d157994c7262d",
+  "base_overlay_tree": "eee6cc980f72bf5e928a9b8b1fda09e8ed89c3bd",
+  "patch_sha256": "867fa72d8bdfcc2ff99e1dd037bfc899dbe49734bcd4fda9b1e2d664df7f12b5",
+  "patch_check": "Passed git apply --cached --check in a fresh temporary index containing exact 335a base plus preserved overlay; patch adds only 2 new test/support files.",
+  "whitespace_check": "git diff --cached --check passed",
+  "source_pins_phase": "Pinned after the final test process completed; no source writes occurred between run start and this pin. Runtime fixture hashes were recorded before execution and rechecked after.",
+  "harness_test_sources_sha256": {
+    "packages/experimental/tool-hardware/tests/hms-compact.spec.ts": "083f42d677a9a2545c2c2a364adddbd3ae1fd49079696a463514734ac513bf47",
+    "packages/experimental/tool-hardware/tests/compact-launcher.py": "4373538777ce8b6a4d7c1d5072d19d4c42cbcfc057c54ead7f7f769266733b7f"
+  },
+  "prior_package_sources_checked_unchanged": 31
+}

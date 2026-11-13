@@ -1,0 +1,83 @@
+[
+  {
+    "id": "openflexure-microscope-server",
+    "url": "https://gitlab.com/openflexure/openflexure-microscope-server.git",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "recorded_at": "2026-11-05T21:43:45.169069+00:00",
+    "path": "repos/openflexure-microscope-server",
+    "archive_scope": "shallow Git checkout; submodules not recursively acquired; LFS media incomplete/pointers for GR00T",
+    "reading_status": "selected_files_only",
+    "inspected_files": [
+      {
+        "path": "src/openflexure_microscope_server/things/stage/__init__.py",
+        "sha256": "ba36c284ab5de1735d29460cda11e15e1255fa3521bab40517bd61d4c1f88f19",
+        "reading_status": "full_file_read",
+        "total_lines": 586
+      },
+      {
+        "path": "src/openflexure_microscope_server/things/stage/sangaboard.py",
+        "sha256": "14616725d5e4bc43c551144665085483b5c25ddd7c5de97dbf45d5fc4458a490",
+        "reading_status": "full_file_read",
+        "total_lines": 274
+      },
+      {
+        "path": "src/openflexure_microscope_server/things/autofocus.py",
+        "sha256": "2603b49a3a5aedd2e633b0ca703e720647111299b9eb47e23578fb1abb3da310",
+        "reading_status": "full_file_read",
+        "total_lines": 1058
+      }
+    ]
+  },
+  {
+    "id": "Isaac-GR00T",
+    "url": "https://github.com/NVIDIA/Isaac-GR00T.git",
+    "commit": "7b304f95b95790490b79bd263ba57015c3c12dfd",
+    "recorded_at": "2026-11-05T21:43:45.175715+00:00",
+    "path": "repos/Isaac-GR00T",
+    "archive_scope": "shallow Git checkout; submodules not recursively acquired; LFS media incomplete/pointers for GR00T",
+    "reading_status": "selected_files_only",
+    "inspected_files": [
+      {
+        "path": "getting_started/policy.md",
+        "sha256": "f5ec4c9aa37714837c1d0758597b1f07e0dd7a3def8715be26660368828fec04",
+        "reading_status": "full_file_read",
+        "total_lines": 579
+      },
+      {
+        "path": "gr00t/policy/server_client.py",
+        "sha256": "d29d2e68e97ceae1762243315f23f22e696538da60fecd87d9a1391d20f7f1b9",
+        "reading_status": "full_file_read",
+        "total_lines": 409
+      }
+    ]
+  },
+  {
+    "id": "gently",
+    "url": "https://github.com/gently-project/gently.git",
+    "commit": "bd7680e1aec0a8fb3e8865e5011d1d227d39d6e5",
+    "recorded_at": "2026-11-05T21:43:45.186680+00:00",
+    "path": "repos/gently",
+    "archive_scope": "shallow Git checkout; submodules not recursively acquired; LFS media incomplete/pointers for GR00T",
+    "reading_status": "selected_files_only",
+    "inspected_files": [
+      {
+        "path": "docs/architecture/hardware-profile-template.md",
+        "sha256": "c24a63bea89f7a0e2f754537b1fc0f589532131b0aabb701cb27dda645fe6c8d",
+        "reading_status": "full_file_read",
+        "total_lines": 97
+      },
+      {
+        "path": "docs/architecture/sample-hardware-domains.md",
+        "sha256": "126aee8f00050cf7db3c5c1dc708b82176f232c6f19951cd6d18f01b4957f9cd",
+        "reading_status": "full_file_read",
+        "total_lines": 104
+      },
+      {
+        "path": "gently/hardware/dispim/devices/stage.py",
+        "sha256": "52c306ba672ea5489589eeb17ab9de3ce823a989451d06d8c449b11dbea630fa",
+        "reading_status": "lines_133_to_end_read",
+        "total_lines": 448
+      }
+    ]
+  }
+]

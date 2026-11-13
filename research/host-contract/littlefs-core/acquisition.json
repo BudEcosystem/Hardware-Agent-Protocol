@@ -1,0 +1,428 @@
+{
+  "schema": "hms.source-acquisition/1",
+  "commit": "6cb4e86540eca0d9ba62500a298385c9d863c8be",
+  "url": "https://codeload.github.com/littlefs-project/littlefs/tar.gz/6cb4e86540eca0d9ba62500a298385c9d863c8be",
+  "resolvedUrl": "https://codeload.github.com/littlefs-project/littlefs/tar.gz/6cb4e86540eca0d9ba62500a298385c9d863c8be",
+  "createdAt": "2026-11-09T02:49:16.827964+00:00",
+  "archiveSha256": "4803faf6db6c60093558a315a10c50926d2cfa5668a3f03fa2523fd09b10b747",
+  "archiveBytes": 280264,
+  "expandedBytes": 1896639,
+  "files": [
+    {
+      "path": ".gitattributes",
+      "bytes": 193,
+      "lfLines": 4,
+      "sha256": "50ef1c298084dd4074e25dd4b3cb62879261541ffab67f5f13efa9036b7a3e37"
+    },
+    {
+      "path": ".github/workflows/post-release.yml",
+      "bytes": 984,
+      "lfLines": 31,
+      "sha256": "e6a70f6c2b5adde13c1d0510d800f703d81962ebe39e765e08e9711496a31530"
+    },
+    {
+      "path": ".github/workflows/release.yml",
+      "bytes": 9256,
+      "lfLines": 263,
+      "sha256": "389339afb8db0da6923d52864569bf5079d2d786d3c07d227f6e0ea59b438d8a"
+    },
+    {
+      "path": ".github/workflows/status.yml",
+      "bytes": 3706,
+      "lfLines": 102,
+      "sha256": "1aaec9432825bfb060b0a162a439e4bd475b87d7d544c83afe444f9b539c120f"
+    },
+    {
+      "path": ".github/workflows/test.yml",
+      "bytes": 29953,
+      "lfLines": 907,
+      "sha256": "c94f9824c381eb71c901e5aabdb4f36dcb2076dd088e53daf31ea213090cb86d"
+    },
+    {
+      "path": ".gitignore",
+      "bytes": 385,
+      "lfLines": 34,
+      "sha256": "6e209d9a8fab8b03bcac4708e7d1d6bf7b3a332c326834dbab761cc483a80683"
+    },
+    {
+      "path": "DESIGN.md",
+      "bytes": 96235,
+      "lfLines": 2173,
+      "sha256": "2a8b3459d74b9fa8bdd947738522c46331739405b1fc3d70f057f636a1dea768"
+    },
+    {
+      "path": "LICENSE.md",
+      "bytes": 1523,
+      "lfLines": 25,
+      "sha256": "0cb4ff1daf5fdc1359c6a6ee3116092f08fc100c9d58b1b77ab17bfd801f856d"
+    },
+    {
+      "path": "Makefile",
+      "bytes": 14916,
+      "lfLines": 595,
+      "sha256": "23ccc0a3332fa6d4a260b5cde929e340265d4eb2c81282147414c44451340f2b"
+    },
+    {
+      "path": "README.md",
+      "bytes": 13676,
+      "lfLines": 342,
+      "sha256": "567ca1c81fa0fde6cc4230f010678fca4a0794ce9572d803dbbe2a1948bf2ac5"
+    },
+    {
+      "path": "SPEC.md",
+      "bytes": 33698,
+      "lfLines": 867,
+      "sha256": "6dd74dfc58ac93589f8e002bb73c0830a59206912cfe8c951c07eb2bd5fccad0"
+    },
+    {
+      "path": "bd/lfs_emubd.c",
+      "bytes": 22788,
+      "lfLines": 739,
+      "sha256": "cb4c45c8a5cb99da4ad209f1cdee712d05e737435cb5a8392cd0969424184ba8"
+    },
+    {
+      "path": "bd/lfs_emubd.h",
+      "bytes": 7654,
+      "lfLines": 244,
+      "sha256": "9bfa7b73ab748c767495ad7f6039d8790f72d18f622af9f20c08b651ccc1190e"
+    },
+    {
+      "path": "bd/lfs_filebd.c",
+      "bytes": 4934,
+      "lfLines": 167,
+      "sha256": "272cd0a62bb8596598bf9c3cb0b1aaf99f2a296e384237afaa4c11b5431b7718"
+    },
+    {
+      "path": "bd/lfs_filebd.h",
+      "bytes": 1880,
+      "lfLines": 82,
+      "sha256": "ec1a79181e5cb96bd9a2ae6144ec392cf4f951285393ad41610833eb7dd30628"
+    },
+    {
+      "path": "bd/lfs_rambd.c",
+      "bytes": 3810,
+      "lfLines": 118,
+      "sha256": "f25214fe0425a74c5698a2cb65a14e7cf657ca5321cc7d40853d5a06d6c6fa37"
+    },
+    {
+      "path": "bd/lfs_rambd.h",
+      "bytes": 1933,
+      "lfLines": 85,
+      "sha256": "f78b559b14e60fd4badf10835dd9072a255c64826866d75008f05d295e7d17c6"
+    },
+    {
+      "path": "benches/bench_dir.toml",
+      "bytes": 7107,
+      "lfLines": 270,
+      "sha256": "b40dae2359dff039abc7ed31ab0def12048034a37afaf7c9504aef18f3860be6"
+    },
+    {
+      "path": "benches/bench_file.toml",
+      "bytes": 2681,
+      "lfLines": 95,
+      "sha256": "a6930fa61f92e4f76c3330b142051c56de7e290ec15389a1e8ecc5f2f8393602"
+    },
+    {
+      "path": "benches/bench_superblock.toml",
+      "bytes": 1237,
+      "lfLines": 56,
+      "sha256": "67935ca003b7a7e476370ab8aee3adf75e98f6c80f3f509ddf9f5b94a1981562"
+    },
+    {
+      "path": "lfs.c",
+      "bytes": 197942,
+      "lfLines": 6558,
+      "sha256": "a36d6a095785ddea9571d541d68d3e4ef01d5b255a99d17d3f07fb6ea60ea132"
+    },
+    {
+      "path": "lfs.h",
+      "bytes": 26833,
+      "lfLines": 802,
+      "sha256": "b1befd7288d08815accc8f9af744c55686c0b9e3ac0061c32ceee38a1b3eb96d"
+    },
+    {
+      "path": "lfs_util.c",
+      "bytes": 988,
+      "lfLines": 37,
+      "sha256": "f2fbde533670560434bd9f5a547174cc7c5a4670a02c47b4bd85180dced8b2ec"
+    },
+    {
+      "path": "lfs_util.h",
+      "bytes": 8049,
+      "lfLines": 273,
+      "sha256": "548d46aa524dc7449e16739286c1a422a52f9de727ff0be0c2ffc5593f5ca981"
+    },
+    {
+      "path": "runners/bench_runner.c",
+      "bytes": 68370,
+      "lfLines": 2063,
+      "sha256": "7f8b243201733a5b2b23db3807f77ac06ab4434577461e27cd2ea1b3acd23a55"
+    },
+    {
+      "path": "runners/bench_runner.h",
+      "bytes": 4169,
+      "lfLines": 146,
+      "sha256": "566e8ce66568fd2ee1f1c59899df0432d3856eef815a30569d63a8d772b7f711"
+    },
+    {
+      "path": "runners/test_runner.c",
+      "bytes": 93635,
+      "lfLines": 2818,
+      "sha256": "5c28f45b123ab9ec748186aa963931ddc61ef9576566ba95d68056a61b3623dc"
+    },
+    {
+      "path": "runners/test_runner.h",
+      "bytes": 4070,
+      "lfLines": 142,
+      "sha256": "8545e70ee7d0bf6d295d5db78f75f7e12433cf42cc96bafe39dea9de81ad4bef"
+    },
+    {
+      "path": "scripts/bench.py",
+      "bytes": 52237,
+      "lfLines": 1433,
+      "sha256": "89960e94703bedae48a34525de9abb1c1d7e5ffd4d1faea68ffada9756cfe452"
+    },
+    {
+      "path": "scripts/changeprefix.py",
+      "bytes": 5403,
+      "lfLines": 181,
+      "sha256": "403fa4480e3f4474fcfb048a27e8d590d4655417b7aa97e8cc7cfd0082638490"
+    },
+    {
+      "path": "scripts/code.py",
+      "bytes": 23095,
+      "lfLines": 707,
+      "sha256": "115948040ac804b9d21d0afca3e82649e636652e4c1f2fd243fb5074cb790f4a"
+    },
+    {
+      "path": "scripts/cov.py",
+      "bytes": 27397,
+      "lfLines": 828,
+      "sha256": "aa96789fec445d9403335a4c7cc17c428c2d66044c9234aba495ac0c278b2601"
+    },
+    {
+      "path": "scripts/data.py",
+      "bytes": 22943,
+      "lfLines": 704,
+      "sha256": "b4e8ca5a8cd0b7eeab75b5e7e6750469c0c832c4c6cf33e9a87884d108485a55"
+    },
+    {
+      "path": "scripts/perf.py",
+      "bytes": 45193,
+      "lfLines": 1344,
+      "sha256": "2ebb5063f05c31fd292fe499e10a0daaf21add4747e65e971b7e01cb0a163388"
+    },
+    {
+      "path": "scripts/perfbd.py",
+      "bytes": 44308,
+      "lfLines": 1276,
+      "sha256": "2844461894231f48213d2a5ca77b16faa9f2861985b5db45d426cbd0f89a6848"
+    },
+    {
+      "path": "scripts/plot.py",
+      "bytes": 54030,
+      "lfLines": 1592,
+      "sha256": "2a7296d2b91c1d9619039fda3ef32f1f3565b37d50a2a79e9cb0098f33cf3635"
+    },
+    {
+      "path": "scripts/plotmpl.py",
+      "bytes": 41869,
+      "lfLines": 1262,
+      "sha256": "c9227baed38903db51dd2f04a1d60e9b23f4fc2857bab142646df975d288095c"
+    },
+    {
+      "path": "scripts/prettyasserts.py",
+      "bytes": 16223,
+      "lfLines": 478,
+      "sha256": "b815a63e5b2f9f2d647accf24e8bb14b7e48783cce20104c1694c2da8b3208d2"
+    },
+    {
+      "path": "scripts/readblock.py",
+      "bytes": 858,
+      "lfLines": 26,
+      "sha256": "bc3794a2b8f072219c402a8973b94e8eeeb4272abfaecc5c6c7c9e1896989d52"
+    },
+    {
+      "path": "scripts/readmdir.py",
+      "bytes": 12631,
+      "lfLines": 399,
+      "sha256": "fab4c538130687e7bdb630c0598553d416d9e58855fbbaba696d35b81d873194"
+    },
+    {
+      "path": "scripts/readtree.py",
+      "bytes": 6357,
+      "lfLines": 183,
+      "sha256": "5240676c50dd977aebefe115ab6e02e329b21e194934e9f5356c8384d34262e6"
+    },
+    {
+      "path": "scripts/stack.py",
+      "bytes": 24367,
+      "lfLines": 735,
+      "sha256": "00a8f29e01d29e15ba6e9b613a0d2e8473f71eb503eb3d4e2840a209f3f216ec"
+    },
+    {
+      "path": "scripts/structs.py",
+      "bytes": 21064,
+      "lfLines": 652,
+      "sha256": "eb8598c2ec9357bb74b8498ae18bdc899d7f457e392e3f3cdc536290c04239a4"
+    },
+    {
+      "path": "scripts/summary.py",
+      "bytes": 25393,
+      "lfLines": 829,
+      "sha256": "8da904ee0ace70d0912ea5ed8635559522ad11ebf361441d29608c8a293fd5fe"
+    },
+    {
+      "path": "scripts/tailpipe.py",
+      "bytes": 5275,
+      "lfLines": 177,
+      "sha256": "97735ead3d7d7c44e5334fe5c54cb4a14f812fa55dfe97ead53e7df66dd0f6d0"
+    },
+    {
+      "path": "scripts/teepipe.py",
+      "bytes": 1993,
+      "lfLines": 73,
+      "sha256": "82dd8330dd385ee3a22cee4482c135aa19731fd0509c4cfca83304a3b7534d97"
+    },
+    {
+      "path": "scripts/test.py",
+      "bytes": 54801,
+      "lfLines": 1487,
+      "sha256": "1afd7cc5a0adaeadbb8aa5bff3c708877059d2fca59fe1c824f17dc7bc2d1bfe"
+    },
+    {
+      "path": "scripts/tracebd.py",
+      "bytes": 31069,
+      "lfLines": 1002,
+      "sha256": "65063ee26b83674dad19af0a7a55cecbc9f909f0c323437a72c3705ef72bb9fa"
+    },
+    {
+      "path": "scripts/watch.py",
+      "bytes": 8135,
+      "lfLines": 265,
+      "sha256": "c6e2371007fa04d4e6fda8dc5687a3d663eb674c80ce78e6015aace639e06074"
+    },
+    {
+      "path": "tests/test_alloc.toml",
+      "bytes": 29556,
+      "lfLines": 955,
+      "sha256": "8d642e1671302e2d5325b72071b7ee3734ea6a39c99c6ed748d1aa9910916a4f"
+    },
+    {
+      "path": "tests/test_attrs.toml",
+      "bytes": 12219,
+      "lfLines": 316,
+      "sha256": "7649b115992f0c8d333b8bc39a8f1842772ac70204cf89daf8aaf052d713c167"
+    },
+    {
+      "path": "tests/test_badblocks.toml",
+      "bytes": 7983,
+      "lfLines": 260,
+      "sha256": "4e9761bea21789eed27ab566730ac43ed11e24d22a49ce17c9480e34122ac10b"
+    },
+    {
+      "path": "tests/test_bd.toml",
+      "bytes": 6811,
+      "lfLines": 248,
+      "sha256": "d9530de00553c808027732a80b3e9986575822acfa4f05f417410cff9f7eb9b4"
+    },
+    {
+      "path": "tests/test_compat.toml",
+      "bytes": 42929,
+      "lfLines": 1453,
+      "sha256": "50c97856ca5201640f8234f2d94c275a0f4aee3f15ecf6919ac088f395f2e043"
+    },
+    {
+      "path": "tests/test_dirs.toml",
+      "bytes": 36281,
+      "lfLines": 1120,
+      "sha256": "fb9b93aaed97832b3a5c92ba21110a928e0cac00cd43d7c7ea0ba1796c8b91b9"
+    },
+    {
+      "path": "tests/test_entries.toml",
+      "bytes": 22546,
+      "lfLines": 642,
+      "sha256": "2f4e0cde81bd70513af344eaaf861feb2e2a748c7399bcb88137b3d6b05b9110"
+    },
+    {
+      "path": "tests/test_evil.toml",
+      "bytes": 10596,
+      "lfLines": 306,
+      "sha256": "49938a860a01e907237758e51a0d264323783aeca1adca9346e8709ca3060cb5"
+    },
+    {
+      "path": "tests/test_exhaustion.toml",
+      "bytes": 16965,
+      "lfLines": 505,
+      "sha256": "b6012493e985c0ba2a203c80b8d404b6ae801730fe57b31bc26b09df415e8ed4"
+    },
+    {
+      "path": "tests/test_files.toml",
+      "bytes": 17620,
+      "lfLines": 539,
+      "sha256": "a8b6b0d9691c64650ec96842245fa9828d875411ee8aa25eaad64ac3678a23d2"
+    },
+    {
+      "path": "tests/test_interspersed.toml",
+      "bytes": 8442,
+      "lfLines": 274,
+      "sha256": "c3592851cfe9db4cb9379b97937c439a366130b3261a3317a8e5918bebdef62b"
+    },
+    {
+      "path": "tests/test_move.toml",
+      "bytes": 71009,
+      "lfLines": 1905,
+      "sha256": "4d905f48918736c0630595c2f4cec7f69996bc6b87b98e8697d4981267db0945"
+    },
+    {
+      "path": "tests/test_orphans.toml",
+      "bytes": 11054,
+      "lfLines": 340,
+      "sha256": "af6a6eb7a0b2c6c57bfe0df1886140d2b7e96ca99073819c73bbf0f24ad08a12"
+    },
+    {
+      "path": "tests/test_paths.toml",
+      "bytes": 327195,
+      "lfLines": 7398,
+      "sha256": "6a193e880d743f03da91c155ac6e7064e24d3759d2d59b47c4f120a2dc1d1255"
+    },
+    {
+      "path": "tests/test_powerloss.toml",
+      "bytes": 5842,
+      "lfLines": 185,
+      "sha256": "8a533ed184c2dbfef7c79ad1caa386fea97a3ac367710d6b637bda11f40e5eb0"
+    },
+    {
+      "path": "tests/test_relocations.toml",
+      "bytes": 18751,
+      "lfLines": 511,
+      "sha256": "8ad7d41467dc23e30f3e8cdcdc4f462d2312687d797884f634443109640fe24c"
+    },
+    {
+      "path": "tests/test_seek.toml",
+      "bytes": 22299,
+      "lfLines": 662,
+      "sha256": "69940d9c7a696762e04063d73a6506327650c64941478d0261b5520079143271"
+    },
+    {
+      "path": "tests/test_shrink.toml",
+      "bytes": 3730,
+      "lfLines": 109,
+      "sha256": "0973057fc74476d25ba5aa15f4625a7439b59cfa78399a8c00406a81d5f67355"
+    },
+    {
+      "path": "tests/test_superblocks.toml",
+      "bytes": 20012,
+      "lfLines": 660,
+      "sha256": "7e32658faa899534607a2633f9d979ad361a30b74444005d43d9ef00410d6586"
+    },
+    {
+      "path": "tests/test_truncate.toml",
+      "bytes": 17553,
+      "lfLines": 503,
+      "sha256": "de8a4e04961051c8c2471e16b54c29d115d72e830e78d5c751337b35c14cd98d"
+    }
+  ],
+  "executed": false,
+  "webLookupFailure": "web open of pinned GitHub tree failed with restricted URL; pinned codeload retrieval succeeded"
+}

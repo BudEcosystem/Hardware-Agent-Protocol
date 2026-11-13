@@ -1,0 +1,604 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-11-06T02:21:13.607732+00:00",
+  "line_counting": "Exact bytes split only on LF; LF retained in each terminated line; nonempty final unterminated line counted; no CR/formfeed/BOM normalization.",
+  "coverage_policy": "Ranges record actual bounded-output reads. Ranges partitioned into <=200-line hash chunks after reading. Incidental search output is not credited. Full flags only for complete files; two large manuals remain selected.",
+  "manifest_path": "research/constrained/clock-boot-platform/manifest.jsonl",
+  "figure_manifest_path": "research/constrained/clock-boot-platform/figure-renders.json",
+  "sources": [
+    {
+      "id": "atmega328p-family-ds40002061b",
+      "source_kind": "manual_pdf",
+      "url": "https://ww1.microchip.com/downloads/en/DeviceDoc/ATmega48A-PA-88A-PA-168A-PA-328-P-DS-DS40002061B.pdf",
+      "final_url": "https://ww1.microchip.com/downloads/en/DeviceDoc/ATmega48A-PA-88A-PA-168A-PA-328-P-DS-DS40002061B.pdf",
+      "retrieved_at": "2026-11-06T02:06:37.075212+00:00",
+      "raw_path": "research/constrained/clock-boot-platform/raw/atmega328p-family-ds40002061b.pdf",
+      "raw_sha256": "b9b9d83cda56a95d999ea8d54fe5a540748ae9020e5e7ae19b913d384ba9320e",
+      "text_path": "research/constrained/clock-boot-platform/text/atmega328p-family-ds40002061b.txt",
+      "text_sha256": "1997fef0624c273cb542802b323d53bcfb19463cce8000508b15e31f5f5d89e8",
+      "line_count": 37017,
+      "covered_line_count": 1442,
+      "coverage_ranges": [
+        {
+          "start_line": 880,
+          "end_line": 910,
+          "sha256": "37b33b2ce8903e159460999202dd65a0899b96eb3a05478d35f5687089b8902c"
+        },
+        {
+          "start_line": 1480,
+          "end_line": 1679,
+          "sha256": "35716476a84d10d4e44a8b48b14037f3cff58e41651daa8db69d140762984af8"
+        },
+        {
+          "start_line": 1680,
+          "end_line": 1705,
+          "sha256": "2f58e38bb6a1c73c2101e873d5de279640aeda47a8cbd4b7a8cd10358525d665"
+        },
+        {
+          "start_line": 2814,
+          "end_line": 3013,
+          "sha256": "657290d4bbbedda02525106a0e3954fdcbb744b0af8bbe66e758f27705f92f1e"
+        },
+        {
+          "start_line": 3014,
+          "end_line": 3213,
+          "sha256": "9da24a2283e6a477bacbc7744a50b46cf52b855516a4660ff6a0c34af4a2fc05"
+        },
+        {
+          "start_line": 3214,
+          "end_line": 3345,
+          "sha256": "f40d885411389204581108374ffaedaceac5ddfbafa629ce8f10b58d29847fe4"
+        },
+        {
+          "start_line": 6368,
+          "end_line": 6535,
+          "sha256": "4f0a0ffc54203b454bf47d3171d69a870a4bd10758eb80ff4e9690a3e61cf901"
+        },
+        {
+          "start_line": 7680,
+          "end_line": 7720,
+          "sha256": "a785944aefd63b49ea0ab8917f61b57a3a48797abf14850e4d304b5f22acb6b1"
+        },
+        {
+          "start_line": 10060,
+          "end_line": 10135,
+          "sha256": "b01936153a3d61db1850784679dfa11d08caa6e2d650864a059407fe6675a811"
+        },
+        {
+          "start_line": 15515,
+          "end_line": 15650,
+          "sha256": "4a61a80dc6f13ef28ad11cc858f55480fbb255415bb564a3aeca241edc5b3ef3"
+        },
+        {
+          "start_line": 15900,
+          "end_line": 15922,
+          "sha256": "8353534c3f33ae5df7773d448e993f6b5fad8b36df06e5f8a4a5ed503f9af943"
+        },
+        {
+          "start_line": 16752,
+          "end_line": 16905,
+          "sha256": "51dbe7a46672c618002ac96980476fa725625207c8f7834a74cfc15b83004b94"
+        },
+        {
+          "start_line": 36621,
+          "end_line": 36675,
+          "sha256": "9589bdd48e9a2f6a5511f7b72ed02f3b3e93961a86b67cc044de47646de1de80"
+        }
+      ],
+      "coverage_complete": false,
+      "reading_status": "selected_ranges_read",
+      "extraction": {
+        "program": "pdftotext",
+        "version": "24.02.0",
+        "arguments": [
+          "-layout",
+          "research/constrained/clock-boot-platform/raw/atmega328p-family-ds40002061b.pdf",
+          "research/constrained/clock-boot-platform/text/atmega328p-family-ds40002061b.txt"
+        ],
+        "normalization": "none after extraction"
+      },
+      "note": "Only recorded ranges read; entire datasheet acquired, not full-read."
+    },
+    {
+      "id": "avr101",
+      "source_kind": "manual_pdf",
+      "url": "https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/doc2526.pdf",
+      "final_url": "https://ww1.microchip.com/downloads/aemDocuments/documents/OTH/ApplicationNotes/ApplicationNotes/doc2526.pdf",
+      "retrieved_at": "2026-11-06T02:06:17.705565+00:00",
+      "raw_path": "research/constrained/clock-boot-platform/raw/avr101.pdf",
+      "raw_sha256": "187aad8b6c3f628faf38bf75447ecacdd7c9090e534db9a9244183cbb02e4bd5",
+      "text_path": "research/constrained/clock-boot-platform/text/avr101.txt",
+      "text_sha256": "5e8d36660b66e3be023eef4b0ac1a3cf5b161370c07f1b45c1a5937df4371e1f",
+      "line_count": 289,
+      "covered_line_count": 289,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 200,
+          "sha256": "9a1465b6b57f98a0953befd5d5c8ba3278173558e6e4dfcc4acf60725f745c98"
+        },
+        {
+          "start_line": 201,
+          "end_line": 289,
+          "sha256": "bf67a7c5f3eb1e5f97c3de8ab7c23e391030ec247b32bd5d57ec59ec45280291"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "full_file_read",
+      "extraction": {
+        "program": "pdftotext",
+        "version": "24.02.0",
+        "arguments": [
+          "-layout",
+          "research/constrained/clock-boot-platform/raw/avr101.pdf",
+          "research/constrained/clock-boot-platform/text/avr101.txt"
+        ],
+        "normalization": "none after extraction"
+      },
+      "note": "Full text read in bounded tool outputs including final unterminated LF line where present."
+    },
+    {
+      "id": "rp2040-datasheet",
+      "source_kind": "manual_pdf",
+      "url": "https://datasheets.raspberrypi.com/rp2040/rp2040-datasheet.pdf",
+      "final_url": "https://pip-assets.raspberrypi.com/categories/814-rp2040/documents/RP-008371-DS-1-rp2040-datasheet.pdf",
+      "retrieved_at": "2026-11-06T02:06:28.183388+00:00",
+      "raw_path": "research/constrained/clock-boot-platform/raw/rp2040-datasheet.pdf",
+      "raw_sha256": "be56fbb75ba0ae9e26558a73c93ac3e75c2ad4e6878d3b6703de2a76d886ea8c",
+      "text_path": "research/constrained/clock-boot-platform/text/rp2040-datasheet.txt",
+      "text_sha256": "0ef8f68865a67ae1be913bd9059463570131f189510b60287759006992b122c8",
+      "line_count": 47882,
+      "covered_line_count": 2307,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 30,
+          "sha256": "530779ce4cfbecf9afe3d52e080c8728f735e4f2f922236614019b72db7bf45f"
+        },
+        {
+          "start_line": 8957,
+          "end_line": 9098,
+          "sha256": "40e576e9e829e74cc64469759a4e9eadb7a8c18e9cc246e89c18abd6dbe0d093"
+        },
+        {
+          "start_line": 9810,
+          "end_line": 9905,
+          "sha256": "a8821593b9ec208dfc7c2c40c2aefea6d7799a17cfc4b4eebef057f8e15c587f"
+        },
+        {
+          "start_line": 11880,
+          "end_line": 12079,
+          "sha256": "576d30267e762d69b7376f8aadf92957723276ead20397ab13fdcadc204aefe0"
+        },
+        {
+          "start_line": 12080,
+          "end_line": 12215,
+          "sha256": "998bc08e47393aaa8e93ee2c514036977560a2625b77cb4b04bc20550498ac11"
+        },
+        {
+          "start_line": 31520,
+          "end_line": 31610,
+          "sha256": "6077ab86708d0e2567a44a89d342bb21b35ca689de94d3eb1bdd3971d2838164"
+        },
+        {
+          "start_line": 31895,
+          "end_line": 31945,
+          "sha256": "054927381f4627932e076288873d12daa5bbac6bcab4796c9241e08010ace614"
+        },
+        {
+          "start_line": 32139,
+          "end_line": 32238,
+          "sha256": "1e61c70d784d20618276e2b7a32a50e919c8faaba6d2a0ecc92e752be86c72d5"
+        },
+        {
+          "start_line": 40205,
+          "end_line": 40404,
+          "sha256": "e148865eb19f4d98b68b77df14cdafff2fd626ceb7d485825fa616e2662d3fa6"
+        },
+        {
+          "start_line": 40405,
+          "end_line": 40445,
+          "sha256": "606eed878442296b7378a94bedd98c1e756c1ae4ea96813f607f0fe681b5c204"
+        },
+        {
+          "start_line": 40695,
+          "end_line": 40894,
+          "sha256": "ae583d2ff6225a372b975a2bf847c32029a3992e8f06f219a62ac4fe2faf7a85"
+        },
+        {
+          "start_line": 40895,
+          "end_line": 41094,
+          "sha256": "9cf4963e3dd3883fc98c1d7b59fd55bc5650ae33976c80ec768960ead46ff299"
+        },
+        {
+          "start_line": 41095,
+          "end_line": 41263,
+          "sha256": "71e072fee95b9d5d28f281ca4fa01263be0891c5c86824d578eed5027e5cffc1"
+        },
+        {
+          "start_line": 47050,
+          "end_line": 47249,
+          "sha256": "a69d12a923ac27d8b1cd4604b8aeeea3d28d986485797e0f3692055579a0b792"
+        },
+        {
+          "start_line": 47250,
+          "end_line": 47449,
+          "sha256": "87cf22dc44acd6b9f7668878037d8e30709f75ce04d8b880656c9394af643a22"
+        },
+        {
+          "start_line": 47450,
+          "end_line": 47649,
+          "sha256": "005fb5dcc4bccb8b7bd7b249fe00306457cdbe11200df5fb167b1467c90d3d02"
+        },
+        {
+          "start_line": 47650,
+          "end_line": 47700,
+          "sha256": "cc8767a824527bda49e98d41e782255380936a28156a08d7af735cf77481184b"
+        }
+      ],
+      "coverage_complete": false,
+      "reading_status": "selected_ranges_read",
+      "extraction": {
+        "program": "pdftotext",
+        "version": "24.02.0",
+        "arguments": [
+          "-layout",
+          "research/constrained/clock-boot-platform/raw/rp2040-datasheet.pdf",
+          "research/constrained/clock-boot-platform/text/rp2040-datasheet.txt"
+        ],
+        "normalization": "none after extraction"
+      },
+      "note": "Only recorded ranges read; entire datasheet acquired, not full-read."
+    },
+    {
+      "id": "pico-sdk-latest",
+      "source_kind": "release_metadata",
+      "url": "https://api.github.com/repos/raspberrypi/pico-sdk/releases/latest",
+      "final_url": "https://api.github.com/repos/raspberrypi/pico-sdk/releases/latest",
+      "retrieved_at": "2026-11-06T02:06:17.417634+00:00",
+      "raw_path": "research/constrained/clock-boot-platform/raw/pico-sdk-latest.json",
+      "raw_sha256": "34c91ea8a9bd84c14c306bf0781e2401522c09b6989c74ddb51503681cbecdfc",
+      "text_path": "research/constrained/clock-boot-platform/text/pico-sdk-latest.txt",
+      "text_sha256": "bc263ebef4ae99e5a9ab82bc07d9e1d96615173d5e503f4d5c813e3bdbb07edc",
+      "line_count": 91,
+      "covered_line_count": 91,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 91,
+          "sha256": "bc263ebef4ae99e5a9ab82bc07d9e1d96615173d5e503f4d5c813e3bdbb07edc"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "full_file_read",
+      "extraction": {
+        "program": "Python json.dumps",
+        "arguments": {
+          "indent": 2,
+          "ensure_ascii": true
+        },
+        "normalization": "JSON parse + pretty print + one LF, raw retained"
+      },
+      "note": "Full text read in bounded tool outputs including final unterminated LF line where present."
+    },
+    {
+      "id": "atmega-family-errata",
+      "source_kind": "manual_pdf",
+      "url": "https://ww1.microchip.com/downloads/aemDocuments/documents/MCU08/ProductDocuments/Errata/ATmega48APA88APA168APA328P-SiliConErrataClarif-DS80000855.pdf",
+      "final_url": "https://ww1.microchip.com/downloads/aemDocuments/documents/MCU08/ProductDocuments/Errata/ATmega48APA88APA168APA328P-SiliConErrataClarif-DS80000855.pdf",
+      "retrieved_at": "2026-11-06T02:11:19.118914+00:00",
+      "raw_path": "research/constrained/clock-boot-platform/raw/atmega-family-errata.pdf",
+      "raw_sha256": "daa69b498a801da32825d513d63e1fbafa0e903b2e2f4231708ac6e2e01396a1",
+      "text_path": "research/constrained/clock-boot-platform/text/atmega-family-errata.txt",
+      "text_sha256": "c54308d71651d70eb57b9e7a56750cd44c12057cdd4a9902aa1fa169f55a806d",
+      "line_count": 1035,
+      "covered_line_count": 1035,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 200,
+          "sha256": "28c760a7d305ff720d40cc5844c4b35ff13286c0cc6df7f3685c8a21c300b3b5"
+        },
+        {
+          "start_line": 201,
+          "end_line": 400,
+          "sha256": "be673d44381d16f05363d349ce1056a0d9d6192d018fa4d0dcf190d8a4b0d026"
+        },
+        {
+          "start_line": 401,
+          "end_line": 600,
+          "sha256": "3d05c6f4d1d30683d3cb8c906b41b8a09e72320eeb820e10b11add1c3a45ac01"
+        },
+        {
+          "start_line": 601,
+          "end_line": 800,
+          "sha256": "08eeec6261a9f1891857f9b54f919f33b6834dbeb3ee6379da1c8aabdab367fc"
+        },
+        {
+          "start_line": 801,
+          "end_line": 1000,
+          "sha256": "f7f7b143388b772e692f05e5a901cfef515f03f95bd2151f9c0264c274b2b3ac"
+        },
+        {
+          "start_line": 1001,
+          "end_line": 1035,
+          "sha256": "97160fd3b133fa5e8da60c9675de86cb5a1e72ad791a2d55fc26b493158222b2"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "full_file_read",
+      "extraction": {
+        "program": "pdftotext",
+        "version": "24.02.0",
+        "arguments": [
+          "-layout",
+          "research/constrained/clock-boot-platform/raw/atmega-family-errata.pdf",
+          "research/constrained/clock-boot-platform/text/atmega-family-errata.txt"
+        ],
+        "normalization": "none after extraction"
+      },
+      "note": "Full text read in bounded tool outputs including final unterminated LF line where present."
+    },
+    {
+      "id": "pico-sdk-tag",
+      "source_kind": "release_metadata",
+      "url": "https://api.github.com/repos/raspberrypi/pico-sdk/git/ref/tags/2.3.1",
+      "final_url": "https://api.github.com/repos/raspberrypi/pico-sdk/git/ref/tags/2.3.1",
+      "retrieved_at": "2026-11-06T02:10:36.264014+00:00",
+      "raw_path": "research/constrained/clock-boot-platform/raw/pico-sdk-tag.json",
+      "raw_sha256": "c0fcd0ab977046f39ddb1a3e95aa313782a856ee4f7e245c2b1aa3286c59e99d",
+      "text_path": "research/constrained/clock-boot-platform/raw/pico-sdk-tag.json",
+      "text_sha256": "c0fcd0ab977046f39ddb1a3e95aa313782a856ee4f7e245c2b1aa3286c59e99d",
+      "line_count": 1,
+      "covered_line_count": 1,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 1,
+          "sha256": "c0fcd0ab977046f39ddb1a3e95aa313782a856ee4f7e245c2b1aa3286c59e99d"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "full_file_read",
+      "extraction": {
+        "program": "identity",
+        "normalization": "none"
+      },
+      "note": "Full text read in bounded tool outputs including final unterminated LF line where present."
+    },
+    {
+      "id": "sdk-hardware_timer-timer.c",
+      "source_kind": "sdk_source",
+      "url": "https://raw.githubusercontent.com/raspberrypi/pico-sdk/079c6f39023649b154152db30f1d781e884879bc/src/rp2_common/hardware_timer/timer.c",
+      "final_url": "https://raw.githubusercontent.com/raspberrypi/pico-sdk/079c6f39023649b154152db30f1d781e884879bc/src/rp2_common/hardware_timer/timer.c",
+      "retrieved_at": "2026-11-06T02:12:06.679604+00:00",
+      "raw_path": "research/constrained/clock-boot-platform/source/timer.c",
+      "raw_sha256": "00cbdb9605f7494a52dbb695203b088b7915f1d10a1a03617f9bfcf80ecca533",
+      "text_path": "research/constrained/clock-boot-platform/source/timer.c",
+      "text_sha256": "00cbdb9605f7494a52dbb695203b088b7915f1d10a1a03617f9bfcf80ecca533",
+      "line_count": 295,
+      "covered_line_count": 295,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 200,
+          "sha256": "f80ceb9dcf5f9077d336efd8722043cb0306402531f8783ffdfb26a63a1b3a9a"
+        },
+        {
+          "start_line": 201,
+          "end_line": 295,
+          "sha256": "8fe0514f1c80d45a43f61c3fcae5b2f1cb865e0309744bd1634efe45ff8fc087"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "full_file_read",
+      "extraction": {
+        "program": "identity",
+        "normalization": "none"
+      },
+      "note": "Full text read in bounded tool outputs including final unterminated LF line where present."
+    },
+    {
+      "id": "sdk-hardware_timer-timer.h",
+      "source_kind": "sdk_source",
+      "url": "https://raw.githubusercontent.com/raspberrypi/pico-sdk/079c6f39023649b154152db30f1d781e884879bc/src/rp2_common/hardware_timer/include/hardware/timer.h",
+      "final_url": "https://raw.githubusercontent.com/raspberrypi/pico-sdk/079c6f39023649b154152db30f1d781e884879bc/src/rp2_common/hardware_timer/include/hardware/timer.h",
+      "retrieved_at": "2026-11-06T02:12:06.751716+00:00",
+      "raw_path": "research/constrained/clock-boot-platform/source/timer.h",
+      "raw_sha256": "5498220e5310d49eb8f3390bbe36f1b7c0857d3fc5c9393d2c95bbd644a599ba",
+      "text_path": "research/constrained/clock-boot-platform/source/timer.h",
+      "text_sha256": "5498220e5310d49eb8f3390bbe36f1b7c0857d3fc5c9393d2c95bbd644a599ba",
+      "line_count": 598,
+      "covered_line_count": 598,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 200,
+          "sha256": "3d1ea471f64ba508dffb4a501760dd6d23d7856e826e31964ed80940d494f2d1"
+        },
+        {
+          "start_line": 201,
+          "end_line": 400,
+          "sha256": "4d0ebb1d24840ac1911e63c57a9a2bf2eb3032dc9f50f9a7cf0e33b6915281c6"
+        },
+        {
+          "start_line": 401,
+          "end_line": 598,
+          "sha256": "404b28568de1ddec714b60213970b3eefaefc44f6239d4e245d5dcc1bb57916e"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "full_file_read",
+      "extraction": {
+        "program": "identity",
+        "normalization": "none"
+      },
+      "note": "Full text read in bounded tool outputs including final unterminated LF line where present."
+    },
+    {
+      "id": "sdk-hardware_watchdog-watchdog.c",
+      "source_kind": "sdk_source",
+      "url": "https://raw.githubusercontent.com/raspberrypi/pico-sdk/079c6f39023649b154152db30f1d781e884879bc/src/rp2_common/hardware_watchdog/watchdog.c",
+      "final_url": "https://raw.githubusercontent.com/raspberrypi/pico-sdk/079c6f39023649b154152db30f1d781e884879bc/src/rp2_common/hardware_watchdog/watchdog.c",
+      "retrieved_at": "2026-11-06T02:12:06.689911+00:00",
+      "raw_path": "research/constrained/clock-boot-platform/source/watchdog.c",
+      "raw_sha256": "e7052da8894a7f125b0f6a5abad3298c9a0d4fc4967b678099eedd160241c727",
+      "text_path": "research/constrained/clock-boot-platform/source/watchdog.c",
+      "text_sha256": "e7052da8894a7f125b0f6a5abad3298c9a0d4fc4967b678099eedd160241c727",
+      "line_count": 127,
+      "covered_line_count": 127,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 127,
+          "sha256": "e7052da8894a7f125b0f6a5abad3298c9a0d4fc4967b678099eedd160241c727"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "full_file_read",
+      "extraction": {
+        "program": "identity",
+        "normalization": "none"
+      },
+      "note": "Full text read in bounded tool outputs including final unterminated LF line where present."
+    },
+    {
+      "id": "sdk-hardware_watchdog-watchdog.h",
+      "source_kind": "sdk_source",
+      "url": "https://raw.githubusercontent.com/raspberrypi/pico-sdk/079c6f39023649b154152db30f1d781e884879bc/src/rp2_common/hardware_watchdog/include/hardware/watchdog.h",
+      "final_url": "https://raw.githubusercontent.com/raspberrypi/pico-sdk/079c6f39023649b154152db30f1d781e884879bc/src/rp2_common/hardware_watchdog/include/hardware/watchdog.h",
+      "retrieved_at": "2026-11-06T02:12:06.834918+00:00",
+      "raw_path": "research/constrained/clock-boot-platform/source/watchdog.h",
+      "raw_sha256": "052f434b5ca9af17c3ed6496b3ff3356f2dfb1673791f002715cfa2788a7b8ea",
+      "text_path": "research/constrained/clock-boot-platform/source/watchdog.h",
+      "text_sha256": "052f434b5ca9af17c3ed6496b3ff3356f2dfb1673791f002715cfa2788a7b8ea",
+      "line_count": 162,
+      "covered_line_count": 162,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 162,
+          "sha256": "052f434b5ca9af17c3ed6496b3ff3356f2dfb1673791f002715cfa2788a7b8ea"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "full_file_read",
+      "extraction": {
+        "program": "identity",
+        "normalization": "none"
+      },
+      "note": "Full text read in bounded tool outputs including final unterminated LF line where present."
+    },
+    {
+      "id": "sdk-hardware_flash-flash.c",
+      "source_kind": "sdk_source",
+      "url": "https://raw.githubusercontent.com/raspberrypi/pico-sdk/079c6f39023649b154152db30f1d781e884879bc/src/rp2_common/hardware_flash/flash.c",
+      "final_url": "https://raw.githubusercontent.com/raspberrypi/pico-sdk/079c6f39023649b154152db30f1d781e884879bc/src/rp2_common/hardware_flash/flash.c",
+      "retrieved_at": "2026-11-06T02:12:07.161961+00:00",
+      "raw_path": "research/constrained/clock-boot-platform/source/flash.c",
+      "raw_sha256": "5f80e90d8c30d5a5899b05f722c569e9c4dda50c268799f2b615f59104804579",
+      "text_path": "research/constrained/clock-boot-platform/source/flash.c",
+      "text_sha256": "5f80e90d8c30d5a5899b05f722c569e9c4dda50c268799f2b615f59104804579",
+      "line_count": 461,
+      "covered_line_count": 461,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 200,
+          "sha256": "c5db8f4a60612b96aef7f7ac00ab0bcc14e939c43035422e019eb476e68edeae"
+        },
+        {
+          "start_line": 201,
+          "end_line": 400,
+          "sha256": "87459ae3c42e7cf1d02d6a72a22a5f3eb4e9c328ae535a32a8c5b52fee94b12e"
+        },
+        {
+          "start_line": 401,
+          "end_line": 461,
+          "sha256": "d36fa678e04e02f5185a558aa0ebead71afa73c1e68d29a81ab213f1b2e38076"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "full_file_read",
+      "extraction": {
+        "program": "identity",
+        "normalization": "none"
+      },
+      "note": "Full text read in bounded tool outputs including final unterminated LF line where present."
+    },
+    {
+      "id": "sdk-hardware_flash-flash.h",
+      "source_kind": "sdk_source",
+      "url": "https://raw.githubusercontent.com/raspberrypi/pico-sdk/079c6f39023649b154152db30f1d781e884879bc/src/rp2_common/hardware_flash/include/hardware/flash.h",
+      "final_url": "https://raw.githubusercontent.com/raspberrypi/pico-sdk/079c6f39023649b154152db30f1d781e884879bc/src/rp2_common/hardware_flash/include/hardware/flash.h",
+      "retrieved_at": "2026-11-06T02:12:07.196856+00:00",
+      "raw_path": "research/constrained/clock-boot-platform/source/flash.h",
+      "raw_sha256": "34bcc266f4535e6cbb57a289c5cb6d92583926fd6f6882ad5032598872523d19",
+      "text_path": "research/constrained/clock-boot-platform/source/flash.h",
+      "text_sha256": "34bcc266f4535e6cbb57a289c5cb6d92583926fd6f6882ad5032598872523d19",
+      "line_count": 312,
+      "covered_line_count": 312,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 200,
+          "sha256": "90b28e7eae69908c413e54ba94d53420a445d0e7324713bd2ec5bfbe32321f62"
+        },
+        {
+          "start_line": 201,
+          "end_line": 312,
+          "sha256": "fd5ef990819da8d3e4f29930c6a23cbbc113f9fcb229353b05614f25774dfb06"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "full_file_read",
+      "extraction": {
+        "program": "identity",
+        "normalization": "none"
+      },
+      "note": "Full text read in bounded tool outputs including final unterminated LF line where present."
+    }
+  ],
+  "integrity_files": [
+    {
+      "path": "research/constrained/clock-boot-platform/manifest.jsonl",
+      "sha256": "8c20fcb9164eb0228054adee8cbc828031b807e6500a00fd56a995b0a6e462b7"
+    },
+    {
+      "path": "research/constrained/clock-boot-platform/figure-renders.json",
+      "sha256": "600da31a2afefa6d908355c8a1073eb463cd29e77cd3a96b0631608b4516adad"
+    },
+    {
+      "path": "research/constrained/clock-boot-platform/notes/source-status.json",
+      "sha256": "f60e31117c0c41e063f9f1f2f6bb885a98f38c170698cca615a4e4fadca54e1a"
+    },
+    {
+      "path": "research/constrained/clock-boot-platform/notes/context-pins.json",
+      "sha256": "0e80de5c6a1ce98b9bbd5f7ca359b55041ecc5db87d8fbabb983798b47685d78"
+    },
+    {
+      "path": "research/constrained/clock-boot-platform/README.md",
+      "sha256": "14870d0286090399c8553a345b99eecc923b80c58544ca7bdb6db9780a0b8113"
+    },
+    {
+      "path": "research/constrained/clock-boot-platform/verify.py",
+      "sha256": "8176afe86acea03f4adbef263034b28e42cfb062fd9fab22e05b29eff24b903c"
+    },
+    {
+      "path": "docs/clock-boot-platform.md",
+      "sha256": "9d82c2e8d1ae3b8bb79ed634a3a870a019f3dc7f2582e921c717936f671cfb87"
+    },
+    {
+      "path": "research/constrained/clock-boot-platform/raw/atmega-product.html",
+      "sha256": "b985e59a24d9ed86807d0d5f0775672e1c17e41df7c945d7e5fde76a53c6c24e"
+    }
+  ],
+  "totals": {
+    "sources": 12,
+    "full_files": 10,
+    "selected_files": 2,
+    "covered_lf_lines": 7120,
+    "visually_reviewed_pages": 28
+  },
+  "scope": "Primary-source review only. No acquired-code execution, physical I/O, MCU/emulator execution or commissioning. Hashes do not establish comprehension, electrical durability, timing or independent stop."
+}

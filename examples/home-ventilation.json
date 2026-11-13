@@ -1,0 +1,79 @@
+{
+  "hms_draft": "0.1",
+  "id": "urn:bud:hms:example:home-ventilation",
+  "title": "home-ventilation",
+  "status": "design_example",
+  "profile": "P2",
+  "capabilities": [
+    "org.bud.home.ventilation/0.1"
+  ],
+  "resources": [
+    "window-zone"
+  ],
+  "observations": [
+    {
+      "id": "opening",
+      "unit": "percent",
+      "evidence_kind": "physical_sensor",
+      "max_age_ms": 100
+    }
+  ],
+  "actions": [
+    {
+      "id": "set_opening",
+      "description": "Design example; values are synthetic and must not commission a physical device.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "opening": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "opening"
+        ],
+        "additionalProperties": false
+      },
+      "effect": "setpoint",
+      "resources": [
+        "window-zone"
+      ],
+      "max_duration_ms": 10000,
+      "cancel_behavior": "request_stop",
+      "disconnect_behavior": "controlled_stop",
+      "completion_evidence": "controller_completion",
+      "required_observations": [
+        "opening"
+      ],
+      "parameters": {
+        "opening": {
+          "quantity": {
+            "unit": "percent",
+            "minimum": 0,
+            "maximum": 100
+          }
+        }
+      }
+    }
+  ],
+  "limits": [
+    {
+      "parameter": "set_opening.opening",
+      "bounds": {
+        "unit": "percent",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "enforcement": "gateway",
+      "evidence_ref": "unmeasured:synthetic-example"
+    }
+  ],
+  "calibration": {
+    "revision": "uncommissioned",
+    "status": "unmeasured",
+    "evidence_ref": "unmeasured:synthetic-example"
+  },
+  "notes": "Illustrates structure only. All numeric limits, time budgets and units are synthetic. No hardware supported or physical verification claimed."
+}

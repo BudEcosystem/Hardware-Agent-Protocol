@@ -1,0 +1,231 @@
+{
+  "@context": [
+    "https://www.w3.org/2022/wot/td/v1.1",
+    {
+      "hms": "https://example.invalid/hms/vocab#"
+    }
+  ],
+  "id": "urn:bud:hms:example:home-ventilation",
+  "title": "home-ventilation",
+  "description": "Synthetic, uncommissioned HMS draft fixture. No live endpoint or validated physical limits.",
+  "profile": [
+    "https://example.invalid/hms/profiles/host-control/0.1"
+  ],
+  "securityDefinitions": {
+    "agent_scoped": {
+      "scheme": "bearer",
+      "in": "header"
+    }
+  },
+  "security": [
+    "agent_scoped"
+  ],
+  "hms:requiredFeatures": [
+    "durable-operations/1",
+    "binding-generations/1",
+    "physical-evidence/1"
+  ],
+  "hms:commissioned": false,
+  "hms:bindingGeneration": "uncommissioned",
+  "hms:calibrationRevision": "unmeasured",
+  "properties": {
+    "opening": {
+      "type": "object",
+      "readOnly": true,
+      "observable": false,
+      "properties": {
+        "value": {
+          "type": "number",
+          "unit": "percent"
+        },
+        "evidenceKind": {
+          "type": "string"
+        },
+        "quality": {
+          "type": "string"
+        },
+        "sampleId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "evidenceKind",
+        "quality",
+        "sampleId"
+      ],
+      "forms": [
+        {
+          "href": "https://example.invalid/devices/home-ventilation/state/opening",
+          "op": "readproperty",
+          "contentType": "application/json"
+        }
+      ]
+    }
+  },
+  "actions": {
+    "set_opening": {
+      "description": "Design example; values are synthetic and must not commission a physical device.",
+      "safe": false,
+      "idempotent": false,
+      "synchronous": false,
+      "input": {
+        "title": "Experimental HMS host invocation",
+        "type": "object",
+        "required": [
+          "protocol",
+          "replayNamespace",
+          "operationKey",
+          "intent"
+        ],
+        "properties": {
+          "protocol": {
+            "const": "hms.invoke/0.1",
+            "type": "string"
+          },
+          "replayNamespace": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])"
+          },
+          "operationKey": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])"
+          },
+          "intent": {
+            "type": "object",
+            "required": [
+              "instanceId",
+              "endpointSession",
+              "controlGeneration",
+              "actionId",
+              "descriptionDigest",
+              "bindingGeneration",
+              "calibrationRevision",
+              "arguments",
+              "timing",
+              "requiredEffect"
+            ],
+            "properties": {
+              "instanceId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                "const": "urn:bud:hms:example:home-ventilation"
+              },
+              "endpointSession": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                "const": "uncommissioned-session"
+              },
+              "controlGeneration": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                "const": "uncommissioned-control"
+              },
+              "actionId": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                "const": "set_opening"
+              },
+              "descriptionDigest": {
+                "type": "string",
+                "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])",
+                "const": "sha256:0fea4790e07934a3bd870f062afed9addb8662576889f464cf23db639d1d113d"
+              },
+              "bindingGeneration": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                "const": "uncommissioned"
+              },
+              "calibrationRevision": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                "const": "unmeasured"
+              },
+              "arguments": {
+                "type": "object",
+                "properties": {
+                  "opening": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100,
+                    "unit": "percent"
+                  }
+                },
+                "required": [
+                  "opening"
+                ]
+              },
+              "requiredEffect": {
+                "enum": [
+                  "capability_completion",
+                  "physical_verified"
+                ],
+                "type": "string"
+              },
+              "timing": {
+                "type": "object",
+                "required": [
+                  "notBeforeUnixMs",
+                  "latestStartUnixMs",
+                  "maxRunMs",
+                  "latestCompletionUnixMs"
+                ],
+                "properties": {
+                  "notBeforeUnixMs": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "latestStartUnixMs": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "latestCompletionUnixMs": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 9007199254740991
+                  },
+                  "maxRunMs": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 4294967295
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "operationId": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "operationId",
+          "state"
+        ]
+      },
+      "hms:effect": "setpoint",
+      "hms:resources": [
+        "window-zone"
+      ],
+      "forms": [
+        {
+          "href": "https://example.invalid/devices/home-ventilation/actions/set_opening",
+          "op": "invokeaction",
+          "contentType": "application/json"
+        }
+      ]
+    }
+  },
+  "hms:descriptionDigest": "sha256:0fea4790e07934a3bd870f062afed9addb8662576889f464cf23db639d1d113d",
+  "hms:endpointSession": "uncommissioned-session",
+  "hms:controlGeneration": "uncommissioned-control"
+}

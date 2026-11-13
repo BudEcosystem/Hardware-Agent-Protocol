@@ -1,0 +1,26 @@
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v4.1.11 /home/bud/Desktop/bud/hms-harness-335a82eb
+
+ ✓ |thread-safe| packages/experimental/hardware-hms/tests/reply.spec.ts > contains malformed bridge output { 5ms
+ ✓ |thread-safe| packages/experimental/hardware-hms/tests/reply.spec.ts > contains malformed bridge output null 1ms
+ ✓ |thread-safe| packages/experimental/hardware-hms/tests/reply.spec.ts > contains malformed bridge output {"ok":true} 1ms
+ ✓ |thread-safe| packages/experimental/hardware-hms/tests/reply.spec.ts > contains malformed bridge output {"ok":true,"result":{},"extra":1} 5ms
+ ✓ |thread-safe| packages/experimental/hardware-hms/tests/reply.spec.ts > contains malformed bridge output {"ok":false,"error":{"code":"arbitrary text"},"outcome":"unconfirmed"} 4ms
+ ✓ |thread-safe| packages/experimental/hardware-hms/tests/reply.spec.ts > contains malformed bridge output {"ok":false,"error":{"code":"DENIED","detail":"private"},"outcome":"unconfirmed"} 0ms
+ ✓ |thread-safe| packages/experimental/hardware-hms/tests/reply.spec.ts > contains malformed bridge output {"ok":false,"error":{"code":"DENIED"},"outcome":"unconfirmed","extra":1} 0ms
+ ✓ |thread-safe| packages/experimental/hardware-hms/tests/reply.spec.ts > contains malformed bridge output {"ok":false,"error":{"code":"DENIED"},"outcome":"no_effect"} 0ms
+ ✓ |thread-safe| packages/experimental/hardware-hms/tests/reply.spec.ts > retains only a closed typed error and unmodified checked success 2ms
+ ✓ |thread-safe| packages/experimental/tool-hardware/tests/hms-sdk-profile.spec.ts > built SDK profile with HMS > retains one HMS effect across native and work-item replay, then reopens the stored work item 40363ms
+ ✓ |thread-safe| packages/experimental/tool-hardware/tests/hms-integration.spec.ts > native HMS simulation integration > composes the opt-in profile, executes three scenarios, preserves replay and typed rejection, then unloads tools 43761ms
+ ✓ |thread-safe| packages/experimental/tool-hardware/tests/hms-integration.spec.ts > native HMS simulation integration > executes actual Node PTC and preserves canonical nested output in restored Session events 11011ms
+ ✓ |thread-safe| packages/experimental/tool-hardware/tests/hms-sdk-profile.spec.ts > built SDK profile with HMS > cancels a Harness item without treating that cancellation as HMS operation cancellation 18055ms
+ ✓ |thread-safe| packages/experimental/tool-hardware/tests/hms-integration.spec.ts > native HMS simulation integration > records native AgentLoop tool results and reconstructs model-visible history from a persisted Session 3671ms
+
+ Test Files  3 passed (3)
+      Tests  14 passed (14)
+   Start at  07:23:48
+   Duration  66.44s (transform 10.67s, setup 552ms, import 13.83s, tests 116.90s, environment 1ms)
+

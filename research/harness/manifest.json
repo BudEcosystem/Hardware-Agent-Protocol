@@ -1,0 +1,343 @@
+{
+  "captured_at": "2026-11-05T21:37:29.383479+00:00",
+  "repository": "/home/bud/Desktop/bud/Bud-Meta-Harness",
+  "commit": "655d7cec797c45f317ac623eca5319b50383b434",
+  "working_tree_status": "",
+  "scope": "Selected local repository files copied without modifying the source repository; this is not a complete repository reading.",
+  "entries": [
+    {
+      "path": "AGENTS.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/AGENTS.md",
+      "snapshot": "snapshot/AGENTS.md",
+      "sha256": "fde379298a5fea63f6d07fd4a1ed1531cc1d37496ca9bf13415d098c6c156eba",
+      "bytes": 19075,
+      "line_count": 191,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          191
+        ]
+      ]
+    },
+    {
+      "path": "docs/architecture.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/docs/architecture.md",
+      "snapshot": "snapshot/docs/architecture.md",
+      "sha256": "cc090bfe5849667dff825a33bddb2c8993a5309d954b4735bf528e76a8907c95",
+      "bytes": 21511,
+      "line_count": 185,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          185
+        ]
+      ]
+    },
+    {
+      "path": "docs/cookbook/adding-a-tool.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/docs/cookbook/adding-a-tool.md",
+      "snapshot": "snapshot/docs/cookbook/adding-a-tool.md",
+      "sha256": "60297e623e5fd8e0ddae421e792ed27bb2d3dad385bb01396d71cd25f2f8f523",
+      "bytes": 14664,
+      "line_count": 103,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          103
+        ]
+      ]
+    },
+    {
+      "path": "packages/core/tools/src/types.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/core/tools/src/types.ts",
+      "snapshot": "snapshot/packages/core/tools/src/types.ts",
+      "sha256": "d705b92e1a649357a13070dd0270812e28ce07bf5b458858a46a445bf9d74c23",
+      "bytes": 4035,
+      "line_count": 88,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          88
+        ]
+      ]
+    },
+    {
+      "path": "packages/extensions/tool-search/src/tool.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/extensions/tool-search/src/tool.ts",
+      "snapshot": "snapshot/packages/extensions/tool-search/src/tool.ts",
+      "sha256": "6ca4a0f8dc5b3c2867371e8f41482d8b7be17180d7dad5bc3adba5126e488aed",
+      "bytes": 4882,
+      "line_count": 119,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          119
+        ]
+      ]
+    },
+    {
+      "path": "packages/mcp/mcp-client/README.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/mcp/mcp-client/README.md",
+      "snapshot": "snapshot/packages/mcp/mcp-client/README.md",
+      "sha256": "69c26227199318d1ec432810aca918209f3af624c53205744b2d3c34619453e5",
+      "bytes": 25274,
+      "line_count": 305,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          305
+        ]
+      ]
+    },
+    {
+      "path": "packages/mcp/mcp-client/src/tools.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/mcp/mcp-client/src/tools.ts",
+      "snapshot": "snapshot/packages/mcp/mcp-client/src/tools.ts",
+      "sha256": "0a636453ef7d7aae890d7ad350d387573cfa638ed4797866b9ec63bc01bc6639",
+      "bytes": 23457,
+      "line_count": 563,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          563
+        ]
+      ]
+    },
+    {
+      "path": "packages/mcp/mcp-client/src/definition.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/mcp/mcp-client/src/definition.ts",
+      "snapshot": "snapshot/packages/mcp/mcp-client/src/definition.ts",
+      "sha256": "2a85e41371406b94624ce457a9cba7ec83e72e9ad9b512597fb91a459e3f706e",
+      "bytes": 7899,
+      "line_count": 192,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          192
+        ]
+      ]
+    },
+    {
+      "path": "packages/mcp/mcp-client/tests/tool-definition.spec.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/mcp/mcp-client/tests/tool-definition.spec.ts",
+      "snapshot": "snapshot/packages/mcp/mcp-client/tests/tool-definition.spec.ts",
+      "sha256": "6a551c2bd02771f33dcf4c2d612e7e57dbde22f7471f1f0824f14760ef2e2128",
+      "bytes": 2692,
+      "line_count": 66,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          66
+        ]
+      ]
+    },
+    {
+      "path": "packages/core/tools/tests/execution-signal-types.spec.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/core/tools/tests/execution-signal-types.spec.ts",
+      "snapshot": "snapshot/packages/core/tools/tests/execution-signal-types.spec.ts",
+      "sha256": "622221142bd0194a9aee21c33574a741cf8d09b0d71859d8df3fb206bd27e973",
+      "bytes": 4046,
+      "line_count": 104,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          104
+        ]
+      ]
+    },
+    {
+      "path": "packages/jobs/jobs/src/types.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/jobs/jobs/src/types.ts",
+      "snapshot": "snapshot/packages/jobs/jobs/src/types.ts",
+      "sha256": "9cc561b127b4e7ec01a93cecea60d0b8ac0641e4a41451e777bb5ff234c63c29",
+      "bytes": 12763,
+      "line_count": 309,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          309
+        ]
+      ]
+    },
+    {
+      "path": "packages/jobs/jobs/src/index.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/jobs/jobs/src/index.ts",
+      "snapshot": "snapshot/packages/jobs/jobs/src/index.ts",
+      "sha256": "d8c1c3773fee7b24fa350c67276d5da3bf7002acbedf4b2c8ed65563b234cb64",
+      "bytes": 8759,
+      "line_count": 198,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          198
+        ]
+      ]
+    },
+    {
+      "path": "packages/ptc-runtime/ptc-runtime/src/types.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/ptc-runtime/ptc-runtime/src/types.ts",
+      "snapshot": "snapshot/packages/ptc-runtime/ptc-runtime/src/types.ts",
+      "sha256": "8bb64f989ec9ef2ab5d0068cf05b63354ab83f47ce6b659256c7e3f6dc523f2c",
+      "bytes": 8023,
+      "line_count": 170,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          170
+        ]
+      ]
+    },
+    {
+      "path": "packages/work/streams/src/types.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/work/streams/src/types.ts",
+      "snapshot": "snapshot/packages/work/streams/src/types.ts",
+      "sha256": "6cb04d171e5365e78183f8ec8970df04a801ef90ac432bb0e95221dbbcbac3db",
+      "bytes": 12727,
+      "line_count": 329,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          329
+        ]
+      ]
+    },
+    {
+      "path": "packages/work/streams/src/service.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/work/streams/src/service.ts",
+      "snapshot": "snapshot/packages/work/streams/src/service.ts",
+      "sha256": "2347e206789c61ed70e363d58f2816064db7ff359a3d3f5121045a12954314fc",
+      "bytes": 4607,
+      "line_count": 108,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          108
+        ]
+      ]
+    },
+    {
+      "path": "packages/work/session-delivery/src/types.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/work/session-delivery/src/types.ts",
+      "snapshot": "snapshot/packages/work/session-delivery/src/types.ts",
+      "sha256": "265ea8e736623f435ffa71b4eea17dfb9a82bdd7476d4cec70fb1b4d06bd0b68",
+      "bytes": 5737,
+      "line_count": 121,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          121
+        ]
+      ]
+    },
+    {
+      "path": "packages/work/session-delivery/src/index.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/work/session-delivery/src/index.ts",
+      "snapshot": "snapshot/packages/work/session-delivery/src/index.ts",
+      "sha256": "1210fa4c9c0565597bd63fd5aed0f5cda79c37e8a59eba6671ea958dec31d2bc",
+      "bytes": 8853,
+      "line_count": 177,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          177
+        ]
+      ]
+    },
+    {
+      "path": "packages/work/session-delivery/src/key.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/work/session-delivery/src/key.ts",
+      "snapshot": "snapshot/packages/work/session-delivery/src/key.ts",
+      "sha256": "8c32318fe8101b5a648a0704d55a4b488c5b8596bf2eef445257bab193cc387a",
+      "bytes": 3563,
+      "line_count": 93,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          93
+        ]
+      ]
+    },
+    {
+      "path": "packages/guard/timeout-policy/src/index.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/guard/timeout-policy/src/index.ts",
+      "snapshot": "snapshot/packages/guard/timeout-policy/src/index.ts",
+      "sha256": "ea462adbd27193b71d038d483e30c0e04bba66ec3461efb27b774b9736908f78",
+      "bytes": 3514,
+      "line_count": 81,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          81
+        ]
+      ]
+    },
+    {
+      "path": "packages/core/tools/src/index.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/core/tools/src/index.ts",
+      "snapshot": "snapshot/packages/core/tools/src/index.ts",
+      "sha256": "4450f6e778b41378dd0e1ff558ab7330d7c4a3bb1c8253aed87ccc07f60deda3",
+      "bytes": 104728,
+      "line_count": 2265,
+      "reading_status": "partial",
+      "read_lines": [
+        [
+          200,
+          450
+        ],
+        [
+          1210,
+          1308
+        ]
+      ]
+    },
+    {
+      "path": "packages/core/tools/src/schema.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/core/tools/src/schema.ts",
+      "snapshot": "snapshot/packages/core/tools/src/schema.ts",
+      "sha256": "62712b1f7cf6e053dd8ce6a7e51d4f5d6d48c4c63c6c7b896b1cbda42111b9da",
+      "bytes": 26531,
+      "line_count": 637,
+      "reading_status": "partial",
+      "read_lines": [
+        [
+          480,
+          555
+        ]
+      ]
+    },
+    {
+      "path": "packages/core/tools/README.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/core/tools/README.md",
+      "snapshot": "snapshot/packages/core/tools/README.md",
+      "sha256": "2407114e26b4a66d7edbfbe55eb3ae8cfa9df4ce4b985ba7d7ed4a2cc16d9cdd",
+      "bytes": 23788,
+      "line_count": 276,
+      "reading_status": "partial",
+      "read_lines": [
+        [
+          1,
+          190
+        ]
+      ]
+    }
+  ]
+}

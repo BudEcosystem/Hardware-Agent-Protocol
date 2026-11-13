@@ -1,0 +1,648 @@
+{
+  "schema": "hms-reading-overlay-v1",
+  "review_date": "2026-11-07",
+  "scope": "Full arXiv v2 and institution-hosted publisher paper; all PDF pages visual; three complete selected website/prompt files. Selected metadata and projected discovery inventories. No full core implementation/dependency audit.",
+  "publisher_full_read": true,
+  "supplement_full_read": false,
+  "implementation_complete": false,
+  "broader_review_complete": false,
+  "sources": [
+    {
+      "id": "lrll-status",
+      "url": "https://arxiv.org/abs/2406.18746",
+      "final_url": "https://arxiv.org/abs/2406.18746",
+      "retrieved_at": "2026-11-06T19:40:55.910284+00:00",
+      "source_version": "arXiv status snapshot",
+      "raw_path": "research/planning/lrll-full/raw/lrll-status.html",
+      "raw_sha256": "677f89ebb057523c2d56d7db624cb18bc6bb7b4bc894489c341d712d8ce55eb9",
+      "text_path": "research/planning/lrll-full/text/lrll-status.txt",
+      "text_sha256": "ee37cad7cdfcfc813a79e1f10730de9189556be0dc6ef8acfe7ae283b3879741",
+      "line_count": 205,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 85,
+          "sha256": "4c7be1fb14c4c94d594605b20086db830044da92fc8741d92a72fc289a8c2c7a"
+        }
+      ],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.4146341463414634,
+      "reading_status": "read_selected",
+      "source_kind": "primary_research_or_metadata",
+      "note": "Coverage applies to retained LF extraction only. Acquisition of unmarked remainder is not reading."
+    },
+    {
+      "id": "lrll-v2",
+      "url": "https://arxiv.org/pdf/2406.18746v2",
+      "final_url": "https://arxiv.org/pdf/2406.18746v2",
+      "retrieved_at": "2026-11-06T19:40:56.119793+00:00",
+      "source_version": "arXiv:2406.18746v2, 2024-07-15",
+      "raw_path": "research/planning/lrll-full/raw/lrll-v2.pdf",
+      "raw_sha256": "6ecce8761cf082d06bb4ab3f9ca23be28629243706fb1d2a38764fefc5b10002",
+      "text_path": "research/planning/lrll-full/text/lrll-v2.txt",
+      "text_sha256": "45b015a005e5cebcded36764dac1f9abaa106fbe047aa2aef62b2c143bd41351",
+      "line_count": 529,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 235,
+          "sha256": "f5aef3d9b687416e4e7b453f449ca1e7f6ec04f5dc3671f6122c6a03b0538338"
+        },
+        {
+          "start_line": 236,
+          "end_line": 420,
+          "sha256": "f5f614e3c1096b5e395eae9505e03907dd4c1f58c5df769f0cb34d4938d37926"
+        },
+        {
+          "start_line": 421,
+          "end_line": 529,
+          "sha256": "f8e3ae0d29478b998a020ee08bd2b6f95b2f991cce67a1796c65559073b682c6"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "source_kind": "primary_research_or_metadata",
+      "note": "Full LF text including final form feed and all references; every PDF page visually reviewed. Publisher PDF includes institutional cover. Unavailable separate supplement not read.",
+      "pdf_page_count": 8,
+      "all_pdf_pages_reviewed": true,
+      "reviewed_pdf_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "appendices_present": 0
+    },
+    {
+      "id": "lrll-project",
+      "url": "https://gtziafas.github.io/LRLL_project/",
+      "final_url": "https://gtziafas.github.io/LRLL_project/",
+      "retrieved_at": "2026-11-06T19:41:12.278392+00:00",
+      "source_version": "Official project page, linked from arXiv",
+      "raw_path": "research/planning/lrll-full/raw/lrll-project.html",
+      "raw_sha256": "0bfd0b64ec14d675a20135741b6fc5dda7732ba3a506f9cbd66c9846047a91b5",
+      "text_path": "research/planning/lrll-full/text/lrll-project.txt",
+      "text_sha256": "09ac3209f0496e86da48e8c1c54810b4fcb6ffa3a6370a2bb5545bcce9183221",
+      "line_count": 28,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 28,
+          "sha256": "09ac3209f0496e86da48e8c1c54810b4fcb6ffa3a6370a2bb5545bcce9183221"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "source_kind": "primary_research_or_metadata",
+      "note": "Coverage applies to retained LF extraction only. Acquisition of unmarked remainder is not reading."
+    },
+    {
+      "id": "author-repositories",
+      "url": "https://api.github.com/users/gtziafas/repos?per_page=100&sort=full_name",
+      "final_url": "https://api.github.com/users/gtziafas/repos?per_page=100&sort=full_name",
+      "retrieved_at": "2026-11-06T19:41:27.588878+00:00",
+      "source_version": "Official author-account repository listing; discovery only",
+      "raw_path": "research/planning/lrll-full/raw/author-repositories.json",
+      "raw_sha256": "e09179be2f73a4f11a44954dcd0c73c4d607e73f62c6353a34b7ca400361bb16",
+      "text_path": "research/planning/lrll-full/text/author-repositories.txt",
+      "text_sha256": "914be008f721839075d10d896fa23966157e3185f795586520b0f5e80722286a",
+      "line_count": 3970,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 12,
+          "sha256": "242ab6cc196663c80d5fcc53480efbc925eb1024bae896dd3ac85c83991c287a"
+        }
+      ],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.003022670025188917,
+      "reading_status": "read_selected",
+      "source_kind": "primary_research_or_metadata",
+      "note": "Coverage applies to retained LF extraction only. Acquisition of unmarked remainder is not reading."
+    },
+    {
+      "id": "lrll-project-commit",
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/commits/master",
+      "final_url": "https://api.github.com/repos/gtziafas/LRLL_project/commits/master",
+      "retrieved_at": "2026-11-06T19:42:03.516393+00:00",
+      "source_version": "Official project repository observed master head",
+      "raw_path": "research/planning/lrll-full/raw/lrll-project-commit.json",
+      "raw_sha256": "85e4214ca21cbb4767caca1998a2feb4b5fa5be5c848a8a742ca517acb527763",
+      "text_path": "research/planning/lrll-full/text/lrll-project-commit.txt",
+      "text_sha256": "e241807ba3efa1f0f59d6ad6b916f79c2fda72035f26f5bbba6dfaf667570d37",
+      "line_count": 100,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 48,
+          "sha256": "e2d330cdbd6553b5e2c87fe494e10fc20f664836d47bc825229634c33a088804"
+        }
+      ],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.48,
+      "reading_status": "read_selected",
+      "source_kind": "primary_research_or_metadata",
+      "note": "Coverage applies to retained LF extraction only. Acquisition of unmarked remainder is not reading."
+    },
+    {
+      "id": "author-homepage",
+      "url": "https://gtziafas.github.io/",
+      "final_url": "https://gtziafas.github.io/",
+      "retrieved_at": "2026-11-06T19:42:04.439148+00:00",
+      "source_version": "Author official homepage discovery",
+      "raw_path": "research/planning/lrll-full/raw/author-homepage.html",
+      "raw_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "text_path": "research/planning/lrll-full/text/author-homepage.txt",
+      "text_sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "line_count": 1,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 1,
+          "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "source_kind": "primary_research_or_metadata",
+      "note": "One LF only. Full byte reading of an empty response gives no substantive homepage evidence."
+    },
+    {
+      "id": "lrll-institution-record",
+      "url": "https://research.rug.nl/en/publications/lifelong-robot-library-learning-bootstrapping-composable-and-gene/",
+      "final_url": "https://research.rug.nl/en/publications/lifelong-robot-library-learning-bootstrapping-composable-and-gene/",
+      "retrieved_at": "2026-11-06T19:44:34.161524+00:00",
+      "source_version": "University of Groningen official publication record; ICRA 2024 DOI 10.1109/ICRA57147.2024.10611448",
+      "raw_path": "research/planning/lrll-full/raw/lrll-institution-record.html",
+      "raw_sha256": "1a935b0acd72940c71dc36e1896bc9a5d195d5104d69393951b2e8a95aad085e",
+      "text_path": "research/planning/lrll-full/text/lrll-institution-record.txt",
+      "text_sha256": "b01a32ca7ec1a63f0bd841125660bc70fee6fc18745fee4c6e32d50422711f3c",
+      "line_count": 233,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 110,
+          "sha256": "b4040a2249123e07cf7da5acfcc2d25fd22ce29b459b227d36f07a127ac70554"
+        }
+      ],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.4721030042918455,
+      "reading_status": "read_selected",
+      "source_kind": "primary_research_or_metadata",
+      "note": "Coverage applies to retained LF extraction only. Acquisition of unmarked remainder is not reading."
+    },
+    {
+      "id": "lrll-publisher",
+      "url": "https://pure.rug.nl/ws/portalfiles/portal/1112140101/Lifelong_Robot_Library_Learning_Bootstrapping_Composable_and_Generalizable_Skills_for_Embodied_Control_with_Language_Models.pdf",
+      "final_url": "https://pure.rug.nl/ws/portalfiles/portal/1112140101/Lifelong_Robot_Library_Learning_Bootstrapping_Composable_and_Generalizable_Skills_for_Embodied_Control_with_Language_Models.pdf",
+      "retrieved_at": "2026-11-06T19:44:34.579575+00:00",
+      "source_version": "Official institutional repository publisher-version public endpoint, ICRA 2024 pages 515–522",
+      "raw_path": "research/planning/lrll-full/raw/lrll-publisher.pdf",
+      "raw_sha256": "68e54194dc3fe5f716b6950f994ee49908d7e5bd0f3db38b870a41de9565bfa2",
+      "text_path": "research/planning/lrll-full/text/lrll-publisher.txt",
+      "text_sha256": "4f0c830db117938f2a7d97e5d962958e5db7822ccf4fff9b1a129f1c7d35d4d4",
+      "line_count": 622,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 210,
+          "sha256": "293723033d2646b989b460a8c1b541a8c3dad55f041a22f2a1d170875f8ecb7f"
+        },
+        {
+          "start_line": 211,
+          "end_line": 420,
+          "sha256": "3f66644fc42380ee121bd36534251993ef3410203a96fcde665f62f15a5216c8"
+        },
+        {
+          "start_line": 421,
+          "end_line": 622,
+          "sha256": "fc97da779c814bd52d3a9894fdede69b6a98c394cf1c0e0a6e8e4644d071c7ba"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "source_kind": "primary_research_or_metadata",
+      "note": "Full LF text including final form feed and all references; every PDF page visually reviewed. Publisher PDF includes institutional cover. Unavailable separate supplement not read.",
+      "pdf_page_count": 9,
+      "all_pdf_pages_reviewed": true,
+      "reviewed_pdf_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "appendices_present": 0
+    },
+    {
+      "id": "lrll-project-tree",
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/trees/25097958485a91450c3a15e5ba9023936180db4b?recursive=1",
+      "final_url": "https://api.github.com/repos/gtziafas/LRLL_project/git/trees/25097958485a91450c3a15e5ba9023936180db4b?recursive=1",
+      "retrieved_at": "2026-11-06T19:44:37.598694+00:00",
+      "source_version": "Official project website repository tree at 25097958485a91450c3a15e5ba9023936180db4b",
+      "raw_path": "research/planning/lrll-full/raw/lrll-project-tree.json",
+      "raw_sha256": "f3fb30ef238532e2abdcf7691268f8fc989589cf1a4ddb4f58b223caf782db8c",
+      "text_path": "research/planning/lrll-full/text/lrll-project-tree.txt",
+      "text_sha256": "a18c913a5568de05102a9d7797fca3b4dcf73d3fa3a7052aff5ca32a4b3a22fc",
+      "line_count": 257,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 45,
+          "sha256": "e076df8790f0833deafc6ddb1f1dff53317b9627d0f65155943c532c1c83a2b4"
+        }
+      ],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.17509727626459143,
+      "reading_status": "read_selected",
+      "source_kind": "primary_research_or_metadata",
+      "note": "Coverage applies to retained LF extraction only. Acquisition of unmarked remainder is not reading."
+    },
+    {
+      "id": "website-README-md",
+      "url": "https://raw.githubusercontent.com/gtziafas/LRLL_project/25097958485a91450c3a15e5ba9023936180db4b/README.md",
+      "final_url": "https://raw.githubusercontent.com/gtziafas/LRLL_project/25097958485a91450c3a15e5ba9023936180db4b/README.md",
+      "retrieved_at": "2026-11-06T19:45:12.099593+00:00",
+      "source_version": "Official LRLL project website file at 25097958485a91450c3a15e5ba9023936180db4b",
+      "raw_path": "research/planning/lrll-full/repository/website-README-md.md",
+      "raw_sha256": "cd68e937db071d0a8ba111930d51323b09303a88e38327be29c2f87aa63f5fe8",
+      "text_path": "research/planning/lrll-full/text/website-README-md.txt",
+      "text_sha256": "cd68e937db071d0a8ba111930d51323b09303a88e38327be29c2f87aa63f5fe8",
+      "line_count": 44,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 44,
+          "sha256": "cd68e937db071d0a8ba111930d51323b09303a88e38327be29c2f87aa63f5fe8"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "source_kind": "primary_research_or_metadata",
+      "note": "Coverage applies to retained LF extraction only. Acquisition of unmarked remainder is not reading."
+    },
+    {
+      "id": "website-index-html",
+      "url": "https://raw.githubusercontent.com/gtziafas/LRLL_project/25097958485a91450c3a15e5ba9023936180db4b/index.html",
+      "final_url": "https://raw.githubusercontent.com/gtziafas/LRLL_project/25097958485a91450c3a15e5ba9023936180db4b/index.html",
+      "retrieved_at": "2026-11-06T19:45:12.513249+00:00",
+      "source_version": "Official LRLL project website file at 25097958485a91450c3a15e5ba9023936180db4b",
+      "raw_path": "research/planning/lrll-full/repository/website-index-html.html",
+      "raw_sha256": "0bfd0b64ec14d675a20135741b6fc5dda7732ba3a506f9cbd66c9846047a91b5",
+      "text_path": "research/planning/lrll-full/text/website-index-html.txt",
+      "text_sha256": "09ac3209f0496e86da48e8c1c54810b4fcb6ffa3a6370a2bb5545bcce9183221",
+      "line_count": 28,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 28,
+          "sha256": "09ac3209f0496e86da48e8c1c54810b4fcb6ffa3a6370a2bb5545bcce9183221"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "source_kind": "primary_research_or_metadata",
+      "note": "Full visible text; complete raw HTML reading is separately recorded under integrity_files."
+    },
+    {
+      "id": "website-prompts-py",
+      "url": "https://raw.githubusercontent.com/gtziafas/LRLL_project/25097958485a91450c3a15e5ba9023936180db4b/prompts.py",
+      "final_url": "https://raw.githubusercontent.com/gtziafas/LRLL_project/25097958485a91450c3a15e5ba9023936180db4b/prompts.py",
+      "retrieved_at": "2026-11-06T19:46:12.984645+00:00",
+      "source_version": "Official LRLL project website file at 25097958485a91450c3a15e5ba9023936180db4b",
+      "raw_path": "research/planning/lrll-full/repository/website-prompts-py.py",
+      "raw_sha256": "799087c57646b074ba785a9e0dfccd7c0d8d99d27b64e63f43248f31d2d4082c",
+      "text_path": "research/planning/lrll-full/text/website-prompts-py.txt",
+      "text_sha256": "799087c57646b074ba785a9e0dfccd7c0d8d99d27b64e63f43248f31d2d4082c",
+      "line_count": 248,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 248,
+          "sha256": "799087c57646b074ba785a9e0dfccd7c0d8d99d27b64e63f43248f31d2d4082c"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "source_kind": "selected_prompt_source",
+      "note": "Coverage applies to retained LF extraction only. Acquisition of unmarked remainder is not reading."
+    }
+  ],
+  "integrity_files": [
+    {
+      "path": "research/planning/lrll-full/README.md",
+      "sha256": "82da0c5571d8bb8ef4d4972a25f0399e168a628f53d5c692d59626a49503cce2"
+    },
+    {
+      "path": "research/planning/lrll-full/acquire.py",
+      "sha256": "1da2a637989d22f8acca6b2b4996ae6924d79c76d8e929050e74dbf8734aaa58"
+    },
+    {
+      "path": "research/planning/lrll-full/build_receipt.py",
+      "sha256": "3ed03a65c78251255ecf3e0a713707428b6472e033ff1b78efd84fbf84d472e3"
+    },
+    {
+      "path": "research/planning/lrll-full/verify.py",
+      "sha256": "f07c9339f86b3a6030a4eb24c84a0df519f637fc6541d64665fd447c83e89401"
+    },
+    {
+      "path": "research/planning/lrll-full/manifest.jsonl",
+      "sha256": "f2366081e90a9c690b29358e71817e29508c035ab7e468e9de8f199be8466ef2"
+    },
+    {
+      "path": "research/planning/lrll-full/repository-pin.json",
+      "sha256": "57cdfa5742a7b3878b09ac8b076825bd797c0824a82e3cf42e038fbea82870b8"
+    },
+    {
+      "path": "research/planning/lrll-full/provenance.json",
+      "sha256": "1d6806d51558a40bdecd3d3ddabe30f40bfaa5dcbd1efbd47c5d5270ae4e71f1"
+    },
+    {
+      "path": "research/planning/lrll-full/notes/critique.md",
+      "sha256": "b6807b805ef87132d3c98023d8df1ad396e621a993ce6986340e43516a85c67b"
+    },
+    {
+      "path": "research/planning/lrll-full/notes/figures.md",
+      "sha256": "7aac65cdfa6923e96064c9e25e152783bf3e85684a32e391eee6baa2fb386b6c"
+    },
+    {
+      "path": "research/planning/lrll-full/notes/paper-comparison.json",
+      "sha256": "a1a605e6aa2bf4cdf4b4a9d657d96dc51f0628ac896b34a8dd84d743e0aaef67"
+    },
+    {
+      "path": "research/planning/lrll-full/notes/paper-comparison-initial.json",
+      "sha256": "b97966c8eef4811741775f88e10f00c949b3148219f285909914cd1ea7130457"
+    },
+    {
+      "path": "research/planning/lrll-full/text/lrll-v2-reading-order.txt",
+      "sha256": "b12c6bb723d13a18208e31e8762b209dd61e2fe2457e4af627b32139a25bdffa"
+    },
+    {
+      "path": "research/planning/lrll-full/text/lrll-publisher-reading-order.txt",
+      "sha256": "12a81da50a4e19f97ed64eab47ac3375e825785dcd5e2944c01361231e3608bb"
+    },
+    {
+      "path": "research/planning/lrll-full/notes/author-repository-inventory.txt",
+      "sha256": "75b995c0bed0474b7a6d8946613372be97f4ac724b4bb192b96a93cfb1ac7035",
+      "text_path": "research/planning/lrll-full/notes/author-repository-inventory.txt",
+      "text_sha256": "75b995c0bed0474b7a6d8946613372be97f4ac724b4bb192b96a93cfb1ac7035",
+      "line_count": 38,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 38,
+          "sha256": "75b995c0bed0474b7a6d8946613372be97f4ac724b4bb192b96a93cfb1ac7035"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full projected inventory or complete selected raw HTML, separately reviewed; not full source JSON or asset dependency audit."
+    },
+    {
+      "path": "research/planning/lrll-full/notes/project-tree-inventory.txt",
+      "sha256": "c9bea143cd822ca086886c7afb55788b51b5d40c678296bd9f3e0aad315bb1b2",
+      "text_path": "research/planning/lrll-full/notes/project-tree-inventory.txt",
+      "text_sha256": "c9bea143cd822ca086886c7afb55788b51b5d40c678296bd9f3e0aad315bb1b2",
+      "line_count": 32,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 32,
+          "sha256": "c9bea143cd822ca086886c7afb55788b51b5d40c678296bd9f3e0aad315bb1b2"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full projected inventory or complete selected raw HTML, separately reviewed; not full source JSON or asset dependency audit."
+    },
+    {
+      "path": "research/planning/lrll-full/repository/website-index-html.html",
+      "sha256": "0bfd0b64ec14d675a20135741b6fc5dda7732ba3a506f9cbd66c9846047a91b5",
+      "text_path": "research/planning/lrll-full/repository/website-index-html.html",
+      "text_sha256": "0bfd0b64ec14d675a20135741b6fc5dda7732ba3a506f9cbd66c9846047a91b5",
+      "line_count": 182,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 182,
+          "sha256": "0bfd0b64ec14d675a20135741b6fc5dda7732ba3a506f9cbd66c9846047a91b5"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full projected inventory or complete selected raw HTML, separately reviewed; not full source JSON or asset dependency audit."
+    }
+  ],
+  "figures": [
+    {
+      "source_id": "lrll-v2",
+      "pdf_page": 1,
+      "path": "research/planning/lrll-full/figures/lrll-v2-page-01.png",
+      "sha256": "472d6aa9ff2167283942364ba480673188aa55b121d65355e83a4f3ad7ef996f",
+      "source_pdf_sha256": "6ecce8761cf082d06bb4ab3f9ca23be28629243706fb1d2a38764fefc5b10002",
+      "labels": [
+        "Figure 1"
+      ],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-v2",
+      "pdf_page": 2,
+      "path": "research/planning/lrll-full/figures/lrll-v2-page-02.png",
+      "sha256": "a1e06bfdfe454a8734d9593ea47aac262ad01a7536b40d0b9fa80f532a871f26",
+      "source_pdf_sha256": "6ecce8761cf082d06bb4ab3f9ca23be28629243706fb1d2a38764fefc5b10002",
+      "labels": [],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-v2",
+      "pdf_page": 3,
+      "path": "research/planning/lrll-full/figures/lrll-v2-page-03.png",
+      "sha256": "9078a2e35e8089b12050f1ad3258b9984a779962237f18ef5574c73c7b49a47c",
+      "source_pdf_sha256": "6ecce8761cf082d06bb4ab3f9ca23be28629243706fb1d2a38764fefc5b10002",
+      "labels": [
+        "Figure 2",
+        "Unnumbered retrieval equation"
+      ],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-v2",
+      "pdf_page": 4,
+      "path": "research/planning/lrll-full/figures/lrll-v2-page-04.png",
+      "sha256": "e81569a43100f33cfe86cbc6f6ab72c4825d9c8d3a42e23426d1316166ba3457",
+      "source_pdf_sha256": "6ecce8761cf082d06bb4ab3f9ca23be28629243706fb1d2a38764fefc5b10002",
+      "labels": [],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-v2",
+      "pdf_page": 5,
+      "path": "research/planning/lrll-full/figures/lrll-v2-page-05.png",
+      "sha256": "4242a9a0d4fd660b8de6fd5e77fd2156590c36cb920ffcabbf1ef0ac5087cdec",
+      "source_pdf_sha256": "6ecce8761cf082d06bb4ab3f9ca23be28629243706fb1d2a38764fefc5b10002",
+      "labels": [
+        "Table I",
+        "Table II"
+      ],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-v2",
+      "pdf_page": 6,
+      "path": "research/planning/lrll-full/figures/lrll-v2-page-06.png",
+      "sha256": "bd30192435ec01032875def349a8b8f03956d00a6f309683d641af206aa156d2",
+      "source_pdf_sha256": "6ecce8761cf082d06bb4ab3f9ca23be28629243706fb1d2a38764fefc5b10002",
+      "labels": [
+        "Figure 3",
+        "Figure 4"
+      ],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-v2",
+      "pdf_page": 7,
+      "path": "research/planning/lrll-full/figures/lrll-v2-page-07.png",
+      "sha256": "d34c6286bfdbcb9a00606626e778a3f4c9eda5efcb9d44d90005f8b0687087fd",
+      "source_pdf_sha256": "6ecce8761cf082d06bb4ab3f9ca23be28629243706fb1d2a38764fefc5b10002",
+      "labels": [],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-v2",
+      "pdf_page": 8,
+      "path": "research/planning/lrll-full/figures/lrll-v2-page-08.png",
+      "sha256": "e14d312bb3054950fba4806bd1c3394d501f32faefc827bee62c9d778158d43c",
+      "source_pdf_sha256": "6ecce8761cf082d06bb4ab3f9ca23be28629243706fb1d2a38764fefc5b10002",
+      "labels": [],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-publisher",
+      "pdf_page": 1,
+      "path": "research/planning/lrll-full/figures/lrll-publisher-page-01.png",
+      "sha256": "288a0f45fb69576bb4ae07b427cdb534d47e34abc3ce9b87874f0ce1d739e7d3",
+      "source_pdf_sha256": "68e54194dc3fe5f716b6950f994ee49908d7e5bd0f3db38b870a41de9565bfa2",
+      "labels": [],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-publisher",
+      "pdf_page": 2,
+      "path": "research/planning/lrll-full/figures/lrll-publisher-page-02.png",
+      "sha256": "6b11db5e639c41743612e293fb4731c1ce76e8943ae0e8550f12736ea336ac7b",
+      "source_pdf_sha256": "68e54194dc3fe5f716b6950f994ee49908d7e5bd0f3db38b870a41de9565bfa2",
+      "labels": [
+        "Figure 1"
+      ],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-publisher",
+      "pdf_page": 3,
+      "path": "research/planning/lrll-full/figures/lrll-publisher-page-03.png",
+      "sha256": "989a5094bcedc4648a8a84c155385f7c889637c859bc5f20ae11b172a20be16f",
+      "source_pdf_sha256": "68e54194dc3fe5f716b6950f994ee49908d7e5bd0f3db38b870a41de9565bfa2",
+      "labels": [],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-publisher",
+      "pdf_page": 4,
+      "path": "research/planning/lrll-full/figures/lrll-publisher-page-04.png",
+      "sha256": "36dfa1d2cfd43f0cd7c75715debf0999de4055133c48f0ddf16a37342f2cb431",
+      "source_pdf_sha256": "68e54194dc3fe5f716b6950f994ee49908d7e5bd0f3db38b870a41de9565bfa2",
+      "labels": [
+        "Figure 2",
+        "Unnumbered retrieval equation"
+      ],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-publisher",
+      "pdf_page": 5,
+      "path": "research/planning/lrll-full/figures/lrll-publisher-page-05.png",
+      "sha256": "988cb7f79e5b48d735fd8892b90702a2038496014a8308fa3e43a3951e81e311",
+      "source_pdf_sha256": "68e54194dc3fe5f716b6950f994ee49908d7e5bd0f3db38b870a41de9565bfa2",
+      "labels": [],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-publisher",
+      "pdf_page": 6,
+      "path": "research/planning/lrll-full/figures/lrll-publisher-page-06.png",
+      "sha256": "14aa65fda3df465a4f5e81737660bca84c2a3518f3f6f8eb7c17c402d4facc85",
+      "source_pdf_sha256": "68e54194dc3fe5f716b6950f994ee49908d7e5bd0f3db38b870a41de9565bfa2",
+      "labels": [
+        "Table I",
+        "Table II"
+      ],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-publisher",
+      "pdf_page": 7,
+      "path": "research/planning/lrll-full/figures/lrll-publisher-page-07.png",
+      "sha256": "1862c83f17f5e5bb0769caca90a0e79b7e5b8b1de2bc476f21dea0aa1092bde8",
+      "source_pdf_sha256": "68e54194dc3fe5f716b6950f994ee49908d7e5bd0f3db38b870a41de9565bfa2",
+      "labels": [
+        "Figure 3",
+        "Figure 4"
+      ],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-publisher",
+      "pdf_page": 8,
+      "path": "research/planning/lrll-full/figures/lrll-publisher-page-08.png",
+      "sha256": "9ae9b834bb56fb6e246db2b8d0cc0d55f2b9bbc6df19f4874767a13a31251005",
+      "source_pdf_sha256": "68e54194dc3fe5f716b6950f994ee49908d7e5bd0f3db38b870a41de9565bfa2",
+      "labels": [],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    },
+    {
+      "source_id": "lrll-publisher",
+      "pdf_page": 9,
+      "path": "research/planning/lrll-full/figures/lrll-publisher-page-09.png",
+      "sha256": "15534e9b8d2c1a1adf91846b54b848ad07c5688831960eaaf562965e86330c42",
+      "source_pdf_sha256": "68e54194dc3fe5f716b6950f994ee49908d7e5bd0f3db38b870a41de9565bfa2",
+      "labels": [],
+      "visual_review_status": "reviewed_full_page",
+      "note": "Figure/table count deduplicates the two versions; all PDF pages viewed."
+    }
+  ]
+}

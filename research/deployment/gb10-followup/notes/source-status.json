@@ -1,0 +1,68 @@
+{
+  "recorded_at": "2026-11-06T02:53:55.023710+00:00",
+  "selected_page_versions": [
+    {
+      "id": "hardware-current",
+      "page_footer_date": "Last updated on Nov 04, 2026.",
+      "version_kind": "Mutable publisher page snapshot, pinned by raw SHA256; no repository commit asserted",
+      "internal_date": null
+    },
+    {
+      "id": "porting-overview",
+      "page_footer_date": "Last updated on Oct 21, 2026.",
+      "version_kind": "Mutable publisher page snapshot, pinned by raw SHA256; no repository commit asserted",
+      "internal_date": null
+    },
+    {
+      "id": "porting-dependencies",
+      "page_footer_date": "Last updated on Oct 21, 2026.",
+      "version_kind": "Mutable publisher page snapshot, pinned by raw SHA256; no repository commit asserted",
+      "internal_date": "April 15, 2026"
+    },
+    {
+      "id": "porting-cuda",
+      "page_footer_date": "Last updated on Oct 21, 2026.",
+      "version_kind": "Mutable publisher page snapshot, pinned by raw SHA256; no repository commit asserted",
+      "internal_date": null
+    },
+    {
+      "id": "release-notes",
+      "page_footer_date": "Last updated on Nov 04, 2026.",
+      "version_kind": "Mutable publisher page snapshot, pinned by raw SHA256; no repository commit asserted",
+      "internal_date": null
+    },
+    {
+      "id": "vllm-advanced",
+      "page_footer_date": null,
+      "version_kind": "Mutable publisher page snapshot, pinned by raw SHA256; no repository commit asserted",
+      "internal_date": null
+    }
+  ],
+  "discovery_queries": [
+    "site.docs.nvidia.com dgx spark software architecture unified memory arm64 container",
+    "site:docs.nvidia.com/dgx/dgx-spark thermal power memory storage",
+    "site:build.nvidia.com/spark local inference vllm arm64"
+  ],
+  "discovery_errors": [
+    {
+      "url": "https://docs.nvidia.com/dgx/dgx-spark-porting-guide/latest/index.html",
+      "tool": "web.run",
+      "observed_result": "not accessible via this tool",
+      "scope": "Discovery attempt, not chosen acquisition; exact attempt timestamp unavailable."
+    },
+    {
+      "url": "https://docs.nvidia.com/dgx/dgx-spark-porting-guide/latest/porting/containers.html",
+      "tool": "web.run",
+      "observed_result": "not accessible via this tool",
+      "scope": "Unconfirmed discovery URL; no claim page exists or publisher denial."
+    }
+  ],
+  "hardware_revisit": {
+    "previous_raw_path": "research/physical-ai/raw/dgx-spark-hardware.html",
+    "previous_raw_sha256": "b3871a53db4515d5f92fe65a0fb635eec351d4aa89adf6fdd4f85e551921765b",
+    "current_raw_path": "research/deployment/gb10-followup/raw/hardware-current.html",
+    "current_raw_sha256": "b3871a53db4515d5f92fe65a0fb635eec351d4aa89adf6fdd4f85e551921765b",
+    "byte_identical": true
+  },
+  "no_acquired_code_executed": true
+}

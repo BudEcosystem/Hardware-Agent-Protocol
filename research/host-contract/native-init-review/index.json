@@ -1,0 +1,26 @@
+{
+  "files": [
+    {
+      "path": "research/host-contract/native-init-review/README.md",
+      "bytes": 3763,
+      "sha256": "d3ed1759bf7cf3fe0211452f327188d61a6992913b328afb2ae6ed7606c86aba"
+    },
+    {
+      "path": "research/host-contract/native-init-review/init.rst",
+      "bytes": 85456,
+      "sha256": "8f21d0e2d984511632289c654d9754bc7c7613e14bb72f652e13fcf4b38689b4"
+    },
+    {
+      "path": "research/host-contract/native-init-review/previous-reading.json",
+      "bytes": 5415,
+      "sha256": "2db309c4da123f42140cb1b5404695edf5c7166b786fb7d16b6fdc94464de1dd"
+    },
+    {
+      "path": "research/host-contract/native-init-review/reading.json",
+      "bytes": 6387,
+      "sha256": "c3249a01690e170791f244eab8465fb40c57ef421a10c324b5b072f6500f904e"
+    }
+  ],
+  "readingVerified": true,
+  "codeExecuted": false
+}

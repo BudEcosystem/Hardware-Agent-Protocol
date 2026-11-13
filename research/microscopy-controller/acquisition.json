@@ -1,0 +1,332 @@
+[
+  {
+    "id": "openflexure-head",
+    "url": "https://gitlab.com/api/v4/projects/openflexure%2Fopenflexure-microscope-server/repository/commits?per_page=1",
+    "retrievedAt": "2026-11-06T00:32:52.347600+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/metadata/openflexure-head.json",
+    "sha256": "2227c29b732f2ddd3e5dce5fc8f0e08de362e319ebf4570d33e2eeef6795bfc7"
+  },
+  {
+    "id": "openflexure-releases",
+    "url": "https://gitlab.com/api/v4/projects/openflexure%2Fopenflexure-microscope-server/releases?per_page=3",
+    "retrievedAt": "2026-11-06T00:32:53.039548+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/metadata/openflexure-releases.json",
+    "sha256": "e708c18d8c6df8f205b51ed2a970bd9e6e3c349a13c410b5aaf2ae3d82a1b3ee"
+  },
+  {
+    "id": "gently-repository",
+    "url": "https://api.github.com/repos/gently-project/gently",
+    "retrievedAt": "2026-11-06T00:32:54.244606+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/metadata/gently-repository.json",
+    "sha256": "c7e6dff173b69748ea79e06b420a166e8fafdbf933062d27ac97f11bfbc3c7ad"
+  },
+  {
+    "id": "gently-head",
+    "url": "https://api.github.com/repos/gently-project/gently/commits/main",
+    "retrievedAt": "2026-11-06T00:32:56.346098+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/metadata/gently-head.json",
+    "sha256": "37d8e2126bb932ddae5719e0105c22a009276a84e7b095cf22aeb388033ea832"
+  },
+  {
+    "id": "gently-releases",
+    "url": "https://api.github.com/repos/gently-project/gently/releases?per_page=3",
+    "retrievedAt": "2026-11-06T00:32:56.874734+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/metadata/gently-releases.json",
+    "sha256": "68a48864a8b2fe02ea7f3eda36336b544bf236d0faefdf67ff969b4cfb9da202"
+  },
+  {
+    "id": "sangaboard-package",
+    "url": "https://pypi.org/pypi/sangaboard/json",
+    "retrievedAt": "2026-11-06T00:32:57.307324+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/metadata/sangaboard-package.json",
+    "sha256": "4ce0f93d93ceef3fd4fd08297ea5aa27243c4a596372e075c9ed37943aee33f2"
+  },
+  {
+    "id": "sangaboard-projects",
+    "url": "https://gitlab.com/api/v4/groups/openflexure%2Fsangaboard/projects?per_page=100",
+    "retrievedAt": "2026-11-06T00:33:31.099530+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/metadata/sangaboard-projects.json",
+    "sha256": "16d194c9592c40fd9d8af30151c1730bd311095d9d6e56cf60c132426f862956"
+  },
+  {
+    "id": "pysangaboard-head",
+    "url": "https://gitlab.com/api/v4/projects/openflexure%2Fsangaboard%2Fpysangaboard/repository/commits?per_page=1",
+    "retrievedAt": "2026-11-06T00:33:31.602472+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/metadata/pysangaboard-head.json",
+    "sha256": "903fb70347769fab42fa9f97ef883b8c2922b6f183eb0245582350b20f4005a9"
+  },
+  {
+    "id": "sangaboard-firmware-head",
+    "url": "https://gitlab.com/api/v4/projects/openflexure%2Fsangaboard%2Ffirmware/repository/commits?per_page=1",
+    "retrievedAt": "2026-11-06T00:33:32.070784+00:00",
+    "status": 404,
+    "path": "research/microscopy-controller/metadata/sangaboard-firmware-head.json",
+    "sha256": "cab94e3c65da6f4f2b8d644eaf58967469d25a4761d17370c38feec6d56ccfdc"
+  },
+  {
+    "id": "sangaboard-firmware-releases",
+    "url": "https://gitlab.com/api/v4/projects/openflexure%2Fsangaboard%2Ffirmware/releases?per_page=5",
+    "retrievedAt": "2026-11-06T00:33:32.679786+00:00",
+    "status": 404,
+    "path": "research/microscopy-controller/metadata/sangaboard-firmware-releases.json",
+    "sha256": "cab94e3c65da6f4f2b8d644eaf58967469d25a4761d17370c38feec6d56ccfdc"
+  },
+  {
+    "id": "sangaboard-firmware-current-head",
+    "url": "https://gitlab.com/api/v4/projects/openflexure%2Fsangaboard%2Fsangaboard-firmware/repository/commits?per_page=1",
+    "retrievedAt": "2026-11-06T00:35:45.675988+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/metadata/sangaboard-firmware-current-head.json",
+    "sha256": "aac170d7c0eb7cd08d43f3ecd2a6422a8e7a84314aabcaf02ffb4e09a3ce1fa2"
+  },
+  {
+    "id": "sangaboard-firmware-current-releases",
+    "url": "https://gitlab.com/api/v4/projects/openflexure%2Fsangaboard%2Fsangaboard-firmware/releases?per_page=5",
+    "retrievedAt": "2026-11-06T00:35:46.395599+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/metadata/sangaboard-firmware-current-releases.json",
+    "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  {
+    "id": "sangaboard-firmware-tags",
+    "url": "https://gitlab.com/api/v4/projects/openflexure%2Fsangaboard%2Fsangaboard-firmware/repository/tags?per_page=5",
+    "retrievedAt": "2026-11-06T00:35:47.239025+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/metadata/sangaboard-firmware-tags.json",
+    "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  {
+    "id": "asi-halt",
+    "url": "https://docs.asiimaging.com/commands/halt?do=export_raw",
+    "resolvedUrl": "https://docs.asiimaging.com/commands/halt?do=export_raw",
+    "retrievedAt": "2026-11-06T00:41:20.475019+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-halt.txt",
+    "sha256": "6216478820df61eec60296000b2dc0dd6ca3d34a04a8634f23b5c0e26a7c5a8e",
+    "bytes": 5524
+  },
+  {
+    "id": "asi-setlow",
+    "url": "https://docs.asiimaging.com/commands/setlow?do=export_raw",
+    "resolvedUrl": "https://docs.asiimaging.com/commands/setlow?do=export_raw",
+    "retrievedAt": "2026-11-06T00:41:20.471143+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-setlow.txt",
+    "sha256": "cbc37bb88e2500e2024fe78f6149265a8812faccdfbfa9a5c5786a61f949323e",
+    "bytes": 5530
+  },
+  {
+    "id": "asi-setup",
+    "url": "https://docs.asiimaging.com/commands/setup?do=export_raw",
+    "resolvedUrl": "https://docs.asiimaging.com/commands/setup?do=export_raw",
+    "retrievedAt": "2026-11-06T00:41:20.476169+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-setup.txt",
+    "sha256": "73a87e0dea0657a1b6200e2d25e1a15f813cb070bdde1c727cdc711b8c9b846f",
+    "bytes": 5527
+  },
+  {
+    "id": "asi-status",
+    "url": "https://docs.asiimaging.com/commands/status?do=export_raw",
+    "resolvedUrl": "https://docs.asiimaging.com/commands/status?do=export_raw",
+    "retrievedAt": "2026-11-06T00:41:20.478336+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-status.txt",
+    "sha256": "e4a2adeb64aa148932f263b15b3e2e4b4557b583aac740226ab47ec0e598572e",
+    "bytes": 5530
+  },
+  {
+    "id": "asi-joystick",
+    "url": "https://docs.asiimaging.com/commands/joystick?do=export_raw",
+    "resolvedUrl": "https://docs.asiimaging.com/commands/joystick?do=export_raw",
+    "retrievedAt": "2026-11-06T00:41:20.477943+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-joystick.txt",
+    "sha256": "bacff352d4147969d06f0ecf43cc0c0b18a70a689cc338f73eb8c2d0ad54aa22",
+    "bytes": 5557
+  },
+  {
+    "id": "asi-where",
+    "url": "https://docs.asiimaging.com/commands/where?do=export_raw",
+    "resolvedUrl": "https://docs.asiimaging.com/commands/where?do=export_raw",
+    "retrievedAt": "2026-11-06T00:41:20.487724+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-where.txt",
+    "sha256": "045ad562ed20e69415f36898ce2562605b864894159e5acde41f93488bdb8947",
+    "bytes": 5527
+  },
+  {
+    "id": "asi-rdstat",
+    "url": "https://docs.asiimaging.com/commands/rdstat?do=export_raw",
+    "resolvedUrl": "https://docs.asiimaging.com/commands/rdstat?do=export_raw",
+    "retrievedAt": "2026-11-06T00:41:20.686390+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-rdstat.txt",
+    "sha256": "c88525b85be07a3e22fb5cdede3c771c7c35e3924aef97e121895da62f6886be",
+    "bytes": 5530
+  },
+  {
+    "id": "asi-pc",
+    "url": "https://docs.asiimaging.com/commands/pc?do=export_raw",
+    "resolvedUrl": "https://docs.asiimaging.com/commands/pc?do=export_raw",
+    "retrievedAt": "2026-11-06T00:41:20.745065+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-pc.txt",
+    "sha256": "649c774e4359a82b74c114e25a7c1c1ce26d5d876e8d470189fa869049270092",
+    "bytes": 5518
+  },
+  {
+    "id": "asi-error",
+    "url": "https://docs.asiimaging.com/commands/error?do=export_raw",
+    "resolvedUrl": "https://docs.asiimaging.com/commands/error?do=export_raw",
+    "retrievedAt": "2026-11-06T00:41:20.681906+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-error.txt",
+    "sha256": "b6a5c76d8fd1c9a80ba1aa94eaff853d1ad4336816d2ca3e5f38a72798eb8186",
+    "bytes": 5527
+  },
+  {
+    "id": "asi-backlash",
+    "url": "https://docs.asiimaging.com/commands/backlash?do=export_raw",
+    "resolvedUrl": "https://docs.asiimaging.com/commands/backlash?do=export_raw",
+    "retrievedAt": "2026-11-06T00:41:20.790234+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-backlash.txt",
+    "sha256": "fb8551a1f0b736100b2d9330f10ae3eab3362cd82f7e61502d7cd3835d97c964",
+    "bytes": 5557
+  },
+  {
+    "id": "micromanager-asitiger",
+    "url": "https://micro-manager.org/ASITiger",
+    "resolvedUrl": "https://micro-manager.org/ASITiger",
+    "retrievedAt": "2026-11-06T00:41:21.052120+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/raw/micromanager-asitiger.html",
+    "sha256": "aefdd78d09ac6052138a11641afa0fc355ac0e60d3671e662027baf0ea215edf",
+    "bytes": 23253
+  },
+  {
+    "id": "picamera2-manual",
+    "url": "https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf",
+    "resolvedUrl": "https://pip-assets.raspberrypi.com/categories/652-raspberry-pi-camera-module-2/documents/RP-008156-DS-7-picamera2-manual.pdf",
+    "retrievedAt": "2026-11-06T00:41:24.595920+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/raw/picamera2-manual.pdf",
+    "sha256": "0c11befd680111b4e056a3f465303d62342eee65f57a89b2aadfd8b09e7377f7",
+    "bytes": 2915733
+  },
+  {
+    "id": "asi-halt-html",
+    "url": "https://docs.asiimaging.com/commands/halt",
+    "retrievedAt": "2026-11-06T00:41:46.035219+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-halt-html.html",
+    "sha256": "be3c051b3b90ba2cc365341b08624949746ffd62c94334d4a912ba92b5115f67",
+    "bytes": 5446
+  },
+  {
+    "id": "asi-setlow-html",
+    "url": "https://docs.asiimaging.com/commands/setlow",
+    "retrievedAt": "2026-11-06T00:41:46.012661+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-setlow-html.html",
+    "sha256": "4e1d1f073c2b41044e1f15f60d52770eef6548253fc80266914aa2c76f1768b6",
+    "bytes": 5452
+  },
+  {
+    "id": "asi-setup-html",
+    "url": "https://docs.asiimaging.com/commands/setup",
+    "retrievedAt": "2026-11-06T00:41:46.035410+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-setup-html.html",
+    "sha256": "14f27cdf057aa789b8ce81666d2e565b5a4a44b0614045808b3caab298fe9ac6",
+    "bytes": 5449
+  },
+  {
+    "id": "asi-status-html",
+    "url": "https://docs.asiimaging.com/commands/status",
+    "retrievedAt": "2026-11-06T00:41:46.039689+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-status-html.html",
+    "sha256": "89f328f477eb4c32a46dee2758434069ce534c81f4c1fd40ca47a2a6b666f866",
+    "bytes": 5452
+  },
+  {
+    "id": "asi-joystick-html",
+    "url": "https://docs.asiimaging.com/commands/joystick",
+    "retrievedAt": "2026-11-06T00:41:46.039278+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-joystick-html.html",
+    "sha256": "80427b6381f149ffcb704a8b4744d1b91e58243f9fdbeb0e56c1951ce4e1e972",
+    "bytes": 5458
+  },
+  {
+    "id": "asi-where-html",
+    "url": "https://docs.asiimaging.com/commands/where",
+    "retrievedAt": "2026-11-06T00:41:46.285624+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-where-html.html",
+    "sha256": "e3226d40ae0c947ae82a6a2ad1a2a4931ca37e7899b67ff69f8b2464282dad0e",
+    "bytes": 5449
+  },
+  {
+    "id": "asi-rdstat-html",
+    "url": "https://docs.asiimaging.com/commands/rdstat",
+    "retrievedAt": "2026-11-06T00:41:46.377656+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-rdstat-html.html",
+    "sha256": "367a618fbe9d553ab2c755ea130b8b596793f370bdad6d09f8ec06f58bf63b6d",
+    "bytes": 5452
+  },
+  {
+    "id": "asi-pc-html",
+    "url": "https://docs.asiimaging.com/commands/pc",
+    "retrievedAt": "2026-11-06T00:41:46.289773+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-pc-html.html",
+    "sha256": "5d6cf9340b132307172e7d829dd6777320a873f5153b0280ef7867ef26886642",
+    "bytes": 5440
+  },
+  {
+    "id": "asi-error-html",
+    "url": "https://docs.asiimaging.com/commands/error",
+    "retrievedAt": "2026-11-06T00:41:46.292445+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-error-html.html",
+    "sha256": "f8f8bbcdc8e62ceb3afcaa613e7e2f71bd59af8a6cb54f72ef3cf05e2fb65aa3",
+    "bytes": 5449
+  },
+  {
+    "id": "asi-backlash-html",
+    "url": "https://docs.asiimaging.com/commands/backlash",
+    "retrievedAt": "2026-11-06T00:41:46.290142+00:00",
+    "status": 403,
+    "path": "research/microscopy-controller/raw/asi-backlash-html.html",
+    "sha256": "310363645ed0270926ac717ff3f89ab188b646f8bd79bdc8b9bae7e171a3f15a",
+    "bytes": 5458
+  },
+  {
+    "id": "gently-release-commit",
+    "url": "https://api.github.com/repos/gently-project/gently/commits/v1.0.0rc1",
+    "retrievedAt": "2026-11-06T00:42:36.571851+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/metadata/gently-release-commit.json",
+    "sha256": "2393664aaddcbfc7e0529db5a7b9032b9ce119ab80a1a010842e12ce44cdcea5"
+  },
+  {
+    "id": "autofocus-arxiv-abstract",
+    "url": "https://arxiv.org/abs/2109.06842",
+    "retrievedAt": "2026-11-06T00:44:32.069853+00:00",
+    "status": 200,
+    "path": "research/microscopy-controller/metadata/autofocus-arxiv-abstract.html",
+    "sha256": "1c09d5c722c133e3ee87b7394ab9b6bffe6bfc49a786b0252dd234a2c75686a7"
+  }
+]

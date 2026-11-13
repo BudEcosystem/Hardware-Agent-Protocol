@@ -1,0 +1,165 @@
+{
+  "scope": "Eight official SQLite pages with bounded acquisition and exact partial/full-text reading receipts; media/PRAGMA gaps retained",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 5655,
+      "sha256": "7727ae12d84740188c581c265d2c897cb1c910df9ad45248bd8e520eca92fdd3"
+    },
+    {
+      "path": "acquire-attach.py",
+      "bytes": 1964,
+      "sha256": "602e84a47d9343e81eebbed3544d2025bbc10251a32c4a82e5fba9915d7a1c1a"
+    },
+    {
+      "path": "acquire-authorizer.py",
+      "bytes": 2356,
+      "sha256": "d4479a67f004954c8bbc343aec726d4a0b6655971e24bb0ca7aaa9d7bc4e202c"
+    },
+    {
+      "path": "acquire.py",
+      "bytes": 2474,
+      "sha256": "752cfca4bc8b51a7ad4d610d06efa6b67c07c0cbc3901226f2aa7a79cb138e4d"
+    },
+    {
+      "path": "acquisition.json",
+      "bytes": 6244,
+      "sha256": "7d8bda5038d0f6db476c3d578361728eb2ad86cbf9ae8434cb722e6f328a304f"
+    },
+    {
+      "path": "authorizer-acquisition.json",
+      "bytes": 2214,
+      "sha256": "09a9b0177e29dc3e3ab7e829212aa25514da0275a3466ab3f1bbfda649d7cc78"
+    },
+    {
+      "path": "launcher-note.json",
+      "bytes": 342,
+      "sha256": "93506fb471b6c9e84b384d3787029d8ef870ba4136436b39488790ef3d2c3abf"
+    },
+    {
+      "path": "metadata/attach.json",
+      "bytes": 5150,
+      "sha256": "e53c78bcc8674933687268774bb31831e4ae53ec4469448fd0408ab66fdfe49c"
+    },
+    {
+      "path": "metadata/authorizer-codes.json",
+      "bytes": 1045,
+      "sha256": "16e55a2a8c2e92cbd06763af4742a3b5017017f5ecb5c385ad61e5b56b50e7f6"
+    },
+    {
+      "path": "metadata/authorizer.json",
+      "bytes": 1032,
+      "sha256": "4de37bff4a4db92cd9a64f4bcba568a11a4e7433ec60496506135321ea175d06"
+    },
+    {
+      "path": "metadata/dbstat.json",
+      "bytes": 989,
+      "sha256": "174154360183d67a1504521aebed72756b7e7d328f5bf658b7e65a4c623261d1"
+    },
+    {
+      "path": "metadata/limits.json",
+      "bytes": 990,
+      "sha256": "c4d25d201e2e08978a23ccf1a33f64bd63a9a1b906d55a311e7c0a4ab7065f8e"
+    },
+    {
+      "path": "metadata/pragmas.json",
+      "bytes": 1410,
+      "sha256": "e2f3cc4d96698f2049bd7739d9c205d872d37d2d45a0884b967242927b3119c4"
+    },
+    {
+      "path": "metadata/tempfiles.json",
+      "bytes": 1005,
+      "sha256": "a7d93c15cded15c224657529413816bcb53b6d7c6a5d3403dd1a4fb497abc59a"
+    },
+    {
+      "path": "metadata/transactions.json",
+      "bytes": 1440,
+      "sha256": "9149116e370e73b3bd0ef740193a906459b8f2cd6374bbf17756fb4c3e5df257"
+    },
+    {
+      "path": "raw/attach.html",
+      "bytes": 306699,
+      "sha256": "5ad54b7f4829c69c88f4bbf8b39c5b88e80740fc84a555ce9c23e5faf1e48138"
+    },
+    {
+      "path": "raw/authorizer-codes.html",
+      "bytes": 8384,
+      "sha256": "9aafe597f56ecb23a84b5d92b4125387239956e0e675d030cec4c4d0f870598c"
+    },
+    {
+      "path": "raw/authorizer.html",
+      "bytes": 10728,
+      "sha256": "f4b43d68f5d827b768cd3a1cad8cfd2aa913e073be9d2498ec80b53cd8e32c02"
+    },
+    {
+      "path": "raw/dbstat.html",
+      "bytes": 12895,
+      "sha256": "2d2418abfc87570651dcd67b844865f9a283083361c5ab53ce2f23c6235a2240"
+    },
+    {
+      "path": "raw/limits.html",
+      "bytes": 21741,
+      "sha256": "0cdbd54a89169177c50efd15854e5c1e0df6fe1a0e0706234e034dd923e0503b"
+    },
+    {
+      "path": "raw/pragmas.html",
+      "bytes": 139936,
+      "sha256": "af75d7d7ab00c29e6eea98618cb1259a3919c308af60a6173215bf9798706034"
+    },
+    {
+      "path": "raw/tempfiles.html",
+      "bytes": 34108,
+      "sha256": "b9c7f358075ecff93675207807188857377df0dc2b9052a46651de21acb84a79"
+    },
+    {
+      "path": "raw/transactions.html",
+      "bytes": 27068,
+      "sha256": "b65dc308fd9e0ce471844c97366a4f5ad3a1f42833a3b19486ad7d6555a8e24e"
+    },
+    {
+      "path": "reading.json",
+      "bytes": 5896,
+      "sha256": "e9caf0dd6fe0a47120685a3fceab1d3016003df81c804e7df697177223cd4a5c"
+    },
+    {
+      "path": "text/attach.txt",
+      "bytes": 5565,
+      "sha256": "7a48ecd5b49f987ae21b0b317429c5316990d2e7fe8bf1c8df5cbea2ebea0724"
+    },
+    {
+      "path": "text/authorizer-codes.txt",
+      "bytes": 4098,
+      "sha256": "346aa5c77c5ebee28735f4244d573ae4c6b26e5b2b460c9d51287a0cc5422c16"
+    },
+    {
+      "path": "text/authorizer.txt",
+      "bytes": 5397,
+      "sha256": "bf96edcaa21bbb24499921c4b5f963213006eee93e47a78942b2580baf2ff89a"
+    },
+    {
+      "path": "text/dbstat.txt",
+      "bytes": 7707,
+      "sha256": "2ec6498e87e013421e127bdb90562fc78546f6e9cda09f12ccd3aeed6304c09b"
+    },
+    {
+      "path": "text/limits.txt",
+      "bytes": 15345,
+      "sha256": "a68b766197ec7a6729d3c5d257755c0868347e378d11d2fbb4e91b456669f2a1"
+    },
+    {
+      "path": "text/pragmas.txt",
+      "bytes": 83877,
+      "sha256": "d0bb67f0235ce56a61f6803cfe38ff9b19f1a9fa82577a48d6b5f25317b3a38e"
+    },
+    {
+      "path": "text/tempfiles.txt",
+      "bytes": 24717,
+      "sha256": "b022154c4fa7b63749779761627f376ec49947e9160a68e11a3ff8d1ff7fcedf"
+    },
+    {
+      "path": "text/transactions.txt",
+      "bytes": 8241,
+      "sha256": "6a3bc15c4b9c07ad285d529a0d52b559ce433cac08892fe4341598d0c52e0b23"
+    }
+  ]
+}

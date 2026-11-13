@@ -1,0 +1,3929 @@
+{
+  "sha": "55e45a880755d0c8c66ca7fb5fe7962ac8974f89",
+  "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/55e45a880755d0c8c66ca7fb5fe7962ac8974f89",
+  "tree": [
+    {
+      "path": ".github",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "981cf85167fbb4f8d1b2ff2e193d7eb23c963303",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/981cf85167fbb4f8d1b2ff2e193d7eb23c963303"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "96233e28c55c8434652744d415e0c5802b18eed9",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/96233e28c55c8434652744d415e0c5802b18eed9"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE/voyager-issue-template.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c5e0c8531becdb59bdaa1b1bcc062632c3ff082e",
+      "size": 502,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c5e0c8531becdb59bdaa1b1bcc062632c3ff082e"
+    },
+    {
+      "path": ".github/workflows",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2e7970ed43ebdfc85d9d267d3ca6aaf9bba99cd2",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/2e7970ed43ebdfc85d9d267d3ca6aaf9bba99cd2"
+    },
+    {
+      "path": ".github/workflows/close_issue.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d5cd3cf15cc2ff804b00dc91af6465df28705e95",
+      "size": 705,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d5cd3cf15cc2ff804b00dc91af6465df28705e95"
+    },
+    {
+      "path": ".gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1e9de91fafbef807a046bcde36b7365118c52204",
+      "size": 1412,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1e9de91fafbef807a046bcde36b7365118c52204"
+    },
+    {
+      "path": "FAQ.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "893a828b3bf4c729df92af1b8a0ab81d78075506",
+      "size": 4982,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/893a828b3bf4c729df92af1b8a0ab81d78075506"
+    },
+    {
+      "path": "LICENSE",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c28174867076bccdcfd1104d62d7e1d52bb7e30b",
+      "size": 1070,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c28174867076bccdcfd1104d62d7e1d52bb7e30b"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bc026e7152ff06f275943122c290494abc7b14c0",
+      "size": 6737,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/bc026e7152ff06f275943122c290494abc7b14c0"
+    },
+    {
+      "path": "images",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fd530ac7f434b509d0720a89f947d6843a94fa6a",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/fd530ac7f434b509d0720a89f947d6843a94fa6a"
+    },
+    {
+      "path": "images/pull.png",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8d03a706b9ab807b550d7622647b530c0bed6c7f",
+      "size": 1527193,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8d03a706b9ab807b550d7622647b530c0bed6c7f"
+    },
+    {
+      "path": "installation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "0e433b7c70be8a6eb9cb3518618b7eef74d488d7",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/0e433b7c70be8a6eb9cb3518618b7eef74d488d7"
+    },
+    {
+      "path": "installation/fabric_mods_install.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4aafd8800c65c644fcac31565baf73dc85556a8e",
+      "size": 2662,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/4aafd8800c65c644fcac31565baf73dc85556a8e"
+    },
+    {
+      "path": "installation/minecraft_instance_install.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ec3b01264bbc2dadaf89d2623e74dcce507bf25f",
+      "size": 3192,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ec3b01264bbc2dadaf89d2623e74dcce507bf25f"
+    },
+    {
+      "path": "requirements.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "47de4c45c418fc22d01e8bff2bc1bf2cbc5a6ef3",
+      "size": 147,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/47de4c45c418fc22d01e8bff2bc1bf2cbc5a6ef3"
+    },
+    {
+      "path": "setup.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ef258f4456364e487dce4c2bc09a4f8d01f8d6d",
+      "size": 1596,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8ef258f4456364e487dce4c2bc09a4f8d01f8d6d"
+    },
+    {
+      "path": "skill_library",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "1e5f27374a429c1d716de88ecd0c6c2628adf29a",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/1e5f27374a429c1d716de88ecd0c6c2628adf29a"
+    },
+    {
+      "path": "skill_library/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "476dc39a23db267ab26c9b26e2ab2f0974759684",
+      "size": 1517,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/476dc39a23db267ab26c9b26e2ab2f0974759684"
+    },
+    {
+      "path": "skill_library/trial1",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "321ffb1dd58ffbe82df561cb697901caad515eb2",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/321ffb1dd58ffbe82df561cb697901caad515eb2"
+    },
+    {
+      "path": "skill_library/trial1/skill",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "2e2f77e341170da37de1e4f7442c1f799ebce6d6",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/2e2f77e341170da37de1e4f7442c1f799ebce6d6"
+    },
+    {
+      "path": "skill_library/trial1/skill/code",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "29876a40c56930c30a77658fbe22698eb789e91b",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/29876a40c56930c30a77658fbe22698eb789e91b"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/collectBamboo.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "24f4ea60a459dfd1166dca3589319bc866cb1a1a",
+      "size": 1042,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/24f4ea60a459dfd1166dca3589319bc866cb1a1a"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/collectFiveCactusBlocks.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0ff2724a453360f14b07814b14b254c1a643400c",
+      "size": 994,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0ff2724a453360f14b07814b14b254c1a643400c"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/cookPorkchops.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "08623777e3f9e94ab8aa0c2dafc2b5f0df44de83",
+      "size": 581,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/08623777e3f9e94ab8aa0c2dafc2b5f0df44de83"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/cookSevenMutton.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0906d21c085aa0bb01e574feb7f64619df832fec",
+      "size": 755,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0906d21c085aa0bb01e574feb7f64619df832fec"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftAcaciaPlanksAndSticks.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d5e71052c2a67256fbd8a93c19146e9825076786",
+      "size": 1080,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d5e71052c2a67256fbd8a93c19146e9825076786"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftBucket.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "22ce07b63e5c68aeb55c23334939da3c336f723f",
+      "size": 800,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/22ce07b63e5c68aeb55c23334939da3c336f723f"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftChest.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "683a92548c14cfafbb5d7eb97b212ce7a4805e65",
+      "size": 911,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/683a92548c14cfafbb5d7eb97b212ce7a4805e65"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftCopperBlock.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fd78442b10857ccb43cdc7197fe57454b85f91fc",
+      "size": 851,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/fd78442b10857ccb43cdc7197fe57454b85f91fc"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftCraftingTable.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a9016f2dacd02aeefa4f0f55a8101fbe9acc8508",
+      "size": 760,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a9016f2dacd02aeefa4f0f55a8101fbe9acc8508"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftFurnace.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "919ebf94ddd5afce405a4f1943b59033551d213f",
+      "size": 653,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/919ebf94ddd5afce405a4f1943b59033551d213f"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftIronAxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c257033bc6918d23e9b47e999cb8f1453b431424",
+      "size": 982,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c257033bc6918d23e9b47e999cb8f1453b431424"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftIronChestplate.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "054e5b5e71e14696c61ae7422ef247ebba70e8f1",
+      "size": 837,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/054e5b5e71e14696c61ae7422ef247ebba70e8f1"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftIronHelmet.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9d63ca23a211b3eb0d38cb665ae11f1631d9387c",
+      "size": 821,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9d63ca23a211b3eb0d38cb665ae11f1631d9387c"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftIronHelmetV2.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a33167adae9d29033faf0aa0f12589f797b258b1",
+      "size": 349,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a33167adae9d29033faf0aa0f12589f797b258b1"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftIronLeggingsAndBoots.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ecf7f73e0ebb8fecabc16bcc9a90280c21b04a79",
+      "size": 958,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ecf7f73e0ebb8fecabc16bcc9a90280c21b04a79"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftIronPickaxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "269f64cf5fe9762c4dcb1bda2a446b9cad2a7bd2",
+      "size": 998,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/269f64cf5fe9762c4dcb1bda2a446b9cad2a7bd2"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftIronPickaxeV2.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "269f64cf5fe9762c4dcb1bda2a446b9cad2a7bd2",
+      "size": 998,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/269f64cf5fe9762c4dcb1bda2a446b9cad2a7bd2"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftIronShovel.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c78e7b96325331d25c9555c365e0c96f5194a847",
+      "size": 1156,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c78e7b96325331d25c9555c365e0c96f5194a847"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftIronSword.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d31f4d18cddee8601c39b00bfbe2bfcc7c1e69bf",
+      "size": 990,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d31f4d18cddee8601c39b00bfbe2bfcc7c1e69bf"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftLightningRod.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c102308d29a292c508a43d51efe4477349bfaea5",
+      "size": 1297,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c102308d29a292c508a43d51efe4477349bfaea5"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftOakPlanksAndSticks.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e5a03a22c450eea04358a849d8d6d765a8c81de1",
+      "size": 904,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e5a03a22c450eea04358a849d8d6d765a8c81de1"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftScaffolding.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c6170bf6de449549e12d32c6e33521685b991485",
+      "size": 660,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c6170bf6de449549e12d32c6e33521685b991485"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftShears.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "270595b7bc0336c6a1d9f420fed7a8d3034ce0b2",
+      "size": 344,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/270595b7bc0336c6a1d9f420fed7a8d3034ce0b2"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftShieldImproved.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c5e9fdc18440de1dd6e14fa0ccc66a26b648ce6c",
+      "size": 2011,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c5e9fdc18440de1dd6e14fa0ccc66a26b648ce6c"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftStonePickaxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5309652326009843243344b54452be78e63cadca",
+      "size": 883,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/5309652326009843243344b54452be78e63cadca"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftStoneShovel.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d208b77c7ef59ad0b66aa70b1d073fb2b37ad13c",
+      "size": 881,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d208b77c7ef59ad0b66aa70b1d073fb2b37ad13c"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftWhiteBed.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "949710894a1cf76f86fe9cde0c3a6f8e3d28c5c6",
+      "size": 1165,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/949710894a1cf76f86fe9cde0c3a6f8e3d28c5c6"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftWoodenHoe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7cb14ea74f126d5b4f614fdbc83bd5a7e42176f5",
+      "size": 1201,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7cb14ea74f126d5b4f614fdbc83bd5a7e42176f5"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftWoodenPickaxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "df550ec9bf466032b52fbc7ea51125dd7aa2ed49",
+      "size": 1451,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/df550ec9bf466032b52fbc7ea51125dd7aa2ed49"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/craftWoodenSword.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4935bcea4b5ac282aa21dcf0b4731dcb0e2dea7f",
+      "size": 1209,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/4935bcea4b5ac282aa21dcf0b4731dcb0e2dea7f"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/eatCookedPorkchop.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e0b0d6f91531a9a1f36da89e46be3b6becec9dd3",
+      "size": 385,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e0b0d6f91531a9a1f36da89e46be3b6becec9dd3"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/eatTwoCookedMutton.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "80674d6c473f1d8642438de02895bea45872021f",
+      "size": 586,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/80674d6c473f1d8642438de02895bea45872021f"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/equipIronArmor.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5f179405558190c62e5b5ad90d4311d20e9870d8",
+      "size": 996,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/5f179405558190c62e5b5ad90d4311d20e9870d8"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/equipIronChestplate.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6672c58fef129b09d2beeb422f6bb2e5314f5f27",
+      "size": 404,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/6672c58fef129b09d2beeb422f6bb2e5314f5f27"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/equipIronSword.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4dff086910127d6e4dc890b36d55792e0900c1ff",
+      "size": 706,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/4dff086910127d6e4dc890b36d55792e0900c1ff"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/fillBucketWithWater.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "66823b3b782c350ad55010171f838454ed42b7c3",
+      "size": 884,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/66823b3b782c350ad55010171f838454ed42b7c3"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/killFourSheep.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ad708645caf838c982e66adb24630b6a173371e2",
+      "size": 927,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ad708645caf838c982e66adb24630b6a173371e2"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/killOneEnderman.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8a81fd785a2cf3e646fd629eb8312e41c7299913",
+      "size": 857,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8a81fd785a2cf3e646fd629eb8312e41c7299913"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/killOnePig.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b911b5641edc764bec3b671b8c3b2b5617a1e9c7",
+      "size": 795,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b911b5641edc764bec3b671b8c3b2b5617a1e9c7"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/killOneSpider.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8ce061113e31caa0e9d9db3d24180d5b4bd96329",
+      "size": 827,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8ce061113e31caa0e9d9db3d24180d5b4bd96329"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/killOneZombie.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8acf109cfbe80a824435a0023f60ebe63678dfbc",
+      "size": 827,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8acf109cfbe80a824435a0023f60ebe63678dfbc"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/killTwoPigs.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3a2ce2587934bc8c7852f0d5802a2ac8dc91c534",
+      "size": 859,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/3a2ce2587934bc8c7852f0d5802a2ac8dc91c534"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/mineFiveCoalOres.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8cf41fdb65762a71a0d24e78d5a11f7f06a079f1",
+      "size": 694,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8cf41fdb65762a71a0d24e78d5a11f7f06a079f1"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/mineFiveCoalOresV2.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "50aa6efa6fd5285fb97ec4602c2d66de2ea27fd9",
+      "size": 690,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/50aa6efa6fd5285fb97ec4602c2d66de2ea27fd9"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/mineFiveCopperOres.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e4b8a228a21c36995f500bdafe6b25722aa31b0",
+      "size": 714,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/2e4b8a228a21c36995f500bdafe6b25722aa31b0"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/mineFiveCopperOresV2.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0990694642b81ec5fd4d19f78b951860b6a0296f",
+      "size": 607,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0990694642b81ec5fd4d19f78b951860b6a0296f"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/mineFiveIronOres.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cef6d4998c766eb4256e24f506d1d62b57a26a1f",
+      "size": 690,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cef6d4998c766eb4256e24f506d1d62b57a26a1f"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/mineFiveIronOresV2.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cef6d4998c766eb4256e24f506d1d62b57a26a1f",
+      "size": 690,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cef6d4998c766eb4256e24f506d1d62b57a26a1f"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/mineFiveLapisLazuliOres.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d6910a015c71de19fe4ffb3f54dd697ac5f3fa9f",
+      "size": 733,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d6910a015c71de19fe4ffb3f54dd697ac5f3fa9f"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/mineTenCobblestone.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d3dfb900c691b5b86a71a482585f69f6e601bd13",
+      "size": 993,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d3dfb900c691b5b86a71a482585f69f6e601bd13"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/mineThreeMoreOakLogs.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "445f4094009e28f71c6c91b82a4ca68b2354ec04",
+      "size": 939,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/445f4094009e28f71c6c91b82a4ca68b2354ec04"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/mineWoodLog.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "975d1904a3c511848f54559d72f1729f9f4239e9",
+      "size": 577,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/975d1904a3c511848f54559d72f1729f9f4239e9"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/obtainOneMoreAcaciaLog.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8916dd48b28f7a22f38b3bf4167bf99dabc0e274",
+      "size": 971,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8916dd48b28f7a22f38b3bf4167bf99dabc0e274"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/smeltCactusIntoGreenDye.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8284ed491d0946059b2347bce01db9e05a64310e",
+      "size": 775,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8284ed491d0946059b2347bce01db9e05a64310e"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/smeltFiveRawIron.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0d1fd4794834b430de5a8919144f801e833e4b44",
+      "size": 583,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0d1fd4794834b430de5a8919144f801e833e4b44"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/smeltFiveRawIronV2.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d0072f5def3231935ccb83224c2e6367542e99db",
+      "size": 1448,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d0072f5def3231935ccb83224c2e6367542e99db"
+    },
+    {
+      "path": "skill_library/trial1/skill/code/smeltRawCopper.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7c3d80b8b330bbc347037ac9e6c766bb867c8e1d",
+      "size": 766,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7c3d80b8b330bbc347037ac9e6c766bb867c8e1d"
+    },
+    {
+      "path": "skill_library/trial1/skill/description",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b9edd46edbedf0f0981ecc308af0181d23a4d0e2",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/b9edd46edbedf0f0981ecc308af0181d23a4d0e2"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/collectBamboo.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fa631466d472293fff93095027d9427465ce3865",
+      "size": 415,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/fa631466d472293fff93095027d9427465ce3865"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/collectFiveCactusBlocks.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4a51c71dcf4baa8fbf08eeedbd369485bc47ee63",
+      "size": 452,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/4a51c71dcf4baa8fbf08eeedbd369485bc47ee63"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/cookPorkchops.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5b4ccf6bf780bcb9935553c2d0d7f6aa9fbdbd2d",
+      "size": 358,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/5b4ccf6bf780bcb9935553c2d0d7f6aa9fbdbd2d"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/cookSevenMutton.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b764b97c619f4ac81eb587040bfce667c704ad15",
+      "size": 385,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b764b97c619f4ac81eb587040bfce667c704ad15"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftAcaciaPlanksAndSticks.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8eda75409b38f422e719758da9cc2bcc3fddda4e",
+      "size": 458,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8eda75409b38f422e719758da9cc2bcc3fddda4e"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftBucket.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c7e4054157a70f609bf5c07d7c4104a39c917ca8",
+      "size": 318,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c7e4054157a70f609bf5c07d7c4104a39c917ca8"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftChest.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6c542298e065e8f588d1eb89f75180abc2c57569",
+      "size": 316,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/6c542298e065e8f588d1eb89f75180abc2c57569"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftCopperBlock.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "32c5b2074bddb32dbee056b484200002fc054a76",
+      "size": 340,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/32c5b2074bddb32dbee056b484200002fc054a76"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftCraftingTable.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ac6583cbf42a1300d1c1d561f96f203957f0196",
+      "size": 269,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7ac6583cbf42a1300d1c1d561f96f203957f0196"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftFurnace.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2aa93d9dfd28a8c4a3a605a83d41b31fb3268592",
+      "size": 369,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/2aa93d9dfd28a8c4a3a605a83d41b31fb3268592"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftIronAxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "572594659329711372837e8f197572096800c31b",
+      "size": 305,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/572594659329711372837e8f197572096800c31b"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftIronChestplate.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "381f35f202906a7ecb9008f545fa9e283c6165f9",
+      "size": 345,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/381f35f202906a7ecb9008f545fa9e283c6165f9"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftIronHelmet.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ddfbac4c94f95c8ded52ed5a68f5b0109c00d39c",
+      "size": 333,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ddfbac4c94f95c8ded52ed5a68f5b0109c00d39c"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftIronHelmetV2.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a2fc2a6064358a78cd179b305c06ba34a10e5e54",
+      "size": 244,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a2fc2a6064358a78cd179b305c06ba34a10e5e54"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftIronLeggingsAndBoots.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1cd672a285f40272ec5c021fff6b37b8a8ee13c9",
+      "size": 347,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1cd672a285f40272ec5c021fff6b37b8a8ee13c9"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftIronPickaxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "963ceead414d430f04f4cdee92f0fad0d176a72c",
+      "size": 317,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/963ceead414d430f04f4cdee92f0fad0d176a72c"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftIronPickaxeV2.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "963ceead414d430f04f4cdee92f0fad0d176a72c",
+      "size": 317,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/963ceead414d430f04f4cdee92f0fad0d176a72c"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftIronShovel.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "60ffd0b422faf21bf0790b7937ca7455f8b3cf9d",
+      "size": 352,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/60ffd0b422faf21bf0790b7937ca7455f8b3cf9d"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftIronSword.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bd863ac60341360ca13c2737d334ada615156b8c",
+      "size": 314,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/bd863ac60341360ca13c2737d334ada615156b8c"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftLightningRod.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cefd7852525a99dac259d2ddab6f6a2f7c3f84b1",
+      "size": 377,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cefd7852525a99dac259d2ddab6f6a2f7c3f84b1"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftOakPlanksAndSticks.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ea2d92df681576416a91f78464bde19e5891274",
+      "size": 294,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7ea2d92df681576416a91f78464bde19e5891274"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftScaffolding.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a3069269e62fe9df36aae7915924b7d96b8ad071",
+      "size": 336,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a3069269e62fe9df36aae7915924b7d96b8ad071"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftShears.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "47c78a2c9288fe2a5d6e4d04fde995f2791805e5",
+      "size": 255,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/47c78a2c9288fe2a5d6e4d04fde995f2791805e5"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftShieldImproved.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dccd0784d7b19dd6b50913f8a0318351f03cd4ae",
+      "size": 363,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/dccd0784d7b19dd6b50913f8a0318351f03cd4ae"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftStonePickaxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "674f87f18660fbf8347c1b33bccce7a57e0b2b7f",
+      "size": 328,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/674f87f18660fbf8347c1b33bccce7a57e0b2b7f"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftStoneShovel.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a59974670da248b91bf4e4e7c86d81d33af346f4",
+      "size": 414,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a59974670da248b91bf4e4e7c86d81d33af346f4"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftWhiteBed.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "90575e40aca7ee21f4ae16c00c3d034aef50102e",
+      "size": 369,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/90575e40aca7ee21f4ae16c00c3d034aef50102e"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftWoodenHoe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc4dc6aa3076855c3b9665b30401bfca5c6fe63d",
+      "size": 318,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cc4dc6aa3076855c3b9665b30401bfca5c6fe63d"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftWoodenPickaxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f6814a82174e5cab3df6c7d27aefc86acb167827",
+      "size": 319,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f6814a82174e5cab3df6c7d27aefc86acb167827"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/craftWoodenSword.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c8b064d5808ad0a7e031825b6495ce06ef5fa9ef",
+      "size": 313,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c8b064d5808ad0a7e031825b6495ce06ef5fa9ef"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/eatCookedPorkchop.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "50a37985118553e288a8279470f42fa1cf4d02b5",
+      "size": 218,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/50a37985118553e288a8279470f42fa1cf4d02b5"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/eatTwoCookedMutton.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "678cd4021467f15a0edbeadfb6be2b95fd4340e2",
+      "size": 356,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/678cd4021467f15a0edbeadfb6be2b95fd4340e2"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/equipIronArmor.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "da0af5eb2f11f96b7260846b77341b9affbe8298",
+      "size": 336,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/da0af5eb2f11f96b7260846b77341b9affbe8298"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/equipIronChestplate.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d6aee3b89b20a6a3c79d916e47916c103a82f694",
+      "size": 296,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d6aee3b89b20a6a3c79d916e47916c103a82f694"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/equipIronSword.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9a057d6f26450f7f8c048f122afb73409ac33816",
+      "size": 312,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9a057d6f26450f7f8c048f122afb73409ac33816"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/fillBucketWithWater.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "114b73bf099e04137e70595090ed7b2a0d40c3cf",
+      "size": 297,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/114b73bf099e04137e70595090ed7b2a0d40c3cf"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/killFourSheep.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6d13e5625194066e4c321f32d7d5972881442c6b",
+      "size": 300,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/6d13e5625194066e4c321f32d7d5972881442c6b"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/killOneEnderman.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "22b2d83ba6c791e835327a648fac3e3782f63a5b",
+      "size": 383,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/22b2d83ba6c791e835327a648fac3e3782f63a5b"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/killOnePig.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2e5fb477fd35529abb67a4bc78bb992c242ec7b9",
+      "size": 368,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/2e5fb477fd35529abb67a4bc78bb992c242ec7b9"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/killOneSpider.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f0a26562bfc048a674e0121b74898e6fd985d20a",
+      "size": 368,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f0a26562bfc048a674e0121b74898e6fd985d20a"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/killOneZombie.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1cf3c4f5f0336b2ee487b5f8b0f08e2edbde6a62",
+      "size": 317,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1cf3c4f5f0336b2ee487b5f8b0f08e2edbde6a62"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/killTwoPigs.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eaecd500f79b0b802918c192fdfc28be386c0b1c",
+      "size": 454,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/eaecd500f79b0b802918c192fdfc28be386c0b1c"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/mineFiveCoalOres.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "35b804dbae758c780f00b0752f840575c911c8a2",
+      "size": 505,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/35b804dbae758c780f00b0752f840575c911c8a2"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/mineFiveCoalOresV2.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "62b477721d6b95dd6f6de3c68aad0371f5c1a9d2",
+      "size": 287,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/62b477721d6b95dd6f6de3c68aad0371f5c1a9d2"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/mineFiveCopperOres.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc8f2c0a1229c8451e70cbfbbb40d96623ef33d4",
+      "size": 295,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cc8f2c0a1229c8451e70cbfbbb40d96623ef33d4"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/mineFiveCopperOresV2.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b7981975f9f55165b05a4cf46a155977c7834722",
+      "size": 210,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b7981975f9f55165b05a4cf46a155977c7834722"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/mineFiveIronOres.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7f9d057696c53e576016ed9bdc1b2422ef8f8571",
+      "size": 287,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7f9d057696c53e576016ed9bdc1b2422ef8f8571"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/mineFiveIronOresV2.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7f9d057696c53e576016ed9bdc1b2422ef8f8571",
+      "size": 287,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7f9d057696c53e576016ed9bdc1b2422ef8f8571"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/mineFiveLapisLazuliOres.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4fb344d2478071d56fb82a7cb8756b14e5060603",
+      "size": 316,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/4fb344d2478071d56fb82a7cb8756b14e5060603"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/mineTenCobblestone.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1ecd65b0214c04d49ea3a2707103fa61e0887b9c",
+      "size": 448,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1ecd65b0214c04d49ea3a2707103fa61e0887b9c"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/mineThreeMoreOakLogs.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7af9400596a9a244caa5c3a84214974f1a456791",
+      "size": 412,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7af9400596a9a244caa5c3a84214974f1a456791"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/mineWoodLog.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c42f711d4803983b949ecbbfc0e89745553e4b0b",
+      "size": 341,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c42f711d4803983b949ecbbfc0e89745553e4b0b"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/obtainOneMoreAcaciaLog.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ed5dcf7bd11776815e079ad52a68576eb69bb0b2",
+      "size": 289,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ed5dcf7bd11776815e079ad52a68576eb69bb0b2"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/smeltCactusIntoGreenDye.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2779a067311e3ac9c83d258d4efefee7f4119c2c",
+      "size": 402,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/2779a067311e3ac9c83d258d4efefee7f4119c2c"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/smeltFiveRawIron.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f4431f0b3eddaa6b695dfeaaa63f3d33a2f24c94",
+      "size": 352,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f4431f0b3eddaa6b695dfeaaa63f3d33a2f24c94"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/smeltFiveRawIronV2.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8f83de6b4eae26e86447d635a1778f6dbfef9238",
+      "size": 316,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8f83de6b4eae26e86447d635a1778f6dbfef9238"
+    },
+    {
+      "path": "skill_library/trial1/skill/description/smeltRawCopper.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "74f6a36edd2d62540ff0807f6f2f2774f1fc2c73",
+      "size": 347,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/74f6a36edd2d62540ff0807f6f2f2774f1fc2c73"
+    },
+    {
+      "path": "skill_library/trial1/skill/skills.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3576cb7c9ef012b7ec36cb802409153bea034181",
+      "size": 66864,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/3576cb7c9ef012b7ec36cb802409153bea034181"
+    },
+    {
+      "path": "skill_library/trial1/skill/vectordb",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "eb5e29aaa96e080b45ce2a32be1eecfbe05c414e",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/eb5e29aaa96e080b45ce2a32be1eecfbe05c414e"
+    },
+    {
+      "path": "skill_library/trial1/skill/vectordb/chroma-collections.parquet",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "096a482a952fe42e54e3f88bc769bbb22ccd497e",
+      "size": 582,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/096a482a952fe42e54e3f88bc769bbb22ccd497e"
+    },
+    {
+      "path": "skill_library/trial1/skill/vectordb/chroma-embeddings.parquet",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b5cc30855f436b53e67430a17fad6d4e9a699a04",
+      "size": 634091,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b5cc30855f436b53e67430a17fad6d4e9a699a04"
+    },
+    {
+      "path": "skill_library/trial1/skill/vectordb/index",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "13001a9cca4e1d3206f482ea6c19167cb84ac477",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/13001a9cca4e1d3206f482ea6c19167cb84ac477"
+    },
+    {
+      "path": "skill_library/trial1/skill/vectordb/index/id_to_uuid_e1bd933d-d62f-46c2-884d-d75ef3bcb09e.pkl",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5c96079e1ca2b8591d316d6d6406ee9e11fff5bf",
+      "size": 1637,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/5c96079e1ca2b8591d316d6d6406ee9e11fff5bf"
+    },
+    {
+      "path": "skill_library/trial1/skill/vectordb/index/index_e1bd933d-d62f-46c2-884d-d75ef3bcb09e.bin",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0ab9523805b33e384168ef95927f0960b7045bb0",
+      "size": 321056,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0ab9523805b33e384168ef95927f0960b7045bb0"
+    },
+    {
+      "path": "skill_library/trial1/skill/vectordb/index/index_metadata_e1bd933d-d62f-46c2-884d-d75ef3bcb09e.pkl",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4f7ebad266f66c5c21f656fe1e10367f26b03208",
+      "size": 73,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/4f7ebad266f66c5c21f656fe1e10367f26b03208"
+    },
+    {
+      "path": "skill_library/trial1/skill/vectordb/index/uuid_to_id_e1bd933d-d62f-46c2-884d-d75ef3bcb09e.pkl",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eef6e100568dd27f4f11e830cece2df43cf097f8",
+      "size": 1903,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/eef6e100568dd27f4f11e830cece2df43cf097f8"
+    },
+    {
+      "path": "skill_library/trial2",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6ea68291d86f5da6c62bae5b1fc7f1b35c396499",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/6ea68291d86f5da6c62bae5b1fc7f1b35c396499"
+    },
+    {
+      "path": "skill_library/trial2/skill",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "25351226bc3aa149c83415c1574b75f9c80cea52",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/25351226bc3aa149c83415c1574b75f9c80cea52"
+    },
+    {
+      "path": "skill_library/trial2/skill/code",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "10e06f744102447f9a314ca8e6bb7bc1236dc101",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/10e06f744102447f9a314ca8e6bb7bc1236dc101"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/catchFiveFishSafely.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cec137fc9cfc1a4029d2359051b53d63c988afd6",
+      "size": 1470,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cec137fc9cfc1a4029d2359051b53d63c988afd6"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/catchThreeFish.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bcd8a4b0f109d20def873a1063e046faf1105daa",
+      "size": 1465,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/bcd8a4b0f109d20def873a1063e046faf1105daa"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/checkStonePickaxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e4c5d8accc7516991c6df78f60cc0d0e9cf5f8a5",
+      "size": 315,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e4c5d8accc7516991c6df78f60cc0d0e9cf5f8a5"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/chopDownSpruceLogs.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0cd4ed43a5e4081f515dd7aaac78ae0a6fb45454",
+      "size": 403,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0cd4ed43a5e4081f515dd7aaac78ae0a6fb45454"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/chopDownSpruceLogsV2.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0cd4ed43a5e4081f515dd7aaac78ae0a6fb45454",
+      "size": 403,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0cd4ed43a5e4081f515dd7aaac78ae0a6fb45454"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/chopSpruceLogs.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7b3afa4ee615c97586b7816768429ca907b0442d",
+      "size": 399,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7b3afa4ee615c97586b7816768429ca907b0442d"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/collectWaterWithBucket.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4fb7fe808efd716bb7b986bf8bc284f9105ecb51",
+      "size": 690,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/4fb7fe808efd716bb7b986bf8bc284f9105ecb51"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/cookMutton.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2bee80a08e5357a815a396f506d49fbed29c51a9",
+      "size": 1090,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/2bee80a08e5357a815a396f506d49fbed29c51a9"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftBucket.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9295c75800f82f35ee114c1271a4e0d3282bbfb2",
+      "size": 662,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9295c75800f82f35ee114c1271a4e0d3282bbfb2"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftChest.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e5fd17511d5c11f0d4e21c5167ef272b256a5aeb",
+      "size": 823,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e5fd17511d5c11f0d4e21c5167ef272b256a5aeb"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftEightSticks.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "67c50498c6040860e359e9e5bf652d21b2463fb4",
+      "size": 797,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/67c50498c6040860e359e9e5bf652d21b2463fb4"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftEightTorches.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "56e6a8ad7df6da67e6a372decd354f43fd3dc7a7",
+      "size": 436,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/56e6a8ad7df6da67e6a372decd354f43fd3dc7a7"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftFishingRod.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3523e7116e43bac3f31150730ec6d147635ea5fd",
+      "size": 1434,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/3523e7116e43bac3f31150730ec6d147635ea5fd"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftFurnace.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1eb0021846fedfad963b6d2e05e5bb3c8a47f67a",
+      "size": 674,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1eb0021846fedfad963b6d2e05e5bb3c8a47f67a"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftIronChestplate.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e29d2dc46061ba7c8541bbd0d9735c1ae8537f94",
+      "size": 934,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e29d2dc46061ba7c8541bbd0d9735c1ae8537f94"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftIronHelmet.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "69e679d99c6771863300380e1c6a7080c02a2f4f",
+      "size": 794,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/69e679d99c6771863300380e1c6a7080c02a2f4f"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftIronLeggingsAndBoots.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "637fbc7647d72cbe56e03614d97a3b2b642b2725",
+      "size": 1044,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/637fbc7647d72cbe56e03614d97a3b2b642b2725"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftIronPickaxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "15502cd81f89bd98511bfd96fe8329394eed5cc0",
+      "size": 828,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/15502cd81f89bd98511bfd96fe8329394eed5cc0"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftIronPickaxeWithMaterials.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c029dab4e8ca7b0659fdf3fafe1c40de5bb9e39e",
+      "size": 1231,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c029dab4e8ca7b0659fdf3fafe1c40de5bb9e39e"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftIronSword.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "16ab34efbe8cd2f0603bf99e988d44b83158191a",
+      "size": 1212,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/16ab34efbe8cd2f0603bf99e988d44b83158191a"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftShieldWithFurnace.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "266676281c8f6ba9a3fd78dfbd4d4ec58a5b1d0c",
+      "size": 1446,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/266676281c8f6ba9a3fd78dfbd4d4ec58a5b1d0c"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftSixteenTorches.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "94d3d81d17f02b4c1f9fc061d30e73327154d00b",
+      "size": 705,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/94d3d81d17f02b4c1f9fc061d30e73327154d00b"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftSpyglass.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2dba3bfc04ef912099f2030fd2e58e4c5e15ccfc",
+      "size": 874,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/2dba3bfc04ef912099f2030fd2e58e4c5e15ccfc"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftSticks.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9caf0f964a3808880e372c5b474cb0ab2000fe16",
+      "size": 639,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9caf0f964a3808880e372c5b474cb0ab2000fe16"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftStoneAxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b72e0fc37ea698e884dacdf7cf8f0c5e8e068c21",
+      "size": 1069,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b72e0fc37ea698e884dacdf7cf8f0c5e8e068c21"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftStoneHoe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "94545d5a5f98fe0807d21c8c29e0a506b0420819",
+      "size": 1069,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/94545d5a5f98fe0807d21c8c29e0a506b0420819"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftStonePickaxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "01083005131637523c661ef304542421047e37e4",
+      "size": 1079,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/01083005131637523c661ef304542421047e37e4"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftStoneShovel.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ddd7bca08fc02e2a6da92366cc2916576609398d",
+      "size": 1078,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ddd7bca08fc02e2a6da92366cc2916576609398d"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftStoneSword.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "75dbc89b627f93a5658758455f9ca5ac4db8cc9d",
+      "size": 1038,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/75dbc89b627f93a5658758455f9ca5ac4db8cc9d"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftTorches.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "467cb1b1e67790e2fa9d36f0e2e78863e95f6e3f",
+      "size": 972,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/467cb1b1e67790e2fa9d36f0e2e78863e95f6e3f"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftTwentySprucePlanks.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "210f5d425128c1bf99c0754b5fe1b6ff9df89717",
+      "size": 531,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/210f5d425128c1bf99c0754b5fe1b6ff9df89717"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftWhiteBedWithExploration.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9f8956174f5151f641db8e645333c5a87bd14445",
+      "size": 1799,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9f8956174f5151f641db8e645333c5a87bd14445"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftWoodenHoe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e5a15ae38169c171620030bda6c7ff8c956a375f",
+      "size": 1055,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e5a15ae38169c171620030bda6c7ff8c956a375f"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftWoodenPickaxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e26f46fcc6619a530186dcf8497d6adf350fa3ac",
+      "size": 914,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e26f46fcc6619a530186dcf8497d6adf350fa3ac"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/craftWoodenPlanks.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5d3c92e2e7bb42dbfd3875642cd2a889b684f622",
+      "size": 749,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/5d3c92e2e7bb42dbfd3875642cd2a889b684f622"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/eatCookedMutton.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7e7077cebd7de08344bc7ea27e1edc2fe12d777e",
+      "size": 232,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7e7077cebd7de08344bc7ea27e1edc2fe12d777e"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/eatCookedMuttonV2.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7e7077cebd7de08344bc7ea27e1edc2fe12d777e",
+      "size": 232,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7e7077cebd7de08344bc7ea27e1edc2fe12d777e"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/eatCookedMuttonV3.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7e7077cebd7de08344bc7ea27e1edc2fe12d777e",
+      "size": 232,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7e7077cebd7de08344bc7ea27e1edc2fe12d777e"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/equipIronArmor.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd0960fca71f1c491263f47687ed192f3b4e01c2",
+      "size": 1097,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cd0960fca71f1c491263f47687ed192f3b4e01c2"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/exploreCave.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8b086964c984b7e129351a1b2f07fa12d29c96ae",
+      "size": 1388,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8b086964c984b7e129351a1b2f07fa12d29c96ae"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/exploreCaveAndGatherResources.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8379a8cc51b4fc8c65e5dc0422f80f3d63a6d171",
+      "size": 1828,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8379a8cc51b4fc8c65e5dc0422f80f3d63a6d171"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/exploreCaveAndGatherResourcesV2.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8379a8cc51b4fc8c65e5dc0422f80f3d63a6d171",
+      "size": 1828,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8379a8cc51b4fc8c65e5dc0422f80f3d63a6d171"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/fishInNearbyWaterSafely.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f6da328fbe146be6c506abc62b0b951e0d7d7bd6",
+      "size": 1621,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f6da328fbe146be6c506abc62b0b951e0d7d7bd6"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/mineCoalOre.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "20f6076ab3abeda340834ffc31f214daa88cb9ab",
+      "size": 772,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/20f6076ab3abeda340834ffc31f214daa88cb9ab"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/mineCopperOreWithStonePickaxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "45bc2c290c2b65faa5808466902a8c8a2907a996",
+      "size": 1084,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/45bc2c290c2b65faa5808466902a8c8a2907a996"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/mineFiveCoalOres.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d9399ad58f7149f7587498546f50aee50ebb595d",
+      "size": 363,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d9399ad58f7149f7587498546f50aee50ebb595d"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/mineFiveCoalOresV2.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d9399ad58f7149f7587498546f50aee50ebb595d",
+      "size": 363,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d9399ad58f7149f7587498546f50aee50ebb595d"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/mineFiveCopperOres.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eb7dfc9c9e66a24e834d5384a1679462dca698c7",
+      "size": 382,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/eb7dfc9c9e66a24e834d5384a1679462dca698c7"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/mineFiveIronOres.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d9d98ea8032c15da25461a4d6bac2b807673370d",
+      "size": 1004,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d9d98ea8032c15da25461a4d6bac2b807673370d"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/mineLapisOre.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f4c1d822ba98828fc8e36e0a36a7397e09be7d9f",
+      "size": 1190,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f4c1d822ba98828fc8e36e0a36a7397e09be7d9f"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/mineThreeIronOres.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "eaf567bd80e8100b949bdbd8eba67c8f7d18acdb",
+      "size": 953,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/eaf567bd80e8100b949bdbd8eba67c8f7d18acdb"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/mineWoodLog.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cd1a20b307b86db8935bce55f8a73ef0840fdf2c",
+      "size": 642,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cd1a20b307b86db8935bce55f8a73ef0840fdf2c"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/smeltOneRawIron.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d4fcb449672ecaf692da4cb820dae4158864295d",
+      "size": 654,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d4fcb449672ecaf692da4cb820dae4158864295d"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/smeltRawCopper.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b39cab0c53b0ddbe656dd253091b74199119e3fa",
+      "size": 872,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b39cab0c53b0ddbe656dd253091b74199119e3fa"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/smeltRawIron.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a625d2debf4fe33e92945eac93e8349e022f2f71",
+      "size": 902,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a625d2debf4fe33e92945eac93e8349e022f2f71"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/smeltSixRawIron.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b70e56bd0d450d00474dace3b845572e7e7a39b4",
+      "size": 905,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b70e56bd0d450d00474dace3b845572e7e7a39b4"
+    },
+    {
+      "path": "skill_library/trial2/skill/code/smeltTwentyFiveIronIngots.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d0d116785be7838b6e88489ae9f73b0c9e495908",
+      "size": 918,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d0d116785be7838b6e88489ae9f73b0c9e495908"
+    },
+    {
+      "path": "skill_library/trial2/skill/description",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4e7a8c7f8ffe6331c1e3424f5f7cb4c8666fd9d5",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/4e7a8c7f8ffe6331c1e3424f5f7cb4c8666fd9d5"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/catchFiveFishSafely.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3db8c25f5463f440831f60becff7df6a836044f4",
+      "size": 431,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/3db8c25f5463f440831f60becff7df6a836044f4"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/catchThreeFish.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d5367c78f0bc32d23c2912e0b85235da0e2dae34",
+      "size": 421,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d5367c78f0bc32d23c2912e0b85235da0e2dae34"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/checkStonePickaxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dde16152447dd36c32ae1074ad51fd9298315dac",
+      "size": 179,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/dde16152447dd36c32ae1074ad51fd9298315dac"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/chopDownSpruceLogs.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "63b43ba5e65f9433dcc75a8b71ce0f70de334e2c",
+      "size": 376,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/63b43ba5e65f9433dcc75a8b71ce0f70de334e2c"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/chopDownSpruceLogsV2.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e020fe65736cb3111b71a75ed063ad1eee226daa",
+      "size": 385,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e020fe65736cb3111b71a75ed063ad1eee226daa"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/chopSpruceLogs.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fea56e42aa3419d4a1838072bce76d2a9762d17a",
+      "size": 384,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/fea56e42aa3419d4a1838072bce76d2a9762d17a"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/collectWaterWithBucket.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c49ce536964eab0d8d2fd639522f5338c795b9cb",
+      "size": 451,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c49ce536964eab0d8d2fd639522f5338c795b9cb"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/cookMutton.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a265f84030af8d0cd651ae2977304a4ff22fc17a",
+      "size": 574,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a265f84030af8d0cd651ae2977304a4ff22fc17a"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftBucket.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "418a8a44ac0686fd6f5989f2a0a2d21777032be7",
+      "size": 244,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/418a8a44ac0686fd6f5989f2a0a2d21777032be7"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftChest.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ce3f18bd52f94542ccae6b71361e7aac3f9c5303",
+      "size": 296,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ce3f18bd52f94542ccae6b71361e7aac3f9c5303"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftEightSticks.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "42a343b8a8fb329a5cf213b2ed4c8e4ea68bfeea",
+      "size": 315,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/42a343b8a8fb329a5cf213b2ed4c8e4ea68bfeea"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftEightTorches.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7ade09b40048394f2759a352218546e32366a7d1",
+      "size": 297,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7ade09b40048394f2759a352218546e32366a7d1"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftFishingRod.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5455d25b4e262bc951bc0b98a87820b56962ad4f",
+      "size": 325,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/5455d25b4e262bc951bc0b98a87820b56962ad4f"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftFurnace.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5f178073c425393ad2c46e39b4bba9fc767fae02",
+      "size": 312,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/5f178073c425393ad2c46e39b4bba9fc767fae02"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftIronChestplate.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "012a21c71b3be32f4748d5af10caab65a276c1fa",
+      "size": 420,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/012a21c71b3be32f4748d5af10caab65a276c1fa"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftIronHelmet.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bb8a152db86976ae13c92184081f8134c1c0895b",
+      "size": 286,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/bb8a152db86976ae13c92184081f8134c1c0895b"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftIronLeggingsAndBoots.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "436c5d835c1f87f3c8c02cb1ccf50775d5c4e552",
+      "size": 347,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/436c5d835c1f87f3c8c02cb1ccf50775d5c4e552"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftIronPickaxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9c7ee6bb2b6f8f652110eead7ca71d5cdd39bff0",
+      "size": 428,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9c7ee6bb2b6f8f652110eead7ca71d5cdd39bff0"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftIronPickaxeWithMaterials.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4c143a3f54d842173bde26b415ec3ab249137e9c",
+      "size": 372,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/4c143a3f54d842173bde26b415ec3ab249137e9c"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftIronSword.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "270a4ab0213fb03e2e94eb06f3205bae378218fb",
+      "size": 401,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/270a4ab0213fb03e2e94eb06f3205bae378218fb"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftShieldWithFurnace.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e49c446b56b6ff80747e9637093489fff54d50ce",
+      "size": 394,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e49c446b56b6ff80747e9637093489fff54d50ce"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftSixteenTorches.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a6f18b4cadf63c69653bdcbccee1e9276773027d",
+      "size": 300,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a6f18b4cadf63c69653bdcbccee1e9276773027d"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftSpyglass.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e5b43fcf0ae4d9c42cdd6b9c2b1b893199ad5a75",
+      "size": 407,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e5b43fcf0ae4d9c42cdd6b9c2b1b893199ad5a75"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftSticks.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b7421fd01bea09c07d6db1f00eef43a5ab319b42",
+      "size": 249,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b7421fd01bea09c07d6db1f00eef43a5ab319b42"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftStoneAxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a1236ac400f7b302ba2715af33a3d246c214fdba",
+      "size": 341,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a1236ac400f7b302ba2715af33a3d246c214fdba"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftStoneHoe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "920d441cbdefa62c48c0569ecf686ec1b1e311ea",
+      "size": 335,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/920d441cbdefa62c48c0569ecf686ec1b1e311ea"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftStonePickaxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aa2b1c6c03669aa098d22f9904550fec0431fdc0",
+      "size": 353,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/aa2b1c6c03669aa098d22f9904550fec0431fdc0"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftStoneShovel.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f04b14bc19b210372ffbdb1d12ddea5a9b002f13",
+      "size": 344,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f04b14bc19b210372ffbdb1d12ddea5a9b002f13"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftStoneSword.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5478f3cbfd30daa91c3d56dbaaf5e79ffab7ea96",
+      "size": 341,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/5478f3cbfd30daa91c3d56dbaaf5e79ffab7ea96"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftTorches.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d4c3a058cd10335001e83dd84152078f0c1c2137",
+      "size": 306,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d4c3a058cd10335001e83dd84152078f0c1c2137"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftTwentySprucePlanks.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6f1e95838c1b68b722c8b00d9e5a162ff0deabcf",
+      "size": 281,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/6f1e95838c1b68b722c8b00d9e5a162ff0deabcf"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftWhiteBedWithExploration.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "942b6056fe441dffb913efb59f6663bf99a24a6d",
+      "size": 363,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/942b6056fe441dffb913efb59f6663bf99a24a6d"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftWoodenHoe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "54f184b9f44a9cd8d9f09560f1525d4d6399bbef",
+      "size": 315,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/54f184b9f44a9cd8d9f09560f1525d4d6399bbef"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftWoodenPickaxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c1de7558845e65771a3759bdb9aab7751c77663c",
+      "size": 284,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c1de7558845e65771a3759bdb9aab7751c77663c"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/craftWoodenPlanks.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9893f7590c711509939eb0403869953ed54c20d2",
+      "size": 426,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9893f7590c711509939eb0403869953ed54c20d2"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/eatCookedMutton.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "37690c85fde276b8383d529a9f6799b381794303",
+      "size": 307,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/37690c85fde276b8383d529a9f6799b381794303"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/eatCookedMuttonV2.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "37690c85fde276b8383d529a9f6799b381794303",
+      "size": 307,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/37690c85fde276b8383d529a9f6799b381794303"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/eatCookedMuttonV3.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "37690c85fde276b8383d529a9f6799b381794303",
+      "size": 307,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/37690c85fde276b8383d529a9f6799b381794303"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/equipIronArmor.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9b6485909126b9a23f57895239f2a58174108830",
+      "size": 373,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9b6485909126b9a23f57895239f2a58174108830"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/exploreCave.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3e8f8ffe875165199acf30c951475293266f8b1d",
+      "size": 370,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/3e8f8ffe875165199acf30c951475293266f8b1d"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/exploreCaveAndGatherResources.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb3832a815ce1150ffb183cc9bfecdd2c8c20481",
+      "size": 559,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cb3832a815ce1150ffb183cc9bfecdd2c8c20481"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/exploreCaveAndGatherResourcesV2.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb3832a815ce1150ffb183cc9bfecdd2c8c20481",
+      "size": 559,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cb3832a815ce1150ffb183cc9bfecdd2c8c20481"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/fishInNearbyWaterSafely.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1c2f1d58fbf7c89a08e5a2f42254b713d9fe2979",
+      "size": 478,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1c2f1d58fbf7c89a08e5a2f42254b713d9fe2979"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/mineCoalOre.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "037c7aa6068605916b0cf5ab5d96c5420ca7ab98",
+      "size": 448,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/037c7aa6068605916b0cf5ab5d96c5420ca7ab98"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/mineCopperOreWithStonePickaxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e7057ec150ac7e3aabf031e30fa26514e26aa925",
+      "size": 471,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e7057ec150ac7e3aabf031e30fa26514e26aa925"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/mineFiveCoalOres.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0f53bb2fe3b0d27598d7cdeb3992e19cc2e5bd5f",
+      "size": 385,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0f53bb2fe3b0d27598d7cdeb3992e19cc2e5bd5f"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/mineFiveCoalOresV2.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0f53bb2fe3b0d27598d7cdeb3992e19cc2e5bd5f",
+      "size": 385,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0f53bb2fe3b0d27598d7cdeb3992e19cc2e5bd5f"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/mineFiveCopperOres.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2da104a164a021e554762a868bd3a6eddf3d6e11",
+      "size": 395,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/2da104a164a021e554762a868bd3a6eddf3d6e11"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/mineFiveIronOres.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "65a484164e42288ea4e08d45fa412d72f0d82d76",
+      "size": 443,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/65a484164e42288ea4e08d45fa412d72f0d82d76"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/mineLapisOre.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7aeed0ca77da0dd449e5a32dfea7fa22ca679bf5",
+      "size": 430,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7aeed0ca77da0dd449e5a32dfea7fa22ca679bf5"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/mineThreeIronOres.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "17c94141bca0db9b9462ab7edd6fae7067facba5",
+      "size": 442,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/17c94141bca0db9b9462ab7edd6fae7067facba5"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/mineWoodLog.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2b892468fd03dfe235810d128a8544f2a9bb0548",
+      "size": 317,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/2b892468fd03dfe235810d128a8544f2a9bb0548"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/smeltOneRawIron.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "26915b07d3a0c5bd59fdd5e1501b7f6f12fe166f",
+      "size": 366,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/26915b07d3a0c5bd59fdd5e1501b7f6f12fe166f"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/smeltRawCopper.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "386259fbcc82bbea12a037d758f7da1d41f49349",
+      "size": 425,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/386259fbcc82bbea12a037d758f7da1d41f49349"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/smeltRawIron.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7bab776cde11b14b1517c432fa7ac01983965e21",
+      "size": 492,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7bab776cde11b14b1517c432fa7ac01983965e21"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/smeltSixRawIron.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f92a0f1a0b5605d4a443c401d91edcfd2e8d054b",
+      "size": 487,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f92a0f1a0b5605d4a443c401d91edcfd2e8d054b"
+    },
+    {
+      "path": "skill_library/trial2/skill/description/smeltTwentyFiveIronIngots.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f19f2dfbeed04f8c2915f59210fd5e0fbef25320",
+      "size": 512,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f19f2dfbeed04f8c2915f59210fd5e0fbef25320"
+    },
+    {
+      "path": "skill_library/trial2/skill/skills.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c94ded90109719b05f25c2b071c2926ddf50ab82",
+      "size": 73091,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c94ded90109719b05f25c2b071c2926ddf50ab82"
+    },
+    {
+      "path": "skill_library/trial2/skill/vectordb",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "89a68b7b01926bb9ba01010577b8c2bd8051dd89",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/89a68b7b01926bb9ba01010577b8c2bd8051dd89"
+    },
+    {
+      "path": "skill_library/trial2/skill/vectordb/chroma-collections.parquet",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e42b75a35d3b3a1dfa75b15d8da0d64a19595204",
+      "size": 582,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e42b75a35d3b3a1dfa75b15d8da0d64a19595204"
+    },
+    {
+      "path": "skill_library/trial2/skill/vectordb/chroma-embeddings.parquet",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "12164e366820e67809c74d1417b3930ceb3ecea7",
+      "size": 649750,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/12164e366820e67809c74d1417b3930ceb3ecea7"
+    },
+    {
+      "path": "skill_library/trial2/skill/vectordb/index",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d03980f637259b7b45bdae8c889fcaea8f61f683",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/d03980f637259b7b45bdae8c889fcaea8f61f683"
+    },
+    {
+      "path": "skill_library/trial2/skill/vectordb/index/id_to_uuid_7b5fd116-0820-46cb-981a-a6d642d4f025.pkl",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c6780631bba018021917e174a5a38ad6f6dfef08",
+      "size": 1675,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c6780631bba018021917e174a5a38ad6f6dfef08"
+    },
+    {
+      "path": "skill_library/trial2/skill/vectordb/index/index_7b5fd116-0820-46cb-981a-a6d642d4f025.bin",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f8b0f1f7a606a107345c26cd4e12dd5984a5928d",
+      "size": 327344,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f8b0f1f7a606a107345c26cd4e12dd5984a5928d"
+    },
+    {
+      "path": "skill_library/trial2/skill/vectordb/index/index_metadata_7b5fd116-0820-46cb-981a-a6d642d4f025.pkl",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c93052ff5e94d2593cf85236b58ee3f853ae7e7b",
+      "size": 73,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c93052ff5e94d2593cf85236b58ee3f853ae7e7b"
+    },
+    {
+      "path": "skill_library/trial2/skill/vectordb/index/uuid_to_id_7b5fd116-0820-46cb-981a-a6d642d4f025.pkl",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1f1e39b241a3168e91b7ec5488e62ec89ba5633f",
+      "size": 1940,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1f1e39b241a3168e91b7ec5488e62ec89ba5633f"
+    },
+    {
+      "path": "skill_library/trial3",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "fc2007755db4e4af3d8ca31b47c729056aa765b5",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/fc2007755db4e4af3d8ca31b47c729056aa765b5"
+    },
+    {
+      "path": "skill_library/trial3/skill",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b92d11bcac9280cbf80d598f68c8f0b6d74e56b4",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/b92d11bcac9280cbf80d598f68c8f0b6d74e56b4"
+    },
+    {
+      "path": "skill_library/trial3/skill/code",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "b594cbbaf7129faf7f8a25382d5c8e282ec65162",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/b594cbbaf7129faf7f8a25382d5c8e282ec65162"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/cookChicken.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e78fc758431d545a488c28209168f98c1b53b40d",
+      "size": 619,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e78fc758431d545a488c28209168f98c1b53b40d"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/cookRawBeef.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d42538e6f0cab8cc534491ef9e63286b539994ff",
+      "size": 613,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d42538e6f0cab8cc534491ef9e63286b539994ff"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/cookRawMutton.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "39b62133351cc123660062ea4aae7cc1c1e8af20",
+      "size": 623,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/39b62133351cc123660062ea4aae7cc1c1e8af20"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/cookThreeRawChicken.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "40184a7e8ca43ac1bb44d107aee5d6fb12ad14a7",
+      "size": 361,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/40184a7e8ca43ac1bb44d107aee5d6fb12ad14a7"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftBirchBoat.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e3de839d01c33caae048ba23183856a587eb1317",
+      "size": 1606,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e3de839d01c33caae048ba23183856a587eb1317"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftBoneMeal.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4f642a3a110f1117b268d461ef4707fb5ce8b2e4",
+      "size": 591,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/4f642a3a110f1117b268d461ef4707fb5ce8b2e4"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftChest.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9e7b5de40f7674c7abffe6cd2122d77625d801f6",
+      "size": 701,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9e7b5de40f7674c7abffe6cd2122d77625d801f6"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftClock.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b82e20b3cac50854a1ffa2779436d1ccb3d666e5",
+      "size": 682,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b82e20b3cac50854a1ffa2779436d1ccb3d666e5"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftCopperBlock.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fd6b467982b3863cf956ad06dba287abdb2ddf68",
+      "size": 648,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/fd6b467982b3863cf956ad06dba287abdb2ddf68"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftDiamondSword.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1b1277d5f7694b3f38a4cb3005e2d71fed758771",
+      "size": 876,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1b1277d5f7694b3f38a4cb3005e2d71fed758771"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftFurnace.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d1ec31c97c98cf8c2e5fda260f4d2dace54625d2",
+      "size": 620,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d1ec31c97c98cf8c2e5fda260f4d2dace54625d2"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftIronChestplate.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "02a0ec3d7999dcd3a95c58dcf1aaec662d0cd848",
+      "size": 1700,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/02a0ec3d7999dcd3a95c58dcf1aaec662d0cd848"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftIronHelmet.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f390c8b12c57bfd6beb573d56865b37a61203c0d",
+      "size": 933,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f390c8b12c57bfd6beb573d56865b37a61203c0d"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftIronLeggingsAndBoots.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a73a9c84e48f2aeb6ee98cd25c46ee0c01b39aa",
+      "size": 1538,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0a73a9c84e48f2aeb6ee98cd25c46ee0c01b39aa"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftIronPickaxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "068481fc702ac36d673701fc6d5abea56c9e1bde",
+      "size": 889,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/068481fc702ac36d673701fc6d5abea56c9e1bde"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftIronSword.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "885d6288280ba8ed5366b5eff4b28863b1f6163f",
+      "size": 879,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/885d6288280ba8ed5366b5eff4b28863b1f6163f"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftShield.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fbca3f3f7fc4e8d353075b7ed3ba9381930a30d7",
+      "size": 887,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/fbca3f3f7fc4e8d353075b7ed3ba9381930a30d7"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftStoneAxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "28f655e40715242ccf8ab8146a244ff9eab2a7c5",
+      "size": 880,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/28f655e40715242ccf8ab8146a244ff9eab2a7c5"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftStoneHoe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a67ef5527034dcac2b5e5d48c7be64c2713f3200",
+      "size": 880,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a67ef5527034dcac2b5e5d48c7be64c2713f3200"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftStoneHoeV2.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a67ef5527034dcac2b5e5d48c7be64c2713f3200",
+      "size": 880,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a67ef5527034dcac2b5e5d48c7be64c2713f3200"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftStonePickaxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "04e6cbeb0a799099bfbfaaa7402a257a66b83664",
+      "size": 900,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/04e6cbeb0a799099bfbfaaa7402a257a66b83664"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftStoneShovel.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2186218ed617540e2c79d7ab7bd19116dee49cd3",
+      "size": 895,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/2186218ed617540e2c79d7ab7bd19116dee49cd3"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftStoneSword.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a1409c9f8a76c0da19603a71b764c60f84739232",
+      "size": 890,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a1409c9f8a76c0da19603a71b764c60f84739232"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftStoneTools.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "84a6799131ef260eca48f3d2426fd80145466e6a",
+      "size": 1058,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/84a6799131ef260eca48f3d2426fd80145466e6a"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftTenCobblestoneWalls.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fda59af8db867c8b081149e33273e93ff4e60f1c",
+      "size": 791,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/fda59af8db867c8b081149e33273e93ff4e60f1c"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftWoodenPickaxe.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6f5715e06e84677b1a8615cf92255af5277cc8f3",
+      "size": 1090,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/6f5715e06e84677b1a8615cf92255af5277cc8f3"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/craftWoodenSword.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b7c5b47fc92289527c88f958c3caea9f8cae4cd5",
+      "size": 905,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b7c5b47fc92289527c88f958c3caea9f8cae4cd5"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/eatCookedBeef.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a541e7cd1b6086ed4643d2463cbc737ebdefda47",
+      "size": 300,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a541e7cd1b6086ed4643d2463cbc737ebdefda47"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/eatCookedBeefV2.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a541e7cd1b6086ed4643d2463cbc737ebdefda47",
+      "size": 300,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a541e7cd1b6086ed4643d2463cbc737ebdefda47"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/eatCookedBeefV3.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a541e7cd1b6086ed4643d2463cbc737ebdefda47",
+      "size": 300,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a541e7cd1b6086ed4643d2463cbc737ebdefda47"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/eatCookedMutton.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "13ab0689d33db91c1549850b25c7b5c4489493e7",
+      "size": 314,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/13ab0689d33db91c1549850b25c7b5c4489493e7"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/eatCookedMuttonIfHungry.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f95a28d99fd62074f7b4400806f70f7b290f94d6",
+      "size": 484,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f95a28d99fd62074f7b4400806f70f7b290f94d6"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/equipIronChestplate.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f9c0d60492e848b1c63b019fa5d427df6244a261",
+      "size": 331,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f9c0d60492e848b1c63b019fa5d427df6244a261"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/equipIronHelmet.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "21db983121b4a20a72aa051ab2c01cc672d149f0",
+      "size": 301,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/21db983121b4a20a72aa051ab2c01cc672d149f0"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/equipIronLeggingsAndBoots.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "41e0fd291c9de07d8f3dc032ac428bab7c8c6a77",
+      "size": 810,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/41e0fd291c9de07d8f3dc032ac428bab7c8c6a77"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/equipShield.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f55349b68b367669cd49b2a5dd65ec7bacc5bfc3",
+      "size": 277,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f55349b68b367669cd49b2a5dd65ec7bacc5bfc3"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/killChickenWithIncreasedTime.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aaa9a6a6a6b852b762afe1cb29658d6dc170565b",
+      "size": 930,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/aaa9a6a6a6b852b762afe1cb29658d6dc170565b"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/killThreeChickens.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1187299b0b005f38401532c9f5a417a95557a3e9",
+      "size": 1090,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1187299b0b005f38401532c9f5a417a95557a3e9"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/killThreeCows.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ebe3a6833a0d70a9ab3921e60490e7e3d07e5365",
+      "size": 1014,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ebe3a6833a0d70a9ab3921e60490e7e3d07e5365"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/killThreeSheep.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c2b4c212b36f95c12665b2919d83545b4b5504d8",
+      "size": 1053,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c2b4c212b36f95c12665b2919d83545b4b5504d8"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/mineDeepslateOres.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "422661e45e20cbe9bebaab8aa0384151c23cbe7b",
+      "size": 481,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/422661e45e20cbe9bebaab8aa0384151c23cbe7b"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/mineEightCobblestone.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aa3591d25275f28d553d5a006a1c21a9ca3e5948",
+      "size": 549,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/aa3591d25275f28d553d5a006a1c21a9ca3e5948"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/mineFiveCoalOre.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "30d7238bdda43cc3d8b01a98a3261cad05c2afea",
+      "size": 602,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/30d7238bdda43cc3d8b01a98a3261cad05c2afea"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/mineFiveCopperOre.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5fef1f89c9b5f117ef849d45ed3019ded209dc7e",
+      "size": 622,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/5fef1f89c9b5f117ef849d45ed3019ded209dc7e"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/mineFourCoalOre.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "53955215c6271ce2bbf22cf48779dc3ba746e547",
+      "size": 315,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/53955215c6271ce2bbf22cf48779dc3ba746e547"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/mineTenCobbledDeepslateBelowY0.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "aaac90481010f4e9e0e25aa3cdef2ada24210687",
+      "size": 697,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/aaac90481010f4e9e0e25aa3cdef2ada24210687"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/mineThreeIronOre.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "139c5f5aa93da5c769bd6dcb2b5c349cd3c5c2fb",
+      "size": 316,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/139c5f5aa93da5c769bd6dcb2b5c349cd3c5c2fb"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/mineThreeMoreOakLogs.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "405e3a1c4a81697451f5834153917060834f77c3",
+      "size": 480,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/405e3a1c4a81697451f5834153917060834f77c3"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/mineWoodLog.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "13b9998c8d8ceeb2168a56a47550581bd1217266",
+      "size": 651,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/13b9998c8d8ceeb2168a56a47550581bd1217266"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/obtainBirchLogs.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0cd2c1094dd29276a53ef4c799f31300185c805c",
+      "size": 448,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0cd2c1094dd29276a53ef4c799f31300185c805c"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/openChestAndCheckContents.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f7f370b7e3ef4ad2a50c510c4240dc606ed77af1",
+      "size": 579,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f7f370b7e3ef4ad2a50c510c4240dc606ed77af1"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/plantOakSapling.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1cf3c4f9662832e1d229a360170939338af9059a",
+      "size": 896,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1cf3c4f9662832e1d229a360170939338af9059a"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/smeltCopperOre.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "112ca634c867123e4b42767088650cfc270a14a3",
+      "size": 962,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/112ca634c867123e4b42767088650cfc270a14a3"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/smeltFiveRawCopper.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ed6ac804e312aa3e3c8f63e2dd75ed745ab0e052",
+      "size": 362,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ed6ac804e312aa3e3c8f63e2dd75ed745ab0e052"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/smeltFiveRawGold.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9bd9c211e0eab582d8e08fb5d6b1e8ef12f9b51e",
+      "size": 631,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9bd9c211e0eab582d8e08fb5d6b1e8ef12f9b51e"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/smeltRawIron.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "686b015d9e81b8593a9fd99a7098d27afd432f1f",
+      "size": 350,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/686b015d9e81b8593a9fd99a7098d27afd432f1f"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/smeltThreeRawCopper.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ac452d4434763ff74f0f93729129c6091be5bc42",
+      "size": 363,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ac452d4434763ff74f0f93729129c6091be5bc42"
+    },
+    {
+      "path": "skill_library/trial3/skill/code/waitAndEatCookedMutton.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "00fd00884e186b7ea128872486106045b5b9fef7",
+      "size": 434,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/00fd00884e186b7ea128872486106045b5b9fef7"
+    },
+    {
+      "path": "skill_library/trial3/skill/description",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "546253d83ddaf8f929c88bb596231f1410227ca4",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/546253d83ddaf8f929c88bb596231f1410227ca4"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/cookChicken.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "37f1f9d4d156a726eec7b347f56a896e39accc87",
+      "size": 396,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/37f1f9d4d156a726eec7b347f56a896e39accc87"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/cookRawBeef.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "92c71e114afc77a757caca03876c4f114c82dd28",
+      "size": 383,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/92c71e114afc77a757caca03876c4f114c82dd28"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/cookRawMutton.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "851024e2cbc53925d825b7dd54b27f0ecd01e46d",
+      "size": 385,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/851024e2cbc53925d825b7dd54b27f0ecd01e46d"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/cookThreeRawChicken.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4baecea3075ac42650033dcbc5decf4d6b00cf0b",
+      "size": 354,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/4baecea3075ac42650033dcbc5decf4d6b00cf0b"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftBirchBoat.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cc723e33b36989d17d912e9d822aef2380b77cbe",
+      "size": 477,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cc723e33b36989d17d912e9d822aef2380b77cbe"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftBoneMeal.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6b8d76f0867564a807c627b25b93db02ae888946",
+      "size": 437,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/6b8d76f0867564a807c627b25b93db02ae888946"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftChest.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dce16c9b0c5a271a0acc8ac553b906184ce203ff",
+      "size": 385,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/dce16c9b0c5a271a0acc8ac553b906184ce203ff"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftClock.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "72975ec49b32afb73dc545e95b46365137347793",
+      "size": 359,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/72975ec49b32afb73dc545e95b46365137347793"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftCopperBlock.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e2c07446e8dfff39b479a6c254f22de9cee042c1",
+      "size": 403,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e2c07446e8dfff39b479a6c254f22de9cee042c1"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftDiamondSword.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d970acf586ccfdd37303f2abf238f3a85f19df82",
+      "size": 422,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d970acf586ccfdd37303f2abf238f3a85f19df82"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftFurnace.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "365c85c7487c502f399943c26c68b653737124b8",
+      "size": 385,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/365c85c7487c502f399943c26c68b653737124b8"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftIronChestplate.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4ecf1bb644a99d9116144e8b3379a715a5540ca7",
+      "size": 566,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/4ecf1bb644a99d9116144e8b3379a715a5540ca7"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftIronHelmet.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d83057e65ab4a4793fff0759ba75068479482c82",
+      "size": 468,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d83057e65ab4a4793fff0759ba75068479482c82"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftIronLeggingsAndBoots.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bd349d93cb543eff797f706f6a5447c9aa5660b8",
+      "size": 506,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/bd349d93cb543eff797f706f6a5447c9aa5660b8"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftIronPickaxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2dd81b5f8e0b7e7c7b6fb6d617649954a45a1469",
+      "size": 397,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/2dd81b5f8e0b7e7c7b6fb6d617649954a45a1469"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftIronSword.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1816bbbdd55ed714cea34f50212c39edcbadc503",
+      "size": 433,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1816bbbdd55ed714cea34f50212c39edcbadc503"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftShield.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f88a6fc47246342d698ed7c526aa1a7c97a01f61",
+      "size": 442,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f88a6fc47246342d698ed7c526aa1a7c97a01f61"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftStoneAxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "96a2a22889be886d6fb23dbfa9127e05a93ca17c",
+      "size": 462,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/96a2a22889be886d6fb23dbfa9127e05a93ca17c"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftStoneHoe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c0a9fc81d87949559d6a2e0ee13c959412bcc335",
+      "size": 462,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c0a9fc81d87949559d6a2e0ee13c959412bcc335"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftStoneHoeV2.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c0a9fc81d87949559d6a2e0ee13c959412bcc335",
+      "size": 462,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c0a9fc81d87949559d6a2e0ee13c959412bcc335"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftStonePickaxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4cc54b9a16aef995a0bb9b13f68e0898f948f92f",
+      "size": 345,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/4cc54b9a16aef995a0bb9b13f68e0898f948f92f"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftStoneShovel.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e77d4ef868f3e71a5e6575e1e5a5603961f66efc",
+      "size": 426,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e77d4ef868f3e71a5e6575e1e5a5603961f66efc"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftStoneSword.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "25664f4367dac68dbbd32435e3f4186931bc923d",
+      "size": 487,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/25664f4367dac68dbbd32435e3f4186931bc923d"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftStoneTools.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1c0a6010dec0881824e8aa913024eb5612091a41",
+      "size": 443,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1c0a6010dec0881824e8aa913024eb5612091a41"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftTenCobblestoneWalls.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c50c9e0ddacba496ffe03070ebb60af999124a71",
+      "size": 426,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c50c9e0ddacba496ffe03070ebb60af999124a71"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftWoodenPickaxe.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cbb51716d0da2a08f48ebf8572ed989c4be3b478",
+      "size": 522,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cbb51716d0da2a08f48ebf8572ed989c4be3b478"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/craftWoodenSword.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d777443255770d9974a7b267277c4e8e1f55ac9b",
+      "size": 380,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d777443255770d9974a7b267277c4e8e1f55ac9b"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/eatCookedBeef.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "974f4eccfcfe94d17f18355291b6cfab2a68150c",
+      "size": 246,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/974f4eccfcfe94d17f18355291b6cfab2a68150c"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/eatCookedBeefV2.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "11039b14bfde1a8bf9cb2d3677a1388497feeee6",
+      "size": 252,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/11039b14bfde1a8bf9cb2d3677a1388497feeee6"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/eatCookedBeefV3.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "11039b14bfde1a8bf9cb2d3677a1388497feeee6",
+      "size": 252,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/11039b14bfde1a8bf9cb2d3677a1388497feeee6"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/eatCookedMutton.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ac8cc51393cde83a7058cc7c24b11fcb7e40b4ed",
+      "size": 265,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ac8cc51393cde83a7058cc7c24b11fcb7e40b4ed"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/eatCookedMuttonIfHungry.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a1a93672544aa3215552e675c91ce2b500353093",
+      "size": 243,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a1a93672544aa3215552e675c91ce2b500353093"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/equipIronChestplate.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3724780388bed93f49cde1107e0dd297c4c180af",
+      "size": 324,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/3724780388bed93f49cde1107e0dd297c4c180af"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/equipIronHelmet.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fe362db9581f44ddf019e44f43a2e8b98866460b",
+      "size": 309,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/fe362db9581f44ddf019e44f43a2e8b98866460b"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/equipIronLeggingsAndBoots.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a7e44b103df923928c8a0a8f4b5ab0136f653b04",
+      "size": 330,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a7e44b103df923928c8a0a8f4b5ab0136f653b04"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/equipShield.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "878c0f3e6408a458c4be71ffd62a0634fc35ac8c",
+      "size": 285,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/878c0f3e6408a458c4be71ffd62a0634fc35ac8c"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/killChickenWithIncreasedTime.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6e29750872073f4a2947b8af36aa32a48011452a",
+      "size": 381,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/6e29750872073f4a2947b8af36aa32a48011452a"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/killThreeChickens.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "232de4229fa53dad054707626494367c292fece3",
+      "size": 423,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/232de4229fa53dad054707626494367c292fece3"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/killThreeCows.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c4e81227cb96ce53bf1ad0cccad7a7ae2ddc0b78",
+      "size": 344,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c4e81227cb96ce53bf1ad0cccad7a7ae2ddc0b78"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/killThreeSheep.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7037dba889e46535eec2a2362dc69bfd3481cc47",
+      "size": 331,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7037dba889e46535eec2a2362dc69bfd3481cc47"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/mineDeepslateOres.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "95f56825a75e8bdba7d15c529da479b0177d1483",
+      "size": 381,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/95f56825a75e8bdba7d15c529da479b0177d1483"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/mineEightCobblestone.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb9c81072a6e4c32e521cd3d6ac992344d754e4a",
+      "size": 383,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cb9c81072a6e4c32e521cd3d6ac992344d754e4a"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/mineFiveCoalOre.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e9473a1861a4e142dd1d4fa1702565eba25ba571",
+      "size": 337,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e9473a1861a4e142dd1d4fa1702565eba25ba571"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/mineFiveCopperOre.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "adcda5a3af22e1d986ef8748ba113f394e6da0bb",
+      "size": 340,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/adcda5a3af22e1d986ef8748ba113f394e6da0bb"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/mineFourCoalOre.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1517836136438c01049cebe649a88e067c096057",
+      "size": 314,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1517836136438c01049cebe649a88e067c096057"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/mineTenCobbledDeepslateBelowY0.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "56ac1587c01b0c339f3c81ab8ea12f56be7dcc5f",
+      "size": 463,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/56ac1587c01b0c339f3c81ab8ea12f56be7dcc5f"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/mineThreeIronOre.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0f6ddb4487405dbb73fd850d76a1180156762114",
+      "size": 315,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0f6ddb4487405dbb73fd850d76a1180156762114"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/mineThreeMoreOakLogs.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ed68a01115bf76f952292b89d3087fe18f68cd2b",
+      "size": 337,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ed68a01115bf76f952292b89d3087fe18f68cd2b"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/mineWoodLog.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ac6ccdb7daaf21f52de80cd5f74091a74e7ed1dc",
+      "size": 338,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ac6ccdb7daaf21f52de80cd5f74091a74e7ed1dc"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/obtainBirchLogs.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c2cc211d5d36b96d5bbe6dc54b42f1d923016180",
+      "size": 352,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c2cc211d5d36b96d5bbe6dc54b42f1d923016180"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/openChestAndCheckContents.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b3f0d25bbbcbfbe0d1ee3435d1caa6cba9df330a",
+      "size": 528,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b3f0d25bbbcbfbe0d1ee3435d1caa6cba9df330a"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/plantOakSapling.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a822559c508267a92e1c5e4c22a22c097b75b83c",
+      "size": 417,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a822559c508267a92e1c5e4c22a22c097b75b83c"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/smeltCopperOre.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5244b1ed8a4e566d6f075cc4c2f5c8ee19e90f5f",
+      "size": 491,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/5244b1ed8a4e566d6f075cc4c2f5c8ee19e90f5f"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/smeltFiveRawCopper.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb9f719b331d72079486efa11b3648f3e8edf4ce",
+      "size": 354,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cb9f719b331d72079486efa11b3648f3e8edf4ce"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/smeltFiveRawGold.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "17ec1330b75fc7c6958a342786cd6a840c289793",
+      "size": 408,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/17ec1330b75fc7c6958a342786cd6a840c289793"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/smeltRawIron.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7b5feb139d3a8d1471de3034032e15bce3a60286",
+      "size": 294,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7b5feb139d3a8d1471de3034032e15bce3a60286"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/smeltThreeRawCopper.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bb3f2eccbd6a4787720f80df6368d9afdb6eb69e",
+      "size": 329,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/bb3f2eccbd6a4787720f80df6368d9afdb6eb69e"
+    },
+    {
+      "path": "skill_library/trial3/skill/description/waitAndEatCookedMutton.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "029853e6d2dfcbd1e332a95cc08d4d7ba866fa97",
+      "size": 245,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/029853e6d2dfcbd1e332a95cc08d4d7ba866fa97"
+    },
+    {
+      "path": "skill_library/trial3/skill/skills.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9f4de1cb0d4931a6cad43b8f3e5b41f72c39fe6a",
+      "size": 65708,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9f4de1cb0d4931a6cad43b8f3e5b41f72c39fe6a"
+    },
+    {
+      "path": "skill_library/trial3/skill/vectordb",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "da048194866f6d352074264b09cbf3f6c010eaaf",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/da048194866f6d352074264b09cbf3f6c010eaaf"
+    },
+    {
+      "path": "skill_library/trial3/skill/vectordb/chroma-collections.parquet",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a3c926800e54bba837ea6a9ba2aeb63a1335983",
+      "size": 582,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0a3c926800e54bba837ea6a9ba2aeb63a1335983"
+    },
+    {
+      "path": "skill_library/trial3/skill/vectordb/chroma-embeddings.parquet",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b588abf3151d0132a50b09520a6224465ee29e68",
+      "size": 679879,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b588abf3151d0132a50b09520a6224465ee29e68"
+    },
+    {
+      "path": "skill_library/trial3/skill/vectordb/index",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "11b1b366ba125020ba4d47475cc3046aaf327a37",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/11b1b366ba125020ba4d47475cc3046aaf327a37"
+    },
+    {
+      "path": "skill_library/trial3/skill/vectordb/index/id_to_uuid_2f8ccde6-89f7-422b-87ec-8e46e8f1292a.pkl",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e085373e43fcb37b7cd88398900d650b4c788bc8",
+      "size": 1763,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e085373e43fcb37b7cd88398900d650b4c788bc8"
+    },
+    {
+      "path": "skill_library/trial3/skill/vectordb/index/index_2f8ccde6-89f7-422b-87ec-8e46e8f1292a.bin",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0b449251366229d4291b90aca583dd27c7fc046c",
+      "size": 346276,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0b449251366229d4291b90aca583dd27c7fc046c"
+    },
+    {
+      "path": "skill_library/trial3/skill/vectordb/index/index_metadata_2f8ccde6-89f7-422b-87ec-8e46e8f1292a.pkl",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9c4ba331f5f02ca96efcffb51b7ec7cdebc28405",
+      "size": 73,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9c4ba331f5f02ca96efcffb51b7ec7cdebc28405"
+    },
+    {
+      "path": "skill_library/trial3/skill/vectordb/index/uuid_to_id_2f8ccde6-89f7-422b-87ec-8e46e8f1292a.pkl",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cb3f369b7ffdc3c6eb7e79b63581a1d51a1446b5",
+      "size": 2051,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/cb3f369b7ffdc3c6eb7e79b63581a1d51a1446b5"
+    },
+    {
+      "path": "voyager",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "d015fd22fb2f5e352b39df8deff957cb985ea791",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/d015fd22fb2f5e352b39df8deff957cb985ea791"
+    },
+    {
+      "path": "voyager/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "412d1a9e0745a6e3e1079634b91924a2d39abb1a",
+      "size": 29,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/412d1a9e0745a6e3e1079634b91924a2d39abb1a"
+    },
+    {
+      "path": "voyager/agents",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "aca4e360c4b445315ead4279d5cdd6a7770de67e",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/aca4e360c4b445315ead4279d5cdd6a7770de67e"
+    },
+    {
+      "path": "voyager/agents/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3989162cf38b1b26889e496315edf1c0b8660bb9",
+      "size": 136,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/3989162cf38b1b26889e496315edf1c0b8660bb9"
+    },
+    {
+      "path": "voyager/agents/action.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b5b27ac0df0fbb9174f830db2651a7a563de5d7f",
+      "size": 10947,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b5b27ac0df0fbb9174f830db2651a7a563de5d7f"
+    },
+    {
+      "path": "voyager/agents/critic.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "34639bb8e7492663ebdb997a0d3973c467dac833",
+      "size": 4795,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/34639bb8e7492663ebdb997a0d3973c467dac833"
+    },
+    {
+      "path": "voyager/agents/curriculum.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "769c409f48536384cb16f7fe612c927e599d0d7d",
+      "size": 20381,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/769c409f48536384cb16f7fe612c927e599d0d7d"
+    },
+    {
+      "path": "voyager/agents/skill.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "08499c78bb269c42604fcff56bdafebfeddb02a0",
+      "size": 4990,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/08499c78bb269c42604fcff56bdafebfeddb02a0"
+    },
+    {
+      "path": "voyager/control_primitives",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "6a2ee0fce97027258d9634de070c53216d56c3f2",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/6a2ee0fce97027258d9634de070c53216d56c3f2"
+    },
+    {
+      "path": "voyager/control_primitives/.prettierrc.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a02bcefdab2e1654666e9d5effedc14501e98db",
+      "size": 22,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0a02bcefdab2e1654666e9d5effedc14501e98db"
+    },
+    {
+      "path": "voyager/control_primitives/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "369e587d7b1a85a7182fb9d58c1eb14956679e4a",
+      "size": 566,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/369e587d7b1a85a7182fb9d58c1eb14956679e4a"
+    },
+    {
+      "path": "voyager/control_primitives/craftHelper.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "41ae1f091ebc6ca2e490f49a10f71cd957585b0f",
+      "size": 2255,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/41ae1f091ebc6ca2e490f49a10f71cd957585b0f"
+    },
+    {
+      "path": "voyager/control_primitives/craftItem.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a26090582e53e50bc8fb8577c1ff2bc15276a560",
+      "size": 1492,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a26090582e53e50bc8fb8577c1ff2bc15276a560"
+    },
+    {
+      "path": "voyager/control_primitives/exploreUntil.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c73dcf3a9d77633d9e3feef22f75ec10968bf8bb",
+      "size": 2617,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c73dcf3a9d77633d9e3feef22f75ec10968bf8bb"
+    },
+    {
+      "path": "voyager/control_primitives/givePlacedItemBack.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "57d3537f4682b55f546c3759dd53968f3db7121c",
+      "size": 1459,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/57d3537f4682b55f546c3759dd53968f3db7121c"
+    },
+    {
+      "path": "voyager/control_primitives/killMob.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3466077b22fbef97fd3ccbc765e788e4f98f648a",
+      "size": 1671,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/3466077b22fbef97fd3ccbc765e788e4f98f648a"
+    },
+    {
+      "path": "voyager/control_primitives/mineBlock.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5746091f463200f2e2c5d74f842e47005c394345",
+      "size": 1153,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/5746091f463200f2e2c5d74f842e47005c394345"
+    },
+    {
+      "path": "voyager/control_primitives/placeItem.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "90175a7ca29fcf8aa60a96ebc96b3e34a073a18a",
+      "size": 2681,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/90175a7ca29fcf8aa60a96ebc96b3e34a073a18a"
+    },
+    {
+      "path": "voyager/control_primitives/shoot.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c0f862a0c272047ca73436d2b4b0abe388e2a6c9",
+      "size": 896,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c0f862a0c272047ca73436d2b4b0abe388e2a6c9"
+    },
+    {
+      "path": "voyager/control_primitives/smeltItem.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4f06817ad8fbb6f4057ffe828677e31ba11911f3",
+      "size": 2481,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/4f06817ad8fbb6f4057ffe828677e31ba11911f3"
+    },
+    {
+      "path": "voyager/control_primitives/useChest.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "64f02da8037a30f6bdfee7aabb4811acc93c6537",
+      "size": 4216,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/64f02da8037a30f6bdfee7aabb4811acc93c6537"
+    },
+    {
+      "path": "voyager/control_primitives/waitForMobRemoved.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "fa83d4310bbe4776e153780dab8db8cca4097e30",
+      "size": 2743,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/fa83d4310bbe4776e153780dab8db8cca4097e30"
+    },
+    {
+      "path": "voyager/control_primitives_context",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "8ddddcc361daa1f21b89c1958cc1bb9dda62fb2c",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/8ddddcc361daa1f21b89c1958cc1bb9dda62fb2c"
+    },
+    {
+      "path": "voyager/control_primitives_context/.prettierrc.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a02bcefdab2e1654666e9d5effedc14501e98db",
+      "size": 22,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0a02bcefdab2e1654666e9d5effedc14501e98db"
+    },
+    {
+      "path": "voyager/control_primitives_context/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8126c39ff3d7a2b4110aaa1f77dd8d60da037a78",
+      "size": 587,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8126c39ff3d7a2b4110aaa1f77dd8d60da037a78"
+    },
+    {
+      "path": "voyager/control_primitives_context/craftItem.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "806811d46888b1e72fa9915a1e80b8d890859338",
+      "size": 608,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/806811d46888b1e72fa9915a1e80b8d890859338"
+    },
+    {
+      "path": "voyager/control_primitives_context/exploreUntil.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "55c62a4539ac1f5ea8c391ff1d2119919d802894",
+      "size": 1110,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/55c62a4539ac1f5ea8c391ff1d2119919d802894"
+    },
+    {
+      "path": "voyager/control_primitives_context/killMob.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "670ca9753cb2c1348b5d3b597f7d8d7779c8f500",
+      "size": 446,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/670ca9753cb2c1348b5d3b597f7d8d7779c8f500"
+    },
+    {
+      "path": "voyager/control_primitives_context/mineBlock.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c6a7559e600eeaf146c78c2c06e5f457e9e31e1f",
+      "size": 483,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c6a7559e600eeaf146c78c2c06e5f457e9e31e1f"
+    },
+    {
+      "path": "voyager/control_primitives_context/mineflayer.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "43217885ca2fe281da3f7b4a9c42d7defbcedc12",
+      "size": 2523,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/43217885ca2fe281da3f7b4a9c42d7defbcedc12"
+    },
+    {
+      "path": "voyager/control_primitives_context/placeItem.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "99e06089c004e25a8ed87665a52aa7d8954ca9c7",
+      "size": 1127,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/99e06089c004e25a8ed87665a52aa7d8954ca9c7"
+    },
+    {
+      "path": "voyager/control_primitives_context/smeltItem.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a3c76257d275b7b11a2ae8dd69eacb7f7bcdf90",
+      "size": 913,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0a3c76257d275b7b11a2ae8dd69eacb7f7bcdf90"
+    },
+    {
+      "path": "voyager/control_primitives_context/useChest.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e80af3fd94a7b281729011ad53f93696ac6d7947",
+      "size": 1873,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e80af3fd94a7b281729011ad53f93696ac6d7947"
+    },
+    {
+      "path": "voyager/env",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "79528a2d954c9f02d49ef09a88c9c613f96c9fa7",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/79528a2d954c9f02d49ef09a88c9c613f96c9fa7"
+    },
+    {
+      "path": "voyager/env/.gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7d06e79c2d2351b640338ec34bc4dec8bb6b4595",
+      "size": 5162,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7d06e79c2d2351b640338ec34bc4dec8bb6b4595"
+    },
+    {
+      "path": "voyager/env/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "24db3aefe1bb291b3ea7cbafe0779bc62474146d",
+      "size": 31,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/24db3aefe1bb291b3ea7cbafe0779bc62474146d"
+    },
+    {
+      "path": "voyager/env/bridge.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "188d14ebb80aece249a6235b2b5f30e73cd1d76f",
+      "size": 6319,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/188d14ebb80aece249a6235b2b5f30e73cd1d76f"
+    },
+    {
+      "path": "voyager/env/minecraft_launcher.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "928e887cad1add910068fff90157741715886c20",
+      "size": 3991,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/928e887cad1add910068fff90157741715886c20"
+    },
+    {
+      "path": "voyager/env/mineflayer",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "89f5a1a06f56c61357659997655a7ce794ec6a86",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/89f5a1a06f56c61357659997655a7ce794ec6a86"
+    },
+    {
+      "path": "voyager/env/mineflayer/.prettierignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "1b07c39e9b4cf3756f6e3ea23f7ab6ea22a87f15",
+      "size": 34,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/1b07c39e9b4cf3756f6e3ea23f7ab6ea22a87f15"
+    },
+    {
+      "path": "voyager/env/mineflayer/.prettierrc.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0a02bcefdab2e1654666e9d5effedc14501e98db",
+      "size": 22,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0a02bcefdab2e1654666e9d5effedc14501e98db"
+    },
+    {
+      "path": "voyager/env/mineflayer/index.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7fb0a8787f87596b9be31818d022c8f0eb0d5951",
+      "size": 13449,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/7fb0a8787f87596b9be31818d022c8f0eb0d5951"
+    },
+    {
+      "path": "voyager/env/mineflayer/lib",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f27fcd7ab9c231fbf365bf0fe586a060aab05ea0",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/f27fcd7ab9c231fbf365bf0fe586a060aab05ea0"
+    },
+    {
+      "path": "voyager/env/mineflayer/lib/observation",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "43bda9e0a881a4553171bacd4076f4f72b2c45d8",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/43bda9e0a881a4553171bacd4076f4f72b2c45d8"
+    },
+    {
+      "path": "voyager/env/mineflayer/lib/observation/base.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b661a24b57c1a61b9ff09b9254ce72002212f5d3",
+      "size": 1136,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b661a24b57c1a61b9ff09b9254ce72002212f5d3"
+    },
+    {
+      "path": "voyager/env/mineflayer/lib/observation/chests.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "842bd171d579d77a328615787e0309d0b40eb1fe",
+      "size": 868,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/842bd171d579d77a328615787e0309d0b40eb1fe"
+    },
+    {
+      "path": "voyager/env/mineflayer/lib/observation/inventory.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0645d1bfa0803e155e3987d3d526f2b43d8f5936",
+      "size": 881,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0645d1bfa0803e155e3987d3d526f2b43d8f5936"
+    },
+    {
+      "path": "voyager/env/mineflayer/lib/observation/onChat.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "54b411e2ad903ca54e4cdbf2b9d8732df82a55f8",
+      "size": 593,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/54b411e2ad903ca54e4cdbf2b9d8732df82a55f8"
+    },
+    {
+      "path": "voyager/env/mineflayer/lib/observation/onError.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ac8fed9e51937c33105068e2c45800fe1c022c89",
+      "size": 495,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ac8fed9e51937c33105068e2c45800fe1c022c89"
+    },
+    {
+      "path": "voyager/env/mineflayer/lib/observation/onSave.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "e5983590ff7b5829b7a9679fee7a11f04f3cc5a7",
+      "size": 503,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/e5983590ff7b5829b7a9679fee7a11f04f3cc5a7"
+    },
+    {
+      "path": "voyager/env/mineflayer/lib/observation/status.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b031fbcf20d307bdd7895de1b29e589b10d33b40",
+      "size": 3467,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b031fbcf20d307bdd7895de1b29e589b10d33b40"
+    },
+    {
+      "path": "voyager/env/mineflayer/lib/observation/voxels.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ecb0c14b70d4b48034fd4af452bb7572073db878",
+      "size": 1783,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ecb0c14b70d4b48034fd4af452bb7572073db878"
+    },
+    {
+      "path": "voyager/env/mineflayer/lib/skillLoader.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d78cf782093b213b35d3d4c719490e3a86a7878b",
+      "size": 2283,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d78cf782093b213b35d3d4c719490e3a86a7878b"
+    },
+    {
+      "path": "voyager/env/mineflayer/lib/utils.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "68af3079602ab8d88059a9c8c4055140dda32f1d",
+      "size": 717,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/68af3079602ab8d88059a9c8c4055140dda32f1d"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "842cb59fe0255cc63ae52d09a988cdf12c38c986",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/842cb59fe0255cc63ae52d09a988cdf12c38c986"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/.gitignore",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0578fdca3844dbbdfdabfa5c927de3a1144d7d5a",
+      "size": 1634,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0578fdca3844dbbdfdabfa5c927de3a1144d7d5a"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/LICENSE",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f2896b56e45adc3d54cd6f98764d4b155b571217",
+      "size": 1070,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/f2896b56e45adc3d54cd6f98764d4b155b571217"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "555acb761e51efff08f372cb2525c8da2a230e57",
+      "size": 3756,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/555acb761e51efff08f372cb2525c8da2a230e57"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/_config.yml",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c4192631f25b34d77a7f159aa0da0e3ae99c4ef4",
+      "size": 26,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c4192631f25b34d77a7f159aa0da0e3ae99c4ef4"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/docs",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "22521380bdcc48e2bdc6a5a68fd87489427346fb",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/22521380bdcc48e2bdc6a5a68fd87489427346fb"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/docs/api.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "66d8a3ecc4a441ff3e989412fc1520e5ffdc1e17",
+      "size": 2575,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/66d8a3ecc4a441ff3e989412fc1520e5ffdc1e17"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/examples",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "80b26790742616a76771737f8e0a5cf63ae3a746",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/80b26790742616a76771737f8e0a5cf63ae3a746"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/examples/collector.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b9bb8faf9e73762856eed9d41f0da027728e82b3",
+      "size": 1603,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b9bb8faf9e73762856eed9d41f0da027728e82b3"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/examples/oreMiner.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6accac88fd3c3e29ac431c497d618d2f27f23c67",
+      "size": 1463,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/6accac88fd3c3e29ac431c497d618d2f27f23c67"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/examples/storageBot.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "b6f9971f25103612d6dd529fc4f4b42a710f1b1f",
+      "size": 3338,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/b6f9971f25103612d6dd529fc4f4b42a710f1b1f"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/package.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0f59e7aa6a1d38ed4c43923f910846d6c7998ec8",
+      "size": 1097,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0f59e7aa6a1d38ed4c43923f910846d6c7998ec8"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/src",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4a0ee64a1eb60e1e3ddfac76102d531dc16461cc",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/4a0ee64a1eb60e1e3ddfac76102d531dc16461cc"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/src/BlockVeins.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ae5542ce3a693d75262bea010b72766e3042fd0b",
+      "size": 1054,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ae5542ce3a693d75262bea010b72766e3042fd0b"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/src/CollectBlock.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d2be87822f9ab6fffe64aeae777933a3f0e61d29",
+      "size": 16178,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d2be87822f9ab6fffe64aeae777933a3f0e61d29"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/src/Inventory.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6a17d0cc525966d26e948d627febd567abf3dbc6",
+      "size": 3163,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/6a17d0cc525966d26e948d627febd567abf3dbc6"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/src/Targets.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "568d07ad98ac8b4140344ed50515ad9e6a246899",
+      "size": 1332,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/568d07ad98ac8b4140344ed50515ad9e6a246899"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/src/TaskQueue.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "81fe3bc5ae05d9f15eedbc4e9f307176ed819040",
+      "size": 1659,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/81fe3bc5ae05d9f15eedbc4e9f307176ed819040"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/src/TemporarySubscriber.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3f14a607da52bc42332ee1f6ba0999c2db76a679",
+      "size": 840,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/3f14a607da52bc42332ee1f6ba0999c2db76a679"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/src/Util.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ee0f29e0cb1034e1dd96593b73119382050b722b",
+      "size": 302,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/ee0f29e0cb1034e1dd96593b73119382050b722b"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/src/index.ts",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "45c9a85087f56b5bd771477a6fe5b1a02d986b9f",
+      "size": 753,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/45c9a85087f56b5bd771477a6fe5b1a02d986b9f"
+    },
+    {
+      "path": "voyager/env/mineflayer/mineflayer-collectblock/tsconfig.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a6076bc0c72a5ed65fd375450a97b2feefb28045",
+      "size": 5791,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a6076bc0c72a5ed65fd375450a97b2feefb28045"
+    },
+    {
+      "path": "voyager/env/mineflayer/package.json",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9e389d268c3e7e09d3ad36a9668fbac7ac587397",
+      "size": 1109,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9e389d268c3e7e09d3ad36a9668fbac7ac587397"
+    },
+    {
+      "path": "voyager/env/process_monitor.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "2ae323706088f8e8171653fe419fb5c624f7a271",
+      "size": 2847,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/2ae323706088f8e8171653fe419fb5c624f7a271"
+    },
+    {
+      "path": "voyager/prompts",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f0e986b5429a1eefda13ed7a3f301ab57966d5f8",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/f0e986b5429a1eefda13ed7a3f301ab57966d5f8"
+    },
+    {
+      "path": "voyager/prompts/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "bd9964f861bec56d3a4c74af9499541583955c69",
+      "size": 203,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/bd9964f861bec56d3a4c74af9499541583955c69"
+    },
+    {
+      "path": "voyager/prompts/action_response_format.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "df3713a8307f28c798600b215403e3b4841dd1c7",
+      "size": 225,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/df3713a8307f28c798600b215403e3b4841dd1c7"
+    },
+    {
+      "path": "voyager/prompts/action_template.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "d6061f0a2409ca9596bb43eefcba692471df1bf4",
+      "size": 2906,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/d6061f0a2409ca9596bb43eefcba692471df1bf4"
+    },
+    {
+      "path": "voyager/prompts/critic.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c42950675cf558ce747f69cae82466bb3ea94e8d",
+      "size": 4136,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/c42950675cf558ce747f69cae82466bb3ea94e8d"
+    },
+    {
+      "path": "voyager/prompts/curriculum.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "66a33c6263c1949551af21a4df1767a1beaef037",
+      "size": 2848,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/66a33c6263c1949551af21a4df1767a1beaef037"
+    },
+    {
+      "path": "voyager/prompts/curriculum_qa_step1_ask_questions.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6d93537fee089875695d80e77e7824011bea6477",
+      "size": 4092,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/6d93537fee089875695d80e77e7824011bea6477"
+    },
+    {
+      "path": "voyager/prompts/curriculum_qa_step2_answer_questions.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "860d986e497ee709b097431f54f5540e5dd9884a",
+      "size": 342,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/860d986e497ee709b097431f54f5540e5dd9884a"
+    },
+    {
+      "path": "voyager/prompts/curriculum_task_decomposition.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "0e3b1592daf21a7bd15c09f621e0eeefcebc6dc0",
+      "size": 898,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/0e3b1592daf21a7bd15c09f621e0eeefcebc6dc0"
+    },
+    {
+      "path": "voyager/prompts/skill.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "dc846cdf697b28e966222153dc8a709b664b390b",
+      "size": 2105,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/dc846cdf697b28e966222153dc8a709b664b390b"
+    },
+    {
+      "path": "voyager/utils",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "75ae073f411872288fd0e62df0a68d0ae7c02438",
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/trees/75ae073f411872288fd0e62df0a68d0ae7c02438"
+    },
+    {
+      "path": "voyager/utils/__init__.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8687afefe6132f31512673005158a66f40d56a5d",
+      "size": 92,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/8687afefe6132f31512673005158a66f40d56a5d"
+    },
+    {
+      "path": "voyager/utils/file_utils.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9fe8ff4422fa2e662fb0783c7c5cf4acfd329146",
+      "size": 15509,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/9fe8ff4422fa2e662fb0783c7c5cf4acfd329146"
+    },
+    {
+      "path": "voyager/utils/json_utils.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a1968faf4da850d31998e5efd9c51dd46b986bd6",
+      "size": 7402,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/a1968faf4da850d31998e5efd9c51dd46b986bd6"
+    },
+    {
+      "path": "voyager/utils/record_utils.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "6c168a4c6b075244c1ca5694e919742bc4500d3c",
+      "size": 3777,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/6c168a4c6b075244c1ca5694e919742bc4500d3c"
+    },
+    {
+      "path": "voyager/voyager.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "61a0c207cbaf3c9389dc0d66f5baf805d3fa3572",
+      "size": 17295,
+      "url": "https://api.github.com/repos/MineDojo/Voyager/git/blobs/61a0c207cbaf3c9389dc0d66f5baf805d3fa3572"
+    }
+  ],
+  "truncated": false
+}

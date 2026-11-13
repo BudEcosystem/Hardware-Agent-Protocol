@@ -1,0 +1,20 @@
+{
+  "current_hms": {
+    "matching": 32,
+    "mismatches": []
+  },
+  "final_snapshot": {
+    "matching": 32,
+    "mismatches": []
+  },
+  "worktree": {
+    "matching": 31,
+    "mismatches": []
+  },
+  "export": {
+    "matching": 31,
+    "mismatches": []
+  },
+  "recorded_at": "2026-11-06T01:58:35.595368+00:00",
+  "scope": "Post-test byte checks of all inventoried HMS inputs, unchanged immutable snapshot, package sources and exported patch. Removed derived __pycache__ only after process teardown; source bytes unchanged."
+}

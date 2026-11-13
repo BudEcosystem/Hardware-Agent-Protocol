@@ -1,0 +1,1 @@
+{"model": "Llama-3.2-1B-Instruct-GGUF", "cases": {"discover_first": {"error": "HTTPError: HTTP Error 500: Internal Server Error", "pass": false}, "invoke_in_bounds": {"error": "HTTPError: HTTP Error 500: Internal Server Error", "pass": false}, "refuse_out_of_bounds": {"error": "HTTPError: HTTP Error 500: Internal Server Error", "pass": false}}, "passed": 0, "total": 3}

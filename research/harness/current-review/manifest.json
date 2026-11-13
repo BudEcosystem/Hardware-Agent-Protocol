@@ -1,0 +1,888 @@
+{
+  "captured_at": "2026-11-05T23:02:55.912716+00:00",
+  "repository": "/home/bud/Desktop/bud/Bud-Meta-Harness",
+  "commit": "1f0762afd0ac9cf0a1a2e3ddb0861c0e3f7aaa44",
+  "review_start_commit": "d338750966ab11c0bb149e3b4914e2851f63e84f",
+  "observed_final_head": "1f0762afd0ac9cf0a1a2e3ddb0861c0e3f7aaa44",
+  "working_tree_status": "",
+  "original_manifest": "../manifest.json",
+  "original_commit": "655d7cec797c45f317ac623eca5319b50383b434",
+  "changed_paths_since_original": [
+    "THIRD_PARTY_NOTICES.md",
+    "apps/desktop/tests/installed-update-package-content.spec.ts",
+    "forge/catalogue/verdict.ts",
+    "forge/plan/owner-away-decisions.md",
+    "forge/plan/phase-3-status.md",
+    "forge/plan/tasks.yaml",
+    "packages/acp/acp/tests/dispose.spec.ts",
+    "packages/api/session-controller/src/commands.ts",
+    "packages/api/voice/src/read-aloud.ts",
+    "packages/attachment/attachment/README.md",
+    "packages/attachment/attachment/src/base64-chunks.ts",
+    "packages/attachment/attachment/src/index.ts",
+    "packages/attachment/attachment/tests/base64-chunks.spec.ts",
+    "packages/bundle/server/tests/server.spec.ts",
+    "packages/client/audio/src/ClipPlayer.module.css",
+    "packages/client/ui-conversation/src/client/locales.ts",
+    "packages/client/ui-voice-call/src/client/dock/CallDock.module.css",
+    "packages/core/tools/tests/gen-tool-catalog.spec.ts",
+    "packages/experimental/translator/src/storage.ts",
+    "packages/experimental/translator/tests/storage-helper.spec.ts",
+    "packages/subprocess/subprocess-local/tests/local.spec.ts",
+    "packages/waav/voice-waav/src/synthesis.ts",
+    "packages/waav/waav/src/realtime.ts",
+    "packages/waav/waav/src/socket.ts",
+    "packages/waav/waav/src/voice.ts",
+    "packages/work/work-store/src/intake/lower.ts",
+    "packages/work/work-store/src/transaction.ts",
+    "packages/work/work-store/src/transition.ts",
+    "scripts/gen-third-party-notices.ts",
+    "scripts/locale-dictionary-parity.spec.ts",
+    "scripts/release/families.spec.ts",
+    "scripts/test-ambient-environment.spec.ts"
+  ],
+  "scope": "Read-only source comparison and additional integration research; snapshots extracted from pinned commit blobs. No adjacent edits, Harness builds or Harness test execution. Full snapshots do not imply full reading; exact ranges are recorded.",
+  "changed_api_review": {
+    "artifact": "changed-adjacent-apis.diff",
+    "sha256": "6f443605891b933add7995062218c32f5bc74cbfcff0de0fd09536f952fbc3bb",
+    "paths": [
+      "packages/api/session-controller/src/commands.ts",
+      "packages/attachment/attachment/src/index.ts",
+      "packages/attachment/attachment/README.md"
+    ],
+    "coverage": "Full diff only; unchanged portions were not read. New base64 helper and its tests read in full."
+  },
+  "comparisons": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "fde379298a5fea63f6d07fd4a1ed1531cc1d37496ca9bf13415d098c6c156eba",
+      "bytes": 19075,
+      "line_count": 191,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/AGENTS.md",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          191
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "docs/architecture.md",
+      "sha256": "cc090bfe5849667dff825a33bddb2c8993a5309d954b4735bf528e76a8907c95",
+      "bytes": 21511,
+      "line_count": 185,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/docs/architecture.md",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          185
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "docs/cookbook/adding-a-tool.md",
+      "sha256": "60297e623e5fd8e0ddae421e792ed27bb2d3dad385bb01396d71cd25f2f8f523",
+      "bytes": 14664,
+      "line_count": 103,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/docs/cookbook/adding-a-tool.md",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          103
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/core/tools/src/types.ts",
+      "sha256": "d705b92e1a649357a13070dd0270812e28ce07bf5b458858a46a445bf9d74c23",
+      "bytes": 4035,
+      "line_count": 88,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/core/tools/src/types.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          88
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/extensions/tool-search/src/tool.ts",
+      "sha256": "6ca4a0f8dc5b3c2867371e8f41482d8b7be17180d7dad5bc3adba5126e488aed",
+      "bytes": 4882,
+      "line_count": 119,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/extensions/tool-search/src/tool.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          119
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/mcp/mcp-client/README.md",
+      "sha256": "69c26227199318d1ec432810aca918209f3af624c53205744b2d3c34619453e5",
+      "bytes": 25274,
+      "line_count": 305,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/mcp/mcp-client/README.md",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          305
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/mcp/mcp-client/src/tools.ts",
+      "sha256": "0a636453ef7d7aae890d7ad350d387573cfa638ed4797866b9ec63bc01bc6639",
+      "bytes": 23457,
+      "line_count": 563,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/mcp/mcp-client/src/tools.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          563
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/mcp/mcp-client/src/definition.ts",
+      "sha256": "2a85e41371406b94624ce457a9cba7ec83e72e9ad9b512597fb91a459e3f706e",
+      "bytes": 7899,
+      "line_count": 192,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/mcp/mcp-client/src/definition.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          192
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/mcp/mcp-client/tests/tool-definition.spec.ts",
+      "sha256": "6a551c2bd02771f33dcf4c2d612e7e57dbde22f7471f1f0824f14760ef2e2128",
+      "bytes": 2692,
+      "line_count": 66,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/mcp/mcp-client/tests/tool-definition.spec.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          66
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/core/tools/tests/execution-signal-types.spec.ts",
+      "sha256": "622221142bd0194a9aee21c33574a741cf8d09b0d71859d8df3fb206bd27e973",
+      "bytes": 4046,
+      "line_count": 104,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/core/tools/tests/execution-signal-types.spec.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          104
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/jobs/jobs/src/types.ts",
+      "sha256": "9cc561b127b4e7ec01a93cecea60d0b8ac0641e4a41451e777bb5ff234c63c29",
+      "bytes": 12763,
+      "line_count": 309,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/jobs/jobs/src/types.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          309
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/jobs/jobs/src/index.ts",
+      "sha256": "d8c1c3773fee7b24fa350c67276d5da3bf7002acbedf4b2c8ed65563b234cb64",
+      "bytes": 8759,
+      "line_count": 198,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/jobs/jobs/src/index.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          198
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/ptc-runtime/ptc-runtime/src/types.ts",
+      "sha256": "8bb64f989ec9ef2ab5d0068cf05b63354ab83f47ce6b659256c7e3f6dc523f2c",
+      "bytes": 8023,
+      "line_count": 170,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/ptc-runtime/ptc-runtime/src/types.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          170
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/work/streams/src/types.ts",
+      "sha256": "6cb04d171e5365e78183f8ec8970df04a801ef90ac432bb0e95221dbbcbac3db",
+      "bytes": 12727,
+      "line_count": 329,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/work/streams/src/types.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          329
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/work/streams/src/service.ts",
+      "sha256": "2347e206789c61ed70e363d58f2816064db7ff359a3d3f5121045a12954314fc",
+      "bytes": 4607,
+      "line_count": 108,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/work/streams/src/service.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          108
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/work/session-delivery/src/types.ts",
+      "sha256": "265ea8e736623f435ffa71b4eea17dfb9a82bdd7476d4cec70fb1b4d06bd0b68",
+      "bytes": 5737,
+      "line_count": 121,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/work/session-delivery/src/types.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          121
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/work/session-delivery/src/index.ts",
+      "sha256": "1210fa4c9c0565597bd63fd5aed0f5cda79c37e8a59eba6671ea958dec31d2bc",
+      "bytes": 8853,
+      "line_count": 177,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/work/session-delivery/src/index.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          177
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/work/session-delivery/src/key.ts",
+      "sha256": "8c32318fe8101b5a648a0704d55a4b488c5b8596bf2eef445257bab193cc387a",
+      "bytes": 3563,
+      "line_count": 93,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/work/session-delivery/src/key.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          93
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/guard/timeout-policy/src/index.ts",
+      "sha256": "ea462adbd27193b71d038d483e30c0e04bba66ec3461efb27b774b9736908f78",
+      "bytes": 3514,
+      "line_count": 81,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/guard/timeout-policy/src/index.ts",
+      "original_reading_status": "full",
+      "original_read_lines": [
+        [
+          1,
+          81
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/core/tools/src/index.ts",
+      "sha256": "4450f6e778b41378dd0e1ff558ab7330d7c4a3bb1c8253aed87ccc07f60deda3",
+      "bytes": 104728,
+      "line_count": 2265,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/core/tools/src/index.ts",
+      "original_reading_status": "partial",
+      "original_read_lines": [
+        [
+          200,
+          450
+        ],
+        [
+          1210,
+          1308
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/core/tools/src/schema.ts",
+      "sha256": "62712b1f7cf6e053dd8ce6a7e51d4f5d6d48c4c63c6c7b896b1cbda42111b9da",
+      "bytes": 26531,
+      "line_count": 637,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/core/tools/src/schema.ts",
+      "original_reading_status": "partial",
+      "original_read_lines": [
+        [
+          480,
+          555
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    },
+    {
+      "path": "packages/core/tools/README.md",
+      "sha256": "2407114e26b4a66d7edbfbe55eb3ae8cfa9df4ce4b985ba7d7ed4a2cc16d9cdd",
+      "bytes": 23788,
+      "line_count": 276,
+      "matches_original_snapshot": true,
+      "original_snapshot": "../snapshot/packages/core/tools/README.md",
+      "original_reading_status": "partial",
+      "original_read_lines": [
+        [
+          1,
+          190
+        ]
+      ],
+      "current_review": "byte comparison; original reading coverage retained"
+    }
+  ],
+  "entries": [
+    {
+      "path": "AGENTS.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/AGENTS.md",
+      "snapshot": "snapshot/AGENTS.md",
+      "sha256": "fde379298a5fea63f6d07fd4a1ed1531cc1d37496ca9bf13415d098c6c156eba",
+      "bytes": 19075,
+      "line_count": 191,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          191
+        ]
+      ]
+    },
+    {
+      "path": "packages/AGENTS.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/AGENTS.md",
+      "snapshot": "snapshot/packages/AGENTS.md",
+      "sha256": "2ff622ab906b77680827135e64525f9c84d757c4e7cd9b685ab9ef04e81e55d1",
+      "bytes": 6577,
+      "line_count": 29,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          29
+        ]
+      ]
+    },
+    {
+      "path": "packages/client/AGENTS.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/client/AGENTS.md",
+      "snapshot": "snapshot/packages/client/AGENTS.md",
+      "sha256": "d2d7786432b1e3cf141682c4ffbcf4e7baec88844cad93fda1fe96a4d88c706b",
+      "bytes": 29207,
+      "line_count": 162,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          162
+        ]
+      ]
+    },
+    {
+      "path": "packages/experimental/AGENTS.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/experimental/AGENTS.md",
+      "snapshot": "snapshot/packages/experimental/AGENTS.md",
+      "sha256": "b5af970c070b34fa7ddc9ebd71f82769707b21d6d8f70388bb6605959003bbd0",
+      "bytes": 1848,
+      "line_count": 9,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          9
+        ]
+      ]
+    },
+    {
+      "path": "docs/AGENTS.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/docs/AGENTS.md",
+      "snapshot": "snapshot/docs/AGENTS.md",
+      "sha256": "3c06a2e74095a32a694dbb7f0c7202a9505eb423be87e6047121f0a69ab0bd4a",
+      "bytes": 11104,
+      "line_count": 77,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          77
+        ]
+      ]
+    },
+    {
+      "path": "scripts/AGENTS.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/scripts/AGENTS.md",
+      "snapshot": "snapshot/scripts/AGENTS.md",
+      "sha256": "d48080cf69f64e3cf0e42a9b6832b480367b4ffdd5c6de96be8e6d1178e68a17",
+      "bytes": 838,
+      "line_count": 5,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          5
+        ]
+      ]
+    },
+    {
+      "path": "packages/identity/anonymous-user-id/src/index.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/identity/anonymous-user-id/src/index.ts",
+      "snapshot": "snapshot/packages/identity/anonymous-user-id/src/index.ts",
+      "sha256": "f23c6a0f0bbe62cb4d56e447aa7975ed02e765ff8f3e03f45507e249e083b87d",
+      "bytes": 8435,
+      "line_count": 191,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          191
+        ]
+      ]
+    },
+    {
+      "path": "packages/credentials/credentials/src/types.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/credentials/credentials/src/types.ts",
+      "snapshot": "snapshot/packages/credentials/credentials/src/types.ts",
+      "sha256": "84ca77248ebd9748fa22941c6ad0ef972d3a6b2fd40b348d34cdfecd97edcb71",
+      "bytes": 4287,
+      "line_count": 101,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          101
+        ]
+      ]
+    },
+    {
+      "path": "packages/credentials/credentials/src/index.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/credentials/credentials/src/index.ts",
+      "snapshot": "snapshot/packages/credentials/credentials/src/index.ts",
+      "sha256": "317fa43f7a932431348c3a2347e02fea5ddafbda8d3da7c202b1d6bd3cec1acf",
+      "bytes": 14996,
+      "line_count": 350,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          350
+        ]
+      ]
+    },
+    {
+      "path": "packages/credentials/authorization/src/types.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/credentials/authorization/src/types.ts",
+      "snapshot": "snapshot/packages/credentials/authorization/src/types.ts",
+      "sha256": "08d7e0801dbe2ec2ab67c6c78fbb8fd015af146f2f105b0407774761e595372b",
+      "bytes": 3112,
+      "line_count": 91,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          91
+        ]
+      ]
+    },
+    {
+      "path": "packages/credentials/authorization/src/index.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/credentials/authorization/src/index.ts",
+      "snapshot": "snapshot/packages/credentials/authorization/src/index.ts",
+      "sha256": "38e1c20c6e26fcc51b65d310493e01de43c50865c03f98f07f742c5627ee32d8",
+      "bytes": 19642,
+      "line_count": 450,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          450
+        ]
+      ]
+    },
+    {
+      "path": "packages/core/agent/src/types.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/core/agent/src/types.ts",
+      "snapshot": "snapshot/packages/core/agent/src/types.ts",
+      "sha256": "75ae297d9a4cfcfca8983ef5c1a23e268705a7b42ba5e00398674227257aadbe",
+      "bytes": 3789,
+      "line_count": 104,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          104
+        ]
+      ]
+    },
+    {
+      "path": "packages/experimental/README.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/experimental/README.md",
+      "snapshot": "snapshot/packages/experimental/README.md",
+      "sha256": "9f429e6ac9f95eb052bccbb46e2fce0abc3438dd90227c50e78d0209d38d16c0",
+      "bytes": 8158,
+      "line_count": 101,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          101
+        ]
+      ]
+    },
+    {
+      "path": "scripts/experimental-package-policy.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/scripts/experimental-package-policy.ts",
+      "snapshot": "snapshot/scripts/experimental-package-policy.ts",
+      "sha256": "3df6de13df79ec7f62f9705f1dd9ac54ec70f803b3c584a370f8f8d5d97e1f1b",
+      "bytes": 3270,
+      "line_count": 64,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          64
+        ]
+      ]
+    },
+    {
+      "path": "packages/experimental/tool-worktree/package.json",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/experimental/tool-worktree/package.json",
+      "snapshot": "snapshot/packages/experimental/tool-worktree/package.json",
+      "sha256": "0d7fcb7509956fe799b7e2bb427906c0f351978dff0e634c8a2fd280e7d49866",
+      "bytes": 1976,
+      "line_count": 68,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          68
+        ]
+      ]
+    },
+    {
+      "path": "packages/experimental/tool-worktree/tests/loader-composition.spec.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/experimental/tool-worktree/tests/loader-composition.spec.ts",
+      "snapshot": "snapshot/packages/experimental/tool-worktree/tests/loader-composition.spec.ts",
+      "sha256": "47e34104c51b24a4a147d702d305ef7cf0f176cf2edc84ca39a4985d016cf74d",
+      "bytes": 5669,
+      "line_count": 106,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          106
+        ]
+      ]
+    },
+    {
+      "path": "packages/experimental/agent-team-profile/package.json",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/experimental/agent-team-profile/package.json",
+      "snapshot": "snapshot/packages/experimental/agent-team-profile/package.json",
+      "sha256": "20dd6599dd859d7a22b75040b7b0bd3fb9c5c5c3ae58d3b07b071d9d4cb5d5a7",
+      "bytes": 1442,
+      "line_count": 54,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          54
+        ]
+      ]
+    },
+    {
+      "path": "packages/experimental/agent-team-profile/cordis.patch.yml",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/experimental/agent-team-profile/cordis.patch.yml",
+      "snapshot": "snapshot/packages/experimental/agent-team-profile/cordis.patch.yml",
+      "sha256": "88713cb26f84850cbca018e63d59e1a97f9ffd097eb782397ec4d1769039289d",
+      "bytes": 1132,
+      "line_count": 41,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          41
+        ]
+      ]
+    },
+    {
+      "path": "packages/experimental/client-ui-agent-team/package.json",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/experimental/client-ui-agent-team/package.json",
+      "snapshot": "snapshot/packages/experimental/client-ui-agent-team/package.json",
+      "sha256": "19cf6c5f16593fa5b44cd379895a3baee9cd9dbcaaf45e85ae9ad532e095ecb1",
+      "bytes": 2065,
+      "line_count": 73,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          73
+        ]
+      ]
+    },
+    {
+      "path": "packages/experimental/client-ui-agent-team/src/index.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/experimental/client-ui-agent-team/src/index.ts",
+      "snapshot": "snapshot/packages/experimental/client-ui-agent-team/src/index.ts",
+      "sha256": "1eff6fe14f46d1807a21f73ee698ecd73407b27c3d84edbaec9697bd56ce94df",
+      "bytes": 194,
+      "line_count": 4,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          4
+        ]
+      ]
+    },
+    {
+      "path": "packages/experimental/client-ui-agent-team/src/client/index.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/experimental/client-ui-agent-team/src/client/index.ts",
+      "snapshot": "snapshot/packages/experimental/client-ui-agent-team/src/client/index.ts",
+      "sha256": "32ab7d4eb5d458ef384a1de939dc1bd91be10906af2a3f03a46005f14a9a0268",
+      "bytes": 594,
+      "line_count": 16,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          16
+        ]
+      ]
+    },
+    {
+      "path": "packages/core/tools/tests/ptc-calls.spec.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/core/tools/tests/ptc-calls.spec.ts",
+      "snapshot": "snapshot/packages/core/tools/tests/ptc-calls.spec.ts",
+      "sha256": "2eebde500d7c1a9aa1ee67c7a9c4f0b598f0a5000eb9a12ef5560049fa1d8bfe",
+      "bytes": 4184,
+      "line_count": 89,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          89
+        ]
+      ]
+    },
+    {
+      "path": "docs/testing.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/docs/testing.md",
+      "snapshot": "snapshot/docs/testing.md",
+      "sha256": "a27c3a5569548498f31368223046c0bbe356e77603b1a84e7471ef258a8eb706",
+      "bytes": 12506,
+      "line_count": 62,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          62
+        ]
+      ]
+    },
+    {
+      "path": "docs/cookbook/adding-a-package.md",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/docs/cookbook/adding-a-package.md",
+      "snapshot": "snapshot/docs/cookbook/adding-a-package.md",
+      "sha256": "089c7c2a2cc8d10f7a0eed2d2d854d97ae250f9e8318dbdf11506dfd224ab9cc",
+      "bytes": 16043,
+      "line_count": 170,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          170
+        ]
+      ]
+    },
+    {
+      "path": "packages/attachment/attachment/src/base64-chunks.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/attachment/attachment/src/base64-chunks.ts",
+      "snapshot": "snapshot/packages/attachment/attachment/src/base64-chunks.ts",
+      "sha256": "0a74599695a901a46f48a285519df24c07e790f97c60ff55385e5564d8c4c2d1",
+      "bytes": 1004,
+      "line_count": 18,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          18
+        ]
+      ]
+    },
+    {
+      "path": "packages/attachment/attachment/tests/base64-chunks.spec.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/attachment/attachment/tests/base64-chunks.spec.ts",
+      "snapshot": "snapshot/packages/attachment/attachment/tests/base64-chunks.spec.ts",
+      "sha256": "dfb8f8d7a8995a3b15cd6acfc1fa4566f4a489604aabe387735160d9d9b5e289",
+      "bytes": 1494,
+      "line_count": 37,
+      "reading_status": "full",
+      "read_lines": [
+        [
+          1,
+          37
+        ]
+      ]
+    },
+    {
+      "path": "packages/core/agent/src/index.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/core/agent/src/index.ts",
+      "snapshot": "snapshot/packages/core/agent/src/index.ts",
+      "sha256": "76098def84c9b6b7cc8efcdfe0686899414a3d30178531f91de367e681cfbe8b",
+      "bytes": 31934,
+      "line_count": 703,
+      "reading_status": "partial",
+      "read_lines": [
+        [
+          300,
+          360
+        ]
+      ]
+    },
+    {
+      "path": "packages/core/agent/src/runtime-types.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/core/agent/src/runtime-types.ts",
+      "snapshot": "snapshot/packages/core/agent/src/runtime-types.ts",
+      "sha256": "a13a72b06e0ff667b6428b4d49af2a4575a85a603a41c62f583d7195000120e2",
+      "bytes": 20537,
+      "line_count": 419,
+      "reading_status": "partial",
+      "read_lines": [
+        [
+          167,
+          225
+        ]
+      ]
+    },
+    {
+      "path": "packages/core/tools/src/index.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/core/tools/src/index.ts",
+      "snapshot": "snapshot/packages/core/tools/src/index.ts",
+      "sha256": "4450f6e778b41378dd0e1ff558ab7330d7c4a3bb1c8253aed87ccc07f60deda3",
+      "bytes": 104728,
+      "line_count": 2265,
+      "reading_status": "partial",
+      "read_lines": [
+        [
+          200,
+          285
+        ],
+        [
+          320,
+          405
+        ]
+      ]
+    },
+    {
+      "path": "packages/core/tools/src/ptc.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/core/tools/src/ptc.ts",
+      "snapshot": "snapshot/packages/core/tools/src/ptc.ts",
+      "sha256": "6e92e803b9c6ae3f7c8636c8190c0fa93d83d845a003217e4b344c80d2f22896",
+      "bytes": 40921,
+      "line_count": 793,
+      "reading_status": "partial",
+      "read_lines": [
+        [
+          480,
+          695
+        ]
+      ]
+    },
+    {
+      "path": "packages/core/tools/tests/ptc.spec.ts",
+      "source": "/home/bud/Desktop/bud/Bud-Meta-Harness/packages/core/tools/tests/ptc.spec.ts",
+      "snapshot": "snapshot/packages/core/tools/tests/ptc.spec.ts",
+      "sha256": "46b2044debea412dc020ced3a25f335bce0c760fc2ef9ed502b42b493c0aaae0",
+      "bytes": 120617,
+      "line_count": 2581,
+      "reading_status": "partial",
+      "read_lines": [
+        [
+          1,
+          185
+        ],
+        [
+          635,
+          668
+        ]
+      ]
+    }
+  ]
+}

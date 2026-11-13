@@ -1,0 +1,30 @@
+)]}'
+{
+  "commit": "028ef9c96e96197026887c0f092424679298aae8",
+  "tree": "6e2e13adb3ebf0a7a19583d58009f8372b592387",
+  "parents": [
+    "10d97b74e2eef787d823f9bc05cb044b47d25c41"
+  ],
+  "author": {
+    "name": "Linus Torvalds",
+    "email": "torvalds@linux-foundation.org",
+    "time": "Sun Apr 12 13:48:06 2026 -0700"
+  },
+  "committer": {
+    "name": "Linus Torvalds",
+    "email": "torvalds@linux-foundation.org",
+    "time": "Sun Apr 12 13:48:06 2026 -0700"
+  },
+  "message": "Linux 7.0\n",
+  "tree_diff": [
+    {
+      "type": "modify",
+      "old_id": "4f54c5685638642357098a0324d6f35d122d9651",
+      "old_mode": 33188,
+      "old_path": "Makefile",
+      "new_id": "36d0a32fbe49be64f270e678d0024e8471c51858",
+      "new_mode": 33188,
+      "new_path": "Makefile"
+    }
+  ]
+}

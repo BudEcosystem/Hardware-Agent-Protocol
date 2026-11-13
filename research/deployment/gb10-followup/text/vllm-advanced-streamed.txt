@@ -1,0 +1,443 @@
+Serve LLMs with vLLM on One Device
+Intermediate
+30 MIN
+A locally accessible model API from one DGX Spark or Station
+Inference
+vLLM
+View on GitHub
+Overview
+Overview
+Intermediate
+Intermediate
+Advanced
+Advanced
+Troubleshooting
+Troubleshooting
+Choose and run a vLLM recipe on DGX Spark or Station
+You will choose a recipe for your device, run its commands, and test the model's API and tool calling.
+Along the way, you will see how the recipe uses memory, batches requests, and selects the code that runs the model.
+Once the endpoint works, you can tune it for your workload, save the launch command, and use it with a client such as Hermes or OpenShell.
+Step
+1
+Choose a model and recipe
+First, open the recipe page for your device and memory size.
+Use
+NVIDIA Local AI Inference Recipes
+to select a model and vLLM configuration.
+Device
+Memory
+Recommended model
+DGX Spark
+64GB unified memory
+Qwen3.8 27B (NVFP4)
+DGX Spark
+128GB unified memory
+Qwen3.8 27B (NVFP4)
+DGX Station
+748GB coherent memory
+DeepSeek V4 Flash 0731
+The recommended Spark model is also one of the models in the Intermediate tab, so you can use either path.
+If you pick a different model in the recipe page, check its prerequisites before you download it.
+Then, copy the "Start container" and "Launch" commands and save them to a file.
+The checkpoint, image, environment settings, and server flags work together.
+For example, a low-precision checkpoint needs a backend that can load and run its format, and a speculative-decoding variant may need a second checkpoint.
+Start with the full configuration from one recipe.
+NOTE
+DeepSeek V4 Flash 0731 on Station
+is the recommended Station recipe. The recipe page marks it experimental. Its setup command uses
+--gpus all
+, so on a Station with more than one GPU, select the GB300 as described in Step 3. Keep the recipe's setup and launch commands together.
+Success:
+You have saved a complete recipe for your device and chosen model.
+Step
+2
+Read the settings that shape the service
+First, check how the recipe divides memory between weights and requests.
+The model weights take up part of the device's memory.
+Serving also needs space for runtime work and the KV cache, which holds attention keys and values from tokens already processed.
+Longer requests and more requests in flight compete for that space.
+Setting
+Why it is in the recipe
+Checkpoint precision and
+--quantization
+Set how model weights are stored and run. Lower precision can reduce weight memory use; the checkpoint and backend must support it.
+--gpu-memory-utilization
+Sets the fraction of GPU memory vLLM budgets for its executor. A higher value can leave more room for KV cache, with less headroom for other use.
+--max-model-len
+Caps the total input and output tokens in a request. A large limit needs enough cache to serve long requests.
+--max-num-seqs
+Caps the number of sequences processed in one iteration. More active sequences can raise throughput and memory use.
+--kv-cache-dtype
+Sets KV-cache precision separately from weight precision. A supported lower-precision cache can hold more tokens in the same memory.
+--cpu-offload-gb
+Places some model weights in host memory. This can make a large model fit, with performance tied to host memory and the CPU–GPU link.
+See the
+vLLM serve options
+and
+quantized KV-cache guide
+for details.
+Next, check how the recipe schedules work and reuses it.
+vLLM first processes the input prompt, called
+prefill
+, then generates output tokens, called
+decode
+.
+The best settings depend on prompt length, output length, and the number of clients.
+Setting
+Why it is in the recipe
+--max-num-batched-tokens
+Sets the token budget for one scheduler iteration. With chunked prefill, smaller values can help active replies keep moving; larger values can process more prompt tokens at once.
+--enable-chunked-prefill
+Splits long prompt processing into chunks that can share batches with decode work.
+--enable-prefix-caching
+Reuses cached work for shared prompt prefixes, such as repeated system prompts or document text. It saves prompt work when the prefix matches.
+--speculative-config
+Uses a draft model or native prediction heads to propose tokens for the main model to check. The gain depends on the model and workload. Preserve any draft-checkpoint settings.
+Read more about
+scheduling and tuning
+,
+prefix caching
+, and
+speculative decoding
+.
+Then, keep the recipe's model-specific runtime settings together.
+Load formats, attention and MoE backends, compilation settings, and environment variables select code paths supported by that image and model.
+Keep them for the first run so you have a working baseline.
+For agent use, also keep the model's tool-call and reasoning parsers.
+--enable-auto-tool-choice
+allows the model to choose a tool, while
+--tool-call-parser
+reads its tool-call format.
+--reasoning-parser
+separates reasoning from the final answer; the model's chat template and request settings control whether it thinks.
+See
+tool calling
+and
+reasoning outputs
+.
+Success:
+You know which settings control capacity, scheduling, and the response format your client will receive.
+Step
+3
+Run the recipe
+First, check the setup command in a terminal on the DGX device.
+Use a local terminal on the device or an SSH session.
+Set any host variables called for by the recipe, such as
+HF_TOKEN
+.
+For Station, check that the command selects the GB300.
+If the recipe uses
+--gpus all
+and your Station has more than one GPU, get the GB300's ID on the host:
+Bash
+Copied
+Copy
+GB300_UUID
+=
+$(
+nvidia-smi --query-gpu
+=
+uuid,name
+--format
+=
+csv,noheader
+|
+\
+awk
+-F,
+'tolower(\$2) ~ /gb300/ {gsub(/[[:space:]]/, "", \$1); print \$1; exit}'
+)
+:
+"\
+${GB300_UUID
+:?
+No GB300 found}
+"
+Before running the container, replace
+--gpus all
+with
+--gpus "device=${GB300_UUID}"
+.
+Keep any GPU selection already supplied by the recipe.
+Then, run the full setup command on the DGX host.
+Docker pulls the image if it is missing.
+The setup or server command downloads model files as needed; keep any explicit download, revision, and local-path options in the recipe.
+The image supplies the vLLM build and libraries used by the configuration.
+The Hugging Face cache mount keeps model files on the host.
+Mounts for the vLLM, FlashInfer, and Triton caches also let later containers reuse compiled work.
+First startup can include downloads, compilation, and kernel tuning.
+Next, run the server command inside the container.
+A setup command that ends with
+--entrypoint /bin/bash
+and an image name opens a shell in that image.
+In that shell:
+Apply any listed environment settings
+Run the complete
+vllm serve
+command
+Leave the terminal open and follow startup output
+If the recipe already launches the server in its Docker command, follow that form directly.
+Finally, note the API address and port.
+With
+--network host
+, vLLM listens directly on the DGX host's port.
+With a Docker
+-p
+mapping, use the published host port for checks outside the container.
+With host networking, a loopback bind is enough for host-local clients and SSH forwarding.
+With port mapping, keep vLLM bound to
+0.0.0.0
+inside the container and choose the host-side bind in the mapping.
+The OpenShell handoff in Step 7 needs the service reachable from its sandbox.
+The commands below use DGX host port
+8000
+.
+Use your recipe's host port if it differs.
+Success:
+The server reports that it is ready to accept requests. Confirm readiness with the API checks in Step 4.
+Step
+4
+Test inference and tool calling
+First, open a second terminal on the DGX device and check the API.
+Run:
+Bash
+Copied
+Copy
+curl
+--fail-with-body
+-i
+http://localhost:8000/health
+curl
+--fail-with-body
+-sS
+http://localhost:8000/v1/models
+The health check should return HTTP
+200
+, and the model list should have a non-empty
+data
+array.
+Copy the served model's
+id
+for the requests below.
+It can differ from the checkpoint name when the recipe sets
+--served-model-name
+.
+Then, send a chat request with that model ID.
+Replace
+<model-id>
+and run:
+Bash
+Copied
+Copy
+curl
+--fail-with-body
+-sS
+http://localhost:8000/v1/chat/completions
+\
+-H
+'Content-Type: application/json'
+\
+-d
+'{"model":"<model-id>","messages":[{"role":"user","content":"Reply with a short greeting."}],"max_tokens":4096}'
+Success:
+choices[0].message.content
+contains an answer.
+Reasoning can use the output-token budget before an answer appears; follow the recipe's request settings or raise the budget if the response ends with
+finish_reason: length
+.
+NOTE
+For DeepSeek V4 Flash, add
+"chat_template_kwargs":{"thinking":false}
+to the JSON body of both tests here for a check with reasoning off. Reasoning controls differ by model; use the selected model's settings.
+Finally, test a tool call.
+Replace
+<model-id>
+and run:
+Bash
+Copied
+Copy
+curl
+--fail-with-body
+-sS
+http://localhost:8000/v1/chat/completions
+\
+-H
+'Content-Type: application/json'
+\
+-d
+'{"model":"<model-id>","messages":[{"role":"user","content":"Use get_weather to look up the weather in Boston."}],"tools":[{"type":"function","function":{"name":"get_weather","description":"Get current weather for a location.","parameters":{"type":"object","properties":{"location":{"type":"string"}},"required":["location"]}}}],"tool_choice":"auto","max_tokens":4096}'
+Success:
+The response contains a
+tool_calls
+entry for
+get_weather
+with Boston in its arguments, and
+finish_reason
+is
+tool_calls
+.
+This checks the model's automatic tool-call path and response format; the request declares the tool, and your client would execute it.
+If the model replies in plain text, check the recipe's tool-call settings and the chosen model's tool support.
+Step
+5
+(optional) Tune the service for your workload
+First, record a baseline with representative requests.
+Use the prompt lengths, output lengths, and client count you expect to serve.
+Record time to first token, output tokens per second, and memory use.
+For multiple clients, distinguish each client's generation rate from total throughput.
+Then, change one setting and repeat the same workload.
+Set
+--max-model-len
+to cover your actual input and output needs
+Try
+--max-num-seqs
+and
+--max-num-batched-tokens
+to balance concurrency and latency
+Compare repeated-prefix workloads with prefix caching, or test the recipe's speculative-decoding variant
+Keep the settings that improve your target measure, then rerun the chat and tool tests
+Memory capacity, request length, and concurrency form a shared budget.
+A context limit of 262144 tokens and
+--max-num-seqs 8
+do not guarantee that eight full-length requests fit at once.
+Read the KV-cache capacity and concurrency estimates in startup output, then test the load you intend to run.
+Success:
+You have measured settings that suit your workload and still pass the functional checks.
+Step
+6
+(optional) Save a repeatable launch script
+First, save the working host setup and server commands.
+Keep the image tag, checkpoint revision or path, GPU selection, cache mounts, environment settings, and tested vLLM options together.
+Then, combine the commands if you want one launch script.
+For a recipe that opens
+/bin/bash
+before you run
+vllm serve
+:
+Move the server's environment settings into Docker
+-e NAME=value
+options
+Replace
+--entrypoint /bin/bash
+with
+--entrypoint vllm
+After the image name, append
+serve
+, the checkpoint or path, and the tested server arguments
+Keep any host preparation before
+docker run
+, including recipe-specific downloads or cache setup
+Add a container name, such as
+--name vllm-local
+, and save the result as
+launch-vllm.sh
+Make it executable and run it on the DGX device:
+Bash
+Copied
+Copy
+chmod
++x launch-vllm.sh
+./launch-vllm.sh
+For a background service, replace the interactive
+-it
+options with
+-d
+.
+Follow its output with
+docker logs --tail 50 --follow vllm-local
+and stop it with
+docker stop vllm-local
+.
+If the recipe uses
+--rm
+, run the saved script again to create the next container.
+Success:
+The saved script starts the same service and passes the checks in Step 4.
+Step
+7
+Connect Hermes, OpenShell, or a laptop client
+First, use an API address reachable from your client.
+Keep the server running and use the exact model ID returned by
+/v1/models
+.
+Client
+API base URL
+Setup
+Hermes or another process on the DGX host
+http://localhost:8000/v1
+Follow the client setup with the served model ID.
+A client on your laptop
+http://localhost:8000/v1
+Forward a local port to the DGX host port with SSH, as shown below.
+The OpenShell sandbox in its playbook
+http://host.openshell.internal:8000/v1
+Keep vLLM reachable from the sandbox; the playbook uses
+--host 0.0.0.0
+and host port
+8000
+.
+The recipe's
+0.0.0.0
+bind can expose an unauthenticated API on the device's network interfaces.
+Use a trusted network or suitable access controls for that route.
+For a laptop client, open an SSH tunnel from the laptop.
+Replace
+user@dgx-host
+with your SSH login and device address, then run:
+Bash
+Copied
+Copy
+ssh
+-N
+-L
+8000
+:127.0.0.1:8000 user@dgx-host
+Keep the tunnel open, then run the health and model-list checks from a second laptop terminal.
+Use
+curl.exe
+for those checks in Windows PowerShell.
+If laptop port
+8000
+is busy, change the leftmost port to
+8001
+and use
+http://localhost:8001/v1
+in the client.
+For Hermes or OpenShell, continue with the matching playbook.
+In the
+Hermes playbook
+, use the host-local API URL and the served model ID. For DeepSeek, follow that playbook's model-specific reasoning settings.
+In the
+OpenShell playbook
+, reuse this endpoint and continue at Step 6 after exporting
+MODEL_HANDLE
+as in its Step 5. Use the ID from
+/v1/models
+; the recipe may give the service an alias.
+Success:
+Your client reaches the existing vLLM service and uses the model you tested.
+Next steps
+Use the Troubleshooting Tab for startup, memory, or connection errors.
+Review the
+vLLM tuning guide
+for further performance work.
+Use
+the vLLM cluster playbook
+for more than one DGX Spark.
+Resources
+vLLM
+Recipes
+vLLM Recipes — DGX
+Spark
+vLLM Recipes — DGX
+Station
+vLLM
+Documentation
+NGC vLLM
+Container
+DGX Spark
+Documentation
+DGX Spark
+Forum
+NVIDIA Developer
+Forums

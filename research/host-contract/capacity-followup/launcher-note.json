@@ -1,0 +1,9 @@
+{
+  "command": "python research/host-contract/capacity-followup/acquire-attach.py",
+  "exitCode": 127,
+  "stderr": "/bin/bash: line 1: python: command not found",
+  "pythonExecuted": false,
+  "acquisitionStarted": false,
+  "subsequentCommand": "python3 research/host-contract/capacity-followup/acquire-attach.py",
+  "subsequentExitCode": 0
+}

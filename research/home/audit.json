@@ -1,0 +1,19 @@
+{
+  "verified_at": "2026-11-06T22:37:57.258055+00:00",
+  "acquisitions": 38,
+  "repository_pins": 5,
+  "snapshot_files": 34,
+  "reconstructed_metadata_trees": 6891,
+  "reading_records": 35,
+  "full_records": 32,
+  "selected_records": 3,
+  "coverage_chunks": 58,
+  "hash_checks": 190,
+  "warning": "Local hashes and Git tree/blob identities verify retained bytes and stated provenance. GitHub HTTPS metadata links commits to trees; commit signatures were not independently validated. Reading coverage is reader-attested, not machine proof. No acquired source program or hardware interface was executed.",
+  "inputs": {
+    "research/home/manifest.jsonl": "c6df5a323ec46bb1476de903f92a40f97e15351f8cb07a6704f5b1ad0c78c62c",
+    "research/home/repos.json": "b87aa30b9294f0b34895e51bc7013da9d014bbc03500096e1a2c4f061b82e070",
+    "research/home/reading-home-full.json": "b2aaee85b8e2517fa6532a877c78135204c373588aba1be491747cd6f0400238",
+    "research/home/audit_home.py": "75b2d69f3ba8ff564665cbba321158062e5503b52308c93b61b636fb49e5d846"
+  }
+}

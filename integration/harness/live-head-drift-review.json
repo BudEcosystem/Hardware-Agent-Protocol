@@ -1,0 +1,1123 @@
+{
+  "schema_version": 1,
+  "reviewed_at_utc": "2026-11-06T01:03:34.663849+00:00",
+  "review_kind": "read_only_external_live_head_drift_static_review",
+  "live_checkout": "/home/bud/Desktop/bud/Bud-Meta-Harness",
+  "tested_overlay_base": "1f0762afd0ac9cf0a1a2e3ddb0861c0e3f7aaa44",
+  "inspected_live_head": "335a82eb121ccefc4c4bee98fc523a76eb218c5c",
+  "history": {
+    "base_is_ancestor": true,
+    "head_first_parent_is_tested_base": true,
+    "commits_reachable_from_head_not_base": 7,
+    "commits": [
+      {
+        "commit": "335a82eb121ccefc4c4bee98fc523a76eb218c5c",
+        "parents": [
+          "1f0762afd0ac9cf0a1a2e3ddb0861c0e3f7aaa44",
+          "765f959b8f70ccf2deb1529a6b2f079f1f4e418b"
+        ],
+        "subject": "Merge pull request #86 from BudEcosystem/feat/um2-sdk-work-items"
+      },
+      {
+        "commit": "765f959b8f70ccf2deb1529a6b2f079f1f4e418b",
+        "parents": [
+          "fb645d53755c31d2250af3e749cc5549132386c4"
+        ],
+        "subject": "Add the W-2i row to the phase 3 status"
+      },
+      {
+        "commit": "fb645d53755c31d2250af3e749cc5549132386c4",
+        "parents": [
+          "4bcbb98a4b82abaf38e428729fd31ce73b7a3a81",
+          "1f0762afd0ac9cf0a1a2e3ddb0861c0e3f7aaa44"
+        ],
+        "subject": "Merge remote-tracking branch 'origin/main' into feat/um2-sdk-work-items"
+      },
+      {
+        "commit": "4bcbb98a4b82abaf38e428729fd31ce73b7a3a81",
+        "parents": [
+          "7f5c4e24e8f1e40e4915b3686fb174521ee82d7d"
+        ],
+        "subject": "Cover the agent a new SDK session lease is composed with"
+      },
+      {
+        "commit": "7f5c4e24e8f1e40e4915b3686fb174521ee82d7d",
+        "parents": [
+          "3aff924a20ee266e5e7bf44c33f9542fb1230dc6"
+        ],
+        "subject": "Close the Python runtime closure over the SDK work-item types"
+      },
+      {
+        "commit": "3aff924a20ee266e5e7bf44c33f9542fb1230dc6",
+        "parents": [
+          "249f15a5f268be386eb8ec5e492821af057fc2af",
+          "a1b94c5e77739f543f0cda250fc466bebc2da6fc"
+        ],
+        "subject": "Merge remote-tracking branch 'origin/main' into feat/um2-sdk-work-items"
+      },
+      {
+        "commit": "249f15a5f268be386eb8ec5e492821af057fc2af",
+        "parents": [
+          "af1e03eea0e0f57b647aa37f973d6239d275bf63"
+        ],
+        "subject": "Add the SDK work-item subset in TypeScript and Python (W-2i)"
+      }
+    ]
+  },
+  "live_observation": {
+    "head_at_start": "335a82eb121ccefc4c4bee98fc523a76eb218c5c",
+    "head_at_finish": "335a82eb121ccefc4c4bee98fc523a76eb218c5c",
+    "status_at_start": "clean (empty git status --porcelain=v1)",
+    "status_at_finish": "",
+    "scope": "Tracked and nonignored untracked status; ignored dependency/build files are not asserted absent. External repository movement was observed before this task, not caused by HMS changes."
+  },
+  "changed_path_count": 132,
+  "diff_shortstat": "132 files changed, 6466 insertions(+), 476 deletions(-)",
+  "changed_paths": [
+    {
+      "status": "M",
+      "path": "apps/cli/src/trigger.ts"
+    },
+    {
+      "status": "M",
+      "path": "apps/cli/src/work.ts"
+    },
+    {
+      "status": "M",
+      "path": "apps/cli/tests/work.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "docs/capability-seams.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/config-catalog.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/config-catalog.zh.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/event-producer-consumer.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/event-producer-consumer.zh.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/persistence-catalog.i18n.yaml"
+    },
+    {
+      "status": "M",
+      "path": "docs/persistence-catalog.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/persistence-catalog.zh.md"
+    },
+    {
+      "status": "M",
+      "path": "docs/persistence-schema.json"
+    },
+    {
+      "status": "M",
+      "path": "docs/subsystems/work-items.md"
+    },
+    {
+      "status": "M",
+      "path": "forge/plan/PLAN.md"
+    },
+    {
+      "status": "M",
+      "path": "forge/plan/owner-away-decisions.md"
+    },
+    {
+      "status": "M",
+      "path": "forge/plan/phase-3-status.md"
+    },
+    {
+      "status": "M",
+      "path": "forge/plan/tasks.yaml"
+    },
+    {
+      "status": "M",
+      "path": "packages/bundle/headless/src/index.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/bundle/sdk-app/README.md"
+    },
+    {
+      "status": "M",
+      "path": "packages/bundle/sdk-app/cordis.patch.yml"
+    },
+    {
+      "status": "M",
+      "path": "packages/bundle/sdk-app/package.json"
+    },
+    {
+      "status": "M",
+      "path": "packages/extensions/tool-cordis/src/api-catalog.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/preset/agent-preset/skills/cordis-composition-reference/references/packages.md"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/client/README.md"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/client/package.json"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/client/src/api.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/client/src/client.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/client/src/index.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/src/work.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/agent-invoke.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/trigger-admit.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/trigger-clear-override.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/trigger-explain.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/trigger-override.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/trigger-rules.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/work-answer.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/work-attention.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/work-cancel.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/work-get.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/work-list.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/work-resume.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/work-retry.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/work-route.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/expected/work-items/work-settled.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/fixtures/work-items.cordis.yml"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/work-fake-runtime.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/work-items.expected.e2e.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/work-takeover.e2e.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/sdk/client/tests/work.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/protocol/README.md"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/protocol/package.json"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/protocol/src/index.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/protocol/src/types.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/protocol/tsconfig.json"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/server/README.md"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/server/src/methods.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/server/src/server.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/sdk/server/tests/methods.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/transport/README.md"
+    },
+    {
+      "status": "M",
+      "path": "packages/transport/transport-cli/README.md"
+    },
+    {
+      "status": "M",
+      "path": "packages/transport/transport-cli/src/index.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/transport/transport-cli/src/operator.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/transport/transport-cli/src/request-id.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/transport/transport-cli/src/result.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/transport/transport-cli/src/types.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/transport/transport-cli/tests/session-logs.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/transport/transport-cli/tests/takeover.e2e.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/transport/transport-cli/tests/transport.spec.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/transport/transport-sdk/README.md"
+    },
+    {
+      "status": "A",
+      "path": "packages/transport/transport-sdk/package.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/transport/transport-sdk/src/errors.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/transport/transport-sdk/src/index.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/transport/transport-sdk/src/params.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/transport/transport-sdk/tests/params.spec.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/transport/transport-sdk/tests/transport.spec.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/transport/transport-sdk/tsconfig.json"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/README.md"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/channels-builtin/README.md"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/channels-builtin/src/index.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/intake/README.md"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/intake/src/index.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/work/intake/src/intake-key.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/work/intake/tests/intake-key.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/work-executors/README.md"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/work-executors/package.json"
+    },
+    {
+      "status": "A",
+      "path": "packages/work/work-executors/src/call-source.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/work-executors/src/index.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/work-executors/tsconfig.json"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/work-ids/src/index.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/work-store/README.md"
+    },
+    {
+      "status": "A",
+      "path": "packages/work/work-store/src/describe.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/work-store/src/index.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/work-store/src/keys.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/work-store/src/schema.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/work-store/src/service.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/work-store/src/types.ts"
+    },
+    {
+      "status": "A",
+      "path": "packages/work/work-store/tests/describe.spec.ts"
+    },
+    {
+      "status": "M",
+      "path": "packages/work/work-store/tests/operations.ts"
+    },
+    {
+      "status": "M",
+      "path": "pnpm-lock.yaml"
+    },
+    {
+      "status": "M",
+      "path": "python/sdk-runtime/package.json"
+    },
+    {
+      "status": "M",
+      "path": "python/sdk/README.md"
+    },
+    {
+      "status": "M",
+      "path": "python/sdk/src/bud_meta_harness/__init__.py"
+    },
+    {
+      "status": "M",
+      "path": "python/sdk/src/bud_meta_harness/api.py"
+    },
+    {
+      "status": "M",
+      "path": "python/sdk/src/bud_meta_harness/client.py"
+    },
+    {
+      "status": "M",
+      "path": "python/sdk/src/bud_meta_harness/models.py"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/agent-invoke.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/trigger-admit.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/trigger-clear-override.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/trigger-explain.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/trigger-override.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/trigger-rules.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/work-answer.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/work-attention.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/work-cancel.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/work-get.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/work-list.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/work-resume.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/work-retry.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/work-route.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/expected/work-items/work-settled.json"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/test_work_items.py"
+    },
+    {
+      "status": "A",
+      "path": "python/sdk/tests/test_work_items_expected.py"
+    },
+    {
+      "status": "M",
+      "path": "scripts/gen-cordis-catalog.ts"
+    },
+    {
+      "status": "M",
+      "path": "scripts/gen-doc-graphs.ts"
+    },
+    {
+      "status": "M",
+      "path": "scripts/verify-application-entrypoints.ts"
+    },
+    {
+      "status": "M",
+      "path": "scripts/verify-package-readme-model-experience.ts"
+    },
+    {
+      "status": "M",
+      "path": "snapshots/sdk/sdk.snapshot.ts"
+    },
+    {
+      "status": "A",
+      "path": "snapshots/sdk/work-item-invoke/session.v4.jsonl"
+    },
+    {
+      "status": "A",
+      "path": "snapshots/sdk/work-item-invoke/snapshot.yml"
+    },
+    {
+      "status": "M",
+      "path": "tsconfig.base.json"
+    },
+    {
+      "status": "M",
+      "path": "tsconfig.host.json"
+    },
+    {
+      "status": "M",
+      "path": "vitest.expected.config.ts"
+    }
+  ],
+  "overlay_overlapping_changed_paths": [
+    "pnpm-lock.yaml",
+    "tsconfig.base.json",
+    "tsconfig.host.json"
+  ],
+  "unchanged_relevant_git_trees": [
+    {
+      "path": "packages/core",
+      "base_git_tree_oid": "44cec7acc43e42ff03ecc80b145e10d7d56578ad",
+      "head_git_tree_oid": "44cec7acc43e42ff03ecc80b145e10d7d56578ad",
+      "unchanged": true
+    },
+    {
+      "path": "vendor",
+      "base_git_tree_oid": "4e0851ead7fadad81219367ca71583e15f8d6483",
+      "head_git_tree_oid": "4e0851ead7fadad81219367ca71583e15f8d6483",
+      "unchanged": true
+    },
+    {
+      "path": "packages/ptc-runtime",
+      "base_git_tree_oid": "d269a7760977b6d7815ff4b7897c791b0172fab2",
+      "head_git_tree_oid": "d269a7760977b6d7815ff4b7897c791b0172fab2",
+      "unchanged": true
+    },
+    {
+      "path": "packages/preset/agent-session",
+      "base_git_tree_oid": "16cd2ffc2e01236b7c2a1c3040ead1ef974854cb",
+      "head_git_tree_oid": "16cd2ffc2e01236b7c2a1c3040ead1ef974854cb",
+      "unchanged": true
+    },
+    {
+      "path": "packages/boot",
+      "base_git_tree_oid": "3ae7b3cde5733317f8f13e7344e3fddef726abfd",
+      "head_git_tree_oid": "3ae7b3cde5733317f8f13e7344e3fddef726abfd",
+      "unchanged": true
+    },
+    {
+      "path": "packages/config",
+      "base_git_tree_oid": "2d728c7d1cd2100f0587f370a3bf80a0afc2c503",
+      "head_git_tree_oid": "2d728c7d1cd2100f0587f370a3bf80a0afc2c503",
+      "unchanged": true
+    },
+    {
+      "path": "packages/work/executor-session",
+      "base_git_tree_oid": "3ab75387800c38d4c380206173fab4785c043968",
+      "head_git_tree_oid": "3ab75387800c38d4c380206173fab4785c043968",
+      "unchanged": true
+    },
+    {
+      "path": "packages/subprocess",
+      "base_git_tree_oid": "d1d29741764247288fe1cb66b0864efa254e6ab0",
+      "head_git_tree_oid": "d1d29741764247288fe1cb66b0864efa254e6ab0",
+      "unchanged": true
+    },
+    {
+      "path": "packages/sandbox",
+      "base_git_tree_oid": "9076eee26e433f72dc3f1d22a17906ace84a2e65",
+      "head_git_tree_oid": "9076eee26e433f72dc3f1d22a17906ace84a2e65",
+      "unchanged": true
+    },
+    {
+      "path": "packages/session",
+      "base_git_tree_oid": "0387824ab57b81f4f784fe1ae778c73f5f084364",
+      "head_git_tree_oid": "0387824ab57b81f4f784fe1ae778c73f5f084364",
+      "unchanged": true
+    },
+    {
+      "path": "packages/llm",
+      "base_git_tree_oid": "3c0fe409dd860852704230c367fe8d70916f8674",
+      "head_git_tree_oid": "3c0fe409dd860852704230c367fe8d70916f8674",
+      "unchanged": true
+    },
+    {
+      "path": "packages/fs",
+      "base_git_tree_oid": "04a89856e3ec62b3cfa23379b72396a941bbe963",
+      "head_git_tree_oid": "04a89856e3ec62b3cfa23379b72396a941bbe963",
+      "unchanged": true
+    },
+    {
+      "path": "packages/util",
+      "base_git_tree_oid": "1a24881a294dac23504daf37c154dcc265fc0b47",
+      "head_git_tree_oid": "1a24881a294dac23504daf37c154dcc265fc0b47",
+      "unchanged": true
+    }
+  ],
+  "relevant_source_hashes": [
+    {
+      "path": "AGENTS.md",
+      "review_scope": "full_file_read",
+      "base_sha256": "fde379298a5fea63f6d07fd4a1ed1531cc1d37496ca9bf13415d098c6c156eba",
+      "head_sha256": "fde379298a5fea63f6d07fd4a1ed1531cc1d37496ca9bf13415d098c6c156eba",
+      "head_git_blob_oid": "c33615265afc2e39c6a8a210f0c141ea302be6e9",
+      "head_bytes": 19075,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/AGENTS.md",
+      "review_scope": "full_file_read",
+      "base_sha256": "2ff622ab906b77680827135e64525f9c84d757c4e7cd9b685ab9ef04e81e55d1",
+      "head_sha256": "2ff622ab906b77680827135e64525f9c84d757c4e7cd9b685ab9ef04e81e55d1",
+      "head_git_blob_oid": "a1800604ff42326e46b4af435f37a06368162027",
+      "head_bytes": 6577,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/experimental/AGENTS.md",
+      "review_scope": "full_file_read",
+      "base_sha256": "b5af970c070b34fa7ddc9ebd71f82769707b21d6d8f70388bb6605959003bbd0",
+      "head_sha256": "b5af970c070b34fa7ddc9ebd71f82769707b21d6d8f70388bb6605959003bbd0",
+      "head_git_blob_oid": "0b2d0ade49853504189183e7c98ea6aa04fd5972",
+      "head_bytes": 1848,
+      "live_matches_head": true
+    },
+    {
+      "path": "vendor/AGENTS.md",
+      "review_scope": "full_file_read",
+      "base_sha256": "3042c29db4048a99e9c244bc40d98951e5693f1c00323dd41ac94453c97496e0",
+      "head_sha256": "3042c29db4048a99e9c244bc40d98951e5693f1c00323dd41ac94453c97496e0",
+      "head_git_blob_oid": "d91a5bc09cfa89bda2133bddeb7ec4cc2d492631",
+      "head_bytes": 915,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/work/work-executors/src/call-source.ts",
+      "review_scope": "full_file_read",
+      "base_sha256": null,
+      "head_sha256": "8dc8668e5863f7e8ecd51069cd5fa02130665778c81543de2b76b5076f3b0cbf",
+      "head_git_blob_oid": "a13aaac17ec868e728223c4c077658743198794f",
+      "head_bytes": 19074,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/transport/transport-sdk/src/index.ts",
+      "review_scope": "full_file_read",
+      "base_sha256": null,
+      "head_sha256": "625e06df3a51f227a7da46d07ee6ef4ade717b07d91aafa6aa5a7eb0d426a3b5",
+      "head_git_blob_oid": "1b09bd53f9024f48cb28bcfeabda9d53e8500689",
+      "head_bytes": 16023,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/transport/transport-sdk/src/errors.ts",
+      "review_scope": "full_file_read",
+      "base_sha256": null,
+      "head_sha256": "0f7bc102d6f652f1dbe40cfa5ae6d998ffd1ccf00f5da558358e4e8e5f6ae4f9",
+      "head_git_blob_oid": "e3ce7ea8d12fe5a8a597fedd8409974a9d3af92d",
+      "head_bytes": 5341,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/transport/transport-cli/src/index.ts",
+      "review_scope": "full_file_read",
+      "base_sha256": "7d98b4b3f75d3478a3ead5b7bdcb64dbc847afe0d61c178651e9b95993750eea",
+      "head_sha256": "7a5cd2a20cce46b2083440139c2bca16c83a52256d3900114d9483310f92410e",
+      "head_git_blob_oid": "a597a47a84f18ba38644be48f317d926434b7fdb",
+      "head_bytes": 5895,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/bundle/sdk-app/cordis.patch.yml",
+      "review_scope": "full_file_read",
+      "base_sha256": "3a32ec60d9005d9b503ef7dc4739f2ebfe4b54650fa34208a96ee1eb84ebe2a0",
+      "head_sha256": "6fe05cc2af1d482cb5262a9715e9f2100d653c5ce4f04a220a55145a332f5ac5",
+      "head_git_blob_oid": "6b9751d7d66b3f3521b748e07122092ef6301af4",
+      "head_bytes": 3345,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/sdk/server/src/methods.ts",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "bda5de400947a18c4a38e57cc7bb9ef7ccbd76e76e80b461bc9165c4d6942374",
+      "head_sha256": "7878059d78dd620e10f85b6d1285f8480d582dea9eb8f62537b99a8c1b59dfc7",
+      "head_git_blob_oid": "727449ca0948d5f4dde20455e03a18948510c3d1",
+      "head_bytes": 9462,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/sdk/server/src/server.ts",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "5556655b2b7dcb3606f7bef0acb2cfc752be0e7bc94cd8e19d07fb247cc343e7",
+      "head_sha256": "bad01c4c1b878b022ad9722cc822ef4a631bc258d732c19a3a7a9739c2fa0de6",
+      "head_git_blob_oid": "16aed94ce1362023fc64d23c945ba6371bb86eaf",
+      "head_bytes": 24651,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/bundle/headless/src/index.ts",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "e3387191ba162b18b657b167e0bc708bd827c3779ee6aa21c011114b753e014e",
+      "head_sha256": "109619682788b08c795fff167eb15045be83d882bb011ac18827afad987f6a19",
+      "head_git_blob_oid": "fe06fa25e88bd066d20f38ea81a7174c7501d508",
+      "head_bytes": 30041,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/work/work-store/src/service.ts",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "90bc04f280583814fb6df94cda9a882bf48aeda22e1588a12ff09834c7614645",
+      "head_sha256": "54bf4b624fb2f67c7e2be2b4d2c2613983566930ea06489d79cb08a6f71c0596",
+      "head_git_blob_oid": "71eef90347e56c622cbabe372e476afac72f82ab",
+      "head_bytes": 12006,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/work/work-store/src/schema.ts",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "9b7573dbd816f2bfed8ecd92923499ca2b89a4d497f9a66f368b5aed37dd3230",
+      "head_sha256": "9041d1497834e458367834a9ef863c71023303dd842e5db51cf507379e2b22ae",
+      "head_git_blob_oid": "8aedc0d6f355c14d52476e4e20ca6782f13d6033",
+      "head_bytes": 19960,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/work/work-store/src/keys.ts",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "4063828fcbbea2068472e3d83c432ca461af81c1b4655f742a32a625ba06610b",
+      "head_sha256": "dfb9a742099cf19fe3b0a61e9a7072c3bbcd81971493d030d58c9c08a3121218",
+      "head_git_blob_oid": "3c10de2225c18b19b3343c5f28dbf77d8f2d1d8f",
+      "head_bytes": 9496,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/work/channels-builtin/src/index.ts",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "019252ba2a8c8766ac244accce3e1a8caf32f78dd4b703d828ac4f621240e32c",
+      "head_sha256": "8689d09767ac07ea703a1828e051c74d3170bb49fe5c65c6391100bf45a25842",
+      "head_git_blob_oid": "8a8408e5cde3270eea2b6aeeb7025dabffe47624",
+      "head_bytes": 1918,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/sdk/client/src/api.ts",
+      "review_scope": "selected_changed_hunks_read_invoke_follow",
+      "base_sha256": "eb835d49edde5e6659f6bf03ccf88f3fa676d8225aafae0e8229ff17da5a4104",
+      "head_sha256": "0877b2b1f98e52770a3cb428d25d451cf87df9d5425fd47c3dfaf8c9aa7d7ac2",
+      "head_git_blob_oid": "dcb7ea3d5aa25a6d27a8319cece1a7f21ecef907",
+      "head_bytes": 19760,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/sdk/client/src/client.ts",
+      "review_scope": "selected_changed_hunks_read_work_methods",
+      "base_sha256": "aa497b46cd124fba2ed44a439657d54e5d6fe1591b8a62abea1d03027ac67e04",
+      "head_sha256": "4b712e86228e412c29a920360230d1dec8cf0e94b0fe50981cb40038c06613dc",
+      "head_git_blob_oid": "5a9d00777f293e463e7f3d2093da113aa88b71df",
+      "head_bytes": 30383,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/sdk/protocol/src/types.ts",
+      "review_scope": "selected_changed_hunks_read_work_methods_notifications",
+      "base_sha256": "ab6c9fcaba400dd99d5e4f68e2e19e9f60277759c95bd3c080146f5bb259d9a9",
+      "head_sha256": "79249e91f8d20dad7ee5d0f99163ce13fb24eae63030d0c4f8307494680f17ac",
+      "head_git_blob_oid": "25d56bebb185e30f3f695a798d8ff1b41c6b24b7",
+      "head_bytes": 16639,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/bundle/sdk-app/package.json",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "00ef141234003d1e6e52fa508d0ef5310f8a905c616c14237037a59806a12c0e",
+      "head_sha256": "7a258ed4a1b25a7b7bae78865e4166d800d03eb80c461cf26667b0329d349e97",
+      "head_git_blob_oid": "a91a386f97f64e766a16de0e31305309b61beb41",
+      "head_bytes": 1578,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/sdk/protocol/package.json",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "68d42967bfd36c5b4cf6478edb418a28da245d213129961ab360643916641567",
+      "head_sha256": "fb08291e36b1005d40c86352cef3bf3785ba8bc9e9b4c7303c117bdf9b52fb2b",
+      "head_git_blob_oid": "aff485600ead0e330ba45c6121a066986f6b4601",
+      "head_bytes": 1390,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/sdk/protocol/tsconfig.json",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "8749f3876ef91d46f35d062f584dc03d2b93f97d656f8624f9822a99512ed3fa",
+      "head_sha256": "cc56f906f658c3906079f882c3a057683c2794eade8fb4407072baf06b84a801",
+      "head_git_blob_oid": "80ad8e2586abfb1c92bc968215d727f580824631",
+      "head_bytes": 570,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/work/work-executors/package.json",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "a8770837056b6ce351c4f38bb229c13faa5f7765b8487a5f30760f0886d32559",
+      "head_sha256": "b31072e8fe5519a53a38d1a65c831a98c10424e7b3efcd7ddc55e016a09afe27",
+      "head_git_blob_oid": "ef58f03618af0210e5945b8924a9e59311c17d6e",
+      "head_bytes": 1850,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/work/work-executors/tsconfig.json",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "7161379cbc1e23398e30c0ad9ef6787dac12ffbf1c17a724980329d46695effd",
+      "head_sha256": "e34245c9d5dada2360dde4950cb8a4d26c9c0a34658370d9fe0bac86079c5649",
+      "head_git_blob_oid": "36d7450abb62eb2cfd083d35005ebd3bc1be0dd2",
+      "head_bytes": 745,
+      "live_matches_head": true
+    },
+    {
+      "path": "python/sdk-runtime/package.json",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "25227dfc3bfca9265902b72ce3d090c9781a7d298bef6479669bc11dfb7a9738",
+      "head_sha256": "b4df7f0be267e14419550e45b09b5fa7aff1b659369352dbce530de070dcd1b6",
+      "head_git_blob_oid": "41a36e5557ad81a2be41e4894f60657198caf867",
+      "head_bytes": 9111,
+      "live_matches_head": true
+    },
+    {
+      "path": "packages/transport/transport-sdk/package.json",
+      "review_scope": "full_added_file_diff_read",
+      "base_sha256": null,
+      "head_sha256": "5720d58a9e619670f21f73fc3bcb1f45df7e8008f244a63e629949c1f837a973",
+      "head_git_blob_oid": "f7566923f47f214f3c820971c9cb3f012e46da81",
+      "head_bytes": 2113,
+      "live_matches_head": true
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "review_scope": "complete_changed_hunks_read_112_added_importer_lines",
+      "base_sha256": "864ba085e777acb18e65ed21a215f4dc06f16aea2070072cc3e7346507d71115",
+      "head_sha256": "ec10efd0c9b3fea3502b9623c29329f0659e09c02754c9c1d99c11edef7d50f5",
+      "head_git_blob_oid": "993dfbfecb66dc5f812ebb2311df58ef7e5d1393",
+      "head_bytes": 1186624,
+      "live_matches_head": true
+    },
+    {
+      "path": "tsconfig.base.json",
+      "review_scope": "complete_changed_hunks_read_and_import_alias_lookup",
+      "base_sha256": "1f8b667285c029222ea528069f6a2bb37526b395a479f3eed9f7bc0dd1575197",
+      "head_sha256": "48bc0e4dc6ecce27c7a149982663b0c4519531e048470c44624cbe2b8d661b05",
+      "head_git_blob_oid": "343b7c2d0eee8cdb046ef57c965ecaf9b21f440c",
+      "head_bytes": 50575,
+      "live_matches_head": true
+    },
+    {
+      "path": "tsconfig.host.json",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "746f2606df690035ded932eb372ccb597af459d01dd4e5df4683cea922f89adc",
+      "head_sha256": "2ad519fc6ca3e0b24210de229fb567858e386320ccdd5187a9e3c4fae53b682b",
+      "head_git_blob_oid": "33b19c45d4fae1e80ffbccd5bf6a076bda9038bb",
+      "head_bytes": 30487,
+      "live_matches_head": true
+    },
+    {
+      "path": "vitest.expected.config.ts",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "4207b6f70bc9938187d13ced4a007f051c10dc34451843b9f9ec9d51c6e5e8b8",
+      "head_sha256": "01bbc8a122084637ba0c19e773500c03ddbdc44b3746200aaae321d533664fa5",
+      "head_git_blob_oid": "8851eb66814dec319b8a5e033c02a9281ac7ea88",
+      "head_bytes": 779,
+      "live_matches_head": true
+    },
+    {
+      "path": "scripts/verify-application-entrypoints.ts",
+      "review_scope": "complete_changed_hunks_read",
+      "base_sha256": "2d48cee3a51f2a25a03e459cb59f1ef43f56e6e1f2ffc362a7bf8ebe2a863bf8",
+      "head_sha256": "c22f5ba73b0c0fef60c10620b1a12852c6f589532bb3b292e54b68637b11f586",
+      "head_git_blob_oid": "aa3f996d278d42e870c069269a66230c691e0198",
+      "head_bytes": 14730,
+      "live_matches_head": true
+    }
+  ],
+  "findings": [
+    {
+      "id": "direct-api-source-unchanged",
+      "classification": "static_compatibility_evidence",
+      "sources": [
+        "packages/core",
+        "vendor",
+        "packages/ptc-runtime",
+        "packages/preset/agent-session",
+        "packages/boot",
+        "packages/config",
+        "packages/subprocess",
+        "packages/sandbox",
+        "packages/session",
+        "packages/llm",
+        "packages/fs",
+        "packages/util"
+      ],
+      "finding": "The complete Git trees of direct HMS overlay/test dependencies are identical between the tested base and inspected head. Loader/Include, Tool schema/registry/execution/finalization, AgentLoop, Session, Node PTC, Agent session leasing service, subprocess and sandbox implementations have no source delta in those trees. No direct HMS API incompatibility was identified by this bounded static review.",
+      "limit": "Tree identity is not an execution result on the new aggregate composition or dependency environment."
+    },
+    {
+      "id": "sdk-profile-work-items",
+      "classification": "behavioral_composition_change",
+      "sources": [
+        "packages/bundle/sdk-app/cordis.patch.yml",
+        "packages/bundle/sdk-app/package.json",
+        "packages/transport/transport-sdk/src/index.ts"
+      ],
+      "finding": "SDK profile now mounts work-store and work-executors with claims=home, executor-session, channels-builtin and transport-sdk. agent/invoke and trigger/admit enter durable work-item processing; work/settled and work/attention report later lifecycle state. The old HMS focused test uses its own Loader composition and does not mount this SDK work-item surface.",
+      "hms_implication": "Any new SDK-profile HMS claim needs actual profile composition, shutdown, recovery and cancellation tests. The home claim concerns Harness work items, not HMS daemon ownership or physical resource fencing."
+    },
+    {
+      "id": "sdk-session-target",
+      "classification": "additive_api_and_behavior_change",
+      "sources": [
+        "packages/sdk/server/src/methods.ts",
+        "packages/sdk/server/src/server.ts"
+      ],
+      "finding": "SdkCall.lease now accepts optional target for composing a new session. A target supplied for a session already open in the SDK runtime is refused; creation passes the selected target into agentSessions.compose. durablePromptContent is exported and clones the no-image content array.",
+      "hms_implication": "Direct core agent-session API is unchanged. A new SDK entry path must ensure the intended agent/profile includes the hardware layer; existing Session attribution must not become HMS authorization."
+    },
+    {
+      "id": "request-replay-vs-hms-intent",
+      "classification": "lifecycle_change_and_binding_boundary",
+      "sources": [
+        "packages/work/work-executors/src/call-source.ts",
+        "packages/transport/transport-cli/src/index.ts",
+        "packages/transport/transport-sdk/src/index.ts",
+        "packages/sdk/client/src/api.ts"
+      ],
+      "finding": "CLI/SDK share CallSource: source-scoped native key combines home and requestId; fingerprint mismatch is refused; an ended item returns stored result, while an open item can be taken over. A session occupied by queued/running/settling work is awaited; other open waiting work refuses the new request as busy. SDK invoke selects the existing work item before composing a new session on an exact repeated request.",
+      "hms_implication": "Harness request IDs and work-item takeover are a separate layer from immutable HMS intent keys and receipts. work/retry or a fresh agent turn must not be treated as evidence that an accepted HMS operation did not run. Reconcile retained HMS requests and operations after ambiguous outcomes."
+    },
+    {
+      "id": "cancellation-and-authority",
+      "classification": "integration_risk_not_a_confirmed_regression",
+      "sources": [
+        "packages/transport/transport-sdk/src/index.ts",
+        "packages/work/work-executors/src/call-source.ts",
+        "packages/work/work-store/src/service.ts",
+        "integration/harness/packages/tool-hardware/src/index.ts",
+        "integration/harness/packages/hardware-hms/src/index.ts"
+      ],
+      "finding": "New SDK work/cancel, work/retry and work/resume operate on Harness work items; watcher lifetime is tied to the SDK call/runtime signal, and shutdown ends watches with later work/get reconciliation. The local SDK operator principal derives from the process account. No new bridge from these work-item methods to the HMS hardware_cancel operation exists in the retained overlay.",
+      "hms_implication": "Canceling a Harness item/turn or client subprocess must retain uncertainty for an already accepted HMS operation; use explicit HMS cancellation and operation reads for that layer. Work-item or Session IDs do not add per-agent authority to the same-UID HMS service."
+    },
+    {
+      "id": "build-and-overlay-overlap",
+      "classification": "revalidation_required",
+      "sources": [
+        "pnpm-lock.yaml",
+        "tsconfig.base.json",
+        "tsconfig.host.json",
+        "packages/sdk/protocol/package.json",
+        "packages/work/work-executors/package.json",
+        "python/sdk-runtime/package.json"
+      ],
+      "finding": "Exactly three files touched by the retained overlay also changed upstream: pnpm-lock.yaml, tsconfig.base.json and tsconfig.host.json. Upstream adds transport-sdk mapping/project reference and 112 lockfile importer lines, plus SDK/protocol/work/Python runtime dependency declarations. Root package.json, pnpm-workspace.yaml and scripts/run-gates.ts have no diff.",
+      "hms_implication": "Reconcile the overlay against the new exact head and rerun dependency, compiled-export, focused type/lint/native/PTC/Session and build artifact/check evidence before claiming support. Neither clean patch applicability nor passing builds/tests at the new head was tested here."
+    }
+  ],
+  "preserved_hms_evidence": [
+    {
+      "path": "integration/harness/harness.patch",
+      "sha256": "ed97e322c1ed008b658db2a151a96797f95a57825293e80eab4471e62c09d740",
+      "base_commit": "1f0762afd0ac9cf0a1a2e3ddb0861c0e3f7aaa44",
+      "unchanged_by_review": true
+    },
+    {
+      "path": "integration/harness/verification.json",
+      "sha256": "0355ea7f194a74f97d8b4f22ab5d69eb7709ec26bcf0052b458dc05a5fa4a981",
+      "declared_harness_base_commit": "1f0762afd0ac9cf0a1a2e3ddb0861c0e3f7aaa44",
+      "declared_focused_tests_passed": 12,
+      "unchanged_by_review": true
+    },
+    {
+      "path": "integration/harness/README.md",
+      "sha256": "373ddd4ee591fd98c78554caa9c4559e032fd6cfadfab1fca53cbdd70cb78506",
+      "review_scope": "existing_overlay_relevance_read_or_prior_review_not_executed_now",
+      "unchanged_by_review": true
+    },
+    {
+      "path": "integration/harness/packages/hardware-profile/cordis.patch.yml",
+      "sha256": "22cb1172e71100e884f819695b9958be4ea2153d9a36ef2a881993b8aff787bc",
+      "review_scope": "existing_overlay_relevance_read_or_prior_review_not_executed_now",
+      "unchanged_by_review": true
+    },
+    {
+      "path": "integration/harness/packages/tool-hardware/tests/hms-integration.spec.ts",
+      "sha256": "e57a5ff1208f48c02111c10b3602e64c766ac3693ec3be21c3a5f257bab51958",
+      "review_scope": "existing_overlay_relevance_read_or_prior_review_not_executed_now",
+      "unchanged_by_review": true
+    },
+    {
+      "path": "integration/harness/packages/tool-hardware/src/index.ts",
+      "sha256": "74a64b90e2748af19c96fbe72571ddf2f5b5099c597aa4bf3d34a6ab759b3eca",
+      "review_scope": "existing_overlay_relevance_read_or_prior_review_not_executed_now",
+      "unchanged_by_review": true
+    },
+    {
+      "path": "integration/harness/packages/hardware-hms/src/index.ts",
+      "sha256": "14dc61db35c278142bbde2420871a4bb1ca960f319be3149a3bc83bbe00e670c",
+      "review_scope": "existing_overlay_relevance_read_or_prior_review_not_executed_now",
+      "unchanged_by_review": true
+    }
+  ],
+  "conclusion": {
+    "direct_api_break_identified": false,
+    "next_native_revalidation_warranted": true,
+    "prior_tests_validate_inspected_head": false,
+    "reason": "Direct dependency source trees are unchanged, but shared build inputs and SDK/CLI work-item composition changed. Static inspection cannot transfer the tested 1f0762af overlay receipts to 335a82eb.",
+    "recommended_next_scope": [
+      "Only after separate authorization/coordination: reconcile the overlay in a new isolated checkout pinned to the desired head; preserve existing 1f0762af artifacts.",
+      "Rerun actual native and Node PTC prepare/invoke/exact replay/query, explicit HMS cancel, abort uncertainty, Loader disposal, AgentLoop and Session reconstruction tests; rerun focused types/lint, built exports and current build:artifacts/build:check.",
+      "If SDK or shipped CLI profile support is claimed, add a real supported-profile work-item run with request replay/mismatch, busy session, work/cancel versus accepted HMS operation, retry/resume/takeover and shutdown/reconnect reconciliation.",
+      "Keep all same-UID, simulation-only, no physical completion, and unresolved production persistence/profile-release limits explicit."
+    ]
+  },
+  "commands_run_categories": [
+    "Read-only local Git history, ancestry, name/status/stat and source diffs; Git show/cat-file/rev-parse for immutable objects.",
+    "Read existing live instructions and selected source files/changes; read retained HMS overlay/receipts.",
+    "Original Python standard-library hash/report assembly; only this new HMS report file written."
+  ],
+  "not_performed": [
+    "No live checkout edits, checkout/reset/merge/rebase/fetch/pull/push or new worktree.",
+    "No patch application or patch applicability check at the inspected head.",
+    "No package installation, build, generator, test, native launch, PTC execution, SDK/CLI execution or acquired code execution.",
+    "No complete 132-file semantic review; changed-path inventory is complete, relevant sources have explicit full-file or selected-diff reading scope.",
+    "No assertion that previous 1f0762af tests/builds validate 335a82eb, or that external commits are authored by this task."
+  ]
+}

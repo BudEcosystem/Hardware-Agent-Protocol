@@ -1,0 +1,106 @@
+[
+  {
+    "id": "linux-getrusage",
+    "headings": [
+      [
+        "h1",
+        "getrusage(2) \u2014 Linux manual page"
+      ],
+      [
+        "h2",
+        "NAME  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "LIBRARY  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "SYNOPSIS  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "DESCRIPTION  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "RETURN VALUE  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "ERRORS  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "ATTRIBUTES  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "STANDARDS  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "HISTORY  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "NOTES  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "SEE ALSO  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "COLOPHON  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ]
+    ],
+    "images": [
+      {
+        "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+        "alt": "Cover of TLPI"
+      },
+      {
+        "class": "statcounter",
+        "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+        "alt": "Web Analytics Made Easy -\nStatCounter"
+      }
+    ]
+  },
+  {
+    "id": "linux-proc-pid-stat",
+    "headings": [
+      [
+        "h1",
+        "proc_pid_stat(5) \u2014 Linux manual page"
+      ],
+      [
+        "h2",
+        "NAME  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "DESCRIPTION  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "SEE ALSO  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ],
+      [
+        "h2",
+        "COLOPHON  \u00a0 \u00a0 \u00a0 \u00a0 top"
+      ]
+    ],
+    "images": [
+      {
+        "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+        "alt": "Cover of TLPI"
+      },
+      {
+        "class": "statcounter",
+        "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+        "alt": "Web Analytics Made Easy -\nStatCounter"
+      }
+    ]
+  }
+]

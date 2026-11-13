@@ -1,0 +1,330 @@
+{
+  "profile": "hms.synthetic-io-installation/1",
+  "driver": "sqlite-finite-io/1",
+  "boardId": "board",
+  "topology": {
+    "profile": "hms.resource-topology/0.1",
+    "topologyId": "synthetic:board-hub",
+    "deployment": "simulation:io-hub",
+    "nodes": {
+      "hub": {
+        "kind": "hub",
+        "contains": [
+          "board",
+          "svcA",
+          "svcB"
+        ],
+        "requires": [],
+        "properties": {}
+      },
+      "board": {
+        "kind": "board",
+        "contains": [
+          "pin5",
+          "pin6",
+          "timer0",
+          "gpio5",
+          "gpio6",
+          "pwm5",
+          "rawtimer"
+        ],
+        "requires": [],
+        "properties": {}
+      },
+      "svcA": {
+        "kind": "service",
+        "contains": [
+          "driverA"
+        ],
+        "requires": [
+          "hub"
+        ],
+        "properties": {
+          "serviceProfile": "synthetic-service/0.1"
+        }
+      },
+      "svcB": {
+        "kind": "service",
+        "contains": [
+          "driverB"
+        ],
+        "requires": [
+          "hub"
+        ],
+        "properties": {
+          "serviceProfile": "synthetic-service/0.1"
+        }
+      },
+      "driverA": {
+        "kind": "driver",
+        "contains": [],
+        "requires": [
+          "svcA"
+        ],
+        "properties": {
+          "driverProfile": "synthetic-io-hub/0.1"
+        }
+      },
+      "driverB": {
+        "kind": "driver",
+        "contains": [],
+        "requires": [
+          "svcB"
+        ],
+        "properties": {
+          "driverProfile": "synthetic-io-hub/0.1"
+        }
+      },
+      "pin5": {
+        "kind": "pin",
+        "contains": [],
+        "requires": [],
+        "properties": {
+          "electrical": {
+            "evidenceMode": "simulation",
+            "nominalMilliVolt": 3300,
+            "maxSourceMicroAmp": 10000,
+            "maxSinkMicroAmp": 10000,
+            "modes": [
+              "digital_input",
+              "push_pull_output",
+              "pwm_output"
+            ],
+            "idleMode": "high_impedance"
+          }
+        }
+      },
+      "pin6": {
+        "kind": "pin",
+        "contains": [],
+        "requires": [],
+        "properties": {
+          "electrical": {
+            "evidenceMode": "simulation",
+            "nominalMilliVolt": 3300,
+            "maxSourceMicroAmp": 10000,
+            "maxSinkMicroAmp": 10000,
+            "modes": [
+              "digital_input",
+              "push_pull_output",
+              "pwm_output"
+            ],
+            "idleMode": "high_impedance"
+          }
+        }
+      },
+      "timer0": {
+        "kind": "timer",
+        "contains": [
+          "chan0"
+        ],
+        "requires": [],
+        "properties": {
+          "minFrequencyHz": 100,
+          "maxFrequencyHz": 10000,
+          "resolutionBits": 8
+        }
+      },
+      "chan0": {
+        "kind": "timer_channel",
+        "contains": [],
+        "requires": [],
+        "properties": {
+          "timer": "timer0",
+          "pin": "pin5"
+        }
+      },
+      "gpio5": {
+        "kind": "gpio_access",
+        "contains": [],
+        "requires": [
+          "driverA"
+        ],
+        "properties": {
+          "pin": "pin5"
+        }
+      },
+      "gpio6": {
+        "kind": "gpio_access",
+        "contains": [],
+        "requires": [
+          "driverB"
+        ],
+        "properties": {
+          "pin": "pin6"
+        }
+      },
+      "pwm5": {
+        "kind": "pwm_access",
+        "contains": [],
+        "requires": [
+          "driverA"
+        ],
+        "properties": {
+          "channel": "chan0"
+        }
+      },
+      "rawtimer": {
+        "kind": "timer_access",
+        "contains": [],
+        "requires": [
+          "driverA"
+        ],
+        "properties": {
+          "timer": "timer0"
+        }
+      }
+    },
+    "atoms": {
+      "atom:svcA": {
+        "node": "svcA",
+        "purpose": "lifecycle"
+      },
+      "atom:svcB": {
+        "node": "svcB",
+        "purpose": "lifecycle"
+      },
+      "atom:driverA": {
+        "node": "driverA",
+        "purpose": "lifecycle"
+      },
+      "atom:driverB": {
+        "node": "driverB",
+        "purpose": "lifecycle"
+      },
+      "atom:pin5": {
+        "node": "pin5",
+        "purpose": "exclusive_hardware"
+      },
+      "atom:pin6": {
+        "node": "pin6",
+        "purpose": "exclusive_hardware"
+      },
+      "atom:timer0": {
+        "node": "timer0",
+        "purpose": "exclusive_hardware"
+      },
+      "atom:chan0": {
+        "node": "chan0",
+        "purpose": "exclusive_hardware"
+      }
+    },
+    "aliases": {
+      "alias:gpio5": {
+        "node": "gpio5",
+        "includes": [
+          "atom:pin5"
+        ]
+      },
+      "alias:gpio6": {
+        "node": "gpio6",
+        "includes": [
+          "atom:pin6"
+        ]
+      },
+      "alias:pwm5": {
+        "node": "pwm5",
+        "includes": [
+          "alias:gpio5",
+          "atom:timer0",
+          "atom:chan0"
+        ]
+      },
+      "alias:timer0": {
+        "node": "rawtimer",
+        "includes": [
+          "atom:timer0"
+        ]
+      }
+    },
+    "consumers": [
+      {
+        "instanceId": "sim:gpio5",
+        "actionId": "gpio_pulse",
+        "rootAliases": [
+          "alias:gpio5"
+        ],
+        "requires": []
+      },
+      {
+        "instanceId": "sim:gpio6",
+        "actionId": "gpio_pulse",
+        "rootAliases": [
+          "alias:gpio6"
+        ],
+        "requires": []
+      },
+      {
+        "instanceId": "sim:pwm5",
+        "actionId": "pwm_burst",
+        "rootAliases": [
+          "alias:pwm5"
+        ],
+        "requires": []
+      },
+      {
+        "instanceId": "sim:gpio5:other-route",
+        "actionId": "gpio_pulse",
+        "rootAliases": [
+          "alias:gpio5"
+        ],
+        "requires": []
+      }
+    ]
+  },
+  "initialGenerations": {
+    "profile": "hms.resource-generations/0.1",
+    "revision": 1,
+    "nodes": {
+      "hub": "generation:1",
+      "board": "generation:1",
+      "svcA": "generation:1",
+      "svcB": "generation:1",
+      "driverA": "generation:1",
+      "driverB": "generation:1",
+      "pin5": "generation:1",
+      "pin6": "generation:1",
+      "timer0": "generation:1",
+      "chan0": "generation:1",
+      "gpio5": "generation:1",
+      "gpio6": "generation:1",
+      "pwm5": "generation:1",
+      "rawtimer": "generation:1"
+    }
+  },
+  "routes": {
+    "profile": "hms.resource-route-inventory/0.1",
+    "adapters": {
+      "io:routeA": [
+        "sim:gpio5",
+        "sim:pwm5"
+      ],
+      "io:routeB": [
+        "sim:gpio6",
+        "sim:gpio5:other-route"
+      ]
+    }
+  },
+  "handlers": [
+    {
+      "instanceId": "sim:gpio5",
+      "actionId": "gpio_pulse",
+      "primitive": "gpio_pulse"
+    },
+    {
+      "instanceId": "sim:gpio6",
+      "actionId": "gpio_pulse",
+      "primitive": "gpio_pulse"
+    },
+    {
+      "instanceId": "sim:pwm5",
+      "actionId": "pwm_burst",
+      "primitive": "pwm_burst"
+    },
+    {
+      "instanceId": "sim:gpio5:other-route",
+      "actionId": "gpio_pulse",
+      "primitive": "gpio_pulse"
+    }
+  ]
+}

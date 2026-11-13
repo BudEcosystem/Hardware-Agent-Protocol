@@ -1,0 +1,201 @@
+{
+  "method": "Actual sequential untruncated LF-addressed reads; full extracted text does not imply all linked documents or SVG geometry. Acquisitions retain initial unread status; this overlay supersedes the specific coverage.",
+  "sources": [
+    {
+      "id": "rfc8785",
+      "url": "https://www.rfc-editor.org/rfc/rfc8785.txt",
+      "raw_path": "research/host-contract/raw/rfc8785.txt",
+      "raw_sha256": "63d52294eb0e3f0014174288186d388b4ddbf2c67d1ce8af1d9726eb0c3ab240",
+      "text_path": "research/host-contract/text/rfc8785.txt",
+      "text_sha256": "63d52294eb0e3f0014174288186d388b4ddbf2c67d1ce8af1d9726eb0c3ab240",
+      "line_count": 984,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 310,
+          "sha256": "afaf2714a731bd6dd34f4b8188a5038203756e7c52431f6939c7d070c59b5bb6"
+        },
+        {
+          "start_line": 311,
+          "end_line": 620,
+          "sha256": "29f51c80e70a06d9174dba0011d444562b7a99435672ff31ef4f6a47e2687da9"
+        },
+        {
+          "start_line": 621,
+          "end_line": 984,
+          "sha256": "c301aacbf5c09a53911ddfd9e65f74c9e30df6180ade8a82511e8e2379e4b7d2"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "visual_scope": "Plain text with complete inline examples/tables"
+    },
+    {
+      "id": "sqlite-transactions",
+      "url": "https://www.sqlite.org/lang_transaction.html",
+      "raw_path": "research/host-contract/raw/sqlite-transactions.html",
+      "raw_sha256": "b65dc308fd9e0ce471844c97366a4f5ad3a1f42833a3b19486ad7d6555a8e24e",
+      "text_path": "research/host-contract/text/sqlite-transactions.txt",
+      "text_sha256": "0497dd7da00cade8d4f3c5e37a6a1868f396a70b9a7d5f47055a1c862e79588f",
+      "line_count": 235,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 235,
+          "sha256": "0497dd7da00cade8d4f3c5e37a6a1868f396a70b9a7d5f47055a1c862e79588f"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "visual_scope": "RFC text tables reviewed; SQLite prose/extracted syntax labels only, SVG syntax geometry not yet separately inspected"
+    },
+    {
+      "id": "sqlite-wal",
+      "url": "https://www.sqlite.org/wal.html",
+      "raw_path": "research/host-contract/raw/sqlite-wal.html",
+      "raw_sha256": "f3467b530b883d4a00574fe1a898b3d121ed72764ae28cf66941080ac0badb9e",
+      "text_path": "research/host-contract/text/sqlite-wal.txt",
+      "text_sha256": "605aebdb86eaa7fd32060bc3da6e6df28de5f593839b984c75802f9d3abc0e21",
+      "line_count": 754,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 300,
+          "sha256": "8fa8236dd152a912548a13be1c16d8d3c6769bb7456a5cabc010edbad413aacf"
+        },
+        {
+          "start_line": 301,
+          "end_line": 560,
+          "sha256": "876788dd90e2300994cdfc4d23add1d542ab6c98f87065457c908892b0055c6e"
+        },
+        {
+          "start_line": 561,
+          "end_line": 754,
+          "sha256": "08c1c375fa286b0c80941c6342acbaa59ea7ff1659e0d4d5f572139f9b34fcab"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "visual_scope": "RFC text tables reviewed; SQLite prose/extracted syntax labels only, SVG syntax geometry not yet separately inspected"
+    },
+    {
+      "id": "rfc8785-errata",
+      "url": "https://www.rfc-editor.org/errata/rfc8785",
+      "raw_path": "research/host-contract/raw/rfc8785-errata.html",
+      "raw_sha256": "a6b93b847a0c74ffb89760521d574150e6ec65cfa5fcd3c1551cccc91e4acbfa",
+      "text_path": "research/host-contract/text/rfc8785-errata.txt",
+      "text_sha256": "9c59602945cc41bb7367ed6c69aa78f5b2782a2423a0ea607ef08a498056d814",
+      "line_count": 99,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 99,
+          "sha256": "9c59602945cc41bb7367ed6c69aa78f5b2782a2423a0ea607ef08a498056d814"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "visual_scope": "Plain text with complete inline examples/tables"
+    },
+    {
+      "id": "sqlite-pragmas",
+      "url": "https://www.sqlite.org/pragma.html",
+      "raw_path": "research/host-contract/raw/sqlite-pragmas.html",
+      "raw_sha256": "af75d7d7ab00c29e6eea98618cb1259a3919c308af60a6173215bf9798706034",
+      "text_path": "research/host-contract/text/sqlite-pragmas.txt",
+      "text_sha256": "d046fc4ca36c70ed6ae4a2cd466ad743be5a847d6464cd83e62574bc323201c1",
+      "line_count": 2688,
+      "coverage_ranges": [
+        {
+          "start_line": 375,
+          "end_line": 405,
+          "sha256": "745b4a367509b16b0511e9d1bb326fdbbbd9970026cdb4b24e548ba328ac42c9"
+        },
+        {
+          "start_line": 910,
+          "end_line": 955,
+          "sha256": "2265fae3460d85c62b62fb7f810df6f013f2f875034ba1eb2e22baf168ead338"
+        },
+        {
+          "start_line": 1250,
+          "end_line": 1348,
+          "sha256": "6ded04b132b2a606548f4edc7e7c4eb1c7af4848ed91fd32dd728d286701cf14"
+        },
+        {
+          "start_line": 2030,
+          "end_line": 2160,
+          "sha256": "71e3e6287017eae6a38d8eaeb0c07cd41b7c9a7ec42a3607c9661a78481f3274"
+        }
+      ],
+      "coverage_complete": false,
+      "reading_status": "read_selected",
+      "visual_scope": "RFC text tables reviewed; SQLite prose/extracted syntax labels only, SVG syntax geometry not yet separately inspected"
+    },
+    {
+      "id": "rfc8785-library:src/rfc8785/__init__.py",
+      "path": "research/host-contract/repos/rfc8785.py/src/rfc8785/__init__.py",
+      "sha256": "fa44927afd547caf7547247078bcf28863d1e69caf116d258c532b3f20ffd154",
+      "line_count": 26,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 26,
+          "sha256": "fa44927afd547caf7547247078bcf28863d1e69caf116d258c532b3f20ffd154"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full"
+    },
+    {
+      "id": "rfc8785-library:src/rfc8785/_impl.py",
+      "path": "research/host-contract/repos/rfc8785.py/src/rfc8785/_impl.py",
+      "sha256": "c25bc3a046528482d53bee3487b837f31dd9c05f33e8f13288c7aab320932cec",
+      "line_count": 254,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 220,
+          "sha256": "a4d88735d1ee51b96ec9d9a5e12afcc85e7969603fd4020d25d79d3d1eefd404"
+        },
+        {
+          "start_line": 221,
+          "end_line": 254,
+          "sha256": "cc34d877f0878d1cbb9cd5b3d141ded071b3612eac1bbcbdc7ee5b82249106c3"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full"
+    },
+    {
+      "id": "rfc8785-library:LICENSE",
+      "path": "research/host-contract/repos/rfc8785.py/LICENSE",
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+      "line_count": 177,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 177,
+          "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full"
+    },
+    {
+      "id": "rfc8785-library:README.md",
+      "path": "research/host-contract/repos/rfc8785.py/README.md",
+      "sha256": "1c09de56dff700748e9c9c3fc192fc2f2f5643e1d5bfd2087b50a8559de8ef52",
+      "line_count": 70,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 70,
+          "sha256": "1c09de56dff700748e9c9c3fc192fc2f2f5643e1d5bfd2087b50a8559de8ef52"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full"
+    }
+  ],
+  "figures": []
+}

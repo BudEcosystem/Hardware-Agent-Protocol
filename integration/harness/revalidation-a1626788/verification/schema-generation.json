@@ -1,0 +1,11 @@
+{
+  "command": [
+    "python3",
+    "/home/bud/Desktop/bud/hms/integration/harness/revalidation-a1626788/runtime-fixture/integration/harness/generate_schemas.py",
+    "TEMP_WORKTREE"
+  ],
+  "byte_identical": true,
+  "source_schema_sha256": "313454429d8d4247dd41ab61e82480f174c7685f03f5a4b077f2ad94ad80705e",
+  "generator_sha256": "1a3a4cf49a1e4b635fa6d6d7c8eeae041ff61549a9cd83141325b83aa0d3e6fb",
+  "output_sha256": "b87a234e35f9d4135b637a93b4b7377e5a86b6829b31563808de32a156a6e4db"
+}

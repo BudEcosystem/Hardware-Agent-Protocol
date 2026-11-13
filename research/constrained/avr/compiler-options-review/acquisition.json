@@ -1,0 +1,70 @@
+{
+  "extraction": "HTMLParser character references decoded; head/script/style excluded; block boundaries and source newlines preserved; horizontal whitespace collapsed; blank lines removed. All body text retained in document order, not a relevance filter.",
+  "finishedAt": "2026-11-09T11:37:02.625450+00:00",
+  "limits": {
+    "acceptEncoding": "identity",
+    "bodyBytesPerRequest": 1048576,
+    "redirectsAllowed": 0,
+    "requests": 2,
+    "socketTimeoutSeconds": 20
+  },
+  "purpose": "Official GCC7.3.0 chapter acquisition; no acquired content executed",
+  "scriptSha256": "28db194cbe8901923be2a829886bba8e9017207abef7eb2c4b641364724d2dc0",
+  "sources": [
+    {
+      "acquiredAt": "2026-11-09T11:37:01.162236+00:00",
+      "encoding": "utf-8",
+      "finalUrl": "https://gcc.gnu.org/onlinedocs/gcc-7.3.0/gcc/Optimize-Options.html",
+      "html": "Optimize-Options.html",
+      "htmlBytes": 178329,
+      "htmlSha256": "0821f161d088ce5a243e5c2af2d0a96314da3b50aab6810b9e61bda65bdff397",
+      "httpStatus": 200,
+      "responseHeaders": {
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "public, max-age=31536000",
+        "Connection": "close",
+        "Content-Length": "178329",
+        "Content-Type": "text/html; charset=utf-8",
+        "Date": "Mon, 09 Nov 2026 11:36:59 GMT",
+        "ETag": "\"2b899-56396713387c0\"",
+        "Last-Modified": "Thu, 25 Jan 2018 09:31:19 GMT",
+        "Server": "nginx",
+        "Strict-Transport-Security": "max-age=16070400",
+        "Vary": "Accept-Encoding,Git-Protocol"
+      },
+      "text": "Optimize-Options.txt",
+      "textBytes": 133140,
+      "textLines": 2684,
+      "textSha256": "bc4c4261dcd1458e25128652b138b55bb837e24313efa91890cc88108152c4ce",
+      "url": "https://gcc.gnu.org/onlinedocs/gcc-7.3.0/gcc/Optimize-Options.html"
+    },
+    {
+      "acquiredAt": "2026-11-09T11:37:02.625286+00:00",
+      "encoding": "utf-8",
+      "finalUrl": "https://gcc.gnu.org/onlinedocs/gcc-7.3.0/gcc/Developer-Options.html",
+      "html": "Developer-Options.html",
+      "htmlBytes": 55797,
+      "htmlSha256": "eb4cd9c6bea8bb1084e1b7ac20f2e5b7b250048eee607b7dab07563cc1d11d6f",
+      "httpStatus": 200,
+      "responseHeaders": {
+        "Accept-Ranges": "bytes",
+        "Cache-Control": "public, max-age=31536000",
+        "Connection": "close",
+        "Content-Length": "55797",
+        "Content-Type": "text/html; charset=utf-8",
+        "Date": "Mon, 09 Nov 2026 11:37:01 GMT",
+        "ETag": "\"d9f5-5639671150340\"",
+        "Last-Modified": "Thu, 25 Jan 2018 09:31:17 GMT",
+        "Server": "nginx",
+        "Strict-Transport-Security": "max-age=16070400",
+        "Vary": "Accept-Encoding,Git-Protocol"
+      },
+      "text": "Developer-Options.txt",
+      "textBytes": 33734,
+      "textLines": 754,
+      "textSha256": "c1f95364af7030f035f9197cc98efd8dcf5271f85fe7558b34e8de6cadbfc849",
+      "url": "https://gcc.gnu.org/onlinedocs/gcc-7.3.0/gcc/Developer-Options.html"
+    }
+  ],
+  "startedAt": "2026-11-09T11:36:58.699493+00:00"
+}

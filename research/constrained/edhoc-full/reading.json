@@ -1,0 +1,584 @@
+{
+  "schema": "hms-reading-overlay-v1",
+  "review_date": "2026-11-06",
+  "scope": "Complete RFC 9528 base specification plus complete selected official status/errata/registry sources, selected information-page text, and numbered PDF figure/table corroboration.",
+  "sources": [
+    {
+      "id": "rfc9528-text",
+      "url": "https://www.rfc-editor.org/rfc/rfc9528.txt",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc9528.txt",
+      "retrieved_at": "2026-11-06T03:10:31.229670+00:00",
+      "source_version": "RFC 9528, March 2024, Proposed Standard",
+      "raw_path": "research/constrained/edhoc-full/raw/rfc9528-text.txt",
+      "raw_sha256": "16b0959ee791bba5b06a4368470f8eb296ac11b84101c82b9013073ec6defe9e",
+      "text_path": "research/constrained/edhoc-full/text/rfc9528-text.txt",
+      "text_sha256": "16b0959ee791bba5b06a4368470f8eb296ac11b84101c82b9013073ec6defe9e",
+      "line_count": 4671,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 400,
+          "sha256": "46a78328d3e0741ba03e69a668f610dffd8060d5fc086127a215d4e57fea7fa6"
+        },
+        {
+          "start_line": 401,
+          "end_line": 800,
+          "sha256": "3fc53a093a07f994b3d2163d9b0e917c451b8f276f2e2775264168c96aaa5b24"
+        },
+        {
+          "start_line": 801,
+          "end_line": 1200,
+          "sha256": "0a3e7e270f0bf4c7cbb19de491ce4d0dc71006ec9e5cb15404501e2ad0e705a9"
+        },
+        {
+          "start_line": 1201,
+          "end_line": 1600,
+          "sha256": "7f0cd0d0f816701bba7768c77566cd80ee264903186b67d8c69e4faf71b966f4"
+        },
+        {
+          "start_line": 1601,
+          "end_line": 2000,
+          "sha256": "570dbcb437b0723d847701bc5e5cd04219753a3650c238a23c3944ee82249e73"
+        },
+        {
+          "start_line": 2001,
+          "end_line": 2400,
+          "sha256": "675130fac2429c00a573fb90777cb5264b64a1c5c8a8abcc2c743cf8862153fd"
+        },
+        {
+          "start_line": 2401,
+          "end_line": 2800,
+          "sha256": "370019f4289c386e2fdac33f2520c21c9fdc7987b88e2373d9f6ce08e5d05f5e"
+        },
+        {
+          "start_line": 2801,
+          "end_line": 3200,
+          "sha256": "df573e5b2c05fa0834da501bab2f0c1e9c16ec156a9c439588b7a76ea772f0d2"
+        },
+        {
+          "start_line": 3201,
+          "end_line": 3400,
+          "sha256": "92e85cdcd54c66db4e057976c075aa8774d228adae60e3900ad8019fc81b847d"
+        },
+        {
+          "start_line": 3401,
+          "end_line": 3700,
+          "sha256": "37a34eb977f1e77940595ccae1f3ad9a8a80e371b7dc7804d2c66b57b4d24a62"
+        },
+        {
+          "start_line": 3701,
+          "end_line": 4000,
+          "sha256": "9291affc6baf31d18919cc31a15f1e3b06c519ac71d72b4c74ddabaf19c59c0d"
+        },
+        {
+          "start_line": 4001,
+          "end_line": 4350,
+          "sha256": "31c58bb15c7a84a0dacb5f6941d34430a176025e041f5c2015c5909832c27b98"
+        },
+        {
+          "start_line": 4351,
+          "end_line": 4671,
+          "sha256": "71c9b9731165b434b42df2196c7d75df469b794eb93e83c07436506e81794773"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Complete RFC: preamble, all sections, security considerations, both reference lists, Appendices A–I, 13 ASCII figures, 15 tables, acknowledgments and addresses. Reference-list reading is not full reading of cited publications."
+    },
+    {
+      "id": "rfc9528-pdf",
+      "url": "https://www.rfc-editor.org/rfc/rfc9528.pdf",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc9528.pdf",
+      "retrieved_at": "2026-11-06T03:10:31.230484+00:00",
+      "source_version": "RFC 9528, March 2024, Proposed Standard",
+      "raw_path": "research/constrained/edhoc-full/raw/rfc9528-pdf.pdf",
+      "raw_sha256": "8f3d6755437f05df5c30ba09b3929a145183d62c95a1310774b77782cd9aee68",
+      "text_path": "research/constrained/edhoc-full/text/rfc9528-pdf-layout.txt",
+      "text_sha256": "77bc6ee7a427cdc5342f1e05ebb5cdcf65518b2a782c8266189af06a0073cb69",
+      "line_count": 4404,
+      "coverage_ranges": [],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.0,
+      "reading_status": "selected_pdf_figures_tables_reviewed",
+      "note": "Official alternate rendition acquired. All numbered figures/tables visually corroborated in 25 selected pages, including split tables. No complete page-by-page PDF read or sequential PDF layout-text read claimed.",
+      "pdf_page_count": 82,
+      "all_pdf_pages_reviewed": false,
+      "reviewed_pdf_pages": [
+        6,
+        8,
+        10,
+        11,
+        16,
+        20,
+        26,
+        35,
+        36,
+        37,
+        38,
+        49,
+        50,
+        51,
+        52,
+        53,
+        55,
+        62,
+        63,
+        65,
+        66,
+        68,
+        69,
+        79,
+        81
+      ]
+    },
+    {
+      "id": "rfc9528-metadata",
+      "url": "https://www.rfc-editor.org/rfc/rfc9528.json",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc9528.json",
+      "retrieved_at": "2026-11-06T03:10:31.231048+00:00",
+      "source_version": "RFC 9528, March 2024, Proposed Standard",
+      "raw_path": "research/constrained/edhoc-full/raw/rfc9528-metadata.json",
+      "raw_sha256": "e83bccdc072299babde324a8edb289d6b8d47fd377d48e340fc8ce70d0d74791",
+      "text_path": "research/constrained/edhoc-full/text/rfc9528-metadata.txt",
+      "text_sha256": "633db519efbcf4b650b6f3171d1bbfb66d3376412c61bc33921eefe16e7fb91b",
+      "line_count": 38,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 38,
+          "sha256": "633db519efbcf4b650b6f3171d1bbfb66d3376412c61bc33921eefe16e7fb91b"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Complete official JSON metadata read; Proposed Standard with no formal updates or obsoletes relationships."
+    },
+    {
+      "id": "rfc9528-errata",
+      "url": "https://www.rfc-editor.org/errata/rfc9528",
+      "final_url": "https://errata.rfc-editor.org/search/?rfc_number=9528&presentation=records",
+      "retrieved_at": "2026-11-06T03:10:31.231774+00:00",
+      "source_version": "RFC 9528, March 2024, Proposed Standard",
+      "raw_path": "research/constrained/edhoc-full/raw/rfc9528-errata.html",
+      "raw_sha256": "41dc59f98d30e130808c57ccfd25ba0c91052bca5f09fe224c53c1a10ee23928",
+      "text_path": "research/constrained/edhoc-full/text/rfc9528-errata.txt",
+      "text_sha256": "1860dabf5f28b4a4d40a6dcf1d5e478f38a70611c663d3941d8cfdd9ff7cb685",
+      "line_count": 110,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 110,
+          "sha256": "1860dabf5f28b4a4d40a6dcf1d5e478f38a70611c663d3941d8cfdd9ff7cb685"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Complete extracted errata-page text read, including both Reported technical records and corrections/notes. Raw HTML retained; scripts are not read or executed as instructions."
+    },
+    {
+      "id": "rfc9528-status",
+      "url": "https://www.rfc-editor.org/info/rfc9528",
+      "final_url": "https://www.rfc-editor.org/info/rfc9528/",
+      "retrieved_at": "2026-11-06T03:10:31.753421+00:00",
+      "source_version": "RFC 9528, March 2024, Proposed Standard",
+      "raw_path": "research/constrained/edhoc-full/raw/rfc9528-status.html",
+      "raw_sha256": "f1952a280d2ac4c0af21e46e8045580fedfe806f35b2b66575de96cafdc49bff",
+      "text_path": "research/constrained/edhoc-full/text/rfc9528-status.txt",
+      "text_sha256": "fb79d849a31ee67e0043e156f49e819b93f977185bdbff4bb403b5184b967181",
+      "line_count": 7146,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 180,
+          "sha256": "7c480e4a0dcdf661869a80f3d63c68656e7b180920556ba4944f8ba7a4ee9520"
+        }
+      ],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.02518891687657431,
+      "reading_status": "read_selected_sections",
+      "note": "Only opening information/status and introductory text LF1–180 read. The information page also embeds an alternate full RFC rendition; remainder not given reading credit."
+    },
+    {
+      "id": "iana-edhoc",
+      "url": "https://www.iana.org/assignments/edhoc/edhoc.xml",
+      "final_url": "https://www.iana.org/assignments/edhoc/edhoc.xml",
+      "retrieved_at": "2026-11-06T03:10:31.977956+00:00",
+      "source_version": "IANA EDHOC registry; updated 2026-08-31",
+      "raw_path": "research/constrained/edhoc-full/raw/iana-edhoc.xml",
+      "raw_sha256": "a01b82609843e72045df6ee7e0849c35462ffd0a919ac6596a0cbe593d571761",
+      "text_path": "research/constrained/edhoc-full/text/iana-edhoc.txt",
+      "text_sha256": "a01b82609843e72045df6ee7e0849c35462ffd0a919ac6596a0cbe593d571761",
+      "line_count": 438,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 230,
+          "sha256": "b7ce18bf6fa88fb055f9c55182ee35161731ef86032c13b8dc7ac70280ab2854"
+        },
+        {
+          "start_line": 231,
+          "end_line": 438,
+          "sha256": "99fb1dfa1bea6188ceab67c25e12e89f3a0acc81c1a83834a9998ba6e8af1ac6"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Complete IANA XML read; registry update 2026-08-31; later registrations identified without claiming full reads of referenced IEEE/EAP/C509 extension documents."
+    }
+  ],
+  "integrity_files": [
+    {
+      "path": "research/constrained/edhoc-full/README.md",
+      "sha256": "13cfc1fec89813b7806e8e1106a7827d447689f03b8b34ac12b9041b4544482c"
+    },
+    {
+      "path": "research/constrained/edhoc-full/acquire.py",
+      "sha256": "32530b3aed122e56f338892203cf902ea49fc4e93836aa211aad25055c8b8baa"
+    },
+    {
+      "path": "research/constrained/edhoc-full/render.py",
+      "sha256": "94577f687f6ba1c64eb171f7348c2583dbe35653f8b7bf3c5afed8d8d3c6413c"
+    },
+    {
+      "path": "research/constrained/edhoc-full/verify.py",
+      "sha256": "0d3179af40988e9f5beccad3cb84e4e533f4991c88461efefa9b7bc32d7c85e2"
+    },
+    {
+      "path": "research/constrained/edhoc-full/manifest.jsonl",
+      "sha256": "8a10744c56106c7c6a802fc7d912420fca37cb857ec746ce60ad7b5e665e427d"
+    },
+    {
+      "path": "research/constrained/edhoc-full/notes/read-session.json",
+      "sha256": "33754bd596fb5358038485836c8fa9bea5c666f72a1435c3fd67644f427c8efe"
+    },
+    {
+      "path": "research/constrained/edhoc-full/notes/tooling.json",
+      "sha256": "8a5a65b0d7ad115e30ad2ddc04fd5e649d4fd05bba2b6d53c41b806a64a4f332"
+    },
+    {
+      "path": "research/constrained/edhoc-full/notes/figure-inventory.json",
+      "sha256": "02b2e18c9ce31fca3fa1c65eaa34d9e6c2b39ca1deae2f3848ae885b66a304ff"
+    },
+    {
+      "path": "research/constrained/edhoc-full/notes/content-inventory.json",
+      "sha256": "07a940015391ebbac6413f3a6198cb9c5ea9a1e1ac24591b7fe6c4466378e298"
+    },
+    {
+      "path": "research/constrained/edhoc-full/notes/full-review.md",
+      "sha256": "26b919fac7e3cd3be5844730c9719443a348a181b5ec1b64a555f9bbc48be515"
+    },
+    {
+      "path": "docs/edhoc-binding.md",
+      "sha256": "9beed2aa228136379a64e66dcd9f5868e64fec929eb5395c4c8d8c694ef792ac"
+    }
+  ],
+  "figures": [
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-06.png",
+      "sha256": "8c5ed4d19deeacb996a6af59b1c72f32e935ffdf4e8c4eaec1e64c2cf297a55c",
+      "pdf_page": 6,
+      "captions": [
+        "Table 1: Examples of EDHOC Message Sizes in Bytes"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-08.png",
+      "sha256": "5925615d74218f70a962fbf1ebd6c301e21de2612abca92c4e6b8917c76a1cb5",
+      "pdf_page": 8,
+      "captions": [
+        "Figure 1: MAC-then-Sign Variant of the SIGMA-I Protocol Used by the EDHOC Method 0"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-10.png",
+      "sha256": "8227c754e53f2713659e66fe1e37fb94fd568030abc7db3eabbe9fa6be848c91",
+      "pdf_page": 10,
+      "captions": [
+        "Figure 2: EDHOC Message Flow Including the Optional Fourth Message",
+        "Table 2: Authentication Keys for Method Types"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-11.png",
+      "sha256": "4ec653cc9641c2a6d514437bc7fa3e600dbeb58b4c96f3ec09e56ca365d14e6b",
+      "pdf_page": 11,
+      "captions": [
+        "Figure 3: One-Byte CBOR-Encoded Integers"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-16.png",
+      "sha256": "6c62c532a4ebf3cf70039f3c252ae91efe99232bc40c8373b06be54df8cf084d",
+      "pdf_page": 16,
+      "captions": [
+        "Figure 4: CCS Containing an X25519 Static Diffie-Hellman Key and an EUI-64 Identity"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-20.png",
+      "sha256": "cc7be2d8353ea09e68291a9d7576999e328d98ec154037e6dd8c04837e9e123b",
+      "pdf_page": 20,
+      "captions": [
+        "Figure 5: EAD Item"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-26.png",
+      "sha256": "dfebd14dc120e90a37791b3a2eceeed40ca6690dc3e1dc399bcede629ee7565f",
+      "pdf_page": 26,
+      "captions": [
+        "Figure 6: Key Derivations Using EDHOC_KDF"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-35.png",
+      "sha256": "8549a285f6e9365ff981561b55344045058cd12266aa2c8392bff8a16c380cda",
+      "pdf_page": 35,
+      "captions": [
+        "Figure 7: EDHOC Error Message"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-36.png",
+      "sha256": "c686a9f69a24282fce6c4539bd0db16ae2eb634f5f6a310a4dea29f8e84feec9",
+      "pdf_page": 36,
+      "captions": [
+        "Table 3: EDHOC Error Codes and Error Information"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-37.png",
+      "sha256": "eb25542902359af3a938144ca81fc9ccd85a60df6a62b8856530c8c95630c4fe",
+      "pdf_page": 37,
+      "captions": [
+        "Figure 8: Cipher Suite Negotiation Example 1"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-38.png",
+      "sha256": "0faa12afb3b6ec0fe0e66e807865190d114011c3f6862bc8228f09361cb76321",
+      "pdf_page": 38,
+      "captions": [
+        "Figure 9: Cipher Suite Negotiation Example 2"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-49.png",
+      "sha256": "7e76f2f5a85477b5d14cbb99d84ab5c0e073e929d636725b2bc488ec485ca3fc",
+      "pdf_page": 49,
+      "captions": [
+        "Table 4: EDHOC Exporter Labels",
+        "Table 5: Registration Procedures for EDHOC"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-50.png",
+      "sha256": "faabac4b86941a7c81d2322acf41ca4ed8faed632686a297cc0a6acdedaf7aef",
+      "pdf_page": 50,
+      "captions": [
+        "Table 6: EDHOC Cipher Suites"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-51.png",
+      "sha256": "b43735bcc3484769a15c9993e1616645b0a02df276a4a94679da90e07b1caef5",
+      "pdf_page": 51,
+      "captions": [
+        "Table 7: Registration Procedures for EDHOC Cipher Suites",
+        "Table 8: Registration Procedures for EDHOC Method"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-52.png",
+      "sha256": "5ff0c36b62c47a6948ca55d11040547f07094e2257dacad381baae3cc7d95f7a",
+      "pdf_page": 52,
+      "captions": [
+        "Table 9: Registration Procedures for EDHOC",
+        "Table 10: EDHOC EAD Labels",
+        "Table 11: Registration Procedures for EDHOC EAD"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-53.png",
+      "sha256": "a4f4873ea36e62dfe51d48aa708584daae93e317d041fdadc60290cbdc6db65f",
+      "pdf_page": 53,
+      "captions": [
+        "Table 12: COSE Header Parameter Labels"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-55.png",
+      "sha256": "f10051dbe549bbfddaea789bcdc7161ee628cb7e626e784c77e094343338f396",
+      "pdf_page": 55,
+      "captions": [
+        "Table 13: CoAP Content-Format IDs"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-62.png",
+      "sha256": "03688c28ca87cbc64020fad245ca2c502ceab9086e34e59c054ebf63584206b8",
+      "pdf_page": 62,
+      "captions": [
+        "Table 14: first part; caption on page 63"
+      ],
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "visual_review_status": "reviewed_figures_and_tables",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-63.png",
+      "sha256": "fa2920deb95000c3eb53d47dd8f845d20d213d353f4a95d228b2bd409c2946cf",
+      "pdf_page": 63,
+      "captions": [
+        "Table 14: Usage of Connection Identifiers in OSCORE"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-65.png",
+      "sha256": "bae818b212f2a106a250108789a34b3a6cce9c90ca35c762343b6993d1fe6fc3",
+      "pdf_page": 65,
+      "captions": [
+        "Figure 10: Example of the Forward Message Flow"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-66.png",
+      "sha256": "a4ff28e026b3aa4b66ed038a85b8b8a785322cf7ddc5e51f6e8c3ab299eabf51",
+      "pdf_page": 66,
+      "captions": [
+        "Figure 11: Example of the Reverse Message Flow"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-68.png",
+      "sha256": "4648316026fa9d35b60fa861b51b2d8f29a6d9da76da6dacbc763219d2aa250d",
+      "pdf_page": 68,
+      "captions": [
+        "Table 15: first part; caption on page 69"
+      ],
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "visual_review_status": "reviewed_figures_and_tables",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-69.png",
+      "sha256": "94fab5b866ad8fec6a18e443bff77798beb0520e0346a9c79ca4345cab5301e4",
+      "pdf_page": 69,
+      "captions": [
+        "Table 15: Examples of Use of CBOR and CDDL"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-79.png",
+      "sha256": "e092f998c3f03a98b4c0528d24aad2a36509f795e2fe9baf5f1c9ce2e0bf7cc9",
+      "pdf_page": 79,
+      "captions": [
+        "Figure 12: Initiator State Machine"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    },
+    {
+      "path": "research/constrained/edhoc-full/figures/rfc9528-page-81.png",
+      "sha256": "f2cb328eb8f4ca5918be22eaa35bbc098cc0f9d29847330a73973a6089aebffd",
+      "pdf_page": 81,
+      "captions": [
+        "Figure 13: Responder State Machine"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+      "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+    }
+  ],
+  "errata": [
+    {
+      "id": 8258,
+      "status": "Reported",
+      "type": "Technical"
+    },
+    {
+      "id": 8272,
+      "status": "Reported",
+      "type": "Technical"
+    }
+  ],
+  "prior_selected_reading": {
+    "path": "research/constrained/reading-oscore-full.json",
+    "source_id": "edhoc-rfc9528",
+    "same_raw_sha256": "16b0959ee791bba5b06a4368470f8eb296ac11b84101c82b9013073ec6defe9e",
+    "effect": "This overlay completes reading of identical RFC bytes; historical selected record remains unchanged."
+  },
+  "caveats": [
+    "Hash/coverage validation does not prove reader understanding.",
+    "No acquired cryptographic/controller code, vectors, emulator or hardware executed.",
+    "Referenced works not automatically reviewed; extension/implementation/target qualification remains."
+  ]
+}

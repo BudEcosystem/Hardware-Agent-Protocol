@@ -1,0 +1,37 @@
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v4.1.11 /home/bud/Desktop/bud/hms-harness-335a82eb
+
+ × |thread-safe| packages/experimental/tool-hardware/tests/hms-compact.spec.ts > Harness tools with original compact C simulator > runs three scenarios through actual Node PTC and retains one OP frame per immutable request 12114ms
+   → expected [] to have a length of 6 but got +0
+ ✓ |thread-safe| packages/experimental/tool-hardware/tests/hms-compact.spec.ts > Harness tools with original compact C simulator > replays native requests after host SIGKILL loses each accepted endpoint OP reply without sending another OP 15139ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |thread-safe| packages/experimental/tool-hardware/tests/hms-compact.spec.ts > Harness tools with original compact C simulator > runs three scenarios through actual Node PTC and retains one OP frame per immutable request
+AssertionError: expected [] to have a length of 6 but got +0
+
+- Expected
++ Received
+
+- 6
++ 0
+
+ ❯ packages/experimental/tool-hardware/tests/hms-compact.spec.ts:193:25
+    191|     expect(text).toContain('simulation')
+    192|     const invocations = dispatch.filter(event => event.data.toolName =…
+    193|     expect(invocations).toHaveLength(6)
+       |                         ^
+    194|     const evidence = []
+    195|     // PTC may project the outer return; inspect the actual canonical …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 1 passed (2)
+   Start at  07:39:34
+   Duration  28.99s (transform 1.25s, setup 70ms, import 1.52s, tests 27.26s, environment 0ms)
+

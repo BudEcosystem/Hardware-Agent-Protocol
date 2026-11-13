@@ -1,0 +1,479 @@
+{
+  "schema": "hms-harness-procedure-design-inputs/1",
+  "recorded_at": "2026-11-06T19:23:38.043348+00:00",
+  "harness_base_commit": "a16267881e98cdac5e1edd7ab6ff5d1dae0a8ff2",
+  "harness_checkout": "/home/bud/Desktop/bud/hms-harness-a1626788",
+  "git_common_directory": "/home/bud/Desktop/bud/Bud-Meta-Harness/.git",
+  "source_writes": false,
+  "harness_execution": false,
+  "items": [
+    {
+      "origin": "harness",
+      "path": "packages/experimental/tool-hardware/src/output-schema.ts",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/tool-hardware/src/output-schema.ts",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/src/output-schema.ts",
+      "sha256": "b87a234e35f9d4135b637a93b4b7377e5a86b6829b31563808de32a156a6e4db",
+      "bytes": 44454,
+      "reading_note": "Selected generated header/method mapping/carrier; body is an integrity input, not fully reviewed.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 4,
+          "sha256": "7e4ff20b060dd883c11b429818fe96761dfedc41254e3dba8f4f50a8993aca90"
+        },
+        {
+          "start_line": 1488,
+          "end_line": 1521,
+          "sha256": "7372804ad9894e0501b0b41f69190946240e8671f3b035c12773f200a3196609"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "docs/subsystems/ptc-runtime.md",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/docs/subsystems/ptc-runtime.md",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/docs/subsystems/ptc-runtime.md",
+      "sha256": "925e72400fe801394524804e2adc9f4425db12bc80e43923bbd8cc8603e26426",
+      "bytes": 14572,
+      "reading_note": "Selected retained-state and output/failure semantics.",
+      "coverage_ranges": [
+        {
+          "start_line": 99,
+          "end_line": 106,
+          "sha256": "98966df49e20bbfd377c5a07f297d6072d54018138ee44484498f66a25c1eed9"
+        },
+        {
+          "start_line": 174,
+          "end_line": 202,
+          "sha256": "b8db963205f42983c2cb4bae6b804ec06f5e644e0915b20612cf408517498167"
+        }
+      ]
+    },
+    {
+      "origin": "hms",
+      "path": "hms/api_contracts.py",
+      "source_path": "/home/bud/Desktop/bud/hms/hms/api_contracts.py",
+      "snapshot_path": "integration/harness/procedure-design/inputs/hms/hms/api_contracts.py",
+      "sha256": "849a4fb9186bd836a1cb8e48a400d774e5e787a5d8c26ee5e487145492062a9b",
+      "bytes": 17881,
+      "reading_note": "Selected full procedure result/correlation validation.",
+      "coverage_ranges": [
+        {
+          "start_line": 89,
+          "end_line": 213,
+          "sha256": "83ca399870fc5625110c2a4f669e4caf43c9dbb66168743afb74e0dcfbbff265"
+        }
+      ]
+    },
+    {
+      "origin": "hms",
+      "path": "schemas/local-api.schema.json",
+      "source_path": "/home/bud/Desktop/bud/hms/schemas/local-api.schema.json",
+      "snapshot_path": "integration/harness/procedure-design/inputs/hms/schemas/local-api.schema.json",
+      "sha256": "1c8c29ca5bea858b92a9ce11304c8b0282051e9d43a21f4ae3a85743916d90d2",
+      "bytes": 77730,
+      "reading_note": "Parsed method-result map only; full schema retained as generator input.",
+      "coverage_ranges": [
+        {
+          "start_line": 3266,
+          "end_line": 3282,
+          "sha256": "8016607d2683efd91f5ecd4c6d89f33ec20f68d3be2e0fdc2ec3f251710d9e12"
+        }
+      ]
+    },
+    {
+      "origin": "hms",
+      "path": "integration/harness/multi-adapter/verification.json",
+      "source_path": "/home/bud/Desktop/bud/hms/integration/harness/multi-adapter/verification.json",
+      "snapshot_path": "integration/harness/procedure-design/inputs/hms/integration/harness/multi-adapter/verification.json",
+      "sha256": "198cc7b46824edc6549378f2932ba06fb17f50ac78775127b494358fa8ffe5a9",
+      "bytes": 44062,
+      "reading_note": "Historical receipt identity and top-level fields inspected; no new validity assertion for historical tests.",
+      "coverage_ranges": []
+    },
+    {
+      "origin": "harness",
+      "path": ".git",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/.git",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/.git",
+      "sha256": "709eeb9cdefa4a32a106fd0f609913c1028ece590ede08f89f538efbdc707155",
+      "bytes": 83,
+      "reading_note": "Checkout points into live common Git repository; read only.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 1,
+          "sha256": "709eeb9cdefa4a32a106fd0f609913c1028ece590ede08f89f538efbdc707155"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "AGENTS.md",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/AGENTS.md",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/AGENTS.md",
+      "sha256": "fde379298a5fea63f6d07fd4a1ed1531cc1d37496ca9bf13415d098c6c156eba",
+      "bytes": 19075,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 191,
+          "sha256": "fde379298a5fea63f6d07fd4a1ed1531cc1d37496ca9bf13415d098c6c156eba"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/AGENTS.md",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/AGENTS.md",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/AGENTS.md",
+      "sha256": "2ff622ab906b77680827135e64525f9c84d757c4e7cd9b685ab9ef04e81e55d1",
+      "bytes": 6577,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 29,
+          "sha256": "2ff622ab906b77680827135e64525f9c84d757c4e7cd9b685ab9ef04e81e55d1"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/AGENTS.md",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/AGENTS.md",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/AGENTS.md",
+      "sha256": "b5af970c070b34fa7ddc9ebd71f82769707b21d6d8f70388bb6605959003bbd0",
+      "bytes": 1848,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 9,
+          "sha256": "b5af970c070b34fa7ddc9ebd71f82769707b21d6d8f70388bb6605959003bbd0"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "docs/architecture.md",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/docs/architecture.md",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/docs/architecture.md",
+      "sha256": "cc090bfe5849667dff825a33bddb2c8993a5309d954b4735bf528e76a8907c95",
+      "bytes": 21511,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 185,
+          "sha256": "cc090bfe5849667dff825a33bddb2c8993a5309d954b4735bf528e76a8907c95"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/hardware/src/index.ts",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/hardware/src/index.ts",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware/src/index.ts",
+      "sha256": "109174fcf31dcfbf81235d404b3cf48da46623fef79247dc5d612a5acb28d715",
+      "bytes": 1400,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 21,
+          "sha256": "109174fcf31dcfbf81235d404b3cf48da46623fef79247dc5d612a5acb28d715"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/hardware/README.md",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/hardware/README.md",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware/README.md",
+      "sha256": "0271a6fb3a5d4b617eeddba9f57be322cb37e58a0120797a2eab723d84d93acb",
+      "bytes": 1643,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 40,
+          "sha256": "0271a6fb3a5d4b617eeddba9f57be322cb37e58a0120797a2eab723d84d93acb"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/hardware-hms/src/index.ts",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/hardware-hms/src/index.ts",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-hms/src/index.ts",
+      "sha256": "14dc61db35c278142bbde2420871a4bb1ca960f319be3149a3bc83bbe00e670c",
+      "bytes": 4474,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 74,
+          "sha256": "14dc61db35c278142bbde2420871a4bb1ca960f319be3149a3bc83bbe00e670c"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/hardware-hms/src/bridge.ts",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/hardware-hms/src/bridge.ts",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-hms/src/bridge.ts",
+      "sha256": "e2e585d0e46f559aa1a73bda4523d3528671534c88be380608da6d699544ed21",
+      "bytes": 884,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 19,
+          "sha256": "e2e585d0e46f559aa1a73bda4523d3528671534c88be380608da6d699544ed21"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/hardware-hms/src/reply.ts",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/hardware-hms/src/reply.ts",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-hms/src/reply.ts",
+      "sha256": "a4f159d293d3f2ae23d9a8539d469e05bc48d44f7d66314167f9c18a96cb0245",
+      "bytes": 1191,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 14,
+          "sha256": "a4f159d293d3f2ae23d9a8539d469e05bc48d44f7d66314167f9c18a96cb0245"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/hardware-hms/tests/reply.spec.ts",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/hardware-hms/tests/reply.spec.ts",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-hms/tests/reply.spec.ts",
+      "sha256": "f496410aa1c61c6a949ba337e12ce70e402805c980311f30ec071e75016a262c",
+      "bytes": 1105,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 15,
+          "sha256": "f496410aa1c61c6a949ba337e12ce70e402805c980311f30ec071e75016a262c"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/hardware-hms/package.json",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/hardware-hms/package.json",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-hms/package.json",
+      "sha256": "343c45f42559e3765d6a56221008c8971bd7ce99e4af5be1af0f945ce531a30b",
+      "bytes": 1376,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 49,
+          "sha256": "343c45f42559e3765d6a56221008c8971bd7ce99e4af5be1af0f945ce531a30b"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/tool-hardware/src/index.ts",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/tool-hardware/src/index.ts",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/src/index.ts",
+      "sha256": "74a64b90e2748af19c96fbe72571ddf2f5b5099c597aa4bf3d34a6ab759b3eca",
+      "bytes": 4564,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 50,
+          "sha256": "74a64b90e2748af19c96fbe72571ddf2f5b5099c597aa4bf3d34a6ab759b3eca"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/tool-hardware/README.md",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/tool-hardware/README.md",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/README.md",
+      "sha256": "f99993ad601a0dc718c963c8f70345538723e506e6317b1028166f5dd502cd8a",
+      "bytes": 1846,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 40,
+          "sha256": "f99993ad601a0dc718c963c8f70345538723e506e6317b1028166f5dd502cd8a"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/tool-hardware/package.json",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/tool-hardware/package.json",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/package.json",
+      "sha256": "dc85b5768958b8e46decd5bb890f3afff2a993359639a69f19c16fa9e6d93ad2",
+      "bytes": 1970,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 63,
+          "sha256": "dc85b5768958b8e46decd5bb890f3afff2a993359639a69f19c16fa9e6d93ad2"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/tool-hardware/tests/hms-integration.spec.ts",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/tool-hardware/tests/hms-integration.spec.ts",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/tests/hms-integration.spec.ts",
+      "sha256": "e57a5ff1208f48c02111c10b3602e64c766ac3693ec3be21c3a5f257bab51958",
+      "bytes": 16545,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 238,
+          "sha256": "e57a5ff1208f48c02111c10b3602e64c766ac3693ec3be21c3a5f257bab51958"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/tool-hardware/tests/hms-sdk-profile.spec.ts",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/tool-hardware/tests/hms-sdk-profile.spec.ts",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/tests/hms-sdk-profile.spec.ts",
+      "sha256": "9bb2294cf02f8fb7986d9ea3b8312a227bdff453877fe1c18e12a2bcce53175b",
+      "bytes": 15468,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 229,
+          "sha256": "9bb2294cf02f8fb7986d9ea3b8312a227bdff453877fe1c18e12a2bcce53175b"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/tool-hardware/tests/hms-compact-multi-adapter.spec.ts",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/tool-hardware/tests/hms-compact-multi-adapter.spec.ts",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/tests/hms-compact-multi-adapter.spec.ts",
+      "sha256": "749a63754ce16ef957f311fdbffd651811874bee52ed1826c2d8bbb671b43110",
+      "bytes": 16449,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 267,
+          "sha256": "749a63754ce16ef957f311fdbffd651811874bee52ed1826c2d8bbb671b43110"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/hardware-profile/cordis.patch.yml",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/hardware-profile/cordis.patch.yml",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-profile/cordis.patch.yml",
+      "sha256": "22cb1172e71100e884f819695b9958be4ea2153d9a36ef2a881993b8aff787bc",
+      "bytes": 416,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 10,
+          "sha256": "22cb1172e71100e884f819695b9958be4ea2153d9a36ef2a881993b8aff787bc"
+        }
+      ]
+    },
+    {
+      "origin": "harness",
+      "path": "packages/experimental/hardware-profile/README.md",
+      "source_path": "/home/bud/Desktop/bud/hms-harness-a1626788/packages/experimental/hardware-profile/README.md",
+      "snapshot_path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-profile/README.md",
+      "sha256": "eb3380b15dd7e3ca94bdeb29720783aa2c992d3ae25441539ea440f31c0e6b99",
+      "bytes": 1605,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 40,
+          "sha256": "eb3380b15dd7e3ca94bdeb29720783aa2c992d3ae25441539ea440f31c0e6b99"
+        }
+      ]
+    },
+    {
+      "origin": "hms",
+      "path": "docs/prompt-to-pat.md",
+      "source_path": "/home/bud/Desktop/bud/hms/docs/prompt-to-pat.md",
+      "snapshot_path": "integration/harness/procedure-design/inputs/hms/docs/prompt-to-pat.md",
+      "sha256": "6e8d30743a79037d2a6f11af1f4334bf9648f810ceb7a43ba4fac1685aa63262",
+      "bytes": 10135,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 163,
+          "sha256": "6e8d30743a79037d2a6f11af1f4334bf9648f810ceb7a43ba4fac1685aa63262"
+        }
+      ]
+    },
+    {
+      "origin": "hms",
+      "path": "docs/io-driver-hub-control.md",
+      "source_path": "/home/bud/Desktop/bud/hms/docs/io-driver-hub-control.md",
+      "snapshot_path": "integration/harness/procedure-design/inputs/hms/docs/io-driver-hub-control.md",
+      "sha256": "79378ecf5091df717731eddce066f4a2a6ce73492378a6dc224f95e2215cd60a",
+      "bytes": 8030,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 113,
+          "sha256": "79378ecf5091df717731eddce066f4a2a6ce73492378a6dc224f95e2215cd60a"
+        }
+      ]
+    },
+    {
+      "origin": "hms",
+      "path": "docs/bounded-procedures.md",
+      "source_path": "/home/bud/Desktop/bud/hms/docs/bounded-procedures.md",
+      "snapshot_path": "integration/harness/procedure-design/inputs/hms/docs/bounded-procedures.md",
+      "sha256": "d54152089532f1a45bba3e9747329ca16ae21e606e561a61c09ec111f4ba45e6",
+      "bytes": 8170,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 150,
+          "sha256": "d54152089532f1a45bba3e9747329ca16ae21e606e561a61c09ec111f4ba45e6"
+        }
+      ]
+    },
+    {
+      "origin": "hms",
+      "path": "integration/harness/generate_schemas.py",
+      "source_path": "/home/bud/Desktop/bud/hms/integration/harness/generate_schemas.py",
+      "snapshot_path": "integration/harness/procedure-design/inputs/hms/integration/harness/generate_schemas.py",
+      "sha256": "1a3a4cf49a1e4b635fa6d6d7c8eeae041ff61549a9cd83141325b83aa0d3e6fb",
+      "bytes": 4357,
+      "reading_note": "Full selected file read.",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 77,
+          "sha256": "1a3a4cf49a1e4b635fa6d6d7c8eeae041ff61549a9cd83141325b83aa0d3e6fb"
+        }
+      ]
+    }
+  ]
+}

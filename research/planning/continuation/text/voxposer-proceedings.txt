@@ -1,0 +1,77 @@
+VoxPoser: Composable 3D Value Maps for Robotic Manipulation with Language Models
+Proceedings of Machine Learning Research
+Volume 229
+JMLR
+DMLR
+TMLR
+MLOSS
+FAQ
+Submission Format
+[
+edit
+]
+VoxPoser: Composable 3D Value Maps for Robotic Manipulation with Language Models
+Wenlong Huang, Chen Wang, Ruohan Zhang, Yunzhu Li, Jiajun Wu, Li Fei-Fei
+Proceedings of The 7th Conference on Robot Learning
+, PMLR 229:540-562, 2023.
+Abstract
+Large language models (LLMs) are shown to possess a wealth of actionable knowledge that can be extracted for robot manipulation in the form of reasoning and planning. Despite the progress, most still rely on pre-defined motion primitives to carry out the physical interactions with the environment, which remains a major bottleneck. In this work, we aim to synthesize robot trajectories, i.e., a dense sequence of 6-DoF end-effector waypoints, for a large variety of manipulation tasks given an open-set of instructions and an open-set of objects. We achieve this by first observing that LLMs excel at inferring affordances and constraints given a free-form language instruction. More importantly, by leveraging their code-writing capabilities, they can interact with a vision-language model (VLM) to compose 3D value maps to ground the knowledge into the observation space of the agent. The composed value maps are then used in a model-based planning framework to zero-shot synthesize closed-loop robot trajectories with robustness to dynamic perturbations. We further demonstrate how the proposed framework can benefit from online experiences by efficiently learning a dynamics model for scenes that involve contact-rich interactions. We present a large-scale study of the proposed method in both simulated and real-robot environments, showcasing the ability to perform a large variety of everyday manipulation tasks specified in free-form natural language.
+Cite this Paper
+BibTeX
+@InProceedings{pmlr-v229-huang23b,
+  title = 	 {VoxPoser: Composable 3D Value Maps for Robotic Manipulation with Language Models},
+  author =       {Huang, Wenlong and Wang, Chen and Zhang, Ruohan and Li, Yunzhu and Wu, Jiajun and Fei-Fei, Li},
+  booktitle = 	 {Proceedings of The 7th Conference on Robot Learning},
+  pages = 	 {540--562},
+  year = 	 {2023},
+  editor = 	 {Tan, Jie and Toussaint, Marc and Darvish, Kourosh},
+  volume = 	 {229},
+  series = 	 {Proceedings of Machine Learning Research},
+  month = 	 {06--09 Nov},
+  publisher =    {PMLR},
+  pdf = 	 {https://proceedings.mlr.press/v229/huang23b/huang23b.pdf},
+  url = 	 {https://proceedings.mlr.press/v229/huang23b.html},
+  abstract = 	 {Large language models (LLMs) are shown to possess a wealth of actionable knowledge that can be extracted for robot manipulation in the form of reasoning and planning. Despite the progress, most still rely on pre-defined motion primitives to carry out the physical interactions with the environment, which remains a major bottleneck. In this work, we aim to synthesize robot trajectories, i.e., a dense sequence of 6-DoF end-effector waypoints, for a large variety of manipulation tasks given an open-set of instructions and an open-set of objects. We achieve this by first observing that LLMs excel at inferring affordances and constraints given a free-form language instruction. More importantly, by leveraging their code-writing capabilities, they can interact with a vision-language model (VLM) to compose 3D value maps to ground the knowledge into the observation space of the agent. The composed value maps are then used in a model-based planning framework to zero-shot synthesize closed-loop robot trajectories with robustness to dynamic perturbations. We further demonstrate how the proposed framework can benefit from online experiences by efficiently learning a dynamics model for scenes that involve contact-rich interactions. We present a large-scale study of the proposed method in both simulated and real-robot environments, showcasing the ability to perform a large variety of everyday manipulation tasks specified in free-form natural language.}
+}
+Copy to Clipboard
+Download
+Endnote
+%0 Conference Paper
+%T VoxPoser: Composable 3D Value Maps for Robotic Manipulation with Language Models
+%A Wenlong Huang
+%A Chen Wang
+%A Ruohan Zhang
+%A Yunzhu Li
+%A Jiajun Wu
+%A Li Fei-Fei
+%B Proceedings of The 7th Conference on Robot Learning
+%C Proceedings of Machine Learning Research
+%D 2023
+%E Jie Tan
+%E Marc Toussaint
+%E Kourosh Darvish	
+%F pmlr-v229-huang23b
+%I PMLR
+%P 540--562
+%U https://proceedings.mlr.press/v229/huang23b.html
+%V 229
+%X Large language models (LLMs) are shown to possess a wealth of actionable knowledge that can be extracted for robot manipulation in the form of reasoning and planning. Despite the progress, most still rely on pre-defined motion primitives to carry out the physical interactions with the environment, which remains a major bottleneck. In this work, we aim to synthesize robot trajectories, i.e., a dense sequence of 6-DoF end-effector waypoints, for a large variety of manipulation tasks given an open-set of instructions and an open-set of objects. We achieve this by first observing that LLMs excel at inferring affordances and constraints given a free-form language instruction. More importantly, by leveraging their code-writing capabilities, they can interact with a vision-language model (VLM) to compose 3D value maps to ground the knowledge into the observation space of the agent. The composed value maps are then used in a model-based planning framework to zero-shot synthesize closed-loop robot trajectories with robustness to dynamic perturbations. We further demonstrate how the proposed framework can benefit from online experiences by efficiently learning a dynamics model for scenes that involve contact-rich interactions. We present a large-scale study of the proposed method in both simulated and real-robot environments, showcasing the ability to perform a large variety of everyday manipulation tasks specified in free-form natural language.
+Copy to Clipboard
+Download
+APA
+Huang, W., Wang, C., Zhang, R., Li, Y., Wu, J. & Fei-Fei, L.. (2023). VoxPoser: Composable 3D Value Maps for Robotic Manipulation with Language Models.
+Proceedings of The 7th Conference on Robot Learning
+, in
+Proceedings of Machine Learning Research
+229:540-562 Available from https://proceedings.mlr.press/v229/huang23b.html.
+Copy to Clipboard
+Download
+Related Material
+Download PDF
+OpenReview
+This site last compiled Sun, 04 Oct 2026 21:11:57 +0000
+Github Account
+Copyright ©
+The authors and PMLR
+2026.
+MLResearchPress

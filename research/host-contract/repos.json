@@ -1,0 +1,31 @@
+[
+  {
+    "url": "https://github.com/trailofbits/rfc8785.py",
+    "ref": "v0.1.4",
+    "commit": "4d9b161f6054301d98d0566e813d020fb019ee10",
+    "checkout_path": "research/host-contract/repos/rfc8785.py",
+    "files": [
+      {
+        "path": "src/rfc8785/__init__.py",
+        "sha256": "fa44927afd547caf7547247078bcf28863d1e69caf116d258c532b3f20ffd154",
+        "reading_status": "read_full"
+      },
+      {
+        "path": "src/rfc8785/_impl.py",
+        "sha256": "c25bc3a046528482d53bee3487b837f31dd9c05f33e8f13288c7aab320932cec",
+        "reading_status": "read_full"
+      },
+      {
+        "path": "LICENSE",
+        "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+        "reading_status": "read_full"
+      },
+      {
+        "path": "README.md",
+        "sha256": "1c09de56dff700748e9c9c3fc192fc2f2f5643e1d5bfd2087b50a8559de8ef52",
+        "reading_status": "read_full"
+      }
+    ],
+    "scope": "Shallow checkout, four files fully read; two modules and license copied unchanged for execution as host dependency"
+  }
+]

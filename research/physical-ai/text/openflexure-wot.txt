@@ -1,0 +1,667 @@
+                                                                                                                                                                      1
+
+
+
+
+                                                         Simplifying the OpenFlexure Microscope
+                                                            software with the Web of Things
+                                                    Joel T. Collins1 , Joe Knapper1 , Samuel J. McDermott2 , Filip Ayazi2 , Kaspar E. Bumke1 , Julian
+                                                                                  Stirling1 , and Richard W. Bowman1*
+arXiv:2101.00933v3 [physics.ins-det] 28 Sep 2021
+
+
+
+
+                                                    1
+                                                        Centre for Photonics and Photonic Materials, Department of Physics, University of Bath, UK.
+                                                                           2
+                                                                             Cavendish Laboratory, University of Cambridge, UK.
+                                                                                         *
+                                                                                           r.w.bowman@bath.ac.uk
+
+
+
+                                                      Abstract—We present the OpenFlexure Microscope          microscopes are directly connected to a single com-
+                                                   software stack which provides graphical and scripted       puter through a variety of (often specialist) interfaces,
+                                                   control of our open source motorised microscope. Our       we use an embedded Raspberry Pi and a web API
+                                                   diverse community of users needs both graphical and
+                                                   script-based interfaces. We split the control code into    (application programming interface) to enable local
+                                                   client and server applications interfaced via a web API    and remote control through internet protocol (IP)
+                                                   conforming to the W3C Web of Things standard. A            networks. Our software stack makes use of modern
+                                                   graphical interface is viewed either in a web browser      networking technologies and Web of Things stan-
+                                                   or in our cross-platform Electron application, and gives   dards to control the microscope and manage the data
+                                                   basic interactive control including common operations
+                                                   such as Z stack acquisition and tiled scanning. Auto-      it generates. This architecture for network-connected
+                                                   mated control is possible from Python and MATLAB,          microscopy has allowed the OpenFlexure Microscope
+                                                   or any language that supports HTTP requests. Network       to be used in a diverse range of settings without
+                                                   control makes the software stack more robust, allows       re-implementation or code duplication. Additionally,
+                                                   multiple microscopes to be controlled by one computer,     the extensibility and interoperability built in to our
+                                                   and facilitates sharing of equipment. Graphical and
+                                                   script-based clients can run simultaneously, making        software architecture has allowed users to develop
+                                                   it easier to monitor ongoing experiments. We have          additional functionality and entirely new imaging
+                                                   included an extension mechanism to add functionality,      modes without having to re-implement the more com-
+                                                   for example controlling additional hardware compo-         plex instrument control code. This article primarily
+                                                   nents or adding automation routines. Using a Web of        describes the server application, the graphical web
+                                                   Things approach has resulted in a user-friendly and
+                                                   extremely versatile software control solution for the      application client, and the Python scripting client. A
+                                                   OpenFlexure Microscope, and we believe this approach       full list of relevant software repositories is given at
+                                                   could be generalised in the future to make automated       the end of the manuscript.
+                                                   experiments involving several instruments much easier
+                                                   to implement.                                              A. Web of Things approach
+                                                      Index Terms—Web technologies, Hardware/software            In recent years, open web technologies have been
+                                                   interfaces, System architectures, integration and mod-     widely adopted for controlling domestic hardware,
+                                                   eling
+                                                                                                              in the “Web of Things” (WoT) [3]. These network
+                                                                                                              and web technologies have already addressed many
+                                                                   I. I NTRODUCTION                           of the problems faced by laboratories and have been
+                                                     We introduce the software stack developed for the        proven robust, fast, and secure. Support staff deeply
+                                                   OpenFlexure Microscope [1], [2], an open-source,           familiar with networking and web technologies are
+                                                   3D-printed, and fully-automated laboratory micro-          already in place at most research laboratories and
+                                                   scope. The microscope has been deployed around the         teaching institutions. While prior work has introduced
+                                                   world in a wide range of operating environments,           web technology into laboratories [4], [5], [6], [7], [8],
+                                                   posing unique challenges as it is used in almost equal     these have lacked the comprehensive standardisation
+                                                   measure by novice and expert microscopists. Some           required for true interoperability. Recently however
+                                                   users need a simple graphical interface, while others      W3C, the primary international standards organiza-
+                                                   require advanced scripting capabilities. While most        tion for the open web, have moved to standardise the
+                                                                                                                    2
+
+
+
+Web of Things, with solid industry and community            an all-in-one solution requiring the adoption of our
+support [9].                                                server code and user interface. Instead, our hope is
+   Aligning our software stack with the W3C WoT             that the approach of splitting up instrument control
+Architecture [9] means that the only bespoke ele-           with a documented, standards-compliant API can
+ments of our microscope control protocol are those          enable intercompatibility. For example, it would be
+specific to our application, i.e. the capabilities of our   possible to write a server to act as a bridge, allowing
+microscope. The way those capabilities are repre-           µManager device adapters to be controlled through
+sented through the HTTP (hypertext transfer proto-          an HTTP API. Similarly, a set of device adapters
+col) API is set by the WoT standard. In turn, our           could enable WoT devices to be controlled by the
+HTTP API can be described using the OpenAPI                 existing MMCore system, and hence the wide variety
+standard [10] which enables automatic generation of         of applications that use it. Crucially, the “semantic
+documentation. Tools exist that use OpenAPI de-             typing” mechanism that allows WoT devices to de-
+scriptions to generate client (and server) code in a        clare their capabilities and their compatibility with
+wide variety of programming languages. Crucially,           particular protocols enables this intercompatibility to
+these underpinning technologies are maintained by           be added gradually. Semantic types are not exclusive,
+a large community of web developers, rather than a          so a particular device could be used from µManager
+small number of microscopists. A major advantage of         or Cockpit or its own bespoke software, all through
+adoptiong the WoT standard is that code controlling         the same HTTP interface. We suggest that the taxon-
+multiple instruments for larger experiments can then        omy and object model provided by µManager could
+be written in any modern language that supports web         be an ideal basis for a set of semantic types for
+requests.                                                   microscope components due to its wide adoption.
+                                                            In the long term, we hope that both open projects
+                                                            and proprietary hardware and software developers
+B. Existing microscope control systems                      will adopt the WoT protocol as a common language,
+   Splitting microscope control software into client        enabling more direct interoperability and eliminating
+and server applications is also done by Micro-              the requirement to use any particular control system
+scope Cockpit [11], [12], though it relies on the           for a given experiment.
+pyro library [13] for communication between client
+and server. This Python-specific protocol makes it                           II. A RCHITECTURE
+difficult to add clients for new languages. The
+most widely used microscope automation package              A. Client–Server Model
+is µManager [14], [15], [16], [17], where “device              A microscope’s software stack generally includes
+adapters” written in C++ provide code for specific          low-level device control code, logic to integrate the
+devices, controlled by a common core. The MMCore            hardware components into a useful instrument, au-
+API allows control from several languages, but the          tomation for common tasks, a graphical interface for
+whole system runs as one process and device adapters        interactive control, and a way to script automated ex-
+are included as binary libraries. This requires all hard-   periments. Treating the microscope as a WoT device
+ware to be connected to the same computer, and also         naturally splits these functions into client applications
+means that only one top-level application can use it at     (the graphical interface and scripting APIs) and a
+a time (e.g. the whole system must be reinitialised to      server handling the bulk of the logic and hardware
+switch between the µManager interface and a Python          control as depicted in Figure 1.
+script for a particular experiment). ImSwitch is a             This split between the server application and
+Python framework that can accommodate extremely             clients has several important advantages. First, it
+complex microscopes, but must be used for every-            enables multiple client applications to connect to a
+thing from managing devices up to the user interface        microscope simultaneously. This allows a graphical
+and so again is mutually exclusive with other control       interface to display a real-time camera feed, while a
+software [18].                                              script controls sample manipulation, data acquisition,
+   The software stack as described in this manuscript       and analysis. The server also provides continuity, so
+is specific to the OpenFlexure Microscope, but has          devices need not be reinitialised every time an ex-
+the potential to be generalised. Generalising this          periment script is started. Conversely, a single client
+WoT approach adds another competing solution to             can manage multiple microscopes simultaneously.
+the previous paragraph, though we do not propose            This has allowed clinicians to image sample slides
+                                                                                                                                   3
+
+
+
+
+  Raspberry Pi                                                                              Openﬂexure Connect
+                                                                 Ethernet
+                                                                 or WiFi
+        Server application                   mDNS-SD                                        Auto-discovery of devices
+
+
+                                             Web app
+                                                           /
+
+
+        Hardware control                     HTTP API
+                                                     /api/v2/
+
+
+
+                                                                                                                     Web app
+                         CSI
+
+
+
+
+                                      USB
+
+
+
+
+                                                                                            Web browser
+                    Camera V2.1
+     Raspberry Pi
+
+
+
+
+   Camera
+
+                                  Motor controller
+
+                                                                                                                     Web app
+
+
+
+
+                                                                                            Experiment script
+
+
+
+                                                                                                   Microscope client
+
+
+
+Fig. 1. The structure of the OFM software and hardware. A server application (using Python and Flask) runs on the microscope’s
+embedded Raspberry Pi. This includes code to control physical hardware, an HTTP API, and announcement of the microscope using
+mDNS to allow auto-discovery. The graphical interface is implemented as a web application using Vue.js, and is served as static
+files from the microscope server application. The OpenFlexure Connect application, built using the cross-platform Electron framework,
+automatically finds available microscopes using mDNS-SD and displays the web application in its own window. Alternatively, the web
+application can be displayed directly in a web browser, using the microscope’s hostname or IP address. Experiment scripts can run at
+the same time, using a client module (at the time of writing, clients exist for Python and MATLAB). Clients may run anywhere on the
+network, including on the embedded computer if a stand-alone system is preferred.
+
+
+
+from several microscopes concurrently, dramatically                 between different languages and avoids duplicated
+increasing data acquisition throughput.                             effort, as most of the complexity is in the server
+   Separating the more complex server application                   application. Indeed, using the OpanAPI description,
+from comparatively simple client applications makes                 it is in principle possible to automatically generate
+it significantly easier to write client libraries in a              clients in a wide range of languages, though these
+broad set of languages. This means that microscope                  may not be as user-friendly as our current clients,
+users can script experiments without having to re-                  which are written by hand.
+implement the hardware control code in their lan-
+guage of choice, interface with a binary library, or
+learn a new language. It also ensures consistency
+                                                                                                                 4
+
+
+
+B. Hardware Architecture                                 C. Server application and Web API
+
+                                                            The server application is written in Python, with
+                                                         much of the back-end code released as a separate
+   Our server runs on a Raspberry Pi computer em-        library (Python-LabThings) [23]. This library uses
+bedded in the microscope (Figure 1). The server          the “Flask” [24] web application framework, and
+application handles communication with the sample        includes various utilities to simplify thread-based
+translation stage, imaging camera, and any additional    concurrency, mDNS discovery, hardware synchroni-
+hardware, as well as logic for data management and       sation, and documentation generation. We also make
+additional functions such as tiled scans and autofo-     use of standard scientific python libraries [25], [26],
+cus. Running the server on an embedded computer          [27], [28]. Our control code for the translation stage is
+ensures the hardware control code is running in a        also published separately, allowing its use outside of
+very well controlled environment. We automatically       the microscope server [29], and we use a customised
+build and distribute an SD card image with a correctly   camera library to take manual control of the Rasp-
+configured operating system and our server and client    berry Pi camera module [30].
+applications pre-installed [19]. This eliminates the        Client–server interactions take place over HTTP.
+most troublesome aspect of distributing instrument       Our HTTP API follows the W3C Web of Things
+control software, which is correctly installing and      interaction model [9] that represents a device’s capa-
+configuring the low-level drivers and libraries on an    bilities through properties, actions, and events (col-
+unknown computer, often clashing with system-level       lectively called “interaction affordances”). Properties
+changes made to support other instruments connected      represent quantities that can be accessed immediately,
+to the same machine. The server application has been     such as the camera’s exposure time or the current
+developed specifically for the Raspberry Pi hardware,    position of the stage. Actions cause the microscope
+and does not have built-in support for other camera      to do something that may take some time, such as
+types. The server has been adapted for use with          capturing an image or moving the stage. The WoT
+other cameras and platforms, e.g. Jetson Nano [20],      model defines the way interactions map onto HTTP
+but is not yet intended as a multi-platform system.      requests and responses, following the principles of
+While the server currently runs on many platforms        representational state transfer (REST) [31], a conven-
+for development purposes, we only use it to control      tion widely used across web service and WoT device
+hardware when it runs on a Raspberry Pi.                 APIs [32]. Most data is transferred using JavaScript
+                                                         Object Notation (JSON), a text based format that
+   Client applications can run on the embedded Rasp-
+                                                         can serialise rich datatypes with informative, human-
+berry Pi computer, making the microscope a stand-
+                                                         readable keys. Larger binary data such as images is
+alone system to which keyboard, monitor, and mouse
+                                                         usually not included in JSON objects, but is instead
+may be attached. More usually, client applications
+                                                         provided as a link to download the data in a suitable
+will run on other devices connected via a wired
+                                                         format, such as JPEG or PNG.
+or wireless IP network, using the Raspberry Pi’s
+ethernet and WiFi interfaces. By using IP networking        The widespread existing use of REST APIs means
+for instrument control we enable control of multi-       that users can interact with the OpenFlexure Mi-
+ple instruments with any external router or switch.      croscope using existing standard libraries. We make
+Replacing different (often proprietary and expensive)    use of the OpenAPI standard [10] to provide a
+connectors and adaptors [21] with commodity hard-        machine-readable description of our API for auto-
+ware makes experimental science more efficient and       matic generation of interactive documentation [33].
+more accessible to resource-constrained scientists.      This same mechanism can, in principle, be used to
+                                                         generate client code in a variety of languages. The
+   The internet protocol itself allows for high-speed,   key feature required to claim compatibility with the
+low-latency plug-and play communication. Fully re-       W3C WoT model is a description of the microscope’s
+mote control can be enabled using existing, well-        web API functionality in a standardised format [34].
+established secure protocols such as SSH forwarding      This “Thing Description” is a higher-level description
+and VPN connections. Clients can automatically de-       of the API than OpenAPI, allowing more meaningful
+tect the server’s IP address and capabilities via mDNS   definitions relating to the capabilities of the device,
+(multicast Domain Name System) [22], which is            rather than just a description of each exchange be-
+already used extensively by consumer WoT devices.        tween client and server. Thing Descriptions may also
+                                                                                                                5
+
+
+
+be annotated with “semantic types” that allow devices      plifying experiment scripts by providing higher-level
+to fit into a taxonomy of device types and capabilities.   actions. The main server application handles only the
+   For example, the camera’s exposure time is a            most basic microscope functionality: capturing im-
+property that can be read and written to as shown in       ages, moving the stage, and managing device settings.
+Figure 2. The stage’s position is a read-only property;    A set of default extensions is included in the server
+moving the stage is accomplished using an action.          package, providing higher-level capabilities including
+Actions do not have to complete instantaneously and        autofocus, scanning the stage to produce mosaics of
+thus require a mechanism to run in the background,         images, and calibrating the camera and stage. Default
+after the initial web request has finished. Each inter-    extensions may be removed or replaced, allowing
+action is represented by an HTTP URL or “endpoint”,        functionality to be customised on each microscope.
+and the HTTP method then describes the type of             Extensions are written as Python scripts that have
+operation to be handled. For example, an HTTP GET          direct access to Python objects that manage physical
+request will read the value of a property, whereas an      components comprising the microscope (e.g. camera
+HTTP PUT request will write a new value to the             and translation stage). Extensions can provide HTTP
+property (Figure 2).                                       API endpoints and HTML interfaces that are dis-
+   1) Actions and concurrency: Many long-running           played as part of the microscope’s web app, and their
+tasks, such as acquiring large tile scans, must run        capabilities are included in the microscope’s built-in
+in the background without blocking new API re-             API documentation.
+quests (e.g. monitoring the video feed or checking            3) Security: The OpenFlexure Microscope soft-
+the progress of the task). Each request and action         ware does not yet implement access control, and
+is therefore handled by its own thread to allow            relies on network topology for security (e.g. the
+concurrency. Access to physical hardware is carefully      microscope should not be exposed to a large organi-
+managed to avoid conflicting instructions by use of        sational network or to the internet). Secure remote
+re-entrant locks. For example, if the translation stage    access is already possible by using tools such as
+is currently in the middle of a long movement, a           SSH to “tunnel” connections, but in the future access
+request to move elsewhere will be denied until the         control could be provided using standard security
+initial move has completed, releasing the stage’s lock.    protocols that are provided for in the WoT standard,
+Clients can continue to interact with the microscope       making the microscope more suitable for use on an
+while an action is running, as long as they do not         insecure network.
+require a locked piece of hardware. This, for example,
+allows the live camera stream to be monitored during
+long-running experiments without users having to           D. Clients
+manually manage multiple threads.                             Our primary client for the OpenFlexure Micro-
+   Background tasks are handled automatically by           scope is a web application included in the micro-
+the server. Whenever an “action” is requested, the         scope’s internal API server. This application pro-
+server will start the function in a new thread and         vides a comprehensive graphical interface for the
+immediately send a “created” response back to the          microscope, including a live stream of the camera,
+client, including the URL of an “action resource” the      capture functionality, basic data management, and
+client can poll to check its progress or final return      full extension support. By developing the client as
+value. In the future, we can improve efficiency by         a browser-accessible web application, we are able to
+allowing the server to asynchronously push updates         support many different operating systems without any
+to clients without polling, for example using Server-      additional code, while simultaneously drawing on the
+Sent Events [35].                                          expertise brought by a large community of existing
+   2) Extensions: Most automation and integration          libraries.
+can be achieved using client-side code, which is              The web application is accompanied by a desktop
+simple to write and easy to debug. When the server         application (OpenFlexure Connect) handling device
+code must be added to, for example to allow control        discovery and connection. The application finds and
+of additional hardware components, Python code can         displays discovered microscopes using mDNS, as
+be added to the server through our “extension” mech-       well as allowing manual connections and saving a list
+anism. This also provides a way to make routines that      of commonly accessed microscopes. Upon connect-
+are initially developed using client code to be made       ing, the application loads the microscope’s graphical
+conveniently available to clients in any language, sim-    user interface (Figure 3). The interface is loaded
+                                                                                                                                    6
+
+
+
+a) READ PROPERTY
+
+  CLIENT                                                SERVER
+
+  GET                                        REQUEST         Read shutter speed
+  settings/camera/shutter_speed                              from physical camera.
+
+
+                                            RESPONSE
+  17ms                                                       Camera returns 17ms
+
+
+
+
+b) WRITE PROPERTY
+
+  CLIENT                                                SERVER
+
+  PUT                                        REQUEST         Write shutter speed
+  settings/camera/shutter_speed                              to physical camera.
+  22ms
+
+                                            RESPONSE
+  OK                                                         Camera returns write successful
+
+
+
+Fig. 2. Simplified example of an HTTP request flow for reading and writing a “property” resource. a) Reading a property requires
+a GET request sent to the URL corresponding to the property to be read (camera shutter speed). The server then sends a response
+containing the properties value (17 milliseconds) in the response body. b) Writing a property requires a PUT request sent to the same
+URL, containing the new value in the request body (22 milliseconds). The server then sends an “OK” response confirming the operation’s
+success.
+
+
+from the microscope, so it can be customised to                     iPython notebooks, especially for data analysis. The
+that microscope’s capabilities and is guaranteed to                 ability to run the graphical client at the same time,
+be compatible with the API version in use.                          e.g. to view the live video feed without any coding,
+   Using a modular interface served by the micro-                   further simplifies setting up and monitoring auto-
+scope allows the client to only render user interface               mated experiments. We have also created a MATLAB
+elements for enabled functionality. Server extensions               client [40] with similar features. As the scripting
+are able to define new graphical interface components               clients are lightweight wrappers for the HTTP API,
+to be rendered within the main client application.                  this involves a minimal amount of duplicated code.
+For example, the interface to manage where images                      The flexibility of the client–server architecture
+are stored is defined in the relevant extension. This               allows task or experiment specific interfaces to be
+mechanism is specific to our web application, rather                created quickly. For example, a client for control-
+than a general feature of the WoT standard. Interfaces              ling the microscope with a USB game pad was
+are served through the HTTP API as HTML or                          developed [41]. This client is useful in remote field
+JSON documents, linked to from the automatically-                   applications where a keyboard and mouse are not
+generated description of the extensions.                            practical.
+
+   For experiment scripting, we have created a Python                      III. I MPLEMENTATION OF MICROSCOPE
+client for the microscope [36], [37] that converts the                                    FUNCTIONALITY
+web API into native Python functions. Functionality
+provided by extensions is also mapped to Python                     A. Live stream
+functions automatically. This enables both scripted                    Central to the microscope interface is the integrated
+experiments and interactive sessions using, for ex-                 live video display. The Raspberry Pi camera is sup-
+ample, Jupyter notebooks [38], [39]. This lowers the                ported by GPU firmware that provides accelerated
+barrier to entry for scripting microscopy experiments               JPEG compression of each video frame, allowing
+since many students and lab users are familiar with                 us to serve a real-time Motion JPEG (MJPEG) live
+                                                                                                                           7
+
+
+
+                                                                     twice. As a new frame is read from the camera,
+                                                                     the event for each client is set, at which point the
+                                                                     response handler for each client will pass the frame
+                                                                     onto the client, unset the event, and then wait for the
+                                                                     event to be set again, dropping frames if neccesary
+                                                                     to ensure latency is minimised for clients not able to
+                                                                     receive frames at the full rate. This system is based
+                                                                     on the work of Miguel Grinberg [42], and is included
+                                                                     in the Python-LabThings library. We use MJPEG in
+                                                                     preference to more sophisticated video formats in
+                                                                     order to minimise latency in the stream. The MJPEG
+                                                                     format also makes it easy to extract or drop individual
+                                                                     frames, and enables our fast autofocus algorithm.
+
+
+                                                                     B. Data collection
+                                                                        The Raspberry Pi camera can capture JPEG images
+                                                                     and the raw 8 megapixel Bayer data from the camera
+                                                                     sensor [43], [30]. This raw Bayer data can be used
+                                                                     for more advanced analysis, avoiding artefacts from
+                                                                     gamma correction, demosaicing, and compression.
+                                                                     The server records metadata about the state of the mi-
+                                                                     croscope at the time of capture (camera settings, stage
+                                                                     position, calibration data, and custom metadata added
+                                                                     by the user), stored as a JavaScript Object Notation
+                                                                     (JSON) formatted string in the “UserComment” EXIF
+                                                                     field. Captures are stored locally on the Raspberry Pi,
+                                                                     either on the SD card or an available USB storage
+                                                                     device, and can be listed (including metadata) and
+                                                                     downloaded through the HTTP API. Separating the
+                                                                     actions of capturing images and downloading them
+                                                                     avoids the need to transfer large amounts of data
+                                                                     over the network during time-critical phases of an
+                                                                     experiment. The standard graphical client provides an
+                                                                     gallery interface to view captured images and view
+                                                                     their metadata.
+                                                                        As previously mentioned, multiple microscopes
+Fig. 3. An example side pane from the OpenFlexure Connect            can be run in parallel to increase data throughput
+microscope client. Using a web API for instrument communication
+allows the client to be written in any programming language. Using   for a single operator. The greatest time saving can
+javascript we were able to create a cross-platform, responsive,      be achieved by setting microscopes to automatically
+and modern user interface using general purpose user interface       scan over a large area, building a composite image
+frameworks.
+                                                                     of hundreds of overlapping fields of view (FOVs).
+                                                                     The server has the option to perform such scans with
+                                                                     movements, paths and capture types chosen by the
+stream of the camera. The server starts a background                 user. Capture options and metadata are the same as
+thread on startup that records JPEG frames from                      individual captures, and individual images are saved,
+the camera into a buffer. When clients connect to                    with metadata, as the scan runs [2]. Scans run as
+the stream, the server will begin sending a multi-                   background tasks, so the microscope’s video feed and
+part stream of frames taken from that buffer. A                      position can be monitored as they run, and scans can
+synchronisation event is created for each client thread              be aborted without losing or corrupting images that
+ensuring that clients never receive the same frame                   are already acquired.
+                                                                                                                8
+
+
+
+C. Autofocus                                             a greater positional resolution than the discrete steps
+                                                         of the simpler autofocus as MJPEG frame size can
+   Due to the parallelogram-based mechanisms con-        be tracked on-the-fly, reducing the time taken to less
+trolling the motion of the OFM translation stage,        than 5 seconds. As autofocus is a rate-limiting step
+changes to the x-y position move the sample over         for scanning large samples, we have continued to re-
+a sphere cap relative to the optics rather than a        fine the method in application-specific estensions, for
+plane [1]. This necessitates an autofocus procedure      example adding error correction to improve reliability
+which can be run reliably at each x-y location in        when using oil immersion objectives [46].
+an automatic scan. As a typical diagnostic scan may
+require over 100 x-y sites to be imaged, the software
+must focus rapidly while still being sufficiently re-    D. Automatic Calibration
+liable to not invalidate a large scan with any out of       1) Lens Shading Table: Due to chief ray angle
+focus images.                                            compensation on the Raspberry Pi camera module’s
+   A basic autofocus procedure captures a z-stack        Sony IMX219 image sensor, the raw images captured
+of images regularly spaced between points expected       by the microscope suffer from vignetting even when
+to be far above and below the focal point. At each       the sample is uniformly illuminated. However, flat-
+height, an image is captured and converted to grey-      field correction allows us to recover uniform images
+scale. A Laplacian convolution is applied to the whole   in software [47]. We use a forked version [30] of the
+image, assigning higher values to areas of greater       “picamera” library [43], to access the lens shading
+spatial brightness variance. These values are raised     table in the camera’s GPU-based image processing
+to the fourth power and summed over the image            pipeline, enabling us to correct for vignetting in
+to provide a sharpness value. The translation stage      both captured images and the real-time preview. A
+is then returned to the z-position with the highest      reduction in saturation at the edges of the image
+sharpness. This procedure is based on methods used       remains, but this can be corrected by post processing
+previously to detect focused areas in an out of focus    at the expense of higher noise in the image [47].
+image [44], and while highly reliable, typically takes      2) Camera-stage Mapping: It is often convenient
+10–20 seconds to complete, limited by capturing and      to move the microscope stage by a given displace-
+image processing time.                                   ment in pixels on the camera, but the axes and step
+   A fast autofocus procedure utilises the MJPEG         size of the translation stage rarely align perfectly. We
+preview stream as a metric of focus. By disabling        calibrate this relationship by moving back and forth
+bit rate control, the stream becomes a simple series     along the stage’s x and y axes in turn, analysing
+of independent JPEG images each with identical           the resulting displacement in the image from the
+compression settings. This JPEG compression uses         camera [48]. We combine the calibrations into a
+the discrete cosine transform to describe blocks of      2 × 2 affine transformation matrix that maps stage
+the image [45], where each block is described using      to camera coordinates. This is a similar approach to
+a superposition of the fewest discrete cosine func-      µManager’s Pixel Calibrator plugin [17], but treating
+tions possible, minimising the storage space required.   the camera’s coordinate system as ground truth rather
+As focused images typically have sharper feature         than the stage. We avoid hard-coded step sizes by
+boundaries, the storage size of an MJPEG frame           moving the stage in gradually increasing steps, and
+will peak when the sample is in focus. By tracking       measure mechanical backlash by comparing motion
+frame size and z-position as the objective moves         in opposite directions. This allows an intuitive click-
+through the focal point without stopping, the position   to-move feature of the microscope’s graphical inter-
+of peak sharpness can be identified and returned to.     face, and will in the future be used when scanning
+On a sparse sample, blur in out of focus images          and tiling images.
+can introduce information into blocks which would           The same image analysis used for stage calibration
+otherwise be empty. If this increase in the number       is used as a 2D displacement encoder, allowing
+of blocks containing some non-zero information out-      for closed-loop sample translation and closed-loop
+weighs the reduction of blocks containing a large        scanning. This significantly reduces the error in each
+amount of information, the JPEG size may maximise        individual move, as well as ensuring that errors do
+away from focus. However, for feature-dense samples      not accumulate over the course of a large scan. Going
+the size of a JPEG image can generally be used as a      forward, we will extend this functionality to include
+reliable measure of focus. This autofocus method has     simultaneous location and mapping (SLAM) [49].
+                                                                                                                        9
+
+
+
+This will enable the creation of a map of the sample      Royal Society (URF\R1\180153, RGF\EA\181034)
+by comparing predictions based on commands sent
+to the motors to observations from the camera. This                    VI. DATA AND CODE ACCESS
+will enable accurate movements to features or areas
+                                                             Pre-built software is available from our build
+of interest using the camera and estimated motor
+                                                          server, linked from https://openflexure.org/projects/
+position.
+                                                          microscope/. User and developer documentation for
+                  IV. C ONCLUSIONS                        the server and the web application is available at
+                                                          https://openflexure-microscope-software.readthedocs.
+   The OpenFlexure Microscope software stack pro-
+                                                          io/, and developer documentation for LabThings is
+vides both graphical and scripted interfaces to the mi-
+                                                          available at https://python-labthings.readthedocs.io/.
+croscope’s hardware capabilities, meeting the needs
+                                                             All of our code described by this manuscript is
+of users with a very wide range of technical abilities.
+                                                          available under open-source licenses, and repositories
+Splitting the code into a server and multiple clients
+                                                          containing the development history of each project
+allows the microscope to be controlled as a stand-
+                                                          are available on GitLab and GitHub. The key repos-
+alone device or over a network, via an interactive
+                                                          itories are listed below:
+application or through a script. Multiple clients can
+                                                          Server & web application: https://gitlab.com/
+connect to the microscope at once, which reduces
+                                                          openflexure/openflexure-microscope-server (includes
+the need to duplicate the functions of the graphical
+                                                          Python server and Vue.js web application)
+interface in scripts that run particular experimental
+                                                          Python        client:    https://gitlab.com/openflexure/
+protocols. Using IP networks allows for multiple
+                                                          openflexure-microscope-pyclient
+devices to access a microscope simultaneously, or for
+                                                          OpenFlexure           Connect:         https://gitlab.com/
+one computer to control multiple microscopes. Our
+                                                          openflexure/openflexure-connect                  (Electron
+standards-compliant HTTP API allows experiment to
+                                                          application to discover microscopes and display
+be scripted in almost any modern language on any
+                                                          the web app)
+operating system, using only standard libraries.
+                                                          SD card image generator: https://gitlab.com/
+   We have created a desktop application that makes
+                                                          openflexure/pi-gen
+it easy to find devices on a network, and display a
+                                                          Python LabThings library: https://github.com/
+graphical interface for the OpenFlexure microscope
+                                                          labthings/python-labthings
+suitable for scientific, educational, and clinical use.
+Extensions can add to or modify the graphical in-
+                                                             The current release of each of the reposito-
+terface, to expose new capabilities or make it more
+                                                          ries above is archived on the University of Bath’s
+suited to a particular purpose. We enable remote
+                                                          data archive at https://PLACEHOLDER.URL.FOR.
+scripting of experiments with our Python and MAT-
+                                                          ARCHIVE.
+LAB clients, which can run alongside the graphical
+interface and integrate well with notebook-based pro-
+gramming.                                                                        R EFERENCES
+   The core architecture of our software is written as     [1] J. P. Sharkey, D. C. W. Foo, A. Kabla, J. J. Baumberg, and
+a stand-alone libraries which are not specific to the          R. W. Bowman, “A one-piece 3D printed flexure translation
+                                                               stage for open-source microscopy,” Review of Scientific In-
+microscope [23]. This makes the more generic aspects           struments, vol. 87, no. 2, p. 025104, feb 2016.
+of our software, such as management of actions that        [2] J. T. Collins et al., “Robotic microscopy for everyone:
+run in threads, or the automatic generation of Thing           the OpenFlexure microscope,” Biomedical Optics Express,
+                                                               vol. 11, no. 5, p. 2447, may 2020.
+Description and OpenAPI descriptions, available to         [3] J. H. Nord, A. Koohang, and J. Paliszkiewicz, “The Inter-
+other projects that wish to adopt a Web of Things              net of Things: Review and theoretical framework,” Expert
+approach. However, a key strength of our approach is           Systems with Applications, vol. 133, pp. 97–108, nov 2019.
+                                                           [4] J. M. Perkel, “The Internet of Things comes to the lab,”
+that intercompatibility does not depend on the use of          Nature, vol. 542, no. 7639, pp. 125–126, feb 2017.
+our library or framework, only on compliance to the        [5] J. Zornig, S. Chen, and H. Dinh, “RESTlabs: A prototype
+W3C Web of Things standard, which is independent               web 2.0 architecture for Remote Labs,” in 2012 9th In-
+                                                               ternational Conference on Remote Engineering and Virtual
+of any toolkit or framework.                                   Instrumentation (REV). IEEE, jul 2012, pp. 1–3.
+                                                           [6] M. M. Uddin, S. Vakati, and A. K. M. Azad, “Potential of
+           V. ACKNOWLEDGEMENTS                                 embedded processors and cloud for remote experimentation,”
+                                                               in Cross Reality and Data Science in Engineering, M. E.
+   We would like to acknowledge financial support              Auer and D. May, Eds.          Cham: Springer International
+from EPSRC (EP/R013969/1, EP/R011443/1) and the                Publishing, 2021, pp. 472–487.
+                                                                                                                                        10
+
+
+
+ [7] M. Moussa, A. Benachenhou, S. Belghit, A. Adda Benattia,          [29] “pysangaboard · gitlab,” https://gitlab.com/bath open
+     and A. Boumehdi, “An Implementation of Microservices                   instrumentation group/pysangaboard/,          (Accessed      on
+     Based Architecture for Remote Laboratories,” in Cross Real-            21/09/2021).
+     ity and Data Science in Engineering, M. E. Auer and D. May,       [30] “jtc42/picamerax: A pure python interface for the raspberry
+     Eds. Cham: Springer International Publishing, 2021, pp.                pi camera module, with extra features and fixes,” https:
+     154–161.                                                               //github.com/jtc42/picamerax, (Accessed on 10/08/2020).
+ [8] C. Salzmann and D. Gillet, “Smart device paradigm, Stan-          [31] R. Fielding, “Architectural Styles and the Design of Network-
+     dardization for online labs,” in 2013 IEEE Global Engineer-            based Software Architectures,” Ph.D. dissertation, University
+     ing Education Conference (EDUCON). IEEE, mar 2013,                     of California, Irvine, 2000.
+     pp. 1217–1221.                                                    [32] L. Richardson, M. Amundsen, and S. Ruby, RESTful Web
+ [9] T. Kawaguchi, K. Kajimoto, M. Kovatsch, M. Lagally,                    APIs. O’Reilly Media, Inc., 2013.
+     R. Matsukura, and K. Toumura, “Web of things                      [33] “Rest api documentation tool — swagger ui,” https://swagger.
+     (wot) architecture,” W3C, W3C Recommendation, Apr.                     io/tools/swagger-ui/, (Accessed on 10/06/2020).
+     2020, https://www.w3.org/TR/2020/REC-wot-architecture-            [34] V. Charpenay, M. McCool, M. Kovatsch, S. Käbisch,
+     20200409/.                                                             and T. Kamiya, “Web of things (wot) thing
+[10] “Openapi specification,” https://swagger.io/specification/,            description,” W3C, W3C Recommendation, Apr. 2020,
+     (Accessed on 10/08/2020).                                              https://www.w3.org/TR/2020/REC-wot-thing-description-
+[11] M. A. Phillips et al., “Microscope-cockpit: Python-based               20200409/.
+     bespoke microscopy for bio-medical science,” bioRxiv, 2021.       [35] I. Hickson, “Server-sent events,” W3C, W3C Recom-
+[12] “Micronoxford/cockpit: Cockpit is a microscope graphi-                 mendation, Feb. 2015, https://www.w3.org/TR/2015/REC-
+     cal user interface.” https://github.com/MicronOxford/cockpit,          eventsource-20150203/.
+     (Accessed on 10/06/2020).                                         [36] “Openflexure               /          openflexure-microscope-
+[13] I. de Jong, “Pyro4: Python remote objects,” https://github.            pyclient      ·     gitlab,”    https://gitlab.com/openflexure/
+     com/irmen/Pyro4, (Accessed on 21/09/2021).                             openflexure-microscope-pyclient, (Accessed on 10/09/2020).
+[14] “Micro-manager,”                https://micro-manager.org/wiki/   [37] “labthings/python-labthings-client:      A     simple    python
+     Micro-Manager, (Accessed on 10/06/2020).                               client for labthings devices,” https://github.com/labthings/
+[15] “Writing plugins for micro-manager,” https://micro-manager.            python-labthings-client, (Accessed on 10/16/2020).
+     org/wiki/Writing plugins for Micro-Manager, (Accessed on          [38] F. Perez and B. E. Granger, “Ipython: A system for interactive
+     10/06/2020).                                                           scientific computing,” Computing in Science Engineering,
+[16] A. Edelstein, N. Amodaj, K. Hoover, R. Vale, and N. Stu-               vol. 9, no. 3, pp. 21–29, May 2007.
+     urman, “Computer control of microscopes using µmanager,”          [39] T. Kluyver et al., “Jupyter notebooks – a publishing format
+     Current Protocols in Molecular Biology, vol. 92, no. 1, pp.            for reproducible computational workflows,” in Positioning
+     14.20.1–14.20.17, 2010.                                                and Power in Academic Publishing: Players, Agents and
+                                                                            Agendas, F. Loizides and B. Schmidt, Eds. IOS Press, 2016,
+[17] A. Edelstein, M. Tsuchida, N. Amodaj, H. Pinkard, R. Vale,
+                                                                            pp. 87 – 90.
+     and N. Stuurman, “Advanced methods of microscope control
+     using µmanager software,” Journal of Biological Methods,          [40] “Openflexure          /       openflexure-microscope-matlab-
+     vol. 1, no. 2, p. e10, 2014.                                           client      ·      gitlab,”     https://gitlab.com/openflexure/
+                                                                            openflexure-microscope-matlab-client,          (Accessed     on
+[18] X. C. Moreno, S. Al-Kadhimi, J. Alvelid, A. Bodén, and
+                                                                            21/01/2021).
+     I. Testa, “Imswitch: Generalizing microscope control in
+                                                                       [41] “Openflexure               /          openflexure-microscope-
+     python,” Journal of Open Source Software, vol. 6, no. 64,
+                                                                            snesclient       ·  gitlab,”    https://gitlab.com/openflexure/
+     p. 3394, 2021.
+                                                                            openflexure-microscope-snesclient,           (Accessed       on
+[19] “Openflexure / pi-gen · gitlab,” https://gitlab.com/
+                                                                            10/08/2020).
+     openflexure/pi-gen, (Accessed on 21/01/2021).
+                                                                       [42] M. Grinberg, “Flask video streaming revisited -
+[20] W. Ouyang et al., “An open-source modular framework                    miguelgrinberg.com,” https://blog.miguelgrinberg.com/post/
+     for automated pipetting and imaging applications,” bioRxiv,            flask-video-streaming-revisited, (Accessed on 10/06/2020).
+     2021.
+                                                                       [43] “waveform80/picamera: A pure python interface to the rasp-
+[21] “Shop - ni,” https://www.ni.com/en-gb/shop.html, (Accessed             berry pi camera module,” https://github.com/waveform80/
+     on 10/06/2020).                                                        picamera, (Accessed on 10/06/2020).
+[22] S. Cheshire and M. Krochmal, “Multicast dns,” Internet            [44] X. Hao, H. Zhao, and J. Liu, “Multifocus color image
+     Requests for Comments, RFC Editor, RFC 6762, February                  sequence fusion based on mean shift segmentation,” Applied
+     2013, http://www.rfc-editor.org/rfc/rfc6762.txt.                       Optics, vol. 54, no. 30, p. 8982, oct 2015.
+[23] “labthings/python-labthings:        Python      implementation    [45] G. K. Wallace, “The JPEG still picture compression stan-
+     of labthings, based on the flask microframework,”                      dard,” Communications of the ACM, vol. 34, no. 4, pp. 30–44,
+     https://github.com/labthings/python-labthings,       (Accessed         apr 1991.
+     on 10/08/2020).                                                   [46] J. Knapper, J. T. Collins, J. Stirling, S. McDermott,
+[24] “pallets/flask: The python micro framework for building web            W. Wadsworth, and R. Bowman, “Fast, high precision auto-
+     applications.” https://github.com/pallets/flask, (Accessed on          focus on a motorised microscope: automating blood sample
+     10/08/2020).                                                           imaging on the openflexure microscope,” 2021.
+[25] C. R. Harris et al., “Array programming with NumPy,”              [47] R. W. Bowman, B. Vodenicharski, J. T. Collins, and J. Stir-
+     Nature, vol. 585, no. 7825, pp. 357–362, Sep. 2020.                    ling, “Flat-Field and Colour Correction for the Raspberry Pi
+[26] P. Virtanen et al., “SciPy 1.0: Fundamental Algorithms for             Camera Module,” Journal of Open Hardware, 2020.
+     Scientific Computing in Python,” Nature Methods, 2020.            [48] “Openflexure / microscope-extensions / camera-stage-
+[27] G. Bradski, “The OpenCV Library,” Dr. Dobb’s Journal of                mapping        ·    gitlab,”    https://gitlab.com/openflexure/
+     Software Tools, 2000.                                                  microscope-extensions/camera-stage-mapping/, (Accessed
+[28] J. D. Hunter, “Matplotlib: A 2d graphics environment,”                 on 10/06/2020).
+     Computing in Science Engineering, vol. 9, no. 3, pp. 90–95,       [49] C. Cadena et al., “Past, Present, and Future of Simultaneous
+     May 2007.                                                              Localization and Mapping: Toward the Robust-Perception
+                                                           11
+
+
+
+Age,” IEEE Transactions on Robotics, vol. 32, no. 6, pp.
+1309–1332, dec 2016.
+

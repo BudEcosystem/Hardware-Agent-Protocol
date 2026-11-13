@@ -1,0 +1,122 @@
+{
+  "scope": "Native immutable loader research",
+  "sources": [
+    {
+      "id": "memfd_create",
+      "requestedUrl": "https://man7.org/linux/man-pages/man2/memfd_create.2.html",
+      "finalUrl": "https://man7.org/linux/man-pages/man2/memfd_create.2.html",
+      "acquiredUnixNs": 1794169315589219772,
+      "headers": {
+        "Date": "Sun, 08 Nov 2026 20:21:55 GMT",
+        "Server": "Apache/2.4.58 (Ubuntu)",
+        "Last-Modified": "Mon, 02 Nov 2026 20:20:30 GMT",
+        "ETag": "\"678e-65f50e092bf80\"",
+        "Accept-Ranges": "bytes",
+        "Content-Length": "26510",
+        "Vary": "Accept-Encoding",
+        "Connection": "close",
+        "Content-Type": "text/html"
+      },
+      "rawPath": "raw/memfd_create.html",
+      "rawBytes": 26510,
+      "rawSha256": "fdeca1263da1a2b63aa145d9ddd619cd85fd1b0fbd1c2b6f820c65880081eb61",
+      "textPath": "text/memfd_create.txt",
+      "textBytes": 16683,
+      "textSha256": "c657fb57ab7db2fcb1f701bb20176d380817107c88c93141842a1e1bfe7a7b44",
+      "lfLines": 412,
+      "surroundingPath": "surrounding/memfd_create.txt",
+      "surroundingSha256": "01ef33239d1ff5b26a521c587a147ca82024c3ebde05fdeb8af89b4af0988174",
+      "images": [
+        {
+          "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+          "alt": "Cover of TLPI"
+        },
+        {
+          "class": "statcounter",
+          "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+          "alt": "Web Analytics Made Easy -\nStatCounter"
+        }
+      ],
+      "readingStatus": "unread",
+      "acquiredCodeExecuted": false
+    },
+    {
+      "id": "seals",
+      "requestedUrl": "https://man7.org/linux/man-pages/man2/F_ADD_SEALS.2const.html",
+      "finalUrl": "https://man7.org/linux/man-pages/man2/F_ADD_SEALS.2const.html",
+      "acquiredUnixNs": 1794169315559841740,
+      "headers": {
+        "Date": "Sun, 08 Nov 2026 20:21:55 GMT",
+        "Server": "Apache/2.4.58 (Ubuntu)",
+        "Last-Modified": "Mon, 02 Nov 2026 20:20:30 GMT",
+        "ETag": "\"3bf6-65f50e092bf80\"",
+        "Accept-Ranges": "bytes",
+        "Content-Length": "15350",
+        "Vary": "Accept-Encoding",
+        "Connection": "close",
+        "Content-Type": "text/html"
+      },
+      "rawPath": "raw/seals.html",
+      "rawBytes": 15350,
+      "rawSha256": "d3fe3c1aa5800eabf146bb7f9f7d68e4bed91650bed4f2f1ff480d6e0b7921eb",
+      "textPath": "text/seals.txt",
+      "textBytes": 7605,
+      "textSha256": "7833fdaedebc4a0cbdc5576632845c5900dcd1cdc54ae2418bbddded2d936193",
+      "lfLines": 182,
+      "surroundingPath": "surrounding/seals.txt",
+      "surroundingSha256": "7e42091caf5e33321d3f43713282aa4ddcd329481e61fbccf20efde010fe2a7a",
+      "images": [
+        {
+          "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+          "alt": "Cover of TLPI"
+        },
+        {
+          "class": "statcounter",
+          "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+          "alt": "Web Analytics Made Easy -\nStatCounter"
+        }
+      ],
+      "readingStatus": "unread",
+      "acquiredCodeExecuted": false
+    },
+    {
+      "id": "proc_pid_fd",
+      "requestedUrl": "https://man7.org/linux/man-pages/man5/proc_pid_fd.5.html",
+      "finalUrl": "https://man7.org/linux/man-pages/man5/proc_pid_fd.5.html",
+      "acquiredUnixNs": 1794169315393017943,
+      "headers": {
+        "Date": "Sun, 08 Nov 2026 20:21:55 GMT",
+        "Server": "Apache/2.4.58 (Ubuntu)",
+        "Last-Modified": "Mon, 02 Nov 2026 20:20:30 GMT",
+        "ETag": "\"2c5f-65f50e092bf80\"",
+        "Accept-Ranges": "bytes",
+        "Content-Length": "11359",
+        "Vary": "Accept-Encoding",
+        "Connection": "close",
+        "Content-Type": "text/html"
+      },
+      "rawPath": "raw/proc_pid_fd.html",
+      "rawBytes": 11359,
+      "rawSha256": "3a50ddef6f2f3a4f1139dcef3299a5eadf8fc96514df9fcb329a3bffd47ff27e",
+      "textPath": "text/proc_pid_fd.txt",
+      "textBytes": 5296,
+      "textSha256": "2c00fefb638e17652f04cd9cc16c39d0cfaaab41ea7eb6ad206b13c1f4d14c2c",
+      "lfLines": 117,
+      "surroundingPath": "surrounding/proc_pid_fd.txt",
+      "surroundingSha256": "1617b4b7088d38486677a4e1fd111d7b74a5656db141f5eaa0e44157b866a9cd",
+      "images": [
+        {
+          "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+          "alt": "Cover of TLPI"
+        },
+        {
+          "class": "statcounter",
+          "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+          "alt": "Web Analytics Made Easy -\nStatCounter"
+        }
+      ],
+      "readingStatus": "unread",
+      "acquiredCodeExecuted": false
+    }
+  ]
+}

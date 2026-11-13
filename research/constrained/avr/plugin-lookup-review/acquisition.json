@@ -1,0 +1,77 @@
+{
+  "compiler_or_acquired_source_executed": false,
+  "files": [
+    {
+      "bytes": 288203,
+      "final_url": "https://gcc.gnu.org/cgit/gcc/plain/gcc/gcc.c?h=releases/gcc-7.3.0",
+      "headers": {
+        "Connection": "close",
+        "Content-Disposition": "inline; filename=\"gcc.c\"",
+        "Content-Length": "288203",
+        "Content-Type": "text/plain; charset=UTF-8",
+        "Date": "Mon, 09 Nov 2026 12:18:30 GMT",
+        "Etag": "\"c48178f1aa368f18b5b38b9a03262b8a30ea8aba\"",
+        "Expires": "Mon, 09 Nov 2026 12:22:27 GMT",
+        "Last-Modified": "Mon, 09 Nov 2026 12:17:27 GMT",
+        "Server": "nginx",
+        "Strict-Transport-Security": "max-age=16070400",
+        "Vary": "Accept-Encoding,Git-Protocol",
+        "X-Content-Type-Options": "nosniff"
+      },
+      "path": "gcc.c",
+      "sha256": "be428a96f36f3660710f95f9b8d9a60a45376553d3cb4b4f6e44a0f8635b0781",
+      "source": "gcc/gcc.c",
+      "status": 200,
+      "url": "https://gcc.gnu.org/cgit/gcc/plain/gcc/gcc.c?h=releases/gcc-7.3.0"
+    },
+    {
+      "bytes": 85238,
+      "final_url": "https://gcc.gnu.org/cgit/gcc/plain/gcc/collect2.c?h=releases/gcc-7.3.0",
+      "headers": {
+        "Connection": "close",
+        "Content-Disposition": "inline; filename=\"collect2.c\"",
+        "Content-Length": "85238",
+        "Content-Type": "text/plain; charset=UTF-8",
+        "Date": "Mon, 09 Nov 2026 12:18:32 GMT",
+        "Etag": "\"ddbd2be8bf8945d026341ef1d660d591cced36eb\"",
+        "Expires": "Mon, 09 Nov 2026 12:23:32 GMT",
+        "Last-Modified": "Mon, 09 Nov 2026 12:18:32 GMT",
+        "Server": "nginx",
+        "Strict-Transport-Security": "max-age=16070400",
+        "Vary": "Accept-Encoding,Git-Protocol",
+        "X-Content-Type-Options": "nosniff"
+      },
+      "path": "collect2.c",
+      "sha256": "06d046a5a596e58fba7f56515e3782f4d982ceb43da1b08b00c847eef2ebd77b",
+      "source": "gcc/collect2.c",
+      "status": 200,
+      "url": "https://gcc.gnu.org/cgit/gcc/plain/gcc/collect2.c?h=releases/gcc-7.3.0"
+    },
+    {
+      "bytes": 6,
+      "final_url": "https://gcc.gnu.org/cgit/gcc/plain/gcc/BASE-VER?h=releases/gcc-7.3.0",
+      "headers": {
+        "Connection": "close",
+        "Content-Disposition": "inline; filename=\"BASE-VER\"",
+        "Content-Length": "6",
+        "Content-Type": "text/plain; charset=UTF-8",
+        "Date": "Mon, 09 Nov 2026 12:18:35 GMT",
+        "Etag": "\"1502020768a7b4ee9a2968d4efa1fcb13ce8d53f\"",
+        "Expires": "Mon, 09 Nov 2026 12:23:35 GMT",
+        "Last-Modified": "Mon, 09 Nov 2026 12:18:35 GMT",
+        "Server": "nginx",
+        "Strict-Transport-Security": "max-age=16070400",
+        "Vary": "Git-Protocol",
+        "X-Content-Type-Options": "nosniff"
+      },
+      "path": "BASE-VER",
+      "sha256": "9e79064c749a37b2c33696623f132b91c29b5e941413dbfb13fa7851e2a53143",
+      "source": "gcc/BASE-VER",
+      "status": 200,
+      "url": "https://gcc.gnu.org/cgit/gcc/plain/gcc/BASE-VER?h=releases/gcc-7.3.0"
+    }
+  ],
+  "recorded_at": "2026-11-09T12:18:35.276289+00:00",
+  "schema": "hms-gcc-plugin-lookup-source-acquisition/1",
+  "scope": "Upstream GCC release tag; not proof of byte-identical downstream AVR build source."
+}

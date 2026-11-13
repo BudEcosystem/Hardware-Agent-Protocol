@@ -1,0 +1,566 @@
+{
+  "id": "hms-recorded",
+  "header": {
+    "version": 4,
+    "id": "hms-recorded",
+    "createdAt": 1793934234788,
+    "cwd": "/tmp/hms-native-bQ8NO5",
+    "isSeeded": false
+  },
+  "events": [
+    {
+      "type": "agent/inbox/spliced",
+      "seq": 0,
+      "time": 1793934234802,
+      "data": {
+        "target": "next-turn",
+        "start": 0,
+        "inserted": [
+          {
+            "content": [
+              {
+                "type": "text",
+                "text": "List the simulated hardware without acting."
+              }
+            ],
+            "source": {
+              "kind": "user"
+            },
+            "role": "user",
+            "id": "99a50500-0d8a-4619-bb2b-1c94566c3bef"
+          }
+        ]
+      }
+    },
+    {
+      "type": "turn/start",
+      "seq": 1,
+      "time": 1793934234807,
+      "data": {
+        "turn": 1
+      }
+    },
+    {
+      "type": "agent/inbox/spliced",
+      "seq": 2,
+      "time": 1793934234808,
+      "data": {
+        "target": "next-turn",
+        "start": 0,
+        "removedCount": 1,
+        "inserted": []
+      }
+    },
+    {
+      "type": "step/start",
+      "seq": 3,
+      "time": 1793934234827,
+      "data": {
+        "turn": 1,
+        "step": 1
+      }
+    },
+    {
+      "type": "system/message",
+      "seq": 4,
+      "time": 1793934234838,
+      "data": {
+        "turn": 1,
+        "step": 1,
+        "message": {
+          "role": "system",
+          "content": [
+            {
+              "type": "text",
+              "text": "You are an AI agent powered by Bud Meta Harness."
+            }
+          ],
+          "source": {
+            "kind": "system-prompt"
+          },
+          "id": "23d98054-b132-47ac-b503-6fcda42f7ad7"
+        }
+      },
+      "surfaceOp": "append"
+    },
+    {
+      "type": "user/message",
+      "seq": 5,
+      "time": 1793934234839,
+      "data": {
+        "content": [
+          {
+            "type": "text",
+            "text": "List the simulated hardware without acting."
+          }
+        ],
+        "source": {
+          "kind": "user"
+        },
+        "role": "user",
+        "id": "99a50500-0d8a-4619-bb2b-1c94566c3bef"
+      },
+      "surfaceOp": "append"
+    },
+    {
+      "type": "user/message",
+      "seq": 6,
+      "time": 1793934234839,
+      "data": {
+        "content": [
+          {
+            "type": "text",
+            "text": "Current runtime context. This snapshot supersedes earlier runtime-context snapshots.\n\nCurrent working directory: \"/tmp/hms-native-bQ8NO5\".\n\nCurrent BUDMH file policy: danger-full-access. The BUDMH file sandbox does not restrict file modifications by available operations."
+          }
+        ],
+        "source": {
+          "kind": "runtime-context",
+          "form": "snapshot",
+          "sections": [
+            {
+              "name": "working-directory:current",
+              "text": "Current working directory: \"/tmp/hms-native-bQ8NO5\"."
+            },
+            {
+              "name": "sandbox:policy",
+              "text": "Current BUDMH file policy: danger-full-access. The BUDMH file sandbox does not restrict file modifications by available operations."
+            }
+          ]
+        },
+        "role": "user",
+        "id": "70e6e441-58b8-40c6-9672-a5449cea77b5"
+      },
+      "surfaceOp": "append"
+    },
+    {
+      "type": "request/header",
+      "seq": 7,
+      "time": 1793934234844,
+      "data": {
+        "header": {
+          "config": {
+            "provider": "hms-keyless",
+            "model": "local-script"
+          },
+          "tools": [
+            {
+              "name": "hardware_cancel",
+              "description": "Request cancellation of an operation. Cancellation acceptance does not prove stopped hardware or rollback; inspect operation state and resources.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "operationId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "operationId"
+                ]
+              }
+            },
+            {
+              "name": "hardware_describe",
+              "description": "Read a simulation instance description and semantic generations.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "instanceId": {
+                    "type": "string"
+                  },
+                  "digest": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "instanceId"
+                ]
+              }
+            },
+            {
+              "name": "hardware_discover",
+              "description": "List local simulation instances and pinned descriptions.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "capability": {
+                    "type": "string"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  },
+                  "cursor": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            {
+              "name": "hardware_events",
+              "description": "Read bounded durable operation events after a sequence cursor.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "operationId": {
+                    "type": "string"
+                  },
+                  "after": {
+                    "type": "integer"
+                  },
+                  "limit": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "operationId"
+                ]
+              }
+            },
+            {
+              "name": "hardware_invoke",
+              "description": "Submit a retained complete request once. Never reconstruct or change it after uncertain delivery. Acceptance is not completion or physical verification; query its operationId. Automatic retries are disabled.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "request": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                },
+                "required": [
+                  "request"
+                ]
+              }
+            },
+            {
+              "name": "hardware_namespace",
+              "description": "Allocate an expiring replay namespace before preparing an immutable request.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "expiresUnixMs": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "expiresUnixMs"
+                ]
+              }
+            },
+            {
+              "name": "hardware_observe",
+              "description": "Read bounded-age simulation evidence, including quality and uncertainty.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "instanceId": {
+                    "type": "string"
+                  },
+                  "property": {
+                    "type": "string"
+                  },
+                  "maxAgeMs": {
+                    "type": "integer"
+                  },
+                  "evidenceKind": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "instanceId",
+                  "property",
+                  "maxAgeMs",
+                  "evidenceKind"
+                ]
+              }
+            },
+            {
+              "name": "hardware_operation",
+              "description": "Read durable execution, cancellation, resource and effect-verification states. Completed simulation is not a verified physical effect.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "operationId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "operationId"
+                ]
+              }
+            },
+            {
+              "name": "hardware_prepare",
+              "description": "Prepare an immutable request with pinned generations. This does not admit or execute it. Retain the complete request unchanged for invoke and any deliberate replay.",
+              "parameters": {
+                "type": "object",
+                "properties": {
+                  "instanceId": {
+                    "type": "string"
+                  },
+                  "actionId": {
+                    "type": "string"
+                  },
+                  "arguments": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "operationKey": {
+                    "type": "string"
+                  },
+                  "replayNamespace": {
+                    "type": "string"
+                  },
+                  "timing": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "requiredEffect": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "instanceId",
+                  "actionId",
+                  "arguments",
+                  "operationKey",
+                  "replayNamespace",
+                  "timing",
+                  "requiredEffect"
+                ]
+              }
+            }
+          ]
+        },
+        "reason": "initial"
+      }
+    },
+    {
+      "type": "request/context",
+      "seq": 8,
+      "time": 1793934234849,
+      "data": {
+        "provider": "hms-keyless",
+        "model": "local-script"
+      }
+    },
+    {
+      "type": "assistant/message",
+      "seq": 9,
+      "time": 1793934234855,
+      "data": {
+        "turn": 1,
+        "step": 1,
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "tool-call",
+              "id": "recorded-discover",
+              "name": "hardware_discover",
+              "arguments": "{\"limit\":10}"
+            }
+          ],
+          "source": {
+            "kind": "model",
+            "provider": "hms-keyless",
+            "model": "local-script"
+          },
+          "id": "4a7ccf76-cfa1-4168-8634-5aa520bd8833"
+        },
+        "stream": [
+          {
+            "type": "chunk",
+            "time": 1793934234852,
+            "chunk": {
+              "type": "block-start",
+              "index": 0,
+              "blockType": "tool-call"
+            }
+          },
+          {
+            "type": "tool-call-chunks",
+            "time0": 1793934234853,
+            "index": 0,
+            "dt": [],
+            "id": "recorded-discover",
+            "name": "hardware_discover",
+            "args": [
+              "{\"limit\":10}"
+            ]
+          },
+          {
+            "type": "chunk",
+            "time": 1793934234853,
+            "chunk": {
+              "type": "block-end",
+              "index": 0,
+              "block": {
+                "type": "tool-call",
+                "id": "recorded-discover",
+                "name": "hardware_discover",
+                "arguments": "{\"limit\":10}"
+              }
+            }
+          },
+          {
+            "type": "chunk",
+            "time": 1793934234854,
+            "chunk": {
+              "type": "finish",
+              "reason": {
+                "kind": "tool-calls"
+              }
+            }
+          }
+        ]
+      },
+      "surfaceOp": "append"
+    },
+    {
+      "type": "tool/call",
+      "seq": 10,
+      "time": 1793934234857,
+      "data": {
+        "turn": 1,
+        "step": 1,
+        "callId": "recorded-discover",
+        "name": "hardware_discover",
+        "arguments": "{\"limit\":10}"
+      }
+    },
+    {
+      "type": "tool/result",
+      "seq": 11,
+      "time": 1793934236648,
+      "data": {
+        "turn": 1,
+        "step": 1,
+        "message": {
+          "role": "tool",
+          "source": {
+            "kind": "tool",
+            "callId": "recorded-discover"
+          },
+          "toolCallId": "recorded-discover",
+          "content": [
+            {
+              "type": "text",
+              "text": "{\"ok\":true,\"result\":{\"cursor\":null,\"items\":[{\"bindingActive\":true,\"bindingGeneration\":\"sim-binding:1\",\"descriptionDigest\":\"sha256:eb2e37b7fc2c30a0609a7d5bc3ba03b860199fe0e0eea98dfbe60c5919820aa7\",\"identityKind\":\"simulation\",\"instanceId\":\"sim:home-fan\",\"presence\":{\"expires_ms\":1793934239325,\"session\":\"sim-session:306a974eea7f4c9bb8cd6cc45ce70226\"},\"retired\":false},{\"bindingActive\":true,\"bindingGeneration\":\"sim-binding:1\",\"descriptionDigest\":\"sha256:f528f133cfdfa8f6f139923e96bbdcf63c73d9da440fcac809e418ff30d25e5e\",\"identityKind\":\"simulation\",\"instanceId\":\"sim:inspection-cell\",\"presence\":{\"expires_ms\":1793934239416,\"session\":\"sim-session:306a974eea7f4c9bb8cd6cc45ce70226\"},\"retired\":false},{\"bindingActive\":true,\"bindingGeneration\":\"sim-binding:1\",\"descriptionDigest\":\"sha256:706cb6a78f269d28e895dd442982dfae2a835e4840afb0674cad4a1f92ad3e42\",\"identityKind\":\"simulation\",\"instanceId\":\"sim:microscope\",\"presence\":{\"expires_ms\":1793934239506,\"session\":\"sim-session:306a974eea7f4c9bb8cd6cc45ce70226\"},\"retired\":false}],\"registryRevision\":10},\"attribution\":{\"sessionId\":\"hms-recorded\",\"callId\":\"recorded-discover\"}}"
+            }
+          ],
+          "isError": false,
+          "id": "3e7fa3ba-969e-41ea-94e5-00996471b1ed"
+        }
+      },
+      "sourceEventSeqs": [
+        10
+      ],
+      "surfaceOp": "append"
+    },
+    {
+      "type": "step/end",
+      "seq": 12,
+      "time": 1793934236648,
+      "data": {
+        "turn": 1,
+        "step": 1
+      }
+    },
+    {
+      "type": "step/start",
+      "seq": 13,
+      "time": 1793934236654,
+      "data": {
+        "turn": 1,
+        "step": 2
+      }
+    },
+    {
+      "type": "assistant/message",
+      "seq": 14,
+      "time": 1793934236663,
+      "data": {
+        "turn": 1,
+        "step": 2,
+        "message": {
+          "role": "assistant",
+          "content": [
+            {
+              "type": "text",
+              "text": "Three simulation instances; no physical effect is verified."
+            }
+          ],
+          "source": {
+            "kind": "model",
+            "provider": "hms-keyless",
+            "model": "local-script"
+          },
+          "id": "3a028221-0868-4ae9-b470-ee61e9f7c572"
+        },
+        "stream": [
+          {
+            "type": "chunk",
+            "time": 1793934236662,
+            "chunk": {
+              "type": "block-start",
+              "index": 0,
+              "blockType": "text"
+            }
+          },
+          {
+            "type": "text-chunks",
+            "time0": 1793934236662,
+            "index": 0,
+            "dt": [],
+            "texts": [
+              "Three simulation instances; no physical effect is verified."
+            ]
+          },
+          {
+            "type": "chunk",
+            "time": 1793934236663,
+            "chunk": {
+              "type": "block-end",
+              "index": 0,
+              "block": {
+                "type": "text",
+                "text": "Three simulation instances; no physical effect is verified."
+              }
+            }
+          },
+          {
+            "type": "chunk",
+            "time": 1793934236663,
+            "chunk": {
+              "type": "finish",
+              "reason": {
+                "kind": "stop"
+              }
+            }
+          }
+        ]
+      },
+      "surfaceOp": "append"
+    },
+    {
+      "type": "step/end",
+      "seq": 15,
+      "time": 1793934236663,
+      "data": {
+        "turn": 1,
+        "step": 2
+      }
+    },
+    {
+      "type": "turn/end",
+      "seq": 16,
+      "time": 1793934236671,
+      "data": {
+        "turn": 1,
+        "reason": {
+          "kind": "completed"
+        }
+      }
+    }
+  ]
+}

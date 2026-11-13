@@ -1,0 +1,75 @@
+closedir(3)              Library Functions Manual             closedir(3)
+
+
+
+       closedir - close a directory
+
+
+
+       Standard C library (libc, -lc)
+
+
+
+       #include <sys/types.h>
+       #include <dirent.h>
+
+       int closedir(DIR *dirp);
+
+
+
+       The closedir() function closes the directory stream associated
+       with dirp.  A successful call to closedir() also closes the
+       underlying file descriptor associated with dirp.  The directory
+       stream descriptor dirp is not available after this call.
+
+
+
+       The closedir() function returns 0 on success.  On error, -1 is
+       returned, and errno is set to indicate the error.
+
+
+
+       EBADF  Invalid directory stream descriptor dirp.
+
+
+
+       For an explanation of the terms used in this section, see
+       attributes(7).
+       ┌──────────────────────────────────────┬───────────────┬─────────┐
+       │ Interface                            │ Attribute     │ Value   │
+       ├──────────────────────────────────────┼───────────────┼─────────┤
+       │ closedir()                           │ Thread safety │ MT-Safe │
+       └──────────────────────────────────────┴───────────────┴─────────┘
+
+
+
+       POSIX.1-2008.
+
+
+
+       POSIX.1-2001, SVr4, 4.3BSD.
+
+
+
+       close(2), opendir(3), readdir(3), rewinddir(3), scandir(3),
+       seekdir(3), telldir(3)
+
+
+
+       This page is part of the man-pages (Linux kernel and C library
+       user-space interface documentation) project.  Information about
+       the project can be found at 
+       ⟨https://www.kernel.org/doc/man-pages/⟩.  If you have a bug report
+       for this manual page, see
+       ⟨https://git.kernel.org/pub/scm/docs/man-pages/man-pages.git/tree/CONTRIBUTING⟩.
+       This page was obtained from the tarball man-pages-6.19.tar.gz
+       fetched from
+       ⟨https://mirrors.edge.kernel.org/pub/linux/docs/man-pages/⟩ on
+       2026-09-09.  If you discover any rendering problems in this HTML
+       version of the page, or you believe there is a better or more up-
+       to-date source for the page, or you have corrections or
+       improvements to the information in this COLOPHON (which is not
+       part of the original manual page), send a mail to
+       man-pages@man7.org
+
+Linux man-pages 6.19            2026-02-08                    closedir(3)

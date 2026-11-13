@@ -1,0 +1,42 @@
+{
+  "$id": "urn:bud:hms:schema:resource-generations:0.1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Staged synthetic shape contract. Python additionally enforces exact integer types, byte bounds, references and closure semantics.",
+  "properties": {
+    "nodes": {
+      "additionalProperties": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+        "type": "string"
+      },
+      "maxProperties": 128,
+      "minProperties": 1,
+      "propertyNames": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "profile": {
+      "const": "hms.resource-generations/0.1"
+    },
+    "revision": {
+      "maximum": 9007199254740991,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "topologyDigest": {
+      "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])",
+      "type": "string"
+    }
+  },
+  "required": [
+    "profile",
+    "topologyDigest",
+    "revision",
+    "nodes"
+  ],
+  "type": "object"
+}

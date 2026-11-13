@@ -1,0 +1,8 @@
+{
+  "python": "3.12.3",
+  "requests": "2.32.5",
+  "beautifulsoup": "4.14.3",
+  "pdftotext": "pdftotext version 24.02.0",
+  "pdftoppm": "pdftoppm version 24.02.0",
+  "policy": "Research acquisition/extraction/rendering only; no source-provided programs, controllers or cryptographic/protocol endpoints executed."
+}

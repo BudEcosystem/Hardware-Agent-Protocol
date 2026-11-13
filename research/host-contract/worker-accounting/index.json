@@ -1,0 +1,85 @@
+{
+  "scope": "Primary whole-worker accounting research; 1315 LF lines fully read; no acquired code execution",
+  "files": [
+    {
+      "path": "NOTES.md",
+      "bytes": 5387,
+      "sha256": "980a586e628df49d522b7906d5858066eaf2de21208275809edb6a7bc3c90c98"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1259,
+      "sha256": "21fdb714399e25ae0da9d1d44ae1583011e7a3581a242aebe0a054b2c365cdb9"
+    },
+    {
+      "path": "acquire.py",
+      "bytes": 3270,
+      "sha256": "4c9046ab8f0389110af2540f68a469d4f94dbd5dc39387af726aaa0c36cb3a8d"
+    },
+    {
+      "path": "acquisition.json",
+      "bytes": 7670,
+      "sha256": "ed1386ad6b953be88b1cb3db8833f95c7d35ef0a4ba3cd821ecf18956738d9a1"
+    },
+    {
+      "path": "html-structure.json",
+      "bytes": 2247,
+      "sha256": "e72c70fe12bd1b6dc4b2712cd876d4352fca7052d661337addff9aab5b1f1d29"
+    },
+    {
+      "path": "raw/linux-getrusage.html",
+      "bytes": 16691,
+      "sha256": "ade816073a4c25f6d272fbf628d7bdf6d9a5b4ae76b29f1889cc01420220d523"
+    },
+    {
+      "path": "raw/linux-proc-pid-stat.html",
+      "bytes": 20647,
+      "sha256": "0f04d78946538fd84db1536845abeb236da51a04844989f34ea7ee7cb0b6700f"
+    },
+    {
+      "path": "raw/linux-psi.rst.txt",
+      "bytes": 6792,
+      "sha256": "11c6b7129103b4547c31895cb1cfc0ff75b741c95a24bfcaeb01dece37b82692"
+    },
+    {
+      "path": "raw/linux-sched-stats.rst.txt",
+      "bytes": 9641,
+      "sha256": "6c80bd9a62d50aa37161d6d909dfeff8c460c3b949454bf4c093c211f6252335"
+    },
+    {
+      "path": "raw/python312-resource.rst.txt",
+      "bytes": 13321,
+      "sha256": "caf900cf72a34dfc8c7c40b819add82ae75314e46ebee62a8110421561d0fc5d"
+    },
+    {
+      "path": "reading.json",
+      "bytes": 3194,
+      "sha256": "90dd865e46e97bbc8ab880c2190fb13581d4f3d382ca07ee458c0ddce79ab838"
+    },
+    {
+      "path": "text/linux-getrusage.txt",
+      "bytes": 8362,
+      "sha256": "5163e115a6f51430a64200b45e43a78a2dcd6983a4eb6631f47034a1a859c078"
+    },
+    {
+      "path": "text/linux-proc-pid-stat.txt",
+      "bytes": 14104,
+      "sha256": "318abb8c2d792a36b4f243ebd994cb094595b2ea7773c85e1958a7786e3caf5c"
+    },
+    {
+      "path": "text/linux-psi.txt",
+      "bytes": 6792,
+      "sha256": "11c6b7129103b4547c31895cb1cfc0ff75b741c95a24bfcaeb01dece37b82692"
+    },
+    {
+      "path": "text/linux-sched-stats.txt",
+      "bytes": 9641,
+      "sha256": "6c80bd9a62d50aa37161d6d909dfeff8c460c3b949454bf4c093c211f6252335"
+    },
+    {
+      "path": "text/python312-resource.txt",
+      "bytes": 13321,
+      "sha256": "caf900cf72a34dfc8c7c40b819add82ae75314e46ebee62a8110421561d0fc5d"
+    }
+  ]
+}

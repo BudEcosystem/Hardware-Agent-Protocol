@@ -1,0 +1,15 @@
+{
+  "command": [
+    "timeout",
+    "5s",
+    "python3",
+    "-B",
+    "research/host-contract/mount-identity/mountinfo_counterexample.py"
+  ],
+  "cpuLimitSeconds": 3,
+  "observedExitCode": 0,
+  "providerInputsSubstituted": true,
+  "realMountChanged": false,
+  "resultSha256": "8664393784f245b9846f2233867204a13c750b8b2b94163e7ac62ffc9a3e04ab",
+  "wallLimitSeconds": 5
+}

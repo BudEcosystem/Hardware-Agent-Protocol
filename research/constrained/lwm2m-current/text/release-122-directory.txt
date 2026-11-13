@@ -1,0 +1,17 @@
+www.openmobilealliance.org - /release/LightweightM2M/V1_2_2-20240613-A/
+www.openmobilealliance.org - /release/LightweightM2M/V1_2_2-20240613-A/
+[To Parent Directory]
+7/9/2024 10:15 PM        <dir>
+HTML-Version
+6/19/2024  4:15 PM        99113
+OMA-ERELD-LightweightM2M-V1_2_2-20240613-A.pdf
+6/19/2024  4:15 PM      2726797
+OMA-ERP-LightweightM2M-V1_2_2-20240613-A.zip
+6/19/2024  4:15 PM       617838
+OMA-RD-LightweightM2M-V1_2-20201110-A.pdf
+6/19/2024  4:15 PM         7840
+OMA-SUP-XML_LWM2M-V1_1-20180710-A.xsd
+6/19/2024  4:15 PM      1713166
+OMA-TS-LightweightM2M_Core-V1_2_2-20240613-A.pdf
+6/19/2024  4:15 PM       886671
+OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A.pdf

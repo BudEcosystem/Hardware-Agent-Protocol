@@ -1,0 +1,100 @@
+{
+  "sha": "25097958485a91450c3a15e5ba9023936180db4b",
+  "node_id": "C_kwDOKUKlbdoAKDI1MDk3OTU4NDg1YTkxNDUwYzNhMTVlNWJhOTAyMzkzNjE4MGRiNGI",
+  "commit": {
+    "author": {
+      "name": "Giorgos Tziafas",
+      "email": "g.t.tziafas@rug.nl",
+      "date": "2024-10-13T18:11:20Z"
+    },
+    "committer": {
+      "name": "GitHub",
+      "email": "noreply@github.com",
+      "date": "2024-10-13T18:11:20Z"
+    },
+    "message": "Add files via upload",
+    "tree": {
+      "sha": "31a3cc98b3fd69a10291321c08a31d10649670df",
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/trees/31a3cc98b3fd69a10291321c08a31d10649670df"
+    },
+    "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/commits/25097958485a91450c3a15e5ba9023936180db4b",
+    "comment_count": 0,
+    "verification": {
+      "verified": true,
+      "reason": "valid",
+      "signature": "-----BEGIN PGP SIGNATURE-----\n\nwsFcBAABCAAQBQJnDA1ICRC1aQ7uu5UhlAAA36YQAKs6mXlXGvTmJQMmo45XUeO2\nwr5lzv36Os3p0ta6nK18GZuYoQAvYg/Sv+l2f38tFjEepmPTPu8LI132fQsgjyqK\naMmV26XPe/GDv2IjeLIxiTSkW4ng560QPVtDwglCvp3H9FGxzqQwxJTeVJafiO+6\n8LABn2uP1fI5Ji79scCFJsgC3Kzvdjktt415Kd7s4PEw95lghb/w8BLfPICNX3Kv\n5m9blHG74y5Jc3kXXZ8cNSLCJRT+F6bLcg9OsHBlqmRxf+gi76a0nBiOTpmxrBrK\nV86Rqmj06FMXLI/umTRuw6Kh8fHq3dcXWVyBt92UDCBHKiPKjFrt8ILS2dV6gGpA\nRe2NtTYIcAM/Y6YSfK9lvcjafljPDcJi91DhfEUEFxoI+fc95ZXZsIqiTEbNBgFS\ng8PWmwm/Pp9Tn/nulEdC/8co90aXpOSlfXwJPiEU9kWIhNWwic3CGzhJ0FRdBD94\nhtSkA+aYXY8zLbwz2bhVFLOs4xVxqwyNibbiA/NKixNz26cv+mKMOT418s1SsWnP\n47BdWaMgeA5PnvGakz9DDgqUy+EPe/7IkqTs4ZzZVuYSYGTCL/jH1Ikdp24PwdoX\nR/tukf7nqy7Ks057fDc0VCzY6ivxJ4ElJE3pqpHXIIV6uChjb06q27+mEnCqgSuN\n6bbkmMOc5q5sPfLwGXXj\n=fD34\n-----END PGP SIGNATURE-----\n",
+      "payload": "tree 31a3cc98b3fd69a10291321c08a31d10649670df\nparent 095a332ef5a0252ae2b557f77bbf22b11a026048\nauthor Giorgos Tziafas <g.t.tziafas@rug.nl> 1728843080 +0200\ncommitter GitHub <noreply@github.com> 1728843080 +0200\n\nAdd files via upload",
+      "verified_at": "2024-11-21T07:43:01Z"
+    }
+  },
+  "url": "https://api.github.com/repos/gtziafas/LRLL_project/commits/25097958485a91450c3a15e5ba9023936180db4b",
+  "html_url": "https://github.com/gtziafas/LRLL_project/commit/25097958485a91450c3a15e5ba9023936180db4b",
+  "comments_url": "https://api.github.com/repos/gtziafas/LRLL_project/commits/25097958485a91450c3a15e5ba9023936180db4b/comments",
+  "author": {
+    "login": "gtziafas",
+    "id": 23073814,
+    "node_id": "MDQ6VXNlcjIzMDczODE0",
+    "avatar_url": "https://avatars.githubusercontent.com/u/23073814?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/gtziafas",
+    "html_url": "https://github.com/gtziafas",
+    "followers_url": "https://api.github.com/users/gtziafas/followers",
+    "following_url": "https://api.github.com/users/gtziafas/following{/other_user}",
+    "gists_url": "https://api.github.com/users/gtziafas/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/gtziafas/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/gtziafas/subscriptions",
+    "organizations_url": "https://api.github.com/users/gtziafas/orgs",
+    "repos_url": "https://api.github.com/users/gtziafas/repos",
+    "events_url": "https://api.github.com/users/gtziafas/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/gtziafas/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "committer": {
+    "login": "web-flow",
+    "id": 19864447,
+    "node_id": "MDQ6VXNlcjE5ODY0NDQ3",
+    "avatar_url": "https://avatars.githubusercontent.com/u/19864447?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/web-flow",
+    "html_url": "https://github.com/web-flow",
+    "followers_url": "https://api.github.com/users/web-flow/followers",
+    "following_url": "https://api.github.com/users/web-flow/following{/other_user}",
+    "gists_url": "https://api.github.com/users/web-flow/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/web-flow/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/web-flow/subscriptions",
+    "organizations_url": "https://api.github.com/users/web-flow/orgs",
+    "repos_url": "https://api.github.com/users/web-flow/repos",
+    "events_url": "https://api.github.com/users/web-flow/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/web-flow/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "parents": [
+    {
+      "sha": "095a332ef5a0252ae2b557f77bbf22b11a026048",
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/commits/095a332ef5a0252ae2b557f77bbf22b11a026048",
+      "html_url": "https://github.com/gtziafas/LRLL_project/commit/095a332ef5a0252ae2b557f77bbf22b11a026048"
+    }
+  ],
+  "stats": {
+    "total": 0,
+    "additions": 0,
+    "deletions": 0
+  },
+  "files": [
+    {
+      "sha": "625172c218bf9359daa4921e1987bdc3e70ac789",
+      "filename": "static/images/favicon.ico",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "blob_url": "https://github.com/gtziafas/LRLL_project/blob/25097958485a91450c3a15e5ba9023936180db4b/static%2Fimages%2Ffavicon.ico",
+      "raw_url": "https://github.com/gtziafas/LRLL_project/raw/25097958485a91450c3a15e5ba9023936180db4b/static%2Fimages%2Ffavicon.ico",
+      "contents_url": "https://api.github.com/repos/gtziafas/LRLL_project/contents/static%2Fimages%2Ffavicon.ico?ref=25097958485a91450c3a15e5ba9023936180db4b"
+    }
+  ]
+}

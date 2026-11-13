@@ -1,0 +1,475 @@
+Errata
+RFC Number
+Errata ID
+Status
+All/Any
+Verified+Reported
+Verified
+Reported
+Held for Document Update
+Rejected
+Area Acronym
+All/Any
+app
+art
+gen
+int
+ops
+rai
+rtg
+sec
+tsv
+wit
+Type
+All/Any
+Editorial
+Technical
+WG Acronym
+Submitter Name
+Stream
+All/Any
+IAB
+INDEPENDENT
+IRTF
+Legacy
+Editorial
+Date Submitted
+Presentation
+Table
+Full Records
+Submit
+Verified (4)
+RFC 7252
+inline-errata
+Source of RFC:
+core (wit)
+Updated by:
+RFC7959, RFC8613, RFC8974, RFC9175, RFC9876
+Errata-ID:
+4948
+Status:
+Verified
+Type:
+Technical
+Reported By:
+Klaus Hartke
+Date Reported:
+2017-02-22
+Verified by:
+Francesca Palombini
+Date Verified:
+2023-01-18
+Section 5.6 says:
+For a presented request, a CoAP endpoint MUST NOT use a stored
+response, unless:
+
+o  the presented request method and that used to obtain the stored
+   response match,
+
+o  all options match between those in the presented request and those
+   of the request used to obtain the stored response (which includes
+   the request URI), except that there is no need for a match of any
+   request options marked as NoCacheKey (Section 5.4) or recognized
+   by the Cache and fully interpreted with respect to its specified
+   cache behavior (such as the ETag request option described in
+   Section 5.10.6; see also Section 5.4.2), and
+
+o  the stored response is either fresh or successfully validated as
+   defined below.
+
+The set of request options that is used for matching the cache entry
+is also collectively referred to as the "Cache-Key".
+It should say:
+For a presented request, a CoAP endpoint MUST NOT use a stored
+response, unless:
+
+o  the presented request method and that used to obtain the stored
+   response match,
+
+o  all options match between those in the presented request and those
+   of the request used to obtain the stored response (which includes
+   the request URI), except that there is no need for a match of any
+   request options marked as NoCacheKey (Section 5.4) or recognized
+   by the Cache and fully interpreted with respect to its specified
+   cache behavior (such as the ETag request option described in
+   Section 5.10.6; see also Section 5.4.2), 
+
+o  the payload of the presented request and the payload of the
+   request used to obtain the stored response match, and
+
+o  the stored response is either fresh or successfully validated as
+   defined below.
+
+The set of request options that is used for matching the cache entry
+plus (if applicable) the request payload are also collectively referred
+to as the "Cache-Key".
+Notes:
+CoAP servers may return error responses in reply to requests that are invalid at the CoAP level (e.g., 4.02 Bad Option if the client includes an unrecognized option) or at the application level above (e.g., 4.00 Bad Request if the client includes a malformed payload according to application semantics).
+
+If the error response does not depend on the request payload, then it is desirable that repeated requests that differ only in the payload can be satisfied with the same cached response. E.g., repeated requests for a non-existing resource should result in a cached 4.04 Not Found response as often as possible, regardless of the payload, rather than hit the server every time.
+
+If the error response depends on the request payload, then it is not desirable that cached responses are reused for repeated requests that differ only in the payload. E.g., a client should not receive an error response for a valid request payload because another client sent an identical request but with a malformed request payload. In this case, including the request payload in the Cache-Key would give the expected result.
+
+The original text does not include the request in the Cache-Key, which may lead to unexpected results. The corrected text changes that.
+
+Since CoAP does not provide any indication in responses to distinguish between the two cases, caches generally cannot determine whether the response depends on the request payload or not and thus must always include the request payload in the Cache-Key to give the expected result. (As an exception, a cache at an origin server may be able to determine whether a cached response depends on the request payload or not, and thus can reuse responses accordingly. This already applies to responses that do not depend on the request method.)
+Errata-ID:
+4949
+Status:
+Verified
+Type:
+Technical
+Reported By:
+Klaus Hartke
+Date Reported:
+2017-02-22
+Verified by:
+Francesca Palombini
+Date Verified:
+2023-01-18
+Section 5.10.7 says:
+If any
+of these reserved option numbers occurs in addition to Location-Path
+and/or Location-Query and are not supported, then a 4.02 (Bad Option)
+error MUST be returned.
+It should say:
+If any
+of these reserved option numbers occurs in addition to Location-Path
+and/or Location-Query and are not supported, then the response MUST
+be rejected (Sections 4.2 and 4.3).
+Notes:
+The Location-* options are used in responses. A client cannot return a 4.02 (Bad Option) response in reply to a response. The correct behavior is to reject the response.
+Errata-ID:
+5078
+Status:
+Verified
+Type:
+Technical
+Reported By:
+Jim Schaad
+Date Reported:
+2017-08-07
+Verified by:
+Francesca Palombini
+Date Verified:
+2023-01-18
+Section 7.2.1 says:
+The Content-Format code
+attribute MAY include a space-separated sequence of Content-Format
+codes, indicating that multiple content-formats are available.  The
+syntax of the attribute value is summarized in the production "ct-
+value" in Figure 12, where "cardinal", "SP", and "DQUOTE" are defined
+as in [RFC6690].
+It should say:
+The Content-Format code
+attribute MAY include a space-separated sequence of Content-Format
+codes, indicating that multiple content-formats are available.
+The Content-Format code attribute MUST NOT appear more than once in a 
+link.  The syntax of the attribute value is summarized in the 
+production "ct-value" in Figure 12, where "cardinal", "SP", and 
+"DQUOTE" are defined as in [RFC6690].
+Notes:
+Insert a sentence that says that the code MUST NOT appear more than once.  This appears to be what was intended, but not stated, by the authors since it supports the space separated values to appear in a single attribute value.
+Errata-ID:
+4954
+Status:
+Verified
+Type:
+Editorial
+Reported By:
+Klaus Hartke
+Date Reported:
+2017-02-28
+Verified by:
+Francesca Palombini
+Date Verified:
+2023-01-18
+Section 12.3 says:
+CoAP does not include a separate way to convey content-encoding
+information with a request or response, and for that reason the
+content-encoding is also specified for each identifier (if any).  If
+multiple content-encodings will be used with a media type, then a
+separate Content-Format identifier for each is to be registered.
+Similarly, other parameters related to an Internet media type, such
+as level, can be defined for a CoAP Content-Format entry.
+
++--------------------------+----------+----+------------------------+
+| Media type               | Encoding | ID | Reference              |
++--------------------------+----------+----+------------------------+
+It should say:
+CoAP does not include a separate way to convey content-coding
+information with a request or response, and for that reason the
+content-coding is also specified for each identifier (if any).  If
+multiple content-codings will be used with a media type, then a
+separate Content-Format identifier for each is to be registered.
+Similarly, other parameters related to an Internet media type, such
+as level, can be defined for a CoAP Content-Format entry.
+
++--------------------------+----------------+----+------------------+
+| Content type             | Content coding | ID | Reference        |
++--------------------------+----------------+----+------------------+
+Notes:
+A CoAP Content-Format is the combination of an Internet Media Type with an HTTP Content Coding, as correctly explained in the first paragraphs of Section 12.3. However, the next paragraph (the original text above) incorrectly uses the term "content-encoding". The correct term is "content-coding", as shown in the corrected text.
+
+Examples for _valid_ CoAP Content-Format registrations:
+
+- media type "text/plain; charset=iso-8859-1" with content-coding "deflate"
+
+- media type "image/png" with content-coding "" (no content-coding)
+
+- media type "image/png" with content-coding "identity" (same as previous, no content-coding)
+
+- media type "application/example+xml" with content-coding "exi"
+
+Examples for _invalid_ CoAP Content-Format registrations:
+
+- media type "application/coap-group+json" with content-coding "UTF-8" (UTF-8 is a character encoding, not a content-coding; should be media type "application/coap-group+json; charset=utf-8" with content-coding "identity")
+
+- media type "audio/opus" with content-coding "identity" ("audio/opus" has a required parameter "rate"; should be media type "audio/opus; rate=48000" with content-coding "identity")
+
+- media type "application/example+xml" with content-coding "identity, exi" (too many content-codings; should be media type "application/example+xml" with content-coding "identity" and, separately, media type "application/example+xml" with content-coding "exi")
+
+- media type "application/example+exi" with content-coding "identity" ("+exi" is not a registered structured syntax suffix at the time of writing of this erratum)
+
+- media type "video/ogg" with content-coding "exi" (EXI is a content-coding for XML information)
+Reported (1)
+RFC 7252
+inline-errata
+Source of RFC:
+core (wit)
+Updated by:
+RFC7959, RFC8613, RFC8974, RFC9175, RFC9876
+Errata-ID:
+9245
+Status:
+Reported
+Type:
+Technical
+Reported By:
+AudaciousAxiom
+Date Reported:
+2026-10-30
+Section 5.7.1 says:
+If the request to the
+destination returns a response that cannot be processed by the proxy
+(e.g, due to unrecognized critical options or message format errors),
+then a 5.02 (Bad Gateway) response MUST be returned.
+It should say:
+If the request to the
+destination returns a response that cannot be processed by the proxy
+(e.g, due to unrecognized Unsafe options or message format errors),
+then a 5.02 (Bad Gateway) response MUST be returned.
+Notes:
+The current text contradicts the end of the section:
+
+Unsafe options in a response that are not recognized by the CoAP-to-
+CoAP proxy server MUST lead to a 5.02 (Bad Gateway) response.  Again,
+Safe-to-Forward options that are not recognized MUST be forwarded.
+Held for Document Update (1)
+RFC 7252
+inline-errata
+Source of RFC:
+core (wit)
+Updated by:
+RFC7959, RFC8613, RFC8974, RFC9175, RFC9876
+Errata-ID:
+4895
+Status:
+Held for Document Update
+Type:
+Editorial
+Reported By:
+Esko Dijk
+Date Reported:
+2016-12-23
+Held for Document Update by:
+Francesca Palombini
+Date Held for Document Update:
+2023-01-18
+Section 6.4 says:
+Note that these rules completely resolve any percent-encoding.
+It should say:
+Note that these rules completely resolve any percent-encoding. Also 
+note that a trailing slash character in the <path> component represents
+a separate, zero-character path segment (see [RFC3986] Section 3.3 
+ABNF) and therefore it is encoded using a Uri-Path Option of zero
+length.
+Notes:
+The current specification for decomposing a URI into CoAP Options (Section 6.4) is correct; however the text may still be unclear to implementers who may think that the phrase "not including the delimiting slash characters" means simply omitting a trailing slash character in the URI path. This is incorrect. See the discussion outcome in email thread https://www.ietf.org/mail-archive/web/core/current/msg08223.html . Therefore, a minor clarification is proposed in the notes after the parsing steps.
+Rejected (4)
+RFC 7252
+inline-errata
+Source of RFC:
+core (wit)
+Updated by:
+RFC7959, RFC8613, RFC8974, RFC9175, RFC9876
+Errata-ID:
+4946
+Status:
+Rejected
+Type:
+Technical
+Reported By:
+Klaus Hartke
+Date Reported:
+2017-02-22
+Rejected by:
+Francesca Palombini
+Date Rejected:
+2023-01-18
+Section 6.1 says:
+coap-URI = "coap:" "//" host [ ":" port ] path-abempty [ "?" query ]
+It should say:
+coap-URI = "coap:" "//" host [ ":" port ] path-abempty [ "?" query ]
+               [ "#" fragment ]
+Notes:
+The optional fragment component allows for indirect identification of a secondary resource, as defined in Section 3.5 of RFC 3986. The fragment identifier is separated from the rest of the URI prior to a dereference; fragment identifiers are processed client-side and are not included in CoAP requests. The original text shows the syntax of coap:// URIs _after_ separating the fragment identifier, which leaves ambiguity as to whether fragment identifiers are supported or not. The corrected text shows the syntax of CoAP URIs _before_ separating the fragment identifier, which makes clear that fragment identifiers are supported.
+ --VERIFIER NOTES-- 
+This errata is rejected to remain aligned with HTTP, see RFC 9110, Section 4.2.1
+Errata-ID:
+4947
+Status:
+Rejected
+Type:
+Technical
+Reported By:
+Klaus Hartke
+Date Reported:
+2017-02-22
+Rejected by:
+Francesca Palombini
+Date Rejected:
+2023-01-18
+Section 6.2 says:
+coaps-URI = "coaps:" "//" host [ ":" port ] path-abempty
+               [ "?" query ]
+It should say:
+coaps-URI = "coaps:" "//" host [ ":" port ] path-abempty
+               [ "?" query ] [ "#" fragment ]
+Notes:
+The optional fragment component allows for indirect identification of a secondary resource, as defined in Section 3.5 of RFC 3986. The fragment identifier is separated from the rest of the URI prior to a dereference; fragment identifiers are processed client-side and are not included in CoAP requests. The original text shows the syntax of coaps:// URIs _after_ separating the fragment identifier, which leaves ambiguity as to whether fragment identifiers are supported or not. The corrected text shows the syntax of CoAP URIs _before_ separating the fragment identifier, which makes clear that fragment identifiers are supported.
+ --VERIFIER NOTES-- 
+   This errata is rejected to remain aligned with HTTP, see RFC 9110, Section 4.2.2
+Errata-ID:
+5284
+Status:
+Rejected
+Type:
+Technical
+Reported By:
+Mohamed Boucadair
+Date Reported:
+2018-03-09
+Rejected by:
+Francesca Palombini
+Date Rejected:
+2023-01-18
+Section 5.3.1 says:
+The client SHOULD generate tokens in such a way that tokens currently
+in use for a given source/destination endpoint pair are unique.
+It should say:
+The client SHOULD generate tokens in such a way that tokens currently
+in use for a given source/destination endpoint pair are unique per
+request.
+Notes:
+Multiple requests may be active for a given source/destination
+endpoint pair.  The OLD text is thus broken.
+
+The NEW text is aligned with the definition of the Token:
+
+  A token is intended for use as a client-local identifier for
+  differentiating between concurrent requests (see Section 5.3); it
+  could have been called a "request ID".
+
+Further, using the same token for a given source/destination endpoint
+pair have some implications, for example, for applications which
+require the support of multiple observe queries because RFC7641
+states the following:
+
+   The entry in the list of observers is keyed by the client endpoint
+    and the token specified by the client in the request.  If an entry
+    with a matching endpoint/token pair is already present in the list
+    (which, for example, happens when the client wishes to reinforce
+    its interest in a resource), the server MUST NOT add a new entry
+    but MUST replace or update the existing one.
+ --VERIFIER NOTES-- 
+After discussing with the working group, it was agreed that the original text is correct and that the addition is redundant and does not help clarify it.
+Errata-ID:
+5429
+Status:
+Rejected
+Type:
+Technical
+Reported By:
+Marian Buschsieweke
+Date Reported:
+2018-07-18
+Rejected by:
+Francesca Palombini
+Date Rejected:
+2023-01-18
+Section 4.4 says:
+An Acknowledgement or Reset message is related to a Confirmable
+message or Non-confirmable message by means of a Message ID along
+with additional address information of the corresponding endpoint.
+The Message ID is a 16-bit unsigned integer that is generated by the
+sender of a Confirmable or Non-confirmable message and included in
+the CoAP header.  The Message ID MUST be echoed in the
+Acknowledgement or Reset message by the recipient.
+
+The same Message ID MUST NOT be reused (in communicating with the
+same endpoint) within the EXCHANGE_LIFETIME (Section 4.8.2).
+
+Implementation Note:  Several implementation strategies can be
+  employed for generating Message IDs.  In the simplest case, a CoAP
+  endpoint generates Message IDs by keeping a single Message ID
+  variable, which is changed each time a new Confirmable or Non-
+  confirmable message is sent, regardless of the destination address
+  or port.  Endpoints dealing with large numbers of transactions
+  could keep multiple Message ID variables, for example, per prefix
+  or destination address.  (Note that some receiving endpoints may
+  not be able to distinguish unicast and multicast packets addressed
+  to it, so endpoints generating Message IDs need to make sure these
+  do not overlap.)  It is strongly recommended that the initial
+  value of the variable (e.g., on startup) be randomized, in order
+  to make successful off-path attacks on the protocol less likely.
+It should say:
+An Acknowledgement or Reset message is related to a Confirmable
+message or Non-confirmable message by means of a Message ID along
+with additional address information of the corresponding endpoint.
+The Message ID is a 16-bit unsigned integer that is generated by the
+sender of a Confirmable or Non-confirmable message and included in
+the CoAP header.  Message IDs of subsequence messages send to the
+same endpoint within EXCHANGE_LIFETIME MUST be strictly ascending
+(wrapping around at a value of 65535).  Additionally, two
+subsequently send Message IDs to the same endpoint SHOULD have a
+difference of at most 16.  The Message ID MUST be echoed in the
+Acknowledgement or Reset message by the recipient.
+
+The same Message ID MUST NOT be reused (in communicating with the
+same endpoint) within the EXCHANGE_LIFETIME (Section 4.8.2).
+
+Implementation Note:  Several implementation strategies can be
+  employed for generating Message IDs.  In the simplest case, a CoAP
+  endpoint generates Message IDs by keeping a single Message ID
+  variable, which is incremented each time a new Confirmable or Non-
+  confirmable message is sent, regardless of the destination address
+  or port.  Endpoints dealing with large numbers of transactions
+  could keep multiple Message ID variables, for example, per prefix
+  or destination address.  (Note that some receiving endpoints may
+  not be able to distinguish unicast and multicast packets addressed
+  to it, so endpoints generating Message IDs need to make sure these
+  do not overlap.)  It is strongly recommended that the initial
+  value of the variable (e.g., on startup) be randomized, in order
+  to make successful off-path attacks on the protocol less likely.
+Notes:
+Without any restrictions on how Message IDs are generated, an implementation of CoAP duplication detection must be prepared to receive a random sequence of Message IDs.
+One simple implementation strategy would be to store the received Message IDs along with a timestamp when they were received.
+If a 16 bit time stamp would be used, 4 Bytes per tracked Message ID would be required.
+If additionaly a CoAP server expects requests to be received at a rate of 1 message per second, at least 247 * 4 Byte or approximately 1 KiB have to be allocated per client.
+A class 1 (see RFC 7228 Section 3) server could handle at most 10 clients in parallel, if anything apart duplicate detection could be implemented without using any memory at all.
+
+If instead Message IDs have to be generated by incrementing a (global or per endpoint/network prefix/...) counter variable, duplicate detection can be implemented in a time and memory efficient way without limiting the rate of the message exchange between to nodes.
+ --VERIFIER NOTES-- 
+In rejecting this Errata report I note that the reported error is not a typo, but a deliberate decision of the authors and working group. The change, therefore, if it is to be applied needs to be achieved through a consensus document.
+Report New Erratum

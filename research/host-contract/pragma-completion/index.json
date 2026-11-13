@@ -1,0 +1,110 @@
+{
+  "scope": "Retained SQLite PRAGMA prose and three inline diagrams fully read; wider research remains incomplete",
+  "proseLFLines": 2688,
+  "newlyCoveredUniqueLines": 2437,
+  "inlineDiagramsVisuallyRead": 3,
+  "acquiredCodeExecuted": false,
+  "linkedReferencesIncluded": false,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 2179,
+      "sha256": "91e3d13b9d5b99bc7cf1b0f1c1ed34860fb4c2a511d4a09513f09461330c2751"
+    },
+    {
+      "path": "diagrams/pragma-stmt.png",
+      "bytes": 28032,
+      "sha256": "afb33d432be0f61f15ea8df35702cc3cac79954c202600aa3d28b5ee6414706a"
+    },
+    {
+      "path": "diagrams/pragma-stmt.svg",
+      "bytes": 6469,
+      "sha256": "fcfda59e48ed1b967705fd9ebf0e364ae1d9289031bb6d1a72ab09b8f7c4998a"
+    },
+    {
+      "path": "diagrams/pragma-stmt.white.png",
+      "bytes": 46174,
+      "sha256": "7fcb22ac395aad4891b74466e93065f1d313c82d765899fd1508c6edc8bde231"
+    },
+    {
+      "path": "diagrams/pragma-value.png",
+      "bytes": 12178,
+      "sha256": "f7d1cf750e5ca03083a505876690282e09d444c22eebbe2d3ae54fefba56b58d"
+    },
+    {
+      "path": "diagrams/pragma-value.svg",
+      "bytes": 2810,
+      "sha256": "bc33a777c6816bafc38e8fd2f5f040eb49dd862f7d2a5c6d2c7e6ce23cddd2fb"
+    },
+    {
+      "path": "diagrams/pragma-value.white.png",
+      "bytes": 19841,
+      "sha256": "132a3110c49e769527b7b44a18eb89a3dd15e641199ca880e774b37ea3c15fc9"
+    },
+    {
+      "path": "diagrams/signed-number.png",
+      "bytes": 10419,
+      "sha256": "db3fa6dbece375c008a024245ab2d3507b32bdff8701161f07e214bc15403974"
+    },
+    {
+      "path": "diagrams/signed-number.svg",
+      "bytes": 2745,
+      "sha256": "7c17b9f74a423a6e1302f23e1b61472800552cdde7fc5279450b24305b020cab"
+    },
+    {
+      "path": "diagrams/signed-number.white.png",
+      "bytes": 17675,
+      "sha256": "d0c4b8e65998e131aa0d6ec6458decd3cd10ec167f8b31a8a21cbc282c608f9b"
+    },
+    {
+      "path": "reading.json",
+      "bytes": 1884,
+      "sha256": "a6588cc257e172c1438c77e228b5733bfc29985ba694b8f2811e0171c40cf81c"
+    },
+    {
+      "path": "record-reading.py",
+      "bytes": 2563,
+      "sha256": "6311e16315bb720d63bff9f2248e4619eb5ee8c0f3fe896e295fe5967d02a18f"
+    },
+    {
+      "path": "render-diagrams.py",
+      "bytes": 2078,
+      "sha256": "c530c62bf9dfdb3ca6a11adb27f1e5d007ac53d9b5caad6e89cf2b054338a835"
+    },
+    {
+      "path": "render-diagrams02.py",
+      "bytes": 2081,
+      "sha256": "01168db953a879fd0ff798c8ede3ff8b50955a8151ab93309a0aba4af36dd237"
+    },
+    {
+      "path": "render-diagrams03.py",
+      "bytes": 2199,
+      "sha256": "3db4d3aa67e6a9fda7c489ae56fa8c5e6e4750e3f3f6b2daef279a29c545dc75"
+    },
+    {
+      "path": "rendering01-failure.json",
+      "bytes": 329,
+      "sha256": "b369b0940da45bef3668bb44299a7a151a58ddb3cab04ba807fbf8e2d5209790"
+    },
+    {
+      "path": "rendering02.json",
+      "bytes": 942,
+      "sha256": "10ce7fd5eabc725cf8dffec9521c0063fabcafc055ae46912a7dbe078716d724"
+    },
+    {
+      "path": "rendering03.json",
+      "bytes": 960,
+      "sha256": "e3c8ec57e53f20f15af438b83417081060e7c2d8afa2ef0ccdf128cbc6c90725"
+    },
+    {
+      "path": "seal-research.py",
+      "bytes": 1679,
+      "sha256": "768eaea0bf41d4049eb5230fe4f4c5f213107b89d782b32dbcc6681779b10dc9"
+    },
+    {
+      "path": "visual-review.json",
+      "bytes": 1898,
+      "sha256": "1e991d266191c3613e2c6ebc6703ead5f541a63219b56befa690b1376664df2a"
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+{
+  "review_date": "2026-11-06",
+  "recorded_at": "2026-11-06T04:45:00.070643+00:00",
+  "method": "Agent read rendered LF-numbered text chunks through shell output, then separately inspected rendered PDF image pages. Receipt assembled after reading, not inferred from acquisition, extraction, grep or hashing.",
+  "source_ranges": {
+    "rfc9177-text": [
+      [
+        1,
+        270
+      ],
+      [
+        271,
+        550
+      ],
+      [
+        551,
+        830
+      ],
+      [
+        831,
+        1110
+      ],
+      [
+        1111,
+        1390
+      ],
+      [
+        1391,
+        1670
+      ],
+      [
+        1671,
+        1940
+      ],
+      [
+        1941,
+        2154
+      ]
+    ],
+    "rfc9177-metadata": [
+      [
+        1,
+        43
+      ]
+    ],
+    "rfc9177-errata": [
+      [
+        1,
+        58
+      ]
+    ],
+    "iana-options": [
+      [
+        1,
+        63
+      ]
+    ],
+    "iana-content-formats": [
+      [
+        1,
+        156
+      ]
+    ],
+    "iana-missing-blocks": [
+      [
+        1,
+        39
+      ]
+    ],
+    "iana-core-status": [
+      [
+        1,
+        32
+      ]
+    ],
+    "rfc9177-pdf": []
+  },
+  "visual_pages": [
+    8,
+    9,
+    16,
+    19,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33,
+    34,
+    35,
+    38,
+    39,
+    40,
+    41
+  ],
+  "full_rfc": true,
+  "all_pdf_pages": false,
+  "statement": "All listed full-source text ranges and selected registry range were displayed and read without output truncation. Separate exploratory search output truncation is not counted as coverage.",
+  "limitations": "Declared reading and consistency evidence, not a proof of comprehension or protocol implementation."
+}

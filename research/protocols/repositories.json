@@ -1,0 +1,70 @@
+[
+  {
+    "id": "firmata-protocol",
+    "url": "https://github.com/firmata/protocol.git",
+    "commit": "7908873e8faae33111143aa6cc236148b12118f2",
+    "retrieved_at": "2026-11-05T21:39:27.440604+00:00",
+    "checkout_path": "repos/firmata-protocol",
+    "acquisition": "depth-1 git clone; complete checkout at commit, history truncated; no submodules fetched",
+    "reading_status": "selected_files_only",
+    "files": [
+      {
+        "path": "protocol.md",
+        "sha256": "9dcc7eb830f6b4fef5564b38af702c9210f8a6f80d694a0dbd918227f223124a",
+        "reading_status": "read_full"
+      },
+      {
+        "path": "scheduler.md",
+        "sha256": "434604057a3ff4fb52185fe07177ba02c7f189460ea9d8149978e166f9030b19",
+        "reading_status": "read_full"
+      },
+      {
+        "path": "accelStepperFirmata.md",
+        "sha256": "aeb9be4288eb313be3f66da117069884fb56a4a0c9e838a941b7f7a55e1f5981",
+        "reading_status": "not_read"
+      }
+    ]
+  },
+  {
+    "id": "firmata-arduino",
+    "url": "https://github.com/firmata/arduino.git",
+    "commit": "ebd19be71b3673ba16f884c00b0a2e940ef86157",
+    "retrieved_at": "2026-11-05T21:39:27.448061+00:00",
+    "checkout_path": "repos/firmata-arduino",
+    "acquisition": "depth-1 git clone; complete checkout at commit, history truncated; no submodules fetched",
+    "reading_status": "selected_files_only",
+    "files": [
+      {
+        "path": "FirmataParser.cpp",
+        "sha256": "e8790315404fe4d8ae286cc09deb8ee4c118f2c3b8293a78d804acc23fbc7d29",
+        "reading_status": "read_full"
+      },
+      {
+        "path": "examples/StandardFirmata/StandardFirmata.ino",
+        "sha256": "0e6ca305f7b65cf81f57385060c483620f761cc8c89b48ea835d0e960eb1ff39",
+        "reading_status": "not_read"
+      }
+    ]
+  },
+  {
+    "id": "rclc",
+    "url": "https://github.com/ros2/rclc.git",
+    "commit": "c34f5d9121e1190e2cb188a8f19e57eead1448c1",
+    "retrieved_at": "2026-11-05T21:39:27.458234+00:00",
+    "checkout_path": "repos/rclc",
+    "acquisition": "depth-1 git clone; complete checkout at commit, history truncated; no submodules fetched",
+    "reading_status": "selected_files_only",
+    "files": [
+      {
+        "path": "rclc/src/rclc/executor.c",
+        "sha256": "fcceaad1390f58d7caedefcb8ba20ff372fda5792ddd0c95983071690bf05fc6",
+        "reading_status": "read_selected_sections"
+      },
+      {
+        "path": "rclc_examples/src/example_executor_trigger.c",
+        "sha256": "6e42f5903c7ecdcdab5e626b27a6a5ef8c38f9b51f5497035592dbbbedd5f31f",
+        "reading_status": "read_full"
+      }
+    ]
+  }
+]

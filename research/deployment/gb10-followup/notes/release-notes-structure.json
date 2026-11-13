@@ -1,0 +1,178 @@
+{
+  "selector": "article.bd-article",
+  "title": "DGX Spark Release Notes \u2014 DGX Spark User Guide",
+  "tables": [
+    {
+      "table": 1,
+      "rows": [
+        [
+          "Component",
+          "Version"
+        ],
+        [
+          "NVIDIA DGX OS",
+          "7.6.0"
+        ],
+        [
+          "NVIDIA GPU Driver",
+          "580.178.04"
+        ],
+        [
+          "NVIDIA CUDA Toolkit",
+          "13.0.3"
+        ],
+        [
+          "NVIDIA TensorRT",
+          "10.14.1"
+        ],
+        [
+          "Canonical Kernel",
+          "7.0.0-1019"
+        ],
+        [
+          "UEFI",
+          "1.111.17"
+        ],
+        [
+          "Embedded Controller (EC)",
+          "3.13.7"
+        ],
+        [
+          "USB Power Delivery (USB PD)",
+          "0.5.25"
+        ],
+        [
+          "Trusted Platform Module (TPM)",
+          "7.516.1"
+        ],
+        [
+          "System on Chip (SoC)",
+          "2.158.15"
+        ]
+      ]
+    }
+  ],
+  "images": [],
+  "article_links": [
+    {
+      "text": "#",
+      "href": "#spark-release-notes"
+    },
+    {
+      "text": "#",
+      "href": "#current-software-versions"
+    },
+    {
+      "text": "#",
+      "href": "#october-2026-release"
+    },
+    {
+      "text": "#",
+      "href": "#what-s-new"
+    },
+    {
+      "text": "DGX Spark Skills",
+      "href": "nvidia-sync.html#spark-dgx-spark-skills"
+    },
+    {
+      "text": "Cloud-init",
+      "href": "enterprise-fleet-lifecycle.html#spark-efl-cloud-init"
+    },
+    {
+      "text": "#",
+      "href": "#fixed-issues"
+    },
+    {
+      "text": "#",
+      "href": "#july-2026-release"
+    },
+    {
+      "text": "#",
+      "href": "#id2"
+    },
+    {
+      "text": "Cloud-init for DGX Spark",
+      "href": "https://docs.nvidia.com/dgx/dgx-spark/enterprise-fleet-lifecycle.html#spark-efl-cloud-init"
+    },
+    {
+      "text": "#",
+      "href": "#id3"
+    },
+    {
+      "text": "#",
+      "href": "#june-2026-release"
+    },
+    {
+      "text": "#",
+      "href": "#id4"
+    },
+    {
+      "text": "#",
+      "href": "#april-2026-release"
+    },
+    {
+      "text": "#",
+      "href": "#id5"
+    },
+    {
+      "text": "Enterprise Manageability",
+      "href": "enterprise-manageability.html#spark-enterprise-manageability"
+    },
+    {
+      "text": "#",
+      "href": "#id6"
+    },
+    {
+      "text": "#",
+      "href": "#march-2026-release"
+    },
+    {
+      "text": "#",
+      "href": "#id7"
+    },
+    {
+      "text": "#",
+      "href": "#february-2026-release"
+    },
+    {
+      "text": "#",
+      "href": "#id8"
+    },
+    {
+      "text": "#",
+      "href": "#january-2026-release"
+    },
+    {
+      "text": "#",
+      "href": "#id9"
+    },
+    {
+      "text": "#",
+      "href": "#id10"
+    },
+    {
+      "text": "#",
+      "href": "#november-2025-release"
+    },
+    {
+      "text": "#",
+      "href": "#id11"
+    },
+    {
+      "text": "#",
+      "href": "#id12"
+    },
+    {
+      "text": "CUDA unified memory guidance",
+      "href": "https://nvidia.custhelp.com/app/answers/detail/a_id/5728"
+    },
+    {
+      "text": "#",
+      "href": "#known-issues"
+    },
+    {
+      "text": "Known Issues",
+      "href": "known-issues.html#spark-known-issues"
+    }
+  ]
+}

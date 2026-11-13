@@ -1,0 +1,1348 @@
+{
+  "fan": {
+    "artifact": {
+      "applicability": {
+        "all": [
+          {
+            "field": "context.evidenceMode",
+            "literal": "simulation",
+            "op": "equals"
+          }
+        ],
+        "phase": "selection"
+      },
+      "effectBudget": {
+        "maxInvocations": 2,
+        "scope": "simulation_only"
+      },
+      "executionPlacement": "hms-host-orchestration",
+      "inputProfile": "hms.sim.fan.level_pair/0.1",
+      "name": "fan-level-pair",
+      "outcomeContract": {
+        "evidenceMode": "simulation",
+        "physicalObjectiveVerified": false,
+        "requiredCompletedSteps": [
+          "initial",
+          "final"
+        ],
+        "requiredEffect": "capability_completion"
+      },
+      "parameters": {
+        "finalLevel": {
+          "frame": null,
+          "unit": "percent",
+          "valueSchema": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "initialLevel": {
+          "frame": null,
+          "unit": "percent",
+          "valueSchema": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          }
+        }
+      },
+      "profile": "hms.pat.bound-sequence/0.1",
+      "protocol": "hms.pat/0.1",
+      "roles": {
+        "fan": {
+          "actions": [
+            "set_level"
+          ],
+          "capabilityFamily": "sim:home-fan",
+          "driverProfiles": [
+            "sqlite-simulation",
+            "compact-simulation"
+          ]
+        }
+      },
+      "runtimeGuardProfile": "installed_primitive_guards_only",
+      "steps": [
+        {
+          "actionId": "set_level",
+          "arguments": {
+            "level": {
+              "parameter": "initialLevel"
+            },
+            "unit": {
+              "literal": "percent"
+            }
+          },
+          "role": "fan",
+          "stepId": "initial",
+          "timing": {
+            "latestCompletionOffsetMs": 1000,
+            "latestStartOffsetMs": 500,
+            "maxRunMs": 500,
+            "notBeforeOffsetMs": 0
+          }
+        },
+        {
+          "actionId": "set_level",
+          "arguments": {
+            "level": {
+              "parameter": "finalLevel"
+            },
+            "unit": {
+              "literal": "percent"
+            }
+          },
+          "role": "fan",
+          "stepId": "final",
+          "timing": {
+            "latestCompletionOffsetMs": 2000,
+            "latestStartOffsetMs": 1500,
+            "maxRunMs": 500,
+            "notBeforeOffsetMs": 0
+          }
+        }
+      ],
+      "targetProfile": "hms.bound-sequence/0.1",
+      "taskKind": "sim.fan.level_pair",
+      "timingBudget": {
+        "latestCompletionOffsetMs": 2000,
+        "latestStartOffsetMs": 500,
+        "maxRunSumMs": 1000
+      },
+      "version": "1"
+    },
+    "bindings": {
+      "fan": {
+        "argumentMetadata": {
+          "set_level": {
+            "level": {
+              "frame": null,
+              "frameArgument": null,
+              "unit": "percent",
+              "unitArgument": "unit"
+            },
+            "unit": {
+              "frame": null,
+              "frameArgument": null,
+              "unit": null,
+              "unitArgument": null
+            }
+          }
+        },
+        "binding": {
+          "adapterId": "simulator:fixture",
+          "argumentSchemas": {
+            "set_level": {
+              "additionalProperties": false,
+              "properties": {
+                "level": {
+                  "maximum": 100,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "unit": {
+                  "const": "percent",
+                  "maxLength": 16,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "level",
+                "unit"
+              ],
+              "type": "object"
+            }
+          },
+          "calibrationRevision": "calibration:1",
+          "controlGeneration": "control:1",
+          "generation": "binding:1",
+          "instanceId": "sim:home-fan",
+          "mode": "simulation",
+          "profile": "hms.binding/0.1",
+          "resourceMap": {
+            "fan-control": "resource:fan-control"
+          },
+          "typeDigest": "sha256:eb2e37b7fc2c30a0609a7d5bc3ba03b860199fe0e0eea98dfbe60c5919820aa7"
+        },
+        "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "driverProfile": "sqlite-simulation",
+        "endpointSession": "session:1",
+        "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "type": {
+          "execution": {
+            "actions": {
+              "set_level": {
+                "completionEvidence": [
+                  "simulation"
+                ],
+                "effect": "setpoint",
+                "inputSchema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "level": {
+                      "maximum": 100,
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "unit": {
+                      "const": "percent",
+                      "maxLength": 16,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "level",
+                    "unit"
+                  ],
+                  "type": "object"
+                },
+                "maxRunMs": 5000,
+                "preconditions": [
+                  {
+                    "equals": true,
+                    "evidenceKind": "simulation",
+                    "maxAgeMs": 1000,
+                    "property": "ready"
+                  }
+                ],
+                "resources": [
+                  "fan-control"
+                ]
+              }
+            },
+            "capabilities": [
+              "sim:home-fan"
+            ],
+            "profile": "hms.execution-contract/0.1",
+            "properties": {
+              "ready": {
+                "frame": null,
+                "schema": {
+                  "type": "boolean"
+                },
+                "unit": "1"
+              },
+              "value": {
+                "frame": "sim:home-fan",
+                "schema": {
+                  "maximum": 100,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "unit": "percent"
+              }
+            },
+            "requiredFeatures": [
+              "binding-generations/1",
+              "durable-operations/1",
+              "host-invoke/0.1",
+              "physical-evidence/1"
+            ]
+          },
+          "profile": "hms.type-bundle/0.1",
+          "td": {
+            "@context": [
+              "https://www.w3.org/2022/wot/td/v1.1",
+              {
+                "hms": "https://example.invalid/hms/vocab#"
+              }
+            ],
+            "actions": {
+              "set_level": {
+                "forms": [
+                  {
+                    "href": "https://example.invalid/simulation/home-fan/actions/set_level",
+                    "op": "invokeaction"
+                  }
+                ],
+                "idempotent": false,
+                "input": {
+                  "properties": {
+                    "intent": {
+                      "properties": {
+                        "actionId": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "arguments": {
+                          "properties": {
+                            "level": {
+                              "maximum": 100,
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "unit": {
+                              "const": "percent",
+                              "maxLength": 16,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "level",
+                            "unit"
+                          ],
+                          "type": "object"
+                        },
+                        "bindingGeneration": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "calibrationRevision": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "controlGeneration": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "descriptionDigest": {
+                          "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "endpointSession": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "instanceId": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "requiredEffect": {
+                          "enum": [
+                            "capability_completion",
+                            "physical_verified"
+                          ]
+                        },
+                        "timing": {
+                          "properties": {
+                            "latestCompletionUnixMs": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "latestStartUnixMs": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "maxRunMs": {
+                              "maximum": 4294967295,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "notBeforeUnixMs": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "notBeforeUnixMs",
+                            "latestStartUnixMs",
+                            "maxRunMs",
+                            "latestCompletionUnixMs"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "instanceId",
+                        "endpointSession",
+                        "controlGeneration",
+                        "actionId",
+                        "descriptionDigest",
+                        "bindingGeneration",
+                        "calibrationRevision",
+                        "arguments",
+                        "timing",
+                        "requiredEffect"
+                      ],
+                      "type": "object"
+                    },
+                    "operationKey": {
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                      "type": "string"
+                    },
+                    "protocol": {
+                      "const": "hms.invoke/0.1"
+                    },
+                    "replayNamespace": {
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "protocol",
+                    "replayNamespace",
+                    "operationKey",
+                    "intent"
+                  ],
+                  "title": "Experimental HMS host invocation",
+                  "type": "object"
+                },
+                "safe": false,
+                "synchronous": false
+              }
+            },
+            "description": "Synthetic executable fixture; no hardware calibration or commissioned physical limits.",
+            "hms:commissioned": false,
+            "id": "urn:bud:hms:sim:home-fan",
+            "properties": {
+              "ready": {
+                "forms": [
+                  {
+                    "href": "https://example.invalid/simulation/home-fan/properties/ready",
+                    "op": "readproperty"
+                  }
+                ],
+                "hms:coordinateFrame": null,
+                "readOnly": true,
+                "type": "boolean",
+                "unit": "1"
+              },
+              "value": {
+                "forms": [
+                  {
+                    "href": "https://example.invalid/simulation/home-fan/properties/value",
+                    "op": "readproperty"
+                  }
+                ],
+                "hms:coordinateFrame": "sim:home-fan",
+                "maximum": 100,
+                "minimum": 0,
+                "readOnly": true,
+                "type": "number",
+                "unit": "percent"
+              }
+            },
+            "security": [
+              "local_os"
+            ],
+            "securityDefinitions": {
+              "local_os": {
+                "scheme": "nosec"
+              }
+            },
+            "title": "Simulated home-fan"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "finalLevel": 2,
+      "initialLevel": 1
+    }
+  },
+  "focus": {
+    "artifact": {
+      "applicability": {
+        "all": [
+          {
+            "field": "context.evidenceMode",
+            "literal": "simulation",
+            "op": "equals"
+          }
+        ],
+        "phase": "selection"
+      },
+      "effectBudget": {
+        "maxInvocations": 2,
+        "scope": "simulation_only"
+      },
+      "executionPlacement": "hms-host-orchestration",
+      "inputProfile": "hms.sim.fan.level_pair/0.1",
+      "name": "fan-level-pair",
+      "outcomeContract": {
+        "evidenceMode": "simulation",
+        "physicalObjectiveVerified": false,
+        "requiredCompletedSteps": [
+          "initial",
+          "final"
+        ],
+        "requiredEffect": "capability_completion"
+      },
+      "parameters": {
+        "finalLevel": {
+          "frame": "sim:microscope",
+          "unit": "um",
+          "valueSchema": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "initialLevel": {
+          "frame": "sim:microscope",
+          "unit": "um",
+          "valueSchema": {
+            "maximum": 100,
+            "minimum": 0,
+            "type": "integer"
+          }
+        }
+      },
+      "profile": "hms.pat.bound-sequence/0.1",
+      "protocol": "hms.pat/0.1",
+      "roles": {
+        "fan": {
+          "actions": [
+            "move_absolute"
+          ],
+          "capabilityFamily": "sim:microscope",
+          "driverProfiles": [
+            "sqlite-simulation",
+            "compact-simulation"
+          ]
+        }
+      },
+      "runtimeGuardProfile": "installed_primitive_guards_only",
+      "steps": [
+        {
+          "actionId": "move_absolute",
+          "arguments": {
+            "frame": {
+              "literal": "sim:microscope"
+            },
+            "position": {
+              "parameter": "initialLevel"
+            },
+            "unit": {
+              "literal": "um"
+            }
+          },
+          "role": "fan",
+          "stepId": "initial",
+          "timing": {
+            "latestCompletionOffsetMs": 1000,
+            "latestStartOffsetMs": 500,
+            "maxRunMs": 500,
+            "notBeforeOffsetMs": 0
+          }
+        },
+        {
+          "actionId": "move_absolute",
+          "arguments": {
+            "frame": {
+              "literal": "sim:microscope"
+            },
+            "position": {
+              "parameter": "finalLevel"
+            },
+            "unit": {
+              "literal": "um"
+            }
+          },
+          "role": "fan",
+          "stepId": "final",
+          "timing": {
+            "latestCompletionOffsetMs": 2000,
+            "latestStartOffsetMs": 1500,
+            "maxRunMs": 500,
+            "notBeforeOffsetMs": 0
+          }
+        }
+      ],
+      "targetProfile": "hms.bound-sequence/0.1",
+      "taskKind": "sim.fan.level_pair",
+      "timingBudget": {
+        "latestCompletionOffsetMs": 2000,
+        "latestStartOffsetMs": 500,
+        "maxRunSumMs": 1000
+      },
+      "version": "1"
+    },
+    "bindings": {
+      "fan": {
+        "argumentMetadata": {
+          "move_absolute": {
+            "frame": {
+              "frame": null,
+              "frameArgument": null,
+              "unit": null,
+              "unitArgument": null
+            },
+            "position": {
+              "frame": "sim:microscope",
+              "frameArgument": "frame",
+              "unit": "um",
+              "unitArgument": "unit"
+            },
+            "unit": {
+              "frame": null,
+              "frameArgument": null,
+              "unit": null,
+              "unitArgument": null
+            }
+          }
+        },
+        "binding": {
+          "adapterId": "simulator:fixture",
+          "argumentSchemas": {
+            "move_absolute": {
+              "additionalProperties": false,
+              "properties": {
+                "frame": {
+                  "const": "sim:microscope",
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                "position": {
+                  "maximum": 100,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "unit": {
+                  "const": "um",
+                  "maxLength": 16,
+                  "type": "string"
+                }
+              },
+              "required": [
+                "position",
+                "unit",
+                "frame"
+              ],
+              "type": "object"
+            }
+          },
+          "calibrationRevision": "calibration:1",
+          "controlGeneration": "control:1",
+          "generation": "binding:1",
+          "instanceId": "sim:microscope",
+          "mode": "simulation",
+          "profile": "hms.binding/0.1",
+          "resourceMap": {
+            "focus-zone": "resource:focus-zone"
+          },
+          "typeDigest": "sha256:706cb6a78f269d28e895dd442982dfae2a835e4840afb0674cad4a1f92ad3e42"
+        },
+        "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "driverProfile": "sqlite-simulation",
+        "endpointSession": "session:1",
+        "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "type": {
+          "execution": {
+            "actions": {
+              "move_absolute": {
+                "completionEvidence": [
+                  "simulation"
+                ],
+                "effect": "motion",
+                "inputSchema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "frame": {
+                      "const": "sim:microscope",
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    "position": {
+                      "maximum": 100,
+                      "minimum": 0,
+                      "type": "number"
+                    },
+                    "unit": {
+                      "const": "um",
+                      "maxLength": 16,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "position",
+                    "unit",
+                    "frame"
+                  ],
+                  "type": "object"
+                },
+                "maxRunMs": 5000,
+                "preconditions": [
+                  {
+                    "equals": true,
+                    "evidenceKind": "simulation",
+                    "maxAgeMs": 1000,
+                    "property": "ready"
+                  }
+                ],
+                "resources": [
+                  "focus-zone"
+                ]
+              }
+            },
+            "capabilities": [
+              "sim:microscope"
+            ],
+            "profile": "hms.execution-contract/0.1",
+            "properties": {
+              "ready": {
+                "frame": null,
+                "schema": {
+                  "type": "boolean"
+                },
+                "unit": "1"
+              },
+              "value": {
+                "frame": "sim:microscope",
+                "schema": {
+                  "maximum": 100,
+                  "minimum": 0,
+                  "type": "number"
+                },
+                "unit": "um"
+              }
+            },
+            "requiredFeatures": [
+              "binding-generations/1",
+              "durable-operations/1",
+              "host-invoke/0.1",
+              "physical-evidence/1"
+            ]
+          },
+          "profile": "hms.type-bundle/0.1",
+          "td": {
+            "@context": [
+              "https://www.w3.org/2022/wot/td/v1.1",
+              {
+                "hms": "https://example.invalid/hms/vocab#"
+              }
+            ],
+            "actions": {
+              "move_absolute": {
+                "forms": [
+                  {
+                    "href": "https://example.invalid/simulation/microscope/actions/move_absolute",
+                    "op": "invokeaction"
+                  }
+                ],
+                "idempotent": false,
+                "input": {
+                  "properties": {
+                    "intent": {
+                      "properties": {
+                        "actionId": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "arguments": {
+                          "properties": {
+                            "frame": {
+                              "const": "sim:microscope",
+                              "maxLength": 64,
+                              "type": "string"
+                            },
+                            "position": {
+                              "maximum": 100,
+                              "minimum": 0,
+                              "type": "number"
+                            },
+                            "unit": {
+                              "const": "um",
+                              "maxLength": 16,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "position",
+                            "unit",
+                            "frame"
+                          ],
+                          "type": "object"
+                        },
+                        "bindingGeneration": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "calibrationRevision": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "controlGeneration": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "descriptionDigest": {
+                          "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "endpointSession": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "instanceId": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "requiredEffect": {
+                          "enum": [
+                            "capability_completion",
+                            "physical_verified"
+                          ]
+                        },
+                        "timing": {
+                          "properties": {
+                            "latestCompletionUnixMs": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "latestStartUnixMs": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "maxRunMs": {
+                              "maximum": 4294967295,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "notBeforeUnixMs": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "notBeforeUnixMs",
+                            "latestStartUnixMs",
+                            "maxRunMs",
+                            "latestCompletionUnixMs"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "instanceId",
+                        "endpointSession",
+                        "controlGeneration",
+                        "actionId",
+                        "descriptionDigest",
+                        "bindingGeneration",
+                        "calibrationRevision",
+                        "arguments",
+                        "timing",
+                        "requiredEffect"
+                      ],
+                      "type": "object"
+                    },
+                    "operationKey": {
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                      "type": "string"
+                    },
+                    "protocol": {
+                      "const": "hms.invoke/0.1"
+                    },
+                    "replayNamespace": {
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "protocol",
+                    "replayNamespace",
+                    "operationKey",
+                    "intent"
+                  ],
+                  "title": "Experimental HMS host invocation",
+                  "type": "object"
+                },
+                "safe": false,
+                "synchronous": false
+              }
+            },
+            "description": "Synthetic executable fixture; no hardware calibration or commissioned physical limits.",
+            "hms:commissioned": false,
+            "id": "urn:bud:hms:sim:microscope",
+            "properties": {
+              "ready": {
+                "forms": [
+                  {
+                    "href": "https://example.invalid/simulation/microscope/properties/ready",
+                    "op": "readproperty"
+                  }
+                ],
+                "hms:coordinateFrame": null,
+                "readOnly": true,
+                "type": "boolean",
+                "unit": "1"
+              },
+              "value": {
+                "forms": [
+                  {
+                    "href": "https://example.invalid/simulation/microscope/properties/value",
+                    "op": "readproperty"
+                  }
+                ],
+                "hms:coordinateFrame": "sim:microscope",
+                "maximum": 100,
+                "minimum": 0,
+                "readOnly": true,
+                "type": "number",
+                "unit": "um"
+              }
+            },
+            "security": [
+              "local_os"
+            ],
+            "securityDefinitions": {
+              "local_os": {
+                "scheme": "nosec"
+              }
+            },
+            "title": "Simulated microscope"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "finalLevel": 2,
+      "initialLevel": 1
+    }
+  },
+  "inspection": {
+    "artifact": {
+      "applicability": {
+        "all": [
+          {
+            "field": "context.evidenceMode",
+            "literal": "simulation",
+            "op": "equals"
+          }
+        ],
+        "phase": "selection"
+      },
+      "effectBudget": {
+        "maxInvocations": 2,
+        "scope": "simulation_only"
+      },
+      "executionPlacement": "hms-host-orchestration",
+      "inputProfile": "hms.sim.fan.level_pair/0.1",
+      "name": "fan-level-pair",
+      "outcomeContract": {
+        "evidenceMode": "simulation",
+        "physicalObjectiveVerified": false,
+        "requiredCompletedSteps": [
+          "initial",
+          "final"
+        ],
+        "requiredEffect": "capability_completion"
+      },
+      "parameters": {
+        "finalLevel": {
+          "frame": null,
+          "unit": "1",
+          "valueSchema": {
+            "enum": [
+              1,
+              2
+            ],
+            "maximum": 2,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "initialLevel": {
+          "frame": null,
+          "unit": "1",
+          "valueSchema": {
+            "enum": [
+              1,
+              2
+            ],
+            "maximum": 2,
+            "minimum": 1,
+            "type": "integer"
+          }
+        }
+      },
+      "profile": "hms.pat.bound-sequence/0.1",
+      "protocol": "hms.pat/0.1",
+      "roles": {
+        "fan": {
+          "actions": [
+            "inspect"
+          ],
+          "capabilityFamily": "sim:inspection-cell",
+          "driverProfiles": [
+            "sqlite-simulation",
+            "compact-simulation"
+          ]
+        }
+      },
+      "runtimeGuardProfile": "installed_primitive_guards_only",
+      "steps": [
+        {
+          "actionId": "inspect",
+          "arguments": {
+            "partId": {
+              "literal": "part:original"
+            },
+            "recipe": {
+              "parameter": "initialLevel"
+            }
+          },
+          "role": "fan",
+          "stepId": "initial",
+          "timing": {
+            "latestCompletionOffsetMs": 1000,
+            "latestStartOffsetMs": 500,
+            "maxRunMs": 500,
+            "notBeforeOffsetMs": 0
+          }
+        },
+        {
+          "actionId": "inspect",
+          "arguments": {
+            "partId": {
+              "literal": "part:original"
+            },
+            "recipe": {
+              "parameter": "finalLevel"
+            }
+          },
+          "role": "fan",
+          "stepId": "final",
+          "timing": {
+            "latestCompletionOffsetMs": 2000,
+            "latestStartOffsetMs": 1500,
+            "maxRunMs": 500,
+            "notBeforeOffsetMs": 0
+          }
+        }
+      ],
+      "targetProfile": "hms.bound-sequence/0.1",
+      "taskKind": "sim.fan.level_pair",
+      "timingBudget": {
+        "latestCompletionOffsetMs": 2000,
+        "latestStartOffsetMs": 500,
+        "maxRunSumMs": 1000
+      },
+      "version": "1"
+    },
+    "bindings": {
+      "fan": {
+        "argumentMetadata": {
+          "inspect": {
+            "partId": {
+              "frame": null,
+              "frameArgument": null,
+              "unit": null,
+              "unitArgument": null
+            },
+            "recipe": {
+              "frame": null,
+              "frameArgument": null,
+              "unit": "1",
+              "unitArgument": null
+            }
+          }
+        },
+        "binding": {
+          "adapterId": "simulator:fixture",
+          "argumentSchemas": {
+            "inspect": {
+              "additionalProperties": false,
+              "properties": {
+                "partId": {
+                  "maxLength": 64,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "recipe": {
+                  "enum": [
+                    1,
+                    2
+                  ],
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "recipe",
+                "partId"
+              ],
+              "type": "object"
+            }
+          },
+          "calibrationRevision": "calibration:1",
+          "controlGeneration": "control:1",
+          "generation": "binding:1",
+          "instanceId": "sim:inspection-cell",
+          "mode": "simulation",
+          "profile": "hms.binding/0.1",
+          "resourceMap": {
+            "cell-zone": "resource:cell-zone"
+          },
+          "typeDigest": "sha256:f528f133cfdfa8f6f139923e96bbdcf63c73d9da440fcac809e418ff30d25e5e"
+        },
+        "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+        "driverProfile": "sqlite-simulation",
+        "endpointSession": "session:1",
+        "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+        "type": {
+          "execution": {
+            "actions": {
+              "inspect": {
+                "completionEvidence": [
+                  "simulation"
+                ],
+                "effect": "inspection",
+                "inputSchema": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "partId": {
+                      "maxLength": 64,
+                      "minLength": 1,
+                      "type": "string"
+                    },
+                    "recipe": {
+                      "enum": [
+                        1,
+                        2
+                      ],
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "recipe",
+                    "partId"
+                  ],
+                  "type": "object"
+                },
+                "maxRunMs": 5000,
+                "preconditions": [
+                  {
+                    "equals": true,
+                    "evidenceKind": "simulation",
+                    "maxAgeMs": 1000,
+                    "property": "ready"
+                  }
+                ],
+                "resources": [
+                  "cell-zone"
+                ]
+              }
+            },
+            "capabilities": [
+              "sim:inspection-cell"
+            ],
+            "profile": "hms.execution-contract/0.1",
+            "properties": {
+              "ready": {
+                "frame": null,
+                "schema": {
+                  "type": "boolean"
+                },
+                "unit": "1"
+              },
+              "value": {
+                "frame": "sim:inspection-cell",
+                "schema": {
+                  "maximum": 1000000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                "unit": "1"
+              }
+            },
+            "requiredFeatures": [
+              "binding-generations/1",
+              "durable-operations/1",
+              "host-invoke/0.1",
+              "physical-evidence/1"
+            ]
+          },
+          "profile": "hms.type-bundle/0.1",
+          "td": {
+            "@context": [
+              "https://www.w3.org/2022/wot/td/v1.1",
+              {
+                "hms": "https://example.invalid/hms/vocab#"
+              }
+            ],
+            "actions": {
+              "inspect": {
+                "forms": [
+                  {
+                    "href": "https://example.invalid/simulation/inspection-cell/actions/inspect",
+                    "op": "invokeaction"
+                  }
+                ],
+                "idempotent": false,
+                "input": {
+                  "properties": {
+                    "intent": {
+                      "properties": {
+                        "actionId": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "arguments": {
+                          "properties": {
+                            "partId": {
+                              "maxLength": 64,
+                              "minLength": 1,
+                              "type": "string"
+                            },
+                            "recipe": {
+                              "enum": [
+                                1,
+                                2
+                              ],
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "recipe",
+                            "partId"
+                          ],
+                          "type": "object"
+                        },
+                        "bindingGeneration": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "calibrationRevision": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "controlGeneration": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "descriptionDigest": {
+                          "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "endpointSession": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "instanceId": {
+                          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                          "type": "string"
+                        },
+                        "requiredEffect": {
+                          "enum": [
+                            "capability_completion",
+                            "physical_verified"
+                          ]
+                        },
+                        "timing": {
+                          "properties": {
+                            "latestCompletionUnixMs": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "latestStartUnixMs": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            },
+                            "maxRunMs": {
+                              "maximum": 4294967295,
+                              "minimum": 1,
+                              "type": "integer"
+                            },
+                            "notBeforeUnixMs": {
+                              "maximum": 9007199254740991,
+                              "minimum": 0,
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "notBeforeUnixMs",
+                            "latestStartUnixMs",
+                            "maxRunMs",
+                            "latestCompletionUnixMs"
+                          ],
+                          "type": "object"
+                        }
+                      },
+                      "required": [
+                        "instanceId",
+                        "endpointSession",
+                        "controlGeneration",
+                        "actionId",
+                        "descriptionDigest",
+                        "bindingGeneration",
+                        "calibrationRevision",
+                        "arguments",
+                        "timing",
+                        "requiredEffect"
+                      ],
+                      "type": "object"
+                    },
+                    "operationKey": {
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                      "type": "string"
+                    },
+                    "protocol": {
+                      "const": "hms.invoke/0.1"
+                    },
+                    "replayNamespace": {
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "protocol",
+                    "replayNamespace",
+                    "operationKey",
+                    "intent"
+                  ],
+                  "title": "Experimental HMS host invocation",
+                  "type": "object"
+                },
+                "safe": false,
+                "synchronous": false
+              }
+            },
+            "description": "Synthetic executable fixture; no hardware calibration or commissioned physical limits.",
+            "hms:commissioned": false,
+            "id": "urn:bud:hms:sim:inspection-cell",
+            "properties": {
+              "ready": {
+                "forms": [
+                  {
+                    "href": "https://example.invalid/simulation/inspection-cell/properties/ready",
+                    "op": "readproperty"
+                  }
+                ],
+                "hms:coordinateFrame": null,
+                "readOnly": true,
+                "type": "boolean",
+                "unit": "1"
+              },
+              "value": {
+                "forms": [
+                  {
+                    "href": "https://example.invalid/simulation/inspection-cell/properties/value",
+                    "op": "readproperty"
+                  }
+                ],
+                "hms:coordinateFrame": "sim:inspection-cell",
+                "maximum": 1000000,
+                "minimum": 0,
+                "readOnly": true,
+                "type": "integer",
+                "unit": "1"
+              }
+            },
+            "security": [
+              "local_os"
+            ],
+            "securityDefinitions": {
+              "local_os": {
+                "scheme": "nosec"
+              }
+            },
+            "title": "Simulated inspection-cell"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "finalLevel": 2,
+      "initialLevel": 1
+    }
+  }
+}

@@ -1,0 +1,63 @@
+{
+  "createdAt": "2026-11-09T00:29:36.742643+00:00",
+  "sources": [
+    {
+      "id": "connection",
+      "path": "raw/connection.c",
+      "sha256": "c33db9525cbc9887293c1cbdc03e0d8a3a3201e7dae98392452a40196e850070",
+      "lfLines": 2659,
+      "coveredLfRanges": [
+        [
+          1,
+          580
+        ],
+        [
+          581,
+          1160
+        ],
+        [
+          1161,
+          1740
+        ],
+        [
+          1741,
+          2320
+        ],
+        [
+          2321,
+          2659
+        ]
+      ],
+      "completeDeclaredTextRead": true,
+      "readMethod": "Primary agent, eight complete untruncated local-source tool outputs"
+    },
+    {
+      "id": "cursor",
+      "path": "raw/cursor.c",
+      "sha256": "6565bcccb050340fc91e8d1962cdc96caf23acddcb3ccca16e10b32d726d7522",
+      "lfLines": 1366,
+      "coveredLfRanges": [
+        [
+          1,
+          480
+        ],
+        [
+          481,
+          980
+        ],
+        [
+          981,
+          1366
+        ]
+      ],
+      "completeDeclaredTextRead": true,
+      "readMethod": "Primary agent, eight complete untruncated local-source tool outputs"
+    }
+  ],
+  "coveredLfLines": 4025,
+  "totalLfLines": 4025,
+  "acquiredCodeCompiledOrExecuted": false,
+  "headersLinkedSourcesAndGeneratedClinicFilesRead": false,
+  "installedBinaryEquivalenceClaimed": false,
+  "broaderResearchComplete": false
+}

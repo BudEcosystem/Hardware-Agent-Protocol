@@ -1,0 +1,101 @@
+{
+  "tag": "fuse-3.14.0",
+  "tagObject": "98e736e71bc9843820253d10a236646972bcb5e9",
+  "commit": "3f65bb699cd2f0afe2b9519c39d29922229f2168",
+  "acquisitionFailures": [
+    {
+      "url": "https://raw.githubusercontent.com/torvalds/linux/v6.8/Documentation/filesystems/fuse/fuse.rst",
+      "http": 404
+    },
+    {
+      "url": "https://raw.githubusercontent.com/libfuse/libfuse/3f65bb699cd2f0afe2b9519c39d29922229f2168/COPYING.LIB",
+      "http": 404
+    }
+  ],
+  "files": [
+    {
+      "path": "GPL2.txt",
+      "url": "https://raw.githubusercontent.com/libfuse/libfuse/3f65bb699cd2f0afe2b9519c39d29922229f2168/GPL2.txt",
+      "bytes": 18092,
+      "lines": 339,
+      "sha256": "8177f97513213526df2cf6184d8ff986c675afb514d4e68a404010521b880643"
+    },
+    {
+      "path": "LGPL2.txt",
+      "url": "https://raw.githubusercontent.com/libfuse/libfuse/3f65bb699cd2f0afe2b9519c39d29922229f2168/LGPL2.txt",
+      "bytes": 26530,
+      "lines": 502,
+      "sha256": "dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551"
+    },
+    {
+      "path": "LICENSE",
+      "url": "https://raw.githubusercontent.com/libfuse/libfuse/3f65bb699cd2f0afe2b9519c39d29922229f2168/LICENSE",
+      "bytes": 435,
+      "lines": 13,
+      "sha256": "b8832d9caaa075bbbd2aef24efa09f8b7ab66a832812d88c602da0c7b4397fad"
+    },
+    {
+      "path": "example/hello.c",
+      "url": "https://raw.githubusercontent.com/libfuse/libfuse/3f65bb699cd2f0afe2b9519c39d29922229f2168/example/hello.c",
+      "bytes": 4200,
+      "lines": 179,
+      "sha256": "ad0cef7931c99dc35b0163af0273be2e708e18a781351e5142f75603e0586cb6"
+    },
+    {
+      "path": "include/fuse.h",
+      "url": "https://raw.githubusercontent.com/libfuse/libfuse/3f65bb699cd2f0afe2b9519c39d29922229f2168/include/fuse.h",
+      "bytes": 46509,
+      "lines": 1326,
+      "sha256": "283086be3cb44e27331029cd220319009487e955f661ca39e2ff7fd04c7abcec"
+    },
+    {
+      "path": "include/fuse_common.h",
+      "url": "https://raw.githubusercontent.com/libfuse/libfuse/3f65bb699cd2f0afe2b9519c39d29922229f2168/include/fuse_common.h",
+      "bytes": 29472,
+      "lines": 934,
+      "sha256": "41e5bda1724deda46a213ea237461323801d6256ec8f9756e19a0c73b20ea608"
+    },
+    {
+      "path": "include/fuse_log.h",
+      "url": "https://raw.githubusercontent.com/libfuse/libfuse/3f65bb699cd2f0afe2b9519c39d29922229f2168/include/fuse_log.h",
+      "bytes": 1968,
+      "lines": 82,
+      "sha256": "7f79a177c6ad78e0c5b5e3773c9e923286308c1dba1ece3a22cb278299d9bcdc"
+    },
+    {
+      "path": "include/fuse_opt.h",
+      "url": "https://raw.githubusercontent.com/libfuse/libfuse/3f65bb699cd2f0afe2b9519c39d29922229f2168/include/fuse_opt.h",
+      "bytes": 7549,
+      "lines": 271,
+      "sha256": "472c9ee7a84bb9c20e58957a3ff47f34c18b4a159ad63b4db7f90aad1e8ff4ce"
+    },
+    {
+      "path": "include/meson.build",
+      "url": "https://raw.githubusercontent.com/libfuse/libfuse/3f65bb699cd2f0afe2b9519c39d29922229f2168/include/meson.build",
+      "bytes": 178,
+      "lines": 4,
+      "sha256": "5e6ed9690e23ce6736a8738542555e9cb8437b19f04195d2fef5a35804bbd74e"
+    },
+    {
+      "path": "installed/fusermount3.1",
+      "url": null,
+      "bytes": 1368,
+      "lines": 44,
+      "sha256": "75c600a07e9ddde636a69f0879531063b8ed6a699ac48358e2321ca98bf052e1"
+    },
+    {
+      "path": "installed/mount.fuse3.8",
+      "url": null,
+      "bytes": 12057,
+      "lines": 258,
+      "sha256": "4b40641cfe0ad804f41ce623b8b2430f745106dec39e93978b23c06b90b399f3"
+    },
+    {
+      "path": "kernel/fuse.rst",
+      "url": "https://raw.githubusercontent.com/torvalds/linux/v6.8/Documentation/filesystems/fuse.rst",
+      "bytes": 17080,
+      "lines": 426,
+      "sha256": "d6db736d8dc7d85180aa5e60a972cda537b275c6519ac61b4305be758ba2f180"
+    }
+  ]
+}

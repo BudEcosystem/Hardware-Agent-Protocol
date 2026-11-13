@@ -1,0 +1,237 @@
+{
+  "files": [
+    {
+      "bytes": 1875,
+      "path": "READING.json",
+      "sha256": "22acacaf22cf1d85b96e23661e56d2436e58a2bfd4e4de4bd4b8e3958888c0e8"
+    },
+    {
+      "bytes": 4085,
+      "path": "README.md",
+      "sha256": "cbcc40666b6581e2fd6f0b016650b1b81b3e06e1a1125f76ddba05ccca98cd7e"
+    },
+    {
+      "bytes": 1470,
+      "path": "acquire.py",
+      "sha256": "dbbd96929675081bfa8b64f3d066c3c5acbdb3f63eb3d2b7d47cdf0c347aa999"
+    },
+    {
+      "bytes": 1014,
+      "path": "extract_glibc.py",
+      "sha256": "3ccc1318ae834eae554ac97aeb5f24a0a84b6abfe0e1f4b28ad0262896beab0a"
+    },
+    {
+      "bytes": 1065,
+      "path": "glibc/sysdeps/unix/sysv/linux/fsync.c",
+      "sha256": "6c2ef9e9e33e3ddb0d70666daf30999330d906f645e9b7119d282926e1ce5578"
+    },
+    {
+      "bytes": 1263,
+      "path": "glibc/sysdeps/unix/sysv/linux/sync_file_range.c",
+      "sha256": "ad2b9d00186f3caf2cc3c1170b4290635ada95b06f1cb79cf73f023bf4172704"
+    },
+    {
+      "bytes": 41,
+      "path": "glibc-objects/.git/HEAD",
+      "sha256": "0070f4d90704f3252417f59ea9bb0b2c92dc891f0b4f686fbe996d19ad360b6c"
+    },
+    {
+      "bytes": 255,
+      "path": "glibc-objects/.git/config",
+      "sha256": "a9e00fa52c2e6678eb6b3ef1d8ae3ecad817478f03e2a3a8c25acd78933f2df4"
+    },
+    {
+      "bytes": 73,
+      "path": "glibc-objects/.git/description",
+      "sha256": "85ab6c163d43a17ea9cf7788308bca1466f1b0a8d1cc92e26e9bf63da4062aee"
+    },
+    {
+      "bytes": 478,
+      "path": "glibc-objects/.git/hooks/applypatch-msg.sample",
+      "sha256": "0223497a0b8b033aa58a3a521b8629869386cf7ab0e2f101963d328aa62193f7"
+    },
+    {
+      "bytes": 896,
+      "path": "glibc-objects/.git/hooks/commit-msg.sample",
+      "sha256": "1f74d5e9292979b573ebd59741d46cb93ff391acdd083d340b94370753d92437"
+    },
+    {
+      "bytes": 4726,
+      "path": "glibc-objects/.git/hooks/fsmonitor-watchman.sample",
+      "sha256": "e0549964e93897b519bd8e333c037e51fff0f88ba13e086a331592bf801fa1d0"
+    },
+    {
+      "bytes": 189,
+      "path": "glibc-objects/.git/hooks/post-update.sample",
+      "sha256": "81765af2daef323061dcbc5e61fc16481cb74b3bac9ad8a174b186523586f6c5"
+    },
+    {
+      "bytes": 424,
+      "path": "glibc-objects/.git/hooks/pre-applypatch.sample",
+      "sha256": "e15c5b469ea3e0a695bea6f2c82bcf8e62821074939ddd85b77e0007ff165475"
+    },
+    {
+      "bytes": 1643,
+      "path": "glibc-objects/.git/hooks/pre-commit.sample",
+      "sha256": "f9af7d95eb1231ecf2eba9770fedfa8d4797a12b02d7240e98d568201251244a"
+    },
+    {
+      "bytes": 416,
+      "path": "glibc-objects/.git/hooks/pre-merge-commit.sample",
+      "sha256": "d3825a70337940ebbd0a5c072984e13245920cdf8898bd225c8d27a6dfc9cb53"
+    },
+    {
+      "bytes": 1374,
+      "path": "glibc-objects/.git/hooks/pre-push.sample",
+      "sha256": "ecce9c7e04d3f5dd9d8ada81753dd1d549a9634b26770042b58dda00217d086a"
+    },
+    {
+      "bytes": 4898,
+      "path": "glibc-objects/.git/hooks/pre-rebase.sample",
+      "sha256": "4febce867790052338076f4e66cc47efb14879d18097d1d61c8261859eaaa7b3"
+    },
+    {
+      "bytes": 544,
+      "path": "glibc-objects/.git/hooks/pre-receive.sample",
+      "sha256": "a4c3d2b9c7bb3fd8d1441c31bd4ee71a595d66b44fcf49ddb310252320169989"
+    },
+    {
+      "bytes": 1492,
+      "path": "glibc-objects/.git/hooks/prepare-commit-msg.sample",
+      "sha256": "e9ddcaa4189fddd25ed97fc8c789eca7b6ca16390b2392ae3276f0c8e1aa4619"
+    },
+    {
+      "bytes": 2783,
+      "path": "glibc-objects/.git/hooks/push-to-checkout.sample",
+      "sha256": "a53d0741798b287c6dd7afa64aee473f305e65d3f49463bb9d7408ec3b12bf5f"
+    },
+    {
+      "bytes": 2308,
+      "path": "glibc-objects/.git/hooks/sendemail-validate.sample",
+      "sha256": "44ebfc923dc5466bc009602f0ecf067b9c65459abfe8868ddc49b78e6ced7a92"
+    },
+    {
+      "bytes": 3650,
+      "path": "glibc-objects/.git/hooks/update.sample",
+      "sha256": "8d5f2fa83e103cf08b57eaa67521df9194f45cbdbcb37da52ad586097a14d106"
+    },
+    {
+      "bytes": 240,
+      "path": "glibc-objects/.git/info/exclude",
+      "sha256": "6671fe83b7a07c8932ee89164d1f2793b2318058eb8b98dc5c06ee0a5a3b0ec1"
+    },
+    {
+      "bytes": 182,
+      "path": "glibc-objects/.git/logs/HEAD",
+      "sha256": "5a0eadac34df6281d282dba1a2ed06d2c6f0564dfa0365aded30d652a6b1e8b1"
+    },
+    {
+      "bytes": 1100,
+      "path": "glibc-objects/.git/objects/pack/pack-78882837e2dca20be9d807fe441776227dd702b8.idx",
+      "sha256": "a8bf2cbd8a097ec98e1e77fa7f5c59ce760c5c4b38e04a98bc0d4e0bae7a86f3"
+    },
+    {
+      "bytes": 659,
+      "path": "glibc-objects/.git/objects/pack/pack-78882837e2dca20be9d807fe441776227dd702b8.pack",
+      "sha256": "99a1189d7b974360560c5cd1a83e61ad19a8e9642e4874f6482eb447f42c2fc1"
+    },
+    {
+      "bytes": 0,
+      "path": "glibc-objects/.git/objects/pack/pack-78882837e2dca20be9d807fe441776227dd702b8.promisor",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 56,
+      "path": "glibc-objects/.git/objects/pack/pack-78882837e2dca20be9d807fe441776227dd702b8.rev",
+      "sha256": "2518ead0505ce5b0797e9d1e84ef8c964378d4fb4e40c4396e4b846b3eb8571f"
+    },
+    {
+      "bytes": 22464,
+      "path": "glibc-objects/.git/objects/pack/pack-78cdfc659cd607015ae58739ef90a69265fbcae7.idx",
+      "sha256": "6d6319aa22c61c53cf119c4c79dc19da7441ea8a9ea758a89eeb2aa27ff4f7ee"
+    },
+    {
+      "bytes": 592241,
+      "path": "glibc-objects/.git/objects/pack/pack-78cdfc659cd607015ae58739ef90a69265fbcae7.pack",
+      "sha256": "d5bbd2661aaeab26e2cc9b2de1b028b6367a7e802877ac136ec9a7630ad2294c"
+    },
+    {
+      "bytes": 62,
+      "path": "glibc-objects/.git/objects/pack/pack-78cdfc659cd607015ae58739ef90a69265fbcae7.promisor",
+      "sha256": "f3b899bd697caaf4383763040533adacc7395187cd0e8e3b2f1b6c1f281b1154"
+    },
+    {
+      "bytes": 3108,
+      "path": "glibc-objects/.git/objects/pack/pack-78cdfc659cd607015ae58739ef90a69265fbcae7.rev",
+      "sha256": "cbef2fa6e82038b360b34cfc84688c42388a05972ebb1fe055e682c9cf39ff57"
+    },
+    {
+      "bytes": 1100,
+      "path": "glibc-objects/.git/objects/pack/pack-df5309d48517a30f22148542db4174ff2d47c61d.idx",
+      "sha256": "5ecfba0739cc3e92bbe2ab1bb00983326f3a7c88540e7d80ed7dd604f312a0ef"
+    },
+    {
+      "bytes": 692,
+      "path": "glibc-objects/.git/objects/pack/pack-df5309d48517a30f22148542db4174ff2d47c61d.pack",
+      "sha256": "413e78533a6be85a4f72cbadbceb6f3910a0cd3aebec02be9bec8812c9cfc3c0"
+    },
+    {
+      "bytes": 0,
+      "path": "glibc-objects/.git/objects/pack/pack-df5309d48517a30f22148542db4174ff2d47c61d.promisor",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "bytes": 56,
+      "path": "glibc-objects/.git/objects/pack/pack-df5309d48517a30f22148542db4174ff2d47c61d.rev",
+      "sha256": "48244c04db24c34a358ff02741564dab1ac7991d873cfba53a393a6d8f9a96e0"
+    },
+    {
+      "bytes": 150,
+      "path": "glibc-objects/.git/packed-refs",
+      "sha256": "839a363722c34ae5c6229f563ded058d1a48b0e61546cbb9d7bccedde805c5ad"
+    },
+    {
+      "bytes": 41,
+      "path": "glibc-objects/.git/shallow",
+      "sha256": "0070f4d90704f3252417f59ea9bb0b2c92dc891f0b4f686fbe996d19ad360b6c"
+    },
+    {
+      "bytes": 639,
+      "path": "glibc-sources.json",
+      "sha256": "295c21f5e50134d24257f295707cf020397c6f7e1ff44e10337becba80b2a298"
+    },
+    {
+      "bytes": 23900,
+      "path": "linux/Documentation/filesystems/ext4/journal.rst",
+      "sha256": "ae23e8ec62ae06fac5a14226a1bdaa4d1b7276aaeefd1c25a1ce1d98739bbbf2"
+    },
+    {
+      "bytes": 5046,
+      "path": "linux/fs/ext4/fsync.c",
+      "sha256": "d23ce1fbcac09b4e04484af0502f6bbfcabca50144d6e63443ecbc37fd769452"
+    },
+    {
+      "bytes": 10458,
+      "path": "linux/fs/sync.c",
+      "sha256": "516e815a08cfdbda55982158575ca16c0b8db2d1957435c54f99bd4a630206c8"
+    },
+    {
+      "bytes": 137933,
+      "path": "linux/mm/filemap.c",
+      "sha256": "3f53e66b1d6d764fd7d995892ce8465752f8e175d35b8e3e1d86182cd959df4e"
+    },
+    {
+      "bytes": 4938,
+      "path": "man-pages/man/man2/fsync.2",
+      "sha256": "661752cb3565840a1836f61a33c2fa6056e7e09af2ce030e2e405783cfb5d399"
+    },
+    {
+      "bytes": 2088,
+      "path": "sources.json",
+      "sha256": "ad10848c799e64b31c454e54de09272c0210e490a5635e49d27f5f76011051b3"
+    }
+  ],
+  "fullReadLFLines": 1591,
+  "fullyReadFiles": 6,
+  "partiallyReadFiles": 1
+}

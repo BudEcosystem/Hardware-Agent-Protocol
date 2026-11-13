@@ -1,0 +1,99 @@
+Errata
+RFC Number
+Errata ID
+Status
+All/Any
+Verified+Reported
+Verified
+Reported
+Held for Document Update
+Rejected
+Area Acronym
+All/Any
+app
+art
+gen
+int
+ops
+rai
+rtg
+sec
+tsv
+wit
+Type
+All/Any
+Editorial
+Technical
+WG Acronym
+Submitter Name
+Stream
+All/Any
+IAB
+INDEPENDENT
+IRTF
+Legacy
+Editorial
+Date Submitted
+Presentation
+Table
+Full Records
+Submit
+Verified (2)
+RFC 8785
+inline-errata
+Source of RFC:
+INDEPENDENT
+Errata-ID:
+7920
+Status:
+Verified
+Type:
+Technical
+Publication Formats:
+TXT
+PDF
+HTML
+Reported By:
+Peter Patel-Schneider
+Date Reported:
+2024-05-02
+Verified by:
+Eliot Lear
+Date Verified:
+2024-05-15
+Section 5 says:
+<end of section>
+It should say:
+Since -0 is a valid JSON Number but is serialized as 0, a JSON
+parser following this specification SHOULD generate an error
+condition (which in turn SHOULD stop processing) when it
+encounters -0, in order to thwart potential attacks on not yet
+parsed data.
+Notes:
+IEEE 754 includes as distinct values both positive and negative
+zero. Section 7.1.12.1 of ECMA-262 says: If m is +0 or -0, return
+the String "0".  This may lend itself to erroneous input to 
+supporting functions.
+Errata-ID:
+6292
+Status:
+Verified
+Type:
+Editorial
+Publication Formats:
+TXT
+PDF
+HTML
+Reported By:
+Matt Langston
+Date Reported:
+2020-09-20
+Verified by:
+Adrian Farrel
+Date Verified:
+2020-09-22
+Section 3.2.2.2 says:
+see Section 24.3.2.2 of [ECMA-262]
+It should say:
+see Section 24.5.2.2 of [ECMA-262]
+Report New Erratum

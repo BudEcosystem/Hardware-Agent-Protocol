@@ -1,0 +1,314 @@
+[
+  {
+    "label": "Table 1",
+    "text_caption_line": 248,
+    "caption_start": "Examples of EDHOC Message Sizes in",
+    "pdf_caption_page": 6,
+    "reviewed_pdf_pages": [
+      6
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Figure 1",
+    "text_caption_line": 313,
+    "caption_start": "MAC-then-Sign Variant of the SIGMA-I Protocol Used by",
+    "pdf_caption_page": 8,
+    "reviewed_pdf_pages": [
+      8
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Figure 2",
+    "text_caption_line": 426,
+    "caption_start": "EDHOC Message Flow Including the Optional Fourth Message",
+    "pdf_caption_page": 10,
+    "reviewed_pdf_pages": [
+      10
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 2",
+    "text_caption_line": 459,
+    "caption_start": "Authentication Keys for Method Types",
+    "pdf_caption_page": 10,
+    "reviewed_pdf_pages": [
+      10
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Figure 3",
+    "text_caption_line": 513,
+    "caption_start": "One-Byte CBOR-Encoded Integers",
+    "pdf_caption_page": 11,
+    "reviewed_pdf_pages": [
+      11
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Figure 4",
+    "text_caption_line": 800,
+    "caption_start": "CCS Containing an X25519 Static Diffie-Hellman Key and",
+    "pdf_caption_page": 16,
+    "reviewed_pdf_pages": [
+      16
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Figure 5",
+    "text_caption_line": 1034,
+    "caption_start": "EAD Item",
+    "pdf_caption_page": 20,
+    "reviewed_pdf_pages": [
+      20
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Figure 6",
+    "text_caption_line": 1366,
+    "caption_start": "Key Derivations Using EDHOC_KDF",
+    "pdf_caption_page": 26,
+    "reviewed_pdf_pages": [
+      26
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Figure 7",
+    "text_caption_line": 1947,
+    "caption_start": "EDHOC Error Message",
+    "pdf_caption_page": 35,
+    "reviewed_pdf_pages": [
+      35
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 3",
+    "text_caption_line": 1976,
+    "caption_start": "EDHOC Error Codes and Error Information",
+    "pdf_caption_page": 36,
+    "reviewed_pdf_pages": [
+      35,
+      36
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Figure 8",
+    "text_caption_line": 2080,
+    "caption_start": "Cipher Suite Negotiation Example 1",
+    "pdf_caption_page": 37,
+    "reviewed_pdf_pages": [
+      37
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Figure 9",
+    "text_caption_line": 2119,
+    "caption_start": "Cipher Suite Negotiation Example 2",
+    "pdf_caption_page": 38,
+    "reviewed_pdf_pages": [
+      38
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 4",
+    "text_caption_line": 2777,
+    "caption_start": "EDHOC Exporter Labels",
+    "pdf_caption_page": 49,
+    "reviewed_pdf_pages": [
+      49
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 5",
+    "text_caption_line": 2792,
+    "caption_start": "Registration Procedures for",
+    "pdf_caption_page": 49,
+    "reviewed_pdf_pages": [
+      49
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 6",
+    "text_caption_line": 2858,
+    "caption_start": "EDHOC Cipher Suites",
+    "pdf_caption_page": 50,
+    "reviewed_pdf_pages": [
+      50
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 7",
+    "text_caption_line": 2872,
+    "caption_start": "Registration Procedures for EDHOC Cipher",
+    "pdf_caption_page": 51,
+    "reviewed_pdf_pages": [
+      50,
+      51
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 8",
+    "text_caption_line": 2902,
+    "caption_start": "Registration Procedures for EDHOC Method Types",
+    "pdf_caption_page": 51,
+    "reviewed_pdf_pages": [
+      51
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 9",
+    "text_caption_line": 2930,
+    "caption_start": "Registration Procedures for",
+    "pdf_caption_page": 52,
+    "reviewed_pdf_pages": [
+      52
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 10",
+    "text_caption_line": 2956,
+    "caption_start": "EDHOC EAD Labels",
+    "pdf_caption_page": 52,
+    "reviewed_pdf_pages": [
+      52
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 11",
+    "text_caption_line": 2966,
+    "caption_start": "Registration Procedures for EDHOC EAD",
+    "pdf_caption_page": 52,
+    "reviewed_pdf_pages": [
+      52
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 12",
+    "text_caption_line": 2997,
+    "caption_start": "COSE Header Parameter Labels",
+    "pdf_caption_page": 53,
+    "reviewed_pdf_pages": [
+      53
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 13",
+    "text_caption_line": 3114,
+    "caption_start": "CoAP Content-Format IDs",
+    "pdf_caption_page": 55,
+    "reviewed_pdf_pages": [
+      55
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 14",
+    "text_caption_line": 3600,
+    "caption_start": "Usage of Connection Identifiers in OSCORE",
+    "pdf_caption_page": 63,
+    "reviewed_pdf_pages": [
+      62,
+      63
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Figure 10",
+    "text_caption_line": 3736,
+    "caption_start": "Example of the Forward Message Flow",
+    "pdf_caption_page": 65,
+    "reviewed_pdf_pages": [
+      65
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Figure 11",
+    "text_caption_line": 3795,
+    "caption_start": "Example of the Reverse Message Flow",
+    "pdf_caption_page": 66,
+    "reviewed_pdf_pages": [
+      66
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Table 15",
+    "text_caption_line": 3956,
+    "caption_start": "Examples of Use of CBOR and CDDL",
+    "pdf_caption_page": 69,
+    "reviewed_pdf_pages": [
+      68,
+      69
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Figure 12",
+    "text_caption_line": 4554,
+    "caption_start": "Initiator State Machine",
+    "pdf_caption_page": 79,
+    "reviewed_pdf_pages": [
+      79
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  },
+  {
+    "label": "Figure 13",
+    "text_caption_line": 4622,
+    "caption_start": "Responder State Machine",
+    "pdf_caption_page": 81,
+    "reviewed_pdf_pages": [
+      81
+    ],
+    "text_review": "Included in full sequential RFC reading",
+    "visual_review": "Complete numbered content reviewed on the listed page(s)"
+  }
+]

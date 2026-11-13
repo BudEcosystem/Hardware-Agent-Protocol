@@ -1,0 +1,8 @@
+5.2 Service request and response header
+
+Each Service request has a RequestHeader and each Service response has a ResponseHeader.
+
+The RequestHeader structure is defined in 7.32 and contains common request parameters such as authenticationToken, timestamp and requestHandle.
+
+The ResponseHeader structure is defined in 7.33 and contains common response parameters such as serviceResult and diagnosticInfo.
+

@@ -1,0 +1,63 @@
+{
+  "name": "@budmh/experimental-tool-hardware",
+  "description": "Experimental same-UID local HMS simulation tool-hardware",
+  "version": "0.2.1-rc.3",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/types/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/types/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/types/**/*.d.ts"
+  ],
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/BudEcosystem/Bud-Meta-Harness.git",
+    "directory": "packages/experimental/tool-hardware"
+  },
+  "dependencies": {
+    "@budmh/experimental-hardware": "workspace:*",
+    "@budmh/schemastery": "workspace:~"
+  },
+  "peerDependencies": {
+    "@budmh/cordis": "workspace:~",
+    "@budmh/tools": "workspace:*",
+    "@budmh/experimental-hardware": "workspace:*",
+    "@budmh/llm": "workspace:*"
+  },
+  "devDependencies": {
+    "@budmh/cordis": "workspace:~",
+    "@budmh/tools": "workspace:*",
+    "@budmh/experimental-hardware": "workspace:*",
+    "@budmh/cordis-plugin-include": "workspace:~",
+    "@budmh/cordis-plugin-loader": "workspace:~",
+    "@budmh/agent": "workspace:*",
+    "@budmh/agent-loop": "workspace:*",
+    "@budmh/fs-local": "workspace:*",
+    "@budmh/llm": "workspace:*",
+    "@budmh/sandbox-local": "workspace:*",
+    "@budmh/sandbox-policy": "workspace:*",
+    "@budmh/session": "workspace:*",
+    "@budmh/session-projection": "workspace:*",
+    "@budmh/subprocess-local": "workspace:*",
+    "@budmh/system-prompt": "workspace:*",
+    "@budmh/working-directory": "workspace:*",
+    "@budmh/ptc-runtime-node": "workspace:*",
+    "@budmh/experimental-hardware-hms": "workspace:*",
+    "@budmh/util-values": "workspace:*",
+    "js-yaml": "^4.3.2",
+    "@budmh/sdk-client": "workspace:*",
+    "@budmh/session-snapshot": "workspace:*"
+  }
+}

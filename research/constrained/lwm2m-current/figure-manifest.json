@@ -1,0 +1,1326 @@
+{
+  "path_base": "repository_root",
+  "method": "Semantic figure pages identified from official PDF caption inventory and HTML image list; excludes logo. Core has28 figures over25 pages; Transport has20 figures over17 pages. Captions and tables are also present in full HTML text.",
+  "renders": [
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-020.png",
+      "sha256": "d246ba23e658a761e57e2c10f60164ceaf3a77b82dfbd73df6a8ff766ab3106a",
+      "bytes": 210317,
+      "document": "core",
+      "pdf_page_one_based": 20,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "20",
+        "-l",
+        "20",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-020"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        1
+      ],
+      "captions": [
+        "Figure: 4.-1 The overall architecture of the LwM2M Enabler"
+      ],
+      "review_note": "Four management interfaces and client/server/bootstrap roles; architecture does not establish physical execution ownership.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-023.png",
+      "sha256": "97ed4c6816be788be9cb172115fef8ad3add2cd2562688f45aba6d56425e3d87",
+      "bytes": 309375,
+      "document": "core",
+      "pdf_page_one_based": 23,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "23",
+        "-l",
+        "23",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-023"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        2,
+        3,
+        4
+      ],
+      "captions": [
+        "Figure: 6.-1 Bootstrap Interface with Bootstrap-Request operation",
+        "Figure: 6.-2 Bootstrap Interface with Bootstrap-Pack-Request operation",
+        "Figure: 6.-3 Client Registration"
+      ],
+      "review_note": "Bootstrap request, bootstrap pack, and registration flows; account configuration and registered presence are separate phases.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-024.png",
+      "sha256": "ab4b02b95ab114c3cb4ec9992b1bb2caf5fc75d5dae2385fddaa2711c3339979",
+      "bytes": 297780,
+      "document": "core",
+      "pdf_page_one_based": 24,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "24",
+        "-l",
+        "24",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-024"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        5,
+        6
+      ],
+      "captions": [
+        "Figure: 6.-4 Device Management and Service Enablement",
+        "Figure: 6.-5 Information Reporting"
+      ],
+      "review_note": "Management and reporting flows; success and notification arrows carry no universal physical completion predicate.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-027.png",
+      "sha256": "8c9ee0e836de0c056ae4d2bc221003cabeb41703ed951b8e482a6e3b8481abca",
+      "bytes": 261364,
+      "document": "core",
+      "pdf_page_one_based": 27,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "27",
+        "-l",
+        "27",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-027"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        7
+      ],
+      "captions": [
+        "Figure: 6.1.3.3.-1 Client Initiated Bootstrap with Bootstrap-Request operation"
+      ],
+      "review_note": "Client initiated bootstrap sequence and finish; subsequent registration follows configuration.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-028.png",
+      "sha256": "92f1006a07cdbd2110d2ddf653488687362c3d129bca3bf182bd7df789125ed5",
+      "bytes": 381940,
+      "document": "core",
+      "pdf_page_one_based": 28,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "28",
+        "-l",
+        "28",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-028"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        8
+      ],
+      "captions": [
+        "Figure: 6.1.3.3.-2 Client Initiated Bootstrap with Bootstrap-Pack-Request operation"
+      ],
+      "review_note": "Bootstrap pack request and fallback/finish sequence; replacement scope is governed by accompanying normative text.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-029.png",
+      "sha256": "1e3ddcd11ae2765c8c9929248c2355b1558a753073ea60639a21be6aadb57102",
+      "bytes": 352477,
+      "document": "core",
+      "pdf_page_one_based": 29,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "29",
+        "-l",
+        "29",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-029"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        9
+      ],
+      "captions": [
+        "Figure: 6.1.3.4.-1 Procedure of Server Initiated Bootstrap initiated by an authorized LwM2M Server"
+      ],
+      "review_note": "Authorized server trigger initiates bootstrap with a separately provisioned bootstrap authority.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-038.png",
+      "sha256": "8e755f9f51ee8390950aa5d9fa20982b1ecdfde464dc879da38e745b194543ea",
+      "bytes": 263385,
+      "document": "core",
+      "pdf_page_one_based": 38,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "38",
+        "-l",
+        "38",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-038"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        10
+      ],
+      "captions": [
+        "Figure: 6.2.-1 Client Registration Interface example flows"
+      ],
+      "review_note": "Register, Update, and Deregister lifecycles; registration state is not an operation lease.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-042.png",
+      "sha256": "33ba070d4008b185365332b8a25a276aa4d9978e46d60b0b2978bf0550d1750c",
+      "bytes": 218375,
+      "document": "core",
+      "pdf_page_one_based": 42,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "42",
+        "-l",
+        "42",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-042"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        11
+      ],
+      "captions": [
+        "Figure: 6.2.1.1.-1 Ordered Servers Procedure"
+      ],
+      "review_note": "Ordered server priorities and blocking behavior; registration retries are not action retries.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-043.png",
+      "sha256": "ce914416f5c6c8e6493190cb3e899459d0871df37fbe85df738288a9cfa5ca71",
+      "bytes": 129960,
+      "document": "core",
+      "pdf_page_one_based": 43,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "43",
+        "-l",
+        "43",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-043"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        12
+      ],
+      "captions": [
+        "Figure: 6.2.1.1.-2 Single Ordered Server Procedure"
+      ],
+      "review_note": "Ordered server retry/backoff and bootstrap fallback branches.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-044.png",
+      "sha256": "a384b98218c96ca2e93474029dbcc736797baad8163e6ac1397c8f9026a42183",
+      "bytes": 254669,
+      "document": "core",
+      "pdf_page_one_based": 44,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "44",
+        "-l",
+        "44",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-044"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        13
+      ],
+      "captions": [
+        "Figure: 6.2.1.1.-3 Single Unordered Server Procedure"
+      ],
+      "review_note": "Unordered server retry/backoff and bootstrap fallback branches.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-048.png",
+      "sha256": "a581ad4fb5b9344ee064efa09f7a86060d67a56a5f213da59e43cb60ad94a66d",
+      "bytes": 120980,
+      "document": "core",
+      "pdf_page_one_based": 48,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "48",
+        "-l",
+        "48",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-048"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        14
+      ],
+      "captions": [
+        "Figure: 6.2.2.-1 Update Example Flow #1"
+      ],
+      "review_note": "Lifetime Update extends registration; it cannot extend a separately admitted physical operation.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-049.png",
+      "sha256": "673f46be854deb3957aa8cf5183074f760cd542310f03486bf8da47ea5ae6368",
+      "bytes": 270311,
+      "document": "core",
+      "pdf_page_one_based": 49,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "49",
+        "-l",
+        "49",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-049"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        15
+      ],
+      "captions": [
+        "Figure: 6.2.2.-2 Update Example Flow #2"
+      ],
+      "review_note": "Object instance creation/deletion changes registered inventory and prompts Update.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-051.png",
+      "sha256": "3f5fd5e3012dda8b7dd82fc81f67a07f14945df4470a1cb9f8b1be3094ab0c3f",
+      "bytes": 104838,
+      "document": "core",
+      "pdf_page_one_based": 51,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "51",
+        "-l",
+        "51",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-051"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        16
+      ],
+      "captions": [
+        "Figure: 6.3.-1 Example flows of Device Management & Service Enablement Interface"
+      ],
+      "review_note": "Read, Write, Execute, Create and Delete request/result sequence; protocol result requires resource-specific interpretation.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-059.png",
+      "sha256": "d584c7d12275a701385a80b7e458234fe21af577eac46a53e4e223e33bbed93d",
+      "bytes": 232129,
+      "document": "core",
+      "pdf_page_one_based": 59,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "59",
+        "-l",
+        "59",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-059"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        17
+      ],
+      "captions": [
+        "Figure: 6.4.-1 Example flow for Information Reporting Interface for the RSSI Resource of the Connectivity Monitoring Object of the example client Appendix LwM2M Objects defined by OMA (Normative)"
+      ],
+      "review_note": "Observe/Notify/Cancel Observation changes reporting state, not equipment execution state.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-062.png",
+      "sha256": "70623864b4ea02747e1f5b4064e524a9b6c8a72f522a325d9cd41ece6994b884",
+      "bytes": 233357,
+      "document": "core",
+      "pdf_page_one_based": 62,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "62",
+        "-l",
+        "62",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-062"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        18
+      ],
+      "captions": [
+        "Figure: 6.4.2.-1 Example of Minimum and Maximum periods in an Observation"
+      ],
+      "review_note": "pmin/pmax example shows timing and unchanged-value periodic notification; reporting time is not acquisition time.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-065.png",
+      "sha256": "8568290ff52be438ea75181ac52ba8a6cf66da15de6ed9a28dbbc340bb09c98f",
+      "bytes": 299742,
+      "document": "core",
+      "pdf_page_one_based": 65,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "65",
+        "-l",
+        "65",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-065"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        19
+      ],
+      "captions": [
+        "Figure: 7.1.-1 Relationship between LwM2M Client, Object, and Resources"
+      ],
+      "review_note": "Client/Object/Object Instance/Resource hierarchy; native Resource differs from an HMS exclusivity claim.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-066.png",
+      "sha256": "2655b20f8184162dba7a585de0def437b76b1628145cbedf3c5bc71b729c785e",
+      "bytes": 392469,
+      "document": "core",
+      "pdf_page_one_based": 66,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "66",
+        "-l",
+        "66",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-066"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        20
+      ],
+      "captions": [
+        "Figure: 7.1.-2 Example of Supported operations and Associated Access Control Object Instance"
+      ],
+      "review_note": "Supported resource operations intersect server ACL permissions.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-084.png",
+      "sha256": "2680388b7ac98d966585c00c16dba2386a0a16f891d69d3eb361f61086680a52",
+      "bytes": 206427,
+      "document": "core",
+      "pdf_page_one_based": 84,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "84",
+        "-l",
+        "84",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-084"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        21
+      ],
+      "captions": [
+        "Figure: 7.5.5.-1 TLV nesting"
+      ],
+      "review_note": "Three-level TLV nesting; figure helps decode structure without imposing an implementation memory bound.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-097.png",
+      "sha256": "23d42055052063239a831f47360cb10939a5ba501601b3bf39519dd521ecc5b2",
+      "bytes": 283839,
+      "document": "core",
+      "pdf_page_one_based": 97,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "97",
+        "-l",
+        "97",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-097"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        22
+      ],
+      "captions": [
+        "Figure: 8.1.2.2.-1 Illustration of the relations between the LwM2M Access Control Object and the other LwM2M Objects"
+      ],
+      "review_note": "ACL owner and server permission relationships, including default Server ID 0; no exclusive physical control fence.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-104.png",
+      "sha256": "c8381d071bb0c625831bbb08de9b6ec527437a271c05a0e97dad507057dd0e73",
+      "bytes": 71660,
+      "document": "core",
+      "pdf_page_one_based": 104,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "104",
+        "-l",
+        "104",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-104"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        23
+      ],
+      "captions": [
+        "Figure: C.-1 Object link Resource simple illustration"
+      ],
+      "review_note": "Object-link graph spans object instances and illustrates null-link sentinel.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-126.png",
+      "sha256": "a6735fb6e456cb820ec7686b555fc32fcca9f29b6a4f9f5f942d0b350f3763ae",
+      "bytes": 244227,
+      "document": "core",
+      "pdf_page_one_based": 126,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "126",
+        "-l",
+        "126",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-126"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        24
+      ],
+      "captions": [
+        "Figure: E.6.1-1 Firmware Update Mechanisms"
+      ],
+      "review_note": "Firmware states, failure branches, cancel before installation, and deferred-update transitions; no installed-image rollback.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-127.png",
+      "sha256": "5469877e8a6db65d00ea5707594b659505e4cb19755c737193d459c65f848f75",
+      "bytes": 142392,
+      "document": "core",
+      "pdf_page_one_based": 127,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "127",
+        "-l",
+        "127",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-127"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        25
+      ],
+      "captions": [
+        "Figure: E.6.2-1 Example of a LwM2M Server pushing a firmware image to a LwM2M client"
+      ],
+      "review_note": "Firmware push uses intermediate block acknowledgments and final transfer response, distinct from installation.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-128.png",
+      "sha256": "f291969cda82911d7b3b892e1050d747dc33e2a1e258527814e68b0ab585a0fb",
+      "bytes": 166089,
+      "document": "core",
+      "pdf_page_one_based": 128,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "128",
+        "-l",
+        "128",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-128"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        26
+      ],
+      "captions": [
+        "Figure: E.6.2-2 Example of a client fetching a firmware image"
+      ],
+      "review_note": "Firmware pull uses block retrieval; completed retrieval does not prove activation.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-143.png",
+      "sha256": "d34e0aa48af7b6a35955211d18715541b4ca23bbf76d986d7be23484a5ae8239",
+      "bytes": 300491,
+      "document": "core",
+      "pdf_page_one_based": 143,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "143",
+        "-l",
+        "143",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-143"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        27
+      ],
+      "captions": [
+        "Figure: G.2.2-1 Example of a UICC File Structure embedding a specific PKCS\\#15 file structure containing LwM2M Bootstrap data location"
+      ],
+      "review_note": "UICC filesystem structure locates bootstrap data and PKCS#15 objects.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/core-page-148.png",
+      "sha256": "3cf12f6d815627c25b974bd22c4a2215f619202bd57d84821802317f581150c5",
+      "bytes": 145709,
+      "document": "core",
+      "pdf_page_one_based": 148,
+      "source_pdf": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "source_pdf_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "148",
+        "-l",
+        "148",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/core-page-148"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        28
+      ],
+      "captions": [
+        "Figure: H.-1 Bootstrap Information transfer from Smartcard to LwM2M Device using Secure Channel according to [GLOBALPLATFORM]"
+      ],
+      "review_note": "Smartcard secure-channel flow uses authentication and encryption with separately provisioned key material.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-018.png",
+      "sha256": "5e302e697c6db4a39216f74fba418e0814176660ad164694e567441b83878be9",
+      "bytes": 189415,
+      "document": "transport",
+      "pdf_page_one_based": 18,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "18",
+        "-l",
+        "18",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-018"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        1
+      ],
+      "captions": [
+        "Figure: 4.-1 The Protocol Stack of the LwM2M Enabler"
+      ],
+      "review_note": "Protocol stack distinguishes transport security, application security, and LwM2M semantics.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-033.png",
+      "sha256": "f3b97839601e90e1242d4cdf213bb62fd0fc5c9b623c48e09197d8ecff30ee4a",
+      "bytes": 371290,
+      "document": "transport",
+      "pdf_page_one_based": 33,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "33",
+        "-l",
+        "33",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-033"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        2
+      ],
+      "captions": [
+        "Figure: 5.3.2.1.1.-1 SMS header definition (no token)"
+      ],
+      "review_note": "SMS example header budget without token: 140 total bytes, 29 DTLS and 4 CoAP overhead, 107 example payload bytes.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-034.png",
+      "sha256": "38028bbcd2b235f5a7c9a2858408e69a2370455429a5dcaa69cd8c38add75de7",
+      "bytes": 341169,
+      "document": "transport",
+      "pdf_page_one_based": 34,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "34",
+        "-l",
+        "34",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-034"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        3
+      ],
+      "captions": [
+        "Figure: 5.3.2.1.1.-2 SMS header definition"
+      ],
+      "review_note": "SMS example token/header budget: 29 DTLS and 12 CoAP overhead, 99 example payload bytes; not a universal bound.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-045.png",
+      "sha256": "6aca4c557ff9930d2d3e88c0c4bb9cdcf20b34a49c073a258a8cf1bbb3400880",
+      "bytes": 218049,
+      "document": "transport",
+      "pdf_page_one_based": 45,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "45",
+        "-l",
+        "45",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-045"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        4
+      ],
+      "captions": [
+        "Figure: 6.4.2.-1 Example of Client initiated Bootstrap exchange"
+      ],
+      "review_note": "Bootstrap Write/Delete/Finish mappings and responses.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-046.png",
+      "sha256": "9211d0102e394958598e8ad8fe0f957a879217199bf0cf2d9940c8a10aeadf6b",
+      "bytes": 301170,
+      "document": "transport",
+      "pdf_page_one_based": 46,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "46",
+        "-l",
+        "46",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-046"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        5,
+        6
+      ],
+      "captions": [
+        "Figure: 6.4.2.-2 Example of Client initiated Bootstrap with Bootstrap-Pack exchange",
+        "Figure: 6.4.2.-3 Example of Server initiated Bootstrap exchange"
+      ],
+      "review_note": "Bootstrap pack and server-triggered bootstrap flow variants.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-048.png",
+      "sha256": "5e4ea583931a1f6fe4de3d3783da96816522d78c02f54733470ed314c8ec8d12",
+      "bytes": 367445,
+      "document": "transport",
+      "pdf_page_one_based": 48,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "48",
+        "-l",
+        "48",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-048"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        7
+      ],
+      "captions": [
+        "Figure: 6.4.3.-1 Example register, update and de-register operation exchanges (shorthand in [CoAP] example style, actual messages using CoAP binary headers)"
+      ],
+      "review_note": "CoAP registration location is reused for Update and Deregister.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-052.png",
+      "sha256": "81206fad49465b742ff412aa2a1e5beb4555367307d94d88e953293dcd6ff1d9",
+      "bytes": 130515,
+      "document": "transport",
+      "pdf_page_one_based": 52,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "52",
+        "-l",
+        "52",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-052"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        8
+      ],
+      "captions": [
+        "Figure: 6.4.4.-1 Example of Device Management & Service Enablement interface exchanges"
+      ],
+      "review_note": "Management and Send response mappings; Execute response is not independently measured physical completion.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-053.png",
+      "sha256": "9a83474bd5988b2b7f27a386f2b6fe7f472189224957fafbc3d2533e1e00680b",
+      "bytes": 219746,
+      "document": "transport",
+      "pdf_page_one_based": 53,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "53",
+        "-l",
+        "53",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-053"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        9
+      ],
+      "captions": [
+        "Figure: 6.4.4.-2 Example of Object Creation and Deletion"
+      ],
+      "review_note": "Create/Delete flows update object instance state.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-055.png",
+      "sha256": "e7f73c1967ce2a753dfabda2ce11268567ee870b6199defea969bce7b58fcdd6",
+      "bytes": 277652,
+      "document": "transport",
+      "pdf_page_one_based": 55,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "55",
+        "-l",
+        "55",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-055"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        10
+      ],
+      "captions": [
+        "Figure: 6.4.5.-1 Example of an Information Reporting exchange"
+      ],
+      "review_note": "Observation token correlation is separate from CoAP message identifiers; Reset terminates reporting.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-057.png",
+      "sha256": "2c4ec4ae9f64a55570c6f9656827adeb4f22b4f485be63f074298b1fd2ed8685",
+      "bytes": 143732,
+      "document": "transport",
+      "pdf_page_one_based": 57,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "57",
+        "-l",
+        "57",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-057"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        11
+      ],
+      "captions": [
+        "Figure: 6.5.-1 Example of Device Management & Service Enablement interface exchanges for Queue Mode"
+      ],
+      "review_note": "Queue-mode awake interval, Update and queued management requests.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-058.png",
+      "sha256": "515e3868f775554b6d21159e1f6b9ba738851a44fcda5eab0b431a15c11f26e3",
+      "bytes": 329103,
+      "document": "transport",
+      "pdf_page_one_based": 58,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "58",
+        "-l",
+        "58",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-058"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        12
+      ],
+      "captions": [
+        "Figure: 6.5.-2 Example of an Information Reporting exchange for Queue Mode"
+      ],
+      "review_note": "Queue-mode reporting wakes communication; Notify delivery does not imply a queued command executed.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-059.png",
+      "sha256": "2602cc62b834de0c55cf4d7d6bb4d200d7f74977e59c7b148d1828ca05a0e0cd",
+      "bytes": 222343,
+      "document": "transport",
+      "pdf_page_one_based": 59,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "59",
+        "-l",
+        "59",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-059"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        13
+      ],
+      "captions": [
+        "Figure: 6.6.1.-1 Example of Device Management & Service Enablement interface exchanges for Queue Mode with SMS Registration Update Trigger"
+      ],
+      "review_note": "Publication conflict: depicted SMS 2.04 response conflicts with section 6.6 prohibition on a response to this trigger.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-080.png",
+      "sha256": "05ab75941df16be73db13b2bca588f0ad58d320a556855a48079a22559281434",
+      "bytes": 155856,
+      "document": "transport",
+      "pdf_page_one_based": 80,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "80",
+        "-l",
+        "80",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-080"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        14,
+        15
+      ],
+      "captions": [
+        "Figure: 8.1.-1 Colocated MQTT Server / LwM2M Server Deployment",
+        "Figure: 8.1.-2 Independent MQTT Server Deployment"
+      ],
+      "review_note": "Colocated and independent MQTT brokers expose different trust/authorization boundaries.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-100.png",
+      "sha256": "ece8250e99b14d7ff3b497b7b92ca93cb1d76365278b447cd2c5e5e323f5f19d",
+      "bytes": 199246,
+      "document": "transport",
+      "pdf_page_one_based": 100,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "100",
+        "-l",
+        "100",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-100"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        16,
+        17
+      ],
+      "captions": [
+        "Figure: C.3.1.1-1 Example of CoAP request from Endpoint using LoRaWAN confirmable messages",
+        "Figure: C.3.1.2-1 Example of CoAP request from Application Server using LoRaWAN confirmable messages"
+      ],
+      "review_note": "LoRaWAN confirmable uplink/downlink receive windows; delivery notification and CoAP response are distinct.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-101.png",
+      "sha256": "1b3fd6d94e252cc48601fa12dc311ecb7bbfe96b2d69164e2756b1491369ffcc",
+      "bytes": 285946,
+      "document": "transport",
+      "pdf_page_one_based": 101,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "101",
+        "-l",
+        "101",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-101"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        18
+      ],
+      "captions": [
+        "Figure: C.3.2.1-1 Example of CoAP request from Endpoint using LoRaWAN unconfirmable messages"
+      ],
+      "review_note": "LoRaWAN unconfirmable uplink polling/retry flow, with substantial delay possible.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-102.png",
+      "sha256": "2fb2831a2f8b7f5b064db83d204f11afb2d6e0d0d5ec674838fd27285184ff4a",
+      "bytes": 164452,
+      "document": "transport",
+      "pdf_page_one_based": 102,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "102",
+        "-l",
+        "102",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-102"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        19
+      ],
+      "captions": [
+        "Figure: C.3.2.2-1 Example of CoAP request from Application Server using LoRaWAN unconfirmable messages"
+      ],
+      "review_note": "LoRaWAN downlink retransmission timing starts on transmission notification.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    },
+    {
+      "path": "research/constrained/lwm2m-current/figures/transport-page-104.png",
+      "sha256": "bfa960888dbcdd503a360dc16dc417c8c354358beddda9cf5d6dd757e9e7f394",
+      "bytes": 229093,
+      "document": "transport",
+      "pdf_page_one_based": 104,
+      "source_pdf": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "source_pdf_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "render_command": [
+        "pdftoppm",
+        "-f",
+        "104",
+        "-l",
+        "104",
+        "-scale-to",
+        "1800",
+        "-png",
+        "-singlefile",
+        "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+        "research/constrained/lwm2m-current/figures/transport-page-104"
+      ],
+      "reading_status": "visually_reviewed_full_rendered_page",
+      "figure_indices": [
+        20
+      ],
+      "captions": [
+        "Figure: D.1-1 3GPP CIoT architecture and the LwM2M protocol stack"
+      ],
+      "review_note": "Informative CIoT architecture and stack, including network buffering paths.",
+      "reviewed_at": "2026-11-06T00:48:12.333873+00:00"
+    }
+  ],
+  "review_scope": "All 48 semantic figures identified in the complete Core/Transport HTML image inventories were visually reviewed on 42 retained PDF page renders. Decorative logos excluded. This is not a claim to visually review every PDF page.",
+  "reviewed_at": "2026-11-06T00:48:12.333873+00:00",
+  "semantic_figure_counts": {
+    "core": 28,
+    "transport": 20
+  }
+}

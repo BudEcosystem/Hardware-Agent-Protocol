@@ -1,0 +1,106 @@
+native/pact/packages/darwin-arm64        | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/pact/packages/darwin-x64          | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/pact/packages/linux-arm64         | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["linux"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/pact/packages/win32-x64           | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["win32"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/darwin-arm64      | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/darwin-x64        | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/linux-arm64       | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["linux"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+Scope: all 444 workspace projects
+[WARN] There are cyclic workspace dependencies: /home/bud/Desktop/bud/hms-harness-335a82eb/apps/cli, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/sdk/client; /home/bud/Desktop/bud/hms-harness-335a82eb/apps/web, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/test-support/client-runtime, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/bundle/web-app; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/api/gateway, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/api/remote-access; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/api/remotes, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/client/ui-plugin-manager, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/client/ui-sidebar, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/client/ui-workspace, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/client/ui-conversation; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/compaction/compaction-basic, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/compaction/compaction-image-offload; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/compaction/compaction-tool-result-pruner, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/llm/token-meter, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/llm/llm-retry, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/test-support/agent-loop-testkit, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/preset/agent-session, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/preset/agent-preset; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/core/agent-default-model, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/settings/settings; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/core/agent-loop, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/core/tools, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/sandbox/sandbox-policy, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/environment/environment, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/preset/agent-preset-registry; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/interaction/user-questions, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/session-query/session-query, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/todo/tool-todo; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/llm/llm-deepseek, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/llm/llm-deepseek-api-key; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/sandbox/sandbox-local, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/sandbox/sandbox-windows-acl; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/session/tool-working-directory, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/session/working-directory; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/ssh/fs-ssh, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/ssh/ssh; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/subagent/subagent-spawn-in-process, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/subagent/tool-subagent; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/work/work-executors, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/work/work-store; /home/bud/Desktop/bud/hms-harness-335a82eb/vendor/cordis, /home/bud/Desktop/bud/hms-harness-335a82eb/vendor/include
+✓ Lockfile passes supply-chain policies (verified 1m ago)
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +1434
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 1434, reused 58, downloaded 0, added 0
+Progress: resolved 1434, reused 939, downloaded 0, added 0
+Packages are hard linked from the content-addressable store to the virtual store.
+  Content-addressable store is at: /home/bud/Desktop/bud/hms-harness-335a82eb/.task-state/pnpm-store/v11
+  Virtual store is at:             node_modules/.pnpm
+Progress: resolved 1434, reused 1429, downloaded 0, added 48
+Progress: resolved 1434, reused 1429, downloaded 0, added 195
+Progress: resolved 1434, reused 1429, downloaded 0, added 494
+Progress: resolved 1434, reused 1429, downloaded 0, added 741
+Progress: resolved 1434, reused 1429, downloaded 0, added 1216
+Progress: resolved 1434, reused 1429, downloaded 0, added 1434, done
+
+devDependencies:
++ @agentclientprotocol/sdk 1.4.0
++ @budmh/agent 0.2.1-rc.3 <- packages/core/agent
++ @budmh/browser-use 0.2.1-rc.3 <- packages/browser-use/browser-use
++ @budmh/computer-use 0.2.1-rc.3 <- packages/computer-use/computer-use
++ @budmh/cua 0.2.1-rc.3 <- packages/experimental/cua
++ @budmh/experimental-browser-use-chrome-devtools-mcp 0.2.1-rc.3 <- packages/experimental/browser-use-chrome-devtools-mcp
++ @budmh/experimental-browser-use-playwright-mcp 0.2.1-rc.3 <- packages/experimental/browser-use-playwright-mcp
++ @budmh/experimental-browser-use-runtime 0.2.1-rc.3 <- packages/experimental/browser-use-runtime
++ @budmh/experimental-browser-use-stagehand-native 0.2.1-rc.3 <- packages/experimental/browser-use-stagehand-native
++ @budmh/experimental-claude-code-mods 0.2.1-rc.3 <- packages/experimental/claude-code-mods
++ @budmh/experimental-computer-use-cua-driver-mcp 0.2.1-rc.3 <- packages/experimental/computer-use-cua-driver-mcp
++ @budmh/experimental-computer-use-cua-driver-native 0.2.1-rc.3 <- packages/experimental/computer-use-cua-driver-native
++ @budmh/experimental-cua-macos 0.2.1-rc.3 <- packages/experimental/cua-macos
++ @budmh/experimental-tool-worktree 0.2.1-rc.3 <- packages/experimental/tool-worktree
++ @budmh/experimental-worktree 0.2.1-rc.3 <- packages/experimental/worktree
++ @budmh/hooks-claude-code 0.2.1-rc.3 <- packages/hooks/hooks-claude-code
++ @budmh/hooks-codex 0.2.1-rc.3 <- packages/hooks/hooks-codex
++ @budmh/llm-replay 0.2.1-rc.3 <- packages/test-support/llm-replay
++ @budmh/mcp-client 0.2.1-rc.3 <- packages/mcp/mcp-client
++ @budmh/skill-office 0.2.1-rc.3 <- packages/skill/skill-office
++ @budmh/tool-ralph 0.2.1-rc.3 <- packages/experimental/tool-ralph
++ @budmh/tool-session-query 0.2.1-rc.3 <- packages/session-query/tool-session-query
++ @budmh/tool-terminal 0.2.1-rc.3 <- packages/terminal/tool-terminal
++ @budmh/tool-working-directory 0.2.1-rc.3 <- packages/session/tool-working-directory
++ @budmh/tool-workspace-dependencies 0.2.1-rc.3 <- packages/skill/tool-workspace-dependencies
++ @budmh/waav-fake 0.2.1-rc.3 <- packages/test-support/waav-fake
++ @budmh/web-fetch-http 0.2.1-rc.3 <- packages/web/web-fetch-http
++ @budmh/working-directory 0.2.1-rc.3 <- packages/session/working-directory
++ @stylistic/eslint-plugin 5.10.0
++ @testing-library/dom 10.4.2
++ @testing-library/react 16.3.3
++ @types/js-yaml 4.0.9
++ @types/jsdom 28.0.3
++ @types/mdast 4.0.4
++ @types/node 22.20.1
++ @types/papaparse 5.5.2
++ @types/react 18.3.31
++ @types/react-dom 18.3.7
++ @types/semver 7.8.0
++ @types/spdx-expression-parse 4.0.0
++ @types/ws 8.18.1
++ @vitest/coverage-v8 4.1.11
++ @yao-pkg/pkg 6.21.0
++ @yarnpkg/cli-dist 4.18.0
++ ajv 8.20.0
++ eslint-plugin-sonarjs 4.2.0
++ execa 10.0.1
++ extract-zip 2.0.1
++ fast-check 4.9.0
++ fflate 0.8.3
++ istanbul-lib-report 3.0.1
++ js-yaml 4.3.2
++ jscpd 5.1.2
++ jsdom 29.1.1
++ lefthook 2.1.12
++ lightningcss 1.33.0
++ mdast-util-from-markdown 2.0.3
++ mdast-util-gfm 3.1.0
++ mermaid 11.17.2
++ micromark-extension-gfm 3.0.0
++ oxlint 1.81.0
++ oxlint-tsgolint 7.0.2001
++ papaparse 5.5.3
++ pnpm 11.28.5
++ publint 0.3.24
++ semver 7.8.5
++ smol-toml 1.9.0
++ spdx-expression-parse 5.0.0
++ tar 7.5.22
++ tsdown 0.22.2
++ tsx 4.23.13
++ typescript 6.0.3
++ vite 8.2.2
++ vite-tsconfig-paths 6.1.1
++ vitest 4.1.11
++ ws 8.21.3
++ zod 4.6.6
+
+Done in 26.6s using pnpm v11.28.5

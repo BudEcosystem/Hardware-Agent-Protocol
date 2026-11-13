@@ -1,0 +1,52 @@
+{
+  "acquiredCodeExecuted": false,
+  "acquisitionManifestUnchanged": true,
+  "fullyReadExtractedLfLines": 403,
+  "fullyReadManuals": 3,
+  "localSources": [
+    {
+      "firstLine": 1,
+      "fullFileRead": true,
+      "lastLine": 55,
+      "path": "local-inputs/sys-prctl.h",
+      "sha256": "a76908ae4f9cc728b69720ede3630ed2df5462e85d03fe949b48f269ad3dade6"
+    },
+    {
+      "fullFileRead": false,
+      "path": "local-inputs/linux-prctl.h",
+      "readRanges": [
+        [
+          158,
+          159
+        ]
+      ],
+      "scope": "PR_SET_CHILD_SUBREAPER and PR_GET_CHILD_SUBREAPER definitions only",
+      "sha256": "6feff68eef81225d5885ed3dd6e0644b6ec4881591e219041fcec87a67040e42"
+    }
+  ],
+  "manuals": [
+    {
+      "firstLine": 1,
+      "fullExtractedManualRead": true,
+      "lastLine": 102,
+      "path": "text/PR_SET_CHILD_SUBREAPER.2const.txt",
+      "sha256": "45bd4b3c9715c5722dee6281e2f4060d104df51cc897d8329180f9f590bf99c9"
+    },
+    {
+      "firstLine": 1,
+      "fullExtractedManualRead": true,
+      "lastLine": 88,
+      "path": "text/PR_GET_CHILD_SUBREAPER.2const.txt",
+      "sha256": "36e0affb71d2283ecda776e05b0e995dfda869bf7ecb28ead976010dd75506c6"
+    },
+    {
+      "firstLine": 1,
+      "fullExtractedManualRead": true,
+      "lastLine": 213,
+      "path": "text/prctl.2.txt",
+      "sha256": "417da8f81572ee1445fc2555959d57cb781fdead45f7b8ea298c66d06d5d4415"
+    }
+  ],
+  "processProbeExecuted": false,
+  "scope": "Headings and every preformatted manual block; HTML navigation/footer chrome excluded. Local kernel header coverage is limited to the two subreaper constants."
+}

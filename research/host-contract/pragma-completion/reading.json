@@ -1,0 +1,94 @@
+{
+  "sourceUrl": "https://sqlite.org/pragma.html",
+  "retainedRaw": "../capacity-followup/raw/pragmas.html",
+  "rawSha256": "af75d7d7ab00c29e6eea98618cb1259a3919c308af60a6173215bf9798706034",
+  "retainedText": "../capacity-followup/text/pragmas.txt",
+  "textSha256": "d0bb67f0235ce56a61f6803cfe38ff9b19f1a9fa82577a48d6b5f25317b3a38e",
+  "totalLFLines": 2688,
+  "readRanges": [
+    [
+      1,
+      230
+    ],
+    [
+      231,
+      480
+    ],
+    [
+      481,
+      730
+    ],
+    [
+      731,
+      980
+    ],
+    [
+      981,
+      1230
+    ],
+    [
+      1231,
+      1480
+    ],
+    [
+      1481,
+      1730
+    ],
+    [
+      1731,
+      1980
+    ],
+    [
+      1981,
+      2105
+    ],
+    [
+      2106,
+      2230
+    ],
+    [
+      2231,
+      2400
+    ],
+    [
+      2401,
+      2540
+    ],
+    [
+      2541,
+      2688
+    ]
+  ],
+  "uniqueLinesRead": 2688,
+  "proseComplete": true,
+  "previousSelectedLines": 251,
+  "newlyCoveredUniqueLines": 2437,
+  "diagrams": [
+    {
+      "path": "diagrams/pragma-stmt.svg",
+      "bytes": 6469,
+      "sha256": "fcfda59e48ed1b967705fd9ebf0e364ae1d9289031bb6d1a72ab09b8f7c4998a",
+      "markupAndBranchPathsRead": true,
+      "renderedVisualInspection": false
+    },
+    {
+      "path": "diagrams/pragma-value.svg",
+      "bytes": 2810,
+      "sha256": "bc33a777c6816bafc38e8fd2f5f040eb49dd862f7d2a5c6d2c7e6ce23cddd2fb",
+      "markupAndBranchPathsRead": true,
+      "renderedVisualInspection": false
+    },
+    {
+      "path": "diagrams/signed-number.svg",
+      "bytes": 2745,
+      "sha256": "7c17b9f74a423a6e1302f23e1b61472800552cdde7fc5279450b24305b020cab",
+      "markupAndBranchPathsRead": true,
+      "renderedVisualInspection": false
+    }
+  ],
+  "decorativeBannerExcluded": true,
+  "linkedReferencesIncluded": false,
+  "acquiredContentExecuted": false,
+  "runtimeExperimentsPerformed": false,
+  "widerResearchComplete": false
+}

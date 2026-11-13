@@ -1,0 +1,83 @@
+{
+  "acquiredCodeExecuted": false,
+  "files": [
+    {
+      "path": "linux/fs/sync.c",
+      "readLineRanges": [
+        [
+          1,
+          381
+        ]
+      ],
+      "sha256": "516e815a08cfdbda55982158575ca16c0b8db2d1957435c54f99bd4a630206c8",
+      "status": "fully-read"
+    },
+    {
+      "path": "linux/fs/ext4/fsync.c",
+      "readLineRanges": [
+        [
+          1,
+          189
+        ]
+      ],
+      "sha256": "d23ce1fbcac09b4e04484af0502f6bbfcabca50144d6e63443ecbc37fd769452",
+      "status": "fully-read"
+    },
+    {
+      "path": "linux/mm/filemap.c",
+      "readLineRanges": [
+        [
+          335,
+          805
+        ]
+      ],
+      "sha256": "3f53e66b1d6d764fd7d995892ce8465752f8e175d35b8e3e1d86182cd959df4e",
+      "status": "partial"
+    },
+    {
+      "path": "linux/Documentation/filesystems/ext4/journal.rst",
+      "readLineRanges": [
+        [
+          1,
+          761
+        ]
+      ],
+      "sha256": "ae23e8ec62ae06fac5a14226a1bdaa4d1b7276aaeefd1c25a1ce1d98739bbbf2",
+      "status": "fully-read"
+    },
+    {
+      "path": "man-pages/man/man2/fsync.2",
+      "readLineRanges": [
+        [
+          1,
+          198
+        ]
+      ],
+      "sha256": "661752cb3565840a1836f61a33c2fa6056e7e09af2ce030e2e405783cfb5d399",
+      "status": "fully-read"
+    },
+    {
+      "path": "glibc/sysdeps/unix/sysv/linux/fsync.c",
+      "readLineRanges": [
+        [
+          1,
+          29
+        ]
+      ],
+      "sha256": "6c2ef9e9e33e3ddb0d70666daf30999330d906f645e9b7119d282926e1ce5578",
+      "status": "fully-read"
+    },
+    {
+      "path": "glibc/sysdeps/unix/sysv/linux/sync_file_range.c",
+      "readLineRanges": [
+        [
+          1,
+          33
+        ]
+      ],
+      "sha256": "ad2b9d00186f3caf2cc3c1170b4290635ada95b06f1cb79cf73f023bf4172704",
+      "status": "fully-read"
+    }
+  ],
+  "fullRepositoryRead": false
+}

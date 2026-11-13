@@ -1,0 +1,116 @@
+[
+  {
+    "id": "bluesky",
+    "url": "https://github.com/bluesky/bluesky",
+    "path": "repos/bluesky",
+    "commit": "5e1423146939ced25413caea4058369bb2537390",
+    "acquired_at": "2026-11-05T21:57:50.838593+00:00",
+    "acquisition": "shallow checkout, no recursive submodules, no third-party execution",
+    "reading_status": "selected_files_only",
+    "inspected_files": [
+      {
+        "path": "src/bluesky/protocols.py",
+        "sha256": "535c426b4fc778fddbf43a429d659ec75f908b3e55e70b25945f9af6a56d31df",
+        "reading_status": "full_file_read",
+        "line_count": 532,
+        "read_lines": [
+          [
+            1,
+            532
+          ]
+        ]
+      },
+      {
+        "path": "src/bluesky/run_engine.py",
+        "sha256": "aac56bfaa12a7ebe772c50073cabfa9bb3c688da5e66aeafb74e0b37b413934e",
+        "reading_status": "selected_sections_read",
+        "line_count": 2898,
+        "read_lines": [
+          [
+            820,
+            882
+          ],
+          [
+            1028,
+            1054
+          ],
+          [
+            1450,
+            1495
+          ],
+          [
+            2223,
+            2370
+          ],
+          [
+            2430,
+            2500
+          ],
+          [
+            2580,
+            2610
+          ]
+        ]
+      }
+    ]
+  },
+  {
+    "id": "labop",
+    "url": "https://github.com/Bioprotocols/labop",
+    "path": "repos/labop",
+    "commit": "2e2bd88150c71a440771fd369f40295dfd622324",
+    "acquired_at": "2026-11-05T21:57:50.838593+00:00",
+    "acquisition": "shallow checkout, no recursive submodules, no third-party execution",
+    "reading_status": "selected_files_only",
+    "inspected_files": [
+      {
+        "path": "labop/execution/lab_interface.py",
+        "sha256": "744dee3fc326cda999f4a7037922c0b23a1c5dca053bdd52deeb6b74646fbf67",
+        "reading_status": "full_file_read",
+        "line_count": 53,
+        "read_lines": [
+          [
+            1,
+            53
+          ]
+        ]
+      },
+      {
+        "path": "labop/sample_map.py",
+        "sha256": "d8d0d8bc34e7b246f42495c16cf487f580a59a6ec6dc2786ffa93fa65ded3c9e",
+        "reading_status": "full_file_read",
+        "line_count": 35,
+        "read_lines": [
+          [
+            1,
+            35
+          ]
+        ]
+      },
+      {
+        "path": "labop/sample_collection.py",
+        "sha256": "f5531ebeafe25e5d47c3e7977988a8236b9a60831a53bdb0853075f63b5a897b",
+        "reading_status": "full_file_read",
+        "line_count": 18,
+        "read_lines": [
+          [
+            1,
+            18
+          ]
+        ]
+      },
+      {
+        "path": "labop/sample_mask.py",
+        "sha256": "0250f91d59faf8ac42835ff21e7d7f00a295e5c2208c06cff40febae069fbbd1",
+        "reading_status": "full_file_read",
+        "line_count": 110,
+        "read_lines": [
+          [
+            1,
+            110
+          ]
+        ]
+      }
+    ]
+  }
+]

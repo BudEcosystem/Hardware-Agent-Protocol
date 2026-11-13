@@ -1,0 +1,11 @@
+{
+  "recorded_at_utc": "2026-11-06T02:51:03.956380+00:00",
+  "passed": true,
+  "hash_assertions": 273,
+  "unique_files": 236,
+  "scope": "Exact source/export/fixture/receipt consistency at finalization. No behavior rerun, no device or target execution. Latest16-pass result retains unresolved prior DEVICE_UNAVAILABLE refusal.",
+  "runtime_280_snapshot_index": {
+    "path": "artifacts/verification/runtime-280-snapshot/index.json",
+    "sha256": "c9d8521ceacd18250755504a018c77ca56169b2e706a019b35bb925b90c18c73"
+  }
+}

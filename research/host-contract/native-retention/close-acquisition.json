@@ -1,0 +1,39 @@
+{
+  "id": "close",
+  "requestedUrl": "https://man7.org/linux/man-pages/man2/close.2.html",
+  "finalUrl": "https://man7.org/linux/man-pages/man2/close.2.html",
+  "acquiredUnixNs": 1794167028612336723,
+  "headers": {
+    "Date": "Sun, 08 Nov 2026 19:43:48 GMT",
+    "Server": "Apache/2.4.58 (Ubuntu)",
+    "Last-Modified": "Mon, 02 Nov 2026 20:20:30 GMT",
+    "ETag": "\"499d-65f50e092bf80\"",
+    "Accept-Ranges": "bytes",
+    "Content-Length": "18845",
+    "Vary": "Accept-Encoding",
+    "Connection": "close",
+    "Content-Type": "text/html"
+  },
+  "rawPath": "raw/close.html",
+  "rawBytes": 18845,
+  "rawSha256": "20eea30e262be7d46294160b5ddbc90048e8185a4766276b15119365207d64c3",
+  "textPath": "text/close.txt",
+  "textBytes": 7797,
+  "textSha256": "bce90baaa9aa90ce9247b99f985ebd3ff1b0f18448d93946aa7d6e799c495a30",
+  "lfLines": 185,
+  "surroundingPath": "surrounding/close.txt",
+  "surroundingSha256": "19d865b4c4cadd3c59eab12fee4bb5c8244718bcddae5e4cbf1ecd4966644cf7",
+  "images": [
+    {
+      "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+      "alt": "Cover of TLPI"
+    },
+    {
+      "class": "statcounter",
+      "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+      "alt": "Web Analytics Made Easy -\nStatCounter"
+    }
+  ],
+  "readingStatus": "unread",
+  "acquiredCodeExecuted": false
+}

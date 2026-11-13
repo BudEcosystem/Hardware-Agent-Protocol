@@ -1,0 +1,13 @@
+{
+  "scope": "Selected built entrypoints used by SDK/profile and package-export smoke tests, not a complete inventory of331client artifacts.",
+  "sha256": {
+    "apps/cli/lib/bin.js": "2a8dd4753636204b909d42d3f0c1cc1621350315dc0eff870016d79d0ce44c4a",
+    "packages/sdk/client/lib/index.js": "6b47d6e0728ebc529f1ba5e3323e04cb2e1e9eb31c567c695591ad5990012ff6",
+    "packages/llm/llm/lib/index.js": "16544d5e34d9e0abcf64494a3c503160a4ce0c1aca22a5ccbb3f1705d4a1b652",
+    "vendor/schemastery/lib/index.mjs": "86bb31d55ef911af6b5318951caaba409791b5ab28f49e9dfa56064c94679a2c",
+    "packages/experimental/hardware/lib/index.js": "630a3c7d8b43bb1d66c958f84a2485d0edcabea5f916661eca8df404e65e6045",
+    "packages/experimental/hardware-hms/lib/index.js": "6c283cc18c0ef838f8f7a7ac02d293dd69e7f1dc895dbfd977565afab5c3b2a3",
+    "packages/experimental/hardware-profile/lib/index.js": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
+    "packages/experimental/tool-hardware/lib/index.js": "e351c16e303aa495a14f262abf3548ae42bec54de9e34209171bcce086850d52"
+  }
+}

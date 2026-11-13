@@ -1,0 +1,61 @@
+7.25 NotificationData parameters
+
+7.25.1 Overview
+
+The NotificationMessage structure used in the Subscription Service set allows specifying different types of NotificationData. The NotificationData parameter is an extensible parameter whose structure depends on the type of Notification being sent. This parameter is defined in Table 160. Other types can be defined by additional parts of OPC 10000 or other specifications based on OPC UA. The ExtensibleParameter type is defined in 7.17.
+
+There may be multiple notifications for a single MonitoredItem in a single NotificationData structure. When that happens the Server shall ensure the notifications appear in the same order that they were queued in the MonitoredItem. These notifications do not need to appear as a contiguous block.
+
+Table 160 - NotificationData parameterTypeIds
+Symbolic Id,Description
+DataChange,Notification data parameter used for data change Notifications.
+Event,Notification data parameter used for Event Notifications.
+StatusChange,Notification data parameter used for Subscription status change Notifications.
+
+7.25.2 DataChangeNotification parameter
+
+
+            Table 161 defines the NotificationData parameter used for data change notifications. This structure contains the monitored data items that are to be reported. Monitored data items are reported under two conditions:
+
+1. if the MonitoringMode is set to REPORTING and a change in value or its status (represented by its StatusCode) is detected;
+2. if the MonitoringMode is set to SAMPLING, the MonitoredItem is linked to a triggering item and the triggering item triggers.
+
+See 5.13 for a description of the MonitoredItem Service set, and in particular the MonitoredItem model and the Triggering model.
+
+After creating a MonitoredItem, the current value or status of the monitored Attribute shall be queued without applying the filter. If the current value is not available after the first sampling interval the first Notification shall be queued after getting the initial value or status from the data source.
+
+Table 161 - DataChangeNotification
+Name,Type,Description
+DataChangeNotification,structure,Data change Notification data.
+monitoredItems [],MonitoredItem Notification,The list of MonitoredItems for which a change has been detected. This structure is defined in-line with the following indented items.
+clientHandle,IntegerId,Client-supplied handle for the MonitoredItem. The IntegerId type is defined in 7.19
+Value,DataValue,"The StatusCode, value and timestamp(s) of the monitored Attribute depending on the sampling and queuing configuration. If the StatusCode indicates an error then the value is to be ignored. If not every detected change has been returned since the Server's queue buffer for the MonitoredItem reached its limit and had to purge out data and the size of the queue is larger than one, the Overflow bit in the DataValue InfoBits of the statusCode is set.                        DataValue is a common type defined in 7.11."
+diagnosticInfos [],DiagnosticInfo,List of diagnostic information. The size and order of this list matches the size and order of the monitoredItems parameter. There is one entry in this list for each Node contained in the monitoredItems parameter. This list is empty if diagnostics information was not requested or is not available for any of the MonitoredItems. DiagnosticInfo is a common type defined in 7.12.
+
+7.25.3 EventNotificationList parameter
+
+
+            Table 162 defines the NotificationData parameter used for Event notifications.
+
+The EventNotificationList defines a table structure that is used to return Event fields to a Client Subscription. The structure is in the form of a table consisting of one or more Events, each containing an array of one or more fields. The selection and order of the fields returned for each Event is identical to the selected parameter of the EventFilter.
+
+Table 162 - EventNotificationList
+Name,Type,Description
+EventNotificationList,structure,Event Notification data.
+events [],EventFieldList,The list of Events being delivered. This structure is defined in-line with the following indented items.
+clientHandle,IntegerId,Client-supplied handle for the MonitoredItem. The IntegerId type is defined in 7.19.
+eventFields [],BaseDataType,List of selected Event fields. This shall be a one to one match with the fields selected in the EventFilter.                        7.22.3 specifies how the Server shall deal with error conditions.
+
+7.25.4 StatusChangeNotification parameter
+
+
+            Table 163 defines the NotificationData parameter used for a StatusChangeNotification.
+
+The StatusChangeNotification informs the Client about a change in the status of a Subscription.
+
+Table 163 - StatusChangeNotification
+Name,Type,Description
+StatusChangeNotification,structure,Event Notification data
+status,StatusCode,The StatusCode that indicates the status change.
+diagnosticInfo,DiagnosticInfo,Diagnostic information for the status change
+

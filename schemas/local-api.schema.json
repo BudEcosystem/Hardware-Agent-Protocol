@@ -1,0 +1,3282 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/hms/schema/local-api/0.1",
+  "title": "Experimental HMS local API",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/request"
+    },
+    {
+      "$ref": "#/$defs/response"
+    }
+  ],
+  "$comment": "All references are local. Host JSON byte/tree/numeric limits and method-specific semantic checks also apply.",
+  "$defs": {
+    "id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])"
+    },
+    "tick": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 9007199254740991
+    },
+    "intent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "instanceId",
+        "endpointSession",
+        "controlGeneration",
+        "actionId",
+        "descriptionDigest",
+        "bindingGeneration",
+        "calibrationRevision",
+        "arguments",
+        "timing",
+        "requiredEffect"
+      ],
+      "properties": {
+        "instanceId": {
+          "$ref": "#/$defs/id"
+        },
+        "endpointSession": {
+          "$ref": "#/$defs/id"
+        },
+        "controlGeneration": {
+          "$ref": "#/$defs/id"
+        },
+        "actionId": {
+          "$ref": "#/$defs/id"
+        },
+        "descriptionDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+        },
+        "bindingGeneration": {
+          "$ref": "#/$defs/id"
+        },
+        "calibrationRevision": {
+          "$ref": "#/$defs/id"
+        },
+        "arguments": {
+          "type": "object"
+        },
+        "requiredEffect": {
+          "enum": [
+            "capability_completion",
+            "physical_verified"
+          ]
+        },
+        "timing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "notBeforeUnixMs",
+            "latestStartUnixMs",
+            "maxRunMs",
+            "latestCompletionUnixMs"
+          ],
+          "properties": {
+            "notBeforeUnixMs": {
+              "$ref": "#/$defs/tick"
+            },
+            "latestStartUnixMs": {
+              "$ref": "#/$defs/tick"
+            },
+            "latestCompletionUnixMs": {
+              "$ref": "#/$defs/tick"
+            },
+            "maxRunMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4294967295
+            }
+          }
+        }
+      }
+    },
+    "invoke": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "protocol",
+        "replayNamespace",
+        "operationKey",
+        "intent"
+      ],
+      "properties": {
+        "protocol": {
+          "const": "hms.invoke/0.1"
+        },
+        "replayNamespace": {
+          "$ref": "#/$defs/id"
+        },
+        "operationKey": {
+          "$ref": "#/$defs/id"
+        },
+        "intent": {
+          "$ref": "#/$defs/intent"
+        }
+      }
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+    },
+    "positive": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9007199254740991
+    },
+    "evidenceKind": {
+      "enum": [
+        "physical_sensor",
+        "controller_measurement",
+        "command_echo",
+        "estimate",
+        "simulation"
+      ]
+    },
+    "clock": {
+      "type": "object",
+      "properties": {
+        "clockDomain": {
+          "$ref": "#/$defs/id"
+        },
+        "clockEpoch": {
+          "$ref": "#/$defs/id"
+        },
+        "ticksMs": {
+          "$ref": "#/$defs/tick"
+        }
+      },
+      "required": [
+        "clockDomain",
+        "clockEpoch",
+        "ticksMs"
+      ],
+      "additionalProperties": false
+    },
+    "uncertainty": {
+      "type": "object",
+      "properties": {
+        "absolute": {
+          "type": "number",
+          "minimum": 0
+        },
+        "unit": {
+          "$ref": "#/$defs/id"
+        },
+        "method": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "absolute",
+        "unit",
+        "method"
+      ],
+      "additionalProperties": false
+    },
+    "observation": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "hms.observation/0.1"
+        },
+        "instanceId": {
+          "$ref": "#/$defs/id"
+        },
+        "propertyId": {
+          "$ref": "#/$defs/id"
+        },
+        "value": {},
+        "unit": {
+          "$ref": "#/$defs/id"
+        },
+        "frame": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "evidenceKind": {
+          "$ref": "#/$defs/evidenceKind"
+        },
+        "source": {
+          "$ref": "#/$defs/id"
+        },
+        "quality": {
+          "enum": [
+            "valid",
+            "stale",
+            "invalid",
+            "unknown"
+          ]
+        },
+        "streamEpoch": {
+          "$ref": "#/$defs/id"
+        },
+        "sequence": {
+          "$ref": "#/$defs/tick"
+        },
+        "endpointSession": {
+          "$ref": "#/$defs/id"
+        },
+        "controlGeneration": {
+          "$ref": "#/$defs/id"
+        },
+        "bindingGeneration": {
+          "$ref": "#/$defs/id"
+        },
+        "calibrationRevision": {
+          "$ref": "#/$defs/id"
+        },
+        "acquisition": {
+          "$ref": "#/$defs/clock"
+        },
+        "receipt": {
+          "$ref": "#/$defs/clock"
+        },
+        "acquisitionLatencyBoundMs": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/tick"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "clockUncertaintyMs": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/tick"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "measurementUncertainty": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/uncertainty"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "ageUpperBoundMs": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/tick"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "protocol",
+        "instanceId",
+        "propertyId",
+        "value",
+        "unit",
+        "frame",
+        "evidenceKind",
+        "source",
+        "quality",
+        "streamEpoch",
+        "sequence",
+        "endpointSession",
+        "controlGeneration",
+        "bindingGeneration",
+        "calibrationRevision",
+        "acquisition",
+        "receipt",
+        "acquisitionLatencyBoundMs",
+        "clockUncertaintyMs",
+        "measurementUncertainty",
+        "ageUpperBoundMs"
+      ],
+      "additionalProperties": false
+    },
+    "operation": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "hms.operation/0.1"
+        },
+        "operationId": {
+          "$ref": "#/$defs/id"
+        },
+        "requestDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+        },
+        "instanceId": {
+          "$ref": "#/$defs/id"
+        },
+        "actionId": {
+          "$ref": "#/$defs/id"
+        },
+        "executionState": {
+          "enum": [
+            "accepted",
+            "dispatching",
+            "running",
+            "outcome_unknown",
+            "completed",
+            "failed",
+            "canceled",
+            "rejected_before_dispatch",
+            "rejected_before_start"
+          ]
+        },
+        "cancellationState": {
+          "enum": [
+            "not_requested",
+            "requested",
+            "acknowledged",
+            "rejected",
+            "confirmed"
+          ]
+        },
+        "effectVerification": {
+          "enum": [
+            "unverified",
+            "verified",
+            "failed",
+            "disputed"
+          ]
+        },
+        "mayHaveActed": {
+          "type": "boolean"
+        },
+        "eventSequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "resourceClaims": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "resource": {
+                "$ref": "#/$defs/id"
+              },
+              "fence": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 9007199254740991
+              }
+            },
+            "required": [
+              "resource",
+              "fence"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 32
+        },
+        "result": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "evidenceKind": {
+                  "enum": [
+                    "sensor",
+                    "controller",
+                    "simulation"
+                  ]
+                },
+                "output": {
+                  "type": "object"
+                }
+              },
+              "required": [
+                "evidenceKind",
+                "output"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "protocol",
+        "operationId",
+        "requestDigest",
+        "instanceId",
+        "actionId",
+        "executionState",
+        "cancellationState",
+        "effectVerification",
+        "mayHaveActed",
+        "eventSequence",
+        "resourceClaims",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "presence": {
+      "type": "object",
+      "properties": {
+        "session": {
+          "$ref": "#/$defs/id"
+        },
+        "expires_ms": {
+          "$ref": "#/$defs/tick"
+        }
+      },
+      "required": [
+        "session",
+        "expires_ms"
+      ],
+      "additionalProperties": false
+    },
+    "inventoryItem": {
+      "type": "object",
+      "properties": {
+        "instanceId": {
+          "$ref": "#/$defs/id"
+        },
+        "descriptionDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+        },
+        "identityKind": {
+          "enum": [
+            "simulation",
+            "gateway",
+            "device"
+          ]
+        },
+        "retired": {
+          "type": "boolean"
+        },
+        "bindingGeneration": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bindingActive": {
+          "type": "boolean"
+        },
+        "presence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/presence"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "instanceId",
+        "descriptionDigest",
+        "identityKind",
+        "retired",
+        "bindingGeneration",
+        "bindingActive",
+        "presence"
+      ],
+      "additionalProperties": false
+    },
+    "discovery": {
+      "type": "object",
+      "properties": {
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/inventoryItem"
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "registryRevision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "items",
+        "cursor",
+        "registryRevision"
+      ],
+      "additionalProperties": false
+    },
+    "valueSchema": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "enum": [
+            "object",
+            "array",
+            "string",
+            "number",
+            "integer",
+            "boolean",
+            "null"
+          ]
+        },
+        "properties": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/id"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/valueSchema"
+          },
+          "minProperties": 0,
+          "maxProperties": 64
+        },
+        "required": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 0,
+          "maxItems": 64
+        },
+        "additionalProperties": {
+          "const": false
+        },
+        "items": {
+          "$ref": "#/$defs/valueSchema"
+        },
+        "minItems": {
+          "$ref": "#/$defs/tick"
+        },
+        "maxItems": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 256
+        },
+        "minimum": {
+          "type": "number"
+        },
+        "maximum": {
+          "type": "number"
+        },
+        "enum": {
+          "type": "array"
+        },
+        "const": {},
+        "minLength": {
+          "$ref": "#/$defs/tick"
+        },
+        "maxLength": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 4096
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "object"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "properties",
+              "required",
+              "additionalProperties"
+            ],
+            "properties": {
+              "items": false,
+              "minItems": false,
+              "maxItems": false,
+              "minimum": false,
+              "maximum": false,
+              "minLength": false,
+              "maxLength": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "array"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "items",
+              "maxItems"
+            ],
+            "properties": {
+              "properties": false,
+              "required": false,
+              "additionalProperties": false,
+              "minimum": false,
+              "maximum": false,
+              "minLength": false,
+              "maxLength": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "string"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "maxLength"
+            ],
+            "properties": {
+              "properties": false,
+              "required": false,
+              "additionalProperties": false,
+              "items": false,
+              "minItems": false,
+              "maxItems": false,
+              "minimum": false,
+              "maximum": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "number"
+              }
+            }
+          },
+          "then": {
+            "required": [],
+            "properties": {
+              "properties": false,
+              "required": false,
+              "additionalProperties": false,
+              "items": false,
+              "minItems": false,
+              "maxItems": false,
+              "minLength": false,
+              "maxLength": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "integer"
+              }
+            }
+          },
+          "then": {
+            "required": [],
+            "properties": {
+              "properties": false,
+              "required": false,
+              "additionalProperties": false,
+              "items": false,
+              "minItems": false,
+              "maxItems": false,
+              "minLength": false,
+              "maxLength": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "boolean"
+              }
+            }
+          },
+          "then": {
+            "required": [],
+            "properties": {
+              "properties": false,
+              "required": false,
+              "additionalProperties": false,
+              "items": false,
+              "minItems": false,
+              "maxItems": false,
+              "minimum": false,
+              "maximum": false,
+              "minLength": false,
+              "maxLength": false
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "null"
+              }
+            }
+          },
+          "then": {
+            "required": [],
+            "properties": {
+              "properties": false,
+              "required": false,
+              "additionalProperties": false,
+              "items": false,
+              "minItems": false,
+              "maxItems": false,
+              "minimum": false,
+              "maximum": false,
+              "minLength": false,
+              "maxLength": false
+            }
+          }
+        }
+      ]
+    },
+    "propertyContract": {
+      "type": "object",
+      "properties": {
+        "schema": {
+          "$ref": "#/$defs/valueSchema"
+        },
+        "unit": {
+          "$ref": "#/$defs/id"
+        },
+        "frame": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "schema",
+        "unit",
+        "frame"
+      ],
+      "additionalProperties": false
+    },
+    "actionContract": {
+      "type": "object",
+      "properties": {
+        "inputSchema": {
+          "$ref": "#/$defs/valueSchema"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 1,
+          "maxItems": 32
+        },
+        "effect": {
+          "$ref": "#/$defs/id"
+        },
+        "maxRunMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4294967295
+        },
+        "preconditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "property": {
+                "$ref": "#/$defs/id"
+              },
+              "equals": {},
+              "maxAgeMs": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 600000
+              },
+              "evidenceKind": {
+                "$ref": "#/$defs/evidenceKind"
+              }
+            },
+            "required": [
+              "property",
+              "equals",
+              "maxAgeMs",
+              "evidenceKind"
+            ],
+            "additionalProperties": false
+          },
+          "minItems": 0,
+          "maxItems": 32
+        },
+        "completionEvidence": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "controller",
+              "sensor",
+              "simulation"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "inputSchema",
+        "resources",
+        "effect",
+        "maxRunMs",
+        "preconditions",
+        "completionEvidence"
+      ],
+      "additionalProperties": false
+    },
+    "executionContract": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "const": "hms.execution-contract/0.1"
+        },
+        "requiredFeatures": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "binding-generations/1",
+              "durable-operations/1",
+              "host-invoke/0.1",
+              "physical-evidence/1"
+            ]
+          },
+          "minItems": 4,
+          "maxItems": 4,
+          "uniqueItems": true
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 1,
+          "maxItems": 16
+        },
+        "properties": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/id"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/propertyContract"
+          },
+          "minProperties": 1,
+          "maxProperties": 32
+        },
+        "actions": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/id"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/actionContract"
+          },
+          "minProperties": 1,
+          "maxProperties": 32
+        }
+      },
+      "required": [
+        "profile",
+        "requiredFeatures",
+        "capabilities",
+        "properties",
+        "actions"
+      ],
+      "additionalProperties": false
+    },
+    "typeBundle": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "const": "hms.type-bundle/0.1"
+        },
+        "td": {
+          "type": "object"
+        },
+        "execution": {
+          "$ref": "#/$defs/executionContract"
+        }
+      },
+      "required": [
+        "profile",
+        "td",
+        "execution"
+      ],
+      "additionalProperties": false
+    },
+    "binding": {
+      "type": "object",
+      "properties": {
+        "profile": {
+          "const": "hms.binding/0.1"
+        },
+        "instanceId": {
+          "$ref": "#/$defs/id"
+        },
+        "generation": {
+          "$ref": "#/$defs/id"
+        },
+        "typeDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+        },
+        "calibrationRevision": {
+          "$ref": "#/$defs/id"
+        },
+        "controlGeneration": {
+          "$ref": "#/$defs/id"
+        },
+        "mode": {
+          "enum": [
+            "simulation",
+            "uncommissioned"
+          ]
+        },
+        "adapterId": {
+          "$ref": "#/$defs/id"
+        },
+        "resourceMap": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/id"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/id"
+          },
+          "minProperties": 1,
+          "maxProperties": 1024
+        },
+        "argumentSchemas": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/id"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/valueSchema"
+          },
+          "minProperties": 1,
+          "maxProperties": 32
+        }
+      },
+      "required": [
+        "profile",
+        "instanceId",
+        "generation",
+        "typeDigest",
+        "calibrationRevision",
+        "controlGeneration",
+        "mode",
+        "adapterId",
+        "resourceMap",
+        "argumentSchemas"
+      ],
+      "additionalProperties": false
+    },
+    "instance": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/id"
+        },
+        "deployment": {
+          "$ref": "#/$defs/id"
+        },
+        "type_digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+        },
+        "identity_kind": {
+          "enum": [
+            "simulation",
+            "gateway",
+            "device"
+          ]
+        },
+        "identity_ref": {
+          "$ref": "#/$defs/id"
+        },
+        "retired": {
+          "type": "integer",
+          "enum": [
+            0,
+            1
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "deployment",
+        "type_digest",
+        "identity_kind",
+        "identity_ref",
+        "retired"
+      ],
+      "additionalProperties": false
+    },
+    "description": {
+      "type": "object",
+      "properties": {
+        "instance": {
+          "$ref": "#/$defs/instance"
+        },
+        "descriptionDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+        },
+        "type": {
+          "$ref": "#/$defs/typeBundle"
+        },
+        "binding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/binding"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "bindingActive": {
+          "type": "boolean"
+        },
+        "presence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/presence"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "registryRevision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        }
+      },
+      "required": [
+        "instance",
+        "descriptionDigest",
+        "type",
+        "binding",
+        "bindingActive",
+        "presence",
+        "registryRevision"
+      ],
+      "additionalProperties": false
+    },
+    "namespace": {
+      "type": "object",
+      "properties": {
+        "token": {
+          "$ref": "#/$defs/id"
+        },
+        "epoch": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "expiresUnixMs": {
+          "$ref": "#/$defs/tick"
+        },
+        "authorityId": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "token",
+        "epoch",
+        "expiresUnixMs",
+        "authorityId"
+      ],
+      "additionalProperties": false
+    },
+    "prepared": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/$defs/invoke"
+        },
+        "requestDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+        },
+        "admitted": {
+          "const": false
+        }
+      },
+      "required": [
+        "request",
+        "requestDigest",
+        "admitted"
+      ],
+      "additionalProperties": false
+    },
+    "evidence": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "enum": [
+            "sensor",
+            "controller",
+            "simulation",
+            "runtime"
+          ]
+        },
+        "source": {
+          "$ref": "#/$defs/id"
+        },
+        "reference": {
+          "$ref": "#/$defs/id"
+        },
+        "assertions": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "running",
+              "completed",
+              "failed",
+              "terminated",
+              "cancel_ack",
+              "resources_quiescent",
+              "physical_verified",
+              "verification_failed",
+              "disputed",
+              "start_excluded"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 32
+        }
+      },
+      "required": [
+        "kind",
+        "source",
+        "reference",
+        "assertions"
+      ],
+      "additionalProperties": false
+    },
+    "event": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "operation_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "accepted"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "digest": {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+                }
+              },
+              "required": [
+                "digest"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "operation_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "dispatch_claimed"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "attemptId": {
+                  "$ref": "#/$defs/id"
+                },
+                "ownerEpoch": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "attemptId",
+                "ownerEpoch"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "operation_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "execution_evidence"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "enum": [
+                    "running",
+                    "completed",
+                    "failed",
+                    "canceled",
+                    "rejected_before_start"
+                  ]
+                },
+                "evidence": {
+                  "$ref": "#/$defs/evidence"
+                }
+              },
+              "required": [
+                "state",
+                "evidence"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "operation_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "reconciled"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "enum": [
+                    "running",
+                    "completed",
+                    "failed",
+                    "canceled",
+                    "rejected_before_start"
+                  ]
+                },
+                "evidence": {
+                  "$ref": "#/$defs/evidence"
+                }
+              },
+              "required": [
+                "state",
+                "evidence"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "operation_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "canceled_before_dispatch"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "proof": {
+                  "const": "exclusive_accepted_state"
+                }
+              },
+              "required": [
+                "proof"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "operation_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "cancel_requested"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "operation_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "cancel_ack"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "accepted": {
+                  "type": "boolean"
+                },
+                "evidence": {
+                  "$ref": "#/$defs/evidence"
+                }
+              },
+              "required": [
+                "accepted",
+                "evidence"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "operation_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "resources_released"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "evidence": {
+                  "$ref": "#/$defs/evidence"
+                }
+              },
+              "required": [
+                "evidence"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "operation_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "evidence_dispute"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "evidence": {
+                  "$ref": "#/$defs/evidence"
+                }
+              },
+              "required": [
+                "evidence"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "operation_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "recovery_unknown"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "reason": {
+                  "$ref": "#/$defs/id"
+                }
+              },
+              "required": [
+                "reason"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "operation_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "outcome_unknown"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "reason": {
+                  "$ref": "#/$defs/id"
+                }
+              },
+              "required": [
+                "reason"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "operation_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "operation_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "rejected_before_dispatch"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "reason": {
+                  "$ref": "#/$defs/id"
+                }
+              },
+              "required": [
+                "reason"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "operation_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "events": {
+      "type": "object",
+      "properties": {
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/event"
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "next": {
+          "$ref": "#/$defs/tick"
+        },
+        "head": {
+          "$ref": "#/$defs/tick"
+        },
+        "gap": {
+          "const": false
+        }
+      },
+      "required": [
+        "events",
+        "next",
+        "head",
+        "gap"
+      ],
+      "additionalProperties": false
+    },
+    "procedureTiming": {
+      "type": "object",
+      "properties": {
+        "notBeforeUnixMs": {
+          "$ref": "#/$defs/tick"
+        },
+        "latestStartUnixMs": {
+          "$ref": "#/$defs/tick"
+        },
+        "latestCompletionUnixMs": {
+          "$ref": "#/$defs/tick"
+        }
+      },
+      "required": [
+        "notBeforeUnixMs",
+        "latestStartUnixMs",
+        "latestCompletionUnixMs"
+      ],
+      "additionalProperties": false
+    },
+    "procedureRequest": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "hms.procedure/0.1"
+        },
+        "replayNamespace": {
+          "$ref": "#/$defs/id"
+        },
+        "procedureKey": {
+          "$ref": "#/$defs/id"
+        },
+        "procedure": {
+          "type": "object",
+          "properties": {
+            "profile": {
+              "const": "hms.bound-sequence/0.1"
+            },
+            "timing": {
+              "$ref": "#/$defs/procedureTiming"
+            },
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "stepId": {
+                    "$ref": "#/$defs/id"
+                  },
+                  "request": {
+                    "$ref": "#/$defs/invoke"
+                  }
+                },
+                "required": [
+                  "stepId",
+                  "request"
+                ],
+                "additionalProperties": false
+              },
+              "minItems": 1,
+              "maxItems": 16
+            }
+          },
+          "required": [
+            "profile",
+            "timing",
+            "steps"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "protocol",
+        "replayNamespace",
+        "procedureKey",
+        "procedure"
+      ],
+      "additionalProperties": false
+    },
+    "procedureState": {
+      "enum": [
+        "accepted",
+        "running",
+        "interrupted",
+        "completed",
+        "failed",
+        "canceled",
+        "expired"
+      ]
+    },
+    "procedureStep": {
+      "type": "object",
+      "properties": {
+        "stepId": {
+          "$ref": "#/$defs/id"
+        },
+        "ordinal": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 15
+        },
+        "requestDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+        },
+        "operationId": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "executionState": {
+          "enum": [
+            "unstarted",
+            "accepted",
+            "dispatching",
+            "running",
+            "outcome_unknown",
+            "completed",
+            "failed",
+            "canceled",
+            "rejected_before_dispatch",
+            "rejected_before_start"
+          ]
+        },
+        "cancellationState": {
+          "enum": [
+            "not_requested",
+            "requested",
+            "acknowledged",
+            "rejected",
+            "confirmed"
+          ]
+        },
+        "effectVerification": {
+          "enum": [
+            "unverified",
+            "verified",
+            "failed",
+            "disputed"
+          ]
+        },
+        "mayHaveActed": {
+          "type": "boolean"
+        },
+        "heldResources": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 32
+        },
+        "eventSequence": {
+          "$ref": "#/$defs/tick"
+        }
+      },
+      "required": [
+        "stepId",
+        "ordinal",
+        "requestDigest",
+        "operationId",
+        "executionState",
+        "cancellationState",
+        "effectVerification",
+        "mayHaveActed",
+        "heldResources",
+        "eventSequence"
+      ],
+      "additionalProperties": false
+    },
+    "procedureStatus": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "hms.procedure-status/0.1"
+        },
+        "procedureId": {
+          "$ref": "#/$defs/id"
+        },
+        "requestDigest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+        },
+        "profile": {
+          "const": "hms.bound-sequence/0.1"
+        },
+        "executionState": {
+          "$ref": "#/$defs/procedureState"
+        },
+        "cancelRequested": {
+          "type": "boolean"
+        },
+        "cancelBlockedCode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "timing": {
+          "$ref": "#/$defs/procedureTiming"
+        },
+        "cursor": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16
+        },
+        "stepCount": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 16
+        },
+        "eventSequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "mayHaveActed": {
+          "type": "boolean"
+        },
+        "aggregateVerification": {
+          "enum": [
+            "unverified",
+            "failed",
+            "disputed"
+          ]
+        },
+        "unresolvedOperations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/id"
+          },
+          "minItems": 0,
+          "maxItems": 16
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/procedureStep"
+          },
+          "minItems": 1,
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "protocol",
+        "procedureId",
+        "requestDigest",
+        "profile",
+        "executionState",
+        "cancelRequested",
+        "cancelBlockedCode",
+        "reason",
+        "timing",
+        "cursor",
+        "stepCount",
+        "eventSequence",
+        "mayHaveActed",
+        "aggregateVerification",
+        "unresolvedOperations",
+        "steps"
+      ],
+      "additionalProperties": false
+    },
+    "procedureCancel": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "hms.procedure-cancel/0.1"
+        },
+        "procedureId": {
+          "$ref": "#/$defs/id"
+        },
+        "executionState": {
+          "$ref": "#/$defs/procedureState"
+        },
+        "cancelRequested": {
+          "type": "boolean"
+        },
+        "cancelBlockedCode": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/id"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "eventSequence": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 9007199254740991
+        },
+        "delivery": {
+          "type": "object",
+          "properties": {
+            "operationId": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "status": {
+              "enum": [
+                "no_active_child",
+                "recorded",
+                "denied",
+                "already_terminal"
+              ]
+            },
+            "code": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "operationId",
+            "status",
+            "code"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "protocol",
+        "procedureId",
+        "executionState",
+        "cancelRequested",
+        "cancelBlockedCode",
+        "eventSequence",
+        "delivery"
+      ],
+      "additionalProperties": false
+    },
+    "procedureEvent": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "procedure_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "accepted"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "requestDigest": {
+                  "type": "string",
+                  "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+                },
+                "stepCount": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 16
+                }
+              },
+              "required": [
+                "requestDigest",
+                "stepCount"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "procedure_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "procedure_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "state_changed"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "$ref": "#/$defs/procedureState"
+                },
+                "reason": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "state",
+                "reason"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "procedure_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "procedure_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "child_admitted"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "stepId": {
+                  "$ref": "#/$defs/id"
+                },
+                "ordinal": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 15
+                },
+                "operationId": {
+                  "$ref": "#/$defs/id"
+                }
+              },
+              "required": [
+                "stepId",
+                "ordinal",
+                "operationId"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "procedure_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "procedure_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "cursor_advanced"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "cursor": {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 16
+                }
+              },
+              "required": [
+                "cursor"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "procedure_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "procedure_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "cancel_requested"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {},
+              "required": [],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "procedure_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "procedure_id": {
+              "$ref": "#/$defs/id"
+            },
+            "sequence": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "time_ms": {
+              "$ref": "#/$defs/tick"
+            },
+            "clock_status": {
+              "enum": [
+                "unqualified_host_clock",
+                "regressed_clamped",
+                "unavailable_clamped"
+              ]
+            },
+            "kind": {
+              "const": "cancel_delivery"
+            },
+            "payload": {
+              "type": "object",
+              "properties": {
+                "operationId": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "status": {
+                  "enum": [
+                    "no_active_child",
+                    "recorded",
+                    "denied",
+                    "already_terminal"
+                  ]
+                },
+                "code": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/$defs/id"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                }
+              },
+              "required": [
+                "operationId",
+                "status",
+                "code"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "required": [
+            "procedure_id",
+            "sequence",
+            "time_ms",
+            "clock_status",
+            "kind",
+            "payload"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "procedureEvents": {
+      "type": "object",
+      "properties": {
+        "protocol": {
+          "const": "hms.procedure-events/0.1"
+        },
+        "procedureId": {
+          "$ref": "#/$defs/id"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/procedureEvent"
+          },
+          "minItems": 0,
+          "maxItems": 100
+        },
+        "next": {
+          "$ref": "#/$defs/tick"
+        },
+        "head": {
+          "$ref": "#/$defs/tick"
+        },
+        "gap": {
+          "const": false
+        }
+      },
+      "required": [
+        "protocol",
+        "procedureId",
+        "events",
+        "next",
+        "head",
+        "gap"
+      ],
+      "additionalProperties": false
+    },
+    "error": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]{0,63}(?![\\s\\S])"
+        }
+      },
+      "required": [
+        "code"
+      ],
+      "additionalProperties": false
+    },
+    "discoverParams": {
+      "type": "object",
+      "properties": {
+        "capability": {
+          "$ref": "#/$defs/id"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        },
+        "cursor": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": [],
+      "additionalProperties": false
+    },
+    "describeParams": {
+      "type": "object",
+      "properties": {
+        "instanceId": {
+          "$ref": "#/$defs/id"
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"
+        }
+      },
+      "required": [
+        "instanceId"
+      ],
+      "additionalProperties": false
+    },
+    "observeParams": {
+      "type": "object",
+      "properties": {
+        "instanceId": {
+          "$ref": "#/$defs/id"
+        },
+        "property": {
+          "$ref": "#/$defs/id"
+        },
+        "maxAgeMs": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 600000
+        },
+        "evidenceKind": {
+          "$ref": "#/$defs/evidenceKind"
+        }
+      },
+      "required": [
+        "instanceId",
+        "property"
+      ],
+      "additionalProperties": false
+    },
+    "namespaceParams": {
+      "type": "object",
+      "properties": {
+        "expiresUnixMs": {
+          "$ref": "#/$defs/tick"
+        }
+      },
+      "required": [
+        "expiresUnixMs"
+      ],
+      "additionalProperties": false
+    },
+    "invokeParams": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/$defs/invoke"
+        }
+      },
+      "required": [
+        "request"
+      ],
+      "additionalProperties": false
+    },
+    "operationParams": {
+      "type": "object",
+      "properties": {
+        "operationId": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "operationId"
+      ],
+      "additionalProperties": false
+    },
+    "cancelParams": {
+      "type": "object",
+      "properties": {
+        "operationId": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "operationId"
+      ],
+      "additionalProperties": false
+    },
+    "eventsParams": {
+      "type": "object",
+      "properties": {
+        "operationId": {
+          "$ref": "#/$defs/id"
+        },
+        "after": {
+          "$ref": "#/$defs/tick"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "operationId"
+      ],
+      "additionalProperties": false
+    },
+    "prepareParams": {
+      "type": "object",
+      "properties": {
+        "instanceId": {
+          "$ref": "#/$defs/id"
+        },
+        "actionId": {
+          "$ref": "#/$defs/id"
+        },
+        "arguments": {
+          "type": "object"
+        },
+        "operationKey": {
+          "$ref": "#/$defs/id"
+        },
+        "replayNamespace": {
+          "$ref": "#/$defs/id"
+        },
+        "timing": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "notBeforeUnixMs",
+            "latestStartUnixMs",
+            "maxRunMs",
+            "latestCompletionUnixMs"
+          ],
+          "properties": {
+            "notBeforeUnixMs": {
+              "$ref": "#/$defs/tick"
+            },
+            "latestStartUnixMs": {
+              "$ref": "#/$defs/tick"
+            },
+            "latestCompletionUnixMs": {
+              "$ref": "#/$defs/tick"
+            },
+            "maxRunMs": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 4294967295
+            }
+          }
+        },
+        "requiredEffect": {
+          "enum": [
+            "capability_completion",
+            "physical_verified"
+          ]
+        }
+      },
+      "required": [
+        "instanceId",
+        "actionId",
+        "arguments",
+        "operationKey",
+        "replayNamespace",
+        "timing",
+        "requiredEffect"
+      ],
+      "additionalProperties": false
+    },
+    "procedure_submitParams": {
+      "type": "object",
+      "properties": {
+        "request": {
+          "$ref": "#/$defs/procedureRequest"
+        }
+      },
+      "required": [
+        "request"
+      ],
+      "additionalProperties": false
+    },
+    "procedure_statusParams": {
+      "type": "object",
+      "properties": {
+        "procedureId": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "procedureId"
+      ],
+      "additionalProperties": false
+    },
+    "procedure_cancelParams": {
+      "type": "object",
+      "properties": {
+        "procedureId": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "procedureId"
+      ],
+      "additionalProperties": false
+    },
+    "procedure_resumeParams": {
+      "type": "object",
+      "properties": {
+        "procedureId": {
+          "$ref": "#/$defs/id"
+        }
+      },
+      "required": [
+        "procedureId"
+      ],
+      "additionalProperties": false
+    },
+    "procedure_eventsParams": {
+      "type": "object",
+      "properties": {
+        "procedureId": {
+          "$ref": "#/$defs/id"
+        },
+        "after": {
+          "$ref": "#/$defs/tick"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100
+        }
+      },
+      "required": [
+        "procedureId"
+      ],
+      "additionalProperties": false
+    },
+    "request": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "discover"
+            },
+            "params": {
+              "$ref": "#/$defs/discoverParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "describe"
+            },
+            "params": {
+              "$ref": "#/$defs/describeParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "observe"
+            },
+            "params": {
+              "$ref": "#/$defs/observeParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "namespace"
+            },
+            "params": {
+              "$ref": "#/$defs/namespaceParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "invoke"
+            },
+            "params": {
+              "$ref": "#/$defs/invokeParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "operation"
+            },
+            "params": {
+              "$ref": "#/$defs/operationParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "cancel"
+            },
+            "params": {
+              "$ref": "#/$defs/cancelParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "events"
+            },
+            "params": {
+              "$ref": "#/$defs/eventsParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "prepare"
+            },
+            "params": {
+              "$ref": "#/$defs/prepareParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "procedure_submit"
+            },
+            "params": {
+              "$ref": "#/$defs/procedure_submitParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "procedure_status"
+            },
+            "params": {
+              "$ref": "#/$defs/procedure_statusParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "procedure_cancel"
+            },
+            "params": {
+              "$ref": "#/$defs/procedure_cancelParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "procedure_resume"
+            },
+            "params": {
+              "$ref": "#/$defs/procedure_resumeParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "method": {
+              "const": "procedure_events"
+            },
+            "params": {
+              "$ref": "#/$defs/procedure_eventsParams"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "method",
+            "params"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "response": {
+      "oneOf": [
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "$ref": "#/$defs/id"
+            },
+            "result": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/description"
+                },
+                {
+                  "$ref": "#/$defs/discovery"
+                },
+                {
+                  "$ref": "#/$defs/events"
+                },
+                {
+                  "$ref": "#/$defs/namespace"
+                },
+                {
+                  "$ref": "#/$defs/observation"
+                },
+                {
+                  "$ref": "#/$defs/operation"
+                },
+                {
+                  "$ref": "#/$defs/prepared"
+                },
+                {
+                  "$ref": "#/$defs/procedureCancel"
+                },
+                {
+                  "$ref": "#/$defs/procedureEvents"
+                },
+                {
+                  "$ref": "#/$defs/procedureStatus"
+                }
+              ]
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "result"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "protocol": {
+              "const": "hctl.local/0.1"
+            },
+            "requestId": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/id"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "error": {
+              "$ref": "#/$defs/error"
+            }
+          },
+          "required": [
+            "protocol",
+            "requestId",
+            "error"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "x-hms-method-results": {
+    "discover": "discovery",
+    "describe": "description",
+    "observe": "observation",
+    "namespace": "namespace",
+    "prepare": "prepared",
+    "invoke": "operation",
+    "operation": "operation",
+    "cancel": "operation",
+    "events": "events",
+    "procedure_submit": "procedureStatus",
+    "procedure_status": "procedureStatus",
+    "procedure_resume": "procedureStatus",
+    "procedure_cancel": "procedureCancel",
+    "procedure_events": "procedureEvents"
+  }
+}

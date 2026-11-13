@@ -1,0 +1,44 @@
+{
+  "acquiredCodeExecuted": false,
+  "fullyReadExtractedLfLines": 1250,
+  "fullyReadManuals": 4,
+  "localSource": {
+    "firstLine": 1,
+    "fullFileRead": true,
+    "lastLine": 358,
+    "path": "hms_qualification/supervisor/qualification_supervisor.py",
+    "sha256": "2f0a6da444ba54729cfd8ccf549b8b015cec2eca33a50a05a2d11de0d0bdceac"
+  },
+  "manuals": [
+    {
+      "firstLine": 1,
+      "fullExtractedManualRead": true,
+      "lastLine": 268,
+      "path": "text/pidfd_open.2.txt",
+      "sha256": "975eed21c55ca67332f42ae715c7fd14562b7d627ff62b43308cb6849d59a375"
+    },
+    {
+      "firstLine": 1,
+      "fullExtractedManualRead": true,
+      "lastLine": 249,
+      "path": "text/pidfd_send_signal.2.txt",
+      "sha256": "eb1cf55c32168033bb5d46b525ca3e59a10a20599e4560582f8e4e57fa3a92dd"
+    },
+    {
+      "firstLine": 1,
+      "fullExtractedManualRead": true,
+      "lastLine": 499,
+      "path": "text/waitid.2.txt",
+      "sha256": "0dcb83bad162109dcf9ba31d9e5b09b4f8bb55321ea914a011be08b12ac2e9f9"
+    },
+    {
+      "firstLine": 1,
+      "fullExtractedManualRead": true,
+      "lastLine": 234,
+      "path": "text/getpgrp.2.txt",
+      "sha256": "60e4ff19030b7f2e4543fa05cf75c9b5a71c7c579f63670a759f71462e427c24"
+    }
+  ],
+  "processProbeExecuted": false,
+  "scope": "Headings and every preformatted manual block; HTML navigation/footer chrome excluded."
+}

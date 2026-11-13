@@ -1,0 +1,297 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-11-05T22:19:39.934197+00:00",
+  "line_counting": "LF-delimited original text bytes; retain LF in each interval digest, retain form feeds and CR bytes; include final unterminated line; not Python splitlines()",
+  "coverage_policy": "coverage_complete means all archived text lines displayed sequentially without truncation and read. RFC ASCII figures/tables included. HTML full-read status covers extracted text, not linked works. Partial duplicate RFC status rendition is explicitly excluded from full-read count.",
+  "sources": [
+    {
+      "id": "coap-rfc7252",
+      "url": "https://www.rfc-editor.org/rfc/rfc7252.txt",
+      "raw_path": "research/protocols/raw/coap-rfc7252.txt",
+      "raw_sha256": "abfe8cce3370b5b32487421b35725eb6eaf962ea454cad008b5a5cd052e27c5f",
+      "text_path": "research/protocols/text/coap-rfc7252.txt",
+      "text_sha256": "abfe8cce3370b5b32487421b35725eb6eaf962ea454cad008b5a5cd052e27c5f",
+      "line_count": 6275,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 500,
+          "sha256": "f283aad4aa009b198d665cf58cfdcff1bd6f0351b7c9f48f8a83619e4780db56"
+        },
+        {
+          "start_line": 501,
+          "end_line": 1000,
+          "sha256": "2c1ff0c7400c5a86e1064631f2f8812e75f52804a7d825350060fe2b7d7f3290"
+        },
+        {
+          "start_line": 1001,
+          "end_line": 1500,
+          "sha256": "88e376ef477efea3b7f2f1903a3ef73f2d85e190df1b09e0b4f6b4765ae242fa"
+        },
+        {
+          "start_line": 1501,
+          "end_line": 2000,
+          "sha256": "850d903ca77dd4db8d98b5e94a7f4c7af1d7f29285f4b31506888bf9d94847a2"
+        },
+        {
+          "start_line": 2001,
+          "end_line": 2500,
+          "sha256": "8d7cf7e4896f54edd24f374f83c5ddd75789173cd47c21b4657e04bfc32e33e1"
+        },
+        {
+          "start_line": 2501,
+          "end_line": 3000,
+          "sha256": "7d5bb36995c76a23168089dc24f72a36762a32a6b8ae80256af406fa7df5a55d"
+        },
+        {
+          "start_line": 3001,
+          "end_line": 3500,
+          "sha256": "a4cbb9ecec7f2c778a3150cf036cb4c5f2a12b986edac86ce968d57a536853f4"
+        },
+        {
+          "start_line": 3501,
+          "end_line": 4000,
+          "sha256": "66e5b1b002cd5d994cc4eb71061575bb34914a36938acba4eef13b18810546dd"
+        },
+        {
+          "start_line": 4001,
+          "end_line": 4500,
+          "sha256": "95a0ef15c51a7c9546c20d00ba15cb77a53cb105762ebaadaf1441521e15117f"
+        },
+        {
+          "start_line": 4501,
+          "end_line": 5000,
+          "sha256": "fbf952794a9ce451008c48a39fb8aa6669321ea31d14e5fdda8b2bff2496254e"
+        },
+        {
+          "start_line": 5001,
+          "end_line": 5500,
+          "sha256": "e1f770767af8db89816a75f4705f8155480a0dd7d0c699f765d88a4b55c80274"
+        },
+        {
+          "start_line": 5501,
+          "end_line": 6000,
+          "sha256": "bad046c9e574d55dcc1636181d8bb1276695bd08fb70ac88540feb4b8ae7d3ee"
+        },
+        {
+          "start_line": 6001,
+          "end_line": 6275,
+          "sha256": "62123aa759116d9853d4bcda465e948d6f99b7dc78c3d61a11da70bd3ec33ff4"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text_including_ascii_figures_and_references",
+      "note": "Original raw and text bytes identical; full sequential untruncated displays. Initial truncated batch not counted."
+    },
+    {
+      "id": "rfc7252-errata",
+      "url": "https://www.rfc-editor.org/errata/rfc7252",
+      "raw_path": "research/constrained/coap/raw/rfc7252-errata.html",
+      "raw_sha256": "4ff8e47efb6e369a91688af12869282e0be71cb0c2ed9bafa5160a75c72b2563",
+      "text_path": "research/constrained/coap/text/rfc7252-errata.txt",
+      "text_sha256": "42b7cf1b3230454d99e48a0bd0afddad6733cdc4c7acdf510bbd6d9eaec3f92c",
+      "line_count": 475,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 475,
+          "sha256": "42b7cf1b3230454d99e48a0bd0afddad6733cdc4c7acdf510bbd6d9eaec3f92c"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Full official errata search results, including all record statuses and details; no claim to read linked RFCs or discussions."
+    },
+    {
+      "id": "rfc7252-status",
+      "url": "https://www.rfc-editor.org/info/rfc7252",
+      "raw_path": "research/constrained/coap/raw/rfc7252-status.html",
+      "raw_sha256": "fdf9abce85da849e6df3fae1f4bdfc9ffed57871292c2b865445f27a904084f9",
+      "text_path": "research/constrained/coap/text/rfc7252-status.txt",
+      "text_sha256": "6eac8c609230a249fe4069f7edeff6810135352111ddafcd48235f144550b8d2",
+      "line_count": 6460,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 180,
+          "sha256": "c499613cea466ed6eb1febe1ecb7f1bff4b8ced27e9b93256d9f401521a2a6d6"
+        }
+      ],
+      "coverage_complete": false,
+      "reading_status": "read_selected_sections",
+      "note": "Only metadata preamble and introductory lines 1-180 read. This URL now serves a duplicate full RFC rendition; no full-read claim. Update list also appears in fully read errata records."
+    },
+    {
+      "id": "coap-rfc9175",
+      "url": "https://www.rfc-editor.org/rfc/rfc9175.txt",
+      "raw_path": "research/constrained/coap/raw/coap-rfc9175.txt",
+      "raw_sha256": "103a997a5a3391f9432a84162168e63c0e7de83c08cf0159339d8e7358a4666a",
+      "text_path": "research/constrained/coap/text/coap-rfc9175.txt",
+      "text_sha256": "103a997a5a3391f9432a84162168e63c0e7de83c08cf0159339d8e7358a4666a",
+      "line_count": 1483,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 400,
+          "sha256": "c3c9ba84a14c8d8f5d54804b85047a1891dc9bcde1d8c7bb6549b128ab2f678f"
+        },
+        {
+          "start_line": 401,
+          "end_line": 800,
+          "sha256": "f58e0da65a7f674a5f2a30d11256446f7da2afc2a413cfc9a266bbe907eb42f7"
+        },
+        {
+          "start_line": 801,
+          "end_line": 1200,
+          "sha256": "dda6722898fcea6e15ea8574c4f1e114ba39dbeab9299cd4e209cd0bfff17ce4"
+        },
+        {
+          "start_line": 1201,
+          "end_line": 1483,
+          "sha256": "586e839a8b6a15f29253584ff6ea66e1d2dad5d771dd0d669ececf9d58ff1e0f"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text_including_ascii_figures_and_references",
+      "note": "Complete RFC source text read sequentially without truncation; linked references not claimed read."
+    },
+    {
+      "id": "coap-rfc9876",
+      "url": "https://www.rfc-editor.org/rfc/rfc9876.txt",
+      "raw_path": "research/constrained/coap/raw/coap-rfc9876.txt",
+      "raw_sha256": "137ca2c2827b4a535386dcdd9e6d4c18f281f43f9b80bc59694c1b96e72c4ace",
+      "text_path": "research/constrained/coap/text/coap-rfc9876.txt",
+      "text_sha256": "137ca2c2827b4a535386dcdd9e6d4c18f281f43f9b80bc59694c1b96e72c4ace",
+      "line_count": 616,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 350,
+          "sha256": "3014963668ba2ef71f90174a328cbcdd58d6fdc9da5eaafa7d8673bf0ca6ee34"
+        },
+        {
+          "start_line": 351,
+          "end_line": 616,
+          "sha256": "3ad0510591a20123ec2919b4c701f81622dabdfdde8756da5f704a411a5f3096"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text_including_ascii_figures_and_references",
+      "note": "Complete RFC source text read sequentially without truncation; linked references not claimed read."
+    },
+    {
+      "id": "coap-rfc8974",
+      "url": "https://www.rfc-editor.org/rfc/rfc8974.txt",
+      "raw_path": "research/constrained/coap/raw/coap-rfc8974.txt",
+      "raw_sha256": "1c70f3ceb9af34688284da9db592a28f89b745c43b0ac2702dc6787901bb347b",
+      "text_path": "research/constrained/coap/text/coap-rfc8974.txt",
+      "text_sha256": "1c70f3ceb9af34688284da9db592a28f89b745c43b0ac2702dc6787901bb347b",
+      "line_count": 974,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 400,
+          "sha256": "e9b577d4fe17a71f48b6bd3cc1a15e5fc2a1591c0f2de59ca6fcae68de5f5f1b"
+        },
+        {
+          "start_line": 401,
+          "end_line": 800,
+          "sha256": "56c0c1365aec55e3d1a9e4dafe5bd7bea7574c41f25f7fdc8ab818bff71b0c78"
+        },
+        {
+          "start_line": 801,
+          "end_line": 974,
+          "sha256": "612d8994765208a017670190c6cbab18832be73968a20f58962192b1342527ca"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text_including_ascii_figures_and_references",
+      "note": "Complete RFC source text read sequentially without truncation; linked references not claimed read."
+    },
+    {
+      "id": "rfc9175-errata",
+      "url": "https://www.rfc-editor.org/errata/rfc9175",
+      "raw_path": "research/constrained/coap/raw/rfc9175-errata.html",
+      "raw_sha256": "34b8c5b82b4a20ea7428a3c44c0cfea27813f0568168362a6e319e00771b455d",
+      "text_path": "research/constrained/coap/text/rfc9175-errata.txt",
+      "text_sha256": "a04feb5a6c3d73efbc52a9aed25aaa7b0b5d98ba6c7ca47e5a5ece50e4e418a0",
+      "line_count": 63,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 63,
+          "sha256": "a04feb5a6c3d73efbc52a9aed25aaa7b0b5d98ba6c7ca47e5a5ece50e4e418a0"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Full official errata search results, including all record statuses and details; no claim to read linked RFCs or discussions."
+    },
+    {
+      "id": "rfc9876-errata",
+      "url": "https://www.rfc-editor.org/errata/rfc9876",
+      "raw_path": "research/constrained/coap/raw/rfc9876-errata.html",
+      "raw_sha256": "d524cfcd5b2132a7a54b3c50e5a0e1cc0ea8b6a54e7fd952446e948b5a640376",
+      "text_path": "research/constrained/coap/text/rfc9876-errata.txt",
+      "text_sha256": "e3f61ac63cdc23da2c856f64c2ccaf440db729a3589036ef9e0f2de6fffd0306",
+      "line_count": 42,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 42,
+          "sha256": "e3f61ac63cdc23da2c856f64c2ccaf440db729a3589036ef9e0f2de6fffd0306"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Full official errata search results, including all record statuses and details; no claim to read linked RFCs or discussions."
+    },
+    {
+      "id": "rfc8974-errata",
+      "url": "https://www.rfc-editor.org/errata/rfc8974",
+      "raw_path": "research/constrained/coap/raw/rfc8974-errata.html",
+      "raw_sha256": "77ed65dc882e99f9f370e6a27fac99f3fb2c9c1020a92c65aa50121ba15ac731",
+      "text_path": "research/constrained/coap/text/rfc8974-errata.txt",
+      "text_sha256": "e3f61ac63cdc23da2c856f64c2ccaf440db729a3589036ef9e0f2de6fffd0306",
+      "line_count": 42,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 42,
+          "sha256": "e3f61ac63cdc23da2c856f64c2ccaf440db729a3589036ef9e0f2de6fffd0306"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Full official errata search results, including all record statuses and details; no claim to read linked RFCs or discussions."
+    }
+  ],
+  "local_context_reads": [
+    {
+      "path": "spec/02-execution.md",
+      "sha256": "3fd0ebb60a4a4436269601d5589711524f5c33169827b57f9bbbd4eb2a0f84b1",
+      "line_count": 119,
+      "reading_status": "read_full_text",
+      "note": "Read independently without truncation after initial truncated combined output."
+    },
+    {
+      "path": "docs/transport-guarantees.md",
+      "sha256": "c30a9d7b5191cc57281dc54ff8ef8ede3ee08403390745dc9bdaa060d86287e1",
+      "line_count": 127,
+      "reading_status": "read_full_text",
+      "note": "Read independently without truncation after initial truncated combined output."
+    }
+  ],
+  "not_claimed_read": [
+    "RFC7959",
+    "RFC8613",
+    "RFC7641",
+    "RFC8323",
+    "RFC7252 bibliography linked works except individually recorded RFCs",
+    "Linked errata mailing-list discussions"
+  ],
+  "artifacts": [
+    "docs/coap-binding.md",
+    "research/protocols/notes/coap-full-review.md"
+  ]
+}

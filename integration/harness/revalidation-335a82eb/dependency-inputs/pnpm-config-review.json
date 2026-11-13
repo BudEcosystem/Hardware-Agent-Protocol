@@ -1,0 +1,25 @@
+{
+  "installed_tool": "pnpm",
+  "version": "11.28.5",
+  "source_path": "/home/bud/.local/share/pnpm/.tools/pnpm/11.28.5/node_modules/pnpm/dist/pnpm.mjs",
+  "source_sha256": "e3738fda08262f74611d7a1ffc11b3e87fa52b466c07eb73211d179ebcb98810",
+  "read_coverage": {
+    "whole_document_read": false,
+    "selected_ranges": [
+      [
+        179110,
+        179125
+      ],
+      [
+        181350,
+        181363
+      ],
+      [
+        183110,
+        183118
+      ]
+    ],
+    "purpose": "pnpm_config_ environment names, pre-run-install override and empty npmrc auth file selection"
+  },
+  "excerpt_sha256": "e084ca915911ce7a67f8a3987f29e4fc61bcb21ad39b1d55183f5fb60caaa5cb"
+}

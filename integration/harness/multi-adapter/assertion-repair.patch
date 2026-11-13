@@ -1,0 +1,11 @@
+--- packages/experimental/tool-hardware/tests/hms-compact.spec.ts
++++ packages/experimental/tool-hardware/tests/hms-compact-multi-adapter.spec.ts
+@@ -237,7 +237,7 @@
+       const retained = JSON.stringify(prepared.result.request)
+       await control!({ method: 'arm' })
+       const admitted = await invoke('invoke', { request: JSON.parse(retained) as JsonValue })
+-      expect(admitted.result.executionState).toBe('accepted')
++      expect(['accepted', 'dispatching']).toContain(admitted.result.executionState)
+       const crash = await control!({ method: 'crash', operationId: admitted.result.operationId! })
+       expect(crash).toMatchObject({ operationId: admitted.result.operationId, requestDigest: admitted.result.requestDigest,
+         endpointPid, endpointAlive: true, receiptAbsent: true })

@@ -1,0 +1,320 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bud:hms:draft:device-description:0.1",
+  "title": "HMS device description draft subset",
+  "description": "Research draft. Structural validity does not establish physical truth, enrollment, safety, or compatibility with Anthropic MHS.",
+  "type": "object",
+  "properties": {
+    "hms_draft": {
+      "const": "0.1"
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1
+    },
+    "status": {
+      "const": "design_example"
+    },
+    "profile": {
+      "type": "string",
+      "enum": [
+        "P0",
+        "P1",
+        "P2",
+        "P3",
+        "P4",
+        "P5",
+        "P6"
+      ]
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "resources": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "minItems": 1
+    },
+    "observations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "unit": {
+            "type": "string",
+            "minLength": 1
+          },
+          "frame": {
+            "type": "string",
+            "minLength": 1
+          },
+          "evidence_kind": {
+            "type": "string",
+            "enum": [
+              "physical_sensor",
+              "controller_measurement",
+              "command_echo",
+              "estimate",
+              "simulation"
+            ]
+          },
+          "max_age_ms": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": [
+          "id",
+          "unit",
+          "evidence_kind",
+          "max_age_ms"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "actions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1
+          },
+          "input_schema": {
+            "type": "object"
+          },
+          "effect": {
+            "type": "string",
+            "enum": [
+              "read",
+              "setpoint",
+              "motion",
+              "process",
+              "energy",
+              "maintenance"
+            ]
+          },
+          "resources": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            },
+            "minItems": 1
+          },
+          "max_duration_ms": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "cancel_behavior": {
+            "type": "string",
+            "enum": [
+              "unsupported",
+              "request_stop",
+              "finish_bounded_step"
+            ]
+          },
+          "disconnect_behavior": {
+            "type": "string",
+            "enum": [
+              "hold",
+              "controlled_stop",
+              "finish_bounded_step",
+              "deenergize",
+              "installation_defined"
+            ]
+          },
+          "completion_evidence": {
+            "type": "string",
+            "enum": [
+              "command_delivery",
+              "controller_completion",
+              "physical_feedback"
+            ]
+          },
+          "required_observations": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "object",
+              "properties": {
+                "quantity": {
+                  "type": "object",
+                  "properties": {
+                    "unit": {
+                      "type": "string",
+                      "minLength": 1
+                    },
+                    "minimum": {
+                      "type": "number"
+                    },
+                    "maximum": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "unit",
+                    "minimum",
+                    "maximum"
+                  ],
+                  "additionalProperties": false
+                },
+                "frame": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "quantity"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "description",
+          "input_schema",
+          "effect",
+          "resources",
+          "max_duration_ms",
+          "cancel_behavior",
+          "disconnect_behavior",
+          "completion_evidence",
+          "required_observations",
+          "parameters"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "limits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "parameter": {
+            "type": "string",
+            "minLength": 1
+          },
+          "bounds": {
+            "type": "object",
+            "properties": {
+              "unit": {
+                "type": "string",
+                "minLength": 1
+              },
+              "minimum": {
+                "type": "number"
+              },
+              "maximum": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "unit",
+              "minimum",
+              "maximum"
+            ],
+            "additionalProperties": false
+          },
+          "enforcement": {
+            "type": "string",
+            "enum": [
+              "gateway",
+              "firmware",
+              "controller",
+              "independent_hardware"
+            ]
+          },
+          "evidence_ref": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "parameter",
+          "bounds",
+          "enforcement",
+          "evidence_ref"
+        ],
+        "additionalProperties": false
+      },
+      "minItems": 1
+    },
+    "calibration": {
+      "type": "object",
+      "properties": {
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "unmeasured",
+            "measured",
+            "expired"
+          ]
+        },
+        "evidence_ref": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [
+        "revision",
+        "status",
+        "evidence_ref"
+      ],
+      "additionalProperties": false
+    },
+    "notes": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "hms_draft",
+    "id",
+    "title",
+    "status",
+    "profile",
+    "capabilities",
+    "resources",
+    "observations",
+    "actions",
+    "limits",
+    "calibration",
+    "notes"
+  ],
+  "additionalProperties": false
+}

@@ -1,0 +1,288 @@
+{
+  "schema": "hms-research-reading-log/1",
+  "review_date": "2026-11-06",
+  "reviewer": "avr_target_build",
+  "generated_at": "2026-11-05T22:36:17.535782+00:00",
+  "sources": [
+    {
+      "id": "arduino-avr-1.8.8-boards.txt",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/boards.txt",
+      "sha256": "e49283dc7a276291e24e91d04b883ea4e884ea2375ed80ede0d69cbf25d40a5d",
+      "bytes": 40230,
+      "line_count": 1312,
+      "reading_status": "partial_read",
+      "coverage_complete": false,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 135,
+          "sha256": "fa77c5cd677ae08063b96a24a633f73a60a65dd2d0c89e374f15ac28a8a524f2"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-cores-arduino-Arduino.h",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/cores/arduino/Arduino.h",
+      "sha256": "335f45c59532cd7df39ce1435fbf1abf8d503d42ac6085a92e0f2ff75f5fffac",
+      "bytes": 7613,
+      "line_count": 260,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 260,
+          "sha256": "335f45c59532cd7df39ce1435fbf1abf8d503d42ac6085a92e0f2ff75f5fffac"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-cores-arduino-HardwareSerial.cpp",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/cores/arduino/HardwareSerial.cpp",
+      "sha256": "641c8d9b1f266c7b97ca59bcb0915e09a897ef1fa78dd9cdb2c93ce1c2d19c1b",
+      "bytes": 8990,
+      "line_count": 281,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 281,
+          "sha256": "641c8d9b1f266c7b97ca59bcb0915e09a897ef1fa78dd9cdb2c93ce1c2d19c1b"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-cores-arduino-HardwareSerial.h",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/cores/arduino/HardwareSerial.h",
+      "sha256": "f64d1a45fb14b94ca2425e73978f61bd054a886e5f838089098008d199a9bd73",
+      "bytes": 5262,
+      "line_count": 161,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 161,
+          "sha256": "f64d1a45fb14b94ca2425e73978f61bd054a886e5f838089098008d199a9bd73"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-cores-arduino-HardwareSerial0.cpp",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/cores/arduino/HardwareSerial0.cpp",
+      "sha256": "388bd9bcd3ff9c2b30a1d6d9a14a4b61a5ab070cc8000f186138c0d15565adf6",
+      "bytes": 2606,
+      "line_count": 79,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 79,
+          "sha256": "388bd9bcd3ff9c2b30a1d6d9a14a4b61a5ab070cc8000f186138c0d15565adf6"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-cores-arduino-HardwareSerial_private.h",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/cores/arduino/HardwareSerial_private.h",
+      "sha256": "ff787b0f29eebaaa903aff4d12349e4a45f5c6ca995cec7aa699bd8296253a93",
+      "bytes": 4470,
+      "line_count": 123,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 123,
+          "sha256": "ff787b0f29eebaaa903aff4d12349e4a45f5c6ca995cec7aa699bd8296253a93"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-cores-arduino-Print.cpp",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/cores/arduino/Print.cpp",
+      "sha256": "4e5077fe1dff0b2f506f23bb2a7dea251f739aa9aab2ad285f71ad6434161e26",
+      "bytes": 5442,
+      "line_count": 266,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 266,
+          "sha256": "4e5077fe1dff0b2f506f23bb2a7dea251f739aa9aab2ad285f71ad6434161e26"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-cores-arduino-Print.h",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/cores/arduino/Print.h",
+      "sha256": "29403f23a682faae75437ca4e8370e0075efa3c70f9850d27ff0105eca4c9146",
+      "bytes": 2964,
+      "line_count": 93,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 93,
+          "sha256": "29403f23a682faae75437ca4e8370e0075efa3c70f9850d27ff0105eca4c9146"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-cores-arduino-Stream.cpp",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/cores/arduino/Stream.cpp",
+      "sha256": "a0f2cfbb1489174e0d52ca9798129751e52994f04a9ece88fb465715f8c3b3cb",
+      "bytes": 8776,
+      "line_count": 318,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 318,
+          "sha256": "a0f2cfbb1489174e0d52ca9798129751e52994f04a9ece88fb465715f8c3b3cb"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-cores-arduino-Stream.h",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/cores/arduino/Stream.h",
+      "sha256": "4f8adb5c1ab52d5f2b5a831cf8bdc0ae49b92c32dd22f2dc5c53389322701cdb",
+      "bytes": 6060,
+      "line_count": 129,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 129,
+          "sha256": "4f8adb5c1ab52d5f2b5a831cf8bdc0ae49b92c32dd22f2dc5c53389322701cdb"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-cores-arduino-hooks.c",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/cores/arduino/hooks.c",
+      "sha256": "525370afcb26502a965376f05b00b4aafc89644e6bc3c693718d56533ca38771",
+      "bytes": 1142,
+      "line_count": 31,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 31,
+          "sha256": "525370afcb26502a965376f05b00b4aafc89644e6bc3c693718d56533ca38771"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-cores-arduino-main.cpp",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/cores/arduino/main.cpp",
+      "sha256": "a2d7d7d72e5259b0212f6682be0ded139f854481fad2c6e742d2f6264924402b",
+      "bytes": 1372,
+      "line_count": 52,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 52,
+          "sha256": "a2d7d7d72e5259b0212f6682be0ded139f854481fad2c6e742d2f6264924402b"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-cores-arduino-wiring.c",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/cores/arduino/wiring.c",
+      "sha256": "586bdf890ff6cd70d2a5457aef406517fff1113dcee51ea9f4f86cd54f8cc204",
+      "bytes": 11951,
+      "line_count": 392,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 392,
+          "sha256": "586bdf890ff6cd70d2a5457aef406517fff1113dcee51ea9f4f86cd54f8cc204"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-cores-arduino-wiring_private.h",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/cores/arduino/wiring_private.h",
+      "sha256": "c416d346d436f2ba55507ba867a0fd6bf8d261440194a237fa318e20c5617bdc",
+      "bytes": 2255,
+      "line_count": 72,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 72,
+          "sha256": "c416d346d436f2ba55507ba867a0fd6bf8d261440194a237fa318e20c5617bdc"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-platform.txt",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/platform.txt",
+      "sha256": "afc8745a57fcb6e88a818aebfdee241bf758c2f665cfd6541f00472809c5522a",
+      "bytes": 8486,
+      "line_count": 142,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 142,
+          "sha256": "afc8745a57fcb6e88a818aebfdee241bf758c2f665cfd6541f00472809c5522a"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    },
+    {
+      "id": "arduino-avr-1.8.8-variants-standard-pins_arduino.h",
+      "path": "research/constrained/avr/source/arduino-avr-1.8.8/variants/standard/pins_arduino.h",
+      "sha256": "d313845f9916c1f21c8ba9848d40806f5caab52529ad510e81b3f15318441631",
+      "bytes": 6437,
+      "line_count": 254,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 254,
+          "sha256": "d313845f9916c1f21c8ba9848d40806f5caab52529ad510e81b3f15318441631"
+        }
+      ],
+      "review_focus": "UART/timer integration and build contract; source only"
+    }
+  ],
+  "method": "Each full source file was displayed untruncated with cat; boards.txt only lines 1-135 displayed with sed. Line units are LF-delimited. Archive acquisition is not reading.",
+  "limitations": [
+    "Only 15 complete selected files and boards.txt lines 1-135 read, not whole ArduinoCore-avr.",
+    "Package index only selected Arduino AVR/toolchain records parsed; full index not read.",
+    "Compiler archive downloaded, checksum verified and trusted tools executed, not source-code reviewed.",
+    "Core source archive and extracted reference files not built or executed.",
+    "External avr-libc headers, USB bridge firmware, register datasheet and omitted Arduino dependencies remain unreviewed."
+  ]
+}

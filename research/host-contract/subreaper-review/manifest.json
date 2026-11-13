@@ -1,0 +1,77 @@
+{
+  "acquiredCodeExecuted": false,
+  "sources": [
+    {
+      "acquiredCodeExecuted": false,
+      "contentType": "text/html",
+      "extractedLfLines": 102,
+      "extraction": "All h1/h2 headings and all preformatted manual blocks in document order; navigation/footer chrome excluded.",
+      "files": [
+        {
+          "bytes": 9879,
+          "path": "raw/PR_SET_CHILD_SUBREAPER.2const.html",
+          "sha256": "b805fe23c7251ad6c3d08a829ed755b80a8fa106929c67325c7122f3b126ef2c"
+        },
+        {
+          "bytes": 3173,
+          "path": "text/PR_SET_CHILD_SUBREAPER.2const.txt",
+          "sha256": "45bd4b3c9715c5722dee6281e2f4060d104df51cc897d8329180f9f590bf99c9"
+        }
+      ],
+      "finalUrl": "https://man7.org/linux/man-pages/man2/PR_SET_CHILD_SUBREAPER.2const.html",
+      "page": "PR_SET_CHILD_SUBREAPER.2const",
+      "preformattedBlocks": 10,
+      "readingStatus": "unread",
+      "retrievedAt": "2026-11-09T10:06:19.904828+00:00",
+      "url": "https://man7.org/linux/man-pages/man2/PR_SET_CHILD_SUBREAPER.2const.html"
+    },
+    {
+      "acquiredCodeExecuted": false,
+      "contentType": "text/html",
+      "extractedLfLines": 88,
+      "extraction": "All h1/h2 headings and all preformatted manual blocks in document order; navigation/footer chrome excluded.",
+      "files": [
+        {
+          "bytes": 8526,
+          "path": "raw/PR_GET_CHILD_SUBREAPER.2const.html",
+          "sha256": "7856e4c4fe0793d51c176fff0d8061c34fef6f14cc5b48e56dfcf5c9ae9b671b"
+        },
+        {
+          "bytes": 2033,
+          "path": "text/PR_GET_CHILD_SUBREAPER.2const.txt",
+          "sha256": "36e0affb71d2283ecda776e05b0e995dfda869bf7ecb28ead976010dd75506c6"
+        }
+      ],
+      "finalUrl": "https://man7.org/linux/man-pages/man2/PR_GET_CHILD_SUBREAPER.2const.html",
+      "page": "PR_GET_CHILD_SUBREAPER.2const",
+      "preformattedBlocks": 11,
+      "readingStatus": "unread",
+      "retrievedAt": "2026-11-09T10:06:19.909754+00:00",
+      "url": "https://man7.org/linux/man-pages/man2/PR_GET_CHILD_SUBREAPER.2const.html"
+    },
+    {
+      "acquiredCodeExecuted": false,
+      "contentType": "text/html",
+      "extractedLfLines": 213,
+      "extraction": "All h1/h2 headings and all preformatted manual blocks in document order; navigation/footer chrome excluded.",
+      "files": [
+        {
+          "bytes": 26266,
+          "path": "raw/prctl.2.html",
+          "sha256": "ef698f6c5aab0224e9bf238ea1820160797c15d0adcee8b37fcaac7297866810"
+        },
+        {
+          "bytes": 6440,
+          "path": "text/prctl.2.txt",
+          "sha256": "417da8f81572ee1445fc2555959d57cb781fdead45f7b8ea298c66d06d5d4415"
+        }
+      ],
+      "finalUrl": "https://man7.org/linux/man-pages/man2/prctl.2.html",
+      "page": "prctl.2",
+      "preformattedBlocks": 13,
+      "readingStatus": "unread",
+      "retrievedAt": "2026-11-09T10:06:20.109760+00:00",
+      "url": "https://man7.org/linux/man-pages/man2/prctl.2.html"
+    }
+  ]
+}

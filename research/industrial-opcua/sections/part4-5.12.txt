@@ -1,0 +1,87 @@
+5.12 Method Service Set
+
+5.12.1 Overview
+
+
+            Methods represent the function calls of Objects. They are defined in OPC 10000-3. Methods are invoked and return only after completion (successful or unsuccessful). Execution times for Methods may vary, depending on the function that they perform.
+
+The Method Service Set defines the means to invoke Methods. A Method shall be a component of an Object. Discovery is provided through the Browse and Query Services. Clients discover the Methods supported by a Server by browsing for the owning Objects References that identify their supported Methods.
+
+Because Methods may control some aspect of plant operations, Method invocation may depend on environmental or other conditions. This may be especially true when attempting to re-invoke a Method immediately after it has completed execution. Conditions that are required to invoke the Method might not yet have returned to the state that permits the Method to start again.
+
+5.12.2 Call
+
+5.12.2.1 Description
+
+This Service is used to call (invoke) a list of Methods.
+
+This Service provides for passing input and output arguments to/from a Method. These arguments are defined by Properties of the Method.
+
+If the Method is invoked in the context of a Session and the Session is terminated, the results of the Method's execution cannot be returned to the Client and are discarded. This is independent of the task actually performed at the Server.
+
+The order the operations are processed in the Server is not defined and depends on the different tasks and the internal Server logic. If a Method is contained in more than one operation, the order of the processing is undefined. If a Client requires sequential processing the Client needs separate Service calls.
+
+5.12.2.2 Parameters
+
+
+              Table 59 defines the parameters for the Service. 
+
+Table 59 - Call Service Parameters
+Name,Type,Description
+Request,,
+requestHeader,RequestHeader,Common request parameters (see 7.32 for RequestHeader definition).
+methodsToCall [],CallMethodRequest,List of Methods to call. This structure is defined in-line with the following indented items.
+objectId,NodeId,"The NodeId shall be that of the Object or ObjectType on which the Method is invoked. In case of an Object, the Object or the ObjectType of the Object or a super type of that ObjectType shall be the source of a HasComponent Reference (or subtype of HasComponent Reference) to the Method specified in methodId. In case of an ObjectType, the ObjectType shall be the source of a HasComponent Reference (or subtype of HasComponent Reference) to the Method specified in methodId. In this case the Method shall not have a ModellingRule. See OPC 10000-3 for a description of Objects and their Methods."
+methodId,NodeId,"NodeId of the Method to invoke. If the objectId is the NodeId of an Object, the methodId is either the NodeId of the Method that is a component of the Object instance or the NodeId of the Method in the ObjectType that defines the Method. Independent of the methodId parameter, the RolePermissions are always verified with the Method Node that is the target of a HasComponent from the Node defined by objectId."
+inputArguments [],BaseDataType,"List of input argument values. An empty list indicates that there are no input arguments. The size and order of this list matches the size and order of the input arguments defined by the input InputArguments Property of the Method. The name, a description and the data type of each argument are defined by the Argument structure in each element of the method's InputArguments Property. Fewer arguments than the total number of input arguments defined may be passed by the Client when optional input arguments are defined. A Method may define input arguments as optional by including HasOptionalInputArgumentDescription references to argument metadata. The InputArguments Property and the HasOptionalInputArgumentDescription ReferenceType are defined in OPC 10000-3."
+,,
+Response,,
+responseHeader,ResponseHeader,Common response parameters (see 7.33 for ResponseHeader definition).
+results [],CallMethodResult,Result for the Method calls. This structure is defined in-line with the following indented items.
+statusCode,StatusCode,"StatusCode of the Method executed in the Server. This StatusCode is set to the Bad_InvalidArgument StatusCode if at least one input argument broke a constraint (e.g. wrong data type, value out of range). This StatusCode is set to a bad StatusCode if the Method execution failed in the Server, e.g. based on an exception. If the Method execution fails but the outputArguments provide additional information like an application specific error code, the Method should return a StatusCode with Severity Uncertain."
+inputArgumentResults [],StatusCode,"List of StatusCodes corresponding to the inputArguments. This list is empty unless the operation level result is Bad_InvalidArgument. If this list is populated, it has the same length as the inputArguments list."
+inputArgumentDiagnosticInfos [],DiagnosticInfo,List of diagnostic information corresponding to the inputArguments. This list is empty if diagnostics information was not requested in the request header or if no diagnostic information was encountered in processing of the request.
+outputArguments [],BaseDataType,"List of output argument values. An empty list indicates that there are no output arguments. The size and order of this list matches the size and order of the output arguments defined by the OutputArguments Property of the Method. The name, a description and the data type of each argument are defined by the Argument structure in each element of the methods OutputArguments Property. The list shall be empty if the statusCode Severity is Bad."
+diagnosticInfos [],DiagnosticInfo,List of diagnostic information for the statusCode of the results. This list is empty if diagnostics information was not requested in the request header or if no diagnostic information was encountered in processing of the request.
+
+5.12.2.3 Service results
+
+
+              Table 60 defines the Service results specific to this Service. Common StatusCodes are defined in Table 178.
+
+Table 60 - Call Service Result Codes
+Symbolic Id,Description
+Bad_NothingToDo,See Table 178 for the description of this result code.
+Bad_TooManyOperations,See Table 178 for the description of this result code.
+
+5.12.2.4 StatusCodes
+
+
+              Table 61 defines values for the statusCode parameter and Table 62 defines values for the inputArgumentResults parameter that are specific to this Service. Common StatusCodes are defined in Table 179.
+
+
+              Server vendors or OPC UA companion specifications may reuse existing StatusCodes for application specific error information. This is valid as long as the canonical description of the StatusCode does not have a different meaning than the application specific description. To eliminate any vagueness, the Server should include the application specific description in the DiagnosticInfo.
+
+Good StatusCodes with sub-status shall not be used as statusCode since many programming language bindings would cause such codes to throw an exception.
+
+Table 61 - Call Operation Level Result Codes
+Symbolic Id,Description
+Bad_NodeIdInvalid,See Table 179 for the description of this result code. Used to indicate that the specified objectId is not an Object or ObjectType.
+Bad_NodeIdUnknown,See Table 179 for the description of this result code. Used to indicate that the specified objectId refers to a node that does not exist in the Server address space.
+Bad_NotExecutable,The executable Attribute does not allow the execution of the Method.
+Bad_ArgumentsMissing,The Client did not specify all of the non-optional input arguments for the Method.
+Bad_TooManyArguments,The Client specified more input arguments than defined for the Method.
+Bad_InvalidArgument,See Table 178 for the description of this result code. Used to indicate in the operation level results that one or more of the input arguments are invalid. The inputArgumentResults contain the specific status code for each invalid argument.
+Bad_UserAccessDenied,See Table 178 for the description of this result code.
+Bad_SecurityModeInsufficient,See Table 179 for the description of this result code.
+Bad_MethodInvalid,The method id does not refer to a Method for the specified Object.
+Bad_NoCommunication,See Table 179 for the description of this result code.
+Bad_NotSupported,See Table 179 for the description of this result code. The Method is not supported for the Object instance.
+Uncertain,The Method execution fails but the outputArguments provide additional information like an application specific error code.
+
+Table 62 - Call Input Argument Result Codes
+Symbolic Id,Description
+Bad_OutOfRange,See Table 179 for the description of this result code. Used to indicate that an input argument is outside the acceptable range.
+Bad_TypeMismatch,See Table 179 for the description of this result code. Used to indicate that an input argument does not have the correct data type. A ByteString is structurally the same as a one dimensional array of Byte. A Server shall accept a ByteString if an array of Byte is expected.
+Bad_DecodingError,See Table 178 for the description of this result code. Used to indicate that an input argument with a Structure DataType cannot be decoded.
+

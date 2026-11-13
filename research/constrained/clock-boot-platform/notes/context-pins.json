@@ -1,0 +1,38 @@
+{
+  "reviewed_at": "2026-11-06T02:21:13.607732+00:00",
+  "scope": "Historical local context pins, not full-source reading claims for every context document; current root-owned files may change.",
+  "files": [
+    {
+      "path": "docs/embedded-evidence.md",
+      "sha256": "5c2eb4b39fd8457d870ddb3eb528f789ed3ef8b1c818c1462ab758ec986d62a2"
+    },
+    {
+      "path": "docs/compact-host-binding.md",
+      "sha256": "8687e7617c039e4d41351007b40037119e6ca9e6f4d744c424160c66d7f4821a"
+    },
+    {
+      "path": "research/constrained/avr/notes/target-build-and-uart-review.md",
+      "sha256": "21d4664ce8918b59bbab6dfada0e5a6c56fa33eaba8d0ef436306bbcc0350599"
+    },
+    {
+      "path": "spec/07-constrained-binding.md",
+      "sha256": "a3c0527d89c4bd388005f6c278d58432690bd654569e6b98e0fd58e1dab9cfcc"
+    },
+    {
+      "path": "protocol/endpoint/endpoint.h",
+      "sha256": "4b4122760ff4073207b26d4ecef3702fdff7dd2ce00219656bc262df8910b817"
+    },
+    {
+      "path": "protocol/endpoint/README.md",
+      "sha256": "704281864be8593eeab6d27f906f15301b4cc07fa8451f9bff176cde2716c4ad"
+    },
+    {
+      "path": "protocol/platform/boot_epoch.c",
+      "sha256": "df4d57cbbf10d24a0320a3f71220c9eb29ff088417d6966f3403ea38972a7b47"
+    },
+    {
+      "path": "protocol/platform/boot_epoch.h",
+      "sha256": "2a24edf81c256551d30786ab65ac2937f419d52ef2e9c77dea72e0fa4e52e65d"
+    }
+  ]
+}

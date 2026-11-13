@@ -1,0 +1,36 @@
+5.3 Service results
+
+
+          Service results are returned at two levels in OPC UA responses, one that indicates the status of the Service call, and the other that indicates the status of each operation requested by the Service.
+
+
+          Service results are defined via the StatusCode (see 7.38).
+
+The status of the Service call is represented by the serviceResult contained in the ResponseHeader (see 7.33). The mechanism for returning this parameter is specific to the communication technology used to convey the Service response and is defined in  OPC 10000-6.
+
+The status of individual operations in a request is represented by individual StatusCodes.
+
+The following cases define the use of these parameters.
+
+1. A bad code is returned in serviceResult if the Service itself failed. In this case, a ServiceFault shall be returned instead of the Service response message. The ServiceFault is defined in 7.34.
+2. The good code is returned in serviceResult if the Service fully or partially succeeded. In this case, other response parameters are returned. The Client shall always check the response parameters, especially all StatusCodes associated with each operation. These StatusCodes may indicate bad or uncertain results for one or more operations requested in the Service call.
+
+All Services with arrays of operations in the request shall return a bad code in the serviceResult if the array is empty.
+
+The Services define various specific StatusCodes and a Server shall use these specific StatusCodes as described in the Service. A Client should be able to handle these Service specific StatusCodes. In addition, a Client shall expect other common StatusCodes defined in Table 178 and Table 179. Additional details for Client handling of specific StatusCodes may be defined in OPC 10000-7.
+
+If the Server discovers, through some out-of-band mechanism that the application or user credentials used to create a Session or SecureChannel have been compromised, then the Server should immediately terminate all sessions and channels that use those credentials. In this case, the Service result code should be either Bad_IdentityTokenRejected or Bad_CertificateUntrusted.
+
+Message parsing can fail due to syntax errors or if data contained within the message exceeds ranges supported by the receiver. When this happens messages shall be rejected by the receiver. If the receiver is a Server then it shall return a ServiceFault with result code of Bad_DecodingError or Bad_EncodingLimitsExceeded. If the receiver is the Client then the Communication Stack should report these errors to the Client application.
+
+Many applications will place limits on the size of messages and/or data elements contained within these messages. For example, a Server may reject requests containing string values longer than a certain length. These limits are typically set by administrators and apply to all connections between a Client and a Server.
+
+
+          Clients that receive Bad_EncodingLimitsExceeded faults from the Server will likely need to reformulate their requests. The administrator may need to increase the limits for the Client if it receives a response from the Server with this fault.
+
+In some cases, parsing errors are fatal and it is not possible to return a fault. For example, the incoming message could exceed the buffer capacity of the receiver. In these cases, these errors may be treated as a communication fault which requires the SecureChannel to be re-established (see 5.6).
+
+The Client and Server reduce the chances of a fatal error by exchanging their message size limits in the CreateSession service. This will allow either party to avoid sending a message that causes a communication fault. The Server should return a Bad_ResponseTooLarge fault if a serialized response message exceeds the message size specified by the Client. Similarly, the Client Communication Stack should report a Bad_RequestTooLarge error to the application before sending a message that exceeds the Server's limit.
+
+Note that the message size limits only apply to the raw message body and do not include headers or the effect of applying any security. This means that a message body that is smaller than the specified maximum could still cause a fatal error.
+

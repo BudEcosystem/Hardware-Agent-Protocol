@@ -1,0 +1,7 @@
+{
+  "scope": "Sources used by targeted-native-tests; diagnostic SELECTs, relay frames and stderr only. Does not refresh or retry HMS commands.",
+  "files_sha256": {
+    "compact-launcher.py": "7d7bbba7a7465ee8039e47b2ca4e15b6e1ba648db5a70a9d51a7f165c8b40132",
+    "hms-compact.spec.ts": "f9cc85ba1cc0531bd4f0af9d3933285298eae6fc9a40d94c8e59ca608a73f62b"
+  }
+}

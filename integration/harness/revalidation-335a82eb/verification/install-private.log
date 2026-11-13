@@ -1,0 +1,131 @@
+COMMAND: ['node', '/home/bud/.local/share/pnpm/.tools/pnpm/11.28.5/node_modules/pnpm/bin/pnpm.mjs', 'install', '--frozen-lockfile', '--prefer-offline', '--ignore-scripts', '--force', '--store-dir=/home/bud/Desktop/bud/hms-harness-335a82eb/.task-state/pnpm-store', '--cache-dir=/home/bud/Desktop/bud/hms-harness-335a82eb/.task-state/pnpm-cache']
+native/pact/packages/darwin-arm64        | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/pact/packages/darwin-x64          | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/pact/packages/linux-arm64         | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["linux"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/pact/packages/win32-x64           | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["win32"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/darwin-arm64      | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/darwin-x64        | [WARN] Unsupported platform: wanted: {"cpu":["x64"],"os":["darwin"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+native/system/packages/linux-arm64       | [WARN] Unsupported platform: wanted: {"cpu":["arm64"],"os":["linux"],"libc":["any"]} (current: {"os":"linux","cpu":"x64","libc":"glibc"})
+[WARN] using --force I sure hope you know what you are doing
+Scope: all 444 workspace projects
+[WARN] There are cyclic workspace dependencies: /home/bud/Desktop/bud/hms-harness-335a82eb/apps/cli, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/sdk/client; /home/bud/Desktop/bud/hms-harness-335a82eb/apps/web, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/test-support/client-runtime, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/bundle/web-app; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/api/gateway, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/api/remote-access; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/api/remotes, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/client/ui-plugin-manager, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/client/ui-sidebar, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/client/ui-workspace, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/client/ui-conversation; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/compaction/compaction-basic, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/compaction/compaction-image-offload; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/compaction/compaction-tool-result-pruner, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/llm/token-meter, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/llm/llm-retry, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/test-support/agent-loop-testkit, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/preset/agent-session, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/preset/agent-preset; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/core/agent-default-model, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/settings/settings; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/core/agent-loop, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/core/tools, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/sandbox/sandbox-policy, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/environment/environment, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/preset/agent-preset-registry; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/interaction/user-questions, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/session-query/session-query, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/todo/tool-todo; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/llm/llm-deepseek, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/llm/llm-deepseek-api-key; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/sandbox/sandbox-local, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/sandbox/sandbox-windows-acl; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/session/tool-working-directory, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/session/working-directory; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/ssh/fs-ssh, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/ssh/ssh; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/subagent/subagent-spawn-in-process, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/subagent/tool-subagent; /home/bud/Desktop/bud/hms-harness-335a82eb/packages/work/work-executors, /home/bud/Desktop/bud/hms-harness-335a82eb/packages/work/work-store; /home/bud/Desktop/bud/hms-harness-335a82eb/vendor/cordis, /home/bud/Desktop/bud/hms-harness-335a82eb/vendor/include
+Recreating /home/bud/Desktop/bud/hms-harness-335a82eb/node_modules
+? Verifying lockfile against supply-chain policies (1758 entries)...
+Lockfile is up to date, resolution step is skipped
+Progress: resolved 1, reused 0, downloaded 0, added 0
+Packages: +1764
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Progress: resolved 1764, reused 0, downloaded 0, added 0
+Progress: resolved 1764, reused 53, downloaded 0, added 0
+Progress: resolved 1764, reused 174, downloaded 0, added 0
+Progress: resolved 1764, reused 353, downloaded 0, added 0
+Progress: resolved 1764, reused 556, downloaded 0, added 0
+Progress: resolved 1764, reused 1284, downloaded 0, added 0
+[WARN] Tarball download average speed 45 KiB/s (size 48 KiB) is below 50 KiB/s: https://registry.npmjs.org/node-addon-require-builtin-darwin-arm64/-/node-addon-require-builtin-darwin-arm64-0.1.9.tgz (GET)
+[WARN] Tarball download average speed 39 KiB/s (size 47 KiB) is below 50 KiB/s: https://registry.npmjs.org/node-addon-require-builtin-darwin-x64/-/node-addon-require-builtin-darwin-x64-0.1.9.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 4, added 55
+[WARN] Tarball download average speed 33 KiB/s (size 74 KiB) is below 50 KiB/s: https://registry.npmjs.org/node-addon-require-builtin-linux-arm64-gnu/-/node-addon-require-builtin-linux-arm64-gnu-0.1.9.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 5, added 145
+Progress: resolved 1764, reused 1458, downloaded 6, added 199
+Progress: resolved 1764, reused 1458, downloaded 8, added 388
+Progress: resolved 1764, reused 1458, downloaded 8, added 577
+[WARN] Tarball download average speed 22 KiB/s (size 142 KiB) is below 50 KiB/s: https://registry.npmjs.org/node-addon-require-builtin-win32-ia32-msvc/-/node-addon-require-builtin-win32-ia32-msvc-0.1.9.tgz (GET)
+[WARN] Tarball download average speed 22 KiB/s (size 139 KiB) is below 50 KiB/s: https://registry.npmjs.org/node-addon-require-builtin-win32-arm64-msvc/-/node-addon-require-builtin-win32-arm64-msvc-0.1.9.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 10, added 797
+Progress: resolved 1764, reused 1458, downloaded 10, added 1386
+Progress: resolved 1764, reused 1458, downloaded 10, added 1474
+[WARN] Tarball download average speed 37 KiB/s (size 304 KiB) is below 50 KiB/s: https://registry.npmjs.org/@koromix/koffi-win32-ia32/-/koffi-win32-ia32-3.1.1.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 11, added 1474
+Progress: resolved 1764, reused 1458, downloaded 12, added 1476
+[WARN] Tarball download average speed 14 KiB/s (size 168 KiB) is below 50 KiB/s: https://registry.npmjs.org/node-addon-require-builtin-win32-x64-msvc/-/node-addon-require-builtin-win32-x64-msvc-0.1.9.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 13, added 1477
+[WARN] Tarball download average speed 30 KiB/s (size 310 KiB) is below 50 KiB/s: https://registry.npmjs.org/@koromix/koffi-win32-arm64/-/koffi-win32-arm64-3.1.1.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 15, added 1479
+[WARN] Tarball download average speed 27 KiB/s (size 319 KiB) is below 50 KiB/s: https://registry.npmjs.org/@koromix/koffi-openbsd-x64/-/koffi-openbsd-x64-3.1.1.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 16, added 1480
+[WARN] Tarball download average speed 16 KiB/s (size 99 KiB) is below 50 KiB/s: https://registry.npmjs.org/@img/sharp-linux-arm/-/sharp-linux-arm-0.35.5.tgz (GET)
+[WARN] Tarball download average speed 35 KiB/s (size 112 KiB) is below 50 KiB/s: https://registry.npmjs.org/@img/sharp-linux-ppc64/-/sharp-linux-ppc64-0.35.5.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 18, added 1482
+[WARN] Tarball download average speed 27 KiB/s (size 389 KiB) is below 50 KiB/s: https://registry.npmjs.org/@koromix/koffi-win32-x64/-/koffi-win32-x64-3.1.1.tgz (GET)
+[WARN] Tarball download average speed 37 KiB/s (size 170 KiB) is below 50 KiB/s: https://registry.npmjs.org/@img/sharp-linux-arm64/-/sharp-linux-arm64-0.35.5.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 19, added 1483
+Progress: resolved 1764, reused 1458, downloaded 20, added 1484
+[WARN] Tarball download average speed 20 KiB/s (size 102 KiB) is below 50 KiB/s: https://registry.npmjs.org/@img/sharp-linux-riscv64/-/sharp-linux-riscv64-0.35.5.tgz (GET)
+[WARN] Tarball download average speed 22 KiB/s (size 105 KiB) is below 50 KiB/s: https://registry.npmjs.org/@img/sharp-linux-s390x/-/sharp-linux-s390x-0.35.5.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 22, added 1486
+Progress: resolved 1764, reused 1458, downloaded 23, added 1486
+Progress: resolved 1764, reused 1458, downloaded 25, added 1489
+Progress: resolved 1764, reused 1458, downloaded 26, added 1490
+Progress: resolved 1764, reused 1458, downloaded 27, added 1491
+Progress: resolved 1764, reused 1458, downloaded 28, added 1492
+Progress: resolved 1764, reused 1458, downloaded 29, added 1493
+Progress: resolved 1764, reused 1458, downloaded 31, added 1495
+Progress: resolved 1764, reused 1458, downloaded 32, added 1496
+Progress: resolved 1764, reused 1458, downloaded 33, added 1497
+Progress: resolved 1764, reused 1458, downloaded 36, added 1500
+Progress: resolved 1764, reused 1458, downloaded 37, added 1501
+[WARN] Tarball download average speed 30 KiB/s (size 295 KiB) is below 50 KiB/s: https://registry.npmjs.org/@koromix/koffi-freebsd-arm64/-/koffi-freebsd-arm64-3.1.1.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 38, added 1501
+Progress: resolved 1764, reused 1458, downloaded 39, added 1503
+Progress: resolved 1764, reused 1458, downloaded 41, added 1505
+Progress: resolved 1764, reused 1458, downloaded 42, added 1505
+Progress: resolved 1764, reused 1458, downloaded 42, added 1506
+Progress: resolved 1764, reused 1458, downloaded 43, added 1506
+Progress: resolved 1764, reused 1458, downloaded 43, added 1507
+Progress: resolved 1764, reused 1458, downloaded 44, added 1507
+Progress: resolved 1764, reused 1458, downloaded 44, added 1508
+Progress: resolved 1764, reused 1458, downloaded 45, added 1508
+Progress: resolved 1764, reused 1458, downloaded 45, added 1509
+Progress: resolved 1764, reused 1458, downloaded 46, added 1509
+Progress: resolved 1764, reused 1458, downloaded 47, added 1511
+Progress: resolved 1764, reused 1458, downloaded 48, added 1511
+Progress: resolved 1764, reused 1458, downloaded 48, added 1512
+Progress: resolved 1764, reused 1458, downloaded 50, added 1514
+Progress: resolved 1764, reused 1458, downloaded 51, added 1514
+Progress: resolved 1764, reused 1458, downloaded 52, added 1516
+Progress: resolved 1764, reused 1458, downloaded 53, added 1516
+Progress: resolved 1764, reused 1458, downloaded 53, added 1517
+Progress: resolved 1764, reused 1458, downloaded 54, added 1517
+Progress: resolved 1764, reused 1458, downloaded 55, added 1519
+Progress: resolved 1764, reused 1458, downloaded 56, added 1519
+Progress: resolved 1764, reused 1458, downloaded 56, added 1520
+Progress: resolved 1764, reused 1458, downloaded 57, added 1520
+[WARN] Tarball download average speed 41 KiB/s (size 3773 KiB) is below 50 KiB/s: https://registry.npmjs.org/lightningcss-freebsd-x64/-/lightningcss-freebsd-x64-1.33.0.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 58, added 1522
+Progress: resolved 1764, reused 1458, downloaded 59, added 1522
+Progress: resolved 1764, reused 1458, downloaded 60, added 1524
+Progress: resolved 1764, reused 1458, downloaded 61, added 1524
+[WARN] Tarball download average speed 49 KiB/s (size 4844 KiB) is below 50 KiB/s: https://registry.npmjs.org/lefthook-windows-arm64/-/lefthook-windows-arm64-2.1.12.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 62, added 1526
+Progress: resolved 1764, reused 1458, downloaded 64, added 1528
+Progress: resolved 1764, reused 1458, downloaded 65, added 1529
+Progress: resolved 1764, reused 1458, downloaded 66, added 1529
+Progress: resolved 1764, reused 1458, downloaded 66, added 1530
+Progress: resolved 1764, reused 1458, downloaded 67, added 1531
+Progress: resolved 1764, reused 1458, downloaded 68, added 1531
+Progress: resolved 1764, reused 1458, downloaded 68, added 1532
+Progress: resolved 1764, reused 1458, downloaded 70, added 1534
+[WARN] Tarball download average speed 44 KiB/s (size 5036 KiB) is below 50 KiB/s: https://registry.npmjs.org/@oxlint/binding-android-arm-eabi/-/binding-android-arm-eabi-1.81.0.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 72, added 1536
+Progress: resolved 1764, reused 1458, downloaded 73, added 1537
+Progress: resolved 1764, reused 1458, downloaded 74, added 1537
+Progress: resolved 1764, reused 1458, downloaded 74, added 1538
+[WARN] Tarball download average speed 49 KiB/s (size 5966 KiB) is below 50 KiB/s: https://registry.npmjs.org/@oxlint/binding-android-arm64/-/binding-android-arm64-1.81.0.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 75, added 1538
+Progress: resolved 1764, reused 1458, downloaded 76, added 1540
+Progress: resolved 1764, reused 1458, downloaded 77, added 1541
+Progress: resolved 1764, reused 1458, downloaded 78, added 1542
+Progress: resolved 1764, reused 1458, downloaded 79, added 1543
+Progress: resolved 1764, reused 1458, downloaded 80, added 1544
+Progress: resolved 1764, reused 1458, downloaded 81, added 1545
+Progress: resolved 1764, reused 1458, downloaded 83, added 1547
+Progress: resolved 1764, reused 1458, downloaded 84, added 1547
+Progress: resolved 1764, reused 1458, downloaded 84, added 1548
+[WARN] Tarball download average speed 45 KiB/s (size 4385 KiB) is below 50 KiB/s: https://registry.npmjs.org/@esbuild/android-arm64/-/android-arm64-0.28.2.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 85, added 1548
+Progress: resolved 1764, reused 1458, downloaded 85, added 1549
+Progress: resolved 1764, reused 1458, downloaded 86, added 1550
+[WARN] Tarball download average speed 43 KiB/s (size 5988 KiB) is below 50 KiB/s: https://registry.npmjs.org/@oxlint/binding-linux-arm64-gnu/-/binding-linux-arm64-gnu-1.81.0.tgz (GET)
+Progress: resolved 1764, reused 1458, downloaded 87, added 1550
+Progress: resolved 1764, reused 1458, downloaded 88, added 1552
+Progress: resolved 1764, reused 1458, downloaded 89, added 1553

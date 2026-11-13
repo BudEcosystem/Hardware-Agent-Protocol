@@ -1,0 +1,11 @@
+{
+  "ok": true,
+  "reading_sha256": "1d5ae2c8291a81195edef714a9fcbf05c2a416b2e15be1a683a3ca899c8fcb03",
+  "sources": 12,
+  "full_files": 10,
+  "selected_files": 2,
+  "covered_lf_lines": 7120,
+  "visually_reviewed_pages": 28,
+  "negative_metadata_checks": 8,
+  "scope": "Offline byte/coverage integrity only; no acquired-code or device execution."
+}

@@ -1,0 +1,65 @@
+{
+  "passed": true,
+  "command": "python3 research/industrial-opcua/audit_opcua.py",
+  "scope": "Retained primary-reference bytes, selected-section slices, reader-asserted LF chunk coverage, figure assets and absent-figure structural evidence. No device, acquired code, conformance or physical-safety test.",
+  "acquisition_records": 8,
+  "repository_pins": 0,
+  "file_hash_checks": 73,
+  "unique_verified_files": 65,
+  "reading_sources": 4,
+  "reading_full_text_sources": 3,
+  "reading_partial_text_sources": 1,
+  "reading_chunk_hashes": 26,
+  "part4_read_lines": 1711,
+  "part4_total_lines": 5827,
+  "part4_complete_selected_sections": 22,
+  "part4_selected_section_lines": 1644,
+  "part10_available_text_lines": 1022,
+  "figures_visually_reviewed": {
+    "4": 16,
+    "10": 15
+  },
+  "part10_referenced_figures_unavailable": 2,
+  "metadata_hashes": [
+    {
+      "path": "research/industrial-opcua/manifest.jsonl",
+      "sha256": "1557a0d72725b7a51a76001851b5b529a5b0f51c1770dcb54eb3b3c9492ffa23"
+    },
+    {
+      "path": "research/industrial-opcua/reading-opcua-full.json",
+      "sha256": "8a259276a6c7eaeee2c6eedc816040f94bdb33ba5f7cc30b47fa185bb179ea5a"
+    },
+    {
+      "path": "research/industrial-opcua/figure-manifest.json",
+      "sha256": "ecab83efec34950861a8c05e96b2cfb627310d35523523155cf17da45e367a0d"
+    },
+    {
+      "path": "research/industrial-opcua/metadata/official-download-attempts.json",
+      "sha256": "4e8b4dd0de915531c5f5cbf8942de7c79fd1d5ed66681a6c566bd3af842f8a2e"
+    },
+    {
+      "path": "research/industrial-opcua/metadata/part10-images.json",
+      "sha256": "b09dd31f621655e7a732fcac038a5587f1f81420a9bcbe189818471229a41d5e"
+    },
+    {
+      "path": "research/industrial-opcua/metadata/part4-images.json",
+      "sha256": "c22f7a313bf205b1368d1c78915a09a6424d3a8d52de6da0810a3319a2a668bf"
+    },
+    {
+      "path": "research/industrial-opcua/metadata/selected-sections.json",
+      "sha256": "309b52284c2abd0a54e519ad2a5495bb9af271532f83c8448d959048fa15e2f3"
+    },
+    {
+      "path": "research/industrial-opcua/audit_opcua.py",
+      "sha256": "750193e66ee01592dfdafa1cfd839a089a609acf723d8decf738541db901e930"
+    },
+    {
+      "path": "research/industrial-opcua/README.md",
+      "sha256": "08acd3cfdfdcbeaa1377855e9b92b5d722f5e8356a778da106587aa00c9a58ad"
+    },
+    {
+      "path": "docs/opcua-binding.md",
+      "sha256": "fac998db949a96a8a49b9fdde7d74aaa485ad5061d4b847fb09afddee7f85eed"
+    }
+  ]
+}

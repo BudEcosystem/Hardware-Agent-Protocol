@@ -1,0 +1,782 @@
+[
+  {
+    "tag": "h1",
+    "id": "title",
+    "section_id": null,
+    "text": "Web of Things (WoT) Architecture\n    1.1"
+  },
+  {
+    "tag": "h2",
+    "id": null,
+    "section_id": "abstract",
+    "text": "Abstract"
+  },
+  {
+    "tag": "h2",
+    "id": null,
+    "section_id": "sotd",
+    "text": "Status of This Document"
+  },
+  {
+    "tag": "h2",
+    "id": "table-of-contents",
+    "section_id": null,
+    "text": "Table of\n    Contents"
+  },
+  {
+    "tag": "h2",
+    "id": "x1-introduction",
+    "section_id": "introduction",
+    "text": "1. Introduction"
+  },
+  {
+    "tag": "h2",
+    "id": "x2-conformance",
+    "section_id": "conformance",
+    "text": "2. Conformance"
+  },
+  {
+    "tag": "h2",
+    "id": "x3-terminology",
+    "section_id": "terminology",
+    "text": "3. Terminology"
+  },
+  {
+    "tag": "h3",
+    "id": "x3-1-device-categories",
+    "section_id": "device-categories",
+    "text": "3.1 Device Categories"
+  },
+  {
+    "tag": "h2",
+    "id": "x4-application-domains",
+    "section_id": "sec-application-domains",
+    "text": "4. Application Domains"
+  },
+  {
+    "tag": "h3",
+    "id": "x4-1-consumer",
+    "section_id": "consumer-use-cases",
+    "text": "4.1 Consumer"
+  },
+  {
+    "tag": "h3",
+    "id": "x4-2-industrial",
+    "section_id": "industrial-iot-usecases",
+    "text": "4.2 Industrial"
+  },
+  {
+    "tag": "h4",
+    "id": "x4-2-1-example-smart-factory",
+    "section_id": "example-smart-factory",
+    "text": "4.2.1 Example: Smart Factory"
+  },
+  {
+    "tag": "h3",
+    "id": "transportationlogistics",
+    "section_id": "sec-transportationlogistics",
+    "text": "4.3 Transportation & Logistics"
+  },
+  {
+    "tag": "h3",
+    "id": "utilities",
+    "section_id": "sec-utilities",
+    "text": "4.4 Utilities"
+  },
+  {
+    "tag": "h3",
+    "id": "oilandgas",
+    "section_id": "sec-oilandgas",
+    "text": "4.5 Oil and\n        Gas"
+  },
+  {
+    "tag": "h3",
+    "id": "insurance",
+    "section_id": "sec-insurance",
+    "text": "4.6 Insurance"
+  },
+  {
+    "tag": "h3",
+    "id": "engineering-and-construction",
+    "section_id": "sec-engineering-and-construction",
+    "text": "4.7 Engineering and\n        Construction"
+  },
+  {
+    "tag": "h3",
+    "id": "agriculture",
+    "section_id": "sec-agriculture",
+    "text": "4.8 Agriculture"
+  },
+  {
+    "tag": "h3",
+    "id": "healthcare",
+    "section_id": "sec-healthcare",
+    "text": "4.9 Healthcare"
+  },
+  {
+    "tag": "h3",
+    "id": "environmentmonitoring",
+    "section_id": "sec-environmentmonitoring",
+    "text": "4.10 Environment Monitoring"
+  },
+  {
+    "tag": "h3",
+    "id": "smartcities",
+    "section_id": "sec-smart-cities",
+    "text": "4.11 Smart\n        Cities"
+  },
+  {
+    "tag": "h3",
+    "id": "smartbuildings",
+    "section_id": "sec-smart-buildings",
+    "text": "4.12 Smart\n        Buildings"
+  },
+  {
+    "tag": "h3",
+    "id": "connectedcar",
+    "section_id": "sec-connected-car",
+    "text": "4.13 Connected Car"
+  },
+  {
+    "tag": "h4",
+    "id": "connectedcar-example",
+    "section_id": "connected-car-example",
+    "text": "4.13.1 Connected Car Example"
+  },
+  {
+    "tag": "h2",
+    "id": "x5-common-deployment-patterns",
+    "section_id": "sec-common-deployment-patterns",
+    "text": "5. Common Deployment Patterns"
+  },
+  {
+    "tag": "h3",
+    "id": "x5-1-telemetry",
+    "section_id": "telemetry",
+    "text": "5.1 Telemetry"
+  },
+  {
+    "tag": "h3",
+    "id": "x5-2-device-controllers",
+    "section_id": "device-controllers",
+    "text": "5.2 Device Controllers"
+  },
+  {
+    "tag": "h3",
+    "id": "x5-3-thing-to-thing",
+    "section_id": "thing-to-thing",
+    "text": "5.3 Thing-to-Thing"
+  },
+  {
+    "tag": "h3",
+    "id": "x5-4-remote-access",
+    "section_id": "remote-access",
+    "text": "5.4 Remote Access"
+  },
+  {
+    "tag": "h3",
+    "id": "x5-5-smart-home-gateways",
+    "section_id": "smart-home-gateways",
+    "text": "5.5 Smart Home Gateways"
+  },
+  {
+    "tag": "h3",
+    "id": "x5-6-edge-devices",
+    "section_id": "edge-devices",
+    "text": "5.6 Edge Devices"
+  },
+  {
+    "tag": "h3",
+    "id": "x5-7-digital-twins",
+    "section_id": "digital-twins",
+    "text": "5.7 Digital Twins"
+  },
+  {
+    "tag": "h4",
+    "id": "x5-7-1-cloud-connected-devices",
+    "section_id": "cloud-connected-devices",
+    "text": "5.7.1 Cloud Connected Devices"
+  },
+  {
+    "tag": "h4",
+    "id": "x5-7-2-orchestration",
+    "section_id": "orchestration",
+    "text": "5.7.2 Orchestration"
+  },
+  {
+    "tag": "h4",
+    "id": "x5-7-3-legacy-devices",
+    "section_id": "legacy-devices",
+    "text": "5.7.3 Legacy Devices"
+  },
+  {
+    "tag": "h3",
+    "id": "x5-8-multi-cloud",
+    "section_id": "multi-cloud",
+    "text": "5.8 Multi-Cloud"
+  },
+  {
+    "tag": "h3",
+    "id": "x5-9-virtual-things",
+    "section_id": "virtual-thing",
+    "text": "5.9 Virtual Things"
+  },
+  {
+    "tag": "h3",
+    "id": "x5-10-cross-domain-collaboration",
+    "section_id": "sec-cross-domain-collaboration",
+    "text": "5.10 Cross-domain Collaboration"
+  },
+  {
+    "tag": "h3",
+    "id": "x5-11-system-integration",
+    "section_id": "sec-system-integration",
+    "text": "5.11 System Integration"
+  },
+  {
+    "tag": "h2",
+    "id": "x6-abstract-wot-system-architecture",
+    "section_id": "sec-wot-architecture",
+    "text": "6. Abstract WoT System\n      Architecture"
+  },
+  {
+    "tag": "h3",
+    "id": "x6-1-fundamental-concepts",
+    "section_id": "sec-architecture-overview",
+    "text": "6.1 Fundamental Concepts"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-1-1-metadata",
+    "section_id": "metadata",
+    "text": "6.1.1 Metadata"
+  },
+  {
+    "tag": "h5",
+    "id": "x6-1-1-1-thing-descriptions",
+    "section_id": "metadata-thing-descriptions",
+    "text": "6.1.1.1 Thing Descriptions"
+  },
+  {
+    "tag": "h5",
+    "id": "x6-1-1-2-thing-models",
+    "section_id": "metadata-thing-models",
+    "text": "6.1.1.2 Thing Models"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-1-2-links",
+    "section_id": "links",
+    "text": "6.1.2 Links"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-1-3-intermediaries",
+    "section_id": "intermediaries",
+    "text": "6.1.3 Intermediaries"
+  },
+  {
+    "tag": "h3",
+    "id": "x6-2-affordances",
+    "section_id": "sec-affordances",
+    "text": "6.2 Affordances"
+  },
+  {
+    "tag": "h3",
+    "id": "x6-3-web-thing",
+    "section_id": "sec-web-thing",
+    "text": "6.3 Web\n        Thing"
+  },
+  {
+    "tag": "h3",
+    "id": "x6-4-lifecycle",
+    "section_id": "lifecycle",
+    "text": "6.4 Lifecycle"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-4-1-simple-system-lifecycle",
+    "section_id": "simple-system-lifecycle",
+    "text": "6.4.1 Simple System Lifecycle"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-4-2-system-lifecycle-with-registration",
+    "section_id": "system-lifecycle-no-directory",
+    "text": "6.4.2 System Lifecycle with\n          Registration"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-4-3-thing-lifecycle",
+    "section_id": "thing-lifecycle",
+    "text": "6.4.3 Thing Lifecycle"
+  },
+  {
+    "tag": "h3",
+    "id": "x6-5-interaction-model",
+    "section_id": "sec-interaction-model",
+    "text": "6.5 Interaction Model"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-5-1-properties",
+    "section_id": "properties",
+    "text": "6.5.1 Properties"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-5-2-actions",
+    "section_id": "actions",
+    "text": "6.5.2 Actions"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-5-3-events",
+    "section_id": "events",
+    "text": "6.5.3 Events"
+  },
+  {
+    "tag": "h3",
+    "id": "x6-6-hypermedia-controls",
+    "section_id": "sec-hypermedia-controls",
+    "text": "6.6 Hypermedia Controls"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-6-1-links",
+    "section_id": "sec-hypermedia-links",
+    "text": "6.6.1 Links"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-6-2-forms",
+    "section_id": "sec-hypermedia-forms",
+    "text": "6.6.2 Forms"
+  },
+  {
+    "tag": "h3",
+    "id": "x6-7-protocol-bindings",
+    "section_id": "sec-protocol-bindings",
+    "text": "6.7 Protocol Bindings"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-7-1-hypermedia-driven",
+    "section_id": "hypermedia-driven",
+    "text": "6.7.1 Hypermedia-driven"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-7-2-uris",
+    "section_id": "sec-arch-URIs",
+    "text": "6.7.2 URIs"
+  },
+  {
+    "tag": "h3",
+    "id": "x6-8-media-types",
+    "section_id": "media-types",
+    "text": "6.8 Media Types"
+  },
+  {
+    "tag": "h3",
+    "id": "x6-9-internationalization",
+    "section_id": "sec-i18n",
+    "text": "6.9 Internationalization"
+  },
+  {
+    "tag": "h3",
+    "id": "x6-10-wot-system-components-and-their-interconnectivity",
+    "section_id": "sec-wot-servient-architecture-high-level",
+    "text": "6.10 WoT System Components and\n        their Interconnectivity"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-10-1-direct-communication",
+    "section_id": "direct-communication",
+    "text": "6.10.1 Direct Communication"
+  },
+  {
+    "tag": "h4",
+    "id": "x6-10-2-indirect-communication",
+    "section_id": "indirect-communication",
+    "text": "6.10.2 Indirect Communication"
+  },
+  {
+    "tag": "h2",
+    "id": "x7-wot-building-blocks",
+    "section_id": "sec-building-blocks",
+    "text": "7. WoT Building Blocks"
+  },
+  {
+    "tag": "h3",
+    "id": "x7-1-wot-thing-description",
+    "section_id": "sec-thing-description",
+    "text": "7.1 WoT Thing Description"
+  },
+  {
+    "tag": "h3",
+    "id": "x7-2-thing-model",
+    "section_id": "sec-thing-model",
+    "text": "7.2 Thing Model"
+  },
+  {
+    "tag": "h3",
+    "id": "x7-3-profiles",
+    "section_id": "wot-profiles",
+    "text": "7.3 Profiles"
+  },
+  {
+    "tag": "h4",
+    "id": "profile-description-methodology",
+    "section_id": "profiling-methodology",
+    "text": "7.3.1 Profiling Methodology"
+  },
+  {
+    "tag": "h3",
+    "id": "x7-4-wot-discovery",
+    "section_id": "sec-discovery",
+    "text": "7.4 WoT Discovery"
+  },
+  {
+    "tag": "h4",
+    "id": "x7-4-1-introduction-mechanisms",
+    "section_id": "sec-discovery-introductions",
+    "text": "7.4.1 Introduction Mechanisms"
+  },
+  {
+    "tag": "h4",
+    "id": "x7-4-2-exploration-mechanisms",
+    "section_id": "sec-discovery-exploration",
+    "text": "7.4.2 Exploration Mechanisms"
+  },
+  {
+    "tag": "h3",
+    "id": "x7-5-wot-binding-templates",
+    "section_id": "sec-binding-templates",
+    "text": "7.5 WoT Binding Templates"
+  },
+  {
+    "tag": "h3",
+    "id": "x7-6-wot-scripting-api",
+    "section_id": "sec-scripting-api",
+    "text": "7.6 WoT Scripting API"
+  },
+  {
+    "tag": "h3",
+    "id": "x7-7-wot-security-and-privacy-guidelines",
+    "section_id": "sec-security-guidelines",
+    "text": "7.7 WoT Security and Privacy\n        Guidelines"
+  },
+  {
+    "tag": "h2",
+    "id": "x8-abstract-servient-architecture",
+    "section_id": "sec-servient-implementation",
+    "text": "8. Abstract Servient Architecture"
+  },
+  {
+    "tag": "h3",
+    "id": "x8-1-behavior-implementation",
+    "section_id": "behavior-implementation",
+    "text": "8.1 Behavior Implementation"
+  },
+  {
+    "tag": "h3",
+    "id": "x8-2-wot-runtime",
+    "section_id": "wot-runtime",
+    "text": "8.2 WoT\n        Runtime"
+  },
+  {
+    "tag": "h3",
+    "id": "x8-3-wot-scripting-api",
+    "section_id": "wot-scripting-api",
+    "text": "8.3 WoT Scripting API"
+  },
+  {
+    "tag": "h3",
+    "id": "x8-4-exposed-thing-and-consumed-thing-abstractions",
+    "section_id": "expose-consumed-thing",
+    "text": "8.4 Exposed Thing and Consumed\n        Thing Abstractions"
+  },
+  {
+    "tag": "h3",
+    "id": "x8-5-private-security-data",
+    "section_id": "private-security-data",
+    "text": "8.5 Private Security Data"
+  },
+  {
+    "tag": "h3",
+    "id": "x8-6-protocol-stack-implementation",
+    "section_id": "protocol-stack-implementation",
+    "text": "8.6 Protocol Stack\n        Implementation"
+  },
+  {
+    "tag": "h3",
+    "id": "x8-7-system-api",
+    "section_id": "system-api",
+    "text": "8.7 System API"
+  },
+  {
+    "tag": "h3",
+    "id": "x8-8-alternative-servient-and-wot-implementations",
+    "section_id": "alt-servient-impl",
+    "text": "8.8 Alternative Servient and WoT\n        Implementations"
+  },
+  {
+    "tag": "h4",
+    "id": "x8-8-1-native-wot-api",
+    "section_id": "native-impl",
+    "text": "8.8.1 Native WoT API"
+  },
+  {
+    "tag": "h4",
+    "id": "x8-8-2-thing-description-for-existing-devices",
+    "section_id": "existing-impl",
+    "text": "8.8.2 Thing Description for\n          Existing Devices"
+  },
+  {
+    "tag": "h2",
+    "id": "x9-example-wot-deployments",
+    "section_id": "sec-deployment-scenario",
+    "text": "9. Example WoT Deployments"
+  },
+  {
+    "tag": "h3",
+    "id": "x9-1-thing-and-consumer-roles",
+    "section_id": "sec-client-server-roles",
+    "text": "9.1 Thing and Consumer Roles"
+  },
+  {
+    "tag": "h3",
+    "id": "x9-2-topology-of-wot-systems-and-deployment-scenarios",
+    "section_id": "sec-topologies-deployment-scenarios",
+    "text": "9.2 Topology of WoT Systems and\n        Deployment Scenarios"
+  },
+  {
+    "tag": "h4",
+    "id": "x9-2-1-consumer-and-thing-on-the-same-network",
+    "section_id": "sec-deployment-app-dev",
+    "text": "9.2.1 Consumer and Thing on the\n          Same Network"
+  },
+  {
+    "tag": "h4",
+    "id": "x9-2-2-consumer-and-thing-connected-via-intermediaries",
+    "section_id": "sec-deployment-intermediaries",
+    "text": "9.2.2 Consumer and Thing\n          Connected via Intermediaries"
+  },
+  {
+    "tag": "h5",
+    "id": "x9-2-2-1-intermediary-acting-as-a-proxy",
+    "section_id": "sec-deployment-app-proxy-dev",
+    "text": "9.2.2.1 Intermediary Acting as\n            a Proxy"
+  },
+  {
+    "tag": "h5",
+    "id": "x9-2-2-2-intermediary-acting-as-a-digital-twin",
+    "section_id": "sec-deployment-digital-twin",
+    "text": "9.2.2.2 Intermediary Acting as\n            a Digital Twin"
+  },
+  {
+    "tag": "h4",
+    "id": "x9-2-3-devices-in-a-local-network-controlled-from-a-cloud-service",
+    "section_id": "sec-deployment-cloud",
+    "text": "9.2.3 Devices in a Local Network\n          Controlled from a Cloud Service"
+  },
+  {
+    "tag": "h4",
+    "id": "x9-2-4-discovery-using-a-thing-description-directory",
+    "section_id": "sec-deployment-discovery-with-directory",
+    "text": "9.2.4 Discovery Using a Thing\n          Description Directory"
+  },
+  {
+    "tag": "h4",
+    "id": "x9-2-5-service-to-service-connections-across-multiple-domains",
+    "section_id": "sec-deployment-service-to-service",
+    "text": "9.2.5 Service-to-Service\n          Connections Across Multiple Domains"
+  },
+  {
+    "tag": "h5",
+    "id": "x9-2-5-1-connection-through-thing-description-directory-synchronization",
+    "section_id": "sec-deployment-service-to-service-synchronized",
+    "text": "9.2.5.1 Connection Through\n            Thing Description Directory\n            Synchronization"
+  },
+  {
+    "tag": "h5",
+    "id": "x9-2-5-2-connection-through-proxy-synchronization",
+    "section_id": "sec-deployment-service-sync-proxy",
+    "text": "9.2.5.2 Connection Through\n            Proxy Synchronization"
+  },
+  {
+    "tag": "h2",
+    "id": "x10-security-considerations",
+    "section_id": "sec-security-considerations",
+    "text": "10. Security Considerations"
+  },
+  {
+    "tag": "h3",
+    "id": "x10-1-wot-thing-description-risks",
+    "section_id": "sec-security-consideration-td-risks",
+    "text": "10.1 WoT Thing Description\n        Risks"
+  },
+  {
+    "tag": "h4",
+    "id": "x10-1-1-thing-description-private-security-data-risk",
+    "section_id": "sec-security-consideration-td-private",
+    "text": "10.1.1 Thing Description Private\n          Security Data Risk"
+  },
+  {
+    "tag": "h4",
+    "id": "x10-1-2-thing-description-communication-metadata-risk",
+    "section_id": "sec-security-consideration-td-cm",
+    "text": "10.1.2 Thing Description\n          Communication Metadata Risk"
+  },
+  {
+    "tag": "h3",
+    "id": "x10-2-wot-scripting-api-risks",
+    "section_id": "sec-security-consideration-scripting-risks",
+    "text": "10.2 WoT Scripting API Risks"
+  },
+  {
+    "tag": "h4",
+    "id": "x10-2-1-cross-script-security-risk",
+    "section_id": "sec-security-consideration-cross-script",
+    "text": "10.2.1 Cross-Script Security\n          Risk"
+  },
+  {
+    "tag": "h4",
+    "id": "x10-2-2-physical-device-direct-access-risk",
+    "section_id": "sec-security-consideration-device-direct-access",
+    "text": "10.2.2 Physical Device Direct\n          Access Risk"
+  },
+  {
+    "tag": "h3",
+    "id": "x10-3-wot-runtime-risks",
+    "section_id": "sec-security-consideration-runtime-risks",
+    "text": "10.3 WoT Runtime Risks"
+  },
+  {
+    "tag": "h4",
+    "id": "x10-3-1-provisioning-and-update-security-risk",
+    "section_id": "sec-security-consideration-update-provisioning",
+    "text": "10.3.1 Provisioning and Update\n          Security Risk"
+  },
+  {
+    "tag": "h4",
+    "id": "x10-3-2-security-credentials-storage-risk",
+    "section_id": "sec-security-consideration-credentials-storage",
+    "text": "10.3.2 Security Credentials\n          Storage Risk"
+  },
+  {
+    "tag": "h3",
+    "id": "x10-4-trusted-environment-risks",
+    "section_id": "sec-security-consideration-trusted-environment-risks",
+    "text": "10.4 Trusted Environment Risks"
+  },
+  {
+    "tag": "h3",
+    "id": "x10-5-secure-transport",
+    "section_id": "sec-security-consideration-secure-transport",
+    "text": "10.5 Secure Transport"
+  },
+  {
+    "tag": "h2",
+    "id": "x11-privacy-considerations",
+    "section_id": "sec-privacy-considerations",
+    "text": "11. Privacy Considerations"
+  },
+  {
+    "tag": "h3",
+    "id": "x11-1-wot-thing-description-risks",
+    "section_id": "sec-privacy-consideration-td-risks",
+    "text": "11.1 WoT Thing Description\n        Risks"
+  },
+  {
+    "tag": "h4",
+    "id": "x11-1-1-thing-description-personally-identifiable-information-risk",
+    "section_id": "sec-privacy-consideration-td-pii",
+    "text": "11.1.1 Thing Description\n          Personally Identifiable Information Risk"
+  },
+  {
+    "tag": "h3",
+    "id": "x11-2-access-to-personally-identifiable-information",
+    "section_id": "arch-privacy-consideration-access-controls",
+    "text": "11.2 Access to Personally\n        Identifiable Information"
+  },
+  {
+    "tag": "h2",
+    "id": "x12-accessibility-considerations",
+    "section_id": "sec-accessibility-considerations",
+    "text": "12. Accessibility Considerations"
+  },
+  {
+    "tag": "h3",
+    "id": "x12-1-greenfield-wot-systems",
+    "section_id": "sec-accessibility-considerations-greenfield",
+    "text": "12.1 Greenfield WoT Systems"
+  },
+  {
+    "tag": "h3",
+    "id": "x12-2-brownfield-wot-systems",
+    "section_id": "sec-accessibility-considerations-brownfield",
+    "text": "12.2 Brownfield WoT Systems"
+  },
+  {
+    "tag": "h2",
+    "id": "a-recent-specification-changes",
+    "section_id": "changes",
+    "text": "A. Recent Specification Changes"
+  },
+  {
+    "tag": "h3",
+    "id": "changes-from-pr",
+    "section_id": "changes-from-11-july-2023-proposed-recommendation",
+    "text": "A.1 Changes from 11 July 2023 Proposed\n        Recommendation"
+  },
+  {
+    "tag": "h3",
+    "id": "changes-from-cr",
+    "section_id": "changes-from-19-january-2023-candidate-recommendation",
+    "text": "A.2 Changes from 19 January 2023 Candidate\n        Recommendation"
+  },
+  {
+    "tag": "h3",
+    "id": "changes-from-wd-2022-09-07",
+    "section_id": "changes-from-the-wd-published-september-7-2022",
+    "text": "A.3 Changes from the WD published September\n        7, 2022"
+  },
+  {
+    "tag": "h3",
+    "id": "changes-from-fpwd-1.1",
+    "section_id": "changes-in-wd-published-september-7-2022-from-the-fpwd-version",
+    "text": "A.4 Changes in WD published September 7, 2022 from the FPWD\n        version"
+  },
+  {
+    "tag": "h3",
+    "id": "changes-in-fpwd-1.1-from-recommendation-1.0",
+    "section_id": "changes-in-the-fpwd-from-the-1-0-version-of-wot-architecture",
+    "text": "A.5 Changes in the FPWD from the\n        1.0 version of [ wot-architecture ]"
+  },
+  {
+    "tag": "h2",
+    "id": "b-acknowledgments",
+    "section_id": "acknowledgements",
+    "text": "B. Acknowledgments"
+  },
+  {
+    "tag": "h2",
+    "id": "c-references",
+    "section_id": "references",
+    "text": "C. References"
+  },
+  {
+    "tag": "h3",
+    "id": "c-1-normative-references",
+    "section_id": "normative-references",
+    "text": "C.1 Normative references"
+  },
+  {
+    "tag": "h3",
+    "id": "c-2-informative-references",
+    "section_id": "informative-references",
+    "text": "C.2 Informative references"
+  }
+]

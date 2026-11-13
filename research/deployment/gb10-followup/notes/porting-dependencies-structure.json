@@ -1,0 +1,628 @@
+{
+  "selector": "article.bd-article",
+  "title": "Dependencies & Tools \u2014 NVIDIA DGX Spark Porting Guide",
+  "tables": [
+    {
+      "table": 1,
+      "rows": [
+        [
+          "Package",
+          "Supported",
+          "Min. Version",
+          "Notes"
+        ],
+        [
+          "ACAR",
+          "Yes",
+          "26-1",
+          ""
+        ],
+        [
+          "Compute Sanitizer",
+          "Yes",
+          "n/a",
+          "Included in CUDA Toolkit"
+        ],
+        [
+          "Container Toolkit",
+          "Yes",
+          "1.17.7",
+          ""
+        ],
+        [
+          "cuCIM",
+          "No",
+          "n/a",
+          ""
+        ],
+        [
+          "cuBLAS",
+          "Yes",
+          "n/a",
+          "Included in HPC SDK and CUDA Toolkit"
+        ],
+        [
+          "CUDA Toolkit",
+          "Yes",
+          "13.0",
+          ""
+        ],
+        [
+          "CUDA-GDB",
+          "Yes",
+          "n/a",
+          "Included in CUDA Toolkit"
+        ],
+        [
+          "CUDA Math API",
+          "Yes",
+          "n/a",
+          "Included in CUDA Toolkit"
+        ],
+        [
+          "cuDNN",
+          "Yes",
+          "9.11",
+          ""
+        ],
+        [
+          "cuDSS",
+          "Yes",
+          "0.7.0",
+          ""
+        ],
+        [
+          "cuEquivariance",
+          "Yes",
+          "0.9.0",
+          ""
+        ],
+        [
+          "cuFFT",
+          "Yes",
+          "n/a",
+          "Included in HPC SDK and CUDA Toolkit"
+        ],
+        [
+          "cuOpt",
+          "Yes",
+          "25.12",
+          ""
+        ],
+        [
+          "CUPTI",
+          "Yes",
+          "n/a",
+          "Included in CUDA Toolkit"
+        ],
+        [
+          "cuPyNumeric",
+          "Yes",
+          "26.01",
+          ""
+        ],
+        [
+          "cuQuantum",
+          "Yes",
+          "25.06",
+          ""
+        ],
+        [
+          "cuRAND",
+          "Yes",
+          "n/a",
+          "Included in HPC SDK and CUDA Toolkit"
+        ],
+        [
+          "cuSolver",
+          "Yes",
+          "n/a",
+          "Included in HPC SDK and CUDA Toolkit"
+        ],
+        [
+          "cuSPARSE",
+          "Yes",
+          "n/a",
+          "Included in CUDA Toolkit"
+        ],
+        [
+          "cuTensor",
+          "Yes",
+          "2.3",
+          ""
+        ],
+        [
+          "CUTLASS",
+          "Yes",
+          "4.2.0",
+          "C++ Supported"
+        ],
+        [
+          "cuVS",
+          "Yes",
+          "25.12",
+          ""
+        ],
+        [
+          "CV-CUDA",
+          "No",
+          "n/a",
+          ""
+        ],
+        [
+          "DeepStream",
+          "Yes",
+          "8.0",
+          ""
+        ],
+        [
+          "HPC SDK",
+          "No",
+          "n/a",
+          ""
+        ],
+        [
+          "Deep Learning Frameworks",
+          "Yes",
+          "25.09",
+          ""
+        ],
+        [
+          "DOCA",
+          "No",
+          "n/a",
+          ""
+        ],
+        [
+          "Model Optimizer",
+          "Yes",
+          "n/a",
+          "Dependent on TensorRT 10.14.1+"
+        ],
+        [
+          "MONAI",
+          "Yes",
+          "TBD",
+          ""
+        ],
+        [
+          "NCCL",
+          "Yes",
+          "2.28.9-1",
+          ""
+        ],
+        [
+          "NPP",
+          "Yes",
+          "n/a",
+          "Included in CUDA Toolkit"
+        ],
+        [
+          "Nsight Aftermath SDK",
+          "No",
+          "n/a",
+          ""
+        ],
+        [
+          "Nsight Cloud",
+          "No",
+          "n/a",
+          ""
+        ],
+        [
+          "Nsight Compute",
+          "Yes",
+          "n/a",
+          "Included in CUDA Toolkit"
+        ],
+        [
+          "Nsight Deep Learning Designer",
+          "No",
+          "n/a",
+          ""
+        ],
+        [
+          "Nsight Graphics",
+          "No",
+          "n/a",
+          ""
+        ],
+        [
+          "Nsight Perf SDK",
+          "No",
+          "n/a",
+          ""
+        ],
+        [
+          "Nsight Systems",
+          "Yes",
+          "TBD",
+          ""
+        ],
+        [
+          "Nsight Tools JupyterLab Extension",
+          "No",
+          "n/a",
+          ""
+        ],
+        [
+          "Nsight Visual Studio Code Edition",
+          "Yes",
+          "2025.1",
+          ""
+        ],
+        [
+          "nvImageCodec",
+          "Yes",
+          "0.8.0",
+          ""
+        ],
+        [
+          "nvJPEG2000",
+          "Yes",
+          "0.10.0",
+          ""
+        ],
+        [
+          "nvmath-python",
+          "Yes",
+          "0.8",
+          ""
+        ],
+        [
+          "NVRTC",
+          "Yes",
+          "n/a",
+          "Included in CUDA Toolkit"
+        ],
+        [
+          "nvTIFF",
+          "Yes",
+          "0.7.0",
+          ""
+        ],
+        [
+          "NVTX",
+          "Yes",
+          "n/a",
+          ""
+        ],
+        [
+          "OptiX",
+          "Yes",
+          "9.0",
+          ""
+        ],
+        [
+          "RAPIDS",
+          "Yes",
+          "25.10",
+          ""
+        ],
+        [
+          "Streamline",
+          "No",
+          "n/a",
+          ""
+        ],
+        [
+          "TensorRT",
+          "Yes",
+          "10.14.1",
+          ""
+        ],
+        [
+          "TensorRT for RTX",
+          "No",
+          "n/a",
+          ""
+        ],
+        [
+          "TensorRT-LLM",
+          "Yes",
+          "1.2",
+          ""
+        ],
+        [
+          "Triton",
+          "Yes",
+          "25.08",
+          ""
+        ],
+        [
+          "Warp",
+          "Yes",
+          "1.10.0",
+          ""
+        ]
+      ]
+    }
+  ],
+  "images": [],
+  "article_links": [
+    {
+      "text": "#",
+      "href": "#dependencies-tools"
+    },
+    {
+      "text": "ACAR",
+      "href": "https://docs.nvidia.com/aerial/cuda-accelerated-ran/latest/index.html"
+    },
+    {
+      "text": "Compute Sanitizer",
+      "href": "https://developer.nvidia.com/compute-sanitizer"
+    },
+    {
+      "text": "CUDA Toolkit",
+      "href": "#ctk"
+    },
+    {
+      "text": "Container Toolkit",
+      "href": "https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html"
+    },
+    {
+      "text": "cuCIM",
+      "href": "https://developer.nvidia.com/cucim-for-image-io-processing"
+    },
+    {
+      "text": "cuBLAS",
+      "href": "https://developer.nvidia.com/cublas"
+    },
+    {
+      "text": "HPC SDK",
+      "href": "#hpc"
+    },
+    {
+      "text": "CUDA Toolkit",
+      "href": "#ctk"
+    },
+    {
+      "text": "CUDA Toolkit",
+      "href": "https://developer.nvidia.com/cuda-toolkit"
+    },
+    {
+      "text": "CUDA-GDB",
+      "href": "https://developer.nvidia.com/cuda-gdb"
+    },
+    {
+      "text": "CUDA Toolkit",
+      "href": "#ctk"
+    },
+    {
+      "text": "CUDA Math API",
+      "href": "https://docs.nvidia.com/cuda/cuda-math-api/index.html"
+    },
+    {
+      "text": "CUDA Toolkit",
+      "href": "#ctk"
+    },
+    {
+      "text": "cuDNN",
+      "href": "https://developer.nvidia.com/cudnn"
+    },
+    {
+      "text": "cuDSS",
+      "href": "https://developer.nvidia.com/cudss"
+    },
+    {
+      "text": "cuEquivariance",
+      "href": "https://github.com/NVIDIA/cuEquivariance"
+    },
+    {
+      "text": "cuFFT",
+      "href": "https://developer.nvidia.com/cufft"
+    },
+    {
+      "text": "HPC SDK",
+      "href": "#hpc"
+    },
+    {
+      "text": "CUDA Toolkit",
+      "href": "#ctk"
+    },
+    {
+      "text": "cuOpt",
+      "href": "https://www.nvidia.com/de-de/ai-data-science/products/cuopt/"
+    },
+    {
+      "text": "CUPTI",
+      "href": "https://developer.nvidia.com/cupti"
+    },
+    {
+      "text": "CUDA Toolkit",
+      "href": "#ctk"
+    },
+    {
+      "text": "cuPyNumeric",
+      "href": "https://docs.nvidia.com/cupynumeric/latest/"
+    },
+    {
+      "text": "cuQuantum",
+      "href": "https://developer.nvidia.com/cuquantum-sdk"
+    },
+    {
+      "text": "cuRAND",
+      "href": "https://developer.nvidia.com/curand"
+    },
+    {
+      "text": "HPC SDK",
+      "href": "#hpc"
+    },
+    {
+      "text": "CUDA Toolkit",
+      "href": "#ctk"
+    },
+    {
+      "text": "cuSolver",
+      "href": "https://developer.nvidia.com/cusolver"
+    },
+    {
+      "text": "HPC SDK",
+      "href": "#hpc"
+    },
+    {
+      "text": "CUDA Toolkit",
+      "href": "#ctk"
+    },
+    {
+      "text": "cuSPARSE",
+      "href": "https://developer.nvidia.com/cusparse"
+    },
+    {
+      "text": "CUDA Toolkit",
+      "href": "#ctk"
+    },
+    {
+      "text": "cuTensor",
+      "href": "https://developer.nvidia.com/cutensor"
+    },
+    {
+      "text": "CUTLASS",
+      "href": "https://github.com/NVIDIA/cutlass"
+    },
+    {
+      "text": "cuVS",
+      "href": "https://developer.nvidia.com/cuvs?sortBy=developer_learning_library%2Fsort%2Ftitle%3Aasc&hitsPerPage=6"
+    },
+    {
+      "text": "CV-CUDA",
+      "href": "https://developer.nvidia.com/cv-cuda"
+    },
+    {
+      "text": "DeepStream",
+      "href": "https://developer.nvidia.com/deepstream-sdk"
+    },
+    {
+      "text": "HPC SDK",
+      "href": "https://developer.nvidia.com/hpc-sdk"
+    },
+    {
+      "text": "Deep Learning Frameworks",
+      "href": "https://developer.nvidia.com/deep-learning-frameworks"
+    },
+    {
+      "text": "DOCA",
+      "href": "https://developer.nvidia.com/networking/doca"
+    },
+    {
+      "text": "Model Optimizer",
+      "href": "https://github.com/NVIDIA/Model-Optimizer"
+    },
+    {
+      "text": "MONAI",
+      "href": "https://docs.nvidia.com/monai/index.html"
+    },
+    {
+      "text": "NCCL",
+      "href": "https://developer.nvidia.com/nccl"
+    },
+    {
+      "text": "NPP",
+      "href": "https://developer.nvidia.com/npp"
+    },
+    {
+      "text": "CUDA Toolkit",
+      "href": "#ctk"
+    },
+    {
+      "text": "Nsight Aftermath SDK",
+      "href": "https://developer.nvidia.com/nsight-aftermath"
+    },
+    {
+      "text": "Nsight Cloud",
+      "href": "https://developer.nvidia.com/nsight-cloud"
+    },
+    {
+      "text": "Nsight Compute",
+      "href": "https://developer.nvidia.com/nsight-compute"
+    },
+    {
+      "text": "CUDA Toolkit",
+      "href": "#ctk"
+    },
+    {
+      "text": "Nsight Deep Learning Designer",
+      "href": "https://developer.nvidia.com/nsight-dl-designer"
+    },
+    {
+      "text": "Nsight Graphics",
+      "href": "https://developer.nvidia.com/nsight-graphics"
+    },
+    {
+      "text": "Nsight Perf SDK",
+      "href": "https://developer.nvidia.com/nsight-perf-sdk"
+    },
+    {
+      "text": "Nsight Systems",
+      "href": "https://developer.nvidia.com/nsight-systems"
+    },
+    {
+      "text": "Nsight Tools JupyterLab Extension",
+      "href": "https://pypi.org/project/jupyterlab-nvidia-nsight/"
+    },
+    {
+      "text": "Nsight Visual Studio Code Edition",
+      "href": "https://developer.nvidia.com/nsight-visual-studio-code-edition"
+    },
+    {
+      "text": "nvImageCodec",
+      "href": "https://developer.nvidia.com/nvimagecodec"
+    },
+    {
+      "text": "nvJPEG2000",
+      "href": "https://developer.nvidia.com/nvjpeg"
+    },
+    {
+      "text": "nvmath-python",
+      "href": "https://developer.nvidia.com/nvmath-python"
+    },
+    {
+      "text": "NVRTC",
+      "href": "https://docs.nvidia.com/cuda/nvrtc/index.html"
+    },
+    {
+      "text": "CUDA Toolkit",
+      "href": "#ctk"
+    },
+    {
+      "text": "nvTIFF",
+      "href": "https://docs.nvidia.com/cuda/nvtiff/index.html"
+    },
+    {
+      "text": "NVTX",
+      "href": "https://github.com/NVIDIA/NVTX"
+    },
+    {
+      "text": "OptiX",
+      "href": "https://developer.nvidia.com/rtx/ray-tracing/optix"
+    },
+    {
+      "text": "RAPIDS",
+      "href": "https://developer.nvidia.com/rapids"
+    },
+    {
+      "text": "Streamline",
+      "href": "https://developer.nvidia.com/rtx/streamline"
+    },
+    {
+      "text": "TensorRT",
+      "href": "https://developer.nvidia.com/tensorrt"
+    },
+    {
+      "text": "TensorRT for RTX",
+      "href": "https://developer.nvidia.com/tensorrt-rtx"
+    },
+    {
+      "text": "TensorRT-LLM",
+      "href": "https://github.com/NVIDIA/TensorRT-LLM"
+    },
+    {
+      "text": "Triton",
+      "href": "https://www.nvidia.com/de-de/ai-data-science/products/triton-inference-server/"
+    },
+    {
+      "text": "Warp",
+      "href": "https://developer.nvidia.com/warp-python"
+    }
+  ]
+}

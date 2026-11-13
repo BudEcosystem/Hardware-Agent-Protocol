@@ -1,0 +1,529 @@
+                                              Lifelong Robot Library Learning: Bootstrapping Composable and
+                                              Generalizable Skills for Embodied Control with Language Models
+                                                                                      Georgios Tziafas1 and Hamidreza Kasaei1
+
+
+                                            Abstract— Large Language Models (LLMs) have emerged
+                                         as a new paradigm for embodied reasoning and control, most
+                                         recently by generating robot policy code that utilizes a custom
+                                         library of vision and control primitive skills. However, prior arts
+                                         fix their skills library and steer the LLM with carefully hand-
+                                         crafted prompt engineering, limiting the agent to a stationary
+arXiv:2406.18746v2 [cs.RO] 15 Jul 2024
+
+
+
+
+                                         range of addressable tasks. In this work, we introduce LRLL, an
+                                         LLM-based lifelong learning agent that continuously grows the
+                                         robot skill library to tackle manipulation tasks of ever-growing
+                                         complexity. LRLL achieves this with four novel contributions:
+                                         1) a soft memory module that allows dynamic storage and
+                                         retrieval of past experiences to serve as context, 2) a self-guided
+                                         exploration policy that proposes new tasks in simulation, 3) a
+                                         skill abstractor that distills recent experiences into new library
+                                         skills, and 4) a lifelong learning algorithm for enabling human
+                                         users to bootstrap new skills with minimal online interaction.
+                                         LRLL continuously transfers knowledge from the memory to
+                                         the library, building composable, general and interpretable
+                                         policies, while bypassing gradient-based optimization, thus
+                                         relieving the learner from catastrophic forgetting. Empirical
+                                         evaluation in a simulated tabletop environment shows that
+                                         LRLL outperforms end-to-end and vanilla LLM approaches                          Fig. 1: Wake-sleep library learning from human guidance.
+                                         in the lifelong setup while learning skills that are transferable
+                                         to the real world. Project material will become available at the
+                                         webpage https://gtziafas.github.io/LRLL_project/.
+                                                                                                                   instead relying on careful prompt design and in-context
+                                                               I. INTRODUCTION                                     examples to steer the LLM and aid generalization. However,
+                                                                                                                   the choice of the skills library and prompt examples remains
+                                            Building interactive agents that can continuously develop              a design choice that limits the span of tasks that the agent
+                                         new skills and adapt to new scenarios remains a challeng-                 can tackle, and require an expert to continuously adapt the
+                                         ing frontier in robotics [1]–[3]. Such an agent should be                 library and prompts to the LLM. In this work, we wish
+                                         able to interface natural language, percepts and actions in               to address such limitations by proposing LRLL, a Lifelong
+                                         order to form policies that are reusable and expandable in                Robot Library Learning agent. LRLL learns hierarchical and
+                                         an open-ended fashion [4]. Recent advances in end-to-end                  generalizable skills across time spans, while staying within
+                                         robot learning [5]–[8] learn capable multimodal policies but              the regime of in-context learning and bringing non-expert
+                                         require copious amounts of data, which are very hard to scale             human users in-the-loop.
+                                         in the robotics domain. Further, their reliance in gradient-
+                                                                                                                      Our learning algorithm is inspired by wake-sleep opti-
+                                         based optimization hinders their applicability in a lifelong
+                                                                                                                   mization [20] and its adaptation for library learning [21].
+                                         setup, due to the effect of catastrophic forgetting [9]–[11].
+                                                                                                                   Learning takes place in cycles, each with two distinct phases:
+                                            Meanwhile, an emerging paradigm has been to leverage
+                                                                                                                   a) a wake phase, during which the agent interacts with its
+                                         the code-writing capabilities of modern LLMs [12]–[14]
+                                                                                                                   environment and users in order to grow its experiences, and
+                                         for synthesizing executable robot policy code from natural
+                                                                                                                   b) a sleep phase, during which the agent reflects on its
+                                         language [15]–[19]. In such a setup, vision and action skills
+                                                                                                                   experiences in order to expand its capabilities. Accumulated
+                                         are implemented as modules (either learned or scripted) in
+                                                                                                                   experiences are distilled into skills throughout the learning
+                                         a first-party API. This allows the LLM to compose them
+                                                                                                                   cycles, therefore allowing complex tasks to be expressed
+                                         arbitrarily in combination with classic programming struc-
+                                                                                                                   as programs composed of simpler skills (see Fig 1). The
+                                         tures (control flow, recursion etc.) and third-party Python
+                                                                                                                   human acts as a teacher, introducing a few demonstrations
+                                         APIs (e.g. numpy) in order to ground visual observation,
+                                                                                                                   and hints to the agent during the wake phase. We assume the
+                                         perform low-level reasoning, and provide parameters for
+                                                                                                                   teacher follows a curriculum approach, where in each cycle
+                                         control primitives. This system bypasses model finetuning,
+                                                                                                                   the objective tasks can be built out of the learner’s current
+                                           1 Department of Artificial Intelligence, University of Groningen, the   repertoire of skills.
+                                         Netherlands, {g.t.tziafas,hamidreza.kasaei}@rug.nl                           To stay within in-context learning, we use a frozen LLM
+to generate the policy code, and design our algorithm as an        LLMs for Robot Control More similar to this work, an
+interchange between two modules: a) an experience memory,          emerging body of methods is chaining LLMs with external
+where the agent can store and retrieve past instruction-code       models [43]–[45] in order to propose grounded plans that
+pairs based on similarity search, in order to feed context         sequence high-level actions [31]–[34]. This method invests
+to the LLM (i.e. prompt retrieval), and b) a skill library,        on the current capabilities of LLMs for multi-step reasoning
+which comprises the collection of API calls the LLM can            using external modules as tools [46], without adittional
+generate code from. At each cycle, the wake phase populates        finetuning. Recent works [15]–[18] replace high-level actions
+the memory with new instruction-code pairs, generated from         with a library of primitives, and use the LLM to generate
+an LLM-based exploration module that proposes and self-            Python code that grounds the visual scene and parameter-
+verifies new tasks in a simulator. During the sleep phase, the     izes the primitives. This allows more complex policy logic
+accumulated experiences are distilled into new skills via an       than sequences of actions and offers more precise spatial
+LLM-based abstraction module. The new skills are appended          grounding [19] and reasoning [15]. However, such works are
+to the library and the wake phase is replayed with refactored      stationary systems that do not further extend their library, and
+experiences, in order to compress the memory. This leads           require manual prompt engineering to be applied in a general
+to a continual transfer of knowledge from human guidance,          setup. Code-as-Policies (CaP) [15] demonstrates sparks of
+via exploration in simulation, to the library, without utilising   non-stationarity by letting the LLM recursively define unseen
+gradients in any part of the process.                              functions, but does not do so in a controlled, reusable fashion
+   To apply our idea in robotics, we design a four-stage           and does not consider human guidance. In this work, we wish
+curriculum and prompt our agent to acquire a broad range           to extend a CaP-like system to incorporate past interactions
+of skills, including precise visual-spatial reasoning and long-    as a self-prompting mechanism and systematically use the
+horizon tabletop rearrangement. Empirically, we show that          LLM function generator to expand the skill library over time.
+LRLL can automatically build a library of hierarchical, gen-       Memory and Context Retrieval Retrieval-augmented LLMs
+eralizable and interpretable skills, while outperforming end-      are a trending direction in NLP research [47]–[49], mostly
+to-end and stationary LLM baselines. We further perform            as a means to reduce LLM hallucinations. In the robotics
+ablations to demonstrate the effectiveness of each proposed        and embodied AI space, several works retrieve the most
+component and explore design options. Finally, we illustrate       similar task-code pairs from memory based on similarity
+that our algorithm can be transferred to a real robot for dual-    search and use them to prompt the LLM [17], [31], but do
+arm tabletop rearrangement tasks, without any further adap-        so in a stationary fashion. Recent works [50]–[52] expand
+tation. In summary, our key contributions are the following:       the memory based on interactions, but there is no refinement
+a) LRLL, an LLM-based agent that can generate policy code,         of the base skills. In our work, we use the memory for LLM
+explore tasks in simulation, and expand its skillset over time,    prompt retrieval, but progressively distill similar experiences
+b) a formal recipe for enabling humans to bootstrap desired        to new skills that refactor and compress the memory.
+robot skills with minimal intervention, and c) extensive           Language-guided Skill Acquisition Iteratively refining
+comparisons, ablation studies and hardware demonstrations          robot skills with language feedback has been explored in
+that evaluate the effectiveness of each proposed component,        the past with external parsers [53] and end-to-end language-
+assess overall generalization capabilities and test sim-to-real    conditioned policies [41], [54]–[56], but rely on either do-
+transferrability.                                                  main knowledge or extensive demonstration datasets, and
+                                                                   therefore lack scalability. More recently, [57] leveraged
+                   II. RELATED WORK                                LLMs with multi-step human feedback to generate reward
+                                                                   functions that will train policies with model-predictive con-
+   Language to Action Natural language has a long-standing         trol. The concurrent work [58] utilizes an LLM to generate
+history for controlling robots [4], serving both as a natural      synthetic experiences in simulation together with success
+interface for human-robot interaction [22]–[25], as well as        conditions, and distills the successful trials into a language-
+a generalizable intermediate representation [7], [26], [27].       conditioned policy with behavioral cloning. Both ideas are
+Approaches range from semantic parsing [28]–[30], planning         conceptually close to our work, exploiting the LLM to gener-
+[31]–[34], reinforcement [35]–[37], imitation [7], [8], [26],      ate information that will train a policy, but employ traditional
+[27], [38], and model-based [39]–[41] learning to more re-         approaches for learning the policy and hence struggle with
+cent large-scale end-to-end multimodal instruction-following       the lifelong learning setup. Instead, LRLL leverages control
+[5], [42]. While end-to-end policies are becoming more             primitives and an LLM to express the policy itself, and poses
+capable, they require prohibitive amounts of offline data          skill acquisition as library learning on top of the primitives.
+or environment interactions. Further, their lifelong learning      This allows complex skills to form from simpler skills over
+potential is limited by the effect of catastrophic forgetting      time, while retaining interpretability and bypassing training
+[9]–[11]. In contrast, in this work we focus on a gradient-        policies from scratch.
+free approach where low-level actions are implemented as
+control primitives, out of which an LLM continuously builds                               III. METHOD
+more complex skills via few-shot human demonstration and              In this section, we provide an overview of the proposed
+interactive exploration.                                           algorithm (Sec. III-A) and its components (Sec. III-B), and
+Fig. 2: Overview of an LRLL learning cycle. At the beginning of the wake phase, a human user provides demonstrations and hints, out of which an
+LLM-based exploration module proposes tasks to complete, while an LLM-based actor-critic agent interacts with the environment to execute and verify
+tasks. During sleep, the experiences are clustered according to their code’s abstract syntax trees (AST) and distilled into new skills with an LLM abstractor.
+The new skills refactor the acquired experiences, which are replayed in the environment in order to compress the memory. We note that for brevity purposes,
+we omit showing the actor-critic modules during replay at the sleep phase. We illustrate examples from our first curriculum cycle (spatial coordination).
+
+
+
+describe details for achieving policy and success generation,                    The demo policies are refactored based on the proposed
+exploration and skill abstraction with LLMs (Sec. III-C).                        functions X̃ (i) = Refactor(X (i) , Lt+1 ), and the wake phase
+                                                                                 is replayed from scratch, starting only with the refactored
+A. LRLL Overview                                                                 demos. When the agent fails in a previously succeeded
+   Our framework (see Fig. 2) receives at each cycle                             task, its policy-success isnalso refactored and  o appended to
+                                                                                                                (i)        (i)
+                                                                                 the memory: Mt+1 = Mt ∪ X̃ ∈ Bt | r = 0 This process
+t a set of Nt language demonstrations Xt that contain
+instruction-policy-success tuples for specific tasks: Xt =                       ensures that by the end of the cycle, the memory will contain
+D            E         Nt                                                        the minimum number of experiences needed to replicate the
+ l (i) , a(i) , r(i)         . The demos are appended to the agent’s
+                       i=1                                                       performance of the wake phase.
+memory Mt . The policy code a(i) is factorized based on the
+current library skills Lt . The success code r(i) describes how                  B. System Components
+the agent can use privileged simulation data to verify the                       Initial Vision & Action Primitives Following previous
+success of a given instruction (e.g. check contact, object                       works [15], [16], we employ frozen pretrained vision-
+poses etc.). The output is a set of formal skills, expressed                     language models for zero-shot vision-language grounding
+as Python functions, which can be directly used for real                         In particular, we use MDETR [45] for referring expression
+robot deployment. This process is repeated for an open-ended                     grounding and CLIP [43] for open-vocabulary classification.
+number of cycles, enabling the agent to expand its library in                    For control, as we wish to demonstrate the capability of
+lifelong fashion. Each cycle consists of two phases:                             LRLL to progressively build complex skills from simpler
+Wake Phase During the wake phase, the agent interacts with                       ones, we start with the most basic primitives: moving the
+its environment in order to grow its proficiency in solving                      arm to a certain pose and opening / closing the gripper.
+more tasks. We use an LLM to iteratively propose new task                        Motion planning is performed via inverse kinematics from
+instructions l1:K = LLMExplore(Xt , Gt , Mt ) based on the in-                   end-effector space.
+put demos Xt , the current memory state Mt and some general                      Experience Memory & Retrieval Agent experiences are
+hints Gt . The proposed tasks are executed and verified in the                   formalized as tuples of task instruction, action and success
+simulator using another LLM’s generated policy and success                       code, either provided by the human teacher or “imagined" by
+code respectively: ak , rk = LLMActorCritic( lk , s0,k , Mt ),                   the LLM exploration module X (i) =< l (i) , a(i) , r(i) >. When
+where s0,k the initial simulator state of proposal k. Successful                 appended to the memory, each experience is indexed by its
+tuples are appended to the experience memory Mt , which                          instruction embedding, provided by an encoder-based LM
+helps the agent to recover more relevant context through-                        [59], [60] zi = F LM (l (i) ). In order to retrieve experiences to
+out exploration. The process is repeated until an iteration                      serve as prompts, the query instruction q is embedded by the
+threshold is met, or the LLM decides that it has completed all                   same model zq and the experiences of the top-k most similar
+objectives denoted in the hints.The acquired experiences are                    instructions based on maximum marginal relevance search
+stored in a replay buffer Bt = < s0,k , lk , ak , rk > | rk = 1 .                [61] are returned:
+Sleep Phase During sleep, the agent reflects on its acquired                                                                                     
+                                                                                 argmaxi∈Mt |S λ (cos(zi , zq ) − (1 − λ )max j∈S cos(zi , z j ))
+experiences to compose new skills. To achieve this, we first
+represent each experience as an abstract syntax tree of its                      where S the set of already selected retrievals, cos the cosine
+policy code. Experiences are clustered such that codes that                      distance metric and λ a diversification hyper-parameter. This
+have the same tree structure modulo variable and constant                        rule is applied k times to retrieve diverse experiences.
+names are grouped together for a total of M clusters C1:M .                      Skill Library Each agent skill corresponds to a function,
+We then feed each cluster into an LLM that uses the                              implemented as a Python API. The library maintains skill
+experiences as examples to define new functions that will                        information such as their names and descriptions, and is
+update the library Lt+1 = Lt ∪ {LLMAbstract(Cm )}M            m=1 .              able to trace skill dependencies from a given code snippet.
+Before learning begins, the library is initialized with the         •  A set of two exemplar generations, containing input
+initial primitives. A wrapper around the library and the agent         demo-hints and output task proposals. We provide one
+converts the newly acquired skills into API modules that are           manual and set one more exemplar from the LLM’s first
+executable in a robot simulator.                                       response in the previous cycle.
+Replay Buffer The replay buffer is a replica of the ex-           Before proposing tasks, we ask the LLM to reason about
+perience memory but only for the explored experiences of          its proposals [51], which significantly helps in responding
+the current cycle. Additionally, for each experience, the         better to the provided hints. We find that decomposing
+simulator states are saved. The replay buffer is reset at the     exploration to a chain of two LLM calls, prompted separately
+beginning of each new cycle.                                      for compositions and variations, leads to faster completion.
+                                                                  Task variations, proposed by the second LLM call, are
+C. LLM Prompts                                                    not included in the progress prompt field. A temperature
+   We implement three LLM modules:                                parameter of 0.1 is set at successive iterations to encourage
+Actor-Critic The actor-critic comprises of two parallel LLM       diverse responses.
+calls, one for policy and one for success code generation.        Skill Abstraction This module leverages LLMs’ capabilities
+Both prompt templates are instantiated after retrieving expe-     to define Python functions out of examples. The goal is dual:
+riences from the memory for a given query, and follow the         a) maintain the same code logic, but abstract code variations
+same general structure:                                           such as target objects and destination regions as arguments
+   • A comment indicating a general purpose of the code
+                                                                  to the new function, and b) extract boilerplate code snippets
+      (e.g. "### Python robot control script").                   and abstract them to new functions. This is achieved by
+   • Information about the API, aiming to present the build-
+                                                                  prompting the LLM in two rounds. The prompt contains:
+      ing blocks for code generation. For the actor, all mod-        • A general purpose system message that primes the
+      ules are extracted from the retrieved examples’ policies         LLM for function generation and imposes constraints.
+      and rendered as import statements [15]. For the critic,        • An API field, rendered from the dependencies of input
+      a fixed code snippet describing simulator utilities via          code snippets as an import statement.
+      docstrings is provided [58].                                   • A set of two exemplar function definitions. The exem-
+   • A sequence of task-code pairs from the retrieved ex-              plars are different for each round of abstraction. As in
+      periences. Each pair is rendered as a comment of the             exploration, one exemplar is manual and the other is
+      task description followed by a policy or success code            selected from the first LLM response of the last cycle.
+      snippet, for the actor and critic respectively.                • The input code snippets with their instruction as com-
+   • Throughout demonstration code, chain-of-thoughts                  ments. We first provide definition examples, which are
+      [62] are provided as in-line comments to guide the               the raw instruction-code pairs from each cluster of the
+      LLM’s reasoning before producing a next line, which is           experience memory, and then abstraction examples,
+      especially useful for explaining perspective conventions         which correspond to the LLM-generated functions from
+      (e.g. "left" correspond to x-axis).                              the first round.
+For inference, the query is appended to the prompt as a           We also ask the LLM to provide a docstring, which is used as
+comment and the LLM fills the corresponding policy or             the skill description, as well as to re-write the given examples
+success code. We find that this code-based completion format      based on the generated function, which is used to refactor
+works robustly also for chat-based LLMs [63].                     the memory and move to the replay stage of the sleep phase.
+Exploration The exploration module proposes the next tasks                           IV. EXPERIMENTS
+to complete in the simulator. The goal is to use the demos
+                                                                     The focus of our experimental evaluation is threefold: a)
+as guidance and introduce both task variations, i.e. alter
+                                                                  compare our method against previous baselines for tabletop
+concepts present in the instruction (e.g. color, spatial direc-
+                                                                  manipulation in simulation (Sec.IV-B), b) evaluate the impact
+tion etc.), as well as task compositions, i.e. combinations of
+                                                                  of each our method’s proposed contributions (Sec.IV-C), and
+concepts present in the demos (e.g. desired destinations for
+                                                                  c) demonstrate the transferability of our approach to the real
+placing objects). The prompt contains:
+                                                                  world (Sec.IV-D).
+   • A system message that includes general directives that
+      condition the LLM for the task, encourages diverse          A. Evaluation Setup
+      responses and provides the required response format.        Implementation We leverage OpenAI’s gpt-3.5-turbo
+   • Hints provided by the teacher, aimed to provide objec-       [63]     engine    for    all    LLM     generations,    and
+      tives of a specific cycle.                                  text-embedding-ada-002 [60] as the memory
+   • Information about the current state, represented as a list   embedding model. Our system is built using the LangChain
+      of appearing object names.                                  library [64]. Our simulator environment is built on Pybullet
+   • A list of completed and failed tasks so far, reflecting      [65] and it is based on the Ravens [66] manipulation suite,
+      the agent’s current progress towards completing all         with the blocks-and-bowls setup replicated from previous
+      objectives mentioned in the hints. The completed tasks      works [15], [34]. We introduce more tasks and language
+      are initialized with the provided demos.                    variations, for a total of 41 task templates, organized in a
+TABLE I: Averaged success rates (%) over seen instructions with                          TABLE II: Averaged success rates (%) over unseen task combinations
+seen/unseen attributes (SA/UA) and unseen instructions (UI), organized in                (FT) and a subset of previous task combinations (BT) for each cycle and
+a 4-cycle curriculum with 10 trials per instruction. Best results are in bold.           baseline. Best results are in bold.
+
+                     CLIPort [27]         LLM-static [15]             LRLL (ours)                            LLM-static [15]   LRLL-no-wake   LRLL-no-sleep      LRLL
+ Tasks                                                                                    Tasks
+                    SA     UA     UI     SA     UA       UI      SA       UA        UI                        FT      BT       FT     BT       FT      BT      FT      BT
+ Spatial Coord/on    -      -      -    100.0   100.0   100.0   100.0    100.0   100.0    Spatial Coord/on   100.0   100.0     68.7   60.0    100.0   100.0   100.0   100.0
+ Visual Reasoning    -      -      -     90.0    83.3    66.6    91.7     94.0    85.1    Visual Reasoning   60.0    100.0     40.0   55.0     80.0   100.0    80.0   100.0
+ Object Manip/on    98.3   37.1   4.1    95.0    94.1    80.0    98.1     98.9    90.4    Object Manip/on    55.3     60.0     46.6   40.4     78.4    80.0   94.0    80.0
+ Rearrangement      70.8   13.9   0.3    93.0    90.0    60.6    97.0     95.4    70.9    Rearrangement      45.7     55.3     50.0   46.6     64.0    78.4   70.2    94.0
+
+ Average            84.5   25.5   2.2   94.5    91.9    76.8    96.9     97.1    86.6     Average            65.1     78.9     51.3   50.5    80.6    89.6    88.1    93.5
+
+
+
+
+curriculum of 4 cycles: a) Spatial Coordination, i.e. precise                               We observe that CLIPort struggles with unseen attributes
+motions relative to objects/regions, b) Visual Reasoning,                                and its performance degrades drastically with unseen instruc-
+i.e. determining attributes, resolving spatial relations and                             tions. LLM-static is robust to unseen attributes (2.9% average
+counting/enumerating objects, c) Object Manipulation,                                    drop) and can generalize significantly better in unseen task
+i.e. single picking, releasing and placing tasks, and d)                                 instructions, with an average success rate of 76.8% in all
+Rearrangement, i.e. long-horizon tasks that involve multiple                             cycles. We find that this baseline’s main limitation is pro-
+objects and destinations.                                                                ducing non-executable code in cases of unseen instructions
+                                                                                         at later cycles, which we attribute to its inability to interpret
+Evaluation For conducting generalization experiments, we
+                                                                                         and compose multiple skills from a limited demonstration
+generate task instances in three splits [15]: seen instructions
+                                                                                         context. Such skill compositions are (partially) already ex-
+with either seen (SA) or unseen (UA) attributes, and unseen
+                                                                                         plored during the wake phase of our LRLL, and abstracted
+instructions with unseen attributes (UI). For studying learn-
+                                                                                         to functions during the sleep phase, resulting in policy code
+ing in the lifelong setup, we also propose two more splits:
+                                                                                         that is much shorter and functional in style. This robustifies
+a) a forward-transfer (FT) split, which contains unseen com-
+                                                                                         LRLL’s generated policies, which translates to an average
+positions of tasks from the present cycle with all previous
+                                                                                         increase of ∼ 6% in unseen attribute and ∼ 10% in unseen
+tasks (with seen attributes), and b) backward-transfer (BT),
+                                                                                         instructions compared to LLM-static.
+which contains the FT tasks from the previous cycle. These
+splits are meant to study whether the agent can learn to                                 C. Ablation Studies
+transfer knowledge between tasks (FT), and to what extent                                   Our ablations focus on exploring the effect of each of our
+it “forgets" or improves on previous tasks (BT).                                         proposed components and discussing options for implemen-
+Baselines We consider four baselines: a) learning end-to-                                tation.
+end multi-task policies with CLIPort [27], adapted as in                                 Forward/Backward Transfer We compare the averaged
+[34] (not applicable in all tasks), b) prompting LLMs for                                success rates of all baselines in FT/BT instructions. Results
+primitive-based policy code using a static prompt, as in                                 are reported in Table II. First, we assess that all baselines are
+CaP [15] (without hand-crafted routing between LLM sub-                                  robust in tasks from previous cycles, showcasing the immu-
+systems), c) LRLL-no-sleep, where we remove the sleep                                    nity of LLM’s in-context learning to forgetting. However, no
+phases from our LRLL and only retrieve examples from the                                 actual increase in backward task’s performance is reported
+memory without abstraction, and d) LRLL-no-wake, where                                   in any baseline. For forward transfer, we see a large increase
+we attempt to synthesize new skills directly from the human                              in averaged success between LLM-static and LRLL. Even
+demonstrations, without the exploration of the wake phase.                               without refactoring code (LRLL-no-sleep baseline), retrieving
+                                                                                         explored experiences leads to better compositional abilities,
+B. Tabletop Manipulation in Simulation                                                   with a ∼ 15% delta from static.
+   We first wish to evaluate the performance of LRLL com-                                Static Prompts vs. Retrieval When prompted with a few
+pared to established baselines in our simulated tabletop                                 examples, the difference between a static and a retrieved
+domain. To that end, we developed a simulated teacher that                               prompt is marginal. In the late cycles of the curriculum, we
+samples tasks from a set of predefined templates. The teacher                            observe the effect of prompt saturation [15], [34] kicking in
+generates up to 5 demonstration (1 per SA template) and                                  the static baseline, leading to several instabilities in the LLM
+multiple test (10 per UA, UI template) tasks in the beginning                            responses, such as ignoring the first examples in favour of
+and end of each of our 4 cycles. For end-to-end learning with                            more recent ones or referring to variable names outside the
+CLIPort [27], we sample 1k trajectories per task template                                current scope. Retrieval-based baselines tackle such issues
+using a scripted expect for each cycle and train the model                               by ensuring a fixed context length for the LLM actor.
+incrementally. For our LLM-static baseline [15], we append                               Effect of Exploration The contribution of the exploration
+demos from each new cycle in the LLM’s prompt. The same                                  module is vital, as the performance of LRLL-no-wake is
+demos are provided to LRLL at the beginning of each cycle’s                              consistently much lower across cycles. This is due to the high
+wake phase. Agents are tested at the end of each cycle.                                  difficulty of abstracting skills from one-shot demos, which
+We repeat our experiments three times with different teacher                             usually leads to a one-to-one mapping of instructions to func-
+seeds and report averaged success rates in Table I.                                      tions, without adding any actual refactoring. When adding
+Fig. 3: tSNE projections of train (SA), test (UA+UI) and explored          Fig. 4: (Left): Number of stored experiences per cycle before and after the
+task instruction embeddings, for two of our curriculum cycles: a) Visual   sleep phase of LRLL. Sleep helps to compress the number of experiences
+Reasoning (right), and b) Rearrangement (left). The exploration module     needed to reach the same performance. (Right): Averaged success rates in
+augments the agent’s experiences with task variations that cover a broad   all unseen instructions vs. number of retrieved experiences. Sleep phase
+range of skill compositions from the demos. (Best viewed in color).        refactors experiences, which leads to sufficient context with fewer examples.
+
+
+
+exploration, the abstractor has significantly more examples                curriculum in the Gazebo simulator [68] and then test the
+to define new skills. To evaluate the breadth of variance in               agent in the real robot. We demonstrate that the robot
+the explored tasks, we visualize the tSNE projections of their             is able to perform long-horizon rearrangement tasks that
+instruction embeddings [60] compared to demonstration and                  combine precise spatial positioning with reasoning about
+test tasks within a cycle (see Fig. 3).                                    object attributes, without any further adaptation from sim-
+Effect of Abstraction LRLL-no-sleep never abstracts the                    ulation. Errors were observed mostly at motion execution
+explored tasks into new skills, and so needs to retrieve a lot             due to collisions, as well as perception errors due to CLIP
+of examples in order to obtain sufficient context. This effect             misclassifications.
+bottlenecks the agent to the quality of the retriever. Besides                        V. CONCLUSION & LIMITATIONS
+performance gains, sleep leads to other practical benefits (see               In this work, we introduce LRLL, an agent and learning
+Fig. 4). First, the amount of experiences required to maintain             algorithm for lifelong robot manipulation. LRLL exploits
+the same success within each cycle is drastically reduced,                 the emergent capabilities of modern LLMs to: a) generate
+leading to a ×8 decrease in RAM required to store expe-                    policies as code, b) interact with the environment to explore
+rience embeddings. Second, LRLL with refactored memory                     new tasks, and c) distill the acquired experiences into new
+requires much less retrieved experiences to maintain high                  skills over time. LRLL replaces tedious prompt engineering
+performance in UI tasks. Additionally, as the experiences                  with retrieval from memory, and a static library of skills with
+are refactored to be simple function calls (to the abstracted              an expandable codebase, written and verified by the agent
+skills), the retrieved code is itself smaller, which leads to              itself. Empirical evaluation shows that our agent learns a
+smaller prompt lengths and hence cost gains for using GPT.                 library of composable, generalizable, and interpretable skills
+LLM and Embedding Models We find no sig-                                   that can be transferred to the real world, while its dynamic
+nificant difference between text-davinci-003 and                           and gradient-free nature prevents it from prompt saturation
+gpt-3.5-turbo in the quality of generated policy code                      and forgetting phenomena of stationary-LLM and end-to-end
+or function abstraction. For exploration, we find that both                approaches respectively.
+models provide rich variance in the proposed tasks, but                       LRLL comes not without limitations. First, perception is
+the chat model tends to be less responsive to the hints                    restricted by the choice of vision APIs, which currently sup-
+signal. This effect can be ameliorated by running more                     port only referring expressions and attribute classification. In
+exploration iterations. The choice of the embedding model                  the future, we would like to look at multimodal LLMs [16],
+is more important, as experiments with smaller encoder LMs                 [69] for open-ended vision-language grounding. Second, the
+such as Sentence-BERT [59] showed a tendency to retrieve                   current human demonstration input to LRLL is language,
+instructions that are similar lexically (e.g. same object noun             limiting its scalability to skills that can be expressed symbol-
+appears), but not necessarily convey the same task.                        ically as primitive compositions. For articulated, contact-rich
+D. Zero-Shot Sim-to-Real Transfer                                          manipulation tasks, we would like to augment demonstration
+                                                                           input to support video or kinesthetic teaching. Third, the
+   We repeat our curriculum with LRLL in a dual-arm robot                  initial prompts to exploration/abstraction modules need to
+setup with two UR5e arms and a Kinect sensor. We provide                   be refined when changing domains or LLM engines. Finally,
+vision APIs for open-vocabulary detection with MDETR                       exploration with commercial LLMs is constrained by latency
+[45] and attribute recognition with CLIP [43]. To assist in                and price factors. In the future, we would like to investigate
+articulated grasping, we also integrate GR-ConvNet [67] for                the gap between GPT and open-source alternatives [70].
+4-DoF grasp synthesis as a vision API. The motion primitives
+for moving the arm and opening/closing the fingers are                                     VI. ACKNOWLEDGMENTS
+parameterized by the left or right arm. We include a catalog                 We thank the Center for Information Technology of the
+of 12 household objects, including fruits, soda cans, juice                University of Groningen for providing access to the Hábrók
+boxes etc. We first train LRLL using our default 4-cycle                   high-performance computing cluster.
+                            R EFERENCES                                       [18] Sai Vemprala, Rogerio Bonatti, Arthur Fender C. Bucker, and Ashish
+                                                                                   Kapoor. Chatgpt for robotics: Design principles and model abilities.
+                                                                                   ArXiv, abs/2306.17582, 2023.
+ [1] Eric Kolve, Roozbeh Mottaghi, Winson Han, Eli VanderBilt, Luca
+     Weihs, Alvaro Herrasti, Matt Deitke, Kiana Ehsani, Daniel Gordon,        [19] Wenlong Huang, Chen Wang, Ruohan Zhang, Yunzhu Li, Jiajun Wu,
+     Yuke Zhu, Aniruddha Kembhavi, Abhinav Kumar Gupta, and Ali                    and Li Fei-Fei. Voxposer: Composable 3d value maps for robotic
+     Farhadi. Ai2-thor: An interactive 3d environment for visual ai. ArXiv,        manipulation with language models. ArXiv, abs/2307.05973, 2023.
+     abs/1712.05474, 2017.                                                    [20] Geoffrey E. Hinton, Peter Dayan, Brendan J. Frey, and R M Neal. The
+ [2] Kiana Ehsani, Winson Han, Alvaro Herrasti, Eli VanderBilt, Luca               "wake-sleep" algorithm for unsupervised neural networks. Science,
+     Weihs, Eric Kolve, Aniruddha Kembhavi, and Roozbeh Mottaghi.                  268 5214:1158–61, 1995.
+     Manipulathor: A framework for visual object manipulation. 2021           [21] Kevin Ellis, Catherine Wong, Maxwell Nye, Mathias Sablé-Meyer,
+     IEEE/CVF Conference on Computer Vision and Pattern Recognition                Lucas Morales, Luke B. Hewitt, Luc Cary, Armando Solar-Lezama,
+     (CVPR), pages 4495–4504, 2021.                                                and Joshua B. Tenenbaum. Dreamcoder: bootstrapping inductive
+ [3] Manolis Savva, Abhishek Kadian, Oleksandr Maksymets, Yili Zhao,               program synthesis with wake-sleep library learning. Proceedings of
+     Erik Wijmans, Bhavana Jain, Julian Straub, Jia Liu, Vladlen Koltun,           the 42nd ACM SIGPLAN International Conference on Programming
+     Jitendra Malik, Devi Parikh, and Dhruv Batra. Habitat: A platform             Language Design and Implementation, 2021.
+     for embodied ai research. 2019 IEEE/CVF International Conference         [22] Dipendra Misra, Jaeyong Sung, Kevin Lee, and Ashutosh Saxena.
+     on Computer Vision (ICCV), pages 9338–9346, 2019.                             Tell me dave: Context-sensitive grounding of natural language to
+ [4] Stefanie Tellex, Nakul Gopalan, Hadas Kress-Gazit, and Cynthia                manipulation instructions. The International Journal of Robotics
+     Matuszek. Robots that use language. Annu. Rev. Control. Robotics              Research, 35:281 – 300, 2014.
+     Auton. Syst., 3:25–55, 2020.                                             [23] Jun Hatori, Yuta Kikuchi, Sosuke Kobayashi, K. Takahashi, Yuta
+ [5] Anthony Brohan, Noah Brown, Justice Carbajal, Yevgen Chebotar,                Tsuboi, Yuya Unno, Wilson Kien Ho Ko, and Jethro Tan. Interac-
+     Krzysztof Choromanski, Tianli Ding, Danny Driess, Chelsea Finn,               tively picking real-world objects with unconstrained spoken language
+     Peter R. Florence, Chuyuan Fu, and et al. Rt-2: Vision-language-              instructions. 2018 IEEE International Conference on Robotics and
+     action models transfer web knowledge to robotic control. ArXiv,               Automation (ICRA), pages 3774–3781, 2017.
+     abs/2307.15818, 2023.                                                    [24] Mohit Shridhar and David Hsu. Interactive visual grounding of refer-
+ [6] Danny Driess, F. Xia, Mehdi S. M. Sajjadi, Corey Lynch, Aakanksha             ring expressions for human-robot interaction. ArXiv, abs/1806.03831,
+     Chowdhery, Brian Ichter, Ayzaan Wahid, Jonathan Tompson, Quan Ho              2018.
+     Vuong, Tianhe Yu, and Wenlong Huang et al. Palm-e: An embodied           [25] Hanbo Zhang, Yunfan Lu, Cunjun Yu, David Hsu, Xuguang Lan, and
+     multimodal language model. In International Conference on Machine             Nanning Zheng. Invigorate: Interactive visual grounding and grasping
+     Learning, 2023.                                                               in clutter. ArXiv, abs/2108.11092, 2021.
+ [7] Yunfan Jiang, Agrim Gupta, Zichen Zhang, Guanzhi Wang, Yongqiang         [26] Eric Jang, Alex Irpan, Mohi Khansari, Daniel Kappler, Frederik Ebert,
+     Dou, Yanjun Chen, Li Fei-Fei, Anima Anandkumar, Yuke Zhu, and                 Corey Lynch, Sergey Levine, and Chelsea Finn. Bc-z: Zero-shot task
+     Linxi (Jim) Fan. Vima: General robot manipulation with multimodal             generalization with robotic imitation learning. ArXiv, abs/2202.02005,
+     prompts. ArXiv, abs/2210.03094, 2022.                                         2022.
+ [8] Corey Lynch, Ayzaan Wahid, Jonathan Tompson, Tianli Ding, James          [27] Mohit Shridhar, Lucas Manuelli, and Dieter Fox. Cliport: What and
+     Betker, Robert K. Baruch, Travis Armstrong, and Peter R. Flo-                 where pathways for robotic manipulation. ArXiv, abs/2109.12098,
+     rence. Interactive language: Talking to robots in real time. ArXiv,           2021.
+     abs/2210.06407, 2022.                                                    [28] Jesse Thomason, Shiqi Zhang, Raymond J. Mooney, and Peter Stone.
+ [9] Timothée Lesort, Vincenzo Lomonaco, Andrei Stoian, Davide Maltoni,            Learning to interpret natural language commands through human-robot
+     David Filliat, and Natalia Díaz Rodríguez. Continual learning for             dialog. In International Joint Conference on Artificial Intelligence,
+     robotics. ArXiv, abs/1907.00182, 2019.                                        2015.
+[10] German Ignacio Parisi, Ronald Kemker, Jose L. Part, Christopher          [29] Renhao Wang, Jiayuan Mao, Joy Hsu, Hang Zhao, Jiajun Wu, and
+     Kanan, and Stefan Wermter. Continual lifelong learning with neural            Yang Gao. Programmatically grounded, compositionally generalizable
+     networks: A review. Neural networks : the official journal of the             robotic manipulation. ArXiv, abs/2304.13826, 2023.
+     International Neural Network Society, 113:54–71, 2018.                   [30] Giorgos Tziafas and Hamidreza Kasaei. Enhancing interpretability and
+[11] Liyuan Wang, Xingxing Zhang, Hang Su, and Jun Zhu. A compre-                  interactivity in robot manipulation: A neurosymbolic approach. 2022.
+     hensive survey of continual learning: Theory, method and application.    [31] Wenlong Huang, P. Abbeel, Deepak Pathak, and Igor Mordatch. Lan-
+     ArXiv, abs/2302.00487, 2023.                                                  guage models as zero-shot planners: Extracting actionable knowledge
+[12] Tom B. Brown, Benjamin Mann, Nick Ryder, Melanie Subbiah, Jared               for embodied agents. ArXiv, abs/2201.07207, 2022.
+     Kaplan, Prafulla Dhariwal, Arvind Neelakantan, Pranav Shyam, Girish      [32] Michael Ahn, Anthony Brohan, Noah Brown, Yevgen Chebotar, Omar
+     Sastry, and Amanda Askell et al. Language models are few-shot                 Cortes, Byron David, Chelsea Finn, Keerthana Gopalakrishnan, Karol
+     learners. ArXiv, abs/2005.14165, 2020.                                        Hausman, Alexander Herzog, Daniel Ho, Jasmine Hsu, Julian Ibarz,
+[13] Hugo Touvron, Louis Martin, Kevin R. Stone, Peter Albert, Amjad               Brian Ichter, Alex Irpan, Eric Jang, Rosario Jauregui Ruano, Kyle
+     Almahairi, Yasmine Babaei, Nikolay Bashlykov, Soumya Batra, Pra-              Jeffrey, Sally Jesmonth, Nikhil Jayant Joshi, Ryan C. Julian, Dmitry
+     jjwal Bhargava, and Shruti Bhosale et al. Llama 2: Open foundation            Kalashnikov, Yuheng Kuang, Kuang-Huei Lee, Sergey Levine, Yao Lu,
+     and fine-tuned chat models. ArXiv, abs/2307.09288, 2023.                      Linda Luu, Carolina Parada, Peter Pastor, Jornell Quiambao, Kanishka
+[14] Aakanksha Chowdhery, Sharan Narang, Jacob Devlin, Maarten                     Rao, Jarek Rettinghouse, Diego M Reyes, Pierre Sermanet, Nicolas
+     Bosma, Gaurav Mishra, Adam Roberts, Paul Barham, Hyung Won                    Sievers, Clayton Tan, Alexander Toshev, Vincent Vanhoucke, F. Xia,
+     Chung, Charles Sutton, and Sebastian Gehrmann et al. Palm: Scaling            Ted Xiao, Peng Xu, Sichun Xu, and Mengyuan Yan. Do as i can, not
+     language modeling with pathways. ArXiv, abs/2204.02311, 2022.                 as i say: Grounding language in robotic affordances. In Conference
+[15] Jacky Liang, Wenlong Huang, F. Xia, Peng Xu, Karol Hausman, Brian             on Robot Learning, 2022.
+     Ichter, Peter R. Florence, and Andy Zeng. Code as policies: Language     [33] Wenlong Huang, F. Xia, Ted Xiao, Harris Chan, Jacky Liang, Peter R.
+     model programs for embodied control. 2023 IEEE International                  Florence, Andy Zeng, Jonathan Tompson, Igor Mordatch, Yevgen
+     Conference on Robotics and Automation (ICRA), pages 9493–9500,                Chebotar, Pierre Sermanet, Noah Brown, Tomas Jackson, Linda Luu,
+     2022.                                                                         Sergey Levine, Karol Hausman, and Brian Ichter. Inner monologue:
+[16] Siyuan Huang, Zhengkai Jiang, Hao-Wen Dong, Yu Jiao Qiao, Peng                Embodied reasoning through planning with language models. In
+     Gao, and Hongsheng Li. Instruct2act: Mapping multi-modality in-               Conference on Robot Learning, 2022.
+     structions to robotic actions with large language model. ArXiv,          [34] Andy Zeng, Adrian S. Wong, Stefan Welker, Krzysztof Choromanski,
+     abs/2305.11176, 2023.                                                         Federico Tombari, Aveek Purohit, Michael S. Ryoo, Vikas Sindhwani,
+[17] Ishika Singh, Valts Blukis, Arsalan Mousavian, Ankit Goyal, Danfei            Johnny Lee, Vincent Vanhoucke, and Peter R. Florence. Socratic
+     Xu, Jonathan Tremblay, Dieter Fox, Jesse Thomason, and Animesh                models: Composing zero-shot multimodal reasoning with language.
+     Garg. Progprompt: Generating situated robot task plans using large            ArXiv, abs/2204.00598, 2022.
+     language models. 2023 IEEE International Conference on Robotics          [35] Jelena Luketina, Nantas Nardelli, Gregory Farquhar, Jakob N. Foerster,
+     and Automation (ICRA), pages 11523–11530, 2022.                               Jacob Andreas, Edward Grefenstette, Shimon Whiteson, and Tim
+     Rocktäschel. A survey of reinforcement learning informed by natural            of the 2023 ACM/IEEE International Conference on Human-Robot
+     language. ArXiv, abs/1906.03926, 2019.                                         Interaction, 2023.
+[36] Prasoon Goyal, Scott Niekum, and Raymond J. Mooney. Pixl2r:               [55] Arthur Fender C. Bucker, Luis F. C. Figueredo, Sami Haddadin,
+     Guiding reinforcement learning using natural language by mapping               Ashish Kapoor, Shuang Ma, and Rogerio Bonatti. Reshaping robot
+     pixels to rewards. ArXiv, abs/2007.15543, 2020.                                trajectories using natural language commands: A study of multi-modal
+[37] Yiding Jiang, Shixiang Shane Gu, Kevin P. Murphy, and Chelsea                  data alignment using transformers. 2022 IEEE/RSJ International
+     Finn. Language as an abstraction for hierarchical deep reinforcement           Conference on Intelligent Robots and Systems (IROS), pages 978–984,
+     learning. In Neural Information Processing Systems, 2019.                      2022.
+[38] Simon Stepputtis, Joseph Campbell, Mariano Phielipp, Stefan Lee,          [56] Arthur Fender C. Bucker, Luis F. C. Figueredo, Sami Haddadin,
+     Chitta Baral, and Heni Ben Amor. Language-conditioned imitation                Ashish Kapoor, Shuang Ma, Sai Vemprala, and Rogerio Bonatti. Latte:
+     learning for robot manipulation tasks. ArXiv, abs/2010.12083, 2020.            Language trajectory transformer. 2023 IEEE International Conference
+[39] Suraj Nair, Eric Mitchell, Kevin Chen, Brian Ichter, Silvio Savarese,          on Robotics and Automation (ICRA), pages 7287–7294, 2022.
+     and Chelsea Finn. Learning language-conditioned robot behavior from       [57] Wenhao Yu, Nimrod Gileadi, Chuyuan Fu, Sean Kirmani, Kuang-
+     offline data and crowd-sourced annotation. In Conference on Robot              Huei Lee, Montse Gonzalez Arenas, Hao-Tien Lewis Chiang, Tom
+     Learning, 2021.                                                                Erez, Leonard Hasenclever, Jan Humplik, Brian Ichter, Ted Xiao, Peng
+[40] Jacob Andreas, Dan Klein, and Sergey Levine. Learning with                     Xu, Andy Zeng, Tingnan Zhang, Nicolas Manfred Otto Heess, Dorsa
+     latent language. In North American Chapter of the Association for              Sadigh, Jie Tan, Yuval Tassa, and F. Xia. Language to rewards for
+     Computational Linguistics, 2017.                                               robotic skill synthesis. ArXiv, abs/2306.08647, 2023.
+                                                                               [58] Huy Ha, Peter R. Florence, and Shuran Song. Scaling up and
+[41] Pratyusha Sharma, Balakumar Sundaralingam, Valts Blukis, Chris
+                                                                                    distilling down: Language-guided robot skill acquisition. ArXiv,
+     Paxton, Tucker Hermans, Antonio Torralba, Jacob Andreas, and Dieter
+                                                                                    abs/2307.14535, 2023.
+     Fox. Correcting robot plans with natural language feedback. ArXiv,
+                                                                               [59] Nils Reimers and Iryna Gurevych. Sentence-bert: Sentence embed-
+     abs/2204.05186, 2022.
+                                                                                    dings using siamese bert-networks. In Conference on Empirical
+[42] Yao Mu, Qinglong Zhang, Mengkang Hu, Wen Wang, Mingyu Ding,                    Methods in Natural Language Processing, 2019.
+     Jun Jin, Bin Wang, Jifeng Dai, Y. Qiao, and Ping Luo. Embodiedgpt:        [60] New         and     improved        embedding      model,      openai,
+     Vision-language pre-training via embodied chain of thought. ArXiv,             https://openai.com/blog/new-and-improved-embedding-model. 2022.
+     abs/2305.15021, 2023.                                                     [61] Jaime G. Carbonell and Jade Goldstein-Stewart. The use of mmr,
+[43] Alec Radford, Jong Wook Kim, Chris Hallacy, Aditya Ramesh,                     diversity-based reranking for reordering documents and producing
+     Gabriel Goh, Sandhini Agarwal, Girish Sastry, Amanda Askell, Pamela            summaries. In Annual International ACM SIGIR Conference on
+     Mishkin, Jack Clark, Gretchen Krueger, and Ilya Sutskever. Learning            Research and Development in Information Retrieval, 1998.
+     transferable visual models from natural language supervision. In          [62] Jason Wei, Xuezhi Wang, Dale Schuurmans, Maarten Bosma, Ed Huai
+     International Conference on Machine Learning, 2021.                            hsin Chi, F. Xia, Quoc Le, and Denny Zhou. Chain of thought prompt-
+[44] Xiuye Gu, Tsung-Yi Lin, Weicheng Kuo, and Yin Cui. Open-                       ing elicits reasoning in large language models. ArXiv, abs/2201.11903,
+     vocabulary object detection via vision and language knowledge dis-             2022.
+     tillation. In International Conference on Learning Representations,       [63] Introducing chatgpt, openai, https://openai.com/blog/chatgpt. 2022.
+     2021.                                                                     [64] Oguzhan Topsakal and Tahir Cetin Akinci. Creating large language
+[45] Aishwarya Kamath, Mannat Singh, Yann LeCun, Ishan Misra, Gabriel               model applications utilizing langchain: A primer on developing llm
+     Synnaeve, and Nicolas Carion. Mdetr - modulated detection for                  apps fast. International Conference on Applied Engineering and
+     end-to-end multi-modal understanding. 2021 IEEE/CVF International              Natural Sciences, 2023.
+     Conference on Computer Vision (ICCV), pages 1760–1770, 2021.              [65] Benjamin Ellenberger. Pybullet gymperium. https://github.
+[46] Shunyu Yao, Jeffrey Zhao, Dian Yu, Nan Du, Izhak Shafran, Karthik              com/benelot/pybullet-gym, 2018–2019.
+     Narasimhan, and Yuan Cao. React: Synergizing reasoning and acting         [66] Andy Zeng, Peter R. Florence, Jonathan Tompson, Stefan Welker,
+     in language models. ArXiv, abs/2210.03629, 2022.                               Jonathan M. Chien, Maria Attarian, Travis Armstrong, Ivan Krasin,
+[47] Weijia Shi, Sewon Min, Michihiro Yasunaga, Minjoon Seo, Rich                   Dan Duong, Vikas Sindhwani, and Johnny Lee. Transporter networks:
+     James, Mike Lewis, Luke Zettlemoyer, and Wen tau Yih. Re-                      Rearranging the visual world for robotic manipulation. In Conference
+     plug: Retrieval-augmented black-box language models.            ArXiv,         on Robot Learning, 2020.
+     abs/2301.12652, 2023.                                                     [67] Sulabh Kumra, Shirin Joshi, and Ferat Sahin. Antipodal robotic
+[48] Zhengbao Jiang, Frank F. Xu, Luyu Gao, Zhiqing Sun, Li-Yu Daisy                grasping using generative residual convolutional neural network. 2020
+     Liu, Jane Dwivedi-Yu, Yiming Yang, Jamie Callan, and Graham Neu-               IEEE/RSJ International Conference on Intelligent Robots and Systems
+     big. Active retrieval augmented generation. ArXiv, abs/2305.06983,             (IROS), pages 9626–9633, 2019.
+     2023.                                                                     [68] Nathan P. Koenig and Andrew Howard. Design and use paradigms
+[49] Reiichiro Nakano, Jacob Hilton, S. Arun Balaji, Jeff Wu, Ouyang                for gazebo, an open-source multi-robot simulator. 2004 IEEE/RSJ
+     Long, Christina Kim, Christopher Hesse, Shantanu Jain, Vineet                  International Conference on Intelligent Robots and Systems (IROS)
+     Kosaraju, William Saunders, Xu Jiang, Karl Cobbe, Tyna Eloundou,               (IEEE Cat. No.04CH37566), 3:2149–2154 vol.3, 2004.
+     Gretchen Krueger, Kevin Button, Matthew Knight, Benjamin Chess,           [69] Haotian Liu, Chunyuan Li, Qingyang Wu, and Yong Jae Lee. Visual
+     and John Schulman. Webgpt: Browser-assisted question-answering                 instruction tuning. ArXiv, abs/2304.08485, 2023.
+     with human feedback. ArXiv, abs/2112.09332, 2021.                         [70] Hugo Touvron et. al. Llama 2: Open foundation and fine-tuned chat
+[50] Joon Sung Park, Joseph C. O’Brien, Carrie J. Cai, Meredith Ringel              models. ArXiv, abs/2307.09288, 2023.
+     Morris, Percy Liang, and Michael S. Bernstein. Generative agents:
+     Interactive simulacra of human behavior. ArXiv, abs/2304.03442,
+     2023.
+[51] Guanzhi Wang, Yuqi Xie, Yunfan Jiang, Ajay Mandlekar, Chaowei
+     Xiao, Yuke Zhu, Linxi (Jim) Fan, and Anima Anandkumar. Voyager:
+     An open-ended embodied agent with large language models. ArXiv,
+     abs/2305.16291, 2023.
+[52] Difei Gao, Lei Ji, Luowei Zhou, Kevin Lin, Joya Chen, Zihan Fan,
+     and Mike Zheng Shou. Assistgpt: A general multi-modal assistant that
+     can plan, execute, inspect, and learn. ArXiv, abs/2306.08640, 2023.
+[53] Alexander Broad, Jacob Arkin, Nathan D. Ratliff, Thomas M. Howard,
+     and Brenna Argall. Real-time natural language corrections for assistive
+     robotic manipulators. The International Journal of Robotics Research,
+     36:684 – 698, 2017.
+[54] Yuchen Cui, Siddharth Karamcheti, Raj Palleti, Nidhya Shivakumar,
+     Percy Liang, and Dorsa Sadigh. No, to the right: Online language
+     corrections for robotic manipulation via shared autonomy. Proceedings
+

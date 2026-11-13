@@ -1,0 +1,6 @@
+{
+  "passed": true,
+  "built_files_verified": 14406,
+  "before_manifest_sha256": "5a867cbacd6249b96bdeab55580f620dd6f82ee22bde3909bb64186641ed9088",
+  "scope": "Existing built bytes unchanged across this validation run; not a new build or a historical artifact-time hash assertion."
+}

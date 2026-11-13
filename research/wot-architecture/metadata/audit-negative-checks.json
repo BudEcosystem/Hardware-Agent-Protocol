@@ -1,0 +1,32 @@
+{
+  "scope": "Isolated copy tests of original offline verifier only; no acquired code executed. These mutations exercise integrity and scope rejection, not research comprehension.",
+  "verifier_sha256": "0d01e19b4661fbe387a06130d2a8f22d3a48287f5454c74df53c30c5b85c5c61",
+  "tested_input_ledger_sha256": "61d4b5ddc0510f90540f44e088a1b08a49ad26a22d587d991aac59e3b5654904",
+  "results": [
+    {
+      "case": "unaltered isolated copy",
+      "exit_code": 0,
+      "passed": true
+    },
+    {
+      "case": "rehashed receipt with one-line reading gap",
+      "rejected": true,
+      "reason": "ValueError: Incomplete/overlapping reading"
+    },
+    {
+      "case": "rehashed figure inventory omits second figure-13 diagram",
+      "rejected": true,
+      "reason": "ValueError: Figure image inventory drift"
+    },
+    {
+      "case": "rehashed receipt falsely calls editor source complete",
+      "rejected": true,
+      "reason": "ValueError: False complete editor draft claim"
+    },
+    {
+      "case": "changed acquired text bytes",
+      "rejected": true,
+      "reason": "ValueError: Hash mismatch: research/wot-architecture/text/architecture-11-rec.txt"
+    }
+  ]
+}

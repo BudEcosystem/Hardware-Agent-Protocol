@@ -1,0 +1,204 @@
+[
+  {
+    "url": "https://www.w3.org/2022/wot/td-schema/v1.1",
+    "retrieved_at": "2026-11-05T21:52:13.990188+00:00",
+    "resolved_url": "https://www.w3.org/2022/wot/td-schema/v1.1",
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "path": "td-schema-1.1.json",
+    "sha256": "fd44f319f94c6f16f66978860ef2f9f4e0e9fd7fc5835a2f3840b9cf2002e0f1",
+    "bytes": 34642,
+    "reading_status": "full_file_read",
+    "read_line_intervals": [
+      [
+        1,
+        700
+      ],
+      [
+        701,
+        1492
+      ],
+      [
+        1493,
+        1493
+      ]
+    ],
+    "logical_lines": 1493,
+    "normativity": "Official informative validation aid; TD Appendix B is non-normative",
+    "declared_version": "1.1-12-March-2025"
+  },
+  {
+    "url": "https://www.w3.org/2022/wot/tm-schema/v1.1",
+    "retrieved_at": "2026-11-05T21:52:14.045863+00:00",
+    "resolved_url": "https://www.w3.org/2022/wot/tm-schema/v1.1",
+    "status": 200,
+    "content_type": "application/json; charset=utf-8",
+    "path": "tm-schema-1.1.json",
+    "sha256": "6912708a0fa9966b51ae75f91951cf48a202d873023b8cba1b53ba4af51e92d3",
+    "bytes": 48724,
+    "reading_status": "archived_not_fully_read"
+  },
+  {
+    "url": "https://www.w3.org/2022/wot/td/v1.1",
+    "retrieved_at": "2026-11-05T21:52:13.938116+00:00",
+    "resolved_url": "https://www.w3.org/2022/wot/td/v1.1",
+    "status": 200,
+    "content_type": "application/ld+json",
+    "path": "td-context-1.1.jsonld",
+    "sha256": "9298ddacce1d023e584dcd4b0e639baa228fb9fa8743dcad6d9c9c29db6ca069",
+    "bytes": 39128,
+    "reading_status": "archived_not_fully_read"
+  },
+  {
+    "url": "https://w3c.github.io/wot-thing-description/errata11.html",
+    "retrieved_at": "2026-11-05T21:52:13.919471+00:00",
+    "resolved_url": "https://w3c.github.io/wot-thing-description/errata11.html",
+    "status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "path": "td-errata.html",
+    "sha256": "8040b2e6d4c6039200871fad2ccc3ee1778a14bd7f9031be96e13fd59d4c3ae6",
+    "bytes": 8982,
+    "reading_status": "full_extracted_text_read"
+  },
+  {
+    "url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/td.png",
+    "retrieved_at": "2026-11-05T21:52:14.023996+00:00",
+    "resolved_url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/td.png",
+    "status": 200,
+    "content_type": "image/png; qs=0.7",
+    "path": "td.png",
+    "sha256": "597e027257f197263a2b8a99ff8183cf763fca61e499e4d3656d2ac875a50746",
+    "bytes": 141636,
+    "reading_status": "visually_inspected_complete"
+  },
+  {
+    "url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/jsonschema.png",
+    "retrieved_at": "2026-11-05T21:52:14.068936+00:00",
+    "resolved_url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/jsonschema.png",
+    "status": 200,
+    "content_type": "image/png; qs=0.7",
+    "path": "jsonschema.png",
+    "sha256": "24eb5330c68834f7a2f8225e19b97980eaa3630b838f8df1cf482d09b992b2d8",
+    "bytes": 114760,
+    "reading_status": "visually_inspected_complete"
+  },
+  {
+    "url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/wotsec.png",
+    "retrieved_at": "2026-11-05T21:52:14.702372+00:00",
+    "resolved_url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/wotsec.png",
+    "status": 200,
+    "content_type": "image/png; qs=0.7",
+    "path": "wotsec.png",
+    "sha256": "2ccb683cc7de9400ec2e20b2d207f16dc4cf3d046c9b08fd92d5c76319497f16",
+    "bytes": 92352,
+    "reading_status": "visually_inspected_complete"
+  },
+  {
+    "url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/hctl.png",
+    "retrieved_at": "2026-11-05T21:52:14.588941+00:00",
+    "resolved_url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/hctl.png",
+    "status": 200,
+    "content_type": "image/png; qs=0.7",
+    "path": "hctl.png",
+    "sha256": "82ddcec7e9780a022e6df9a6e4b50defe2cde846adafd14a4789c18915ec2c9c",
+    "bytes": 60923,
+    "reading_status": "visually_inspected_complete"
+  },
+  {
+    "url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/thing_model_td.png",
+    "retrieved_at": "2026-11-05T21:52:14.684151+00:00",
+    "resolved_url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/thing_model_td.png",
+    "status": 200,
+    "content_type": "image/png; qs=0.7",
+    "path": "thing_model_td.png",
+    "sha256": "f03f02760af9a5d00e253f7f73c50e00b9907c183dce29627760ee82f23e0233",
+    "bytes": 32741,
+    "reading_status": "visually_inspected_complete"
+  },
+  {
+    "url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/tm_overwriting.png",
+    "retrieved_at": "2026-11-05T21:52:14.806664+00:00",
+    "resolved_url": "https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/visualization/tm_overwriting.png",
+    "status": 200,
+    "content_type": "image/png; qs=0.7",
+    "path": "tm_overwriting.png",
+    "sha256": "d652d97dc50546a16858832ff93a5ed617c714d067cf751cb3395c24bc220a3e",
+    "bytes": 298811,
+    "reading_status": "visually_inspected_complete"
+  },
+  {
+    "url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/overview.png",
+    "resolved_url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/overview.png",
+    "status": 200,
+    "content_type": "image/png; qs=0.7",
+    "path": "discovery-overview.png",
+    "bytes": 105994,
+    "sha256": "2a460c1403c759e7ed83663c524ad0705fdf205618e859e0fa55a8acd7a120fc",
+    "retrieved_at": "2026-11-05T21:55:18.657680+00:00",
+    "reading_status": "visually_inspected_complete"
+  },
+  {
+    "url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/sequence-dnssd-thing.png",
+    "resolved_url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/sequence-dnssd-thing.png",
+    "status": 200,
+    "content_type": "image/png; qs=0.7",
+    "path": "discovery-sequence-dnssd-thing.png",
+    "bytes": 18433,
+    "sha256": "79954f3a13d276545d0dc4f7b8057e4284301d5851061eae41e2710f9a74d59e",
+    "retrieved_at": "2026-11-05T21:55:19.207713+00:00",
+    "reading_status": "visually_inspected_complete"
+  },
+  {
+    "url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/sequence-dnssd-directory.png",
+    "resolved_url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/sequence-dnssd-directory.png",
+    "status": 200,
+    "content_type": "image/png; qs=0.7",
+    "path": "discovery-sequence-dnssd-directory.png",
+    "bytes": 16590,
+    "sha256": "576e3e915fcc93d6e22c89efdc7cfb602632b16f053f642c748febbff5215f29",
+    "retrieved_at": "2026-11-05T21:55:19.870595+00:00",
+    "reading_status": "visually_inspected_complete"
+  },
+  {
+    "url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/exploration-class-diagram.svg",
+    "resolved_url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/exploration-class-diagram.svg",
+    "status": 200,
+    "content_type": "image/svg+xml; qs=0.85",
+    "path": "discovery-exploration-class-diagram.svg",
+    "bytes": 15609,
+    "sha256": "42c6bf7ede7e8a17c19b7f9820e6ed1cb266ce8d0dd33973ad1eb00ed40b233f",
+    "retrieved_at": "2026-11-05T21:55:20.519850+00:00",
+    "reading_status": "visually_inspected_complete"
+  },
+  {
+    "url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/discovery-class-diagram-ontology.svg",
+    "resolved_url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/images/discovery-class-diagram-ontology.svg",
+    "status": 200,
+    "content_type": "image/svg+xml; qs=0.85",
+    "path": "discovery-discovery-class-diagram-ontology.svg",
+    "bytes": 9076,
+    "sha256": "ef302ff046c4fe099970633e29c5dc2ebb4782348977d9455d2074a3739a4671",
+    "retrieved_at": "2026-11-05T21:55:21.066881+00:00",
+    "reading_status": "visually_inspected_complete"
+  },
+  {
+    "url": "https://w3c.github.io/wot-discovery/errata.html",
+    "resolved_url": "https://w3c.github.io/wot-discovery/errata.html",
+    "status": 200,
+    "content_type": "text/html; charset=utf-8",
+    "path": "discovery-errata.html",
+    "bytes": 5280,
+    "sha256": "df6f2b10cf33eea1146807c18a6abaf3cd034c4886d45e535543f7448d99f18f",
+    "retrieved_at": "2026-11-05T21:55:21.592132+00:00",
+    "reading_status": "full_extracted_text_read"
+  },
+  {
+    "url": "https://www.w3.org/TR/2023/REC-wot-discovery-20231205/#tdd-extensions-jsonschema",
+    "path": "discovery-extensions-schema-as-published.json",
+    "bytes": 768,
+    "sha256": "6927391f328047151bfab484cc9c99ce4a2e7a57db577fce827ada188fa9a470",
+    "extraction": "Text content of Appendix A pre element from archived official raw HTML; unchanged including trailing space in $schema key",
+    "reading_status": "fully_read_as_part_of_document",
+    "normativity": "Normative appendix; not an independently hosted schema"
+  }
+]

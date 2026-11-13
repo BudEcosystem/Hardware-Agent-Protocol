@@ -1,0 +1,71 @@
+{
+  "acquiredCodeExecuted": false,
+  "files": [
+    {
+      "bytes": 3348,
+      "path": "NOTES.md",
+      "sha256": "4cfafeadd7e7576839447e776926518ffa745327ce2d6ebd2d0bc223e20ffc51"
+    },
+    {
+      "bytes": 3060,
+      "path": "acquire.py",
+      "sha256": "97c9c85f24d703dd0f8c290b9b85c74597406f60be2ab3495c62ee0a50ce3585"
+    },
+    {
+      "bytes": 10671,
+      "path": "local-inputs/linux-prctl.h",
+      "sha256": "6feff68eef81225d5885ed3dd6e0644b6ec4881591e219041fcec87a67040e42"
+    },
+    {
+      "bytes": 1795,
+      "path": "local-inputs/sys-prctl.h",
+      "sha256": "a76908ae4f9cc728b69720ede3630ed2df5462e85d03fe949b48f269ad3dade6"
+    },
+    {
+      "bytes": 568,
+      "path": "local-inputs.json",
+      "sha256": "6e2f525f56d5e3901a2b93b99244474cdb59bdd447c6c285f45e9070f2ade000"
+    },
+    {
+      "bytes": 2969,
+      "path": "manifest.json",
+      "sha256": "bf3b3a79021a962450f52a2891740afb6f818a3c2554fafc14029e27d840c118"
+    },
+    {
+      "bytes": 8526,
+      "path": "raw/PR_GET_CHILD_SUBREAPER.2const.html",
+      "sha256": "7856e4c4fe0793d51c176fff0d8061c34fef6f14cc5b48e56dfcf5c9ae9b671b"
+    },
+    {
+      "bytes": 9879,
+      "path": "raw/PR_SET_CHILD_SUBREAPER.2const.html",
+      "sha256": "b805fe23c7251ad6c3d08a829ed755b80a8fa106929c67325c7122f3b126ef2c"
+    },
+    {
+      "bytes": 26266,
+      "path": "raw/prctl.2.html",
+      "sha256": "ef698f6c5aab0224e9bf238ea1820160797c15d0adcee8b37fcaac7297866810"
+    },
+    {
+      "bytes": 1614,
+      "path": "reading.json",
+      "sha256": "ef422d1ed2eddaeb2f387ade3e3e5a5f961a15a4eee40dcef836831ebaaef507"
+    },
+    {
+      "bytes": 2033,
+      "path": "text/PR_GET_CHILD_SUBREAPER.2const.txt",
+      "sha256": "36e0affb71d2283ecda776e05b0e995dfda869bf7ecb28ead976010dd75506c6"
+    },
+    {
+      "bytes": 3173,
+      "path": "text/PR_SET_CHILD_SUBREAPER.2const.txt",
+      "sha256": "45bd4b3c9715c5722dee6281e2f4060d104df51cc897d8329180f9f590bf99c9"
+    },
+    {
+      "bytes": 6440,
+      "path": "text/prctl.2.txt",
+      "sha256": "417da8f81572ee1445fc2555959d57cb781fdead45f7b8ea298c66d06d5d4415"
+    }
+  ],
+  "status": "sealed-source-review"
+}

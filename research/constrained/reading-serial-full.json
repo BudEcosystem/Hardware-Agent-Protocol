@@ -1,0 +1,133 @@
+{
+  "schema": "hms-research-reading-log/1",
+  "review_date": "2026-11-06",
+  "reviewer": "root",
+  "generated_at": "2026-11-05T22:20:32.372315+00:00",
+  "sources": [
+    {
+      "id": "rfc1662",
+      "url": "https://www.rfc-editor.org/rfc/rfc1662.txt",
+      "raw_path": "research/constrained/serial/raw/rfc1662.txt",
+      "raw_sha256": "97fc11c5117461af5bdb8f3076f8d2e4d52c81935ab144cd4f50cb41e3aef2c1",
+      "text_path": "research/constrained/serial/text/rfc1662.txt",
+      "text_sha256": "97fc11c5117461af5bdb8f3076f8d2e4d52c81935ab144cd4f50cb41e3aef2c1",
+      "line_count": 1440,
+      "line_definition": "LF-delimited including final unterminated; formfeeds not line breaks",
+      "reading_status": "full_extracted_text_read",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 500,
+          "sha256": "7521a0c87be56b035e68aaedadeee9ef7744f4ebcaf0d42d4f8f6e65315c6b27"
+        },
+        {
+          "start_line": 501,
+          "end_line": 1000,
+          "sha256": "f12da896f97b18323f139b3cc070b4cf8e3ed049051fe67845b87bda560c70c5"
+        },
+        {
+          "start_line": 1001,
+          "end_line": 1440,
+          "sha256": "3e6b4d44607d2ab37ffb4cde6ea3bdbb4f18305e41c6f24336389ee35ebe9cfd"
+        }
+      ]
+    },
+    {
+      "id": "rfc1662-errata",
+      "url": "https://www.rfc-editor.org/errata/rfc1662",
+      "raw_path": "research/constrained/serial/raw/rfc1662-errata.html",
+      "raw_sha256": "b99869362513d90b51ab41098f8d9a5df6f69a4fe10c257b3b7f48adbe4fb00b",
+      "text_path": "research/constrained/serial/text/rfc1662-errata.txt",
+      "text_sha256": "e3a6b3838dd76f8f5d0457c140729d8ac593782ba0dcdd22ab25593855e58c5d",
+      "line_count": 62,
+      "line_definition": "LF-delimited including final unterminated; formfeeds not line breaks",
+      "reading_status": "full_extracted_text_read",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 62,
+          "sha256": "e3a6b3838dd76f8f5d0457c140729d8ac593782ba0dcdd22ab25593855e58c5d"
+        }
+      ]
+    },
+    {
+      "id": "uno-r3-datasheet",
+      "url": "https://docs.arduino.cc/resources/datasheets/A000066-datasheet.pdf",
+      "raw_path": "research/constrained/serial/raw/uno-r3-datasheet.pdf",
+      "raw_sha256": "7decc9caca757eae23241053e0c84ded9ca95c3260b9ad9521f19479a044ad49",
+      "text_path": "research/constrained/serial/text/uno-r3-datasheet.txt",
+      "text_sha256": "beb0157e454db19afbc82bf128c7b716edc29b838df348a59d706b7b5f71f885",
+      "line_count": 539,
+      "line_definition": "LF-delimited including final unterminated; formfeeds not line breaks",
+      "reading_status": "full_extracted_text_read",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 370,
+          "sha256": "90dd7e06d04fb38d08264460db9bc060e2f596485a293372e2df279eb005a8b2"
+        },
+        {
+          "start_line": 371,
+          "end_line": 539,
+          "sha256": "bd9f9c63a53e654a042823bf7feacae34d069cffde6c3527c2689b86a425e8ab"
+        }
+      ]
+    }
+  ],
+  "figures": [
+    {
+      "path": "research/constrained/serial/figures/uno-r3-page-10.png",
+      "sha256": "5af34e8dedce4195b442c65a2c70decffb86ea02ba81a922c457aa1fa37761ff",
+      "source_id": "uno-r3-datasheet",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/constrained/serial/figures/uno-r3-page-11.png",
+      "sha256": "cd69fa7fc9f691718d6e848b1b73d6714c1faf9c89c935d0a236ba074a4aff73",
+      "source_id": "uno-r3-datasheet",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/constrained/serial/figures/uno-r3-page-2.png",
+      "sha256": "0db48908ca08780e48cff0795e597dd141bd2b0319e1ffd5e8df54bf7098f861",
+      "source_id": "uno-r3-datasheet",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/constrained/serial/figures/uno-r3-page-5.png",
+      "sha256": "4425a72340458cbc19c8970c415f04de0a2587db7aa2c2a85e8e0cf7c0c78158",
+      "source_id": "uno-r3-datasheet",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/constrained/serial/figures/uno-r3-page-6.png",
+      "sha256": "7cb7bc2bdbb33b379f670768677665e976d4b17d06aaf0063e0f8294ae803122",
+      "source_id": "uno-r3-datasheet",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/constrained/serial/figures/uno-r3-page-7.png",
+      "sha256": "41e432976a2ec8c61329683ef7162178b47195bbbae18c12a0eb304b7aa424a9",
+      "source_id": "uno-r3-datasheet",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/constrained/serial/figures/uno-r3-page-9.png",
+      "sha256": "33aaf428868218ddaaaf1bb3abae9ae8780247119199a50c3905d7e0b37a64d5",
+      "source_id": "uno-r3-datasheet",
+      "visually_inspected": true
+    }
+  ],
+  "artifacts": [
+    "research/constrained/serial/notes/framing-review.md",
+    "spec/07-constrained-binding.md"
+  ],
+  "limitations": [
+    "No linked standards or chip datasheets thereby read",
+    "Comparison-page direct download failed403",
+    "No device/MCU build or physical tests"
+  ]
+}

@@ -1,0 +1,1216 @@
+{
+  "negatives": [
+    {
+      "errorCode": "PAT_PARAMETER_OUT_OF_DOMAIN",
+      "family": "fan",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": 1000,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "parameters": {
+        "finalLevel": 2,
+        "initialLevel": true
+      }
+    },
+    {
+      "errorCode": "PAT_PARAMETER_OUT_OF_DOMAIN",
+      "family": "fan",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": 1000,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "parameters": {
+        "finalLevel": 2,
+        "initialLevel": 1.0
+      }
+    },
+    {
+      "errorCode": "PAT_PARAMETER_OUT_OF_DOMAIN",
+      "family": "fan",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": 1000,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "parameters": {
+        "finalLevel": 2,
+        "initialLevel": -1
+      }
+    },
+    {
+      "errorCode": "PAT_PARAMETER_OUT_OF_DOMAIN",
+      "family": "fan",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": 1000,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "parameters": {
+        "finalLevel": 2,
+        "initialLevel": 101
+      }
+    },
+    {
+      "errorCode": "PAT_TIME_BOUNDS",
+      "family": "fan",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": true,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "parameters": {
+        "finalLevel": 2,
+        "initialLevel": 1
+      }
+    },
+    {
+      "errorCode": "PAT_TIME_BOUNDS",
+      "family": "fan",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": 9007199254740991,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "parameters": {
+        "finalLevel": 2,
+        "initialLevel": 1
+      }
+    },
+    {
+      "errorCode": "PAT_TIME_BOUNDS",
+      "family": "fan",
+      "options": {
+        "caller_deadline_ms": 2999,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": 1000,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "parameters": {
+        "finalLevel": 2,
+        "initialLevel": 1
+      }
+    },
+    {
+      "errorCode": "PAT_INVALID_IDENTITY",
+      "family": "fan",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "same",
+          "initial": "same"
+        },
+        "origin_ms": 1000,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "parameters": {
+        "finalLevel": 2,
+        "initialLevel": 1
+      }
+    },
+    {
+      "errorCode": "PAT_NOT_APPLICABLE",
+      "family": "fan",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "other"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": 1000,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "parameters": {
+        "finalLevel": 2,
+        "initialLevel": 1
+      }
+    }
+  ],
+  "positives": [
+    {
+      "family": "fan",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": 1000,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "output": {
+        "compilerDigest": "sha256:a82b2c0c6a7bcf072b8f9cf912b01de6aa6feb143e382aeef718901b0784a57f",
+        "dependencies": [
+          {
+            "bindingDigest": "sha256:7de3f53eadb828bd395f8607822e697162284e73a5efd5e055e33c4f4a38f673",
+            "bindingGeneration": "binding:1",
+            "calibrationRevision": "calibration:1",
+            "controlGeneration": "control:1",
+            "descriptionDigest": "sha256:eb2e37b7fc2c30a0609a7d5bc3ba03b860199fe0e0eea98dfbe60c5919820aa7",
+            "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "driverProfile": "sqlite-simulation",
+            "endpointSession": "session:1",
+            "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "instanceId": "sim:home-fan",
+            "metadataDigest": "sha256:f91ef9bfbfd9c51234ce79488fd3645c1121e3a6fc8081716ec1a7030852b0c6",
+            "role": "fan"
+          }
+        ],
+        "environmentDigest": "sha256:4ca4c240bc45a55cb0f8272882af845c8f1811e8049ba388f803ee9bdd625bb8",
+        "evaluationEnvironment": {
+          "compilerDigest": "sha256:a82b2c0c6a7bcf072b8f9cf912b01de6aa6feb143e382aeef718901b0784a57f",
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "profile": "hms.pat.environment/0.1",
+          "roles": {
+            "fan": {
+              "argumentMetadataDigest": "sha256:f91ef9bfbfd9c51234ce79488fd3645c1121e3a6fc8081716ec1a7030852b0c6",
+              "bindingDigest": "sha256:7de3f53eadb828bd395f8607822e697162284e73a5efd5e055e33c4f4a38f673",
+              "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "driverProfile": "sqlite-simulation",
+              "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "typeDigest": "sha256:eb2e37b7fc2c30a0609a7d5bc3ba03b860199fe0e0eea98dfbe60c5919820aa7"
+            }
+          }
+        },
+        "patDigest": "sha256:09a2d86681264f99d3afa00c2ae41f732721d9bad3e86e75eade78c200da5ee2",
+        "report": {
+          "admitted": false,
+          "evidenceMode": "simulation",
+          "frameConversions": [],
+          "parameterDomainPreserved": true,
+          "physicalObjectiveVerified": false,
+          "runtimeGuards": "installed_primitive_guards_only",
+          "stepCount": 2,
+          "targetProfile": "hms.bound-sequence/0.1",
+          "unitConversions": [],
+          "unsupported": []
+        },
+        "request": {
+          "procedure": {
+            "profile": "hms.bound-sequence/0.1",
+            "steps": [
+              {
+                "request": {
+                  "intent": {
+                    "actionId": "set_level",
+                    "arguments": {
+                      "level": 1,
+                      "unit": "percent"
+                    },
+                    "bindingGeneration": "binding:1",
+                    "calibrationRevision": "calibration:1",
+                    "controlGeneration": "control:1",
+                    "descriptionDigest": "sha256:eb2e37b7fc2c30a0609a7d5bc3ba03b860199fe0e0eea98dfbe60c5919820aa7",
+                    "endpointSession": "session:1",
+                    "instanceId": "sim:home-fan",
+                    "requiredEffect": "capability_completion",
+                    "timing": {
+                      "latestCompletionUnixMs": 2000,
+                      "latestStartUnixMs": 1500,
+                      "maxRunMs": 500,
+                      "notBeforeUnixMs": 1000
+                    }
+                  },
+                  "operationKey": "child:initial",
+                  "protocol": "hms.invoke/0.1",
+                  "replayNamespace": "replay:fixture:1:token"
+                },
+                "stepId": "initial"
+              },
+              {
+                "request": {
+                  "intent": {
+                    "actionId": "set_level",
+                    "arguments": {
+                      "level": 2,
+                      "unit": "percent"
+                    },
+                    "bindingGeneration": "binding:1",
+                    "calibrationRevision": "calibration:1",
+                    "controlGeneration": "control:1",
+                    "descriptionDigest": "sha256:eb2e37b7fc2c30a0609a7d5bc3ba03b860199fe0e0eea98dfbe60c5919820aa7",
+                    "endpointSession": "session:1",
+                    "instanceId": "sim:home-fan",
+                    "requiredEffect": "capability_completion",
+                    "timing": {
+                      "latestCompletionUnixMs": 3000,
+                      "latestStartUnixMs": 2500,
+                      "maxRunMs": 500,
+                      "notBeforeUnixMs": 1000
+                    }
+                  },
+                  "operationKey": "child:final",
+                  "protocol": "hms.invoke/0.1",
+                  "replayNamespace": "replay:fixture:1:token"
+                },
+                "stepId": "final"
+              }
+            ],
+            "timing": {
+              "latestCompletionUnixMs": 3000,
+              "latestStartUnixMs": 1500,
+              "notBeforeUnixMs": 1000
+            }
+          },
+          "procedureKey": "parent:1",
+          "protocol": "hms.procedure/0.1",
+          "replayNamespace": "replay:fixture:1:token"
+        },
+        "requestDigest": "sha256:fa7371173abab01d4ab7917acfea6a9b1868de0af30c9ea6b7faeb3ef02173dc",
+        "runBindingDigest": "sha256:17918b80ef0fcb62c5b8dd80e3cfe6a837b5b244607eeb187c60c47494c40ab3"
+      },
+      "parameters": {
+        "finalLevel": 2,
+        "initialLevel": 1
+      }
+    },
+    {
+      "family": "fan",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": 1000,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "output": {
+        "compilerDigest": "sha256:a82b2c0c6a7bcf072b8f9cf912b01de6aa6feb143e382aeef718901b0784a57f",
+        "dependencies": [
+          {
+            "bindingDigest": "sha256:7de3f53eadb828bd395f8607822e697162284e73a5efd5e055e33c4f4a38f673",
+            "bindingGeneration": "binding:1",
+            "calibrationRevision": "calibration:1",
+            "controlGeneration": "control:1",
+            "descriptionDigest": "sha256:eb2e37b7fc2c30a0609a7d5bc3ba03b860199fe0e0eea98dfbe60c5919820aa7",
+            "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "driverProfile": "sqlite-simulation",
+            "endpointSession": "session:1",
+            "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "instanceId": "sim:home-fan",
+            "metadataDigest": "sha256:f91ef9bfbfd9c51234ce79488fd3645c1121e3a6fc8081716ec1a7030852b0c6",
+            "role": "fan"
+          }
+        ],
+        "environmentDigest": "sha256:4ca4c240bc45a55cb0f8272882af845c8f1811e8049ba388f803ee9bdd625bb8",
+        "evaluationEnvironment": {
+          "compilerDigest": "sha256:a82b2c0c6a7bcf072b8f9cf912b01de6aa6feb143e382aeef718901b0784a57f",
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "profile": "hms.pat.environment/0.1",
+          "roles": {
+            "fan": {
+              "argumentMetadataDigest": "sha256:f91ef9bfbfd9c51234ce79488fd3645c1121e3a6fc8081716ec1a7030852b0c6",
+              "bindingDigest": "sha256:7de3f53eadb828bd395f8607822e697162284e73a5efd5e055e33c4f4a38f673",
+              "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "driverProfile": "sqlite-simulation",
+              "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "typeDigest": "sha256:eb2e37b7fc2c30a0609a7d5bc3ba03b860199fe0e0eea98dfbe60c5919820aa7"
+            }
+          }
+        },
+        "patDigest": "sha256:09a2d86681264f99d3afa00c2ae41f732721d9bad3e86e75eade78c200da5ee2",
+        "report": {
+          "admitted": false,
+          "evidenceMode": "simulation",
+          "frameConversions": [],
+          "parameterDomainPreserved": true,
+          "physicalObjectiveVerified": false,
+          "runtimeGuards": "installed_primitive_guards_only",
+          "stepCount": 2,
+          "targetProfile": "hms.bound-sequence/0.1",
+          "unitConversions": [],
+          "unsupported": []
+        },
+        "request": {
+          "procedure": {
+            "profile": "hms.bound-sequence/0.1",
+            "steps": [
+              {
+                "request": {
+                  "intent": {
+                    "actionId": "set_level",
+                    "arguments": {
+                      "level": 2,
+                      "unit": "percent"
+                    },
+                    "bindingGeneration": "binding:1",
+                    "calibrationRevision": "calibration:1",
+                    "controlGeneration": "control:1",
+                    "descriptionDigest": "sha256:eb2e37b7fc2c30a0609a7d5bc3ba03b860199fe0e0eea98dfbe60c5919820aa7",
+                    "endpointSession": "session:1",
+                    "instanceId": "sim:home-fan",
+                    "requiredEffect": "capability_completion",
+                    "timing": {
+                      "latestCompletionUnixMs": 2000,
+                      "latestStartUnixMs": 1500,
+                      "maxRunMs": 500,
+                      "notBeforeUnixMs": 1000
+                    }
+                  },
+                  "operationKey": "child:initial",
+                  "protocol": "hms.invoke/0.1",
+                  "replayNamespace": "replay:fixture:1:token"
+                },
+                "stepId": "initial"
+              },
+              {
+                "request": {
+                  "intent": {
+                    "actionId": "set_level",
+                    "arguments": {
+                      "level": 1,
+                      "unit": "percent"
+                    },
+                    "bindingGeneration": "binding:1",
+                    "calibrationRevision": "calibration:1",
+                    "controlGeneration": "control:1",
+                    "descriptionDigest": "sha256:eb2e37b7fc2c30a0609a7d5bc3ba03b860199fe0e0eea98dfbe60c5919820aa7",
+                    "endpointSession": "session:1",
+                    "instanceId": "sim:home-fan",
+                    "requiredEffect": "capability_completion",
+                    "timing": {
+                      "latestCompletionUnixMs": 3000,
+                      "latestStartUnixMs": 2500,
+                      "maxRunMs": 500,
+                      "notBeforeUnixMs": 1000
+                    }
+                  },
+                  "operationKey": "child:final",
+                  "protocol": "hms.invoke/0.1",
+                  "replayNamespace": "replay:fixture:1:token"
+                },
+                "stepId": "final"
+              }
+            ],
+            "timing": {
+              "latestCompletionUnixMs": 3000,
+              "latestStartUnixMs": 1500,
+              "notBeforeUnixMs": 1000
+            }
+          },
+          "procedureKey": "parent:1",
+          "protocol": "hms.procedure/0.1",
+          "replayNamespace": "replay:fixture:1:token"
+        },
+        "requestDigest": "sha256:5dcb8f49cbf04b8b62c0619c34ddcca9aac9c896b7e62aeacfb3a0191b496136",
+        "runBindingDigest": "sha256:17918b80ef0fcb62c5b8dd80e3cfe6a837b5b244607eeb187c60c47494c40ab3"
+      },
+      "parameters": {
+        "finalLevel": 1,
+        "initialLevel": 2
+      }
+    },
+    {
+      "family": "focus",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": 1000,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "output": {
+        "compilerDigest": "sha256:a82b2c0c6a7bcf072b8f9cf912b01de6aa6feb143e382aeef718901b0784a57f",
+        "dependencies": [
+          {
+            "bindingDigest": "sha256:821a5638f862b8fb5b50cac216a3813efbd08e30fb7333f8cedb745d866a72e0",
+            "bindingGeneration": "binding:1",
+            "calibrationRevision": "calibration:1",
+            "controlGeneration": "control:1",
+            "descriptionDigest": "sha256:706cb6a78f269d28e895dd442982dfae2a835e4840afb0674cad4a1f92ad3e42",
+            "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "driverProfile": "sqlite-simulation",
+            "endpointSession": "session:1",
+            "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "instanceId": "sim:microscope",
+            "metadataDigest": "sha256:5dddf024755b91ac481e12686e084a5945983fadada278fd66961333f4156f86",
+            "role": "fan"
+          }
+        ],
+        "environmentDigest": "sha256:93f40a4445d7e2d03559f60626a915a38c72f1fe6bbc2ba79e64d06c4dd52359",
+        "evaluationEnvironment": {
+          "compilerDigest": "sha256:a82b2c0c6a7bcf072b8f9cf912b01de6aa6feb143e382aeef718901b0784a57f",
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "profile": "hms.pat.environment/0.1",
+          "roles": {
+            "fan": {
+              "argumentMetadataDigest": "sha256:5dddf024755b91ac481e12686e084a5945983fadada278fd66961333f4156f86",
+              "bindingDigest": "sha256:821a5638f862b8fb5b50cac216a3813efbd08e30fb7333f8cedb745d866a72e0",
+              "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "driverProfile": "sqlite-simulation",
+              "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "typeDigest": "sha256:706cb6a78f269d28e895dd442982dfae2a835e4840afb0674cad4a1f92ad3e42"
+            }
+          }
+        },
+        "patDigest": "sha256:23636c81998bd56891d6dca60ca95f74a03d8fc393180136d34c3601f9977cad",
+        "report": {
+          "admitted": false,
+          "evidenceMode": "simulation",
+          "frameConversions": [],
+          "parameterDomainPreserved": true,
+          "physicalObjectiveVerified": false,
+          "runtimeGuards": "installed_primitive_guards_only",
+          "stepCount": 2,
+          "targetProfile": "hms.bound-sequence/0.1",
+          "unitConversions": [],
+          "unsupported": []
+        },
+        "request": {
+          "procedure": {
+            "profile": "hms.bound-sequence/0.1",
+            "steps": [
+              {
+                "request": {
+                  "intent": {
+                    "actionId": "move_absolute",
+                    "arguments": {
+                      "frame": "sim:microscope",
+                      "position": 1,
+                      "unit": "um"
+                    },
+                    "bindingGeneration": "binding:1",
+                    "calibrationRevision": "calibration:1",
+                    "controlGeneration": "control:1",
+                    "descriptionDigest": "sha256:706cb6a78f269d28e895dd442982dfae2a835e4840afb0674cad4a1f92ad3e42",
+                    "endpointSession": "session:1",
+                    "instanceId": "sim:microscope",
+                    "requiredEffect": "capability_completion",
+                    "timing": {
+                      "latestCompletionUnixMs": 2000,
+                      "latestStartUnixMs": 1500,
+                      "maxRunMs": 500,
+                      "notBeforeUnixMs": 1000
+                    }
+                  },
+                  "operationKey": "child:initial",
+                  "protocol": "hms.invoke/0.1",
+                  "replayNamespace": "replay:fixture:1:token"
+                },
+                "stepId": "initial"
+              },
+              {
+                "request": {
+                  "intent": {
+                    "actionId": "move_absolute",
+                    "arguments": {
+                      "frame": "sim:microscope",
+                      "position": 2,
+                      "unit": "um"
+                    },
+                    "bindingGeneration": "binding:1",
+                    "calibrationRevision": "calibration:1",
+                    "controlGeneration": "control:1",
+                    "descriptionDigest": "sha256:706cb6a78f269d28e895dd442982dfae2a835e4840afb0674cad4a1f92ad3e42",
+                    "endpointSession": "session:1",
+                    "instanceId": "sim:microscope",
+                    "requiredEffect": "capability_completion",
+                    "timing": {
+                      "latestCompletionUnixMs": 3000,
+                      "latestStartUnixMs": 2500,
+                      "maxRunMs": 500,
+                      "notBeforeUnixMs": 1000
+                    }
+                  },
+                  "operationKey": "child:final",
+                  "protocol": "hms.invoke/0.1",
+                  "replayNamespace": "replay:fixture:1:token"
+                },
+                "stepId": "final"
+              }
+            ],
+            "timing": {
+              "latestCompletionUnixMs": 3000,
+              "latestStartUnixMs": 1500,
+              "notBeforeUnixMs": 1000
+            }
+          },
+          "procedureKey": "parent:1",
+          "protocol": "hms.procedure/0.1",
+          "replayNamespace": "replay:fixture:1:token"
+        },
+        "requestDigest": "sha256:1664997bd46706697154be464fbd088e8471bcbf24c50b171ffcc72f5e4680f5",
+        "runBindingDigest": "sha256:ff46e9ae378aab2906ac1b24e496b5c49858ad0020b6853c3a82924829eb28dc"
+      },
+      "parameters": {
+        "finalLevel": 2,
+        "initialLevel": 1
+      }
+    },
+    {
+      "family": "focus",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": 1000,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "output": {
+        "compilerDigest": "sha256:a82b2c0c6a7bcf072b8f9cf912b01de6aa6feb143e382aeef718901b0784a57f",
+        "dependencies": [
+          {
+            "bindingDigest": "sha256:821a5638f862b8fb5b50cac216a3813efbd08e30fb7333f8cedb745d866a72e0",
+            "bindingGeneration": "binding:1",
+            "calibrationRevision": "calibration:1",
+            "controlGeneration": "control:1",
+            "descriptionDigest": "sha256:706cb6a78f269d28e895dd442982dfae2a835e4840afb0674cad4a1f92ad3e42",
+            "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "driverProfile": "sqlite-simulation",
+            "endpointSession": "session:1",
+            "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "instanceId": "sim:microscope",
+            "metadataDigest": "sha256:5dddf024755b91ac481e12686e084a5945983fadada278fd66961333f4156f86",
+            "role": "fan"
+          }
+        ],
+        "environmentDigest": "sha256:93f40a4445d7e2d03559f60626a915a38c72f1fe6bbc2ba79e64d06c4dd52359",
+        "evaluationEnvironment": {
+          "compilerDigest": "sha256:a82b2c0c6a7bcf072b8f9cf912b01de6aa6feb143e382aeef718901b0784a57f",
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "profile": "hms.pat.environment/0.1",
+          "roles": {
+            "fan": {
+              "argumentMetadataDigest": "sha256:5dddf024755b91ac481e12686e084a5945983fadada278fd66961333f4156f86",
+              "bindingDigest": "sha256:821a5638f862b8fb5b50cac216a3813efbd08e30fb7333f8cedb745d866a72e0",
+              "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "driverProfile": "sqlite-simulation",
+              "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "typeDigest": "sha256:706cb6a78f269d28e895dd442982dfae2a835e4840afb0674cad4a1f92ad3e42"
+            }
+          }
+        },
+        "patDigest": "sha256:23636c81998bd56891d6dca60ca95f74a03d8fc393180136d34c3601f9977cad",
+        "report": {
+          "admitted": false,
+          "evidenceMode": "simulation",
+          "frameConversions": [],
+          "parameterDomainPreserved": true,
+          "physicalObjectiveVerified": false,
+          "runtimeGuards": "installed_primitive_guards_only",
+          "stepCount": 2,
+          "targetProfile": "hms.bound-sequence/0.1",
+          "unitConversions": [],
+          "unsupported": []
+        },
+        "request": {
+          "procedure": {
+            "profile": "hms.bound-sequence/0.1",
+            "steps": [
+              {
+                "request": {
+                  "intent": {
+                    "actionId": "move_absolute",
+                    "arguments": {
+                      "frame": "sim:microscope",
+                      "position": 2,
+                      "unit": "um"
+                    },
+                    "bindingGeneration": "binding:1",
+                    "calibrationRevision": "calibration:1",
+                    "controlGeneration": "control:1",
+                    "descriptionDigest": "sha256:706cb6a78f269d28e895dd442982dfae2a835e4840afb0674cad4a1f92ad3e42",
+                    "endpointSession": "session:1",
+                    "instanceId": "sim:microscope",
+                    "requiredEffect": "capability_completion",
+                    "timing": {
+                      "latestCompletionUnixMs": 2000,
+                      "latestStartUnixMs": 1500,
+                      "maxRunMs": 500,
+                      "notBeforeUnixMs": 1000
+                    }
+                  },
+                  "operationKey": "child:initial",
+                  "protocol": "hms.invoke/0.1",
+                  "replayNamespace": "replay:fixture:1:token"
+                },
+                "stepId": "initial"
+              },
+              {
+                "request": {
+                  "intent": {
+                    "actionId": "move_absolute",
+                    "arguments": {
+                      "frame": "sim:microscope",
+                      "position": 1,
+                      "unit": "um"
+                    },
+                    "bindingGeneration": "binding:1",
+                    "calibrationRevision": "calibration:1",
+                    "controlGeneration": "control:1",
+                    "descriptionDigest": "sha256:706cb6a78f269d28e895dd442982dfae2a835e4840afb0674cad4a1f92ad3e42",
+                    "endpointSession": "session:1",
+                    "instanceId": "sim:microscope",
+                    "requiredEffect": "capability_completion",
+                    "timing": {
+                      "latestCompletionUnixMs": 3000,
+                      "latestStartUnixMs": 2500,
+                      "maxRunMs": 500,
+                      "notBeforeUnixMs": 1000
+                    }
+                  },
+                  "operationKey": "child:final",
+                  "protocol": "hms.invoke/0.1",
+                  "replayNamespace": "replay:fixture:1:token"
+                },
+                "stepId": "final"
+              }
+            ],
+            "timing": {
+              "latestCompletionUnixMs": 3000,
+              "latestStartUnixMs": 1500,
+              "notBeforeUnixMs": 1000
+            }
+          },
+          "procedureKey": "parent:1",
+          "protocol": "hms.procedure/0.1",
+          "replayNamespace": "replay:fixture:1:token"
+        },
+        "requestDigest": "sha256:805a1304a3dd0c3159fa8c2a98237b62402eee55122f0d11e30004f2bf286367",
+        "runBindingDigest": "sha256:ff46e9ae378aab2906ac1b24e496b5c49858ad0020b6853c3a82924829eb28dc"
+      },
+      "parameters": {
+        "finalLevel": 1,
+        "initialLevel": 2
+      }
+    },
+    {
+      "family": "inspection",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": 1000,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "output": {
+        "compilerDigest": "sha256:a82b2c0c6a7bcf072b8f9cf912b01de6aa6feb143e382aeef718901b0784a57f",
+        "dependencies": [
+          {
+            "bindingDigest": "sha256:18c37b30e88c2168e1100153167283f2d63b6c5d8f7de40ae7a2df8ee45494dc",
+            "bindingGeneration": "binding:1",
+            "calibrationRevision": "calibration:1",
+            "controlGeneration": "control:1",
+            "descriptionDigest": "sha256:f528f133cfdfa8f6f139923e96bbdcf63c73d9da440fcac809e418ff30d25e5e",
+            "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "driverProfile": "sqlite-simulation",
+            "endpointSession": "session:1",
+            "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "instanceId": "sim:inspection-cell",
+            "metadataDigest": "sha256:e15aa36d19219a405385c4a1724516fac6bf778d5635323e5a96f9ef88ce73f6",
+            "role": "fan"
+          }
+        ],
+        "environmentDigest": "sha256:02ed724943f39b3af5ffa871a781da96877fe803c337f6185b4460b9a308a2ee",
+        "evaluationEnvironment": {
+          "compilerDigest": "sha256:a82b2c0c6a7bcf072b8f9cf912b01de6aa6feb143e382aeef718901b0784a57f",
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "profile": "hms.pat.environment/0.1",
+          "roles": {
+            "fan": {
+              "argumentMetadataDigest": "sha256:e15aa36d19219a405385c4a1724516fac6bf778d5635323e5a96f9ef88ce73f6",
+              "bindingDigest": "sha256:18c37b30e88c2168e1100153167283f2d63b6c5d8f7de40ae7a2df8ee45494dc",
+              "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "driverProfile": "sqlite-simulation",
+              "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "typeDigest": "sha256:f528f133cfdfa8f6f139923e96bbdcf63c73d9da440fcac809e418ff30d25e5e"
+            }
+          }
+        },
+        "patDigest": "sha256:814d0efb713d5fb4c51a309457333afc2019b1af33a89b4f039e60e6c88d6d23",
+        "report": {
+          "admitted": false,
+          "evidenceMode": "simulation",
+          "frameConversions": [],
+          "parameterDomainPreserved": true,
+          "physicalObjectiveVerified": false,
+          "runtimeGuards": "installed_primitive_guards_only",
+          "stepCount": 2,
+          "targetProfile": "hms.bound-sequence/0.1",
+          "unitConversions": [],
+          "unsupported": []
+        },
+        "request": {
+          "procedure": {
+            "profile": "hms.bound-sequence/0.1",
+            "steps": [
+              {
+                "request": {
+                  "intent": {
+                    "actionId": "inspect",
+                    "arguments": {
+                      "partId": "part:original",
+                      "recipe": 1
+                    },
+                    "bindingGeneration": "binding:1",
+                    "calibrationRevision": "calibration:1",
+                    "controlGeneration": "control:1",
+                    "descriptionDigest": "sha256:f528f133cfdfa8f6f139923e96bbdcf63c73d9da440fcac809e418ff30d25e5e",
+                    "endpointSession": "session:1",
+                    "instanceId": "sim:inspection-cell",
+                    "requiredEffect": "capability_completion",
+                    "timing": {
+                      "latestCompletionUnixMs": 2000,
+                      "latestStartUnixMs": 1500,
+                      "maxRunMs": 500,
+                      "notBeforeUnixMs": 1000
+                    }
+                  },
+                  "operationKey": "child:initial",
+                  "protocol": "hms.invoke/0.1",
+                  "replayNamespace": "replay:fixture:1:token"
+                },
+                "stepId": "initial"
+              },
+              {
+                "request": {
+                  "intent": {
+                    "actionId": "inspect",
+                    "arguments": {
+                      "partId": "part:original",
+                      "recipe": 2
+                    },
+                    "bindingGeneration": "binding:1",
+                    "calibrationRevision": "calibration:1",
+                    "controlGeneration": "control:1",
+                    "descriptionDigest": "sha256:f528f133cfdfa8f6f139923e96bbdcf63c73d9da440fcac809e418ff30d25e5e",
+                    "endpointSession": "session:1",
+                    "instanceId": "sim:inspection-cell",
+                    "requiredEffect": "capability_completion",
+                    "timing": {
+                      "latestCompletionUnixMs": 3000,
+                      "latestStartUnixMs": 2500,
+                      "maxRunMs": 500,
+                      "notBeforeUnixMs": 1000
+                    }
+                  },
+                  "operationKey": "child:final",
+                  "protocol": "hms.invoke/0.1",
+                  "replayNamespace": "replay:fixture:1:token"
+                },
+                "stepId": "final"
+              }
+            ],
+            "timing": {
+              "latestCompletionUnixMs": 3000,
+              "latestStartUnixMs": 1500,
+              "notBeforeUnixMs": 1000
+            }
+          },
+          "procedureKey": "parent:1",
+          "protocol": "hms.procedure/0.1",
+          "replayNamespace": "replay:fixture:1:token"
+        },
+        "requestDigest": "sha256:228cc5eaf778dd3729c62ba2d53c8c0ff53a74f6b707029f7603209a814fea58",
+        "runBindingDigest": "sha256:5eac6fe38bb1eb0a277628d2c0c667c839e95a4ffd435b4b1505e985576775d6"
+      },
+      "parameters": {
+        "finalLevel": 2,
+        "initialLevel": 1
+      }
+    },
+    {
+      "family": "inspection",
+      "options": {
+        "caller_deadline_ms": 3500,
+        "context": {
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "inputProfile": "hms.sim.fan.level_pair/0.1",
+          "taskKind": "sim.fan.level_pair"
+        },
+        "operation_keys": {
+          "final": "child:final",
+          "initial": "child:initial"
+        },
+        "origin_ms": 1000,
+        "procedure_key": "parent:1",
+        "replay_namespace": "replay:fixture:1:token"
+      },
+      "output": {
+        "compilerDigest": "sha256:a82b2c0c6a7bcf072b8f9cf912b01de6aa6feb143e382aeef718901b0784a57f",
+        "dependencies": [
+          {
+            "bindingDigest": "sha256:18c37b30e88c2168e1100153167283f2d63b6c5d8f7de40ae7a2df8ee45494dc",
+            "bindingGeneration": "binding:1",
+            "calibrationRevision": "calibration:1",
+            "controlGeneration": "control:1",
+            "descriptionDigest": "sha256:f528f133cfdfa8f6f139923e96bbdcf63c73d9da440fcac809e418ff30d25e5e",
+            "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+            "driverProfile": "sqlite-simulation",
+            "endpointSession": "session:1",
+            "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+            "instanceId": "sim:inspection-cell",
+            "metadataDigest": "sha256:e15aa36d19219a405385c4a1724516fac6bf778d5635323e5a96f9ef88ce73f6",
+            "role": "fan"
+          }
+        ],
+        "environmentDigest": "sha256:02ed724943f39b3af5ffa871a781da96877fe803c337f6185b4460b9a308a2ee",
+        "evaluationEnvironment": {
+          "compilerDigest": "sha256:a82b2c0c6a7bcf072b8f9cf912b01de6aa6feb143e382aeef718901b0784a57f",
+          "deployment": "test:simulation",
+          "evidenceMode": "simulation",
+          "profile": "hms.pat.environment/0.1",
+          "roles": {
+            "fan": {
+              "argumentMetadataDigest": "sha256:e15aa36d19219a405385c4a1724516fac6bf778d5635323e5a96f9ef88ce73f6",
+              "bindingDigest": "sha256:18c37b30e88c2168e1100153167283f2d63b6c5d8f7de40ae7a2df8ee45494dc",
+              "driverDigest": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+              "driverProfile": "sqlite-simulation",
+              "installationDigest": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+              "typeDigest": "sha256:f528f133cfdfa8f6f139923e96bbdcf63c73d9da440fcac809e418ff30d25e5e"
+            }
+          }
+        },
+        "patDigest": "sha256:814d0efb713d5fb4c51a309457333afc2019b1af33a89b4f039e60e6c88d6d23",
+        "report": {
+          "admitted": false,
+          "evidenceMode": "simulation",
+          "frameConversions": [],
+          "parameterDomainPreserved": true,
+          "physicalObjectiveVerified": false,
+          "runtimeGuards": "installed_primitive_guards_only",
+          "stepCount": 2,
+          "targetProfile": "hms.bound-sequence/0.1",
+          "unitConversions": [],
+          "unsupported": []
+        },
+        "request": {
+          "procedure": {
+            "profile": "hms.bound-sequence/0.1",
+            "steps": [
+              {
+                "request": {
+                  "intent": {
+                    "actionId": "inspect",
+                    "arguments": {
+                      "partId": "part:original",
+                      "recipe": 2
+                    },
+                    "bindingGeneration": "binding:1",
+                    "calibrationRevision": "calibration:1",
+                    "controlGeneration": "control:1",
+                    "descriptionDigest": "sha256:f528f133cfdfa8f6f139923e96bbdcf63c73d9da440fcac809e418ff30d25e5e",
+                    "endpointSession": "session:1",
+                    "instanceId": "sim:inspection-cell",
+                    "requiredEffect": "capability_completion",
+                    "timing": {
+                      "latestCompletionUnixMs": 2000,
+                      "latestStartUnixMs": 1500,
+                      "maxRunMs": 500,
+                      "notBeforeUnixMs": 1000
+                    }
+                  },
+                  "operationKey": "child:initial",
+                  "protocol": "hms.invoke/0.1",
+                  "replayNamespace": "replay:fixture:1:token"
+                },
+                "stepId": "initial"
+              },
+              {
+                "request": {
+                  "intent": {
+                    "actionId": "inspect",
+                    "arguments": {
+                      "partId": "part:original",
+                      "recipe": 1
+                    },
+                    "bindingGeneration": "binding:1",
+                    "calibrationRevision": "calibration:1",
+                    "controlGeneration": "control:1",
+                    "descriptionDigest": "sha256:f528f133cfdfa8f6f139923e96bbdcf63c73d9da440fcac809e418ff30d25e5e",
+                    "endpointSession": "session:1",
+                    "instanceId": "sim:inspection-cell",
+                    "requiredEffect": "capability_completion",
+                    "timing": {
+                      "latestCompletionUnixMs": 3000,
+                      "latestStartUnixMs": 2500,
+                      "maxRunMs": 500,
+                      "notBeforeUnixMs": 1000
+                    }
+                  },
+                  "operationKey": "child:final",
+                  "protocol": "hms.invoke/0.1",
+                  "replayNamespace": "replay:fixture:1:token"
+                },
+                "stepId": "final"
+              }
+            ],
+            "timing": {
+              "latestCompletionUnixMs": 3000,
+              "latestStartUnixMs": 1500,
+              "notBeforeUnixMs": 1000
+            }
+          },
+          "procedureKey": "parent:1",
+          "protocol": "hms.procedure/0.1",
+          "replayNamespace": "replay:fixture:1:token"
+        },
+        "requestDigest": "sha256:cc8da02a459ef0431734b35fa3e863ab1046ebe4e01e89093a7d753869646759",
+        "runBindingDigest": "sha256:5eac6fe38bb1eb0a277628d2c0c667c839e95a4ffd435b4b1505e985576775d6"
+      },
+      "parameters": {
+        "finalLevel": 1,
+        "initialLevel": 2
+      }
+    }
+  ],
+  "provenance": {
+    "baselineCompilerDigest": "sha256:a82b2c0c6a7bcf072b8f9cf912b01de6aa6feb143e382aeef718901b0784a57f",
+    "baselineCompilerManifest": {
+      "packages": [
+        {
+          "codeDigest": "sha256:d13220de23818b735b2b2bdce5624dce1ca36851803ff05c59ed82d8eefce010",
+          "fileCount": 37,
+          "package": "jsonschema",
+          "version": "4.25.1"
+        },
+        {
+          "codeDigest": "sha256:f9e1c0e0cba96e715a6205579bb27d20adc85df17573a2444ffff6e590f4981d",
+          "fileCount": 13,
+          "package": "referencing",
+          "version": "0.37.0"
+        },
+        {
+          "codeDigest": "sha256:c7cab1915137914e9f6b89cb2b7f55c97db19285b646bf3a3fa05a2895fbaf85",
+          "fileCount": 10,
+          "package": "jsonschema-specifications",
+          "version": "2025.9.1"
+        },
+        {
+          "codeDigest": "sha256:c28bed47c85e84f22edba2afd1fcb491f06141d44ad006d1be9bbb8df2ad80f0",
+          "fileCount": 19,
+          "package": "attrs",
+          "version": "25.4.0"
+        },
+        {
+          "codeDigest": "sha256:a83c05aba7152d8d39e84043262495cda10fd7504a73b9da5683e727af7bfa4d",
+          "fileCount": 2,
+          "package": "rpds-py",
+          "version": "0.30.0"
+        }
+      ],
+      "profile": "hms.pat-compiler-identity/0.1",
+      "pythonImplementation": "CPython",
+      "pythonVersion": "3.12.3",
+      "sources": [
+        {
+          "path": "hms/pat_contracts.py",
+          "sha256": "02294821d39c67269d87032b1fe67f47f6e6ae86a6920bd018b298088e3a6995"
+        },
+        {
+          "path": "hms/pat_compiler.py",
+          "sha256": "de13645edd0cd52786049d84b04c663f6fb8db71830ff0e9dbd5f6d3cf7b3393"
+        },
+        {
+          "path": "hms/pat_catalog.py",
+          "sha256": "ed579f1d9c1bcbe11f95454ffba09950868e30c1b4a8e8675a1e46b7b68a45e0"
+        },
+        {
+          "path": "hms/pat_execution.py",
+          "sha256": "80b8e481e0ba03ba8b53ed7839111dfff402acee7ce303e089ae7de885e19145"
+        },
+        {
+          "path": "hms/pat_bindings.py",
+          "sha256": "8430eee9937982e9c89654de8036c7614838f51c0f8ac4648a3caf23386bd9ba"
+        },
+        {
+          "path": "hms/contracts.py",
+          "sha256": "e83689a9750b12eb0dabb73d8a152f4d32da7d1cedcade9d9999403b7f401f06"
+        },
+        {
+          "path": "hms/procedures.py",
+          "sha256": "94a4c4368e9ee19ee7eaebf22419a26ebf24ecaeb05faa31d4bf85dcc8f5127f"
+        },
+        {
+          "path": "hms/registry.py",
+          "sha256": "d72e58032cdc759ac4e1123e1c80eafe918916948e687331db935c4027738357"
+        },
+        {
+          "path": "hms/journal.py",
+          "sha256": "49976a25be284af8ec887a51a954070ab5394df15f4ac8488a9465379eb59043"
+        },
+        {
+          "path": "hms/projections.py",
+          "sha256": "233eb7c5f5432b11b54889e38258b0685fef21479c662ab198dfe518d1fc129b"
+        },
+        {
+          "path": "hms/_vendor/rfc8785/__init__.py",
+          "sha256": "fa44927afd547caf7547247078bcf28863d1e69caf116d258c532b3f20ffd154"
+        },
+        {
+          "path": "hms/_vendor/rfc8785/_impl.py",
+          "sha256": "c25bc3a046528482d53bee3487b837f31dd9c05f33e8f13288c7aab320932cec"
+        },
+        {
+          "path": "schemas/invoke.schema.json",
+          "sha256": "ef6fa8c274c03eb176720a5f0d474b08fcbf22840af8f78270e6067f7056845a"
+        },
+        {
+          "path": "research/protocols/wot-artifacts/td-schema-1.1.json",
+          "sha256": "fd44f319f94c6f16f66978860ef2f9f4e0e9fd7fc5835a2f3840b9cf2002e0f1"
+        }
+      ]
+    },
+    "baselineInputPins": {
+      "path": "artifacts/implementation/pat-environment-extraction/baseline/inputs.json",
+      "sha256": "3e4f58b33265b59774f791e0eb1ab6fe7d75d814bf1409faf38d2b233367925c"
+    },
+    "baselineSource": {
+      "path": "artifacts/implementation/pat-environment-extraction/baseline/sources/hms/pat_compiler.py",
+      "sha256": "de13645edd0cd52786049d84b04c663f6fb8db71830ff0e9dbd5f6d3cf7b3393"
+    },
+    "descriptorFixtures": {
+      "path": "tests/fixtures/pat-environment.json",
+      "sha256": "8392b107d0e38651e4d517c2635c6199878b846052ec7c04f511c3bf5dd31d53"
+    },
+    "generatedUtc": "2026-11-06T22:10:23.025751+00:00",
+    "method": "Load only baseline/sources via sys.path; call original compile_pat using each complete positive/negative options record plus artifact/bindings from named family and exact stored parameters. Store original output or PatError.code with json.dumps, preserving 1.0. No output hashes are reconstructed or hand-edited.",
+    "negativeCount": 9,
+    "originalFixtureBuilder": {
+      "path": "artifacts/implementation/pat-environment-extraction/build_fixtures.py",
+      "sha256": "77a31aaa804fbdda5a1b33d1cf62b8c116d71635759fdf0f1c6443c82f822825"
+    },
+    "positiveCount": 6,
+    "scope": "Exact pure calls to retained original compiler before integration; no Runtime, worker, device, model or test execution. Synthetic descriptor identities are not installed attestation."
+  },
+  "schema": "hms-pat-environment-baseline/1"
+}

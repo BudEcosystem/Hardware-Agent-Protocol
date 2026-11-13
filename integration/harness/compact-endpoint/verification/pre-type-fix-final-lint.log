@@ -1,0 +1,1 @@
+packages/experimental/tool-hardware/tests/hms-compact.spec.ts:103:44: error @stylistic(member-delimiter-style): Unexpected separator (;).

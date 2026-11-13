@@ -1,0 +1,407 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-11-05T23:05:28.435302+00:00",
+  "line_counting": "LF-delimited original text bytes; retain LF in each interval digest, retain form feeds and CR bytes and UTF-8 BOMs; include final unterminated line; not Python splitlines()",
+  "coverage_policy": "coverage_complete means all archived text lines displayed sequentially without truncation and read. RFC/draft ASCII figures/tables included. HTML full-read status covers extracted text, not linked works. A complete Internet-Draft read is not a published-standard claim. Duplicate RFC status rendition explicitly selected-only. No acquired implementation code or hardware executed.",
+  "sources": [
+    {
+      "id": "oscore-rfc8613",
+      "source_kind": "published_rfc",
+      "url": "https://www.rfc-editor.org/rfc/rfc8613.txt",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc8613.txt",
+      "retrieved_at": "2026-11-05T22:58:51.139943+00:00",
+      "raw_path": "research/constrained/oscore/raw/oscore-rfc8613.txt",
+      "raw_sha256": "47fe1119e036f4cccc46c2cf8b68a5747e48c85715155f2bbde97d79a8732e78",
+      "text_path": "research/constrained/oscore/text/oscore-rfc8613.txt",
+      "text_sha256": "47fe1119e036f4cccc46c2cf8b68a5747e48c85715155f2bbde97d79a8732e78",
+      "line_count": 5267,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 500,
+          "sha256": "d64a9af408e024377bc41a85cf8557d91f9711cd7b301fbf11937ee38c8c660c"
+        },
+        {
+          "start_line": 501,
+          "end_line": 1000,
+          "sha256": "0f4f3b23544333d4f9a32ae9f0c510627e1c5af758d8f767cd46660734d9714b"
+        },
+        {
+          "start_line": 1001,
+          "end_line": 1500,
+          "sha256": "e35d180ed2c0590fe455d252190944e67491ccc23eaa321a02662ee410ba2f98"
+        },
+        {
+          "start_line": 1501,
+          "end_line": 2000,
+          "sha256": "5feae56f9811c1c2a8378bbd2f4fe8f881ea19eb1d00f24762419fe23287d6f5"
+        },
+        {
+          "start_line": 2001,
+          "end_line": 2500,
+          "sha256": "164ff274228bf209efa7b741e69709f13f67be1e00da21f7957270cfd3cdf893"
+        },
+        {
+          "start_line": 2501,
+          "end_line": 3000,
+          "sha256": "085ae0ef3f618a698f950beadcedb046c6cb2349891115b7b45f2294cdcaa37d"
+        },
+        {
+          "start_line": 3001,
+          "end_line": 3500,
+          "sha256": "503c5413cc1996a9741e6dc2335c60c49f5347fac82f33af6c3b8a6844ca12bf"
+        },
+        {
+          "start_line": 3501,
+          "end_line": 4000,
+          "sha256": "06bc33ab54745af35598bff1bb95c089fc079934ac116d24051c6667f072734b"
+        },
+        {
+          "start_line": 4001,
+          "end_line": 4500,
+          "sha256": "9ef0db8c20fa3b81bbdf7b1c10ffedf58192061f8e37cf8cd8d467eefab53abb"
+        },
+        {
+          "start_line": 4501,
+          "end_line": 5000,
+          "sha256": "4e9754502d41527b469f7b0899482d159fd01f8c0548aaf9fca51f8ea7397c81"
+        },
+        {
+          "start_line": 5001,
+          "end_line": 5267,
+          "sha256": "fdeb194b41c1f143b22724193c22ff9f7572d9812d7af4127758a59d9acf22d8"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text_including_ascii_figures_and_references",
+      "note": "All 94 pages, sections 1-14, appendices A-E, 14 ASCII figures, all tables, five compression examples and eight Appendix C test vectors; original bytes copied identically. No vector execution or linked bibliography full-read claim."
+    },
+    {
+      "id": "rfc8613-errata",
+      "source_kind": "official_errata",
+      "url": "https://www.rfc-editor.org/errata/rfc8613",
+      "final_url": "https://errata.rfc-editor.org/search/?rfc_number=8613&presentation=records",
+      "retrieved_at": "2026-11-05T22:58:53.045371+00:00",
+      "raw_path": "research/constrained/oscore/raw/rfc8613-errata.html",
+      "raw_sha256": "bc3c981ee71311cb134ee0c893d1d1c158a6addb50ce9751a51330a0b6d55518",
+      "text_path": "research/constrained/oscore/text/rfc8613-errata.txt",
+      "text_sha256": "a85b4c700dafbe854a4e3ec45f8f55856369219c4cd8deccf3dc6df8af349274",
+      "line_count": 98,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 98,
+          "sha256": "a85b4c700dafbe854a4e3ec45f8f55856369219c4cd8deccf3dc6df8af349274"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Full live records: verified editorial 8229 and technical 8230 held for document update; HTML retained; no linked discussion full-read claim."
+    },
+    {
+      "id": "rfc8613-status",
+      "source_kind": "official_status_rendition",
+      "url": "https://www.rfc-editor.org/info/rfc8613",
+      "final_url": "https://www.rfc-editor.org/info/rfc8613/",
+      "retrieved_at": "2026-11-05T22:58:57.022613+00:00",
+      "raw_path": "research/constrained/oscore/raw/rfc8613-status.html",
+      "raw_sha256": "2438600c1930da4fd705f9e412610f4fc6b0a9e4b1e550cc5b02ee5d1374607d",
+      "text_path": "research/constrained/oscore/text/rfc8613-status.txt",
+      "text_sha256": "03880ec92d8c999e7042fbaac2b0e294aa1eb1c2fff5e785e6b71a86fb8bcd5d",
+      "line_count": 5795,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 150,
+          "sha256": "e42f8a6d9812d6211a67c92c7410b68bc507238feefeb4ef85d3c2396598f463"
+        }
+      ],
+      "coverage_complete": false,
+      "reading_status": "read_selected_sections",
+      "note": "Only metadata/introduction/TOC preamble read; URL now contains duplicate full RFC rendition. Machine metadata separately acquired and fully read."
+    },
+    {
+      "id": "rfc8613-metadata",
+      "source_kind": "official_metadata",
+      "url": "https://www.rfc-editor.org/rfc/rfc8613.json",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc8613.json",
+      "retrieved_at": "2026-11-05T23:00:48.608047+00:00",
+      "raw_path": "research/constrained/oscore/raw/rfc8613-metadata.json",
+      "raw_sha256": "1a155d7ab513bbd5bcb8701db18213ffbe57a1288fc9b4511f2356ad14d31272",
+      "text_path": "research/constrained/oscore/text/rfc8613-metadata.txt",
+      "text_sha256": "1a155d7ab513bbd5bcb8701db18213ffbe57a1288fc9b4511f2356ad14d31272",
+      "line_count": 31,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 31,
+          "sha256": "1a155d7ab513bbd5bcb8701db18213ffbe57a1288fc9b4511f2356ad14d31272"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text",
+      "note": "Complete RFC Editor JSON: Proposed Standard, updates RFC7252, updated_by and obsoleted_by empty at retrieval."
+    },
+    {
+      "id": "oscore-key-limits-08",
+      "source_kind": "internet_draft",
+      "url": "https://www.ietf.org/archive/id/draft-ietf-core-oscore-key-limits-08.txt",
+      "final_url": "https://www.ietf.org/archive/id/draft-ietf-core-oscore-key-limits-08.txt",
+      "retrieved_at": "2026-11-05T23:00:49.033719+00:00",
+      "raw_path": "research/constrained/oscore/raw/oscore-key-limits-08.txt",
+      "raw_sha256": "05114f1ff55bf6731212768cf6ddb7578478d042d7fe3ae2b9091ebe8d546890",
+      "text_path": "research/constrained/oscore/text/oscore-key-limits-08.txt",
+      "text_sha256": "05114f1ff55bf6731212768cf6ddb7578478d042d7fe3ae2b9091ebe8d546890",
+      "line_count": 840,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 450,
+          "sha256": "604b09aaef8932f92c0b1b623960804f37b70ef1dae4577e320dd197e4259076"
+        },
+        {
+          "start_line": 451,
+          "end_line": 840,
+          "sha256": "f0d20d1dd79a5dbc178691671d43eff83ef31cf31f6cee0263269406fd8dfaf4"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text_including_ascii_figures_and_references",
+      "note": "Complete work-in-progress Internet-Draft, intended Informational; three ASCII figures and all appendices read. Not a published RFC or adopted numeric policy. Apparent units inconsistency documented in notes; underlying AEAD analysis not read."
+    },
+    {
+      "id": "oscore-key-update-15",
+      "source_kind": "internet_draft",
+      "url": "https://www.ietf.org/archive/id/draft-ietf-core-oscore-key-update-15.txt",
+      "final_url": "https://www.ietf.org/archive/id/draft-ietf-core-oscore-key-update-15.txt",
+      "retrieved_at": "2026-11-05T23:00:49.584957+00:00",
+      "raw_path": "research/constrained/oscore/raw/oscore-key-update-15.txt",
+      "raw_sha256": "03bb92909f63da5a91f6da22b33ab2ba4794f1f62a34b40b1db1ebe004af0fbb",
+      "text_path": "research/constrained/oscore/text/oscore-key-update-15.txt",
+      "text_sha256": "03bb92909f63da5a91f6da22b33ab2ba4794f1f62a34b40b1db1ebe004af0fbb",
+      "line_count": 4480,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 250,
+          "sha256": "dd3ff8773c3d0745049b5a008ddfe704355262d435e6c325ec393c12055eb465"
+        }
+      ],
+      "coverage_complete": false,
+      "reading_status": "read_selected_sections",
+      "note": "Preamble, abstract, TOC, introduction and terminology only. Proposed update/deprecation is work in progress, not an already-published RFC update. Algorithm, state machine and appendices not reviewed."
+    },
+    {
+      "id": "edhoc-rfc9528",
+      "source_kind": "published_rfc",
+      "url": "https://www.rfc-editor.org/rfc/rfc9528.txt",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc9528.txt",
+      "retrieved_at": "2026-11-05T23:00:50.227147+00:00",
+      "raw_path": "research/constrained/oscore/raw/edhoc-rfc9528.txt",
+      "raw_sha256": "16b0959ee791bba5b06a4368470f8eb296ac11b84101c82b9013073ec6defe9e",
+      "text_path": "research/constrained/oscore/text/edhoc-rfc9528.txt",
+      "text_sha256": "16b0959ee791bba5b06a4368470f8eb296ac11b84101c82b9013073ec6defe9e",
+      "line_count": 4671,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 200,
+          "sha256": "867637c36e7b9aa69c093a9c4e32e3e8fe465a180d5246383669d6fd48c3952e"
+        }
+      ],
+      "coverage_complete": false,
+      "reading_status": "read_selected_sections",
+      "note": "Preamble, abstract, TOC and introductory motivation only. EDHOC cryptography, state machine and appendices not reviewed; RFC9668 integration read does not substitute."
+    },
+    {
+      "id": "edhoc-oscore-rfc9668",
+      "source_kind": "published_rfc",
+      "url": "https://www.rfc-editor.org/rfc/rfc9668.txt",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc9668.txt",
+      "retrieved_at": "2026-11-05T23:00:50.721452+00:00",
+      "raw_path": "research/constrained/oscore/raw/edhoc-oscore-rfc9668.txt",
+      "raw_sha256": "8785201c9c52d5efbd068bf30df73de72680f772f0e95d9736da327b166030b9",
+      "text_path": "research/constrained/oscore/text/edhoc-oscore-rfc9668.txt",
+      "text_sha256": "8785201c9c52d5efbd068bf30df73de72680f772f0e95d9736da327b166030b9",
+      "line_count": 1235,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 450,
+          "sha256": "2216732ea92b699c636ac6d9d17ef07c3ebdf62ec83713c55b3ffd2a966ee3b2"
+        },
+        {
+          "start_line": 451,
+          "end_line": 900,
+          "sha256": "3f4e25b29ab5d78378fd2b440002cc40bd44728fa06ea821956ec9d1174d4a6d"
+        },
+        {
+          "start_line": 901,
+          "end_line": 1235,
+          "sha256": "d2f7f9a33fdacc4e82bd552f5d9917b69b811062581e8eadc8990d579e8ac356"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text_including_ascii_figures_and_references",
+      "note": "Complete RFC including five ASCII figures, four tables, combined-message example and references; linked RFC9528 remains selected-only. No implementation execution."
+    },
+    {
+      "id": "rfc9668-metadata",
+      "source_kind": "official_metadata",
+      "url": "https://www.rfc-editor.org/rfc/rfc9668.json",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc9668.json",
+      "retrieved_at": "2026-11-05T23:01:42.316004+00:00",
+      "raw_path": "research/constrained/oscore/raw/rfc9668-metadata.json",
+      "raw_sha256": "edfa5f8785f345a1183ffab3f29f286b0755afa8d46773ada4d55d0fef070aa5",
+      "text_path": "research/constrained/oscore/text/rfc9668-metadata.txt",
+      "text_sha256": "edfa5f8785f345a1183ffab3f29f286b0755afa8d46773ada4d55d0fef070aa5",
+      "line_count": 40,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 40,
+          "sha256": "edfa5f8785f345a1183ffab3f29f286b0755afa8d46773ada4d55d0fef070aa5"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text",
+      "note": "Complete RFC Editor JSON: Proposed Standard, no listed updates or obsoletion; separate specification rather than formal RFC8613 update."
+    },
+    {
+      "id": "rfc9668-errata",
+      "source_kind": "official_errata",
+      "url": "https://www.rfc-editor.org/errata/rfc9668",
+      "final_url": "https://errata.rfc-editor.org/search/?rfc_number=9668&presentation=records",
+      "retrieved_at": "2026-11-05T23:01:44.149513+00:00",
+      "raw_path": "research/constrained/oscore/raw/rfc9668-errata.html",
+      "raw_sha256": "42e66fc04153b5fdb9fa4410579d0a0ff6fcccd4b4a5ad380472b72dab8399ae",
+      "text_path": "research/constrained/oscore/text/rfc9668-errata.txt",
+      "text_sha256": "5c64af097efad175ea335e806c9a0cbb8f73041d6594fe75dcb49aa30685c9c0",
+      "line_count": 42,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 42,
+          "sha256": "5c64af097efad175ea335e806c9a0cbb8f73041d6594fe75dcb49aa30685c9c0"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Complete live query returned no matching errata at retrieval; raw HTML retained."
+    }
+  ],
+  "local_context_reads": [
+    {
+      "path": "spec/02-execution.md",
+      "sha256": "cc6260f9005b8c2ae3e05a3a49296715057ae85864f31772f82b4594120bb9a6",
+      "line_count": 119,
+      "reading_status": "read_full_text",
+      "note": "Read independently without truncation; initial truncated combined local output excluded."
+    },
+    {
+      "path": "docs/coap-binding.md",
+      "sha256": "b31b3e5504219aba6bfa79102c79ab1bf7eab4e18c0d4b8d0ee0a2040002ef4f",
+      "line_count": 135,
+      "reading_status": "read_full_text",
+      "note": "Read independently without truncation; initial truncated combined local output excluded."
+    },
+    {
+      "path": "docs/lwm2m-binding.md",
+      "sha256": "eb9f4ede5cb62cb50e0f155b274988ec42e0005dba688a2aadb66c52430ad69a",
+      "line_count": 76,
+      "reading_status": "read_full_text",
+      "note": "Read independently without truncation; initial truncated combined local output excluded."
+    }
+  ],
+  "figure_coverage": [
+    {
+      "source_id": "oscore-rfc8613",
+      "figures": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "format": "original ASCII text",
+      "test_vectors": [
+        "C.1",
+        "C.2",
+        "C.3",
+        "C.4",
+        "C.5",
+        "C.6",
+        "C.7",
+        "C.8"
+      ],
+      "vector_execution": false
+    },
+    {
+      "source_id": "edhoc-oscore-rfc9668",
+      "figures": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "tables": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "format": "original ASCII text"
+    },
+    {
+      "source_id": "oscore-key-limits-08",
+      "figures": [
+        1,
+        2,
+        3
+      ],
+      "format": "original ASCII text; draft estimates not independently proven"
+    }
+  ],
+  "not_claimed_read": [
+    "RFC9528 beyond lines 1-200, including EDHOC cryptographic and handshake details",
+    "KUDOS draft-ietf-core-oscore-key-update-15 beyond lines 1-250",
+    "RFC8613 info HTML rendition beyond lines 1-150",
+    "Underlying AEAD-limits draft and cryptographic proofs cited by key-limits-08",
+    "Group OSCORE or OSCORE-capable-proxy specifications",
+    "ACE OSCORE authorization profile",
+    "Linked RFC bibliography and errata discussion pages except individually recorded sources; existing separate CoAP review is referenced by binding, not relabeled as an OSCORE source read"
+  ],
+  "artifacts": [
+    "docs/oscore-binding.md",
+    "research/constrained/oscore/notes/full-review.md"
+  ],
+  "validation": {
+    "checked_at": "2026-11-05T23:06:27.292896+00:00",
+    "checks": [
+      "all 10 raw and text hashes match",
+      "all LF coverage interval hashes match",
+      "complete ranges contiguous from first through final line",
+      "manifest and reading-log statuses agree",
+      "local context hashes match at validation time",
+      "relative artifact links resolve",
+      "authored files have final LF and no trailing whitespace or conflict markers"
+    ],
+    "result": "passed",
+    "not_performed": [
+      "cryptographic vector execution",
+      "acquired implementation code execution",
+      "hardware tests",
+      "Git diff check: workspace is not a Git repository"
+    ]
+  }
+}

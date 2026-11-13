@@ -1,0 +1,11 @@
+{
+  "recorded_at": "2026-11-06T02:23:23.945720+00:00",
+  "source_worktree": "/home/bud/Desktop/bud/hms-harness-335a82eb",
+  "destination_worktree": "/home/bud/Desktop/bud/hms-harness-a1626788",
+  "copy_command": "cp -a --reflink=auto for node_modules and .task-state/pnpm-store, pnpm-cache; separate owned directories",
+  "retargeted_links": [],
+  "remaining_external_absolute_links": [],
+  "modules_manifest_before_sha256": "d28ec9ff5b927c02b592ac37395e6ea36d5db36174f6da21e27f9a1ad64e69a6",
+  "modules_manifest_after_sha256": "766d6ad8bffc3ac0146d8142fa09b854d55c13cc4ee0276a7429b297a5529cb1",
+  "manifest_change": "Copied manifest store path changed from335a to newa162 matching the independently copied content-addressed store; frozen installer follows."
+}

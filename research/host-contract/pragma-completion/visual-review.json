@@ -1,0 +1,52 @@
+{
+  "images": [
+    {
+      "source": "diagrams/pragma-stmt.svg",
+      "path": "diagrams/pragma-stmt.white.png",
+      "dimensions": [
+        1649,
+        200
+      ],
+      "bytes": 46174,
+      "sha256": "7fcb22ac395aad4891b74466e93065f1d313c82d765899fd1508c6edc8bde231"
+    },
+    {
+      "source": "diagrams/pragma-value.svg",
+      "path": "diagrams/pragma-value.white.png",
+      "dimensions": [
+        529,
+        221
+      ],
+      "bytes": 19841,
+      "sha256": "132a3110c49e769527b7b44a18eb89a3dd15e641199ca880e774b37ea3c15fc9"
+    },
+    {
+      "source": "diagrams/signed-number.svg",
+      "path": "diagrams/signed-number.white.png",
+      "dimensions": [
+        585,
+        200
+      ],
+      "bytes": 17675,
+      "sha256": "d0c4b8e65998e131aa0d6ec6458decd3cd10ec167f8b31a8a21cbc282c608f9b"
+    }
+  ],
+  "renderedImagesInspected": 3,
+  "primaryAgentVisualReview": true,
+  "readingReceiptSha256": "a6588cc257e172c1438c77e228b5733bfc29985ba694b8f2811e0171c40cf81c",
+  "earlierReadingReceiptRetainedUnchanged": true,
+  "findings": [
+    "Optional schema-and-dot prefix; either no value, equals value, or parenthesized value.",
+    "Three alternative value branches rejoin the same exit.",
+    "Numeric literal accepts no sign, plus, or minus."
+  ],
+  "render01": "Failed before output because the installed GI bridge lacked a foreign Cairo Context type; retained.",
+  "render02": "Three transparent PNGs rendered but appeared black against the image viewer background; retained and not credited as visual reading.",
+  "render03": "Same static SVG with explicit rendering viewport and white background rectangle; all three branches visually inspected.",
+  "sourceSvgChanged": false,
+  "sourceScriptExecuted": false,
+  "externalResourcesAllowed": false,
+  "retainedPageProseAndInlineDiagramsComplete": true,
+  "linkedReferencesIncluded": false,
+  "widerResearchComplete": false
+}

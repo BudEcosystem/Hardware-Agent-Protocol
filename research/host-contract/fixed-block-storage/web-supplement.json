@@ -1,0 +1,18 @@
+{
+  "url": "https://www.man7.org/linux/man-pages/man1/fuse2fs.1.html",
+  "resolvedUrl": "https://www.man7.org/linux/man-pages/man1/fuse2fs.1.html",
+  "retrievedAt": "2026-11-09T02:42:24.008470+00:00",
+  "files": [
+    {
+      "path": "fuse2fs/fuse2fs.1.html",
+      "bytes": 9623,
+      "sha256": "b2884d4dcb7953e046f3c2464ae2dd129bdd0d43690c97e6d8159734ad421b2f"
+    },
+    {
+      "path": "fuse2fs/fuse2fs.1.txt",
+      "bytes": 4459,
+      "sha256": "31acd207cacc00207aac3f460c4f2189f3809d949a82fd14cb02b2e4412c9fc2"
+    }
+  ],
+  "extraction": "Python HTMLParser text nodes excluding script/style; full rendered article read separately; raw HTML retained"
+}

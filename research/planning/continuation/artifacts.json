@@ -1,0 +1,590 @@
+{
+  "path_base": "repository_root",
+  "derivation": "pdftotext -layout for extracted text; pdftoppm -scale-to 1800 -png for retained page renders.",
+  "artifacts": [
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-01.png",
+      "sha256": "c336de4724ceb354ab21ae95dd89d85d2090f7e65d1fb2d5871ccaa10e23ae12",
+      "bytes": 499109,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 1,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-02.png",
+      "sha256": "e3e1d76e17901ee7af7ecfa50072431a9500352f1505429971d05945d72fabe8",
+      "bytes": 645959,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 2,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-03.png",
+      "sha256": "8833f16449e3702c0af397f48ec18367838cdd80fedd61e07cedabd86e84ac78",
+      "bytes": 692533,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 3,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-04.png",
+      "sha256": "de98ec8a46f4ad9b743c84680e471abdb3ed0f33673062ca0d5b39279e245f30",
+      "bytes": 711613,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 4,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-05.png",
+      "sha256": "a9541c919fb4e43c251a9e5384642e0e5848e04723deef1982808d041a477f7c",
+      "bytes": 532856,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 5,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-06.png",
+      "sha256": "53d3fc2263aaf7290e8269f26f24be0100005619264649d989b9034b6a12725d",
+      "bytes": 549964,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 6,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-07.png",
+      "sha256": "f18a231a266816fb91682840abdb4166ffd7de2c002adfb0b31696a5539e0875",
+      "bytes": 528923,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 7,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-08.png",
+      "sha256": "b9f2939723a45e8345e4745220f26ea4502febffe0694d05cfbc14cf92a2a8db",
+      "bytes": 685625,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 8,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-09.png",
+      "sha256": "670defa71913d968ae73eaaa6520e8d772d07ee79db26142a19d07db773dd35d",
+      "bytes": 471516,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 9,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-10.png",
+      "sha256": "852c5ff40b1699c93de35b040499e5b156496717f79ca25a2582b249c1fb73aa",
+      "bytes": 503159,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 10,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-11.png",
+      "sha256": "8f7e717e4fc68f15263ec000c2fb40372b42ad5aa1527c35c44cba7e22c51f6a",
+      "bytes": 489714,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 11,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-12.png",
+      "sha256": "d11e56c739a26a5439d900ee4037a861013d310bb3608e269b094624ed7e8750",
+      "bytes": 521514,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 12,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-13.png",
+      "sha256": "7e02fd8221d1df0be261ee168dc8426a3857a06b63eccec20fcf7662cbb97d76",
+      "bytes": 487942,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 13,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-14.png",
+      "sha256": "ddabefd722a3fe2957a6e88cab9b50ca39e9f3812c025d398b47c85848e5ebc8",
+      "bytes": 165950,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 14,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-01.png",
+      "sha256": "101ab8b03c649b0dee821e60db8fbe120a2821f2290ad507aece4334cc2d3fa5",
+      "bytes": 491018,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 1,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-02.png",
+      "sha256": "3d60e6b8ca530ff9d07e26020b82e1d6401d095b6f468a58486f1f8c4b76e3f6",
+      "bytes": 546114,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 2,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-03.png",
+      "sha256": "622d38e0ca315f20538b2a1227f42f0e65590376fc2cb2cdcf864e8903184053",
+      "bytes": 663636,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 3,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-04.png",
+      "sha256": "dc7dfb6fb91e6263275a8528e49ecff7997cf2609fb2287b68c1dd6e17c4edf1",
+      "bytes": 461118,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 4,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-05.png",
+      "sha256": "ff6bb01764f562d1eb66ffe70202c0b7f441a9eef0777ecd7f45a6e927457640",
+      "bytes": 600331,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 5,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-06.png",
+      "sha256": "46ac3399788d696c40959a0d4e66d965260ade32a4d4d97931dc7e83e0fc6335",
+      "bytes": 369308,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 6,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-07.png",
+      "sha256": "56525832cf16f5e207761f842b3f9d6b76788243f803637f7c4435109a58bf52",
+      "bytes": 343719,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 7,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-08.png",
+      "sha256": "d26ffb24336d7cf68270e5227aa0426e8778c24501c6a6161e681abc8f532deb",
+      "bytes": 277012,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 8,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-09.png",
+      "sha256": "7f33199d82975ddd311f1da466a6b934c748644145be42cc2e43c767bd9a2c9b",
+      "bytes": 267477,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 9,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-10.png",
+      "sha256": "1cb3b6c9250deba9cffc8f3e5589cc7aa1d0208b07e425487b0efa127073f5a6",
+      "bytes": 257642,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 10,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-11.png",
+      "sha256": "7f63644f6443c7ee9ebd17f054aaff86bfadf26b8dae39105c178e474202e7ff",
+      "bytes": 294749,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 11,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-01.png",
+      "sha256": "2505d43d499a4f81639ef160bd7422d8d1c77390fc1abae4acd2b3caabda50a2",
+      "bytes": 560598,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 1,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-02.png",
+      "sha256": "63abeef61013c0a363d72595521c6c06e13fc397831dae2662bf2a211a2a67c9",
+      "bytes": 635490,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 2,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-03.png",
+      "sha256": "924f13a347890a4c59f695268419698917eea94d9f91f44899e57a0ac6f9b45d",
+      "bytes": 547201,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 3,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-04.png",
+      "sha256": "d4b810e09029397a683610775fa9b181ba604fc4dee69cd53f199ede0841c0e0",
+      "bytes": 646208,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 4,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-05.png",
+      "sha256": "efc70a9da59297b0fb944e0fa88b6203f2e95d97a570cc2a21df046c9468f36e",
+      "bytes": 764424,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 5,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-06.png",
+      "sha256": "f497d7941b97f6dc7ded4a8861d8f30754dd2ce0d89b797da8dd7bfbdcf646a9",
+      "bytes": 549224,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 6,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-07.png",
+      "sha256": "95750b640c124626a538aee9d68c4c1ba9f9008e7c4350cf75c0422f1bc6b25d",
+      "bytes": 567854,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 7,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-08.png",
+      "sha256": "4a5cbd83156e47b4389f374802379972618f8b51f4c287335a2e1c1fe4fc2e67",
+      "bytes": 659695,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 8,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-09.png",
+      "sha256": "a68079b20f85ff28aa2e74203fc660ff8bd0e84813cd7b82e0094317b8822ceb",
+      "bytes": 484542,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 9,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-10.png",
+      "sha256": "a6029a213969aba7a235f907760e62a3b8070666a7f515635fea8b18bae6990c",
+      "bytes": 481045,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 10,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-11.png",
+      "sha256": "7faed1eed179344e96478a036f48d8641868d403be96520af4e5d9063237ac56",
+      "bytes": 525238,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 11,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-12.png",
+      "sha256": "49a08637ecf70b3a685f3ba9fadeb5ba1543426659e12f74d95ec33bf7fcbe23",
+      "bytes": 511127,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 12,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-13.png",
+      "sha256": "1bc16fc18b1b4665d9bb4fd005a7f0377050c6a5e846549611d214d445134e32",
+      "bytes": 533673,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 13,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-14.png",
+      "sha256": "d43c70bd709466155e6c009f6d891a97953e6109ccd4af7b753596f1882bc325",
+      "bytes": 332877,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 14,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-15.png",
+      "sha256": "a844be0a7dee6db2435c50045def0d8660311796857b74ecb089fc5ad4d7a0a2",
+      "bytes": 481483,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 15,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-16.png",
+      "sha256": "2a3b126c343b9859d3d908bc01938743e6c176e04c103e260d73c698183771dd",
+      "bytes": 556123,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 16,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-17.png",
+      "sha256": "90fce27f9dae6c1ce7e595202d143e1cd45d85837d9cdf579685e8f47750c809",
+      "bytes": 670614,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 17,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-18.png",
+      "sha256": "9db707c732d9b4c6ea11121c945939abe2bee3cda105b772b9e3c71600315819",
+      "bytes": 452127,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 18,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-19.png",
+      "sha256": "1211c3bcc5918c792cf527d96153658d68494c5d7f96e8b7e3064e551128c784",
+      "bytes": 643612,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 19,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-20.png",
+      "sha256": "5bb126a09ae200316af660429a99a34268fe2e41deb9bf19dadd0757da13a57d",
+      "bytes": 235283,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 20,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-21.png",
+      "sha256": "a0c20a16c1d55c634876243a99d58690c04ca22950833d7fb5883e95422109ec",
+      "bytes": 357680,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 21,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-22.png",
+      "sha256": "790f7e602a9b4929b965bf51877aaa72ad454e5c3c0a90eca764b98e24bbebf3",
+      "bytes": 297745,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 22,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-23.png",
+      "sha256": "4196261513c9b56a8c0ec5a0034de587d6f15e35cc398fa3bd070476f0a0a35c",
+      "bytes": 263845,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 23,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-24.png",
+      "sha256": "82b53726b74879c9ba0078d8c97a591c43610b8e8ca5af3eb78158af46f4cd27",
+      "bytes": 288100,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 24,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-25.png",
+      "sha256": "bf0773275c44d39682727668386440ce55580a5c2b6d6cefad3885cf94d28ef6",
+      "bytes": 230683,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 25,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-01.png",
+      "sha256": "19f7232a12d2910f077ea9094b6931f7c2c32f9a72969c7d83b76f1a393e1ef0",
+      "bytes": 763345,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 1,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-02.png",
+      "sha256": "d06d63e7ba5940146420f97fe6a90cb097521aa4dacabb8a42c54a0def0e37a1",
+      "bytes": 529544,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 2,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-03.png",
+      "sha256": "58457bddba8395e148bc285acb9208887771803ed3863f90544cf9ed6aabd253",
+      "bytes": 541762,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 3,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-04.png",
+      "sha256": "b54117214f57fd9ca01c18d61bdb9578ab72c707df3072ed617c35356c95591f",
+      "bytes": 657218,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 4,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-05.png",
+      "sha256": "5f55fa68881c4fd96780ebfcbbfb4857c976fe74ca597d4492babc40c3eb1c48",
+      "bytes": 835445,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 5,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-06.png",
+      "sha256": "023011035a8086d277601330b8a83dcac8b77c7f44f67f37788e4018a6374b27",
+      "bytes": 537564,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 6,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-07.png",
+      "sha256": "e418c557df3cea1c25ce6d2a67cf8cb76bcc51290a481ffef9e725888091b68a",
+      "bytes": 532901,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 7,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-08.png",
+      "sha256": "a8cb0137c80f6ad2810be1d63fd868669df88941c0445d1c20fc9eee81ce4496",
+      "bytes": 496218,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 8,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-09.png",
+      "sha256": "9bf0a99953b7df2a59afcb35045c5bea258c314018163b31e7a4a4183242dd15",
+      "bytes": 454410,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 9,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-10.png",
+      "sha256": "97f2588a86648d47c4c9aea75c08a2a3e98b031674796dcae12b734e12949b01",
+      "bytes": 478674,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 10,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-11.png",
+      "sha256": "d32da305f1a39afe6f48b90989c4c2f5b53d99ce6316e43904b12a7a7336c0c8",
+      "bytes": 448990,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 11,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-12.png",
+      "sha256": "2889d02f9d8d36ba3c5881210a61e8fb6a8bde21dc3a655c1b339d13646f4a75",
+      "bytes": 437070,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 12,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-13.png",
+      "sha256": "5820f482eb1fc857d43cc08a1fb5ed5fb2e5879fc8463398a3a47997ce7ceb94",
+      "bytes": 419850,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 13,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-14.png",
+      "sha256": "6c62ecaed09f61868e28c92c90109d02789e0fe65806c694161971a3a36e451e",
+      "bytes": 423837,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 14,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-15.png",
+      "sha256": "f564f2e0c2d2f580fc0a3109107752f4a229ade4e037e0733779e92b047a14ec",
+      "bytes": 465645,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 15,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-16.png",
+      "sha256": "3f19adefeb02bb9b5c06c1c3d45f7dd63ba81a8b60c6bb15941ca12e46ce965b",
+      "bytes": 465458,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 16,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-17.png",
+      "sha256": "24920e7f4dcc2e42f79d89d2537e383792de5e331d2c052b426f8fd2c655f2dc",
+      "bytes": 294301,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 17,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-18.png",
+      "sha256": "ff2792b0eb49419f92f1136f15095370c0d6db2867ce6f87ae6ba181001eef46",
+      "bytes": 631621,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 18,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-19.png",
+      "sha256": "d228ce973aaa27dfc16cbb3484f0dbbdae00b1b26bf064d176198f1b14995642",
+      "bytes": 288889,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 19,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-20.png",
+      "sha256": "5b5ed4018d78003372e2967b377b51739703dd12afc3b2f68e800b2a429517a9",
+      "bytes": 235707,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 20,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-21.png",
+      "sha256": "905c9b18fdad9ae9e721697fd39bd1f352b513c19f0069e9090577b7ace030b4",
+      "bytes": 287030,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 21,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-22.png",
+      "sha256": "78afa24845ceba6db9269648c33f76000d897da225a2146d41a4b4961a62f9ab",
+      "bytes": 172215,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 22,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-23.png",
+      "sha256": "1d9bef7845210cc0ac7a3baad496b7df18b31eb7b3f9f4cf0bf24358dce433c5",
+      "bytes": 339472,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 23,
+      "reading_status": "rendered_not_separately_visually_reviewed"
+    }
+  ]
+}

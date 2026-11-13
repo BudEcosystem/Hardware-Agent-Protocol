@@ -1,0 +1,55 @@
+{
+  "acquiredExternalCodeExecuted": false,
+  "externalLfLinesRead": 1703,
+  "files": [
+    {
+      "complete": true,
+      "path": "statx.2",
+      "readRanges": [
+        [
+          1,
+          728
+        ]
+      ],
+      "sha256": "9a826efa5d59d5e6996acac1b445a7df0d833077f933009e751f0c527b2cb228"
+    },
+    {
+      "complete": true,
+      "path": "statfs.2",
+      "readRanges": [
+        [
+          1,
+          395
+        ]
+      ],
+      "sha256": "3dc4ed703d7e2b5edee6765ea33152c89671b6cde5d3ea6f4236160700713b9d"
+    },
+    {
+      "complete": true,
+      "path": "statmount.2",
+      "readRanges": [
+        [
+          1,
+          460
+        ]
+      ],
+      "sha256": "1ccd96d38ea90229f3ae8dda9d7645329d2bfeed32307f679c53dfc75d4e140e"
+    },
+    {
+      "complete": true,
+      "path": "proc_pid_mountinfo.5",
+      "readRanges": [
+        [
+          1,
+          120
+        ]
+      ],
+      "sha256": "190e9124ac7b358a9f9936fcbd8b2f740217c0ebb3a6ac1343551e7d11b5b38c"
+    }
+  ],
+  "kernelImplementationFullyRead": false,
+  "libcImplementationFullyRead": false,
+  "manualCommit": "adb436b2e4471218021d86f188fb58dec3946eb8",
+  "reviewer": "primary agent only",
+  "status": "complete-selected-sources"
+}

@@ -1,0 +1,54 @@
+{
+  "schema": "hms-body-extraction/1",
+  "sources": [
+    {
+      "id": "set_authorizer",
+      "rawSha256": "f4b43d68f5d827b768cd3a1cad8cfd2aa913e073be9d2498ec80b53cd8e32c02",
+      "textPath": "text/set_authorizer.txt",
+      "bytes": 5166,
+      "sha256": "85a79c6bab0e1ff2e4927964abb205eb1c4f40d1cbecb145b65fcd47ae984221",
+      "lfLines": 80,
+      "scope": "Complete API body through final See also links; site navigation and non-executed scripts excluded.",
+      "bodyImages": [],
+      "linksNotAcquiredOrReadByThisLane": [
+        "https://www.sqlite.org/c3ref/c_alter_table.html",
+        "https://www.sqlite.org/c3ref/c_deny.html",
+        "https://www.sqlite.org/c3ref/constlist.html",
+        "https://www.sqlite.org/c3ref/funclist.html",
+        "https://www.sqlite.org/c3ref/intro.html",
+        "https://www.sqlite.org/c3ref/limit.html",
+        "https://www.sqlite.org/c3ref/objlist.html",
+        "https://www.sqlite.org/c3ref/prepare.html",
+        "https://www.sqlite.org/c3ref/sqlite3.html",
+        "https://www.sqlite.org/c3ref/step.html",
+        "https://www.sqlite.org/c3ref/stmt.html",
+        "https://www.sqlite.org/gencol.html",
+        "https://www.sqlite.org/lang_createtable.html",
+        "https://www.sqlite.org/lang_delete.html",
+        "https://www.sqlite.org/lang_delete.html#truncateopt",
+        "https://www.sqlite.org/lang_select.html",
+        "https://www.sqlite.org/pragma.html#pragma_max_page_count",
+        "https://www.sqlite.org/pragma.html#syntax",
+        "https://www.sqlite.org/rescode.html#ok"
+      ]
+    },
+    {
+      "id": "action_codes",
+      "rawSha256": "9aafe597f56ecb23a84b5d92b4125387239956e0e675d030cec4c4d0f870598c",
+      "textPath": "text/action_codes.txt",
+      "bytes": 3875,
+      "sha256": "6060a84674965eba4a764200f6927c48ed222685d3f1c12531fbe351bc7c0dff",
+      "lfLines": 56,
+      "scope": "Complete API body through final See also links; site navigation and non-executed scripts excluded.",
+      "bodyImages": [],
+      "linksNotAcquiredOrReadByThisLane": [
+        "https://www.sqlite.org/c3ref/constlist.html",
+        "https://www.sqlite.org/c3ref/funclist.html",
+        "https://www.sqlite.org/c3ref/intro.html",
+        "https://www.sqlite.org/c3ref/objlist.html",
+        "https://www.sqlite.org/c3ref/set_authorizer.html",
+        "https://www.sqlite.org/c3ref/stricmp.html"
+      ]
+    }
+  ]
+}

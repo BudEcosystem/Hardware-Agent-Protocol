@@ -1,0 +1,96 @@
+{
+  "review": "HMS embedded implementation review",
+  "recorded_at": "2026-11-05T22:18:49.362183+00:00",
+  "repositories": [
+    {
+      "id": "firmata-protocol",
+      "url": "https://github.com/firmata/protocol.git",
+      "commit": "7908873e8faae33111143aa6cc236148b12118f2",
+      "checkout_path": "research/protocols/repos/firmata-protocol",
+      "acquisition": "Previously retained checkout; not fetched or modified by this review. Original metadata: research/protocols/repositories.json",
+      "retrieved_at": "2026-11-05T21:39:27.440604+00:00",
+      "reading_status": "selected_files_only",
+      "whole_repository_read": false,
+      "inspected_files": [
+        "protocol.md",
+        "scheduler.md",
+        "accelStepperFirmata.md"
+      ],
+      "file_hashes_and_coverage": "research/embedded/reading-log.json"
+    },
+    {
+      "id": "firmata-arduino",
+      "url": "https://github.com/firmata/arduino.git",
+      "commit": "ebd19be71b3673ba16f884c00b0a2e940ef86157",
+      "checkout_path": "research/protocols/repos/firmata-arduino",
+      "acquisition": "Previously retained checkout; not fetched or modified by this review. Original metadata: research/protocols/repositories.json",
+      "retrieved_at": "2026-11-05T21:39:27.448061+00:00",
+      "reading_status": "selected_files_only",
+      "whole_repository_read": false,
+      "inspected_files": [
+        "FirmataParser.cpp",
+        "FirmataParser.h",
+        "FirmataConstants.h",
+        "FirmataDefines.h",
+        "Firmata.cpp",
+        "Firmata.h",
+        "examples/StandardFirmata/StandardFirmata.ino"
+      ],
+      "file_hashes_and_coverage": "research/embedded/reading-log.json"
+    },
+    {
+      "id": "rclc",
+      "url": "https://github.com/ros2/rclc.git",
+      "commit": "c34f5d9121e1190e2cb188a8f19e57eead1448c1",
+      "checkout_path": "research/protocols/repos/rclc",
+      "acquisition": "Previously retained checkout; not fetched or modified by this review. Original metadata: research/protocols/repositories.json",
+      "retrieved_at": "2026-11-05T21:39:27.458234+00:00",
+      "reading_status": "selected_files_only",
+      "whole_repository_read": false,
+      "inspected_files": [
+        "rclc/src/rclc/executor.c",
+        "rclc/include/rclc/executor.h",
+        "rclc/src/rclc/executor_handle.c",
+        "rclc/include/rclc/executor_handle.h",
+        "rclc/src/rclc/sleep.c",
+        "rclc/include/rclc/sleep.h"
+      ],
+      "file_hashes_and_coverage": "research/embedded/reading-log.json"
+    },
+    {
+      "id": "configurable-firmata",
+      "url": "https://github.com/firmata/ConfigurableFirmata.git",
+      "commit": "3734757348263e890d276f7e4fbc1f7e2bf5f2b9",
+      "checkout_path": "research/embedded/repos/configurable-firmata",
+      "acquisition": "depth-1 git clone; complete checkout at commit; history truncated; no submodules fetched; no build/install/execution",
+      "command": "git clone --depth 1 https://github.com/firmata/ConfigurableFirmata.git research/embedded/repos/configurable-firmata",
+      "retrieved_at": "2026-11-05T22:12:48.652840+00:00",
+      "retrieval_time_basis": "clone-created .git/config filesystem modification time",
+      "discovery_source": "research/protocols/repos/firmata-protocol/scheduler.md and accelStepperFirmata.md official implementation links",
+      "reading_status": "selected_files_only",
+      "whole_repository_read": false,
+      "inspected_files": [
+        "library.properties",
+        "src/ConfigurableFirmata.cpp",
+        "src/ConfigurableFirmata.h",
+        "src/FirmataScheduler.cpp",
+        "src/FirmataScheduler.h",
+        "src/AccelStepperFirmata.cpp",
+        "src/AccelStepperFirmata.h",
+        "src/utility/AccelStepper.cpp",
+        "src/utility/AccelStepper.h",
+        "src/utility/MultiStepper.cpp",
+        "src/utility/MultiStepper.h",
+        "src/FirmataExt.cpp",
+        "src/FirmataExt.h",
+        "src/Encoder7Bit.cpp",
+        "src/Encoder7Bit.h",
+        "src/FirmataFeature.h",
+        "src/FirmataReporting.cpp",
+        "src/FirmataReporting.h",
+        "examples/ConfigurableFirmata/ConfigurableFirmata.ino"
+      ],
+      "file_hashes_and_coverage": "research/embedded/reading-log.json"
+    }
+  ]
+}

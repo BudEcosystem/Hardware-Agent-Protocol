@@ -1,0 +1,643 @@
+{
+  "record_kind": "supplemental_full_reading_audit",
+  "reviewed_at": "2026-11-05T22:42:37.664305+00:00",
+  "path_base": "repository_root",
+  "supersedes": "Unread acquisition statuses for saycan-v2 and code-as-policies-v4 only; acquisition records remain unchanged.",
+  "method": "Sequential bounded untruncated display/read of every LF-delimited extracted text line including appendices, prompts, references and acknowledgments; all substantive figures/tables inspected with view_image. Formfeed is not a line separator.",
+  "coverage_hash_convention": "Hash original inclusive-range bytes, including each existing LF terminator. Concatenated coverage bytes reproduce the entire text file.",
+  "notes_path": "research/planning/notes/full-review.md",
+  "derived_profile_path": "docs/planning-and-grounding.md",
+  "sources": [
+    {
+      "id": "saycan-v2",
+      "url": "https://arxiv.org/pdf/2204.01691v2",
+      "retrieved_at": "2026-11-05T22:33:37.196845+00:00",
+      "raw_path": "research/planning/raw/saycan-v2.pdf",
+      "sha256": "48c22d36a044bbbd34e640beb1db4fb4ba57e74d97fefa0fb121d55c31282312",
+      "bytes": 12827088,
+      "text_path": "research/planning/text/saycan-v2.txt",
+      "text_sha256": "80d6c21e0c522ac0ae63f09f3133797035db36eb6b0a218cd2e7c9caf34b0f1f",
+      "arxiv_version": "2204.01691v2",
+      "versioned_source_url": "https://arxiv.org/abs/2204.01691v2",
+      "text_bytes": 125338,
+      "text_line_count": 1903,
+      "text_newline_count": 1902,
+      "pdf_page_count": 34,
+      "reading_status": "full_extracted_text_and_numbered_figures_tables_read",
+      "sequential_read_ranges": [
+        [
+          1,
+          300
+        ],
+        [
+          301,
+          600
+        ],
+        [
+          601,
+          900
+        ],
+        [
+          901,
+          1200
+        ],
+        [
+          1201,
+          1470
+        ],
+        [
+          1471,
+          1700
+        ],
+        [
+          1701,
+          1903
+        ]
+      ],
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 300,
+          "sha256": "3e121dcadb151ebf32fef5e9a0bf91671bd4937b07aed9981bd845a8ced48c2f",
+          "bytes": 26903,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 301,
+          "end_line": 600,
+          "sha256": "81ab7d3b3ea3f37a4d2bb28583db9ac6abee6b53f41838cfdd8d54e28b5ae236",
+          "bytes": 21621,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 601,
+          "end_line": 900,
+          "sha256": "94bfe013e3d1d398ca7b8f8796eecbad241dafd20d12d01e5688d148d2312a6e",
+          "bytes": 21801,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 901,
+          "end_line": 1200,
+          "sha256": "3d41a5405a71bf771f64a1551a2462c6904646adac92cd91dd2c7239dd270504",
+          "bytes": 21338,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1201,
+          "end_line": 1470,
+          "sha256": "44f722c356f50f23210712da5bbadf9dc9b9ca4bd6ddd4eddd47d56d96741f27",
+          "bytes": 16815,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1471,
+          "end_line": 1700,
+          "sha256": "cbc9cb8aab17bece351d49a6adba29cada4ce3bf5d2ff0afeeec48ffb83894d9",
+          "bytes": 11846,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1701,
+          "end_line": 1903,
+          "sha256": "795263dffcd092ced8f23b797942b60769c0845377ff866f11f06fca126c16f8",
+          "bytes": 5014,
+          "status": "read_untruncated"
+        }
+      ],
+      "text_coverage_fraction": 1.0,
+      "coverage_complete": true,
+      "pdf_pages_visually_inspected_one_based": [
+        1,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34
+      ],
+      "numbered_figures_inspected": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17
+      ],
+      "numbered_tables_inspected": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "5 (prompt ablation, page 25)",
+        "5 (task list, pages 26–28)",
+        "6",
+        "7",
+        "8"
+      ],
+      "source_issues": [
+        "Appendix D.2 page 22 describes a place affordance based on gripper state; page 24 sets place affordance to 1.0 and relies on language ordering.",
+        "Appendix D.3 page 24 reports 54% for zero examples without required termination; Table 5 on page 25 reports 52%.",
+        "Table 5 is duplicated: prompt ablation on page 25 and task list spanning pages 26–28.",
+        "Figures 15 and 17 repeat the same two rollout panels."
+      ],
+      "terminal_line_inspection": {
+        "line": 1903,
+        "bytes_hex": "0c",
+        "description": "Final unterminated formfeed-only LF logical line explicitly inspected in final text chunk."
+      }
+    },
+    {
+      "id": "code-as-policies-v4",
+      "url": "https://arxiv.org/pdf/2209.07753v4",
+      "retrieved_at": "2026-11-05T22:33:37.205030+00:00",
+      "raw_path": "research/planning/raw/code-as-policies-v4.pdf",
+      "sha256": "e36857fa13746da031444ec59549e61204ca92d599b1d048ac1c55aaf1f6d0a3",
+      "bytes": 3200561,
+      "text_path": "research/planning/text/code-as-policies-v4.txt",
+      "text_sha256": "d3b7cddccb2f913d670bfda3be7b1b035a4103fa0b761e242dc287c15c17be1d",
+      "arxiv_version": "2209.07753v4",
+      "versioned_source_url": "https://arxiv.org/abs/2209.07753v4",
+      "text_bytes": 135178,
+      "text_line_count": 1150,
+      "text_newline_count": 1149,
+      "pdf_page_count": 16,
+      "reading_status": "full_extracted_text_and_numbered_figures_tables_read",
+      "sequential_read_ranges": [
+        [
+          1,
+          260
+        ],
+        [
+          261,
+          500
+        ],
+        [
+          501,
+          740
+        ],
+        [
+          741,
+          950
+        ],
+        [
+          951,
+          1150
+        ]
+      ],
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 260,
+          "sha256": "a60a34188b45877107b5bfc8078b9a2759ff28a315495b7df88c2cee32a42633",
+          "bytes": 32403,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 261,
+          "end_line": 500,
+          "sha256": "ba07f8cb3740963c24655cd0a9b833b9208c0d2a77bd86aeb65d77b32dc308cb",
+          "bytes": 29392,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 501,
+          "end_line": 740,
+          "sha256": "33785cad5d757bf34bd08e96af929aa8ac4bf5e1be7b76d1bea4f387459a872c",
+          "bytes": 27617,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 741,
+          "end_line": 950,
+          "sha256": "fdbdf0312e0ea8a8f13f328af8d52690a181cd378ddd81951f74f006cf2afaef",
+          "bytes": 23481,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 951,
+          "end_line": 1150,
+          "sha256": "f5aa091e5ebd7811a9bb4716efe8d9ff5e4d644072a8ceb981127afce35452d6",
+          "bytes": 22285,
+          "status": "read_untruncated"
+        }
+      ],
+      "text_coverage_fraction": 1.0,
+      "coverage_complete": true,
+      "pdf_pages_visually_inspected_one_based": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16
+      ],
+      "numbered_figures_inspected": [
+        1,
+        2,
+        4,
+        5,
+        6,
+        7
+      ],
+      "numbered_tables_inspected": [
+        "I",
+        "II",
+        "III",
+        "IV",
+        "V",
+        "VI"
+      ],
+      "source_issues": [
+        "Table III reports CLIPort 0.01 for unseen-attribute/unseen-instruction spatial-geometric tasks; Table VI reports the corresponding oracle-termination aggregate as 1.3%. Both visually verified; unresolved.",
+        "Appendix K identifies seen spatial instructions as 5–8; its fifth seen instruction is also in the long-horizon group, and Table VI spatial totals match rows 6–8.",
+        "Figure numbering skips 3. All sixteen pages were visually inspected; numbered figures present are 1, 2, 4, 5, 6, 7."
+      ],
+      "terminal_line_inspection": {
+        "line": 1150,
+        "bytes_hex": "0c",
+        "description": "Final unterminated formfeed-only LF logical line explicitly inspected in final text chunk."
+      }
+    }
+  ],
+  "figures": [
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p01.png",
+      "sha256": "ecee3b3f394da6e83f0f44e95928479f641c31af365af30d59d080f904511d3d",
+      "bytes": 954309,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 1,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p02.png",
+      "sha256": "72ea611481eab4b73d2d2395abd2051920917e3b8be4219e4f649f7cacfed7d4",
+      "bytes": 1018181,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 2,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p03.png",
+      "sha256": "596cc27b8221763e58c127087f617f1564fb7e1e745cdff0d8c93014d9e16eec",
+      "bytes": 749375,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 3,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p04.png",
+      "sha256": "cfd73a881e702c9f4d98f602dc65f0533a545a26bb91efd200464411fc945af7",
+      "bytes": 715679,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 4,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p05.png",
+      "sha256": "999c518bfafcbd313e2fa5df50c22cc5c407464951c7691e3e27f484326f7f75",
+      "bytes": 769823,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 5,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p06.png",
+      "sha256": "988bc1dee6fbf0ac2122fe14b432edfd56e7934a4bbdca589c84bc8edd9e05d8",
+      "bytes": 823688,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 6,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p07.png",
+      "sha256": "597ee8ffde79278c8f643c82b9f78d2d8f7e60f6ef1ba61efc0024d4dedfa49e",
+      "bytes": 960477,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 7,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p08.png",
+      "sha256": "2bbfc9f57b227b7b85cb6973dc8aa10f30f86bf294824082b0dbc8baffb53294",
+      "bytes": 90757,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 8,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p09.png",
+      "sha256": "bcbfd2c5f9a7ea91735c01723ea439e5dc60088668026d3866dea5e4782e5662",
+      "bytes": 721598,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 9,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p10.png",
+      "sha256": "d881576453236cd912dde6b7a9f3418f949e2ce353fd374352245b158e44f7fb",
+      "bytes": 665773,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 10,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p11.png",
+      "sha256": "07d38ddbee697c7a8b9472ff9c3378bcbab4067ada34e00e4e22c583df9de954",
+      "bytes": 596367,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 11,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p12.png",
+      "sha256": "bb2ac3a3319bf5b076aa267e94eec508c43d5d1fc745fc9fcf33de1a298e21ca",
+      "bytes": 665814,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 12,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p13.png",
+      "sha256": "e836883f6817ac435c046c59097599edc563078571073072d0748172a0f97623",
+      "bytes": 684424,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 13,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p14.png",
+      "sha256": "8d6f487723df210195f956d52d0b0757f3a7fe5c914cffbea7fb5cb619c0f763",
+      "bytes": 721165,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 14,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p15.png",
+      "sha256": "5d4d49995333140a2b8bf7902850ab4f41e55b892d2823c1c95ff00a0f23a42a",
+      "bytes": 667814,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 15,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/code-as-policies-v4-p16.png",
+      "sha256": "c665e4583c19e43ca2e04ce530e0d364efa16e2044f2c5ebd6a67fa91888666c",
+      "bytes": 404296,
+      "source_id": "code-as-policies-v4",
+      "pdf_page_one_based": 16,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p01.png",
+      "sha256": "fd80cb4b82fc3ac32f5bb4fda13fa53cb15d8f24c9ab3cbd72f029aae67ac884",
+      "bytes": 582337,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 1,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p04.png",
+      "sha256": "2c5c0fef02a178c8c3e7d0ea1c4f5905c77cb52c89f42bd8ddda67e9662ee1e7",
+      "bytes": 676651,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 4,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p05.png",
+      "sha256": "5d9eb1e3c3223b73076fc2391cafbc181d547fabe053e79eb241bb3696bebb24",
+      "bytes": 511995,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 5,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p06.png",
+      "sha256": "cbc1bcd81b225c32f616b5312928cd339f2b306f557375b4acdffed1eab6c329",
+      "bytes": 657601,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 6,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p07.png",
+      "sha256": "23e15266a7120b97cc0ba3ced7b06cbbc061eb048ced1576c492ba8b0c79ab09",
+      "bytes": 830950,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 7,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p08.png",
+      "sha256": "27b6ef08cb7f4ea345508c13c296db3390658e3acdf62dacafbf1861e177aa12",
+      "bytes": 656304,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 8,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p09.png",
+      "sha256": "8e72c28d12676dd506d60dd6954ea354debec732b877d9b66e4d27abf9827c01",
+      "bytes": 494273,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 9,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p10.png",
+      "sha256": "f0e6c84ce74d0a4b89feec62e522e409c6d67b6b5d521ac99c4ca00feb09d73d",
+      "bytes": 557910,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 10,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p11.png",
+      "sha256": "b71239bc3e22290696e77934444a3a8bb3fc09321062d0ce45ba7cf03cc19444",
+      "bytes": 675989,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 11,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p20.png",
+      "sha256": "9ed706f7faa570b19e730a560925b5a3c03e79e767289f02c763667aa09e4ec3",
+      "bytes": 497772,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 20,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p21.png",
+      "sha256": "b166a284ec206e468463995e7f76f8c91532e4f8322a9b76e5ed8c459eb27a6d",
+      "bytes": 480180,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 21,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p22.png",
+      "sha256": "4c71d662126d1c25d0ad21c857f342f908397239ecb21a8dd2d76fd18b0b65e2",
+      "bytes": 456535,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 22,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p23.png",
+      "sha256": "08d39a6ba2cf4e29628e691c6da05300241aad3852200024968d5c6750c8b206",
+      "bytes": 498883,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 23,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p24.png",
+      "sha256": "8d3f904a2c8856a949295e0f5c511b2919314e61cf98b914901e7018a34ae641",
+      "bytes": 544119,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 24,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p25.png",
+      "sha256": "4e9b6ec5d9e56032281bbea10ca12a01cab94e24bf287e1a30ca5f03e4362944",
+      "bytes": 387122,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 25,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p26.png",
+      "sha256": "513d8d948ba4669d892dabf479961a57072761e9e81fac8b49683cdd2cf500c1",
+      "bytes": 369479,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 26,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p27.png",
+      "sha256": "079f3b12a5352b3c523f2a07e6c8544c974cfc04fa694c16a1a5a19588c78da7",
+      "bytes": 317474,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 27,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p28.png",
+      "sha256": "6ea7d830b357e4feba10d671c675f0c712b073eba3d171a940de895306e68843",
+      "bytes": 349173,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 28,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p29.png",
+      "sha256": "5e1dcf029d3323848fef0a5f268b92be8e577e08e8f4ab6e2aa15d17746a4c48",
+      "bytes": 217994,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 29,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p30.png",
+      "sha256": "8a7baec4cb5733aa9f34653db15240c428ea877279cae9f049fa2c338cd8c82c",
+      "bytes": 358472,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 30,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p31.png",
+      "sha256": "28511b54ace176d8e727bfe0605556932c9540d19000ed6973a2548abc166566",
+      "bytes": 640905,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 31,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p32.png",
+      "sha256": "2327fe2fa832341833e1b99ed62ab182887d9c2eae8d053fc97d95753cc3cecc",
+      "bytes": 687675,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 32,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p33.png",
+      "sha256": "886250fa53e896dc79ac2d256bd4a096eb5d1bfe9f95bb5eabf4af98b5440300",
+      "bytes": 650972,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 33,
+      "reading_status": "visually_inspected"
+    },
+    {
+      "path": "research/planning/figures/saycan-v2-p34.png",
+      "sha256": "07223aeac7059624227ab19e6a1f20b0dad9583c66c913c78c6b0b54e49ab1af",
+      "bytes": 687512,
+      "source_id": "saycan-v2",
+      "pdf_page_one_based": 34,
+      "reading_status": "visually_inspected"
+    }
+  ],
+  "visual_review": {
+    "method": "pdftoppm -scale-to 1800 -png -singlefile per page; view_image inspection",
+    "render_directory": "research/planning/figures",
+    "scope": "All 16 Code as Policies PDF pages; 24 SayCan pages covering all numbered figures, tables, multipart task-list tables and the source-discrepancy prose on page 24. Does not claim visual reading of all SayCan prose-only pages.",
+    "limits": "No video playback; no digitization or exact numerical reconstruction from plotted bar lengths."
+  },
+  "excluded_claims": [
+    "No full repository or notebook read/audit; exact selected cells tracked separately.",
+    "No acquired code executed, installed, built or modified.",
+    "No weights, datasets, training, inference, simulation or physical robot experiment executed.",
+    "No claims of functional safety, hardware qualification, hctl implementation or current-model performance.",
+    "Linked prompt files and cited papers are not included in full-paper coverage."
+  ],
+  "new_sources_acquired": [
+    "saycan-v2",
+    "code-as-policies-v4",
+    "saycan-project",
+    "code-as-policies-project"
+  ],
+  "existing_manifests_modified": false
+}

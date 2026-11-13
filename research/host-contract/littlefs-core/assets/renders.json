@@ -1,0 +1,26 @@
+{
+  "renderer": "installed librsvg-2/cairo through ctypes; static SVG only",
+  "files": [
+    {
+      "source": "file-cost.svg",
+      "render": "file-cost.png",
+      "sha256": "ac0c86cfd857008e4e2c9324d8f45cd0de50a230759a30024bb73445ac5b991a",
+      "width": 1000,
+      "height": 650
+    },
+    {
+      "source": "metadata-cost.svg",
+      "render": "metadata-cost.png",
+      "sha256": "21950b0fb5bd7346f06d8fa513bb6cd686b88ce00be46e725809747a6b25634b",
+      "width": 1000,
+      "height": 650
+    },
+    {
+      "source": "wear-distribution.svg",
+      "render": "wear-distribution.png",
+      "sha256": "989b3ee5d0d432e88cf7b9e54f7a902bd576b10ad97ebfff0c1d06012de3460a",
+      "width": 1000,
+      "height": 650
+    }
+  ]
+}

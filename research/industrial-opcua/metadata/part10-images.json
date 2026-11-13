@@ -1,0 +1,82 @@
+[
+  {
+    "src": "/images/opclogo.png",
+    "alt": "OPC Foundation",
+    "parent": "<a aria-label=\"OPC Foundation home\" b-9bvyxychcn=\"\" href=\"/\">\n<img alt=\"OPC Foundation\" class=\"site-logo\" src=\"/images/opclogo.png\"/>\n</a>"
+  },
+  {
+    "src": "/img/35d4cbfb09269db905be4e67a84e3d86c006c97933f7ba381e971a5bbb339996.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_1_automation-facility-control\"><img alt=\"\" class=\"figure-img\" src=\"/img/35d4cbfb09269db905be4e67a84e3d86c006c97933f7ba381e971a5bbb339996.png\"/><figcaption>Figure 1 - Automation facility control</figcaption></figure>"
+  },
+  {
+    "src": "/img/a95659534db01e8ca246d069a8b4bff5c0123b7fc6ee2167c5eaf21a0fd000e3.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_2_program-illustration\"><img alt=\"\" class=\"figure-img\" src=\"/img/a95659534db01e8ca246d069a8b4bff5c0123b7fc6ee2167c5eaf21a0fd000e3.png\"/><figcaption>Figure 2 - Program illustration</figcaption></figure>"
+  },
+  {
+    "src": "/img/e42b1cc4e9116544d1c6125bef9805207fc43df6d1e2589b4c141d1e30ccbde5.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_4_program-type\"><img alt=\"\" class=\"figure-img\" src=\"/img/e42b1cc4e9116544d1c6125bef9805207fc43df6d1e2589b4c141d1e30ccbde5.png\"/><figcaption>Figure 4 - Program Type</figcaption></figure>"
+  },
+  {
+    "src": "/img/925aac8f7a82efc25b0fc0985d56b62675187884b4e86b54a94dacb897541e2f.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_5_program-references\"><img alt=\"\" class=\"figure-img\" src=\"/img/925aac8f7a82efc25b0fc0985d56b62675187884b4e86b54a94dacb897541e2f.png\"/><figcaption>Figure 5 - Program FSM References</figcaption></figure>"
+  },
+  {
+    "src": "/img/2c527f278e26fbcc1fd029955def93af3ec502557e2748fd7ad64a8565bfcd2d.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_6_programstatemachinetype-causes-and-effects\"><img alt=\"\" class=\"figure-img\" src=\"/img/2c527f278e26fbcc1fd029955def93af3ec502557e2748fd7ad64a8565bfcd2d.png\"/><figcaption>Figure 6 - ProgramStateMachineType causes and effects</figcaption></figure>"
+  },
+  {
+    "src": "/img/b41b7256d01cd5745e50d914be3638861f1bd2a2b89116ebc490a144793139dd.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_1_program-example\"><img alt=\"\" class=\"figure-img\" src=\"/img/b41b7256d01cd5745e50d914be3638861f1bd2a2b89116ebc490a144793139dd.png\"/><figcaption>Figure A.1 - Program example </figcaption></figure>"
+  },
+  {
+    "src": "/img/96b762833b63a58e97e66e37f29b2c089fab10a343c4a8b7168b11e4df2d1279.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_2_domaindownload-state-diagram\"><img alt=\"\" class=\"figure-img\" src=\"/img/96b762833b63a58e97e66e37f29b2c089fab10a343c4a8b7168b11e4df2d1279.png\"/><figcaption>Figure A.2 - DomainDownload state diagram</figcaption></figure>"
+  },
+  {
+    "src": "/img/f589836dfc98269c08c1c9c012e678e84144deb8c209d8deafd3fa27f9b30d3f.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_3_domaindownloadtype-partial-state-model\"><img alt=\"\" class=\"figure-img\" src=\"/img/f589836dfc98269c08c1c9c012e678e84144deb8c209d8deafd3fa27f9b30d3f.png\"/><figcaption>Figure A.3 - DomainDownloadType partial state model</figcaption></figure>"
+  },
+  {
+    "src": "/img/b7fcf53d1cbb2580afa45d53d3e4688a057906f9234deb7cf9094683c9ab7e6d.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_4_ready-to-running-model\"><img alt=\"\" class=\"figure-img\" src=\"/img/b7fcf53d1cbb2580afa45d53d3e4688a057906f9234deb7cf9094683c9ab7e6d.png\"/><figcaption>Figure A.4 - Ready To Running model</figcaption></figure>"
+  },
+  {
+    "src": "/img/f6df1f85c902d459a0b94d31daaab2630ed24a96c28bb7aee88035c1e50ab456.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_5_opening-to-sending-to-closing-model\"><img alt=\"\" class=\"figure-img\" src=\"/img/f6df1f85c902d459a0b94d31daaab2630ed24a96c28bb7aee88035c1e50ab456.png\"/><figcaption>Figure A.5 - Opening To Sending To Closing model</figcaption></figure>"
+  },
+  {
+    "src": "/img/cb01cd2b53cea8c78856771eb127159184c5618a2dc82f0dbf2517c3e9d91b75.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_6_running-to-suspended-model\"><img alt=\"\" class=\"figure-img\" src=\"/img/cb01cd2b53cea8c78856771eb127159184c5618a2dc82f0dbf2517c3e9d91b75.png\"/><figcaption>Figure A.6 - Running To Suspended model</figcaption></figure>"
+  },
+  {
+    "src": "/img/c9a7e75edba0354deb008ada61688d6369b368d7a8e1e69ee7adb9c7a8e61347.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_7_suspended-to-running-model\"><img alt=\"\" class=\"figure-img\" src=\"/img/c9a7e75edba0354deb008ada61688d6369b368d7a8e1e69ee7adb9c7a8e61347.png\"/><figcaption>Figure A.7 - Suspended To Running model</figcaption></figure>"
+  },
+  {
+    "src": "/img/9c6bb592ce8e4e72df7bbcd9c54c47f0b3e39548d9102c0deea775a637ada0d0.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_8_running-to-halted-aborted-model\"><img alt=\"\" class=\"figure-img\" src=\"/img/9c6bb592ce8e4e72df7bbcd9c54c47f0b3e39548d9102c0deea775a637ada0d0.png\"/><figcaption>Figure A.8 - Running To Halted - Aborted model</figcaption></figure>"
+  },
+  {
+    "src": "/img/9073cb1f8af73baed33794eae815e1931a15efbdff8207c74f8f7d96071b31a3.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_9_suspended-to-aborted-model\"><img alt=\"\" class=\"figure-img\" src=\"/img/9073cb1f8af73baed33794eae815e1931a15efbdff8207c74f8f7d96071b31a3.png\"/><figcaption>Figure A.9 - Suspended To Aborted model</figcaption></figure>"
+  },
+  {
+    "src": "/img/c57941aedbc195075bf5178b206043390569789a7f9d8707eaf7cd0dc2f6ddbd.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_10_running-to-completed-model\"><img alt=\"\" class=\"figure-img\" src=\"/img/c57941aedbc195075bf5178b206043390569789a7f9d8707eaf7cd0dc2f6ddbd.png\"/><figcaption>Figure A.10 - Running To Completed model</figcaption></figure>"
+  }
+]

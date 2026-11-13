@@ -1,0 +1,42 @@
+6.8 Durable Subscriptions
+
+
+          MonitoredItems are used to monitor Variable Values for data changes and event notifier Objects for new Events. Subscriptions are used to combine data changes and events of the assigned MonitoredItems to an optimized stream of network messages. A reliable delivery is ensured as long as the lifetime of the Subscription and the queues in the MonitoredItems are long enough for a network interruption between OPC UA Client and Server. All queues that ensure reliable delivery are normally kept in memory and a Server restart would delete them.
+
+There are use cases where OPC UA Clients have no permanent network connection to the OPC UA Server or where reliable delivery of data changes and events is necessary even if the OPC UA Server is restarted or the network connection is interrupted for a longer time.
+
+To ensure this reliable delivery, the OPC UA Server shall keep collected data and events in until the OPC UA Client has confirmed reception. It is possible that there will be data lost if the Server is not shut down gracefully or in case of power failure. But the OPC UA Server should persist the queues frequently even if the Server is not shut down.
+
+The Method SetSubscriptionDurable defined in OPC 10000-5 is used to set a Subscription into this durable mode and to allow much longer lifetimes and queue sizes than for normal Subscriptions. The Method shall be called before the MonitoredItems are created in the durable Subscription. The Server shall verify that the Method is called within the Session context of the Session that owns the Subscription.
+
+A value of 0 for the parameter lifetimeInHours requests the highest lifetime supported by the Server.
+
+The revisedLifetimeInHours is used to set the LifetimeCount of the Subscription.
+
+
+          ModifySubscription can be used to change the parameters of the durable Subscription. If the Client would like to keep the previous life time setting, the Client needs to calculate the LifetimeCount based on the revisedLifetimeInHours and the PublishingInterval. ModifySubscription does not change the durable mode of the Subscription.
+
+An OPC UA Server providing durable Subscriptions shall
+
+Support the SetSubscriptionDurable Method defined in OPC 10000-5
+
+Support Service TransferSubscriptions
+
+Support long Subscription lifetimes, minimum requirements are define in OPC 10000-7
+
+Support large MonitoredItem queues, minimum requirements are define in OPC 10000-7
+
+Store Subscriptions settings and sent notification messages with sequence numbers
+
+Store MonitoredItem settings and queues
+
+An OPC UA Client using durable Subscriptions shall
+
+Use the SetSubscriptionDurable Method defined in OPC 10000-5 to create a durable Subscription
+
+Close Sessions for planned communication interruptions
+
+Use the Service TransferSubscriptions to assign the durable Subscription to a new Session for data transfer
+
+Store SubscriptionId, MonitoredItem client and server handles and the last confirmed sequence number
+

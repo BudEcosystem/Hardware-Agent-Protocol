@@ -1,0 +1,25 @@
+{
+  "status": "passed",
+  "scope": "Retained-byte hashes, git pins, selected source byte equality and declared coverage counts; not independent proof of reading or hardware correctness",
+  "retainedFilesVerified": 80,
+  "acquisitionRecordsVerified": 37,
+  "repositoryPinsVerified": 4,
+  "selectedSourceFilesVerified": 32,
+  "completeSourceFiles": 31,
+  "completeSourceLines": 15216,
+  "selectedCompleteFunctionLines": 765,
+  "acquiredCodeExecuted": false,
+  "acquiredTestsExecuted": false,
+  "deviceOrServiceContacted": false,
+  "inputsSha256": {
+    "manifest.json": "8cae3e7a3c66a500e6baf1cdfea4fc6964c4f2a012399ccbc311af2f253f9d1d",
+    "acquisition.json": "453cba112eceff70854dfb0657a7a44ac4039c8bb35355f9499391f1dba4614e",
+    "pins.json": "fdf2869b696d431e18e7d3e6b2e27fdd129cb6b4c76386434373429ad2c26314",
+    "selected-files.json": "34cfce70f8d7681065451ca0e82c87c7c9315234cc2a4b1843d1ec726042a4e4",
+    "coverage.json": "7117f3b3b6660dc4d4394eb88e82fb070f0054dd69f2ff0b33093db747355e2d",
+    "source-notes.md": "9e8639d73178a69372bce8518dc62c1a83f3247c758b0d33579f328121d2efb5",
+    "README.md": "54de345a6f1be7c0e97c15a322234d890ff8b8d6e9fb8620ee51036e248833e7",
+    "verify_retained.py": "b945827439fbf41ea1e98874606c72a74a62214689d3634599a6b2dfd119855e"
+  },
+  "bindingDocumentSha256": "042a6017bb50e64ad9f3099cff0f1efdf21c74c3cefab4d879dda8c0d154ed67"
+}

@@ -1,0 +1,145 @@
+5.6 SecureChannel Service Set
+
+5.6.1 Overview
+
+This Service Set defines Services used to open a communication channel that ensures the Confidentiality and Integrity of all Messages exchanged with the Server. The base concepts for OPC UA security are defined in OPC 10000-2.
+
+The SecureChannel Services are unlike other Services because they are not implemented directly by the OPC UA Application. Instead, they are provided by the Communication Stack on which the OPC UA Application is built. For example, an OPC UA Server may be built on a stack that allows applications to establish a SecureChannel using HTTPS. In these cases, the OPC UA Application shall verify that the Message it received was in the context of an HTTPS connection. OPC 10000-6 describes how the SecureChannel Services are implemented.
+
+A SecureChannel is a long-running logical connection between a single Client and a single Server. This channel maintains a set of keys known only to the Client and Server, which are used to sign and encrypt Messages sent across the network to ensure Confidentiality and Integrity. The SecureChannel Services allow the Client and Server to securely negotiate the keys to use.
+
+Logical connections may be initiated by the Client or by the Server as described in OPC 10000-6. After the connection is initiated, the SecureChannel is opened and closed by the Client using the SecureChannel Services.
+
+An EndpointDescription tells a Client how to establish a SecureChannel with a given Endpoint. A Client may obtain the EndpointDescription from a Discovery Server, via some non-UA defined directory server or from its own configuration.
+
+The exact algorithms used to sign and encrypt Messages are described in the SecurityPolicy field of the EndpointDescription. A Client shall use these algorithms when it creates a SecureChannel.
+
+It should be noted that some SecurityPolicies defined in OPC 10000-7 will turn off authentication and encryption resulting in a SecureChannel that provides no security.
+
+When a Client and Server are communicating via a SecureChannel, they shall verify that all incoming Messages have been signed and encrypted according to the requirements specified in the EndpointDescription. An OPC UA Application shall not process any Message that does not conform to these requirements.
+
+The relationship between the SecureChannel and the OPC UA Application depends on the implementation technology. OPC 10000-6 defines any requirements that depend on the technology used.
+
+The correlation between the OPC UA Application Session and the SecureChannel is illustrated in Figure 13. The Communication Stack is used by the OPC UA Applications to exchange Messages. In the first step, the SecureChannel Services are used to establish a SecureChannel between the two Communication Stacks which allows the secure exchange of Messages. In the second step, the OPC UA Applications use the Session Service Set to establish an OPC UA Application Session.
+
+[Figure: Figure 13 - SecureChannel and Session Services]
+
+Once a Client has established a Session it may wish to access the Session from a different SecureChannel. The Client can do this by validating the new SecureChannel with the ActivateSession Service described in 5.7.3.
+
+If a Server acts as a Client to other Servers, which is commonly referred to as Server chaining, then the Server shall be able to maintain user level security. By this we mean that the user identity should be passed to the underlying Server or it should be mapped to an appropriate user identity in the underlying Server. It is unacceptable to ignore user level security. This is required to ensure that security is maintained and that a user does not obtain information that they should not have access to. Whenever possible a Server should impersonate the original Client by passing the original Client's user identity to the underlying Server when it calls the ActivateSession Service. If impersonation is not an option then the Server shall map the original Client's user identity onto a new user identity which the underlying Server does recognize.
+
+5.6.2 OpenSecureChannel
+
+5.6.2.1 Description
+
+This Service is used to open or renew a SecureChannel that can be used to ensure Confidentiality and Integrity for Message exchange during a Session. This Service requires the Communication Stack to apply the various security algorithms to the Messages as they are sent and received. Specific implementations of this Service for different Communication Stacks are described in OPC 10000-6.
+
+Each SecureChannel has a globally-unique identifier and is valid for a specific combination of Client and Server application instances. Each channel contains one or more SecurityTokens that identify a set of cryptography keys that are used to encrypt and authenticate Messages. SecurityTokens also have globally-unique identifiers which are attached to each Message secured with the token. This allows an authorized receiver to know how to decrypt and verify the Message.
+
+
+              SecurityTokens have a finite lifetime negotiated with this Service. However, differences between the system clocks on different machines and network latencies mean that valid Messages could arrive after the token has expired. To prevent valid Messages from being discarded, the applications should do the following:
+
+1. 
+                  Clients should request a new SecurityToken after 75 % of its lifetime has elapsed. This should ensure that Clients will receive the new SecurityToken before the old one actually expires.
+2. 
+                  Servers shall use the existing SecurityToken to secure outgoing Messages until the SecurityToken expires or the Server receives a Message secured with a new SecurityToken. This should ensure that Clients do not reject Messages secured with the new SecurityToken that arrive before the Client receives the new SecurityToken.
+3. 
+                  Clients should accept Messages secured by an expired SecurityToken for up to 25 % of the token lifetime. This should ensure that Messages sent by the Server before the token expired are not rejected because of network delays.
+
+Each SecureChannel exists until it is explicitly closed or until the last token has expired and the overlap period has elapsed. A Server application should limit the number of SecureChannels. To protect against misbehaving Clients and denial of service attacks, the Server shall close the oldest unused SecureChannel that has no Session assigned before reaching the maximum number of supported SecureChannels. When Session-less Service invocation is done through a transport mapping that requires the OpenSecureChannel Service, the Server shall maintain a last used time for the SecureChannel to detect the oldest unused SecureChannel.
+
+The OpenSecureChannel request and response Messages shall be signed with the sender's private key. These Messages shall always be encrypted. If the transport layer does not provide encryption, then these Messages shall be encrypted with the receiver's public key. These requirements for OpenSecureChannel only apply if the securityPolicyUri is not None.
+
+If the protocol defined in OPC 10000-6 requires that ApplicationInstanceCertificates are used in the OpenSecureChannel Service, then Clients and Servers shall verify that the same Certificates are used in the CreateSession and ActivateSession Services. Certificates are not provided and shall not be verified if the securityPolicyUri is None.
+
+If the securityPolicyUri is not None, a Client shall verify the HostName specified in the Server Certificate is the same as the HostName contained in the endpointUrl. If there is a difference then the Client shall report the difference and may choose to not open the SecureChannel. Servers shall add all possible HostNames like MyHost and MyHost.mycompany.com into the Server Certificate. This includes IP addresses of the host or the HostName exposed by a NAT router used to connect to the Server. Servers shall not append the 'local' top level domain to any domains declared in their Certificate; an unqualified domain name is used if a more appropriate qualifier does not exist. Clients using a URL returned from an LDS-ME shall remove the 'local' top level domain when checking the domain against the Server Certificate.
+
+
+              Clients should be prepared to replace the HostName and port returned in the EndpointDescription with the HostName or the IP addresses and the port they used to call GetEndpoints. The Client shall still execute the HostName verification comparing the HostName used by the Client to create the SecureChannel with the HostName list in the Server Certificate. See Table 100 for more details.
+
+5.6.2.2 Parameters
+
+
+              Table 11 defines the parameters for the Service.
+
+Unlike other Services, the parameters for this Service provide only an abstract definition. The concrete representation on the network depends on the mappings defined in OPC 10000-6.
+
+Table 11 - OpenSecureChannel Service Parameters
+Name,Type,Description
+Request,,
+requestHeader,RequestHeader,Common request parameters. The authenticationToken is always null. The type RequestHeader is defined in 7.32.
+clientCertificate,ApplicationInstance‌Certificate,"A Certificate that identifies the Client. The OpenSecureChannel request shall be signed with the private key for this Certificate. The ApplicationInstanceCertificate type is defined in 7.3. If the securityPolicyUri is None, the Server shall ignore the ApplicationInstanceCertificate."
+requestType,Enum SecurityToken RequestType,The type of SecurityToken request: An enumeration that shall be one of the following: 	ISSUE	creates a new SecurityToken for a new SecureChannel. 	RENEW 	creates a new SecurityToken for an existing SecureChannel.
+secureChannelId,BaseDataType,The identifier for the SecureChannel that the new token should belong to. This parameter shall be null when creating a new SecureChannel. The concrete security protocol definition in OPC 10000-6 chooses the concrete DataType.
+securityMode,Enum MessageSecurityMode,The type of security to apply to the messages.  The type MessageSecurityMode type is defined in 7.20. A SecureChannel may need to be created even if the securityMode is NONE. The exact behaviour depends on the mapping used and is described in the OPC 10000-6.
+securityPolicyUri,String,The URI for SecurityPolicy to use when securing messages sent over the SecureChannel. The set of known URIs and the SecurityPolicies associated with them are defined in OPC 10000-7.
+clientNonce,ByteString,A random number that shall not be used in any other request. A new clientNonce shall be generated for each time a SecureChannel is renewed. This parameter shall have a length equal to the SecureChannelNonceLength defined for the SecurityPolicy in OPC 10000-7. The SecurityPolicy is identified by the securityPolicyUri.
+requestedLifetime,Duration,"The requested lifetime, in milliseconds, for the new SecurityToken. It specifies when the Client expects to renew the SecureChannel by calling the OpenSecureChannel Service again. If a SecureChannel is not renewed, then all Messages sent using the current SecurityTokens shall be rejected by the receiver. Several cryptanalytic attacks become easier as more material encrypted with a specific key is available. By limiting the amount of data processed using a particular key, those attacks are made more difficult. Therefore the volume of data exchanged between Client and Server shall be limited by establishing a new SecurityToken after the lifetime. The setting of the requested lifetime depends on the expected number of exchanged messages and their size in the lifetime. A higher volume of data requires shorter lifetime."
+,,
+Response,,
+responseHeader,ResponseHeader,Common response parameters (see 7.33 for ResponseHeader type definition).
+securityToken,ChannelSecurityToken,Describes the new SecurityToken issued by the Server. This structure is defined in-line with the following indented items.
+channelId,BaseDataType,A unique identifier for the SecureChannel. This is the identifier that shall be supplied whenever the SecureChannel is renewed. The concrete security protocol definition in OPC 10000-6 chooses the concrete DataType.
+tokenId,ByteString,A unique identifier for a single SecurityToken within the channel. This is the identifier that shall be passed with each Message secured with the SecurityToken.
+createdAt,UtcTime,The time when the SecurityToken was created.
+revisedLifetime,Duration,The lifetime of the SecurityToken in milliseconds. The UTC expiration time for the token may be calculated by adding the lifetime to the createdAt time. The revised lifetime shall be used by the Client to renew a SecureChannel before it expires even if the MessageSecurityMode is NONE. The Server shall provide a lifetime greater than 0. It should be a sensible value based on the capabilities and configuration of the Server.
+serverNonce,ByteString,A random number that shall not be used in any other request. A new serverNonce shall be generated for each time a SecureChannel is renewed. This parameter shall have a length equal to the SecureChannelNonceLength defined for the SecurityPolicy in OPC 10000-7. The SecurityPolicy is identified by the securityPolicyUri.
+
+5.6.2.3 Service results
+
+
+              Table 12 defines the Service results specific to this Service. Common StatusCodes are defined in Table 178.
+
+Table 12 - OpenSecureChannel Service Result Codes
+Symbolic Id,Description
+Bad_SecurityChecksFailed,See Table 178 for the description of this result code.
+Bad_CertificateTimeInvalid,See Table 178 for the description of this result code.
+Bad_CertificateIssuerTimeInvalid,See Table 178 for the description of this result code.
+Bad_CertificateHostNameInvalid,See Table 178 for the description of this result code.
+Bad_CertificateUriInvalid,See Table 178 for the description of this result code.
+Bad_CertificateUseNotAllowed,See Table 178 for the description of this result code.
+Bad_CertificateIssuerUseNotAllowed,See Table 178 for the description of this result code.
+Bad_CertificateUntrusted,See Table 178 for the description of this result code.
+Bad_CertificateRevocationUnknown,See Table 178 for the description of this result code.
+Bad_CertificateIssuerRevocationUnknown,See Table 178 for the description of this result code.
+Bad_CertificateRevoked,See Table 178 for the description of this result code.
+Bad_CertificateIssuerRevoked,See Table 178 for the description of this result code.
+Bad_RequestTypeInvalid,The SecurityToken request type is not valid.
+Bad_SecurityModeRejected,The security mode does not meet the requirements set by the server.
+Bad_SecurityPolicyRejected,The security policy does not meet the requirements set by the Server.
+Bad_SecureChannelIdInvalid,See Table 178 for the description of this result code.
+Bad_NonceInvalid,See Table 178 for the description of this result code. A Server shall check the minimum length of the Client nonce and return this status if the length is below 32 bytes. A check for duplicated nonce can only be done in OpenSecureChannel calls with the request type RENEW.
+
+5.6.3 CloseSecureChannel
+
+5.6.3.1 Description
+
+This Service is used to terminate a SecureChannel.
+
+The request Messages shall be signed with the appropriate key associated with the current token for the SecureChannel.
+
+5.6.3.2 Parameters
+
+
+              Table 13 defines the parameters for the Service.
+
+Specific protocol mappings defined in OPC 10000-6 may choose to omit the response.
+
+Table 13 - CloseSecureChannel Service Parameters
+Name,Type,Description
+Request,,
+requestHeader,RequestHeader,Common request parameters. The authenticationToken is always null. The type RequestHeader is defined in 7.32.
+secureChannelId,BaseDataType,The identifier for the SecureChannel to close. The concrete security protocol definition in OPC 10000-6 chooses the concrete DataType.
+,,
+Response,,
+responseHeader,ResponseHeader,Common response parameters (see 7.33 for ResponseHeader definition).
+
+5.6.3.3 Service results
+
+
+              Table 14 defines the Service results specific to this Service. Common StatusCodes are defined in Table 178.
+
+Table 14 - CloseSecureChannel Service Result Codes
+Symbolic Id,Description
+Bad_SecureChannelIdInvalid,See Table 178 for the description of this result code.
+

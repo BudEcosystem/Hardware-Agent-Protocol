@@ -1,0 +1,23 @@
+[
+  {
+    "path": "metadata-cost.svg",
+    "url": "https://raw.githubusercontent.com/geky/littlefs/gh-images/metadata-cost.svg?sanitize=true",
+    "bytes": 29199,
+    "sha256": "fdf7af8924d637caa3e83b0f8ccecd8c8f8f4eda08a217d80220766f62925fc7",
+    "status": "retained"
+  },
+  {
+    "path": "wear-distribution.svg",
+    "url": "https://raw.githubusercontent.com/geky/littlefs/gh-images/wear-distribution.svg?sanitize=true",
+    "bytes": 56268,
+    "sha256": "0faacaf049536f89354c18c245fb7619ae729a02beb1affe9f6ff59f79931db5",
+    "status": "retained"
+  },
+  {
+    "path": "file-cost.svg",
+    "url": "https://raw.githubusercontent.com/geky/littlefs/gh-images/file-cost.svg?sanitize=true",
+    "bytes": 30258,
+    "sha256": "126e351add269ffa0155174be762e029b52a8af56ddd96f173a33af997580507",
+    "status": "retained"
+  }
+]

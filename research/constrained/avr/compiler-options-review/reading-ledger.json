@@ -1,0 +1,160 @@
+{
+  "compilerInvoked": false,
+  "flagsChanged": false,
+  "method": "Each inclusive range displayed with line numbers in bounded read-only tool calls and read in full; every tool result was nontruncated. Hashes identify read bytes; ledger is a reading record, not independent proof of comprehension.",
+  "recordedAt": "2026-11-09T11:41:39.343039+00:00",
+  "schema": "hms-full-source-reading-ledger/1",
+  "scope": "Entire normalized readable body text of exactly two retained official GCC7.3.0 chapters. Not all HTML markup, linked pages, GCC manual, implementation sources or installed toolchain.",
+  "sources": [
+    {
+      "completeExtractedBodyRead": true,
+      "coveredLines": 2684,
+      "html": "Optimize-Options.html",
+      "htmlSha256": "0821f161d088ce5a243e5c2af2d0a96314da3b50aab6810b9e61bda65bdff397",
+      "ranges": [
+        {
+          "bytes": 9421,
+          "firstLine": 1,
+          "lastLine": 240,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "b6f2638c96c04444899e54c0d95cadc78d4ff342ce7d19c7db4a4bd66794ad0b"
+        },
+        {
+          "bytes": 11830,
+          "firstLine": 241,
+          "lastLine": 480,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "b8618d6b36224492b3eba1ea23c04b0133021e104367ceeb476625bbbffeb4a2"
+        },
+        {
+          "bytes": 12180,
+          "firstLine": 481,
+          "lastLine": 720,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "1c072c9c93c966c0d961567941a753981d1c276cc9a946d43ce4092a6e57cfd7"
+        },
+        {
+          "bytes": 11470,
+          "firstLine": 721,
+          "lastLine": 960,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "05356e0d26f8abef4c0c2c845c762c6f0ae5483d2eb07e96d33a26d94c5d19a9"
+        },
+        {
+          "bytes": 11424,
+          "firstLine": 961,
+          "lastLine": 1200,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "d4bf9269f459ebdd1aac5ba70b0555da215d11a83e3564aaaf6734460fd6a516"
+        },
+        {
+          "bytes": 12601,
+          "firstLine": 1201,
+          "lastLine": 1440,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "5cab3292022be29e02c591de4b840b3ec6759f462170d05aa42295db4782faba"
+        },
+        {
+          "bytes": 13104,
+          "firstLine": 1441,
+          "lastLine": 1680,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "d0f982c68c3b501d8fcfa46770a032963ff798e2bbd09ab55ac39bb32f00bf85"
+        },
+        {
+          "bytes": 12216,
+          "firstLine": 1681,
+          "lastLine": 1920,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "fbe262ddf169e017fcc5614e13bc06908ec5c553300df1909e9bd061f623cce6"
+        },
+        {
+          "bytes": 12633,
+          "firstLine": 1921,
+          "lastLine": 2160,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "7b9787903160b31761c132bbd081bcefc4000b061f1d921073573ecfe2d5ac36"
+        },
+        {
+          "bytes": 11601,
+          "firstLine": 2161,
+          "lastLine": 2400,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "d8f5609e51716f67039170b596952445646b2c80c7dae6fd0fd4bc83ee5f4587"
+        },
+        {
+          "bytes": 14660,
+          "firstLine": 2401,
+          "lastLine": 2684,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "0121ef394f43f55337b9c213f2d37c6da85dc110f41d2f1f78798d541abf0f49"
+        }
+      ],
+      "text": "Optimize-Options.txt",
+      "textSha256": "bc4c4261dcd1458e25128652b138b55bb837e24313efa91890cc88108152c4ce",
+      "totalLines": 2684,
+      "url": "https://gcc.gnu.org/onlinedocs/gcc-7.3.0/gcc/Optimize-Options.html"
+    },
+    {
+      "completeExtractedBodyRead": true,
+      "coveredLines": 754,
+      "html": "Developer-Options.html",
+      "htmlSha256": "eb4cd9c6bea8bb1084e1b7ac20f2e5b7b250048eee607b7dab07563cc1d11d6f",
+      "ranges": [
+        {
+          "bytes": 7455,
+          "firstLine": 1,
+          "lastLine": 200,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "e0a7d2c8d1e5f4b1a30260ecbedd46f6edc38d3e3e076769e5a90b6b9646f8d5"
+        },
+        {
+          "bytes": 9045,
+          "firstLine": 201,
+          "lastLine": 400,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "3beb93b7f91d92d470a2a76ae92da34cd27bde0fb59a9baa9561fecf7786be03"
+        },
+        {
+          "bytes": 9608,
+          "firstLine": 401,
+          "lastLine": 600,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "709166c933ab36876d3b53d6cb4960f11ccadacedcf2fcf27b00e3cc8408b65a"
+        },
+        {
+          "bytes": 7626,
+          "firstLine": 601,
+          "lastLine": 754,
+          "outputTruncated": false,
+          "readInFull": true,
+          "sha256": "1f3004ddeeae184cf33d6d6e0c0893055aa70913cf59473a4ec1311abdacc41d"
+        }
+      ],
+      "text": "Developer-Options.txt",
+      "textSha256": "c1f95364af7030f035f9197cc98efd8dcf5271f85fe7558b34e8de6cadbfc849",
+      "totalLines": 754,
+      "url": "https://gcc.gnu.org/onlinedocs/gcc-7.3.0/gcc/Developer-Options.html"
+    }
+  ],
+  "targetExecuted": false,
+  "unreviewed": [
+    "All linked chapters and external pages",
+    "GCC implementation and backend source",
+    "Installed AVR LTO backend/plugin closure and exact post-LTO artifact behavior"
+  ]
+}

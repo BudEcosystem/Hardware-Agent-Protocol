@@ -1,0 +1,257 @@
+{
+  "sha": "25097958485a91450c3a15e5ba9023936180db4b",
+  "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/trees/25097958485a91450c3a15e5ba9023936180db4b",
+  "tree": [
+    {
+      "path": ".nojekyll",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8b137891791fe96927ad78e64b0aad7bded08bdc",
+      "size": 1,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/8b137891791fe96927ad78e64b0aad7bded08bdc"
+    },
+    {
+      "path": "README.md",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "69373d4e17bcd79506fcaa6d801f8227105c0a2d",
+      "size": 2871,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/69373d4e17bcd79506fcaa6d801f8227105c0a2d"
+    },
+    {
+      "path": "index.html",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "62fda213ea5911377ed6b880fcf981e4fa3f5923",
+      "size": 9157,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/62fda213ea5911377ed6b880fcf981e4fa3f5923"
+    },
+    {
+      "path": "prompts.py",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "84159524fe44caa20cb893537058520ea8b2b9da",
+      "size": 9291,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/84159524fe44caa20cb893537058520ea8b2b9da"
+    },
+    {
+      "path": "static",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "72fd88e027ac6d0c97a9a923da6af4c86bda9545",
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/trees/72fd88e027ac6d0c97a9a923da6af4c86bda9545"
+    },
+    {
+      "path": "static/css",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "4e392051a957b74a21bcd55b6e485f68fe0e19c9",
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/trees/4e392051a957b74a21bcd55b6e485f68fe0e19c9"
+    },
+    {
+      "path": "static/css/bulma-carousel.min.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "4d4b7d103e0013f64e4dedd2ad0b2947cc0d11a5",
+      "size": 3645,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/4d4b7d103e0013f64e4dedd2ad0b2947cc0d11a5"
+    },
+    {
+      "path": "static/css/bulma-slider.min.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "09b4aeb2fb19d7d883a0b01cb1982cb382992f95",
+      "size": 13782,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/09b4aeb2fb19d7d883a0b01cb1982cb382992f95"
+    },
+    {
+      "path": "static/css/bulma.css.map.txt",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "ed3a9d377ba3c30e6eb8b2a35e08e8dc814a0725",
+      "size": 96528,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/ed3a9d377ba3c30e6eb8b2a35e08e8dc814a0725"
+    },
+    {
+      "path": "static/css/bulma.min.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a807a314caa0df0ddccacd6b732d83f5ffde7a89",
+      "size": 204030,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/a807a314caa0df0ddccacd6b732d83f5ffde7a89"
+    },
+    {
+      "path": "static/css/fontawesome.all.min.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "cbeaa76a1f624412d148a03b600afa54b2684114",
+      "size": 59190,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/cbeaa76a1f624412d148a03b600afa54b2684114"
+    },
+    {
+      "path": "static/css/index.css",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c4559011e814c2a731c474fb6a88afcc6ea7ea7e",
+      "size": 1760,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/c4559011e814c2a731c474fb6a88afcc6ea7ea7e"
+    },
+    {
+      "path": "static/images",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "a270d51d58f8678093e21f78d25588b96db5741e",
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/trees/a270d51d58f8678093e21f78d25588b96db5741e"
+    },
+    {
+      "path": "static/images/carousel1.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8b14d41f730e3642c5986d15e956bb8af5134367",
+      "size": 203726,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/8b14d41f730e3642c5986d15e956bb8af5134367"
+    },
+    {
+      "path": "static/images/carousel2.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "8871abfdc9c3745a372d1b55952f4d24481e3ea0",
+      "size": 372056,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/8871abfdc9c3745a372d1b55952f4d24481e3ea0"
+    },
+    {
+      "path": "static/images/carousel3.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "a70d291241eea483a3e2ca58d7c779b17cc164b8",
+      "size": 507607,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/a70d291241eea483a3e2ca58d7c779b17cc164b8"
+    },
+    {
+      "path": "static/images/carousel4.jpg",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "14411fd93d699377c6e17280cabaf9a39d67dbdc",
+      "size": 201734,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/14411fd93d699377c6e17280cabaf9a39d67dbdc"
+    },
+    {
+      "path": "static/images/favicon.ico",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "625172c218bf9359daa4921e1987bdc3e70ac789",
+      "size": 318,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/625172c218bf9359daa4921e1987bdc3e70ac789"
+    },
+    {
+      "path": "static/js",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "f0ceeedb13a850a4b755da155b02d71f6d0167c1",
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/trees/f0ceeedb13a850a4b755da155b02d71f6d0167c1"
+    },
+    {
+      "path": "static/js/bulma-carousel.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "229edba242bb190698662cdce6bdacde9f0769fe",
+      "size": 82823,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/229edba242bb190698662cdce6bdacde9f0769fe"
+    },
+    {
+      "path": "static/js/bulma-carousel.min.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "5fff0695f00cf9da60dd87aa72c51367b00e92ff",
+      "size": 40723,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/5fff0695f00cf9da60dd87aa72c51367b00e92ff"
+    },
+    {
+      "path": "static/js/bulma-slider.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c6718de5c5ae59d2c22141a147f5afba41af9cbb",
+      "size": 16404,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/c6718de5c5ae59d2c22141a147f5afba41af9cbb"
+    },
+    {
+      "path": "static/js/bulma-slider.min.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "7e62685763cf7668cfa8857fac0b27af2c277286",
+      "size": 6926,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/7e62685763cf7668cfa8857fac0b27af2c277286"
+    },
+    {
+      "path": "static/js/fontawesome.all.min.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "9ee22fdb7753983bae3986b2436bdd167730cd5b",
+      "size": 1194960,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/9ee22fdb7753983bae3986b2436bdd167730cd5b"
+    },
+    {
+      "path": "static/js/index.js",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "c08a79032592be8f5e7318991b0242323389469d",
+      "size": 413,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/c08a79032592be8f5e7318991b0242323389469d"
+    },
+    {
+      "path": "static/pdfs",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "82249a75cad18790fba481abb1553745a81deb1c",
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/trees/82249a75cad18790fba481abb1553745a81deb1c"
+    },
+    {
+      "path": "static/pdfs/sample.pdf",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "80f9dedb22582266a9daa4b5a74a2b7ef60f99a4",
+      "size": 14062,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/80f9dedb22582266a9daa4b5a74a2b7ef60f99a4"
+    },
+    {
+      "path": "static/videos",
+      "mode": "040000",
+      "type": "tree",
+      "sha": "05a7f9fd5f92f78bd22f153fe99447db1ccecf01",
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/trees/05a7f9fd5f92f78bd22f153fe99447db1ccecf01"
+    },
+    {
+      "path": "static/videos/banner_video.mp4",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "68eb69b23434984ce6053d307b6b6b7f709a7e7e",
+      "size": 2527585,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/68eb69b23434984ce6053d307b6b6b7f709a7e7e"
+    },
+    {
+      "path": "static/videos/carousel1.mp4",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "3dc429a6613bf85898a47643fe31d4439fe9d973",
+      "size": 1339736,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/3dc429a6613bf85898a47643fe31d4439fe9d973"
+    },
+    {
+      "path": "static/videos/carousel2.mp4",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "f47c06cc18baa434989aa2d46756a0b678957242",
+      "size": 2804617,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/f47c06cc18baa434989aa2d46756a0b678957242"
+    },
+    {
+      "path": "static/videos/carousel3.mp4",
+      "mode": "100644",
+      "type": "blob",
+      "sha": "698e9f972a96948e15606d89ceda254e571d2692",
+      "size": 1638525,
+      "url": "https://api.github.com/repos/gtziafas/LRLL_project/git/blobs/698e9f972a96948e15606d89ceda254e571d2692"
+    }
+  ],
+  "truncated": false
+}

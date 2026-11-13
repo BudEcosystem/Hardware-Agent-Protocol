@@ -1,0 +1,79 @@
+{
+  "hms_draft": "0.1",
+  "id": "urn:bud:hms:example:microscope-focus",
+  "title": "microscope-focus",
+  "status": "design_example",
+  "profile": "P1",
+  "capabilities": [
+    "org.bud.positioning.axis/0.1"
+  ],
+  "resources": [
+    "objective-sample-zone"
+  ],
+  "observations": [
+    {
+      "id": "position",
+      "unit": "um",
+      "evidence_kind": "estimate",
+      "max_age_ms": 100
+    }
+  ],
+  "actions": [
+    {
+      "id": "move_absolute",
+      "description": "Design example; values are synthetic and must not commission a physical device.",
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "position": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "position"
+        ],
+        "additionalProperties": false
+      },
+      "effect": "motion",
+      "resources": [
+        "objective-sample-zone"
+      ],
+      "max_duration_ms": 10000,
+      "cancel_behavior": "request_stop",
+      "disconnect_behavior": "controlled_stop",
+      "completion_evidence": "controller_completion",
+      "required_observations": [
+        "position"
+      ],
+      "parameters": {
+        "position": {
+          "quantity": {
+            "unit": "um",
+            "minimum": 0,
+            "maximum": 100
+          }
+        }
+      }
+    }
+  ],
+  "limits": [
+    {
+      "parameter": "move_absolute.position",
+      "bounds": {
+        "unit": "um",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "enforcement": "gateway",
+      "evidence_ref": "unmeasured:synthetic-example"
+    }
+  ],
+  "calibration": {
+    "revision": "uncommissioned",
+    "status": "unmeasured",
+    "evidence_ref": "unmeasured:synthetic-example"
+  },
+  "notes": "Illustrates structure only. All numeric limits, time budgets and units are synthetic. No hardware supported or physical verification claimed."
+}

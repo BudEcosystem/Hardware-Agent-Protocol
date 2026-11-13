@@ -1,0 +1,652 @@
+{
+  "schema": "hms-reading-overlay-v1",
+  "review_date": "2026-11-06",
+  "scope": "Complete RFC 9177 TXT, metadata, errata, two relevant IANA CSV registries and media registration. Selected broad-registry status lines and selected PDF figure/table visual corroboration; no implied full reading of referenced works or all PDF pages.",
+  "sources": [
+    {
+      "id": "rfc9177-text",
+      "url": "https://www.rfc-editor.org/rfc/rfc9177.txt",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc9177.txt",
+      "retrieved_at": "2026-11-06T04:35:51.613426+00:00",
+      "source_version": "RFC 9177, March 2022",
+      "raw_path": "research/constrained/qblock-full/raw/rfc9177-text.txt",
+      "text_path": "research/constrained/qblock-full/text/rfc9177-text.txt",
+      "text_sha256": "9d30ee75ff09a98919e310c903b7a371325b1fb017c5e46646c8bb5f0fe9fb0f",
+      "source_kind": "published_rfc",
+      "raw_sha256": "9d30ee75ff09a98919e310c903b7a371325b1fb017c5e46646c8bb5f0fe9fb0f",
+      "line_count": 2154,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 270,
+          "sha256": "407c6aed9ff4ac58cc73184e3894bf2e7d29d70ec3c7b145eac40c2f49a2bc31"
+        },
+        {
+          "start_line": 271,
+          "end_line": 550,
+          "sha256": "c2931d4d6c0624142b3dc4fa439621a5fe633ea39fb50ff8137b6f6bca88e644"
+        },
+        {
+          "start_line": 551,
+          "end_line": 830,
+          "sha256": "7cd41f402468b6f602ad774928b8a6b299875f2e11426165b9560232fae36979"
+        },
+        {
+          "start_line": 831,
+          "end_line": 1110,
+          "sha256": "99cb3ce98eac2f4ddd79a08627f096b65001739f397dacdace80054169254f43"
+        },
+        {
+          "start_line": 1111,
+          "end_line": 1390,
+          "sha256": "ad4abbb68ece32edcc27faad90a955158dceefa35f0e0d0819a803825e35533e"
+        },
+        {
+          "start_line": 1391,
+          "end_line": 1670,
+          "sha256": "4d5d663641be4fe38714697446006460987b3c5958e2a156d43d2994ba31599f"
+        },
+        {
+          "start_line": 1671,
+          "end_line": 1940,
+          "sha256": "827b217bf9afada320abb81e243b9b8812017336484ee6730c9bdd0fa2cbbb64"
+        },
+        {
+          "start_line": 1941,
+          "end_line": 2154,
+          "sha256": "8524e7f0cf68b36c915402bb93c0b226775e21db58bca7c93164b1b7a4bf35d0"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Full LF-bounded reading of the published RFC, all 20 figures, five tables, references, Appendices A/B, acknowledgments and addresses; target works of references not implied read."
+    },
+    {
+      "id": "rfc9177-pdf",
+      "url": "https://www.rfc-editor.org/rfc/rfc9177.pdf",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc9177.pdf",
+      "retrieved_at": "2026-11-06T04:35:54.287636+00:00",
+      "source_version": "RFC 9177, March 2022",
+      "raw_path": "research/constrained/qblock-full/raw/rfc9177-pdf.pdf",
+      "text_path": "research/constrained/qblock-full/text/rfc9177-pdf.txt",
+      "text_sha256": "99e568a37f85a8b3480e5df8715ed81e50013db9948dcf114bd43218ceac7a40",
+      "source_kind": "published_rfc_pdf",
+      "raw_sha256": "6474d2f28e4286102c4c83bab419e9ccad432e024eb040919b8c7573d4c4f0db",
+      "line_count": 2192,
+      "coverage_ranges": [],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.0,
+      "reading_status": "acquired_pdf_selected_visual_review",
+      "note": "Complete PDF acquired and text extracted for inventory; selected figure/table pages visually inspected. No full PDF text read or all-pages visual review claim. Complete RFC semantic reading is recorded against the official TXT.",
+      "pdf_page_count": 41,
+      "all_pdf_pages_reviewed": false,
+      "reviewed_pdf_pages": [
+        8,
+        9,
+        16,
+        19,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        38,
+        39,
+        40,
+        41
+      ]
+    },
+    {
+      "id": "rfc9177-metadata",
+      "url": "https://www.rfc-editor.org/rfc/rfc9177.json",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc9177.json",
+      "retrieved_at": "2026-11-06T04:35:54.868301+00:00",
+      "source_version": "RFC Editor metadata snapshot",
+      "raw_path": "research/constrained/qblock-full/raw/rfc9177-metadata.json",
+      "text_path": "research/constrained/qblock-full/text/rfc9177-metadata.txt",
+      "text_sha256": "03200992c31c396b3128d4ddf2f6009959e307458f328fb0f5ac1804b85fe38d",
+      "source_kind": "official_metadata",
+      "raw_sha256": "183c8e9dfd960364556eaae9691af1990c03743a414aa1619bf2a7afeb8a049e",
+      "line_count": 43,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 43,
+          "sha256": "03200992c31c396b3128d4ddf2f6009959e307458f328fb0f5ac1804b85fe38d"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Complete current official metadata JSON read via pretty-printed text; metadata does not replace the independent errata query."
+    },
+    {
+      "id": "rfc9177-errata",
+      "url": "https://www.rfc-editor.org/errata/rfc9177",
+      "final_url": "https://errata.rfc-editor.org/search/?rfc_number=9177&presentation=records",
+      "retrieved_at": "2026-11-06T04:35:56.813240+00:00",
+      "source_version": "RFC Editor errata snapshot",
+      "raw_path": "research/constrained/qblock-full/raw/rfc9177-errata.html",
+      "text_path": "research/constrained/qblock-full/text/rfc9177-errata.txt",
+      "text_sha256": "877e7598c576801f729d84836c8a85dd71c87966ca11304e6411ab0cb885a640",
+      "source_kind": "official_errata",
+      "raw_sha256": "cfd86668536c97fbed0343edde67e44f51c2f950ce37bb1eb5a3609e99926b2f",
+      "line_count": 58,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 58,
+          "sha256": "877e7598c576801f729d84836c8a85dd71c87966ca11304e6411ab0cb885a640"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Complete all-status official errata search text read, including no matching errata result; original URL redirects to official errata site."
+    },
+    {
+      "id": "iana-core-status",
+      "url": "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml",
+      "final_url": "https://www.iana.org/assignments/core-parameters",
+      "retrieved_at": "2026-11-06T04:35:57.603219+00:00",
+      "source_version": "IANA CoRE registry snapshot",
+      "raw_path": "research/constrained/qblock-full/raw/iana-core-status.html",
+      "text_path": "research/constrained/qblock-full/text/iana-core-status.txt",
+      "text_sha256": "d064c7af75dec642071ea9890198a11bc63a188e09a1d8bf503eae4b06c9b435",
+      "source_kind": "official_registry",
+      "raw_sha256": "ab4afefef0b9975f6245ea61f815a81aab0a80a5e76d569b25c587dfe2da8bce",
+      "line_count": 2897,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 32,
+          "sha256": "8cb7d19dd4e585de6abe0edbb44d3b79eef4957015e6bb487456fe580e56b226"
+        }
+      ],
+      "coverage_complete": false,
+      "text_coverage_fraction": 0.011045909561615464,
+      "reading_status": "read_selected_sections",
+      "note": "Entire broad registry acquired; only first 32 LF lines read for identity and update date. Relevant allocations independently fully read in the two CSV snapshots. Other registry sections and linked references not claimed read."
+    },
+    {
+      "id": "iana-options",
+      "url": "https://www.iana.org/assignments/core-parameters/option-numbers.csv",
+      "final_url": "https://www.iana.org/assignments/core-parameters/option-numbers.csv",
+      "retrieved_at": "2026-11-06T04:35:58.915001+00:00",
+      "source_version": "IANA CoAP Option Numbers snapshot",
+      "raw_path": "research/constrained/qblock-full/raw/iana-options.csv",
+      "text_path": "research/constrained/qblock-full/text/iana-options.txt",
+      "text_sha256": "755b4aea3a78dd921cfd36bdfd087579e075d1c38fcba3db0e31d51fb8ab788c",
+      "source_kind": "official_registry",
+      "raw_sha256": "755b4aea3a78dd921cfd36bdfd087579e075d1c38fcba3db0e31d51fb8ab788c",
+      "line_count": 63,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 63,
+          "sha256": "755b4aea3a78dd921cfd36bdfd087579e075d1c38fcba3db0e31d51fb8ab788c"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Entire official CoAP Option Numbers CSV read, including Q-Block1 19, Q-Block2 31 and relevant associated options; referenced specifications not implied read."
+    },
+    {
+      "id": "iana-content-formats",
+      "url": "https://www.iana.org/assignments/core-parameters/content-formats.csv",
+      "final_url": "https://www.iana.org/assignments/core-parameters/content-formats.csv",
+      "retrieved_at": "2026-11-06T04:36:00.038819+00:00",
+      "source_version": "IANA CoAP Content-Formats snapshot",
+      "raw_path": "research/constrained/qblock-full/raw/iana-content-formats.csv",
+      "text_path": "research/constrained/qblock-full/text/iana-content-formats.txt",
+      "text_sha256": "dbd114fe13d3c742f437be35b392ce7e83cb872015b0404eb407679a0293444e",
+      "source_kind": "official_registry",
+      "raw_sha256": "dbd114fe13d3c742f437be35b392ce7e83cb872015b0404eb407679a0293444e",
+      "line_count": 156,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 156,
+          "sha256": "dbd114fe13d3c742f437be35b392ce7e83cb872015b0404eb407679a0293444e"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Entire official CoAP Content-Formats CSV read, including application/missing-blocks+cbor-seq 272; referenced specifications not implied read."
+    },
+    {
+      "id": "iana-missing-blocks",
+      "url": "https://www.iana.org/assignments/media-types/application/missing-blocks+cbor-seq",
+      "final_url": "https://www.iana.org/assignments/media-types/application/missing-blocks+cbor-seq",
+      "retrieved_at": "2026-11-06T04:36:00.904427+00:00",
+      "source_version": "IANA application/missing-blocks+cbor-seq registration",
+      "raw_path": "research/constrained/qblock-full/raw/iana-missing-blocks.txt",
+      "text_path": "research/constrained/qblock-full/text/iana-missing-blocks.txt",
+      "text_sha256": "9027be4ef9715fb08ffc2573d54ed2e37069cfeb921201a0b85c3e0f1a544671",
+      "source_kind": "official_media_registration",
+      "raw_sha256": "9027be4ef9715fb08ffc2573d54ed2e37069cfeb921201a0b85c3e0f1a544671",
+      "line_count": 39,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 39,
+          "sha256": "9027be4ef9715fb08ffc2573d54ed2e37069cfeb921201a0b85c3e0f1a544671"
+        }
+      ],
+      "coverage_complete": true,
+      "text_coverage_fraction": 1.0,
+      "reading_status": "read_full",
+      "note": "Complete official media registration read, including CBOR Sequence encoding, usage and RFC reference."
+    }
+  ],
+  "integrity_files": [
+    {
+      "path": "research/constrained/qblock-full/manifest.jsonl",
+      "sha256": "c3cd9b56baeced756688ee30778e0ea517d3b991cb777ab7d9dbcc4cc9d23e87"
+    },
+    {
+      "path": "research/constrained/qblock-full/README.md",
+      "sha256": "8e8584fa24249b0e3599e3d8da016d1ea9ae5d024a7fa673d5b56902f5f0d316"
+    },
+    {
+      "path": "research/constrained/qblock-full/acquire.py",
+      "sha256": "ab7f6b0e0bdcb3a7959b856c003413535c7e7f2d03aa60c341310def6c44e8cd"
+    },
+    {
+      "path": "research/constrained/qblock-full/render.py",
+      "sha256": "7ffd81841ba29b63dc978bcd87f4126b761c473258dca68a2976735524ccac5b"
+    },
+    {
+      "path": "research/constrained/qblock-full/verify.py",
+      "sha256": "7dae33d7f82b255658a246c8f3d0fd4d76526f7227d3867087f16a8a9999ea67"
+    },
+    {
+      "path": "research/constrained/qblock-full/build_receipt.py",
+      "sha256": "6e6b0463b73d7b6edec4220ffaf802be05297da013f382e63745e3d55e44a1a3"
+    },
+    {
+      "path": "research/constrained/qblock-full/notes/full-review.md",
+      "sha256": "d5a897fde0800aec74084ed8cf5de2970818c3e4c22b216c629b77298a52dbf7"
+    },
+    {
+      "path": "research/constrained/qblock-full/notes/content-inventory.json",
+      "sha256": "a0f7a6c2bbdc4feca5b9ecc57bb52dde2b7b785a04dc9b31906130903d5e2cf6"
+    },
+    {
+      "path": "research/constrained/qblock-full/notes/figure-inventory.json",
+      "sha256": "f038ffce8ece57c05403c50dd017a3643ff843f676031f7cac7a99a3d6d25084"
+    },
+    {
+      "path": "research/constrained/qblock-full/notes/read-session.json",
+      "sha256": "a7000ebca470713703ebdfef773d98e3279ecfc31f5e023f003facb02a5d11e5"
+    },
+    {
+      "path": "research/constrained/qblock-full/notes/access-observations.json",
+      "sha256": "1685c6547bdd5c3ce760ad14b0727548cc813d5c12eac82c42d74393b594bbd3"
+    },
+    {
+      "path": "research/constrained/qblock-full/notes/tooling.json",
+      "sha256": "1f6e3e24e895c65a677e139a6639eaee4494a158e51617f3d933651b7f98659b"
+    },
+    {
+      "path": "docs/qblock-binding.md",
+      "sha256": "ea04897d2870e7432f6e87c0b8802628ff98c838f2f770315c1a60bf549255f4"
+    }
+  ],
+  "figures": [
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-08.png",
+      "sha256": "fb162581f61bad892d5866117e38c399b6a4ad0f2493ef44532f5ee6fbbc2adc",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 8,
+      "captions": [
+        "Table 1: CoAP Q-Block1 and Q-Block2 Option Properties"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Verified options 19/31, critical and unsafe flags, Q-Block2 repeatable flag, uint length 0–3 and no default."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-09.png",
+      "sha256": "7b0986593faef03af0e4af7207cadfc00bae93db758cd5eaff78069a9967eb9e",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 9,
+      "captions": [
+        "Table 2: OSCORE Protection of the Q-Block1 and Q-Block2 Options"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Verified both Q-Block options marked E and U; Inner and Outer scopes are independent."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-16.png",
+      "sha256": "6c978d592a7d6dd78e6608dce01327a822c962772ee2d1f26247065d43c179a9",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 16,
+      "captions": [
+        "Figure 1: Structure of the Missing Blocks Payload"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Verified nonempty missing-number group CDDL; the surrounding text clarifies CBOR Sequence without an array wrapper."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-19.png",
+      "sha256": "9aa21f980b6b396d603aba2edb586e4716ba016bdfb91cd17110ee0dc4c0f16c",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 19,
+      "captions": [
+        "Table 3: Congestion Control Parameters"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Verified defaults 10, 4, 2 s, 2–3 s, 4 s, 247–248 s, 247 s and formula context."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-23.png",
+      "sha256": "8dd5cf454927a303c68d0b67d83a2baefaaa44f07cb26bce01383ce65abef52f",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 23,
+      "captions": [
+        "Figure 2: Example of a NON Request with the Q-Block1 option (without Loss)"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Four NON request blocks carry one Request-Tag and separate tokens; final response follows receipt of all four."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-24.png",
+      "sha256": "52e07c6e6bbd0682a816bebefe2f2b37462ce64fbd38175f95a5847346cdd203",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 24,
+      "captions": [
+        "Figure 3: Example of a MAX_PAYLOADS NON Request with the Q-Block1 Option (without Loss)",
+        "Figure 4: Example of a MAX_PAYLOADS NON Request with the Q-Block1 Option (with Loss)"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "After ten request payloads, 2.31 enables the eleventh; final 2.04 follows the complete body.",
+        "Loss arrows remove blocks 1/9 and next-set block 10; later block 11 reveals missing previous-set data."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-25.png",
+      "sha256": "7729249f4a98f617db0ae3b3b0578c722875275694feec1615e393f9563ec866",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 25,
+      "captions": [
+        "Figure 5: Example of a NON Request with the Q-Block1 Option (Block Recovery)"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Missing 1/9 requested together; later missing 10 recovered after final-number block already arrived; final response then occurs."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-26.png",
+      "sha256": "eba6fbe7fddc4509e66e1fb04ddd2a8372df87a9d7db0ca661e84796b5db2d33",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 26,
+      "captions": [
+        "Figure 6: Example of a NON Request with the Q-Block1 Option (with Eventual Failure)"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Retry wait markers grow 1/2/4/8/16 times NON_RECEIVE_TIMEOUT, ending in partial-body release."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-27.png",
+      "sha256": "8e4863203ba9a1332d626871969d1ed0674937f5c8783e3cfe123b4d30e4c38e",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 27,
+      "captions": [
+        "Figure 7: Example of NON Notifications with the Q-Block2 Option (without Loss)",
+        "Figure 8: Example of NON Notifications with the Q-Block2 Option (without Loss)"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "All original notification blocks share token, ETag and Observe; the next representation changes ETag/Observe.",
+        "Continue uses a new request token but subsequent notification remains on original token with Observe."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-28.png",
+      "sha256": "a64ad105ed2308df377e59879de4779800685a29679efb90a95764ae27131392",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 28,
+      "captions": [
+        "Figure 9: Example of NON Notifications with the Q-Block2 Option (Block Recovery)"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Two lost blocks requested together; recovery responses use recovery token and omit Observe; one block requires another attempt."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-29.png",
+      "sha256": "d94dff7920965817c9a3f45c8d5db3d15de6ca37368593f6ade1dc88f5acbe46",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 29,
+      "captions": [
+        "Figure 10: Example of NON Notifications with the Q-Block2 Option (Block Recovery with the M Bit Set)"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "M=1 at block 2 requests remaining set, then block 10 Continue resumes original notification token/Observe."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-30.png",
+      "sha256": "acdc6ffd32a422f39274eb9d0ea3bb694492b3c367c843c3ce6dc72d5cff9a43",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 30,
+      "captions": [
+        "Figure 11: Example of a NON FETCH with the Q-Block1 and Q-Block2 Options (without Loss)"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "FETCH request body has one Request-Tag; returned/observed response bodies have separate ETags and original response token."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-31.png",
+      "sha256": "9c9c2189ebe4946d8d754b26488ccf4abfe01d776c28acba17af8f25f8015e79",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 31,
+      "captions": [
+        "Figure 12: Example of a NON FETCH with the Q-Block1 and Q-Block2 Options (without Loss)"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Both directions exceed MAX_PAYLOADS; response Continue retains token 0xaa across response sets."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-32.png",
+      "sha256": "f037223e44ad545dc883d8c62fbb3a3a1541808b494e51e82aa6c67a2ae3a30b",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 32,
+      "captions": [
+        "Figure 13: Example of a NON FETCH with the Q-Block1 and Q-Block2 Options (with Loss)",
+        "Figure 14: Example of a NON Request with the Q-Block1 Option (Server Recovery)"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Two FETCH request blocks lost before wait; remaining blocks alone do not complete request body.",
+        "Server recovery fills missing request blocks before response transmission; response block loss remains independently recoverable."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-33.png",
+      "sha256": "b88c104df1a9a05fa555c6e320f1bcaed782ea2f7a32ed28768951a553d5aacb",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 33,
+      "captions": [
+        "Figure 15: Example of a NON Request with the Q-Block1 Option (Client Recovery)"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Response recovery FETCH carries tag without original body; recovery tokens differ from original observation token."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-34.png",
+      "sha256": "69195f2462c3263b0943cc461189ee0e246fe8d940c3801d156997ec5cc72ccb",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 34,
+      "captions": [
+        "Table 4: Additions to CoAP Option Numbers Registry"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Verified IANA option assignments Q-Block1 19 and Q-Block2 31."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-35.png",
+      "sha256": "c8f0a7621fec098c567ed340ff11203a6f556d5835df0b4be53d47e69f4a9ed2",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 35,
+      "captions": [
+        "Table 5: Addition to CoAP Content-Format Registry"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Verified Content-Format 272 for missing-blocks CBOR sequence, no content encoding."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-38.png",
+      "sha256": "39b802a5f1793f2db927cbf8512e48e635fe5c8fdad261602ec0af0d6a3d24aa",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 38,
+      "captions": [
+        "Figure 16: Example of a CON Request with the Q-Block1 Option (without Loss)",
+        "Figure 17: Example of a CON Request with the Q-Block1 Option (Block Recovery)"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "NSTART=3 gates CON sends; empty ACKs differ from final 2.04.",
+        "Lost CON requests retry with original MID/token and exponential backoff; failure remains possible."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-39.png",
+      "sha256": "01b265c4d1722208148bb6603bdb888a113e53b41427fc463eab667367a48d6e",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 39,
+      "captions": [
+        "Figure 18: Example of CON Notifications with the Q-Block2 Option"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "CON notifications individually ACKed; NSTART and lost-response retries visible; no physical completion semantics."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-40.png",
+      "sha256": "06d3419ea5c7d662ce5ebfe9a49396c8c7f65022e96090ff395682c3c12fc7ef",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 40,
+      "captions": [
+        "Figure 19: Example of a Reliable Request with the Q-Block1 Option"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Reliable request has no UDP MID/type/ACK; only final method result follows request body."
+      ]
+    },
+    {
+      "path": "research/constrained/qblock-full/figures/rfc9177-page-41.png",
+      "sha256": "4b03133703be064e2299eabab3db833775a62a7f971e4458292df578638996b3",
+      "source_id": "rfc9177-pdf",
+      "pdf_page": 41,
+      "captions": [
+        "Figure 20: Example of Notifications with the Q-Block2 Option"
+      ],
+      "visual_review_status": "reviewed_figures_and_tables",
+      "render_method": "pdftoppm -f PAGE -l PAGE -scale-to 1400 -png -singlefile",
+      "scope": "Selected PDF page containing specified figures/tables, visually inspected; not all-PDF review.",
+      "observations": [
+        "Reliable Observe response bodies carry distinct ETags; no UDP per-message acknowledgments."
+      ]
+    }
+  ],
+  "errata": [],
+  "metadata_status": "PROPOSED STANDARD",
+  "iana_core_snapshot_last_updated": "2026-08-11",
+  "allocations": {
+    "Q-Block1": 19,
+    "Q-Block2": 31,
+    "application/missing-blocks+cbor-seq": 272
+  },
+  "prior_selected_reading": {
+    "path": "research/constrained/reading-observe-blockwise-full.json",
+    "sha256": "9ac62e5b3513f86d76796ed5ee67e67e4a688a330624f7c95ec55059d1b23e23",
+    "source_id": "q-block-rfc9177",
+    "range": [
+      1,
+      200
+    ],
+    "coverage_complete": false,
+    "relation": "Same RFC bytes; prior selected coverage preserved without rewriting."
+  },
+  "qualification": "Archival full-reading overlay and proposed HMS binding only; no protocol, cryptographic, MCU, physical or conformance execution. Broader literature goal remains open."
+}

@@ -1,0 +1,559 @@
+diff --git a/packages/experimental/tool-hardware/tests/compact-launcher.py b/packages/experimental/tool-hardware/tests/compact-launcher.py
+new file mode 100644
+index 00000000..5d001193
+--- /dev/null
++++ b/packages/experimental/tool-hardware/tests/compact-launcher.py
+@@ -0,0 +1,293 @@
++"""Test-only launcher: independent C lifetime, exact byte relay and host SIGKILL.
++
++ReplyGate is copied from the original HMS tests/test_endpoint_cli.py; this file
++adds bounded JSON control for Harness tests. It never invokes an HMS action.
++"""
++import json
++import select
++import signal
++import socket
++import sqlite3
++import stat
++import subprocess
++import sys
++import threading
++import time
++import traceback
++from pathlib import Path
++
++ROOT, BINARY, BASE = map(Path, sys.argv[1:4])
++sys.path.insert(0, str(ROOT))
++from hms.endpoint_wire import Execution, Opcode, Operation, Receipt, Request, decode_response
++from protocol.serial.frame import Decoder, encode
++
++class ReplyGate:
++    """Forward exact original frames; hold replies at one externally chosen OP."""
++
++    def __init__(self, host, native):
++        self.host, self.native = host, native
++        self.lock = threading.Lock()
++        self.stop = threading.Event()
++        self.gated = threading.Event()
++        self.release = threading.Event()
++        self.release.set()
++        self.armed = False
++        self.pending = []
++        self.requests = []
++        self.responses = []
++        self.gated_reply = None
++        self.error = None
++        self.thread = threading.Thread(target=self.run, name='hms-cli-test-relay')
++        self.thread.start()
++
++    def arm(self):
++        with self.lock:
++            if self.pending or not self.release.is_set():
++                raise AssertionError('Previous reply gate has not drained')
++            self.gated.clear()
++            self.gated_reply = None
++            self.release.clear()
++            self.armed = True
++
++    def run(self):
++        decoders = {self.host: Decoder(), self.native: Decoder()}
++        buffers = {self.host: bytearray(), self.native: bytearray()}
++        try:
++            while not self.stop.is_set():
++                with self.lock:
++                    if self.release.is_set() and self.pending:
++                        for raw in self.pending:
++                            self.host.sendall(raw)
++                        self.pending.clear()
++                ready, _, _ = select.select([self.host, self.native], [], [], 0.002)
++                for source in ready:
++                    block = source.recv(4096)
++                    if not block:
++                        return
++                    for byte in block:
++                        buffers[source].append(byte)
++                        event = decoders[source].feed(byte)
++                        if event is None:
++                            continue
++                        if event[0] != 'frame':
++                            raise AssertionError(f'Unexpected native stream error: {event}')
++                        frame, raw = event[1], bytes(buffers[source])
++                        buffers[source].clear()
++                        if encode(frame) != raw:
++                            raise AssertionError('Relay must preserve the complete original frame')
++                        with self.lock:
++                            if source is self.host:
++                                self.native.sendall(raw)
++                                self.requests.append((frame, raw))
++                            else:
++                                self.responses.append((frame, raw))
++                                if self.armed and frame.payload[1] == (Opcode.OP | 0x80):
++                                    self.armed = False
++                                    self.gated_reply = (frame, raw)
++                                    self.pending.append(raw)
++                                    self.gated.set()
++                                elif self.pending and not self.release.is_set():
++                                    self.pending.append(raw)
++                                else:
++                                    self.host.sendall(raw)
++        except BaseException as error:
++            if not self.stop.is_set():
++                self.error = error
++        finally:
++            self.host.close()
++            self.native.close()
++
++    def op_frames(self):
++        with self.lock:
++            return [(frame, raw) for frame, raw in self.requests if frame.payload[1] == Opcode.OP]
++
++    def close(self):
++        self.stop.set()
++        self.thread.join(3)
++        if self.thread.is_alive():
++            raise AssertionError('External relay failed to stop')
++        if self.error is not None:
++            raise self.error
++
++
++class Launcher:
++    def __init__(self):
++        self.state, self.socket = BASE / 'state', BASE / 'hctl.sock'
++        self.host_wire, relay_host = socket.socketpair()
++        relay_native, native_wire = socket.socketpair()
++        self.daemon = None
++        self.crashes = {}
++        self.fixture = subprocess.Popen([str(BINARY), '--boot', '73'],
++            stdin=native_wire, stdout=native_wire, stderr=subprocess.PIPE)
++        native_wire.close()
++        self.relay = ReplyGate(relay_host, relay_native)
++
++    def database(self, query, params=()):
++        with sqlite3.connect(f'file:{self.state / "authority.db"}?mode=ro', uri=True, timeout=1) as db:
++            return db.execute(query, params).fetchall()
++
++    def start(self, create=False):
++        assert self.daemon is None
++        args = [sys.executable, '-B', '-m', 'hms', 'serve', '--socket', str(self.socket),
++                '--state-dir', str(self.state), '--endpoint-fd', str(self.host_wire.fileno())]
++        if create:
++            args.append('--init-compact-simulation')
++        self.daemon = subprocess.Popen(args, cwd=ROOT, pass_fds=(self.host_wire.fileno(),),
++                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
++        ready, _, _ = select.select([self.daemon.stdout], [], [], 8)
++        assert ready, 'No bounded daemon readiness'
++        line = self.daemon.stdout.readline()
++        assert line, 'Daemon exited before readiness'
++        result = json.loads(line)
++        assert result['ready'] and result['deployment'] == 'simulation:compact'
++        info = self.socket.lstat()
++        assert stat.S_ISSOCK(info.st_mode)
++        self.socket_identity = (info.st_dev, info.st_ino)
++        assert self.fixture.poll() is None
++        return dict(socket=str(self.socket), deployment=result['deployment'], endpointPid=self.fixture.pid)
++
++    def crash(self, operation_id):
++        assert self.relay.gated.wait(3), 'Endpoint did not answer OP'
++        assert self.relay.error is None
++        frame, wire = self.relay.op_frames()[-1]
++        operation = Operation.parse(frame.payload)
++        reply, reply_wire = self.relay.gated_reply
++        receipt = decode_response(reply, Request(frame), operation=operation, simulator_only=True)
++        assert isinstance(receipt, Receipt) and receipt.execution in {Execution.QUEUED, Execution.RUNNING}
++        daemon, self.daemon = self.daemon, None
++        daemon.kill()
++        _, error = daemon.communicate(timeout=3)
++        assert daemon.returncode == -signal.SIGKILL, repr(error)
++        assert self.fixture.poll() is None, 'Endpoint died with host'
++        assert self.database('SELECT payload,tx_sequence,receipt FROM ep_commands WHERE operation_id=?',
++                             (operation_id,)) == [(frame.payload, frame.sequence, None)]
++        info = self.socket.lstat()
++        assert stat.S_ISSOCK(info.st_mode) and (info.st_dev, info.st_ino) == self.socket_identity
++        self.socket.unlink()  # Only our reaped daemon's verified stale inode.
++        with self.relay.lock:
++            request_count = len(self.relay.requests)
++        result = dict(operationId=operation_id, endpointPid=self.fixture.pid, endpointAlive=True,
++            nativeExecution=receipt.execution.name.lower(), receiptAbsent=True,
++            opWireHex=wire.hex(), replyWireHex=reply_wire.hex(), sequence=frame.sequence,
++            requestDigest='sha256:'+operation.reference.intent_digest.hex(), requestCount=request_count)
++        self.crashes[operation_id] = result
++        return result
++
++    def evidence(self, operation_id):
++        deadline = time.monotonic() + 5
++        while self.database('SELECT retired FROM ep_commands WHERE operation_id=?', (operation_id,)) != [(1,)]:
++            assert time.monotonic() < deadline, 'No bounded endpoint retirement'
++            assert self.relay.error is None
++            time.sleep(0.01)
++        rows = self.database('SELECT payload,tx_sequence FROM ep_commands WHERE operation_id=?', (operation_id,))
++        assert len(rows) == 1
++        payload, sequence = rows[0]
++        operation = Operation.parse(payload)
++        with self.relay.lock:
++            requests, responses = list(self.relay.requests), list(self.relay.responses)
++        matches = [(f, raw) for f, raw in requests if f.payload == payload]
++        assert len(matches) == 1 and matches[0][0].sequence == sequence
++        op_frames = [(f, raw) for f, raw in requests if f.payload[1] == Opcode.OP]
++        retained = []
++        for (raw,) in self.database("SELECT wire FROM ep_packets WHERE direction='tx' ORDER BY id"):
++            decoder = Decoder()
++            for octet in raw:
++                event = decoder.feed(octet)
++                if event is not None:
++                    assert event[0] == 'frame'
++                    if event[1].payload[1] == Opcode.OP:
++                        retained.append(raw)
++        assert retained == [raw for _, raw in op_frames], 'Actual OP handoffs differ from durable reservation packets'
++        by_sequence = {f.sequence: f for f, _ in requests}
++        completed = None
++        for frame, raw in responses:
++            request = by_sequence.get(int.from_bytes(frame.payload[2:6], 'big'))
++            if request is None or request.payload not in (payload, operation.reference.payload(Opcode.QUERY)):
++                continue
++            receipt = decode_response(frame, Request(request), operation=operation, simulator_only=True)
++            if isinstance(receipt, Receipt) and receipt.execution == Execution.COMPLETED:
++                assert receipt.evidence_kind == 5 and receipt.verification == 0
++                assert len(receipt.result) == 12
++                completed = dict(execution='completed', evidenceKind='simulation', verification='unverified',
++                    heldResources=receipt.held_resources, sampleTick=int.from_bytes(receipt.result[:8], 'big'),
++                    value=int.from_bytes(receipt.result[8:], 'big'), resultHex=receipt.result.hex(), wireHex=raw.hex())
++        assert completed is not None and completed['heldResources'] == 0
++        assert not (self.state / 'simulated-plant.db').exists()
++        crash = self.crashes.get(operation_id)
++        queried = crash is not None and any(f.payload == operation.reference.payload(Opcode.QUERY)
++                    for f, _ in requests[crash['requestCount']:])
++        if crash is not None:
++            assert queried and matches[0][1].hex() == crash['opWireHex']
++        return dict(operationId=operation_id, requestDigest='sha256:'+operation.reference.intent_digest.hex(),
++            endpointPid=self.fixture.pid, endpointAlive=self.fixture.poll() is None, totalOpFrames=len(op_frames),
++            operationOpFrames=len(matches), retainedEqualsForwarded=True, retired=True, noSQLitePlant=True,
++            queriedAfterRestart=queried, opWireHex=matches[0][1].hex(), sequence=sequence,
++            nativeReceipt=completed, crash=crash,
++            frames=dict(requests=[raw.hex() for _, raw in requests], responses=[raw.hex() for _, raw in responses]))
++
++    def close(self):
++        self.relay.release.set()
++        errors = []
++        if self.daemon is not None:
++            daemon, self.daemon = self.daemon, None
++            if daemon.poll() is None:
++                daemon.terminate()
++            try:
++                _, error = daemon.communicate(timeout=4)
++            except subprocess.TimeoutExpired:
++                daemon.kill()
++                _, error = daemon.communicate(timeout=3)
++                errors.append('Daemon did not quiesce')
++            if daemon.returncode != 0:
++                errors.append(f'Daemon exit {daemon.returncode}: {error!r}')
++        self.host_wire.close()
++        self.relay.close()
++        try:
++            _, error = self.fixture.communicate(timeout=3)
++        except subprocess.TimeoutExpired:
++            self.fixture.kill()
++            _, error = self.fixture.communicate(timeout=3)
++            errors.append('Native fixture did not exit on socket close')
++        if self.fixture.returncode != 0:
++            errors.append(f'Endpoint exit {self.fixture.returncode}: {error!r}')
++        assert not errors, errors
++        return dict(daemonClosed=True, endpointExit=self.fixture.returncode)
++
++
++def main():
++    launcher = Launcher()
++    closed = False
++    try:
++        print(json.dumps({'ready': launcher.start(create=True)}), flush=True)
++        for line in sys.stdin:
++            command = json.loads(line)
++            try:
++                method = command['method']
++                if method == 'arm':
++                    launcher.relay.arm()
++                    result = {'armed': True}
++                elif method == 'crash':
++                    result = launcher.crash(command['operationId'])
++                elif method == 'restart':
++                    launcher.relay.release.set()
++                    result = launcher.start()
++                elif method == 'evidence':
++                    result = launcher.evidence(command['operationId'])
++                elif method == 'close':
++                    result = launcher.close()
++                    closed = True
++                else:
++                    raise ValueError('Unknown test command')
++                print(json.dumps({'result': result}), flush=True)
++                if closed:
++                    break
++            except BaseException as error:
++                traceback.print_exc(file=sys.stderr)
++                print(json.dumps({'error': str(error)}), flush=True)
++    finally:
++        if not closed:
++            launcher.close()
++
++
++if __name__ == '__main__':
++    main()
+diff --git a/packages/experimental/tool-hardware/tests/hms-compact.spec.ts b/packages/experimental/tool-hardware/tests/hms-compact.spec.ts
+new file mode 100644
+index 00000000..78236909
+--- /dev/null
++++ b/packages/experimental/tool-hardware/tests/hms-compact.spec.ts
+@@ -0,0 +1,254 @@
++/** Actual Loader/native/PTC tools through HMS and an independently owned original C endpoint. */
++import { spawn, type ChildProcess } from 'node:child_process'
++import { once } from 'node:events'
++import { appendFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import { createInterface } from 'node:readline'
++import { fileURLToPath, pathToFileURL } from 'node:url'
++import { afterEach, describe, expect, it, vi } from 'vitest'
++import { Context } from '@budmh/cordis'
++import Loader from '@budmh/cordis-plugin-loader'
++import Include, { entryListSchema } from '@budmh/cordis-plugin-include'
++import yaml from 'js-yaml'
++import AgentRegistry from '@budmh/agent'
++import AgentLoop from '@budmh/agent-loop'
++import LocalFileSystem from '@budmh/fs-local'
++import LlmRuntime, { ToolCallId } from '@budmh/llm'
++import LocalSandbox from '@budmh/sandbox-local'
++import SandboxPolicyService from '@budmh/sandbox-policy'
++import SessionStore, { SessionId } from '@budmh/session'
++import SessionProjectionRegistry from '@budmh/session-projection'
++import LocalSubprocessRuntime from '@budmh/subprocess-local'
++import SystemPrompt from '@budmh/system-prompt'
++import ToolRuntime from '@budmh/tools'
++import WorkingDirectoryService from '@budmh/working-directory'
++import NodePtcRuntime from '@budmh/ptc-runtime-node'
++import HmsHardware from '@budmh/experimental-hardware-hms'
++import type { JsonValue } from '@budmh/util-values'
++import * as ToolHardware from '../src/index.ts'
++
++const hmsRoot = process.env.HMS_COMPACT_ROOT
++const launcher = fileURLToPath(new URL('./compact-launcher.py', import.meta.url))
++const cases: [string, string, Record<string, JsonValue>, number][] = [
++  ['sim:home-fan', 'set_level', { level: 25, unit: 'percent' }, 25],
++  ['sim:microscope', 'move_absolute', { position: 42, unit: 'um', frame: 'sim:microscope' }, 42],
++  ['sim:inspection-cell', 'inspect', { recipe: 1, partId: 'part:α' }, 1],
++]
++type Reply = {
++  ok: boolean
++  result: Record<string, JsonValue>
++  error?: { code: string }
++  attribution: { sessionId: string; callId: string }
++}
++interface Evidence extends Record<string, JsonValue> {
++  operationId: string
++  requestDigest: string
++  endpointPid: number
++  endpointAlive: boolean
++  totalOpFrames: number
++  operationOpFrames: number
++  retainedEqualsForwarded: boolean
++  noSQLitePlant: boolean
++  retired: boolean
++  queriedAfterRestart: boolean
++  opWireHex: string
++  nativeReceipt: { execution: string; evidenceKind: string; verification: string; heldResources: number; sampleTick: number; value: number }
++}
++let context: Context | undefined
++let directory: string | undefined
++let supervisor: ChildProcess | undefined
++let control: ((params: Record<string, JsonValue>) => Promise<Record<string, JsonValue>>) | undefined
++let stderr = ''
++
++afterEach(async () => {
++  await context?.fiber.dispose(); context = undefined
++  vi.unstubAllEnvs()
++  try {
++    if (supervisor) {
++      const child = supervisor; supervisor = undefined
++      const exited = child.exitCode === null ? once(child, 'exit') : Promise.resolve([child.exitCode])
++      if (child.exitCode === null) {
++        try { expect(await control!({ method: 'close' })).toMatchObject({ daemonClosed: true, endpointExit: 0 }) }
++        finally { child.stdin!.end() }
++      }
++      expect((await exited)[0], stderr).toBe(0)
++    }
++  } finally {
++    control = undefined
++    if (directory) await rm(directory, { recursive: true, force: true }); directory = undefined
++  }
++}, 30000)
++
++async function setup(mode: 'native' | 'ptc') {
++  directory = await mkdtemp(join(tmpdir(), 'hms-harness-compact-'))
++  stderr = ''
++  const env = Object.fromEntries(Object.entries(process.env).filter(([key]) => !/KEY|SECRET|TOKEN|PASSWORD|PROXY|^BUDMH_/iu.test(key)))
++  const child = spawn('python3', ['-B', launcher, hmsRoot!, join(hmsRoot!, 'bin/endpoint-scenarios-pipe'), directory], { env, stdio: ['pipe', 'pipe', 'pipe'] })
++  supervisor = child
++  child.stderr.on('data', (chunk) => { stderr += String(chunk) })
++  const lines = createInterface({ input: child.stdout })[Symbol.asyncIterator]()
++  const ended = once(child, 'exit').then(([code]) => { throw new Error('Compact launcher exited ' + String(code) + ': ' + stderr) })
++  // The lifetime promise participates in every read; suppress only its detached completion after successful close.
++  void ended.catch(() => undefined)
++  const read = async () => {
++    let timer: NodeJS.Timeout | undefined
++    try {
++      const line = await Promise.race([lines.next(), ended, new Promise<never>((_resolve, reject) => {
++        timer = setTimeout(() => { reject(new Error('Compact launcher response deadline: ' + stderr)) }, 15000)
++      })])
++      if (line.done) throw new Error('Compact launcher output ended: ' + stderr)
++      return JSON.parse(line.value) as {
++        ready?: { socket: string; deployment: string; endpointPid: number }
++        result?: Record<string, JsonValue>
++        error?: string
++      }
++    } finally { clearTimeout(timer) }
++  }
++  const ready = (await read()).ready!
++  expect(ready).toMatchObject({ deployment: 'simulation:compact' })
++  control = async (params) => {
++    child.stdin.write(JSON.stringify(params) + '\n')
++    const reply = await read()
++    if (reply.error !== undefined) throw new Error(reply.error + '\n' + stderr)
++    expect(reply.result).toBeDefined()
++    return reply.result!
++  }
++  const modules = new Map<string, unknown>([
++    ['@budmh/agent', AgentRegistry], ['@budmh/session', SessionStore], ['@budmh/session-projection', SessionProjectionRegistry],
++    ['@budmh/system-prompt', SystemPrompt], ['@budmh/llm', LlmRuntime], ['@budmh/tools', ToolRuntime],
++    ['@budmh/fs-local', LocalFileSystem], ['@budmh/subprocess-local', LocalSubprocessRuntime], ['@budmh/sandbox-local', LocalSandbox],
++    ['@budmh/sandbox-policy', SandboxPolicyService], ['@budmh/working-directory', WorkingDirectoryService],
++    ['@budmh/ptc-runtime-node', NodePtcRuntime], ['@budmh/experimental-hardware-hms', HmsHardware],
++    ['@budmh/experimental-tool-hardware', ToolHardware], ['@budmh/agent-loop', AgentLoop],
++  ])
++  const rows = [...modules.keys()].filter(name => !name.startsWith('@budmh/experimental-')).map(name => ({ name: 'cordis:' + name,
++    ...name === '@budmh/tools' ? { config: { mode } } : {},
++    ...name === '@budmh/sandbox-policy' ? { config: { mode: 'danger-full-access' } } : {},
++    ...name === '@budmh/agent-loop' ? { config: { agents: [] } } : {},
++  }))
++  const patches = yaml.load(await readFile(new URL('../../hardware-profile/cordis.patch.yml', import.meta.url), 'utf8'), { schema: entryListSchema }) as { insert: { id: string; name: string; config?: Record<string, string> }[] }[]
++  for (const row of patches[0]!.insert) row.name = 'cordis:' + row.name
++  vi.stubEnv('HMS_ROOT', hmsRoot); vi.stubEnv('HMS_SOCKET', ready.socket)
++  const config = join(directory, 'cordis.yml')
++  await writeFile(config, JSON.stringify(rows))
++  context = new Context(); context.baseUrl = pathToFileURL(directory).href + '/'
++  await context.plugin(Loader)
++  context.loader.builtins.include = Include
++  for (const [name, plugin] of modules) context.loader.builtins[name] = plugin
++  await context.loader.create({ name: 'cordis:include', config: { path: pathToFileURL(config).href, patches } })
++  await context.loader.await()
++  const ctx = context
++  const agent = await ctx.agentLoop.create(SessionId('hms-compact-' + mode), {}, { cwd: directory })
++  let calls = 0
++  const invoke = async (method: string, args: Record<string, JsonValue>) => {
++    const result = await ctx.tools.execute({ name: 'hardware_' + method, arguments: args, callId: ToolCallId('compact-' + String(++calls)), agent, signal: new AbortController().signal })
++    expect(result.isError, JSON.stringify(result)).not.toBe(true)
++    expect(result.content).toEqual([{ type: 'text', text: JSON.stringify(result.value) }])
++    const value = result.value as Reply
++    expect(value.ok, JSON.stringify(value)).toBe(true)
++    return value
++  }
++  return { ctx, agent, invoke, endpointPid: ready.endpointPid }
++}
++
++async function capture(scenario: string, value: object) {
++  if (process.env.HMS_COMPACT_CAPTURE) await appendFile(process.env.HMS_COMPACT_CAPTURE, JSON.stringify({ scenario, ...value }) + '\n')
++}
++
++function checkEvidence(value: Evidence, receipt: Record<string, JsonValue>, expected: number, count: number, endpointPid: number) {
++  expect(value).toMatchObject({ operationId: receipt.operationId, requestDigest: receipt.requestDigest, endpointPid, endpointAlive: true,
++    totalOpFrames: count, operationOpFrames: 1, retainedEqualsForwarded: true, noSQLitePlant: true, retired: true })
++  expect(value.nativeReceipt).toMatchObject({ execution: 'completed', evidenceKind: 'simulation', verification: 'unverified', heldResources: 0, value: expected })
++  expect(receipt).toMatchObject({ executionState: 'completed', effectVerification: 'unverified', resourceClaims: [],
++    result: { evidenceKind: 'simulation', output: { value: expected, sampleTick: value.nativeReceipt.sampleTick, effectCommitted: true } } })
++}
++
++describe.skipIf(!hmsRoot || process.platform !== 'linux')('Harness tools with original compact C simulator', () => {
++  it('runs three scenarios through actual Node PTC and retains one OP frame per immutable request', async () => {
++    const { ctx, agent, endpointPid } = await setup('ptc')
++    const code = `const ns = await tools.hardware_namespace({ expiresUnixMs: Date.now() + 180000 });
++const results = [];
++for (const [instanceId, actionId, args, expected] of ${JSON.stringify(cases)}) {
++  const now = Date.now();
++  const prepared = await tools.hardware_prepare({ instanceId, actionId, arguments: args, operationKey: 'compact-ptc-' + actionId, replayNamespace: ns.result.token, requiredEffect: 'capability_completion', timing: { notBeforeUnixMs: now, latestStartUnixMs: now + 15000, maxRunMs: 5000, latestCompletionUnixMs: now + 25000 } });
++  if (!prepared.ok) throw new Error(JSON.stringify(prepared));
++  const retained = JSON.stringify(prepared.result.request);
++  const admitted = await tools.hardware_invoke({ request: JSON.parse(retained) });
++  if (!admitted.ok) throw new Error(JSON.stringify(admitted));
++  let status = admitted;
++  for (let i = 0; i < 12; ++i) {
++    status = await tools.hardware_operation({ operationId: admitted.result.operationId });
++    if (!status.ok) throw new Error(JSON.stringify(status));
++    if (status.result.executionState === 'completed' && status.result.resourceClaims.length === 0) break;
++  }
++  if (status.result.executionState !== 'completed' || status.result.result.output.value !== expected) throw new Error('Endpoint did not complete');
++  const replayed = await tools.hardware_invoke({ request: JSON.parse(retained) });
++  if (!replayed.ok || replayed.result.operationId !== admitted.result.operationId || JSON.stringify(replayed.result.result) !== JSON.stringify(status.result.result)) throw new Error('Replay changed operation');
++  results.push({ retained, admitted, status, replayed });
++}
++return results;`
++    const result = await ctx.tools.execute({ name: 'run_code', arguments: { code, description: 'Run three local compact simulations with retained requests' }, callId: ToolCallId('compact-ptc'), agent, signal: new AbortController().signal })
++    expect(result.isError, JSON.stringify(result)).not.toBe(true)
++    const dispatch = agent.session.snapshotEvents().filter(event => event.type === 'tool/ptc-dispatch')
++    const text = JSON.stringify(dispatch)
++    expect(text).toContain('simulation')
++    const invocations = dispatch.filter(event => event.data.name === 'hardware_invoke')
++    expect(invocations).toHaveLength(6)
++    for (let i = 0; i < 3; ++i) expect(invocations[2 * i]!.data.arguments).toEqual(invocations[2 * i + 1]!.data.arguments)
++    const evidence = []
++    // PTC may project the outer return; inspect the actual canonical nested dispatch records.
++    const statuses = dispatch.filter(event => event.data.name === 'hardware_operation')
++    for (const [instanceId, _action, _args, expected] of cases) {
++      const relevant = statuses.map(event => JSON.parse(event.data.content.find(block => block.type === 'text')!.text) as Reply)
++        .filter(reply => reply.result.instanceId === instanceId && reply.result.executionState === 'completed')
++      expect(relevant.length).toBeGreaterThan(0)
++      const status = relevant.at(-1)!.result
++      const observed = await control!({ method: 'evidence', operationId: status.operationId! }) as Evidence
++      checkEvidence(observed, status, expected, 3, endpointPid)
++      evidence.push(observed)
++    }
++    await capture('ptc-three-native-c', { result, dispatch, evidence })
++  }, 150000)
++
++  it('replays native requests after host SIGKILL loses each accepted endpoint OP reply without sending another OP', async () => {
++    const { invoke, endpointPid } = await setup('native')
++    const namespace = await invoke('namespace', { expiresUnixMs: Date.now() + 180000 })
++    let count = 0
++    for (const [instanceId, actionId, args, expected] of cases) {
++      const now = Date.now()
++      const prepared = await invoke('prepare', { instanceId, actionId, arguments: args, operationKey: 'compact-loss-' + actionId,
++        replayNamespace: namespace.result.token!, requiredEffect: 'capability_completion', timing: {
++          notBeforeUnixMs: now, latestStartUnixMs: now + 15000, maxRunMs: 5000, latestCompletionUnixMs: now + 25000,
++        } })
++      const retained = JSON.stringify(prepared.result.request)
++      await control!({ method: 'arm' })
++      const admitted = await invoke('invoke', { request: JSON.parse(retained) as JsonValue })
++      expect(admitted.result.executionState).toBe('accepted')
++      const crash = await control!({ method: 'crash', operationId: admitted.result.operationId! })
++      expect(crash).toMatchObject({ operationId: admitted.result.operationId, requestDigest: admitted.result.requestDigest,
++        endpointPid, endpointAlive: true, receiptAbsent: true })
++      expect(['queued', 'running']).toContain(crash.nativeExecution)
++      const restarted = await control!({ method: 'restart' })
++      expect(restarted.endpointPid).toBe(endpointPid)
++      const replayed = await invoke('invoke', { request: JSON.parse(retained) as JsonValue })
++      expect(replayed.result.operationId).toBe(admitted.result.operationId)
++      expect(replayed.result.requestDigest).toBe(admitted.result.requestDigest)
++      let status = replayed
++      for (let i = 0; i < 12 && (status.result.executionState !== 'completed' || (status.result.resourceClaims as JsonValue[]).length > 0); ++i) {
++        status = await invoke('operation', { operationId: admitted.result.operationId! })
++      }
++      const again = await invoke('invoke', { request: JSON.parse(retained) as JsonValue })
++      expect(again.result.operationId).toBe(admitted.result.operationId)
++      expect(again.result.result).toEqual(status.result.result)
++      const evidence = await control!({ method: 'evidence', operationId: admitted.result.operationId! }) as Evidence
++      checkEvidence(evidence, status.result, expected, ++count, endpointPid)
++      expect(evidence.queriedAfterRestart).toBe(true)
++      expect(evidence.opWireHex).toBe(crash.opWireHex)
++      const observation = await invoke('observe', { instanceId, property: 'value', maxAgeMs: 10000, evidenceKind: 'simulation' })
++      expect(observation.result).toMatchObject({ value: expected, acquisition: { ticksMs: evidence.nativeReceipt.sampleTick } })
++      expect(JSON.stringify(prepared.result.request)).toBe(retained)
++      await capture('native-endpoint-reply-loss', { instanceId, retained, admitted, crash, replayed, status, again, evidence, observation })
++    }
++  }, 180000)
++})

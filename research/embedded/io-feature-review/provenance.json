@@ -1,0 +1,13 @@
+{
+  "acquisition": "existing retained clean checkout; no new fetch",
+  "checkoutClean": true,
+  "commit": "3734757348263e890d276f7e4fbc1f7e2bf5f2b9",
+  "newCopiesExact": true,
+  "priorManifests": {
+    "reading-log.json": "d1dbb073d46615d37f0d7318027ad46dc5c0f52e373a345bde29c2d0dcfe3edd",
+    "repositories.json": "9c0af3f61dce64278b50209509f123b1d46b78459e0b3f3a5f8fc85d5adff152",
+    "verify.py": "c6a2da31593a1a9e2d133304def010861cb191fa60a4f4b7b0e2b50c4708e74c"
+  },
+  "priorVerifierResult": "Verified 35 full-file records, 11542 logical lines, 403667 bytes, and 4 clean pinned checkouts.",
+  "repository": "https://github.com/firmata/ConfigurableFirmata.git"
+}

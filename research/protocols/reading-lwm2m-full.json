@@ -1,0 +1,550 @@
+{
+  "reviewed_at": "2026-11-05T22:18:15.307223+00:00",
+  "reviewer": "lwm2m_full_read",
+  "line_convention": "LF bytes only: split on b\"\\n\", retain LF with each terminated line; retain final nonempty unterminated line (Core 1.2 final line is form-feed). Do not split on form-feed or other Unicode line separators. Range hashes include existing LF bytes.",
+  "sources": [
+    {
+      "id": "lwm2m-core12",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2-20201110-A/OMA-TS-LightweightM2M_Core-V1_2-20201110-A.pdf",
+      "raw_path": "research/protocols/raw/lwm2m-core12.pdf",
+      "raw_sha256": "8761e79d322b3ad8d0cfc492943cbd86fdffc754cb520a24414a462b7a1fcefd",
+      "text_path": "research/protocols/text/lwm2m-core12.txt",
+      "text_sha256": "3b32586ef3e0facaa971a59cccf27386fed38325d239360b27cd8966f7512323",
+      "line_count": 11164,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 500,
+          "sha256": "f23d15721bc4a601f30099004e8c875bd7ff2e18ec082b00af36cd48da921699"
+        },
+        {
+          "start_line": 501,
+          "end_line": 1000,
+          "sha256": "bfc34a0bbaa03cbebc8dbdfeba52d3b504346cd9bb25e776e06c842fadc5ab3f"
+        },
+        {
+          "start_line": 1001,
+          "end_line": 1500,
+          "sha256": "9da0fb81e818922acfe8c4f722f650c8af2f0c81f78bb5d29b1b470d0265d5c2"
+        },
+        {
+          "start_line": 1501,
+          "end_line": 2000,
+          "sha256": "3e73342c914b15956ef29bf0627902482741d776c7dea5254ecb24cf1f31cfde"
+        },
+        {
+          "start_line": 2001,
+          "end_line": 2500,
+          "sha256": "be805a36d33d369e2673bddfee86b83f2ab488208bade9925e06bea133771b2b"
+        },
+        {
+          "start_line": 2501,
+          "end_line": 3000,
+          "sha256": "e5d3398b8103f0b8b0a1980b767401480851da49884aa7fa32357bd19bd5a7f3"
+        },
+        {
+          "start_line": 3001,
+          "end_line": 3500,
+          "sha256": "f6f2b7a6eb2e1e8fa266d54c33c4332a6da062dfed4e72f9872ac3b10e57a407"
+        },
+        {
+          "start_line": 3501,
+          "end_line": 4000,
+          "sha256": "b944380c431872ecf20ffaefe1dec81b12f514ccee51e8daaf117dc4c2daa35a"
+        },
+        {
+          "start_line": 4001,
+          "end_line": 4500,
+          "sha256": "e97e0b4cd53aadce8875d2fc999b9742a3558484e9f910936fe22dcdcf1a871f"
+        },
+        {
+          "start_line": 4501,
+          "end_line": 5000,
+          "sha256": "55a1f66d3e6036cefc534baffe2a00744edf2c0ef7296bf9d374f0b9a716fbb8"
+        },
+        {
+          "start_line": 5001,
+          "end_line": 5500,
+          "sha256": "b30bd167dc40f8c05461bc8d71769505e5e15761c5ca6af29bc2afdc600ae8de"
+        },
+        {
+          "start_line": 5501,
+          "end_line": 6000,
+          "sha256": "c95e82e9e87a97fa9f347926c7249164e21cf598cac9827d021fb48d4144dbd5"
+        },
+        {
+          "start_line": 6001,
+          "end_line": 6500,
+          "sha256": "b7159b88e8c4f36b9be3ac83037305354bafb6bcdd616b06579bbcf9141e5baf"
+        },
+        {
+          "start_line": 6501,
+          "end_line": 7000,
+          "sha256": "2e11c1a6c184df6c422c4586402a176ea1bfb445da659c7c4178eead70e79dc7"
+        },
+        {
+          "start_line": 7001,
+          "end_line": 7500,
+          "sha256": "68b405dfa245bc51d42f399e94cedf4d97617d566cb8b9689e2cd50a71fe86e9"
+        },
+        {
+          "start_line": 7501,
+          "end_line": 7750,
+          "sha256": "807d149207a2515017defc7c0b391a07eab66a13edb0d9756a9165d5fb065c43"
+        },
+        {
+          "start_line": 7751,
+          "end_line": 8000,
+          "sha256": "4b9b7d8308a9c6392b5e35c150f4d6a2f05ca0fcb5e3bfd2cd7aa0f92d021db6"
+        },
+        {
+          "start_line": 8001,
+          "end_line": 8250,
+          "sha256": "00d018053d8c6f98456006fba1e0e4d8bdb3922c90a85b766246ade8bb5afd3e"
+        },
+        {
+          "start_line": 8251,
+          "end_line": 8500,
+          "sha256": "0b70eaf6790de3de2e8f792d7a2e779e48df334e069e91c5cdec6198d58b00c1"
+        },
+        {
+          "start_line": 8501,
+          "end_line": 8750,
+          "sha256": "62817e11445b2834cd07d07dd02cd99a73a47f007df2ecb444351882674f6600"
+        },
+        {
+          "start_line": 8751,
+          "end_line": 9000,
+          "sha256": "01fe8059d83a887bc48fb08b52e0366005876fb539db77946ecfd69984d5e3df"
+        },
+        {
+          "start_line": 9001,
+          "end_line": 9250,
+          "sha256": "638726c60650fa60dbccccceefcf0da019b223c068d26610f006ae09efc97241"
+        },
+        {
+          "start_line": 9251,
+          "end_line": 9500,
+          "sha256": "334d274e334149fbd3d62cd8deeee97e9375a91f5d33a69008829efa6a007de2"
+        },
+        {
+          "start_line": 9501,
+          "end_line": 10000,
+          "sha256": "deb2ffbda54a082a385bfad18e79b8ff2efe45bed46d655d37f0055d76442750"
+        },
+        {
+          "start_line": 10001,
+          "end_line": 10500,
+          "sha256": "67dffa2ba054b8c6ba736b0a9ea1d9b09c6e0f512aff6bd5bcde7f61f7a8b730"
+        },
+        {
+          "start_line": 10501,
+          "end_line": 11164,
+          "sha256": "17b36be869b6bb1998be493b251ce89a9f76ff0783b25eb7d81e4d3d1bda3ba2"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text_and_all_28_semantic_figures",
+      "pages": 154,
+      "limitations": [
+        "All LF-delimited lines, tables and appendices were read. Original PDF page 128 clips the right edge of the MQTT Server table; inspected visually and not silently reconstructed.",
+        "The 7501-8000 output was truncated by the orchestration output cap and excluded; replacement reads 7501-7750 and 7751-8000 were complete.",
+        "Referenced external standards, object registry files, and companion Transport specification were not covered by the Core full read."
+      ]
+    },
+    {
+      "id": "release-directory",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/",
+      "final_url": "https://www.openmobilealliance.org/release/LightweightM2M/",
+      "http_status": 200,
+      "retrieved_at": "2026-11-05T22:16:34.633058+00:00",
+      "raw_path": "research/constrained/lwm2m/release-directory.html",
+      "raw_sha256": "b89593da6d2ea82fcfc8534d4a0b57c6b46ddc86b0f92e847f174c8aeda0856b",
+      "text_path": "research/constrained/lwm2m/release-directory.txt",
+      "text_sha256": "ebe362c1a2aeab25a362b5454618e918c9789f2bb61f71b845cfdb6262cd14f8",
+      "line_count": 53,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 53,
+          "sha256": "ebe362c1a2aeab25a362b5454618e918c9789f2bb61f71b845cfdb6262cd14f8"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "covered_line_count": 53
+    },
+    {
+      "id": "release-122",
+      "url": "https://www.openmobilealliance.org/release/lightweightm2m/V1_2_2-20240613-A/HTML-Version/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A.html",
+      "final_url": "https://www.openmobilealliance.org/release/lightweightm2m/V1_2_2-20240613-A/HTML-Version/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A.html",
+      "http_status": 200,
+      "retrieved_at": "2026-11-05T22:16:35.755148+00:00",
+      "raw_path": "research/constrained/lwm2m/release-122.html",
+      "raw_sha256": "e004370124f247b956dcd4bbd56c2c7d3e47f5bd5cd0cf1c535052bb91c68fd7",
+      "text_path": "research/constrained/lwm2m/release-122.txt",
+      "text_sha256": "7475004c116b4e23b484630d24cc9ac136e0005d077018378a20e74b189e371d",
+      "line_count": 179,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 179,
+          "sha256": "7475004c116b4e23b484630d24cc9ac136e0005d077018378a20e74b189e371d"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "covered_line_count": 179
+    },
+    {
+      "id": "core-122",
+      "url": "https://www.openmobilealliance.org/RELEASE/LightweightM2M/V1_2_2-20240613-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_2_2-20240613-A.html",
+      "final_url": "https://www.openmobilealliance.org/RELEASE/LightweightM2M/V1_2_2-20240613-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_2_2-20240613-A.html",
+      "http_status": 200,
+      "retrieved_at": "2026-11-05T22:16:38.142719+00:00",
+      "raw_path": "research/constrained/lwm2m/core-122.html",
+      "raw_sha256": "340effe8405e3f2f6130752347c21ef9ff1d5f99ed3aad90736190557e984b70",
+      "text_path": "research/constrained/lwm2m/core-122.txt",
+      "text_sha256": "5810505442a7697119b2512a16c6baaba576a49825ded8bd02e89d845b197944",
+      "line_count": 7893,
+      "coverage_ranges": [
+        {
+          "start_line": 320,
+          "end_line": 355,
+          "sha256": "9b45336f6d75622fa6f40bd08b8ae34428ffeb5956180e54d41605684ebe37bc"
+        },
+        {
+          "start_line": 1290,
+          "end_line": 1385,
+          "sha256": "cb191afdddc41dd97905272b8d7290b6a5d907e3df9a3b52b2d393b108fba4e8"
+        },
+        {
+          "start_line": 1485,
+          "end_line": 1510,
+          "sha256": "13066a41b4af8aa9ecb6e7b7deccfd752ccba273301d4e1d5cc36b025f973c18"
+        },
+        {
+          "start_line": 1748,
+          "end_line": 1785,
+          "sha256": "8b61815b1415f8b20f2a1c35067b48a4380d4936e95983c83a5d545154c6966a"
+        },
+        {
+          "start_line": 1890,
+          "end_line": 1905,
+          "sha256": "b5b435bb099ae810655536eff474df943bc35e4b9fb98ef49b88efafbac99bd7"
+        },
+        {
+          "start_line": 2100,
+          "end_line": 2165,
+          "sha256": "9449c58f223ea42acaf3e803b4e2bab0726f85cdd8e6b5859a7c4f648115f616"
+        },
+        {
+          "start_line": 6135,
+          "end_line": 6190,
+          "sha256": "b69e5e658b4eafbef04dc3b8e370b5c8eb7259e4fbf87613912fa632269caf9f"
+        }
+      ],
+      "coverage_complete": false,
+      "reading_status": "read_selected_sections",
+      "covered_line_count": 334,
+      "reading_scope": "Revision notices; registration/Profile ID; protected credential objects; Execute argument uniqueness; Write-Composite; object version placement; MQTT table clipping cross-check. Not a full 1.2.2 review."
+    }
+  ],
+  "figures": [
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-020.png",
+      "sha256": "df418daac4ab15985ebabaaf432a563201b53327d640bcc425d257a91b862a96",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 20,
+      "figure_ids": [
+        "4.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-028.png",
+      "sha256": "3d16b1b23c5bba9c1f0b779ed08eabc4dc2726d2611e918c170786f95c46e45e",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 28,
+      "figure_ids": [
+        "6.-1",
+        "6.-2",
+        "6.-3"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-029.png",
+      "sha256": "a990314530fb201e07cfe9aa18ae0c53c454c1882423bd6e06eff5f98890678a",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 29,
+      "figure_ids": [
+        "6.-4",
+        "6.-5"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-032.png",
+      "sha256": "1d7da6d622519f9650decc706103b49b5181edaa198a955dcd7d4aeb0498068d",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 32,
+      "figure_ids": [
+        "6.1.3.3.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-033.png",
+      "sha256": "266d7fec3a65595f72166613438884f4f25fbdb021352dff57f50f21b6f1a555",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 33,
+      "figure_ids": [
+        "6.1.3.3.-2"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-034.png",
+      "sha256": "ab49a63e4a5590ea791c3150e72963525fff24035a91d456d04d18c1621a840a",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 34,
+      "figure_ids": [
+        "6.1.3.4.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-042.png",
+      "sha256": "abe3ed60ecff817dc4324020fd7b88b487ba1fc28e04bb172ee46fbbacb73535",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 42,
+      "figure_ids": [
+        "6.2.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-046.png",
+      "sha256": "6b7f2fe1c467d2f7005f6dfbdc8f30a178f48192e798fa780f20626518143861",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 46,
+      "figure_ids": [
+        "6.2.1.1.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-047.png",
+      "sha256": "7f323d71c1d94bc986bfc6b9742d6bbec63375dd73a50d27295c8fb3ea4970f1",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 47,
+      "figure_ids": [
+        "6.2.1.1.-2"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-048.png",
+      "sha256": "7d2389dbc653901f636752e9e072afc42f60bbdd0aa4f6e1a895a5dea7d8cbf1",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 48,
+      "figure_ids": [
+        "6.2.1.1.-3"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-052.png",
+      "sha256": "10c1649ccd4204ed6593585f7fc4c6116f4cf639b314fe5a27498337dbc115f3",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 52,
+      "figure_ids": [
+        "6.2.2.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-053.png",
+      "sha256": "78e045006529bca6b52e9c3a7994be2595f24f4578836a66f6b709283de61733",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 53,
+      "figure_ids": [
+        "6.2.2.-2"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-054.png",
+      "sha256": "494595871a0d5aacc6160102c0843b84de232c1abc05d425809f96d9f6ad79d7",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 54,
+      "figure_ids": [
+        "6.3.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-062.png",
+      "sha256": "5210709b64e3992ee5509118f89a87457719b7f4f25fe103f9dd8f57f3c1d54b",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 62,
+      "figure_ids": [
+        "6.4.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-065.png",
+      "sha256": "3d04aaea719e14ea881954c7224dac098517a8743096748faa2f199efa45643d",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 65,
+      "figure_ids": [
+        "6.4.2.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-068.png",
+      "sha256": "76530b9b4b27a8cea0e445263c88019da638b3da445d4660864230b9bb2afeaf",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 68,
+      "figure_ids": [
+        "7.1.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-069.png",
+      "sha256": "72e08f0b1bd0ff211ce40e81243884e4efc9e8899875e3c3b963952c9691c65c",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 69,
+      "figure_ids": [
+        "7.1.-2"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-081.png",
+      "sha256": "0f0a855bad1a90eaee159c26887a7388c241067d8b3a9e8017b5b52c69279b2a",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 81,
+      "figure_ids": [
+        "7.4.5.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-094.png",
+      "sha256": "c4d75d12ba9a684c88b0ff8dca59543f02b4c6af5f407287136c13316c68998d",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 94,
+      "figure_ids": [
+        "8.1.2.2.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-101.png",
+      "sha256": "d76c4a990677730490597275fd448947908a5381460edc50378ce879b0091b49",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 101,
+      "figure_ids": [
+        "C.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-122.png",
+      "sha256": "72b1fb0cec2ad2b80cb4d525e0e82d8fa103d1442731f5d751e4a024c75b8426",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 122,
+      "figure_ids": [
+        "E.6.1-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-123.png",
+      "sha256": "c185bc1ebabdde24fbd563e013aa369f4e9c492d40047f6d36ae6cfba5b659cd",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 123,
+      "figure_ids": [
+        "E.6.2-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-124.png",
+      "sha256": "874aeb7c039f0691dbfc461c0e1688ccc32041f924065149eae928c3aa3849e6",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 124,
+      "figure_ids": [
+        "E.6.2-2"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-139.png",
+      "sha256": "0d9469ffaa1344bef7ccb4b67b04b6c38fa4aff64f0426583598005524bc8bf4",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 139,
+      "figure_ids": [
+        "G.2.2-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-144.png",
+      "sha256": "2a02b7a484134235027187e6cecfbb32790b6c074fe4278903ba40788a0caa2f",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 144,
+      "figure_ids": [
+        "H.-1"
+      ],
+      "reading_status": "visually_inspected",
+      "render": "pdftoppm -scale-to 1800 -png -singlefile"
+    },
+    {
+      "path": "research/constrained/lwm2m/figures/core12-page-128.png",
+      "sha256": "3791b50c7fbf281f6b0b18645a50bb8563ef3fde6cfaf36561e4be62540a9d17",
+      "source_id": "lwm2m-core12",
+      "pdf_page": 128,
+      "table_ids": [
+        "E.11-2"
+      ],
+      "reading_status": "visually_inspected",
+      "note": "Right edge of description column is clipped in source PDF. Current 1.2.2 HTML table read separately; not substituted into original snapshot."
+    }
+  ],
+  "semantic_figures_expected": 28,
+  "semantic_figures_visually_inspected": 28,
+  "limitations": [
+    "No device operations, downloaded research code execution, wire conformance, timing measurements or runtime implementation.",
+    "Current 1.2.2 Core was sampled for errata, not fully read; companion Transport and external registry remain future work."
+  ]
+}

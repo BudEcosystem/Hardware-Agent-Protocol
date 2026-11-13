@@ -1,0 +1,642 @@
+                                                   ORIGINAL ARTICLE
+arXiv:2109.06842v2 [physics.ins-det] 15 Sep 2021
+
+
+                                                   Journal Section
+
+
+
+
+                                                   Fast, high precision autofocus on a motorised
+                                                   microscope: automating blood sample imaging on
+                                                   the OpenFlexure Microscope
+
+                                                   Joe Knapper1               |    Joel T. Collins1       |   Julian Stirling1         |
+                                                   Samuel McDermott2                       |    William Wadsworth1            |   Richard
+                                                   Bowman1
+
+
+                                                   1 Centre for Photonics and Photonic
+
+                                                   Materials, Department of Physics,
+                                                   University of Bath, UK.                          The OpenFlexure Microscope is a 3D printed, low-cost mi-
+                                                   2 Cavendish Laboratory, University of
+                                                                                                    croscope capable of automated image acquisition through
+                                                   Cambridge, UK.
+                                                                                                    the use of a motorised translation stage and a Raspberry
+                                                   Correspondence
+                                                                                                    Pi imaging system. This automation has applications in re-
+                                                   Richard Bowman, Centre for Photonics and
+                                                   Photonic Materials, Department of Physics,       search and healthcare, including in supporting the diagnosis
+                                                   University of Bath, UK.
+                                                                                                    of malaria in low resource settings. The plasmodium para-
+                                                   Email: rwb34@bath.ac.uk
+                                                                                                    sites which cause malaria require high magniﬁcation imag-
+                                                   Funding information
+                                                                                                    ing, which has a shallow depth of ﬁeld, necessitating the
+                                                   EPSRC, Grant/Award Number:
+                                                   (EP/R013969/1 and EP/R011443/1; The              development of an accurate and precise autofocus proce-
+                                                   Royal Society, Grant/Award Number:
+                                                                                                    dure. We present methods of identifying the focal plane
+                                                   URF\R1\180153
+                                                                                                    of the microscope, and procedures for reliably acquiring a
+                                                                                                    stack of focused images on a system aﬀected by backlash
+                                                                                                    and drift. We also present and assess a method to verify the
+                                                                                                    success of autofocus during the scan. The speed, reliability
+                                                                                                    and precision of each method is evaluated, and the limita-
+                                                                                                    tions discussed in terms of the end users’ requirements.
+
+                                                                                                    KEYWORDS
+                                                                                                    open source, autofocus, open hardware, light microscopy, focus
+
+
+                                                                                                                                                                     1
+2                                                                                                           Knapper et al.
+
+
+
+
+                           Condenser
+                              mount
+
+
+                                   x-y
+                                stage
+                                                                                   z-actuator
+                        Objective lens                                             Optional
+                                                                                   motor mount
+                            Camera &                                               Actuator gear
+                        optics module
+
+
+                                                                                   Electronics
+                                                                                   housing
+
+
+
+
+F I G U R E 1 A labelled diagram of the OpenFlexure Microscope in a trans-illumination set up. Reproduced under
+CC-BY licence from Collins et al. [2].
+
+
+
+1   |   INTRODUCTION
+
+As the number and accessibility of low-cost, locally manufactured microscopes continues to grow, their potential
+applications are also increasing. Microscopes costing less than 1 USD can be assembled and used in outreach and
+education [1], while more expensive designs have applications in research. An example of an open-source, lab grade
+microscope is the OpenFlexure Microscope, a 3D printed microscope capable of automated sample positioning and
+high resolution imaging [2]. Costing 200 USD in parts, a research grade version of the OpenFlexure Microscope
+(shown in Figure 1) combines a Raspberry Pi, Pi Camera and a custom motor controller board with a 3D-printed
+precision translation mechanism to precisely position and image a sample in a 12 × 12 × 4 mm volume. Flexure
+hinges are used to translate the stage and sample in x y , and the optics module in z . Standard RMS objectives can be
+screwed in to provide magniﬁcation, requiring an achromatic tube lens with a focal length of 50 mm. Based on the
+user’s requirements, the OpenFlexure software can be used to automate the capturing of large areas of a sample [3].
+This has the potential to improve the eﬃciency of research, as users can automate the sample movement and image
+collection conventionally performed by hand.
+    As with manual microscopy, automatically moving across a sample capturing images requires frequent refocusing,
+as hardware and sample imperfections move the sample away from the object plane. Conventional microscopes
+require technicians to be trained in how to identify and return to the desired focal point, adjusting the height of the
+sample or optics until the image becomes as sharp as possible. Automated microscopy requires a similar procedure,
+moving the sample while tracking position and image sharpness before returning to the position of highest sharpness.
+As the depth of ﬁeld of an objective decreases as magniﬁcation increases, higher power microscopes require more
+frequent and more precise autofocus.
+    One application of microscopy requiring high magniﬁcation is in healthcare, where blood, cerebrospinal ﬂuid and
+other samples are examined for evidence of parasites or bacteria [4]. The size of disease-causing parasites are often
+within an order of magnitude of the diﬀraction limit (0.2 µm) of high NA objectives. This necessitates the highest levels
+of magniﬁcation possible, typically employing a 1.2 NA, 100× oil immersion objective. These objectives have a depth
+of ﬁeld below 1 µm, and so require extremely accurate focus. An autofocus not suﬃciently accurate or reliable would
+produce unusable out-of-focus images, increasing the chance of a misdiagnosis.
+Knapper et al.                                                                                                        3
+
+
+    High-power automated microscopes require a rapid autofocus procedure suitable for a narrow depth of ﬁeld.
+On the OpenFlexure Microscope, the procedure must be designed to accommodate limited computational resources,
+backlash and errors in positioning. In this paper, a modiﬁed 2D Laplacian and JPEG ﬁle size are assessed as image
+sharpness metrics, based on their reliability, speed and suitability to the samples of interest. The optimal order of
+movements and recalibration measurements are discussed in terms of a closed-loop, self-correcting solution to im-
+perfect positioning hardware. These measurements and movements are combined into several autofocus options,
+allowing the user to make an informed choice based on their required speed, reliability and sample type.
+
+
+
+2    |   BACKGROUND AND MOTIVATION
+
+The recent increase in aﬀordable hardware and accessible manufacturing methods has lead to a surge of interest in
+low-cost microscopy. Microscopes suitable for a range of budgets and applications have been developed and shared
+as open-source projects, including Foldscope, Microscopi and UC2 [1, 5, 6]. The primary applications of low-cost
+microscopes are in education and outreach, allowing users to quickly and easily view samples.
+    In sub-Saharan Africa, where malaria is endemic, manual light microscopy is considered to be the “gold standard”
+of diagnosis [7]. Microscopy performed on a blood sample is sensitive, rapid and can also diagnose other conditions.
+Although the cost per test scales favourably, the cost of supplying low resource areas with equipment, training and
+maintenance is considerable, motivating research into a more accessible alternative. To declare a thick smear blood
+sample as negative for malaria, WHO training requires 100–200 ﬁelds of view to be examined [8]. Low-cost micro-
+scopes with automated sample movement and image capturing present a viable alternative to the time-consuming
+process of manually searching a sample. Low-cost microscopes enabled by local manufacturing and supported by a
+community of users have several advantages over commercial microscopes.
+    Manufacturing the microscope locally greatly decreases the upfront and maintenance costs, and is less reliant
+on international supply chains. Low-cost microscopes are generally lighter and more portable than their commercial
+counterparts, increasing the areas which can oﬀer the testing. This makes rapid, point-of-care (POC) diagnosis more
+accessible, reducing delays in treatment or the opportunities for administrative errors.
+    Malaria diagnosis requires high magniﬁcation imaging, usually employing a 100× oil immersion objective with an
+NA of at least 1.2. These objectives have a depth of ﬁeld less than 1 µm, requiring the sample, optics and camera to
+be precisely positioned to focus the image. For a low-cost, automated microscope to be used in the image acquisition
+for malaria diagnosis, the autofocus procedure needs to reliably position the sample in the small range in which it is
+suﬃciently focused. Even slightly defocused images, or areas of the sample fully out-of-focus, limit the diagnostician’s
+access to information. The consequences of a misdiagnosis in these cases can be severe. In addition to the health
+risks of a patient receiving incorrect treatment, incorrect diagnoses have been shown to have wider-reaching societal
+and economic impacts. Public trust in healthcare can be reduced, and valuable medication can be wasted treating the
+wrong condition.
+    OpenFlexure software including a simple autofocus procedure was trialled by our collaborators at the Ifakara
+Health Institute (IHI). Using blood samples already collected and tested by their standard procedure, images were
+collected as follows. At each xy position in a user-deﬁned grid, an autofocus procedure (details given in Section 4)
+was performed to position the objective such that the sample was at the focal point. The objective was then moved
+a ﬁxed distance below the focal point, and an image captured. The objective was then raised in regular steps (dz ),
+capturing an image at each point. This series of images is known as a z-stack, and should be centred on the focal
+plane. The centre image is used for diagnosis, while the images taken above and below are used later to assess how
+4                                                                                                            Knapper et al.
+
+
+
+
+F I G U R E 2 Cropped blood sample images taken on the OpenFlexure Microscope using a 100× oil immersion
+objective with an NA of 1.2, at distances 0 µm (a), 1 µm (b), 2 µm (c), 3 µm (d), 5 µm (e) and 10 µm (f) from the focal
+point. Scale bar is 10 µm.
+
+
+
+well the system focused.
+    Stacks of 5, 7 and 9 images were taken, with image spacing ranging from 0.5 µm to 5.0 µm. Assessing these z-stacks
+showed that the accuracy in positioning required for high magniﬁcation focus necessitated closed loop correction
+steps. In particular, the changing of direction at the beginning of the z-stack introduced more uncertainty in position
+than the precision required for diagnosis. Figure 2 shows the level of blur introduced by positioning the sample 1, 2,
+3, 5 and 10 µm away from the focal point.
+
+
+
+3   |   MEASURING SHARPNESS
+
+Autofocus procedures are commonly used in digital cameras and smartphones, adjusting the focus to produce the
+sharpest image. Sharpness metrics are also commonly used to assess the eﬀect of modiﬁcations to imaging systems,
+such as in adaptive optics [9]. There are numerous sharpness metrics available for digital images, generally giving
+higher scores to images with rapidly changing colours, hard lines and high frequency information. Sun et al. proposed
+ﬁve criteria for assessing the performance of a sharpness metric in digital microscopy [10]. The criteria, when testing
+multiple sharpness metrics on the same stack of images, can be used to predict the performance of the metric on
+similar samples. These criteria include the proximity of the metric’s sharpness peak to the known sharpest image,
+and the width of the peak. The further criteria assess the number, size and distance to secondary peaks. For many
+applications, speed and computational resources are less important. When performed on a Raspberry Pi however, the
+speed and how computationally expensive the metric is are also important factors.
+    When focusing the OpenFlexure Microscope, sharpness metrics are used to give a relative measure of image
+sharpness. These measures also award a higher score to images with more features, and so an individual image score
+isn’t suﬃcient to judge if an image is sparse and well-focused, or densely populated and out of focus. Due to the
+lack of a reference image for comparison, in image quality assessment, this is a no-reference problem. Metrics can
+only assess based on the data they collect, rather than having prior knowledge of how a focused image should look.
+In addition to assessing the performance of a sharpness metric, its suitability for various samples and likely causes
+of failure must be understood. As the OpenFlexure Microscope has the option for down-sampled (832 × 624 pixels,
+∼300 KB) or full resolution (3280 × 2464 pixels, ∼5 MB) captures, sharpness metric performance was assessed for
+each.
+Knapper et al.                                                                                                                                                              5
+
+
+                            45       Laplacian              DR images     49                                   JPEG size              DR images
+                                                                                                     280                                            4.40
+  DR Lap. Sharpness (arb)
+
+
+
+
+                                                                           FR Lap. Sharpness (arb)
+                                                            FR images                                                                 FR images
+
+
+
+
+                                                                                                                                                       FR JPEG size (MB)
+                                                                              DR JPEG size (kB)
+                            40                              Focused range 48                         270                              Focused range 4.35
+
+                                                                          47                         260                                            4.30
+                            35                                                                       250                                            4.25
+                                                                          46                         240
+                            30                                                                                                                      4.20
+                                                                          45                         230
+                                                                                                                                                    4.15
+                            25                                                                       220
+                                 0     20        40   60     80     100                                    0     20        40   60     80     100
+                                     Relative objective position (µm)                                          Relative objective position (µm)
+F I G U R E 3 Plots of sharpness measures against height for the same stack of 99 down-sampled resolution (DR)
+and full resolution (FR) images of a zea seed sample. The green zone represents a manually assessed range of
+in-focus images. (a) uses the modiﬁed Laplacian metric, and (b) uses the JPEG ﬁle size. Each step is 50 ± 2 nm.
+
+
+
+                A modiﬁed 2D Laplacian is commonly used for edge detection and to assess image sharpness [11]. The form used
+in OpenFlexure software converts a captured image to greyscale before convolving the image with a Laplacian kernel
+[12]
+
+
+
+                                                                          0              1           0
+                                                                          
+                                                                                                      1 .                                                                (1)
+                                                                                                       
+                                                                          1            −4
+                                                                          
+                                                                          0              1           0
+                                                                                                       
+                                                                          
+
+This score of colour change around the pixel is squared and averaged over the image to give an image sharpness score.
+The image in a stack with the highest Laplacian score was taken to be the most focused, as hard edges and sharp
+features are characteristic of a focused image.
+                An autofocus procedure using this method was written and tested on an ipomoea root sample. The microscope
+captured a z-stack of 7 images equally spaced throughout the range to be searched. The Laplacian sharpness of each
+image was assessed, and the objective returned to the position of greatest sharpness. A trial repeating this autofocus
+procedure ten times on an ipomoea root sample found that focusing took an average of 14.9 seconds with a standard
+deviation of 1.0 s. As a typical scan on blood samples requires 100 x -y positions be focused on, at this rate, refocusing
+would add over 24 minutes to each scan, reducing throughput and delaying results.
+                An alternative sharpness metric which reduces this delay utilises the OpenFlexure software’s MJPEG preview
+stream, included to aid the user in positioning samples and previewing captures. With bit-rate control disabled (as in
+OpenFlexure software), an MJPEG stream consists of independent JPEG frames. JPEG encoding splits the image into
+8 × 8 pixel blocks, describing each block using superpositions of discrete cosine functions [13]. To save storage space,
+each block is described using the fewest possible cosine functions. Focused images with high frequency information
+and hard boundaries will require more cosine functions to describe them than an out-of-focus, blurred image. This
+causes sharper images to have a larger ﬁle size, increasing the data rate required to maintain the MJPEG stream.
+By tracking this size and the z position as the objective is swept through the focal point, a peak sharpness can be
+identiﬁed and returned to.
+                A fast autofocus procedure based on this metric was written and included in OpenFlexure software [3]. The
+sample moves through a range of interest (typically 100 µm) and the JPEG size is tracked. Unlike the Laplacian metric,
+this method is computationally ‘free’, as the MJPEG stream is generated in the GPU by default. This enables sample
+6                                                                                                          Knapper et al.
+
+
+
+
+F I G U R E 4 Images of a 1951 USAF resolution target edge taken on the OpenFlexure Microscope using a 100×
+oil immersion objective with an NA of 1.2. a) is taken at the focal point, and b) taken 51 µm away. The defocusing
+causes a more gradual edge, but introduces information into 8×8 pixel blocks that would otherwise be empty,
+increasing the JPEG size.
+
+
+
+positioning to be assessed in real time, allowing the sample to continue moving throughout the measurements. This
+allows more positions to be assessed, with the spacing between images limited only by the frame rate and movement
+speed. Ten trials of this procedure on the same ipomoea root sample took an average of 4.1 s with a standard deviation
+of 0.4 s. Across a 100-location blood scan, this reduces the time taken focusing from 24 minutes to under 7.
+    The performance of these metrics were assessed by post-processing a stack of 99 images of a zea seed section,
+taken ∼ 1 µm apart. Images were captured at both down-sampled and full resolution on a Raspberry Pi camera, with
+magniﬁcation provided by a 40×, 0.65 NA RMS objective. The focused range was judged manually from examination
+of the images in the stack, and covers a range of approximately 5 µm. We note this is thicker than the ∼ 1 µm depth
+of ﬁeld (DOF) of the objective used. This is due to the thickness of the sample and subjectivity in determining when
+the images are considered focused.
+    The Laplacian and JPEG sharpness metrics were applied to each image in the stack, and the results are shown in
+Figure 3. The position of the highest peak for the full resolution Laplacian in Figure 3 motivated an examination of the
+image corresponding to that position. This examination revealed an area of approximately 590 × 1 pixel in which the
+capture failed, causing a black line and white specks to appear in the image. These artefacts have no correlation to
+the surrounding pixels, and so dominate the Laplacian metric. Due to JPEG encoding splitting the image into blocks,
+the JPEG metric is not similarly disrupted. Only the 8×8 blocks containing the failed pixels were aﬀected, making the
+JPEG sharpness metric more resilient to localised capture failures.
+    Using down-sampled resolution images, the Laplacian metric shows a clear peak centred in the range of focused
+images. The peak is noisy, but narrow and clearly higher than the background sharpness of unfocused images. By
+contrast, the Laplacian metric fails using full resolution images. There are numerous, single image peaks outside the
+focused range. These false peaks are only seen in the full resolution images, where the increased pixel count leads
+to a higher probability of a small area of dead pixels, which dominate the Laplacian score. The Laplacian convolution
+used employs a 3×3 matrix, meaning only adjacent pixels are compared. Using a 40× objective, the OpenFlexure
+Microscope has a ﬁeld of view of ∼ 320 × 240 µm. Capturing a full resolution image on the Pi Camera, the digital
+resolution of the image is 3280 × 2464 pixels. This corresponds to a physical pixel size ∼ 0.1 µm, below the diﬀraction
+limit of high NA imaging. This oversampling combined with a 3×3 Laplacian means that a signiﬁcant amount of the
+contrast detected between neighbouring pixels is due to noise rather than focus. This issue becomes more severe
+with higher magniﬁcation imaging, where the narrower ﬁeld of view (∼ 140 × 105 µm) is signiﬁcantly oversampled by
+full resolution images.
+    The JPEG metric performed better; both the down-sampled and full resolution images displayed a clear, narrow
+peak centred in the focused range, with no false maxima. The JPEG size increases gradually and symmetrically either
+side of the peak, and remains consistent at a background size when the sample is fully out-of-focus. Using a 40×
+Knapper et al.                                                                                                                                                                    7
+
+                                                                                                                                                          3.775
+                                                 DR images                  51.5                        192                    DR images
+DR Lap. Sharpness (arb)
+
+
+
+
+                                                                              FR Lap. Sharpness (arb)
+                          26.00                  FR images                                                                     FR images                  3.750
+                                                                                                        190
+
+
+
+
+                                                                                                                                                              FR JPEG size (MB)
+                                                                                 DR JPEG size (kB)
+                                                 Focused range              51.0                                               Focused range
+                          25.75                                                                                                                           3.725
+                          25.50                                             50.5                        188                                               3.700
+                          25.25                                             50.0                        186                                               3.675
+                          25.00                                                                         184                                               3.650
+                                                                            49.5
+                          24.75 Laplacian                                                               182
+                                                                                                              JPEG size                                   3.625
+                                                                            49.0
+                                  60        70       80          90   100                                      60         70       80          90   100
+                                    Relative objective position (µm)                                             Relative objective position (µm)
+
+F I G U R E 5 A plot of JPEG size against objective height for a stack of images centred on the target shown in
+Figure 4. Both down-sampled resolution (DR) and full resolution (FR) image have their minimum in the manually
+judged focused range. Each step is 50 ± 2 nm.
+
+
+
+objective, the 8×8 blocks in a full resolution image represent a ∼0.8 µm × 0.8 µm area, which is more inline with the
+resolution of the microscope.
+                          Although the JPEG metric was found to be faster and more reliable on the samples tested, the division of the image
+into smaller blocks causes a potential failure state. On suﬃciently sparsely-populated samples, a focused image may
+have the majority of blocks without features and showing only the background. Defocusing the image may cause
+information to “overﬂow” from populated blocks into these otherwise empty blocks. At this point, the defocusing
+begins to introduce more information to the image, increasing the ﬁle size. Examples of focused and defocused
+images of a sparse sample are shown in Figure 4. Figure 5 shows a graph of JPEG size against height for this sample,
+where the minimum JPEG size is within the focused range. This would lead the JPEG metric to cause an autofocus to
+fail on this sample, instead positioning the sample far from focus.
+                          This failure mode only aﬀects sparse samples, such as individual latex beads or a single hard edge. As these
+failures are uncommon and understood, the JPEG metric is included in OpenFlexure software, with documentation
+recommending its use be avoided on such samples [14, 15]. As the Laplacian metric averages pixel contrast over the
+full image, it is more reliable for less populated samples.
+
+
+
+4                         |   HARDWARE POSITIONING
+
+When travelling in a single direction, the OpenFlexure Microscope translation stage is highly precise. The printed
+mechanism turns a single half-step of the stepper motor into an average movement in x y of 88 ± 6 nm. To provide
+the accuracy in focusing required for high magniﬁcation imaging, the z axis mechanism has a greater resolution of
+50 ± 2 nm per half-step. Error in the position is introduced, however, when the motors change direction. Mechanical
+backlash in the motor’s internal gearing and the printed gears connecting it to the leadscrew introduce a slight lag be-
+tween the motors and stage changing direction. This backlash reduces the certainty in position, but can be estimated
+by measuring the average distance moved by the motors before sample movement is observed. 15 trials in x y indi-
+cated the OpenFlexure Microscope has an average backlash of 137 ± 19 steps, corresponding to an uncertainty in x y
+of 12.1 ± 1.9 µm and 6.9 ± 1.0 µm in z . Measurements of the x y movements and ﬁeld of view were performed using
+OpenFlexure’s calibration code [16, 14]. Measurement of the z step size was based on a procedure used previously
+to measure OpenFlexure precision [17].
+                          Although this eﬀect is minor compared to the ﬁeld of view in the plane of the sample, 6.9 µm in z is far greater
+8                                                                                                            Knapper et al.
+
+
+than the depth of ﬁeld of the 100× objective used in blood imaging. This means that the microscope cannot reliably
+measure the sharpness in a single movement, then return directly to the measured focal point. The change of direction
+would introduce uncertainty greater than the full range of the z-stack. This means not only would the central image
+not necessarily be at the focal point, but the z-stack may miss the focal point entirely. Including additional movements
+to always approach the focal plane from the same direction mitigates the backlash for imaging on systems with objec-
+tives between 4× and 40×, but the lower depth of ﬁeld of 60× and 100× objectives is close enough to the backlash
+uncertainty of ± 1.0 µm to require further correction.
+    A “smart stack” procedure [18] was devised and implemented in Python, using the OpenFlexure Python library
+[19]. The new procedure performs movements and measurements in a more reliable order. It utilises the speed and
+reliability of the JPEG sharpness metric, as the blood samples used in malaria diagnosis are densely populated enough
+to reliably work with this method. The basis of the smart stack is to use the sharpness measurements to estimate
+backlash and verify that the 9-image stack has its most focused image towards the centre. After estimating the
+distance between the objective and the focal plane of the sample, the microscope will only move in a single direction
+in z , eliminating the eﬀect of backlash. An overview of the procedure and example measurements are shown as a
+ﬂowchart in Figure 6.
+    The ﬁrst step is to perform an initial sweep around the focal point, moving the objective from below the focal
+point to above to build up a sharpness against z curve. Moving from one x y grid position to the next, the microscope
+is only expected to move a maximum of few microns out of focus, and so this sweep is centred at the height of the
+previous stack. The FWHM of the sharpness peak for a blood sample is ∼ 25 µm, and over ∼ 75 µm the peak lowers to
+a background sharpness on both sides. To ensure these details are captured, the calibration curve is collected over a
+range of 150 µm. The curve is then tested to ensure there is a suﬃciently tall, narrow peak in the range. If this peak is
+absent or appears misshapen, a warning is recorded, as this may indicate an issue with the movements or positioning
+of the sample.
+    As the sharpness curve varies depending on the direction of travel, the objective is then returned to below the
+focal point. A second, shorter curve is collected, over a range suﬃcient to show the trend in sharpness while remaining
+far from the estimated position of the stack. The lag between the two curves is estimated to predict any unexpected
+shift in positioning. The initial sweep and this lag is then used to make a second movement towards the start of the
+z-stack, below the focal point. To account for errors in movement, this movement is intentionally undershot, as the
+time penalty for overshooting and restarting is far greater than for undershooting.
+    The microscope then begins the z-stack, storing a series of images, their positions and their JPEG ﬁle sizes. The
+sizes are assessed against the peak of the initial sweep, to ensure the images captured have a similar sharpness to
+the estimated focal point. If so, a fourth-order Chebyshev polynomial ﬁt is applied to the sharpnesses [21]. The
+sharpnesses and Chebyshev ﬁt are then assessed using the following parameters:
+
+
+•   the number and position of the turning points in the ﬁt, as around the focal point there should be a single sharpness
+    peak
+•   the gradient of the approach to and regression from the peak, to ensure the sharpness is peaking as expected
+•   the z position of the peak within the stack, aiming to centre the stack on the focal point where possible
+
+
+    If the criteria indicate a well-focused z-stack centred on the focal point, the images are saved and the image closest
+to the peak of the ﬁtted polynomial is marked as the focused image to use in tiling and diagnosis. The microscope
+then moves to the next x y location. If the peak is estimated to be lower than the lowest point of the z-stack, the
+procedure is automatically restarted. If the peak is unclear or estimated to be above the z-stack central image, the
+Knapper et al.                                                                                              9
+
+
+
+
+F I G U R E 6 A ﬂowchart of the movements, measurements and captures performed in the smart z-stack. Steps to
+estimate the optimal distances and intelligently abort the procedure may be added.
+10                                                                                                      Knapper et al.
+
+
+
+
+F I G U R E 7 Tiled scan image of a Giemsa-stained thin blood smear, obtained with a 100×, 1.25 NA oil immersion
+objective and focused using the smart stack algorithm. The composite image was built from a 10 × 10 grid of full
+resolution captures with an approximately 40% overlap, using the Fiji stitching plugin [20]. Inset: a single capture
+used to assemble the tiled image.
+Knapper et al.                                                                                                         11
+
+
+microscope continues the z-stack, replacing the lowest image with one taken at the next z position above the original
+stack. The shifted stack is then assessed as before. A break height far above the predicted peak is included as a
+failsafe, preventing the software from running indeﬁnitely or causing the objective to strike the sample.
+
+
+
+5    |   RESULTS
+
+The comparison of sharpness metrics showed that each are suitable for diﬀerent applications. The JPEG size is quicker,
+less aﬀected by noise and less computationally intensive, but unsuitable for sparse or plain samples. The Laplacian
+is more aﬀected by noise and failures in captures, but works on the sparse or plain samples that cause the JPEG
+method to fail. Figure 3 indicates that using the highest resolution of image available can cause the metric to be less
+reliable. The increased likelihood of a capture failure, and the image resolution exceeding the optical resolution of the
+microscope aﬀects the 3×3 Laplacian matrix to an unacceptable level. Lower resolution images are quicker to save
+and assess, require less storage space, and have a resolution more in line with the optical set up.
+    The failure caused by the 3×3 Laplacian kernel testing for contrast below the diﬀraction limit may be mitigated
+by using a larger kernel which evaluates based on a larger area around each pixel. Limited computational resources,
+however, make this unviable for large area scans requiring many autofocus routines. Larger kernels are more compu-
+tationally expensive, increasing the time required to focus.
+    Regardless of the choice of kernel size, the Laplacian sharpness metric requires each image to be captured, opened,
+converted to a Numpy array and converted to greyscale before the kernel is applied. These steps contribute a signiﬁ-
+cant amount to the time taken performing the Laplacian sharpness metric. By contrast, the JPEG size metric requires
+only the ﬁle size from the GPU, and so can be performed in real time alongside continuous movement. This lack of a
+processing backlog means the required movements can be tested and fed into a closed loop feedback system without
+delaying results.
+    Although the faster JPEG metric is used to assess images, the use of the smart stack algorithm extends the
+duration of a 10×10×9 image blood scan from approximately 45 minutes to 80 ± 8 minutes. Some delay is expected,
+as the smart stack algorithm follows the original stack procedure, but allows the possibility of extra images being taken,
+or a stack being restarted if it appears to fail. The improved reliability of scans compensates for this delay however,
+by decreasing wasted time retaking images or scans when the z-stack fails. An example of a 10 × 10 image scan of a
+blood sample using the smart stack procedure is shown in Figure 7. All images were captured automatically using the
+OpenFlexure Microscope, using a generic plan corrected achromatic 100× oil immersion objective with an NA of 1.2.
+    The improved reliability is shown in Figure 8, by testing the position of the sharpest image in a stack of 9 images
+with dz =0.5 µm. If the autofocus and stack was successful, the sharpest image would be the centre of the stack. The
+historical data using JPEG autofocus but no smart stack was gathered from blood samples on OpenFlexure Micro-
+scopes running in Tanzanian health clinics (number of stacks tested N = 59, 427) and in Bath (N = 4, 100). The stacks
+from Tanzania have a similar likelihood of having the sharpest image at any position in the stack, with a skew towards
+the lower images. More than 57% of the stacks taken in Bath had their sharpest image at the lowest image in the
+stack, a position that would be rejected by the smart stack procedure. Manual examination of these scans showed
+that in some cases the stack was entirely missing the focal plane, taking 9 unfocused and unusable images.
+    The smart stack data was collected on an OpenFlexure Microscope in Bath using multiple blood samples (N =
+1, 127). As with the historical data, images were collected using a 100× objective and a stack of 9 images with dz =
+0.5 µm. Over 95% of stacks had the sharpest image in the central three images (range = 1 µm), showing the stack had
+centred around a peak sharpness. This indicates a signiﬁcant improvement in identifying and centring on the focal
+12                                                                                                       Knapper et al.
+
+                                                            IHI Autofocus Stacks
+                                                     60
+
+                                                     40
+
+                                                     20
+
+                                                      0
+                                                            Bath Autofocus Stacks
+
+
+                                     Frequency (%)
+                                                     60
+
+                                                     40
+
+                                                     20
+
+                                                      0
+                                                             Bath Smart Stacks
+                                                     60
+
+                                                     40
+
+                                                     20
+
+                                                      0
+                                                          -4 -3 -2 -1 0 1 2 3 4
+                                                     Sharpest image position in stack
+F I G U R E 8 Comparison of the position of the sharpest image in a 9 image z-stack with dz = 0.5 µm. Stacks tested
+were from historical autofocus-only stacks from Tanzanian clinics (IHI), autofocus-only stacks collected in Bath, and
+smart stacks collected in Bath. Number of stacks tested = 59,427 IHI, 4,100 Bath autofocus and 1,127 smart stacks.
+
+
+
+plane of the sample.
+
+
+
+6    |   IMPLEMENTATION ON THE OPENFLEXURE MICROSCOPE
+
+The ﬁndings of this paper, including sharpness metric suitability, eﬀects of backlash and eﬀects of performing a smart
+stack, are included in the OpenFlexure documentation [15]. Users will be informed of when it is more suitable to use
+the JPEG size or Laplacian metric, along with troubleshooting for unexpected failures. This allows the end user to
+make their own informed decision, based on their sample, setup and requirements of reliability against speed. Both
+metrics are available in the OpenFlexure software, and smart stack will be included as the blood scan method in a
+future release.
+
+
+
+7    |   CONCLUSION
+
+The advantages of Laplacian and JPEG size sharpness metrics have been explored in the context of the sample and
+available computing resources. Trials have indicated that these metrics can be made quicker and more reliable by
+assessing images at a lower resolution. Based on the nature of blood samples and the level of focusing precision
+needed for high-power imaging, the JPEG metric was selected as suitable for large-area blood scans required for
+Knapper et al.                                                                                                             13
+
+
+malaria diagnosis.
+    Once a focal point has been estimated, mechanical backlash necessitates the inclusion of additional error-correction
+steps before movement, allowing the microscope to approach the focal point from a consistent direction. The open-
+loop stage control also necessitates the stacks of images to be tested as they are collected, to identify if they contain
+a peak resembling the sharpness expected around a focal point. The eﬀect of including the calibration and tests have
+been demonstrated on the blood samples which are the focus of our development.
+    Improving the user experience of working with the OpenFlexure Microscope motivated the inclusion of both
+sharpness metrics and stack options in the OpenFlexure software. The advantages and drawbacks of each option are
+explained in the documentation, allowing users to make their own decisions based on their workﬂow and priorities.
+When performing autofocus in a clinical environment, the >95% conﬁdence in a clear, well focused z-stack beneﬁts
+the user, advancing the aim of supporting malaria diagnosis through automated smart microscopy.
+
+
+
+8    |   ACKNOWLEDGEMENTS
+
+We acknowledge ﬁnancial support from EPSRC (EP/R013969/1, EP/R011443/1) and The Royal Society (URF\R1\180153).
+All data and analysis code created during this research is openly available from the University of Bath Research Data
+Archive at [doi to be conﬁrmed during prooﬁng].
+
+
+
+references
+ [1] Cybulski JS, Clements J, Prakash M. Foldscope: Origami-Based Paper Microscope. PLoS ONE 2014;9(6):e98781. https:
+     //dx.plos.org/10.1371/journal.pone.0098781.
+
+ [2] Collins JT, Knapper J, Stirling J, Mduda J, Mkindi C, Mayagaya V, et al. Robotic microscopy for everyone: the OpenFlexure
+     Microscope. Biomedical Optics Express 2020;11(5):2447–2460. https://www.osapublishing.org/boe/abstract.cfm?
+     doi=10.1364/BOE.385729.
+
+ [3] Collins JT, Knapper J, Stirling J, McDermott S, Bowman R, Modern Microscopy with the Web of Things: The OpenFlexure
+     Microscope Software Stack; 2021. Preprint, https://arxiv.org/abs/2101.00933.
+
+ [4] Bennett JE, Dolin R, Blaser MJ, Mandell GL. Mandell, Douglas, and Bennett’s Principles and Practice of Infectious
+     Diseases E-Book. Elsevier Health Sciences; 2009. https://books.google.co.uk/books?id=uPbHJdSGjPEC.
+
+ [5] Wincott M, Jeﬀerson A, Dobbie I, Booth M, Davis I, Parton R. Democratising “Microscopi”: a 3D printed automated
+     XYZT ﬂuorescence imaging system for teaching, outreach and ﬁeldwork. Wellcome Open Res 2021;https://doi.org/
+     10.1101/2020.05.21.108894.
+
+ [6] Diederich B, Richter R, Carlstedt S, Uwurukundo X, Wang H, Mosig A, et al. UC2 – A 3D-printed General-Purpose
+     Optical Toolbox for Microscopic Imaging. In: Imaging and Applied Optics 2019 (COSI, IS, MATH, pcAOP), vol. 2019
+     Washington, D.C.: OSA; 2019. p. ITh3B.5. https://www.osapublishing.org/abstract.cfm?URI=ISA- 2019-ITh3B.5.
+
+ [7] World Health Organisation, REPORT OF A JOINT WHO/USAID INFORMAL CONSULTATION Malaria Diagnosis; 2000.
+     http://www.who.int/tdr/publications/documents/malaria-diagnosis.pdf.
+
+ [8] World Health Organization. Basic Malaria Microscopy. WORLD HEALTH ORGN; 2010. https://www.ebook.de/de/
+     product/9817928/world_health_organization_basic_malaria_microscopy.html.
+
+ [9] Gould TJ, Kromann EB, Burke D, Booth MJ, Bewersdorf J. Auto-aligning stimulated emission depletion microscope using
+     adaptive optics. Optics Letters 2013;38(11):1860.
+14                                                                                                               Knapper et al.
+
+
+[10] Sun Y, Duthaler S, Nelson BJ. Autofocusing in computer microscopy: Selecting the optimal focus algorithm. Microscopy
+     Research and Technique 2004 oct;65(3):139–149. http://doi.wiley.com/10.1002/jemt.20118.
+
+[11] Hao X, Zhao H, Liu J. Multifocus color image sequence fusion based on mean shift segmentation. Applied Optics 2015
+     oct;54(30):8982. https://www.osapublishing.org/abstract.cfm?URI=ao- 54- 30- 8982.
+
+[12] Virtanen P, Gommers R, Oliphant TE, Haberland M, Reddy T, Cournapeau D, et al. SciPy 1.0: fundamental algorithms
+     for scientiﬁc computing in Python. Nature Methods 2020;17(3):261–272.
+
+[13] Wallace GK. THE JPEG STILL PICTURE COMPRESSION STANDARD. IEEE Transactions on Consumer Electronics
+     1992;38(1):18–34.
+
+[14] Collins JT, Bowman R, OpenFlexure / openﬂexure-microscope-server · GitLab;. (Accessed on 2021-06-12]. https:
+     //gitlab.com/openflexure/openflexure-microscope-server.
+
+[15] Collins JT, Stirling J, Bowman R, Openﬂexure Microscope Documentation - Redoc;. (Accessed on 2021-07-22). https:
+     //redocly.github.io/redoc/?url=https://build.openflexure.org/temp/rwb34/swagger.yaml.
+
+[16] Stirling J, Bowman R, Bath Open Instrumentation Group / micat · GitLab;. (Accessed on 2021-07-1]. https://gitlab.
+     com/bath_open_instrumentation_group/micat.
+
+[17] Grant SD, Richford K, Burdett HL, McKee D, Patton BR. Low-cost, open-access quantitative phase imaging of algal cells
+     using the transport of intensity equation. Royal Society Open Science 2020;7.
+
+[18] Knapper J, smart stack · GitLab;. (Accessed on 2021-07-19). https://gitlab.com/jaknapper/smart-stack.
+
+[19] Collins JT, Bowman R, openﬂexure-microscope-pyclient · GitLab;. (Accessed on 2021-07-19). https://gitlab.com/
+     openflexure/openflexure-microscope-pyclient.
+
+[20] Preibisch S, Saalfeld S, Tomancak P. Globally optimal stitching of tiled 3D microscopic image acquisitions. Bioinformatics
+     2009;25(11):1463–1465.
+
+[21] Harris CR, Millman KJ, van der Walt SJ, Gommers R, Virtanen P, Cournapeau D, et al. Array programming with NumPy.
+     Nature 2020 585:7825 2020 9;585(7825):357–362. https://www.nature.com/articles/s41586- 020- 2649- 2.
+

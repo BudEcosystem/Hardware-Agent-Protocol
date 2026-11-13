@@ -1,0 +1,14 @@
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+The plugin "vite-tsconfig-paths" is detected. Vite now supports tsconfig paths resolution natively via the resolve.tsconfigPaths option. You can remove the plugin and set resolve.tsconfigPaths: true in your Vite config instead.
+
+ RUN  v4.1.11 /home/bud/Desktop/bud/hms-harness-335a82eb
+
+ ✓ |thread-safe| packages/experimental/tool-hardware/tests/hms-compact.spec.ts > Harness tools with original compact C simulator > runs three scenarios through actual Node PTC and retains one OP frame per immutable request 27144ms
+ ✓ |thread-safe| packages/experimental/tool-hardware/tests/hms-compact.spec.ts > Harness tools with original compact C simulator > replays native requests after host SIGKILL loses each accepted endpoint OP reply without sending another OP 32058ms
+
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+   Start at  07:41:22
+   Duration  66.65s (transform 5.41s, setup 399ms, import 6.24s, tests 59.21s, environment 0ms)
+

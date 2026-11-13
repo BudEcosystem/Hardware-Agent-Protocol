@@ -1,0 +1,58 @@
+{
+  "acquiredCodeExecuted": false,
+  "compilerInvokedForThisResearch": false,
+  "fileCount": 8,
+  "files": [
+    {
+      "bytes": 6,
+      "path": "BASE-VER",
+      "sha256": "9e79064c749a37b2c33696623f132b91c29b5e941413dbfb13fa7851e2a53143"
+    },
+    {
+      "bytes": 2952,
+      "path": "NOTES.md",
+      "sha256": "896953b4756643d427fcd3a520b31e4b8ef4bd35f8097760c96ac863f0bb48dd"
+    },
+    {
+      "bytes": 1641,
+      "path": "README.md",
+      "sha256": "f201a851cc5f9861e2124c8b8cdb31ee6a79a750fd04a147735e355596f9b67b"
+    },
+    {
+      "bytes": 2120,
+      "path": "SOURCE-COVERAGE.json",
+      "sha256": "47f5e89b5baea54524cd8977fde25e4e0b60fe6735eb2ca099cdf7f9c6120e8a"
+    },
+    {
+      "bytes": 1849,
+      "path": "acquire.py",
+      "sha256": "5f83b11d429583e1a9139d09a3571e968b16afdd2bc0826231375a366f39b901"
+    },
+    {
+      "bytes": 3199,
+      "path": "acquisition.json",
+      "sha256": "094731cb8513c60b8872968fe156aa265a8237357b1244717c96f7a24cbbf377"
+    },
+    {
+      "bytes": 85238,
+      "path": "collect2.c",
+      "sha256": "06d046a5a596e58fba7f56515e3782f4d982ceb43da1b08b00c847eef2ebd77b"
+    },
+    {
+      "bytes": 288203,
+      "path": "gcc.c",
+      "sha256": "be428a96f36f3660710f95f9b8d9a60a45376553d3cb4b4f6e44a0f8635b0781"
+    }
+  ],
+  "fullFilesRead": [
+    "BASE-VER"
+  ],
+  "partialFilesRead": [
+    "gcc.c",
+    "collect2.c"
+  ],
+  "scope": "Official upstream GCC 7.3 complete relevant driver functions and collect2 main; exact read ranges retained, no downstream source identity claim",
+  "status": "sealed-partial-file-source-review",
+  "targetExecuted": false,
+  "totalBytes": 385208
+}

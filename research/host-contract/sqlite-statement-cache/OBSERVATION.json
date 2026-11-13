@@ -1,0 +1,1011 @@
+{
+  "pythonVersion": "3.12.3 (main, Aug 31 2026, 10:18:26) [GCC 13.3.0]",
+  "sqliteVersion": "3.45.1",
+  "connectTextSignature": "($module, /, database, timeout=5.0, detect_types=0,\n        isolation_level='', check_same_thread=True,\n        factory=ConnectionType, cached_statements=128, uri=False, *,\n        autocommit=sqlite3.LEGACY_TRANSACTION_CONTROL)",
+  "sqliteExtensionOrigin": "/usr/lib/python3.12/lib-dynload/_sqlite3.cpython-312-x86_64-linux-gnu.so",
+  "sqliteExtensionSha256": "ecf54958b24c533f5c8dc67ca82cdce236aeb322864140bfe93eb8a69b729f4d",
+  "pythonExecutableSha256": "e50d468e8b0adfb05733f5b87b3cff34829c4a8c1aea50c865aa8bdfe4bb150f",
+  "sourceIndexSha256": "ec6df4066c89f38328030a28e2a5bd71d137abbc67cd51cb161cc246e2e8a268",
+  "sourceInputs": [
+    {
+      "path": "artifacts/implementation/qualification-package/implementation03/project/hms/pat_io_trials.py",
+      "bytes": 19872,
+      "sha256": "a8f0a5caee3cf3e347746a6e5565e0c682cab1ff6282ab81511c348dbedf454b"
+    },
+    {
+      "path": "artifacts/implementation/qualification-package/implementation03/project/hms/pat_io_configuration_capture.py",
+      "bytes": 10464,
+      "sha256": "1911b75c47f93752371f005a48b61e47a9bccdfed717d7048145ec6f879eb50e"
+    },
+    {
+      "path": "artifacts/implementation/qualification-package/implementation03/project/hms/journal.py",
+      "bytes": 42674,
+      "sha256": "e93a21332005c851a5b7e0a3423cc2bb86da102c79ca197e353dccad68356e36"
+    },
+    {
+      "path": "artifacts/implementation/qualification-package/implementation03/project/hms/synthetic_io_board.py",
+      "bytes": 26756,
+      "sha256": "09de1e8e3ae1ea71753b70b37de1af1030ea93f1459fe08d161d730ed97fef21"
+    },
+    {
+      "path": "artifacts/implementation/qualification-package/implementation03/project/hms/pat_catalog.py",
+      "bytes": 34970,
+      "sha256": "8cc1bf3a217c8ed0d18cedccdb772dd4438c46fc5c9a702481036c6ba9f278b4"
+    }
+  ],
+  "staticDistinctSqlByConnection": {
+    "authority": 164,
+    "board": 28
+  },
+  "queries": [
+    {
+      "store": "authority",
+      "table": "meta",
+      "sql": "PRAGMA table_info(meta)"
+    },
+    {
+      "store": "authority",
+      "table": "meta",
+      "sql": "SELECT count(*) FROM meta"
+    },
+    {
+      "store": "authority",
+      "table": "meta",
+      "sql": "SELECT max(length(CAST(key AS BLOB))),max(length(CAST(value AS BLOB))) FROM meta"
+    },
+    {
+      "store": "authority",
+      "table": "meta",
+      "sql": "SELECT key,value FROM meta ORDER BY key,value LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "series",
+      "sql": "PRAGMA table_info(series)"
+    },
+    {
+      "store": "authority",
+      "table": "series",
+      "sql": "SELECT count(*) FROM series"
+    },
+    {
+      "store": "authority",
+      "table": "series",
+      "sql": "SELECT max(length(CAST(principal AS BLOB))),max(length(CAST(deployment AS BLOB))),max(length(CAST(next_epoch AS BLOB))),max(length(CAST(floor AS BLOB))),max(length(CAST(last_expiry AS BLOB))) FROM series"
+    },
+    {
+      "store": "authority",
+      "table": "series",
+      "sql": "SELECT principal,deployment,next_epoch,floor,last_expiry FROM series ORDER BY principal,deployment,next_epoch,floor,last_expiry LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "namespaces",
+      "sql": "PRAGMA table_info(namespaces)"
+    },
+    {
+      "store": "authority",
+      "table": "namespaces",
+      "sql": "SELECT count(*) FROM namespaces"
+    },
+    {
+      "store": "authority",
+      "table": "namespaces",
+      "sql": "SELECT max(length(CAST(token AS BLOB))),max(length(CAST(principal AS BLOB))),max(length(CAST(deployment AS BLOB))),max(length(CAST(epoch AS BLOB))),max(length(CAST(expires_ms AS BLOB))) FROM namespaces"
+    },
+    {
+      "store": "authority",
+      "table": "namespaces",
+      "sql": "SELECT token,principal,deployment,epoch,expires_ms FROM namespaces ORDER BY token,principal,deployment,epoch,expires_ms LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "operations",
+      "sql": "PRAGMA table_info(operations)"
+    },
+    {
+      "store": "authority",
+      "table": "operations",
+      "sql": "SELECT count(*) FROM operations"
+    },
+    {
+      "store": "authority",
+      "table": "operations",
+      "sql": "SELECT max(length(CAST(id AS BLOB))),max(length(CAST(principal AS BLOB))),max(length(CAST(deployment AS BLOB))),max(length(CAST(digest AS BLOB))),max(length(CAST(intent AS BLOB))),max(length(CAST(admission AS BLOB))),max(length(CAST(state AS BLOB))),max(length(CAST(cancel_state AS BLOB))),max(length(CAST(verification AS BLOB))),max(length(CAST(may_have_acted AS BLOB))),max(length(CAST(sequence AS BLOB))),max(length(CAST(attempt_id AS BLOB))),max(length(CAST(owner_epoch AS BLOB))) FROM operations"
+    },
+    {
+      "store": "authority",
+      "table": "operations",
+      "sql": "SELECT id,principal,deployment,digest,intent,admission,state,cancel_state,verification,may_have_acted,sequence,attempt_id,owner_epoch FROM operations ORDER BY id,principal,deployment,digest,intent,admission,state,cancel_state,verification,may_have_acted,sequence,attempt_id,owner_epoch LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "replay_keys",
+      "sql": "PRAGMA table_info(replay_keys)"
+    },
+    {
+      "store": "authority",
+      "table": "replay_keys",
+      "sql": "SELECT count(*) FROM replay_keys"
+    },
+    {
+      "store": "authority",
+      "table": "replay_keys",
+      "sql": "SELECT max(length(CAST(namespace AS BLOB))),max(length(CAST(caller_key AS BLOB))),max(length(CAST(operation_id AS BLOB))) FROM replay_keys"
+    },
+    {
+      "store": "authority",
+      "table": "replay_keys",
+      "sql": "SELECT namespace,caller_key,operation_id FROM replay_keys ORDER BY namespace,caller_key,operation_id LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "resource_floors",
+      "sql": "PRAGMA table_info(resource_floors)"
+    },
+    {
+      "store": "authority",
+      "table": "resource_floors",
+      "sql": "SELECT count(*) FROM resource_floors"
+    },
+    {
+      "store": "authority",
+      "table": "resource_floors",
+      "sql": "SELECT max(length(CAST(deployment AS BLOB))),max(length(CAST(resource AS BLOB))),max(length(CAST(fence AS BLOB))) FROM resource_floors"
+    },
+    {
+      "store": "authority",
+      "table": "resource_floors",
+      "sql": "SELECT deployment,resource,fence FROM resource_floors ORDER BY deployment,resource,fence LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "claims",
+      "sql": "PRAGMA table_info(claims)"
+    },
+    {
+      "store": "authority",
+      "table": "claims",
+      "sql": "SELECT count(*) FROM claims"
+    },
+    {
+      "store": "authority",
+      "table": "claims",
+      "sql": "SELECT max(length(CAST(deployment AS BLOB))),max(length(CAST(resource AS BLOB))),max(length(CAST(operation_id AS BLOB))),max(length(CAST(fence AS BLOB))) FROM claims"
+    },
+    {
+      "store": "authority",
+      "table": "claims",
+      "sql": "SELECT deployment,resource,operation_id,fence FROM claims ORDER BY deployment,resource,operation_id,fence LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "events",
+      "sql": "PRAGMA table_info(events)"
+    },
+    {
+      "store": "authority",
+      "table": "events",
+      "sql": "SELECT count(*) FROM events"
+    },
+    {
+      "store": "authority",
+      "table": "events",
+      "sql": "SELECT max(length(CAST(operation_id AS BLOB))),max(length(CAST(sequence AS BLOB))),max(length(CAST(time_ms AS BLOB))),max(length(CAST(clock_status AS BLOB))),max(length(CAST(kind AS BLOB))),max(length(CAST(payload AS BLOB))) FROM events"
+    },
+    {
+      "store": "authority",
+      "table": "events",
+      "sql": "SELECT operation_id,sequence,time_ms,clock_status,kind,payload FROM events ORDER BY operation_id,sequence,time_ms,clock_status,kind,payload LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "io_dispatch_links",
+      "sql": "PRAGMA table_info(io_dispatch_links)"
+    },
+    {
+      "store": "authority",
+      "table": "io_dispatch_links",
+      "sql": "SELECT count(*) FROM io_dispatch_links"
+    },
+    {
+      "store": "authority",
+      "table": "io_dispatch_links",
+      "sql": "SELECT max(length(CAST(operation AS BLOB))),max(length(CAST(document AS BLOB))),max(length(CAST(digest AS BLOB))) FROM io_dispatch_links"
+    },
+    {
+      "store": "authority",
+      "table": "io_dispatch_links",
+      "sql": "SELECT operation,document,digest FROM io_dispatch_links ORDER BY operation,document,digest LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "io_authority_receipts",
+      "sql": "PRAGMA table_info(io_authority_receipts)"
+    },
+    {
+      "store": "authority",
+      "table": "io_authority_receipts",
+      "sql": "SELECT count(*) FROM io_authority_receipts"
+    },
+    {
+      "store": "authority",
+      "table": "io_authority_receipts",
+      "sql": "SELECT max(length(CAST(operation AS BLOB))),max(length(CAST(sequence AS BLOB))),max(length(CAST(document AS BLOB))),max(length(CAST(digest AS BLOB))) FROM io_authority_receipts"
+    },
+    {
+      "store": "authority",
+      "table": "io_authority_receipts",
+      "sql": "SELECT operation,sequence,document,digest FROM io_authority_receipts ORDER BY operation,sequence,document,digest LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "pr_meta",
+      "sql": "PRAGMA table_info(pr_meta)"
+    },
+    {
+      "store": "authority",
+      "table": "pr_meta",
+      "sql": "SELECT count(*) FROM pr_meta"
+    },
+    {
+      "store": "authority",
+      "table": "pr_meta",
+      "sql": "SELECT max(length(CAST(key AS BLOB))),max(length(CAST(value AS BLOB))) FROM pr_meta"
+    },
+    {
+      "store": "authority",
+      "table": "pr_meta",
+      "sql": "SELECT key,value FROM pr_meta ORDER BY key,value LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "pr_procedures",
+      "sql": "PRAGMA table_info(pr_procedures)"
+    },
+    {
+      "store": "authority",
+      "table": "pr_procedures",
+      "sql": "SELECT count(*) FROM pr_procedures"
+    },
+    {
+      "store": "authority",
+      "table": "pr_procedures",
+      "sql": "SELECT max(length(CAST(id AS BLOB))),max(length(CAST(principal AS BLOB))),max(length(CAST(deployment AS BLOB))),max(length(CAST(digest AS BLOB))),max(length(CAST(request AS BLOB))),max(length(CAST(state AS BLOB))),max(length(CAST(reason AS BLOB))),max(length(CAST(cursor AS BLOB))),max(length(CAST(cancel_requested AS BLOB))),max(length(CAST(cancel_delivery AS BLOB))),max(length(CAST(sequence AS BLOB))) FROM pr_procedures"
+    },
+    {
+      "store": "authority",
+      "table": "pr_procedures",
+      "sql": "SELECT id,principal,deployment,digest,request,state,reason,cursor,cancel_requested,cancel_delivery,sequence FROM pr_procedures ORDER BY id,principal,deployment,digest,request,state,reason,cursor,cancel_requested,cancel_delivery,sequence LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "pr_steps",
+      "sql": "PRAGMA table_info(pr_steps)"
+    },
+    {
+      "store": "authority",
+      "table": "pr_steps",
+      "sql": "SELECT count(*) FROM pr_steps"
+    },
+    {
+      "store": "authority",
+      "table": "pr_steps",
+      "sql": "SELECT max(length(CAST(procedure_id AS BLOB))),max(length(CAST(ordinal AS BLOB))),max(length(CAST(step_id AS BLOB))),max(length(CAST(request AS BLOB))),max(length(CAST(digest AS BLOB))),max(length(CAST(operation_id AS BLOB))) FROM pr_steps"
+    },
+    {
+      "store": "authority",
+      "table": "pr_steps",
+      "sql": "SELECT procedure_id,ordinal,step_id,request,digest,operation_id FROM pr_steps ORDER BY procedure_id,ordinal,step_id,request,digest,operation_id LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "pr_keys",
+      "sql": "PRAGMA table_info(pr_keys)"
+    },
+    {
+      "store": "authority",
+      "table": "pr_keys",
+      "sql": "SELECT count(*) FROM pr_keys"
+    },
+    {
+      "store": "authority",
+      "table": "pr_keys",
+      "sql": "SELECT max(length(CAST(namespace AS BLOB))),max(length(CAST(caller_key AS BLOB))),max(length(CAST(procedure_id AS BLOB))),max(length(CAST(step_id AS BLOB))) FROM pr_keys"
+    },
+    {
+      "store": "authority",
+      "table": "pr_keys",
+      "sql": "SELECT namespace,caller_key,procedure_id,step_id FROM pr_keys ORDER BY namespace,caller_key,procedure_id,step_id LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "pr_events",
+      "sql": "PRAGMA table_info(pr_events)"
+    },
+    {
+      "store": "authority",
+      "table": "pr_events",
+      "sql": "SELECT count(*) FROM pr_events"
+    },
+    {
+      "store": "authority",
+      "table": "pr_events",
+      "sql": "SELECT max(length(CAST(procedure_id AS BLOB))),max(length(CAST(sequence AS BLOB))),max(length(CAST(time_ms AS BLOB))),max(length(CAST(clock_status AS BLOB))),max(length(CAST(kind AS BLOB))),max(length(CAST(payload AS BLOB))) FROM pr_events"
+    },
+    {
+      "store": "authority",
+      "table": "pr_events",
+      "sql": "SELECT procedure_id,sequence,time_ms,clock_status,kind,payload FROM pr_events ORDER BY procedure_id,sequence,time_ms,clock_status,kind,payload LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "rt_catalog",
+      "sql": "PRAGMA table_info(rt_catalog)"
+    },
+    {
+      "store": "authority",
+      "table": "rt_catalog",
+      "sql": "SELECT count(*) FROM rt_catalog"
+    },
+    {
+      "store": "authority",
+      "table": "rt_catalog",
+      "sql": "SELECT max(length(CAST(singleton AS BLOB))),max(length(CAST(profile AS BLOB))),max(length(CAST(legacy AS BLOB))),max(length(CAST(owner AS BLOB))) FROM rt_catalog"
+    },
+    {
+      "store": "authority",
+      "table": "rt_catalog",
+      "sql": "SELECT singleton,profile,legacy,owner FROM rt_catalog ORDER BY singleton,profile,legacy,owner LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "rt_adapters",
+      "sql": "PRAGMA table_info(rt_adapters)"
+    },
+    {
+      "store": "authority",
+      "table": "rt_adapters",
+      "sql": "SELECT count(*) FROM rt_adapters"
+    },
+    {
+      "store": "authority",
+      "table": "rt_adapters",
+      "sql": "SELECT max(length(CAST(adapter AS BLOB))),max(length(CAST(document AS BLOB))),max(length(CAST(digest AS BLOB))),max(length(CAST(ready AS BLOB))) FROM rt_adapters"
+    },
+    {
+      "store": "authority",
+      "table": "rt_adapters",
+      "sql": "SELECT adapter,document,digest,ready FROM rt_adapters ORDER BY adapter,document,digest,ready LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "rt_io_installation",
+      "sql": "PRAGMA table_info(rt_io_installation)"
+    },
+    {
+      "store": "authority",
+      "table": "rt_io_installation",
+      "sql": "SELECT count(*) FROM rt_io_installation"
+    },
+    {
+      "store": "authority",
+      "table": "rt_io_installation",
+      "sql": "SELECT max(length(CAST(singleton AS BLOB))),max(length(CAST(document AS BLOB))),max(length(CAST(digest AS BLOB))) FROM rt_io_installation"
+    },
+    {
+      "store": "authority",
+      "table": "rt_io_installation",
+      "sql": "SELECT singleton,document,digest FROM rt_io_installation ORDER BY singleton,document,digest LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "rc_catalog",
+      "sql": "PRAGMA table_info(rc_catalog)"
+    },
+    {
+      "store": "authority",
+      "table": "rc_catalog",
+      "sql": "SELECT count(*) FROM rc_catalog"
+    },
+    {
+      "store": "authority",
+      "table": "rc_catalog",
+      "sql": "SELECT max(length(CAST(singleton AS BLOB))),max(length(CAST(profile AS BLOB))),max(length(CAST(topology AS BLOB))),max(length(CAST(topology_digest AS BLOB))),max(length(CAST(routes AS BLOB))),max(length(CAST(routes_digest AS BLOB))),max(length(CAST(current_revision AS BLOB))) FROM rc_catalog"
+    },
+    {
+      "store": "authority",
+      "table": "rc_catalog",
+      "sql": "SELECT singleton,profile,topology,topology_digest,routes,routes_digest,current_revision FROM rc_catalog ORDER BY singleton,profile,topology,topology_digest,routes,routes_digest,current_revision LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "rc_generations",
+      "sql": "PRAGMA table_info(rc_generations)"
+    },
+    {
+      "store": "authority",
+      "table": "rc_generations",
+      "sql": "SELECT count(*) FROM rc_generations"
+    },
+    {
+      "store": "authority",
+      "table": "rc_generations",
+      "sql": "SELECT max(length(CAST(revision AS BLOB))),max(length(CAST(document AS BLOB))),max(length(CAST(digest AS BLOB))) FROM rc_generations"
+    },
+    {
+      "store": "authority",
+      "table": "rc_generations",
+      "sql": "SELECT revision,document,digest FROM rc_generations ORDER BY revision,document,digest LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "rc_tokens",
+      "sql": "PRAGMA table_info(rc_tokens)"
+    },
+    {
+      "store": "authority",
+      "table": "rc_tokens",
+      "sql": "SELECT count(*) FROM rc_tokens"
+    },
+    {
+      "store": "authority",
+      "table": "rc_tokens",
+      "sql": "SELECT max(length(CAST(node AS BLOB))),max(length(CAST(generation AS BLOB))),max(length(CAST(revision AS BLOB))) FROM rc_tokens"
+    },
+    {
+      "store": "authority",
+      "table": "rc_tokens",
+      "sql": "SELECT node,generation,revision FROM rc_tokens ORDER BY node,generation,revision LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "rc_proofs",
+      "sql": "PRAGMA table_info(rc_proofs)"
+    },
+    {
+      "store": "authority",
+      "table": "rc_proofs",
+      "sql": "SELECT count(*) FROM rc_proofs"
+    },
+    {
+      "store": "authority",
+      "table": "rc_proofs",
+      "sql": "SELECT max(length(CAST(instance AS BLOB))),max(length(CAST(generation AS BLOB))),max(length(CAST(revision AS BLOB))),max(length(CAST(document AS BLOB))),max(length(CAST(digest AS BLOB))),max(length(CAST(binding_digest AS BLOB))) FROM rc_proofs"
+    },
+    {
+      "store": "authority",
+      "table": "rc_proofs",
+      "sql": "SELECT instance,generation,revision,document,digest,binding_digest FROM rc_proofs ORDER BY instance,generation,revision,document,digest,binding_digest LIMIT ?"
+    },
+    {
+      "store": "board",
+      "table": "io_meta",
+      "sql": "PRAGMA table_info(io_meta)"
+    },
+    {
+      "store": "board",
+      "table": "io_meta",
+      "sql": "SELECT count(*) FROM io_meta"
+    },
+    {
+      "store": "board",
+      "table": "io_meta",
+      "sql": "SELECT max(length(CAST(key AS BLOB))),max(length(CAST(value AS BLOB))) FROM io_meta"
+    },
+    {
+      "store": "board",
+      "table": "io_meta",
+      "sql": "SELECT key,value FROM io_meta ORDER BY key,value LIMIT ?"
+    },
+    {
+      "store": "board",
+      "table": "io_resources",
+      "sql": "PRAGMA table_info(io_resources)"
+    },
+    {
+      "store": "board",
+      "table": "io_resources",
+      "sql": "SELECT count(*) FROM io_resources"
+    },
+    {
+      "store": "board",
+      "table": "io_resources",
+      "sql": "SELECT max(length(CAST(resource AS BLOB))),max(length(CAST(state AS BLOB))) FROM io_resources"
+    },
+    {
+      "store": "board",
+      "table": "io_resources",
+      "sql": "SELECT resource,state FROM io_resources ORDER BY resource,state LIMIT ?"
+    },
+    {
+      "store": "board",
+      "table": "io_owners",
+      "sql": "PRAGMA table_info(io_owners)"
+    },
+    {
+      "store": "board",
+      "table": "io_owners",
+      "sql": "SELECT count(*) FROM io_owners"
+    },
+    {
+      "store": "board",
+      "table": "io_owners",
+      "sql": "SELECT max(length(CAST(resource AS BLOB))),max(length(CAST(operation AS BLOB))),max(length(CAST(fence AS BLOB))) FROM io_owners"
+    },
+    {
+      "store": "board",
+      "table": "io_owners",
+      "sql": "SELECT resource,operation,fence FROM io_owners ORDER BY resource,operation,fence LIMIT ?"
+    },
+    {
+      "store": "board",
+      "table": "io_fences",
+      "sql": "PRAGMA table_info(io_fences)"
+    },
+    {
+      "store": "board",
+      "table": "io_fences",
+      "sql": "SELECT count(*) FROM io_fences"
+    },
+    {
+      "store": "board",
+      "table": "io_fences",
+      "sql": "SELECT max(length(CAST(resource AS BLOB))),max(length(CAST(fence AS BLOB))),max(length(CAST(operation AS BLOB))) FROM io_fences"
+    },
+    {
+      "store": "board",
+      "table": "io_fences",
+      "sql": "SELECT resource,fence,operation FROM io_fences ORDER BY resource,fence,operation LIMIT ?"
+    },
+    {
+      "store": "board",
+      "table": "io_receipts",
+      "sql": "PRAGMA table_info(io_receipts)"
+    },
+    {
+      "store": "board",
+      "table": "io_receipts",
+      "sql": "SELECT count(*) FROM io_receipts"
+    },
+    {
+      "store": "board",
+      "table": "io_receipts",
+      "sql": "SELECT max(length(CAST(operation AS BLOB))),max(length(CAST(state AS BLOB))),max(length(CAST(sequence AS BLOB))),max(length(CAST(digest AS BLOB))),max(length(CAST(document AS BLOB))) FROM io_receipts"
+    },
+    {
+      "store": "board",
+      "table": "io_receipts",
+      "sql": "SELECT operation,state,sequence,digest,document FROM io_receipts ORDER BY operation,state,sequence,digest,document LIMIT ?"
+    },
+    {
+      "store": "board",
+      "table": "io_receipt_versions",
+      "sql": "PRAGMA table_info(io_receipt_versions)"
+    },
+    {
+      "store": "board",
+      "table": "io_receipt_versions",
+      "sql": "SELECT count(*) FROM io_receipt_versions"
+    },
+    {
+      "store": "board",
+      "table": "io_receipt_versions",
+      "sql": "SELECT max(length(CAST(operation AS BLOB))),max(length(CAST(sequence AS BLOB))),max(length(CAST(digest AS BLOB))),max(length(CAST(document AS BLOB))) FROM io_receipt_versions"
+    },
+    {
+      "store": "board",
+      "table": "io_receipt_versions",
+      "sql": "SELECT operation,sequence,digest,document FROM io_receipt_versions ORDER BY operation,sequence,digest,document LIMIT ?"
+    },
+    {
+      "store": "board",
+      "table": "io_effects",
+      "sql": "PRAGMA table_info(io_effects)"
+    },
+    {
+      "store": "board",
+      "table": "io_effects",
+      "sql": "SELECT count(*) FROM io_effects"
+    },
+    {
+      "store": "board",
+      "table": "io_effects",
+      "sql": "SELECT max(length(CAST(instance AS BLOB))),max(length(CAST(activations AS BLOB))),max(length(CAST(completed AS BLOB))),max(length(CAST(canceled AS BLOB))) FROM io_effects"
+    },
+    {
+      "store": "board",
+      "table": "io_effects",
+      "sql": "SELECT instance,activations,completed,canceled FROM io_effects ORDER BY instance,activations,completed,canceled LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_meta",
+      "sql": "PRAGMA table_info(reg_meta)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_meta",
+      "sql": "SELECT key FROM reg_meta ORDER BY key LIMIT 5"
+    },
+    {
+      "store": "authority",
+      "table": "reg_meta",
+      "sql": "SELECT count(*) FROM reg_meta WHERE key IN (?,?,?)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_meta",
+      "sql": "SELECT DISTINCT typeof(key),typeof(value) FROM reg_meta WHERE key IN (?,?,?) LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_meta",
+      "sql": "SELECT max(length(CAST(key AS BLOB))),max(length(CAST(value AS BLOB))) FROM reg_meta WHERE key IN (?,?,?)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_meta",
+      "sql": "SELECT key,value FROM reg_meta WHERE key IN (?,?,?) ORDER BY key,value LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_types",
+      "sql": "PRAGMA table_info(reg_types)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_types",
+      "sql": "SELECT count(*) FROM reg_types"
+    },
+    {
+      "store": "authority",
+      "table": "reg_types",
+      "sql": "SELECT DISTINCT typeof(digest),typeof(document) FROM reg_types LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_types",
+      "sql": "SELECT max(length(CAST(digest AS BLOB))),max(length(CAST(document AS BLOB))) FROM reg_types"
+    },
+    {
+      "store": "authority",
+      "table": "reg_types",
+      "sql": "SELECT digest,document FROM reg_types ORDER BY digest,document LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_instances",
+      "sql": "PRAGMA table_info(reg_instances)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_instances",
+      "sql": "SELECT count(*) FROM reg_instances"
+    },
+    {
+      "store": "authority",
+      "table": "reg_instances",
+      "sql": "SELECT DISTINCT typeof(id),typeof(deployment),typeof(type_digest),typeof(identity_kind),typeof(identity_ref),typeof(retired) FROM reg_instances LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_instances",
+      "sql": "SELECT max(length(CAST(id AS BLOB))),max(length(CAST(deployment AS BLOB))),max(length(CAST(type_digest AS BLOB))),max(length(CAST(identity_kind AS BLOB))),max(length(CAST(identity_ref AS BLOB))),max(length(CAST(retired AS BLOB))) FROM reg_instances"
+    },
+    {
+      "store": "authority",
+      "table": "reg_instances",
+      "sql": "SELECT id,deployment,type_digest,identity_kind,identity_ref,retired FROM reg_instances ORDER BY id,deployment,type_digest,identity_kind,identity_ref,retired LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_capabilities",
+      "sql": "PRAGMA table_info(reg_capabilities)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_capabilities",
+      "sql": "SELECT count(*) FROM reg_capabilities"
+    },
+    {
+      "store": "authority",
+      "table": "reg_capabilities",
+      "sql": "SELECT DISTINCT typeof(instance),typeof(capability) FROM reg_capabilities LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_capabilities",
+      "sql": "SELECT max(length(CAST(instance AS BLOB))),max(length(CAST(capability AS BLOB))) FROM reg_capabilities"
+    },
+    {
+      "store": "authority",
+      "table": "reg_capabilities",
+      "sql": "SELECT instance,capability FROM reg_capabilities ORDER BY instance,capability LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_bindings",
+      "sql": "PRAGMA table_info(reg_bindings)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_bindings",
+      "sql": "SELECT count(*) FROM reg_bindings"
+    },
+    {
+      "store": "authority",
+      "table": "reg_bindings",
+      "sql": "SELECT DISTINCT typeof(instance),typeof(generation),typeof(document),typeof(active) FROM reg_bindings LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_bindings",
+      "sql": "SELECT max(length(CAST(instance AS BLOB))),max(length(CAST(generation AS BLOB))),max(length(CAST(document AS BLOB))),max(length(CAST(active AS BLOB))) FROM reg_bindings"
+    },
+    {
+      "store": "authority",
+      "table": "reg_bindings",
+      "sql": "SELECT instance,generation,document,active FROM reg_bindings ORDER BY instance,generation,document,active LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_binding_history",
+      "sql": "PRAGMA table_info(reg_binding_history)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_binding_history",
+      "sql": "SELECT count(*) FROM reg_binding_history"
+    },
+    {
+      "store": "authority",
+      "table": "reg_binding_history",
+      "sql": "SELECT DISTINCT typeof(instance),typeof(generation),typeof(digest),typeof(document) FROM reg_binding_history LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_binding_history",
+      "sql": "SELECT max(length(CAST(instance AS BLOB))),max(length(CAST(generation AS BLOB))),max(length(CAST(digest AS BLOB))),max(length(CAST(document AS BLOB))) FROM reg_binding_history"
+    },
+    {
+      "store": "authority",
+      "table": "reg_binding_history",
+      "sql": "SELECT instance,generation,digest,document FROM reg_binding_history ORDER BY instance,generation,digest,document LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_presence",
+      "sql": "PRAGMA table_info(reg_presence)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_presence",
+      "sql": "SELECT count(*) FROM reg_presence"
+    },
+    {
+      "store": "authority",
+      "table": "reg_presence",
+      "sql": "SELECT DISTINCT typeof(instance),typeof(session),typeof(expires_ms),typeof(adapter) FROM reg_presence LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_presence",
+      "sql": "SELECT max(length(CAST(instance AS BLOB))),max(length(CAST(session AS BLOB))),max(length(CAST(expires_ms AS BLOB))),max(length(CAST(adapter AS BLOB))) FROM reg_presence"
+    },
+    {
+      "store": "authority",
+      "table": "reg_presence",
+      "sql": "SELECT instance,session,expires_ms,adapter FROM reg_presence ORDER BY instance,session,expires_ms,adapter LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_endpoint_sessions",
+      "sql": "PRAGMA table_info(reg_endpoint_sessions)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_endpoint_sessions",
+      "sql": "SELECT count(*) FROM reg_endpoint_sessions"
+    },
+    {
+      "store": "authority",
+      "table": "reg_endpoint_sessions",
+      "sql": "SELECT DISTINCT typeof(instance),typeof(session) FROM reg_endpoint_sessions LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_endpoint_sessions",
+      "sql": "SELECT max(length(CAST(instance AS BLOB))),max(length(CAST(session AS BLOB))) FROM reg_endpoint_sessions"
+    },
+    {
+      "store": "authority",
+      "table": "reg_endpoint_sessions",
+      "sql": "SELECT instance,session FROM reg_endpoint_sessions ORDER BY instance,session LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_session_history",
+      "sql": "PRAGMA table_info(reg_session_history)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_session_history",
+      "sql": "SELECT count(*) FROM reg_session_history"
+    },
+    {
+      "store": "authority",
+      "table": "reg_session_history",
+      "sql": "SELECT DISTINCT typeof(instance),typeof(session) FROM reg_session_history LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_session_history",
+      "sql": "SELECT max(length(CAST(instance AS BLOB))),max(length(CAST(session AS BLOB))) FROM reg_session_history"
+    },
+    {
+      "store": "authority",
+      "table": "reg_session_history",
+      "sql": "SELECT instance,session FROM reg_session_history ORDER BY instance,session LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_observations",
+      "sql": "PRAGMA table_info(reg_observations)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_observations",
+      "sql": "SELECT count(*) FROM reg_observations"
+    },
+    {
+      "store": "authority",
+      "table": "reg_observations",
+      "sql": "SELECT DISTINCT typeof(instance),typeof(property),typeof(document) FROM reg_observations LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_observations",
+      "sql": "SELECT max(length(CAST(instance AS BLOB))),max(length(CAST(property AS BLOB))),max(length(CAST(document AS BLOB))) FROM reg_observations"
+    },
+    {
+      "store": "authority",
+      "table": "reg_observations",
+      "sql": "SELECT instance,property,document FROM reg_observations ORDER BY instance,property,document LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_streams",
+      "sql": "PRAGMA table_info(reg_streams)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_streams",
+      "sql": "SELECT count(*) FROM reg_streams"
+    },
+    {
+      "store": "authority",
+      "table": "reg_streams",
+      "sql": "SELECT DISTINCT typeof(instance),typeof(property),typeof(epoch) FROM reg_streams LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_streams",
+      "sql": "SELECT max(length(CAST(instance AS BLOB))),max(length(CAST(property AS BLOB))),max(length(CAST(epoch AS BLOB))) FROM reg_streams"
+    },
+    {
+      "store": "authority",
+      "table": "reg_streams",
+      "sql": "SELECT instance,property,epoch FROM reg_streams ORDER BY instance,property,epoch LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_stream_history",
+      "sql": "PRAGMA table_info(reg_stream_history)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_stream_history",
+      "sql": "SELECT count(*) FROM reg_stream_history"
+    },
+    {
+      "store": "authority",
+      "table": "reg_stream_history",
+      "sql": "SELECT DISTINCT typeof(instance),typeof(property),typeof(epoch) FROM reg_stream_history LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_stream_history",
+      "sql": "SELECT max(length(CAST(instance AS BLOB))),max(length(CAST(property AS BLOB))),max(length(CAST(epoch AS BLOB))) FROM reg_stream_history"
+    },
+    {
+      "store": "authority",
+      "table": "reg_stream_history",
+      "sql": "SELECT instance,property,epoch FROM reg_stream_history ORDER BY instance,property,epoch LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_grants",
+      "sql": "PRAGMA table_info(reg_grants)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_grants",
+      "sql": "SELECT count(*) FROM reg_grants"
+    },
+    {
+      "store": "authority",
+      "table": "reg_grants",
+      "sql": "SELECT DISTINCT typeof(principal),typeof(deployment),typeof(target),typeof(verb) FROM reg_grants LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_grants",
+      "sql": "SELECT max(length(CAST(principal AS BLOB))),max(length(CAST(deployment AS BLOB))),max(length(CAST(target AS BLOB))),max(length(CAST(verb AS BLOB))) FROM reg_grants"
+    },
+    {
+      "store": "authority",
+      "table": "reg_grants",
+      "sql": "SELECT principal,deployment,target,verb FROM reg_grants ORDER BY principal,deployment,target,verb LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_resource_requirements",
+      "sql": "PRAGMA table_info(reg_resource_requirements)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_resource_requirements",
+      "sql": "SELECT count(*) FROM reg_resource_requirements"
+    },
+    {
+      "store": "authority",
+      "table": "reg_resource_requirements",
+      "sql": "SELECT DISTINCT typeof(adapter),typeof(profile) FROM reg_resource_requirements LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_resource_requirements",
+      "sql": "SELECT max(length(CAST(adapter AS BLOB))),max(length(CAST(profile AS BLOB))) FROM reg_resource_requirements"
+    },
+    {
+      "store": "authority",
+      "table": "reg_resource_requirements",
+      "sql": "SELECT adapter,profile FROM reg_resource_requirements ORDER BY adapter,profile LIMIT ?"
+    },
+    {
+      "store": "authority",
+      "table": "reg_resource_instances",
+      "sql": "PRAGMA table_info(reg_resource_instances)"
+    },
+    {
+      "store": "authority",
+      "table": "reg_resource_instances",
+      "sql": "SELECT count(*) FROM reg_resource_instances"
+    },
+    {
+      "store": "authority",
+      "table": "reg_resource_instances",
+      "sql": "SELECT DISTINCT typeof(instance),typeof(adapter),typeof(profile) FROM reg_resource_instances LIMIT 2"
+    },
+    {
+      "store": "authority",
+      "table": "reg_resource_instances",
+      "sql": "SELECT max(length(CAST(instance AS BLOB))),max(length(CAST(adapter AS BLOB))),max(length(CAST(profile AS BLOB))) FROM reg_resource_instances"
+    },
+    {
+      "store": "authority",
+      "table": "reg_resource_instances",
+      "sql": "SELECT instance,adapter,profile FROM reg_resource_instances ORDER BY instance,adapter,profile LIMIT ?"
+    }
+  ],
+  "runtimeCacheMissesMeasured": false,
+  "hypothesisOnly": true,
+  "authorizerReplacementPresent": [
+    "Journal._check_business_commit",
+    "PatCatalog._verify_evidence"
+  ],
+  "databaseConnectionsOpened": 0,
+  "productionRuntimeChanged": false,
+  "scope": "Static capture-only query set; startup, runtime and other queries may add statements."
+}

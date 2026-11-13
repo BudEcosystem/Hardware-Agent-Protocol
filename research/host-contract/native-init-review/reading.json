@@ -1,0 +1,190 @@
+{
+  "totalAcquiredLfLines": 5360,
+  "totalReadLfLines": 5360,
+  "totalUnreadLfLines": 0,
+  "newlyReadLfLines": 2112,
+  "completeSources": 6,
+  "completeSourceLfLines": 5360,
+  "complete": true,
+  "sources": [
+    {
+      "path": "exceptions.rst",
+      "url": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/exceptions.rst",
+      "finalUrl": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/exceptions.rst",
+      "bytes": 55104,
+      "sha256": "a72affca78426f9f90c70efba697a34a3d07e0859d0c5a84d1d9614be198dc62",
+      "lfLines": 1222,
+      "coverage": "complete",
+      "readRanges": [
+        {
+          "first": 1,
+          "last": 1222,
+          "sha256": "a72affca78426f9f90c70efba697a34a3d07e0859d0c5a84d1d9614be198dc62"
+        }
+      ],
+      "readLfLines": 1222,
+      "unreadLfLines": 0,
+      "retainedPath": "research/host-contract/native-exception-review/exceptions.rst"
+    },
+    {
+      "path": "init.rst",
+      "url": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/init.rst",
+      "finalUrl": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/init.rst",
+      "bytes": 85456,
+      "sha256": "8f21d0e2d984511632289c654d9754bc7c7613e14bb72f652e13fcf4b38689b4",
+      "lfLines": 2191,
+      "coverage": "complete",
+      "readRanges": [
+        {
+          "first": 1,
+          "last": 2191,
+          "sha256": "8f21d0e2d984511632289c654d9754bc7c7613e14bb72f652e13fcf4b38689b4"
+        }
+      ],
+      "readLfLines": 2191,
+      "unreadLfLines": 0,
+      "retainedPath": "research/host-contract/native-init-review/init.rst"
+    },
+    {
+      "path": "module.rst",
+      "url": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/module.rst",
+      "finalUrl": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/module.rst",
+      "bytes": 24448,
+      "sha256": "3184dbc38a64ac92d84490fc9d105f0a970535c31c2cddd3f9de34a4405ae0d3",
+      "lfLines": 661,
+      "coverage": "complete",
+      "readRanges": [
+        {
+          "first": 1,
+          "last": 661,
+          "sha256": "3184dbc38a64ac92d84490fc9d105f0a970535c31c2cddd3f9de34a4405ae0d3"
+        }
+      ],
+      "readLfLines": 661,
+      "unreadLfLines": 0,
+      "retainedPath": "research/host-contract/native-binding-api-review/module.rst"
+    },
+    {
+      "path": "sys.rst",
+      "url": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/sys.rst",
+      "finalUrl": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/sys.rst",
+      "bytes": 18051,
+      "sha256": "c0985bfc614fe38ced18bcfc84998398342aa3cf30de47a77e96b830d6968e65",
+      "lfLines": 465,
+      "coverage": "complete",
+      "readRanges": [
+        {
+          "first": 1,
+          "last": 465,
+          "sha256": "c0985bfc614fe38ced18bcfc84998398342aa3cf30de47a77e96b830d6968e65"
+        }
+      ],
+      "readLfLines": 465,
+      "unreadLfLines": 0,
+      "retainedPath": "research/host-contract/native-binding-api-review/sys.rst"
+    },
+    {
+      "path": "long.rst",
+      "url": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/long.rst",
+      "finalUrl": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/long.rst",
+      "bytes": 12162,
+      "sha256": "f9272f1088fc3460d92904985a549b17422fd0260bf526cc59d6a52494cf4665",
+      "lfLines": 348,
+      "coverage": "complete",
+      "readRanges": [
+        {
+          "first": 1,
+          "last": 348,
+          "sha256": "f9272f1088fc3460d92904985a549b17422fd0260bf526cc59d6a52494cf4665"
+        }
+      ],
+      "readLfLines": 348,
+      "unreadLfLines": 0,
+      "retainedPath": "research/host-contract/native-binding-api-review/long.rst"
+    },
+    {
+      "path": "pep-0475.rst",
+      "url": "https://raw.githubusercontent.com/python/peps/main/peps/pep-0475.rst",
+      "finalUrl": "https://raw.githubusercontent.com/python/peps/main/peps/pep-0475.rst",
+      "bytes": 16325,
+      "sha256": "5624e338889dc7208ae43b514450c16fe58628acbcd1b1c9ec7eba63570c6663",
+      "lfLines": 473,
+      "coverage": "complete",
+      "readRanges": [
+        {
+          "first": 1,
+          "last": 473,
+          "sha256": "5624e338889dc7208ae43b514450c16fe58628acbcd1b1c9ec7eba63570c6663"
+        }
+      ],
+      "readLfLines": 473,
+      "unreadLfLines": 0,
+      "retainedPath": "research/host-contract/native-binding-api-review/pep-0475.rst"
+    }
+  ],
+  "originalReadingSha256": "027052b23088b75c575a3281047f95f511508a202d106331848f9089882ed46c",
+  "linkedReferencesFullyRead": false,
+  "acquiredCodeExecuted": false,
+  "newNetworkAcquisition": false,
+  "previousReadingSha256": "2db309c4da123f42140cb1b5404695edf5c7166b786fb7d16b6fdc94464de1dd",
+  "originalSourcePath": "research/host-contract/native-binding-api-review/exceptions.rst",
+  "newReadSegments": [
+    {
+      "first": 1,
+      "last": 300,
+      "sha256": "6884c3c0b8bc6aceed142de453d96df788f2129f77649fc2381cbc6736139922"
+    },
+    {
+      "first": 301,
+      "last": 620,
+      "sha256": "998e45995240b1d2a6cac087a2a6a69eb0606df51eca060167abdade25cf2209"
+    },
+    {
+      "first": 621,
+      "last": 940,
+      "sha256": "42b4b7afc68d5ab2a76da40a79e11522e4950f987dd4fe6dfc84b5c8152f5460"
+    },
+    {
+      "first": 941,
+      "last": 1222,
+      "sha256": "4fb8aa470261ef01f54471d3605b81329bf4fd33c10e60f317be28123a9b018f"
+    }
+  ],
+  "observedReadSegments": [
+    {
+      "first": 1,
+      "last": 320,
+      "sha256": "5aeebe9a06dfa53f09193b4d1f38e212415edd43313528339a73987ba60ecbf8"
+    },
+    {
+      "first": 321,
+      "last": 650,
+      "sha256": "d2c2e7c1338001baa82bbd91176ad18e1c8e2d5a7f3b37b0016f5cfa3bde8306"
+    },
+    {
+      "first": 651,
+      "last": 1000,
+      "sha256": "b82e2ec6deb9429d70ee919501334e70489861f2419edabab3cdc77ac31f4bcc"
+    },
+    {
+      "first": 1001,
+      "last": 1350,
+      "sha256": "b9161e754d560eb035ea0805c1a967cd317b3c048de0f09cb0bcddb0d7f65e6a"
+    },
+    {
+      "first": 1351,
+      "last": 1700,
+      "sha256": "e5f7d8ccb516fbe65658ba2e94f5013aa2718e5cbeda61697a551268d7049d77"
+    },
+    {
+      "first": 1701,
+      "last": 2030,
+      "sha256": "8c9c5dfebb37a77db35b5c56149edbf737ae9693f0bb842a70c2f88eec0051bf"
+    },
+    {
+      "first": 2031,
+      "last": 2191,
+      "sha256": "c15ac3bdfcef6bb834179223d018d94cc79f48f83fb10286ac1401772886f377"
+    }
+  ]
+}

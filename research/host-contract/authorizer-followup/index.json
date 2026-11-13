@@ -1,0 +1,75 @@
+{
+  "schema": "hms-primary-followup-index/1",
+  "files": [
+    {
+      "path": "research/host-contract/authorizer-followup/NOTES.md",
+      "bytes": 3030,
+      "sha256": "ecec037b6e99fd258eaef4670d347cac3e979578d3ccd4404735fd7a57f967fb"
+    },
+    {
+      "path": "research/host-contract/authorizer-followup/acquire.py",
+      "bytes": 2373,
+      "sha256": "bda6c4ddd4daf38e47fb82809ee35464b280e5f362a9ce2b2daae49884fa6b40"
+    },
+    {
+      "path": "research/host-contract/authorizer-followup/acquisition.json",
+      "bytes": 1927,
+      "sha256": "18dbb075aff4f6d0fe01b251be565096356422f7f58b5e55366adb757c039dbb"
+    },
+    {
+      "path": "research/host-contract/authorizer-followup/extract.py",
+      "bytes": 2694,
+      "sha256": "6a6da1f7f371f2dcff6210f2aec805bb358fb14afff3e055cd0596d9ecc30458"
+    },
+    {
+      "path": "research/host-contract/authorizer-followup/extraction.json",
+      "bytes": 2386,
+      "sha256": "81aee671a4543609982ac6ef927244378f7ac08557380b23a065f3de90985248"
+    },
+    {
+      "path": "research/host-contract/authorizer-followup/manifest.jsonl",
+      "bytes": 1109,
+      "sha256": "8501448284d16ed0edbea85902be07ca713f642e994f36367c86c0dc246d3576"
+    },
+    {
+      "path": "research/host-contract/authorizer-followup/metadata/action_codes.json",
+      "bytes": 791,
+      "sha256": "23836d4decfb615820318c723f4e1c0d922991c7805aaa5b2411aba712602f88"
+    },
+    {
+      "path": "research/host-contract/authorizer-followup/metadata/set_authorizer.json",
+      "bytes": 797,
+      "sha256": "f6f541bd3d220002379b7ad0d87dcc9c121f01d97b33de8d26c2cf8915ec6567"
+    },
+    {
+      "path": "research/host-contract/authorizer-followup/raw/action_codes.html",
+      "bytes": 8384,
+      "sha256": "9aafe597f56ecb23a84b5d92b4125387239956e0e675d030cec4c4d0f870598c"
+    },
+    {
+      "path": "research/host-contract/authorizer-followup/raw/set_authorizer.html",
+      "bytes": 10728,
+      "sha256": "f4b43d68f5d827b768cd3a1cad8cfd2aa913e073be9d2498ec80b53cd8e32c02"
+    },
+    {
+      "path": "research/host-contract/authorizer-followup/reading.json",
+      "bytes": 1346,
+      "sha256": "334d0be5f9ae9175d5e22152f2fcafbf1f6c73af37ded76fd1409ad81426fb62"
+    },
+    {
+      "path": "research/host-contract/authorizer-followup/text/action_codes.txt",
+      "bytes": 3875,
+      "sha256": "6060a84674965eba4a764200f6927c48ed222685d3f1c12531fbe351bc7c0dff"
+    },
+    {
+      "path": "research/host-contract/authorizer-followup/text/set_authorizer.txt",
+      "bytes": 5166,
+      "sha256": "85a79c6bab0e1ff2e4927964abb205eb1c4f40d1cbecb145b65fcd47ae984221"
+    },
+    {
+      "path": "research/host-contract/authorizer-followup/verify.py",
+      "bytes": 2547,
+      "sha256": "5b53502ea42b51e9b9fc796e3ddc93ba6b16cc811df4298a880a9142e0fbf4a1"
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+{
+  "url": "https://raw.githubusercontent.com/torvalds/linux/v6.12/Documentation/userspace-api/mfd_noexec.rst",
+  "sha256": "3294d8f1ec5bf0b241660bdfea4cb340ee9d0b9d35f8630f1e5686a5aec391a7",
+  "lfLines": 86,
+  "headerSha256": "d06dd37df2ad2df29391c38239c1af6944efef8dc4040ed41833169cd4c4a3c9",
+  "headerLfLines": 39,
+  "acquiredCodeExecuted": false
+}

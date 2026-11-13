@@ -1,0 +1,317 @@
+{
+  "scope": "Native retention helper source research",
+  "sources": [
+    {
+      "id": "fdopendir",
+      "requestedUrl": "https://man7.org/linux/man-pages/man3/fdopendir.3.html",
+      "finalUrl": "https://man7.org/linux/man-pages/man3/fdopendir.3.html",
+      "acquiredUnixNs": 1794166960634304863,
+      "headers": {
+        "Date": "Sun, 08 Nov 2026 19:42:40 GMT",
+        "Server": "Apache/2.4.58 (Ubuntu)",
+        "Last-Modified": "Mon, 02 Nov 2026 20:20:30 GMT",
+        "ETag": "\"32b1-65f50e092bf80\"",
+        "Accept-Ranges": "bytes",
+        "Content-Length": "12977",
+        "Vary": "Accept-Encoding",
+        "Connection": "close",
+        "Content-Type": "text/html"
+      },
+      "rawPath": "raw/fdopendir.html",
+      "rawBytes": 12977,
+      "rawSha256": "ec26d14cd175c8651fdf60a8f554323c6b860d3e212297443de55af9896ff0e0",
+      "textPath": "text/fdopendir.txt",
+      "textBytes": 4471,
+      "textSha256": "ff215a151a3d126b9a48c67830947c7f757ac807d88e137dee7223b3e48e0066",
+      "lfLines": 128,
+      "surroundingPath": "surrounding/fdopendir.txt",
+      "surroundingSha256": "ffe5e9b8e1cc531ab44203a446d024057e5bef76025a9508ff87a618e004fc6f",
+      "images": [
+        {
+          "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+          "alt": "Cover of TLPI"
+        },
+        {
+          "class": "statcounter",
+          "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+          "alt": "Web Analytics Made Easy -\nStatCounter"
+        }
+      ],
+      "readingStatus": "unread",
+      "acquiredCodeExecuted": false
+    },
+    {
+      "id": "readdir",
+      "requestedUrl": "https://man7.org/linux/man-pages/man3/readdir.3.html",
+      "finalUrl": "https://man7.org/linux/man-pages/man3/readdir.3.html",
+      "acquiredUnixNs": 1794166960680318989,
+      "headers": {
+        "Date": "Sun, 08 Nov 2026 19:42:40 GMT",
+        "Server": "Apache/2.4.58 (Ubuntu)",
+        "Last-Modified": "Mon, 02 Nov 2026 20:20:30 GMT",
+        "ETag": "\"4948-65f50e092bf80\"",
+        "Accept-Ranges": "bytes",
+        "Content-Length": "18760",
+        "Vary": "Accept-Encoding",
+        "Connection": "close",
+        "Content-Type": "text/html"
+      },
+      "rawPath": "raw/readdir.html",
+      "rawBytes": 18760,
+      "rawSha256": "b9f2de8eee242e9ebe85c5dff4998cc3bb7dfd8c5eefb1da582d116edc5a58ee",
+      "textPath": "text/readdir.txt",
+      "textBytes": 9210,
+      "textSha256": "b382b63da3b3b326e5d562ebadb489a82b4e64f4556e37124d9d14a2bef90301",
+      "lfLines": 218,
+      "surroundingPath": "surrounding/readdir.txt",
+      "surroundingSha256": "366662dfa9d264fa53aa3646a8da0a5cb15273fb0edb904f71b0c512a3a20034",
+      "images": [
+        {
+          "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+          "alt": "Cover of TLPI"
+        },
+        {
+          "class": "statcounter",
+          "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+          "alt": "Web Analytics Made Easy -\nStatCounter"
+        }
+      ],
+      "readingStatus": "unread",
+      "acquiredCodeExecuted": false
+    },
+    {
+      "id": "fstatat",
+      "requestedUrl": "https://man7.org/linux/man-pages/man2/fstatat.2.html",
+      "finalUrl": "https://man7.org/linux/man-pages/man2/fstatat.2.html",
+      "acquiredUnixNs": 1794166960692019142,
+      "headers": {
+        "Date": "Sun, 08 Nov 2026 19:42:40 GMT",
+        "Server": "Apache/2.4.58 (Ubuntu)",
+        "Last-Modified": "Mon, 02 Nov 2026 20:20:30 GMT",
+        "ETag": "\"64ec-65f50e092bf80\"",
+        "Accept-Ranges": "bytes",
+        "Content-Length": "25836",
+        "Vary": "Accept-Encoding",
+        "Connection": "close",
+        "Content-Type": "text/html"
+      },
+      "rawPath": "raw/fstatat.html",
+      "rawBytes": 25836,
+      "rawSha256": "0067346ded7cc8259ad614874993bd99b3edff372b61057d236c9dfe5e40501e",
+      "textPath": "text/fstatat.txt",
+      "textBytes": 12236,
+      "textSha256": "3df11e73c4a538fb673984f3aaf01c4a0d79bb9c6f230902c0e74eb04e7707e8",
+      "lfLines": 319,
+      "surroundingPath": "surrounding/fstatat.txt",
+      "surroundingSha256": "3d94546703aaee69b914265cf1150585105b6419f7fccace8983a264cc020954",
+      "images": [
+        {
+          "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+          "alt": "Cover of TLPI"
+        },
+        {
+          "class": "statcounter",
+          "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+          "alt": "Web Analytics Made Easy -\nStatCounter"
+        }
+      ],
+      "readingStatus": "unread",
+      "acquiredCodeExecuted": false
+    },
+    {
+      "id": "open",
+      "requestedUrl": "https://man7.org/linux/man-pages/man2/open.2.html",
+      "finalUrl": "https://man7.org/linux/man-pages/man2/open.2.html",
+      "acquiredUnixNs": 1794166961153791422,
+      "headers": {
+        "Date": "Sun, 08 Nov 2026 19:42:40 GMT",
+        "Server": "Apache/2.4.58 (Ubuntu)",
+        "Last-Modified": "Mon, 02 Nov 2026 20:20:30 GMT",
+        "ETag": "\"12ada-65f50e092bf80\"",
+        "Accept-Ranges": "bytes",
+        "Content-Length": "76506",
+        "Vary": "Accept-Encoding",
+        "Connection": "close",
+        "Content-Type": "text/html"
+      },
+      "rawPath": "raw/open.html",
+      "rawBytes": 76506,
+      "rawSha256": "d665489cadb85624d98fae03a8d8d06209030f32735cff8aeba949ad8491c789",
+      "textPath": "text/open.txt",
+      "textBytes": 49056,
+      "textSha256": "7eaeb81212e278b6b7dcf4d0cdd7595e52fba600147ef194479171a6e7382afc",
+      "lfLines": 1040,
+      "surroundingPath": "surrounding/open.txt",
+      "surroundingSha256": "56db5cfd9dc5619e3a409bde1b48260fb76f9da149ea0b0acf4b738f0af6a62e",
+      "images": [
+        {
+          "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+          "alt": "Cover of TLPI"
+        },
+        {
+          "class": "statcounter",
+          "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+          "alt": "Web Analytics Made Easy -\nStatCounter"
+        }
+      ],
+      "readingStatus": "unread",
+      "acquiredCodeExecuted": false
+    },
+    {
+      "id": "closedir",
+      "requestedUrl": "https://man7.org/linux/man-pages/man3/closedir.3.html",
+      "finalUrl": "https://man7.org/linux/man-pages/man3/closedir.3.html",
+      "acquiredUnixNs": 1794166961350405661,
+      "headers": {
+        "Date": "Sun, 08 Nov 2026 19:42:41 GMT",
+        "Server": "Apache/2.4.58 (Ubuntu)",
+        "Last-Modified": "Mon, 02 Nov 2026 20:20:30 GMT",
+        "ETag": "\"283e-65f50e092bf80\"",
+        "Accept-Ranges": "bytes",
+        "Content-Length": "10302",
+        "Vary": "Accept-Encoding",
+        "Connection": "close",
+        "Content-Type": "text/html"
+      },
+      "rawPath": "raw/closedir.html",
+      "rawBytes": 10302,
+      "rawSha256": "358400ea94829713623382116d3916c92f2e178189824d2523253ceb11beda6a",
+      "textPath": "text/closedir.txt",
+      "textBytes": 2727,
+      "textSha256": "c815f5b97fda7cb168cc43aef0826c7f9c8e1f0a153da443bae8986a4305e4b8",
+      "lfLines": 75,
+      "surroundingPath": "surrounding/closedir.txt",
+      "surroundingSha256": "5b117d112ee5d8453dcf7ee3b5b78693260a081bd50c4b81a45acd2cc0a54001",
+      "images": [
+        {
+          "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+          "alt": "Cover of TLPI"
+        },
+        {
+          "class": "statcounter",
+          "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+          "alt": "Web Analytics Made Easy -\nStatCounter"
+        }
+      ],
+      "readingStatus": "unread",
+      "acquiredCodeExecuted": false
+    },
+    {
+      "id": "dirfd",
+      "requestedUrl": "https://man7.org/linux/man-pages/man3/dirfd.3.html",
+      "finalUrl": "https://man7.org/linux/man-pages/man3/dirfd.3.html",
+      "acquiredUnixNs": 1794166961384317430,
+      "headers": {
+        "Date": "Sun, 08 Nov 2026 19:42:41 GMT",
+        "Server": "Apache/2.4.58 (Ubuntu)",
+        "Last-Modified": "Mon, 02 Nov 2026 20:20:30 GMT",
+        "ETag": "\"2a8c-65f50e092bf80\"",
+        "Accept-Ranges": "bytes",
+        "Content-Length": "10892",
+        "Vary": "Accept-Encoding",
+        "Connection": "close",
+        "Content-Type": "text/html"
+      },
+      "rawPath": "raw/dirfd.html",
+      "rawBytes": 10892,
+      "rawSha256": "f6dc54316686d0401aba4c3e7d9534ba8a6780b8b522981b270a97bfbf36bf9c",
+      "textPath": "text/dirfd.txt",
+      "textBytes": 3406,
+      "textSha256": "03c34966bc419114b395c6f6bca9a38059c6916e0aa12d5767873b43753a0047",
+      "lfLines": 94,
+      "surroundingPath": "surrounding/dirfd.txt",
+      "surroundingSha256": "a5f6b1fc90ed5e61d8fb5fcc124fb2504cd519f5dd63048b9e6455ee4e2ee7b7",
+      "images": [
+        {
+          "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+          "alt": "Cover of TLPI"
+        },
+        {
+          "class": "statcounter",
+          "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+          "alt": "Web Analytics Made Easy -\nStatCounter"
+        }
+      ],
+      "readingStatus": "unread",
+      "acquiredCodeExecuted": false
+    },
+    {
+      "id": "dup",
+      "requestedUrl": "https://man7.org/linux/man-pages/man2/dup.2.html",
+      "finalUrl": "https://man7.org/linux/man-pages/man2/dup.2.html",
+      "acquiredUnixNs": 1794166961624370574,
+      "headers": {
+        "Date": "Sun, 08 Nov 2026 19:42:41 GMT",
+        "Server": "Apache/2.4.58 (Ubuntu)",
+        "Last-Modified": "Mon, 02 Nov 2026 20:20:30 GMT",
+        "ETag": "\"3de0-65f50e092bf80\"",
+        "Accept-Ranges": "bytes",
+        "Content-Length": "15840",
+        "Vary": "Accept-Encoding",
+        "Connection": "close",
+        "Content-Type": "text/html"
+      },
+      "rawPath": "raw/dup.html",
+      "rawBytes": 15840,
+      "rawSha256": "f0b886340b0471a181d135320ed5b3847de410ab05ca4a29b78780d1aa2aa2ae",
+      "textPath": "text/dup.txt",
+      "textBytes": 6644,
+      "textSha256": "cdcbbf34f8352ec08ce677253c45ea456c2258c5e92e0cd7242f9012c2730a7d",
+      "lfLines": 179,
+      "surroundingPath": "surrounding/dup.txt",
+      "surroundingSha256": "3d19fbecbf21da7d60b8f07b27cd88bb69df48edb723c3ff978dee30789aa382",
+      "images": [
+        {
+          "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+          "alt": "Cover of TLPI"
+        },
+        {
+          "class": "statcounter",
+          "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+          "alt": "Web Analytics Made Easy -\nStatCounter"
+        }
+      ],
+      "readingStatus": "unread",
+      "acquiredCodeExecuted": false
+    },
+    {
+      "id": "getuid",
+      "requestedUrl": "https://man7.org/linux/man-pages/man2/getuid.2.html",
+      "finalUrl": "https://man7.org/linux/man-pages/man2/getuid.2.html",
+      "acquiredUnixNs": 1794166961866561511,
+      "headers": {
+        "Date": "Sun, 08 Nov 2026 19:42:41 GMT",
+        "Server": "Apache/2.4.58 (Ubuntu)",
+        "Last-Modified": "Mon, 02 Nov 2026 20:20:30 GMT",
+        "ETag": "\"2bd6-65f50e092bf80\"",
+        "Accept-Ranges": "bytes",
+        "Content-Length": "11222",
+        "Vary": "Accept-Encoding",
+        "Connection": "close",
+        "Content-Type": "text/html"
+      },
+      "rawPath": "raw/getuid.html",
+      "rawBytes": 11222,
+      "rawSha256": "215b3d7a42aed3b3bc34e6a562300eb9f9ddb767b194457be53c667fd5b2fd55",
+      "textPath": "text/getuid.txt",
+      "textBytes": 2346,
+      "textSha256": "e3cba974a8f90c3f64fd255b91733c625823084d331252dc5cc858d2754b1320",
+      "lfLines": 73,
+      "surroundingPath": "surrounding/getuid.txt",
+      "surroundingSha256": "2dbbbaa1667bd01a75c6a8a44cfc0feb5f7bd8d0d1aea771982fca947eead020",
+      "images": [
+        {
+          "src": "https://man7.org/tlpi/cover/TLPI-front-cover-vsmall.png",
+          "alt": "Cover of TLPI"
+        },
+        {
+          "class": "statcounter",
+          "src": "https://c.statcounter.com/7422636/0/9b6714ff/1/",
+          "alt": "Web Analytics Made Easy -\nStatCounter"
+        }
+      ],
+      "readingStatus": "unread",
+      "acquiredCodeExecuted": false
+    }
+  ]
+}

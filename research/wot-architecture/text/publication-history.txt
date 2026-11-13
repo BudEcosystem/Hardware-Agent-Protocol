@@ -1,0 +1,118 @@
+Web of Things (WoT) Architecture 1.1 publication history | Standards | W3C
+Skip to content
+日本語ホームページ
+Japanese website
+简体中文首页
+Chinese website
+Visit the W3C homepage
+Standards & groups
+Standards & groups
+Understand the various specifications, their maturity levels on the web standards track, their adoption, and the groups that develop them.
+Explore web standards
+About W3C web standards
+W3C standards & drafts
+Types of documents W3C publishes
+W3C groups
+Translations of W3C standards & drafts
+Reviews & public feedback
+Promote web standards
+Liaisons
+Technical Architecture Group (TAG)
+Get involved
+Get involved
+W3C works at the nexus of core technology, industry needs, and societal needs.
+Find ways to get involved
+Become a member
+Member home (restricted)
+List of W3C members
+Mailing lists
+Participant guidebook
+Positive work environment
+Invited Experts
+Support us
+Accessibility
+Internationalization
+Privacy
+Security
+Web sustainability
+Resources
+Resources
+Master web fundamentals, use our developer tools, or contribute code.
+Learn from W3C resources
+Developers
+Validators & tools
+Accessibility fundamentals
+Internationalization (i18n)
+Translations of W3C standards & drafts
+Code of conduct
+Reports
+News & events
+News & events
+Recent content across news, blogs, press releases, media; upcoming events.
+Explore news & events
+News
+Blog
+Press releases
+Press & media
+Events
+Annual W3C Conference (TPAC)
+Code of conduct
+Support us
+Support us
+Make a huge difference to our operations as a public-interest non-profit, and help us to achieve our vision.
+Ways you can support us
+About
+About
+Understand our values and principles, learn our history, look into our policies, meet our people.
+Find out more about us
+Our mission
+Support us
+Leadership
+Staff
+Careers
+Media kit
+Diversity
+Corporation
+Policies & legal information
+Contact us
+Help
+Search
+My account
+Home
+Standards
+Web of Things (WoT) Architecture 1.1 publication history
+Web of Things (WoT) Architecture 1.1 publication history
+Date
+Status
+5 December 2023
+Recommendation
+11 July 2023
+Proposed Recommendation
+19 January 2023
+Candidate Recommendation Snapshot
+7 September 2022
+Working Draft
+24 November 2020
+First Public Working Draft
+In this section
+wot-architecture10 history
+Home
+Contact
+Help
+Support us
+Legal & Policies
+Corporation
+System Status
+W3C on Mastodon
+W3C on GitHub
+Copyright © 2026
+World Wide Web Consortium
+.
+W3C
+®
+liability
+,
+trademark
+and
+permissive license
+rules apply.

@@ -1,0 +1,33 @@
+{
+  "id": "corruption",
+  "url": "https://sqlite.org/howtocorrupt.html",
+  "finalUrl": "https://sqlite.org/howtocorrupt.html",
+  "retrievedAt": "2026-11-08T02:05:07.141693+00:00",
+  "status": 200,
+  "headers": {
+    "Connection": "close",
+    "Date": "Sun, 08 Nov 2026 02:05:08 GMT",
+    "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+    "Cache-Control": "max-age=120",
+    "ETag": "\"m6ae24ec4sb691\"",
+    "Content-type": "text/html; charset=utf-8",
+    "Content-length": "46737"
+  },
+  "rawPath": "raw/corruption.html",
+  "rawBytes": 46737,
+  "rawSha256": "e00709e3f37e95332d8e6df243510665e9cab1d7938d4fd85cbf5f47648a50bf",
+  "textPath": "text/corruption.txt",
+  "textBytes": 34083,
+  "textSha256": "ce0d7055a46859859452f5425f59fdb83c35930a85deabf2a4f524c10fcd8a71",
+  "lines": 765,
+  "visuals": [
+    {
+      "kind": "img",
+      "source": "images/sqlite370_banner.svg",
+      "identifier": null,
+      "text": ""
+    }
+  ],
+  "readingStatus": "acquired-not-yet-read",
+  "acquiredContentExecuted": false
+}

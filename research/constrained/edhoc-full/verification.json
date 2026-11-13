@@ -1,0 +1,15 @@
+{
+  "status": "pass",
+  "checked_at": "2026-11-06T22:38:08.823089+00:00",
+  "retrieval_records": 6,
+  "unique_files_checked": 48,
+  "full_text_sources": 4,
+  "rfc9528_lf_lines": 4671,
+  "coverage_chunks": 18,
+  "figures": 13,
+  "tables": 15,
+  "selected_pdf_pages_reviewed": 25,
+  "total_pdf_pages": 82,
+  "negative_self_checks": 6,
+  "scope": "Archival hashes and declared coverage consistency only; no crypto, controller, hardware or conformance execution."
+}

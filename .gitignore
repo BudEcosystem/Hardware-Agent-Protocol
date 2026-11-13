@@ -1,0 +1,26 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+node_modules/
+build/
+dist/
+*.egg-info/
+.superpowers/
+# Retained evidence store (26 GB); content-addressed ingest is separate work.
+artifacts/
+# Research: keep notes, manifests and reading receipts; not raw downloads or checkouts.
+research/**/raw/
+research/**/repos/
+research/**/source/
+research/**/sources/
+research/**/full/
+research/**/*.pdf
+research/**/*.tar.*
+research/**/*.zip
+research/**/*.tgz
+research/home/metadata/ha-core-tree.json
+# Embedded upstream checkouts used as research inputs
+integration/harness/procedure-design/inputs/harness/
+research/host-contract/chunk-sync-source/glibc-objects/
+research/host-contract/mount-predicate-source/glibc-objects/

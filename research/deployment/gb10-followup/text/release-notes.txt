@@ -1,0 +1,194 @@
+DGX Spark Release Notes
+#
+This section provides release notes for the DGX Spark, including information about
+new features, known issues, and software version updates.
+Current Software Versions
+#
+The following table shows the current version information for the DGX Spark
+software stack.
+Component
+Version
+NVIDIA DGX OS
+7.6.0
+NVIDIA GPU Driver
+580.178.04
+NVIDIA CUDA Toolkit
+13.0.3
+NVIDIA TensorRT
+10.14.1
+Canonical Kernel
+7.0.0-1019
+UEFI
+1.111.17
+Embedded Controller (EC)
+3.13.7
+USB Power Delivery (USB PD)
+0.5.25
+Trusted Platform Module (TPM)
+7.516.1
+System on Chip (SoC)
+2.158.15
+Note
+These release versions apply only to the DGX Spark Founders Edition. GB10-based partner systems may not receive updates at the same time.
+October 2026 Release
+#
+What’s New
+#
+DGX Dashboard Wi-Fi Assistant
+: The new feature enables users to join a new Wi-Fi network when DGX Spark is used in appliance mode (without a keyboard, mouse, and display).
+Dynamic Display Reserved Memory
+: Display Reserved Memory adds a UEFI option to automatically optimize the memory carveout to match display usage. Systems without connected displays can automatically adjust to the minimum carveout (512 MB).
+DGX Spark Skills (available in late October)
+: Workflow-focused resources for agents will be available through NVIDIA Sync (OpenCode). These resources provide DGX Spark-specific knowledge and guidance for troubleshooting, clustering multiple DGX Spark systems, device maintenance, playbook discovery, support escalation, awareness of official documentation, convenient user forum search, and other DGX Spark workflows. Refer to
+DGX Spark Skills
+for details on how to implement the skills for existing agent harnesses.
+New Kernel Support
+: This update supports the Linux 7.0 kernel (previously 6.17). It includes security updates and improved file and memory management:
+Large page frame number maps (pfnmap)
+Splitting extended GPU memory (EGM) into 1 GB chunks
+Memory System Resource Partitioning and Monitoring
+Support for 64 GB Systems
+: The system software now supports both 64 GB and 128 GB configurations, so users do not have to match software updates with hardware. Dashboards and other system information automatically reflect the available memory.
+Native Cloud-init Support
+: Simple configuration files can automate system configuration and provisioning at first boot through the
+Cloud-init
+initialization framework. Enterprise environments can immediately deploy custom configurations at first boot.
+Fixed Issues
+#
+DKMS Kernel-Module Build Failures
+: Addressed DKMS kernel-module build failures after an
+nvidia-installer
+installation.
+Delayed Wake-Up
+: Addressed delayed wake-up when multiple threads wait on the same Vulkan semaphore.
+Black Screens After Modesets
+: Addressed black screens after modesets in X11 applications using the Present extension.
+OpenGL Buffers Allocated With glBufferStorage
+: Addressed an issue where OpenGL buffers allocated with
+glBufferStorage
+and no storage flags migrated from GPU memory to host memory.
+Fans Stop Responding in Headless Mode
+: Addressed an issue where the fans stopped responding when the system was in headless (appliance) mode at low idle power draw.
+Ukrainian Language Option
+: Addressed an issue where the initial system configuration screens did not offer the Ukrainian language option. The option was available only after login in
+Settings
+.
+July 2026 Release
+#
+What’s New
+#
+Improved Memory Management
+: The included driver enhances Out-of-Memory (OOM) handling with GB10’s unified memory architecture. User feedback is now available when the system encounters memory pressure, which improves robustness and reliability when operating larger models.
+Adjustable Display Reserved Memory
+: The Display Reserved Memory can now be toggled between 2 GB (default) and 4 GB through the system BIOS. Workflows that require displaying many applications and windows will benefit from the larger display memory carveout. Users in appliance mode do not need to change default settings.
+Enterprise Management Feature Enhancements
+: The cloud-init initialization framework and image customization include the following updates. Refer to
+Cloud-init for DGX Spark
+for more information.
+Cloud-init Network Protocol Support
+: In addition to direct USB connections, Cloud-init now supports DHCP, HTTP, and TFTP.
+FastOS Recovery Image Customization
+: In addition to already supporting the customization of DGX OS, Cloud-init adds support to customize the NVIDIA-provided FastOS recovery image for the DGX Spark Founders Edition.
+Fixed Issues
+#
+System and Display Instability When Hot-Plugging Displays
+: Addressed system and display instability when hot-plugging displays.
+June 2026 Release
+#
+What’s New
+#
+Out-of-Box-Experience (OOBE) Enhancements
+: Updates to the OOBE that enable faster initial device setup time and easier navigation to discover and install local AI agents, including:
+Over-the-Air (OTA) Updates
+: OTA updates are not installed by default during initial setup, allowing users to start using their system sooner. Users can download and install OTA updates after initial system setup.
+NemoClaw Playbook
+: After initial system boot, the DGX Spark playbook site opens, where the NemoClaw playbook is prominently displayed for streamlined setup of a sandboxed local agent.
+New Application and Library Features
+: NVIDIA Sync and NVIDIA Collective Communications Library (NCCL) include the following updates:
+NVIDIA Sync Cluster Assistant
+: The Cluster Assistant is now available on the
+Settings
+page in the NVIDIA Sync application. The Cluster Assistant helps users connect up to three devices without a network switch, and up to four devices using a switch.
+NCCL
+: NCCL (Version 2.30u1) has updated support for connecting three DGX Spark systems in a ring topology.
+April 2026 Release
+#
+What’s New
+#
+Enterprise Features
+: Support for tools and capabilities designed to facilitate system management in enterprise environments, including:
+Enterprise Management Guide
+: Enables IT administrators to plan, configure, and manage DGX Spark deployments at scale with a dedicated reference covering workflows, provisioning, update procedures, and system lifecycle management across fleets. For more information, refer to
+Enterprise Manageability
+.
+Skip the Automated OOBE for IT Administrator Provisioning
+: Allows IT administrators to bypass the OOBE entirely during provisioning, reducing manual per-device setup steps and minimizing touch while deploying across multiple DGX Spark units.
+USB and Local Repository Support for Installations and Updates
+: Allows IT administrators to deliver OS installations and software updates through USB drives or internal local package repositories, removing the dependency on cloud connectivity for software distribution and patch management, and allowing administrators to control when new releases are installed.
+Support for Air Gapped Deployment and Updates
+: Enables IT administrators to deploy and operate DGX Spark systems on isolated networks with no external internet access, suitable for strict security, compliance, and data sovereignty requirements.
+Customized Enterprise ISOs Through cloud-init
+: Allows IT administrators to embed site-specific configurations (users, network settings, software, and policies) directly into custom DGX OS images using cloud-init, ensuring every unit arrives pre-configured to enterprise standards on first boot.
+DGX Dashboard Enhancements
+: Release highlights are now provided for software releases, enabling users to determine the urgency of applying updates.
+Fixed Issues
+#
+Bluetooth Keyboard Pairing
+: Addressed an issue where the Bluetooth keyboard pairing modal did not appear in some instances when a keyboard was plugged in.
+Unable to Detect Network During System Setup
+: Addressed Wi-Fi and Ethernet connectivity issues reported during system setup.
+March 2026 Release
+#
+What’s New
+#
+Partner Factory Updates
+: Firmware update to facilitate GB10 partner factory updates.
+February 2026 Release
+#
+Fixed Issues
+#
+Improved Performance with Multiple DGX Spark Systems
+: Addressed performance regression noted by some users with multiple connected DGX Spark systems after updating to DGX OS 7.4.0.
+January 2026 Release
+#
+What’s New
+#
+Power Management
+: Added hot plug support for the ConnectX-7 network adapter, saving up to 18W of power when the adapter is not in use.
+Bluetooth Audio Support
+: Support for Bluetooth audio devices, including headphones and headsets, is now available.
+Additional Security Controls
+: Wi-Fi and Bluetooth can now be disabled in the Unified Extensible Firmware Interface (UEFI) for environments requiring additional security.
+Fixed Issues
+#
+Improved Monitor Support
+: Better compatibility with TVs and monitors, including multi-monitor configurations and the use of non-native resolutions and refresh rates.
+Improved Peripheral Setup
+: Smoother and more complete OOBE navigation.
+November 2025 Release
+#
+What’s New
+#
+New DGX OS kernel
+: The operating system now incorporates the Ubuntu 6.14 Hardware Enablement (HWE) kernel stack. The new kernel brings ongoing performance gains, enhanced stability, broader hardware compatibility, and the latest security updates for a more secure operating environment.
+JupyterLab updated to latest CUDA and PyTorch
+: Updated JupyterLab to CUDA 13.0.2 and the latest PyTorch version, enabling users to work with updated frameworks immediately without extra downloads.
+Fixed Issues
+#
+Improved memory reporting in DGX Dashboard
+: Addressed the issue with memory reporting differences with unified memory architecture. The readout is now consistent with CUDA guidance for unified memory systems. For more information, refer to
+CUDA unified memory guidance
+.
+Image Generation in JupyterLab
+: Resolved the inability to generate images in Stable Diffusion XL Playbook example. Users can now run end-to-end example workflow inside JupyterLab.
+Improved Peripheral Interoperability
+: Better compatibility with USB-C devices, monitors, Bluetooth peripherals, and Wi-Fi access points.
+Improved recovery image reliability
+: The recovery image now installs correctly on macOS and also when multiple external USB-C drives are connected.
+Keyboard accessibility improvements
+: Smoother and more complete OOBE navigation, including the ability to complete entire system setup process using only keyboard.
+Known Issues
+#
+For an updated list of known issues, refer to
+Known Issues
+.

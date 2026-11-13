@@ -1,0 +1,55 @@
+{
+  "scope": "Four complete primary texts; original two partial API readings retained unchanged",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 3756,
+      "sha256": "d014bdb4eb09c60eacdcfa0a593a1857e9f796aa34cf4c200a7f145953b6351e"
+    },
+    {
+      "path": "exceptions.rst",
+      "bytes": 55104,
+      "sha256": "a72affca78426f9f90c70efba697a34a3d07e0859d0c5a84d1d9614be198dc62"
+    },
+    {
+      "path": "init.rst",
+      "bytes": 85456,
+      "sha256": "8f21d0e2d984511632289c654d9754bc7c7613e14bb72f652e13fcf4b38689b4"
+    },
+    {
+      "path": "long.rst",
+      "bytes": 12162,
+      "sha256": "f9272f1088fc3460d92904985a549b17422fd0260bf526cc59d6a52494cf4665"
+    },
+    {
+      "path": "module.rst",
+      "bytes": 24448,
+      "sha256": "3184dbc38a64ac92d84490fc9d105f0a970535c31c2cddd3f9de34a4405ae0d3"
+    },
+    {
+      "path": "original-reading.json",
+      "bytes": 4072,
+      "sha256": "027052b23088b75c575a3281047f95f511508a202d106331848f9089882ed46c"
+    },
+    {
+      "path": "pep-0475.rst",
+      "bytes": 16325,
+      "sha256": "5624e338889dc7208ae43b514450c16fe58628acbcd1b1c9ec7eba63570c6663"
+    },
+    {
+      "path": "reading.json",
+      "bytes": 4157,
+      "sha256": "d637a5fa191da2e03b58d340cc4d6fbc24c3421472c29fadf7b3f2513735b41d"
+    },
+    {
+      "path": "seal.py",
+      "bytes": 2414,
+      "sha256": "e24635d027892960858c607d1c1c544c6b17bd2187d6072b5f52db7cdd75bd67"
+    },
+    {
+      "path": "sys.rst",
+      "bytes": 18051,
+      "sha256": "c0985bfc614fe38ced18bcfc84998398342aa3cf30de47a77e96b830d6968e65"
+    }
+  ]
+}

@@ -1,0 +1,203 @@
+[
+  {
+    "id": "limits",
+    "url": "https://sqlite.org/limits.html",
+    "finalUrl": "https://sqlite.org/limits.html",
+    "retrievedAt": "2026-11-08T01:23:42.793134+00:00",
+    "status": 200,
+    "headers": {
+      "Connection": "close",
+      "Date": "Sun, 08 Nov 2026 01:23:44 GMT",
+      "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+      "Cache-Control": "max-age=120",
+      "ETag": "\"m6ae24ec4s54ed\"",
+      "Content-type": "text/html; charset=utf-8",
+      "Content-length": "21741"
+    },
+    "rawPath": "raw/limits.html",
+    "rawBytes": 21741,
+    "rawSha256": "0cdbd54a89169177c50efd15854e5c1e0df6fe1a0e0706234e034dd923e0503b",
+    "textPath": "text/limits.txt",
+    "textBytes": 15345,
+    "textSha256": "a68b766197ec7a6729d3c5d257755c0868347e378d11d2fbb4e91b456669f2a1",
+    "lines": 362,
+    "visuals": [
+      {
+        "kind": "img",
+        "source": "images/sqlite370_banner.svg",
+        "identifier": null,
+        "text": ""
+      }
+    ],
+    "readingStatus": "acquired-not-yet-read",
+    "acquiredContentExecuted": false
+  },
+  {
+    "id": "transactions",
+    "url": "https://sqlite.org/lang_transaction.html",
+    "finalUrl": "https://sqlite.org/lang_transaction.html",
+    "retrievedAt": "2026-11-08T01:23:44.488897+00:00",
+    "status": 200,
+    "headers": {
+      "Connection": "close",
+      "Date": "Sun, 08 Nov 2026 01:23:45 GMT",
+      "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+      "Cache-Control": "max-age=120",
+      "ETag": "\"m6ae24ec4s69bc\"",
+      "Content-type": "text/html; charset=utf-8",
+      "Content-length": "27068"
+    },
+    "rawPath": "raw/transactions.html",
+    "rawBytes": 27068,
+    "rawSha256": "b65dc308fd9e0ce471844c97366a4f5ad3a1f42833a3b19486ad7d6555a8e24e",
+    "textPath": "text/transactions.txt",
+    "textBytes": 8241,
+    "textSha256": "6a3bc15c4b9c07ad285d529a0d52b559ce433cac08892fe4341598d0c52e0b23",
+    "lines": 235,
+    "visuals": [
+      {
+        "kind": "img",
+        "source": "images/sqlite370_banner.svg",
+        "identifier": null,
+        "text": ""
+      },
+      {
+        "kind": "svg",
+        "source": null,
+        "identifier": null,
+        "text": "BEGIN EXCLUSIVE TRANSACTION DEFERRED IMMEDIATE"
+      },
+      {
+        "kind": "svg",
+        "source": null,
+        "identifier": null,
+        "text": "COMMIT TRANSACTION END"
+      },
+      {
+        "kind": "svg",
+        "source": null,
+        "identifier": null,
+        "text": "ROLLBACK TRANSACTION TO SAVEPOINT savepoint-name"
+      }
+    ],
+    "readingStatus": "acquired-not-yet-read",
+    "acquiredContentExecuted": false
+  },
+  {
+    "id": "pragmas",
+    "url": "https://sqlite.org/pragma.html",
+    "finalUrl": "https://sqlite.org/pragma.html",
+    "retrievedAt": "2026-11-08T01:23:45.928347+00:00",
+    "status": 200,
+    "headers": {
+      "Connection": "close",
+      "Date": "Sun, 08 Nov 2026 01:23:46 GMT",
+      "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+      "Cache-Control": "max-age=120",
+      "ETag": "\"m6ae24ec4s222a0\"",
+      "Content-type": "text/html; charset=utf-8",
+      "Content-length": "139936"
+    },
+    "rawPath": "raw/pragmas.html",
+    "rawBytes": 139936,
+    "rawSha256": "af75d7d7ab00c29e6eea98618cb1259a3919c308af60a6173215bf9798706034",
+    "textPath": "text/pragmas.txt",
+    "textBytes": 83877,
+    "textSha256": "d0bb67f0235ce56a61f6803cfe38ff9b19f1a9fa82577a48d6b5f25317b3a38e",
+    "lines": 2688,
+    "visuals": [
+      {
+        "kind": "img",
+        "source": "images/sqlite370_banner.svg",
+        "identifier": null,
+        "text": ""
+      },
+      {
+        "kind": "svg",
+        "source": null,
+        "identifier": null,
+        "text": "PRAGMA schema-name . pragma-name ( pragma-value ) = pragma-value"
+      },
+      {
+        "kind": "svg",
+        "source": null,
+        "identifier": null,
+        "text": "signed-number name signed-literal"
+      },
+      {
+        "kind": "svg",
+        "source": null,
+        "identifier": null,
+        "text": "+ numeric-literal -"
+      }
+    ],
+    "readingStatus": "acquired-not-yet-read",
+    "acquiredContentExecuted": false
+  },
+  {
+    "id": "tempfiles",
+    "url": "https://sqlite.org/tempfiles.html",
+    "finalUrl": "https://sqlite.org/tempfiles.html",
+    "retrievedAt": "2026-11-08T01:23:48.393782+00:00",
+    "status": 200,
+    "headers": {
+      "Connection": "close",
+      "Date": "Sun, 08 Nov 2026 01:23:49 GMT",
+      "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+      "Cache-Control": "max-age=120",
+      "ETag": "\"m6ae24ec4s853c\"",
+      "Content-type": "text/html; charset=utf-8",
+      "Content-length": "34108"
+    },
+    "rawPath": "raw/tempfiles.html",
+    "rawBytes": 34108,
+    "rawSha256": "b9c7f358075ecff93675207807188857377df0dc2b9052a46651de21acb84a79",
+    "textPath": "text/tempfiles.txt",
+    "textBytes": 24717,
+    "textSha256": "b022154c4fa7b63749779761627f376ec49947e9160a68e11a3ff8d1ff7fcedf",
+    "lines": 618,
+    "visuals": [
+      {
+        "kind": "img",
+        "source": "images/sqlite370_banner.svg",
+        "identifier": null,
+        "text": ""
+      }
+    ],
+    "readingStatus": "acquired-not-yet-read",
+    "acquiredContentExecuted": false
+  },
+  {
+    "id": "dbstat",
+    "url": "https://sqlite.org/dbstat.html",
+    "finalUrl": "https://sqlite.org/dbstat.html",
+    "retrievedAt": "2026-11-08T01:23:49.827087+00:00",
+    "status": 200,
+    "headers": {
+      "Connection": "close",
+      "Date": "Sun, 08 Nov 2026 01:23:50 GMT",
+      "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+      "Cache-Control": "max-age=120",
+      "ETag": "\"m6ae24ec4s325f\"",
+      "Content-type": "text/html; charset=utf-8",
+      "Content-length": "12895"
+    },
+    "rawPath": "raw/dbstat.html",
+    "rawBytes": 12895,
+    "rawSha256": "2d2418abfc87570651dcd67b844865f9a283083361c5ab53ce2f23c6235a2240",
+    "textPath": "text/dbstat.txt",
+    "textBytes": 7707,
+    "textSha256": "2ec6498e87e013421e127bdb90562fc78546f6e9cda09f12ccd3aeed6304c09b",
+    "lines": 194,
+    "visuals": [
+      {
+        "kind": "img",
+        "source": "images/sqlite370_banner.svg",
+        "identifier": null,
+        "text": ""
+      }
+    ],
+    "readingStatus": "acquired-not-yet-read",
+    "acquiredContentExecuted": false
+  }
+]

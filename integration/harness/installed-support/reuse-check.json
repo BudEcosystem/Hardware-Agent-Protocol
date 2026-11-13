@@ -1,0 +1,25 @@
+{
+  "recorded_at": "2026-11-06T03:02:16.618925+00:00",
+  "harness_base_commit": "a16267881e98cdac5e1edd7ab6ff5d1dae0a8ff2",
+  "worktree": "/home/bud/Desktop/bud/hms-harness-a1626788",
+  "prior_receipt": {
+    "path": "integration/harness/revalidation-a1626788/verification.json",
+    "sha256": "ed259fad71f3d58b668b72217861a72c7592c9c37d8a7dcdfe53f31df325ff50"
+  },
+  "unchanged_overlay_files": 38,
+  "changed_hms_files": [
+    "hms/endpoint_binding.py",
+    "hms/registry.py",
+    "hms/runtime.py",
+    "hms/simulator.py"
+  ],
+  "fixture_files": 44,
+  "pinned_existing_built_files": 14406,
+  "reused_checks": {
+    "build_artifacts": "PASS7 gates,0 failed,0 skipped,294.13s; final changes since this build are only2 compact test/support files, with unchanged production/build/dependency inputs.",
+    "build_check": "PASS3 aggregate gates,0 failed,0 skipped,18.17s after final diagnostic TypeScript change.",
+    "focused_oxlint": "PASS final owned package source/tests.",
+    "built_exports_smoke": "PASS actual compiled four-package exports under plain Node."
+  },
+  "qualification": "Same a162 source base and all38 exact overlay input hashes; new changes are external Python HMS only. Reuse prior7 artifact stages and3 aggregate checks. Existing built bytes are additionally pinned before/after this run, not represented as a new build."
+}

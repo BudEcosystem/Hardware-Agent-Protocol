@@ -1,0 +1,380 @@
+{
+  "source_text": "research/constrained/qblock-full/text/rfc9177-text.txt",
+  "lf_lines": 2154,
+  "sections": [
+    {
+      "line": 111,
+      "title": "1.  Introduction"
+    },
+    {
+      "line": 163,
+      "title": "2.  Terminology"
+    },
+    {
+      "line": 201,
+      "title": "3.  Alternative CoAP Block-Wise Transfer Options"
+    },
+    {
+      "line": 293,
+      "title": "3.1.  CoAP Response Code (4.08) Usage"
+    },
+    {
+      "line": 302,
+      "title": "3.2.  Applicability Scope"
+    },
+    {
+      "line": 345,
+      "title": "4.  The Q-Block1 and Q-Block2 Options"
+    },
+    {
+      "line": 347,
+      "title": "4.1.  Properties of the Q-Block1 and Q-Block2 Options"
+    },
+    {
+      "line": 473,
+      "title": "4.2.  Structure of the Q-Block1 and Q-Block2 Options"
+    },
+    {
+      "line": 491,
+      "title": "4.3.  Using the Q-Block1 Option"
+    },
+    {
+      "line": 668,
+      "title": "4.4.  Using the Q-Block2 Option"
+    },
+    {
+      "line": 783,
+      "title": "4.5.  Using the Observe Option"
+    },
+    {
+      "line": 797,
+      "title": "4.6.  Using the Size1 and Size2 Options"
+    },
+    {
+      "line": 813,
+      "title": "4.7.  Using the Q-Block1 and Q-Block2 Options Together"
+    },
+    {
+      "line": 819,
+      "title": "4.8.  Using the Q-Block2 Option with Multicast"
+    },
+    {
+      "line": 825,
+      "title": "5.  The Use of the 4.08 (Request Entity Incomplete) Response Code"
+    },
+    {
+      "line": 895,
+      "title": "6.  The Use of Tokens"
+    },
+    {
+      "line": 911,
+      "title": "7.  Congestion Control for Unreliable Transports"
+    },
+    {
+      "line": 921,
+      "title": "7.1.  Confirmable (CON)"
+    },
+    {
+      "line": 938,
+      "title": "7.2.  Non-confirmable (NON)"
+    },
+    {
+      "line": 1148,
+      "title": "8.  Caching Considerations"
+    },
+    {
+      "line": 1202,
+      "title": "9.  HTTP Mapping Considerations"
+    },
+    {
+      "line": 1210,
+      "title": "10.  Examples with Non-confirmable Messages"
+    },
+    {
+      "line": 1251,
+      "title": "10.1.  Q-Block1 Option"
+    },
+    {
+      "line": 1253,
+      "title": "10.1.1.  A Simple Example"
+    },
+    {
+      "line": 1271,
+      "title": "10.1.2.  Handling MAX_PAYLOADS Limits"
+    },
+    {
+      "line": 1294,
+      "title": "10.1.3.  Handling MAX_PAYLOADS with Recovery"
+    },
+    {
+      "line": 1350,
+      "title": "10.1.4.  Handling Recovery if Failure Occurs"
+    },
+    {
+      "line": 1390,
+      "title": "10.2.  Q-Block2 Option"
+    },
+    {
+      "line": 1396,
+      "title": "10.2.1.  A Simple Example"
+    },
+    {
+      "line": 1425,
+      "title": "10.2.2.  Handling MAX_PAYLOADS Limits"
+    },
+    {
+      "line": 1461,
+      "title": "10.2.3.  Handling MAX_PAYLOADS with Recovery"
+    },
+    {
+      "line": 1501,
+      "title": "10.2.4.  Handling Recovery by Setting the M Bit"
+    },
+    {
+      "line": 1541,
+      "title": "10.3.  Q-Block1 and Q-Block2 Options"
+    },
+    {
+      "line": 1543,
+      "title": "10.3.1.  A Simple Example"
+    },
+    {
+      "line": 1570,
+      "title": "10.3.2.  Handling MAX_PAYLOADS Limits"
+    },
+    {
+      "line": 1618,
+      "title": "10.3.3.  Handling Recovery"
+    },
+    {
+      "line": 1704,
+      "title": "11.  Security Considerations"
+    },
+    {
+      "line": 1735,
+      "title": "12.  IANA Considerations"
+    },
+    {
+      "line": 1737,
+      "title": "12.1.  CoAP Option Numbers Registry"
+    },
+    {
+      "line": 1754,
+      "title": "12.2.  Media Type Registration"
+    },
+    {
+      "line": 1800,
+      "title": "12.3.  CoAP Content-Formats Registry"
+    },
+    {
+      "line": 1815,
+      "title": "13.  References"
+    },
+    {
+      "line": 1817,
+      "title": "13.1.  Normative References"
+    },
+    {
+      "line": 1891,
+      "title": "13.2.  Informative References"
+    },
+    {
+      "line": 1943,
+      "title": "Appendix A.  Examples with Confirmable Messages"
+    },
+    {
+      "line": 2077,
+      "title": "Appendix B.  Examples with Reliable Transports"
+    },
+    {
+      "line": 2128,
+      "title": "Acknowledgments"
+    },
+    {
+      "line": 2143,
+      "title": "Authors' Addresses"
+    }
+  ],
+  "figures_tables": [
+    {
+      "kind": "Table",
+      "number": 1,
+      "caption": "Table 1: CoAP Q-Block1 and Q-Block2 Option Properties",
+      "start_line": 367,
+      "end_line": 367
+    },
+    {
+      "kind": "Table",
+      "number": 2,
+      "caption": "Table 2: OSCORE Protection of the Q-Block1 and Q-Block2 Options",
+      "start_line": 458,
+      "end_line": 461
+    },
+    {
+      "kind": "Figure",
+      "number": 1,
+      "caption": "Figure 1: Structure of the Missing Blocks Payload",
+      "start_line": 860,
+      "end_line": 860
+    },
+    {
+      "kind": "Table",
+      "number": 3,
+      "caption": "Table 3: Congestion Control Parameters",
+      "start_line": 1031,
+      "end_line": 1031
+    },
+    {
+      "kind": "Figure",
+      "number": 2,
+      "caption": "Figure 2: Example of a NON Request with the Q-Block1 option (without Loss)",
+      "start_line": 1268,
+      "end_line": 1269
+    },
+    {
+      "kind": "Figure",
+      "number": 3,
+      "caption": "Figure 3: Example of a MAX_PAYLOADS NON Request with the Q-Block1 Option (without Loss)",
+      "start_line": 1291,
+      "end_line": 1292
+    },
+    {
+      "kind": "Figure",
+      "number": 4,
+      "caption": "Figure 4: Example of a MAX_PAYLOADS NON Request with the Q-Block1 Option (with Loss)",
+      "start_line": 1316,
+      "end_line": 1317
+    },
+    {
+      "kind": "Figure",
+      "number": 5,
+      "caption": "Figure 5: Example of a NON Request with the Q-Block1 Option (Block Recovery)",
+      "start_line": 1347,
+      "end_line": 1348
+    },
+    {
+      "kind": "Figure",
+      "number": 6,
+      "caption": "Figure 6: Example of a NON Request with the Q-Block1 Option (with Eventual Failure)",
+      "start_line": 1387,
+      "end_line": 1388
+    },
+    {
+      "kind": "Figure",
+      "number": 7,
+      "caption": "Figure 7: Example of NON Notifications with the Q-Block2 Option (without Loss)",
+      "start_line": 1422,
+      "end_line": 1423
+    },
+    {
+      "kind": "Figure",
+      "number": 8,
+      "caption": "Figure 8: Example of NON Notifications with the Q-Block2 Option (without Loss)",
+      "start_line": 1458,
+      "end_line": 1459
+    },
+    {
+      "kind": "Figure",
+      "number": 9,
+      "caption": "Figure 9: Example of NON Notifications with the Q-Block2 Option (Block Recovery)",
+      "start_line": 1498,
+      "end_line": 1499
+    },
+    {
+      "kind": "Figure",
+      "number": 10,
+      "caption": "Figure 10: Example of NON Notifications with the Q-Block2 Option (Block Recovery with the M Bit Set)",
+      "start_line": 1538,
+      "end_line": 1539
+    },
+    {
+      "kind": "Figure",
+      "number": 11,
+      "caption": "Figure 11: Example of a NON FETCH with the Q-Block1 and Q-Block2 Options (without Loss)",
+      "start_line": 1567,
+      "end_line": 1568
+    },
+    {
+      "kind": "Figure",
+      "number": 12,
+      "caption": "Figure 12: Example of a NON FETCH with the Q-Block1 and Q-Block2 Options (without Loss)",
+      "start_line": 1610,
+      "end_line": 1611
+    },
+    {
+      "kind": "Figure",
+      "number": 13,
+      "caption": "Figure 13: Example of a NON FETCH with the Q-Block1 and Q-Block2 Options (with Loss)",
+      "start_line": 1633,
+      "end_line": 1634
+    },
+    {
+      "kind": "Figure",
+      "number": 14,
+      "caption": "Figure 14: Example of a NON Request with the Q-Block1 Option (Server Recovery)",
+      "start_line": 1660,
+      "end_line": 1661
+    },
+    {
+      "kind": "Figure",
+      "number": 15,
+      "caption": "Figure 15: Example of a NON Request with the Q-Block1 Option (Client Recovery)",
+      "start_line": 1701,
+      "end_line": 1702
+    },
+    {
+      "kind": "Table",
+      "number": 4,
+      "caption": "Table 4: Additions to CoAP Option Numbers Registry",
+      "start_line": 1751,
+      "end_line": 1752
+    },
+    {
+      "kind": "Table",
+      "number": 5,
+      "caption": "Table 5: Addition to CoAP Content-Format Registry",
+      "start_line": 1813,
+      "end_line": 1813
+    },
+    {
+      "kind": "Figure",
+      "number": 16,
+      "caption": "Figure 16: Example of a CON Request with the Q-Block1 Option (without Loss)",
+      "start_line": 1970,
+      "end_line": 1971
+    },
+    {
+      "kind": "Figure",
+      "number": 17,
+      "caption": "Figure 17: Example of a CON Request with the Q-Block1 Option (Block Recovery)",
+      "start_line": 2003,
+      "end_line": 2004
+    },
+    {
+      "kind": "Figure",
+      "number": 18,
+      "caption": "Figure 18: Example of CON Notifications with the Q-Block2 Option",
+      "start_line": 2066,
+      "end_line": 2066
+    },
+    {
+      "kind": "Figure",
+      "number": 19,
+      "caption": "Figure 19: Example of a Reliable Request with the Q-Block1 Option",
+      "start_line": 2098,
+      "end_line": 2098
+    },
+    {
+      "kind": "Figure",
+      "number": 20,
+      "caption": "Figure 20: Example of Notifications with the Q-Block2 Option",
+      "start_line": 2123,
+      "end_line": 2123
+    }
+  ],
+  "appendices": [
+    "A",
+    "B"
+  ],
+  "coverage": "Complete TXT; all figure/table bodies included in full ranges."
+}

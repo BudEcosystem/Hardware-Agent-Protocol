@@ -1,0 +1,51 @@
+{
+  "id": "pragmas",
+  "url": "https://sqlite.org/pragma.html",
+  "finalUrl": "https://sqlite.org/pragma.html",
+  "retrievedAt": "2026-11-08T01:23:45.928347+00:00",
+  "status": 200,
+  "headers": {
+    "Connection": "close",
+    "Date": "Sun, 08 Nov 2026 01:23:46 GMT",
+    "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+    "Cache-Control": "max-age=120",
+    "ETag": "\"m6ae24ec4s222a0\"",
+    "Content-type": "text/html; charset=utf-8",
+    "Content-length": "139936"
+  },
+  "rawPath": "raw/pragmas.html",
+  "rawBytes": 139936,
+  "rawSha256": "af75d7d7ab00c29e6eea98618cb1259a3919c308af60a6173215bf9798706034",
+  "textPath": "text/pragmas.txt",
+  "textBytes": 83877,
+  "textSha256": "d0bb67f0235ce56a61f6803cfe38ff9b19f1a9fa82577a48d6b5f25317b3a38e",
+  "lines": 2688,
+  "visuals": [
+    {
+      "kind": "img",
+      "source": "images/sqlite370_banner.svg",
+      "identifier": null,
+      "text": ""
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "identifier": null,
+      "text": "PRAGMA schema-name . pragma-name ( pragma-value ) = pragma-value"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "identifier": null,
+      "text": "signed-number name signed-literal"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "identifier": null,
+      "text": "+ numeric-literal -"
+    }
+  ],
+  "readingStatus": "acquired-not-yet-read",
+  "acquiredContentExecuted": false
+}

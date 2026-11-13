@@ -1,0 +1,10 @@
+{
+  "url": "https://api.github.com/repos/modelcontextprotocol/modelcontextprotocol/commits/main",
+  "commit": "3c4d91b7e832d9b74338d56eed03403ccc662123",
+  "metadata_path": "research/mcp/raw/commit.json",
+  "sha256": "0ff6c73521546bbb7a9a412fadd6bdd3313eff3eb9c696810e62b6d8e8121cea",
+  "tree_sha": "85cf513aca293d44eb7491d62d4693207215b9b2",
+  "tree_metadata_path": "research/mcp/raw/tree.json",
+  "tree_metadata_url": "https://api.github.com/repos/modelcontextprotocol/modelcontextprotocol/git/trees/85cf513aca293d44eb7491d62d4693207215b9b2?recursive=1",
+  "tree_metadata_sha256": "e69941fcf1914cb28207ec3ecaa8f6f6efcf10030465da6c0588d73d0a9f6e4a"
+}

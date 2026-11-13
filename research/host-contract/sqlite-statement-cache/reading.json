@@ -1,0 +1,61 @@
+{
+  "createdAt": "2026-11-09T00:23:56.860296+00:00",
+  "sources": [
+    {
+      "id": "prepare",
+      "path": "text/prepare.txt",
+      "sha256": "4587270661f0e2f39e00a3dde5e06289e939d340df4d404a8008a1aafa557c74",
+      "lfLines": 121,
+      "coveredLfRanges": [
+        [
+          1,
+          121
+        ]
+      ],
+      "completeDeclaredTextRead": true,
+      "readMethod": "Primary agent, complete untruncated tool output",
+      "scope": "Complete API body through final See also links; site navigation and non-executed scripts excluded."
+    },
+    {
+      "id": "statement_object",
+      "path": "text/statement_object.txt",
+      "sha256": "917f44e41d93cbe11aa2f99cfcff6a28127d1595699f836b459e9310f4e90fe6",
+      "lfLines": 151,
+      "coveredLfRanges": [
+        [
+          1,
+          151
+        ]
+      ],
+      "completeDeclaredTextRead": true,
+      "readMethod": "Primary agent, complete untruncated tool output",
+      "scope": "Complete API body through final See also links; site navigation and non-executed scripts excluded."
+    },
+    {
+      "id": "cpython_statement",
+      "path": "text/cpython_statement.c",
+      "sha256": "eee3f2fda3f57f9ec3d2bd38022ee6d03687713911777956a024660b073e17fa",
+      "lfLines": 205,
+      "coveredLfRanges": [
+        [
+          1,
+          205
+        ]
+      ],
+      "completeDeclaredTextRead": true,
+      "readMethod": "Primary agent, complete untruncated tool output",
+      "scope": "Complete pinned CPython v3.12.3 source, byte-identical copy; not executed."
+    }
+  ],
+  "totalLfLines": 477,
+  "coveredLfLines": 477,
+  "acquiredCodeExecuted": false,
+  "linkedReferencesRead": false,
+  "relatedSourceOutstanding": [
+    {
+      "url": "https://docs.python.org/3.12/library/sqlite3.html",
+      "status": "Browsed for context; not acquired or fully read in this packet; not included in coverage."
+    }
+  ],
+  "broaderResearchComplete": false
+}

@@ -1,0 +1,219 @@
+{
+  "browserPinnedTreeAvailable": false,
+  "commit": "3734757348263e890d276f7e4fbc1f7e2bf5f2b9",
+  "dependencyRereads": [
+    {
+      "path": "research/embedded/repos/configurable-firmata/src/FirmataExt.cpp",
+      "priorFullReading": true,
+      "ranges": [
+        [
+          1,
+          202
+        ]
+      ],
+      "sha256": "38cdfcdec764f1aa22fd5e75a8e233cae28cb76e40f429bb630c7e17fbcfa294"
+    },
+    {
+      "path": "research/embedded/repos/configurable-firmata/src/FirmataReporting.cpp",
+      "priorFullReading": true,
+      "ranges": [
+        [
+          1,
+          77
+        ]
+      ],
+      "sha256": "18254094ee640c7783b52d8611d2871bba228d9c0c0defed49938746125a50df"
+    },
+    {
+      "path": "research/embedded/repos/configurable-firmata/src/ConfigurableFirmata.cpp",
+      "priorFullReading": true,
+      "ranges": [
+        [
+          327,
+          389
+        ],
+        [
+          748,
+          805
+        ],
+        [
+          875,
+          925
+        ]
+      ],
+      "sha256": "fa014da8dfcb9fc5d18a3c767d0f9fa2014cd763253a8fcab9d0c87ceed96bbc"
+    },
+    {
+      "path": "research/embedded/repos/configurable-firmata/examples/ConfigurableFirmata/ConfigurableFirmata.ino",
+      "priorFullReading": true,
+      "ranges": [
+        [
+          112,
+          148
+        ]
+      ],
+      "sha256": "863123401ddc7705a2f62a6237b4024ef8d153fe8c97a16a0442acf41ac40921"
+    }
+  ],
+  "files": [
+    {
+      "bytes": 1587,
+      "lfLines": 46,
+      "logicalLines": 46,
+      "path": "research/embedded/repos/configurable-firmata/src/DigitalInputFirmata.h",
+      "readRangesInclusive": [
+        [
+          1,
+          46
+        ]
+      ],
+      "retained": "source/DigitalInputFirmata.h",
+      "sha256": "45d3cdedf236fa3f88b768837459d108ec7bba319f92355cbe2d45845606e5b3",
+      "status": "newly-fully-read"
+    },
+    {
+      "bytes": 5725,
+      "lfLines": 148,
+      "logicalLines": 148,
+      "path": "research/embedded/repos/configurable-firmata/src/DigitalInputFirmata.cpp",
+      "readRangesInclusive": [
+        [
+          1,
+          148
+        ]
+      ],
+      "retained": "source/DigitalInputFirmata.cpp",
+      "sha256": "19bfefaa7c0d7c2566cd7403b162f29778982d77f88760e654a96e737bb2f24c",
+      "status": "newly-fully-read"
+    },
+    {
+      "bytes": 1307,
+      "lfLines": 40,
+      "logicalLines": 40,
+      "path": "research/embedded/repos/configurable-firmata/src/DigitalOutputFirmata.h",
+      "readRangesInclusive": [
+        [
+          1,
+          40
+        ]
+      ],
+      "retained": "source/DigitalOutputFirmata.h",
+      "sha256": "7ad1b63a0b99f2d08fa6e7b18d47a2dc047a4e96955bb2cbd3d19daddc496809",
+      "status": "newly-fully-read"
+    },
+    {
+      "bytes": 3359,
+      "lfLines": 106,
+      "logicalLines": 106,
+      "path": "research/embedded/repos/configurable-firmata/src/DigitalOutputFirmata.cpp",
+      "readRangesInclusive": [
+        [
+          1,
+          106
+        ]
+      ],
+      "retained": "source/DigitalOutputFirmata.cpp",
+      "sha256": "caad49d9b7182d848fd3f67b9995e38691be208a87d7aaf1f5049f7872140d06",
+      "status": "newly-fully-read"
+    },
+    {
+      "bytes": 1406,
+      "lfLines": 41,
+      "logicalLines": 41,
+      "path": "research/embedded/repos/configurable-firmata/src/AnalogInputFirmata.h",
+      "readRangesInclusive": [
+        [
+          1,
+          41
+        ]
+      ],
+      "retained": "source/AnalogInputFirmata.h",
+      "sha256": "86776f8c77578f26c8e44130d7439ae88158f1d05f05766ef188db94b69fbe56",
+      "status": "newly-fully-read"
+    },
+    {
+      "bytes": 4219,
+      "lfLines": 143,
+      "logicalLines": 143,
+      "path": "research/embedded/repos/configurable-firmata/src/AnalogInputFirmata.cpp",
+      "readRangesInclusive": [
+        [
+          1,
+          143
+        ]
+      ],
+      "retained": "source/AnalogInputFirmata.cpp",
+      "sha256": "a409025716045fa7e9bae1e12bc26823e1ee6babc204284462e405d222c93c58",
+      "status": "newly-fully-read"
+    },
+    {
+      "bytes": 1564,
+      "lfLines": 56,
+      "logicalLines": 56,
+      "path": "research/embedded/repos/configurable-firmata/src/AnalogOutputFirmata.h",
+      "readRangesInclusive": [
+        [
+          1,
+          56
+        ]
+      ],
+      "retained": "source/AnalogOutputFirmata.h",
+      "sha256": "5c1b41316588c98d8c2722fe4f3897709b6627ba8a63fb968aaa4858c6f38f40",
+      "status": "newly-fully-read"
+    },
+    {
+      "bytes": 1529,
+      "lfLines": 63,
+      "logicalLines": 63,
+      "path": "research/embedded/repos/configurable-firmata/src/AnalogOutputFirmata.cpp",
+      "readRangesInclusive": [
+        [
+          1,
+          63
+        ]
+      ],
+      "retained": "source/AnalogOutputFirmata.cpp",
+      "sha256": "f6c930c5bb7e26ac7c6359b2e6f62968e3e6bfc386e98cabba6bfe7f8fc91656",
+      "status": "newly-fully-read"
+    },
+    {
+      "bytes": 3966,
+      "lfLines": 157,
+      "logicalLines": 157,
+      "path": "research/embedded/repos/configurable-firmata/src/ServoFirmata.h",
+      "readRangesInclusive": [
+        [
+          1,
+          157
+        ]
+      ],
+      "retained": "source/ServoFirmata.h",
+      "sha256": "efe0d70dfc4f27d9b0440980c00c8d8a7898b41ab48c92566e99671939ad885a",
+      "status": "newly-fully-read"
+    },
+    {
+      "bytes": 139,
+      "lfLines": 4,
+      "logicalLines": 4,
+      "path": "research/embedded/repos/configurable-firmata/src/ServoFirmata.cpp",
+      "readRangesInclusive": [
+        [
+          1,
+          4
+        ]
+      ],
+      "retained": "source/ServoFirmata.cpp",
+      "sha256": "c51a8b443d0b552557b1cd264d9525ba5c486105fdbdddccfde6274fab78b5f8",
+      "status": "newly-fully-read"
+    }
+  ],
+  "license": {
+    "path": "source/LICENSE.txt",
+    "sha256": "253ab592417971d406ea43868f05ea9987728549ad59c8c8a2b2efcce0c6993e",
+    "status": "retained-not-claimed-newly-fully-read"
+  },
+  "newlyFullyReadFiles": 10,
+  "newlyFullyReadLfLines": 804,
+  "upstreamCodeExecuted": false,
+  "wholeRepositoryRead": false
+}

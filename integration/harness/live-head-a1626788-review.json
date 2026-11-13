@@ -1,0 +1,851 @@
+{
+  "recorded_at": "2026-11-06T02:19:35.955894+00:00",
+  "previous_tested_commit": "335a82eb121ccefc4c4bee98fc523a76eb218c5c",
+  "reviewed_live_commit": "a16267881e98cdac5e1edd7ab6ff5d1dae0a8ff2",
+  "live_status": "clean",
+  "scope": "Bounded read-only drift review, not a runtime compatibility proof or full review of WaaV interaction feature. Root AGENTS reread; other applicable instructions previously read in full and byte-identical at new head.",
+  "changed_file_count": 133,
+  "changed_files": [
+    {
+      "path": "apps/cli/composition.md",
+      "before_git_blob": "d0e3c8eb17d42fcec3ad554ec0c42e90179ace8b",
+      "after_git_blob": "3f8dc1102fb43ce39e2d31771fa44c52f88d4954"
+    },
+    {
+      "path": "apps/web/tests/voice-call-interaction.e2e.ts",
+      "before_git_blob": null,
+      "after_git_blob": "8b67225d9e7067f24021701717edaedaeee39a1e"
+    },
+    {
+      "path": "apps/web/tests/voice-call-interaction.overlay.yml",
+      "before_git_blob": null,
+      "after_git_blob": "c419cfc82b1c15b33c1b062f27ae563f935d472b"
+    },
+    {
+      "path": "apps/web/tsconfig.json",
+      "before_git_blob": "b3d40de1270f8e06b03d2dd98d290456f88b4238",
+      "after_git_blob": "f87b3fd830f8a09a9a683d63dca805eab0fd3115"
+    },
+    {
+      "path": "docs/config-catalog.md",
+      "before_git_blob": "cf79dd428a62444594ee95679beab4f254c47d6b",
+      "after_git_blob": "afc2e5ea284c6a357180fc00ddd809476ddb5f89"
+    },
+    {
+      "path": "docs/config-catalog.zh.md",
+      "before_git_blob": "da1a2e31b1843b953311f1a4f82ac32028f1bb4c",
+      "after_git_blob": "5296b035a26c2aba733fae31d47ecee9de849518"
+    },
+    {
+      "path": "docs/event-producer-consumer.md",
+      "before_git_blob": "5845021a12efb2bfd2c40c3f4e05086d3bd46f54",
+      "after_git_blob": "446ec164d2e6d07df59dc7bb1b9737fd809a7c97"
+    },
+    {
+      "path": "docs/event-producer-consumer.zh.md",
+      "before_git_blob": "0c210daa7bff262a1605d25167ac1e23821712ef",
+      "after_git_blob": "83629fda2556a4d7fc9b16a1f5030f2b064339af"
+    },
+    {
+      "path": "docs/persistence-catalog.i18n.yaml",
+      "before_git_blob": "e7651cbfef14e628f52b810bb6be9a9874c31c82",
+      "after_git_blob": "bab94602188377c45f895b7452a5b106c32eeb21"
+    },
+    {
+      "path": "docs/persistence-catalog.md",
+      "before_git_blob": "4f7a2e7d9c0d6d1ef110f5871fe3a488505fdc0a",
+      "after_git_blob": "97e7d6373685e84c7880441c7a8732bd3eabd592"
+    },
+    {
+      "path": "docs/persistence-catalog.zh.md",
+      "before_git_blob": "a239b236b35e87dd01a9f3ea83cb6f659d00b87f",
+      "after_git_blob": "670be239572397fadd6aff7ec1aab4d62125f140"
+    },
+    {
+      "path": "docs/persistence-changes/2026-11-06-waav-interaction-events.md",
+      "before_git_blob": null,
+      "after_git_blob": "01c68b15ad77d454b444353a0a32cb5d7e648dea"
+    },
+    {
+      "path": "docs/persistence-changes/2026-11-06-waav-interaction-events.schema.json",
+      "before_git_blob": null,
+      "after_git_blob": "bec82c9e890ad83707b012629c2cda687ddcbe5d"
+    },
+    {
+      "path": "docs/persistence-changes/historical-formats/README.i18n.yaml",
+      "before_git_blob": "327674d87280fc94c490e2320c50384813fc3381",
+      "after_git_blob": "bb2ff1356e8319b19070c71387e76425751413dc"
+    },
+    {
+      "path": "docs/persistence-changes/historical-formats/README.md",
+      "before_git_blob": "a3872f475adc87d4b3db3b5c7e95c64baa6dbfba",
+      "after_git_blob": "2358e324a67ca3cb411d800cd88df179618ab147"
+    },
+    {
+      "path": "docs/persistence-changes/historical-formats/README.zh.md",
+      "before_git_blob": "60b037b092ea98a044daa1daeb6739ba9230ea51",
+      "after_git_blob": "3c7a60da946a6f507c5366b0ee88f50c66c95d7c"
+    },
+    {
+      "path": "docs/persistence-schema.json",
+      "before_git_blob": "adf8cb411c74621233da3948e630b7c21dc06486",
+      "after_git_blob": "5aefe678c54d53e160bff0bc293778ed0eb7d29f"
+    },
+    {
+      "path": "docs/subsystems/voice.md",
+      "before_git_blob": "67484f5e46ee689451dc5adc4d1d5bcb76333fb5",
+      "after_git_blob": "62860605408f08328bbd627d1c8f701362ac08a2"
+    },
+    {
+      "path": "docs/subsystems/waav.md",
+      "before_git_blob": "d709c702ba89809346c373914ba84e4545323b42",
+      "after_git_blob": "6cfddf7fe6d1d7019fa5ef69fa182459e45d97c0"
+    },
+    {
+      "path": "forge/plan/owner-away-decisions.md",
+      "before_git_blob": "606f60465b55807095fb8d6c8615c4cea59a4f04",
+      "after_git_blob": "0c7aa41a8014bc9c67a3b7ff2002fbae392d081c"
+    },
+    {
+      "path": "forge/plan/phase-3-status.md",
+      "before_git_blob": "72c5180fe1a1cbfcdbb3c2f89cd8d4d15dc4e8d7",
+      "after_git_blob": "f29243c9da0343280528839b2d4846c03466c7ba"
+    },
+    {
+      "path": "packages/api/voice/README.md",
+      "before_git_blob": "0d1fa20881a4b4155c36587d51a4f214e1f8dab0",
+      "after_git_blob": "58e5d0339dc14d7a9025b7e31bb0c975a6599639"
+    },
+    {
+      "path": "packages/api/voice/src/call.ts",
+      "before_git_blob": "64832e4f97a62da79b4130801bc8abd41a613aef",
+      "after_git_blob": "b70e0d68d72db708556114e93a30be56a73920ff"
+    },
+    {
+      "path": "packages/api/voice/src/connection.ts",
+      "before_git_blob": "c04b8c6bb2623e5b70cc34b22fe6b462e97af1b9",
+      "after_git_blob": "3b36abb47d30db66b35d32433ebfdfe7427ff435"
+    },
+    {
+      "path": "packages/api/voice/src/sdk-types.ts",
+      "before_git_blob": "52c2e9ea776f08d66ae2ccd3dd7b1385cb48030a",
+      "after_git_blob": "7fca0af43214050b5d60ef1c1667d2d70ce8d01f"
+    },
+    {
+      "path": "packages/api/voice/src/sdk.ts",
+      "before_git_blob": "282fd5c5b476c99428f854aa030e49943c2e329b",
+      "after_git_blob": "1d4978175604340d147a8d4f23f4792f3f16dadf"
+    },
+    {
+      "path": "packages/api/voice/src/types.ts",
+      "before_git_blob": "3c16bcf32b97d3007c0038bca1031796bc6de1a5",
+      "after_git_blob": "e139ed05410ee90576a615946e0c02b4dfdc840b"
+    },
+    {
+      "path": "packages/api/voice/tests/call.spec.ts",
+      "before_git_blob": "4d9b671ae465eb53112677b68f3df94d104755b7",
+      "after_git_blob": "466ca403011d225fd89fbaf8c8602fc3882f4f71"
+    },
+    {
+      "path": "packages/api/voice/tests/connection.spec.ts",
+      "before_git_blob": "66fa9a21bd65cc8cd66d9faae2cdab9cadd6c90b",
+      "after_git_blob": "7a9370a3829f6a9774e7378f998af424c70745b4"
+    },
+    {
+      "path": "packages/api/voice/tests/fixtures/sdk-conformance.json",
+      "before_git_blob": "8f596767e9c6616c65aeffe7589683232461310e",
+      "after_git_blob": "ca2fcd5925adb80ce2f5db4809161f0f1b014b31"
+    },
+    {
+      "path": "packages/api/voice/tests/fixtures/sdk-driver.json",
+      "before_git_blob": "644fa40a7bec5937ad9b93352a4722ab6f9f7fa2",
+      "after_git_blob": "967577a5f30c09728fdbe1ccba38f45c31ab0966"
+    },
+    {
+      "path": "packages/api/voice/tests/sdk.spec.ts",
+      "before_git_blob": "81e144fc4f51e3abd0675d4fc3007c38715acc8a",
+      "after_git_blob": "e38b0e244411639ff7a8cff22670cb8433ac66e4"
+    },
+    {
+      "path": "packages/bundle/base/cordis.patch.yml",
+      "before_git_blob": "869a4a8b41a5920ad853f6ea89d91f051284f9a4",
+      "after_git_blob": "116be9b82d324568a6280f08c9caaa686ba4172e"
+    },
+    {
+      "path": "packages/client/ui-voice-call/README.md",
+      "before_git_blob": "bd5196cf4e6bd736d1d05ba1d7b15fabc4b06d31",
+      "after_git_blob": "bea41f48a7a66ebdae004f5846e2f293084db333"
+    },
+    {
+      "path": "packages/client/ui-voice-call/src/client/call/call.ts",
+      "before_git_blob": "8b57a8157d278d67e12ab95c4f0d1a9a0340b339",
+      "after_git_blob": "1c1b8f687a9f88b3441779af7d0e3b9c803579a8"
+    },
+    {
+      "path": "packages/client/ui-voice-call/src/client/call/engine.ts",
+      "before_git_blob": null,
+      "after_git_blob": "f78a92055defa7983cc0f30ab651b86ee69488e0"
+    },
+    {
+      "path": "packages/client/ui-voice-call/src/client/call/registry.ts",
+      "before_git_blob": "da946f29304182a6f1e425df02d36738f2734442",
+      "after_git_blob": "44e1e73f50bb07bff969e5f65d6fe6d4c8244292"
+    },
+    {
+      "path": "packages/client/ui-voice-call/src/client/call/sources.ts",
+      "before_git_blob": "24ede0672632a295b2910f8c3b252e0c33749949",
+      "after_git_blob": "b8876965e94565054dbbcefb208ff35293054cd1"
+    },
+    {
+      "path": "packages/client/ui-voice-call/src/client/contract.ts",
+      "before_git_blob": "5b8d5fd427943821f7db7b8c9e3189694fbc772d",
+      "after_git_blob": "c1d303a6df2d175b8d4c23fbdae74f85dc4045cc"
+    },
+    {
+      "path": "packages/client/ui-voice-call/src/client/dock/CallDock.module.css",
+      "before_git_blob": "f785d84fb3e6a752e0a1f4d7f93301ce863e55fd",
+      "after_git_blob": "d4a9347553ddcf0c222f66e44a06306870ee0123"
+    },
+    {
+      "path": "packages/client/ui-voice-call/src/client/dock/CallDock.tsx",
+      "before_git_blob": "b3ca4f49a6a13d4b9564b8dd82b27f6f766e23fa",
+      "after_git_blob": "b80c4104caf7ab55bc0349e4b2aafc1f8c1c428e"
+    },
+    {
+      "path": "packages/client/ui-voice-call/src/client/dock/EngineControls.tsx",
+      "before_git_blob": null,
+      "after_git_blob": "af30a6a9d886b33bb27ec4e69d1670b556e637bb"
+    },
+    {
+      "path": "packages/client/ui-voice-call/src/client/index.ts",
+      "before_git_blob": "8a4578a7544e1d564dbdf27002d3205aba96fffe",
+      "after_git_blob": "27fec57402a98aec6a819015713577a3d9e5632d"
+    },
+    {
+      "path": "packages/client/ui-voice-call/src/client/locales.ts",
+      "before_git_blob": "ca7d7cd9d1e61c69f3c3bf332537e86197f11bab",
+      "after_git_blob": "af1cef81c2cb9833ebe8a8824a1295d24e28d336"
+    },
+    {
+      "path": "packages/client/ui-voice-call/tests/call-engine.client.spec.ts",
+      "before_git_blob": null,
+      "after_git_blob": "0e88022bda27b10a71a410c2f358d1faa05437ab"
+    },
+    {
+      "path": "packages/client/ui-voice-call/tests/dock.client.spec.tsx",
+      "before_git_blob": "ed295172a90d9106fe4ed6e829e6bd736f84c75e",
+      "after_git_blob": "d5ba9b039ab4ab84b3e565171972fcc78dc5e9ed"
+    },
+    {
+      "path": "packages/client/ui-voice-call/tests/engine-dock.client.spec.tsx",
+      "before_git_blob": null,
+      "after_git_blob": "0dd3fbcb2255655115a55b51145bd87fbccc27fc"
+    },
+    {
+      "path": "packages/client/ui-voice-call/tests/engine.client.spec.ts",
+      "before_git_blob": null,
+      "after_git_blob": "23f6212447b9eb081751eeb084a0905b2e2a1eb2"
+    },
+    {
+      "path": "packages/client/ui-voice-call/tests/plugin.client.spec.tsx",
+      "before_git_blob": "99d45e6be405c66a519d409754d5c4e513c43880",
+      "after_git_blob": "855c5f137b8a7096269c35cd7efc5cf5c4bb1d99"
+    },
+    {
+      "path": "packages/core/session/src/known-event-types.ts",
+      "before_git_blob": "96155b86a8a80b8d1185eb28a4152a8a4f07e5d8",
+      "after_git_blob": "c01ab85da086457b20f670369df50b08ce0862b8"
+    },
+    {
+      "path": "packages/extensions/tool-cordis/src/api-catalog.ts",
+      "before_git_blob": "a97835587f5552439afb01d7f99b53912dc3e770",
+      "after_git_blob": "045e149fafeb931ca1bfed30898441414082798e"
+    },
+    {
+      "path": "packages/llm/llm-external-turns/README.md",
+      "before_git_blob": "52917d57f9ee768eae1b084063e6e61d75fd0fe1",
+      "after_git_blob": "41a33c8e3a35d767117ddf8936fec0d412475a95"
+    },
+    {
+      "path": "packages/sdk/client/README.md",
+      "before_git_blob": "00d4c05acf08af5a7d069ec2614c25e034364e60",
+      "after_git_blob": "30e56e205a056238ed09491123331549161569e5"
+    },
+    {
+      "path": "packages/sdk/client/src/index.ts",
+      "before_git_blob": "64adf3e6faa241460ef7336367a9ce8d6303f208",
+      "after_git_blob": "8202431c8abe7492ca42348fa098c597403485a7"
+    },
+    {
+      "path": "packages/sdk/client/src/voice-driver.ts",
+      "before_git_blob": "989d9aede6ec18b9c7c905efc97b826b216f1c15",
+      "after_git_blob": "b58337f5e61b1701197b033b96328af2953e7a32"
+    },
+    {
+      "path": "packages/sdk/client/src/voice.ts",
+      "before_git_blob": "3351183561cdce4883b8a1facf96a313db7be863",
+      "after_git_blob": "1f6d831e2b8d0568f8bb360cc0e1eada32133c39"
+    },
+    {
+      "path": "packages/sdk/client/tests/voice-conformance.spec.ts",
+      "before_git_blob": "910d64db745026d32c6bd3e18220761aabbfa206",
+      "after_git_blob": "9f782aaff1dc4f7163f057c186a008a53e4014c3"
+    },
+    {
+      "path": "packages/test-support/llm-replay/src/index.ts",
+      "before_git_blob": "73ab89bd4d4207ee443ae41f6d5f9a26d0d0d678",
+      "after_git_blob": "2c362732585b4014e80a8ac5537e543524a781f4"
+    },
+    {
+      "path": "packages/test-support/llm-replay/tests/llm-replay.spec.ts",
+      "before_git_blob": "fe6c9557c6b85e532158e7b1f35c635141898016",
+      "after_git_blob": "d8067d5b565ca21480ab0be3a169b9c9d1dce791"
+    },
+    {
+      "path": "packages/test-support/waav-fake/README.md",
+      "before_git_blob": "1e6ce149caaaee463720a0807d6e7723c8dbfd6b",
+      "after_git_blob": "c07ac8cc87c34b255b6bdf1b9c2bc3dfbf9b7481"
+    },
+    {
+      "path": "packages/test-support/waav-fake/src/gateway.ts",
+      "before_git_blob": "9302dbb4bbc6ee6c03610fcd485dd571727eabef",
+      "after_git_blob": "5b0599f0761b56355e2d8bfef5c61127bf003f8d"
+    },
+    {
+      "path": "packages/test-support/waav-fake/src/interaction-script.ts",
+      "before_git_blob": "344ab85bd86702b34900f7c2173b953bd98783bc",
+      "after_git_blob": "4703f8ad46657e9fe883b417191ad335fb8c85fc"
+    },
+    {
+      "path": "packages/test-support/waav-fake/src/recognizer.ts",
+      "before_git_blob": "09756f25c8ced7b4009bed2a3d89d8db8f625c86",
+      "after_git_blob": "fa1d2ac59904f6d5510b22304798097fdb7e8915"
+    },
+    {
+      "path": "packages/test-support/waav-fake/src/ws-session.ts",
+      "before_git_blob": "9d70ec906fe61560026f6bc0b678610b0bce6ec8",
+      "after_git_blob": "cfe5a7f5d6ee0e7d6a739636eeeb8fc5649b10a4"
+    },
+    {
+      "path": "packages/test-support/waav-fake/tests/contract/harness.ts",
+      "before_git_blob": "d624db2e231f50474436f3fa15d3fbd71fb94554",
+      "after_git_blob": "a22de22e4d22892b8a72295a49a763ca34d3edeb"
+    },
+    {
+      "path": "packages/test-support/waav-fake/tests/interaction.spec.ts",
+      "before_git_blob": "24c0a9ceff5221fc441ed3b935f67f5bd71572c8",
+      "after_git_blob": "1f09d7b164a535e59cffa0ad626757397796080e"
+    },
+    {
+      "path": "packages/test-support/waav-fake/tests/ws-session.spec.ts",
+      "before_git_blob": "fd6e6657751890e61a720ec611458a56e3c40a37",
+      "after_git_blob": "a20d1718be21bf869bfaca92693d91d844945593"
+    },
+    {
+      "path": "packages/waav/voice-waav/README.md",
+      "before_git_blob": "d2720cee77a9bdda0e31fda47f9c3dd16ad54bb4",
+      "after_git_blob": "0eb6e4edfdc6486bb4d9eba4fc1567172a378eb0"
+    },
+    {
+      "path": "packages/waav/voice-waav/package.json",
+      "before_git_blob": "f1601d1d70f23684be278f42427775ddaf9ce40f",
+      "after_git_blob": "0129484358fa9ef56ba572b0171e9eff6f5782a7"
+    },
+    {
+      "path": "packages/waav/voice-waav/src/config.ts",
+      "before_git_blob": "cb2f26fa99c54a1d5abae840a0ac75a42111d5a5",
+      "after_git_blob": "7827107de3767169f5871829801e2b12ca807b03"
+    },
+    {
+      "path": "packages/waav/voice-waav/src/engine.ts",
+      "before_git_blob": null,
+      "after_git_blob": "2793974b400220c5db15108c1e6598a1f740994f"
+    },
+    {
+      "path": "packages/waav/voice-waav/src/index.ts",
+      "before_git_blob": "ef2d70d964c783a931885ab94326e2cb44ec4346",
+      "after_git_blob": "7f51788b5338e263a3310d1481bd9f80176fd8f2"
+    },
+    {
+      "path": "packages/waav/voice-waav/src/interaction.ts",
+      "before_git_blob": null,
+      "after_git_blob": "b28f1d3c3ddcd4ceca8f283fa9ff80f7db5bd71d"
+    },
+    {
+      "path": "packages/waav/voice-waav/src/json.ts",
+      "before_git_blob": null,
+      "after_git_blob": "89c303cc6c1a90328ed4b8a0cbcc2887b0b6a5ec"
+    },
+    {
+      "path": "packages/waav/voice-waav/src/pipeline.ts",
+      "before_git_blob": "ae9c274acbe2c02403a13dad39122053dbab5035",
+      "after_git_blob": "bd9558c90cbc8fc48714aed30a079a6a0436b62f"
+    },
+    {
+      "path": "packages/waav/voice-waav/src/replies.ts",
+      "before_git_blob": null,
+      "after_git_blob": "0283fe35d87854a1d76bdc9fa1015a2b878c8392"
+    },
+    {
+      "path": "packages/waav/voice-waav/src/synthesis.ts",
+      "before_git_blob": "89cba865cd23f9616014e671ce6e7b69d654692f",
+      "after_git_blob": "64060e3b9bfda731a555bec2c359a2d05dca1dec"
+    },
+    {
+      "path": "packages/waav/voice-waav/src/types.ts",
+      "before_git_blob": "63ccaac2a107e063272362976ece726eba6b6411",
+      "after_git_blob": "e05de7d78faa12c7864b45afa5e35cf4121bf5b2"
+    },
+    {
+      "path": "packages/waav/voice-waav/tests/call.ts",
+      "before_git_blob": "94f430e9f57d812f9efb8fb46db6241065559388",
+      "after_git_blob": "296139e61b8cb22f4346311bf4d766030687da84"
+    },
+    {
+      "path": "packages/waav/voice-waav/tests/contract/owners.contract.ts",
+      "before_git_blob": null,
+      "after_git_blob": "c3bdee513cccb8170767037a2ae923ab437d4833"
+    },
+    {
+      "path": "packages/waav/voice-waav/tests/owner-flows.spec.ts",
+      "before_git_blob": null,
+      "after_git_blob": "2917bc05911292d13673585524cb79bfb3cb5b04"
+    },
+    {
+      "path": "packages/waav/voice-waav/tests/owner-units.spec.ts",
+      "before_git_blob": null,
+      "after_git_blob": "3856d0de7aa25dac70bc016fb7e50b50e086713e"
+    },
+    {
+      "path": "packages/waav/voice-waav/tests/owners.spec.ts",
+      "before_git_blob": null,
+      "after_git_blob": "6d0861b53803dff7abf76b087217b91b2712b35a"
+    },
+    {
+      "path": "packages/waav/voice-waav/tests/pipeline-owned.spec.ts",
+      "before_git_blob": null,
+      "after_git_blob": "c46a1589685f7f221dda062c1d0ad00b703fac6c"
+    },
+    {
+      "path": "packages/waav/voice-waav/tests/pipeline-stub.spec.ts",
+      "before_git_blob": "a2c17bcee21292c2cdfb394ab59570cefc921d57",
+      "after_git_blob": "d9169c6b4d58a1775407787bf92e941c9be4a368"
+    },
+    {
+      "path": "packages/waav/voice-waav/tests/provider.spec.ts",
+      "before_git_blob": "a859c163f177ef407b441c16a925a6a48b266ecd",
+      "after_git_blob": "429b2f6688306ba3301175e34b6f52fbf2fe592c"
+    },
+    {
+      "path": "packages/waav/voice-waav/tests/support.ts",
+      "before_git_blob": "704ac1aeb193a9a0a99de23e352bcff4cbe01c80",
+      "after_git_blob": "a7f23a4f7ad40c52d2909f40d407e7849867a2ca"
+    },
+    {
+      "path": "packages/waav/voice-waav/tests/units.spec.ts",
+      "before_git_blob": "5ed1c8ecdcdcac8b19a443d8b66a1a7a2cd255fa",
+      "after_git_blob": "0b862af7141f690999bf3e0c5830f99f1ba03317"
+    },
+    {
+      "path": "packages/waav/voice-waav/tsconfig.json",
+      "before_git_blob": "e1b7978876ef1c09e2b2ab7bf563387d4d5e9aad",
+      "after_git_blob": "fdd47df281abc1fa2cc5c581beac4fa39630291d"
+    },
+    {
+      "path": "packages/work/stream-turns/README.md",
+      "before_git_blob": "e9bfc46c01ff26660b029617b2ff93bebcb9e074",
+      "after_git_blob": "3dfc5fbe8c5bfd2930020bd95e4b6119861a4f42"
+    },
+    {
+      "path": "packages/work/stream-turns/src/call.ts",
+      "before_git_blob": "b22db41c16c1b281fc7baa0ee9d0c0750d1faffb",
+      "after_git_blob": "f72b34245d2b8e27f840a580b7ebabebd38eacca"
+    },
+    {
+      "path": "packages/work/stream-turns/src/config.ts",
+      "before_git_blob": "e8b88355df7492f90e96aeafe835fd4ca3a289c1",
+      "after_git_blob": "d8201e0c7d8f50351179d5a275ebc086679ebf63"
+    },
+    {
+      "path": "packages/work/stream-turns/src/core.ts",
+      "before_git_blob": "a8692049465a922bac92e6a1acc0d5e448967f31",
+      "after_git_blob": "dc82525979df2ef04fd6ff9eea401c0c388967a8"
+    },
+    {
+      "path": "packages/work/stream-turns/src/index.ts",
+      "before_git_blob": "d4d162a33cf51c804df963e214b462895b50b1bd",
+      "after_git_blob": "729d9e0ac8e4cf4dff8e8aeb42c21e4829823eba"
+    },
+    {
+      "path": "packages/work/stream-turns/src/types.ts",
+      "before_git_blob": "ce06354bf96a9e52f6e1e47dac45062023887a8f",
+      "after_git_blob": "197fae7a20b303a1d7e24187cfe829ff39703ffc"
+    },
+    {
+      "path": "packages/work/stream-turns/tests/core.spec.ts",
+      "before_git_blob": "1e88f029cfbabba603ac0ecc9af725dfcd927673",
+      "after_git_blob": "88f6513353c9b35ca2da5731a059081ec9afcd01"
+    },
+    {
+      "path": "packages/work/stream-turns/tests/engine.spec.ts",
+      "before_git_blob": null,
+      "after_git_blob": "eceef85f431954b5db25c5ebf202398442e2db1f"
+    },
+    {
+      "path": "packages/work/stream-turns/tests/fake-pipeline.ts",
+      "before_git_blob": "6314e555c805344d1c339d5dd494e32be07144ed",
+      "after_git_blob": "f826d76052a861174cda7a7ee28caae15c72aa78"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "before_git_blob": "993dfbfecb66dc5f812ebb2311df58ef7e5d1393",
+      "after_git_blob": "258870f2b0727df14e08d33f457e466ad07733b5"
+    },
+    {
+      "path": "python/sdk/README.md",
+      "before_git_blob": "e876d5ac8465d8acc749361fbe7b4b470dbe72f1",
+      "after_git_blob": "8d7053f6580be4c727cc1453424e5cac16eddf5f"
+    },
+    {
+      "path": "python/sdk/src/bud_meta_harness/voice.py",
+      "before_git_blob": "30e3c60c0425de8e55341f4e7565e22ad3d2554a",
+      "after_git_blob": "b22e62650502db50e38afe46e6c5fe72a28e70b9"
+    },
+    {
+      "path": "python/sdk/tests/test_voice_conformance.py",
+      "before_git_blob": "7c850019234e8b01c1d52f2f2819052d843716d6",
+      "after_git_blob": "2a95fe7d9bf575a8f435f2b65f1b1c8ac8055a72"
+    },
+    {
+      "path": "python/sdk/tests/test_voice_waav_interaction_snapshot.py",
+      "before_git_blob": null,
+      "after_git_blob": "65f02e8e4107748ea9fc5bf3736a50fbebb457f5"
+    },
+    {
+      "path": "scripts/product-package-policy.ts",
+      "before_git_blob": "025d3caeee4ea1f3e6c29dfb2e8424d8f4e6b44e",
+      "after_git_blob": "6ad8bf87ee82663158b1a638cf3795539984f573"
+    },
+    {
+      "path": "scripts/verify-package-readme-model-experience.ts",
+      "before_git_blob": "ee96c895bb6ccc39d00aba4e82f0a6bb9cebabb3",
+      "after_git_blob": "250a00ddf22b8aac58c325237d5ca8c3d426ae7b"
+    },
+    {
+      "path": "snapshots/sdk/sdk.snapshot.ts",
+      "before_git_blob": "b109517a5babd8c4fc3ac2ef2970d26a15b2e184",
+      "after_git_blob": "d42ae115d792b0443e18175bde825468446f67d1"
+    },
+    {
+      "path": "snapshots/sdk/voice-call-barge-in/session.v4.jsonl",
+      "before_git_blob": "35b5519800480f4bc4c418af18df9c7cc3f7ae53",
+      "after_git_blob": "3955b2738bbf951e0f2c96631c7f4dbd36e6d789"
+    },
+    {
+      "path": "snapshots/sdk/voice-call-tool-steer/session.v4.jsonl",
+      "before_git_blob": "17b78f3218080148a42f4a7da0354c6605a6936b",
+      "after_git_blob": "4bf25f3a562fe59f9cdb62922aa802e36d96ae58"
+    },
+    {
+      "path": "snapshots/sdk/voice-call/session.v4.jsonl",
+      "before_git_blob": "3d82a0703dafdba78ec1c89254cd10b53394892d",
+      "after_git_blob": "7902ec567fac697ce92ba5863c8928c4964465fc"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-conversation/fake-waav.mjs",
+      "before_git_blob": null,
+      "after_git_blob": "860e097e6506af9ab1b4375bcfefd7ba847914e9"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-conversation/runtime.cordis.yml",
+      "before_git_blob": null,
+      "after_git_blob": "16d4d7001429170b5e063717957f83fab394d373"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-conversation/session.v4.jsonl",
+      "before_git_blob": null,
+      "after_git_blob": "db572941eb95700471614822e85e935cb6424287"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-conversation/snapshot.yml",
+      "before_git_blob": null,
+      "after_git_blob": "58211df84972487f6df9115b5c3658abcd0ed00f"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-conversation/system-prompt.expected.md",
+      "before_git_blob": null,
+      "after_git_blob": "223ebfeed0f04cbdd6923f23f2864c51c65cd535"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-conversation/tool-schemas.expected.json",
+      "before_git_blob": null,
+      "after_git_blob": "6ec8c4f4fd1f7b47153a432b437c6245fe60840d"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-conversation/voice.expected.json",
+      "before_git_blob": null,
+      "after_git_blob": "91278fe98acbeaa290d2f2e2af31d8807a93ae2c"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-conversation/voice.script.json",
+      "before_git_blob": null,
+      "after_git_blob": "1979cb8166facdb23328c39abb25b4882529cd99"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-interaction/fake-waav.mjs",
+      "before_git_blob": null,
+      "after_git_blob": "2bd053d1c65cbe885a3bfba9a5aba973d77d45e4"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-interaction/runtime.cordis.yml",
+      "before_git_blob": null,
+      "after_git_blob": "f4171c2fe59c7958d000a60a14560a99495e3492"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-interaction/session.v4.jsonl",
+      "before_git_blob": null,
+      "after_git_blob": "a94e4e73ca867c86cc4994c5970abfc1b5167faf"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-interaction/snapshot.yml",
+      "before_git_blob": null,
+      "after_git_blob": "914e6acba5655e171b6210f92caa2f9c52a4bf04"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-interaction/system-prompt.expected.md",
+      "before_git_blob": null,
+      "after_git_blob": "223ebfeed0f04cbdd6923f23f2864c51c65cd535"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-interaction/tool-schemas.expected.json",
+      "before_git_blob": null,
+      "after_git_blob": "a4c5dc362102c6f18e352e80ac503f0b20c8bdaf"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-interaction/voice.expected.json",
+      "before_git_blob": null,
+      "after_git_blob": "3cc970ac081450be1f1fb3a9136be1e7fec04c58"
+    },
+    {
+      "path": "snapshots/sdk/voice-waav-interaction/voice.script.json",
+      "before_git_blob": null,
+      "after_git_blob": "220bfe00ef69bb8ae23c0310cf5b046ea7a96c66"
+    },
+    {
+      "path": "snapshots/web/voice-call-interaction/dock-answered.expected.md",
+      "before_git_blob": null,
+      "after_git_blob": "00dc729594425dcb3b6e6d8a013853dd4c960478"
+    },
+    {
+      "path": "snapshots/web/voice-call-interaction/dock-switched.expected.md",
+      "before_git_blob": null,
+      "after_git_blob": "575f4a499cbd2e55eaa7a246942036a33c788373"
+    },
+    {
+      "path": "snapshots/web/voice-call-interaction/dock-tasks.expected.md",
+      "before_git_blob": null,
+      "after_git_blob": "900c033b1ab6f7eca52a1de78a00db93b8070eae"
+    },
+    {
+      "path": "snapshots/web/voice-call-interaction/session.v4.jsonl",
+      "before_git_blob": null,
+      "after_git_blob": "2c8070f7589dc02b73edfbdf8bed524e9bcf8837"
+    },
+    {
+      "path": "snapshots/web/voice-call-interaction/snapshot.yml",
+      "before_git_blob": null,
+      "after_git_blob": "52a9f978a41fffd95f519d3d6178af34e8c5dc2d"
+    },
+    {
+      "path": "snapshots/web/voice-call-interaction/system-prompt.expected.md",
+      "before_git_blob": null,
+      "after_git_blob": "1dbddd7f0d0004625061ca35c037eaadec9b2e31"
+    },
+    {
+      "path": "snapshots/web/voice-call-interaction/tool-schemas.expected.json",
+      "before_git_blob": null,
+      "after_git_blob": "51de2083e3bfec9f4d945fb989ab30917a3aeb59"
+    },
+    {
+      "path": "tsconfig.host.json",
+      "before_git_blob": "33b19c45d4fae1e80ffbccd5bf6a076bda9038bb",
+      "after_git_blob": "de220f29c9ffa61aa6a0d2707ce3c511b2972ecf"
+    }
+  ],
+  "unchanged_instruction_and_direct_api_objects": {
+    "AGENTS.md": {
+      "before_git_object": "c33615265afc2e39c6a8a210f0c141ea302be6e9",
+      "after_git_object": "c33615265afc2e39c6a8a210f0c141ea302be6e9",
+      "unchanged": true
+    },
+    "packages/AGENTS.md": {
+      "before_git_object": "a1800604ff42326e46b4af435f37a06368162027",
+      "after_git_object": "a1800604ff42326e46b4af435f37a06368162027",
+      "unchanged": true
+    },
+    "packages/experimental/AGENTS.md": {
+      "before_git_object": "0b2d0ade49853504189183e7c98ea6aa04fd5972",
+      "after_git_object": "0b2d0ade49853504189183e7c98ea6aa04fd5972",
+      "unchanged": true
+    },
+    "scripts/AGENTS.md": {
+      "before_git_object": "f93988d601273a1d980cc9b92e8226357d961bba",
+      "after_git_object": "f93988d601273a1d980cc9b92e8226357d961bba",
+      "unchanged": true
+    },
+    "docs/architecture.md": {
+      "before_git_object": "32c032bf7ada2c948e56501b65aea86cadb1d1b7",
+      "after_git_object": "32c032bf7ada2c948e56501b65aea86cadb1d1b7",
+      "unchanged": true
+    },
+    "docs/testing.md": {
+      "before_git_object": "07eaca75032c6fe662ea3f790ef9f3483e6c921c",
+      "after_git_object": "07eaca75032c6fe662ea3f790ef9f3483e6c921c",
+      "unchanged": true
+    },
+    "docs/defensive-patterns/README.md": {
+      "before_git_object": "81498140a37cd4573a3ad261d6bbc651f4a1d1d4",
+      "after_git_object": "81498140a37cd4573a3ad261d6bbc651f4a1d1d4",
+      "unchanged": true
+    },
+    "docs/defensive-patterns/general.md": {
+      "before_git_object": "5d5bd448f708fc81de55cdb35ffbddbf15239f28",
+      "after_git_object": "5d5bd448f708fc81de55cdb35ffbddbf15239f28",
+      "unchanged": true
+    },
+    "docs/defensive-patterns/package-surface.md": {
+      "before_git_object": "1b2b9e91cdcbdac710c1615e727aa3d81759dccd",
+      "after_git_object": "1b2b9e91cdcbdac710c1615e727aa3d81759dccd",
+      "unchanged": true
+    },
+    "docs/defensive-patterns/conversation-and-session.md": {
+      "before_git_object": "a4f084f8212e34085c8df75bed6f1d3a50055932",
+      "after_git_object": "a4f084f8212e34085c8df75bed6f1d3a50055932",
+      "unchanged": true
+    },
+    ".agents/skills/budmh-error-handling/SKILL.md": {
+      "before_git_object": "c2c2c2132f8bed3dc0bc674d8f1da91e02ca1838",
+      "after_git_object": "c2c2c2132f8bed3dc0bc674d8f1da91e02ca1838",
+      "unchanged": true
+    },
+    "packages/core/tools": {
+      "before_git_object": "492f0f461930c63d8dedb3570648beffb32f6050",
+      "after_git_object": "492f0f461930c63d8dedb3570648beffb32f6050",
+      "unchanged": true
+    },
+    "packages/core/agent-loop": {
+      "before_git_object": "c3bbe651cab857a0fc1a1231be89e1f83353fac7",
+      "after_git_object": "c3bbe651cab857a0fc1a1231be89e1f83353fac7",
+      "unchanged": true
+    },
+    "packages/core/agent": {
+      "before_git_object": "390624ced6a9dbd8c4bf2757b0ea920175a3f4dd",
+      "after_git_object": "390624ced6a9dbd8c4bf2757b0ea920175a3f4dd",
+      "unchanged": true
+    },
+    "packages/ptc-runtime/ptc-runtime-node": {
+      "before_git_object": "24ec7566ae47c099950c4cc20dc6c6f64c0c9eba",
+      "after_git_object": "24ec7566ae47c099950c4cc20dc6c6f64c0c9eba",
+      "unchanged": true
+    },
+    "packages/subprocess/subprocess": {
+      "before_git_object": "14a0610bbfc2d98d8feaa43a4abad6dd945b0b7c",
+      "after_git_object": "14a0610bbfc2d98d8feaa43a4abad6dd945b0b7c",
+      "unchanged": true
+    },
+    "packages/subprocess/subprocess-local": {
+      "before_git_object": "7dd5751062796a99a107f881b0af2fa11747a451",
+      "after_git_object": "7dd5751062796a99a107f881b0af2fa11747a451",
+      "unchanged": true
+    },
+    "packages/sandbox/sandbox": {
+      "before_git_object": "a04711168ddd0009ef72a761ec8c758ea920d113",
+      "after_git_object": "a04711168ddd0009ef72a761ec8c758ea920d113",
+      "unchanged": true
+    },
+    "packages/sandbox/sandbox-local": {
+      "before_git_object": "472c5b5c461184a2136f563d6a94e0d978fc35f5",
+      "after_git_object": "472c5b5c461184a2136f563d6a94e0d978fc35f5",
+      "unchanged": true
+    },
+    "packages/bundle/sdk-app": {
+      "before_git_object": "4e0ad21a548ffa84fdcd1dcde7242b02079862e3",
+      "after_git_object": "4e0ad21a548ffa84fdcd1dcde7242b02079862e3",
+      "unchanged": true
+    },
+    "packages/sdk/client/src/api.ts": {
+      "before_git_object": "dcb7ea3d5aa25a6d27a8319cece1a7f21ecef907",
+      "after_git_object": "dcb7ea3d5aa25a6d27a8319cece1a7f21ecef907",
+      "unchanged": true
+    },
+    "packages/sdk/client/src/client.ts": {
+      "before_git_object": "5a9d00777f293e463e7f3d2093da113aa88b71df",
+      "after_git_object": "5a9d00777f293e463e7f3d2093da113aa88b71df",
+      "unchanged": true
+    },
+    "packages/sdk/client/src/launch.ts": {
+      "before_git_object": "845a7baba24ba3710e5a498d97096ba194178c49",
+      "after_git_object": "845a7baba24ba3710e5a498d97096ba194178c49",
+      "unchanged": true
+    },
+    "packages/sdk/client/src/work.ts": {
+      "before_git_object": "6624c60ed8a93f5a1940e2f0d9ff1880e362e0ae",
+      "after_git_object": "6624c60ed8a93f5a1940e2f0d9ff1880e362e0ae",
+      "unchanged": true
+    },
+    "packages/sdk/client/src/types.ts": {
+      "before_git_object": "614528805e1cefa2912798288039ca8939a03838",
+      "after_git_object": "614528805e1cefa2912798288039ca8939a03838",
+      "unchanged": true
+    },
+    "packages/core/session/src/index.ts": {
+      "before_git_object": "a1ac1afbfa85421d34a249c9e1f325a9131e107f",
+      "after_git_object": "a1ac1afbfa85421d34a249c9e1f325a9131e107f",
+      "unchanged": true
+    }
+  },
+  "fully_read_selected_diffs": [
+    "packages/bundle/base/cordis.patch.yml",
+    "packages/core/session/src/known-event-types.ts",
+    "packages/sdk/client/src/index.ts",
+    "packages/sdk/client/src/voice-driver.ts",
+    "packages/sdk/client/src/voice.ts",
+    "packages/test-support/llm-replay/src/index.ts",
+    "pnpm-lock.yaml",
+    "tsconfig.host.json",
+    "packages/waav/voice-waav/src/index.ts",
+    "packages/waav/voice-waav/package.json",
+    "packages/waav/voice-waav/tsconfig.json"
+  ],
+  "selected_diff": "diff --git a/packages/bundle/base/cordis.patch.yml b/packages/bundle/base/cordis.patch.yml\nindex 869a4a8b..116be9b8 100644\n--- a/packages/bundle/base/cordis.patch.yml\n+++ b/packages/bundle/base/cordis.patch.yml\n@@ -732,6 +732,13 @@\n       name: '@budmh/waav-tools'\n       disabled: !!js \"!process.env.BUDMH_WAAV_URL && !process.env.BUDMH_WAAV_LOCAL\"\n \n+    # External turns: a voice-waav profile whose replyOwner is WaaV (waav-conversation, waav-agent,\n+    # waav-dag, waav-interaction) binds the call's Agent to the route `external`, so WaaV's lines are\n+    # logged as the Agent's replies. Mounted with the same gate as the WaaV rows.\n+    - id: llm-external-turns\n+      name: '@budmh/llm-external-turns'\n+      disabled: !!js \"!process.env.BUDMH_WAAV_URL && !process.env.BUDMH_WAAV_LOCAL\"\n+\n     # Voice calls through WaaV: the `waav` speech pipeline provider of ctx.speechPipelines. With\n     # both engine providers set it declares the `default` profile from the same variables, plus\n     # BUDMH_WAAV_STT_MODE (auto, streaming or segmented; a model that only transcribes after the\ndiff --git a/packages/core/session/src/known-event-types.ts b/packages/core/session/src/known-event-types.ts\nindex 96155b86..c01ab85d 100644\n--- a/packages/core/session/src/known-event-types.ts\n+++ b/packages/core/session/src/known-event-types.ts\n@@ -106,6 +106,8 @@ export const KNOWN_SESSION_EVENT_TYPES: ReadonlySet<string> = new Set([\n   'voice/spoken',\n   'voice/turn',\n   'voice/warning',\n+  'waav/interaction',\n+  'waav/task',\n   'web/bud-search-llm-request',\n   'work-item/linked',\n   'working-directory/change',\ndiff --git a/packages/sdk/client/src/index.ts b/packages/sdk/client/src/index.ts\nindex 64adf3e6..8202431c 100644\n--- a/packages/sdk/client/src/index.ts\n+++ b/packages/sdk/client/src/index.ts\n@@ -11,7 +11,7 @@\n \n export { BudMetaHarness, HarnessSession, validatedSessionEvent } from './api.ts'\n export type { HarnessVoice, RunOptions } from './api.ts'\n-export { VoiceCall, voiceUplinkCost, type VoiceCallEnd } from './voice.ts'\n+export { VoiceCall, voiceUplinkCost, type VoiceCallEnd, type VoiceCommand, type VoicePipelineEvent } from './voice.ts'\n export { HarnessTriggers, HarnessWork, type FollowOptions, type InvokeOptions, type InvokeResult, type WorkRunResult } from './work.ts'\n export {\n   VoiceCallDriver,\ndiff --git a/packages/sdk/client/src/voice-driver.ts b/packages/sdk/client/src/voice-driver.ts\nindex 989d9aed..b58337f5 100644\n--- a/packages/sdk/client/src/voice-driver.ts\n+++ b/packages/sdk/client/src/voice-driver.ts\n@@ -20,7 +20,7 @@\n import { Buffer } from 'node:buffer'\n import type { VoiceCallDownlink, VoiceCallRequest } from '@budmh/api-voice/types'\n import { isRecord, type HarnessClient, type NotificationSubscription } from './client.ts'\n-import { VoiceCall, type VoiceCallEnd } from './voice.ts'\n+import { VoiceCall, type VoiceCallEnd, type VoiceCommand, type VoicePipelineEvent } from './voice.ts'\n \n /** One condition of a `wait` step. */\n export type VoiceScriptCondition =\n@@ -39,6 +39,8 @@ export type VoiceScriptStep =\n   | { readonly silence: number }\n   /** Send typed text with `voice/text`. */\n   | { readonly say: string }\n+  /** Send a command to the call's speech engine with `voice/command`. */\n+  | { readonly command: VoiceCommand }\n   /**\n    * Stop playout of the n-th segment (from 1, in the order `segment` items arrived) at `ms`, and wait until it\n    * played that far, ended earlier or was cleared. The hold lasts for the rest of the call.\n@@ -87,6 +89,8 @@ export interface VoiceDriverTranscript {\n   /** `reconnected` attempts. */\n   readonly reconnections: readonly number[]\n   readonly warnings: readonly { readonly code: string; readonly message: string }[]\n+  /** `pipeline` items: what the call's speech engine reported; present only when it reported something. */\n+  readonly pipeline?: readonly VoicePipelineEvent[]\n   readonly ended: VoiceCallEnd\n }\n \n@@ -130,6 +134,7 @@ export class VoiceCallDriver {\n   private readonly fragments: string[] = []\n   private readonly reconnections: number[] = []\n   private readonly warnings: { code: string; message: string }[] = []\n+  private readonly pipeline: VoicePipelineEvent[] = []\n   private paused = false\n   private speaking = false\n   private uplink: Promise<void> = Promise.resolve()\n@@ -238,6 +243,7 @@ export class VoiceCallDriver {\n       case 'fragment': this.fragments.push(item.text); break\n       case 'reconnected': this.reconnections.push(item.attempt); break\n       case 'warning': this.warnings.push({ code: item.code, message: item.message }); break\n+      case 'pipeline': this.pipeline.push(item.event); break\n       case 'credit':\n       case 'reconnecting':\n       case 'ended':\n@@ -340,6 +346,9 @@ export class VoiceCallDriver {\n           const held = this.segments[segment - 1]\n           return held !== undefined && (held.cleared || held.ended || held.played / this.outputBytesPerMs >= ms)\n         })\n+      } else if ('command' in step) {\n+        this.send(() => this.call.command(step.command))\n+        await this.flush()\n       } else if ('wait' in step) {\n         await this.until(what, () => step.wait.every(condition => this.satisfied(condition)))\n       } else {\n@@ -371,6 +380,8 @@ export class VoiceCallDriver {\n       controls: { pause: this.eventCounts.get('pause') ?? 0, resume: this.eventCounts.get('resume') ?? 0, clear: this.eventCounts.get('clear') ?? 0 },\n       reconnections: [...this.reconnections],\n       warnings: [...this.warnings],\n+      // Present only when the engine reported something, so transcripts of calls without engine events keep their form.\n+      ...this.pipeline.length === 0 ? {} : { pipeline: [...this.pipeline] },\n       ended: this.call.endState() ?? { reason: 'open' },\n     }\n   }\ndiff --git a/packages/sdk/client/src/voice.ts b/packages/sdk/client/src/voice.ts\nindex 33511835..1f6d831e 100644\n--- a/packages/sdk/client/src/voice.ts\n+++ b/packages/sdk/client/src/voice.ts\n@@ -13,6 +13,12 @@ import type { VoiceSdkStartResult } from '@budmh/api-voice/sdk-types'\n import type { VoiceCallDownlink, VoiceCallRequest, VoiceCallUplink, VoiceStreamId } from '@budmh/api-voice/types'\n import { isRecord, SdkProtocolError, TransportClosedError, type HarnessClient, type NotificationSubscription } from './client.ts'\n \n+/** A command to a call's speech engine: the `command` of the uplink item. */\n+export type VoiceCommand = Extract<VoiceCallUplink, { readonly type: 'command' }>['command']\n+\n+/** What a call's speech engine reported: the `event` of a `pipeline` item. */\n+export type VoicePipelineEvent = Extract<VoiceCallDownlink, { readonly type: 'pipeline' }>['event']\n+\n /** How a call ended: the `ended` item without its `type`. */\n export type VoiceCallEnd = Omit<Extract<VoiceCallDownlink, { readonly type: 'ended' }>, 'type'>\n \n@@ -215,6 +221,16 @@ export class VoiceCall implements AsyncIterable<VoiceCallDownlink> {\n     return this.send('voice/text', { type: 'text', text })\n   }\n \n+  /**\n+   * Send a command to the call's speech engine, such as answering a question it asked or changing who answers; the\n+   * pipeline provider defines and checks the commands, and a refused one comes back as a `warning` item.\n+   * @param command - the command's JSON object.\n+   * @returns after the command was written.\n+   */\n+  command(command: VoiceCommand): Promise<void> {\n+    return this.send('voice/command', { type: 'command', command })\n+  }\n+\n   /**\n    * End the call.\n    * @returns how it ended, after the Host tore it down and sent `ended`.\n@@ -224,7 +240,7 @@ export class VoiceCall implements AsyncIterable<VoiceCallDownlink> {\n     return this.ended\n   }\n \n-  private async send(method: 'voice/audio' | 'voice/played' | 'voice/text', item: VoiceCallUplink): Promise<void> {\n+  private async send(method: 'voice/audio' | 'voice/played' | 'voice/text' | 'voice/command', item: VoiceCallUplink): Promise<void> {\n     const cost = voiceUplinkCost(item, this.opened.credit.frameOverheadBytes)\n     if (cost > this.opened.credit.bytes) throw new Error(`an uplink item of ${String(cost)} bytes exceeds the call's credit of ${String(this.opened.credit.bytes)}`)\n     while (this.remaining < cost && this.end === undefined && this.failure === undefined) {\ndiff --git a/packages/test-support/llm-replay/src/index.ts b/packages/test-support/llm-replay/src/index.ts\nindex 73ab89bd..2c362732 100644\n--- a/packages/test-support/llm-replay/src/index.ts\n+++ b/packages/test-support/llm-replay/src/index.ts\n@@ -459,6 +459,9 @@ export function parseSessionHeader(text: string): {\n   }\n }\n \n+/** The route of steps an external turn source answered (`@budmh/llm-external-turns`); no model is called on it. */\n+const EXTERNAL_ROUTE = 'external'\n+\n /**\n  * Reconstruct the per-`stream()` replay script from a recorded session log.\n  *\n@@ -470,12 +473,16 @@ export function parseSessionHeader(text: string): {\n  * waits for the same cancellation. Any other missing assistant terminator\n  * means the live stream threw, so derivation rejects and the scenario must\n  * provide an explicit override. Multiple calls\n- * may share one turn and step when the loop retries.\n+ * may share one turn and step when the loop retries. Steps on the\n+ * external-turns route (`@budmh/llm-external-turns`) called no model and\n+ * yield no entry: replay runs their external source again.\n  * @param events - the recorded session's events.\n  * @returns one `chunks` entry per recorded model call, in call order.\n  */\n export function deriveReplayScript(events: SessionEvent[]): ReplayEntry[] {\n   const script: ReplayEntry[] = []\n+  /** Whether the latest request ran on the external-turns route. */\n+  let external = false\n   const close = (key: string | undefined, chunks: StreamChunk[], interrupted = false): void => {\n     if (chunks.length === 0) return\n     if (chunks[chunks.length - 1]?.type !== 'finish' && interrupted) {\n@@ -515,7 +522,14 @@ export function deriveReplayScript(events: SessionEvent[]): ReplayEntry[] {\n       }\n       continue\n     }\n+    if (event.type === 'request/context') {\n+      external = event.data.provider === EXTERNAL_ROUTE\n+      continue\n+    }\n     if (event.type !== 'assistant/message' && event.type !== 'assistant/attempt') continue\n+    // A step on the external-turns route called no model: its reply came from the bound source, which replay runs again.\n+    const source = event.type === 'assistant/message' ? event.data.message.source : undefined\n+    if (source?.kind === 'model' ? source.provider === EXTERNAL_ROUTE : external) continue\n     const chunks = expandAssistantStream(event.data.stream).map(member => member.chunk)\n     close(`${String(event.data.turn)}/${String(event.data.step)}`, chunks, event.type === 'assistant/message' && event.data.interrupted === true)\n   }\ndiff --git a/packages/waav/voice-waav/package.json b/packages/waav/voice-waav/package.json\nindex f1601d1d..01294843 100644\n--- a/packages/waav/voice-waav/package.json\n+++ b/packages/waav/voice-waav/package.json\n@@ -33,20 +33,26 @@\n     \"@budmh/schemastery\": \"workspace:~\"\n   },\n   \"peerDependencies\": {\n+    \"@budmh/agent\": \"workspace:*\",\n     \"@budmh/agent-spec\": \"workspace:*\",\n     \"@budmh/cordis\": \"workspace:~\",\n     \"@budmh/credentials\": \"workspace:*\",\n     \"@budmh/launch-environment\": \"workspace:*\",\n+    \"@budmh/llm-external-turns\": \"workspace:*\",\n+    \"@budmh/session\": \"workspace:*\",\n     \"@budmh/stream-turns\": \"workspace:*\",\n     \"@budmh/streams\": \"workspace:*\",\n     \"@budmh/util-values\": \"workspace:*\",\n     \"@budmh/waav\": \"workspace:*\"\n   },\n   \"devDependencies\": {\n+    \"@budmh/agent\": \"workspace:*\",\n     \"@budmh/agent-spec\": \"workspace:*\",\n     \"@budmh/cordis\": \"workspace:~\",\n     \"@budmh/credentials\": \"workspace:*\",\n     \"@budmh/launch-environment\": \"workspace:*\",\n+    \"@budmh/llm-external-turns\": \"workspace:*\",\n+    \"@budmh/session\": \"workspace:*\",\n     \"@budmh/stream-turns\": \"workspace:*\",\n     \"@budmh/streams\": \"workspace:*\",\n     \"@budmh/util-values\": \"workspace:*\",\ndiff --git a/packages/waav/voice-waav/src/index.ts b/packages/waav/voice-waav/src/index.ts\nindex ef2d70d9..7f51788b 100644\n--- a/packages/waav/voice-waav/src/index.ts\n+++ b/packages/waav/voice-waav/src/index.ts\n@@ -16,6 +16,7 @@ import { launchEnvironmentOf } from '@budmh/launch-environment'\n import type { SpeechPipelineDescription, SpeechPipelineProvider, SpeechPipelineProviderId, SpeechPipelineRequest, SpeechVoiceInfo } from '@budmh/stream-turns'\n import type { JsonObject } from '@budmh/streams'\n import { redactWaavConfig } from '@budmh/waav'\n+import type {} from '@budmh/llm-external-turns'\n import type { WaavEndpointName, WaavJson } from '@budmh/waav'\n import { Config, GNANI_SAMPLE_RATES, pathDiagnostics, profileDiagnostics, readProfile, resolveTtsPath } from './config.ts'\n import { openWaavPipeline, VoiceWaavError } from './pipeline.ts'\n@@ -23,12 +24,19 @@ import type { VoiceProfile } from './types.ts'\n \n export type * from './types.ts'\n export {\n-  Config, GNANI_SAMPLE_RATES, pathDiagnostics, profileDiagnostics, readProfile, resolveTtsPath, snakeCase, wireFeatures,\n-  type ConfigInput, type ProfileConfigInput, type ProfileInput, type PronunciationInput, type SttFeaturesInput, type SttInput,\n-  type TranslationInput, type TtsFeaturesInput, type TtsInput, type TurnDetectionInput, type VoiceDescriptorInput,\n+  Config, GNANI_SAMPLE_RATES, INTERACTION_KEYS, ownerDiagnostics, pathDiagnostics, profileDiagnostics, readOwner, readProfile, REPLY_OWNERS,\n+  resolveProtocolVersions, resolveReplySpeech, resolveTtsPath, snakeCase, wireFeatures,\n+  type AgentInput, type ConfigInput, type ConversationInput, type DagInput, type ProfileConfigInput, type ProfileInput,\n+  type PronunciationInput,\n+  type SttFeaturesInput, type SttInput, type TranslationInput, type TtsFeaturesInput, type TtsInput, type TurnDetectionInput,\n+  type VoiceDescriptorInput,\n } from './config.ts'\n+export { EngineVoice, type EngineTurnEvent, type EngineVoiceDeps } from './engine.ts'\n+export { commandMessage, interactionLog, parseCommand, taskLog, VoiceWaavCommandError } from './interaction.ts'\n+export { jsonObject, jsonValue } from './json.ts'\n+export { WaavReplySource, type ReplyLine, type ReplySourceDeps } from './replies.ts'\n export { openWaavPipeline, VoiceWaavError, WaavPipelineOpenError, type PipelineDeps, type VoiceWaavErrorCode } from './pipeline.ts'\n-export { segmentTts, synthesisPath, type SynthesisDeps, type SynthesisPath } from './synthesis.ts'\n+export { SampleAligner, segmentTts, synthesisPath, type SynthesisDeps, type SynthesisPath } from './synthesis.ts'\n export { TurnMapper, type MappedTurn } from './turns.ts'\n export { UplinkBuffer, type UplinkFrame } from './uplink.ts'\n \n@@ -112,7 +120,8 @@ export function describeProfiles(profiles: ReadonlyMap<string, VoiceProfile>, de\n       detail: { profile: profile.name, provider, ...model === undefined ? {} : { model } },\n     })\n   }\n-  return { voices, languages: [...languages], detail: { defaultProfile, profiles: [...profiles.keys()] } }\n+  const owners = Object.fromEntries([...profiles.values()].map(profile => [profile.name, profile.owner.replyOwner]))\n+  return { voices, languages: [...languages], detail: { defaultProfile, profiles: [...profiles.keys()], replyOwners: owners } }\n }\n \n /**\n@@ -160,7 +169,10 @@ export function apply(ctx: Context, config: Config): void {\n       return await openWaavPipeline({\n         waav: ctx.waav, profile, request, ttsPath, reconnect: config.reconnect, serialClearQuietMs: config.serialClearQuietMs,\n         charsPerSecond: ctx.speechPipelines.settings.estimateCharsPerSecond,\n-        redact: async (value: WaavJson) => await ctx.waav.redact(redactWaavConfig(value, secrets, [])),\n+        redact: async (value: WaavJson, extras: readonly string[] = []) => await ctx.waav.redact(redactWaavConfig(value, secrets, extras)),\n+        profiles, pathOf: other => resolveTtsPath(other, config.ttsPaths, request.transport.kind),\n+        externalTurns: () => ctx.get('externalTurns'), interactionRefused: config.interactionRefused,\n+        replyWaitMs: config.replyWaitMs,\n       }, signal)\n     },\n   }\ndiff --git a/packages/waav/voice-waav/tsconfig.json b/packages/waav/voice-waav/tsconfig.json\nindex e1b79788..fdd47df2 100644\n--- a/packages/waav/voice-waav/tsconfig.json\n+++ b/packages/waav/voice-waav/tsconfig.json\n@@ -9,10 +9,10 @@\n   ],\n   \"references\": [\n     {\n-      \"path\": \"../../../vendor/cosmokit\"\n+      \"path\": \"../../../vendor/cordis\"\n     },\n     {\n-      \"path\": \"../../../vendor/cordis\"\n+      \"path\": \"../../../vendor/cosmokit\"\n     },\n     {\n       \"path\": \"../../../vendor/schemastery\"\n@@ -20,9 +20,18 @@\n     {\n       \"path\": \"../../agent/agent-spec\"\n     },\n+    {\n+      \"path\": \"../../core/agent\"\n+    },\n+    {\n+      \"path\": \"../../core/session\"\n+    },\n     {\n       \"path\": \"../../credentials/credentials\"\n     },\n+    {\n+      \"path\": \"../../llm/llm-external-turns\"\n+    },\n     {\n       \"path\": \"../../util/brand\"\n     },\n@@ -33,10 +42,10 @@\n       \"path\": \"../../util/values\"\n     },\n     {\n-      \"path\": \"../../work/streams\"\n+      \"path\": \"../../work/stream-turns\"\n     },\n     {\n-      \"path\": \"../../work/stream-turns\"\n+      \"path\": \"../../work/streams\"\n     },\n     {\n       \"path\": \"../waav\"\ndiff --git a/pnpm-lock.yaml b/pnpm-lock.yaml\nindex 993dfbfe..258870f2 100644\n--- a/pnpm-lock.yaml\n+++ b/pnpm-lock.yaml\n@@ -17816,6 +17816,9 @@ importers:\n         specifier: link:../../../vendor/schemastery\n         version: link:../../../vendor/schemastery\n     devDependencies:\n+      '@budmh/agent':\n+        specifier: workspace:*\n+        version: link:../../core/agent\n       '@budmh/agent-spec':\n         specifier: workspace:*\n         version: link:../../agent/agent-spec\n@@ -17828,6 +17831,12 @@ importers:\n       '@budmh/launch-environment':\n         specifier: workspace:*\n         version: link:../../util/launch-environment\n+      '@budmh/llm-external-turns':\n+        specifier: workspace:*\n+        version: link:../../llm/llm-external-turns\n+      '@budmh/session':\n+        specifier: workspace:*\n+        version: link:../../core/session\n       '@budmh/stream-turns':\n         specifier: workspace:*\n         version: link:../../work/stream-turns\ndiff --git a/tsconfig.host.json b/tsconfig.host.json\nindex 33b19c45..de220f29 100644\n--- a/tsconfig.host.json\n+++ b/tsconfig.host.json\n@@ -190,6 +190,7 @@\n     \"apps/web/tests/skill-tool-row.e2e.ts\",\n     \"apps/web/tests/speech-tools.e2e.ts\",\n     \"apps/web/tests/voice-call.e2e.ts\",\n+    \"apps/web/tests/voice-call-interaction.e2e.ts\",\n     \"apps/web/tests/tool-details.e2e.ts\",\n     \"apps/web/tests/turn-tail-actions.e2e.ts\",\n     \"apps/web/tests/goal-multi-turn-actions.e2e.ts\",\n",
+  "additional_read_ranges": [
+    {
+      "path": "packages/waav/voice-waav/src/index.ts",
+      "ranges": [
+        [
+          130,
+          187
+        ]
+      ],
+      "scope": "apply: registration and lazy pipeline open"
+    },
+    {
+      "path": "packages/llm/llm-external-turns/src/index.ts",
+      "ranges": [
+        [
+          100,
+          170
+        ]
+      ],
+      "scope": "constructor registration and agent routing listeners; unchanged underlying service"
+    }
+  ],
+  "findings": [
+    "Direct hardware consumer dependencies/tool executor/agent loop/PTC/subprocess seams and non-voice SDK work/launch APIs are exact unchanged git objects.",
+    "Baseprofile adds llm-external-turns gated by BUDMH_WAAV_URL or BUDMH_WAAV_LOCAL. Existing keyless SDKtest explicitly removes all BUDMH_ ambient values before restoring private settings, so that added row stays disabled in tested composition.",
+    "Session known-event set gains waav/interaction and waav/task; no existing event removed. SDK entry only adds voice type exports; voice command/driver changes do not alter work/invoke APIs.",
+    "Shared host aggregate adds one Web e2e test; lockfile adds9workspace dependency lines for existing voice-waav importer. Artifact and aggregate builds still require execution at newbase.",
+    "No direct overlay API break identified by selected diff. Full133file feature review was not performed."
+  ],
+  "next_step": "Separate detached a1626788 worktree and revalidation lane; reconcile preserved335a overlay plus additive compact tests, run16focusedtests and applicable full build gates. No current compatibility claim from this diff alone."
+}

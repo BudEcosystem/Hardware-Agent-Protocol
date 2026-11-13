@@ -1,0 +1,26 @@
+{
+  "created_at": "2026-11-06T02:44:13.723493+00:00",
+  "argv": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "packages/experimental/tool-hardware/tests/hms-integration.spec.ts",
+    "packages/experimental/hardware-hms/tests/reply.spec.ts",
+    "packages/experimental/tool-hardware/tests/hms-sdk-profile.spec.ts",
+    "packages/experimental/tool-hardware/tests/hms-compact.spec.ts",
+    "--reporter=verbose"
+  ],
+  "cwd": "/home/bud/Desktop/bud/hms-harness-a1626788",
+  "exit_code": 0,
+  "elapsed_seconds": 39.76,
+  "test_environment": {
+    "HMS_ROOT": "/home/bud/Desktop/bud/hms/integration/harness/revalidation-a1626788/runtime-fixture",
+    "HMS_CAPTURE": "/home/bud/Desktop/bud/hms/integration/harness/revalidation-a1626788/session-capture.json",
+    "HMS_TIMINGS": "/home/bud/Desktop/bud/hms/integration/harness/revalidation-a1626788/native-call-timings.jsonl",
+    "HMS_SDK_CAPTURE": "/home/bud/Desktop/bud/hms/integration/harness/revalidation-a1626788/sdk-capture.jsonl",
+    "HMS_COMPACT_ROOT": "/home/bud/Desktop/bud/hms/integration/harness/revalidation-a1626788/runtime-fixture",
+    "HMS_COMPACT_CAPTURE": "/home/bud/Desktop/bud/hms/integration/harness/revalidation-a1626788/compact-capture.jsonl",
+    "HMS_COMPACT_DIAGNOSTICS": "/home/bud/Desktop/bud/hms/integration/harness/revalidation-a1626788/compact-diagnostics.jsonl"
+  },
+  "environment": "Credential names scrubbed; private XDG state/config/cache and pnpm store/cache/auth config; Node24.22.1 first in PATH; automatic pre-run install disabled after explicit installation."
+}

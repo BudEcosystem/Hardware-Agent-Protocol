@@ -1,0 +1,203 @@
+Dependencies & Tools
+#
+The following table lists NVIDIA software packages with Spark support status, minimum supported version and a link to the latest supported release. Note that support might extend over time, so make sure to always check the latest version of this porting guide. Last Updated: April 15, 2026.
+Package
+Supported
+Min. Version
+Notes
+ACAR
+Yes
+26-1
+Compute Sanitizer
+Yes
+n/a
+Included in
+CUDA Toolkit
+Container Toolkit
+Yes
+1.17.7
+cuCIM
+No
+n/a
+cuBLAS
+Yes
+n/a
+Included in
+HPC SDK
+and
+CUDA Toolkit
+CUDA Toolkit
+Yes
+13.0
+CUDA-GDB
+Yes
+n/a
+Included in
+CUDA Toolkit
+CUDA Math API
+Yes
+n/a
+Included in
+CUDA Toolkit
+cuDNN
+Yes
+9.11
+cuDSS
+Yes
+0.7.0
+cuEquivariance
+Yes
+0.9.0
+cuFFT
+Yes
+n/a
+Included in
+HPC SDK
+and
+CUDA Toolkit
+cuOpt
+Yes
+25.12
+CUPTI
+Yes
+n/a
+Included in
+CUDA Toolkit
+cuPyNumeric
+Yes
+26.01
+cuQuantum
+Yes
+25.06
+cuRAND
+Yes
+n/a
+Included in
+HPC SDK
+and
+CUDA Toolkit
+cuSolver
+Yes
+n/a
+Included in
+HPC SDK
+and
+CUDA Toolkit
+cuSPARSE
+Yes
+n/a
+Included in
+CUDA Toolkit
+cuTensor
+Yes
+2.3
+CUTLASS
+Yes
+4.2.0
+C++ Supported
+cuVS
+Yes
+25.12
+CV-CUDA
+No
+n/a
+DeepStream
+Yes
+8.0
+HPC SDK
+No
+n/a
+Deep Learning Frameworks
+Yes
+25.09
+DOCA
+No
+n/a
+Model Optimizer
+Yes
+n/a
+Dependent on TensorRT 10.14.1+
+MONAI
+Yes
+TBD
+NCCL
+Yes
+2.28.9-1
+NPP
+Yes
+n/a
+Included in
+CUDA Toolkit
+Nsight Aftermath SDK
+No
+n/a
+Nsight Cloud
+No
+n/a
+Nsight Compute
+Yes
+n/a
+Included in
+CUDA Toolkit
+Nsight Deep Learning Designer
+No
+n/a
+Nsight Graphics
+No
+n/a
+Nsight Perf SDK
+No
+n/a
+Nsight Systems
+Yes
+TBD
+Nsight Tools JupyterLab Extension
+No
+n/a
+Nsight Visual Studio Code Edition
+Yes
+2025.1
+nvImageCodec
+Yes
+0.8.0
+nvJPEG2000
+Yes
+0.10.0
+nvmath-python
+Yes
+0.8
+NVRTC
+Yes
+n/a
+Included in
+CUDA Toolkit
+nvTIFF
+Yes
+0.7.0
+NVTX
+Yes
+n/a
+OptiX
+Yes
+9.0
+RAPIDS
+Yes
+25.10
+Streamline
+No
+n/a
+TensorRT
+Yes
+10.14.1
+TensorRT for RTX
+No
+n/a
+TensorRT-LLM
+Yes
+1.2
+Triton
+Yes
+25.08
+Warp
+Yes
+1.10.0

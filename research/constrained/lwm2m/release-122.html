@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<!-- saved from url=(0134)https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <link rel="stylesheet" href="./OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_files/default.min.css">
+    <title>OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full</title>
+    <link rel="stylesheet" type="text/css" href="./OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_files/Style_IE.css" media="screen,print">
+  </head>
+  <body cz-shortcut-listen="true">
+    <div class="document-cover">
+  <table class="no-border">
+    <tbody><tr>
+      <td>
+        <div class="document-logo">
+          <img src="./OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_files/OMASpecWorks_logo.png">
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td class="text-right text-xx-large"><b>Enabler Release Definition for LightweightM2M</b></td>
+    </tr>
+    <tr>
+      <td class="text-right text-x-large">Approved Version: 1.2.2 - 2024-06-13</td>
+    </tr>
+    <tr>
+      <td class="text-right text-x-large"><b>Open Mobile Alliance</b></td>
+    </tr>
+    <tr>
+      <td class="text-right text-x-large">OMA-ERELD-LightweightM2M-V1_2_2-20240613-A</td>
+    </tr>
+    <tr>
+      <td class="text-right text-large">master: 18 Jun 2024 14:22:00 <i>rev: e58dc1c</i></td>
+    </tr>
+  </tbody></table>
+</div>
+
+<div class="pb_before">
+
+<p>Use of this document is subject to all of the terms and conditions of the Use Agreement located at <a href="https://www.omaspecworks.org/about/policies-and-terms-of-use/">https://www.omaspecworks.org/about/policies-and-terms-of-use/</a>.</p>
+</div>
+
+<p>Unless this document is clearly designated as an approved specification, this document is a work in process, is not an approved Open Mobile Alliance™ specification, and is subject to revision or removal without notice.</p>
+<p>You may use this document or any part of the document for internal or educational purposes only, provided you do not modify, edit or take out of context the information in this document in any manner. Information contained in this document may be used, at your sole risk, for any purposes. You may not use this document in any other manner without the prior written permission of the Open Mobile Alliance. The Open Mobile Alliance authorizes you to copy this document, provided that you retain all copyright and other proprietary notices contained in the original materials on any copies of the materials and that you comply strictly with these terms. This copyright permission does not constitute an endorsement of the products or services. The Open Mobile Alliance assumes no responsibility for errors or omissions in this document.</p>
+<p>Each Open Mobile Alliance member has agreed to use reasonable endeavors to inform the Open Mobile Alliance in a timely manner of Essential IPR as it becomes aware that the Essential IPR is related to the prepared or published specification.<br>
+However, the members do not have an obligation to conduct IPR searches. The declared Essential IPR is publicly available to members and non-members of the Open Mobile Alliance and may be found on the “OMA IPR Declarations” list at <a href="https://www.omaspecworks.org/about/intellectual-property-rights/">https://www.omaspecworks.org/about/intellectual-property-rights/</a>. The Open Mobile Alliance has not conducted an independent IPR review of this document and the information contained herein, and makes no representations or warranties regarding third party IPR, including without limitation patents, copyrights or trade secret rights. This document may contain inventions for which you must obtain licenses from third parties before making, using or selling the inventions. Defined terms above are set forth in the schedule to the Open Mobile Alliance Application Form.</p>
+<p>NO REPRESENTATIONS OR WARRANTIES (WHETHER EXPRESS OR IMPLIED) ARE MADE BY THE OPEN MOBILE ALLIANCE OR ANY OPEN MOBILE ALLIANCE MEMBER OR ITS AFFILIATES REGARDING ANY OF THE IPR’S REPRESENTED ON THE “OMA IPR DECLARATIONS” LIST, INCLUDING, BUT NOT LIMITED TO THE ACCURACY, COMPLETENESS, VALIDITY OR RELEVANCE OF THE INFORMATION OR WHETHER OR NOT SUCH RIGHTS ARE ESSENTIAL OR NON-ESSENTIAL.</p>
+<p>THE OPEN MOBILE ALLIANCE IS NOT LIABLE FOR AND HEREBY DISCLAIMS ANY DIRECT, INDIRECT, PUNITIVE, SPECIAL, INCIDENTAL, CONSEQUENTIAL, OR EXEMPLARY DAMAGES ARISING OUT OF OR IN CONNECTION WITH THE USE OF DOCUMENTS AND THE INFORMATION CONTAINED IN THE DOCUMENTS.</p>
+<p>THIS DOCUMENT IS PROVIDED ON AN "AS IS" "AS AVAILABLE" AND "WITH ALL FAULTS" BASIS.</p>
+<p>Copyright 2024 Open Mobile Alliance.</p>
+<p>Used with the permission of the Open Mobile Alliance under the terms set forth above.</p>
+<div class="documentTOC"><h2>Table of Contents</h2><ul><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#1-0-1-Scope">1. Scope</a></li><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#2-0-2-References">2. References</a></li><ul><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#2-1-0-21-Normative-References">2.1. Normative References</a></li><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#2-2-0-22-Informative-References">2.2. Informative References</a></li></ul><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#3-0-3-LwM2M-Release-Version-Overview">3. LwM2M Release Version Overview</a></li><ul><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#3-1-0-31-Version-v10-Functionality">3.1. Version v1.0 Functionality</a></li><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#3-2-0-32-Version-v11-Functionality">3.2. Version v1.1 Functionality</a></li><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#3-3-0-33-Version-v111-Functionality">3.3. Version v1.1.1 Functionality</a></li><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#3-4-0-34-Version-v12-Functionality">3.4. Version v1.2 Functionality</a></li><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#3-5-0-35-Version-v122">3.5. Version v1.2.2</a></li></ul><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#4-0-4-Document-Listing-for-LightweightM2M-v122">4. Document Listing for LightweightM2M v1.2.2</a></li><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#5-0-5-Publication-Considerations">5. Publication Considerations</a></li><ul><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#5-1-0-51-OMNA-Considerations">5.1. OMNA Considerations</a></li><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#5-2-0-52-IANA-Considerations">5.2. IANA Considerations</a></li><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#5-3-0-53-Actions-Required-on-Publication-of-LwM2M-v122-specifications">5.3. Actions Required on Publication of LwM2M v1.2.2 specifications</a></li></ul><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#6-0-Appendix-A-Change-History-Informative">Appendix A.  Change History (Informative)</a></li><ul><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#6-1-0-A1-Approved-Version-History">A.1 Approved Version History</a></li></ul></ul><div class="table-of-tables"><h2>Table of Tables</h2><ul><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#Table-21-1-Normative-References">Table: 2.1.-1 Normative References</a></li><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#Table-22-1-Informative-References">Table: 2.2.-1 Informative References</a></li><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#Table-4-1-Document-Listing-for-LightweightM2M-v122">Table: 4.-1 Document Listing for LightweightM2M v1.2.2</a></li><li><a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html#Table-A1-1-Approved-Version-History">Table: A.1-1 Approved Version History</a></li></ul></div></div><h2 id="1-0-1-Scope">1. Scope</h2>
+<p>The scope of this document is limited to the Enabler Release Definition of LightweightM2M v1.2.2 according to OMA Release process and the Enabler Release specification baseline listed below.</p>
+<h2 id="2-0-2-References">2. References</h2>
+<h3 id="2-1-0-21-Normative-References">2.1. Normative References</h3>
+<table id="Table-21-1-Normative-References">
+ <caption>Table: 2.1.-1 Normative References</caption>
+ <tbody>
+  <tr>
+   <td>[CoAP]</td>
+   <td>Shelby, Z., Hartke, K., Bormann, C., and B. Frank, "The Constrained Application Protocol (CoAP)", RFC 7252, Jun. 2014.</td>
+   </tr>
+   <tr>
+    <td>[LightweightM2M_RD]</td>
+    <td>“Lightweight Machine to Machine Requirements”, Version 1.2, Open Mobile Alliance™,
+OMA-RD-LightweightM2M-V1_2, URL:http://www.openmobilealliance.org/</td>
+   </tr>
+   <tr>
+    <td>[LwM2M-Core]</td>
+    <td>“Core Technical Specification for LightweightM2M Enabler”, Version 1.2, Open Mobile Alliance™,
+OMA-TS-LightweightM2M_Core-V1_2, URL:http://www.openmobilealliance.org/</td>
+   </tr>
+   <tr>
+    <td>[LwM2M-Transport]</td>
+    <td>“Transport Technical Specification for LightweightM2M Enabler”, Version 1.2, Open Mobile Alliance™,
+OMA-TS-LightweightM2M_Transport-V1_2, URL:http://www.openmobilealliance.org/</td>
+   </tr>
+   <tr>
+     <td>[BCP 14]</td>
+     <td>"Key words for use in RFCs to Indicate Requirement Levels", B. Leiba, May 2017, URL:https://www.rfc-editor.org/info/bcp14</td>
+  </tr>
+  <tr>
+     <td>[RFC2119]</td>
+     <td>"Key words for use in RFCs to Indicate Requirement Levels", S. Bradner, March 1997, URL:https://www.rfc-editor.org/rfc/rfc2119.txt</td>
+  </tr>
+  <tr>
+    <td>[RFC8174]</td>
+    <td>"Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words", B. Leiba, May 2017, URL:https://www.rfc-editor.org/rfc/rfc8174.txt</td>
+  </tr>
+   <tr>
+    <td>[SCRRULES]</td>
+    <td>“SCR Rules and Procedures”, Open Mobile Alliance™, OMA-ORG-SCR_Rules_and_Procedures, URL:http://member.openmobilealliance.org/ftp/Public_documents/iop/Permanent_documents/OMA-ORG-SCR_Rules_and_Procedures-V1_0-20060919-A.zip</td>
+   </tr>
+ </tbody>
+</table>
+
+<h3 id="2-2-0-22-Informative-References">2.2. Informative References</h3>
+<table id="Table-22-1-Informative-References">
+ <caption>Table: 2.2.-1 Informative References</caption>
+ <tbody>
+  <tr>
+   <td>[OMADICT]</td>
+   <td>“Dictionary for OMA Specifications”, Version 2.9, Open Mobile Alliance™, OMA-ORG-Dictionary-V2_9, URL:http://www.openmobilealliance.org/
+</td>
+   </tr>
+ </tbody>
+</table>
+
+<h2 id="3-0-3-LwM2M-Release-Version-Overview">3. LwM2M Release Version Overview</h2>
+<h3 id="3-1-0-31-Version-v10-Functionality">3.1. Version v1.0 Functionality</h3>
+<p>Lightweight M2M 1.0 enabler introduces the following features below for the initial release.</p>
+<ul>
+<li><p>Simple Object based resource model</p></li>
+<li><p>Resource operations of creation/retrieval/update/deletion/configuration of attribute</p></li>
+<li><p>Resource observation/notification</p></li>
+<li><p>TLV/JSON/Plain Text/Opaque data format support</p></li>
+<li><p>UDP and SMS transport layer support</p></li>
+<li><p>DTLS based security</p></li>
+<li><p>Queue mode for NAT/Firewall environment</p></li>
+<li><p>Multiple LwM2M Server support</p></li>
+<li><p>Basic M2M functionalities: LwM2M Server, Access Control, Device, Connectivity, Firmware Update, Location, Connectivity Statistics</p></li>
+</ul>
+<h3 id="3-2-0-32-Version-v11-Functionality">3.2. Version v1.1 Functionality</h3>
+<p>Version 1.1 of the LwM2M protocol introduced the following new features:</p>
+<ul>
+<li><p>Enhancement of the LwM2M bootstrapping capabilities allowing for incremental upgrades.</p></li>
+<li><p>Improved support for Public Key Infrastructure (PKI) deployments.</p></li>
+<li><p>Introduction of enhanced registration sequence mechanisms by the LwM2M Client to LwM2M Server(s).</p></li>
+<li><p>Support for LwM2M over TCP/TLS to better support firewall and NAT traversal.</p></li>
+<li><p>Better support of LwM2M over Low Power WANs, including 3GPP CIoT &amp; LoRaWAN.</p></li>
+<li><p>Extended LwM2M commands to enable Resource Instance level access.</p></li>
+<li><p>Performance improvement for retrieving and updating Resources of multiple objects.</p></li>
+<li><p>Support for JSON using SenML with CBOR serialization for compressed payload with highly efficient transmission.</p></li>
+<li><p>Addition of new data types.</p></li>
+</ul>
+<h3 id="3-3-0-33-Version-v111-Functionality">3.3. Version v1.1.1 Functionality</h3>
+<p>Version 1.1.1 of the LwM2M protocol introduced the following new feature:</p>
+<ul>
+<li>Support for Concise Binary Object Representation (CBOR) format for use with "Read" and "Write" operations on single resources</li>
+</ul>
+<h3 id="3-4-0-34-Version-v12-Functionality">3.4. Version v1.2 Functionality</h3>
+<p>Version 1.2 of the LwM2M protocol introduced the following new features:</p>
+<ul>
+<li><p>New transports for LwM2M; this allows LwM2M messaging to be conveyed over MQTT and over HTTP.</p></li>
+<li><p>Optimizations for the bootstrapping interface; this reduces the amount of data and the number of messages transmitted during the bootstrapping exchange.</p></li>
+<li><p>Optimizations for the registration interface; this reduces the amount of data transmitted during registration exchanges.</p></li>
+<li><p>Optimizations for the information reporting interface; observation attributes may now be included in an Observe operation.</p></li>
+<li><p>Support for LwM2M gateway functionality; this allows non-LwM2M IoT devices as well as LwM2M devices behind a gateway to be connected to the LwM2M ecosystem and to manage those devices remotely.</p></li>
+<li><p>New, highly optimized encoding format based on CBOR called LwM2M CBOR.</p></li>
+<li><p>Enhanced functionality for firmware updates.</p></li>
+<li><p>Definition of new notification attributes (edge, confirmable notification, and maximum historical queue). Edge allows notifications to be triggered on rising and falling edges. Confirmable notifications allow the control of reliable transmissions of notifications. Maximum historical queue allows the control of time-series data usage.</p></li>
+<li><p>Clarifications of object versioning rules.</p></li>
+<li><p>Updates to use the latest communication security protocols based on TLS and DTLS 1.3 (as well as the use of the Connection ID).</p></li>
+<li><p>Flexibility to control the use of TLS and DTLS 1.3 through configuration information.</p></li>
+<li><p>Untangling the relationship of security credentials and their server configuration.</p></li>
+</ul>
+<h3 id="3-5-0-35-Version-v122">3.5. Version v1.2.2</h3>
+<p>Version 1.2.2 of the LwM2M protocol introduced the following editoral/bug fixes changes:</p>
+<ul>
+<li><p>Updated RFC reference for RFC2119 to RFC8174</p></li>
+<li><p>Fixed broken links to references to Appendex</p></li>
+<li><p>Clarification of core object versioning</p></li>
+<li><p>Fixed object 27 range enumeration</p></li>
+<li><p>Transport appendix C diagrams updated</p></li>
+<li><p>Clarified UDP bindings in section 6.2</p></li>
+<li><p>Clarified 6.4.4 error codes for COAP</p></li>
+<li><p>Updated ETS test for MQTT</p></li>
+<li><p>Link for the delta's for 1.2.2 from 1.2.1</p></li>
+</ul>
+<p>For detail changes, please refer to this link for <a href="https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html">deltas between v1.2.2 and v1.2.1</a>.</p>
+<h2 id="4-0-4-Document-Listing-for-LightweightM2M-v122">4. Document Listing for LightweightM2M v1.2.2</h2>
+<table id="Table-4-1-Document-Listing-for-LightweightM2M-v122">
+    <caption>Table: 4.-1 Document Listing for LightweightM2M v1.2.2</caption>
+    <thead>
+        <tr>
+            <th>Doc Ref</th>
+            <th>Permanent Document Reference</th>
+            <th>Description</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>[LightweightM2M_RD]</td>
+            <td>OMA-RD-LightweightM2M-V1_2-20201110-A</td>
+            <td>Requirements Document for LightweightM2M Enabler</td>
+        </tr>
+        <tr>
+            <td>[LightweightM2M_TS_Core]</td>
+            <td>OMA-TS-LightweightM2M_Core-V1_2_2-20240613-A</td>
+            <td>Core Technical Specification for LightweightM2M Enabler</td>
+        </tr>
+        <tr>
+            <td>[LightweightM2M_TS_Transport]</td>
+            <td>OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A</td>
+            <td>Transport Technical Specification for LightweightM2M Enabler</td>
+        </tr>
+        <tr>
+            <td>[lwm2m-schema]</td>
+            <td>OMA-SUP-XML_LWM2M-V1_1-20180710-A</td>
+            <td>LwM2M schema for LwM2M v1.1, file name: LWM2M-v1_1.xsd, path: http://www.openmobilealliance.org/tech/profiles</td>
+        </tr>
+    </tbody>
+</table>
+
+<h2 id="5-0-5-Publication-Considerations">5. Publication Considerations</h2>
+<h3 id="5-1-0-51-OMNA-Considerations">5.1. OMNA Considerations</h3>
+<p>For LwM2M v1.2.2:</p>
+<ul>
+<li>New LwM2M Objects as listed in Appendix E of [LightweightM2M_TS_Core].</li>
+</ul>
+<p>No additional considerations for v1.2.2 were identified.</p>
+<h3 id="5-2-0-52-IANA-Considerations">5.2. IANA Considerations</h3>
+<p>For LwM2M v1.2: OMA is requesting IANA to register a new media type for LwM2M CBOR in the "Media Types" registry and in the "CoAP Content-Formats" registry.:</p>
+<ul>
+<li>Type name: application</li>
+<li>Subtype name: vnd.oma.lwm2m+cbor</li>
+<li>Required parameters: none</li>
+<li>Optional parameters: none</li>
+<li>Encoding considerations: binary</li>
+</ul>
+<p>No additional considerations for v1.2.2 were identified.</p>
+<h3 id="5-3-0-53-Actions-Required-on-Publication-of-LwM2M-v122-specifications">5.3. Actions Required on Publication of LwM2M v1.2.2 specifications</h3>
+<ul>
+<li>None</li>
+</ul>
+<h2 id="6-0-Appendix-A-Change-History-Informative">Appendix A.  Change History (Informative)</h2>
+<h3 id="6-1-0-A1-Approved-Version-History">A.1 Approved Version History</h3>
+<table id="Table-A1-1-Approved-Version-History">
+  <caption>Table: A.1-1 Approved Version History</caption>
+  <thead>
+    <tr>
+       <th>Reference</th><th>Date</th><th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+     <tr>
+       <td>OMA-ERELD-LightweightM2M-V1_1-20180710-A</td>
+       <td>10 Jul 2018</td>
+       <td>Status changed to Approved by DMSE WG on 10 Jul 2018.</td>
+     </tr>
+     <tr>
+       <td>OMA-ERELD-LightweightM2M-V1_1_1-20190617-A</td>
+       <td>17 Jun 2019</td>
+       <td>Status changed to Approved by DMSE WG on 17 Jun 2019.</td>
+     </tr>
+     <tr>
+       <td>OMA-ERELD-LightweightM2M-V1_2-20201110-A</td>
+       <td>10 Nov 2020</td>
+       <td>Status changed to Approved by DMSE WG on 10 Nov 2020.</td>
+     </tr>
+     <tr>
+       <td>OMA-ERELD-LightweightM2M-V1_2_1-20221209-A</td>
+       <td>09 Dec 2022</td>
+       <td>Status changed to Approved by DMSE WG on 9 Dec 2022.</td>
+     </tr>
+    <tr>
+       <td>OMA-ERELD-LightweightM2M-V1_2_2-20240613-A</td>
+       <td>13 Jun 2024</td>
+       <td>Status changed to Approved by DMSE WG on 13 Jun 2024.</td>
+     </tr>
+  </tbody>
+ </table> 
+
+
+    <script src="./OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_files/highlight.min.js" type="6bd922cfe880f649b696e947-text/javascript"></script>
+    <script type="6bd922cfe880f649b696e947-text/javascript">hljs.initHighlightingOnLoad();</script>
+  
+
+<script src="/cdn-cgi/scripts/7d0fa10a/cloudflare-static/rocket-loader.min.js" data-cf-settings="6bd922cfe880f649b696e947-|49" defer></script></body></html>

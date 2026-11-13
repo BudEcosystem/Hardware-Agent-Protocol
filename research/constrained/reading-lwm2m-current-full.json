@@ -1,0 +1,423 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-11-06T00:48:12.333873+00:00",
+  "line_counting": "LF-delimited archived text bytes; retain LF in interval digests, retain form feeds and CR bytes and UTF-8 BOM; include final unterminated line; not Python splitlines().",
+  "coverage_policy": "Full means all archived text lines displayed without truncation and read, including tables and appendices available in that publication. Core and Transport semantic figures were also visually reviewed as separately pinned PDF renders. Missing published appendix content, linked works, acquired PDF text renditions and unacquired repositories are not claimed fully read. No acquired code or devices executed.",
+  "sources": [
+    {
+      "id": "core-122-html",
+      "source_kind": "approved_specification_html",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_2_2-20240613-A.html",
+      "final_url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_2_2-20240613-A.html",
+      "retrieved_at": "2026-11-06T00:32:47.653887+00:00",
+      "raw_path": "research/constrained/lwm2m-current/raw/core-122-html.html",
+      "raw_sha256": "9b0ba061775ba1653265e4df0e70d131070b738a4776fe607b03e6988bc1d67c",
+      "text_path": "research/constrained/lwm2m-current/text/core-122-html.txt",
+      "text_sha256": "dd4a1d8d79021a0ee53f1ffbd4cc20a38ffe8e57f2aeeaff5ddfbf17f1021d60",
+      "line_count": 7896,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 380,
+          "sha256": "1e28d16f0c57afba573e90d4a2d401e6aa5cf4f1176cb08a601a559642b96011"
+        },
+        {
+          "start_line": 381,
+          "end_line": 690,
+          "sha256": "d436e4427ed3d9b3fe859d1f7b90d6c9afbe4fa6c1b6ef66a77a39035d65891a"
+        },
+        {
+          "start_line": 691,
+          "end_line": 950,
+          "sha256": "cbb2149162240837d06afe46f57cda9d9982d41f58cd2920112c086fa7161d49"
+        },
+        {
+          "start_line": 951,
+          "end_line": 1130,
+          "sha256": "e6d6a8001a89a2f8a0c2a57b28dc60aaf219121ee50efc36df36d38ef823de1c"
+        },
+        {
+          "start_line": 1131,
+          "end_line": 1320,
+          "sha256": "f9928d7dea54b73c7610a3a923f767aea1f69eb0576d6f5c221017e25c2762d5"
+        },
+        {
+          "start_line": 1321,
+          "end_line": 1510,
+          "sha256": "7732967ca3d939da0e6add2058f1335a39b3e0f935d02d50c8defc6a8a263ca5"
+        },
+        {
+          "start_line": 1511,
+          "end_line": 1730,
+          "sha256": "9def85a11282d0900dd1e391553d1add5ae25de25155a9ef05e7a99e00b17a27"
+        },
+        {
+          "start_line": 1731,
+          "end_line": 1840,
+          "sha256": "ab9b3c169a4d76b3f5008f5a872b2ca4b44758f49d44be91dda396693a6e40b6"
+        },
+        {
+          "start_line": 1841,
+          "end_line": 2140,
+          "sha256": "c0444e37d01c80232a2f13c8672b67871e83934f6e6b86c4cc3c015857c846ce"
+        },
+        {
+          "start_line": 2141,
+          "end_line": 2440,
+          "sha256": "38bee59b67314f4c6eb10832cb93e5055d56b775e944b0cce12aace66b8acafa"
+        },
+        {
+          "start_line": 2441,
+          "end_line": 2760,
+          "sha256": "9c99333debd9d04e1ec4ca690bbab9b4eb06c7b232e926da1212970b81c8c41a"
+        },
+        {
+          "start_line": 2761,
+          "end_line": 3160,
+          "sha256": "aac828c5198cce7bbc4aac696baf9403144f4dae1492937b2b71b1a6a8fc4f8f"
+        },
+        {
+          "start_line": 3161,
+          "end_line": 3660,
+          "sha256": "d85bac81b9e44a96775f039c8894f3d4c790aa61bc30924ab339e484d78d1647"
+        },
+        {
+          "start_line": 3661,
+          "end_line": 4020,
+          "sha256": "2dc2416ff85e1aba4b1ebbf8cf2ac718a88f93e52a1ef3d7eede4d2a63caab0a"
+        },
+        {
+          "start_line": 4021,
+          "end_line": 4350,
+          "sha256": "cd65c799de4465c65ef699e48ff31fb326c0d8500b97f279ec551706b95f5a30"
+        },
+        {
+          "start_line": 4351,
+          "end_line": 4690,
+          "sha256": "6eed610762828cf9e8a0d2b67f2e58421a44ac7afb4ad8468838c118716c5487"
+        },
+        {
+          "start_line": 4691,
+          "end_line": 5090,
+          "sha256": "2a31cafad572b4cd04a31361a7bf90d84bc802da60fe5a65674f69ceb4116549"
+        },
+        {
+          "start_line": 5091,
+          "end_line": 5490,
+          "sha256": "7d056a8c863950d459a45e79c93b6eb45925e30e23962c17250eb7ff0e912bf1"
+        },
+        {
+          "start_line": 5491,
+          "end_line": 5880,
+          "sha256": "50b0a9458176cd9fd16443ab86c1d4b4ec4f453fbbf04768336a286e3468d716"
+        },
+        {
+          "start_line": 5881,
+          "end_line": 6290,
+          "sha256": "c138e386fc246331be1b9d32426bd7f50bb63b2e9db51b4a944800581997201a"
+        },
+        {
+          "start_line": 6291,
+          "end_line": 6700,
+          "sha256": "90c024f7cdc6ab04c67e6f3d9244a84bf4ec5340ce15e27ff640021c6d43fff0"
+        },
+        {
+          "start_line": 6701,
+          "end_line": 7160,
+          "sha256": "1844cad9219669624ebda187604d0f23e408592288f50b7a84d0826eba3e71eb"
+        },
+        {
+          "start_line": 7161,
+          "end_line": 7500,
+          "sha256": "036f2866a737bcb1c9fa8b34a5da7150d59613f6ac61a4fef792904b310469aa"
+        },
+        {
+          "start_line": 7501,
+          "end_line": 7896,
+          "sha256": "476a7a9ebc8f8159455678961709dfe64c6d1b9613298abbddcc6555f1a1124d"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_available_published_text_and_all_semantic_figures",
+      "note": "Complete available published Core 1.2.2 HTML text: all sections, tables, references, appendices A-M. All 28 semantic figures separately reviewed on 25 PDF page renders. Normative Appendix K is a publication placeholder (No commit found for the ref v1_2-dev), in HTML and PDF; missing content was not read. Separate official XSDs have their own receipts. No linked bibliography or whole PDF text full-read claim."
+    },
+    {
+      "id": "release-122-html",
+      "source_kind": "official_release_metadata",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/HTML-Version/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A.html",
+      "final_url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/HTML-Version/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A.html",
+      "retrieved_at": "2026-11-06T00:32:50.377831+00:00",
+      "raw_path": "research/constrained/lwm2m-current/raw/release-122-html.html",
+      "raw_sha256": "cac41e9f8a62655cb00fd04bb513263633129dd0f2266cf26361cf83de60d4ce",
+      "text_path": "research/constrained/lwm2m-current/text/release-122-html.txt",
+      "text_sha256": "7475004c116b4e23b484630d24cc9ac136e0005d077018378a20e74b189e371d",
+      "line_count": 179,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 179,
+          "sha256": "7475004c116b4e23b484630d24cc9ac136e0005d077018378a20e74b189e371d"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Complete official 1.2.2 approved release definition including version summaries, baseline document table and change history."
+    },
+    {
+      "id": "release-index",
+      "source_kind": "official_release_metadata",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/",
+      "final_url": "https://www.openmobilealliance.org/release/LightweightM2M/",
+      "retrieved_at": "2026-11-06T00:32:51.764841+00:00",
+      "raw_path": "research/constrained/lwm2m-current/raw/release-index.html",
+      "raw_sha256": "738a217765bc394ed011efde1b45a7d5046df78ddfb30f98c9020b0723d969e7",
+      "text_path": "research/constrained/lwm2m-current/text/release-index.txt",
+      "text_sha256": "ebe362c1a2aeab25a362b5454618e918c9789f2bb61f71b845cfdb6262cd14f8",
+      "line_count": 53,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 53,
+          "sha256": "ebe362c1a2aeab25a362b5454618e918c9789f2bb61f71b845cfdb6262cd14f8"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Complete current official release listing; latest listed approved folder is V1_2_2-20240613-A."
+    },
+    {
+      "id": "release-122-directory",
+      "source_kind": "official_release_metadata",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/",
+      "final_url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/",
+      "retrieved_at": "2026-11-06T00:32:52.447319+00:00",
+      "raw_path": "research/constrained/lwm2m-current/raw/release-122-directory.html",
+      "raw_sha256": "57384506f1186fa320427ad70f48e497cbfe25cbdd72aa09377109788af8f060",
+      "text_path": "research/constrained/lwm2m-current/text/release-122-directory.txt",
+      "text_sha256": "f41aa8f6cb5ae62edbd0c4c3a057126a6cd1575e042214d78e8cc2c42e28a4bd",
+      "line_count": 17,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 17,
+          "sha256": "f41aa8f6cb5ae62edbd0c4c3a057126a6cd1575e042214d78e8cc2c42e28a4bd"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Complete official 1.2.2 release directory listing."
+    },
+    {
+      "id": "releases-current",
+      "source_kind": "official_release_metadata",
+      "url": "https://oma-knowledge-base.openmobilealliance.org/specifications/lwm2m/releases/",
+      "final_url": "https://oma-knowledge-base.openmobilealliance.org/specifications/lwm2m/releases/",
+      "retrieved_at": "2026-11-06T00:32:52.625808+00:00",
+      "raw_path": "research/constrained/lwm2m-current/raw/releases-current.html",
+      "raw_sha256": "f8ce514861ee4a1a99d20df38aea5f83db739038893297e8e50f34b7ac09668a",
+      "text_path": "research/constrained/lwm2m-current/text/releases-current.txt",
+      "text_sha256": "626fd716f37e45397baa56a44b6a889e8c4cdb198f6a89566395cd084ff804e7",
+      "line_count": 240,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 240,
+          "sha256": "626fd716f37e45397baa56a44b6a889e8c4cdb198f6a89566395cd084ff804e7"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Complete extracted OMA knowledge-base release page, including navigation; explicitly identifies June 2024 v1.2.2 as latest release."
+    },
+    {
+      "id": "transport-122-html",
+      "source_kind": "approved_specification_html",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/HTML-Version/OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A.html",
+      "final_url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/HTML-Version/OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A.html",
+      "retrieved_at": "2026-11-06T00:32:47.655304+00:00",
+      "raw_path": "research/constrained/lwm2m-current/raw/transport-122-html.html",
+      "raw_sha256": "35982630cb3754bbe246955d2e8ddb82257ffa4df91e1dd8beac51dcff75f867",
+      "text_path": "research/constrained/lwm2m-current/text/transport-122-html.txt",
+      "text_sha256": "3c039c8732c35c0c8cd03edd1b7cdc5d378ee67600457225fc44ce8e269b67b9",
+      "line_count": 3876,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 350,
+          "sha256": "5eab171608912c288de908bf1ddd334148ae1a4e047127ce8cac2248ccf29034"
+        },
+        {
+          "start_line": 351,
+          "end_line": 640,
+          "sha256": "98e0aea2bbc4f73beaec9304b23333429ab85a637a0c94657b86fa8c40d28cfc"
+        },
+        {
+          "start_line": 641,
+          "end_line": 930,
+          "sha256": "dde2a3cae3ac2ab430bc8eb5b6c4d718be6b9dd0ba438dfb07d9c2c67992091e"
+        },
+        {
+          "start_line": 931,
+          "end_line": 1120,
+          "sha256": "4d967fe4aa0fb02b82485304abe34e5b7e803f7a6de2b3f3566f5920b37bf78d"
+        },
+        {
+          "start_line": 1121,
+          "end_line": 1290,
+          "sha256": "c2bcb844b77259e08a7a1da83fc767e01164cd598a98e78ebfb4f62b379d7ed3"
+        },
+        {
+          "start_line": 1291,
+          "end_line": 1500,
+          "sha256": "443b463fc85159b39719cce5843fd415b9b5c1d807bfd9e076d5e2ed75d0961d"
+        },
+        {
+          "start_line": 1501,
+          "end_line": 1720,
+          "sha256": "194cb3c442d2b24572b312fb681375e3ea98dff00f96617e6e34f43863a9580c"
+        },
+        {
+          "start_line": 1721,
+          "end_line": 1990,
+          "sha256": "2f30b3fdcd445bf4261b98b813a53d163b75a266e3fe15c7d48f171e58ed89f3"
+        },
+        {
+          "start_line": 1991,
+          "end_line": 2300,
+          "sha256": "063a4dc3242ebd00eab8cdfcdfdc27c4c85ffe506232573da14c8df1aa2ca921"
+        },
+        {
+          "start_line": 2301,
+          "end_line": 2570,
+          "sha256": "564bd5639f225b730cde17369f8b549797ce30a9a886b44c0849839e70f2ff20"
+        },
+        {
+          "start_line": 2571,
+          "end_line": 2830,
+          "sha256": "ab6281a31701cf8ae58bac1ead0ca25187a353e32e2fd4464ff2129604c491cb"
+        },
+        {
+          "start_line": 2831,
+          "end_line": 3160,
+          "sha256": "91f9e35a4c412c163bee6eaefe660509199270eb926bb9281938c307d06394a0"
+        },
+        {
+          "start_line": 3161,
+          "end_line": 3500,
+          "sha256": "d81c4e7aa1ea3ca6160b6c908c33e69fd055de63b1d3e2128d2942c745b59f42"
+        },
+        {
+          "start_line": 3501,
+          "end_line": 3740,
+          "sha256": "5be1548c1aaa1020449fb7ef720d957363fd547a37a83163edf3abd6611fd8e2"
+        },
+        {
+          "start_line": 3741,
+          "end_line": 3876,
+          "sha256": "15430e9f4bb846fa06017f8c5d1e0801f72d7c27566ee4db8751d9e5e8245c97"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_available_published_text_and_all_semantic_figures",
+      "note": "Complete published Transport 1.2.2 HTML text: all sections, tables, references and appendices A-D, including normative LoRaWAN and informative CIoT annexes. All 20 semantic figures separately reviewed on 17 PDF page renders. No linked RFC/3GPP/MQTT work or whole PDF text full-read claim."
+    },
+    {
+      "id": "schema-v1-xsd",
+      "source_kind": "official_xml_schema",
+      "url": "https://www.openmobilealliance.org/tech/profiles/LWM2M.xsd",
+      "final_url": "https://www.openmobilealliance.org/tech/profiles/LWM2M.xsd",
+      "retrieved_at": "2026-11-06T00:43:03.447778+00:00",
+      "raw_path": "research/constrained/lwm2m-current/raw/schema-v1-xsd.xml",
+      "raw_sha256": "0c6d79ce71e5eefdb6a508ec3b781501526b64ee1690e7fe3a267e5677f662f9",
+      "text_path": "research/constrained/lwm2m-current/text/schema-v1-xsd.txt",
+      "text_sha256": "cbaf5e42c7eb9991cb0dde60543911c087c62547e5367cfb16a5cf5423701138",
+      "line_count": 163,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 163,
+          "sha256": "cbaf5e42c7eb9991cb0dde60543911c087c62547e5367cfb16a5cf5423701138"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Complete separately published LWM2M.xsd, version 1.0.1 dated 2017-01-14. Raw bytes preserved, text CRLF normalized to LF, BOM retained. Structural schema reading only; no compiler execution."
+    },
+    {
+      "id": "schema-v11-xsd",
+      "source_kind": "official_xml_schema",
+      "url": "https://www.openmobilealliance.org/tech/profiles/LWM2M-v1_1.xsd",
+      "final_url": "https://www.openmobilealliance.org/tech/profiles/LWM2M-v1_1.xsd",
+      "retrieved_at": "2026-11-06T00:43:04.442377+00:00",
+      "raw_path": "research/constrained/lwm2m-current/raw/schema-v11-xsd.xml",
+      "raw_sha256": "4f604b9cffa3146606dc17a507e56ca6e3be2c77a1fe90fd67c0ecafc69a661d",
+      "text_path": "research/constrained/lwm2m-current/text/schema-v11-xsd.txt",
+      "text_sha256": "ca9d1f8e01984f30e7575fbd2389ca7d9b13dd9b4b0c1a9b82571ee5954afec9",
+      "line_count": 168,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 168,
+          "sha256": "ca9d1f8e01984f30e7575fbd2389ca7d9b13dd9b4b0c1a9b82571ee5954afec9"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Complete separately published LWM2M-v1_1.xsd, version 1.1 dated 2018-07-10; referenced by approved release definition. Raw bytes preserved, text CRLF normalized to LF, BOM retained. It does not repair or prove the content of missing Core Appendix K."
+    },
+    {
+      "id": "release-122-linked-delta",
+      "source_kind": "official_release_metadata",
+      "url": "https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html",
+      "final_url": "https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html",
+      "retrieved_at": "2026-11-06T00:43:05.599099+00:00",
+      "raw_path": "research/constrained/lwm2m-current/raw/release-122-linked-delta.html",
+      "raw_sha256": "6e5344a247a582a369731e2e9babebcd5c63d25fbe14f269195bcc2cc80b601d",
+      "text_path": "research/constrained/lwm2m-current/text/release-122-linked-delta.txt",
+      "text_sha256": "5f8a963f82ce1ecb2bd5d6f19621add647ff202fb3b85babaef3e070fc4ce8cc",
+      "line_count": 179,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 179,
+          "sha256": "5f8a963f82ce1ecb2bd5d6f19621add647ff202fb3b85babaef3e070fc4ce8cc"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Complete document reached by official release definition delta link. It is a full release-definition rendition with the same short generator revision and 2025 copyright, not a verified line-by-line redline of Core/Transport."
+    }
+  ],
+  "figure_manifest_path": "research/constrained/lwm2m-current/figure-manifest.json",
+  "figure_manifest_sha256": "d19638cc9ad9984b14d825c64ece91dcf370339a6425c8b33abd0e34a95723e3",
+  "unread_text_renditions": [
+    {
+      "id": "core-122-pdf",
+      "text_path": "research/constrained/lwm2m-current/text/core-122-pdf.txt",
+      "status": "not_full_read",
+      "note": "PDF retained as authoritative alternate rendition; Core/Transport used for semantic figure review and targeted cross-checks only, release PDF acquired but not read."
+    },
+    {
+      "id": "transport-122-pdf",
+      "text_path": "research/constrained/lwm2m-current/text/transport-122-pdf.txt",
+      "status": "not_full_read",
+      "note": "PDF retained as authoritative alternate rendition; Core/Transport used for semantic figure review and targeted cross-checks only, release PDF acquired but not read."
+    },
+    {
+      "id": "release-122-pdf",
+      "text_path": "research/constrained/lwm2m-current/text/release-122-pdf.txt",
+      "status": "not_full_read",
+      "note": "PDF retained as authoritative alternate rendition; Core/Transport used for semantic figure review and targeted cross-checks only, release PDF acquired but not read."
+    }
+  ],
+  "counts": {
+    "full_text_sources": 9,
+    "full_text_lines": 12771,
+    "coverage_ranges": 46,
+    "full_specifications": 2,
+    "semantic_figures": 48,
+    "reviewed_pdf_page_renders": 42,
+    "acquired_sources": 12
+  },
+  "path_base": "repository_root"
+}

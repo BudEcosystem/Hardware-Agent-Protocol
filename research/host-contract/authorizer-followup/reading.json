@@ -1,0 +1,41 @@
+{
+  "schema": "hms-primary-reading/1",
+  "readCompletedUtc": "2026-11-06T22:34:44.740194+00:00",
+  "sources": [
+    {
+      "id": "set_authorizer",
+      "path": "research/host-contract/authorizer-followup/text/set_authorizer.txt",
+      "sha256": "85a79c6bab0e1ff2e4927964abb205eb1c4f40d1cbecb145b65fcd47ae984221",
+      "lfLines": 80,
+      "scope": "full_meaningful_API_body",
+      "chunks": [
+        {
+          "start": 1,
+          "end": 80,
+          "sha256": "85a79c6bab0e1ff2e4927964abb205eb1c4f40d1cbecb145b65fcd47ae984221"
+        }
+      ],
+      "tableRowsRead": 0
+    },
+    {
+      "id": "action_codes",
+      "path": "research/host-contract/authorizer-followup/text/action_codes.txt",
+      "sha256": "6060a84674965eba4a764200f6927c48ed222685d3f1c12531fbe351bc7c0dff",
+      "lfLines": 56,
+      "scope": "full_meaningful_API_body",
+      "chunks": [
+        {
+          "start": 1,
+          "end": 56,
+          "sha256": "6060a84674965eba4a764200f6927c48ed222685d3f1c12531fbe351bc7c0dff"
+        }
+      ],
+      "tableRowsRead": 33
+    }
+  ],
+  "figures": [],
+  "figureScope": "No meaningful body images; API signature and33-row action table retained and read as preformatted text. Site navigation/logo/scripts excluded.",
+  "acquisitionIsReading": false,
+  "linkedPagesRead": false,
+  "acquiredProgramsExecuted": false
+}

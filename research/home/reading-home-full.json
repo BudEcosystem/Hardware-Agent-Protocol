@@ -1,0 +1,958 @@
+{
+  "method": "Actual untruncated LF-addressed sequential reads or complete cat displays. Chunk hashes attest retained byte intervals; they do not mechanically prove comprehension. Raw acquisition records remain initially unread; this overlay supplies reading scope.",
+  "reviewed_at": "2026-11-05T23:07:29.243382+00:00",
+  "sources": [
+    {
+      "id": "ha-contributors:src/content/docs/core/internals/websocket-api.md",
+      "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/internals/websocket-api.md",
+      "raw_path": "research/home/snapshots/ha-contributors/src/content/docs/core/internals/websocket-api.md",
+      "raw_sha256": "f4cbe18717888d56e0c4ffefb9a44ca502bcb9bb72a56b8ed24572d5f3974ea0",
+      "text_path": "research/home/snapshots/ha-contributors/src/content/docs/core/internals/websocket-api.md",
+      "text_sha256": "f4cbe18717888d56e0c4ffefb9a44ca502bcb9bb72a56b8ed24572d5f3974ea0",
+      "line_count": 525,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 280,
+          "sha256": "7a054cc09d9986c16ae5d5bdf7826587b1f89a1145c70e2eaa784f071c1ec3c3"
+        },
+        {
+          "start_line": 281,
+          "end_line": 525,
+          "sha256": "949bf77dda5d72d30f47c9820c716d2ffd21b2c83909f52d69a23b5c57241e48"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/home-assistant/contributors.home-assistant.io",
+      "commit": "abdc493f06647a69e8d64da62dd91b784273ac62",
+      "repository_path": "src/content/docs/core/internals/websocket-api.md",
+      "git_blob_sha": "c7f6298d3a939380439e1c7468d11caee6a88e40",
+      "visual_scope": "Text/source only; embedded image pixels, browser-generated MDX components and linked references not separately inspected."
+    },
+    {
+      "id": "ha-contributors:src/content/docs/core/internals/rest-api.md",
+      "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/internals/rest-api.md",
+      "raw_path": "research/home/snapshots/ha-contributors/src/content/docs/core/internals/rest-api.md",
+      "raw_sha256": "3be37181c244785391e21e5e9237b2d420e61a5d6fc755294ee915fcfdd77d1d",
+      "text_path": "research/home/snapshots/ha-contributors/src/content/docs/core/internals/rest-api.md",
+      "text_sha256": "3be37181c244785391e21e5e9237b2d420e61a5d6fc755294ee915fcfdd77d1d",
+      "line_count": 251,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 251,
+          "sha256": "3be37181c244785391e21e5e9237b2d420e61a5d6fc755294ee915fcfdd77d1d"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/home-assistant/contributors.home-assistant.io",
+      "commit": "abdc493f06647a69e8d64da62dd91b784273ac62",
+      "repository_path": "src/content/docs/core/internals/rest-api.md",
+      "git_blob_sha": "d4f20897dd7c6a04b9117074be82d9808ef7b69f",
+      "visual_scope": "Text/source only; embedded image pixels, browser-generated MDX components and linked references not separately inspected."
+    },
+    {
+      "id": "ha-contributors:src/content/docs/core/internals/states.md",
+      "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/internals/states.md",
+      "raw_path": "research/home/snapshots/ha-contributors/src/content/docs/core/internals/states.md",
+      "raw_sha256": "5e040c792b2b5401fccdae6a0a79f813b689f8d79a30401ca06902e6fb2e1308",
+      "text_path": "research/home/snapshots/ha-contributors/src/content/docs/core/internals/states.md",
+      "text_sha256": "5e040c792b2b5401fccdae6a0a79f813b689f8d79a30401ca06902e6fb2e1308",
+      "line_count": 75,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 75,
+          "sha256": "5e040c792b2b5401fccdae6a0a79f813b689f8d79a30401ca06902e6fb2e1308"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/home-assistant/contributors.home-assistant.io",
+      "commit": "abdc493f06647a69e8d64da62dd91b784273ac62",
+      "repository_path": "src/content/docs/core/internals/states.md",
+      "git_blob_sha": "614aa4bff6ebc8bf733e2b6fd43a1cf0704537ae",
+      "visual_scope": "Text/source only; embedded image pixels, browser-generated MDX components and linked references not separately inspected."
+    },
+    {
+      "id": "ha-contributors:src/content/docs/core/internals/events.md",
+      "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/internals/events.md",
+      "raw_path": "research/home/snapshots/ha-contributors/src/content/docs/core/internals/events.md",
+      "raw_sha256": "009908ecf96c5b0c82732a5cbc94ae3df2bd9ad9e43a49a9c4a1f11901dc58b5",
+      "text_path": "research/home/snapshots/ha-contributors/src/content/docs/core/internals/events.md",
+      "text_sha256": "009908ecf96c5b0c82732a5cbc94ae3df2bd9ad9e43a49a9c4a1f11901dc58b5",
+      "line_count": 96,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 96,
+          "sha256": "009908ecf96c5b0c82732a5cbc94ae3df2bd9ad9e43a49a9c4a1f11901dc58b5"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/home-assistant/contributors.home-assistant.io",
+      "commit": "abdc493f06647a69e8d64da62dd91b784273ac62",
+      "repository_path": "src/content/docs/core/internals/events.md",
+      "git_blob_sha": "578079c4eca243b6eda68b96bf67f5307e18901b",
+      "visual_scope": "Text/source only; embedded image pixels, browser-generated MDX components and linked references not separately inspected."
+    },
+    {
+      "id": "ha-contributors:src/content/docs/core/entities/state-updates.md",
+      "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/entities/state-updates.md",
+      "raw_path": "research/home/snapshots/ha-contributors/src/content/docs/core/entities/state-updates.md",
+      "raw_sha256": "a470b0e4a893862189a99ce4e58e0223d91633c60a96796fd94f20749a3964eb",
+      "text_path": "research/home/snapshots/ha-contributors/src/content/docs/core/entities/state-updates.md",
+      "text_sha256": "a470b0e4a893862189a99ce4e58e0223d91633c60a96796fd94f20749a3964eb",
+      "line_count": 149,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 149,
+          "sha256": "a470b0e4a893862189a99ce4e58e0223d91633c60a96796fd94f20749a3964eb"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/home-assistant/contributors.home-assistant.io",
+      "commit": "abdc493f06647a69e8d64da62dd91b784273ac62",
+      "repository_path": "src/content/docs/core/entities/state-updates.md",
+      "git_blob_sha": "deb0b26cfc696e9898e26a6455a81e8658ea8e43",
+      "visual_scope": "Text/source only; embedded image pixels, browser-generated MDX components and linked references not separately inspected."
+    },
+    {
+      "id": "ha-contributors:src/content/docs/core/entities/state-attributes.md",
+      "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/entities/state-attributes.md",
+      "raw_path": "research/home/snapshots/ha-contributors/src/content/docs/core/entities/state-attributes.md",
+      "raw_sha256": "0fd855797d6119b19da769426137e612a68dbbadb2639be910f1f5e92c6e90d1",
+      "text_path": "research/home/snapshots/ha-contributors/src/content/docs/core/entities/state-attributes.md",
+      "text_sha256": "0fd855797d6119b19da769426137e612a68dbbadb2639be910f1f5e92c6e90d1",
+      "line_count": 87,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 87,
+          "sha256": "0fd855797d6119b19da769426137e612a68dbbadb2639be910f1f5e92c6e90d1"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/home-assistant/contributors.home-assistant.io",
+      "commit": "abdc493f06647a69e8d64da62dd91b784273ac62",
+      "repository_path": "src/content/docs/core/entities/state-attributes.md",
+      "git_blob_sha": "67708cab562322549850cfe8077b74affe00aac8",
+      "visual_scope": "Text/source only; embedded image pixels, browser-generated MDX components and linked references not separately inspected."
+    },
+    {
+      "id": "ha-contributors:src/content/docs/core/integrations/fetching-data.md",
+      "url": "https://raw.githubusercontent.com/home-assistant/contributors.home-assistant.io/abdc493f06647a69e8d64da62dd91b784273ac62/src/content/docs/core/integrations/fetching-data.md",
+      "raw_path": "research/home/snapshots/ha-contributors/src/content/docs/core/integrations/fetching-data.md",
+      "raw_sha256": "3fe481a4116aaebe54db72860f9a920853f5fe11f60331ba82b569ba894c0fca",
+      "text_path": "research/home/snapshots/ha-contributors/src/content/docs/core/integrations/fetching-data.md",
+      "text_sha256": "3fe481a4116aaebe54db72860f9a920853f5fe11f60331ba82b569ba894c0fca",
+      "line_count": 198,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 198,
+          "sha256": "3fe481a4116aaebe54db72860f9a920853f5fe11f60331ba82b569ba894c0fca"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/home-assistant/contributors.home-assistant.io",
+      "commit": "abdc493f06647a69e8d64da62dd91b784273ac62",
+      "repository_path": "src/content/docs/core/integrations/fetching-data.md",
+      "git_blob_sha": "3eb8d018e08fb42f1ed64c08caa9bc5511d24aa5",
+      "visual_scope": "Text/source only; embedded image pixels, browser-generated MDX components and linked references not separately inspected."
+    },
+    {
+      "id": "ha-core:homeassistant/components/websocket_api/commands.py",
+      "url": "https://raw.githubusercontent.com/home-assistant/core/74cf5a49c63ed8d4d87717844bf14f79c28c9cea/homeassistant/components/websocket_api/commands.py",
+      "raw_path": "research/home/snapshots/ha-core/homeassistant/components/websocket_api/commands.py",
+      "raw_sha256": "e161f3e2f75cfcc25e0ad66871a6d9c1740111f65cb194791926cf6f8494d443",
+      "text_path": "research/home/snapshots/ha-core/homeassistant/components/websocket_api/commands.py",
+      "text_sha256": "e161f3e2f75cfcc25e0ad66871a6d9c1740111f65cb194791926cf6f8494d443",
+      "line_count": 1455,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 300,
+          "sha256": "1544a64dad101e9f5b54668314f73900d76902a2a76d3d07513b370afd20101c"
+        },
+        {
+          "start_line": 301,
+          "end_line": 582,
+          "sha256": "c2092e1e1689e404ba6ef3faeaaec618b395d36a6bb810f6b20fa913299dd89a"
+        }
+      ],
+      "coverage_complete": false,
+      "reading_status": "read_selected",
+      "reading_scope": "Setup/registration, events, call_service, get_states, subscribe_entities and no-await snapshot handoff; remainder unread.",
+      "repository": "https://github.com/home-assistant/core",
+      "commit": "74cf5a49c63ed8d4d87717844bf14f79c28c9cea",
+      "repository_path": "homeassistant/components/websocket_api/commands.py",
+      "git_blob_sha": "03297e0820d912f98f3441476e00c96fdbfe53dc",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "ha-core:homeassistant/components/websocket_api/connection.py",
+      "url": "https://raw.githubusercontent.com/home-assistant/core/74cf5a49c63ed8d4d87717844bf14f79c28c9cea/homeassistant/components/websocket_api/connection.py",
+      "raw_path": "research/home/snapshots/ha-core/homeassistant/components/websocket_api/connection.py",
+      "raw_sha256": "abe7fc8e7fabc9a552bfb5b6df36117b42d0aa75b948064c1a384e42c608368c",
+      "text_path": "research/home/snapshots/ha-core/homeassistant/components/websocket_api/connection.py",
+      "text_sha256": "abe7fc8e7fabc9a552bfb5b6df36117b42d0aa75b948064c1a384e42c608368c",
+      "line_count": 413,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 413,
+          "sha256": "abe7fc8e7fabc9a552bfb5b6df36117b42d0aa75b948064c1a384e42c608368c"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/home-assistant/core",
+      "commit": "74cf5a49c63ed8d4d87717844bf14f79c28c9cea",
+      "repository_path": "homeassistant/components/websocket_api/connection.py",
+      "git_blob_sha": "e031b7c429bd6348c0a6957b4b0101896f59db5f",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "ha-core:homeassistant/components/api/__init__.py",
+      "url": "https://raw.githubusercontent.com/home-assistant/core/74cf5a49c63ed8d4d87717844bf14f79c28c9cea/homeassistant/components/api/__init__.py",
+      "raw_path": "research/home/snapshots/ha-core/homeassistant/components/api/__init__.py",
+      "raw_sha256": "ed3e5b3ac91a3bcf2e87d27b7e26579a420477747123b846c5cd019649045673",
+      "text_path": "research/home/snapshots/ha-core/homeassistant/components/api/__init__.py",
+      "text_sha256": "ed3e5b3ac91a3bcf2e87d27b7e26579a420477747123b846c5cd019649045673",
+      "line_count": 553,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 300,
+          "sha256": "adf05001fbbe969f33adf9722220a57641791ad6d1172c45ef7fa8fdd99f023d"
+        },
+        {
+          "start_line": 301,
+          "end_line": 553,
+          "sha256": "835c6c98ae53469e81f8d526d5c26e42d8e750b7c04de21276db72d50d939c0a"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/home-assistant/core",
+      "commit": "74cf5a49c63ed8d4d87717844bf14f79c28c9cea",
+      "repository_path": "homeassistant/components/api/__init__.py",
+      "git_blob_sha": "a66f75403c21c1dd64771713d60704502de0ee81",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "ha-js-websocket:lib/connection.ts",
+      "url": "https://raw.githubusercontent.com/home-assistant/home-assistant-js-websocket/ad8031f63b996cccb9dc53633325c2039b030aee/lib/connection.ts",
+      "raw_path": "research/home/snapshots/ha-js-websocket/lib/connection.ts",
+      "raw_sha256": "de1ea449caabc9ad9f364f6a93337b24131768793347c0ccbce35acdba2955f7",
+      "text_path": "research/home/snapshots/ha-js-websocket/lib/connection.ts",
+      "text_sha256": "de1ea449caabc9ad9f364f6a93337b24131768793347c0ccbce35acdba2955f7",
+      "line_count": 616,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 260,
+          "sha256": "4b0b4dbd2ec6fa802d8b683f53f708b6c8b9b684a471664b52379173b256ed13"
+        },
+        {
+          "start_line": 261,
+          "end_line": 616,
+          "sha256": "20369158684f462d4a253f5b6d34029a58110f8da3371f12ed80be861c35e61f"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/home-assistant/home-assistant-js-websocket",
+      "commit": "ad8031f63b996cccb9dc53633325c2039b030aee",
+      "repository_path": "lib/connection.ts",
+      "git_blob_sha": "e981bf41d136488bd686bb267e13db4307c359e8",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "ha-js-websocket:lib/entities.ts",
+      "url": "https://raw.githubusercontent.com/home-assistant/home-assistant-js-websocket/ad8031f63b996cccb9dc53633325c2039b030aee/lib/entities.ts",
+      "raw_path": "research/home/snapshots/ha-js-websocket/lib/entities.ts",
+      "raw_sha256": "80d61d9204613b2fe58210779f374462d881c7cdfbc043b05179266eb3fedadf",
+      "text_path": "research/home/snapshots/ha-js-websocket/lib/entities.ts",
+      "text_sha256": "80d61d9204613b2fe58210779f374462d881c7cdfbc043b05179266eb3fedadf",
+      "line_count": 2,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 2,
+          "sha256": "80d61d9204613b2fe58210779f374462d881c7cdfbc043b05179266eb3fedadf"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/home-assistant/home-assistant-js-websocket",
+      "commit": "ad8031f63b996cccb9dc53633325c2039b030aee",
+      "repository_path": "lib/entities.ts",
+      "git_blob_sha": "02a20e29cf439e469601cec8a0a02bd0d34628b6",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "ha-js-websocket:lib/collection.ts",
+      "url": "https://raw.githubusercontent.com/home-assistant/home-assistant-js-websocket/ad8031f63b996cccb9dc53633325c2039b030aee/lib/collection.ts",
+      "raw_path": "research/home/snapshots/ha-js-websocket/lib/collection.ts",
+      "raw_sha256": "7e66b3a0063a25a59b213b93e64b49e4f085132a3f007b92dcaca27729d8d3aa",
+      "text_path": "research/home/snapshots/ha-js-websocket/lib/collection.ts",
+      "text_sha256": "7e66b3a0063a25a59b213b93e64b49e4f085132a3f007b92dcaca27729d8d3aa",
+      "line_count": 191,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 191,
+          "sha256": "7e66b3a0063a25a59b213b93e64b49e4f085132a3f007b92dcaca27729d8d3aa"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/home-assistant/home-assistant-js-websocket",
+      "commit": "ad8031f63b996cccb9dc53633325c2039b030aee",
+      "repository_path": "lib/collection.ts",
+      "git_blob_sha": "132f49cfa130d2c67681d78057b622920ed668c0",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/api/api.proto",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api.proto",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/api/api.proto",
+      "raw_sha256": "52d1831f8621c436dd15d8d19b6eaf6a632fe13e4bb00966f8b31dba39680917",
+      "text_path": "research/home/snapshots/esphome/esphome/components/api/api.proto",
+      "text_sha256": "52d1831f8621c436dd15d8d19b6eaf6a632fe13e4bb00966f8b31dba39680917",
+      "line_count": 3129,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 410,
+          "sha256": "7d98ffb21be41ebe17f32b956a3c91610fde5ed73356a33b34b493d6d5822ef8"
+        },
+        {
+          "start_line": 411,
+          "end_line": 820,
+          "sha256": "53577980c53a8fb7c68c6ce92e60f5e28215d07a483dfb8627477def8467566b"
+        },
+        {
+          "start_line": 821,
+          "end_line": 1230,
+          "sha256": "cc9f5e33d4a01df1aacb3e574b1a7f956453c2181c9b7628e831eaf7cddbd221"
+        },
+        {
+          "start_line": 1231,
+          "end_line": 1660,
+          "sha256": "18ba6f55a298b68cf8c4fe07e4ed13a0194576c77419a9e5f561dc2a29e8dee2"
+        },
+        {
+          "start_line": 1661,
+          "end_line": 2070,
+          "sha256": "60dc21b7697a1bf9758ceb97306edee6f66948c3f04cb9651ca44bf821f55e9f"
+        },
+        {
+          "start_line": 2071,
+          "end_line": 2490,
+          "sha256": "1ba33ea116e773d90dfd7bd8e507960daa9ec51bf15019eabfe6b63df0e192e7"
+        },
+        {
+          "start_line": 2491,
+          "end_line": 2890,
+          "sha256": "d975cf572bb3261dd6a22e3174ab5eaf1085949761452829a2d7c957a4a00eea"
+        },
+        {
+          "start_line": 2891,
+          "end_line": 3129,
+          "sha256": "2b2a3a8a29109e9830e76d54ae2a1f4cda1affa6edfcfdde22da4d1caec7fdba"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/api/api.proto",
+      "git_blob_sha": "8e9ff00f59cc1222aee591b76e05925d31fc0baa",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/api/api_connection.cpp",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api_connection.cpp",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/api/api_connection.cpp",
+      "raw_sha256": "7c528db887aa3407bb157876644a6849d2ec7bcd66f82e99cd243f55a96178da",
+      "text_path": "research/home/snapshots/esphome/esphome/components/api/api_connection.cpp",
+      "text_sha256": "7c528db887aa3407bb157876644a6849d2ec7bcd66f82e99cd243f55a96178da",
+      "line_count": 2827,
+      "coverage_ranges": [
+        {
+          "start_line": 490,
+          "end_line": 565,
+          "sha256": "796ecf81d16f71ff3bd016ffcbff962866a671f047ee7c3bd0c3582ac2b469c3"
+        },
+        {
+          "start_line": 680,
+          "end_line": 760,
+          "sha256": "49b3c763f91cb10d021656d5c15427840bb5995823ccdd03e85bbc8d53b52c5f"
+        },
+        {
+          "start_line": 1860,
+          "end_line": 1965,
+          "sha256": "e30bb6ad5e7b9530ea9b419cd7fc4db9dd280e3aadef9eb52fbe64cfd899f19e"
+        },
+        {
+          "start_line": 2140,
+          "end_line": 2375,
+          "sha256": "242f8c2cb63f101dfeca3387603004d0f7e8b32473d361991b63cc6651b2c236"
+        },
+        {
+          "start_line": 2440,
+          "end_line": 2485,
+          "sha256": "26889dd860b6455d00688119e0684eeeb41c60f4f5313ed7c717c7759e37cb87"
+        }
+      ],
+      "coverage_complete": false,
+      "reading_status": "read_selected",
+      "reading_scope": "Selected native cover/switch/sensor state and command handlers, hello/authentication, service requests/responses, key changes and buffering entry points. The rest of this large file remains unread.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/api/api_connection.cpp",
+      "git_blob_sha": "efa0beb55e1d0bb0d63710038ecb7971ea3cf1f4",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/api/api_server.cpp",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api_server.cpp",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/api/api_server.cpp",
+      "raw_sha256": "04493ab169d14da679ede65e526cf00606d94fbbb51bc78ec37e23b7d6be758f",
+      "text_path": "research/home/snapshots/esphome/esphome/components/api/api_server.cpp",
+      "text_sha256": "04493ab169d14da679ede65e526cf00606d94fbbb51bc78ec37e23b7d6be758f",
+      "line_count": 903,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 350,
+          "sha256": "0b2edb0145b20f19c548bcbfc6d19bcbbd213b22fe97be368a7c316846c86d6b"
+        },
+        {
+          "start_line": 351,
+          "end_line": 640,
+          "sha256": "c794bd19d058b880389070ed9a9a6128a8c0a960c9ae91c753e632b5bfa93af6"
+        },
+        {
+          "start_line": 641,
+          "end_line": 903,
+          "sha256": "436140b902a920a3f0c1a1e8fb6b05c3cb45c1c6e40ace65dde7ec1e1557a96a"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/api/api_server.cpp",
+      "git_blob_sha": "33869dd976e14a5a026ce95cfca60c40548b25a1",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/api/api_frame_helper.cpp",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api_frame_helper.cpp",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/api/api_frame_helper.cpp",
+      "raw_sha256": "0c02ac1f2453e1514918a5598543d5235c3e6ef62cdba5410e173174747cfc46",
+      "text_path": "research/home/snapshots/esphome/esphome/components/api/api_frame_helper.cpp",
+      "text_sha256": "0c02ac1f2453e1514918a5598543d5235c3e6ef62cdba5410e173174747cfc46",
+      "line_count": 231,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 231,
+          "sha256": "0c02ac1f2453e1514918a5598543d5235c3e6ef62cdba5410e173174747cfc46"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/api/api_frame_helper.cpp",
+      "git_blob_sha": "41d1230aaa6e54ba4121fb065188cf5031e0c75a",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/api/api_frame_helper_noise.cpp",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api_frame_helper_noise.cpp",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/api/api_frame_helper_noise.cpp",
+      "raw_sha256": "da2a2b90e94c2d95d7788c298cdfa60398573300ff80bf94998d121c172bb9dd",
+      "text_path": "research/home/snapshots/esphome/esphome/components/api/api_frame_helper_noise.cpp",
+      "text_sha256": "da2a2b90e94c2d95d7788c298cdfa60398573300ff80bf94998d121c172bb9dd",
+      "line_count": 608,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 310,
+          "sha256": "995d59af745ce7b09ea51bc244deafa2439916458fa0455613514b293934f1e1"
+        },
+        {
+          "start_line": 311,
+          "end_line": 608,
+          "sha256": "803225aba427b80b7cc258a6024dc7029de0466ee2e1859bf341d3588252c4f7"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/api/api_frame_helper_noise.cpp",
+      "git_blob_sha": "21ef085c53f87c78db71649796535c75df6dd47e",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/template/switch/template_switch.cpp",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/template/switch/template_switch.cpp",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/template/switch/template_switch.cpp",
+      "raw_sha256": "07cf62381d68c282109fde4d2648e21d063c3abcd823a5e96eadbdcaffb305ee",
+      "text_path": "research/home/snapshots/esphome/esphome/components/template/switch/template_switch.cpp",
+      "text_sha256": "07cf62381d68c282109fde4d2648e21d063c3abcd823a5e96eadbdcaffb305ee",
+      "line_count": 53,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 53,
+          "sha256": "07cf62381d68c282109fde4d2648e21d063c3abcd823a5e96eadbdcaffb305ee"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/template/switch/template_switch.cpp",
+      "git_blob_sha": "729db370531292e1f74e0ce3ec2bf75e21dedee7",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/time_based/cover/time_based_cover.cpp",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/time_based/cover/time_based_cover.cpp",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/time_based/cover/time_based_cover.cpp",
+      "raw_sha256": "2da9f80fa943d19c239744aa1d25b3bee93ba4e990b8f5f43fd48e378edb2f6b",
+      "text_path": "research/home/snapshots/esphome/esphome/components/time_based/cover/time_based_cover.cpp",
+      "text_sha256": "2da9f80fa943d19c239744aa1d25b3bee93ba4e990b8f5f43fd48e378edb2f6b",
+      "line_count": 185,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 185,
+          "sha256": "2da9f80fa943d19c239744aa1d25b3bee93ba4e990b8f5f43fd48e378edb2f6b"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/time_based/cover/time_based_cover.cpp",
+      "git_blob_sha": "613b190cf3cca1f7921836f16e16118adf6df477",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome-docs:src/content/docs/components/api.mdx",
+      "url": "https://raw.githubusercontent.com/esphome/esphome.io/4dad66388fb0b2b3591ba4bdfb46b3694125b3e5/src/content/docs/components/api.mdx",
+      "raw_path": "research/home/snapshots/esphome-docs/src/content/docs/components/api.mdx",
+      "raw_sha256": "695716b2eb549d91ab382dae3d099e6a88fdab5441584572f60823396bd14f48",
+      "text_path": "research/home/snapshots/esphome-docs/src/content/docs/components/api.mdx",
+      "text_sha256": "695716b2eb549d91ab382dae3d099e6a88fdab5441584572f60823396bd14f48",
+      "line_count": 1000,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 260,
+          "sha256": "46b787832b1afb02ce82795e7985c60072d72ec4a9999ac68c0ae803ac121321"
+        },
+        {
+          "start_line": 261,
+          "end_line": 530,
+          "sha256": "93fe3ca6983bd34d58db0bcef59f90b96f3b8ba14e4df27098272c81d68c276d"
+        },
+        {
+          "start_line": 531,
+          "end_line": 800,
+          "sha256": "a391c806bed02e43d452912beb9ab1ed547c45953b3a7ee73434f2dd8f82e47d"
+        },
+        {
+          "start_line": 801,
+          "end_line": 1000,
+          "sha256": "d4a08e6ad03355f0b53d11179b322ed83f115877ab5a8a692c4bd0f7efabc2bb"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome.io",
+      "commit": "4dad66388fb0b2b3591ba4bdfb46b3694125b3e5",
+      "repository_path": "src/content/docs/components/api.mdx",
+      "git_blob_sha": "87ca0c08651d20c631af43cecd21d5415dac8a35",
+      "visual_scope": "Text/source only; embedded image pixels, browser-generated MDX components and linked references not separately inspected."
+    },
+    {
+      "id": "esphome-docs:src/content/docs/automations/actions.mdx",
+      "url": "https://raw.githubusercontent.com/esphome/esphome.io/4dad66388fb0b2b3591ba4bdfb46b3694125b3e5/src/content/docs/automations/actions.mdx",
+      "raw_path": "research/home/snapshots/esphome-docs/src/content/docs/automations/actions.mdx",
+      "raw_sha256": "03e1bdeebdbcd366c2d90272fc492ee5c50f11347cbea2bb00f5b67f581a8d5f",
+      "text_path": "research/home/snapshots/esphome-docs/src/content/docs/automations/actions.mdx",
+      "text_sha256": "03e1bdeebdbcd366c2d90272fc492ee5c50f11347cbea2bb00f5b67f581a8d5f",
+      "line_count": 533,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 533,
+          "sha256": "03e1bdeebdbcd366c2d90272fc492ee5c50f11347cbea2bb00f5b67f581a8d5f"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome.io",
+      "commit": "4dad66388fb0b2b3591ba4bdfb46b3694125b3e5",
+      "repository_path": "src/content/docs/automations/actions.mdx",
+      "git_blob_sha": "b7c4f94e9d24f150df257ff0fbdaa0038262970e",
+      "visual_scope": "Text/source only; embedded image pixels, browser-generated MDX components and linked references not separately inspected."
+    },
+    {
+      "id": "esphome-docs:src/content/docs/components/script.mdx",
+      "url": "https://raw.githubusercontent.com/esphome/esphome.io/4dad66388fb0b2b3591ba4bdfb46b3694125b3e5/src/content/docs/components/script.mdx",
+      "raw_path": "research/home/snapshots/esphome-docs/src/content/docs/components/script.mdx",
+      "raw_sha256": "728278e8196a6eff0121f8fbba3f6a5b5ca643f2877ba5b4d15795cb1ba02b7a",
+      "text_path": "research/home/snapshots/esphome-docs/src/content/docs/components/script.mdx",
+      "text_sha256": "728278e8196a6eff0121f8fbba3f6a5b5ca643f2877ba5b4d15795cb1ba02b7a",
+      "line_count": 183,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 183,
+          "sha256": "728278e8196a6eff0121f8fbba3f6a5b5ca643f2877ba5b4d15795cb1ba02b7a"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome.io",
+      "commit": "4dad66388fb0b2b3591ba4bdfb46b3694125b3e5",
+      "repository_path": "src/content/docs/components/script.mdx",
+      "git_blob_sha": "2b49b8dcc366cb206db1f02875d1ec538686ff91",
+      "visual_scope": "Text/source only; embedded image pixels, browser-generated MDX components and linked references not separately inspected."
+    },
+    {
+      "id": "esphome-docs:src/content/docs/components/switch/template.mdx",
+      "url": "https://raw.githubusercontent.com/esphome/esphome.io/4dad66388fb0b2b3591ba4bdfb46b3694125b3e5/src/content/docs/components/switch/template.mdx",
+      "raw_path": "research/home/snapshots/esphome-docs/src/content/docs/components/switch/template.mdx",
+      "raw_sha256": "eb30b106d7a5c6e36720ca340dbd6a112d0e5c85a9eb37556f04db8d2553d956",
+      "text_path": "research/home/snapshots/esphome-docs/src/content/docs/components/switch/template.mdx",
+      "text_sha256": "eb30b106d7a5c6e36720ca340dbd6a112d0e5c85a9eb37556f04db8d2553d956",
+      "line_count": 99,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 99,
+          "sha256": "eb30b106d7a5c6e36720ca340dbd6a112d0e5c85a9eb37556f04db8d2553d956"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome.io",
+      "commit": "4dad66388fb0b2b3591ba4bdfb46b3694125b3e5",
+      "repository_path": "src/content/docs/components/switch/template.mdx",
+      "git_blob_sha": "b26e7861020c0a8e54044d51086e6eb7644456de",
+      "visual_scope": "Text/source only; embedded image pixels, browser-generated MDX components and linked references not separately inspected."
+    },
+    {
+      "id": "esphome-docs:src/content/docs/components/cover/time_based.mdx",
+      "url": "https://raw.githubusercontent.com/esphome/esphome.io/4dad66388fb0b2b3591ba4bdfb46b3694125b3e5/src/content/docs/components/cover/time_based.mdx",
+      "raw_path": "research/home/snapshots/esphome-docs/src/content/docs/components/cover/time_based.mdx",
+      "raw_sha256": "0ca9596ba4bdffd184ed4bf2a0d8cb2bfc708bfa0d9f46c064fb5c5f06ade90c",
+      "text_path": "research/home/snapshots/esphome-docs/src/content/docs/components/cover/time_based.mdx",
+      "text_sha256": "0ca9596ba4bdffd184ed4bf2a0d8cb2bfc708bfa0d9f46c064fb5c5f06ade90c",
+      "line_count": 98,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 98,
+          "sha256": "0ca9596ba4bdffd184ed4bf2a0d8cb2bfc708bfa0d9f46c064fb5c5f06ade90c"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome.io",
+      "commit": "4dad66388fb0b2b3591ba4bdfb46b3694125b3e5",
+      "repository_path": "src/content/docs/components/cover/time_based.mdx",
+      "git_blob_sha": "8fb5b118e443ea9df3f01e1982a8b670a1c37b3d",
+      "visual_scope": "Text/source only; embedded image pixels, browser-generated MDX components and linked references not separately inspected."
+    },
+    {
+      "id": "ha-state-object",
+      "url": "https://www.home-assistant.io/docs/configuration/state_object/",
+      "raw_path": "research/home/raw/ha-state-object.html",
+      "raw_sha256": "ac66a7585699434b88728608d24ec62890cb8078d40a772f0041f41c81d030ae",
+      "text_path": "research/home/text/ha-state-object.txt",
+      "text_sha256": "02da0edd3228ead1f415b7626e46bf7d4bb0ed71e19e13fa4f706b52c946ea4d",
+      "line_count": 237,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 237,
+          "sha256": "02da0edd3228ead1f415b7626e46bf7d4bb0ed71e19e13fa4f706b52c946ea4d"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "visual_scope": "Text/source only; embedded image pixels, browser-generated MDX components and linked references not separately inspected."
+    },
+    {
+      "id": "ha-js-websocket:lib/states.ts",
+      "url": "https://raw.githubusercontent.com/home-assistant/home-assistant-js-websocket/ad8031f63b996cccb9dc53633325c2039b030aee/lib/states.ts",
+      "raw_path": "research/home/snapshots/ha-js-websocket/lib/states.ts",
+      "raw_sha256": "7d5daac6f30a44b87faf1111b2dc9d5c51a9696b4f9ed2a193ac5a68e63b6e52",
+      "text_path": "research/home/snapshots/ha-js-websocket/lib/states.ts",
+      "text_sha256": "7d5daac6f30a44b87faf1111b2dc9d5c51a9696b4f9ed2a193ac5a68e63b6e52",
+      "line_count": 222,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 222,
+          "sha256": "7d5daac6f30a44b87faf1111b2dc9d5c51a9696b4f9ed2a193ac5a68e63b6e52"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/home-assistant/home-assistant-js-websocket",
+      "commit": "ad8031f63b996cccb9dc53633325c2039b030aee",
+      "repository_path": "lib/states.ts",
+      "git_blob_sha": "72a28482605d7ccf351c4a955b2c9bc3c98aa757",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/noise/noise.cpp",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/noise/noise.cpp",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/noise/noise.cpp",
+      "raw_sha256": "d4223d35aba6e33a3302d6167a4a6e4b932d21335020cfd1dca55b9601ebc755",
+      "text_path": "research/home/snapshots/esphome/esphome/components/noise/noise.cpp",
+      "text_sha256": "d4223d35aba6e33a3302d6167a4a6e4b932d21335020cfd1dca55b9601ebc755",
+      "line_count": 119,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 119,
+          "sha256": "d4223d35aba6e33a3302d6167a4a6e4b932d21335020cfd1dca55b9601ebc755"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/noise/noise.cpp",
+      "git_blob_sha": "118bfb234fd0ca0a32f3d83c2a001ff0e247f882",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/noise/noise.h",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/noise/noise.h",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/noise/noise.h",
+      "raw_sha256": "dbff394147491c06e3b7960263c3f700b5dfb11353e7bb0d166d3f19e4a4ed0b",
+      "text_path": "research/home/snapshots/esphome/esphome/components/noise/noise.h",
+      "text_sha256": "dbff394147491c06e3b7960263c3f700b5dfb11353e7bb0d166d3f19e4a4ed0b",
+      "line_count": 92,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 92,
+          "sha256": "dbff394147491c06e3b7960263c3f700b5dfb11353e7bb0d166d3f19e4a4ed0b"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/noise/noise.h",
+      "git_blob_sha": "271a829944a7d0f89b150e7eeca2f0d022b32fcd",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/api/user_services.h",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/user_services.h",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/api/user_services.h",
+      "raw_sha256": "ac9de89a33ba492733febb387b98488882d3d405f735580a16401078b3bbcdee",
+      "text_path": "research/home/snapshots/esphome/esphome/components/api/user_services.h",
+      "text_sha256": "ac9de89a33ba492733febb387b98488882d3d405f735580a16401078b3bbcdee",
+      "line_count": 327,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 327,
+          "sha256": "ac9de89a33ba492733febb387b98488882d3d405f735580a16401078b3bbcdee"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/api/user_services.h",
+      "git_blob_sha": "3b17bdb7bcdeb6250617040be6bb6c863d590bfb",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/api/api_connection.h",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api_connection.h",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/api/api_connection.h",
+      "raw_sha256": "20f1ece0371665fc9aacb4faa3275f0807bfe51a302ca9382cb54bc3ed86fa3b",
+      "text_path": "research/home/snapshots/esphome/esphome/components/api/api_connection.h",
+      "text_sha256": "20f1ece0371665fc9aacb4faa3275f0807bfe51a302ca9382cb54bc3ed86fa3b",
+      "line_count": 891,
+      "coverage_ranges": [
+        {
+          "start_line": 280,
+          "end_line": 355,
+          "sha256": "6b94ee9b5a8a650928bc0a6392a58c97ea9cb6551e170c80a8ed72ee6c761d6a"
+        },
+        {
+          "start_line": 680,
+          "end_line": 750,
+          "sha256": "e451306fc30a9e51167067fedffdc01f006cee6813f22e5697b380535d113234"
+        },
+        {
+          "start_line": 830,
+          "end_line": 891,
+          "sha256": "6c25084c5a8b79891d66c7803e8790ad0f71ddb591e9082e27715be317f3be8b"
+        }
+      ],
+      "coverage_complete": false,
+      "reading_status": "read_selected",
+      "reading_scope": "Selected state subscription/initial iterator, authentication-state accessor, DeferredBatch deduplication and immediate/batch decision helpers. Remainder unread.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/api/api_connection.h",
+      "git_blob_sha": "9f784185b8367df15de9b7f2496526c99a2c8ceb",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/api/subscribe_state.cpp",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/subscribe_state.cpp",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/api/subscribe_state.cpp",
+      "raw_sha256": "d0a2ccb667b0c1dd18a715993f15f93e418a16879f9bc1e066def6ffa0506455",
+      "text_path": "research/home/snapshots/esphome/esphome/components/api/subscribe_state.cpp",
+      "text_sha256": "d0a2ccb667b0c1dd18a715993f15f93e418a16879f9bc1e066def6ffa0506455",
+      "line_count": 78,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 78,
+          "sha256": "d0a2ccb667b0c1dd18a715993f15f93e418a16879f9bc1e066def6ffa0506455"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/api/subscribe_state.cpp",
+      "git_blob_sha": "09b5640d8acd1fbc0eff6c5a0f8536331d54d761",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/api/api_options.proto",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/api/api_options.proto",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/api/api_options.proto",
+      "raw_sha256": "1206b5d2bf815a2ad68c180a4dd5a0b42579e6b3f4fa55d389d80699d95ed20f",
+      "text_path": "research/home/snapshots/esphome/esphome/components/api/api_options.proto",
+      "text_sha256": "1206b5d2bf815a2ad68c180a4dd5a0b42579e6b3f4fa55d389d80699d95ed20f",
+      "line_count": 130,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 130,
+          "sha256": "1206b5d2bf815a2ad68c180a4dd5a0b42579e6b3f4fa55d389d80699d95ed20f"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/api/api_options.proto",
+      "git_blob_sha": "8e8fa99833d1b3534a05f846553587fdd3263fd8",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/noise/noise_handshake.cpp",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/noise/noise_handshake.cpp",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/noise/noise_handshake.cpp",
+      "raw_sha256": "24028b188e0d550ff61d8e6549ed55affbcb498d8d571e140fde7d81c5469432",
+      "text_path": "research/home/snapshots/esphome/esphome/components/noise/noise_handshake.cpp",
+      "text_sha256": "24028b188e0d550ff61d8e6549ed55affbcb498d8d571e140fde7d81c5469432",
+      "line_count": 152,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 152,
+          "sha256": "24028b188e0d550ff61d8e6549ed55affbcb498d8d571e140fde7d81c5469432"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/noise/noise_handshake.cpp",
+      "git_blob_sha": "15938f3aca1669c03d148e0e728ce89b391001e1",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    },
+    {
+      "id": "esphome:esphome/components/noise/noise_handshake.h",
+      "url": "https://raw.githubusercontent.com/esphome/esphome/9a78022ded2285861f10de50168a0aa71e2a4322/esphome/components/noise/noise_handshake.h",
+      "raw_path": "research/home/snapshots/esphome/esphome/components/noise/noise_handshake.h",
+      "raw_sha256": "371abbe12dbc7bda3112fd8f69d3fd35375e7a682d2bd1d7adbd8b3012044963",
+      "text_path": "research/home/snapshots/esphome/esphome/components/noise/noise_handshake.h",
+      "text_sha256": "371abbe12dbc7bda3112fd8f69d3fd35375e7a682d2bd1d7adbd8b3012044963",
+      "line_count": 64,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 64,
+          "sha256": "371abbe12dbc7bda3112fd8f69d3fd35375e7a682d2bd1d7adbd8b3012044963"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full",
+      "reading_scope": "Complete retained text/source file, including examples, comments and inline tables. No claim to read linked documents or the entire repository.",
+      "repository": "https://github.com/esphome/esphome",
+      "commit": "9a78022ded2285861f10de50168a0aa71e2a4322",
+      "repository_path": "esphome/components/noise/noise_handshake.h",
+      "git_blob_sha": "ef556a26b00bb0d42666f97d6a91c54eaabf3547",
+      "visual_scope": "Source text; no acquired program execution, generated-code expansion or runtime test."
+    }
+  ],
+  "figures": []
+}

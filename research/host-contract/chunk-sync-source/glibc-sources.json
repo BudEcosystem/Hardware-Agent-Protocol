@@ -1,0 +1,21 @@
+{
+  "checkout": false,
+  "files": [
+    {
+      "bytes": 1065,
+      "lfLines": 29,
+      "path": "glibc/sysdeps/unix/sysv/linux/fsync.c",
+      "revision": "ef321e23c20eebc6d6fb4044425c00e6df27b05f",
+      "sha256": "6c2ef9e9e33e3ddb0d70666daf30999330d906f645e9b7119d282926e1ce5578"
+    },
+    {
+      "bytes": 1263,
+      "lfLines": 33,
+      "path": "glibc/sysdeps/unix/sysv/linux/sync_file_range.c",
+      "revision": "ef321e23c20eebc6d6fb4044425c00e6df27b05f",
+      "sha256": "ad2b9d00186f3caf2cc3c1170b4290635ada95b06f1cb79cf73f023bf4172704"
+    }
+  ],
+  "origin": "https://sourceware.org/git/glibc.git",
+  "partialObjects": true
+}

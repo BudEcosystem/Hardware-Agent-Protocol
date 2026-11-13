@@ -1,0 +1,90 @@
+{
+  "scope": "Partial SCPI header reading overlay, exact LF coverage and visual notes.",
+  "files": [
+    {
+      "path": "NOTES.md",
+      "bytes": 6062,
+      "sha256": "bbc572efb6abd8f221aedb806e0713d2ecbbd7099160bd08311ee147556ae003"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1323,
+      "sha256": "d987b0b56030851086c7f4d4b6228289d04299ca7424c0e70ceced67c0d66e69"
+    },
+    {
+      "path": "audit.json",
+      "bytes": 410,
+      "sha256": "0b718c7dd3608ed085df4c0d896eab856f663e1aba44fb4669d49b20617887e3"
+    },
+    {
+      "path": "pages/scpi-022.png",
+      "bytes": 257427,
+      "sha256": "ca72e381b614bab4b76bd2d5fe87f2c063d1dad6020261dadc06cb31f26b5329"
+    },
+    {
+      "path": "pages/scpi-023.png",
+      "bytes": 209242,
+      "sha256": "84575fb4066acb38eb600e5536498bd3c926b5e30694cb163dffa9c15053372a"
+    },
+    {
+      "path": "pages/scpi-024.png",
+      "bytes": 176784,
+      "sha256": "b87e5597220a835afe6d4b5d4757062fb1a128ef120bd6d0570fa2f41d6504d7"
+    },
+    {
+      "path": "pages/scpi-025.png",
+      "bytes": 255982,
+      "sha256": "ff15b1f6097e1a047dd7ff43e1bd636455fc5625b3eedb545a9f2729b4676aef"
+    },
+    {
+      "path": "pages/scpi-026.png",
+      "bytes": 253755,
+      "sha256": "3af719afa94e48396096c4158a9012abbc14229b2ad362b1c5265951ec3821f8"
+    },
+    {
+      "path": "pages/scpi-027.png",
+      "bytes": 202495,
+      "sha256": "2a53ed96353b754b8fe9fa726c27872b7bee052ce96b2e1d37108fd3cbebb3c6"
+    },
+    {
+      "path": "pages/scpi-028.png",
+      "bytes": 264389,
+      "sha256": "7b1741e0fc167cb8bee51d52a73938d456b73d470bf8f7a43f460562725a13d8"
+    },
+    {
+      "path": "pages/scpi-029.png",
+      "bytes": 257234,
+      "sha256": "ed4a7b7313ee15d16ea9dd7637d65c923827e33b0b9596f2b3e7b219e29e207f"
+    },
+    {
+      "path": "pages/scpi-030.png",
+      "bytes": 218556,
+      "sha256": "8a69e86f24656df5aee7e030c2fd05ddeebdad97d8788bb8abf7093c435d1a22"
+    },
+    {
+      "path": "pages/scpi-031.png",
+      "bytes": 229541,
+      "sha256": "378c84b59ba43bbaa1ad867e053301c315bfcb8a9cd214a16ccbbedba45e7ecd"
+    },
+    {
+      "path": "pages/scpi-032.png",
+      "bytes": 111744,
+      "sha256": "7bae9fc634927d4d6cdf7dd0dfe1b980b79b48abb2e61f7c14f1e342d572cd36"
+    },
+    {
+      "path": "pages/scpi-033.png",
+      "bytes": 13884,
+      "sha256": "ef4b225e409eb08307a08bed7e623d1e27aebd1fba4d96fcbf69ca28aaacff42"
+    },
+    {
+      "path": "reading.json",
+      "bytes": 4443,
+      "sha256": "46d2751aca88bf83f0e380c00806307a05637aaa8f01cd7a74cd5a73e09df33a"
+    },
+    {
+      "path": "render.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

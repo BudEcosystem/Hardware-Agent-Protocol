@@ -1,0 +1,14 @@
+7.33 ResponseHeader
+
+The components of this parameter are defined in Table 172.
+
+Table 172 - ResponseHeader
+Name,Type,Description
+ResponseHeader,structure,Common parameters for all responses.
+timestamp,UtcTime,The time the Server sent the response.
+requestHandle,IntegerId,The requestHandle given by the Client to the request.
+serviceResult,StatusCode,OPC UA-defined result of the Service invocation. The StatusCode type is defined in 7.38.
+serviceDiagnostics,DiagnosticInfo,Diagnostic information for the Service invocation. This parameter is empty if diagnostics information was not requested in the request header. The DiagnosticInfo type is defined in 7.12.
+stringTable [],String,"There is one string in this list for each unique namespace, symbolic identifier, and localized text string contained in all of the diagnostics information parameters contained in the response (see 7.12). Each is identified within this table by its zero-based index."
+additionalHeader,Extensible Parameter AdditionalHeader,"If additional header parameters are needed, they shall be passed using the AdditionalParametersType defined in 7.1. Applications that do not understand the header should ignore it."
+

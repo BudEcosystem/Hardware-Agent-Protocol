@@ -1,0 +1,35 @@
+{
+  "repository": "https://github.com/gtziafas/LRLL_project",
+  "commit": "25097958485a91450c3a15e5ba9023936180db4b",
+  "tree_sha": "31a3cc98b3fd69a10291321c08a31d10649670df",
+  "repository_role": "official project website with one prompt artifact; not identified full research implementation",
+  "whole_repository_read": false,
+  "core_orchestration_files_read": 0,
+  "prompt_source_files_read": 1,
+  "files": [
+    {
+      "repository_path": "README.md",
+      "path": "research/planning/lrll-full/repository/website-README-md.md",
+      "sha256": "cd68e937db071d0a8ba111930d51323b09303a88e38327be29c2f87aa63f5fe8",
+      "bytes": 2871,
+      "git_blob_sha1": "69373d4e17bcd79506fcaa6d801f8227105c0a2d",
+      "scope": "complete website file"
+    },
+    {
+      "repository_path": "index.html",
+      "path": "research/planning/lrll-full/repository/website-index-html.html",
+      "sha256": "0bfd0b64ec14d675a20135741b6fc5dda7732ba3a506f9cbd66c9846047a91b5",
+      "bytes": 9157,
+      "git_blob_sha1": "62fda213ea5911377ed6b880fcf981e4fa3f5923",
+      "scope": "complete website file"
+    },
+    {
+      "repository_path": "prompts.py",
+      "path": "research/planning/lrll-full/repository/website-prompts-py.py",
+      "sha256": "799087c57646b074ba785a9e0dfccd7c0d8d99d27b64e63f43248f31d2d4082c",
+      "bytes": 9291,
+      "git_blob_sha1": "84159524fe44caa20cb893537058520ea8b2b9da",
+      "scope": "complete prompt artifact"
+    }
+  ]
+}

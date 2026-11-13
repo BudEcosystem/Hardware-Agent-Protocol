@@ -1,0 +1,1464 @@
+{
+  "render_method": "pdftoppm PNG; both complete Modbus PDFs rendered at width 700 and reviewed as 2x2 page sheets; TCP diagram detail pages rendered at width 1800; selected SCPI and serial pages rendered at width 1000. Raw original PDFs remain archived.",
+  "pages": [
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 1,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-01.png",
+      "sha256": "a2d01960610917c033fe2d4b6d3375f2b932cae0756f5fb491c03ec26407e597",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 2,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-02.png",
+      "sha256": "74ca2c5ff2fad4b8f0948be6423a01daf4f490e86cdc024ed0f108e4ed4c12b8",
+      "figure_captions": [
+        "Figure 1:       MODBUS communication stack"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 3,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-03.png",
+      "sha256": "603a8e856971d67d4fa2c9c6f932c40a37a5e1ded82814586639b703bfce76a5",
+      "figure_captions": [
+        "Figure 2:         Example of MODBUS Network Architecture",
+        "Figure 3:       General MODBUS frame"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 4,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-04.png",
+      "sha256": "0956cbdbbf987857fe19f400af4e6adb9d0c9b66cc270365af6f1cee2eafbaf7",
+      "figure_captions": [
+        "Figure 4:          MODBUS transaction (error free)",
+        "Figure 5:       MODBUS transaction (exception response)"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 5,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-05.png",
+      "sha256": "d040f2b57610736cd2d6a04c6b654b6fd36e1807d619433038ef6a2ed844bcdd",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 6,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-06.png",
+      "sha256": "3ccf323efb4d86a082767c53840abdaddbc76cccafd711d5df7a399b87904606",
+      "figure_captions": [
+        "Figure 6           MODBUS Data Model with separate block"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 7,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-07.png",
+      "sha256": "b273c519d5431aa4050ff30519d1f90a77476d700d5d8025ac361906c0d52d7c",
+      "figure_captions": [
+        "Figure 7             MODBUS Data Model with only 1 block"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 8,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-08.png",
+      "sha256": "cc7f3d94defb7a5e3b0c89e6abb8f9c2445a5893e2b8350341e96af77d2f6635",
+      "figure_captions": [
+        "Figure 8        MODBUS Addressing model"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 9,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-09.png",
+      "sha256": "41593b01a67a236774cc625b022fc6ee7b23e664ee5686a8caeb6b000e85f6ac",
+      "figure_captions": [
+        "Figure 9   MODBUS Transaction state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 10,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-10.png",
+      "sha256": "d1ddf45a40680a7d8b20fc93e47df102c0c7c16b46123a9836720ee95f6a9acd",
+      "figure_captions": [
+        "Figure 10      MODBUS Function Code Categories"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 11,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-11.png",
+      "sha256": "4a52ef1d9567174a4179682b7e39484d13d746d6bf49f9567eb116ca69bf8241",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 12,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-12.png",
+      "sha256": "f95a76dd36e9ad814f528a5e1f02332150031c0870244e955765c9932b0a24df",
+      "figure_captions": [
+        "Figure 11:                Read Coils state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 13,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-13.png",
+      "sha256": "c43af5399d36c486d6958c3eaef46aaf736e16e563d89a5c09f3305580c9c437",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 14,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-14.png",
+      "sha256": "6cfc742774da5bba8dd40dfebd94e72a07a475a9a2c4723e4b2f4e12bc596efc",
+      "figure_captions": [
+        "Figure 12:           Read Discrete Inputs state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 15,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-15.png",
+      "sha256": "6ef54956b6c4f941cdfc60bee38009746833f3274a5d919230de0a49dcb24a6c",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 16,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-16.png",
+      "sha256": "e37aaf305e0c7e57fbcc9b6440133a774c12adae46b8e17cd51f0faff55b2791",
+      "figure_captions": [
+        "Figure 13:              Read Holding Registers state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 17,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-17.png",
+      "sha256": "576440417062e7f2f6ec5dffbf80ab02127c6363486bfa8518d26d2a45a4da6d",
+      "figure_captions": [
+        "Figure 14:              Read Input Registers state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 18,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-18.png",
+      "sha256": "b293b9e578dc2f96f529175dae93efca38029a98387891ced510c84070588ca3",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 19,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-19.png",
+      "sha256": "05ea7a20571d7c2aa196fe0afefed265c79896e62b9d51ee43612d8eea84be27",
+      "figure_captions": [
+        "Figure 15:            Write Single Output state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 20,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-20.png",
+      "sha256": "aa566cc376ea31a2ec68217df94033f97a53b83063b0b37be50faaf021f70642",
+      "figure_captions": [
+        "Figure 16:               Write Single Register state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 21,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-21.png",
+      "sha256": "43d4db43a0029801cc5a9725996d00c6db3ff9a698c13b78429ccd1eeae73405",
+      "figure_captions": [
+        "Figure 17:         Read Exception Status state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 22,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-22.png",
+      "sha256": "32e091cd66ab7b6c1c6d889851e8a6568ac91c7ad541cc38f80755b17a88954d",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 23,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-23.png",
+      "sha256": "1d9a1989defcfb5e0c5ad4009ad91c702c291db53a310ef0e641e4df2906a01d",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 24,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-24.png",
+      "sha256": "2de387b43bc750d31a684ff29af9b6b412cadbce61c671eea83082fd1fb97294",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 25,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-25.png",
+      "sha256": "13860f4003db0030e01e53b6dd3639a0b5024089ee0b9086dd8b8f1f013e679a",
+      "figure_captions": [
+        "Figure 18:             Diagnostic state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 26,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-26.png",
+      "sha256": "eae6042d63b653a65b1c6ed6cd5ce4d09b39af997b5eb2a141a6b7da5a81cb18",
+      "figure_captions": [
+        "Figure 19:        Get Comm Event Counter state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 27,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-27.png",
+      "sha256": "1cd0b33baf8ef037aac4c71659652addd2d4d81e85fa4d622a83a93e2c4ac11d",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 28,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-28.png",
+      "sha256": "9205ee7cc8de1c54901f9a488dd0013c904235c39969bba889773d2b64ea03e9",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 29,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-29.png",
+      "sha256": "887449439e94f9e89cf18d521e53ce5d18bc8cf9c1f743d0241b7c27371a2963",
+      "figure_captions": [
+        "Figure 20:   Get Comm Event Log state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 30,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-30.png",
+      "sha256": "b34b99d171504b19e498184525bc66ed649f2703de3bc51eef80695792edf864",
+      "figure_captions": [
+        "Figure 21:            Write Multiple Outputs state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 31,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-31.png",
+      "sha256": "f3402294ada80218e3fc3691dca90a241903f09caf78375e342ac7cf0eeef4cb",
+      "figure_captions": [
+        "Figure 22:             Write Multiple Registers state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 32,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-32.png",
+      "sha256": "3714aeaa82f5e82e5e1dc6e2b8e76d2518e8f75ce8dd8e9633356ca7c5144238",
+      "figure_captions": [
+        "Figure 23:          Report server ID state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 33,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-33.png",
+      "sha256": "5f8590ee318e56c4949f4c092ea693901e3c3bce7009f455c9cb692a8c231fb6",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 34,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-34.png",
+      "sha256": "e4f23db746c216c23b42d365aeb9107c1a0fe1f393301ddc36e20e6020f194ac",
+      "figure_captions": [
+        "Figure 24:           Read File Record state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 35,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-35.png",
+      "sha256": "47760b70fa1a85e82120ce29e825128015e1276401fb50ab03c3d93bacb74c5d",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 36,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-36.png",
+      "sha256": "1031abc45bc62bcff027c5308fd001a265be8ee03c84e96f2fbb1f5042b28d67",
+      "figure_captions": [
+        "Figure 25:           Write File Record state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 37,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-37.png",
+      "sha256": "648548567071a8846e7d22c609efb7cee83ee59e3e01e52ab99bc8f91cdd934f",
+      "figure_captions": [
+        "Figure 26:           Mask Write Holding Register state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 38,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-38.png",
+      "sha256": "e74a03cdad2b3a901a644bda8c4442be6d4a6c15424d81a92c1fce83b389ebce",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 39,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-39.png",
+      "sha256": "c206c2c8d26ca4c7e4ae0d40c7a5505e703dce273a19a1b82dd5c3949de2fa8b",
+      "figure_captions": [
+        "Figure 27:              Read/Write Multiple Registers state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 40,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-40.png",
+      "sha256": "57aa2a96871c5e7803cf042bccb094f9cb82505f1dc648cdfc3f3901003f2b5b",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 41,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-41.png",
+      "sha256": "32b01b3ecc5259af08bb031b8196751156588c55e14bb7326bba1851c9909faa",
+      "figure_captions": [
+        "Figure 28:           Read FIFO Queue state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 42,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-42.png",
+      "sha256": "36e445b5fe4357b3ebf08d8de28ca83c1b98e0a556c1ea7404ecaf74c3f5a3aa",
+      "figure_captions": [
+        "Figure 29:     MODBUS encapsulated Interface Transport"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 43,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-43.png",
+      "sha256": "9fa4a12723e7210cc9de0f2184cb609b46d81dd6cca110323f0e9ff0663dcebb",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 44,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-44.png",
+      "sha256": "ba95ca2e3e71e0aba1aca1ea7d8536cc02eb2482de023bb695a1abdec71d417a",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 45,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-45.png",
+      "sha256": "fa12d87409eb942f9289914bd30f9f94da3cecd3e3705f23d90d87da8f122766",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 46,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-46.png",
+      "sha256": "5d54470b22f35762c0d20dbb81a6894ae88329fdb03458e72b2da388ce096b5e",
+      "figure_captions": [
+        "Figure 30:           Read Device Identification state diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 47,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-47.png",
+      "sha256": "f52ea694a841e06064e6ba4b2ba9822dd2ee7a324fd31f09afcdc4702ed95cee",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 48,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-48.png",
+      "sha256": "a3f2eb5ca13c9248066ae9f13f42933707f6ff4041a364b763af27a2e88ca5cb",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 49,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-49.png",
+      "sha256": "aa23a198103530dea9940086ffb6aee9667fccbf09a5a24dc96b76bb073aeaed",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page": 50,
+      "render_path": "research/instrumentation/figures/modbus-application-v1.1b3/page-50.png",
+      "sha256": "d340fa470268ba2ade3dbf58d46781d385107b5910d0063a525fa072910d631b",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 1,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-01.png",
+      "sha256": "edc5946552fb8421b2197647afdd1cb32693cf7388bc1dddacadbbbf52bc795e",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 2,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-02.png",
+      "sha256": "29d37fa73380cfe1fa21a618970ce76cba5758f890bb3cdec69730ab9ea8332b",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 3,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-03.png",
+      "sha256": "c715ba7fd56f2cf285bd2639dd0f32521a10d176a6f8bd6b77c50907195c9908",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 4,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-04.png",
+      "sha256": "a11a8ae2e7b14bbce1631152af05e2321daa997da6373d92b920ad54d99244e7",
+      "figure_captions": [
+        "Figure 1: MODBUS TCP/IP communication architecture",
+        "Figure 2: General MODBUS frame",
+        "Figure 3: MODBUS request/response over TCP/IP"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 5,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-05.png",
+      "sha256": "04b5b494f9991a17daeb33a74fc1454f419e2f3963062e8bb2f7cc0664dc666a",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 6,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-06.png",
+      "sha256": "797e18d667867342ccf1012392401a0901c961ebfe9aa1bca1b085e571aea900",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 7,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-07.png",
+      "sha256": "5388c27b8e0c963b1866ad6448e0d3d308b2d8b0d6bbf15ea17a62ae46c5043a",
+      "figure_captions": [
+        "Figure 4: MODBUS Messaging Service Conceptual Architecture"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 8,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-08.png",
+      "sha256": "61e353509cc3fac022ff99d1c59bb3e649af092077c33d23ab6abb6d76bceade",
+      "figure_captions": [
+        "Figure 5              MODBUS Data Model with                           Figure 6                MODBUS Data Model with only"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 9,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-09.png",
+      "sha256": "848625c245e59aeb7f727d2fcb984adf529a42adb073a6af89d8ad6a4d794bf0",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 10,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-10.png",
+      "sha256": "58bb3ad735fd374bab3e17bf7c13bf6ef0293c8868e617bf7f29a6f634f541fb",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 11,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-11.png",
+      "sha256": "469d9057fd3cd6e29426fa22823fde81ad709d8006ddb5e47d0a7c5adca237b9",
+      "figure_captions": [
+        "Figure 7: TCP connection management activity diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 12,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-12.png",
+      "sha256": "24b96df82711d0cf1da94fbd218153615c05e2fb10987d1815ebe115c53863ff",
+      "figure_captions": [
+        "Figure 8: MODBUS TCP connection establishment"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 13,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-13.png",
+      "sha256": "a86aa864cfac40024cdc0e9736b9c0056055a3bf3841866e3d272a59dd551884",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 14,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-14.png",
+      "sha256": "28f6856d9a8913ac22f139096e1c320d343184369c377dc061562932187ce1fe",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 15,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-15.png",
+      "sha256": "c385d93e268e024147f7ba1cdbfd22ec8a5c511a44e99ba46db46559410f8fff",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 16,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-16.png",
+      "sha256": "0ab767670a8f7bd0c98539fac126ca90ca55e0116a4dcb4f29002e202d464cfd",
+      "figure_captions": [
+        "Figure 39: MODBUS Exchanges describes a full MODBUS communication between a"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 17,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-17.png",
+      "sha256": "a0c5df0e6a431da189f8d67c297920bddc746ece9850d48b5af4967c959170ec",
+      "figure_captions": [
+        "Figure 9: MODBUS Exchanges"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 18,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-18.png",
+      "sha256": "29c9b240d40b63df255880db4417671ccf3530b481e22af37fd037ab9affdfdb",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 19,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-19.png",
+      "sha256": "4f4f97913650ba4a29ed337a19712845fecae3ee3cc20cc11ed5cbbd59ade908",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 20,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-20.png",
+      "sha256": "49a4693246e4e19995483a0dafd64e8f1b9e6efc1316bf8b9ffc008a92016fdd",
+      "figure_captions": [
+        "Figure 10: MODBUS Client unit"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 21,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-21.png",
+      "sha256": "b4a441ea7224b760d83238b7cd83888d897ad02f017be66d2ca494109edd8601",
+      "figure_captions": [
+        "Figure 11: MODBUS Client Activity Diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 22,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-22.png",
+      "sha256": "17736dae9fad620003b54f820fdda7780fd455619764597609012560c0b10f5e",
+      "figure_captions": [
+        "The following activity diagram describes, more deeply than in Figure 11 MODBUS",
+        "Figure 12: Request building activity diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 23,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-23.png",
+      "sha256": "cb55896e61bac213d08619f9aaeabe5a022aefb49a4286d8eb05a4fd2ce5e797",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 24,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-24.png",
+      "sha256": "29b04fb70f98d19b7d97cdb1c82d0135ba61a7269d0436d83649218f9f494688",
+      "figure_captions": [
+        "The following activity diagram describes, more deeply than in Figure 11 MODBUS"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 25,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-25.png",
+      "sha256": "8d22c6fa74825b5efc49cc861cff52fae0ea35643acac4f614ea7da779194c72",
+      "figure_captions": [
+        "Figure 13: Process MODBUS Confirmation activity diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 26,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-26.png",
+      "sha256": "1b2b48c179b8a56a7c1470d1dbdde8ca06f79a2ff085b2885f77704578b0781f",
+      "figure_captions": [
+        "Figure 14: MODBUS Server unit"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 27,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-27.png",
+      "sha256": "be0def830f97f080aebde3a7c34f7fa4f26d298d9141f89c2d8b80e2ffad357d",
+      "figure_captions": [
+        "Figure 15: Process MODBUS Indication activity diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 28,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-28.png",
+      "sha256": "b564963831b7f5d6caa455af7e9f02dc68d86db24d9ce5ca43c1335042df7b42",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 29,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-29.png",
+      "sha256": "0eacfc9be904188a48359fed6ddf66dbd0f48e25c66ce22d11ec42c92a3ecde9",
+      "figure_captions": [
+        "Figure 16: MODBUS PDU Checking activity diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 30,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-30.png",
+      "sha256": "3bad7f2ebe41b8881b8b8b66daa3c51a4294cb064a17faafec19fbed9418d77c",
+      "figure_captions": [
+        "Figure 17: MODBUS service processing activity diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 31,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-31.png",
+      "sha256": "6fce329bfd217021b7fe4d35c357c90bdd00ceecccd8e11d21051ab78d187aa5",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 32,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-32.png",
+      "sha256": "5050f362349da1f6c95cc728a8f0461d3fda8981d2a08ea8b05e1d3b2c714dd8",
+      "figure_captions": [
+        "Figure 18: MODBUS Messaging Service Object Model Diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 33,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-33.png",
+      "sha256": "9731ed5868f15419765f4a4146fa54bbe71fdc9094ce39f7848030a0e89993e8",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 34,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-34.png",
+      "sha256": "636f5f3a9fadd2de33fedf1983468b387d8729530d222b13dad3fa91d5135449",
+      "figure_captions": [
+        "Figure 19: MODBUS TCP management package"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 35,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-35.png",
+      "sha256": "642807edaefe2362d4869e0be41231ff782fd9ab3c05e12ecf5a0d5961917791",
+      "figure_captions": [
+        "Figure 20: MODBUS Configuration layer package"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 36,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-36.png",
+      "sha256": "c8eb8623231ae7ad322f19970bbf339666a9f2a288343bb8477fa693487e19ab",
+      "figure_captions": [
+        "Figure 21: MODBUS Communication Application layer package"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 37,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-37.png",
+      "sha256": "e6c7eb170b5618668b723942d90e28627c1acc568aa357df4ce4e55ecf193bcb",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 38,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-38.png",
+      "sha256": "3c3f323561937c7abbd0b973e705fcf33417283ae14e6e7734aa459f37469a65",
+      "figure_captions": [
+        "Figure 22: Class Diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 39,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-39.png",
+      "sha256": "4788f527a425ceb94c254fb766464563edd84678f016d90a2cdb7072cfd0454e",
+      "figure_captions": [
+        "Figure 23: MODBUS client sequence diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 40,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-40.png",
+      "sha256": "0361652693db3bbebd7aab8e557870c123056f849d3020a1d0436db863d10b2c",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 41,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-41.png",
+      "sha256": "72e0a30c7bb5903e4454f67af721531b5fb1097c5fcfc33e09a7fbbb21c94fc2",
+      "figure_captions": [
+        "Figure 24: MODBUS server Diagram"
+      ],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 42,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-42.png",
+      "sha256": "d193e8df905e37b7ee178a562f6ba7cdd2b90b2d058a677139829e708f48f441",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 43,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-43.png",
+      "sha256": "5bd9c82828ea3cd79b692995a3a0667a458423ec1621d427dc45bba49495125c",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 44,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-44.png",
+      "sha256": "1b65042656d6e498bbb31178c1e9c4dda51c2632cd7ebf29172c0c3c3b5dc4b6",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 45,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-45.png",
+      "sha256": "4b2142b96973f57708ea8ad634a24a71d4b74d0b4518c653c01a3bd181246592",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 46,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b/page-46.png",
+      "sha256": "7426e8f228fa89cf63c35ff3e97bffe1dc44aff68080d90d6a18a5b9d8cc4ee0",
+      "figure_captions": [],
+      "visual_status": "reviewed_in_page_sheet"
+    },
+    {
+      "id": "scpi-99",
+      "pdf_page": 50,
+      "render_path": "research/instrumentation/figures/scpi-99-page-50.png",
+      "sha256": "7d3dfcdfb88f083ba1ea41bd73d3cbd5b6bbe5eff73eb607224f867bd90eaa67",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    },
+    {
+      "id": "scpi-99",
+      "pdf_page": 51,
+      "render_path": "research/instrumentation/figures/scpi-99-page-51.png",
+      "sha256": "492ccdd660174aee2026bc4441b22a3903dec53b73ccd5ff6a1ce54417ca815d",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    },
+    {
+      "id": "scpi-99",
+      "pdf_page": 52,
+      "render_path": "research/instrumentation/figures/scpi-99-page-52.png",
+      "sha256": "25c6afba066db4e5748a6565265d9288a1717562cf532cfb6d199fe6553d99e7",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    },
+    {
+      "id": "scpi-99",
+      "pdf_page": 53,
+      "render_path": "research/instrumentation/figures/scpi-99-page-53.png",
+      "sha256": "b21e09e759edf1d6d27e25994f69078a34242cf59e8ece272e5ab0bdbbe5cb16",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    },
+    {
+      "id": "scpi-99",
+      "pdf_page": 54,
+      "render_path": "research/instrumentation/figures/scpi-99-page-54.png",
+      "sha256": "5efe2321d371b969da90f288e525c589a76722c4164991d69a51442f9cc7238e",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    },
+    {
+      "id": "scpi-99",
+      "pdf_page": 55,
+      "render_path": "research/instrumentation/figures/scpi-99-page-55.png",
+      "sha256": "359d7af19fad1be0d837ff9c87f4be1e2f80129a721d5597758dbed61fa39c25",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    },
+    {
+      "id": "scpi-99",
+      "pdf_page": 56,
+      "render_path": "research/instrumentation/figures/scpi-99-page-56.png",
+      "sha256": "5b4930433e9cc15030564c191343d223f5aa6273f600ab1eb3af3472f6419e9d",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    },
+    {
+      "id": "scpi-99",
+      "pdf_page": 57,
+      "render_path": "research/instrumentation/figures/scpi-99-page-57.png",
+      "sha256": "3f094c47912d2c21d8673a265de14b650223ceb2652782bb72bfa2c5d43b510b",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    },
+    {
+      "id": "scpi-99",
+      "pdf_page": 517,
+      "render_path": "research/instrumentation/figures/scpi-99-page-517.png",
+      "sha256": "70420c546f95101f34d5be291847f41a3e58666ba9d5ec3be4da5320e878c627",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    },
+    {
+      "id": "modbus-serial-v1.02",
+      "pdf_page": 7,
+      "render_path": "research/instrumentation/figures/modbus-serial-v1.02-page-7.png",
+      "sha256": "246673c72d89300009bde9b582a97f88052caf34c2d788a72d30170017505f0c",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    },
+    {
+      "id": "modbus-serial-v1.02",
+      "pdf_page": 8,
+      "render_path": "research/instrumentation/figures/modbus-serial-v1.02-page-8.png",
+      "sha256": "be9e317b9b5c3f55e8e2193efae228a795bcd4411ab3ce19aa80a1fe40ab3ead",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    },
+    {
+      "id": "modbus-serial-v1.02",
+      "pdf_page": 9,
+      "render_path": "research/instrumentation/figures/modbus-serial-v1.02-page-9.png",
+      "sha256": "44b76892c4cb666410d33ef65c12dd747b2d49adb804b9e306895d3ffc043e21",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    },
+    {
+      "id": "modbus-serial-v1.02",
+      "pdf_page": 10,
+      "render_path": "research/instrumentation/figures/modbus-serial-v1.02-page-10.png",
+      "sha256": "eff37bd90ffd18eea966b605d6dadeb86c4beeebd6ae934154285b8ea64ff69d",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    },
+    {
+      "id": "modbus-serial-v1.02",
+      "pdf_page": 11,
+      "render_path": "research/instrumentation/figures/modbus-serial-v1.02-page-11.png",
+      "sha256": "8f0e6b90fdddde1548bcaeb976e5d148cd101c302c1f072835723dcce057400f",
+      "visual_status": "reviewed_full_page",
+      "scope": "Selected page only; surrounding document not fully visually reviewed"
+    }
+  ],
+  "sheets": [
+    {
+      "id": "modbus-application-v1.1b3",
+      "path": "research/instrumentation/figures/modbus-application-v1.1b3-pages-01-04.png",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sha256": "b2278f9c1536b551fb2195ba7f9b686581b9438693344d98b3f18df0e6d2fc57",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "path": "research/instrumentation/figures/modbus-application-v1.1b3-pages-05-08.png",
+      "pdf_pages": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "sha256": "bfaffb114a10b5688791df4d6a68547dea5eb83a923917c3014d8514285eabe2",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "path": "research/instrumentation/figures/modbus-application-v1.1b3-pages-09-12.png",
+      "pdf_pages": [
+        9,
+        10,
+        11,
+        12
+      ],
+      "sha256": "6e93507fbd81bc9d310e05cbb77369ee8a41c0d9e9d9c7cd63b27166c81f5504",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "path": "research/instrumentation/figures/modbus-application-v1.1b3-pages-13-16.png",
+      "pdf_pages": [
+        13,
+        14,
+        15,
+        16
+      ],
+      "sha256": "cf0d5f1b0d58772eafc2d289455da5a923583f891971484b1e07d5574fb1171e",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "path": "research/instrumentation/figures/modbus-application-v1.1b3-pages-17-20.png",
+      "pdf_pages": [
+        17,
+        18,
+        19,
+        20
+      ],
+      "sha256": "94ea29c49c3dd3bdcc50300e7b74ab6d758e9ef7a2da8ff4303ad70be5e0c4f0",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "path": "research/instrumentation/figures/modbus-application-v1.1b3-pages-21-24.png",
+      "pdf_pages": [
+        21,
+        22,
+        23,
+        24
+      ],
+      "sha256": "b98b2178fbcc804f0d36b339c93a6275bb580a1ffa77ac6bb007864863a38125",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "path": "research/instrumentation/figures/modbus-application-v1.1b3-pages-25-28.png",
+      "pdf_pages": [
+        25,
+        26,
+        27,
+        28
+      ],
+      "sha256": "1fec816497135f637c338a22507a6c8787b972d56cf61d1c6e79b259b392b274",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "path": "research/instrumentation/figures/modbus-application-v1.1b3-pages-29-32.png",
+      "pdf_pages": [
+        29,
+        30,
+        31,
+        32
+      ],
+      "sha256": "f33cca197f78d44ebd473a6b0c11a44ed929c11de0af6bcdfd4d7bc0d2544ad8",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "path": "research/instrumentation/figures/modbus-application-v1.1b3-pages-33-36.png",
+      "pdf_pages": [
+        33,
+        34,
+        35,
+        36
+      ],
+      "sha256": "c5629dd5d9f57809c0fbf63e9f67106c79994ca0486b8ed2ecdaf6cd3eaf4787",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "path": "research/instrumentation/figures/modbus-application-v1.1b3-pages-37-40.png",
+      "pdf_pages": [
+        37,
+        38,
+        39,
+        40
+      ],
+      "sha256": "42ef0634da29257268db32533fa4e387263fddbf0de2bf8e092f0fbc99d47215",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "path": "research/instrumentation/figures/modbus-application-v1.1b3-pages-41-44.png",
+      "pdf_pages": [
+        41,
+        42,
+        43,
+        44
+      ],
+      "sha256": "f014da2092232ea8a76f6b3836f5969120cb5ab893eac2eda942830fed66edc0",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "path": "research/instrumentation/figures/modbus-application-v1.1b3-pages-45-48.png",
+      "pdf_pages": [
+        45,
+        46,
+        47,
+        48
+      ],
+      "sha256": "86987107c813e514cba1ae594b2afb989aa2d32ac3ac7398c14cdc6dc253cb67",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-application-v1.1b3",
+      "path": "research/instrumentation/figures/modbus-application-v1.1b3-pages-49-50.png",
+      "pdf_pages": [
+        49,
+        50
+      ],
+      "sha256": "f10bd831cb9143b43d5ca0f093622bc0802582f8ef1e93b4706aaae8f001431b",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-01-04.png",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "sha256": "3e551341c3d35962538d3bc2c6cf8ccb06f6bd0c5c8eae5778d100af870da5c7",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-05-08.png",
+      "pdf_pages": [
+        5,
+        6,
+        7,
+        8
+      ],
+      "sha256": "38bf0dbd456897fda48a8c74993d36c2c8b518c7e3f754df6f84bc957f5d6288",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-09-12.png",
+      "pdf_pages": [
+        9,
+        10,
+        11,
+        12
+      ],
+      "sha256": "d618f281935668cd6c86f96296f50e3d7414d534cb810ade4a1cc85345191761",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-13-16.png",
+      "pdf_pages": [
+        13,
+        14,
+        15,
+        16
+      ],
+      "sha256": "42beb03eab65d68804428db84f2c7120b343d9161807a72fb1e8e25024d154dc",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-17-20.png",
+      "pdf_pages": [
+        17,
+        18,
+        19,
+        20
+      ],
+      "sha256": "2f999da0d0306c17c7c2a79d768771b06ac641e206f013d74261cb232d86067b",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-21-24.png",
+      "pdf_pages": [
+        21,
+        22,
+        23,
+        24
+      ],
+      "sha256": "a952c9ab28a1a51a7df9492d2cc9f57003e6175ab62d31d0d954f2d9a31278f7",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-25-28.png",
+      "pdf_pages": [
+        25,
+        26,
+        27,
+        28
+      ],
+      "sha256": "e251820184eb7a7a3aff0e0afd91551641bd03d47025c0dcf8308357979430c7",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-29-32.png",
+      "pdf_pages": [
+        29,
+        30,
+        31,
+        32
+      ],
+      "sha256": "e954b9bebe7e0f40ba80fb97a781f8a9a60853720db6843827f0e4d1376b680f",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-33-36.png",
+      "pdf_pages": [
+        33,
+        34,
+        35,
+        36
+      ],
+      "sha256": "be17885ddaa5e5d7bc2f746c21285f776b4f4dd817f2ab4cad1f771dfe01f0ed",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-37-40.png",
+      "pdf_pages": [
+        37,
+        38,
+        39,
+        40
+      ],
+      "sha256": "7629662fa7064e9ee4e8abcc22957dc58d0ee0e67fe9085993687bece18a48bf",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-41-44.png",
+      "pdf_pages": [
+        41,
+        42,
+        43,
+        44
+      ],
+      "sha256": "a96260f372c1dbbd161139b7cc005349dee8653ea82ce8c655d0865bdba992df",
+      "visual_status": "reviewed"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-pages-45-46.png",
+      "pdf_pages": [
+        45,
+        46
+      ],
+      "sha256": "1aca7e5565c152694619c3df01bb619799f2cffcafdbd5579afba2e3142307e3",
+      "visual_status": "reviewed"
+    }
+  ],
+  "schema_version": 1,
+  "reviewed_at": "2026-11-05T22:48:03.783699+00:00",
+  "detail_images": [
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 38,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-page-38-detail.png",
+      "sha256": "bbdd44cb4b2fe590df3da3b031990fed49e23e988929c83f154bd361a29c13c6",
+      "visual_status": "reviewed_at_original_detail",
+      "purpose": "Class/sequence diagram labels, connections, message ordering and resource lifecycle; no clipped original method signature inferred"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 39,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-page-39-detail.png",
+      "sha256": "e65ac114d5d9035f86ff55acf72c937452c5b7ecb74372d1d6610942d7be328b",
+      "visual_status": "reviewed_at_original_detail",
+      "purpose": "Class/sequence diagram labels, connections, message ordering and resource lifecycle; no clipped original method signature inferred"
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page": 41,
+      "render_path": "research/instrumentation/figures/modbus-tcp-guide-v1.0b-page-41-detail.png",
+      "sha256": "aa7b323fd5b31740562b66217f66771cab724b5b6a32affb57ade3a8e9692451",
+      "visual_status": "reviewed_at_original_detail",
+      "purpose": "Class/sequence diagram labels, connections, message ordering and resource lifecycle; no clipped original method signature inferred"
+    }
+  ],
+  "source_coverage": [
+    {
+      "id": "modbus-application-v1.1b3",
+      "pdf_page_count": 50,
+      "reviewed_pdf_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50
+      ],
+      "all_pdf_pages_reviewed": true
+    },
+    {
+      "id": "modbus-tcp-guide-v1.0b",
+      "pdf_page_count": 46,
+      "reviewed_pdf_pages": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        22,
+        23,
+        24,
+        25,
+        26,
+        27,
+        28,
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46
+      ],
+      "all_pdf_pages_reviewed": true
+    },
+    {
+      "id": "scpi-99",
+      "pdf_page_count": 819,
+      "reviewed_pdf_pages": [
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        517
+      ],
+      "all_pdf_pages_reviewed": false
+    },
+    {
+      "id": "modbus-serial-v1.02",
+      "pdf_page_count": 44,
+      "reviewed_pdf_pages": [
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "all_pdf_pages_reviewed": false
+    }
+  ],
+  "interpretation_notes": [
+    "Every page of both fully read Modbus artifacts was visually checked, not only pages with detected Figure captions. Tables, state flowcharts, protocol examples and unlabeled diagrams are included.",
+    "SCPI visual coverage is chapter 9 status reporting pages 50–57 and error-queue figure page 517 only. Other text excerpts have no separate visual completeness claim.",
+    "Serial visual coverage is pages 7–11 only, including controller/server state and transaction/broadcast timing diagrams.",
+    "Automated figure-caption extraction is an index aid, not a complete inventory of graphical content."
+  ]
+}

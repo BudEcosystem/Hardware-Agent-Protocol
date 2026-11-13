@@ -1,0 +1,21 @@
+{
+  "url": "https://github.com/Abenor-Labs/Open-MHS",
+  "commit": "92b04b023915ba7cdf2cac55eb58e86a3c94cc0d",
+  "acquired_at": "2026-11-05T21:39:08.422302+00:00",
+  "path": "research/mhs/repos/open-mhs",
+  "coverage": "selected files fully read; remaining repository unread",
+  "files_read": [
+    {
+      "path": "open_mhs/drivers/base.py",
+      "sha256": "11e6aa4cc8b7990aec8b0ecf057bdd841d71a5c9758dd8c1c8d14bca053aa073"
+    },
+    {
+      "path": "docs/threat-model.md",
+      "sha256": "5f96b73346a77f8ac4055b93fcb934bc24ae64607d5e7837eb81e67d74a54c99"
+    },
+    {
+      "path": "docs/standards-map.md",
+      "sha256": "78938346037700efb7a3edb09e3ba176d73636e2b58f53f2b44dd979d18099ed"
+    }
+  ]
+}

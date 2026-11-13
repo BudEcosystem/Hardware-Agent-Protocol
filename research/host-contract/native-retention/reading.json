@@ -1,0 +1,163 @@
+{
+  "recordedUnixNs": 1794167080849907744,
+  "reviewer": "primary-agent",
+  "independentReview": false,
+  "totalLfLines": 2311,
+  "sources": [
+    {
+      "id": "fdopendir",
+      "textSha256": "ff215a151a3d126b9a48c67830947c7f757ac807d88e137dee7223b3e48e0066",
+      "rawSha256": "ec26d14cd175c8651fdf60a8f554323c6b860d3e212297443de55af9896ff0e0",
+      "lfLines": 128,
+      "readRanges": [
+        [
+          1,
+          128
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "surroundingTextReadInFull": true,
+      "technicalFigures": 0,
+      "decorativeImagesExcluded": 2,
+      "acquiredExamplesExecuted": false
+    },
+    {
+      "id": "readdir",
+      "textSha256": "b382b63da3b3b326e5d562ebadb489a82b4e64f4556e37124d9d14a2bef90301",
+      "rawSha256": "b9f2de8eee242e9ebe85c5dff4998cc3bb7dfd8c5eefb1da582d116edc5a58ee",
+      "lfLines": 218,
+      "readRanges": [
+        [
+          1,
+          218
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "surroundingTextReadInFull": true,
+      "technicalFigures": 0,
+      "decorativeImagesExcluded": 2,
+      "acquiredExamplesExecuted": false
+    },
+    {
+      "id": "fstatat",
+      "textSha256": "3df11e73c4a538fb673984f3aaf01c4a0d79bb9c6f230902c0e74eb04e7707e8",
+      "rawSha256": "0067346ded7cc8259ad614874993bd99b3edff372b61057d236c9dfe5e40501e",
+      "lfLines": 319,
+      "readRanges": [
+        [
+          1,
+          319
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "surroundingTextReadInFull": true,
+      "technicalFigures": 0,
+      "decorativeImagesExcluded": 2,
+      "acquiredExamplesExecuted": false
+    },
+    {
+      "id": "open",
+      "textSha256": "7eaeb81212e278b6b7dcf4d0cdd7595e52fba600147ef194479171a6e7382afc",
+      "rawSha256": "d665489cadb85624d98fae03a8d8d06209030f32735cff8aeba949ad8491c789",
+      "lfLines": 1040,
+      "readRanges": [
+        [
+          1,
+          1040
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "surroundingTextReadInFull": true,
+      "technicalFigures": 0,
+      "decorativeImagesExcluded": 2,
+      "acquiredExamplesExecuted": false
+    },
+    {
+      "id": "closedir",
+      "textSha256": "c815f5b97fda7cb168cc43aef0826c7f9c8e1f0a153da443bae8986a4305e4b8",
+      "rawSha256": "358400ea94829713623382116d3916c92f2e178189824d2523253ceb11beda6a",
+      "lfLines": 75,
+      "readRanges": [
+        [
+          1,
+          75
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "surroundingTextReadInFull": true,
+      "technicalFigures": 0,
+      "decorativeImagesExcluded": 2,
+      "acquiredExamplesExecuted": false
+    },
+    {
+      "id": "dirfd",
+      "textSha256": "03c34966bc419114b395c6f6bca9a38059c6916e0aa12d5767873b43753a0047",
+      "rawSha256": "f6dc54316686d0401aba4c3e7d9534ba8a6780b8b522981b270a97bfbf36bf9c",
+      "lfLines": 94,
+      "readRanges": [
+        [
+          1,
+          94
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "surroundingTextReadInFull": true,
+      "technicalFigures": 0,
+      "decorativeImagesExcluded": 2,
+      "acquiredExamplesExecuted": false
+    },
+    {
+      "id": "dup",
+      "textSha256": "cdcbbf34f8352ec08ce677253c45ea456c2258c5e92e0cd7242f9012c2730a7d",
+      "rawSha256": "f0b886340b0471a181d135320ed5b3847de410ab05ca4a29b78780d1aa2aa2ae",
+      "lfLines": 179,
+      "readRanges": [
+        [
+          1,
+          179
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "surroundingTextReadInFull": true,
+      "technicalFigures": 0,
+      "decorativeImagesExcluded": 2,
+      "acquiredExamplesExecuted": false
+    },
+    {
+      "id": "getuid",
+      "textSha256": "e3cba974a8f90c3f64fd255b91733c625823084d331252dc5cc858d2754b1320",
+      "rawSha256": "215b3d7a42aed3b3bc34e6a562300eb9f9ddb767b194457be53c667fd5b2fd55",
+      "lfLines": 73,
+      "readRanges": [
+        [
+          1,
+          73
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "surroundingTextReadInFull": true,
+      "technicalFigures": 0,
+      "decorativeImagesExcluded": 2,
+      "acquiredExamplesExecuted": false
+    },
+    {
+      "id": "close",
+      "textSha256": "bce90baaa9aa90ce9247b99f985ebd3ff1b0f18448d93946aa7d6e799c495a30",
+      "rawSha256": "20eea30e262be7d46294160b5ddbc90048e8185a4766276b15119365207d64c3",
+      "lfLines": 185,
+      "readRanges": [
+        [
+          1,
+          185
+        ]
+      ],
+      "technicalTextReadInFull": true,
+      "surroundingTextReadInFull": true,
+      "technicalFigures": 0,
+      "decorativeImagesExcluded": 2,
+      "acquiredExamplesExecuted": false
+    }
+  ],
+  "linkedReferencesRead": false,
+  "truncatedOpenTailRereadInFull": true
+}

@@ -1,0 +1,482 @@
+5.14 Subscription Service Set
+
+5.14.1 Subscription model
+
+5.14.1.1 Description
+
+
+              Subscriptions are used to report Notifications to the Client. Their general behaviour is summarized below. Their precise behaviour is described in 5.14.1.2.
+
+1. 
+                  Subscriptions have a set of MonitoredItems assigned to them by the Client. MonitoredItems generate Notifications that are to be reported to the Client by the Subscription (see 5.13.1 for a description of MonitoredItems).
+2. 
+                  Subscriptions have a publishing interval. The publishing interval of a Subscription defines the cyclic rate at which the Subscription executes. Each time it executes, it attempts to send a NotificationMessage to the Client. NotificationMessages contain Notifications that have not yet been reported to Client.
+3. 
+                  NotificationMessages are sent to the Client in response to Publish requests. Publish requests are normally queued to the Session as they are received, and one is de-queued and processed by a Subscription related to this Session for each publishing cycle, if there are Notifications to report. When there are not, the Publish request is not de-queued from the Session, and the Server waits until the next cycle and checks again for Notifications.
+4. At the beginning of a cycle, if there are Notifications to send but there are no Publish requests queued, the Server enters a wait state for a Publish request to be received. When one is received, it is processed immediately without waiting for the next publishing cycle.
+5. 
+                  NotificationMessages are uniquely identified by sequence numbers that enable Clients to detect missed Messages. The publishing interval also defines the default sampling interval for its MonitoredItems.
+6. 
+                  Subscriptions have a keep-alive counter that counts the number of consecutive publishing cycles in which there have been no Notifications to report to the Client. When the maximum keep-alive count is reached, a Publish request is de-queued and used to return a keep-alive Message. This keep-alive Message informs the Client that the Subscription is still active. Each keep-alive Message is a response to a Publish request in which the notificationMessage parameter does not contain any Notifications and that contains the sequence number of the next NotificationMessage that is to be sent. In the clauses that follow, the term NotificationMessage refers to a response to a Publish request in which the notificationMessage parameter actually contains one or more Notifications, as opposed to a keep-alive Message in which this parameter contains no Notifications. The maximum keep-alive count is set by the Client during Subscription creation and may be subsequently modified using the ModifySubscription Service. Similar to Notification processing described in (c) above, if there are no Publish requests queued, the Server waits for the next one to be received and sends the keep-alive immediately without waiting for the next publishing cycle.
+7. Publishing by a Subscription may be enabled or disabled by the Client when created, or subsequently using the SetPublishingMode Service. Disabling causes the Subscription to cease sending NotificationMessages to the Client. However, the Subscription continues to execute cyclically and continues to send keep-alive Messages to the Client.
+8. 
+                  Subscriptions have a lifetime counter that counts the number of consecutive publishing cycles in which there have been no Publish requests available to send a Publish response for the Subscription. Any Service call that uses the SubscriptionId or the processing of a Publish response resets the lifetime counter of this Subscription. When this counter reaches the value calculated for the lifetime of a Subscription, the Subscription is closed. Closing the Subscription causes its MonitoredItems to be deleted. In addition the Server shall issue a StatusChangeNotification notificationMessage with the status code Bad_Timeout. The StatusChangeNotification notificationMessage type is defined in 7.25.4.
+9. 
+                  Sessions maintain a retransmission queue of sent NotificationMessages. NotificationMessages are retained in this queue until they are acknowledged. The Session maintains a retransmission queue size of at least two times the number of Publish requests per Session the Server supports. A Profile in OPC 10000-7 may make the retransmission queue support optional. The minimum number of Publish requests per Session the Server shall support is defined in OPC 10000-7. Clients are required to acknowledge NotificationMessages as they are received if the Publish response parameter availableSequenceNumbers is not an empty array. An empty array in availableSequenceNumbers indicates that the Server does not support a retransmission queue and acknowledgement of NotificationMessages. In the case of a retransmission queue overflow, the oldest sent NotificationMessage gets deleted. If a Subscription is transferred to another Session, the queued NotificationMessages for this Subscription are moved from the old to the new Session.
+
+The sequence number is an unsigned 32-bit integer that is incremented by one for each NotificationMessage sent. The value 0 is never used for the sequence number. The first NotificationMessage sent on a Subscription has a sequence number of 1. If the sequence number rolls over, it rolls over to 1.
+
+When a Subscription is created, the first Message is sent at the end of the first publishing cycle to inform the Client that the Subscription is operational. A NotificationMessage is sent if there are Notifications ready to be reported. If there are none, a keep-alive Message is sent instead that contains a sequence number of 1, indicating that the first NotificationMessage has not yet been sent. This is the only time a keep-alive Message is sent without waiting for the maximum keep-alive count to be reached, as specified in (f) above.
+
+A Client shall be prepared for receiving Publish responses for a Subscription more frequently than the corresponding publishing interval. One example is the situation where the number of available notifications exceeds the Subscription setting maxNotificationsPerPublish. A Client is always able to control the timing of the Publish responses by not queueing Publish requests. If a Client does not queue Publish requests in the Server, the Server can only send a Publish response if it receives a new Publish request. This would increase latency for delivery of notifications but allows a Client to throttle the number of received Publish responses in high load situations.
+
+The value of the sequence number is never reset during the lifetime of a Subscription. Therefore, the same sequence number shall not be reused on a Subscription until over four billion NotificationMessages have been sent. At a continuous rate of one thousand NotificationMessages per second on a given Subscription, it would take roughly fifty days for the same sequence number to be reused. This allows Clients to safely treat sequence numbers as unique.
+
+Sequence numbers are also used by Clients to acknowledge the receipt of NotificationMessages. Publish requests allow the Client to acknowledge all Notifications up to a specific sequence number and to acknowledge the sequence number of the last NotificationMessage received. One or more gaps may exist in between. Acknowledgements allow the Server to delete NotificationMessages from its retransmission queue. If the retransmission queue contains outdated sequence numbers related to the sequence number acknowledged by the Client, the Server may delete these older NotificationMessage from the retransmission queue. The outdated sequence numbers are calculated with the following formular.
+
+outdated < acknowledged sequence number - (2 x max retransmission queue size)
+
+
+              Clients may ask for retransmission of selected NotificationMessages using the Republish Service. This Service returns the requested Message.
+
+
+              Subscriptions are designed to work independent of the actual communication connection between OPC UA Client and Server and independent of a Session. Short communication interruptions can be handled without losing data or events. To make sure that longer communication interruptions or planned disconnects can be handled without losing data or events, an OPC UA Server may support durable Subscriptions. If this feature is supported, the Server accepts a high Subscription RequestedLifetimeCount and large MonitoredItem QueueSize parameter settings. Subclause 6.8 describes how durable Subscriptions can be created and used.
+
+5.14.1.2 State table
+
+The state table formally describes the operation of the Subscription. The following model of operations is described by this state table. This description applies when publishing is enabled or disabled for the Subscription.
+
+After creation of the Subscription, the Server starts the publishing timer and restarts it whenever it expires. If the timer expires the number of times defined for the Subscription lifetime without having received a Subscription Service request from the Client, the Subscription assumes that the Client is no longer present, and terminates.
+
+
+              Clients send Publish requests to Servers to receive Notifications. Publish requests are not directed to any one Subscription and, therefore, may be used by any Subscription. Each contains acknowledgements for one or more Subscriptions. These acknowledgements are processed when the Publish request is received. The Server then queues the request in a queue shared by all Subscriptions, except in the following cases.
+
+1. The previous Publish response indicated that there were still more Notifications ready to be transferred and there were no more Publish requests queued to transfer them.
+2. The publishing timer of a Subscription expired and there were either Notifications to be sent or a keep-alive Message to be sent.
+
+In these cases, the newly received Publish request is processed immediately by the first Subscription to encounter either case (a) or case (b).
+
+Each time the publishing timer expires, it is immediately reset. If there are Notifications or a keep-alive Message to be sent, it de-queues and processes a Publish request. When a Subscription processes a Publish request, it accesses the queues of its MonitoredItems and de-queues its Notifications, if any. It returns these Notifications in the response, setting the moreNotifications flag if it was not able to return all available Notifications in the response.
+
+If there were Notifications or a keep-alive Message to be sent but there were no Publish requests queued, the Subscription assumes that the Publish request is late and waits for the next Publish request to be received, as described in case (b).
+
+If the Subscription is disabled when the publishing timer expires or if there are no Notifications available, it enters the keep-alive state and sets the keep-alive counter to its maximum value as defined for the Subscription.
+
+While in the keep-alive state, it checks for Notifications each time the publishing timer expires. If one or more Notifications have been generated, a Publish request is de-queued and a NotificationMessage is returned in the response. However, if the publishing timer expires without a Notification becoming available, a Publish request is de-queued and a keep-alive Message is returned in the response. The Subscription then returns to the normal state of waiting for the publishing timer to expire again. If, in either of these cases, there are no Publish requests queued, the Subscription waits for the next Publish request to be received, as described in case (b).
+
+The Subscription states are defined in Table 78.
+
+Table 78 - Subscription States
+State,Description
+CLOSED,The Subscription has not yet been created or has terminated.
+CREATING,The Subscription is being created.
+NORMAL,The Subscription is cyclically checking for Notifications from its MonitoredItems. The keep-alive counter is not used in this state.
+LATE,"The publishing timer has expired and there are Notifications available or a keep-alive Message is ready to be sent, but there are no Publish requests queued. When in this state, the next Publish request is processed when it is received. The keep-alive counter is not used in this state."
+KEEPALIVE,The Subscription is cyclically checking for Notifications from its MonitoredItems or for the keep-alive counter to count down to 0 from its maximum.
+
+The state table is described in Table 79. The following rules and conventions apply.
+
+1. 
+                  Events represent the receipt of Service requests and the occurrence internal Events, such as timer expirations.
+2. 
+                  Service requests Events may be accompanied by conditions that test Service parameter values. Parameter names begin with a lower case letter.
+3. Internal Events may be accompanied by conditions that test state Variable values. State Variables are defined in 5.14.1.3. They begin with an upper case letter.
+4. 
+                  Service request and internal Events may be accompanied by conditions represented by functions whose return value is tested. Functions are identified by "()" after their name. They are described in 5.14.1.4.
+5. When an Event is received, the first transition for the current state is located and the transitions are searched sequentially for the first transition that meets the Event or conditions criteria. If none are found, the Event is ignored.
+6. Actions are described by functions and state Variable manipulations.
+7. The LifetimeTimerExpires Event is triggered when its corresponding counter reaches zero.
+
+Table 79 - Subscription State Table
+#,Current State,Event/Conditions,Action,Next State
+1,CLOSED,Receive CreateSubscription Request,CreateSubscription(),CREATING
+2,CREATING,CreateSubscription fails,ReturnNegativeResponse(),CLOSED
+3,CREATING,CreateSubscription succeeds,InitializeSubscription() MessageSent = FALSE ReturnResponse(),NORMAL
+4,NORMAL,Receive Publish Request  &&  ( 		PublishingEnabled == FALSE 	||  		(PublishingEnabled == TRUE 		&& MoreNotifications == FALSE) ),DeleteAckedNotificationMsgs() EnqueuePublishingReq(),NORMAL
+5,NORMAL,Receive Publish Request  && PublishingEnabled == TRUE  && MoreNotifications == TRUE,ResetLifetimeCounter()  DeleteAckedNotificationMsgs() ReturnNotifications() MessageSent = TRUE,NORMAL
+6,NORMAL,PublishingTimer Expires && PublishingReqQueued == TRUE && PublishingEnabled == TRUE  && NotificationsAvailable == TRUE,ResetLifetimeCounter() StartPublishingTimer() DequeuePublishReq() ReturnNotifications() MessageSent = TRUE,NORMAL
+7,NORMAL,PublishingTimer Expires && PublishingReqQueued == TRUE && MessageSent == FALSE &&  ( 		PublishingEnabled == FALSE 	||  		(PublishingEnabled == TRUE 		&& NotificationsAvailable == FALSE) ),ResetLifetimeCounter() StartPublishingTimer() DequeuePublishReq() ReturnKeepAlive() MessageSent = TRUE,NORMAL
+8,NORMAL,PublishingTimer Expires  && PublishingReqQueued == FALSE && ( 		MessageSent == FALSE 	||  		(PublishingEnabled == TRUE  		&& NotificationsAvailable == TRUE) ),StartPublishingTimer(),LATE
+9,NORMAL,PublishingTimer Expires && MessageSent == TRUE && ( 		PublishingEnabled == FALSE  	|| 		(PublishingEnabled == TRUE  		&& NotificationsAvailable == FALSE) ),StartPublishingTimer() ResetKeepAliveCounter() KeepAliveCounter--,KEEPALIVE
+10,LATE,Receive Publish Request  && PublishingEnabled == TRUE && (NotificationsAvailable == TRUE || MoreNotifications == TRUE),ResetLifetimeCounter()  DeleteAckedNotificationMsgs() ReturnNotifications() MessageSent = TRUE,NORMAL
+11,LATE,Receive Publish Request  && ( 		PublishingEnabled == FALSE 	|| 		(PublishingEnabled == TRUE 		&& NotificationsAvailable == FALSE 		&& MoreNotifications == FALSE) ),ResetLifetimeCounter()  DeleteAckedNotificationMsgs() ReturnKeepAlive() MessageSent = TRUE,KEEPALIVE
+12,LATE,PublishingTimer Expires,StartPublishingTimer(),LATE
+13,KEEPALIVE,Receive Publish Request,DeleteAckedNotificationMsgs() EnqueuePublishingReq(),KEEPALIVE
+14,KEEPALIVE,PublishingTimer Expires && PublishingEnabled == TRUE && NotificationsAvailable == TRUE && PublishingReqQueued == TRUE,ResetLifetimeCounter() StartPublishingTimer() DequeuePublishReq() ReturnNotifications() MessageSent = TRUE,NORMAL
+15,KEEPALIVE,PublishingTimer Expires && PublishingReqQueued == TRUE && KeepAliveCounter <= 1 && ( 		PublishingEnabled == FALSE 	|| 		(PublishingEnabled == TRUE 		&& NotificationsAvailable == FALSE ),StartPublishingTimer() DequeuePublishReq() ReturnKeepAlive() ResetKeepAliveCounter(),KEEPALIVE
+16,KEEPALIVE,PublishingTimer Expires && KeepAliveCounter > 1 &&  ( 		PublishingEnabled == FALSE 	|| 		(PublishingEnabled == TRUE 		&& NotificationsAvailable == FALSE) ),StartPublishingTimer() KeepAliveCounter--,KEEPALIVE
+17,KEEPALIVE,PublishingTimer Expires && PublishingReqQueued == FALSE &&  ( 		KeepAliveCounter == 1 	|| 		(KeepAliveCounter > 1 		&& PublishingEnabled == TRUE 		&& NotificationsAvailable == TRUE) ),StartPublishingTimer(),LATE
+18,NORMAL || LATE || KEEPALIVE,Receive ModifySubscription Request && SubscriptionAssignedToSession == TRUE,ResetLifetimeCounter() UpdateSubscriptionParams() ReturnResponse(),SAME
+19,NORMAL || LATE || KEEPALIVE,Receive SetPublishingMode Request && SubscriptionAssignedToSession == TRUE,ResetLifetimeCounter() SetPublishingEnabled() MoreNotifications = FALSE ReturnResponse(),SAME
+20,NORMAL || LATE || KEEPALIVE,Receive Republish Request && RequestedMessageFound == TRUE,ResetLifetimeCounter() ReturnResponse(),SAME
+21,NORMAL || LATE || KEEPALIVE,Receive Republish Request && RequestedMessageFound == FALSE,ResetLifetimeCounter() ReturnNegativeResponse(),SAME
+22,NORMAL || LATE || KEEPALIVE,Receive TransferSubscriptions Request && SessionChanged() == FALSE,ResetLifetimeCounter() ReturnNegativeResponse (),SAME
+23,NORMAL || LATE || KEEPALIVE,Receive TransferSubscriptions Request && SessionChanged() == TRUE && ClientValidated() ==TRUE,SetSession() ResetLifetimeCounter()  ReturnResponse() IssueStatusChangeNotification(),SAME
+24,NORMAL || LATE || KEEPALIVE,Receive TransferSubscriptions Request && SessionChanged() == TRUE && ClientValidated() == FALSE,ReturnNegativeResponse(),SAME
+25,NORMAL || LATE || KEEPALIVE,Receive DeleteSubscriptions Request && SubscriptionAssignedToSession ==TRUE,DeleteMonitoredItems() DeleteClientPublReqQueue(),CLOSED
+26,NORMAL || LATE || KEEPALIVE,Receive Subscription related Request && SubscriptionAssignedToSession ==FALSE,ReturnNegativeResponse(),SAME
+27,NORMAL || LATE || KEEPALIVE,LifetimeCounter == 1 The LifetimeCounter is decremented if PublishingTimer expires and PublishingReqQueued == FALSE The LifetimeCounter is reset if PublishingReqQueued == TRUE.,DeleteMonitoredItems() IssueStatusChangeNotification(),CLOSED
+
+5.14.1.3 State variables and parameters
+
+The state variables are defined alphabetically in Table 80.
+
+Table 80 - State variables and parameters
+State Variable,Description
+MoreNotifications,A boolean value that is set to TRUE only by the CreateNotificationMsg() when there were too many Notifications for a single NotificationMessage.
+LatePublishRequest,"A boolean value that is set to TRUE to reflect that, the last time the publishing timer expired, there were no Publish requests queued."
+LifetimeCounter,A value that contains the number of consecutive publishing timer expirations without Client activity before the Subscription is terminated.
+MessageSent,A boolean value that is set to TRUE to mean that either a NotificationMessage or a keep-alive Message has been sent on the Subscription. It is a flag that is used to ensure that either a NotificationMessage or a keep-alive Message is sent out the first time the publishing timer expires.
+NotificationsAvailable,"A boolean value that is set to TRUE only when there is at least one MonitoredItem that is in the reporting mode and that has a Notification queued or there is at least one item to report whose triggering item has triggered and that has a Notification queued. The transition of this state Variable from FALSE to TRUE creates the ""New Notification Queued"" Event in the state table."
+PublishingEnabled,The parameter that requests publishing to be enabled or disabled.
+PublishingReqQueued,A boolean value that is set to TRUE only when there is a Publish request Message queued to the Subscription.
+RequestedMessageFound,A boolean value that is set to TRUE only when the Message requested to be retransmitted was found in the retransmission queue.
+SeqNum,The value that records the value of the sequence number used in NotificationMessages.
+SubscriptionAssignedToSession,A boolean value that is set to TRUE only when the Subscription related Service is called with the Session the Subscription is assigned to. A Subscription is assigned to the Session that created it. That assignment can only be changed through successful completion of the TransferSubscriptions Service.
+
+5.14.1.4 Functions
+
+The action functions are defined alphabetically in Table 81.
+
+Table 81 - Functions
+Function,Description
+ClientValidated(),A boolean function that returns TRUE only when the Client that is submitting a TransferSubscriptions request is operating on behalf of the same user and supports the same Profiles as the Client of the previous Session.
+CreateNotificationMsg(),"Increment the SeqNum and create a NotificationMessage from the MonitoredItems assigned to the Subscription. Save the newly-created NotificationMessage in the retransmission queue. If all available Notifications can be sent in the Publish response, the MoreNotifications state Variable is set to FALSE. Otherwise, it is set to TRUE."
+CreateSubscription(),Attempt to create the Subscription.
+DeleteAckedNotificationMsgs(),Delete the NotificationMessages from the retransmission queue that were acknowledged by the request.
+DeleteClientPublReqQueue(),"Clear the Publish request queue for the Client that is sending the DeleteSubscriptions request, if there are no more Subscriptions assigned to that Client."
+DeleteMonitoredItems(),Delete all MonitoredItems assigned to the Subscription.
+DequeuePublishReq(),"De-queue a publishing request in first-in first-out order. Validate if the publish request is still valid by checking the timeoutHint in the RequestHeader.  If the request timed out, send a Bad_Timeout service result for the request and de-queue another publish request. ResetLifetimeCounter()"
+EnqueuePublishingReq(),Enqueue the publishing request.
+InitializeSubscription(),ResetLifetimeCounter() MoreNotifications = FALSE PublishRateChange = FALSE PublishingEnabled = value of publishingEnabled parameter in the CreateSubscription request PublishingReqQueued = FALSE SeqNum = 0 SetSession() StartPublishingTimer()
+IssueStatusChangeNotification(),Issue a StatusChangeNotification notificationMessage with a status code for the status change of the Subscription. The StatusChangeNotification notificationMessage type is defined in 7.25.4. Bad_Timeout status code is used if the lifetime expires and Good_SubscriptionTransferred is used if the Subscriptions was transferred to another Session.
+ResetKeepAliveCounter(),Reset the keep-alive counter to the maximum keep-alive count of the Subscription. The maximum keep-alive count is set by the Client when the Subscription is created and may be modified using the ModifySubscription Service.
+ResetLifetimeCounter(),Reset the LifetimeCounter Variable to the value specified for the lifetime of a Subscription in the CreateSubscription Service (5.14.2).
+ReturnKeepAlive(),Create an empty NotificationMessage with the current SeqNum value. ReturnResponse()
+ReturnNegativeResponse(),Return a Service response indicating the appropriate Service level error. No parameters are returned other than the responseHeader that contains the Service level StatusCode.
+ReturnNotifications(),CreateNotificationMsg() ReturnResponse() If (MoreNotifications == TRUE) && (PublishingReqQueued == TRUE) { 	DequeuePublishReq() 	Loop through this function again }
+ReturnResponse(),"Return the appropriate response, setting the appropriate parameter values and StatusCodes defined for the Service."
+SessionChanged(),A boolean function that returns TRUE only when the Session used to send a TransferSubscriptions request is different from the Client Session currently associated with the Subscription.
+SetPublishingEnabled (),Set the PublishingEnabled state Variable to the value of the publishingEnabled parameter received in the request.
+SetSession,Set the Session information for the Subscription to match the Session on which the TransferSubscriptions request was issued.
+StartPublishingTimer(),Start or restart the publishing timer and decrement the LifetimeCounter Variable.
+UpdateSubscriptionParams(),"Negotiate and update the Subscription parameters. If the new keep-alive interval is less than the current value of the keep-alive counter, perform ResetKeepAliveCounter() and ResetLifetimeCounter()."
+
+5.14.2 CreateSubscription
+
+5.14.2.1 Description
+
+This Service is used to create a Subscription. Subscriptions monitor a set of MonitoredItems for Notifications and return them to the Client in response to Publish requests.
+
+Illegal request values for parameters that can be revised do not generate errors. Instead the Server will choose default values and indicate them in the corresponding revised parameter.
+
+5.14.2.2 Parameters
+
+
+              Table 82 defines the parameters for the Service.
+
+Table 82 - CreateSubscription Service Parameters
+Name,Type,Description
+Request,,
+requestHeader,Request Header,Common request parameters (see 7.32 for RequestHeader definition).
+requestedPublishing Interval,Duration,"This interval defines the cyclic rate that the Subscription is being requested to return Notifications to the Client. This interval is expressed in milliseconds. This interval is represented by the publishing timer in the Subscription state table (see 5.14.1.2). The negotiated value for this parameter returned in the response is used as the default sampling interval for MonitoredItems assigned to this Subscription. If the requested value is 0 or negative, the Server shall revise with the fastest supported publishing interval."
+requestedLifetimeCount,Counter,"Requested lifetime count (see 7.8 for Counter definition). The lifetime count shall be a minimum of three times the keep keep-alive count. When the publishing timer has expired this number of times without a Publish request being available to send a NotificationMessage, then the Subscription shall be deleted by the Server."
+requestedMaxKeepAlive Count,Counter,"Requested maximum keep-alive count (see 7.8 for Counter definition). When the publishing timer has expired this number of times without requiring any NotificationMessage to be sent, the Subscription sends a keep-alive Message to the Client. The negotiated value for this parameter is returned in the response. If the requested value is 0, the Server shall revise with the smallest supported keep-alive count."
+maxNotificationsPerPublish,Counter,The maximum number of notifications that the Client wishes to receive in a single Publish response. A value of zero indicates that there is no limit. The number of notifications per Publish is the sum of monitoredItems in the DataChangeNotification and events in the EventNotificationList.
+publishingEnabled,Boolean,A Boolean parameter with the following values: 	TRUE	publishing is enabled for the Subscription. 	FALSE	publishing is disabled for the Subscription. The value of this parameter does not affect the value of the monitoring mode Attribute of MonitoredItems.
+priority,Byte,"Indicates the relative priority of the Subscription. When more than one Subscription needs to send a Publish response, the Server should de-queue a Publish request to the Subscription with the highest priority number. For Subscriptions with equal priority the Server should de-queue Publish requests in a round-robin fashion. A Client that does not require special priority settings should set this value to zero."
+,,
+Response,,
+responseHeader,Response Header,Common response parameters (see 7.33 for ResponseHeader definition).
+subscriptionId,IntegerId,"The Server-assigned identifier for the Subscription (see 7.19 for IntegerId definition). This identifier shall be unique for the entire Server, not just for the Session, in order to allow the Subscription to be transferred to another Session using the TransferSubscriptions service. After Server start-up the generation of subscriptionIds should start from a random IntegerId or continue from the point before the restart."
+revisedPublishingInterval,Duration,"The actual publishing interval that the Server will use, expressed in milliseconds. The Server should attempt to honour the Client request for this parameter, but may negotiate this value up or down to meet its own constraints."
+revisedLifetimeCount,Counter,The lifetime of the Subscription shall be a minimum of three times the keep-alive interval negotiated by the Server.
+revisedMaxKeepAliveCount,Counter,"The actual maximum keep-alive count (see 7.8 for Counter definition). The Server should attempt to honour the Client request for this parameter, but may negotiate this value up or down to meet its own constraints."
+
+5.14.2.3 Service results
+
+
+              Table 83 defines the Service results specific to this Service. Common StatusCodes are defined in Table 178.
+
+Table 83 - CreateSubscription Service Result Codes
+Symbolic Id,Description
+Bad_TooManySubscriptions,The Server has reached its maximum number of Subscriptions.
+
+5.14.3 ModifySubscription
+
+5.14.3.1 Description
+
+This Service is used to modify a Subscription.
+
+Illegal request values for parameters that can be revised do not generate errors. Instead the Server will choose default values and indicate them in the corresponding revised parameter.
+
+Changes to the Subscription settings shall be applied immediately by the Server. They take effect as soon as practical but not later than twice the new revisedPublishingInterval.
+
+5.14.3.2 Parameters
+
+
+              Table 84 defines the parameters for the Service.
+
+Table 84 - ModifySubscription Service Parameters
+Name,Type,Description
+Request,,
+requestHeader,RequestHeader,Common request parameters (see 7.32 for RequestHeader definition).
+subscriptionId,IntegerId,The Server-assigned identifier for the Subscription (see 7.19 for IntegerId definition).
+requestedPublishingInterval,Duration,"This interval defines the cyclic rate at which the Subscription is being requested to return Notifications to the Client. This interval is expressed in milliseconds. This interval is represented by the publishing timer in the Subscription state table (see 5.14.1.2). The negotiated value for this parameter returned in the response is used as the default sampling interval for MonitoredItems assigned to this Subscription. If the requested value is 0 or negative, the Server shall revise with the fastest supported publishing interval."
+requestedLifetimeCount,Counter,"Requested lifetime count (see 7.8 for Counter definition). The lifetime count shall be a minimum of three times the keep-alive count. When the publishing timer has expired this number of times without a Publish request being available to send a NotificationMessage, then the Subscription shall be deleted by the Server."
+requestedMaxKeepAliveCount,Counter,"Requested maximum keep-alive count (see 7.8 for Counter definition). When the publishing timer has expired this number of times without requiring any NotificationMessage to be sent, the Subscription sends a keep-alive Message to the Client. The negotiated value for this parameter is returned in the response. If the requested value is 0, the Server shall revise with the smallest supported keep-alive count."
+maxNotificationsPerPublish,Counter,The maximum number of notifications that the Client wishes to receive in a single Publish response. A value of zero indicates that there is no limit.
+priority,Byte,"Indicates the relative priority of the Subscription. When more than one Subscription needs to send Notifications, the Server should de-queue a Publish request to the Subscription with the highest priority number. For Subscriptions with equal priority the Server should de-queue Publish requests in a round-robin fashion. A Client that does not require special priority settings should set this value to zero."
+,,
+Response,,
+responseHeader,ResponseHeader,Common response parameters (see 7.33 for ResponseHeader definition).
+revisedPublishingInterval,Duration,"The actual publishing interval that the Server will use, expressed in milliseconds. The Server should attempt to honour the Client request for this parameter, but may negotiate this value up or down to meet its own constraints."
+revisedLifetimeCount,Counter,The lifetime of the Subscription shall be a minimum of three times the keep-alive interval negotiated by the Server.
+revisedMaxKeepAliveCount,Counter,"The actual maximum keep-alive count (see 7.8 for Counter definition). The Server should attempt to honour the Client request for this parameter, but may negotiate this value up or down to meet its own constraints."
+
+5.14.3.3 Service results
+
+
+              Table 85 defines the Service results specific to this Service. Common StatusCodes are defined in Table 178.
+
+Table 85 - ModifySubscription Service Result Codes
+Symbolic Id,Description
+Bad_SubscriptionIdInvalid,See Table 178 for the description of this result code.
+
+5.14.4 SetPublishingMode
+
+5.14.4.1 Description
+
+This Service is used to enable sending of Notifications on one or more Subscriptions.
+
+5.14.4.2 Parameters
+
+
+              Table 86 defines the parameters for the Service.
+
+Table 86 - SetPublishingMode Service Parameters
+Name,Type,Description
+Request,,
+requestHeader,RequestHeader,Common request parameters (see 7.32 for RequestHeader definition).
+publishingEnabled,Boolean,A Boolean parameter with the following values: 	TRUE	publishing of NotificationMessages is enabled for the Subscription. 	FALSE	publishing of NotificationMessages is disabled for the Subscription. The value of this parameter does not affect the value of the monitoring mode Attribute of MonitoredItems. Setting this value to FALSE does not discontinue the sending of keep-alive Messages.
+subscriptionIds [],IntegerId,List of Server-assigned identifiers for the Subscriptions to enable or disable (see 7.19 for IntegerId definition).
+,,
+Response,,
+responseHeader,ResponseHeader,Common response parameters (see 7.33 for ResponseHeader definition).
+results [],StatusCode,List of StatusCodes for the Subscriptions to enable/disable (see 7.38 for StatusCode definition). The size and order of the list matches the size and order of the subscriptionIds request parameter.
+diagnosticInfos [],DiagnosticInfo,List of diagnostic information for the Subscriptions to enable/disable (see 7.12 for DiagnosticInfo definition). The size and order of the list matches the size and order of the subscriptionIds request parameter. This list is empty if diagnostics information was not requested in the request header or if no diagnostic information was encountered in processing of the request.
+
+5.14.4.3 Service results
+
+
+              Table 87 defines the Service results specific to this Service. Common StatusCodes are defined in Table 178.
+
+Table 87 - SetPublishingMode Service Result Codes
+Symbolic Id,Description
+Bad_NothingToDo,See Table 178 for the description of this result code.
+Bad_TooManyOperations,See Table 178 for the description of this result code.
+
+5.14.4.4 StatusCodes
+
+
+              Table 88 defines values for the results parameter that are specific to this Service. Common StatusCodes are defined in Table 179.
+
+Table 88 - SetPublishingMode Operation Level Result Codes
+Symbolic Id,Description
+Bad_SubscriptionIdInvalid,See Table 178 for the description of this result code.
+
+5.14.5 Publish
+
+5.14.5.1 Description
+
+This Service is used for two purposes. First, it is used to acknowledge the receipt of NotificationMessages for one or more Subscriptions. Second, it is used to request the Server to return a NotificationMessage or a keep-alive Message. Since Publish requests are not directed to a specific Subscription, they may be used by any Subscription. 5.14.1.2 describes the use of the Publish Service.
+
+
+              Client strategies for issuing Publish requests may vary depending on the networking delays between the Client and the Server. In many cases, the Client may wish to issue a Publish request immediately after creating a Subscription, and thereafter, immediately after receiving a Publish response.
+
+In other cases, especially in high latency networks, the Client may wish to pipeline Publish requests to ensure cyclic reporting from the Server. Pipelining involves sending more than one Publish request for each Subscription before receiving a response. For example, if the network introduces a delay between the Client and the Server of 5 seconds and the publishing interval for a Subscription is one second, then the Client shall issue Publish requests every second instead of waiting for a response to be received before sending the next request.
+
+A Server should limit the number of active Publish requests to avoid an infinite number since it is expected that the Publish requests are queued in the Server. But a Server shall accept more queued Publish requests than created Subscriptions. It is expected that a Server supports several Publish requests per Subscription. When a Server receives a new Publish request that exceeds its limit it shall de-queue the oldest Publish request and return a response with the result set to Bad_TooManyPublishRequests. If a Client receives this Service result for a Publish request it shall not issue another Publish request before one of its outstanding Publish requests is returned from the Server.
+
+
+              Clients can limit the size of Publish responses with the maxNotificationsPerPublish parameter passed to the CreateSubscription Service. However, this could still result in a message that is too large for the Client or Server to process. In this situation, the Client will find that either the SecureChannel goes into a fault state and needs to be re-established or the Publish response returns an error and calling the Republish Service also returns an error. If either situation occurs then the Client will adjust its message processing limits or the parameters for the Subscription and/or MonitoredItems.
+
+The return diagnostic info setting in the request header of the CreateMonitoredItems or the last ModifyMonitoredItems Service is applied to the Monitored Items and is used as the diagnostic information settings when sending Notifications in the Publish response.
+
+5.14.5.2 Parameters
+
+
+              Table 89 defines the parameters for the Service.
+
+Table 89 - Publish Service Parameters
+Name,Type,Description
+Request,,
+requestHeader,RequestHeader,Common request parameters (see 7.32 for RequestHeader definition).
+subscription Acknowledgements [],Subscription Acknowledgement,The list of acknowledgements for one or more Subscriptions. This list may contain multiple acknowledgements for the same Subscription (multiple entries with the same subscriptionId). This structure is defined in-line with the following indented items.
+subscriptionId,IntegerId,The Server assigned identifier for a Subscription (see 7.19 for IntegerId definition).
+sequenceNumber,Counter,The sequence number being acknowledged (see 7.8 for Counter definition). The Server may delete the Message with this sequence number from its retransmission queue.
+,,
+Response,,
+responseHeader,ResponseHeader,Common response parameters (see 7.33 for ResponseHeader definition).
+subscriptionId,IntegerId,The Server-assigned identifier for the Subscription for which Notifications are being returned (see 7.19 for IntegerId definition). The value 0 is used to indicate that there were no Subscriptions defined for which a response could be sent.
+availableSequence Numbers [],Counter,"A list of sequence number ranges that identify unacknowledged NotificationMessages that are available for retransmission from the Subscription's retransmission queue including the sequence number of this response if it is not a keep-alive Message. This list is prepared after processing the acknowledgements in the request (see 7.8 for Counter definition). The list shall be empty if the Server does not support the retransmission queue. If the list is empty, the Client should not acknowledge sequence numbers. This information is for diagnostic purpose and Clients should log differences to the expected sequence numbers."
+moreNotifications,Boolean,A Boolean parameter with the following values: 	TRUE	the number of Notifications that were ready to be sent could not be sent in a single response. 	FALSE	all Notifications that were ready are included in the response.
+notificationMessage,Notification Message,The NotificationMessage that contains the list of Notifications. The NotificationMessage parameter type is specified in 7.26.
+results [],StatusCode,List of results for the acknowledgements (see 7.38 for StatusCode definition). The size and order of the list matches the size and order of the subscriptionAcknowledgements request parameter.
+diagnosticInfos [],DiagnosticInfo,List of diagnostic information for the acknowledgements (see 7.12 for DiagnosticInfo definition). The size and order of the list matches the size and order of the subscriptionAcknowledgements request parameter. This list is empty if diagnostics information was not requested in the request header or if no diagnostic information was encountered in processing of the request.
+
+5.14.5.3 Service results
+
+
+              Table 90 defines the Service results specific to this Service. Common StatusCodes are defined in Table 178.
+
+Table 90 - Publish Service Result Codes
+Symbolic Id,Description
+Bad_TooManyPublishRequests,The Server has reached the maximum number of queued Publish requests.
+Bad_NoSubscription,There is no Subscription available for this session.
+
+5.14.5.4 StatusCodes
+
+
+              Table 91 defines values for the results parameter that are specific to this Service. Common StatusCodes are defined in Table 179.
+
+Table 91 - Publish Operation Level Result Codes
+Symbolic Id,Description
+Bad_SubscriptionIdInvalid,See Table 178 for the description of this result code.
+Bad_SequenceNumberUnknown,The sequence number is unknown to the Server.
+Good_RetransmissionQueueNotSupported,The Server does not support retransmission queue and acknowledgement of sequence numbers is not available.
+
+5.14.6 Republish
+
+5.14.6.1 Description
+
+This Service requests the Subscription to republish a NotificationMessage from its retransmission queue. If the Server does not have the requested Message in its retransmission queue, it returns an error response.
+
+See 5.14.1.2 for the detail description of the behaviour of this Service.
+
+See 6.7 for a description of the issues and strategies regarding reconnect handling and Republish.
+
+5.14.6.2 Parameters
+
+
+              Table 92 defines the parameters for the Service.
+
+Table 92 - Republish Service Parameters
+Name,Type,Description
+Request,,
+requestHeader,RequestHeader,Common request parameters (see 7.32 for RequestHeader definition).
+subscriptionId,IntegerId,The Server assigned identifier for the Subscription to be republished (see 7.19 for IntegerId definition).
+retransmitSequence Number,Counter,The sequence number of a specific NotificationMessage to be republished (see 7.8 for Counter definition).
+,,
+Response,,
+responseHeader,ResponseHeader,Common response parameters (see 7.33 for ResponseHeader definition).
+notificationMessage,Notification Message,The requested NotificationMessage. The NotificationMessage parameter type is specified in 7.26.
+
+5.14.6.3 Service results
+
+
+              Table 93 defines the Service results specific to this Service. Common StatusCodes are defined in Table 178.
+
+Table 93 - Republish Service Result Codes
+Symbolic Id,Description
+Bad_SubscriptionIdInvalid,See Table 178 for the description of this result code.
+Bad_MessageNotAvailable,The requested message is no longer available.
+
+5.14.7 TransferSubscriptions
+
+5.14.7.1 Description
+
+This Service is used to transfer a Subscription and its MonitoredItems from one Session to another. For example, a Client may need to reopen a Session and then transfer its Subscriptions to that Session. It may also be used by one Client to take over a Subscription from another Client by transferring the Subscription to its Session.
+
+The authenticationToken contained in the request header identifies the Session to which the Subscription and MonitoredItems shall be transferred. The Server shall validate that the Client of that Session is operating on behalf of the same non-ANONYMOUS ClientUserId. The ClientUserId is defined in OPC 10000-5. If the Client uses an ANONYMOUS UserTokenType, the Server shall validate if the ApplicationUri is the same for the old and the new Session and the MessageSecurityMode is SIGN or SIGNANDENCRYPT. If the Server transfers the Subscription, it returns the sequence numbers of the NotificationMessages that are available for retransmission. The Client should acknowledge all Messages in this list for which it will not request retransmission.
+
+If the Server transfers the Subscription to the new Session, the Server shall issue a StatusChangeNotification notificationMessage with the status code Good_SubscriptionTransferred to the old Session. The StatusChangeNotification notificationMessage type is defined in 7.25.4.
+
+5.14.7.2 Parameters
+
+
+              Table 94 defines the parameters for the Service.
+
+Table 94 - TransferSubscriptions Service Parameters
+Name,Type,Description
+Request,,
+requestHeader,RequestHeader,Common request parameters (see 7.32 for RequestHeader definition).
+subscriptionIds [],IntegerId,List of identifiers for the Subscriptions to be transferred to the new Client (see 7.19 for IntegerId definition). These identifiers are transferred from the primary Client to a backup Client via external mechanisms.
+sendInitialValues,Boolean,"A Boolean parameter with the following values: 	TRUE	the first Publish response(s) after the TransferSubscriptions call shall contain the current value for each data MonitoredItem in the Subscription where the Monitoring Mode is set to Reporting. If a value is queued for a data MonitoredItem, the next value in the queue is sent in the Publish response. If no value is queued for a data MonitoredItem, the last value sent is repeated in the Publish response. 	FALSE	the first Publish response after the TransferSubscriptions call shall contain only the value changes since the last Publish response was sent. This parameter only applies to MonitoredItems used for monitoring Attribute changes. The data should be sent in the next regular PublishingInterval."
+,,
+Response,,
+responseHeader,ResponseHeader,Common response parameters (see 7.33 for ResponseHeader definition).
+results [],TransferResult,List of results for the Subscriptions to transfer. The size and order of the list matches the size and order of the subscriptionIds request parameter. This structure is defined in-line with the following indented items.
+statusCode,StatusCode,StatusCode for each Subscription to be transferred (see 7.38 for StatusCode definition).
+availableSequence Numbers [],Counter,A list of sequence number ranges that identify NotificationMessages that are in the Subscription's retransmission queue. This parameter is null or empty if the transfer of the Subscription failed. The Counter type is defined in 7.8.
+diagnosticInfos [],DiagnosticInfo,List of diagnostic information for the Subscriptions to transfer (see 7.12 for DiagnosticInfo definition). The size and order of the list matches the size and order of the subscriptionIds request parameter. This list is empty if diagnostics information was not requested in the request header or if no diagnostic information was encountered in processing of the request.
+
+5.14.7.3 Service results
+
+
+              Table 95 defines the Service results specific to this Service. Common StatusCodes are defined in Table 178.
+
+Table 95 - TransferSubscriptions Service Result Codes
+Symbolic Id,Description
+Bad_NothingToDo,See Table 178 for the description of this result code.
+Bad_TooManyOperations,See Table 178 for the description of this result code.
+Bad_InsufficientClientProfile,The Client of the current Session does not support one or more Profiles that are necessary for the Subscription.
+
+5.14.7.4 StatusCodes
+
+
+              Table 96 defines values for the operation level statusCode parameter that are specific to this Service. Common StatusCodes are defined in Table 179.
+
+Table 96 - TransferSubscriptions Operation Level Result Codes
+Symbolic Id,Description
+Bad_SubscriptionIdInvalid,See Table 178 for the description of this result code.
+Bad_UserAccessDenied,See Table 178 for the description of this result code. The Client of the current Session is not operating on behalf of the same user as the Session that owns the Subscription.
+Bad_TooManySubscriptions,The Server has reached its maximum number of Subscriptions for the Session.
+Bad_NothingToDo,See Table 178 for the description of this result code. This result code is returned if the Subscription is already owned by the Session used to call TransferSubscription.
+
+5.14.8 DeleteSubscriptions
+
+5.14.8.1 Description
+
+This Service is invoked to delete one or more Subscriptions that belong to the Client's Session. 
+
+Successful completion of this Service causes all MonitoredItems that use the Subscription to be deleted. If this is the last Subscription for the Session, then all Publish requests still queued for that Session are de-queued and shall be returned with Bad_NoSubscription.
+
+
+              Subscriptions that were transferred to another Session shall be deleted by the Client that owns the Session.
+
+5.14.8.2 Parameters
+
+
+              Table 97 defines the parameters for the Service.
+
+Table 97 - DeleteSubscriptions Service Parameters
+Name,Type,Description
+Request,,
+requestHeader,RequestHeader,Common request parameters (see 7.32 for RequestHeader definition).
+subscriptionIds [],IntegerId,The Server-assigned identifier for the Subscription (see 7.19 for IntegerId definition).
+,,
+Response,,
+responseHeader,ResponseHeader,Common response parameters (see 7.33 for ResponseHeader definition).
+results [],StatusCode,List of StatusCodes for the Subscriptions to delete (see 7.38 for StatusCode definition). The size and order of the list matches the size and order of the subscriptionIds request parameter.
+diagnosticInfos [],DiagnosticInfo,List of diagnostic information for the Subscriptions to delete (see 7.12 for DiagnosticInfo definition). The size and order of the list matches the size and order of the subscriptionIds request parameter. This list is empty if diagnostics information was not requested in the request header or if no diagnostic information was encountered in processing of the request.
+
+5.14.8.3 Service results
+
+
+              Table 98 defines the Service results specific to this Service. Common StatusCodes are defined in Table 178.
+
+Table 98 - DeleteSubscriptions Service Result Codes
+Symbolic Id,Description
+Bad_NothingToDo,See Table 178 for the description of this result code.
+Bad_TooManyOperations,See Table 178 for the description of this result code.
+
+5.14.8.4 StatusCodes
+
+
+              Table 99 defines values for the results parameter that are specific to this Service. Common StatusCodes are defined in Table 179.
+
+Table 99 - DeleteSubscriptions Operation Level Result Codes
+Symbolic Id,Description
+Bad_SubscriptionIdInvalid,See Table 178 for the description of this result code.
+

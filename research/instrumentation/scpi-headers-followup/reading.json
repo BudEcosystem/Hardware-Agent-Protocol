@@ -1,0 +1,125 @@
+{
+  "schema": "hms.scpi-header-reading/1",
+  "reviewed_at": "2026-11-07T20:31:26.173121+00:00",
+  "source_id": "scpi-99",
+  "raw_path": "research/instrumentation/raw/scpi-99.pdf",
+  "raw_sha256": "09b60c1400a973b1d0a983cdf8f2cb403bbe225b0acf4c01e4e324ab7833dece",
+  "text_path": "research/instrumentation/text/scpi-99.txt",
+  "text_sha256": "d7ec21e72944ca8485b83ccf00edfa1e068c0e08d3419e3dd408baedcc60b39c",
+  "line_count": 42293,
+  "line_counting": "LF-delimited original bytes; keep LF, CR and form feeds; include final unterminated line; not str.splitlines()",
+  "coverage_ranges": [
+    {
+      "start_line": 971,
+      "end_line": 1260,
+      "sha256": "c5184998489d6de1f0d45bc87d3f6a3e821c9a1114e8596b0da1b6455a2af8c4"
+    },
+    {
+      "start_line": 1261,
+      "end_line": 1455,
+      "sha256": "76dfc9252148ee029f725bce2acd404faaa0964b1bb0c0712274d6fa26593e9c"
+    },
+    {
+      "start_line": 1456,
+      "end_line": 1520,
+      "sha256": "f6cdf20ed29d2b08b97a3b9ed0fad8c95ba7ed9e9319a8dab26f9152648e8cb3"
+    },
+    {
+      "start_line": 1521,
+      "end_line": 1545,
+      "sha256": "067fc75d13791a9bf56c11dd549459dc38eedbf2794d662f7dc7e11a8a16ec75"
+    },
+    {
+      "start_line": 1546,
+      "end_line": 1570,
+      "sha256": "c62f240c8feb07f93d88dc7f1b793b38e950e015f7611b2de3f15903e5be1a27"
+    }
+  ],
+  "new_covered_line_count": 600,
+  "coverage_complete": false,
+  "scope": "Complete retained Volume 1 Chapters 5 and 6 only; full 819-page specification remains partial.",
+  "prior_receipt_path": "research/instrumentation/reading-instrumentation.json",
+  "prior_receipt_sha256": "2769ec5e615fef2b5547f43b6e44bd5d6bb4ffe7dbaf43056c1af59519e3e725",
+  "prior_covered_line_count": 1696,
+  "cumulative_covered_line_count": 2296,
+  "pdf_page_count": 819,
+  "visually_reviewed_pdf_pages": [
+    22,
+    23,
+    24,
+    25,
+    26,
+    27,
+    28,
+    29,
+    30,
+    31,
+    32,
+    33
+  ],
+  "images": [
+    {
+      "pdf_page": 22,
+      "path": "research/instrumentation/scpi-headers-followup/pages/scpi-022.png",
+      "sha256": "ca72e381b614bab4b76bd2d5fe87f2c063d1dad6020261dadc06cb31f26b5329"
+    },
+    {
+      "pdf_page": 23,
+      "path": "research/instrumentation/scpi-headers-followup/pages/scpi-023.png",
+      "sha256": "84575fb4066acb38eb600e5536498bd3c926b5e30694cb163dffa9c15053372a"
+    },
+    {
+      "pdf_page": 24,
+      "path": "research/instrumentation/scpi-headers-followup/pages/scpi-024.png",
+      "sha256": "b87e5597220a835afe6d4b5d4757062fb1a128ef120bd6d0570fa2f41d6504d7"
+    },
+    {
+      "pdf_page": 25,
+      "path": "research/instrumentation/scpi-headers-followup/pages/scpi-025.png",
+      "sha256": "ff15b1f6097e1a047dd7ff43e1bd636455fc5625b3eedb545a9f2729b4676aef"
+    },
+    {
+      "pdf_page": 26,
+      "path": "research/instrumentation/scpi-headers-followup/pages/scpi-026.png",
+      "sha256": "3af719afa94e48396096c4158a9012abbc14229b2ad362b1c5265951ec3821f8"
+    },
+    {
+      "pdf_page": 27,
+      "path": "research/instrumentation/scpi-headers-followup/pages/scpi-027.png",
+      "sha256": "2a53ed96353b754b8fe9fa726c27872b7bee052ce96b2e1d37108fd3cbebb3c6"
+    },
+    {
+      "pdf_page": 28,
+      "path": "research/instrumentation/scpi-headers-followup/pages/scpi-028.png",
+      "sha256": "7b1741e0fc167cb8bee51d52a73938d456b73d470bf8f7a43f460562725a13d8"
+    },
+    {
+      "pdf_page": 29,
+      "path": "research/instrumentation/scpi-headers-followup/pages/scpi-029.png",
+      "sha256": "ed4a7b7313ee15d16ea9dd7637d65c923827e33b0b9596f2b3e7b219e29e207f"
+    },
+    {
+      "pdf_page": 30,
+      "path": "research/instrumentation/scpi-headers-followup/pages/scpi-030.png",
+      "sha256": "8a69e86f24656df5aee7e030c2fd05ddeebdad97d8788bb8abf7093c435d1a22"
+    },
+    {
+      "pdf_page": 31,
+      "path": "research/instrumentation/scpi-headers-followup/pages/scpi-031.png",
+      "sha256": "378c84b59ba43bbaa1ad867e053301c315bfcb8a9cd214a16ccbbedba45e7ecd"
+    },
+    {
+      "pdf_page": 32,
+      "path": "research/instrumentation/scpi-headers-followup/pages/scpi-032.png",
+      "sha256": "7bae9fc634927d4d6cdf7dd0dfe1b980b79b48abb2e61f7c14f1e342d572cd36"
+    },
+    {
+      "pdf_page": 33,
+      "path": "research/instrumentation/scpi-headers-followup/pages/scpi-033.png",
+      "sha256": "ef4b225e409eb08307a08bed7e623d1e27aebd1fba4d96fcbf69ca28aaacff42"
+    }
+  ],
+  "semantic_diagrams_reviewed": 2,
+  "acquired_code_executed": false,
+  "physical_device_executed": false
+}

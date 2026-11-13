@@ -1,0 +1,917 @@
+{
+  "$id": "urn:bud:hms:schema:resource-topology:0.1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "Staged synthetic shape contract. Python additionally enforces exact integer types, byte bounds, references and closure semantics.",
+  "properties": {
+    "aliases": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "includes": {
+            "items": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+              "type": "string"
+            },
+            "maxItems": 384,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "node": {
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+            "type": "string"
+          }
+        },
+        "required": [
+          "node",
+          "includes"
+        ],
+        "type": "object"
+      },
+      "maxProperties": 256,
+      "minProperties": 0,
+      "propertyNames": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "atoms": {
+      "additionalProperties": {
+        "additionalProperties": false,
+        "properties": {
+          "node": {
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+            "type": "string"
+          },
+          "purpose": {
+            "enum": [
+              "exclusive_hardware",
+              "lifecycle"
+            ]
+          }
+        },
+        "required": [
+          "node",
+          "purpose"
+        ],
+        "type": "object"
+      },
+      "maxProperties": 128,
+      "minProperties": 0,
+      "propertyNames": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "consumers": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "actionId": {
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+            "type": "string"
+          },
+          "instanceId": {
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+            "type": "string"
+          },
+          "requires": {
+            "items": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+              "type": "string"
+            },
+            "maxItems": 128,
+            "minItems": 0,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "rootAliases": {
+            "items": {
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+              "type": "string"
+            },
+            "maxItems": 256,
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "instanceId",
+          "actionId",
+          "rootAliases",
+          "requires"
+        ],
+        "type": "object"
+      },
+      "maxItems": 128,
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "deployment": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+      "type": "string"
+    },
+    "nodes": {
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "kind": {
+                "const": "hub"
+              },
+              "properties": {
+                "additionalProperties": false,
+                "properties": {},
+                "required": [],
+                "type": "object"
+              },
+              "requires": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "kind",
+              "contains",
+              "requires",
+              "properties"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "kind": {
+                "const": "board"
+              },
+              "properties": {
+                "additionalProperties": false,
+                "properties": {},
+                "required": [],
+                "type": "object"
+              },
+              "requires": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "kind",
+              "contains",
+              "requires",
+              "properties"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "kind": {
+                "const": "service"
+              },
+              "properties": {
+                "additionalProperties": false,
+                "properties": {
+                  "serviceProfile": {
+                    "const": "synthetic-service/0.1"
+                  }
+                },
+                "required": [
+                  "serviceProfile"
+                ],
+                "type": "object"
+              },
+              "requires": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "kind",
+              "contains",
+              "requires",
+              "properties"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "kind": {
+                "const": "driver"
+              },
+              "properties": {
+                "additionalProperties": false,
+                "properties": {
+                  "driverProfile": {
+                    "const": "synthetic-io-hub/0.1"
+                  },
+                  "implementationDigest": {
+                    "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "driverProfile",
+                  "implementationDigest"
+                ],
+                "type": "object"
+              },
+              "requires": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "kind",
+              "contains",
+              "requires",
+              "properties"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "kind": {
+                "const": "pin"
+              },
+              "properties": {
+                "additionalProperties": false,
+                "properties": {
+                  "electrical": {
+                    "additionalProperties": false,
+                    "properties": {
+                      "evidenceMode": {
+                        "const": "simulation"
+                      },
+                      "idleMode": {
+                        "const": "high_impedance"
+                      },
+                      "maxSinkMicroAmp": {
+                        "maximum": 20000,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "maxSourceMicroAmp": {
+                        "maximum": 20000,
+                        "minimum": 0,
+                        "type": "integer"
+                      },
+                      "modes": {
+                        "items": {
+                          "enum": [
+                            "digital_input",
+                            "push_pull_output",
+                            "pwm_output"
+                          ]
+                        },
+                        "maxItems": 3,
+                        "minItems": 1,
+                        "type": "array",
+                        "uniqueItems": true
+                      },
+                      "nominalMilliVolt": {
+                        "maximum": 5000,
+                        "minimum": 1,
+                        "type": "integer"
+                      }
+                    },
+                    "required": [
+                      "evidenceMode",
+                      "nominalMilliVolt",
+                      "maxSourceMicroAmp",
+                      "maxSinkMicroAmp",
+                      "modes",
+                      "idleMode"
+                    ],
+                    "type": "object"
+                  }
+                },
+                "required": [
+                  "electrical"
+                ],
+                "type": "object"
+              },
+              "requires": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "kind",
+              "contains",
+              "requires",
+              "properties"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "kind": {
+                "const": "timer"
+              },
+              "properties": {
+                "additionalProperties": false,
+                "properties": {
+                  "maxFrequencyHz": {
+                    "maximum": 1000000,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "minFrequencyHz": {
+                    "maximum": 1000000,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "resolutionBits": {
+                    "maximum": 16,
+                    "minimum": 1,
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "minFrequencyHz",
+                  "maxFrequencyHz",
+                  "resolutionBits"
+                ],
+                "type": "object"
+              },
+              "requires": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "kind",
+              "contains",
+              "requires",
+              "properties"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "kind": {
+                "const": "timer_channel"
+              },
+              "properties": {
+                "additionalProperties": false,
+                "properties": {
+                  "pin": {
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                    "type": "string"
+                  },
+                  "timer": {
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "timer",
+                  "pin"
+                ],
+                "type": "object"
+              },
+              "requires": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "kind",
+              "contains",
+              "requires",
+              "properties"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "kind": {
+                "const": "bus"
+              },
+              "properties": {
+                "additionalProperties": false,
+                "properties": {
+                  "addressBits": {
+                    "const": 7,
+                    "type": "integer"
+                  },
+                  "busProfile": {
+                    "const": "synthetic-i2c/0.1"
+                  },
+                  "maxRateHz": {
+                    "maximum": 1000000,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "minRateHz": {
+                    "maximum": 1000000,
+                    "minimum": 1,
+                    "type": "integer"
+                  },
+                  "pins": {
+                    "items": {
+                      "maxLength": 128,
+                      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                      "type": "string"
+                    },
+                    "maxItems": 128,
+                    "minItems": 1,
+                    "type": "array",
+                    "uniqueItems": true
+                  }
+                },
+                "required": [
+                  "busProfile",
+                  "pins",
+                  "minRateHz",
+                  "maxRateHz",
+                  "addressBits"
+                ],
+                "type": "object"
+              },
+              "requires": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "kind",
+              "contains",
+              "requires",
+              "properties"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "kind": {
+                "const": "bus_address"
+              },
+              "properties": {
+                "additionalProperties": false,
+                "properties": {
+                  "address": {
+                    "maximum": 127,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  "bus": {
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "bus",
+                  "address"
+                ],
+                "type": "object"
+              },
+              "requires": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "kind",
+              "contains",
+              "requires",
+              "properties"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "kind": {
+                "const": "gpio_access"
+              },
+              "properties": {
+                "additionalProperties": false,
+                "properties": {
+                  "pin": {
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "pin"
+                ],
+                "type": "object"
+              },
+              "requires": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "kind",
+              "contains",
+              "requires",
+              "properties"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "kind": {
+                "const": "pwm_access"
+              },
+              "properties": {
+                "additionalProperties": false,
+                "properties": {
+                  "channel": {
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "channel"
+                ],
+                "type": "object"
+              },
+              "requires": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "kind",
+              "contains",
+              "requires",
+              "properties"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "kind": {
+                "const": "timer_access"
+              },
+              "properties": {
+                "additionalProperties": false,
+                "properties": {
+                  "timer": {
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "timer"
+                ],
+                "type": "object"
+              },
+              "requires": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "kind",
+              "contains",
+              "requires",
+              "properties"
+            ],
+            "type": "object"
+          },
+          {
+            "additionalProperties": false,
+            "properties": {
+              "contains": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "kind": {
+                "const": "bus_access"
+              },
+              "properties": {
+                "additionalProperties": false,
+                "properties": {
+                  "addressNode": {
+                    "anyOf": [
+                      {
+                        "maxLength": 128,
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "bus": {
+                    "maxLength": 128,
+                    "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "bus",
+                  "addressNode"
+                ],
+                "type": "object"
+              },
+              "requires": {
+                "items": {
+                  "maxLength": 128,
+                  "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+                  "type": "string"
+                },
+                "maxItems": 128,
+                "minItems": 0,
+                "type": "array",
+                "uniqueItems": true
+              }
+            },
+            "required": [
+              "kind",
+              "contains",
+              "requires",
+              "properties"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "maxProperties": 128,
+      "minProperties": 1,
+      "propertyNames": {
+        "maxLength": 128,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+        "type": "string"
+      },
+      "type": "object"
+    },
+    "profile": {
+      "const": "hms.resource-topology/0.1"
+    },
+    "topologyId": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])",
+      "type": "string"
+    }
+  },
+  "required": [
+    "profile",
+    "topologyId",
+    "deployment",
+    "nodes",
+    "atoms",
+    "aliases",
+    "consumers"
+  ],
+  "type": "object"
+}

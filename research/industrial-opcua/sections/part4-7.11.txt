@@ -1,0 +1,68 @@
+7.11 DataValue
+
+7.11.1 General
+
+The components of this parameter are defined in Table 131.
+
+Table 131 - DataValue
+Name,Type,Description
+DataValue,structure,The value and associated information.
+value,BaseDataType,The data value. If the StatusCode indicates an error then the value is to be ignored and the Server shall set it to null.
+statusCode,StatusCode,The StatusCode that defines the Server's ability to access/provide the value. The StatusCode type is defined in 7.38
+sourceTimestamp,UtcTime,The source timestamp for the value.
+sourcePicoSeconds,UInteger,"Specifies the number of 10 picoseconds (1,0 e-11 seconds) intervals which shall be added to the sourceTimestamp."
+serverTimestamp,UtcTime,The Server timestamp for the value.
+serverPicoSeconds,UInteger,"Specifies the number of 10 picoseconds (1,0 e-11 seconds) intervals which shall be added to the serverTimestamp."
+
+7.11.2 PicoSeconds
+
+Some applications require high resolution timestamps. The PicoSeconds fields allow applications to specify timestamps with a resolution of 10 picoseconds. The actual size of the PicoSeconds field depends on the resolution of the UtcTime DataType. For example, if the UtcTime DataType has a resolution of 100 nanoseconds then the PicoSeconds field would need to store values up to 10 000 in order to provide the resolution of 10 picoseconds. The resolution of the UtcTime DataType depends on the Mappings defined in OPC 10000-6.
+
+7.11.3 SourceTimestamp
+
+The sourceTimestamp is used to reflect the timestamp that was applied to a Variable value by the data source. Once a value has been assigned a source timestamp, the source timestamp for that value instance never changes. In this context, "value instance" refers to the value received, independent of its actual value.
+
+The sourceTimestamp shall be UTC time and should indicate the time of the last change of the value or statusCode.
+
+The sourceTimestamp should be generated as close as possible to the source of the value but the timestamp needs to be set always by the same physical clock. In the case of redundant sources, the clocks of the sources should be synchronized.
+
+If the OPC UA Server receives the Variable value from another OPC UA Server, then the OPC UA Server shall always pass the source timestamp without changes. If the source that applies the timestamp is not available, the source timestamp is set to null. For example, if a value could not be read because of some error during processing like invalid arguments passed in the request then the sourceTimestamp shall be null.
+
+In the case of a bad or uncertain status sourceTimestamp is used to reflect the time that the source recognized the non-good status or the time the Server last tried to recover from the bad or uncertain status.
+
+The sourceTimestamp is only returned with a Value Attribute. For all other Attributes the returned sourceTimestamp is set to null.
+
+7.11.4 ServerTimestamp
+
+The serverTimestamp is used to reflect the time that the Server received a Variable value or knew it to be accurate.
+
+In the case of a bad or uncertain status, serverTimestamp is used to reflect the time that the Server received the status or that the Server last tried to recover from the bad or uncertain status.
+
+In the case where the OPC UA Server subscribes to a value from another OPC UA Server, each Server applies its own serverTimestamp. This is in contrast to the sourceTimestamp in which only the originator of the data is allowed to apply the sourceTimestamp.
+
+If the Server subscribes to the value from another Server every ten seconds and the value changes, then the serverTimestamp is updated each time a new value is received. If the value does not change, then new values will not be received on the Subscription. However, in the absence of errors, the receiving Server applies a new serverTimestamp every ten seconds because not receiving a value means that the value has not changed. Thus, the serverTimestamp reflects the time at which the Server knew the value to be accurate.
+
+This concept also applies to OPC UA Servers that receive values from exception-based data sources. For example, suppose that a Server is receiving values from an exception-based device, and that
+
+1. the device is checking values every 0,5 seconds, 
+2. the connection to the device is good,
+3. the device sent an update 3 minutes ago with a value of 1,234.
+
+In this case, the Server value would be 1,234 and the serverTimestamp would be updated every 0,5 seconds after the receipt of the value.
+
+7.11.5 StatusCode assigned to a value
+
+The StatusCode is used to indicate the conditions under which a Variable value was generated, and thereby can be used as an indicator of the usability of the value. The StatusCode is defined in 7.38.
+
+Overall condition (severity)
+
+- A StatusCode with severity Good means that the value is of good quality.
+- A StatusCode with severity Uncertain means that the quality of the value is uncertain for reasons indicated by the SubCode.
+- A StatusCode with severity Bad means that the value is not usable for reasons indicated by the SubCode.
+
+Rules
+
+- The StatusCode indicates the usability of the value. Therefore, It is required that Clients minimally check the StatusCode Severity of all results, even if they do not check the other fields, before accessing and using the value.
+- A Server, which does not support status information, shall return a severity code of Good. It is also acceptable for a Server to simply return a severity and a non-specific (0) SubCode.
+- If the Server has no known value - in particular when Severity is BAD, it shall return a NULL value. If the DataType of the Variable is not BaseDataType, the Severity shall be BAD if the value is NULL for a non-nullable Datatype. If a Variable is created and no default value or initial value is available, the StatusCode shall be Bad_NoValue.
+

@@ -1,0 +1,41 @@
+# Experimental Agent Teams profile layer. Apply after budmh-base so these replacements
+# keep direct delegation and coordination on the Team tools.
+
+- id: tool-subagent-control
+  disabled: true
+
+- id: tool-subagent-list-agents
+  disabled: true
+
+- id: tool-subagent
+  disabled: true
+
+- id: tool-subagent-fork
+  disabled: true
+
+- insert:
+    # The rows above are root rows; each preset mounts its own copies, which a
+    # root patch cannot reach. This adds to any `disableRows` an earlier layer set.
+    - id: agent-team-withdraw-direct-delegation
+      name: '@budmh/agent-preset-registry/withdraw-rows'
+      config:
+        rows:
+          - tool-subagent-control
+          - tool-subagent-list-agents
+          - tool-subagent
+          - tool-subagent-fork
+
+    - id: agent-team
+      name: '@budmh/experimental-agent-team'
+      config:
+        maxMessageBytes: 65536
+        disposalTimeoutMs: 5000
+
+    - id: tool-agent-team
+      name: '@budmh/experimental-tool-agent-team'
+      config:
+        freshProvider: spawn
+        forkProvider: fork
+
+    - id: ui-agent-team
+      name: '@budmh/experimental-client-ui-agent-team'

@@ -1,0 +1,101 @@
+{
+  "acquiredCodeExecuted": false,
+  "sources": [
+    {
+      "acquiredCodeExecuted": false,
+      "contentType": "text/html",
+      "extractedLfLines": 268,
+      "extraction": "All h1/h2 headings and all preformatted manual blocks in document order; navigation/footer chrome excluded.",
+      "files": [
+        {
+          "bytes": 18141,
+          "path": "raw/pidfd_open.2.html",
+          "sha256": "d34301a2f18869b774ad5c5dc3ef0e93988b903deb13bdc41cbbd60bce9c5bab"
+        },
+        {
+          "bytes": 8840,
+          "path": "text/pidfd_open.2.txt",
+          "sha256": "975eed21c55ca67332f42ae715c7fd14562b7d627ff62b43308cb6849d59a375"
+        }
+      ],
+      "finalUrl": "https://man7.org/linux/man-pages/man2/pidfd_open.2.html",
+      "page": "pidfd_open.2",
+      "preformattedBlocks": 13,
+      "readingStatus": "unread",
+      "retrievedAt": "2026-11-09T09:04:04.453605+00:00",
+      "url": "https://man7.org/linux/man-pages/man2/pidfd_open.2.html"
+    },
+    {
+      "acquiredCodeExecuted": false,
+      "contentType": "text/html",
+      "extractedLfLines": 249,
+      "extraction": "All h1/h2 headings and all preformatted manual blocks in document order; navigation/footer chrome excluded.",
+      "files": [
+        {
+          "bytes": 16416,
+          "path": "raw/pidfd_send_signal.2.html",
+          "sha256": "ce2039f7e7ad77be2110b5d3281552e86ece0b5bda9197020a66b1df82c51246"
+        },
+        {
+          "bytes": 7974,
+          "path": "text/pidfd_send_signal.2.txt",
+          "sha256": "eb1cf55c32168033bb5d46b525ca3e59a10a20599e4560582f8e4e57fa3a92dd"
+        }
+      ],
+      "finalUrl": "https://man7.org/linux/man-pages/man2/pidfd_send_signal.2.html",
+      "page": "pidfd_send_signal.2",
+      "preformattedBlocks": 13,
+      "readingStatus": "unread",
+      "retrievedAt": "2026-11-09T09:04:04.427333+00:00",
+      "url": "https://man7.org/linux/man-pages/man2/pidfd_send_signal.2.html"
+    },
+    {
+      "acquiredCodeExecuted": false,
+      "contentType": "text/html",
+      "extractedLfLines": 499,
+      "extraction": "All h1/h2 headings and all preformatted manual blocks in document order; navigation/footer chrome excluded.",
+      "files": [
+        {
+          "bytes": 31979,
+          "path": "raw/waitid.2.html",
+          "sha256": "fe247c4fc91a2dafd978157a46fa2a91fa48b902e643d852e8352d78c4b32fd3"
+        },
+        {
+          "bytes": 19419,
+          "path": "text/waitid.2.txt",
+          "sha256": "0dcb83bad162109dcf9ba31d9e5b09b4f8bb55321ea914a011be08b12ac2e9f9"
+        }
+      ],
+      "finalUrl": "https://man7.org/linux/man-pages/man2/waitid.2.html",
+      "page": "waitid.2",
+      "preformattedBlocks": 15,
+      "readingStatus": "unread",
+      "retrievedAt": "2026-11-09T09:04:04.452870+00:00",
+      "url": "https://man7.org/linux/man-pages/man2/waitid.2.html"
+    },
+    {
+      "acquiredCodeExecuted": false,
+      "contentType": "text/html",
+      "extractedLfLines": 234,
+      "extraction": "All h1/h2 headings and all preformatted manual blocks in document order; navigation/footer chrome excluded.",
+      "files": [
+        {
+          "bytes": 17131,
+          "path": "raw/getpgrp.2.html",
+          "sha256": "69a6535022713b483ff702de41ac99ed85203329cc291c708064004ecea94be6"
+        },
+        {
+          "bytes": 8456,
+          "path": "text/getpgrp.2.txt",
+          "sha256": "60e4ff19030b7f2e4543fa05cf75c9b5a71c7c579f63670a759f71462e427c24"
+        }
+      ],
+      "finalUrl": "https://man7.org/linux/man-pages/man2/getpgrp.2.html",
+      "page": "getpgrp.2",
+      "preformattedBlocks": 12,
+      "readingStatus": "unread",
+      "retrievedAt": "2026-11-09T09:04:04.453745+00:00",
+      "url": "https://man7.org/linux/man-pages/man2/getpgrp.2.html"
+    }
+  ]
+}

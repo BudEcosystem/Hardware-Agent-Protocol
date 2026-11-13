@@ -1,0 +1,63 @@
+Errata
+RFC Number
+Errata ID
+Status
+All/Any
+Verified+Reported
+Verified
+Reported
+Held for Document Update
+Rejected
+Area Acronym
+All/Any
+app
+art
+gen
+int
+ops
+rai
+rtg
+sec
+tsv
+wit
+Type
+All/Any
+Editorial
+Technical
+WG Acronym
+Submitter Name
+Stream
+All/Any
+IAB
+INDEPENDENT
+IRTF
+Legacy
+Editorial
+Date Submitted
+Presentation
+Table
+Full Records
+Submit
+Reported (1)
+RFC 9175
+Source of RFC:
+core (wit)
+Errata-ID:
+9031
+Status:
+Reported
+Type:
+Technical
+Publication Format:
+TXT
+Reported By:
+Karol Witusik
+Date Reported:
+2026-07-20
+Section 2.4. says:
+For actuator applications with low delay tolerance, to avoid additional round trips for multiple requests in rapid sequence, the server may send preemptive Echo option values in successful requests, irrespectively of whether or not the request contained an Echo option. The client then uses the Echo option with the new value in the next actuation request, and the server compares the receive time accordingly.
+It should say:
+For actuator applications with low delay tolerance, to avoid additional round trips for multiple requests in rapid sequence, the server may send preemptive Echo option values in successful responses, irrespectively of whether or not the request contained an Echo option. The client then uses the Echo option with the new value in the next actuation request, and the server compares the receive time accordingly.
+Notes:
+I think this paragraph refers to positive responses, not requests.
+Report New Erratum

@@ -1,0 +1,33 @@
+{
+  "id": "tempfiles",
+  "url": "https://sqlite.org/tempfiles.html",
+  "finalUrl": "https://sqlite.org/tempfiles.html",
+  "retrievedAt": "2026-11-08T01:23:48.393782+00:00",
+  "status": 200,
+  "headers": {
+    "Connection": "close",
+    "Date": "Sun, 08 Nov 2026 01:23:49 GMT",
+    "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+    "Cache-Control": "max-age=120",
+    "ETag": "\"m6ae24ec4s853c\"",
+    "Content-type": "text/html; charset=utf-8",
+    "Content-length": "34108"
+  },
+  "rawPath": "raw/tempfiles.html",
+  "rawBytes": 34108,
+  "rawSha256": "b9c7f358075ecff93675207807188857377df0dc2b9052a46651de21acb84a79",
+  "textPath": "text/tempfiles.txt",
+  "textBytes": 24717,
+  "textSha256": "b022154c4fa7b63749779761627f376ec49947e9160a68e11a3ff8d1ff7fcedf",
+  "lines": 618,
+  "visuals": [
+    {
+      "kind": "img",
+      "source": "images/sqlite370_banner.svg",
+      "identifier": null,
+      "text": ""
+    }
+  ],
+  "readingStatus": "acquired-not-yet-read",
+  "acquiredContentExecuted": false
+}

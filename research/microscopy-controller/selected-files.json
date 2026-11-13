@@ -1,0 +1,503 @@
+[
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "src/openflexure_microscope_server/things/stage/__init__.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/stage/__init__.py",
+    "sha256": "ba36c284ab5de1735d29460cda11e15e1255fa3521bab40517bd61d4c1f88f19",
+    "lines": 586,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        586
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "src/openflexure_microscope_server/things/stage/sangaboard.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/stage/sangaboard.py",
+    "sha256": "14616725d5e4bc43c551144665085483b5c25ddd7c5de97dbf45d5fc4458a490",
+    "lines": 274,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        274
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "src/openflexure_microscope_server/things/autofocus.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/autofocus.py",
+    "sha256": "2603b49a3a5aedd2e633b0ca703e720647111299b9eb47e23578fb1abb3da310",
+    "lines": 1058,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        1058
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "tests/unit_tests/test_sangaboard.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_sangaboard.py",
+    "sha256": "ea7caf74a473e3a7aba17a8b5666e05d9202bd84aa1f38f82e8628f1aad3bb3a",
+    "lines": 81,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        81
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "tests/unit_tests/test_autofocus.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_autofocus.py",
+    "sha256": "4054cfee22461a0d8c75e4ccdd6e3cf34ee365d4d6d30ad6fe5b8912d495389b",
+    "lines": 310,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        310
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "src/openflexure_microscope_server/things/camera/__init__.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/camera/__init__.py",
+    "sha256": "811a67aa7bbc2bb198cfe279177bf054466a0cda31b21af7c2412c3cbd2d7c2b",
+    "lines": 1043,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        1043
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "src/openflexure_microscope_server/things/camera/picamera.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/camera/picamera.py",
+    "sha256": "0784e86ad03fbbbfe7df3c92fc8a3f77e0a1cf7425c2fc71e07de4f8a31a7a55",
+    "lines": 1092,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        1092
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "src/openflexure_microscope_server/things/scan_workflows.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/scan_workflows.py",
+    "sha256": "5194889031e656506b375f09007da23768c4625c07c8ca98160b8096f5ab2fbc",
+    "lines": 1041,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        1041
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "tests/unit_tests/test_base_camera.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_base_camera.py",
+    "sha256": "0f231deee037456bcab0884ce5ea7ae94ab67d9cd79854d09c972f6e168958c8",
+    "lines": 139,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        139
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "tests/unit_tests/test_metadata.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_metadata.py",
+    "sha256": "6c98f73322fdc8f617cd2b195c27ec516aae0f05eb5d944a3b2d397730a3cede",
+    "lines": 187,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        187
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "tests/unit_tests/test_stage.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_stage.py",
+    "sha256": "497aaed83afde15159738b817e520a826127749c2a5becec3861ed14900ee03d",
+    "lines": 850,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        850
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "tests/unit_tests/test_scan_workflows.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_scan_workflows.py",
+    "sha256": "262e974d4a1e2fb5efd047c7a43a5bc5c021c530f4591c8adfa0df64a6bb11b2",
+    "lines": 554,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        554
+      ]
+    ]
+  },
+  {
+    "repository": "gently",
+    "commit": "bd7680e1aec0a8fb3e8865e5011d1d227d39d6e5",
+    "path": "gently/hardware/dispim/devices/stage.py",
+    "retainedPath": "research/microscopy-controller/snapshot/gently/gently/hardware/dispim/devices/stage.py",
+    "sha256": "52c306ba672ea5489589eeb17ab9de3ce823a989451d06d8c449b11dbea630fa",
+    "lines": 448,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        448
+      ]
+    ]
+  },
+  {
+    "repository": "gently",
+    "commit": "bd7680e1aec0a8fb3e8865e5011d1d227d39d6e5",
+    "path": "gently/hardware/dispim/devices/acquisition.py",
+    "retainedPath": "research/microscopy-controller/snapshot/gently/gently/hardware/dispim/devices/acquisition.py",
+    "sha256": "86c8fdc459dfd4413e0a54efe2baf553179c77e3fd27afd6794165b2080f6f44",
+    "lines": 391,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        391
+      ]
+    ]
+  },
+  {
+    "repository": "gently",
+    "commit": "bd7680e1aec0a8fb3e8865e5011d1d227d39d6e5",
+    "path": "gently/hardware/dispim/devices/camera.py",
+    "retainedPath": "research/microscopy-controller/snapshot/gently/gently/hardware/dispim/devices/camera.py",
+    "sha256": "60d1bad4877777400e08bc0fe937024dbe147b1502fad46debc5630b98cea836",
+    "lines": 470,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        470
+      ]
+    ]
+  },
+  {
+    "repository": "gently",
+    "commit": "bd7680e1aec0a8fb3e8865e5011d1d227d39d6e5",
+    "path": "gently/analysis/focus_validation.py",
+    "retainedPath": "research/microscopy-controller/snapshot/gently/gently/analysis/focus_validation.py",
+    "sha256": "0bb83a907a9778430adc2eafb2f58735747a60f89b122e35e24fb2eef95c7d7d",
+    "lines": 176,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        176
+      ]
+    ]
+  },
+  {
+    "repository": "gently",
+    "commit": "bd7680e1aec0a8fb3e8865e5011d1d227d39d6e5",
+    "path": "tests/test_focus_validation.py",
+    "retainedPath": "research/microscopy-controller/snapshot/gently/tests/test_focus_validation.py",
+    "sha256": "7e4690e19dbd9556000f6eccbb9783c1e15405f1325162cb3167f8d472741465",
+    "lines": 106,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        106
+      ]
+    ]
+  },
+  {
+    "repository": "gently",
+    "commit": "bd7680e1aec0a8fb3e8865e5011d1d227d39d6e5",
+    "path": "tests/test_dispim_device_safety.py",
+    "retainedPath": "research/microscopy-controller/snapshot/gently/tests/test_dispim_device_safety.py",
+    "sha256": "ad169dae293ce84eac79caa5c76e588729d1a8c934a9daa19c80ed9a311c9d0a",
+    "lines": 961,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        961
+      ]
+    ]
+  },
+  {
+    "repository": "gently",
+    "commit": "bd7680e1aec0a8fb3e8865e5011d1d227d39d6e5",
+    "path": "gently/hardware/dispim/device_layer.py",
+    "retainedPath": "research/microscopy-controller/snapshot/gently/gently/hardware/dispim/device_layer.py",
+    "sha256": "d1565623e314a6315cef391c118d65b03d9e6ffad5080ca85fbe8d131f00c33b",
+    "lines": 4018,
+    "readingStatus": "selected-complete-functions-read",
+    "readLineRangesInclusive": [
+      [
+        221,
+        476
+      ],
+      [
+        595,
+        716
+      ],
+      [
+        1620,
+        1752
+      ],
+      [
+        2610,
+        2705
+      ],
+      [
+        3729,
+        3819
+      ],
+      [
+        3887,
+        3953
+      ]
+    ],
+    "scope": "initialize; XY/slow/full-state reads; plan executor and submit; nudge helper/status/handler; on_start; on_stop. Other functions were not fully read."
+  },
+  {
+    "repository": "sangaboard-firmware",
+    "commit": "1657c416980ec0e3510ae2ccdd28f8757d993878",
+    "path": "README.md",
+    "retainedPath": "research/microscopy-controller/repos/sangaboard-firmware/README.md",
+    "sha256": "294cf76d51dc04dd38448d0953457bdbf6e6b4c7b601f62a3de46c355180d479",
+    "lines": 50,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        50
+      ]
+    ]
+  },
+  {
+    "repository": "sangaboard-firmware",
+    "commit": "1657c416980ec0e3510ae2ccdd28f8757d993878",
+    "path": "src/config.h",
+    "retainedPath": "research/microscopy-controller/repos/sangaboard-firmware/src/config.h",
+    "sha256": "14495fbfd556d4bb53934a68ea1cc8c7df888bab48af52665a5af312f49142d6",
+    "lines": 38,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        38
+      ]
+    ]
+  },
+  {
+    "repository": "sangaboard-firmware",
+    "commit": "1657c416980ec0e3510ae2ccdd28f8757d993878",
+    "path": "src/main.cpp",
+    "retainedPath": "research/microscopy-controller/repos/sangaboard-firmware/src/main.cpp",
+    "sha256": "73444b4264f6717ab33dee9d8233091b4d08f388ad609d2661f542fd54e566da",
+    "lines": 310,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        310
+      ]
+    ]
+  },
+  {
+    "repository": "sangaboard-firmware",
+    "commit": "1657c416980ec0e3510ae2ccdd28f8757d993878",
+    "path": "src/modules/stage/stage.cpp",
+    "retainedPath": "research/microscopy-controller/repos/sangaboard-firmware/src/modules/stage/stage.cpp",
+    "sha256": "6912a19c567fca97dfda3418096bfad4173c46521f08c332907a8124f2784680",
+    "lines": 406,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        406
+      ]
+    ]
+  },
+  {
+    "repository": "sangaboard-firmware",
+    "commit": "1657c416980ec0e3510ae2ccdd28f8757d993878",
+    "path": "src/modules/stage/StepperF_alt.cpp",
+    "retainedPath": "research/microscopy-controller/repos/sangaboard-firmware/src/modules/stage/StepperF_alt.cpp",
+    "sha256": "47c52bf2250922c17eff8660a712267c8177c436ba5f62e74928fb43750c428f",
+    "lines": 415,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        415
+      ]
+    ]
+  },
+  {
+    "repository": "sangaboard-firmware",
+    "commit": "1657c416980ec0e3510ae2ccdd28f8757d993878",
+    "path": "src/modules/endstops/endstops.cpp",
+    "retainedPath": "research/microscopy-controller/repos/sangaboard-firmware/src/modules/endstops/endstops.cpp",
+    "sha256": "bed83b0e4361a51bc6880c7e3dc9e8eecd1011904062cca384e27fcec3fbb694",
+    "lines": 308,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        308
+      ]
+    ]
+  },
+  {
+    "repository": "sangaboard-firmware",
+    "commit": "1657c416980ec0e3510ae2ccdd28f8757d993878",
+    "path": "test/test_blocking_moves.py",
+    "retainedPath": "research/microscopy-controller/repos/sangaboard-firmware/test/test_blocking_moves.py",
+    "sha256": "e27ac4a5c367d99efe74a8aaddf285ad993b25f46dd74ad33508d32012842e8e",
+    "lines": 33,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        33
+      ]
+    ]
+  },
+  {
+    "repository": "pysangaboard",
+    "commit": "ae9188125b8f3718e74dd0245fd37b021236f48c",
+    "path": "sangaboard/sangaboard.py",
+    "retainedPath": "research/microscopy-controller/repos/pysangaboard/sangaboard/sangaboard.py",
+    "sha256": "23834ca71b38f4b5a238e102695e5266c67de4a2e13c3f2ae37fac0b62c6aa14",
+    "lines": 506,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        506
+      ]
+    ]
+  },
+  {
+    "repository": "pysangaboard",
+    "commit": "ae9188125b8f3718e74dd0245fd37b021236f48c",
+    "path": "sangaboard/extensible_serial_instrument.py",
+    "retainedPath": "research/microscopy-controller/repos/pysangaboard/sangaboard/extensible_serial_instrument.py",
+    "sha256": "8f9881780a88045ac24533351fbb72de61e846a3cd7db2a9907993911f4ac8de",
+    "lines": 566,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        566
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "src/openflexure_microscope_server/things/smart_scan.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/smart_scan.py",
+    "sha256": "05a93e568f780c90e59d6af754e95e2000372d99a30ec34b3c0691eebc028adf",
+    "lines": 859,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        859
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "tests/unit_tests/test_smart_scan.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_smart_scan.py",
+    "sha256": "8062ff16ce687b6e29a406c06ca2dd28795e37a50bdfff8c30d66ff97e674cea",
+    "lines": 952,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        952
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "src/openflexure_microscope_server/things/camera_stage_mapping.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/src/openflexure_microscope_server/things/camera_stage_mapping.py",
+    "sha256": "2684fdc33807047c642561151e2bb5da9a23cf46da11e650b31b21a055e4473c",
+    "lines": 507,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        507
+      ]
+    ]
+  },
+  {
+    "repository": "openflexure-microscope-server",
+    "commit": "143c2add6ac7fcbf3c1094e1f3e82000f14d4dae",
+    "path": "tests/unit_tests/test_camera_stage_mapping.py",
+    "retainedPath": "research/microscopy-controller/snapshot/openflexure-microscope-server/tests/unit_tests/test_camera_stage_mapping.py",
+    "sha256": "92df57369e47320400833203c2ecdf7eacacdd7b40f57cf2a5db726f07bdc236",
+    "lines": 499,
+    "readingStatus": "full-file-read",
+    "readLineRangesInclusive": [
+      [
+        1,
+        499
+      ]
+    ]
+  }
+]

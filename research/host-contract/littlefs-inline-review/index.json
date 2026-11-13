@@ -1,0 +1,31 @@
+{
+  "files": [
+    {
+      "bytes": 3232,
+      "path": "NOTES.md",
+      "sha256": "f95b1efe4d4de4ba1b1d88dd112de46c68ddfcebb47b0d7e25190757ca30354e"
+    },
+    {
+      "bytes": 2364,
+      "path": "README.md",
+      "sha256": "d1d86b55cbb3785b0d45021230ed37a2d5be0dd41c3ab9a5cab3a69a810c80e9"
+    },
+    {
+      "bytes": 12060,
+      "path": "reading-coverage.json",
+      "sha256": "2ec7182940be5fb66d50481854740062347dd8934e09f25261c0051b1ebdc1d8"
+    },
+    {
+      "bytes": 535,
+      "path": "sources.json",
+      "sha256": "1fef0f50f5034a538d09bb5574f27eae1848508df43c3c76381f77de113a5e84"
+    },
+    {
+      "bytes": 17620,
+      "path": "test_files.toml",
+      "sha256": "a8b6b0d9691c64650ec96842245fa9828d875411ee8aa25eaad64ac3678a23d2"
+    }
+  ],
+  "sourceOnly": true,
+  "upstreamTestsExecuted": false
+}

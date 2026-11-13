@@ -1,0 +1,63 @@
+{
+  "schema": "hms-lrll-provenance-v1",
+  "identity": {
+    "title": "Lifelong Robot Library Learning: Bootstrapping Composable and Generalizable Skills for Embodied Control with Language Models",
+    "authors": [
+      "Georgios Tziafas",
+      "Hamidreza Kasaei"
+    ],
+    "arxiv": "2406.18746v2",
+    "arxiv_revision_date": "2024-07-15",
+    "doi": "10.1109/ICRA57147.2024.10611448",
+    "publication": "ICRA 2024, pages 515–522"
+  },
+  "primary_discovery": [
+    "https://arxiv.org/abs/2406.18746",
+    "https://gtziafas.github.io/LRLL_project/",
+    "https://research.rug.nl/en/publications/lifelong-robot-library-learning-bootstrapping-composable-and-gene/",
+    "https://api.github.com/users/gtziafas/repos?per_page=100&sort=full_name"
+  ],
+  "paper_scope": {
+    "arxiv_pages": 8,
+    "publisher_pdf_pages": 9,
+    "publisher_body_pages": 8,
+    "publisher_extra": "Institutional cover",
+    "appendices_in_acquired_papers": 0,
+    "supplement_read": false,
+    "unique_numbered_figures": 4,
+    "unique_numbered_tables": 2,
+    "all_acquired_pdf_pages_visually_reviewed": true,
+    "manuscript_publisher_byte_equivalence": false,
+    "comparison": "notes/paper-comparison.json; token diagnostic ignores order, not an equivalence proof"
+  },
+  "repository_scope": {
+    "commit": "25097958485a91450c3a15e5ba9023936180db4b",
+    "selected_complete_files": 3,
+    "prompt_source_files": 1,
+    "core_orchestration_files": 0,
+    "whole_repository_read": false,
+    "implementation_complete": false,
+    "discovery_limit": "38 public author-account repository entries projected to name/description/homepage; only relevant project tree and three selected files examined. Does not prove absence of another implementation."
+  },
+  "gaps": [
+    {
+      "id": "lrll-supplement-attempt",
+      "status": 404,
+      "meaning": "Official project linked supplementary PDF unavailable; not read"
+    },
+    {
+      "id": "lrll-code-link-attempt",
+      "status": 404,
+      "meaning": "Official project Code href is YOUR REPO HERE placeholder; no core implementation inferred"
+    },
+    {
+      "id": "lrll-publisher-attempt",
+      "status": 403,
+      "meaning": "Institution-linked files endpoint rejected; ordinary public pure.rug.nl repository endpoint later succeeded"
+    }
+  ],
+  "empty_acquisition": "Author homepage HTTP 200 response contains only one LF; no biographical or implementation evidence",
+  "license_context": "arXiv status links CC BY 4.0; website says CC BY-SA 4.0; publisher institutional cover identifies Taverne and retained copyright. Website notice is not relabeled as publisher license.",
+  "execution_scope": "Only original acquisition, extraction, rendering, comparison and archive validation utilities; no acquired source imports, execution, compilation, model, simulator, controller, MCU or hardware",
+  "broader_review_complete": false
+}

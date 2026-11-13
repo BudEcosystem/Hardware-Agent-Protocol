@@ -1,0 +1,1045 @@
+{
+  "record_kind": "supplemental_full_reading_audit",
+  "reviewed_at": "2026-11-05T23:41:37.623213+00:00",
+  "path_base": "repository_root",
+  "method": "Sequential bounded untruncated display/read of complete LF-delimited text. All numbered paper figures and tables inspected using retained page renders. Metadata text and ten selected repository files read completely. Formfeed is not a line separator.",
+  "coverage_hash_convention": "Original inclusive LF-line bytes, retaining existing LF terminators and any final unterminated byte sequence.",
+  "supersedes": "Acquisition-time unread status for the exact 10 acquisition records and 10 selected VoxPoser source files; acquisition manifests remain immutable.",
+  "derived_profile_path": "docs/planning-continuation.md",
+  "sources": [
+    {
+      "id": "inner-monologue-v1",
+      "url": "https://arxiv.org/pdf/2207.05608v1",
+      "final_url": "https://arxiv.org/pdf/2207.05608v1",
+      "retrieved_at": "2026-11-05T23:30:39.441580+00:00",
+      "raw_path": "research/planning/continuation/raw/inner-monologue-v1.pdf",
+      "sha256": "ecf30268add2af672291ad65b53c9fd87801f6490b0af195b12db1dedee0f2b9",
+      "bytes": 10805774,
+      "text_path": "research/planning/continuation/text/inner-monologue-v1.txt",
+      "text_sha256": "9962efac30e0f877ffeceb0f66a5a731e508bdb1b907140e679de7380ab2bfe0",
+      "status": "acquired",
+      "reading_status": "read_full",
+      "pdf_page_count": 25,
+      "raw_sha256": "ecf30268add2af672291ad65b53c9fd87801f6490b0af195b12db1dedee0f2b9",
+      "text_bytes": 118058,
+      "line_count": 1663,
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 180,
+          "sha256": "fcaec09b3d32342476f9fcfebf4254a942535bd249acf7d8ea364ad8618e51be",
+          "bytes": 16946,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 181,
+          "end_line": 360,
+          "sha256": "5186946dbb87e4f8ff49aa1a50d9cab4d94ade8113d0cd702eaf2cf569a6ccdd",
+          "bytes": 12820,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 361,
+          "end_line": 540,
+          "sha256": "bf10ad17f2eabc553a02dbd55a898665e08ebb1194c7f194c4c51f5985999b54",
+          "bytes": 16776,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 541,
+          "end_line": 720,
+          "sha256": "acdaf7c1ee11ea6f63c3ee31f9fa4ea534c90471a86b72f727c0d2bbd1efb4fe",
+          "bytes": 15755,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 721,
+          "end_line": 900,
+          "sha256": "f20869c1b80755121621a9f2eea2e299e17951589d098760bfb52b34bdf85937",
+          "bytes": 14720,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 901,
+          "end_line": 1100,
+          "sha256": "528177a3d2856947a201bae37ff9d93eb365d9c1ecea6b56a5df98352398d37a",
+          "bytes": 15573,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1101,
+          "end_line": 1300,
+          "sha256": "2b4eb6ffcb383929c16675248f92a85774b17b184b94a976c58cfcf681c3ba26",
+          "bytes": 13286,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1301,
+          "end_line": 1480,
+          "sha256": "317ee2fb4d2bc37782f293e48ac6116f0a4985edf783f2d33709e83fd75f48d2",
+          "bytes": 5948,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1481,
+          "end_line": 1663,
+          "sha256": "786e658a76f2fc6ead7bff81afe6e167f095117151bf8f1641018fc372b85d4b",
+          "bytes": 6234,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Entire extracted paper text, including appendices/prompts/references when present; all numbered figures and tables visually inspected on listed pages. Not every prose page separately visually inspected.",
+      "pdf_pages_visually_inspected_one_based": [
+        2,
+        4,
+        5,
+        6,
+        7,
+        8,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20
+      ],
+      "all_numbered_figures_and_tables_visually_reviewed": true,
+      "all_pdf_pages_visually_reviewed": false
+    },
+    {
+      "id": "voxposer-v2",
+      "url": "https://arxiv.org/pdf/2307.05973v2",
+      "final_url": "https://arxiv.org/pdf/2307.05973v2",
+      "retrieved_at": "2026-11-05T23:30:36.408235+00:00",
+      "raw_path": "research/planning/continuation/raw/voxposer-v2.pdf",
+      "sha256": "cf1cadcf7a1ee44979908c07698f87755c9b5340a79420db509a92d6d2533d42",
+      "bytes": 9374922,
+      "text_path": "research/planning/continuation/text/voxposer-v2.txt",
+      "text_sha256": "540f469632d12e5b6338c6dc6504c8baf27bc9ae016762a527e6a3295708f74c",
+      "status": "acquired",
+      "reading_status": "read_full",
+      "pdf_page_count": 23,
+      "raw_sha256": "cf1cadcf7a1ee44979908c07698f87755c9b5340a79420db509a92d6d2533d42",
+      "text_bytes": 84494,
+      "line_count": 1240,
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 180,
+          "sha256": "10c05a4618d1f65ee39099137e924c1ce1110bf0dc3867513843efd9fa54fc6b",
+          "bytes": 14920,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 181,
+          "end_line": 360,
+          "sha256": "e01829f4284f2f15a89c2e4a6a50db40936b04e3a394e8a77910ce527d814f68",
+          "bytes": 13674,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 361,
+          "end_line": 540,
+          "sha256": "1e139d59ad622413ce4c0ff0f11b6eac73133cd5841ef4778825cf82fa49380c",
+          "bytes": 13861,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 541,
+          "end_line": 740,
+          "sha256": "ef06fa2fec8088aab49633b84a84b67baba1846643da72b5a1197340e9d3e06f",
+          "bytes": 11428,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 741,
+          "end_line": 940,
+          "sha256": "48edd3f80a5e34ad5695de513273f3eff36d3d6ada7b68d18f8ae560dad0e5ac",
+          "bytes": 12043,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 941,
+          "end_line": 1120,
+          "sha256": "60d8e6c143926b85e5aa7e3a37d33793d83365a96967181eb7d6997af936855e",
+          "bytes": 11031,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1121,
+          "end_line": 1240,
+          "sha256": "32b449c31542a0f5fb393a171d703e82e8f9e1752c93d46734565cf6a60d2217",
+          "bytes": 7537,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Entire extracted paper text, including appendices/prompts/references when present; all numbered figures and tables visually inspected on listed pages. Not every prose page separately visually inspected.",
+      "pdf_pages_visually_inspected_one_based": [
+        1,
+        4,
+        5,
+        7,
+        8,
+        18,
+        22
+      ],
+      "all_numbered_figures_and_tables_visually_reviewed": true,
+      "all_pdf_pages_visually_reviewed": false
+    },
+    {
+      "id": "inner-monologue-arxiv",
+      "url": "https://arxiv.org/abs/2207.05608",
+      "final_url": "https://arxiv.org/abs/2207.05608",
+      "retrieved_at": "2026-11-05T23:30:29.620540+00:00",
+      "raw_path": "research/planning/continuation/raw/inner-monologue-arxiv.html",
+      "sha256": "2aa76a7ed2c3d3498b7a1c22ae8b8fefbfec643afdae314b641a4040b59f56ad",
+      "bytes": 43944,
+      "text_path": "research/planning/continuation/text/inner-monologue-arxiv.txt",
+      "text_sha256": "9b27c4032135c6ddc9faf16eff5be96c0eea4cf6674c544d927b3d8af96686f0",
+      "status": "acquired",
+      "reading_status": "read_full",
+      "raw_sha256": "2aa76a7ed2c3d3498b7a1c22ae8b8fefbfec643afdae314b641a4040b59f56ad",
+      "text_bytes": 5090,
+      "line_count": 235,
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 235,
+          "sha256": "9b27c4032135c6ddc9faf16eff5be96c0eea4cf6674c544d927b3d8af96686f0",
+          "bytes": 5090,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Entire LF-delimited extracted text; embedded links and media are not thereby read."
+    },
+    {
+      "id": "voxposer-arxiv",
+      "url": "https://arxiv.org/abs/2307.05973",
+      "final_url": "https://arxiv.org/abs/2307.05973",
+      "retrieved_at": "2026-11-05T23:30:29.596573+00:00",
+      "raw_path": "research/planning/continuation/raw/voxposer-arxiv.html",
+      "sha256": "6054c314968d29e51a781d8d01f00619640cae08e9749ce94771c2da622fe13d",
+      "bytes": 42712,
+      "text_path": "research/planning/continuation/text/voxposer-arxiv.txt",
+      "text_sha256": "c4f82d02ad3efa27578f521ad0b588be13524f4277b404e2a4f3eff8068a83bf",
+      "status": "acquired",
+      "reading_status": "read_full",
+      "raw_sha256": "6054c314968d29e51a781d8d01f00619640cae08e9749ce94771c2da622fe13d",
+      "text_bytes": 5151,
+      "line_count": 215,
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 215,
+          "sha256": "c4f82d02ad3efa27578f521ad0b588be13524f4277b404e2a4f3eff8068a83bf",
+          "bytes": 5151,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Entire LF-delimited extracted text; embedded links and media are not thereby read."
+    },
+    {
+      "id": "inner-monologue-proceedings",
+      "url": "https://proceedings.mlr.press/v205/huang23c.html",
+      "final_url": "https://proceedings.mlr.press/v205/huang23c.html",
+      "retrieved_at": "2026-11-05T23:30:30.157210+00:00",
+      "raw_path": "research/planning/continuation/raw/inner-monologue-proceedings.html",
+      "sha256": "3b28a46c6dfd016f51963ae1497081298a8e79c061e9f9d0ccf88a5b36f66f02",
+      "bytes": 17809,
+      "text_path": "research/planning/continuation/text/inner-monologue-proceedings.txt",
+      "text_sha256": "dd871bb4414167cf7efee191098e7c57ccbf3321598d3ae96f2b47a2fde3b699",
+      "status": "acquired",
+      "reading_status": "read_full",
+      "raw_sha256": "3b28a46c6dfd016f51963ae1497081298a8e79c061e9f9d0ccf88a5b36f66f02",
+      "text_bytes": 6911,
+      "line_count": 89,
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 89,
+          "sha256": "dd871bb4414167cf7efee191098e7c57ccbf3321598d3ae96f2b47a2fde3b699",
+          "bytes": 6911,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Entire LF-delimited extracted text; embedded links and media are not thereby read."
+    },
+    {
+      "id": "voxposer-proceedings",
+      "url": "https://proceedings.mlr.press/v229/huang23b.html",
+      "final_url": "https://proceedings.mlr.press/v229/huang23b.html",
+      "retrieved_at": "2026-11-05T23:30:30.085350+00:00",
+      "raw_path": "research/planning/continuation/raw/voxposer-proceedings.html",
+      "sha256": "e1d18d0367114c8b27ab4c10ffd6ecd9037cb371b2a021f2ddf7f1178c47e08f",
+      "bytes": 16632,
+      "text_path": "research/planning/continuation/text/voxposer-proceedings.txt",
+      "text_sha256": "5843ba7ec0521889111546da029da1ddd5b453671be8b4228e58cc984bc92beb",
+      "status": "acquired",
+      "reading_status": "read_full",
+      "raw_sha256": "e1d18d0367114c8b27ab4c10ffd6ecd9037cb371b2a021f2ddf7f1178c47e08f",
+      "text_bytes": 6578,
+      "line_count": 77,
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 77,
+          "sha256": "5843ba7ec0521889111546da029da1ddd5b453671be8b4228e58cc984bc92beb",
+          "bytes": 6578,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Entire LF-delimited extracted text; embedded links and media are not thereby read."
+    },
+    {
+      "id": "inner-monologue-project",
+      "url": "https://innermonologue.github.io/",
+      "final_url": "https://innermonologue.github.io/",
+      "retrieved_at": "2026-11-05T23:30:30.617082+00:00",
+      "raw_path": "research/planning/continuation/raw/inner-monologue-project.html",
+      "sha256": "58ef4c9c80d4aedcb7b84f3ceea06ba52f260958817ba9623e498e7b7b2af273",
+      "bytes": 21720,
+      "text_path": "research/planning/continuation/text/inner-monologue-project.txt",
+      "text_sha256": "e755200eb1b57654b8812e50b0584ffa85bff171605e77fd1c643aefded54d5c",
+      "status": "acquired",
+      "reading_status": "read_full",
+      "raw_sha256": "58ef4c9c80d4aedcb7b84f3ceea06ba52f260958817ba9623e498e7b7b2af273",
+      "text_bytes": 10326,
+      "line_count": 84,
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 84,
+          "sha256": "e755200eb1b57654b8812e50b0584ffa85bff171605e77fd1c643aefded54d5c",
+          "bytes": 10326,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Entire LF-delimited extracted text; embedded links and media are not thereby read."
+    },
+    {
+      "id": "voxposer-project",
+      "url": "https://voxposer.github.io/",
+      "final_url": "https://voxposer.github.io/",
+      "retrieved_at": "2026-11-05T23:30:30.675249+00:00",
+      "raw_path": "research/planning/continuation/raw/voxposer-project.html",
+      "sha256": "c1f5f798c7686fec3796257c0d686bec073742f17e8be1819523f29787be79f1",
+      "bytes": 21046,
+      "text_path": "research/planning/continuation/text/voxposer-project.txt",
+      "text_sha256": "28e4cd5abfb061001747d78e5810c77c2d7091eca09396954623831cedfd3bc9",
+      "status": "acquired",
+      "reading_status": "read_full",
+      "raw_sha256": "c1f5f798c7686fec3796257c0d686bec073742f17e8be1819523f29787be79f1",
+      "text_bytes": 5062,
+      "line_count": 130,
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 130,
+          "sha256": "28e4cd5abfb061001747d78e5810c77c2d7091eca09396954623831cedfd3bc9",
+          "bytes": 5062,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Entire LF-delimited extracted text; embedded links and media are not thereby read."
+    },
+    {
+      "id": "inner-monologue-pmlr",
+      "url": "https://proceedings.mlr.press/v205/huang23c/huang23c.pdf",
+      "retrieved_at": "2026-11-05T23:31:53.469056+00:00",
+      "raw_path": "research/planning/continuation/raw/inner-monologue-pmlr.pdf",
+      "sha256": "a8edfa05bef6ea6ad5021bf2bd63283c1eeb865452c81aa9f00566761c5f3f1e",
+      "bytes": 7460839,
+      "text_path": "research/planning/continuation/text/inner-monologue-pmlr.txt",
+      "text_sha256": "b3b8be60a62db7bd2c22e23f5de654cdbc39088d09f1a63a4d7a66449fa82f83",
+      "status": "acquired",
+      "reading_status": "read_full",
+      "pdf_page_count": 14,
+      "raw_sha256": "a8edfa05bef6ea6ad5021bf2bd63283c1eeb865452c81aa9f00566761c5f3f1e",
+      "text_bytes": 71772,
+      "line_count": 873,
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 180,
+          "sha256": "3beeccf0cf69ab3c3407daa66073aec73ef6a475ee3064a0476e59d0290e6e6b",
+          "bytes": 14692,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 181,
+          "end_line": 360,
+          "sha256": "3ad3540e6d51b6e80481adbcaaa677f05fc399c9cfef1273fca7f829abc3be40",
+          "bytes": 13664,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 361,
+          "end_line": 540,
+          "sha256": "8f87a7e09a1ae547726461a0d4727219743463776fef804c6d45f3bff38244c5",
+          "bytes": 15952,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 541,
+          "end_line": 720,
+          "sha256": "5b22d1719fb9d905537839e1c50bc7c9f4b2fe4b2c7500cf106e1bc2d19b062f",
+          "bytes": 15789,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 721,
+          "end_line": 873,
+          "sha256": "09e48e82c4a58c06bba1453598944b74bef9e8dc51ebc598bc78fd3b9a762c60",
+          "bytes": 11675,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Entire extracted paper text, including appendices/prompts/references when present; all numbered figures and tables visually inspected on listed pages. Not every prose page separately visually inspected.",
+      "pdf_pages_visually_inspected_one_based": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "all_numbered_figures_and_tables_visually_reviewed": true,
+      "all_pdf_pages_visually_reviewed": false
+    },
+    {
+      "id": "inner-monologue-pmlr-supp",
+      "url": "https://proceedings.mlr.press/v205/huang23c/huang23c-supp.pdf",
+      "final_url": "https://proceedings.mlr.press/v205/huang23c/huang23c-supp.pdf",
+      "retrieved_at": "2026-11-05T23:40:02.214656+00:00",
+      "raw_path": "research/planning/continuation/raw/inner-monologue-pmlr-supp.pdf",
+      "sha256": "c57ba2f66aefcf349f93435840c960eafeea8b1bd33b10e9052813d637cb7eb3",
+      "bytes": 3226995,
+      "text_path": "research/planning/continuation/text/inner-monologue-pmlr-supp.txt",
+      "text_sha256": "22c9b8d55af71f94a4593cd6ca688334d71f3981f3bc7c13e8b1532aae5b4a37",
+      "status": "acquired",
+      "reading_status": "read_full",
+      "pdf_page_count": 11,
+      "raw_sha256": "c57ba2f66aefcf349f93435840c960eafeea8b1bd33b10e9052813d637cb7eb3",
+      "text_bytes": 40973,
+      "line_count": 753,
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 180,
+          "sha256": "f20a1b54fa069837fd35907727ecd8520a4dbd1294230486d6d721a0644bfe4d",
+          "bytes": 14710,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 181,
+          "end_line": 360,
+          "sha256": "2486cedfb092fc70d5dcf676444c5ac867b12fb5a5a7209d9c19fdfbbd67f5da",
+          "bytes": 12554,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 361,
+          "end_line": 540,
+          "sha256": "6f89e3d375cadf7c412590f1513199d8e0f528f5b44430a784a8e56d57fbf734",
+          "bytes": 6548,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 541,
+          "end_line": 753,
+          "sha256": "9cdd27984213f587d2ddfaa852b5001fd4083f98b023f26d1d96a29478db2801",
+          "bytes": 7161,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Entire extracted paper text, including appendices/prompts/references when present; all numbered figures and tables visually inspected on listed pages. Not every prose page separately visually inspected.",
+      "pdf_pages_visually_inspected_one_based": [
+        1,
+        3,
+        4,
+        5,
+        6
+      ],
+      "all_numbered_figures_and_tables_visually_reviewed": true,
+      "all_pdf_pages_visually_reviewed": false
+    },
+    {
+      "id": "voxposer:README.md",
+      "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/README.md",
+      "path": "research/planning/continuation/repos/voxposer/README.md",
+      "sha256": "31050d71b94a82dc9aa5aa1cf90e16c69f69d977cc84d4398cf6929b6db32775",
+      "raw_path": "research/planning/continuation/repos/voxposer/README.md",
+      "raw_sha256": "31050d71b94a82dc9aa5aa1cf90e16c69f69d977cc84d4398cf6929b6db32775",
+      "text_path": "research/planning/continuation/repos/voxposer/README.md",
+      "text_sha256": "31050d71b94a82dc9aa5aa1cf90e16c69f69d977cc84d4398cf6929b6db32775",
+      "bytes": 6193,
+      "line_count": 84,
+      "repository": "https://github.com/huangwl18/VoxPoser",
+      "commit": "e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce",
+      "git_blob_sha": "3790b8c7af80c0d37400115d14566de1cfe9b089",
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 84,
+          "sha256": "31050d71b94a82dc9aa5aa1cf90e16c69f69d977cc84d4398cf6929b6db32775",
+          "bytes": 6193,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Selected complete file; no whole-repository/dependency claim. Source text only, never executed."
+    },
+    {
+      "id": "voxposer:src/LMP.py",
+      "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/LMP.py",
+      "path": "research/planning/continuation/repos/voxposer/src/LMP.py",
+      "sha256": "e2c5fb4d7b04c26d57e0188b3ee3bddc60474fa136bc208f0ed3096668146e47",
+      "raw_path": "research/planning/continuation/repos/voxposer/src/LMP.py",
+      "raw_sha256": "e2c5fb4d7b04c26d57e0188b3ee3bddc60474fa136bc208f0ed3096668146e47",
+      "text_path": "research/planning/continuation/repos/voxposer/src/LMP.py",
+      "text_sha256": "e2c5fb4d7b04c26d57e0188b3ee3bddc60474fa136bc208f0ed3096668146e47",
+      "bytes": 8263,
+      "line_count": 189,
+      "repository": "https://github.com/huangwl18/VoxPoser",
+      "commit": "e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce",
+      "git_blob_sha": "abecbc7d6655fea2a7e92e4e8c6b366d6df6a1d5",
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 189,
+          "sha256": "e2c5fb4d7b04c26d57e0188b3ee3bddc60474fa136bc208f0ed3096668146e47",
+          "bytes": 8263,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Selected complete file; no whole-repository/dependency claim. Source text only, never executed."
+    },
+    {
+      "id": "voxposer:src/interfaces.py",
+      "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/interfaces.py",
+      "path": "research/planning/continuation/repos/voxposer/src/interfaces.py",
+      "sha256": "81ccd350616d8325ba49abd259f682e1915bc59c41010139aa42160c3c52e475",
+      "raw_path": "research/planning/continuation/repos/voxposer/src/interfaces.py",
+      "raw_sha256": "81ccd350616d8325ba49abd259f682e1915bc59c41010139aa42160c3c52e475",
+      "text_path": "research/planning/continuation/repos/voxposer/src/interfaces.py",
+      "text_sha256": "81ccd350616d8325ba49abd259f682e1915bc59c41010139aa42160c3c52e475",
+      "bytes": 25406,
+      "line_count": 492,
+      "repository": "https://github.com/huangwl18/VoxPoser",
+      "commit": "e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce",
+      "git_blob_sha": "120d6251b38fe7fedb173371ce2e75ce16f91a1b",
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 180,
+          "sha256": "a738f5ef0f76e4dfa52ba944245089a37848f08755e4760b4fc80eccb08777e9",
+          "bytes": 10456,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 181,
+          "end_line": 360,
+          "sha256": "a484cd853f107d9a24aae67947df1720083c40dc1e71b2bd8f98d3e148ba4607",
+          "bytes": 8528,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 361,
+          "end_line": 492,
+          "sha256": "76471bcb1cb2554dc229cbe5ebe6208707d870c2277f343c7b981e14584cf381",
+          "bytes": 6422,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Selected complete file; no whole-repository/dependency claim. Source text only, never executed."
+    },
+    {
+      "id": "voxposer:src/planners.py",
+      "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/planners.py",
+      "path": "research/planning/continuation/repos/voxposer/src/planners.py",
+      "sha256": "885dba2543e53e2e0686a9fc675891eb636bd22b56556b9f1ea31af5e5c0802f",
+      "raw_path": "research/planning/continuation/repos/voxposer/src/planners.py",
+      "raw_sha256": "885dba2543e53e2e0686a9fc675891eb636bd22b56556b9f1ea31af5e5c0802f",
+      "text_path": "research/planning/continuation/repos/voxposer/src/planners.py",
+      "text_sha256": "885dba2543e53e2e0686a9fc675891eb636bd22b56556b9f1ea31af5e5c0802f",
+      "bytes": 9031,
+      "line_count": 166,
+      "repository": "https://github.com/huangwl18/VoxPoser",
+      "commit": "e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce",
+      "git_blob_sha": "ed066ebb01667c819588a457d08ccf9fdfc8d4b7",
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 166,
+          "sha256": "885dba2543e53e2e0686a9fc675891eb636bd22b56556b9f1ea31af5e5c0802f",
+          "bytes": 9031,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Selected complete file; no whole-repository/dependency claim. Source text only, never executed."
+    },
+    {
+      "id": "voxposer:src/controllers.py",
+      "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/controllers.py",
+      "path": "research/planning/continuation/repos/voxposer/src/controllers.py",
+      "sha256": "588f6f033fc218e1ae65b48798310477882b47bcf7b0d3ea741e87ae7aec66a0",
+      "raw_path": "research/planning/continuation/repos/voxposer/src/controllers.py",
+      "raw_sha256": "588f6f033fc218e1ae65b48798310477882b47bcf7b0d3ea741e87ae7aec66a0",
+      "text_path": "research/planning/continuation/repos/voxposer/src/controllers.py",
+      "text_sha256": "588f6f033fc218e1ae65b48798310477882b47bcf7b0d3ea741e87ae7aec66a0",
+      "bytes": 9420,
+      "line_count": 195,
+      "repository": "https://github.com/huangwl18/VoxPoser",
+      "commit": "e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce",
+      "git_blob_sha": "5e4e679a38b500e64f8d8c41bff57b556d839a33",
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 195,
+          "sha256": "588f6f033fc218e1ae65b48798310477882b47bcf7b0d3ea741e87ae7aec66a0",
+          "bytes": 9420,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Selected complete file; no whole-repository/dependency claim. Source text only, never executed."
+    },
+    {
+      "id": "voxposer:src/dynamics_models.py",
+      "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/dynamics_models.py",
+      "path": "research/planning/continuation/repos/voxposer/src/dynamics_models.py",
+      "sha256": "e785b59b5a00f9d26928a05f209a6f4ecf00a0797d7403043274bbec0f1a0e47",
+      "raw_path": "research/planning/continuation/repos/voxposer/src/dynamics_models.py",
+      "raw_sha256": "e785b59b5a00f9d26928a05f209a6f4ecf00a0797d7403043274bbec0f1a0e47",
+      "text_path": "research/planning/continuation/repos/voxposer/src/dynamics_models.py",
+      "text_sha256": "e785b59b5a00f9d26928a05f209a6f4ecf00a0797d7403043274bbec0f1a0e47",
+      "bytes": 1575,
+      "line_count": 36,
+      "repository": "https://github.com/huangwl18/VoxPoser",
+      "commit": "e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce",
+      "git_blob_sha": "40d1816160d0187c8dcdcae13e3c09914e4c5bcb",
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 36,
+          "sha256": "e785b59b5a00f9d26928a05f209a6f4ecf00a0797d7403043274bbec0f1a0e47",
+          "bytes": 1575,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Selected complete file; no whole-repository/dependency claim. Source text only, never executed."
+    },
+    {
+      "id": "voxposer:src/envs/rlbench_env.py",
+      "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/envs/rlbench_env.py",
+      "path": "research/planning/continuation/repos/voxposer/src/envs/rlbench_env.py",
+      "sha256": "d794e6e4591acc45540e0c80799e862d278787e50fff262e0fb2e39b2a1ca333",
+      "raw_path": "research/planning/continuation/repos/voxposer/src/envs/rlbench_env.py",
+      "raw_sha256": "d794e6e4591acc45540e0c80799e862d278787e50fff262e0fb2e39b2a1ca333",
+      "text_path": "research/planning/continuation/repos/voxposer/src/envs/rlbench_env.py",
+      "text_sha256": "d794e6e4591acc45540e0c80799e862d278787e50fff262e0fb2e39b2a1ca333",
+      "bytes": 16805,
+      "line_count": 397,
+      "repository": "https://github.com/huangwl18/VoxPoser",
+      "commit": "e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce",
+      "git_blob_sha": "01355e92596bd5a6ba560017a714988439101f10",
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 200,
+          "sha256": "3fad2ae1e1c1821521a3c8e0a0a7e0f1a77ad3a3f83ca03ab521dfd5ef6da6f8",
+          "bytes": 10062,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 201,
+          "end_line": 397,
+          "sha256": "377a00cf3848e1aec8576d07fda9cb523e94e7d8b3c6640de9cdbed024f4a0b5",
+          "bytes": 6743,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Selected complete file; no whole-repository/dependency claim. Source text only, never executed."
+    },
+    {
+      "id": "voxposer:src/configs/rlbench_config.yaml",
+      "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/configs/rlbench_config.yaml",
+      "path": "research/planning/continuation/repos/voxposer/src/configs/rlbench_config.yaml",
+      "sha256": "3408ccf091646a5bfc0638edd8b33415111e1e0c9e0a728c0de54a91dc02e7b3",
+      "raw_path": "research/planning/continuation/repos/voxposer/src/configs/rlbench_config.yaml",
+      "raw_sha256": "3408ccf091646a5bfc0638edd8b33415111e1e0c9e0a728c0de54a91dc02e7b3",
+      "text_path": "research/planning/continuation/repos/voxposer/src/configs/rlbench_config.yaml",
+      "text_sha256": "3408ccf091646a5bfc0638edd8b33415111e1e0c9e0a728c0de54a91dc02e7b3",
+      "bytes": 3626,
+      "line_count": 153,
+      "repository": "https://github.com/huangwl18/VoxPoser",
+      "commit": "e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce",
+      "git_blob_sha": "0091eddac36e57a6b342d7b5da0336f9670f82e3",
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 153,
+          "sha256": "3408ccf091646a5bfc0638edd8b33415111e1e0c9e0a728c0de54a91dc02e7b3",
+          "bytes": 3626,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Selected complete file; no whole-repository/dependency claim. Source text only, never executed."
+    },
+    {
+      "id": "voxposer:src/prompts/rlbench/planner_prompt.txt",
+      "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/prompts/rlbench/planner_prompt.txt",
+      "path": "research/planning/continuation/repos/voxposer/src/prompts/rlbench/planner_prompt.txt",
+      "sha256": "4857bd355b5aab271e8986732a0e7d0b7e9e3e39240feb0338a36304a2fc2d6f",
+      "raw_path": "research/planning/continuation/repos/voxposer/src/prompts/rlbench/planner_prompt.txt",
+      "raw_sha256": "4857bd355b5aab271e8986732a0e7d0b7e9e3e39240feb0338a36304a2fc2d6f",
+      "text_path": "research/planning/continuation/repos/voxposer/src/prompts/rlbench/planner_prompt.txt",
+      "text_sha256": "4857bd355b5aab271e8986732a0e7d0b7e9e3e39240feb0338a36304a2fc2d6f",
+      "bytes": 3734,
+      "line_count": 115,
+      "repository": "https://github.com/huangwl18/VoxPoser",
+      "commit": "e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce",
+      "git_blob_sha": "2668ac88ea7cc386e27d2a446eda7245127617a7",
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 115,
+          "sha256": "4857bd355b5aab271e8986732a0e7d0b7e9e3e39240feb0338a36304a2fc2d6f",
+          "bytes": 3734,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Selected complete file; no whole-repository/dependency claim. Source text only, never executed."
+    },
+    {
+      "id": "voxposer:src/prompts/rlbench/composer_prompt.txt",
+      "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/prompts/rlbench/composer_prompt.txt",
+      "path": "research/planning/continuation/repos/voxposer/src/prompts/rlbench/composer_prompt.txt",
+      "sha256": "06dcd423164a0927085eee0994d344aca872745c0c13b549108f710c9746d0ae",
+      "raw_path": "research/planning/continuation/repos/voxposer/src/prompts/rlbench/composer_prompt.txt",
+      "raw_sha256": "06dcd423164a0927085eee0994d344aca872745c0c13b549108f710c9746d0ae",
+      "text_path": "research/planning/continuation/repos/voxposer/src/prompts/rlbench/composer_prompt.txt",
+      "text_sha256": "06dcd423164a0927085eee0994d344aca872745c0c13b549108f710c9746d0ae",
+      "bytes": 6065,
+      "line_count": 120,
+      "repository": "https://github.com/huangwl18/VoxPoser",
+      "commit": "e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce",
+      "git_blob_sha": "36e1706e24f4521c0732d7da544dbc9d014897cc",
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 120,
+          "sha256": "06dcd423164a0927085eee0994d344aca872745c0c13b549108f710c9746d0ae",
+          "bytes": 6065,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_gaps": [],
+      "reading_scope": "Selected complete file; no whole-repository/dependency claim. Source text only, never executed."
+    }
+  ],
+  "figures": [
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-02.png",
+      "sha256": "e3e1d76e17901ee7af7ecfa50072431a9500352f1505429971d05945d72fabe8",
+      "bytes": 645959,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 2,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-03.png",
+      "sha256": "8833f16449e3702c0af397f48ec18367838cdd80fedd61e07cedabd86e84ac78",
+      "bytes": 692533,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 3,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-04.png",
+      "sha256": "de98ec8a46f4ad9b743c84680e471abdb3ed0f33673062ca0d5b39279e245f30",
+      "bytes": 711613,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 4,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-05.png",
+      "sha256": "a9541c919fb4e43c251a9e5384642e0e5848e04723deef1982808d041a477f7c",
+      "bytes": 532856,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 5,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-06.png",
+      "sha256": "53d3fc2263aaf7290e8269f26f24be0100005619264649d989b9034b6a12725d",
+      "bytes": 549964,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 6,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-07.png",
+      "sha256": "f18a231a266816fb91682840abdb4166ffd7de2c002adfb0b31696a5539e0875",
+      "bytes": 528923,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 7,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-08.png",
+      "sha256": "b9f2939723a45e8345e4745220f26ea4502febffe0694d05cfbc14cf92a2a8db",
+      "bytes": 685625,
+      "source_id": "inner-monologue-pmlr",
+      "pdf_page_one_based": 8,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-01.png",
+      "sha256": "101ab8b03c649b0dee821e60db8fbe120a2821f2290ad507aece4334cc2d3fa5",
+      "bytes": 491018,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 1,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-03.png",
+      "sha256": "622d38e0ca315f20538b2a1227f42f0e65590376fc2cb2cdcf864e8903184053",
+      "bytes": 663636,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 3,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-04.png",
+      "sha256": "dc7dfb6fb91e6263275a8528e49ecff7997cf2609fb2287b68c1dd6e17c4edf1",
+      "bytes": 461118,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 4,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-05.png",
+      "sha256": "ff6bb01764f562d1eb66ffe70202c0b7f441a9eef0777ecd7f45a6e927457640",
+      "bytes": 600331,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 5,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-pmlr-supp-06.png",
+      "sha256": "46ac3399788d696c40959a0d4e66d965260ade32a4d4d97931dc7e83e0fc6335",
+      "bytes": 369308,
+      "source_id": "inner-monologue-pmlr-supp",
+      "pdf_page_one_based": 6,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-02.png",
+      "sha256": "63abeef61013c0a363d72595521c6c06e13fc397831dae2662bf2a211a2a67c9",
+      "bytes": 635490,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 2,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-04.png",
+      "sha256": "d4b810e09029397a683610775fa9b181ba604fc4dee69cd53f199ede0841c0e0",
+      "bytes": 646208,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 4,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-05.png",
+      "sha256": "efc70a9da59297b0fb944e0fa88b6203f2e95d97a570cc2a21df046c9468f36e",
+      "bytes": 764424,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 5,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-06.png",
+      "sha256": "f497d7941b97f6dc7ded4a8861d8f30754dd2ce0d89b797da8dd7bfbdcf646a9",
+      "bytes": 549224,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 6,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-07.png",
+      "sha256": "95750b640c124626a538aee9d68c4c1ba9f9008e7c4350cf75c0422f1bc6b25d",
+      "bytes": 567854,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 7,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-08.png",
+      "sha256": "4a5cbd83156e47b4389f374802379972618f8b51f4c287335a2e1c1fe4fc2e67",
+      "bytes": 659695,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 8,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-15.png",
+      "sha256": "a844be0a7dee6db2435c50045def0d8660311796857b74ecb089fc5ad4d7a0a2",
+      "bytes": 481483,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 15,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-16.png",
+      "sha256": "2a3b126c343b9859d3d908bc01938743e6c176e04c103e260d73c698183771dd",
+      "bytes": 556123,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 16,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-17.png",
+      "sha256": "90fce27f9dae6c1ce7e595202d143e1cd45d85837d9cdf579685e8f47750c809",
+      "bytes": 670614,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 17,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-18.png",
+      "sha256": "9db707c732d9b4c6ea11121c945939abe2bee3cda105b772b9e3c71600315819",
+      "bytes": 452127,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 18,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-19.png",
+      "sha256": "1211c3bcc5918c792cf527d96153658d68494c5d7f96e8b7e3064e551128c784",
+      "bytes": 643612,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 19,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/inner-monologue-v1-20.png",
+      "sha256": "5bb126a09ae200316af660429a99a34268fe2e41deb9bf19dadd0757da13a57d",
+      "bytes": 235283,
+      "source_id": "inner-monologue-v1",
+      "pdf_page_one_based": 20,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-01.png",
+      "sha256": "19f7232a12d2910f077ea9094b6931f7c2c32f9a72969c7d83b76f1a393e1ef0",
+      "bytes": 763345,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 1,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-04.png",
+      "sha256": "b54117214f57fd9ca01c18d61bdb9578ab72c707df3072ed617c35356c95591f",
+      "bytes": 657218,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 4,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-05.png",
+      "sha256": "5f55fa68881c4fd96780ebfcbbfb4857c976fe74ca597d4492babc40c3eb1c48",
+      "bytes": 835445,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 5,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-07.png",
+      "sha256": "e418c557df3cea1c25ce6d2a67cf8cb76bcc51290a481ffef9e725888091b68a",
+      "bytes": 532901,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 7,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-08.png",
+      "sha256": "a8cb0137c80f6ad2810be1d63fd868669df88941c0445d1c20fc9eee81ce4496",
+      "bytes": 496218,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 8,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-18.png",
+      "sha256": "ff2792b0eb49419f92f1136f15095370c0d6db2867ce6f87ae6ba181001eef46",
+      "bytes": 631621,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 18,
+      "reading_status": "visually_reviewed"
+    },
+    {
+      "path": "research/planning/continuation/figures/voxposer-v2-22.png",
+      "sha256": "78afa24845ceba6db9269648c33f76000d897da225a2146d41a4b4961a62f9ab",
+      "bytes": 172215,
+      "source_id": "voxposer-v2",
+      "pdf_page_one_based": 22,
+      "reading_status": "visually_reviewed"
+    }
+  ],
+  "limitations": [
+    "Reader-attested coverage is not machine proof of understanding.",
+    "No project videos, interactive value-map viewers, external experimental prompt links, dependencies or unselected repository files read or run.",
+    "The released RLBench code is not the paper evaluation benchmark or the real-world perception pipeline.",
+    "No physical devices contacted; no acquired program executed."
+  ]
+}

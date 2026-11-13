@@ -1,0 +1,38 @@
+[
+  {
+    "id": "release-directory",
+    "url": "https://www.openmobilealliance.org/release/LightweightM2M/",
+    "final_url": "https://www.openmobilealliance.org/release/LightweightM2M/",
+    "http_status": 200,
+    "retrieved_at": "2026-11-05T22:16:34.633058+00:00",
+    "raw_path": "research/constrained/lwm2m/release-directory.html",
+    "raw_sha256": "b89593da6d2ea82fcfc8534d4a0b57c6b46ddc86b0f92e847f174c8aeda0856b",
+    "text_path": "research/constrained/lwm2m/release-directory.txt",
+    "text_sha256": "ebe362c1a2aeab25a362b5454618e918c9789f2bb61f71b845cfdb6262cd14f8",
+    "line_count": 53
+  },
+  {
+    "id": "release-122",
+    "url": "https://www.openmobilealliance.org/release/lightweightm2m/V1_2_2-20240613-A/HTML-Version/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A.html",
+    "final_url": "https://www.openmobilealliance.org/release/lightweightm2m/V1_2_2-20240613-A/HTML-Version/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A.html",
+    "http_status": 200,
+    "retrieved_at": "2026-11-05T22:16:35.755148+00:00",
+    "raw_path": "research/constrained/lwm2m/release-122.html",
+    "raw_sha256": "e004370124f247b956dcd4bbd56c2c7d3e47f5bd5cd0cf1c535052bb91c68fd7",
+    "text_path": "research/constrained/lwm2m/release-122.txt",
+    "text_sha256": "7475004c116b4e23b484630d24cc9ac136e0005d077018378a20e74b189e371d",
+    "line_count": 179
+  },
+  {
+    "id": "core-122",
+    "url": "https://www.openmobilealliance.org/RELEASE/LightweightM2M/V1_2_2-20240613-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_2_2-20240613-A.html",
+    "final_url": "https://www.openmobilealliance.org/RELEASE/LightweightM2M/V1_2_2-20240613-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_2_2-20240613-A.html",
+    "http_status": 200,
+    "retrieved_at": "2026-11-05T22:16:38.142719+00:00",
+    "raw_path": "research/constrained/lwm2m/core-122.html",
+    "raw_sha256": "340effe8405e3f2f6130752347c21ef9ff1d5f99ed3aad90736190557e984b70",
+    "text_path": "research/constrained/lwm2m/core-122.txt",
+    "text_sha256": "5810505442a7697119b2512a16c6baaba576a49825ded8bd02e89d845b197944",
+    "line_count": 7893
+  }
+]

@@ -1,0 +1,1 @@
+packages/experimental/tool-hardware/tests/hms-sdk-profile.spec.ts:117:29: error @stylistic(arrow-parens): Expected parentheses around arrow function argument having a body with curly braces.

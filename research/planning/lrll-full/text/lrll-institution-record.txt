@@ -1,0 +1,233 @@
+Lifelong Robot Library Learning: Bootstrapping Composable and Generalizable Skills for Embodied Control with Language Models
+      -  the University of Groningen research portal
+Skip to main navigation
+Skip to search
+Skip to main content
+the University of Groningen research portal Home
+Help & FAQ
+Link opens in a new tab
+English
+Nederlands
+Search content at the University of Groningen research portal
+Home
+Profiles
+Research units
+Research output
+Activities
+Datasets
+Press/Media
+Projects
+Prizes
+Lifelong Robot Library Learning: Bootstrapping Composable and Generalizable Skills for Embodied Control with Language Models
+Georgios Tziafas
+*
+,
+Hamidreza Kasaei
+*
+Corresponding author for this work
+Artificial Intelligence
+Research output
+:
+Chapter in Book/Report/Conference proceeding
+›
+Conference contribution
+›
+Academic
+›
+peer-review
+12
+Citations
+(Scopus)
+193
+Downloads
+(Pure)
+Overview
+Fingerprint
+Abstract
+Large Language Models (LLMs) have emerged as a new paradigm for embodied reasoning and control, most recently by generating robot policy code that utilizes a custom library of vision and control primitive skills. However, prior arts fix their skills library and steer the LLM with carefully handcrafted prompt engineering, limiting the agent to a stationary range of addressable tasks. In this work, we introduce LRLL, an LLM-based lifelong learning agent that continuously grows the robot skill library to tackle manipulation tasks of ever-growing complexity. LRLL achieves this with four novel contributions: 1) a soft memory module that allows dynamic storage and retrieval of past experiences to serve as context, 2) a self-guided exploration policy that proposes new tasks in simulation, 3) a skill abstractor that distills recent experiences into new library skills, and 4) a lifelong learning algorithm for enabling human users to bootstrap new skills with minimal online interaction. LRLL continuously transfers knowledge from the memory to the library, building composable, general and interpretable policies, while bypassing gradient-based optimization, thus relieving the learner from catastrophic forgetting. Empirical evaluation in a simulated tabletop environment shows that LRLL outperforms end-to-end and vanilla LLM approaches in the lifelong setup while learning skills that are transferable to the real world. Project material will become available at the webpage https://gtziafas.github.io/LRLL_project/.
+Original language
+English
+Title of host publication
+2024 IEEE International Conference on Robotics and Automation, ICRA 2024
+Publisher
+Institute of Electrical and Electronics Engineers Inc.
+Pages
+515-522
+Number of pages
+8
+ISBN (Electronic)
+9798350384574
+DOIs
+https://doi.org/10.1109/ICRA57147.2024.10611448
+Publication status
+Published -
+2024
+Event
+2024 IEEE International Conference on Robotics and Automation, ICRA 2024
+- Yokohama, Japan
+Duration:
+13-May-2024
+→
+17-May-2024
+Publication series
+Name
+Proceedings - IEEE International Conference on Robotics and Automation
+ISSN (Print)
+1050-4729
+Conference
+Conference
+2024 IEEE International Conference on Robotics and Automation, ICRA 2024
+Country/Territory
+Japan
+City
+Yokohama
+Period
+13/05/2024
+→
+17/05/2024
+Access to Document
+10.1109/ICRA57147.2024.10611448
+Lifelong Robot Library Learning
+Final publisher's version, 4.4 MB
+Licence:
+Taverne
+Handle.net
+Persistent link
+Other files and links
+Link to publication in Scopus
+Fingerprint
+Dive into the research topics of 'Lifelong Robot Library Learning: Bootstrapping Composable and Generalizable Skills for Embodied Control with Language Models'. Together they form a unique fingerprint.
+Language Modeling
+Computer Science
+100%
+Large Language Model
+Computer Science
+100%
+Robotics
+Computer Science
+100%
+Lifelong Learning
+Computer Science
+50%
+Skill Library
+Keyphrases
+50%
+Knowledge Transfer
+Computer Science
+25%
+Growing Complexity
+Computer Science
+25%
+Learning Skill
+Computer Science
+25%
+View full fingerprint
+Cite this
+APA
+Author
+BIBTEX
+Harvard
+Standard
+RIS
+Vancouver
+Tziafas, G.
+, & Kasaei, H.
+(2024).
+Lifelong Robot Library Learning: Bootstrapping Composable and Generalizable Skills for Embodied Control with Language Models
+. In
+2024 IEEE International Conference on Robotics and Automation, ICRA 2024
+(pp. 515-522). (Proceedings - IEEE International Conference on Robotics and Automation). Institute of Electrical and Electronics Engineers Inc..
+https://doi.org/10.1109/ICRA57147.2024.10611448
+Tziafas, Georgios
+; Kasaei, Hamidreza
+. /
+Lifelong Robot Library Learning : Bootstrapping Composable and Generalizable Skills for Embodied Control with Language Models
+. 2024 IEEE International Conference on Robotics and Automation, ICRA 2024. Institute of Electrical and Electronics Engineers Inc., 2024. pp. 515-522 (Proceedings - IEEE International Conference on Robotics and Automation).
+@inproceedings{2ddda900980a441888ee44f0cdee4b2e,
+title     = "Lifelong Robot Library Learning: Bootstrapping Composable and Generalizable Skills for Embodied Control with Language Models",
+abstract  = "Large Language Models (LLMs) have emerged as a new paradigm for embodied reasoning and control, most recently by generating robot policy code that utilizes a custom library of vision and control primitive skills. However, prior arts fix their skills library and steer the LLM with carefully handcrafted prompt engineering, limiting the agent to a stationary range of addressable tasks. In this work, we introduce LRLL, an LLM-based lifelong learning agent that continuously grows the robot skill library to tackle manipulation tasks of ever-growing complexity. LRLL achieves this with four novel contributions: 1) a soft memory module that allows dynamic storage and retrieval of past experiences to serve as context, 2) a self-guided exploration policy that proposes new tasks in simulation, 3) a skill abstractor that distills recent experiences into new library skills, and 4) a lifelong learning algorithm for enabling human users to bootstrap new skills with minimal online interaction. LRLL continuously transfers knowledge from the memory to the library, building composable, general and interpretable policies, while bypassing gradient-based optimization, thus relieving the learner from catastrophic forgetting. Empirical evaluation in a simulated tabletop environment shows that LRLL outperforms end-to-end and vanilla LLM approaches in the lifelong setup while learning skills that are transferable to the real world. Project material will become available at the webpage https://gtziafas.github.io/LRLL\_project/.",
+author    = "Georgios Tziafas and Hamidreza Kasaei",
+note      = "Publisher Copyright: {\textcopyright} 2024 IEEE.; 2024 IEEE International Conference on Robotics and Automation, ICRA 2024 ; Conference date: 13-05-2024 Through 17-05-2024",
+year      = "2024",
+doi       = "10.1109/ICRA57147.2024.10611448",
+language  = "English",
+series    = "Proceedings - IEEE International Conference on Robotics and Automation",
+publisher = "Institute of Electrical and Electronics Engineers Inc.",
+pages     = "515--522",
+booktitle = "2024 IEEE International Conference on Robotics and Automation, ICRA 2024",
+}
+Tziafas, G
+& Kasaei, H
+2024,
+Lifelong Robot Library Learning: Bootstrapping Composable and Generalizable Skills for Embodied Control with Language Models
+. in
+2024 IEEE International Conference on Robotics and Automation, ICRA 2024.
+Proceedings - IEEE International Conference on Robotics and Automation, Institute of Electrical and Electronics Engineers Inc., pp. 515-522, 2024 IEEE International Conference on Robotics and Automation, ICRA 2024, Yokohama, Japan,
+13/05/2024
+.
+https://doi.org/10.1109/ICRA57147.2024.10611448
+Lifelong Robot Library Learning: Bootstrapping Composable and Generalizable Skills for Embodied Control with Language Models.
+/
+Tziafas, Georgios
+; Kasaei, Hamidreza
+.
+2024 IEEE International Conference on Robotics and Automation, ICRA 2024. Institute of Electrical and Electronics Engineers Inc., 2024. p. 515-522 (Proceedings - IEEE International Conference on Robotics and Automation).
+Research output
+:
+Chapter in Book/Report/Conference proceeding
+›
+Conference contribution
+›
+Academic
+›
+peer-review
+TY  - GEN
+T1  - Lifelong Robot Library Learning
+T2  - 2024 IEEE International Conference on Robotics and Automation, ICRA 2024
+AU  - Tziafas, Georgios
+AU  - Kasaei, Hamidreza
+N1  - Publisher Copyright:
+© 2024 IEEE.
+PY  - 2024
+Y1  - 2024
+N2  - Large Language Models (LLMs) have emerged as a new paradigm for embodied reasoning and control, most recently by generating robot policy code that utilizes a custom library of vision and control primitive skills. However, prior arts fix their skills library and steer the LLM with carefully handcrafted prompt engineering, limiting the agent to a stationary range of addressable tasks. In this work, we introduce LRLL, an LLM-based lifelong learning agent that continuously grows the robot skill library to tackle manipulation tasks of ever-growing complexity. LRLL achieves this with four novel contributions: 1) a soft memory module that allows dynamic storage and retrieval of past experiences to serve as context, 2) a self-guided exploration policy that proposes new tasks in simulation, 3) a skill abstractor that distills recent experiences into new library skills, and 4) a lifelong learning algorithm for enabling human users to bootstrap new skills with minimal online interaction. LRLL continuously transfers knowledge from the memory to the library, building composable, general and interpretable policies, while bypassing gradient-based optimization, thus relieving the learner from catastrophic forgetting. Empirical evaluation in a simulated tabletop environment shows that LRLL outperforms end-to-end and vanilla LLM approaches in the lifelong setup while learning skills that are transferable to the real world. Project material will become available at the webpage https://gtziafas.github.io/LRLL_project/.
+AB  - Large Language Models (LLMs) have emerged as a new paradigm for embodied reasoning and control, most recently by generating robot policy code that utilizes a custom library of vision and control primitive skills. However, prior arts fix their skills library and steer the LLM with carefully handcrafted prompt engineering, limiting the agent to a stationary range of addressable tasks. In this work, we introduce LRLL, an LLM-based lifelong learning agent that continuously grows the robot skill library to tackle manipulation tasks of ever-growing complexity. LRLL achieves this with four novel contributions: 1) a soft memory module that allows dynamic storage and retrieval of past experiences to serve as context, 2) a self-guided exploration policy that proposes new tasks in simulation, 3) a skill abstractor that distills recent experiences into new library skills, and 4) a lifelong learning algorithm for enabling human users to bootstrap new skills with minimal online interaction. LRLL continuously transfers knowledge from the memory to the library, building composable, general and interpretable policies, while bypassing gradient-based optimization, thus relieving the learner from catastrophic forgetting. Empirical evaluation in a simulated tabletop environment shows that LRLL outperforms end-to-end and vanilla LLM approaches in the lifelong setup while learning skills that are transferable to the real world. Project material will become available at the webpage https://gtziafas.github.io/LRLL_project/.
+UR  - https://www.scopus.com/pages/publications/85202446795
+U2  - 10.1109/ICRA57147.2024.10611448
+DO  - 10.1109/ICRA57147.2024.10611448
+M3  - Conference contribution
+AN  - SCOPUS:85202446795
+T3  - Proceedings - IEEE International Conference on Robotics and Automation
+SP  - 515
+EP  - 522
+BT  - 2024 IEEE International Conference on Robotics and Automation, ICRA 2024
+PB  - Institute of Electrical and Electronics Engineers Inc.
+Y2  - 13 May 2024 through 17 May 2024
+ER  -
+Tziafas G
+, Kasaei H
+.
+Lifelong Robot Library Learning:
+Bootstrapping Composable and Generalizable Skills for Embodied Control with Language Models
+. In 2024 IEEE International Conference on Robotics and Automation, ICRA 2024. Institute of Electrical and Electronics Engineers Inc. 2024. p. 515-522. (Proceedings - IEEE International Conference on Robotics and Automation). doi: 10.1109/ICRA57147.2024.10611448
+Powered by
+Pure
+Link opens in a new tab
+,
+Scopus
+Link opens in a new tab
+&
+Elsevier Fingerprint Engine™
+Link opens in a new tab
+All content on this site: Copyright © 2026 the University of Groningen research portal, its licensors, and contributors. All rights are reserved, including those for text and data mining, AI training, and similar technologies. For all open access content, the relevant licensing terms apply
+We use cookies to help provide and enhance our service and tailor content. By continuing you agree to the
+use of cookies
+Log in to Pure
+Link opens in a new tab
+the University of Groningen research portal data protection policy
+Link opens in a new tab
+About web accessibility
+Link opens in a new tab
+Report vulnerability
+Link opens in a new tab
+Contact us

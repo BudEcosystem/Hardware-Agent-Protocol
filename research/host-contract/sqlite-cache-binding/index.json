@@ -1,0 +1,38 @@
+{
+  "files": [
+    {
+      "path": "research/host-contract/sqlite-cache-binding/README.md",
+      "bytes": 2775,
+      "sha256": "c257323284047abd1e796e848f07be5c5e2af0178c49ddcfefa19015ad11293d"
+    },
+    {
+      "path": "research/host-contract/sqlite-cache-binding/acquire.py",
+      "bytes": 1650,
+      "sha256": "5cae6564767e329051e08dac5f131756dd1ce5e0fbbde5f729338eb025dab94f"
+    },
+    {
+      "path": "research/host-contract/sqlite-cache-binding/acquisition.json",
+      "bytes": 3445,
+      "sha256": "7defac5cfde43e2e6a430f3e0e03dd76464e3af706d5daa188fa16617cbf1611"
+    },
+    {
+      "path": "research/host-contract/sqlite-cache-binding/raw/connection.c",
+      "bytes": 78031,
+      "sha256": "c33db9525cbc9887293c1cbdc03e0d8a3a3201e7dae98392452a40196e850070"
+    },
+    {
+      "path": "research/host-contract/sqlite-cache-binding/raw/cursor.c",
+      "bytes": 40974,
+      "sha256": "6565bcccb050340fc91e8d1962cdc96caf23acddcb3ccca16e10b32d726d7522"
+    },
+    {
+      "path": "research/host-contract/sqlite-cache-binding/reading.json",
+      "bytes": 1394,
+      "sha256": "756da7df4560d19b894bca3544c8c31d1972a4f54b9990bc68f01fe73a85471b"
+    }
+  ],
+  "coveredLfLines": 4025,
+  "declaredTextFullRead": true,
+  "acquiredCodeCompiledOrExecuted": false,
+  "broaderResearchComplete": false
+}

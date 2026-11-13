@@ -1,0 +1,164 @@
+{
+  "reviewedAt": "2026-11-06",
+  "kind": "source-reading-and-document-review",
+  "acquiredCodeExecuted": false,
+  "acquiredTestsExecuted": false,
+  "deviceOrServiceContacted": false,
+  "fullRepositoriesRead": false,
+  "sourceFiles": {
+    "manifest": "research/microscopy-controller/selected-files.json",
+    "sha256": "34cfce70f8d7681065451ca0e82c87c7c9315234cc2a4b1843d1ec726042a4e4",
+    "completeFiles": 31,
+    "completeFileLines": 15216,
+    "partialFiles": 1,
+    "selectedCompleteFunctionLines": 765
+  },
+  "priorContextRead": [
+    "docs/microscope-retrofit.md",
+    "research/physical-ai/repos.json",
+    "research/physical-ai/notes/reading-notes.md"
+  ],
+  "documents": [
+    {
+      "id": "openflexure-autofocus",
+      "url": "https://arxiv.org/abs/2109.06842v2",
+      "sourceAcquisition": "existing immutable archive, current version revalidated",
+      "retainedPath": "research/physical-ai/raw/openflexure-autofocus.pdf",
+      "sha256": "fd3baf84df813d440267c4bbe428c95e1efebafe932fd6769b8d51acb5fb2a41",
+      "textPath": "research/physical-ai/text/openflexure-autofocus.txt",
+      "textSha256": "8b53625aaa4a9a8d8fec2ebe52eef2b37b0ac47516da8213a1930b267337ce6e",
+      "fullTextRead": true,
+      "pdfPages": 14,
+      "readIncludesReferences": true,
+      "allFiguresInspected": true,
+      "figurePagesOneBased": [
+        2,
+        4,
+        5,
+        6,
+        7,
+        9,
+        10,
+        12
+      ],
+      "figures": [
+        {
+          "path": "research/microscopy-controller/figures/autofocus-02.png",
+          "sha256": "4e87a35a75029ca81930b09a78a50d66969fc7369d74df986aa9b052f8d01eb8"
+        },
+        {
+          "path": "research/microscopy-controller/figures/autofocus-04.png",
+          "sha256": "64ef51b72748413f30ceaaa37298a5602984b448be822488bdc891266bec5aa7"
+        },
+        {
+          "path": "research/microscopy-controller/figures/autofocus-05.png",
+          "sha256": "ff8b4942aed30c70970277053f808b8033ea9117e3c65d5284a8df714992e953"
+        },
+        {
+          "path": "research/microscopy-controller/figures/autofocus-06.png",
+          "sha256": "5719f29026350d641a6e1d9fab2e775f784b1b3ef23f8ddff36be0911bde7cc2"
+        },
+        {
+          "path": "research/microscopy-controller/figures/autofocus-07.png",
+          "sha256": "924962e1e6877a533bbd5802f5666b99c1cfcba3b8e3d5abdfe1c3e9a69b5984"
+        },
+        {
+          "path": "research/microscopy-controller/figures/autofocus-09.png",
+          "sha256": "846b7a2452ea7e406939ca9e69f84e31190d82eb762ca83566ab16cb074b0c3f"
+        },
+        {
+          "path": "research/microscopy-controller/figures/autofocus-10.png",
+          "sha256": "635e3fc62f98294d9ad51876aa128c24efd9ca4dc079759e1d100f6f7e78eba8"
+        },
+        {
+          "path": "research/microscopy-controller/figures/autofocus-12.png",
+          "sha256": "2eef2487f404e47ffbdd586f9d6abb6099ab709ef36f3eb2c34f0e4163cf81a6"
+        }
+      ],
+      "datasetOrAnalysisExecuted": false
+    },
+    {
+      "id": "picamera2-manual",
+      "url": "https://datasheets.raspberrypi.com/camera/picamera2-manual.pdf",
+      "retainedPath": "research/microscopy-controller/raw/picamera2-manual.pdf",
+      "sha256": "0c11befd680111b4e056a3f465303d62342eee65f57a89b2aadfd8b09e7377f7",
+      "version": "Release 7; build 2026-10-27 f7f16579351f",
+      "fullTextRead": false,
+      "textPath": "research/microscopy-controller/text/picamera2-manual.txt",
+      "textSha256": "cc41cbd6fa78c82a8f651c88c0338f3ce4cbc3d8d40d3c02b03cb0d1c5a1cb89",
+      "readLineRangesInclusive": [
+        [
+          1,
+          36
+        ],
+        [
+          2316,
+          2548
+        ],
+        [
+          3934,
+          3963
+        ],
+        [
+          5575,
+          5581
+        ]
+      ],
+      "scope": "Colophon; entire sections 6.2,6.3,6.4 excluding 6.4.2 onward, entire 6.4.1; Holding on to requests and Buffer queues within Picamera2; SensorTimestamp row only in Appendix C. Other text was only searched/context-inspected.",
+      "pdfPagesContainingSelectedScopeOneBased": [
+        2,
+        37,
+        38,
+        39,
+        40,
+        60,
+        83
+      ],
+      "figuresInspected": []
+    },
+    {
+      "id": "micromanager-asitiger",
+      "url": "https://micro-manager.org/ASITiger",
+      "retainedPath": "research/microscopy-controller/raw/micromanager-asitiger.html",
+      "sha256": "aefdd78d09ac6052138a11641afa0fc355ac0e60d3671e662027baf0ea215edf",
+      "textPath": "research/microscopy-controller/text/micromanager-asitiger.txt",
+      "textSha256": "f1b46facafde943844a4742d1039a23d25f9e8f545bf09a66d98cba47fcf23cd",
+      "fullTextRead": true,
+      "scope": "Entire rendered ASITiger page including normal/fast sequencing and SerialCommand caveat; linked pages, MMCore and adapter implementations not read."
+    },
+    {
+      "id": "asi-selected-commands",
+      "urls": [
+        "https://docs.asiimaging.com/commands/setlow",
+        "https://docs.asiimaging.com/commands/status",
+        "https://docs.asiimaging.com/commands/joystick",
+        "https://docs.asiimaging.com/commands/rdstat"
+      ],
+      "retainedPath": "research/microscopy-controller/raw/asi-selected-web-render.json",
+      "sha256": "39bda59e7a4480f28d6502b171b324869272f63d74300220b5901abe78ac6158",
+      "sourceKind": "Web tool text rendering, not origin HTML",
+      "fullCommandPageTextRead": [
+        "SETLOW",
+        "STATUS",
+        "JOYSTICK",
+        "RDSTAT"
+      ],
+      "unavailableOrNotFullyRead": [
+        "HALT",
+        "SETUP",
+        "WHERE",
+        "PC",
+        "BACKLASH",
+        "ERROR"
+      ],
+      "scope": "Four complete command-page text renderings. Raw/HTML requests received403 and bodies were retained as failed acquisition only. Composite render also contains failure messages; these are not source text."
+    }
+  ],
+  "testReadingLimitations": [
+    "All selected tests read only, never run.",
+    "Gently bottom-camera LED expectations conflict with current implementation.",
+    "OpenFlexure mapping fixture arrays not separately audited.",
+    "Sangaboard test/test_blocking_moves.py connects to hardware and was not executed.",
+    "No missed-step, stop-latency, optical-quality or mechanical-clearance measurements."
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "headers": [
+    {
+      "fullyRead": false,
+      "path": "/usr/include/linux/stat.h",
+      "selectedLines": [
+        {
+          "line": 155,
+          "text": "#define STATX_MNT_ID\t\t0x00001000U\t/* Got stx_mnt_id */"
+        },
+        {
+          "line": 157,
+          "text": "#define STATX_MNT_ID_UNIQUE\t0x00004000U\t/* Want/got extended stx_mount_id */"
+        }
+      ],
+      "sha256": "c20889137b96f2a0a3ff3a250842fe226426cb67dce84a2354b50cab2ab348e2"
+    },
+    {
+      "fullyRead": false,
+      "path": "/usr/include/linux/fcntl.h",
+      "selectedLines": [
+        {
+          "line": 106,
+          "text": "#define AT_EMPTY_PATH\t\t0x1000\t/* Allow empty relative pathname */"
+        }
+      ],
+      "sha256": "ae5234007eb7755459bcd1c44846e9b1b4a3a2cea65afa4442aaf48fd8987c6f"
+    }
+  ],
+  "newSyscallProbeExecuted": false,
+  "observedUTC": "2026-11-09T06:33:46.587883+00:00",
+  "uname": {
+    "machine": "x86_64",
+    "nodename": "bud-dev",
+    "release": "7.0.0-42-generic",
+    "sysname": "Linux",
+    "version": "#42~24.04.1-Ubuntu SMP PREEMPT_DYNAMIC Mon Oct 19 14:43:01 UTC 2"
+  }
+}

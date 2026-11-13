@@ -1,0 +1,11 @@
+7.26 NotificationMessage
+
+The components of this parameter are defined in Table 164.
+
+Table 164 - NotificationMessage
+Name,Type,Description
+NotificationMessage,structure,The Message that contains one or more Notifications.
+sequenceNumber,Counter,The sequence number of the NotificationMessage.
+publishTime,UtcTime,"The time that this Message was sent to the Client. If this Message is retransmitted to the Client, this parameter contains the time it was first transmitted to the Client."
+notificationData [],Extensible Parameter NotificationData,"The list of NotificationData structures. The NotificationData parameter type is an extensible parameter type specified in 7.25. It specifies the types of Notifications that can be sent. The ExtensibleParameter type is specified in 7.17. Notifications of the same type should be grouped into one NotificationData element. If a Subscription contains MonitoredItems for events and data, this array should have not more than 2 elements. If the Subscription contains MonitoredItems only for data or only for events, the array size should always be one for this Subscription."
+

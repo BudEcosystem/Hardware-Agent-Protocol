@@ -1,0 +1,7 @@
+{
+  "scope": "Exact sources for first 16-test run; output retained under pre-observer-fix-* names. Only bounded read observer retry changed between this and second failure.",
+  "files_sha256": {
+    "compact-launcher.py": "4373538777ce8b6a4d7c1d5072d19d4c42cbcfc057c54ead7f7f769266733b7f",
+    "hms-compact.spec.ts": "2fed5f38f47f6fd12ed352f3fceeab2d577ededb7ba9be214866cf1f7659fcd5"
+  }
+}

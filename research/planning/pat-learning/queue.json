@@ -1,0 +1,35 @@
+{
+  "scope": "Selected official abstract/status metadata only; no full papers, figures, appendices, or implementations read. These records are research leads, not validated results.",
+  "papers": [
+    {
+      "arxiv_id": "2406.18746",
+      "url": "https://arxiv.org/abs/2406.18746",
+      "title": "Lifelong Robot Library Learning: Bootstrapping Composable and Generalizable Skills for Embodied Control with Language Models",
+      "observed_version": "v2, 2024-07-15",
+      "status": "metadata_only_selected",
+      "paper_read": false,
+      "implementation_read": false,
+      "question_for_full_reading": "How are experiences abstracted/promoted and what inference remains during reuse?"
+    },
+    {
+      "arxiv_id": "2603.01145",
+      "url": "https://arxiv.org/abs/2603.01145",
+      "title": "AutoSkill: Experience-Driven Lifelong Learning via Skill Self-Evolution",
+      "observed_version": "v2, 2026-03-05",
+      "status": "metadata_only_selected",
+      "paper_read": false,
+      "implementation_read": false,
+      "question_for_full_reading": "Distinguish injected guidance for future LLM calls from executable, bounded, inference-free procedures."
+    },
+    {
+      "arxiv_id": "2611.00544",
+      "url": "https://arxiv.org/abs/2611.00544",
+      "title": "Skill++: Towards Lifelong Agents via Routing-Aware Skill Refinement",
+      "observed_version": "v1, submitted 2026-10-31",
+      "status": "metadata_only_selected",
+      "paper_read": false,
+      "implementation_read": false,
+      "question_for_full_reading": "Study routing interference, body/metadata mismatch and abstention; abstract explicitly concerns LLM routers, not deterministic selection."
+    }
+  ]
+}

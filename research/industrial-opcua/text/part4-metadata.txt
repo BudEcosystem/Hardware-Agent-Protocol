@@ -1,0 +1,51 @@
+OPC-10000-4 – OPC Unified Architecture - Part 4: Services
+OPC Unified Architecture - Part 4: Services
+Go
+OPC-10000-4
+OPC Unified Architecture - Part 4: Services
+Document
+OPC 10000-4
+Release Version
+1.05.07
+Publication Date
+2026-04-15
+Browse
+Single Page View
+Download ▾
+STS XML (XML for IEC Specifications)
+Markdown (AI Friendly, Low Token Count)
+RAG Chunks (JSONL for Ollama / local models)
+Version History
+Version
+Published
+1.05.07
+2026-04-15
+current
+1.04
+2017-11-22
+Namespaces
+Namespace URI
+Model Version
+http://opcfoundation.org/UA/
+primary
+1.05.07
+Download
+Supplementary Files
+UA-1.05.07-2026-04-15/Schema
+Licences
+This document is subject to the license terms described
+here
+.
+The general OPC Foundation specification license agreement also applies and can be found
+here
+.
+The official version of the specification is
+here
+.
+        The official version is considered correct if there are differences with this website.
+Licences
+Cancel
+OK
+↑
+↓
+✕

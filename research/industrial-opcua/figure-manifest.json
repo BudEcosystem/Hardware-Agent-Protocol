@@ -1,0 +1,361 @@
+{
+  "path_base": "repository_root",
+  "figures": [
+    {
+      "path": "research/industrial-opcua/figures/part4-01-fig_1_discovery-service-set.png",
+      "sha256": "51516becb6a1f638ac4972c7c8a0282379253d9c930132094479ca02fbfdbe69",
+      "bytes": 9316,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/51516becb6a1f638ac4972c7c8a0282379253d9c930132094479ca02fbfdbe69.png",
+      "figure_id": "fig_1_discovery-service-set",
+      "caption": "Figure 1 - Discovery Service Set",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-02-fig_2_securechannel-service-set.png",
+      "sha256": "9cc0c5dba750eee7993005a989a5803a8f18d1530543d8982505c44c7759fffe",
+      "bytes": 9192,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/9cc0c5dba750eee7993005a989a5803a8f18d1530543d8982505c44c7759fffe.png",
+      "figure_id": "fig_2_securechannel-service-set",
+      "caption": "Figure 2 - SecureChannel Service Set",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-03-fig_3_session-service-set.png",
+      "sha256": "7bb97219fb780c647573b304936cfd4054e424533f86fa0ac780af35ad6d3f5b",
+      "bytes": 5542,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/7bb97219fb780c647573b304936cfd4054e424533f86fa0ac780af35ad6d3f5b.png",
+      "figure_id": "fig_3_session-service-set",
+      "caption": "Figure 3 - Session Service Set",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-04-fig_4_nodemanagement-service-set.png",
+      "sha256": "b6d8123795457576d59e67239b6c60d96b474c5c274a15aec1c7bbd60e9179a6",
+      "bytes": 20199,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/b6d8123795457576d59e67239b6c60d96b474c5c274a15aec1c7bbd60e9179a6.png",
+      "figure_id": "fig_4_nodemanagement-service-set",
+      "caption": "Figure 4 - NodeManagement Service Set",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-05-fig_5_view-service-set.png",
+      "sha256": "ad7c94f2656719c2f51c017b57033107f855b8283fce57501b77313a960b2757",
+      "bytes": 26590,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/ad7c94f2656719c2f51c017b57033107f855b8283fce57501b77313a960b2757.png",
+      "figure_id": "fig_5_view-service-set",
+      "caption": "Figure 5 - View Service Set",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-06-fig_6_attribute-service-set.png",
+      "sha256": "eb3ad913bc635d5d93e0aaa831ca7ad12abe4d35a0f5e9a7834bbf3260c64886",
+      "bytes": 29294,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/eb3ad913bc635d5d93e0aaa831ca7ad12abe4d35a0f5e9a7834bbf3260c64886.png",
+      "figure_id": "fig_6_attribute-service-set",
+      "caption": "Figure 6 - Attribute Service Set",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-07-fig_7_method-service-set.png",
+      "sha256": "d1b70dc30dc1be38b7d25ddcd05d9997b4324a737e1c106706daafdedace19bf",
+      "bytes": 20243,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/d1b70dc30dc1be38b7d25ddcd05d9997b4324a737e1c106706daafdedace19bf.png",
+      "figure_id": "fig_7_method-service-set",
+      "caption": "Figure 7 - Method Service Set",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-08-fig_8_monitoreditem-and-subscription-service-sets.png",
+      "sha256": "08a2ecb682f45a5bfbe07ca618165106223e5b3b08f1d2f569df56dd4a2b288f",
+      "bytes": 26272,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/08a2ecb682f45a5bfbe07ca618165106223e5b3b08f1d2f569df56dd4a2b288f.png",
+      "figure_id": "fig_8_monitoreditem-and-subscription-service-sets",
+      "caption": "Figure 8 - MonitoredItem and Subscription Service Sets",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-13-fig_13_securechannel-and-session-services.png",
+      "sha256": "e3728d3785491744727e3be9f3e6de0cb263de52fe65646992f962578a0f97d0",
+      "bytes": 22769,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/e3728d3785491744727e3be9f3e6de0cb263de52fe65646992f962578a0f97d0.png",
+      "figure_id": "fig_13_securechannel-and-session-services",
+      "caption": "Figure 13 - SecureChannel and Session Services",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-14-fig_14_multiplexing-users-on-a-session.png",
+      "sha256": "2dad1a2e274f9c76c2b9d48ea60567bef353b2bd2e256da8758ee9188058b9a7",
+      "bytes": 29953,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/2dad1a2e274f9c76c2b9d48ea60567bef353b2bd2e256da8758ee9188058b9a7.png",
+      "figure_id": "fig_14_multiplexing-users-on-a-session",
+      "caption": "Figure 14 - Multiplexing users on a Session",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-15-fig_15_monitoreditem-model.png",
+      "sha256": "3c10aaded9ba0dcd7db9e3c7000603f63fff418ec07f9b584c44fd17878855bc",
+      "bytes": 52779,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/3c10aaded9ba0dcd7db9e3c7000603f63fff418ec07f9b584c44fd17878855bc.png",
+      "figure_id": "fig_15_monitoreditem-model",
+      "caption": "Figure 15 - MonitoredItem model",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-16-fig_16_typical-delay-in-change-detection.png",
+      "sha256": "339d2b10854bf339efb507bc85ada8b689b2864eac766b165e23e99ec96b3944",
+      "bytes": 28273,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/339d2b10854bf339efb507bc85ada8b689b2864eac766b165e23e99ec96b3944.png",
+      "figure_id": "fig_16_typical-delay-in-change-detection",
+      "caption": "Figure 16 - Typical delay in change detection",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-17-fig_17_queue-overflow-handling.png",
+      "sha256": "861825395d9a49857ac3de1c33ac994609d866614892b048f2d8ea25c31b72bc",
+      "bytes": 47859,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/861825395d9a49857ac3de1c33ac994609d866614892b048f2d8ea25c31b72bc.png",
+      "figure_id": "fig_17_queue-overflow-handling",
+      "caption": "Figure 17 - Queue overflow handling",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-18-fig_18_triggering-model.png",
+      "sha256": "0768223ca389a3b8c873ae3a8ae370fddfe910a0dfb4d58baf40b569858fc26b",
+      "bytes": 36319,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/0768223ca389a3b8c873ae3a8ae370fddfe910a0dfb4d58baf40b569858fc26b.png",
+      "figure_id": "fig_18_triggering-model",
+      "caption": "Figure 18 - Triggering model",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-36-fig_36_reconnect-sequence.png",
+      "sha256": "0daf26252444f36da452c11ad5506571d7256f58268af91e67c3318fa5825c0d",
+      "bytes": 33509,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/0daf26252444f36da452c11ad5506571d7256f58268af91e67c3318fa5825c0d.png",
+      "figure_id": "fig_36_reconnect-sequence",
+      "caption": "Figure 36 - Reconnect sequence",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part4-37-fig_37_logical-layers-of-a-server.png",
+      "sha256": "7138c7b888f06ee49019b4f307de7ea915135427a556a91e68349c2d8a602066",
+      "bytes": 6670,
+      "source_html": "research/industrial-opcua/raw/part4-full.html",
+      "url": "https://reference.opcfoundation.org/img/7138c7b888f06ee49019b4f307de7ea915135427a556a91e68349c2d8a602066.png",
+      "figure_id": "fig_37_logical-layers-of-a-server",
+      "caption": "Figure 37 - Logical layers of a Server",
+      "part": "4",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-01-fig_1_automation-facility-control.png",
+      "sha256": "35d4cbfb09269db905be4e67a84e3d86c006c97933f7ba381e971a5bbb339996",
+      "bytes": 180697,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/35d4cbfb09269db905be4e67a84e3d86c006c97933f7ba381e971a5bbb339996.png",
+      "figure_id": "fig_1_automation-facility-control",
+      "caption": "Figure 1 - Automation facility control",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-02-fig_2_program-illustration.png",
+      "sha256": "a95659534db01e8ca246d069a8b4bff5c0123b7fc6ee2167c5eaf21a0fd000e3",
+      "bytes": 21331,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/a95659534db01e8ca246d069a8b4bff5c0123b7fc6ee2167c5eaf21a0fd000e3.png",
+      "figure_id": "fig_2_program-illustration",
+      "caption": "Figure 2 - Program illustration",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-03-fig_4_program-type.png",
+      "sha256": "e42b1cc4e9116544d1c6125bef9805207fc43df6d1e2589b4c141d1e30ccbde5",
+      "bytes": 21079,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/e42b1cc4e9116544d1c6125bef9805207fc43df6d1e2589b4c141d1e30ccbde5.png",
+      "figure_id": "fig_4_program-type",
+      "caption": "Figure 4 - Program Type",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-04-fig_5_program-references.png",
+      "sha256": "925aac8f7a82efc25b0fc0985d56b62675187884b4e86b54a94dacb897541e2f",
+      "bytes": 19531,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/925aac8f7a82efc25b0fc0985d56b62675187884b4e86b54a94dacb897541e2f.png",
+      "figure_id": "fig_5_program-references",
+      "caption": "Figure 5 - Program FSM References",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-05-fig_6_programstatemachinetype-causes-and-effects.png",
+      "sha256": "2c527f278e26fbcc1fd029955def93af3ec502557e2748fd7ad64a8565bfcd2d",
+      "bytes": 22450,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/2c527f278e26fbcc1fd029955def93af3ec502557e2748fd7ad64a8565bfcd2d.png",
+      "figure_id": "fig_6_programstatemachinetype-causes-and-effects",
+      "caption": "Figure 6 - ProgramStateMachineType causes and effects",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-06-fig_1_program-example.png",
+      "sha256": "b41b7256d01cd5745e50d914be3638861f1bd2a2b89116ebc490a144793139dd",
+      "bytes": 5583,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/b41b7256d01cd5745e50d914be3638861f1bd2a2b89116ebc490a144793139dd.png",
+      "figure_id": "fig_1_program-example",
+      "caption": "Figure A.1 - Program example",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-07-fig_2_domaindownload-state-diagram.png",
+      "sha256": "96b762833b63a58e97e66e37f29b2c089fab10a343c4a8b7168b11e4df2d1279",
+      "bytes": 34513,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/96b762833b63a58e97e66e37f29b2c089fab10a343c4a8b7168b11e4df2d1279.png",
+      "figure_id": "fig_2_domaindownload-state-diagram",
+      "caption": "Figure A.2 - DomainDownload state diagram",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-08-fig_3_domaindownloadtype-partial-state-model.png",
+      "sha256": "f589836dfc98269c08c1c9c012e678e84144deb8c209d8deafd3fa27f9b30d3f",
+      "bytes": 45434,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/f589836dfc98269c08c1c9c012e678e84144deb8c209d8deafd3fa27f9b30d3f.png",
+      "figure_id": "fig_3_domaindownloadtype-partial-state-model",
+      "caption": "Figure A.3 - DomainDownloadType partial state model",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-09-fig_4_ready-to-running-model.png",
+      "sha256": "b7fcf53d1cbb2580afa45d53d3e4688a057906f9234deb7cf9094683c9ab7e6d",
+      "bytes": 23497,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/b7fcf53d1cbb2580afa45d53d3e4688a057906f9234deb7cf9094683c9ab7e6d.png",
+      "figure_id": "fig_4_ready-to-running-model",
+      "caption": "Figure A.4 - Ready To Running model",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-10-fig_5_opening-to-sending-to-closing-model.png",
+      "sha256": "f6df1f85c902d459a0b94d31daaab2630ed24a96c28bb7aee88035c1e50ab456",
+      "bytes": 26101,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/f6df1f85c902d459a0b94d31daaab2630ed24a96c28bb7aee88035c1e50ab456.png",
+      "figure_id": "fig_5_opening-to-sending-to-closing-model",
+      "caption": "Figure A.5 - Opening To Sending To Closing model",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-11-fig_6_running-to-suspended-model.png",
+      "sha256": "cb01cd2b53cea8c78856771eb127159184c5618a2dc82f0dbf2517c3e9d91b75",
+      "bytes": 20836,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/cb01cd2b53cea8c78856771eb127159184c5618a2dc82f0dbf2517c3e9d91b75.png",
+      "figure_id": "fig_6_running-to-suspended-model",
+      "caption": "Figure A.6 - Running To Suspended model",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-12-fig_7_suspended-to-running-model.png",
+      "sha256": "c9a7e75edba0354deb008ada61688d6369b368d7a8e1e69ee7adb9c7a8e61347",
+      "bytes": 20542,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/c9a7e75edba0354deb008ada61688d6369b368d7a8e1e69ee7adb9c7a8e61347.png",
+      "figure_id": "fig_7_suspended-to-running-model",
+      "caption": "Figure A.7 - Suspended To Running model",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-13-fig_8_running-to-halted-aborted-model.png",
+      "sha256": "9c6bb592ce8e4e72df7bbcd9c54c47f0b3e39548d9102c0deea775a637ada0d0",
+      "bytes": 21711,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/9c6bb592ce8e4e72df7bbcd9c54c47f0b3e39548d9102c0deea775a637ada0d0.png",
+      "figure_id": "fig_8_running-to-halted-aborted-model",
+      "caption": "Figure A.8 - Running To Halted - Aborted model",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-14-fig_9_suspended-to-aborted-model.png",
+      "sha256": "9073cb1f8af73baed33794eae815e1931a15efbdff8207c74f8f7d96071b31a3",
+      "bytes": 21624,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/9073cb1f8af73baed33794eae815e1931a15efbdff8207c74f8f7d96071b31a3.png",
+      "figure_id": "fig_9_suspended-to-aborted-model",
+      "caption": "Figure A.9 - Suspended To Aborted model",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    },
+    {
+      "path": "research/industrial-opcua/figures/part10-15-fig_10_running-to-completed-model.png",
+      "sha256": "c57941aedbc195075bf5178b206043390569789a7f9d8707eaf7cd0dc2f6ddbd",
+      "bytes": 22908,
+      "source_html": "research/industrial-opcua/raw/part10-full.html",
+      "url": "https://reference.opcfoundation.org/img/c57941aedbc195075bf5178b206043390569789a7f9d8707eaf7cd0dc2f6ddbd.png",
+      "figure_id": "fig_10_running-to-completed-model",
+      "caption": "Figure A.10 - Running To Completed model",
+      "part": "10",
+      "reading_status": "visually_reviewed_full_asset"
+    }
+  ],
+  "visual_review_method": "All 31 retained image assets displayed individually at available resolution via view_image; Figure 1 Part10 is a low-resolution illustrative facility plan, so tiny engineering labels are not legible and are not used as evidence.",
+  "unavailable_referenced_figures": [
+    {
+      "part": "10",
+      "label": "Figure 3",
+      "title": "Program states and transitions",
+      "evidence": "Broken xref fig_3_program-states-and-transitions in full HTML and STS XML; no matching figure asset exposed."
+    },
+    {
+      "part": "10",
+      "label": "Figure A.11",
+      "title": "Sequence of operations",
+      "evidence": "Referenced at the end of Annex A.2.6.3, absent from retained HTML/XML figure assets and Markdown figure markers."
+    }
+  ]
+}

@@ -1,0 +1,765 @@
+{
+  "schema": "hms-research-reading-log/1",
+  "review_date": "2026-11-06",
+  "reviewer": "sila_full_read; mapping delegated to sila_full_read/mapping",
+  "generated_at": "2026-11-05T22:08:44.005838+00:00",
+  "scope": "Full retained SiLA2v1.1 PartA/PartB text including glossary/references; all semantic diagrams and selected numeric/security table renders",
+  "sources": [
+    {
+      "id": "sila-core11",
+      "url": "https://sila-standard.com/wp-content/uploads/2022/03/SiLA-2-Part-A-Overview-Concepts-and-Core-Specification-v1.1.pdf",
+      "version": "Release v1.1, 19 March 2022; retained PDF footer v1.0 inconsistency",
+      "raw_path": "research/laboratory/raw/sila-core11.pdf",
+      "raw_sha256": "64e2a62a8531fe9464d363c7bccee4cb1505bfba1882f1bbde7783daac004584",
+      "text_path": "research/laboratory/text/sila-core11.txt",
+      "text_sha256": "db20cc24236188fd7c0eb5c2e6253b47228920ab75703021cff9777085a19c71",
+      "page_count": 92,
+      "line_count": 4149,
+      "line_definition": "1-based LF/sed-addressable lines including final unterminated form feed; not Python splitlines()",
+      "reading_status": "full_extracted_text_read",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 360,
+          "sha256": "f311118d47c35a7323ec3d49e05931298518c54ea2de7b80e858cf9a61cb1e8c",
+          "bytes": 11157,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 361,
+          "end_line": 850,
+          "sha256": "f818016d129770308c589760040e450173e6734718c7f0da1e80cbc16da8de98",
+          "bytes": 19326,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 851,
+          "end_line": 1350,
+          "sha256": "35ee8102bf9627ad174b8aabefaac67a3d7bc850027b43978eb0e47f95a9930c",
+          "bytes": 24123,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1351,
+          "end_line": 1850,
+          "sha256": "c90a1d1972a108155a4ff9251f108141a51042c8a76aced5ab1ca842cc75f395",
+          "bytes": 24879,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1851,
+          "end_line": 2350,
+          "sha256": "17f0ae0c9edfb7a225200932430dac01143166e1251e3339f70a628792770c52",
+          "bytes": 25603,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 2351,
+          "end_line": 2850,
+          "sha256": "d57ed8d1f8d797aa2826a4ce69148679bf537a0e397adf5f8cd9a75c5d898390",
+          "bytes": 26121,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 2851,
+          "end_line": 3350,
+          "sha256": "352511bef1c0a125e2c983eb07e0b6bc5c2aa69bb188167f960b65908f11adbe",
+          "bytes": 27220,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3351,
+          "end_line": 3850,
+          "sha256": "c2f565a4fa02c81cb882c331921572997b66de3cb502a14e0c13043e0f7befa2",
+          "bytes": 27957,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3851,
+          "end_line": 4149,
+          "sha256": "e4f5ad971964896cdba6d11b2fca712cc375ca5bc253b855797b77b76627ab61",
+          "bytes": 13771,
+          "status": "read_untruncated"
+        }
+      ],
+      "figure_scope": {
+        "semantic_diagram_pages": [
+          15,
+          16,
+          17,
+          20,
+          21,
+          22,
+          23,
+          28,
+          31,
+          32,
+          33,
+          34,
+          37,
+          48,
+          49,
+          50,
+          52,
+          55,
+          56,
+          57,
+          58
+        ],
+        "additional_numeric_unit_table_pages": [
+          63,
+          64,
+          68,
+          69,
+          70,
+          71,
+          72,
+          73,
+          74
+        ],
+        "all_semantic_diagrams_inspected": true,
+        "all_tables_text_read": true,
+        "all_tables_visually_rendered": false
+      },
+      "notes_path": "research/laboratory/notes/sila-full-review.md",
+      "limitations": [
+        "External feature XML/XSD/repositories, referenced standards, and latest errata/version history remain unread.",
+        "Future-considerations entries appear in contents but absent from retained PDF body.",
+        "Reading does not establish implementation behavior or conformance."
+      ]
+    },
+    {
+      "id": "sila-mapping11",
+      "url": "https://sila-standard.com/wp-content/uploads/2022/03/SiLA-2-Part-B-Mapping-Specification-v1.1.pdf",
+      "version": "1.1, 19 March 2022",
+      "raw_path": "research/laboratory/raw/sila-mapping11.pdf",
+      "raw_sha256": "9376695b36853d6860aafcd02b44f3016494f93c142a5d605aae1601b113926d",
+      "text_path": "research/laboratory/text/sila-mapping11.txt",
+      "text_sha256": "ca0e3a90b47639b10ba8a671effc56feaff53f5c060862f835de4a0dfb84ea7a",
+      "page_count": 91,
+      "line_count": 4099,
+      "line_definition": "LF-delimited sed-addressable lines including final unterminated form feed; not Python splitlines()",
+      "reading_status": "full_extracted_text_read",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 500,
+          "sha256": "9b90334cd331146eadd0c44282b3ec019a09866c6a5ac3b957f86ffebf2facf9",
+          "bytes": 19228,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 501,
+          "end_line": 1000,
+          "sha256": "de6ebf7bad1b863ef65e7c51a77123e78b22f39dcd5a3ed50bf34e0b68e6be31",
+          "bytes": 23670,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1001,
+          "end_line": 1500,
+          "sha256": "b59dc3ee1166bfe2229f00555c4f2f0b5e50effc8978c72fc478a46e869e4f18",
+          "bytes": 18591,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1501,
+          "end_line": 2000,
+          "sha256": "29ce0a07ae2918ae1d703fc577b786f5019b3addc56b49ddd2b9a500f442049c",
+          "bytes": 18446,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 2001,
+          "end_line": 2500,
+          "sha256": "0da43d115fab0cff59d50cbeda5b2eff537b6d3c0ba827cfd64c305bac805115",
+          "bytes": 19684,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 2501,
+          "end_line": 3000,
+          "sha256": "07d6b2940d032503f384b82f1e6b7cc0eec807d1448bdfa33549c6b69f624072",
+          "bytes": 19307,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3001,
+          "end_line": 3500,
+          "sha256": "fc5311bacd3e4fd8d6e86562076b267adad3f136644acc5d9bd9d1545b5aae09",
+          "bytes": 24458,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3501,
+          "end_line": 3800,
+          "sha256": "c7ecf065375b60bc52e142179851af6e25a96b77fc8313df20a1ebe88884b0c7",
+          "bytes": 22812,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3801,
+          "end_line": 4099,
+          "sha256": "18f4dc0a21b9e166d44f224f6f05eff7b85225f8ab4a3ad03f7a77c5212ebd56",
+          "bytes": 21847,
+          "status": "read_untruncated"
+        }
+      ],
+      "excluded_truncated_attempts": [
+        {
+          "start_line": 3501,
+          "end_line": 4099,
+          "resolution": "Reread as 3501-3800 and 3801-4099 without truncation"
+        }
+      ],
+      "figure_scope": "All 12 non-logo diagrams inspected; four additional pages inspected for type/security contradictions",
+      "images": [
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-17.png",
+          "sha256": "25ddc6626574c346dde33d7129c642c452929b5a2508f15e5754a9b065f3bc4b",
+          "page": 17,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-32.png",
+          "sha256": "0e90a7f9d3e6a61579299d85b316a8e717f24b1e6b85cbb23566519b4c7f882f",
+          "page": 32,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-35.png",
+          "sha256": "95b6bd2d3c7768e592e286e7aafc3204b6891c37f9ecc8735ae4fbbd4ecf465d",
+          "page": 35,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-38.png",
+          "sha256": "cf6a2267b69f8f5f78bb600323494adffb1a77bd765c575e431a1dd4c5d80421",
+          "page": 38,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-41.png",
+          "sha256": "a58a8e0af0731972b3af081da2913ff24050b591a8bd2577f3ae11b38cfd74c4",
+          "page": 41,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-43.png",
+          "sha256": "373059ef0692d6dfc43187626256b5fe23efcd50428675d646247631c19bcf26",
+          "page": 43,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-47.png",
+          "sha256": "1075816c6fe1f8eb5c28fe0ed585bca580cb7aaa0c1e632bef3d71b0f5e9ec49",
+          "page": 47,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-49.png",
+          "sha256": "aac665edaab508a0aa68666c9f6b6dcd5bce0fc5aba5613efa75c46483b9e23e",
+          "page": 49,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-57.png",
+          "sha256": "5bf24765a947d42f82438d10097435572b660128633835d8ed54cd43bc22e5e0",
+          "page": 57,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-60.png",
+          "sha256": "efa497176640b7b531d6440a91271b12206ba04c4e891525946ebfb890cb5e54",
+          "page": 60,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-62.png",
+          "sha256": "bfa629516922f347378220800a128290be842010e849c2d8baab5127e74cbfb2",
+          "page": 62,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-64.png",
+          "sha256": "f6a7cf22e04a2bd829d5635b0d2f6cd2150763dc2f6a073a2357ffbc796197f3",
+          "page": 64,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-54.png",
+          "sha256": "2fc5744baede1bd528050a0731f9ec6ecc2521cd2b9effea01bcfb3f26d62032",
+          "page": 54,
+          "visually_inspected": true,
+          "kind": "type_or_security_confirmation",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-55.png",
+          "sha256": "f8632473e0a4f323346a7d197e5d11ed9625c90327bf336ecae5a18afe29df37",
+          "page": 55,
+          "visually_inspected": true,
+          "kind": "type_or_security_confirmation",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-74.png",
+          "sha256": "91797ff47b163fd096f153bf00c6c847694af260aa7f2fad9dc6f1739d2db68f",
+          "page": 74,
+          "visually_inspected": true,
+          "kind": "type_or_security_confirmation",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-75.png",
+          "sha256": "b6afba675e5faab72bc38f7c338132d72d58647965a015add7c81b4ce8fe5360",
+          "page": 75,
+          "visually_inspected": true,
+          "kind": "type_or_security_confirmation",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        }
+      ],
+      "notes_path": "research/laboratory/notes/sila-mapping-review.md",
+      "limitations": [
+        "Reading does not imply implementation conformance, timing measurement or physical validation.",
+        "Referenced proto/XSD artifacts, implementations and RFCs remain unread by this workstream.",
+        "Future considerations appear in contents but their body is absent after the final normative marker in this PDF."
+      ]
+    }
+  ],
+  "figures": [
+    {
+      "path": "research/laboratory/figures/sila-core-page-15.png",
+      "sha256": "2dc9d060d303839086aade71d34c2e660f941cc30a543a3d91815463b5410c9e",
+      "page": 15,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-16.png",
+      "sha256": "3b9e7e52f942268e009cc1a026087075dcc609b82ce0f5a9a337fc06d6651634",
+      "page": 16,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-17.png",
+      "sha256": "2881f7442946a1230b9a8fe4fe09a02aae699a6b683eef08e790ccc68aa6da32",
+      "page": 17,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-20.png",
+      "sha256": "f8bfd8c6c2cd6132de2a6ab8127ea9d61fb3cf97afe1f5019ce9cf8e8ac95b92",
+      "page": 20,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-21.png",
+      "sha256": "9e2ad26af5a92d505b055154e28964de0a75aae9c3d30d352f9acb5ffccaacd0",
+      "page": 21,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-22.png",
+      "sha256": "b9bcfdbfbc65284b87db18db3d67b264d96f4081780e36e992989522c606dd8b",
+      "page": 22,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-23.png",
+      "sha256": "afee62aadd7a8e74f615844d73630dd078384a76bfc3cbfb04e21ae55f709783",
+      "page": 23,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-28.png",
+      "sha256": "cd1e0e6654363be4b7a3b41f9a2b34b98ba1f917dc0a1c30129ccd38f3c41781",
+      "page": 28,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-31.png",
+      "sha256": "22f3d09c261a81e587200d99681f0bbed804a7208b673f812488473dc3397b4a",
+      "page": 31,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-32.png",
+      "sha256": "1fa09aed7f5fb8ca345a4adfa81dff66a419f1bbc4f41b602b69d23aeca8fc98",
+      "page": 32,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-33.png",
+      "sha256": "fb0897d62c78787c46d0062786f561f5e4b70c21485fb8af87119c432f781879",
+      "page": 33,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-34.png",
+      "sha256": "dfe29c96f5829a73e9d718a30d4f6d8e711af17ed7118ba333f86febc349a5cd",
+      "page": 34,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-37.png",
+      "sha256": "899eaed3aaa6408e560f7e014906b953d5741f3da566f3c4f5758034d23827c9",
+      "page": 37,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-48.png",
+      "sha256": "7ed13e43d3755653f26db6207b59c10584e490ed581cbb2f9df27ba0305d573c",
+      "page": 48,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-49.png",
+      "sha256": "1182022e136de37313db601e86025ae65b5755d4c686f565c67918217b0bf1db",
+      "page": 49,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-50.png",
+      "sha256": "79bb9026378be4a6d927091848446e414133337d4142fd31b4f315b008e53001",
+      "page": 50,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-52.png",
+      "sha256": "6f8bd5d0993e6e9312e27544f7d419e1af262058756f22fe6322d4130e2aaff2",
+      "page": 52,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-55.png",
+      "sha256": "5793333e1304c089a5468ddecdc1463f522c8d256a3be98830ef5e8c7e0e656c",
+      "page": 55,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-56.png",
+      "sha256": "40fa58af7508d6e54bfc8f2d0374b6e3d7ab020f87aa7bd369b386ac0e363cc6",
+      "page": 56,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-57.png",
+      "sha256": "6db4738055ff0da8b73493ab332ccfbfeb4fadd235cacdc06b48109fdf5e116b",
+      "page": 57,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-58.png",
+      "sha256": "38b6edac70de52f8fcecdc7fa04715bb0e862c0a051b7adedc7c54a0d042d3ce",
+      "page": 58,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-63.png",
+      "sha256": "e0769d851bc99bc7807b9182f33724b87e96469a8f63fc12928ae942a3673b19",
+      "page": 63,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-64.png",
+      "sha256": "5dfb8ffe7c10341e081f63d8b0e397cc2db792b698384df9f4a26af66a4095d2",
+      "page": 64,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-68.png",
+      "sha256": "f2bd7cd68441135975b30ddca57cb70f8fc83aca38276c1ca448760ad7175305",
+      "page": 68,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-69.png",
+      "sha256": "50ebef8c5c4b583950da6ffc586be778e7f054663cbc5ab977f86ef86974bdb5",
+      "page": 69,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-70.png",
+      "sha256": "92f6e1e2c0d767218f0953db7a96e4a4b210dc84dfe1cc6a3aab1fc936a7718b",
+      "page": 70,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-71.png",
+      "sha256": "fd8698e42eb659263e0c05c274423bec78b8e6867ee5ea1af22f6a1dc91c505b",
+      "page": 71,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-72.png",
+      "sha256": "2d7e1da0711871fce6b81d4a1eabd109773849c868cafd856bebba80aff01879",
+      "page": 72,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-73.png",
+      "sha256": "26333fa126b350718a6dd6bacba7f7f19e07a9bafe68811ef4305facb19ad1b3",
+      "page": 73,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-core-page-74.png",
+      "sha256": "21e8efeba07c55025008cce9db67980dda94cb0526103f6bbd85436b33d9aca6",
+      "page": 74,
+      "source_id": "sila-core11",
+      "derived_from": "research/laboratory/raw/sila-core11.pdf",
+      "method": "pdftoppm -scale-to 1900 -png -singlefile",
+      "visually_inspected": true
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-17.png",
+      "sha256": "25ddc6626574c346dde33d7129c642c452929b5a2508f15e5754a9b065f3bc4b",
+      "page": 17,
+      "visually_inspected": true,
+      "kind": "diagram",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-32.png",
+      "sha256": "0e90a7f9d3e6a61579299d85b316a8e717f24b1e6b85cbb23566519b4c7f882f",
+      "page": 32,
+      "visually_inspected": true,
+      "kind": "diagram",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-35.png",
+      "sha256": "95b6bd2d3c7768e592e286e7aafc3204b6891c37f9ecc8735ae4fbbd4ecf465d",
+      "page": 35,
+      "visually_inspected": true,
+      "kind": "diagram",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-38.png",
+      "sha256": "cf6a2267b69f8f5f78bb600323494adffb1a77bd765c575e431a1dd4c5d80421",
+      "page": 38,
+      "visually_inspected": true,
+      "kind": "diagram",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-41.png",
+      "sha256": "a58a8e0af0731972b3af081da2913ff24050b591a8bd2577f3ae11b38cfd74c4",
+      "page": 41,
+      "visually_inspected": true,
+      "kind": "diagram",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-43.png",
+      "sha256": "373059ef0692d6dfc43187626256b5fe23efcd50428675d646247631c19bcf26",
+      "page": 43,
+      "visually_inspected": true,
+      "kind": "diagram",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-47.png",
+      "sha256": "1075816c6fe1f8eb5c28fe0ed585bca580cb7aaa0c1e632bef3d71b0f5e9ec49",
+      "page": 47,
+      "visually_inspected": true,
+      "kind": "diagram",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-49.png",
+      "sha256": "aac665edaab508a0aa68666c9f6b6dcd5bce0fc5aba5613efa75c46483b9e23e",
+      "page": 49,
+      "visually_inspected": true,
+      "kind": "diagram",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-57.png",
+      "sha256": "5bf24765a947d42f82438d10097435572b660128633835d8ed54cd43bc22e5e0",
+      "page": 57,
+      "visually_inspected": true,
+      "kind": "diagram",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-60.png",
+      "sha256": "efa497176640b7b531d6440a91271b12206ba04c4e891525946ebfb890cb5e54",
+      "page": 60,
+      "visually_inspected": true,
+      "kind": "diagram",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-62.png",
+      "sha256": "bfa629516922f347378220800a128290be842010e849c2d8baab5127e74cbfb2",
+      "page": 62,
+      "visually_inspected": true,
+      "kind": "diagram",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-64.png",
+      "sha256": "f6a7cf22e04a2bd829d5635b0d2f6cd2150763dc2f6a073a2357ffbc796197f3",
+      "page": 64,
+      "visually_inspected": true,
+      "kind": "diagram",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-54.png",
+      "sha256": "2fc5744baede1bd528050a0731f9ec6ecc2521cd2b9effea01bcfb3f26d62032",
+      "page": 54,
+      "visually_inspected": true,
+      "kind": "type_or_security_confirmation",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-55.png",
+      "sha256": "f8632473e0a4f323346a7d197e5d11ed9625c90327bf336ecae5a18afe29df37",
+      "page": 55,
+      "visually_inspected": true,
+      "kind": "type_or_security_confirmation",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-74.png",
+      "sha256": "91797ff47b163fd096f153bf00c6c847694af260aa7f2fad9dc6f1739d2db68f",
+      "page": 74,
+      "visually_inspected": true,
+      "kind": "type_or_security_confirmation",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    },
+    {
+      "path": "research/laboratory/figures/sila-mapping-page-75.png",
+      "sha256": "b6afba675e5faab72bc38f7c338132d72d58647965a015add7c81b4ce8fe5360",
+      "page": 75,
+      "visually_inspected": true,
+      "kind": "type_or_security_confirmation",
+      "method": "pdftoppm -scale-to 2100 -png -singlefile"
+    }
+  ],
+  "artifacts": [
+    "research/laboratory/notes/sila-full-review.md",
+    "research/laboratory/notes/sila-mapping-review.md",
+    "docs/laboratory-bindings.md"
+  ],
+  "limitations": [
+    "No runtime, firmware, interoperability or physical tests executed.",
+    "External linked normative feature/schema/protobuf artifacts not yet acquired or read by this review."
+  ]
+}

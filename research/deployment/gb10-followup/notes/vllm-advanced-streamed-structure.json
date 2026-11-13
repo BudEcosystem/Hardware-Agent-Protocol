@@ -1,0 +1,241 @@
+{
+  "selector": "server-streamed HTML page container div#S:f",
+  "title": "Serve LLMs with vLLM on One Device | DGX Spark",
+  "tables": [
+    {
+      "table": 1,
+      "rows": [
+        [
+          "Device",
+          "Memory",
+          "Recommended model"
+        ],
+        [
+          "DGX Spark",
+          "64GB unified memory",
+          "Qwen3.8 27B (NVFP4)"
+        ],
+        [
+          "DGX Spark",
+          "128GB unified memory",
+          "Qwen3.8 27B (NVFP4)"
+        ],
+        [
+          "DGX Station",
+          "748GB coherent memory",
+          "DeepSeek V4 Flash 0731"
+        ]
+      ]
+    },
+    {
+      "table": 2,
+      "rows": [
+        [
+          "Setting",
+          "Why it is in the recipe"
+        ],
+        [
+          "Checkpoint precision and --quantization",
+          "Set how model weights are stored and run. Lower precision can reduce weight memory use; the checkpoint and backend must support it."
+        ],
+        [
+          "--gpu-memory-utilization",
+          "Sets the fraction of GPU memory vLLM budgets for its executor. A higher value can leave more room for KV cache, with less headroom for other use."
+        ],
+        [
+          "--max-model-len",
+          "Caps the total input and output tokens in a request. A large limit needs enough cache to serve long requests."
+        ],
+        [
+          "--max-num-seqs",
+          "Caps the number of sequences processed in one iteration. More active sequences can raise throughput and memory use."
+        ],
+        [
+          "--kv-cache-dtype",
+          "Sets KV-cache precision separately from weight precision. A supported lower-precision cache can hold more tokens in the same memory."
+        ],
+        [
+          "--cpu-offload-gb",
+          "Places some model weights in host memory. This can make a large model fit, with performance tied to host memory and the CPU\u2013GPU link."
+        ]
+      ]
+    },
+    {
+      "table": 3,
+      "rows": [
+        [
+          "Setting",
+          "Why it is in the recipe"
+        ],
+        [
+          "--max-num-batched-tokens",
+          "Sets the token budget for one scheduler iteration. With chunked prefill, smaller values can help active replies keep moving; larger values can process more prompt tokens at once."
+        ],
+        [
+          "--enable-chunked-prefill",
+          "Splits long prompt processing into chunks that can share batches with decode work."
+        ],
+        [
+          "--enable-prefix-caching",
+          "Reuses cached work for shared prompt prefixes, such as repeated system prompts or document text. It saves prompt work when the prefix matches."
+        ],
+        [
+          "--speculative-config",
+          "Uses a draft model or native prediction heads to propose tokens for the main model to check. The gain depends on the model and workload. Preserve any draft-checkpoint settings."
+        ]
+      ]
+    },
+    {
+      "table": 4,
+      "rows": [
+        [
+          "Client",
+          "API base URL",
+          "Setup"
+        ],
+        [
+          "Hermes or another process on the DGX host",
+          "http://localhost:8000/v1",
+          "Follow the client setup with the served model ID."
+        ],
+        [
+          "A client on your laptop",
+          "http://localhost:8000/v1",
+          "Forward a local port to the DGX host port with SSH, as shown below."
+        ],
+        [
+          "The OpenShell sandbox in its playbook",
+          "http://host.openshell.internal:8000/v1",
+          "Keep vLLM reachable from the sandbox; the playbook uses --host 0.0.0.0 and host port 8000 ."
+        ]
+      ]
+    }
+  ],
+  "images": [],
+  "article_links": [
+    {
+      "text": "Inference",
+      "href": "/search?label=Inference"
+    },
+    {
+      "text": "vLLM",
+      "href": "/search?label=vLLM"
+    },
+    {
+      "text": "View on GitHub",
+      "href": "https://github.com/vllm-project/vllm"
+    },
+    {
+      "text": "Overview Overview",
+      "href": "/spark/vllm/overview"
+    },
+    {
+      "text": "Intermediate Intermediate",
+      "href": "/spark/vllm/intermediate"
+    },
+    {
+      "text": "Advanced Advanced",
+      "href": "/spark/vllm/advanced"
+    },
+    {
+      "text": "Troubleshooting Troubleshooting",
+      "href": "/spark/vllm/troubleshooting"
+    },
+    {
+      "text": "NVIDIA Local AI Inference Recipes",
+      "href": "https://nvidia.github.io/local-ai-inference-recipes/"
+    },
+    {
+      "text": "Qwen3.8 27B (NVFP4)",
+      "href": "https://nvidia.github.io/local-ai-inference-recipes/hardware/dgx-spark/index.html?model=qwen%2Fqwen3.8-27b&os=linux&backend=vllm&memory=64&precision=nvfp4&variant=&memoryConfig=64"
+    },
+    {
+      "text": "Qwen3.8 27B (NVFP4)",
+      "href": "https://nvidia.github.io/local-ai-inference-recipes/hardware/dgx-spark/index.html?model=qwen%2Fqwen3.8-27b&os=linux&backend=vllm&memory=128&precision=nvfp4&variant=&memoryConfig=128"
+    },
+    {
+      "text": "DeepSeek V4 Flash 0731",
+      "href": "https://nvidia.github.io/local-ai-inference-recipes/hardware/dgx-station/index.html?model=deepseek%2Fdeepseek-v4-flash-0731&os=linux&backend=vllm&memory=&precision=fp4-fp8-mixed&variant=&memoryConfig=748"
+    },
+    {
+      "text": "DeepSeek V4 Flash 0731 on Station",
+      "href": "https://nvidia.github.io/local-ai-inference-recipes/hardware/dgx-station/index.html?model=deepseek%2Fdeepseek-v4-flash-0731&os=linux&backend=vllm&memory=&precision=fp4-fp8-mixed&variant=&memoryConfig=748"
+    },
+    {
+      "text": "vLLM serve options",
+      "href": "https://docs.vllm.ai/en/latest/cli/serve/"
+    },
+    {
+      "text": "quantized KV-cache guide",
+      "href": "https://docs.vllm.ai/en/latest/features/quantization/quantized_kvcache/"
+    },
+    {
+      "text": "scheduling and tuning",
+      "href": "https://docs.vllm.ai/en/latest/configuration/optimization/"
+    },
+    {
+      "text": "prefix caching",
+      "href": "https://docs.vllm.ai/en/latest/features/automatic_prefix_caching/"
+    },
+    {
+      "text": "speculative decoding",
+      "href": "https://docs.vllm.ai/en/latest/features/speculative_decoding/"
+    },
+    {
+      "text": "tool calling",
+      "href": "https://docs.vllm.ai/en/latest/features/tool_calling/"
+    },
+    {
+      "text": "reasoning outputs",
+      "href": "https://docs.vllm.ai/en/latest/features/reasoning_outputs/"
+    },
+    {
+      "text": "Hermes playbook",
+      "href": "https://build.nvidia.com/playbooks/hermes-agent"
+    },
+    {
+      "text": "OpenShell playbook",
+      "href": "https://build.nvidia.com/playbooks/openshell"
+    },
+    {
+      "text": "vLLM tuning guide",
+      "href": "https://docs.vllm.ai/en/latest/configuration/optimization/"
+    },
+    {
+      "text": "the vLLM cluster playbook",
+      "href": "https://build.nvidia.com/playbooks/vllm-cluster"
+    },
+    {
+      "text": "vLLM Recipes",
+      "href": "https://recipes.vllm.ai/browse"
+    },
+    {
+      "text": "vLLM Recipes \u2014 DGX Spark",
+      "href": "https://recipes.vllm.ai/browse?panel=open&hw=dgx_spark_gb10"
+    },
+    {
+      "text": "vLLM Recipes \u2014 DGX Station",
+      "href": "https://recipes.vllm.ai/browse?panel=open&hw=dgx_station_gb300"
+    },
+    {
+      "text": "vLLM Documentation",
+      "href": "https://docs.vllm.ai/en/latest/"
+    },
+    {
+      "text": "NGC vLLM Container",
+      "href": "https://catalog.ngc.nvidia.com/orgs/nvidia/containers/vllm"
+    },
+    {
+      "text": "DGX Spark Documentation",
+      "href": "https://docs.nvidia.com/dgx/dgx-spark"
+    },
+    {
+      "text": "DGX Spark Forum",
+      "href": "https://forums.developer.nvidia.com/c/accelerated-computing/dgx-spark-gb10"
+    },
+    {
+      "text": "NVIDIA Developer Forums",
+      "href": "https://forums.developer.nvidia.com/"
+    }
+  ]
+}

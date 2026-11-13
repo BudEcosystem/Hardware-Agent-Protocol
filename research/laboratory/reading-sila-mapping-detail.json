@@ -1,0 +1,230 @@
+{
+  "schema": "hms-research-reading-log/1",
+  "reviewer": "sila_full_read/mapping",
+  "reviewed_at": "2026-11-05T22:06:48.027677+00:00",
+  "sources": [
+    {
+      "id": "sila-mapping11",
+      "url": "https://sila-standard.com/wp-content/uploads/2022/03/SiLA-2-Part-B-Mapping-Specification-v1.1.pdf",
+      "version": "1.1, 19 March 2022",
+      "raw_path": "research/laboratory/raw/sila-mapping11.pdf",
+      "raw_sha256": "9376695b36853d6860aafcd02b44f3016494f93c142a5d605aae1601b113926d",
+      "text_path": "research/laboratory/text/sila-mapping11.txt",
+      "text_sha256": "ca0e3a90b47639b10ba8a671effc56feaff53f5c060862f835de4a0dfb84ea7a",
+      "page_count": 91,
+      "line_count": 4099,
+      "line_definition": "LF-delimited sed-addressable lines including final unterminated form feed; not Python splitlines()",
+      "reading_status": "full_extracted_text_read",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 500,
+          "sha256": "9b90334cd331146eadd0c44282b3ec019a09866c6a5ac3b957f86ffebf2facf9",
+          "bytes": 19228,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 501,
+          "end_line": 1000,
+          "sha256": "de6ebf7bad1b863ef65e7c51a77123e78b22f39dcd5a3ed50bf34e0b68e6be31",
+          "bytes": 23670,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1001,
+          "end_line": 1500,
+          "sha256": "b59dc3ee1166bfe2229f00555c4f2f0b5e50effc8978c72fc478a46e869e4f18",
+          "bytes": 18591,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1501,
+          "end_line": 2000,
+          "sha256": "29ce0a07ae2918ae1d703fc577b786f5019b3addc56b49ddd2b9a500f442049c",
+          "bytes": 18446,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 2001,
+          "end_line": 2500,
+          "sha256": "0da43d115fab0cff59d50cbeda5b2eff537b6d3c0ba827cfd64c305bac805115",
+          "bytes": 19684,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 2501,
+          "end_line": 3000,
+          "sha256": "07d6b2940d032503f384b82f1e6b7cc0eec807d1448bdfa33549c6b69f624072",
+          "bytes": 19307,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3001,
+          "end_line": 3500,
+          "sha256": "fc5311bacd3e4fd8d6e86562076b267adad3f136644acc5d9bd9d1545b5aae09",
+          "bytes": 24458,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3501,
+          "end_line": 3800,
+          "sha256": "c7ecf065375b60bc52e142179851af6e25a96b77fc8313df20a1ebe88884b0c7",
+          "bytes": 22812,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3801,
+          "end_line": 4099,
+          "sha256": "18f4dc0a21b9e166d44f224f6f05eff7b85225f8ab4a3ad03f7a77c5212ebd56",
+          "bytes": 21847,
+          "status": "read_untruncated"
+        }
+      ],
+      "excluded_truncated_attempts": [
+        {
+          "start_line": 3501,
+          "end_line": 4099,
+          "resolution": "Reread as 3501-3800 and 3801-4099 without truncation"
+        }
+      ],
+      "figure_scope": "All 12 non-logo diagrams inspected; four additional pages inspected for type/security contradictions",
+      "images": [
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-17.png",
+          "sha256": "25ddc6626574c346dde33d7129c642c452929b5a2508f15e5754a9b065f3bc4b",
+          "page": 17,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-32.png",
+          "sha256": "0e90a7f9d3e6a61579299d85b316a8e717f24b1e6b85cbb23566519b4c7f882f",
+          "page": 32,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-35.png",
+          "sha256": "95b6bd2d3c7768e592e286e7aafc3204b6891c37f9ecc8735ae4fbbd4ecf465d",
+          "page": 35,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-38.png",
+          "sha256": "cf6a2267b69f8f5f78bb600323494adffb1a77bd765c575e431a1dd4c5d80421",
+          "page": 38,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-41.png",
+          "sha256": "a58a8e0af0731972b3af081da2913ff24050b591a8bd2577f3ae11b38cfd74c4",
+          "page": 41,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-43.png",
+          "sha256": "373059ef0692d6dfc43187626256b5fe23efcd50428675d646247631c19bcf26",
+          "page": 43,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-47.png",
+          "sha256": "1075816c6fe1f8eb5c28fe0ed585bca580cb7aaa0c1e632bef3d71b0f5e9ec49",
+          "page": 47,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-49.png",
+          "sha256": "aac665edaab508a0aa68666c9f6b6dcd5bce0fc5aba5613efa75c46483b9e23e",
+          "page": 49,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-57.png",
+          "sha256": "5bf24765a947d42f82438d10097435572b660128633835d8ed54cd43bc22e5e0",
+          "page": 57,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-60.png",
+          "sha256": "efa497176640b7b531d6440a91271b12206ba04c4e891525946ebfb890cb5e54",
+          "page": 60,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-62.png",
+          "sha256": "bfa629516922f347378220800a128290be842010e849c2d8baab5127e74cbfb2",
+          "page": 62,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-64.png",
+          "sha256": "f6a7cf22e04a2bd829d5635b0d2f6cd2150763dc2f6a073a2357ffbc796197f3",
+          "page": 64,
+          "visually_inspected": true,
+          "kind": "diagram",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-54.png",
+          "sha256": "2fc5744baede1bd528050a0731f9ec6ecc2521cd2b9effea01bcfb3f26d62032",
+          "page": 54,
+          "visually_inspected": true,
+          "kind": "type_or_security_confirmation",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-55.png",
+          "sha256": "f8632473e0a4f323346a7d197e5d11ed9625c90327bf336ecae5a18afe29df37",
+          "page": 55,
+          "visually_inspected": true,
+          "kind": "type_or_security_confirmation",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-74.png",
+          "sha256": "91797ff47b163fd096f153bf00c6c847694af260aa7f2fad9dc6f1739d2db68f",
+          "page": 74,
+          "visually_inspected": true,
+          "kind": "type_or_security_confirmation",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        },
+        {
+          "path": "research/laboratory/figures/sila-mapping-page-75.png",
+          "sha256": "b6afba675e5faab72bc38f7c338132d72d58647965a015add7c81b4ce8fe5360",
+          "page": 75,
+          "visually_inspected": true,
+          "kind": "type_or_security_confirmation",
+          "method": "pdftoppm -scale-to 2100 -png -singlefile"
+        }
+      ],
+      "notes_path": "research/laboratory/notes/sila-mapping-review.md",
+      "limitations": [
+        "Reading does not imply implementation conformance, timing measurement or physical validation.",
+        "Referenced proto/XSD artifacts, implementations and RFCs remain unread by this workstream.",
+        "Future considerations appear in contents but their body is absent after the final normative marker in this PDF."
+      ]
+    }
+  ]
+}

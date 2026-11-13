@@ -1,0 +1,49 @@
+[
+  {
+    "profile": "hms.adapter-installation/1",
+    "adapterId": "simulation:local",
+    "driver": "sqlite-simulation",
+    "instances": {
+      "fan": "sim:local-fan",
+      "focus": "sim:local-focus",
+      "inspection": "sim:local-inspection"
+    },
+    "resources": {
+      "fan": "sim-resource:local-fan",
+      "focus": "sim-resource:local-focus",
+      "inspection": "sim-resource:local-inspection"
+    }
+  },
+  {
+    "profile": "hms.adapter-installation/1",
+    "adapterId": "simulation:compact-a",
+    "driver": "compact-simulation",
+    "instances": {
+      "fan": "sim:compact-a-fan",
+      "focus": "sim:compact-a-focus",
+      "inspection": "sim:compact-a-inspection"
+    },
+    "resources": {
+      "fan": "sim-resource:compact-a-fan",
+      "focus": "sim-resource:compact-a-focus",
+      "inspection": "sim-resource:compact-a-inspection"
+    },
+    "incarnationHex": "01010101010101010101010101010101"
+  },
+  {
+    "profile": "hms.adapter-installation/1",
+    "adapterId": "simulation:compact-b",
+    "driver": "compact-simulation",
+    "instances": {
+      "fan": "sim:compact-b-fan",
+      "focus": "sim:compact-b-focus",
+      "inspection": "sim:compact-b-inspection"
+    },
+    "resources": {
+      "fan": "sim-resource:compact-b-fan",
+      "focus": "sim-resource:compact-b-focus",
+      "inspection": "sim-resource:compact-b-inspection"
+    },
+    "incarnationHex": "02020202020202020202020202020202"
+  }
+]

@@ -1,0 +1,289 @@
+     AVR101: High Endurance EEPROM Storage
+
+
+Features                                                                                      8-bit
+• Circular Buffer in EEPROM
+• RESET Protection of EEPROM Buffer                                                           Microcontroller
+• Increased Endurance of EEPROM Storage
+
+
+Introduction                                                                                  Application
+Having a system that regularly writes parameters to the EEPROM can wear out the
+EEPROM, since it is only guaranteed to endure 100 k erase/write cycles. Writing the           Note
+parameters to a circular buffer in EEPROM where each of the elements in the buffer
+can endure 100 k erase/write cycles can circumvent this. However, if the system is
+exposed to RESET conditions, such as power failures, the system needs to be able to
+identify the correct position in the circular buffer again. This document describes how
+to make safe high endurance parameter storage in EEPROM.
+
+
+Theory of Operation
+By having a circular buffer (O-buffer) in EEPROM it is possible to increase the number
+of times that a parameter can be stored in EEPROM. If the buffer has two levels the
+number of times that the parameter can be stored is twice the endurance of one single
+EEPROM cell: 200 k erase/writes. By using this approach it is possible to increase the
+number of times a parameter can be stored by increasing the O-buffer size. In other
+word, the idea is to distribute the storage of the parameter over several EEPROM
+locations to achieve increased parameter storage endurance. When using the O-
+buffer approach the parameter storage endurance equal the number of memory loca-
+tions used in the O-buffer times the endurance of a single EEPROM location.
+All O-buffers need a pointer to the last location written. To be able to recover the posi-
+tion of the pointer, e.g., after power loss, a second O-buffer can be used. The
+secondary O-buffer should not hold the specific address, but just a “sign” showing the
+state of the Parameter Buffer. By making the two O-buffers similar in size and by let-
+ting their relative buffer pointers operate in parallel it is possible to identify the last
+used location in the parameter O-buffer. Figure 1 illustrates an eight level O-buffers.
+
+
+
+
+                                                                                                     Rev. 2526A–AVR–09/02
+
+
+
+
+                                                                                                                       1
+               Figure 1. Parallel O-buffers in EEPROM
+
+                                           X       D0                            0            1
+
+                                  X                     D1           0                            2
+                                           Parameter                                 Status
+                                             Buffer                                  Buffer
+                                  X                     D2           0                            3
+
+                                           D4      D3                            5            4
+
+
+
+
+                                      tr
+
+
+
+
+                                                                           tr
+                                      p
+
+
+
+
+                                                                             p
+                                  fer
+
+
+
+
+                                                                         fer
+                                 Buf
+
+
+
+
+                                                                     Buf
+               When writing to the Parameter Buffer the Status Buffer is also updated: The Buffer
+               Pointer points to the same element in both the of the Parameter Buffer and the Status
+               Buffer. The value of the Status Buffer element equivalent to the last element written to in
+               the Parameter Buffer is increased by 1, also when wrapping from the end to the begin-
+               ning of the buffer. After a RESET it is then possible to look through the Status Buffer,
+               finding the last Status Buffer element changed by finding the location where the differ-
+               ence between a buffer element and the next buffer element is bigger than 1.
+               Note that it is important to initialise the EEPROM memory of the Status Buffers before it
+               is used the first time. If this is not done it may not be possible to find the correct location
+               of the last used buffer element. The problem will only occur if a RESET condition occurs
+               before the O-buffer has completed a full “tour” round the circle. The best solution to
+               make sure that the buffer has been initialised is to erase/program it along with the
+               erase/programming of the Flash Memory.
+               One should be aware that this method of providing additional endurance for the param-
+               eter storage is memory hungry. One way of reducing this is to re-use the Status O-buffer
+               for multiple parameters. This requires that all parameters are stored at the same time,
+               so that all buffers are operated in parallel.
+
+
+Code Example   The code example was developed using IAR EWAVR 2.26C and the ATmega16 as tar-
+               get device.
+               The code example consists of 4 functions: findCurrentEepromAddr(), which identifies
+               where in the Parameter Buffer to continue after RESET; EeReadBuffer(), which reads
+               the parameter from the buffer; EeWriteBuffer(), which stores the parameter in the
+               Parameter Buffer. Finally, there is a main function, which illustrates how to use the other
+               function.
+               The functions are described by flow charts below. The main function is not described as
+               flow chart.
+
+
+
+
+2    AVR101
+                                                                                                      2526A–AVR–09/02
+                                                                                                               AVR101
+
+                  Figure 2. Find Current EEPROM Address
+
+                                                                                        Find Current
+                                                                                         EEPROM
+                                                                                          address
+
+
+
+
+                                                                                  addr = Status Buffer start
+                                                                                          address
+
+
+
+
+                                                                        No
+                                                                                     StatusBuf[addr] ==
+                                                                                    StatusBuf[addr+1]+1
+
+
+
+
+                                                                                                  Yes
+
+
+
+                                     addr = addr - buffer size - 1                      addr = n + 1
+
+
+
+
+                                             Return addr
+
+
+
+
+                  Figure 3. EEPROM Read Buffer
+
+
+                                                                     EEPROM read
+                                                                        Buffer
+
+
+
+
+                                                                                         No
+
+                                                                       EEWE bit
+                                                                       cleared?
+
+
+
+
+                                                                             Yes
+
+
+                                                             Copy EEPROM address to
+                                                                     EEAR
+
+
+
+
+                                                                Initiate EEPROM read
+
+
+
+
+                                                                     Return EEPROM
+                                                                          value
+
+
+
+
+                                                                                                                    3
+2526A–AVR–09/02
+             Figure 4. EEPROM Write Buffer
+
+
+                                                   EEPROM write
+                                                      buffer
+
+
+
+
+                                             Increment Buffer Address
+
+
+
+
+                                              Store parameter in buffer
+
+
+
+
+                                             Increment and store Status
+                                                   Buffer Value
+
+
+
+
+                                                       Return
+
+
+
+
+4   AVR101
+                                                                          2526A–AVR–09/02
+ Atmel Headquarters                            Atmel Operations
+ Corporate Headquarters                        Memory                                               RF/Automotive
+   2325 Orchard Parkway                          2325 Orchard Parkway                                 Theresienstrasse 2
+   San Jose, CA 95131                            San Jose, CA 95131                                   Postfach 3535
+   TEL 1(408) 441-0311                           TEL 1(408) 441-0311                                  74025 Heilbronn, Germany
+   FAX 1(408) 487-2600                           FAX 1(408) 436-4314                                  TEL (49) 71-31-67-0
+                                                                                                      FAX (49) 71-31-67-2340
+ Europe                                        Microcontrollers
+   Atmel Sarl                                    2325 Orchard Parkway                                 1150 East Cheyenne Mtn. Blvd.
+   Route des Arsenaux 41                         San Jose, CA 95131                                   Colorado Springs, CO 80906
+   Case Postale 80                               TEL 1(408) 441-0311                                  TEL 1(719) 576-3300
+   CH-1705 Fribourg                              FAX 1(408) 436-4314                                  FAX 1(719) 540-1759
+   Switzerland
+   TEL (41) 26-426-5555                          La Chantrerie                                      Biometrics/Imaging/Hi-Rel MPU/
+   FAX (41) 26-426-5500                          BP 70602                                           High Speed Converters/RF Datacom
+                                                 44306 Nantes Cedex 3, France                         Avenue de Rochepleine
+ Asia                                            TEL (33) 2-40-18-18-18                               BP 123
+   Room 1219                                     FAX (33) 2-40-18-19-60                               38521 Saint-Egreve Cedex, France
+   Chinachem Golden Plaza                                                                             TEL (33) 4-76-58-30-00
+   77 Mody Road Tsimhatsui                     ASIC/ASSP/Smart Cards                                  FAX (33) 4-76-58-34-80
+   East Kowloon                                  Zone Industrielle
+   Hong Kong                                     13106 Rousset Cedex, France
+   TEL (852) 2721-9778                           TEL (33) 4-42-53-60-00
+   FAX (852) 2722-1369                           FAX (33) 4-42-53-60-01
+
+ Japan                                           1150 East Cheyenne Mtn. Blvd.
+   9F, Tonetsu Shinkawa Bldg.                    Colorado Springs, CO 80906
+   1-24-8 Shinkawa                               TEL 1(719) 576-3300
+   Chuo-ku, Tokyo 104-0033                       FAX 1(719) 540-1759
+   Japan
+   TEL (81) 3-3523-3551                          Scottish Enterprise Technology Park
+   FAX (81) 3-3523-7581                          Maxwell Building
+                                                 East Kilbride G75 0QR, Scotland
+                                                 TEL (44) 1355-803-000
+                                                 FAX (44) 1355-242-743
+
+
+                                                                                                    e-mail
+                                                                                                    literature@atmel.com
+
+                                                                                                    Web Site
+                                                                                                    http://www.atmel.com
+
+
+
+
+© Atmel Corporation 2002.
+Atmel Corporation makes no warranty for the use of its products, other than those expressly contained in the Company’s standard warranty
+which is detailed in Atmel’s Terms and Conditions located on the Company’s web site. The Company assumes no responsibility for any errors
+which may appear in this document, reserves the right to change devices or specifications detailed herein at any time without notice, and does
+not make any commitment to update the information contained herein. No licenses to patents or other intellectual property of Atmel are granted
+by the Company in connection with the sale of Atmel products, expressly or by implication. Atmel’s products are not authorized for use as critical
+components in life support devices or systems.
+
+
+ATMEL ® and AVR® are the registered trademarks of Atmel.
+
+
+Other terms and product names may be the trademarks of others.
+                                                                                                                         Printed on recycled paper.
+
+                                                                                                                        2526A–AVR–09/02         0M
+

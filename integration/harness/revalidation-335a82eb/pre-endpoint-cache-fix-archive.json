@@ -1,0 +1,31 @@
+{
+  "reason": "Root independent review found disputed terminal value must invalidate cached observation in endpoint_binding. Native SQLite simulation tests do not execute that binding but final complete input snapshot will be refreshed and14tests rerun.",
+  "snapshot_path": "hms-final-snapshot",
+  "passed_tests": 14,
+  "files": {
+    "final-hms-inputs.json": {
+      "archive_path": "pre-endpoint-cache-fix-hms-inputs.json",
+      "sha256": "77a75277705e472f56a256019d9aaa3af8e57ac0ff6d742cb29acaa82abaadf4"
+    },
+    "final-session-capture.json": {
+      "archive_path": "pre-endpoint-cache-fix-session-capture.json",
+      "sha256": "4929742a91384d32e648a7228e05df9e0bce1527b960eb2d373575967ebd1e07"
+    },
+    "final-native-call-timings.jsonl": {
+      "archive_path": "pre-endpoint-cache-fix-native-call-timings.jsonl",
+      "sha256": "734fe836ca1193b548aac38574eac9838c59d07ad437b21da00b5b169555b72f"
+    },
+    "final-sdk-capture.jsonl": {
+      "archive_path": "pre-endpoint-cache-fix-sdk-capture.jsonl",
+      "sha256": "a95b47107cedc82dcda7e447e8cb50f8981f0dde9c039b6eb74eefcdae1298d3"
+    },
+    "verification/final-focused-tests.log": {
+      "archive_path": "verification/pre-endpoint-cache-fix-focused-tests.log",
+      "sha256": "49e33292dbc0c42738f120a3fd8f482608ba978856b11d01e3e35bbe80fcccf3"
+    },
+    "verification/final-focused-tests.command.json": {
+      "archive_path": "verification/pre-endpoint-cache-fix-focused-tests.command.json",
+      "sha256": "041334c99a1ff907dd68c3fcba61e9ff4ad96fe22d279d532f84d76ff4aa65bd"
+    }
+  }
+}

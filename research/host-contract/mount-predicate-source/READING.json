@@ -1,0 +1,124 @@
+{
+  "acquiredCodeExecuted": false,
+  "files": [
+    {
+      "path": "linux/fs/mount.h",
+      "readLineRanges": [
+        [
+          1,
+          266
+        ]
+      ],
+      "sha256": "86c7a133c56416124581546f79c3dda716dd6ae6704efe36e0d5701b96302f6b",
+      "status": "fully-read"
+    },
+    {
+      "path": "linux/fs/namespace.c",
+      "readLineRanges": [
+        [
+          1,
+          350
+        ],
+        [
+          700,
+          750
+        ],
+        [
+          1125,
+          1325
+        ]
+      ],
+      "sha256": "80f8495c5743372cf92ee7759ab2c15572dc84667da459fdb149cad8bff917f6",
+      "status": "partial"
+    },
+    {
+      "path": "linux/fs/stat.c",
+      "readLineRanges": [
+        [
+          1,
+          968
+        ]
+      ],
+      "sha256": "47d331643ef846d014684819266beb580fd6da3e9430b0cdedebed53e99d9078",
+      "status": "fully-read"
+    },
+    {
+      "path": "linux/include/linux/stat.h",
+      "readLineRanges": [
+        [
+          1,
+          72
+        ]
+      ],
+      "sha256": "189c21c895c453c9b1022da7b2d907e09dc4e0fef5e7bbd165dd32f930a30e1b",
+      "status": "fully-read"
+    },
+    {
+      "path": "linux/include/uapi/linux/stat.h",
+      "readLineRanges": [
+        [
+          1,
+          260
+        ]
+      ],
+      "sha256": "c900a05e031d999074db5ac3567f651ce2cf2f9f9e0a686810d6453c9f8b9526",
+      "status": "fully-read"
+    },
+    {
+      "path": "glibc/io/bits/statx-generic.h",
+      "readLineRanges": [
+        [
+          1,
+          65
+        ]
+      ],
+      "sha256": "2cab536381a2e5b16ec63266830890d948012e0ef2ee7e607c5500e25d8abf44",
+      "status": "fully-read"
+    },
+    {
+      "path": "glibc/io/bits/types/struct_statx.h",
+      "readLineRanges": [
+        [
+          1,
+          55
+        ]
+      ],
+      "sha256": "d414d628034f1efb33effd2bbc85d2c0d1be9ea46d52cdc48fd99a93ecaa8acd",
+      "status": "fully-read"
+    },
+    {
+      "path": "glibc/io/statx_generic.c",
+      "readLineRanges": [
+        [
+          1,
+          90
+        ]
+      ],
+      "sha256": "28f667cd5a97f98fd7f87924a4b017f8839d92ef1df09ccc91958603e5813b3d",
+      "status": "fully-read"
+    },
+    {
+      "path": "glibc/sysdeps/unix/sysv/linux/bits/statx.h",
+      "readLineRanges": [
+        [
+          1,
+          39
+        ]
+      ],
+      "sha256": "aa197c11709c0ab300b5c9feb8ea06d173725fa45cf4fcb7a93080f3496c5314",
+      "status": "fully-read"
+    },
+    {
+      "path": "glibc/sysdeps/unix/sysv/linux/statx.c",
+      "readLineRanges": [
+        [
+          1,
+          38
+        ]
+      ],
+      "sha256": "34e862df5538805afc57a3faa099baf9eeada8849f20c3477a421dd55afd4464",
+      "status": "fully-read"
+    }
+  ],
+  "repositoryWideReadClaim": false
+}

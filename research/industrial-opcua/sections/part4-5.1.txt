@@ -1,0 +1,6 @@
+5.1 General
+
+This clause defines the OPC UA Service Sets and their Services. Clause 7 contains the definitions of common parameters used by these Services. Subclause 6.5 describes auditing requirements for all services.
+
+Whether or not a Server supports a Service Set, or a Service within a Service Set, is defined by its Profile. Profiles are described in OPC 10000-7.
+

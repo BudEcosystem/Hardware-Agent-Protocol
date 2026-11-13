@@ -1,0 +1,57 @@
+{
+  "recorded_at": "2026-11-06T04:26:07.333571+00:00",
+  "harness_base_commit": "a16267881e98cdac5e1edd7ab6ff5d1dae0a8ff2",
+  "worktree": "/home/bud/Desktop/bud/hms-harness-a1626788",
+  "prior_receipt": {
+    "path": "integration/harness/installed-support/verification.json",
+    "sha256": "64aea7cae093b1f232f80a8998edf6e68865d7769230b2673a99aba1c9a692f8"
+  },
+  "build_baseline_receipt": {
+    "path": "integration/harness/revalidation-a1626788/verification.json",
+    "sha256": "ed259fad71f3d58b668b72217861a72c7592c9c37d8a7dcdfe53f31df325ff50"
+  },
+  "unchanged_overlay_files": 38,
+  "current_overlay_and_test_files": 39,
+  "assertion_repair": {
+    "created_at": "2026-11-06T04:14:20.621270+00:00",
+    "original": {
+      "path": "packages/experimental/tool-hardware/tests/hms-compact.spec.ts",
+      "sha256": "f9cc85ba1cc0531bd4f0af9d3933285298eae6fc9a40d94c8e59ca608a73f62b"
+    },
+    "copied_test": {
+      "path": "packages/experimental/tool-hardware/tests/hms-compact-multi-adapter.spec.ts",
+      "sha256": "749a63754ce16ef957f311fdbffd651811874bee52ed1826c2d8bbb671b43110",
+      "snapshot_path": "packages/tool-hardware/tests/hms-compact-multi-adapter.spec.ts"
+    },
+    "patch": {
+      "path": "assertion-repair.patch",
+      "sha256": "0f99cc6e959658ea5a69bf45987a355812732400675bc03732a4d36d6c68b1d2"
+    },
+    "change": "Only the gated invoke reply assertion accepts accepted or dispatching. Reply gating, SIGKILL position, native frames, QUERY-only recovery and effect checks are unchanged.",
+    "semantics": "Existing Runtime.invoke projects current status after durable submit; a worker may advance to dispatching before the reply. This is a test assumption repair, not a production API change.",
+    "build_scope": "The package tsconfig includes src only; tests are outside emitted artifact inputs. Host aggregate test typechecking and focused lint will rerun for this added test."
+  },
+  "changed_hms_files": [
+    "hms/adapter_catalog.py",
+    "hms/cli.py",
+    "hms/endpoint_binding.py",
+    "hms/installations.py",
+    "hms/local_adapter.py",
+    "hms/registry.py",
+    "hms/runtime.py",
+    "hms/simulator.py",
+    "hms/state_path.py"
+  ],
+  "added_hms_files": [
+    "hms/adapter_catalog.py",
+    "hms/installations.py",
+    "hms/local_adapter.py"
+  ],
+  "fixture_files": 47,
+  "pinned_existing_built_files": 14406,
+  "reused_checks": {
+    "build_artifacts": "PASS7 gates,0 failed,0 skipped,294.13s; final changes since this build are only2 compact test/support files, with unchanged production/build/dependency inputs.",
+    "built_exports_smoke": "PASS actual compiled four-package exports under plain Node."
+  },
+  "qualification": "Same a162 base and 38 exact inherited overlay input hashes; one additional copied test repairs an assertion without changing emitted artifact inputs. Reuse prior 7 artifact stages and built-export check; rerun 3 aggregate checks and focused lint. Existing built bytes are pinned before/after, not represented as a new build."
+}

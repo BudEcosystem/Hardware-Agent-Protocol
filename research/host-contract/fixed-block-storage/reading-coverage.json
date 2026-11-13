@@ -1,0 +1,183 @@
+{
+  "schema": "hms.selected-source-reading/1",
+  "createdAt": "2026-11-09T02:45:28.129831+00:00",
+  "review": "primary agent only",
+  "files": [
+    {
+      "path": "littlefs/README.md",
+      "sha256": "567ca1c81fa0fde6cc4230f010678fca4a0794ce9572d803dbbe2a1948bf2ac5",
+      "lfLines": 342,
+      "fullyRead": true,
+      "readRanges": [
+        [
+          1,
+          342
+        ]
+      ]
+    },
+    {
+      "path": "littlefs/LICENSE.md",
+      "sha256": "0cb4ff1daf5fdc1359c6a6ee3116092f08fc100c9d58b1b77ab17bfd801f856d",
+      "lfLines": 25,
+      "fullyRead": true,
+      "readRanges": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "path": "littlefs-fuse/README.md",
+      "sha256": "20fe8fadb2f3677bf48d67fef4f85583e09f2f60ac6c657285f83764619df5ff",
+      "lfLines": 176,
+      "fullyRead": true,
+      "readRanges": [
+        [
+          1,
+          176
+        ]
+      ]
+    },
+    {
+      "path": "littlefs-fuse/LICENSE.md",
+      "sha256": "9fd6d396541da2a949e9819817effcae34bb45b20ef8b070a998dcacf6d03e45",
+      "lfLines": 25,
+      "fullyRead": true,
+      "readRanges": [
+        [
+          1,
+          25
+        ]
+      ]
+    },
+    {
+      "path": "littlefs-fuse/lfs_fuse.c",
+      "sha256": "9c240156859b2fb65bd9b5fe6ffe4ad89746ff1291fc552826f225d61eec03e7",
+      "lfLines": 687,
+      "fullyRead": true,
+      "readRanges": [
+        [
+          1,
+          687
+        ]
+      ]
+    },
+    {
+      "path": "littlefs-fuse/lfs_fuse_bd.c",
+      "sha256": "c08b0cd8c973c2072e005df0a84833700599b73fb50c7ceecb2e00dc738f0790",
+      "lfLines": 139,
+      "fullyRead": true,
+      "readRanges": [
+        [
+          1,
+          139
+        ]
+      ]
+    },
+    {
+      "path": "littlefs-fuse/lfs_fuse_bd.h",
+      "sha256": "f50dfd7bca397d367b3f886353a0594e45e643acc69d19691dc2b6d644da6f2d",
+      "lfLines": 40,
+      "fullyRead": true,
+      "readRanges": [
+        [
+          1,
+          40
+        ]
+      ]
+    },
+    {
+      "path": "fuse2fs/fuse2fs.c",
+      "sha256": "1cb6c5f608ab5ac34afc8829ab85a66cbb8bed341c8d07b68b9e0963b2e13f38",
+      "lfLines": 5841,
+      "fullyRead": true,
+      "readRanges": [
+        [
+          1,
+          850
+        ],
+        [
+          851,
+          1700
+        ],
+        [
+          1701,
+          2550
+        ],
+        [
+          2551,
+          2950
+        ],
+        [
+          2951,
+          3500
+        ],
+        [
+          3501,
+          4100
+        ],
+        [
+          4101,
+          4650
+        ],
+        [
+          4651,
+          5250
+        ],
+        [
+          5251,
+          5841
+        ]
+      ]
+    },
+    {
+      "path": "installed/posix_fallocate.3",
+      "sha256": "d49e1df81f0a33eccc03e110ddbbd2f50b6e38a090862aeea8f5887d64abcfb0",
+      "lfLines": 181,
+      "fullyRead": true,
+      "readRanges": [
+        [
+          1,
+          181
+        ]
+      ]
+    },
+    {
+      "path": "installed/fsync.2",
+      "sha256": "431e8df828ce9b59635ea44b66a65ff8e25dbc85672587437f163553ba630929",
+      "lfLines": 200,
+      "fullyRead": true,
+      "readRanges": [
+        [
+          1,
+          200
+        ]
+      ]
+    },
+    {
+      "path": "installed/pread.2",
+      "sha256": "f60596b46bb106e1140b900ba99e784194ae31753d50a54d3647429d177f30ec",
+      "lfLines": 146,
+      "fullyRead": true,
+      "readRanges": [
+        [
+          1,
+          146
+        ]
+      ]
+    }
+  ],
+  "fullFiles": 11,
+  "lfLines": 7802,
+  "truncatedReadsCounted": false,
+  "wholeRepositoriesRead": false,
+  "littlefsCoreDesignSpecificationRead": false,
+  "acquiredCodeExecuted": false,
+  "supplement": {
+    "path": "fuse2fs/fuse2fs.1.txt",
+    "fullyRead": true,
+    "rawHtmlRetained": true,
+    "countedInSourceLfLines": false
+  }
+}

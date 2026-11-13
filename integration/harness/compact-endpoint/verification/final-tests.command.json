@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-11-06T02:13:53.464171+00:00",
+  "argv": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "packages/experimental/tool-hardware/tests/hms-compact.spec.ts",
+    "--reporter=verbose"
+  ],
+  "cwd": "/home/bud/Desktop/bud/hms-harness-335a82eb",
+  "exit_code": 0,
+  "elapsed_seconds": 59.541,
+  "test_environment": {
+    "HMS_COMPACT_ROOT": "/home/bud/Desktop/bud/hms/integration/harness/compact-endpoint/runtime-fixture",
+    "HMS_COMPACT_CAPTURE": "/home/bud/Desktop/bud/hms/integration/harness/compact-endpoint/final-capture.jsonl"
+  },
+  "environment": "Credential names scrubbed; private XDG state/config/cache and pnpm store/cache/auth config; Node24.22.1 first in PATH; automatic pre-run install disabled after explicit installation."
+}

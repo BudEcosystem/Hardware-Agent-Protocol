@@ -1,0 +1,112 @@
+[
+  {
+    "number": 1,
+    "html_id": null,
+    "rows": [
+      [
+        "Category",
+        "data size (RAM)",
+        "code size (Flash, ROM, ...)",
+        "Typical Representative",
+        "Remarks, typical application scenarios"
+      ],
+      [
+        "Class-0, C0",
+        "<< 10 KiB",
+        "<< 100 KiB",
+        "small footprint microcontrollers",
+        "Sensor nodes without secure communication"
+      ],
+      [
+        "Class-1, C1",
+        "~ 10 KiB",
+        "~ 100 KiB",
+        "microcontrollers",
+        "Sensors that typically supports secure\n            communication protocols such as TLS, DTLS"
+      ],
+      [
+        "Class-2, C2",
+        "~ 64 KiB",
+        "~ 256 KiB",
+        "connected limited device",
+        "Small embedded devices such as M2M communication\n            nodes, smart meters, sensor nodes and other embedded\n            appliances, home appliances, low-end TV set-top boxes,\n            and point of sale terminals are some examples."
+      ],
+      [
+        "Class-3, C3",
+        "~ 64-256 KiB",
+        "~ 256 KiB - several MBs",
+        "ISP gateway",
+        "Small home and industrial gateways"
+      ],
+      [
+        "Class-4, C4",
+        "~ 256 KiB - several MB",
+        "~ 1 MB - several MB",
+        "gateway/hub",
+        "Large home and industrial gateways"
+      ],
+      [
+        "Class-5, C5",
+        "~ 1 - 8 GB",
+        "~ 1 - 16 GB",
+        "edge",
+        "Small edge servers"
+      ],
+      [
+        "Class-6, C6",
+        "~ several GB",
+        "~ several GB",
+        "edge",
+        "Large edge servers"
+      ],
+      [
+        "Class-7, C7",
+        "~ several GB",
+        "~ several GB",
+        "cloud",
+        "Cloud systems with multiple compute nodes"
+      ]
+    ]
+  },
+  {
+    "number": 2,
+    "html_id": null,
+    "rows": [
+      [
+        "Constraints on",
+        "Rationale",
+        "Examples"
+      ],
+      [
+        "vocabulary of Thing Description classes",
+        "guaranteed set of metadata fields",
+        "Make specific vocabulary terms mandatory, remove\n              others"
+      ],
+      [
+        "class relationships",
+        "unambiguous structure",
+        "limited cardinality, e.g. only one form per\n              operation per interaction affordance."
+      ],
+      [
+        "values of vocabulary terms",
+        "simplified processing",
+        "Limit the length of characters per string. Always\n              use arrays, where the spec permits a string or an\n              array of strings."
+      ],
+      [
+        "data schemas",
+        "simplified processing",
+        "No arbitrary nested objects or arrays of\n              arrays."
+      ],
+      [
+        "security",
+        "reduced implementation effort",
+        "Only a restricted set of security\n              mechanisms."
+      ],
+      [
+        "protocol binding",
+        "guaranteed protocol semantics",
+        "limited protocol(s) and protocol features,\n              Example: predefined mapping of http verbs (GET/PUT)\n              to operation verbs, similar constraints for other\n              protocols."
+      ]
+    ]
+  }
+]

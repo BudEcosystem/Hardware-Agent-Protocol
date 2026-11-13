@@ -1,0 +1,22 @@
+{
+  "id": "set_authorizer",
+  "requestedUrl": "https://www.sqlite.org/c3ref/set_authorizer.html",
+  "finalUrl": "https://www.sqlite.org/c3ref/set_authorizer.html",
+  "startedUtc": "2026-11-06T22:32:58.484850+00:00",
+  "completedUtc": "2026-11-06T22:33:00.278774+00:00",
+  "status": 200,
+  "headers": {
+    "Connection": "close",
+    "Date": "Fri, 06 Nov 2026 22:33:00 GMT",
+    "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+    "Cache-Control": "max-age=120",
+    "ETag": "\"m6ae24ec4s29e8\"",
+    "Content-type": "text/html; charset=utf-8",
+    "Content-length": "10728"
+  },
+  "maximumBytes": 1048576,
+  "bytes": 10728,
+  "sha256": "f4b43d68f5d827b768cd3a1cad8cfd2aa913e073be9d2498ec80b53cd8e32c02",
+  "complete": true,
+  "scope": "Raw page acquisition only; reading recorded separately."
+}

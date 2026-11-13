@@ -1,0 +1,13 @@
+{
+  "schema": "hms-harness-review-context-drift/1",
+  "changes": [
+    {
+      "path": "docs/prompt-to-pat.md",
+      "reviewed_sha256": "6e8d30743a79037d2a6f11af1f4334bf9648f810ceb7a43ba4fac1685aa63262",
+      "current_sha256": "507eff71f4f13b61836bf6beed7963e39b0571b68d7b1f189bba70e16bc3f649",
+      "current_snapshot_path": "integration/harness/procedure-design/context-current/docs/prompt-to-pat.md",
+      "diff": "--- reviewed snapshot\n+++ current root context\n@@ -155,8 +155,12 @@\n skill library improved through environmental feedback; that demonstration is in\n Minecraft, and does not itself establish deterministic zero-inference routing or\n physical-device qualification ([official project](https://voyager.minedojo.org/),\n-[paper](https://arxiv.org/abs/2305.16291)). Full Voyager/code reading is a new\n-research lane, not completed by this design note. Firmata's retained\n+[paper](https://arxiv.org/abs/2305.16291)). The new\n+[reading receipt](../research/planning/pat-learning/reading.json) covers the full\n+arXiv v2 paper and thirteen selected complete repository files; publisher-final\n+access remains a recorded gap. The [critique](../research/planning/pat-learning/notes/critique.md)\n+traces continued model/embedding calls and concrete program-bound and promotion\n+limitations. It does not claim a complete repository audit. Firmata's retained\n [scheduler protocol](../research/protocols/repos/firmata-protocol/scheduler.md)\n shows an existing message-programming mechanism; HMS additionally needs durable\n identity, bounded effects and explicit evidence semantics.\n",
+      "assessment": "Concurrent parent update records completed Voyager selected research. Delta read; PAT interfaces/acceptance unaffected. No source overwrite."
+    }
+  ]
+}

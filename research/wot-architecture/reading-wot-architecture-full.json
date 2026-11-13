@@ -1,0 +1,226 @@
+{
+  "schema_version": 1,
+  "reviewer": "HMS research agent /root/home_bindings_read",
+  "completed_at_utc": "2026-11-06T01:38:32.221878+00:00",
+  "method": "Agent read all recorded bounded untruncated text chunks, both complete tables, every semantic figure via contact sheets or individual lifecycle renders, and complete SVG labels. Source scripts/styles not executed; original SVG input checked for scripts/external resource references. Bibliography entries, not linked bibliography works, included.",
+  "sources": [
+    {
+      "id": "architecture-11-rec",
+      "source_url": "https://www.w3.org/TR/2023/REC-wot-architecture11-20231205/",
+      "raw_path": "research/wot-architecture/raw/architecture-11-rec.html",
+      "raw_sha256": "82aa73cba33f5098db0cde716bc66622bc3db25d531c4fd894b5eacfea34deb1",
+      "text_path": "research/wot-architecture/text/architecture-11-rec.txt",
+      "text_sha256": "99ba5fc61bf80fe9318077860ef0354ffb765733694adbb7289b29a52718af0f",
+      "text_bytes": 219357,
+      "logical_lines": 8405,
+      "line_count": 8405,
+      "ends_with_newline": true,
+      "reading_status": "read_full_available_document_text",
+      "coverage_complete": true,
+      "untruncated_read_line_intervals": [
+        [
+          1,
+          1100
+        ],
+        [
+          1101,
+          2100
+        ],
+        [
+          2101,
+          3100
+        ],
+        [
+          3101,
+          4100
+        ],
+        [
+          4101,
+          5100
+        ],
+        [
+          5101,
+          6100
+        ],
+        [
+          6101,
+          7100
+        ],
+        [
+          7101,
+          8300
+        ],
+        [
+          8301,
+          8405
+        ]
+      ],
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 1100,
+          "sha256": "213d6d0add98eabf2298b41b215c0425e36acc809edc1b6bb565694ae6694c68"
+        },
+        {
+          "start_line": 1101,
+          "end_line": 2100,
+          "sha256": "bb06f52aad8f1e51372a490bb23d91cc8b3c59e3d4de26e1dfb3bdfad3660d54"
+        },
+        {
+          "start_line": 2101,
+          "end_line": 3100,
+          "sha256": "ceef7b77b534a1f6512a53d3572b6126843150fff372075fe26a478bf0a9c3b7"
+        },
+        {
+          "start_line": 3101,
+          "end_line": 4100,
+          "sha256": "bc87abe37902b1ba675336be394dbd47186c6a4d5c8b905f4877d7b5d873915f"
+        },
+        {
+          "start_line": 4101,
+          "end_line": 5100,
+          "sha256": "99b12a918c56f40d224d256f0f26712e6b3c8f917144e4520fea732c1b80c215"
+        },
+        {
+          "start_line": 5101,
+          "end_line": 6100,
+          "sha256": "dcb9156f4e2750cd2697f3e6d8335af25d8cb66e5b682d96fb5ba3e3474b0e23"
+        },
+        {
+          "start_line": 6101,
+          "end_line": 7100,
+          "sha256": "30859674db17c6a5c4594c7d6dd8fa038ba0a4ad4f258e5373883ef726aa8fba"
+        },
+        {
+          "start_line": 7101,
+          "end_line": 8300,
+          "sha256": "50d83d5755085ab3e8d3bafb85b88480c638db2f2bf7425292e36d746966fabe"
+        },
+        {
+          "start_line": 8301,
+          "end_line": 8405,
+          "sha256": "6802fe5773c21a1559624da91609813a4da75499f0bcad86c7e057d9d18e0060"
+        }
+      ]
+    },
+    {
+      "id": "errata-11",
+      "source_url": "https://w3c.github.io/wot-architecture/errata11.html",
+      "raw_path": "research/wot-architecture/raw/errata-11.html",
+      "raw_sha256": "d3ef549927f89e44a942a05bec5be3f2443f1054beaaa129c1ddf8a6c73da4ac",
+      "text_path": "research/wot-architecture/text/errata-11.txt",
+      "text_sha256": "c8bed6e7ec366626f601de17a6a0f09c882d34036664f9b5e69259f29b9bfc8f",
+      "text_bytes": 2959,
+      "logical_lines": 79,
+      "line_count": 79,
+      "ends_with_newline": true,
+      "reading_status": "read_full_available_document_text",
+      "coverage_complete": true,
+      "untruncated_read_line_intervals": [
+        [
+          1,
+          79
+        ]
+      ],
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 79,
+          "sha256": "c8bed6e7ec366626f601de17a6a0f09c882d34036664f9b5e69259f29b9bfc8f"
+        }
+      ]
+    },
+    {
+      "id": "publication-history",
+      "source_url": "https://www.w3.org/standards/history/wot-architecture11/",
+      "raw_path": "research/wot-architecture/raw/publication-history.html",
+      "raw_sha256": "fb68c256d65038ba64284abd1ae423cab45d1c6cd89b3c54a413430163b2a717",
+      "text_path": "research/wot-architecture/text/publication-history.txt",
+      "text_sha256": "d6bc71c4302baad0bc352d0ec7c9e1f8f94d4840f8116a4844984afb925b9862",
+      "text_bytes": 2467,
+      "logical_lines": 118,
+      "line_count": 118,
+      "ends_with_newline": true,
+      "reading_status": "read_full_available_document_text",
+      "coverage_complete": true,
+      "untruncated_read_line_intervals": [
+        [
+          1,
+          118
+        ]
+      ],
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 118,
+          "sha256": "d6bc71c4302baad0bc352d0ec7c9e1f8f94d4840f8116a4844984afb925b9862"
+        }
+      ]
+    }
+  ],
+  "selected_sources": [
+    {
+      "id": "editors-draft",
+      "path": "research/wot-architecture/raw/editors-draft.html",
+      "raw_sha256": "b5934e866e86bc72ebe401a187bf4bf24a2ce4bc261fff636164a609496bfb48",
+      "coverage_complete": false,
+      "reading_status": "selected_raw_configuration_only",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 70,
+          "sha256": "092d6dc2b54b9a351e9a43ebc1fc71c817a7abae588aefab4d8531a3796a33fb"
+        }
+      ],
+      "scope": "Title, ED status, shortName, repository/main and stale previous-publication metadata; entire 5,020-line editor text and linked works not read."
+    }
+  ],
+  "equivalent_unread_renditions": [
+    {
+      "id": "latest-alias",
+      "reason": "Byte-identical alias copies of fully read Recommendation; not counted as separate full readings"
+    },
+    {
+      "id": "latest-11-alias",
+      "reason": "Byte-identical alias copies of fully read Recommendation; not counted as separate full readings"
+    }
+  ],
+  "unread_text_renditions": [
+    {
+      "id": "editors-draft",
+      "text_path": "research/wot-architecture/text/editors-draft.txt",
+      "lines": 5020,
+      "reason": "Only raw configuration lines 1–70 reviewed; no full editor-draft reading"
+    }
+  ],
+  "scope": "One complete Recommendation, including sections 1–12, appendices A changes, B acknowledgments and C reference entries, all tables and semantic figures; two complete status pages; one selected editor configuration. No full bibliography, repository, context, Thing Model schema, Binding Templates, Security Guidelines, Scripting API, Profile or linked use-case document claim.",
+  "counts": {
+    "acquisitions": 6,
+    "full_specifications": 1,
+    "full_text_sources": 3,
+    "full_text_lines": 8602,
+    "coverage_ranges": 11,
+    "selected_raw_sources": 1,
+    "selected_raw_lines": 70,
+    "semantic_figures": 40,
+    "figure_assets": 41,
+    "table_count": 2,
+    "section_headings": 130
+  },
+  "figure_manifest": {
+    "path": "research/wot-architecture/metadata/figure-reviews.json",
+    "sha256": "1a10667d22bc3feb78ee5c6821cf36bcfecf038131fda501feb79e486405c224",
+    "bytes": 31547
+  },
+  "table_manifest": {
+    "path": "research/wot-architecture/metadata/table-inventory.json",
+    "sha256": "cce88c81d8dd85db2f348865453635b4aefd2e1ae69346a0a00f504bec2e7e16",
+    "bytes": 3148
+  },
+  "section_manifest": {
+    "path": "research/wot-architecture/metadata/section-inventory.json",
+    "sha256": "35325813389257700e15eebee593fb633c131a93a29d1662c72cfe83b0448312",
+    "bytes": 20436
+  },
+  "svg_rendering_caveat": "Complete SVG source labels supplement fallback renders; figure 23 source is defective. No corrected diagram or script-generated publication was substituted."
+}

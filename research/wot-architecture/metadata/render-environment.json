@@ -1,0 +1,9 @@
+{
+  "python": "Python 3, installed Pillow plus installed librsvg/cairo through ctypes; original render.py only",
+  "librsvg_package": "2.58.0+dfsg-1ubuntu0.1",
+  "libcairo_package": "1.18.0-3build1",
+  "command": "python3 -B research/wot-architecture/render.py",
+  "target_code_executed": false,
+  "acquired_code_executed": false,
+  "failed_alternatives": "Headless browser attempts returned without screenshot; no resulting images retained. Final SVG review artifacts are librsvg fallback renders, not browser screenshots."
+}

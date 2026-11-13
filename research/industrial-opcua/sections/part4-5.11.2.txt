@@ -1,0 +1,54 @@
+5.11.2 Read
+
+5.11.2.1 Description
+
+This Service is used to read one or more Attributes of one or more Nodes. For constructed Attribute values whose elements are indexed, such as an array, this Service allows Clients to read the entire set of indexed values as a composite, to read individual elements or to read ranges of elements of the composite.
+
+The maxAge parameter is used to direct the Server to access the value from the underlying data source, such as a device, if its copy of the data is older than that which the maxAge specifies. If the Server cannot meet the requested maximum age, it returns its "best effort" value rather than rejecting the request.
+
+5.11.2.2 Parameters
+
+
+              Table 47 defines the parameters for the Service.
+
+Table 47 - Read Service Parameters
+Name,Type,Description
+Request,,
+requestHeader,RequestHeader,Common request parameters (see 7.32 for RequestHeader definition).
+maxAge,Duration,"Maximum age of the value to be read in milliseconds. The age of the value is based on the difference between the ServerTimestamp and the time when the Server starts processing the request. For example if the Client specifies a maxAge of 500 milliseconds and it takes 100 milliseconds until the Server starts processing the request, the age of the returned value could be 600 milliseconds prior to the time it was requested. If the Server has one or more values of an Attribute that are within the maximum age, it can return any one of the values or it can read a new value from the data source. The number of values of an Attribute that a Server has depends on the number of MonitoredItems that are defined for the Attribute. In any case, the Client can make no assumption about which copy of the data will be returned.  If the Server does not have a value that is within the maximum age, it shall attempt to read a new value from the data source.  If the Server cannot meet the requested maxAge, it returns its ""best effort"" value rather than rejecting the request. This may occur when the time it takes the Server to process and return the new data value after it has been accessed is greater than the specified maximum age. If maxAge is set to 0, the Server shall attempt to read a new value from the data source. If maxAge is set to the max Int32 value or greater, the Server shall attempt to get a cached value. Negative values are invalid for maxAge."
+timestampsTo Return,Enum TimestampsTo Return,An enumeration that specifies the Timestamps to be returned for each requested Variable Value Attribute. The TimestampsToReturn enumeration is defined in 7.39.
+nodesToRead [],ReadValueId,"List of Nodes and their Attributes to read. For each entry in this list, a StatusCode is returned, and if it indicates success, the Attribute Value is also returned. The ReadValueId parameter type is defined in 7.28."
+,,
+Response,,
+responseHeader,ResponseHeader,Common response parameters (see 7.33 for ResponseHeader definition).
+results [],DataValue,List of Attribute values (see 7.11 for DataValue definition). The size and order of this list matches the size and order of the nodesToRead request parameter. There is one entry in this list for each Node contained in the nodesToRead parameter.
+diagnosticInfos [],DiagnosticInfo,List of diagnostic information (see 7.12 for DiagnosticInfo definition). The size and order of this list matches the size and order of the nodesToRead request parameter. There is one entry in this list for each Node contained in the nodesToRead parameter. This list is empty if diagnostics information was not requested in the request header or if no diagnostic information was encountered in processing of the request.
+
+5.11.2.3 Service results
+
+
+              Table 48 defines the Service results specific to this Service. Common StatusCodes are defined in Table 178.
+
+Table 48 - Read Service Result Codes
+Symbolic Id,Description
+Bad_NothingToDo,See Table 178 for the description of this result code.
+Bad_TooManyOperations,See Table 178 for the description of this result code.
+Bad_MaxAgeInvalid,The max age parameter is invalid.
+Bad_TimestampsToReturnInvalid,See Table 178 for the description of this result code.
+
+5.11.2.4 StatusCodes
+
+
+              Table 49 defines values for the operation level statusCode contained in the DataValue structure of each results element. Common StatusCodes are defined in Table 179.
+
+Table 49 - Read Operation Level Result Codes
+Symbolic Id,Description
+Bad_NodeIdInvalid,See Table 179 for the description of this result code.
+Bad_NodeIdUnknown,See Table 179 for the description of this result code.
+Bad_AttributeIdInvalid,See Table 179 for the description of this result code.
+Bad_IndexRangeInvalid,See Table 179 for the description of this result code.
+Bad_IndexRangeNoData,See Table 179 for the description of this result code.
+Bad_NotReadable,See Table 179 for the description of this result code.
+Bad_UserAccessDenied,See Table 178 for the description of this result code.
+Bad_SecurityModeInsufficient,See Table 179 for the description of this result code.
+

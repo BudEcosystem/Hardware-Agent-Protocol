@@ -1,0 +1,109 @@
+5.13.1 MonitoredItem model
+
+5.13.1.1 Overview
+
+
+              Clients define MonitoredItems to subscribe to data and Events. Each MonitoredItem identifies the item to be monitored and the Subscription to use to send Notifications. The item to be monitored may be any Node Attribute.
+
+
+              Notifications are data structures that describe the occurrence of data changes and Events. They are packaged into NotificationMessages for transfer to the Client. The Subscription periodically sends NotificationMessages at a user-specified publishing interval, and the cycle during which these messages are sent is called a publishing cycle.
+
+Four primary parameters are defined for MonitoredItems that tell the Server how the item is to be sampled, evaluated and reported. These parameters are the sampling interval, the monitoring mode, the filter and the queue parameter. Figure 15 illustrates these concepts.
+
+[Figure: Figure 15 - MonitoredItem model]
+
+
+              Attributes, other than the Value Attribute, are only monitored for a change in value. The filter is not used for these Attributes. Any change in value for these Attributes causes a Notification to be generated.
+
+The Value Attribute is used when monitoring Variables. Variable values are monitored for a change in value or a change in their status. The filters defined in this document (see 7.22.2) and in OPC 10000-8 are used to determine if the value change is large enough to cause a Notification to be generated for the Variable.
+
+
+              Objects and views can be used to monitor Events. Events are only available from Nodes where the SubscribeToEvents bit of the EventNotifier Attribute is set. The filter defined in this document (see 7.22.3) is used to determine if an Event received from the Node is sent to the Client. The filter also allows selecting fields of the EventType that will be contained in the Event such as EventId, EventType, SourceNode, Time and Description.
+
+
+              OPC 10000-3 describes the Event model and the base EventTypes.
+
+The Properties of the base EventTypes and the representation of the base EventTypes in the AddressSpace are specified in OPC 10000-5.
+
+5.13.1.2 Sampling interval
+
+Each MonitoredItem created by the Client is assigned a sampling interval that is either inherited from the publishing interval of the Subscription or that is defined specifically to override that rate. A negative number indicates that the default sampling interval defined by the publishing interval of the Subscription is requested. The sampling interval indicates the fastest rate at which the Server should sample its underlying source for data changes.
+
+A Client shall define a sampling interval of 0 if it subscribes for Events.
+
+The assigned sampling interval defines a "best effort" cyclic rate that the Server uses to sample the item from its source. "Best effort" in this context means that the Server does its best to sample at this rate. Sampling at rates faster than this rate is acceptable, but not necessary to meet the needs of the Client. How the Server deals with the sampling rate and how often it actually polls its data source internally is a Server implementation detail. However, the time between values returned to the Client shall be greater or equal to the sampling interval.
+
+The Client may also specify 0 for the sampling interval, which indicates that the Server should use the fastest practical rate. It is expected that Servers will support only a limited set of sampling intervals to optimize their operation. If the exact interval requested by the Client is not supported by the Server, then the Server assigns to the MonitoredItem the most appropriate interval as determined by the Server. It returns this assigned interval to the Client. The ServerCapabilities Object defined in OPC 10000-5 identifies the minimum sampling interval supported by the Server. The optional MinimumSamplingInterval Attribute defined in OPC 10000-3 identifies the minimum sampling interval supported for a Variable. If a Server uses a fixed set of sampling intervals, the intervals can be exposed using the SamplingIntervalDiagnosticsArray in the ServerDiagnostics Object defined in OPC 10000-5.
+
+The Server may support data that is collected based on a sampling model or generated based on an exception-based model. The fastest supported sampling interval may be equal to 0, which indicates that the data item is exception-based rather than being sampled at some period. An exception-based model means that the underlying system does not require sampling and reports data changes.
+
+The Client may use the revised sampling interval values as a hint for setting the publishing interval as well as the keep-alive count of a Subscription. If, for example, the smallest revised sampling interval of the MonitoredItems is 5 seconds, then the time before a keep-alive is sent should be longer than 5 seconds.
+
+Note that, in many cases, the OPC UA Server provides access to a decoupled system and therefore has no knowledge of the data update logic. In this case, even though the OPC UA Server samples at the negotiated rate, the data might be updated by the underlying system at a much slower rate. In this case, changes can only be detected at this slower rate.
+
+If the behaviour by which the underlying system updates the item is known, it will be available via the MinimumSamplingInterval Attribute defined in OPC 10000-3. If the Server specifies a value for the MinimumSamplingInterval Attribute it shall always return a revisedSamplingInterval that is equal or higher than the MinimumSamplingInterval if the Client subscribes to the Value Attribute.
+
+
+              Clients should also be aware that the sampling by the OPC UA Server and the update cycle of the underlying system are usually not synchronized. This can cause additional delays in change detection, as illustrated in Figure 16.
+
+[Figure: Figure 16 - Typical delay in change detection]
+
+5.13.1.3 Monitoring mode
+
+The monitoring mode parameter is used to enable and disable the sampling of a MonitoredItem, and also to provide for independently enabling and disabling the reporting of Notifications. This capability allows a MonitoredItem to be configured to sample, sample and report, or neither. Disabling sampling does not change the values of any of the other MonitoredItem parameter, such as its sampling interval.
+
+When a MonitoredItem is enabled (i.e. when the MonitoringMode is changed from DISABLED to SAMPLING or REPORTING) or it is created in the enabled state, the Server shall report the first sample as soon as possible and the time of this sample becomes the starting point for the next sampling interval.
+
+5.13.1.4 Filter
+
+Each time a MonitoredItem is sampled, the Server evaluates the sample using the filter defined for the MonitoredItem. The filter parameter defines the criteria that the Server uses to determine if a Notification should be generated for the sample. The type of filter is dependent on the type of the item that is being monitored. For example, the DataChangeFilter and the AggregateFilter are used when monitoring Variable Values and the EventFilter is used when monitoring Events. Sampling and evaluation, including the use of filters, are described in this document. Additional filters may be defined in other parts of OPC 10000. 
+
+5.13.1.5 Queue parameters
+
+If the sample passes the filter criteria, a Notification is generated and queued for transfer by the Subscription. The size of the queue is defined when the MonitoredItem is created. When the queue is full and a new Notification is received, the Server either discards the oldest Notification and queues the new one, or it replaces the last value added to the queue with the new one. The MonitoredItem is configured for one of these discard policies when the MonitoredItem is created. If a Notification is discarded for a DataValue and the size of the queue is larger than one, then the Overflow bit (flag) in the InfoBits portion of the DataValue statusCode is set. If discardOldest is TRUE, the oldest value gets deleted from the queue and the next value in the queue gets the flag set. If discardOldest is FALSE, the last value added to the queue gets replaced with the new value. The new value gets the flag set to indicate the lost values in the next NotificationMessage. Figure 17 illustrates the queue overflow handling.
+
+[Figure: Figure 17 - Queue overflow handling]
+
+If the queue size is one, the queue becomes a buffer that always contains the newest Notification. In this case, if the sampling interval of the MonitoredItem is faster than the publishing interval of the Subscription, the MonitoredItem will be over sampling and the Client will always receive the most up-to-date value. The discard policy is ignored if the queue size is one.
+
+On the other hand, the Client may want to subscribe to a continuous stream of Notifications without any gaps, but does not want them reported at the sampling interval. In this case, the MonitoredItem would be created with a queue size large enough to hold all Notifications generated between two consecutive publishing cycles. Then, at each publishing cycle, the Subscription would send all Notifications queued for the MonitoredItem to the Client. The Server shall return Notifications for any particular item in the same order they are in the queue.
+
+The Server may be sampling at a faster rate than the sampling interval to support other Clients; the Client should only expect values at the negotiated sampling interval. The Server may deliver fewer values than dictated by the sampling interval, based on the filter and implementation constraints. If a DataChangeFilter is configured for a MonitoredItem, it is always applied to the newest value in the queue compared to the current sample.
+
+If, for example, the AbsoluteDeadband in the DataChangeFilter is "10", the queue could consist of values in the following order:
+
+- 100
+- 111
+- 100
+- 89
+- 100
+
+Queuing of data may result in unexpected behaviour when using a Deadband filter and the number of encountered changes is larger than the number of values that can be maintained. The new first value in the queue may not exceed the Deadband limit of the previous value sent to the Client.
+
+The queue size is the maximum value supported by the Server when monitoring Events. In this case, the Server is responsible for the Event buffer. If Events are lost, an Event of the type EventQueueOverflowEventType is placed in the queue. This Event is generated when the first Event is discarded on a MonitoredItem subscribing for Events. It is put into the Queue of the MonitoredItem in addition to the size of the Queue defined for this MonitoredItem without discarding any other Event. If discardOldest is set to TRUE it is put at the beginning of the queue and is never discarded, otherwise at the end. An aggregating Server shall not pass on such an Event. It shall be handled like other connection error scenarios using the SystemStatusChangeEventType with the ServerState COMMUNICATION_FAULT.
+
+For any fatal error during event processing like out of memory situations, the Server should queue an SystemStatusChangeEventType event with the ServerState COMMUNICATION_FAULT and the source set to the Server Object. If there are no resources available at the time the error happens, the Server should flag an error internally until there are resources to further process Events for the MonitoredItem.
+
+5.13.1.6 Triggering model
+
+The MonitoredItems Service allows the addition of items that are reported only when some other item (the triggering item) triggers. This is done by creating links between the triggered items and the items to report. The monitoring mode of the items to report is set to sampling-only so that it will sample and queue Notifications without reporting them. Figure 18 illustrates this concept.
+
+[Figure: Figure 18 - Triggering model]
+
+The triggering mechanism is a useful feature that allows Clients to reduce the data volume on the wire by configuring some items to sample frequently but only report when some other Event happens.
+
+The following triggering behaviours are specified.
+
+1. If the monitoring mode of the triggering item is SAMPLING, then it is not reported when the triggering item triggers the items to report.
+2. If the monitoring mode of the triggering item is REPORTING, then it is reported when the triggering item triggers the items to report.
+3. If the monitoring mode of the triggering item is DISABLED, then the triggering item does not trigger the items to report.
+4. If the monitoring mode of the item to report is SAMPLING, then it is reported when the triggering item triggers the items to report.
+5. If the monitoring mode of the item to report is REPORTING, this effectively causes the triggering item to be ignored. All notifications of the items to report are sent after the publishing interval expires.
+6. If the monitoring mode of the item to report is DISABLED, then there will be no sampling of the item to report and therefore no notifications to report.
+7. The first trigger shall occur when the first notification is queued for the triggering item after the creation of the link.
+
+
+              Clients create and delete triggering links between a triggering item and a set of items to report. If the MonitoredItem that represents an item to report is deleted before its associated triggering link is deleted, the triggering link is also deleted, but the triggering item is otherwise unaffected.
+
+Deletion of a MonitoredItem should not be confused with the removal of the Attribute that it monitors. If the Node that contains the Attribute being monitored is deleted, the MonitoredItem generates a Notification with a StatusCode Bad_NodeIdUnknown that indicates the deletion, but the MonitoredItem is not deleted.
+

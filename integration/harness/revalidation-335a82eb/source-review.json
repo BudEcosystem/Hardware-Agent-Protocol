@@ -1,0 +1,183 @@
+{
+  "commit": "335a82eb121ccefc4c4bee98fc523a76eb218c5c",
+  "recorded_at": "2026-11-06T01:53:35.716037+00:00",
+  "coverage_note": "Retained selected source inputs for instruction and SDK seam review. This is not a full Harness source review. Previously reviewed integration APIs are exercised by native/PTC/Loader/AgentLoop/Session tests. Upstream SDK test sources were read for launch/work API usage, not executed as part of this HMS receipt. Stand-in host-engine server helper was read but never invoked.",
+  "files": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "fde379298a5fea63f6d07fd4a1ed1531cc1d37496ca9bf13415d098c6c156eba",
+      "read_coverage": {
+        "status": "full",
+        "lines": 191
+      }
+    },
+    {
+      "path": "packages/AGENTS.md",
+      "sha256": "2ff622ab906b77680827135e64525f9c84d757c4e7cd9b685ab9ef04e81e55d1",
+      "read_coverage": {
+        "status": "full",
+        "lines": 29
+      }
+    },
+    {
+      "path": "packages/experimental/AGENTS.md",
+      "sha256": "b5af970c070b34fa7ddc9ebd71f82769707b21d6d8f70388bb6605959003bbd0",
+      "read_coverage": {
+        "status": "full",
+        "lines": 9
+      }
+    },
+    {
+      "path": "scripts/AGENTS.md",
+      "sha256": "d48080cf69f64e3cf0e42a9b6832b480367b4ffdd5c6de96be8e6d1178e68a17",
+      "read_coverage": {
+        "status": "full",
+        "lines": 5
+      }
+    },
+    {
+      "path": "docs/architecture.md",
+      "sha256": "cc090bfe5849667dff825a33bddb2c8993a5309d954b4735bf528e76a8907c95",
+      "read_coverage": {
+        "status": "full",
+        "lines": 185
+      }
+    },
+    {
+      "path": "docs/testing.md",
+      "sha256": "a27c3a5569548498f31368223046c0bbe356e77603b1a84e7471ef258a8eb706",
+      "read_coverage": {
+        "status": "full",
+        "lines": 62
+      }
+    },
+    {
+      "path": "docs/defensive-patterns/README.md",
+      "sha256": "85f90d1979b965aa6612290d64bc0ded600466b55a6c909408525cd87098c9ff",
+      "read_coverage": {
+        "status": "full",
+        "lines": 25
+      }
+    },
+    {
+      "path": "docs/defensive-patterns/package-surface.md",
+      "sha256": "84d668f8bc82ce58035deb45549c5203318d96fe9c1ed0d085631b80187f846b",
+      "read_coverage": {
+        "status": "full",
+        "lines": 231
+      }
+    },
+    {
+      "path": "docs/defensive-patterns/general.md",
+      "sha256": "1947f73bea365a9f9ea10760fc7494d5d6d85550bca79a39be59e354593882d6",
+      "read_coverage": {
+        "status": "full",
+        "lines": 222
+      }
+    },
+    {
+      "path": "docs/defensive-patterns/conversation-and-session.md",
+      "sha256": "b123a1a787266a272e5b1f309cacbe401295d32a14647e7840f798a5fdd6959f",
+      "read_coverage": {
+        "status": "full",
+        "lines": 316
+      }
+    },
+    {
+      "path": ".agents/skills/budmh-error-handling/SKILL.md",
+      "sha256": "953b8396b8581a4655fe96b74a1a8bd421567617d7da14bf51a6dbf58b7fdd94",
+      "read_coverage": {
+        "status": "full",
+        "lines": 30
+      }
+    },
+    {
+      "path": "packages/sdk/client/src/launch.ts",
+      "sha256": "f58e9de44f084ced9efc16cfe8940306c97003dca20c5e5ef67020c6b7c461d6",
+      "read_coverage": {
+        "status": "full",
+        "lines": 157
+      }
+    },
+    {
+      "path": "packages/sdk/client/src/work.ts",
+      "sha256": "5d028d40376392b49d4c90b0dfed161662cf3bd85f6e6fb953a35a2971059e7c",
+      "read_coverage": {
+        "status": "full",
+        "lines": 209
+      }
+    },
+    {
+      "path": "packages/sdk/client/src/types.ts",
+      "sha256": "767e950c22409429f63c5dd8dd6dd11549c338ee8616d041e9990fbedaaca8b8",
+      "read_coverage": {
+        "status": "full",
+        "lines": 83
+      }
+    },
+    {
+      "path": "packages/bundle/sdk-app/cordis.patch.yml",
+      "sha256": "6fe05cc2af1d482cb5262a9715e9f2100d653c5ce4f04a220a55145a332f5ac5",
+      "read_coverage": {
+        "status": "full",
+        "lines": 67
+      }
+    },
+    {
+      "path": "packages/test-support/session-snapshot/src/host-isolation.ts",
+      "sha256": "58afec0a5996ac358b60414dd717f31ccd61d1671bd77c72eaa05faed8a6b979",
+      "read_coverage": {
+        "status": "full",
+        "lines": 99
+      }
+    },
+    {
+      "path": "packages/sdk/client/tests/work-items.expected.e2e.ts",
+      "sha256": "12350fd45c3c113ea664b5a0db0ceb5062d59fc2e529ba7573bf4fbf74689cd6",
+      "read_coverage": {
+        "status": "full",
+        "lines": 158
+      }
+    },
+    {
+      "path": "packages/sdk/client/tests/work-takeover.e2e.ts",
+      "sha256": "b97dff551665d79ee77455a4445f34101cd04283e60babf2e6bcfb33754e8e7c",
+      "read_coverage": {
+        "status": "full",
+        "lines": 111
+      }
+    },
+    {
+      "path": "packages/sdk/client/src/api.ts",
+      "sha256": "0877b2b1f98e52770a3cb428d25d451cf87df9d5425fd47c3dfaf8c9aa7d7ac2",
+      "read_coverage": {
+        "status": "partial",
+        "line_ranges": [
+          [
+            1,
+            260
+          ]
+        ],
+        "whole_file_read": false
+      }
+    },
+    {
+      "path": "packages/sdk/client/src/client.ts",
+      "sha256": "4b712e86228e412c29a920360230d1dec8cf0e94b0fe50981cb40038c06613dc",
+      "read_coverage": {
+        "status": "partial",
+        "line_ranges": [
+          [
+            280,
+            425
+          ],
+          [
+            575,
+            635
+          ]
+        ],
+        "whole_file_read": false
+      }
+    }
+  ]
+}

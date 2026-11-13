@@ -1,0 +1,385 @@
+{
+  "schema": "hms-research-reading-log/1",
+  "review_date": "2026-11-06",
+  "reviewer": "transport_full_read",
+  "scope": "Full transport standard reading and independent HMS binding analysis",
+  "generated_at": "2026-11-05T21:57:28.794297+00:00",
+  "sources": [
+    {
+      "id": "mqtt5",
+      "url": "https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html",
+      "retrieved_at": "2026-11-05T21:36:39.047340+00:00",
+      "raw_path": "research/protocols/raw/mqtt5.html",
+      "raw_sha256": "16f24e2b021d86b3bbb2b39c8b5ee134b3d39f69320ba61d3c07a38af74e696c",
+      "text_path": "research/protocols/text/mqtt5.txt",
+      "text_sha256": "ae6075424994d4f6e78a2aecbf8d4ad8060e6da044a86fe2c85f517e07ba29f7",
+      "text_bytes": 307424,
+      "line_count": 10642,
+      "line_definition": "1-based LF-delimited sed-addressable lines, counting final unterminated line; chunk SHA-256 includes original bytes and existing line terminators",
+      "reading_status": "full_extracted_text_read",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 1000,
+          "sha256": "cdeb6337c997193f9298e1b8acedf7107802ac095695a964d1117bace3ce4024",
+          "bytes": 16111,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1001,
+          "end_line": 2000,
+          "sha256": "f58fd5f422dc881fbd70d7b581bb182f78ffdc6b56e0d541ea4e4e7175d093b5",
+          "bytes": 21587,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 2001,
+          "end_line": 3000,
+          "sha256": "0bcbe8b5ff6b550aa66ee03b4ab14f5f6023ec0c50eadddb78c5f2ee2cc0c78a",
+          "bytes": 18489,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3001,
+          "end_line": 4000,
+          "sha256": "ea3286def56281b9ea7cf73bcee20468e401e105fa995acc73a1647c4f42ba2f",
+          "bytes": 30998,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 4001,
+          "end_line": 5000,
+          "sha256": "d1b055c39a9b19d2907e7badb0cb9a1e8bb76e4f578ea2683b4c3d2945211760",
+          "bytes": 33877,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 5001,
+          "end_line": 6000,
+          "sha256": "5ede67594094bdec759fd24d150ae4f08d39533235e4c2da844aab5cc300cef5",
+          "bytes": 26807,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 6001,
+          "end_line": 7000,
+          "sha256": "9bb5fdaa06efaa13f4fb56dcae360b554df4871a8da725edf8bd843ea5fc9c95",
+          "bytes": 24117,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 7001,
+          "end_line": 8000,
+          "sha256": "ae35025988c0bb172108f517cb33e02267a0b994a122d23d877667cc21057e46",
+          "bytes": 28169,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 8001,
+          "end_line": 8500,
+          "sha256": "903b35a7125bbf004f7d64adfce83c02f3cb1e9908b347384498035fd47ec609",
+          "bytes": 21207,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 8501,
+          "end_line": 9000,
+          "sha256": "7a8946ee1aa3cdbcae40228680b07030ca5d0ea40647e14d0757c2dccd0083b9",
+          "bytes": 20974,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 9001,
+          "end_line": 9700,
+          "sha256": "1dabb442a0259d6f9fd9c0a6860a428f2232b960dd380f27820dd77e0bb1e0c1",
+          "bytes": 25199,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 9701,
+          "end_line": 10150,
+          "sha256": "8b6864ba07ec0e655a931de48747d580ef4ad148980763a9fb5bc9f80a082105",
+          "bytes": 18470,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 10151,
+          "end_line": 10641,
+          "sha256": "3cf3e89074390bce0bbc23dfb952739e623d292b0760888386db7047e25f9cc6",
+          "bytes": 21371,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 10642,
+          "end_line": 10642,
+          "sha256": "1d53b5b002d9bef81e30c378fa0213120a89529be402fc3974fa72718a44639a",
+          "bytes": 48,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_method": "Sequential bounded sed ranges displayed and read; truncated outputs excluded and reread. Original source inspected for selected structural details; no runtime or protocol conformance test performed.",
+      "source_structure_review": {
+        "html_table_count": 59,
+        "table_text": "All in full extracted text",
+        "row_and_colspan_review_zero_based_table_indexes": [
+          14,
+          19,
+          20,
+          22,
+          37,
+          54,
+          55,
+          56
+        ],
+        "selected_details": [
+          "CONNECT flags",
+          "PUBLISH flags and QoS",
+          "acknowledgement types",
+          "SUBSCRIBE options",
+          "QoS0/QoS1/QoS2 flow tables"
+        ],
+        "raster_images": "Only OASIS logo present; not relevant to semantics",
+        "all_html_tables_visually_rendered": false
+      },
+      "excluded_truncated_attempts": [
+        {
+          "start_line": 8001,
+          "end_line": 9000,
+          "resolution": "reread in two 500-line chunks"
+        },
+        {
+          "start_line": 9701,
+          "end_line": 10641,
+          "resolution": "reread as 9701–10150 and 10151–10641"
+        }
+      ],
+      "raw_bytes": 1435680
+    },
+    {
+      "id": "sparkplug3-spec",
+      "url": "https://sparkplug.eclipse.org/specification/version/3.0/documents/sparkplug-specification-3.0.0.pdf",
+      "retrieved_at": "2026-11-05T21:38:18.069716+00:00",
+      "raw_path": "research/protocols/raw/sparkplug3-spec.pdf",
+      "raw_sha256": "c188787eaa8185a2ea7b4f2667a00c64b6119e35255165724529dd759ee1486c",
+      "text_path": "research/protocols/text/sparkplug3-spec.txt",
+      "text_sha256": "5d19e676f18869dd170fe68d6a6196c9227a2e38d56339eeec47157f6252bade",
+      "text_bytes": 347319,
+      "line_count": 7173,
+      "line_definition": "1-based LF-delimited sed-addressable lines, counting final unterminated line; chunk SHA-256 includes original bytes and existing line terminators",
+      "reading_status": "full_extracted_text_read",
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 250,
+          "sha256": "a7b2492a05e31d52fbbfa7e55642bd1404b53cd0b422498032701a5cf26dc3d2",
+          "bytes": 34215,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 251,
+          "end_line": 750,
+          "sha256": "ac700ce9c9b9ac36de72622cd6afad4499c230486af4fe9e05fd66b9585d3299",
+          "bytes": 23599,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 751,
+          "end_line": 1250,
+          "sha256": "196ee5d2ad2a708a6dbf5c468750a29ed1c16aec7c1ab60cef3d426a6ae36283",
+          "bytes": 23287,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1251,
+          "end_line": 1750,
+          "sha256": "1e8706902c8fea8a7225b4c2c9aca1b8c8617997e65cf378b1e8f24fc948913b",
+          "bytes": 23369,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 1751,
+          "end_line": 2250,
+          "sha256": "0610fbedf198e46069581b1e5b150f746796ce73222f7805f3123e5308a6b253",
+          "bytes": 27668,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 2251,
+          "end_line": 2750,
+          "sha256": "e23bd06821f842c61a5b7e274abc98cdef7d000743ed03f4a418cd948ac7da93",
+          "bytes": 26888,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 2751,
+          "end_line": 3250,
+          "sha256": "bf79414af7877072b01197331ad33c0fc2cf72a7d99779e363df58adc4d9d553",
+          "bytes": 26110,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3251,
+          "end_line": 3750,
+          "sha256": "6f9a090dacdf2bd1717ea3062a790e72ff4ff24cc5fa33e451d83adcc9f65614",
+          "bytes": 18806,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 3751,
+          "end_line": 4250,
+          "sha256": "38706e18dc3685cb6bafc5e41b91fa120fd2dd87552466f0f8d930da6c528d83",
+          "bytes": 16669,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 4251,
+          "end_line": 4750,
+          "sha256": "735e141cf6107e4a77734fc138c33b9216d91c21660bb6d002d40b38012e1e5e",
+          "bytes": 15424,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 4751,
+          "end_line": 5250,
+          "sha256": "5237110bd316e29ceb6b489cbc045953d55a1f07461b9b1600d8c63d8699e65b",
+          "bytes": 18556,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 5251,
+          "end_line": 5750,
+          "sha256": "85a3257257f7d93805e167b9abf07d6de0a0cb06f50929d82de8e7b77cbe391b",
+          "bytes": 22143,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 5751,
+          "end_line": 6250,
+          "sha256": "add3eb8456481361a555daf19a7626c9aa0ee3fa3e647873965a454c5c66cd40",
+          "bytes": 23441,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 6251,
+          "end_line": 6750,
+          "sha256": "0434de4be02cd96895ce4c8c97e47e52b294911ad86475a1f94efaf1594701f7",
+          "bytes": 27924,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 6751,
+          "end_line": 7172,
+          "sha256": "ff5af04586c2e5f1de87bb6ac51d48e2062d20851a000f9c6c1d9714a241e1e2",
+          "bytes": 19219,
+          "status": "read_untruncated"
+        },
+        {
+          "start_line": 7173,
+          "end_line": 7173,
+          "sha256": "ef6cbd2161eaea7943ce8693b9824d23d1793ffb1c0fca05b600d3899b44c977",
+          "bytes": 1,
+          "status": "read_untruncated"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_method": "Sequential bounded sed ranges displayed and read; truncated outputs excluded and reread. Original source inspected for selected structural details; no runtime or protocol conformance test performed.",
+      "source_structure_review": {
+        "pdf_pages": 141,
+        "all_numbered_figures_visually_inspected": true,
+        "figures": [
+          {
+            "figure": 1,
+            "pdf_page_one_based": 13,
+            "printed_page": 6
+          },
+          {
+            "figure": 2,
+            "pdf_page_one_based": 19,
+            "printed_page": 12
+          },
+          {
+            "figure": 3,
+            "pdf_page_one_based": 22,
+            "printed_page": 15
+          },
+          {
+            "figure": 4,
+            "pdf_page_one_based": 40,
+            "printed_page": 33
+          },
+          {
+            "figure": 5,
+            "pdf_page_one_based": 45,
+            "printed_page": 38
+          },
+          {
+            "figure": 6,
+            "pdf_page_one_based": 50,
+            "printed_page": 43
+          },
+          {
+            "figure": 7,
+            "pdf_page_one_based": 55,
+            "printed_page": 48
+          },
+          {
+            "figure": 8,
+            "pdf_page_one_based": 58,
+            "printed_page": 51
+          },
+          {
+            "figure": 9,
+            "pdf_page_one_based": 73,
+            "printed_page": 66
+          },
+          {
+            "figure": 10,
+            "pdf_page_one_based": 92,
+            "printed_page": 85
+          },
+          {
+            "figure": 11,
+            "pdf_page_one_based": 95,
+            "printed_page": 88
+          },
+          {
+            "figure": 12,
+            "pdf_page_one_based": 108,
+            "printed_page": 101
+          },
+          {
+            "figure": 13,
+            "pdf_page_one_based": 109,
+            "printed_page": 102
+          },
+          {
+            "figure": 14,
+            "pdf_page_one_based": 110,
+            "printed_page": 103
+          }
+        ],
+        "method": "pdftoppm local rendering plus view_image; transient renderings under /tmp; original PDF retained",
+        "all_pdf_pages_visually_inspected": false
+      },
+      "excluded_truncated_attempts": [
+        {
+          "start_line": 1,
+          "end_line": 500,
+          "resolution": "reread as 1–250 and 251–750"
+        }
+      ],
+      "raw_bytes": 2102904
+    }
+  ],
+  "artifacts": [
+    "research/protocols/notes/transport-full-review.md",
+    "docs/transport-guarantees.md"
+  ],
+  "limitations": [
+    "Coverage attests reading, not implementation conformance or formal proof.",
+    "MQTT 3.1.1, referenced RFCs, source implementations, TCK and errata beyond these pinned documents are not thereby fully read.",
+    "Legacy sparkplug3 manifest entry is a redirected project page, not the specification; it was not counted.",
+    "Upstream editorial inconsistencies remain documented, not silently fixed in source archives."
+  ]
+}

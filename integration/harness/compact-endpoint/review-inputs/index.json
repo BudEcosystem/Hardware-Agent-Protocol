@@ -1,0 +1,19 @@
+{
+  "review_path": "integration/harness/compact-endpoint/independent-review.json",
+  "review_sha256": "d8c6b0ce476cbdee7c1baf11593027390417c0ff633d6e8546794c398fec0e22",
+  "reason": "a162 test-helper read-only lock retry changes after independent static review; preserve exact reviewed source, do not claim review applies to subsequent helper",
+  "files": [
+    {
+      "original_path": "integration/harness/revalidation-a1626788/packages/tool-hardware/tests/hms-compact.spec.ts",
+      "path": "integration/harness/compact-endpoint/review-inputs/revalidation-a1626788/hms-compact.spec.ts",
+      "sha256": "2fed5f38f47f6fd12ed352f3fceeab2d577ededb7ba9be214866cf1f7659fcd5",
+      "kind": "exact-byte copy of reviewed source, not reconstruction"
+    },
+    {
+      "original_path": "integration/harness/revalidation-a1626788/packages/tool-hardware/tests/compact-launcher.py",
+      "path": "integration/harness/compact-endpoint/review-inputs/revalidation-a1626788/compact-launcher.py",
+      "sha256": "4373538777ce8b6a4d7c1d5072d19d4c42cbcfc057c54ead7f7f769266733b7f",
+      "kind": "exact-byte copy of reviewed source, not reconstruction"
+    }
+  ]
+}

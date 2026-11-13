@@ -1,0 +1,119 @@
+Errata
+RFC Number
+Errata ID
+Status
+All/Any
+Verified+Reported
+Verified
+Reported
+Held for Document Update
+Rejected
+Area Acronym
+All/Any
+app
+art
+gen
+int
+ops
+rai
+rtg
+sec
+tsv
+wit
+Type
+All/Any
+Editorial
+Technical
+WG Acronym
+Submitter Name
+Stream
+All/Any
+IAB
+INDEPENDENT
+IRTF
+Legacy
+Editorial
+Date Submitted
+Presentation
+Table
+Full Records
+Submit
+Verified (1)
+RFC 7959
+inline-errata
+Source of RFC:
+core (wit)
+Updated by:
+RFC8323, RFC8323
+Errata-ID:
+7523
+Status:
+Verified
+Type:
+Editorial
+Reported By:
+Christian Amsüss
+Date Reported:
+2023-05-24
+Verified by:
+Murray Kucherawy
+Date Verified:
+2023-07-08
+Section 3 says:
+then the block number (NUM), more bit (M), and block size exponent
+   (2**(SZX+4)) separated by slashes.  For example, a Block2 Option
+It should say:
+then the block number (NUM), more bit (M), and block size
+   (2**(SZX+4)) separated by slashes.  For example, a Block2 Option
+Notes:
+The examples are given in the style of "2:1/1/128", wher 128 is the size (2**(SZX+4)), not the size exponent -- it contains the size exponent in the expression, but the full expression is the size.
+
+(Reporting this as an erratum because the use of "SZX" for "size" instead of "size exponent" has some potential for spreading and creating confusion; for example in Wireshark at https://gitlab.com/wireshark/wireshark/-/merge_requests/10763)
+Held for Document Update (1)
+RFC 7959
+inline-errata
+Source of RFC:
+core (wit)
+Updated by:
+RFC8323, RFC8323
+Errata-ID:
+6083
+Status:
+Held for Document Update
+Type:
+Editorial
+Reported By:
+Mohamed Boucadair
+Date Reported:
+2020-04-09
+Held for Document Update by:
+Barry Leiba
+Date Held for Document Update:
+2020-04-10
+Section 2.1 says:
++-----+---+---+---+---+--------+--------+--------+---------+
+       | No. | C | U | N | R | Name   | Format | Length | Default |
+       +-----+---+---+---+---+--------+--------+--------+---------+
+       |  23 | C | U | - | - | Block2 | uint   |    0-3 | (none)  |
+       |     |   |   |   |   |        |        |        |         |
+       |  27 | C | U | - | - | Block1 | uint   |    0-3 | (none)  |
+       +-----+---+---+---+---+--------+--------+--------+---------+
+
+                       Table 1: Block Option Numbers
+It should say:
++-----+---+---+---+---+--------+--------+--------+---------+
+       | No. | C | U | N | R | Name   | Format | Length | Default |
+       +-----+---+---+---+---+--------+--------+--------+---------+
+       |  23 | x | x | - |   | Block2 | uint   |    0-3 | (none)  |
+       |     |   |   |   |   |        |        |        |         |
+       |  27 | x | x | - |   | Block1 | uint   |    0-3 | (none)  |
+       +-----+---+---+---+---+--------+--------+--------+---------+
+
+                       Table 1: Block Option Numbers
+Notes:
+* This is to align with the conventions in Section 5.10 of RFC7252
+* These options are not repeatable as per:
+
+"Either Block option MUST NOT occur more than once in a
+   single message."
+Report New Erratum

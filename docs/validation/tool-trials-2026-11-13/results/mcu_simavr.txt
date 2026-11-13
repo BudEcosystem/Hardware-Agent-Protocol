@@ -1,0 +1,17 @@
+TOOLCHAIN avr-gcc (GCC) 7.3.0
+SIZE328     364	     24	      0	    388	    184	t328.elf
+SIZE2560     496	     24	      0	    520	    208	t2560.elf
+--- run atmega328p
+[32mHMS-AVR-OK boots=0.
+[0m[32mDONE.
+[0mLoaded 364 .text at address 0x0
+Loaded 24 .data
+signal caught, simavr terminating
+--- run atmega2560
+[32mHMS-AVR-OK boots=0.
+[0m[32mDONE.
+[0mLoaded 496 .text at address 0x0
+Loaded 24 .data
+signal caught, simavr terminating
+--- cores
+Supported AVR cores:        atmega128 atmega128L         atmega1280         atmega1281         atmega1284p atmega1284         atmega128rfa1         atmega128rfr2         atmega16         atmega164 atmega164p atmega164pa         atmega168 atmega168p atmega168pa         atmega16m1         atmega2560         atmega32         atmega324 atmega324p         atmega324a atmega324pa         atmega328 atmega328p         atmega32u4         atmega48 atmega48p atmega48pa         atmega644 atmega644p         atmega8 atmega8l         atmega88 atmega88p atmega88pa         attiny13 attiny13a         attiny2313 

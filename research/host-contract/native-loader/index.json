@@ -1,0 +1,90 @@
+{
+  "scope": "Three manuals, upstream policy and installed UAPI header; full selected text reading",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 2867,
+      "sha256": "c13ca32e9b7d1a3754371cab4313a62cc12eeeab5e5f08dbe2c6b855f77ede19"
+    },
+    {
+      "path": "acquire.py",
+      "bytes": 2799,
+      "sha256": "aa8e8ac71db2eb34b6fcf93d25e8eff7037100221f92ee60e993c51f28ce6165"
+    },
+    {
+      "path": "acquisition.json",
+      "bytes": 4634,
+      "sha256": "4161a4d5db1721c6daa55fddc7eccda52212a8167a35341162109fa84d3de42e"
+    },
+    {
+      "path": "exec-policy-acquisition.json",
+      "bytes": 352,
+      "sha256": "7885b08de3a0fd34808c640b3a206cc7874ead332e7556d278d52768073737a7"
+    },
+    {
+      "path": "installed-memfd.h",
+      "bytes": 1467,
+      "sha256": "d06dd37df2ad2df29391c38239c1af6944efef8dc4040ed41833169cd4c4a3c9"
+    },
+    {
+      "path": "mfd_noexec.rst",
+      "bytes": 3152,
+      "sha256": "3294d8f1ec5bf0b241660bdfea4cb340ee9d0b9d35f8630f1e5686a5aec391a7"
+    },
+    {
+      "path": "raw/memfd_create.html",
+      "bytes": 26510,
+      "sha256": "fdeca1263da1a2b63aa145d9ddd619cd85fd1b0fbd1c2b6f820c65880081eb61"
+    },
+    {
+      "path": "raw/proc_pid_fd.html",
+      "bytes": 11359,
+      "sha256": "3a50ddef6f2f3a4f1139dcef3299a5eadf8fc96514df9fcb329a3bffd47ff27e"
+    },
+    {
+      "path": "raw/seals.html",
+      "bytes": 15350,
+      "sha256": "d3fe3c1aa5800eabf146bb7f9f7d68e4bed91650bed4f2f1ff480d6e0b7921eb"
+    },
+    {
+      "path": "reading.json",
+      "bytes": 1342,
+      "sha256": "c32b9f7496e42bcc81312d6b3b9ae45742a6c447f3c76d826456af6aa4dbe458"
+    },
+    {
+      "path": "seal.py",
+      "bytes": 1959,
+      "sha256": "a30ca187e28a2aba091dcf8b80cde1ac4ca3a112c491b7f66a4d292533be6338"
+    },
+    {
+      "path": "surrounding/memfd_create.txt",
+      "bytes": 1128,
+      "sha256": "01ef33239d1ff5b26a521c587a147ca82024c3ebde05fdeb8af89b4af0988174"
+    },
+    {
+      "path": "surrounding/proc_pid_fd.txt",
+      "bytes": 591,
+      "sha256": "1617b4b7088d38486677a4e1fd111d7b74a5656db141f5eaa0e44157b866a9cd"
+    },
+    {
+      "path": "surrounding/seals.txt",
+      "bytes": 793,
+      "sha256": "7e42091caf5e33321d3f43713282aa4ddcd329481e61fbccf20efde010fe2a7a"
+    },
+    {
+      "path": "text/memfd_create.txt",
+      "bytes": 16683,
+      "sha256": "c657fb57ab7db2fcb1f701bb20176d380817107c88c93141842a1e1bfe7a7b44"
+    },
+    {
+      "path": "text/proc_pid_fd.txt",
+      "bytes": 5296,
+      "sha256": "2c00fefb638e17652f04cd9cc16c39d0cfaaab41ea7eb6ad206b13c1f4d14c2c"
+    },
+    {
+      "path": "text/seals.txt",
+      "bytes": 7605,
+      "sha256": "7833fdaedebc4a0cbdc5576632845c5900dcd1cdc54ae2418bbddded2d936193"
+    }
+  ]
+}

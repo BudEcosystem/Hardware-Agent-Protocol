@@ -1,0 +1,110 @@
+Errata
+RFC Number
+Errata ID
+Status
+All/Any
+Verified+Reported
+Verified
+Reported
+Held for Document Update
+Rejected
+Area Acronym
+All/Any
+app
+art
+gen
+int
+ops
+rai
+rtg
+sec
+tsv
+wit
+Type
+All/Any
+Editorial
+Technical
+WG Acronym
+Submitter Name
+Stream
+All/Any
+IAB
+INDEPENDENT
+IRTF
+Legacy
+Editorial
+Date Submitted
+Presentation
+Table
+Full Records
+Submit
+Reported (2)
+RFC 9528
+Source of RFC:
+lake (sec)
+Errata-ID:
+8258
+Status:
+Reported
+Type:
+Technical
+Publication Format:
+HTML
+Reported By:
+Brian Sipos
+Date Reported:
+2025-01-23
+Section C.2 says:
+EAD_1 = 1* ead
+EAD_2 = 1* ead
+EAD_3 = 1* ead
+EAD_4 = 1* ead
+...
+PLAINTEXT_2 = (
+  C_R,
+  ID_CRED_R : map / bstr / -24..23,
+...
+PLAINTEXT_3 = (
+  ID_CRED_I : map / bstr / -24..23,
+It should say:
+EAD_1 = (+ ead)
+EAD_2 = (+ ead)
+EAD_3 = (+ ead)
+EAD_4 = (+ ead)
+...
+PLAINTEXT_2 = (
+  C_R : bstr / -24..23,
+  ID_CRED_R : header_map / bstr / -24..23,
+...
+PLAINTEXT_3 = (
+  ID_CRED_I : header_map / bstr / -24..23,
+Notes:
+The EAD groups are missing parentheses.
+The PLAINTEXT_2 field C_R is missing a type entirely, which is identical to message_1 field C_I.
+The ID_CRED_R and ID_CRED_I fields use an undefined type "map" but could use the valid COSE-defined type "header_map" or some locally-defined equivalent.
+Errata-ID:
+8272
+Status:
+Reported
+Type:
+Technical
+Publication Format:
+TXT
+Reported By:
+John Mattsson
+Date Reported:
+2025-01-29
+Section 5.4.2 says:
+The Initiator SHOULD NOT persistently store PRK_out or application keys
+until the Initiator has verified message_4 or a message protected with
+a derived application key, such as an OSCORE message, from the Responder
+and the application has authenticated the Responder.
+It should say:
+The Initiator SHOULD NOT persistently store
+C_I, C_R, PRK_out or application keys
+until the Initiator has verified message_4 or a message protected with
+a derived application key, such as an OSCORE message, from the Responder
+and the application has authenticated the Responder.
+Notes:
+This applies to the connection identifiers C_I, C_R equally as to the keys.
+Report New Erratum

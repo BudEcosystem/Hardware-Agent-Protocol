@@ -1,0 +1,102 @@
+[
+  {
+    "source_path": "research/wot-architecture/figures/21-1.svg",
+    "foreign_object_labels": [
+      "onboard",
+      "bootstrap",
+      "Device",
+      "Consumer",
+      "activate",
+      "deactivate",
+      "offboard",
+      "decomission",
+      "use",
+      "destroy"
+    ],
+    "fallback_text_labels": [
+      "onboard",
+      "bootstrap",
+      "Device",
+      "Consumer",
+      "activate",
+      "deactivate",
+      "offboard",
+      "decomission",
+      "use",
+      "destroy",
+      "Viewer does not support full SVG 1.1"
+    ]
+  },
+  {
+    "source_path": "research/wot-architecture/figures/22-1.svg",
+    "foreign_object_labels": [
+      "register",
+      "onboard",
+      "bootstrap",
+      "deregister",
+      "Device",
+      "Directory",
+      "Consumer",
+      "activate",
+      "deactivate",
+      "decomission",
+      "use",
+      "discover",
+      "offboard",
+      "destroy"
+    ],
+    "fallback_text_labels": [
+      "register",
+      "onboard",
+      "bootstrap",
+      "deregister",
+      "Device",
+      "Directory",
+      "Consumer",
+      "activate",
+      "deactivate",
+      "decomission",
+      "use",
+      "discover",
+      "offboard",
+      "destroy",
+      "Viewer does not support full SVG 1.1"
+    ]
+  },
+  {
+    "source_path": "research/wot-architecture/figures/23-1.svg",
+    "foreign_object_labels": [
+      "Destroy",
+      "Provisioning Configuration Commissioning",
+      "Bootstrapped",
+      "Update",
+      "Operational %3CmxGraphModel%3E%3Croot%3E%3CmxCell%20id%3D%220%22%2F%3E%3CmxCell%20id%3D%221%22%20parent%3D%220%22%2F%3E%3CmxCell%20id%3D%222%22%20value%3D%22%26lt%3Bspan%20style%3D%26quot%3Bbackground-color%3A%20rgb(255%20%2C%20255%20%2C%20255)%26quot%3B%26gt%3BBootstrapped%26lt%3B%2Fspan%26gt%3B%22%20style%3D%22rounded%3D1%3BwhiteSpace%3Dwrap%3Bhtml%3D1%3BfillColor%3D%23dae8fc%3BstrokeColor%3D%236c8ebf%3B%22%20vertex%3D%221%22%20parent%3D%221%22%3E%3CmxGeometry%20x%3D%22205%22%20y%3D%22990%22%20width%3D%22120%22%20height%3D%2260%22%20as%3D%22geometry%22%2F%3E%3C%2FmxCell%3E%3C%2Froot%3E%3C%2FmxGraphModel%3E",
+      "Destroy",
+      "Maintenance",
+      "Destroyed",
+      "Bootstrapping",
+      "Manufactured",
+      "Settings",
+      "Re-bootstrapping",
+      "Factory reset",
+      "Destroy"
+    ],
+    "fallback_text_labels": [
+      "Destroy",
+      "Provisioning...",
+      "Bootstrapped",
+      "Update",
+      "Operational%3CmxGrap...",
+      "  Destroy  ",
+      "Maintenance",
+      "Destroyed",
+      "Bootstrapping",
+      "Manufactured",
+      "Settings",
+      "Re-bootstr...",
+      "Factory...",
+      "Destroy",
+      "Viewer does not support full SVG 1.1"
+    ]
+  }
+]

@@ -1,0 +1,94 @@
+dirfd(3)                 Library Functions Manual                dirfd(3)
+
+
+
+       dirfd - get directory stream file descriptor
+
+
+
+       Standard C library (libc, -lc)
+
+
+
+       #include <sys/types.h>
+       #include <dirent.h>
+
+       int dirfd(DIR *dirp);
+
+   Feature Test Macro Requirements for glibc (see
+   feature_test_macros(7)):
+
+       dirfd():
+           /* Since glibc 2.10: */ _POSIX_C_SOURCE >= 200809L
+               || /* glibc <= 2.19: */ _BSD_SOURCE || _SVID_SOURCE
+
+
+
+       The function dirfd() returns the file descriptor associated with
+       the directory stream dirp.
+
+       This file descriptor is the one used internally by the directory
+       stream.  As a result, it is useful only for functions which do not
+       depend on or alter the file position, such as fstat(2) and
+       fchdir(2).  It will be automatically closed when closedir(3) is
+       called.
+
+
+
+       On success, dirfd() returns a file descriptor (a nonnegative
+       integer).  On error, -1 is returned, and errno is set to indicate
+       the error.
+
+
+
+       POSIX.1-2008 specifies two errors, neither of which is returned by
+       the current implementation.
+
+       EINVAL dirp does not refer to a valid directory stream.
+
+       ENOTSUP
+              The implementation does not support the association of a
+              file descriptor with a directory.
+
+
+
+       For an explanation of the terms used in this section, see
+       attributes(7).
+       ┌──────────────────────────────────────┬───────────────┬─────────┐
+       │ Interface                            │ Attribute     │ Value   │
+       ├──────────────────────────────────────┼───────────────┼─────────┤
+       │ dirfd()                              │ Thread safety │ MT-Safe │
+       └──────────────────────────────────────┴───────────────┴─────────┘
+
+
+
+       POSIX.1-2008.
+
+
+
+       4.3BSD-Reno (not in 4.2BSD).
+
+
+
+       open(2), openat(2), closedir(3), opendir(3), readdir(3),
+       rewinddir(3), scandir(3), seekdir(3), telldir(3)
+
+
+
+       This page is part of the man-pages (Linux kernel and C library
+       user-space interface documentation) project.  Information about
+       the project can be found at 
+       ⟨https://www.kernel.org/doc/man-pages/⟩.  If you have a bug report
+       for this manual page, see
+       ⟨https://git.kernel.org/pub/scm/docs/man-pages/man-pages.git/tree/CONTRIBUTING⟩.
+       This page was obtained from the tarball man-pages-6.19.tar.gz
+       fetched from
+       ⟨https://mirrors.edge.kernel.org/pub/linux/docs/man-pages/⟩ on
+       2026-09-09.  If you discover any rendering problems in this HTML
+       version of the page, or you believe there is a better or more up-
+       to-date source for the page, or you have corrections or
+       improvements to the information in this COLOPHON (which is not
+       part of the original manual page), send a mail to
+       man-pages@man7.org
+
+Linux man-pages 6.19            2026-02-08                       dirfd(3)

@@ -1,0 +1,1453 @@
+{
+  "schema": "hms-endpoint-wire-vectors/0.1",
+  "status": "proposed_design_vectors_not_endpoint_implementation",
+  "spec": "spec/11-endpoint-wire.md",
+  "physicalCommissioning": "none; synthetic fixtures only",
+  "sourceHashes": {
+    "spec/11-endpoint-wire.md": "247975d27e3d398e9e769f39436d140e0c5e2aca77908300fe0081676d4b6fe6",
+    "protocol/serial/frame.py": "34ead95e1392e99f37c85699fd1448ac10d7b5e8d0ec79b01952732eb6fd9180",
+    "protocol/serial/frame.h": "29870e0821d724f39116f6f2ff81b4245bd9810680b235e45f116b11615ec7d7",
+    "protocol/serial/frame.c": "4bb8120c648852d3205f743df308ded521d64639607c7926c493c7cb8bb2771f"
+  },
+  "layout": {
+    "byteOrder": "big-endian except inherited serial FCS",
+    "payloadLimit": 192,
+    "opFixedBytes": 88,
+    "maxResources": 8,
+    "fenceBytesEach": 4,
+    "maxArgumentBytes": 72,
+    "maxResultBytes": 32,
+    "helloResponseBytes": 186,
+    "controlResponseBytes": 69,
+    "receiptFixedBytes": 86,
+    "maxReceiptBytes": 118,
+    "maxDecodedFrameBytes": 214,
+    "maxEncodedFrameBytes": 430
+  },
+  "statusCodes": {
+    "OK": 0,
+    "UNSUPPORTED": 1,
+    "BAD_LENGTH": 2,
+    "RESERVED_FIELD": 3,
+    "BAD_STATE": 4,
+    "BOOT_MISMATCH": 5,
+    "CONTEXT_MISMATCH": 6,
+    "BUSY": 7,
+    "OLD_OR_FORGOTTEN": 8,
+    "CONFLICT": 9,
+    "UNKNOWN_PRIMITIVE": 10,
+    "BAD_ARGUMENT": 11,
+    "RESOURCE_MISMATCH": 12,
+    "STALE_FENCE": 13,
+    "BAD_TIME": 14,
+    "START_EXPIRED": 15,
+    "LEASE_INVALID": 16,
+    "UNCOMMISSIONED_OR_EVIDENCE_UNSUPPORTED": 17,
+    "BOOT_UNQUALIFIED": 18,
+    "COUNTER_EXHAUSTED": 19,
+    "NOT_SEEN": 20,
+    "CLOCK_UNQUALIFIED": 21,
+    "RECONCILIATION_REQUIRED": 22
+  },
+  "syntheticInstalledManifest": {
+    "profile": "synthetic-endpoint-fixture/0.1",
+    "physicalCommissioned": false,
+    "resourceCount": 8,
+    "primitives": [
+      {
+        "id": 4660,
+        "name": "fixture.scaled_pair",
+        "arguments": "two signed big-endian i32 values, range -100000 through 100000",
+        "argumentBytes": 8,
+        "result": "signed big-endian i32 sum",
+        "resultBytes": 4,
+        "resourceMask": 5,
+        "effect": "simulation_only",
+        "maxRunMs": 200
+      },
+      {
+        "id": 16962,
+        "name": "fixture.opaque72",
+        "arguments": "exactly 72 opaque fixture bytes",
+        "argumentBytes": 72,
+        "result": "first 32 fixture bytes",
+        "resultBytes": 32,
+        "resourceMask": 255,
+        "effect": "simulation_only",
+        "maxRunMs": 200
+      }
+    ]
+  },
+  "syntheticHostContext": {
+    "profile": "synthetic-endpoint-context/0.1",
+    "incarnationHex": "00112233445566778899aabbccddeeff",
+    "bootEpoch": 42,
+    "contextHandle": 7,
+    "manifestDigest": "sha256:ddb6714ca881983941c5517d6847de40150d5e474f08d25958323c5fb5789343",
+    "firmwareDigest": "sha256:64ad2194b0515050d53aa1a331e2e33718bb6f3dca6fc2525a1f236baa52d0ae",
+    "calibrationRevision": "synthetic:1",
+    "physicalCommissioned": false,
+    "resourceMapping": {
+      "0": "fixture:resource:0",
+      "1": "fixture:resource:1",
+      "2": "fixture:resource:2",
+      "3": "fixture:resource:3",
+      "4": "fixture:resource:4",
+      "5": "fixture:resource:5",
+      "6": "fixture:resource:6",
+      "7": "fixture:resource:7"
+    }
+  },
+  "fixtureDigests": {
+    "firmware": "64ad2194b0515050d53aa1a331e2e33718bb6f3dca6fc2525a1f236baa52d0ae",
+    "installedManifest": "ddb6714ca881983941c5517d6847de40150d5e474f08d25958323c5fb5789343",
+    "hostContext": "dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f8850",
+    "firstHostIntent": "95724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d504423327",
+    "maxHostIntent": "f1c825c4d0cc8451184644992a7c35a9bf63813c2e0cf002fe13ff603f4390d0"
+  },
+  "hostMapping": {
+    "firstRequest": {
+      "protocol": "hms.invoke/0.1",
+      "replayNamespace": "fixture:namespace",
+      "operationKey": "fixture:call-one",
+      "intent": {
+        "instanceId": "fixture:endpoint",
+        "actionId": "fixture:scaled-pair",
+        "endpointSession": "boot:42",
+        "controlGeneration": "control:2",
+        "descriptionDigest": "sha256:ddb6714ca881983941c5517d6847de40150d5e474f08d25958323c5fb5789343",
+        "bindingGeneration": "context:7",
+        "calibrationRevision": "synthetic:1",
+        "arguments": {
+          "first": 1000,
+          "second": -25,
+          "unit": "fixture_count"
+        },
+        "timing": {
+          "notBeforeUnixMs": 1700000000100,
+          "latestStartUnixMs": 1700000000200,
+          "maxRunMs": 200,
+          "latestCompletionUnixMs": 1700000000500
+        },
+        "requiredEffect": "capability_completion"
+      }
+    },
+    "firstCanonicalIntent": "{\"actionId\":\"fixture:scaled-pair\",\"arguments\":{\"first\":1000,\"second\":-25,\"unit\":\"fixture_count\"},\"bindingGeneration\":\"context:7\",\"calibrationRevision\":\"synthetic:1\",\"controlGeneration\":\"control:2\",\"descriptionDigest\":\"sha256:ddb6714ca881983941c5517d6847de40150d5e474f08d25958323c5fb5789343\",\"endpointSession\":\"boot:42\",\"instanceId\":\"fixture:endpoint\",\"requiredEffect\":\"capability_completion\",\"timing\":{\"latestCompletionUnixMs\":1700000000500,\"latestStartUnixMs\":1700000000200,\"maxRunMs\":200,\"notBeforeUnixMs\":1700000000100}}",
+    "firstIntentDigest": "sha256:95724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d504423327",
+    "maximumRequest": {
+      "protocol": "hms.invoke/0.1",
+      "replayNamespace": "fixture:namespace",
+      "operationKey": "fixture:maximum",
+      "intent": {
+        "instanceId": "fixture:endpoint",
+        "actionId": "fixture:opaque72",
+        "endpointSession": "boot:42",
+        "controlGeneration": "control:2",
+        "descriptionDigest": "sha256:ddb6714ca881983941c5517d6847de40150d5e474f08d25958323c5fb5789343",
+        "bindingGeneration": "context:7",
+        "calibrationRevision": "synthetic:1",
+        "arguments": {
+          "opaqueHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f4041424344454647"
+        },
+        "timing": {
+          "notBeforeUnixMs": 1700000000400,
+          "latestStartUnixMs": 1700000000500,
+          "maxRunMs": 200,
+          "latestCompletionUnixMs": 1700000000750
+        },
+        "requiredEffect": "capability_completion"
+      }
+    },
+    "maximumIntentDigest": "sha256:f1c825c4d0cc8451184644992a7c35a9bf63813c2e0cf002fe13ff603f4390d0",
+    "clockMapping": {
+      "endpointBoot": 42,
+      "localTickAtAnchor": 1000,
+      "hostUnixMsAtAnchor": 1700000000000,
+      "uncertaintyMs": 0,
+      "qualification": "exact synthetic fixture only, no measured physical clock"
+    },
+    "dispatchRecordRequirement": "Persist these exact compact payload bytes and the existing host operation mapping before driver handoff; no automatic mutation retry."
+  },
+  "fixtureAdmissionState": {
+    "bootEpoch": 42,
+    "controlGeneration": 2,
+    "contextHandle": 7,
+    "contextDigest": "dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f8850",
+    "resourceCount": 8,
+    "endpointState": "ARMED",
+    "simulatorOnly": true,
+    "physicalCommissioned": false,
+    "clockQualified": true,
+    "nowTick": 1000,
+    "armedUntilTick": 2000,
+    "acceptedCallHighWater": 0,
+    "resourceFenceFloors": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0
+    ],
+    "slot": null
+  },
+  "wireVectors": [
+    {
+      "name": "hello_request",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 0,
+        "sequence": 0
+      },
+      "payload_length": 2,
+      "payload_hex": "0101",
+      "encoded_frame_length": 26,
+      "encoded_frame_hex": "7e484d0101000000000000000000000000000000020101e6a67e",
+      "proposed_expectation": "diagnostic_only_no_authority"
+    },
+    {
+      "name": "hello_qualified_synthetic_response",
+      "frame": {
+        "kind": 2,
+        "channel": 0,
+        "session": 42,
+        "sequence": 1
+      },
+      "payload_length": 186,
+      "payload_hex": "0181000000000000112233445566778899aabbccddeeff64ad2194b0515050d53aa1a331e2e33718bb6f3dca6fc2525a1f236baa52d0aeddb6714ca881983941c5517d6847de40150d5e474f08d25958323c5fb57893430000000100000000000000000000000000000000000000000000000000000000000000000000000039084820010100000000000003e8000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+      "encoded_frame_length": 211,
+      "encoded_frame_hex": "7e484d01020000000000000000002a0000000100ba0181000000000000112233445566778899aabbccddeeff64ad2194b0515050d53aa1a331e2e33718bb6f3dca6fc2525a1f236baa52d0aeddb6714ca881983941c5517d5d6847de40150d5e474f08d25958323c5fb57893430000000100000000000000000000000000000000000000000000000000000000000000000000000039084820010100000000000003e8000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000840a7e",
+      "proposed_expectation": "well_formed_layout",
+      "fields": {
+        "flags": 57,
+        "bootQualified": true,
+        "simulatorOnly": true,
+        "physicalCommissioned": false,
+        "ordinaryInhibited": true,
+        "endpointState": 0,
+        "nowTick": 1000
+      },
+      "note": "Zero echoed request sequence is diagnostic; it does not qualify physical freshness."
+    },
+    {
+      "name": "bind_request",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 1
+      },
+      "payload_length": 72,
+      "payload_hex": "0110000000010007ddb6714ca881983941c5517d6847de40150d5e474f08d25958323c5fb5789343dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f8850",
+      "encoded_frame_length": 97,
+      "encoded_frame_hex": "7e484d01010000000000000000002a0000000100480110000000010007ddb6714ca881983941c5517d5d6847de40150d5e474f08d25958323c5fb5789343dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f8850eb737e",
+      "proposed_expectation": "bind_only_if_reconciled_slot_free_and_inhibited",
+      "fields": {
+        "expectedControlGeneration": 1,
+        "newContextHandle": 7,
+        "installedManifestDigest": "ddb6714ca881983941c5517d6847de40150d5e474f08d25958323c5fb5789343",
+        "hostContextDigest": "dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f8850"
+      }
+    },
+    {
+      "name": "bind_success",
+      "frame": {
+        "kind": 2,
+        "channel": 0,
+        "session": 42,
+        "sequence": 2
+      },
+      "payload_length": 69,
+      "payload_hex": "01900000000100000000020007dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f885001003900000000000003e800000000000000000000000000",
+      "encoded_frame_length": 93,
+      "encoded_frame_hex": "7e484d01020000000000000000002a00000002004501900000000100000000020007dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f885001003900000000000003e800000000000000000000000000508f7e",
+      "proposed_expectation": "well_formed_layout",
+      "fields": {
+        "controlGeneration": 2,
+        "contextHandle": 7,
+        "endpointState": 1,
+        "armedUntilTick": 0
+      }
+    },
+    {
+      "name": "arm_request",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 2
+      },
+      "payload_length": 48,
+      "payload_hex": "0111000000020007dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f885000000000000007d0",
+      "encoded_frame_length": 72,
+      "encoded_frame_hex": "7e484d01010000000000000000002a0000000200300111000000020007dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f885000000000000007d03f637e",
+      "proposed_expectation": "arm_synthetic_eligibility_until_absolute_tick_2000"
+    },
+    {
+      "name": "arm_success",
+      "frame": {
+        "kind": 2,
+        "channel": 0,
+        "session": 42,
+        "sequence": 3
+      },
+      "payload_length": 69,
+      "payload_hex": "01910000000200000000020007dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f885002001900000000000003e800000000000007d00000000000",
+      "encoded_frame_length": 93,
+      "encoded_frame_hex": "7e484d01020000000000000000002a00000003004501910000000200000000020007dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f885002001900000000000003e800000000000007d000000000009bec7e",
+      "proposed_expectation": "well_formed_layout"
+    },
+    {
+      "name": "op_scaled_pair",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 3
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000003006801200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7b75d7e",
+      "proposed_expectation": "queue_once_given_fixture_admission_state",
+      "fields": {
+        "controlGeneration": 2,
+        "contextHandle": 7,
+        "callNumber": 1,
+        "hostIntentDigest": "95724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d504423327",
+        "primitiveId": 4660,
+        "resourceMask": 5,
+        "argumentLength": 8,
+        "requiredEffect": 0,
+        "flags": 0,
+        "reserved": 0,
+        "notBeforeTick": 1100,
+        "latestStartTick": 1200,
+        "latestCompletionTick": 1500,
+        "maxRunMs": 200,
+        "leaseUntilTick": 1600,
+        "fencesInResourceBitOrder": [
+          5,
+          9
+        ],
+        "argumentHex": "000003e8ffffffe7"
+      }
+    },
+    {
+      "name": "queued_receipt",
+      "frame": {
+        "kind": 2,
+        "channel": 0,
+        "session": 42,
+        "sequence": 4
+      },
+      "payload_length": 86,
+      "payload_hex": "01a000000003000000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332701000000050000000000000100000000000003e8ffffffffffffffffffffffffffffffff00",
+      "encoded_frame_length": 110,
+      "encoded_frame_hex": "7e484d01020000000000000000002a00000004005601a000000003000000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332701000000050000000000000100000000000003e8ffffffffffffffffffffffffffffffff00fada7e",
+      "proposed_expectation": "volatile_queue_acceptance_not_durable_physical_execution"
+    },
+    {
+      "name": "query_request",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 4
+      },
+      "payload_length": 44,
+      "payload_hex": "01210000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d504423327",
+      "encoded_frame_length": 68,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000004002c01210000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d504423327ea3e7e",
+      "proposed_expectation": "well_formed_layout"
+    },
+    {
+      "name": "running_receipt",
+      "frame": {
+        "kind": 2,
+        "channel": 0,
+        "session": 42,
+        "sequence": 5
+      },
+      "payload_length": 86,
+      "payload_hex": "01a100000004000000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332702000000050100000000000200000000000003e8000000000000047effffffffffffffff00",
+      "encoded_frame_length": 111,
+      "encoded_frame_hex": "7e484d01020000000000000000002a00000005005601a100000004000000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332702000000050100000000000200000000000003e8000000000000047d5effffffffffffffff0046797e",
+      "proposed_expectation": "well_formed_layout"
+    },
+    {
+      "name": "cancel_request",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 5
+      },
+      "payload_length": 44,
+      "payload_hex": "01220000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d504423327",
+      "encoded_frame_length": 68,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000005002c01220000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332719887e",
+      "proposed_expectation": "well_formed_layout"
+    },
+    {
+      "name": "cancel_requested_receipt",
+      "frame": {
+        "kind": 2,
+        "channel": 0,
+        "session": 42,
+        "sequence": 6
+      },
+      "payload_length": 86,
+      "payload_hex": "01a200000005000000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332702010000050100000000000300000000000003e8000000000000047effffffffffffffff00",
+      "encoded_frame_length": 111,
+      "encoded_frame_hex": "7e484d01020000000000000000002a00000006005601a200000005000000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332702010000050100000000000300000000000003e8000000000000047d5effffffffffffffff00b71a7e",
+      "proposed_expectation": "request_acknowledgement_does_not_prove_termination"
+    },
+    {
+      "name": "completed_still_holds_resources",
+      "frame": {
+        "kind": 2,
+        "channel": 0,
+        "session": 42,
+        "sequence": 7
+      },
+      "payload_length": 90,
+      "payload_hex": "01a100000006000000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332703020500050100000000000400000000000003e8000000000000047e000000000000051404000003cf",
+      "encoded_frame_length": 115,
+      "encoded_frame_hex": "7e484d01020000000000000000002a00000007005a01a100000006000000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332703020500050100000000000400000000000003e8000000000000047d5e000000000000051404000003cf3af87e",
+      "proposed_expectation": "terminal_completion_with_claims_retained"
+    },
+    {
+      "name": "completed_quiescent_receipt",
+      "frame": {
+        "kind": 2,
+        "channel": 0,
+        "session": 42,
+        "sequence": 8
+      },
+      "payload_length": 90,
+      "payload_hex": "01a100000007000000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332703020500000100000000000500000000000003e8000000000000047e000000000000051404000003cf",
+      "encoded_frame_length": 115,
+      "encoded_frame_hex": "7e484d01020000000000000000002a00000008005a01a100000007000000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332703020500000100000000000500000000000003e8000000000000047d5e000000000000051404000003cf8e207e",
+      "proposed_expectation": "well_formed_layout"
+    },
+    {
+      "name": "retire_request",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 8
+      },
+      "payload_length": 44,
+      "payload_hex": "01230000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d504423327",
+      "encoded_frame_length": 68,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000008002c01230000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332766ce7e",
+      "proposed_expectation": "only_after_host_durable_receipt_and_local_terminal_quiescence"
+    },
+    {
+      "name": "retire_success",
+      "frame": {
+        "kind": 2,
+        "channel": 0,
+        "session": 42,
+        "sequence": 9
+      },
+      "payload_length": 7,
+      "payload_hex": "01a30000000800",
+      "encoded_frame_length": 31,
+      "encoded_frame_hex": "7e484d01020000000000000000002a00000009000701a3000000080051f87e",
+      "proposed_expectation": "well_formed_layout"
+    },
+    {
+      "name": "query_after_retirement",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 9
+      },
+      "payload_length": 44,
+      "payload_hex": "01210000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d504423327",
+      "encoded_frame_length": 68,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000009002c01210000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332751177e",
+      "proposed_expectation": "status_8_old_or_forgotten"
+    },
+    {
+      "name": "old_or_forgotten_response",
+      "frame": {
+        "kind": 2,
+        "channel": 0,
+        "session": 42,
+        "sequence": 10
+      },
+      "payload_length": 7,
+      "payload_hex": "01a10000000908",
+      "encoded_frame_length": 31,
+      "encoded_frame_hex": "7e484d01020000000000000000002a0000000a000701a10000000908fe117e",
+      "proposed_expectation": "well_formed_layout"
+    },
+    {
+      "name": "op_maximum_192_bytes",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 10
+      },
+      "payload_length": 192,
+      "payload_hex": "012000000002000700000002f1c825c4d0cc8451184644992a7c35a9bf63813c2e0cf002fe13ff603f4390d04242ff4800000000000000000000057800000000000005dc00000000000006d6000000c8000000000000076c00000006000000010000000a0000000100000001000000010000000100000001000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f4041424344454647",
+      "encoded_frame_length": 216,
+      "encoded_frame_hex": "7e484d01010000000000000000002a0000000a00c0012000000002000700000002f1c825c4d0cc8451184644992a7c35a9bf63813c2e0cf002fe13ff603f4390d04242ff4800000000000000000000057800000000000005dc00000000000006d6000000c8000000000000076c00000006000000010000000a0000000100000001000000010000000100000001000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464792177e",
+      "proposed_expectation": "queue_only_after_prior_receipt_retired",
+      "fields": {
+        "callNumber": 2,
+        "primitiveId": 16962,
+        "resourceMask": 255,
+        "argumentLength": 72,
+        "fixedBytes": 88,
+        "fenceBytes": 32,
+        "argumentBytes": 72,
+        "hostIntentDigest": "f1c825c4d0cc8451184644992a7c35a9bf63813c2e0cf002fe13ff603f4390d0"
+      }
+    },
+    {
+      "name": "revoke_request",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 11
+      },
+      "payload_length": 10,
+      "payload_hex": "01120000000200070006",
+      "encoded_frame_length": 34,
+      "encoded_frame_hex": "7e484d01010000000000000000002a0000000b000a01120000000200070006cbc37e",
+      "proposed_expectation": "inhibit_advance_control_and_apply_loss_policy_not_stop_proof"
+    },
+    {
+      "name": "revoke_success",
+      "frame": {
+        "kind": 2,
+        "channel": 0,
+        "session": 42,
+        "sequence": 11
+      },
+      "payload_length": 69,
+      "payload_hex": "01920000000b00000000030007dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f885000003900000000000003e800000000000000000000000000",
+      "encoded_frame_length": 93,
+      "encoded_frame_hex": "7e484d01020000000000000000002a0000000b004501920000000b00000000030007dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f885000003900000000000003e800000000000000000000000000b09e7e",
+      "proposed_expectation": "well_formed_layout",
+      "note": "Standalone slot-free revocation fixture, not a continuation of every preceding vector."
+    },
+    {
+      "name": "not_seen_response",
+      "frame": {
+        "kind": 2,
+        "channel": 0,
+        "session": 42,
+        "sequence": 12
+      },
+      "payload_length": 7,
+      "payload_hex": "01a10000000c14",
+      "encoded_frame_length": 31,
+      "encoded_frame_hex": "7e484d01020000000000000000002a0000000c000701a10000000c14795d7e",
+      "proposed_expectation": "snapshot_only_not_future_start_exclusion"
+    },
+    {
+      "name": "op_truncated",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 100
+      },
+      "payload_length": 103,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffff",
+      "encoded_frame_length": 127,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000064006701200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffff26237e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_trailing_byte",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 101
+      },
+      "payload_length": 105,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe700",
+      "encoded_frame_length": 129,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000065006901200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7005bc47e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_argument_length_over_72",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 102
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234054900000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000066006801200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234054900000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe73a4f7e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_reserved_flags",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 103
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800010000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000067006801200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800010000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7c2507e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_reserved_word",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 104
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000100000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000068006801200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000100000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7e3447e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_stale_boot",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 41,
+        "sequence": 105
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002900000069006801200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7ed8c7e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_zero_call",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 106
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000095724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a0000006a006801200000000200070000000095724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7eeaf7e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_unknown_primitive",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 107
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d504423327beef050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a0000006b006801200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d504423327beef050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe78a517e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_required_physical_verification_in_simulation",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 108
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050801000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a0000006c006801200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050801000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe746017e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_same_digest_changed_arguments",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 109
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e9ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a0000006d006801200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e9ffffffe72a9f7e",
+      "proposed_expectation": "reject_without_new_effects",
+      "note": "Full retained payload comparison detects conflict even though supplied host digest is unchanged."
+    },
+    {
+      "name": "op_older_call_after_retirement",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 110
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a0000006e006801200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe722eb7e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_new_call_before_terminal_receipt_retired",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 111
+      },
+      "payload_length": 104,
+      "payload_hex": "012000000002000700000002f1c825c4d0cc8451184644992a7c35a9bf63813c2e0cf002fe13ff603f4390d01234050800000000000000000000044c00000000000004b000000000000005dc000000c80000000000000640000000060000000a000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a0000006f0068012000000002000700000002f1c825c4d0cc8451184644992a7c35a9bf63813c2e0cf002fe13ff603f4390d01234050800000000000000000000044c00000000000004b000000000000005dc000000c80000000000000640000000060000000a000003e8ffffffe785847e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_stale_resource_fence",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 112
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000295724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c80000000000000640000000050000000a000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000070006801200000000200070000000295724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c80000000000000640000000050000000a000003e8ffffffe79b197e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_start_at_exclusive_deadline",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 113
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000071006801200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe722257e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_stale_deadline_after_32_bit_hardware_wrap",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 114
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000072006801200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe76e5a7e",
+      "proposed_expectation": "reject_without_new_effects",
+      "note": "Qualified u64 local clock does not reinterpret old low 32-bit timestamps as current."
+    },
+    {
+      "name": "op_operation_lease_past_context_lease",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 115
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000007d10000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000073006801200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000007d10000000500000009000003e8ffffffe7a42f7e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_invalid_window",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 116
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d504423327123405080000000000000000000004b000000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000074006801200000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d504423327123405080000000000000000000004b000000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7606b7e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "op_old_control_after_revoke",
+      "frame": {
+        "kind": 1,
+        "channel": 0,
+        "session": 42,
+        "sequence": 117
+      },
+      "payload_length": 104,
+      "payload_hex": "01200000000200070000000295724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7",
+      "encoded_frame_length": 128,
+      "encoded_frame_hex": "7e484d01010000000000000000002a00000075006801200000000200070000000295724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d5044233271234050800000000000000000000044c00000000000004b000000000000005dc000000c800000000000006400000000500000009000003e8ffffffe7484e7e",
+      "proposed_expectation": "reject_without_new_effects"
+    },
+    {
+      "name": "invalid_simulation_verified_receipt",
+      "frame": {
+        "kind": 2,
+        "channel": 0,
+        "session": 42,
+        "sequence": 90
+      },
+      "payload_length": 90,
+      "payload_hex": "01a100000006000000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332703020501050100000000000400000000000003e8000000000000047e000000000000051404000003cf",
+      "encoded_frame_length": 115,
+      "encoded_frame_hex": "7e484d01020000000000000000002a0000005a005a01a100000006000000000200070000000195724aadcf0d5aebd11dcf1e6860127f8f9569a9a34dd2a799ad26d50442332703020501050100000000000400000000000003e8000000000000047d5e000000000000051404000003cf410d7e",
+      "proposed_expectation": "host_reject_receipt_semantics",
+      "note": "A well-framed response with simulation evidence cannot claim physical verification."
+    }
+  ],
+  "negativeAdmissionCases": [
+    {
+      "vector": "op_truncated",
+      "expectedStatus": 2,
+      "precondition": "armed_free_fixture_state",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_trailing_byte",
+      "expectedStatus": 2,
+      "precondition": "armed_free_fixture_state",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_argument_length_over_72",
+      "expectedStatus": 2,
+      "precondition": "armed_free_fixture_state",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_reserved_flags",
+      "expectedStatus": 3,
+      "precondition": "armed_free_fixture_state",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_reserved_word",
+      "expectedStatus": 3,
+      "precondition": "armed_free_fixture_state",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_stale_boot",
+      "expectedStatus": 5,
+      "precondition": "armed_free_fixture_state",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_zero_call",
+      "expectedStatus": 11,
+      "precondition": "armed_free_fixture_state",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_unknown_primitive",
+      "expectedStatus": 10,
+      "precondition": "armed_free_fixture_state",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_required_physical_verification_in_simulation",
+      "expectedStatus": 17,
+      "precondition": "armed_free_fixture_state",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_same_digest_changed_arguments",
+      "expectedStatus": 9,
+      "precondition": "retained_original_call_1",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_older_call_after_retirement",
+      "expectedStatus": 8,
+      "precondition": "slot_free_call_high_water_1_fences_5_0_9_0_0_0_0_0",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_new_call_before_terminal_receipt_retired",
+      "expectedStatus": 7,
+      "precondition": "terminal_quiescent_call_1_still_retained",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_stale_resource_fence",
+      "expectedStatus": 13,
+      "precondition": "slot_free_call_high_water_1_fences_5_0_9_0_0_0_0_0",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_start_at_exclusive_deadline",
+      "expectedStatus": 15,
+      "precondition": "armed_free_fixture_state",
+      "nowTick": 1200,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_stale_deadline_after_32_bit_hardware_wrap",
+      "precondition": "armed_free_fixture_state",
+      "nowTick": 4294968396,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      },
+      "expectedStatusAnyOf": [
+        4,
+        15,
+        16
+      ]
+    },
+    {
+      "vector": "op_operation_lease_past_context_lease",
+      "expectedStatus": 16,
+      "precondition": "armed_free_fixture_state",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_invalid_window",
+      "expectedStatus": 14,
+      "precondition": "armed_free_fixture_state",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    },
+    {
+      "vector": "op_old_control_after_revoke",
+      "expectedStatus": 6,
+      "precondition": "slot_free_high_water_1_current_control_4_context_8_armed_after_revoke_and_rebind",
+      "nowTick": 1000,
+      "mutationAssertions": {
+        "newEffectCount": 0,
+        "partialResourceAcquisition": false,
+        "admissionAdvancesCallOrFenceFloors": false
+      }
+    }
+  ],
+  "stateScenarios": [
+    {
+      "name": "exact_duplicate_is_not_new_execution",
+      "initial": "bound armed qualified synthetic boot 42; free slot; call high-water 0; all fence floors 0",
+      "steps": [
+        {
+          "inputVector": "op_scaled_pair",
+          "expect": {
+            "slot": "QUEUED",
+            "callHighWater": 1,
+            "fenceFloors": [
+              5,
+              0,
+              9,
+              0,
+              0,
+              0,
+              0,
+              0
+            ],
+            "heldMask": 5,
+            "primitiveDispatches": 0
+          }
+        },
+        {
+          "inputVector": "op_scaled_pair",
+          "expect": {
+            "sameReceipt": true,
+            "primitiveDispatches": 0
+          }
+        },
+        {
+          "localEvent": "qualified clock reaches 1150; predicates remain valid",
+          "expect": {
+            "slot": "RUNNING",
+            "mayHaveActed": true,
+            "primitiveDispatches": 1
+          }
+        },
+        {
+          "inputVector": "op_scaled_pair",
+          "expect": {
+            "sameOperation": true,
+            "primitiveDispatches": 1
+          }
+        }
+      ]
+    },
+    {
+      "name": "explicit_retirement_preserves_refusal_floor",
+      "initial": "call 1 COMPLETED with quiescence, held mask 0, host has durably saved exact receipt",
+      "steps": [
+        {
+          "inputVector": "retire_request",
+          "expect": {
+            "status": 0,
+            "slot": null,
+            "callHighWater": 1,
+            "fenceFloors": [
+              5,
+              0,
+              9,
+              0,
+              0,
+              0,
+              0,
+              0
+            ]
+          }
+        },
+        {
+          "inputVector": "query_after_retirement",
+          "expect": {
+            "status": 8,
+            "outcomeCannotBeReconstructed": true
+          }
+        },
+        {
+          "inputVector": "op_older_call_after_retirement",
+          "expect": {
+            "status": 8,
+            "primitiveDispatches": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "future_cancel_is_not_a_tombstone",
+      "initial": "qualified boot; call high-water 0; free slot",
+      "steps": [
+        {
+          "inputVector": "cancel_request",
+          "expect": {
+            "status": 20,
+            "callHighWater": 0,
+            "futureDispatchExclusionProven": false
+          }
+        },
+        {
+          "localEvent": "a previously buffered original OP arrives before its deadline",
+          "expect": {
+            "mustStillApplyNormalAdmission": true,
+            "cancelDidNotInvalidateItsControlDomain": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "link_reconnect_preserves_execution_domain",
+      "initial": "call 1 queued or running in qualified boot 42 control 2",
+      "steps": [
+        {
+          "localEvent": "UART disconnect/error and reconnect",
+          "expect": {
+            "parserCleared": true,
+            "bootEpoch": 42,
+            "controlGeneration": 2,
+            "slotPreserved": true,
+            "fenceFloorsPreserved": true,
+            "leaseNotRenewed": true
+          }
+        },
+        {
+          "inputVector": "query_request",
+          "expect": {
+            "existingReceiptReturned": true,
+            "automaticOpResendAllowed": false
+          }
+        }
+      ]
+    },
+    {
+      "name": "qualified_reset_does_not_prove_no_physical_prefix",
+      "initial": "call 1 may have dispatched in boot 42; host has durable mapping; baseline receipt is volatile",
+      "steps": [
+        {
+          "localEvent": "reset; qualified NVM platform commits next epoch 43 before effect eligibility",
+          "expect": {
+            "bootEpoch": 43,
+            "controlGeneration": 1,
+            "slot": null,
+            "reconciliationRequired": true,
+            "ordinaryInhibited": true,
+            "hostPriorOperation": "outcome_unknown",
+            "hostClaimsRetained": true
+          }
+        },
+        {
+          "inputVector": "op_scaled_pair",
+          "expect": {
+            "status": 5,
+            "newEffects": 0
+          }
+        },
+        {
+          "localEvent": "host requests new BIND using boot 43 before platform reconciliation",
+          "expect": {
+            "status": 22,
+            "newEffects": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "unqualified_boot_is_diagnostic_only",
+      "initial": "boot counter torn/rolled back/unqualified; ordinary gate inhibited",
+      "steps": [
+        {
+          "inputVector": "hello_request",
+          "expect": {
+            "responseSession": 0,
+            "bootQualified": false,
+            "ordinaryInhibited": true
+          }
+        },
+        {
+          "localEvent": "any BIND/ARM/OP request",
+          "expect": {
+            "status": 18,
+            "newEffects": 0
+          }
+        }
+      ]
+    },
+    {
+      "name": "queued_expiry_is_not_running_expiry",
+      "initial": "queued call 1 at tick 1000",
+      "steps": [
+        {
+          "localEvent": "scheduler first eligible service is tick 1200",
+          "expect": {
+            "slot": "REJECTED_BEFORE_START",
+            "mayHaveActed": false,
+            "heldMask": 0,
+            "primitiveDispatches": 0,
+            "receiptRetainedUntilRetire": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "cancel_completion_race",
+      "initial": "call 1 running; cancellation requested",
+      "steps": [
+        {
+          "localEvent": "installed completion evidence wins before observed cancellation termination",
+          "expect": {
+            "slot": "COMPLETED",
+            "cancellation": "ACKNOWLEDGED",
+            "heldUntilQuiescence": true
+          }
+        },
+        {
+          "localEvent": "late cancellation callback arrives",
+          "expect": {
+            "executionNotRewrittenToCanceled": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "revocation_does_not_erase_receipt_or_claims",
+      "initial": "call 1 running in control 2",
+      "steps": [
+        {
+          "inputVector": "revoke_request",
+          "expect": {
+            "currentControlGeneration": 3,
+            "ordinaryInhibited": true,
+            "lossPolicyServiced": true,
+            "claimsNotReleasedByAcknowledgement": true,
+            "slotPreserved": true
+          }
+        },
+        {
+          "inputVector": "query_request",
+          "expect": {
+            "oldControlRecordStillQueryable": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "counter_exhaustion_cannot_wrap",
+      "initial": "control generation 4294967295; ordinary eligibility not transferable",
+      "steps": [
+        {
+          "localEvent": "BIND or REVOKE requires generation increment",
+          "expect": {
+            "status": 19,
+            "endpointState": "FAULT_LOCKED",
+            "ordinaryInhibited": true,
+            "wrappedControlGenerationForbidden": true,
+            "independentLossStopStillRequired": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "boot_epoch_nvm_failure_preserves_inhibition",
+      "initial": "startup platform cannot verify a strictly new persisted epoch",
+      "steps": [
+        {
+          "localEvent": "attempt ordinary initialization",
+          "expect": {
+            "ordinaryInhibited": true,
+            "noInventedNonce": true,
+            "noPhysicalEffectClaim": true,
+            "diagnosticHelloOnly": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "revoked_diagnostic_context_cannot_be_rearmed",
+      "initial": "call 1 running in control 2/context 7; context valid; local clock remains qualified",
+      "steps": [
+        {
+          "inputVector": "revoke_request",
+          "expect": {
+            "controlGeneration": 3,
+            "contextValid": false,
+            "endpointState": "DRAINING",
+            "slotPreserved": true
+          }
+        },
+        {
+          "inputFields": {
+            "opcode": "ARM",
+            "controlGeneration": 3,
+            "contextHandle": 7,
+            "hostContextDigest": "dd882e7087dffe2cf05f98536507c363f43a5fb8a217916ec30db64ac06f8850",
+            "leaseUntilTick": 2500
+          },
+          "expect": {
+            "status": 4,
+            "contextValid": false,
+            "ordinaryInhibited": true
+          }
+        },
+        {
+          "localEvent": "installed loss response establishes known failure/termination and quiescence; host durably stores receipt",
+          "expect": {
+            "slot": "FAILED",
+            "heldMask": 0,
+            "endpointState": "RESET_INHIBITED",
+            "contextValid": false
+          }
+        },
+        {
+          "inputVector": "retire_request",
+          "expect": {
+            "status": 0,
+            "slot": null,
+            "controlGeneration": 3,
+            "callHighWater": 1
+          }
+        },
+        {
+          "inputFields": {
+            "opcode": "BIND",
+            "expectedControlGeneration": 3,
+            "newContextHandle": 8,
+            "installedManifestDigest": "ddb6714ca881983941c5517d6847de40150d5e474f08d25958323c5fb5789343",
+            "hostContextDigest": "0a8d3f17964f5d6f3787a3cacc270fb3068751e94489af752543767d08f99d60"
+          },
+          "expect": {
+            "status": 0,
+            "controlGeneration": 4,
+            "contextHandle": 8,
+            "endpointState": "BOUND_DISARMED",
+            "contextValid": true
+          }
+        },
+        {
+          "inputFields": {
+            "opcode": "ARM",
+            "controlGeneration": 4,
+            "contextHandle": 8,
+            "hostContextDigest": "0a8d3f17964f5d6f3787a3cacc270fb3068751e94489af752543767d08f99d60",
+            "leaseUntilTick": 2500
+          },
+          "expect": {
+            "status": 0,
+            "endpointState": "ARMED"
+          }
+        }
+      ]
+    },
+    {
+      "name": "stale_handle_revoke_does_not_mutate_current_context",
+      "initial": "ARMED current control 4/context 8; qualified clock; free slot",
+      "steps": [
+        {
+          "inputFields": {
+            "opcode": "REVOKE",
+            "expectedControlGeneration": 4,
+            "contextHandle": 7,
+            "reason": 6
+          },
+          "expect": {
+            "status": 6,
+            "controlGeneration": 4,
+            "contextHandle": 8,
+            "endpointState": "ARMED",
+            "armDeadlineUnchanged": true
+          }
+        }
+      ]
+    },
+    {
+      "name": "absolute_arm_replay_cannot_renew_or_shorten_budgets",
+      "initial": "ARMED control 2/context 7; armed-until 2500; existing call operation lease 1600; qualified now 1500",
+      "steps": [
+        {
+          "inputVector": "arm_request",
+          "expect": {
+            "status": 0,
+            "armedUntilTick": 2500,
+            "operationLeaseUntilTick": 1600,
+            "newPrimitiveDispatches": 0
+          }
+        },
+        {
+          "localEvent": "qualified clock reaches 2100, beyond replayed ARM deadline 2000 but before current context deadline 2500",
+          "expect": {
+            "priorOperationCannotResumeAfterItsLease": true
+          }
+        },
+        {
+          "inputVector": "arm_request",
+          "expect": {
+            "status": 16,
+            "armedUntilTick": 2500,
+            "operationLeaseUntilTick": 1600,
+            "newPrimitiveDispatches": 0
+          }
+        }
+      ]
+    }
+  ],
+  "validationPerformed": {
+    "payloadSizesCalculated": true,
+    "allWireVectorsRoundTripExistingSerialCodec": true,
+    "hostIntentFixturesPassExistingHostParser": true,
+    "fullHostIntentDigestsComputedUsingExistingHostProfile": true,
+    "endpointPayloadDecoderExists": false,
+    "endpointStateMachineExecuted": false,
+    "targetCompiledOrExecuted": false,
+    "hardwareUsed": false,
+    "acquiredCodeExecuted": false
+  },
+  "exclusions": [
+    "No authenticated transport or boot-counter implementation.",
+    "No proof of durable physical effects, independent stop, real timing, SRAM fit or physical conformance.",
+    "Vectors are independent cases unless stateScenarios explicitly connects them.",
+    "FCS-valid negative payloads intentionally pass the existing framing codec; their proposed rejection belongs to the future endpoint layer.",
+    "Literal firmware digest hashes a synthetic label; no installed firmware artifact exists."
+  ]
+}

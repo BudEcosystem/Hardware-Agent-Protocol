@@ -1,0 +1,116 @@
+{
+  "protocol": "hms.pat/0.1",
+  "profile": "hms.pat.bound-sequence/0.1",
+  "name": "simulation-fan-level-pair",
+  "version": "1",
+  "taskKind": "sim.fan.level_pair",
+  "inputProfile": "hms.sim.fan.level_pair/0.1",
+  "parameters": {
+    "initialLevel": {
+      "valueSchema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "unit": "percent",
+      "frame": null
+    },
+    "finalLevel": {
+      "valueSchema": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "unit": "percent",
+      "frame": null
+    }
+  },
+  "roles": {
+    "fan": {
+      "capabilityFamily": "sim:home-fan",
+      "actions": [
+        "set_level"
+      ],
+      "driverProfiles": [
+        "sqlite-simulation",
+        "compact-simulation"
+      ]
+    }
+  },
+  "applicability": {
+    "all": [
+      {
+        "field": "context.evidenceMode",
+        "op": "equals",
+        "literal": "simulation"
+      },
+      {
+        "field": "trigger.taskKind",
+        "op": "equals",
+        "literal": "sim.fan.level_pair"
+      }
+    ],
+    "phase": "selection"
+  },
+  "targetProfile": "hms.bound-sequence/0.1",
+  "executionPlacement": "hms-host-orchestration",
+  "timingBudget": {
+    "latestStartOffsetMs": 500,
+    "latestCompletionOffsetMs": 2000,
+    "maxRunSumMs": 1000
+  },
+  "steps": [
+    {
+      "stepId": "initial",
+      "role": "fan",
+      "actionId": "set_level",
+      "arguments": {
+        "level": {
+          "parameter": "initialLevel"
+        },
+        "unit": {
+          "literal": "percent"
+        }
+      },
+      "timing": {
+        "notBeforeOffsetMs": 0,
+        "latestStartOffsetMs": 500,
+        "maxRunMs": 500,
+        "latestCompletionOffsetMs": 1000
+      }
+    },
+    {
+      "stepId": "final",
+      "role": "fan",
+      "actionId": "set_level",
+      "arguments": {
+        "level": {
+          "parameter": "finalLevel"
+        },
+        "unit": {
+          "literal": "percent"
+        }
+      },
+      "timing": {
+        "notBeforeOffsetMs": 0,
+        "latestStartOffsetMs": 1500,
+        "maxRunMs": 500,
+        "latestCompletionOffsetMs": 2000
+      }
+    }
+  ],
+  "effectBudget": {
+    "maxInvocations": 2,
+    "scope": "simulation_only"
+  },
+  "outcomeContract": {
+    "requiredEffect": "capability_completion",
+    "requiredCompletedSteps": [
+      "initial",
+      "final"
+    ],
+    "evidenceMode": "simulation",
+    "physicalObjectiveVerified": false
+  },
+  "runtimeGuardProfile": "installed_primitive_guards_only"
+}

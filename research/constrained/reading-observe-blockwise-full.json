@@ -1,0 +1,758 @@
+{
+  "schema_version": 1,
+  "reviewed_at": "2026-11-05T23:36:50.860357+00:00",
+  "line_counting": "LF-delimited original text bytes; retain each LF in interval digest, form feeds/CR/BOM bytes, and any final unterminated line; not Python splitlines().",
+  "coverage_policy": "coverage_complete means all archived text lines displayed in bounded outputs without truncation and read. RFC ASCII figures/tables and references included. HTML claims cover extracted text, not linked works. Initial truncated navigation/status/schema outputs excluded from full-read evidence. No acquired implementation code or hardware executed.",
+  "sources": [
+    {
+      "id": "observe-rfc7641",
+      "source_kind": "published_rfc",
+      "url": "https://www.rfc-editor.org/rfc/rfc7641.txt",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc7641.txt",
+      "retrieved_at": "2026-11-05T23:30:15.537687+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/observe-rfc7641.txt",
+      "text_path": "research/constrained/observe-blockwise/text/observe-rfc7641.txt",
+      "text_sha256": "5f1a4fce0f4754ab0de0f10eed23c4a7ce48fdd657bc4a88712c5b860a1d701f",
+      "raw_sha256": "5f1a4fce0f4754ab0de0f10eed23c4a7ce48fdd657bc4a88712c5b860a1d701f",
+      "line_count": 1683,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 450,
+          "sha256": "3f73b82525fcfd50bf7fb81834886f3c02d1ccf187b0812d39d102ea044b6434"
+        },
+        {
+          "start_line": 451,
+          "end_line": 900,
+          "sha256": "846cf8cbbef11c4171b63dc8f8afee4870c642ae01957f3bafd204e07c67aadc"
+        },
+        {
+          "start_line": 901,
+          "end_line": 1350,
+          "sha256": "ff785b4ded234837482ec235d5e42eeb901a4f87aad84267b69f242b4b1a6e84"
+        },
+        {
+          "start_line": 1351,
+          "end_line": 1683,
+          "sha256": "3dc080c7b5e0378ffdf671fee91c4253805fac0811d0af323b03377f1cb8eaf8"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text_including_ascii_figures_and_references",
+      "note": "All sections 1-9, Appendix A.1/A.2, figures 1-8, all tables and references."
+    },
+    {
+      "id": "rfc7641-metadata",
+      "source_kind": "official_metadata",
+      "url": "https://www.rfc-editor.org/rfc/rfc7641.json",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc7641.json",
+      "retrieved_at": "2026-11-05T23:30:15.669232+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/rfc7641-metadata.json",
+      "text_path": "research/constrained/observe-blockwise/text/rfc7641-metadata.txt",
+      "text_sha256": "2d24988bf1433065ec428c2caa424ff55a609ce25732ef6c1efdc27a49935cbf",
+      "raw_sha256": "2d24988bf1433065ec428c2caa424ff55a609ce25732ef6c1efdc27a49935cbf",
+      "line_count": 33,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 33,
+          "sha256": "2d24988bf1433065ec428c2caa424ff55a609ce25732ef6c1efdc27a49935cbf"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text",
+      "note": "Complete live official metadata/errata query read; links and discussion threads are not included."
+    },
+    {
+      "id": "rfc7641-errata",
+      "source_kind": "official_errata",
+      "url": "https://www.rfc-editor.org/errata/rfc7641",
+      "final_url": "https://errata.rfc-editor.org/search/?rfc_number=7641&presentation=records",
+      "retrieved_at": "2026-11-05T23:30:17.853028+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/rfc7641-errata.html",
+      "text_path": "research/constrained/observe-blockwise/text/rfc7641-errata.txt",
+      "text_sha256": "5c64af097efad175ea335e806c9a0cbb8f73041d6594fe75dcb49aa30685c9c0",
+      "raw_sha256": "efc67f45e7a6378ede6a8eb13b04fae133e2be32295ad2ae813b5df9640dfae3",
+      "line_count": 42,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 42,
+          "sha256": "5c64af097efad175ea335e806c9a0cbb8f73041d6594fe75dcb49aa30685c9c0"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Complete live official metadata/errata query read; links and discussion threads are not included."
+    },
+    {
+      "id": "blockwise-rfc7959",
+      "source_kind": "published_rfc",
+      "url": "https://www.rfc-editor.org/rfc/rfc7959.txt",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc7959.txt",
+      "retrieved_at": "2026-11-05T23:30:15.999268+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/blockwise-rfc7959.txt",
+      "text_path": "research/constrained/observe-blockwise/text/blockwise-rfc7959.txt",
+      "text_sha256": "0b1e50d6a5d5a3684dcf990e1b25c54d6ea953a544a5c54bfb7103dec0c37da1",
+      "raw_sha256": "0b1e50d6a5d5a3684dcf990e1b25c54d6ea953a544a5c54bfb7103dec0c37da1",
+      "line_count": 2075,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 450,
+          "sha256": "10a254a3657d20dfe1975f0e106bc27a3c70122d28eabec5331591b3dd433823"
+        },
+        {
+          "start_line": 451,
+          "end_line": 900,
+          "sha256": "1adaf701a4a15498eb58e72257355698d2c4bfcf8becd0ffb3aac852b882e25b"
+        },
+        {
+          "start_line": 901,
+          "end_line": 1350,
+          "sha256": "86d7ccbed0f6045fa2cd1b100d7bb56e2d8b2eda6f4a090e6919716f734aae8b"
+        },
+        {
+          "start_line": 1351,
+          "end_line": 1800,
+          "sha256": "cdccffb9029550daa19a20cf8fe877db322d9aff9c964ca609769ff457a22f47"
+        },
+        {
+          "start_line": 1801,
+          "end_line": 2075,
+          "sha256": "1c3b4606996b3e020b713a274dd316bcd5e7c71dc35230bcd340df7321529cef"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text_including_ascii_figures_and_references",
+      "note": "All sections 1-8, figures 1-13, tables 1-4, examples and references; no appendix exists."
+    },
+    {
+      "id": "rfc7959-metadata",
+      "source_kind": "official_metadata",
+      "url": "https://www.rfc-editor.org/rfc/rfc7959.json",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc7959.json",
+      "retrieved_at": "2026-11-05T23:30:16.067073+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/rfc7959-metadata.json",
+      "text_path": "research/constrained/observe-blockwise/text/rfc7959-metadata.txt",
+      "text_sha256": "7236b5169563702eb84f934dbc5bc799adf8b295b5d29e7f9165b62fd59f0167",
+      "raw_sha256": "7236b5169563702eb84f934dbc5bc799adf8b295b5d29e7f9165b62fd59f0167",
+      "line_count": 41,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 41,
+          "sha256": "7236b5169563702eb84f934dbc5bc799adf8b295b5d29e7f9165b62fd59f0167"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text",
+      "note": "Complete live official metadata/errata query read; links and discussion threads are not included."
+    },
+    {
+      "id": "rfc7959-errata",
+      "source_kind": "official_errata",
+      "url": "https://www.rfc-editor.org/errata/rfc7959",
+      "final_url": "https://errata.rfc-editor.org/search/?rfc_number=7959&presentation=records",
+      "retrieved_at": "2026-11-05T23:30:17.842636+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/rfc7959-errata.html",
+      "text_path": "research/constrained/observe-blockwise/text/rfc7959-errata.txt",
+      "text_sha256": "86736ad4d12d34257b516cf45620687e5123b14584922a9f0995297b7556ec63",
+      "raw_sha256": "cf273930ca99bb6e9ccbd3ee5c0dcf8415555abe67ef246fc088685af1db7660",
+      "line_count": 119,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 119,
+          "sha256": "86736ad4d12d34257b516cf45620687e5123b14584922a9f0995297b7556ec63"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Complete live official metadata/errata query read; links and discussion threads are not included."
+    },
+    {
+      "id": "reliable-coap-rfc8323",
+      "source_kind": "published_rfc",
+      "url": "https://www.rfc-editor.org/rfc/rfc8323.txt",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc8323.txt",
+      "retrieved_at": "2026-11-05T23:30:16.542941+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/reliable-coap-rfc8323.txt",
+      "text_path": "research/constrained/observe-blockwise/text/reliable-coap-rfc8323.txt",
+      "text_sha256": "8580e89363131387f9fc5ba7ffe664cfb7f66c6232be9cffa3900c7e17f21ed7",
+      "raw_sha256": "8580e89363131387f9fc5ba7ffe664cfb7f66c6232be9cffa3900c7e17f21ed7",
+      "line_count": 3027,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 450,
+          "sha256": "b9dcf7f36aa4013fbc5768fc825fd0111535b143ab928b392916017edf292010"
+        },
+        {
+          "start_line": 451,
+          "end_line": 900,
+          "sha256": "25bbee5ca09802c2ddae21c0fe2933020d4e4fa1d8a81240a78da1689c9008ea"
+        },
+        {
+          "start_line": 901,
+          "end_line": 1350,
+          "sha256": "c84ab243c1c6e60bb5d9569355b6f4eb025b369eb5e391020820f2a278b2cb59"
+        },
+        {
+          "start_line": 1351,
+          "end_line": 1800,
+          "sha256": "3bfca30b0c078509ed7d77f7ca14d6c908bc7d51d65940322f4a5842ba8fc0f7"
+        },
+        {
+          "start_line": 1801,
+          "end_line": 2250,
+          "sha256": "67f2cbbcf1b9a47f1cd010cbb392662dbbfa57780d2c0c97e5b7fbc8d32edc4c"
+        },
+        {
+          "start_line": 2251,
+          "end_line": 2700,
+          "sha256": "53d596796bea6b719604c7e5d754cfc87207d5d83bb7fa6b2bde01f85ac53d58"
+        },
+        {
+          "start_line": 2701,
+          "end_line": 3027,
+          "sha256": "ff0fd6aa6b33d8ae9ade84a69bc8c19e2641e63bc04096e812f3bdcf14792273"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text_including_ascii_figures_and_references",
+      "note": "All sections 1-12, Appendix A, figures 1-18, numbered and unnumbered tables and references."
+    },
+    {
+      "id": "rfc8323-metadata",
+      "source_kind": "official_metadata",
+      "url": "https://www.rfc-editor.org/rfc/rfc8323.json",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc8323.json",
+      "retrieved_at": "2026-11-05T23:30:17.277672+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/rfc8323-metadata.json",
+      "text_path": "research/constrained/observe-blockwise/text/rfc8323-metadata.txt",
+      "text_sha256": "8d75088478d0063803600866c6eea93846247d3fffecb83637996e04f88d8a3c",
+      "raw_sha256": "8d75088478d0063803600866c6eea93846247d3fffecb83637996e04f88d8a3c",
+      "line_count": 45,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 45,
+          "sha256": "8d75088478d0063803600866c6eea93846247d3fffecb83637996e04f88d8a3c"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text",
+      "note": "Complete live official metadata/errata query read; links and discussion threads are not included."
+    },
+    {
+      "id": "rfc8323-errata",
+      "source_kind": "official_errata",
+      "url": "https://www.rfc-editor.org/errata/rfc8323",
+      "final_url": "https://errata.rfc-editor.org/search/?rfc_number=8323&presentation=records",
+      "retrieved_at": "2026-11-05T23:30:18.609028+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/rfc8323-errata.html",
+      "text_path": "research/constrained/observe-blockwise/text/rfc8323-errata.txt",
+      "text_sha256": "5c64af097efad175ea335e806c9a0cbb8f73041d6594fe75dcb49aa30685c9c0",
+      "raw_sha256": "1e5477acc1c5be60a822e2ea840f695bcf01a20f9a32507a9efd556f429c4931",
+      "line_count": 42,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 42,
+          "sha256": "5c64af097efad175ea335e806c9a0cbb8f73041d6594fe75dcb49aa30685c9c0"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Complete live official metadata/errata query read; links and discussion threads are not included."
+    },
+    {
+      "id": "rfc8974-metadata",
+      "source_kind": "official_metadata",
+      "url": "https://www.rfc-editor.org/rfc/rfc8974.json",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc8974.json",
+      "retrieved_at": "2026-11-05T23:32:22.898161+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/rfc8974-metadata.json",
+      "text_path": "research/constrained/observe-blockwise/text/rfc8974-metadata.txt",
+      "text_sha256": "b3ebf76e105de860034a13882d21f6bb9431558c1611bef37f883108488106b3",
+      "raw_sha256": "b3ebf76e105de860034a13882d21f6bb9431558c1611bef37f883108488106b3",
+      "line_count": 35,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 35,
+          "sha256": "b3ebf76e105de860034a13882d21f6bb9431558c1611bef37f883108488106b3"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text",
+      "note": "Complete live official metadata/errata query read; links and discussion threads are not included."
+    },
+    {
+      "id": "rfc8974-errata",
+      "source_kind": "official_errata",
+      "url": "https://www.rfc-editor.org/errata/rfc8974",
+      "final_url": "https://errata.rfc-editor.org/search/?rfc_number=8974&presentation=records",
+      "retrieved_at": "2026-11-05T23:32:24.802234+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/rfc8974-errata.html",
+      "text_path": "research/constrained/observe-blockwise/text/rfc8974-errata.txt",
+      "text_sha256": "5c64af097efad175ea335e806c9a0cbb8f73041d6594fe75dcb49aa30685c9c0",
+      "raw_sha256": "77ed65dc882e99f9f370e6a27fac99f3fb2c9c1020a92c65aa50121ba15ac731",
+      "line_count": 42,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 42,
+          "sha256": "5c64af097efad175ea335e806c9a0cbb8f73041d6594fe75dcb49aa30685c9c0"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Complete live official metadata/errata query read; links and discussion threads are not included."
+    },
+    {
+      "id": "rfc9175-metadata",
+      "source_kind": "official_metadata",
+      "url": "https://www.rfc-editor.org/rfc/rfc9175.json",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc9175.json",
+      "retrieved_at": "2026-11-05T23:32:22.802165+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/rfc9175-metadata.json",
+      "text_path": "research/constrained/observe-blockwise/text/rfc9175-metadata.txt",
+      "text_sha256": "60ff991d1fca234e0da9b6073ae86ee1500f01eafb728f45f14ba8bee3d36b1f",
+      "raw_sha256": "60ff991d1fca234e0da9b6073ae86ee1500f01eafb728f45f14ba8bee3d36b1f",
+      "line_count": 44,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 44,
+          "sha256": "60ff991d1fca234e0da9b6073ae86ee1500f01eafb728f45f14ba8bee3d36b1f"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text",
+      "note": "Complete live official metadata/errata query read; links and discussion threads are not included."
+    },
+    {
+      "id": "rfc9175-errata",
+      "source_kind": "official_errata",
+      "url": "https://www.rfc-editor.org/errata/rfc9175",
+      "final_url": "https://errata.rfc-editor.org/search/?rfc_number=9175&presentation=records",
+      "retrieved_at": "2026-11-05T23:32:24.464673+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/rfc9175-errata.html",
+      "text_path": "research/constrained/observe-blockwise/text/rfc9175-errata.txt",
+      "text_sha256": "050e4581082abf83f3900276c2ffc4328d94a4c890138f38bd5ec5e4b5d9913f",
+      "raw_sha256": "34b8c5b82b4a20ea7428a3c44c0cfea27813f0568168362a6e319e00771b455d",
+      "line_count": 63,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 63,
+          "sha256": "050e4581082abf83f3900276c2ffc4328d94a4c890138f38bd5ec5e4b5d9913f"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_extracted_text",
+      "note": "Complete live official metadata/errata query read; links and discussion threads are not included."
+    },
+    {
+      "id": "body-integrity-rfc9175",
+      "source_kind": "published_rfc",
+      "url": "https://www.rfc-editor.org/rfc/rfc9175.txt",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc9175.txt",
+      "retrieved_at": "2026-11-05T23:32:23.403920+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/body-integrity-rfc9175.txt",
+      "text_path": "research/constrained/observe-blockwise/text/body-integrity-rfc9175.txt",
+      "text_sha256": "103a997a5a3391f9432a84162168e63c0e7de83c08cf0159339d8e7358a4666a",
+      "raw_sha256": "103a997a5a3391f9432a84162168e63c0e7de83c08cf0159339d8e7358a4666a",
+      "line_count": 1483,
+      "coverage_ranges": [
+        {
+          "start_line": 672,
+          "end_line": 1056,
+          "sha256": "6067edfc581c30405fbd4fedaf1cf9ed5d5a82107f5100c4af9f50aa77946d3b"
+        }
+      ],
+      "coverage_complete": false,
+      "reading_status": "read_selected_sections",
+      "note": "Complete sections 3-4: Request-Tag/body integrity and secure token processing. Remaining text, appendices and security discussion not reread in this lane; separate full base-CoAP receipt cross-referenced."
+    },
+    {
+      "id": "rfc9177-metadata",
+      "source_kind": "official_metadata",
+      "url": "https://www.rfc-editor.org/rfc/rfc9177.json",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc9177.json",
+      "retrieved_at": "2026-11-05T23:32:23.832203+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/rfc9177-metadata.json",
+      "text_path": "research/constrained/observe-blockwise/text/rfc9177-metadata.txt",
+      "text_sha256": "183c8e9dfd960364556eaae9691af1990c03743a414aa1619bf2a7afeb8a049e",
+      "raw_sha256": "183c8e9dfd960364556eaae9691af1990c03743a414aa1619bf2a7afeb8a049e",
+      "line_count": 43,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 43,
+          "sha256": "183c8e9dfd960364556eaae9691af1990c03743a414aa1619bf2a7afeb8a049e"
+        }
+      ],
+      "coverage_complete": true,
+      "reading_status": "read_full_source_text",
+      "note": "Complete live official metadata/errata query read; links and discussion threads are not included."
+    },
+    {
+      "id": "q-block-rfc9177",
+      "source_kind": "published_rfc",
+      "url": "https://www.rfc-editor.org/rfc/rfc9177.txt",
+      "final_url": "https://www.rfc-editor.org/rfc/rfc9177.txt",
+      "retrieved_at": "2026-11-05T23:32:24.378248+00:00",
+      "raw_path": "research/constrained/observe-blockwise/raw/q-block-rfc9177.txt",
+      "text_path": "research/constrained/observe-blockwise/text/q-block-rfc9177.txt",
+      "text_sha256": "9d30ee75ff09a98919e310c903b7a371325b1fb017c5e46646c8bb5f0fe9fb0f",
+      "raw_sha256": "9d30ee75ff09a98919e310c903b7a371325b1fb017c5e46646c8bb5f0fe9fb0f",
+      "line_count": 2154,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 200,
+          "sha256": "2ba7572a7cc3955c99e73f2c95442a551cdcb3e11ff07ec3c4f6932e9768dc6a"
+        }
+      ],
+      "coverage_complete": false,
+      "reading_status": "read_selected_sections",
+      "note": "Preamble, abstract, complete contents, introduction and terminology only. Protocol, examples and appendices not reviewed; no Q-Block support claim."
+    }
+  ],
+  "local_context_reads": [
+    {
+      "path": "docs/coap-binding.md",
+      "sha256": "b31b3e5504219aba6bfa79102c79ab1bf7eab4e18c0d4b8d0ee0a2040002ef4f",
+      "line_count": 135,
+      "reading_status": "read_full_text",
+      "note": "Complete current base CoAP binding read independently in an untruncated output."
+    }
+  ],
+  "figure_coverage": [
+    {
+      "source_id": "observe-rfc7641",
+      "format": "original ASCII text",
+      "all_figures_read": true,
+      "all_tables_read": true,
+      "printed_page_count": 30,
+      "figures": [
+        {
+          "number": 1,
+          "line": 246,
+          "caption_start": "Figure 1: The Observer Design Pattern"
+        },
+        {
+          "number": 2,
+          "line": 313,
+          "caption_start": "Figure 2: Observing a Resource in CoAP"
+        },
+        {
+          "number": 3,
+          "line": 1324,
+          "caption_start": "Figure 3: A Client Registers and Receives One Notification of the"
+        },
+        {
+          "number": 4,
+          "line": 1384,
+          "caption_start": "Figure 4: The Client Re-registers after Max-Age Ends"
+        },
+        {
+          "number": 5,
+          "line": 1447,
+          "caption_start": "Figure 5: The Client Re-registers and Gives the Server the"
+        },
+        {
+          "number": 6,
+          "line": 1491,
+          "caption_start": "Figure 6: The Client Rejects a Notification and Thereby Cancels the"
+        },
+        {
+          "number": 7,
+          "line": 1560,
+          "caption_start": "Figure 7: A Proxy Observes a Resource to Keep its Cache Up to Date"
+        },
+        {
+          "number": 8,
+          "line": 1617,
+          "caption_start": "Figure 8: A Client Observes a Resource through a Proxy"
+        }
+      ],
+      "numbered_tables": [
+        {
+          "number": 1,
+          "line": 468,
+          "caption_start": "Table 1: The Observe Option"
+        }
+      ],
+      "unnumbered_tables": "All included in complete sequential text; RFC7641 IANA table and RFC8323 signaling-option tables included."
+    },
+    {
+      "source_id": "blockwise-rfc7959",
+      "format": "original ASCII text",
+      "all_figures_read": true,
+      "all_tables_read": true,
+      "printed_page_count": 37,
+      "figures": [
+        {
+          "number": 1,
+          "line": 473,
+          "caption_start": "Figure 1: Block Option Value"
+        },
+        {
+          "number": 2,
+          "line": 1045,
+          "caption_start": "Figure 2: Simple Block-Wise GET"
+        },
+        {
+          "number": 3,
+          "line": 1097,
+          "caption_start": "Figure 3: Block-Wise GET with Early Negotiation"
+        },
+        {
+          "number": 4,
+          "line": 1159,
+          "caption_start": "Figure 4: Block-Wise GET with Late Negotiation"
+        },
+        {
+          "number": 5,
+          "line": 1203,
+          "caption_start": "Figure 5: Block-Wise GET with Late Negotiation and Lost CON"
+        },
+        {
+          "number": 6,
+          "line": 1227,
+          "caption_start": "Figure 6: Block-Wise GET with Late Negotiation and Lost ACK"
+        },
+        {
+          "number": 7,
+          "line": 1262,
+          "caption_start": "Figure 7: Simple Atomic Block-Wise PUT"
+        },
+        {
+          "number": 8,
+          "line": 1309,
+          "caption_start": "Figure 8: Simple Stateless Block-Wise PUT"
+        },
+        {
+          "number": 9,
+          "line": 1334,
+          "caption_start": "Figure 9: Simple Atomic Block-Wise PUT with Negotiation"
+        },
+        {
+          "number": 10,
+          "line": 1386,
+          "caption_start": "Figure 10: Atomic Block-Wise POST with Block-Wise Response"
+        },
+        {
+          "number": 11,
+          "line": 1437,
+          "caption_start": "Figure 11: Atomic Block-Wise POST with Block-Wise Response,"
+        },
+        {
+          "number": 12,
+          "line": 1525,
+          "caption_start": "Figure 12: Observe Sequence with Block-Wise Response"
+        },
+        {
+          "number": 13,
+          "line": 1602,
+          "caption_start": "Figure 13: Observe Sequence with Early Negotiation"
+        }
+      ],
+      "numbered_tables": [
+        {
+          "number": 1,
+          "line": 385,
+          "caption_start": "Table 1: Block Option Numbers"
+        },
+        {
+          "number": 2,
+          "line": 1668,
+          "caption_start": "Table 2: Size Option Numbers"
+        },
+        {
+          "number": 3,
+          "line": 1773,
+          "caption_start": "Table 3: CoAP Option Numbers"
+        },
+        {
+          "number": 4,
+          "line": 1786,
+          "caption_start": "Table 4: CoAP Response Codes"
+        }
+      ],
+      "unnumbered_tables": "All included in complete sequential text; RFC7641 IANA table and RFC8323 signaling-option tables included."
+    },
+    {
+      "source_id": "reliable-coap-rfc8323",
+      "format": "original ASCII text",
+      "all_figures_read": true,
+      "all_tables_read": true,
+      "printed_page_count": 54,
+      "figures": [
+        {
+          "number": 1,
+          "line": 270,
+          "caption_start": "Figure 1: Layering of CoAP over Reliable Transports"
+        },
+        {
+          "number": 2,
+          "line": 426,
+          "caption_start": "Figure 2: Comparison between CoAP over Unreliable Transports and"
+        },
+        {
+          "number": 3,
+          "line": 474,
+          "caption_start": "Figure 3: CoAP Message Format as Defined in RFC 7252"
+        },
+        {
+          "number": 4,
+          "line": 530,
+          "caption_start": "Figure 4: CoAP Frame for Reliable Transports"
+        },
+        {
+          "number": 5,
+          "line": 581,
+          "caption_start": "Figure 5: CoAP Message with No Options or Payload"
+        },
+        {
+          "number": 6,
+          "line": 703,
+          "caption_start": "Figure 6: CoAP Client (WebSocket Client) Accesses CoAP Server"
+        },
+        {
+          "number": 7,
+          "line": 752,
+          "caption_start": "Figure 7: CoAP Client (WebSocket Client) Accesses CoAP Server"
+        },
+        {
+          "number": 8,
+          "line": 772,
+          "caption_start": "Figure 8: CoAP Client (UDP Client) Accesses CoAP Server (WebSocket"
+        },
+        {
+          "number": 9,
+          "line": 820,
+          "caption_start": "Figure 9: Example of an Opening Handshake"
+        },
+        {
+          "number": 10,
+          "line": 862,
+          "caption_start": "Figure 10: CoAP Message Format over WebSockets"
+        },
+        {
+          "number": 11,
+          "line": 1329,
+          "caption_start": "Figure 11: Ping Message Example"
+        },
+        {
+          "number": 12,
+          "line": 1365,
+          "caption_start": "Figure 12: Pong Message Example"
+        },
+        {
+          "number": 13,
+          "line": 1485,
+          "caption_start": "Figure 13: GET with BERT Blocks"
+        },
+        {
+          "number": 14,
+          "line": 1506,
+          "caption_start": "Figure 14: PUT with BERT Blocks"
+        },
+        {
+          "number": 15,
+          "line": 1774,
+          "caption_start": "Figure 15: The \"coap+ws\" URI Scheme"
+        },
+        {
+          "number": 16,
+          "line": 1823,
+          "caption_start": "Figure 16: The \"coaps+ws\" URI Scheme"
+        },
+        {
+          "number": 17,
+          "line": 2796,
+          "caption_start": "Figure 17: A CoAP Client Retrieves the Representation of a Resource"
+        },
+        {
+          "number": 18,
+          "line": 2851,
+          "caption_start": "Figure 18: A CoAP Client Retrieves the Representation of a Resource"
+        }
+      ],
+      "numbered_tables": [
+        {
+          "number": 1,
+          "line": 2106,
+          "caption_start": "Table 1: CoAP Signaling Codes"
+        },
+        {
+          "number": 2,
+          "line": 2153,
+          "caption_start": "Table 2: CoAP Signaling Option Codes"
+        },
+        {
+          "number": 3,
+          "line": 2458,
+          "caption_start": "Table 3: CoAP Option Numbers"
+        }
+      ],
+      "unnumbered_tables": "All included in complete sequential text; RFC7641 IANA table and RFC8323 signaling-option tables included."
+    }
+  ],
+  "cross_referenced_existing_reviews": [
+    {
+      "path": "research/protocols/reading-coap-full.json",
+      "scope": "Existing full RFC7252, RFC9175 and RFC8974 review; only RFC9175 selected lines were independently reread here. No prior full read duplicated in this lane count."
+    },
+    {
+      "path": "research/constrained/reading-oscore-full.json",
+      "scope": "Separate prior OSCORE review; not repeated or relabeled as a new full read."
+    }
+  ],
+  "not_claimed_read": [
+    "RFC9175 outside lines 672-1056 in this lane (prior separate full review is cross-referenced).",
+    "RFC9177 beyond lines 1-200, including Q-Block protocol, examples and appendices; no direct RFC9177 errata query was made.",
+    "RFC8974 body in this lane (separate full base-CoAP receipt); current metadata and errata were read here.",
+    "Linked bibliography, TLS/DTLS/WebSocket internals and current security profile updates except individually recorded sources.",
+    "Web-preview RFC info renditions; these navigation pages were not archived or counted as complete readings."
+  ],
+  "artifacts": [
+    "docs/coap-streaming-binding.md",
+    "research/constrained/observe-blockwise/notes/full-review.md"
+  ],
+  "validation": {
+    "checked_at": "2026-11-05T23:37:31.164664+00:00",
+    "result": "passed",
+    "checks": [
+      "all 16 raw/text hash pairs match",
+      "all 29 LF interval hashes match",
+      "all complete ranges contiguous from first through final line",
+      "manifest and reading-receipt statuses agree",
+      "local base-CoAP context hash matches",
+      "all relative artifact links resolve",
+      "authored Markdown has final LF and no trailing whitespace or conflict markers"
+    ],
+    "corpus_audit": {
+      "command": "python3 scripts/audit_corpus.py",
+      "exit_code": 0,
+      "source_records": 155,
+      "hash_assertions_verified": 1037,
+      "unique_files_verified": 679,
+      "coverage_chunk_hashes_verified": 346,
+      "scope": "Point-in-time global audit; concurrent lanes may subsequently add records. Hash checking does not prove reading."
+    },
+    "not_performed": [
+      "CoAP/transport implementation execution",
+      "acquired example/program execution",
+      "protocol exchanges",
+      "hardware tests",
+      "physical conformance tests",
+      "TLS/DTLS current deployment-profile qualification"
+    ]
+  }
+}

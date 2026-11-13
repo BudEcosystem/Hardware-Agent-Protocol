@@ -1,0 +1,341 @@
+{
+  "record_kind": "supplemental_full_reading_audit",
+  "reviewed_at": "2026-11-05T21:57:29Z",
+  "path_base": "repository_root",
+  "supersedes": "The partial reading coverage for gr00t-n1 and openvla in research/physical-ai/manifest.json; source acquisition records are unchanged.",
+  "method": "Read extracted text sequentially in bounded, untruncated tool outputs, including appendices, acknowledgments and references. Then inspect every numbered figure and table on rendered PDF pages. Line numbers count LF-delimited logical lines; formfeed bytes do not split lines. A follow-up audit inspected each final unterminated formfeed-only line separately. Ranges are inclusive and collectively cover every source byte.",
+  "notes_path": "research/physical-ai/notes/vla-full-review.md",
+  "derived_profile_path": "docs/learned-control-profile.md",
+  "sources": [
+    {
+      "id": "gr00t-n1",
+      "arxiv_version": "2503.14734v2",
+      "versioned_source_url": "https://arxiv.org/abs/2503.14734v2",
+      "retrieved_at": "2026-11-05T21:36:38.440622+00:00",
+      "raw_path": "research/physical-ai/raw/gr00t-n1.pdf",
+      "sha256": "76e38cf679637b816b16edf7170340883dd09175bf334aeeaed49392777731b9",
+      "bytes": 21021950,
+      "text_path": "research/physical-ai/text/gr00t-n1.txt",
+      "text_sha256": "2458c0b41e43be8cc8385598b49cc0ca8ee3a8b12b40ba901e93316b1ebe2c28",
+      "text_bytes": 140789,
+      "text_line_count": 2148,
+      "pdf_page_count": 36,
+      "reading_status": "full_extracted_text_and_numbered_figures_tables_read",
+      "sequential_read_ranges": [
+        [
+          1,
+          300
+        ],
+        [
+          301,
+          600
+        ],
+        [
+          601,
+          900
+        ],
+        [
+          901,
+          1200
+        ],
+        [
+          1201,
+          1500
+        ],
+        [
+          1501,
+          1800
+        ],
+        [
+          1801,
+          2147
+        ],
+        [
+          2148,
+          2148
+        ]
+      ],
+      "text_coverage_fraction": 1.0,
+      "pdf_pages_visually_inspected_one_based": [
+        2,
+        3,
+        4,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        13,
+        15,
+        16,
+        20,
+        21,
+        22,
+        25,
+        26,
+        27,
+        28
+      ],
+      "numbered_figures_inspected": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14
+      ],
+      "numbered_tables_inspected": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "source_issues": [
+        "DexMimicGen 100-demonstration results disagree: Table 2 reports Diffusion Policy 56.1% and GR00T N1 66.5%; Table 4 and Figure 10 report 46.9% and 58.5%. All values were visually verified; discrepancy remains unresolved.",
+        "Figure 12's caption mismatches top/bottom task and object labels visible in its panels. Do not derive a precise task-level comparison from that caption."
+      ],
+      "text_newline_count": 2147,
+      "terminal_line_inspection": {
+        "line": 2148,
+        "bytes_hex": "0c",
+        "description": "Unterminated formfeed-only logical line, inspected explicitly during coverage audit."
+      },
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 300,
+          "sha256": "eae1fa3d3d76457ef1cf37e869067218fd2ec296f27dbd854e9bb6a07c971d08",
+          "bytes": 20598
+        },
+        {
+          "start_line": 301,
+          "end_line": 600,
+          "sha256": "a1154ff44aeeb17cba82ce40c8b97717937d1362a3e845fcbde4be7299b50461",
+          "bytes": 18993
+        },
+        {
+          "start_line": 601,
+          "end_line": 900,
+          "sha256": "4ef6ea6becc0ba92aeef6fa8274c2986498e9904f2357f02b33d8d645e411cad",
+          "bytes": 20348
+        },
+        {
+          "start_line": 901,
+          "end_line": 1200,
+          "sha256": "9ff0485e8931829fca55beda3418d381fad6934112a00b1330be2aed1ec706bb",
+          "bytes": 20498
+        },
+        {
+          "start_line": 1201,
+          "end_line": 1500,
+          "sha256": "d471cb03e829ac1e1c381b0eaed299f0010216548449ea0cc6dff51a748a5279",
+          "bytes": 14938
+        },
+        {
+          "start_line": 1501,
+          "end_line": 1800,
+          "sha256": "475adabb299921b1f2ab68535d02968cb228c0bcf35bd5600f0923383dd87889",
+          "bytes": 22799
+        },
+        {
+          "start_line": 1801,
+          "end_line": 2147,
+          "sha256": "7053f2c212f8c5e93a3e6a54a379bd613901cf5bd289dd3a78d18a35b3fe84c4",
+          "bytes": 22614
+        },
+        {
+          "start_line": 2148,
+          "end_line": 2148,
+          "sha256": "ef6cbd2161eaea7943ce8693b9824d23d1793ffb1c0fca05b600d3899b44c977",
+          "bytes": 1
+        }
+      ]
+    },
+    {
+      "id": "openvla",
+      "arxiv_version": "2406.09246v3",
+      "versioned_source_url": "https://arxiv.org/abs/2406.09246v3",
+      "retrieved_at": "2026-11-05T21:36:38.445645+00:00",
+      "raw_path": "research/physical-ai/raw/openvla.pdf",
+      "sha256": "353c37df34458f12f969b14dfd8b77175b727b9cddea7bb891759beddeefe1be",
+      "bytes": 13240309,
+      "text_path": "research/physical-ai/text/openvla.txt",
+      "text_sha256": "8bd28736fcf30c9ebd7dfbfb23fb202fd7bec845dd857a397009567e6aaddefb",
+      "text_bytes": 167510,
+      "text_line_count": 2173,
+      "pdf_page_count": 37,
+      "reading_status": "full_extracted_text_and_numbered_figures_tables_read",
+      "sequential_read_ranges": [
+        [
+          1,
+          300
+        ],
+        [
+          301,
+          600
+        ],
+        [
+          601,
+          900
+        ],
+        [
+          901,
+          1200
+        ],
+        [
+          1201,
+          1500
+        ],
+        [
+          1501,
+          1800
+        ],
+        [
+          1801,
+          2172
+        ],
+        [
+          2173,
+          2173
+        ]
+      ],
+      "text_coverage_fraction": 1.0,
+      "pdf_pages_visually_inspected_one_based": [
+        1,
+        4,
+        7,
+        8,
+        9,
+        10,
+        21,
+        22,
+        25,
+        26,
+        27,
+        28,
+        29,
+        31,
+        32,
+        34,
+        35,
+        37
+      ],
+      "numbered_figures_inspected": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "numbered_tables_inspected": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12
+      ],
+      "scope_caveats": [
+        "Footnote 4 scopes Sections 5.3 and 5.4 to a smaller-data-mixture, SigLIP-only variant, rather than the main fused-encoder model.",
+        "Real-robot evaluation includes partial-credit scores; inference precision experiments depend on controller timing and blocking/nonblocking mode.",
+        "LIBERO training data was replayed and curated, and a separate policy was trained per suite."
+      ],
+      "text_newline_count": 2172,
+      "terminal_line_inspection": {
+        "line": 2173,
+        "bytes_hex": "0c",
+        "description": "Unterminated formfeed-only logical line, inspected explicitly during coverage audit."
+      },
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 300,
+          "sha256": "1fe250fc2a9e4605fd7f794daa70a6761e521e94122bbb78bea96a6f59278ab3",
+          "bytes": 26128
+        },
+        {
+          "start_line": 301,
+          "end_line": 600,
+          "sha256": "52acf64ece7c4651cce0e480610d597e0bf92bd6465dc8c2afcf487d1198f41a",
+          "bytes": 27390
+        },
+        {
+          "start_line": 601,
+          "end_line": 900,
+          "sha256": "401f3393fa61b1be3113d2b66a0b70078c0f897e4a6d8184ff9595e85d556e7f",
+          "bytes": 21313
+        },
+        {
+          "start_line": 901,
+          "end_line": 1200,
+          "sha256": "f62246155518444d80d24b4f4db2ea3f279baed71ddedd82e92dccb70bcd30f9",
+          "bytes": 16566
+        },
+        {
+          "start_line": 1201,
+          "end_line": 1500,
+          "sha256": "4329e854661bf34ddb198d771d15388bcf2ba5aa249b721936a67d3f7731293d",
+          "bytes": 20257
+        },
+        {
+          "start_line": 1501,
+          "end_line": 1800,
+          "sha256": "9b443f6700de354437969ca7461c904dc644b65bcea0538ed33fd4e3de2d4504",
+          "bytes": 23601
+        },
+        {
+          "start_line": 1801,
+          "end_line": 2172,
+          "sha256": "5ee5f9245af6acd90a0f732cc200fb02047639e073d66594ac852faf36244393",
+          "bytes": 32254
+        },
+        {
+          "start_line": 2173,
+          "end_line": 2173,
+          "sha256": "ef6cbd2161eaea7943ce8693b9824d23d1793ffb1c0fca05b600d3899b44c977",
+          "bytes": 1
+        }
+      ]
+    }
+  ],
+  "visual_review": {
+    "method": "pdftoppm rendering at 1500-pixel maximum dimension; rendered page images inspected with view_image.",
+    "scope": "All numbered figures and tables, with selected surrounding prose pages. Not a visual inspection of every PDF page, video playback or independent replication of results.",
+    "render_cache": "Temporary /tmp/hms-vla-figures; reproducible from archived PDFs, not an additional acquired source."
+  },
+  "excluded_claims": [
+    "No entire model repository read or audited.",
+    "No weights, datasets, training, inference or physical robot experiments executed.",
+    "No claim that these historical versions describe later GR00T or OpenVLA-derived systems.",
+    "No claim of HMS implementation, hardware qualification, functional safety or GB10 latency measurements.",
+    "SiLA 2 Core reading was not started in this task; its archived acquisition remains unread here."
+  ],
+  "new_sources_acquired": [],
+  "existing_manifests_modified": false,
+  "coverage_corrected_at": "2026-11-05T22:04:42Z",
+  "coverage_hash_convention": "For each inclusive range, hash its original bytes including an LF terminator when that terminator exists. Concatenating the range bytes reproduces the entire text file byte-for-byte."
+}

@@ -1,0 +1,15 @@
+{
+  "attempted_at": "2026-11-06T00:08:11.118659+00:00",
+  "attempts": [
+    {
+      "url": "https://opcfoundation.org/documents/10000-4",
+      "result": "HTTP 403 Forbidden",
+      "access_attempt": "ordinary unauthenticated HTTPS; no login/bypass attempted"
+    },
+    {
+      "url": "https://opcfoundation.org/documents/10000-10",
+      "result": "HTTP 403 Forbidden",
+      "access_attempt": "ordinary unauthenticated HTTPS; no login/bypass attempted"
+    }
+  ]
+}

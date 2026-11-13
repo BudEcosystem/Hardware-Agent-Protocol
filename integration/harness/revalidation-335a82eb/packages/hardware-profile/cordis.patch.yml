@@ -1,0 +1,10 @@
+# Apply after base, then configure hardware-hms with absolute hmsRoot/socketPath.
+# Same-UID simulation authority is shared; Session IDs are attribution only.
+- insert:
+    - id: hardware-hms
+      name: '@budmh/experimental-hardware-hms'
+      config:
+        hmsRoot: !!js process.env.HMS_ROOT
+        socketPath: !!js process.env.HMS_SOCKET
+    - id: tool-hardware
+      name: '@budmh/experimental-tool-hardware'

@@ -1,0 +1,145 @@
+{
+  "schema_version": 1,
+  "checked_at": "2026-11-06T00:48:12.333873+00:00",
+  "current_approved_baseline": {
+    "version": "1.2.2",
+    "approved_date": "2024-06-13",
+    "core": "OMA-TS-LightweightM2M_Core-V1_2_2-20240613-A",
+    "transport": "OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A",
+    "release_definition": "OMA-ERELD-LightweightM2M-V1_2_2-20240613-A",
+    "current_status_evidence_ids": [
+      "releases-current",
+      "release-index",
+      "release-122-directory",
+      "release-122-html"
+    ]
+  },
+  "generator_revision": {
+    "displayed_branch": "master",
+    "displayed_time": "18 Jun 2024 14:22:00",
+    "short_revision": "e58dc1c",
+    "scope": "Publication header only; not a verified full Git commit, repository pin, or latest repository claim. No repository acquired."
+  },
+  "schema_baseline": {
+    "release_definition_reference": "OMA-SUP-XML_LWM2M-V1_1-20180710-A",
+    "separate_full_reads": [
+      "schema-v1-xsd",
+      "schema-v11-xsd"
+    ],
+    "core_appendix_k": "Both official Core HTML and PDF contain No commit found for the ref v1_2-dev in place of embedded normative schema; unavailable content not read."
+  },
+  "delta_link": {
+    "id": "release-122-linked-delta",
+    "scope": "Officially linked generator rendition of full release definition, not independently verified redline. Copyright year differs from official static release (2025 versus 2024)."
+  },
+  "version_difference_scope": "Author-provided 1.2.1 change lists in current Core/Transport section 1.2 and 1.2.2 bug-fix list in release definition section 3.5; no full baseline 1.2-to-1.2.2 text/repository diff performed.",
+  "errata_search": {
+    "scope": "Bounded primary-site search and official current release metadata; no separate formal 1.2.2 errata document located. This is not proof that no errata or unresolved issues exist. Observed publication conflicts are analyst findings, not OMA-approved errata.",
+    "queries": [
+      "site:openmobilealliance.org LwM2M \"1.2.2\" errata",
+      "site:github.com/OpenMobileAlliance \"No commit found for the ref v1_2-dev\"",
+      "site:oma-knowledge-base.openmobilealliance.org LwM2M releases latest 1.2.2"
+    ],
+    "official_issue_route": "https://github.com/OpenMobileAlliance/OMA_LwM2M_for_Developers/issues",
+    "route_reference": "https://oma-knowledge-base.openmobilealliance.org/about/contact/",
+    "route_scope": "Primary contact page inspected via browsing; no full repository/issues read or issue filing claim."
+  },
+  "source_pins": [
+    {
+      "id": "core-122-pdf",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/OMA-TS-LightweightM2M_Core-V1_2_2-20240613-A.pdf",
+      "raw_path": "research/constrained/lwm2m-current/raw/core-122-pdf.pdf",
+      "raw_sha256": "ca213dc3ca05c1329c907faff196f090ec2bf3133345e6858311741c7a4a0b84",
+      "text_path": "research/constrained/lwm2m-current/text/core-122-pdf.txt",
+      "text_sha256": "e91bcfec692bab79f48032c4afb548a057e44660e7009dcd74584de188a989b9"
+    },
+    {
+      "id": "core-122-html",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/HTML-Version/OMA-TS-LightweightM2M_Core-V1_2_2-20240613-A.html",
+      "raw_path": "research/constrained/lwm2m-current/raw/core-122-html.html",
+      "raw_sha256": "9b0ba061775ba1653265e4df0e70d131070b738a4776fe607b03e6988bc1d67c",
+      "text_path": "research/constrained/lwm2m-current/text/core-122-html.txt",
+      "text_sha256": "dd4a1d8d79021a0ee53f1ffbd4cc20a38ffe8e57f2aeeaff5ddfbf17f1021d60"
+    },
+    {
+      "id": "transport-122-pdf",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A.pdf",
+      "raw_path": "research/constrained/lwm2m-current/raw/transport-122-pdf.pdf",
+      "raw_sha256": "87955005e299f4af9052a0ef0da0651494d2e2e3905a68e5097d6f3b100b805f",
+      "text_path": "research/constrained/lwm2m-current/text/transport-122-pdf.txt",
+      "text_sha256": "50a118330029414f9bf582ddbc2451fc3df5579932466c880da38f5cfd84b24f"
+    },
+    {
+      "id": "transport-122-html",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/HTML-Version/OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A.html",
+      "raw_path": "research/constrained/lwm2m-current/raw/transport-122-html.html",
+      "raw_sha256": "35982630cb3754bbe246955d2e8ddb82257ffa4df91e1dd8beac51dcff75f867",
+      "text_path": "research/constrained/lwm2m-current/text/transport-122-html.txt",
+      "text_sha256": "3c039c8732c35c0c8cd03edd1b7cdc5d378ee67600457225fc44ce8e269b67b9"
+    },
+    {
+      "id": "release-122-html",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/HTML-Version/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A.html",
+      "raw_path": "research/constrained/lwm2m-current/raw/release-122-html.html",
+      "raw_sha256": "cac41e9f8a62655cb00fd04bb513263633129dd0f2266cf26361cf83de60d4ce",
+      "text_path": "research/constrained/lwm2m-current/text/release-122-html.txt",
+      "text_sha256": "7475004c116b4e23b484630d24cc9ac136e0005d077018378a20e74b189e371d"
+    },
+    {
+      "id": "release-122-pdf",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A.pdf",
+      "raw_path": "research/constrained/lwm2m-current/raw/release-122-pdf.pdf",
+      "raw_sha256": "e4fa27fb22feeff99ded3bbcc8a287296e965f2b2078b1164a95ba5c2ffd5a78",
+      "text_path": "research/constrained/lwm2m-current/text/release-122-pdf.txt",
+      "text_sha256": "9c75e9e4f4f7f6df0ab5e48ac6c9de19c65724140370be2e0f5a7e956bea784d"
+    },
+    {
+      "id": "release-index",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/",
+      "raw_path": "research/constrained/lwm2m-current/raw/release-index.html",
+      "raw_sha256": "738a217765bc394ed011efde1b45a7d5046df78ddfb30f98c9020b0723d969e7",
+      "text_path": "research/constrained/lwm2m-current/text/release-index.txt",
+      "text_sha256": "ebe362c1a2aeab25a362b5454618e918c9789f2bb61f71b845cfdb6262cd14f8"
+    },
+    {
+      "id": "release-122-directory",
+      "url": "https://www.openmobilealliance.org/release/LightweightM2M/V1_2_2-20240613-A/",
+      "raw_path": "research/constrained/lwm2m-current/raw/release-122-directory.html",
+      "raw_sha256": "57384506f1186fa320427ad70f48e497cbfe25cbdd72aa09377109788af8f060",
+      "text_path": "research/constrained/lwm2m-current/text/release-122-directory.txt",
+      "text_sha256": "f41aa8f6cb5ae62edbd0c4c3a057126a6cd1575e042214d78e8cc2c42e28a4bd"
+    },
+    {
+      "id": "releases-current",
+      "url": "https://oma-knowledge-base.openmobilealliance.org/specifications/lwm2m/releases/",
+      "raw_path": "research/constrained/lwm2m-current/raw/releases-current.html",
+      "raw_sha256": "f8ce514861ee4a1a99d20df38aea5f83db739038893297e8e50f34b7ac09668a",
+      "text_path": "research/constrained/lwm2m-current/text/releases-current.txt",
+      "text_sha256": "626fd716f37e45397baa56a44b6a889e8c4cdb198f6a89566395cd084ff804e7"
+    },
+    {
+      "id": "schema-v1-xsd",
+      "url": "https://www.openmobilealliance.org/tech/profiles/LWM2M.xsd",
+      "raw_path": "research/constrained/lwm2m-current/raw/schema-v1-xsd.xml",
+      "raw_sha256": "0c6d79ce71e5eefdb6a508ec3b781501526b64ee1690e7fe3a267e5677f662f9",
+      "text_path": "research/constrained/lwm2m-current/text/schema-v1-xsd.txt",
+      "text_sha256": "cbaf5e42c7eb9991cb0dde60543911c087c62547e5367cfb16a5cf5423701138"
+    },
+    {
+      "id": "schema-v11-xsd",
+      "url": "https://www.openmobilealliance.org/tech/profiles/LWM2M-v1_1.xsd",
+      "raw_path": "research/constrained/lwm2m-current/raw/schema-v11-xsd.xml",
+      "raw_sha256": "4f604b9cffa3146606dc17a507e56ca6e3be2c77a1fe90fd67c0ecafc69a661d",
+      "text_path": "research/constrained/lwm2m-current/text/schema-v11-xsd.txt",
+      "text_sha256": "ca9d1f8e01984f30e7575fbd2389ca7d9b13dd9b4b0c1a9b82571ee5954afec9"
+    },
+    {
+      "id": "release-122-linked-delta",
+      "url": "https://md2html-tool.com/docs/OpenMobileAlliance/LwM2M/master/e58dc1c/ERELD-LwM2M/OMA-ERELD-LightweightM2M-V1_2_2-20240613-A_full.html",
+      "raw_path": "research/constrained/lwm2m-current/raw/release-122-linked-delta.html",
+      "raw_sha256": "6e5344a247a582a369731e2e9babebcd5c63d25fbe14f269195bcc2cc80b601d",
+      "text_path": "research/constrained/lwm2m-current/text/release-122-linked-delta.txt",
+      "text_sha256": "5f8a963f82ce1ecb2bd5d6f19621add647ff202fb3b85babaef3e070fc4ce8cc"
+    }
+  ]
+}

@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bud:hms:schema:adapter-installations:1",
+  "title": "Trusted simulation adapter installations",
+  "description": "Host profile also enforces canonical UTF-8 size <=65536 bytes, unique adapter/instance IDs and unique compact incarnations; resource IDs may overlap.",
+  "type": "array",
+  "minItems": 1,
+  "maxItems": 16,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "profile",
+      "adapterId",
+      "driver",
+      "instances",
+      "resources"
+    ],
+    "properties": {
+      "profile": {
+        "const": "hms.adapter-installation/1"
+      },
+      "adapterId": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$",
+        "maxLength": 128
+      },
+      "driver": {
+        "enum": [
+          "sqlite-simulation",
+          "compact-simulation"
+        ]
+      },
+      "instances": {
+        "type": "object",
+        "required": [
+          "fan",
+          "focus",
+          "inspection"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "fan": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$",
+            "maxLength": 128
+          },
+          "focus": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$",
+            "maxLength": 64
+          },
+          "inspection": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$",
+            "maxLength": 128
+          }
+        }
+      },
+      "resources": {
+        "type": "object",
+        "required": [
+          "fan",
+          "focus",
+          "inspection"
+        ],
+        "additionalProperties": false,
+        "properties": {
+          "fan": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$",
+            "maxLength": 128
+          },
+          "focus": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$",
+            "maxLength": 128
+          },
+          "inspection": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$",
+            "maxLength": 128
+          }
+        }
+      },
+      "incarnationHex": {
+        "type": "string",
+        "pattern": "^[0-9a-f]{32}$",
+        "minLength": 32,
+        "maxLength": 32
+      }
+    },
+    "allOf": [
+      {
+        "if": {
+          "properties": {
+            "driver": {
+              "const": "compact-simulation"
+            }
+          }
+        },
+        "then": {
+          "required": [
+            "incarnationHex"
+          ]
+        },
+        "else": {
+          "not": {
+            "required": [
+              "incarnationHex"
+            ]
+          }
+        }
+      }
+    ]
+  }
+}

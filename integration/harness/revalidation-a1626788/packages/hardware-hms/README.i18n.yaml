@@ -1,0 +1,37 @@
+# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
+# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
+# After editing either side, bring the other along and re-record with:
+#   pnpm run verify-translation-pairing --write packages/experimental/hardware-hms/README.md
+/:
+  en: 6157c824f8fe91ed
+  zh: 8554a7828a4530d2
+/budmh-experimental-hardware-hms:
+  en: 71f5017f0e3d7494
+  zh: 4d5147a78a3db42f
+/budmh-experimental-hardware-hms/summary:
+  en: cf0d9f4986fe9237
+  zh: 74d551d2a5ba4e2a
+/budmh-experimental-hardware-hms/use-this-package:
+  en: 5ef95b96e402a600
+  zh: 326932ba21717288
+/budmh-experimental-hardware-hms/understand-the-implementation:
+  en: f457f51be2b946a6
+  zh: 2ace7d4f461bfaee
+/budmh-experimental-hardware-hms/model-experience:
+  en: 215e7ba838619b7b
+  zh: 215e7ba838619b7b
+/budmh-experimental-hardware-hms/model-experience/hardware-tool-output:
+  en: 8e5c0b7523195825
+  zh: 8e5c0b7523195825
+/budmh-experimental-hardware-hms/model-experience/hardware-tool-output/what-the-model-sees:
+  en: 42dc44b1783d8024
+  zh: 2dc51d8ddff10074
+/budmh-experimental-hardware-hms/model-experience/hardware-tool-output/token-effect:
+  en: 07e3b374e1b1265d
+  zh: dd5078351e7fa6da
+/budmh-experimental-hardware-hms/model-experience/hardware-tool-output/kv-cache-effect:
+  en: c4b2084841cf3efc
+  zh: f2feb8119fb500be
+/budmh-experimental-hardware-hms/known-limitations-and-deferred-work:
+  en: 122b168b7472599f
+  zh: 3bd7a3796e75ac29

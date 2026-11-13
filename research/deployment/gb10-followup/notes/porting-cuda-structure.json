@@ -1,0 +1,20 @@
+{
+  "selector": "article.bd-article",
+  "title": "CUDA \u2014 NVIDIA DGX Spark Porting Guide",
+  "tables": [],
+  "images": [],
+  "article_links": [
+    {
+      "text": "#",
+      "href": "#cuda"
+    },
+    {
+      "text": "#",
+      "href": "#gpudirect-rdma"
+    },
+    {
+      "text": "ib_reg_mr function",
+      "href": "https://man7.org/linux/man-pages/man3/ibv_reg_mr.3.html"
+    }
+  ]
+}

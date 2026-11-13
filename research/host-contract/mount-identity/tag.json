@@ -1,0 +1,30 @@
+)]}'
+{
+  "commit": "adb436b2e4471218021d86f188fb58dec3946eb8",
+  "tree": "32d465a5925d68668b12bde87e9e998429a5ab35",
+  "parents": [
+    "9382d1c2e66ce6940caf82ffc450515387d779cb"
+  ],
+  "author": {
+    "name": "Alejandro Colomar",
+    "email": "alx@kernel.org",
+    "time": "Tue Aug 25 19:11:56 2026 +0200"
+  },
+  "committer": {
+    "name": "Alejandro Colomar",
+    "email": "alx@kernel.org",
+    "time": "Tue Aug 25 19:11:56 2026 +0200"
+  },
+  "message": "Changes: Ready for 6.19\n\nSigned-off-by: Alejandro Colomar \u003calx@kernel.org\u003e\n",
+  "tree_diff": [
+    {
+      "type": "modify",
+      "old_id": "3dfb235faba7abc592b238288242187f70aa50bd",
+      "old_mode": 33188,
+      "old_path": "Changes",
+      "new_id": "5865323119ce038b8d440cc38e20facf1eada6a1",
+      "new_mode": 33188,
+      "new_path": "Changes"
+    }
+  ]
+}

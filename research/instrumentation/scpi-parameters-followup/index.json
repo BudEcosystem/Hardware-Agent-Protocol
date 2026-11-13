@@ -1,0 +1,75 @@
+{
+  "scope": "Partial SCPI parameter/coupling reading overlay.",
+  "files": [
+    {
+      "path": "NOTES.md",
+      "bytes": 6876,
+      "sha256": "64fe6e17d872cceb5a55d5f16bb6c62bed0e5252462213bf4f99468bb919090f"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1204,
+      "sha256": "3429603525564d703ff7d043073760cabf656f35a3e20f0390b1245f998877e7"
+    },
+    {
+      "path": "audit.json",
+      "bytes": 440,
+      "sha256": "9342bb3b2f0f3e74a195f6be985fee3c843efc1d21abe80642f05100abc8dadf"
+    },
+    {
+      "path": "pages/scpi-034.png",
+      "bytes": 255422,
+      "sha256": "aeab231805b9d5e1b60d110d54c177d17ebb34d12f6282d7836aa969525dd9ed"
+    },
+    {
+      "path": "pages/scpi-035.png",
+      "bytes": 241705,
+      "sha256": "9e5d69019ff289d174be7dbad8c500d4f9186657aa9747f9dad14c6dec736096"
+    },
+    {
+      "path": "pages/scpi-036.png",
+      "bytes": 154291,
+      "sha256": "fbdb376fb50a9b25790cb0ae5125dbe57a9151729b08852dff2f5e731dae941c"
+    },
+    {
+      "path": "pages/scpi-037.png",
+      "bytes": 208352,
+      "sha256": "c3dc569733d602b161aac383b18f8140f30e641e630f589628e4e367ae37044b"
+    },
+    {
+      "path": "pages/scpi-038.png",
+      "bytes": 251827,
+      "sha256": "2b7fc97a1e414362745923b60c88d9710a78f71a340b308b6ba8edef6a32b307"
+    },
+    {
+      "path": "pages/scpi-039.png",
+      "bytes": 193889,
+      "sha256": "07d947ca21290138788060dbcbd27058860371466e5a208696aba5daa983055c"
+    },
+    {
+      "path": "pages/scpi-040.png",
+      "bytes": 247936,
+      "sha256": "ed1f22782ac5c97730621d3fdc8c768dea22288071ed367e647a1b1460636e83"
+    },
+    {
+      "path": "pages/scpi-041.png",
+      "bytes": 177638,
+      "sha256": "53f5dc3b0285e01354b080994c6d500160900a6d09a6663e4257f3e7e38d8e90"
+    },
+    {
+      "path": "pages/scpi-042.png",
+      "bytes": 71421,
+      "sha256": "ac1b4b66c5d3ab550d64edbe443a73da2c7c5f542bfa72f6a33e30a5a2a14da2"
+    },
+    {
+      "path": "pages/scpi-043.png",
+      "bytes": 13092,
+      "sha256": "20b9474b076116139bc94242837a1792616ba380e48531751b5fc547e5d488c7"
+    },
+    {
+      "path": "reading.json",
+      "bytes": 4086,
+      "sha256": "5933031f2d69a6e56a1ab18b32935b5fc5d3af435fad7803c6297dff8be9eb54"
+    }
+  ]
+}

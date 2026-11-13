@@ -1,0 +1,208 @@
+Voyager | An Open-Ended Embodied Agent with Large Language Models
+Voyager: An Open-Ended Embodied Agent with Large Language Models
+Guanzhi Wang
+1 2
+,
+Yuqi Xie
+3
+,
+Yunfan Jiang
+4*
+,
+Ajay Mandlekar
+1*
+,
+Chaowei Xiao
+1 5
+,
+Yuke Zhu
+1 3
+,
+Linxi "Jim" Fan
+1†
+,
+Anima Anandkumar
+1 2†
+1
+NVIDIA,
+2
+Caltech,
+3
+UT Austin,
+4
+Stanford,
+5
+ASU
+*
+Equal contribution
+†
+Equal advising
+Corresponding authors: guanzhi@caltech.edu, dr.jimfan.ai@gmail.com
+arXiv
+PDF
+Code
+Tweet
+MineDojo
+Abstract
+We introduce Voyager, the first LLM-powered embodied lifelong learning agent in Minecraft that continuously explores the world, acquires diverse skills, and makes novel discoveries without human intervention.
+                                Voyager consists of three key components: 1) an automatic curriculum that maximizes exploration, 2) an ever-growing skill library of executable code for storing and retrieving complex behaviors, and 3) a new
+                                iterative prompting mechanism that incorporates environment feedback, execution errors, and self-verification for program improvement. Voyager interacts with GPT-4 via blackbox queries, which bypasses the
+                                need for model parameter fine-tuning. The skills developed by Voyager are temporally extended, interpretable, and compositional, which compounds the agent's abilities rapidly and alleviates catastrophic
+                                forgetting. Empirically, Voyager shows strong in-context lifelong learning capability and exhibits exceptional proficiency in playing Minecraft. It obtains 3.3x more unique items, travels 2.3x longer
+                                distances, and unlocks key tech tree milestones up to 15.3x faster than prior SOTA. Voyager is able to utilize the learned skill library in a new Minecraft world to solve novel tasks from scratch, while other
+                                techniques struggle to generalize.
+Voyager discovers new Minecraft items and skills continually by self-driven exploration, significantly outperforming the baselines.
+Introduction
+Building generally capable embodied agents that continuously explore, plan, and develop new skills in open-ended worlds is a grand challenge for the AI community. Classical approaches employ reinforcement
+                                    learning (RL) and imitation learning that operate on primitive actions, which could be challenging for systematic exploration, interpretability, and generalization. Recent advances in large language model
+                                    (LLM) based agents harness the world knowledge encapsulated in pre-trained LLMs to generate consistent action plans or executable policies. They are applied to embodied tasks like games and robotics, as
+                                    well as NLP tasks without embodiment. However, these agents are not lifelong learners that can progressively acquire, update, accumulate, and transfer knowledge over extended time spans.
+Let us consider Minecraft as an example. Unlike most other games studied in AI, Minecraft does not impose a predefined end goal or a fixed storyline but rather provides a unique playground with endless
+                                    possibilities. An effective lifelong learning agent should have similar capabilities as human players: (1)
+propose suitable tasks
+based on its current skill level and world state, e.g., learn to
+                                    harvest sand and cactus before iron if it finds itself in a desert rather than a forest; (2)
+refine skills
+based on environment feedback and
+commit mastered skills to memory
+for future reuse
+                                    in similar situations (e.g. fighting zombies is similar to fighting spiders); (3)
+continually explore the world
+and seek out new tasks in a self-driven manner.
+Voyager Components
+We introduce Voyager, the first
+LLM-powered embodied lifelong learning agent
+to drive exploration, master a wide range of skills, and make new discoveries continually without human intervention in
+                                    Minecraft. Voyager is made possible through three key modules: 1) an
+automatic curriculum
+that maximizes exploration; 2) a
+skill library
+for storing and retrieving complex behaviors; and 3)
+                                    a new
+iterative prompting mechanism
+that generates executable code for embodied control. We opt to use code as the action space instead of low-level motor commands because programs can naturally
+                                    represent temporally extended and compositional actions, which are essential for many long-horizon tasks in Minecraft. Voyager interacts with a blackbox LLM (GPT-4) through prompting and in-context
+                                    learning. Our approach bypasses the need for model parameter access and explicit gradient-based training or finetuning.
+Voyager consists of three key components:
+an automatic curriculum for open-ended exploration, a skill library for increasingly complex behaviors, and an iterative prompting mechanism that uses code as action space.
+Automatic Curriculum
+Automatic curriculum.
+The automatic curriculum takes into account the exploration progress and the agent's state to maximize exploration. The curriculum is generated by GPT-4 based on the overarching goal of "discovering as
+                                    many diverse things as possible". This approach can be perceived as an in-context form of
+novelty search
+.
+Skill Library
+Skill library.
+Top: Adding a new skill.
+Each skill is indexed by the embedding of its description, which can be retrieved in similar situations in the future.
+Bottom: Skill retrieval.
+When faced with a new
+                                    task proposed by the automatic curriculum, we perform querying to identify the top-5 relevant skills. Complex skills can be synthesized by composing simpler programs, which compounds Voyager's
+                                    capabilities rapidly over time and alleviates catastrophic forgetting.
+Iterative Prompting Mechanism
+Left: Environment feedback.
+GPT-4 realizes it needs 2 more planks before crafting sticks.
+Right: Execution error.
+GPT-4
+                                        realizes it should craft a wooden axe instead of an acacia axe since there is no acacia axe in Minecraft.
+Self-verification.
+By providing the agent's current state and the task to GPT-4, we ask it to act as a critic and inform us whether the program achieves the task. In addition, if the task fails, it provides a critique by
+                                suggesting how to complete the task.
+Experiments
+We systematically evaluate Voyager and baselines on their exploration performance, tech tree mastery, map coverage, and zero-shot generalization capability to novel tasks in a new world.
+Significantly Better Exploration
+As shown in the first figure, Voyager's superiority is evident in its ability to consistently make new strides, discovering 63 unique items within 160 prompting iterations, 3.3x many novel items compared to
+                                its counterparts. On the other hand, AutoGPT lags considerably in discovering new items, while ReAct and Reflexion struggle to make significant progress.
+Tech Tree Mastery
+Tech tree mastery.
+The Minecraft tech tree tests the agent's ability to craft and use a hierarchy of tools. Progressing through this tree (wooden tool → stone tool → iron tool → diamond tool) requires the
+                                    agent to master systematic and compositional skills. In this table, fractions indicate the number of successful trials out of three total runs.
+Numbers are prompting iterations averaged over three trials. The fewer the iterations, the more efficient the method.
+Compared with baselines, Voyager unlocks the wooden level 15.3x faster (in
+                                    terms of the prompting iterations), the stone level 8.5x faster, the iron level 6.4x faster, and Voyager is the only one to unlock the diamond level of the tech tree
+Extensive Map Traversal
+Map coverage: Two bird's eye views of Minecraft maps.
+Voyager is able to navigate distances 2.3x longer compared to baselines by traversing a variety of terrains, while the baseline agents often find themselves confined to local areas, which
+                                        significantly hampers their capacity to discover new knowledge.
+Efficient Zero-Shot Generalization to Unseen Tasks
+Zero-shot generalization to unseen tasks.
+We clear the agent's inventory, reset it to a newly instantiated world, and test it with unseen tasks. In the table above, fractions indicate the number of successful trials out of three total runs.
+Numbers are prompting iterations averaged over three trials. The fewer the iterations, the more efficient the method.
+Voyager can consistently solve all the tasks, while baselines cannot solve
+                                        any task within 50 prompting iterations. What's interesting to note is that our skill library constructed from lifelong learning not only enhances Voyager's performance but also gives a boost to
+                                        AutoGPT. This demonstrates that the skill library serves as a versatile tool that can be readily employed by other methods, effectively acting as a plug-and-play asset to enhance performance.
+Ablation Studies
+Ablation studies.
+GPT-3.5 means replacing GPT-4 with GPT-3.5 for code generation. Voyager outperforms all the alternatives, demonstrating the critical role of
+                                        each component. In addition, GPT-4 significantly outperforms GPT-3.5 in code generation.
+Conclusion
+In this work, we introduce Voyager, the first LLM-powered embodied lifelong learning agent, which leverages GPT-4 to explore the world continuously, develop increasingly sophisticated skills, and make new
+                                    discoveries consistently without human intervention. Voyager exhibits superior performance in discovering novel items, unlocking the Minecraft tech tree, traversing diverse terrains, and applying its
+                                    learned skill library to unseen tasks in a newly instantiated world. Voyager serves as a starting point to develop powerful generalist agents without tuning the model parameters.
+Media Coverage
+"They Plugged GPT-4 Into Minecraft—and Unearthed New Potential for AI. The bot plays the video game by tapping the text generator to pick up new skills, suggesting that the tech behind ChatGPT could automate many workplace tasks." - Will Knight,
+WIRED
+"The Voyager project shows, however, that by pairing GPT-4’s abilities with agent software that stores sequences that work and remembers what does not, developers can achieve stunning results." - John Koetsier,
+Forbes
+"Voyager, the GTP-4 bot that plays Minecraft autonomously and better than anyone else" -
+Ruetir
+"This AI used GPT-4 to become an expert Minecraft player" - Devin Coldewey,
+TechCrunch
+Coverage Index:
+[Atmarkit]
+[Career Engine]
+[Crast.net]
+[Daily Top Feeds]
+[Entrepreneur en Espanol]
+[Finance Jxyuging]
+[Forbes]
+[Forbes Argentina]
+[Gaming Deputy]
+[Gearrice]
+[Haberik]
+[Head Topics]
+[InfoQ]
+[ITmedia News]
+[Mark Tech Post]
+[Medium]
+[MSN]
+[Note]
+[Noticias de Hoy]
+[Ruetir]
+[Stock HK]
+[Tech Tribune France]
+[TechCrunch]
+[TechBeezer]
+[Toutiao]
+[US Times Post]
+[VN Explorer]
+[WIRED]
+[Zaker]
+Team
+Guanzhi Wang
+Yuqi Xie
+Yunfan Jiang
+*
+Ajay Mandlekar
+*
+Chaowei Xiao
+Yuke Zhu
+Linxi "Jim" Fan
+†
+Anima Anandkumar
+†
+* Equal Contribution   † Equal Advising
+BibTeX
+@article{wang2023voyager,
+  title   = {Voyager: An Open-Ended Embodied Agent with Large Language Models},
+  author  = {Guanzhi Wang and Yuqi Xie and Yunfan Jiang and Ajay Mandlekar and Chaowei Xiao and Yuke Zhu and Linxi Fan and Anima Anandkumar},
+  year    = {2023},
+  journal = {arXiv preprint arXiv: Arxiv-2305.16291}
+}
+Website template borrowed from
+NeRFies
+,
+CLIPort
+, and
+VIMA
+.

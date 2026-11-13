@@ -1,0 +1,221 @@
+{
+  "schema": "hms.gb10-deployment-reading/1",
+  "recorded_at": "2026-11-06T02:54:53.996999+00:00",
+  "scope": "six complete bounded HTML primary-content pages",
+  "no_acquired_code_executed": true,
+  "sources": [
+    {
+      "id": "hardware-current",
+      "url": "https://docs.nvidia.com/dgx/dgx-spark/hardware.html",
+      "raw_path": "research/deployment/gb10-followup/raw/hardware-current.html",
+      "raw_sha256": "b3871a53db4515d5f92fe65a0fb635eec351d4aa89adf6fdd4f85e551921765b",
+      "text_path": "research/deployment/gb10-followup/text/hardware-current.txt",
+      "text_sha256": "045ef82ef001657dde8bf660b7a2d3816b727082ccf179ca2cc4548f7fa0978e",
+      "line_count": 108,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 108,
+          "sha256": "045ef82ef001657dde8bf660b7a2d3816b727082ccf179ca2cc4548f7fa0978e"
+        }
+      ],
+      "tables_reviewed": 2,
+      "structure_path": "research/deployment/gb10-followup/notes/hardware-current-structure.json",
+      "structure_sha256": "75a23bff68f8462b3e8c445486d4249db9f1172d8eea5d3b6a5af636762a26ab",
+      "scope": "Complete extracted primary content of this bounded page only; linked documents and other tabs excluded."
+    },
+    {
+      "id": "porting-overview",
+      "url": "https://docs.nvidia.com/dgx/dgx-spark-porting-guide/latest/overview.html",
+      "raw_path": "research/deployment/gb10-followup/raw/porting-overview.html",
+      "raw_sha256": "6ac8ed8616d9e1c5e592e88a09c6af62ac1ddf17ae8cc548af5f97b746691c97",
+      "text_path": "research/deployment/gb10-followup/text/porting-overview.txt",
+      "text_sha256": "47d70f13a72013300093a8892693a3930b4d5a20a68b4fbc4ccd29d7f62d2253",
+      "line_count": 40,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 40,
+          "sha256": "47d70f13a72013300093a8892693a3930b4d5a20a68b4fbc4ccd29d7f62d2253"
+        }
+      ],
+      "tables_reviewed": 0,
+      "structure_path": "research/deployment/gb10-followup/notes/porting-overview-structure.json",
+      "structure_sha256": "27910abe3f223f8ae8a01d54107eb85c36c625f8fd8f1a652f72a3520d4f3ae0",
+      "scope": "Complete extracted primary content of this bounded page only; linked documents and other tabs excluded."
+    },
+    {
+      "id": "porting-dependencies",
+      "url": "https://docs.nvidia.com/dgx/dgx-spark-porting-guide/latest/porting/dependencies.html",
+      "raw_path": "research/deployment/gb10-followup/raw/porting-dependencies.html",
+      "raw_sha256": "61cb171e67868616055445d338e472c53cbc737d60e27dccd312725617f4d201",
+      "text_path": "research/deployment/gb10-followup/text/porting-dependencies.txt",
+      "text_sha256": "4537479ed7c1458c3def73c9e37e1e1dcc7f51fbab225f42747527be4be69e7b",
+      "line_count": 203,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 203,
+          "sha256": "4537479ed7c1458c3def73c9e37e1e1dcc7f51fbab225f42747527be4be69e7b"
+        }
+      ],
+      "tables_reviewed": 1,
+      "structure_path": "research/deployment/gb10-followup/notes/porting-dependencies-structure.json",
+      "structure_sha256": "b5fa9205fefa24b9b6e171fbbba6fe53faa08f02677d1b0b4b8079c32102087c",
+      "scope": "Complete extracted primary content of this bounded page only; linked documents and other tabs excluded."
+    },
+    {
+      "id": "porting-cuda",
+      "url": "https://docs.nvidia.com/dgx/dgx-spark-porting-guide/latest/porting/cuda.html",
+      "raw_path": "research/deployment/gb10-followup/raw/porting-cuda.html",
+      "raw_sha256": "8376057bf0567652aaf03996297a6c141251235ea6091d98e5e086e4bfbfe823",
+      "text_path": "research/deployment/gb10-followup/text/porting-cuda.txt",
+      "text_sha256": "a343030b2967a07cac10e7049d25975b5e085a3f7f91804b9e497d2464f0e496",
+      "line_count": 25,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 25,
+          "sha256": "a343030b2967a07cac10e7049d25975b5e085a3f7f91804b9e497d2464f0e496"
+        }
+      ],
+      "tables_reviewed": 0,
+      "structure_path": "research/deployment/gb10-followup/notes/porting-cuda-structure.json",
+      "structure_sha256": "e66d6b4cd683aa55eeacab137d82f62695882e6d74a42a6ea1732920f26ad2a0",
+      "scope": "Complete extracted primary content of this bounded page only; linked documents and other tabs excluded."
+    },
+    {
+      "id": "release-notes",
+      "url": "https://docs.nvidia.com/dgx/dgx-spark/release-notes.html",
+      "raw_path": "research/deployment/gb10-followup/raw/release-notes.html",
+      "raw_sha256": "c23062c192afd426d1f174099a7892e0af674908e3e3e3cc6a4a641eeb5dc04f",
+      "text_path": "research/deployment/gb10-followup/text/release-notes.txt",
+      "text_sha256": "ae6787f9db890b78b80202ff8a5b48265175f45254850273fe5e7973c81d3793",
+      "line_count": 194,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 194,
+          "sha256": "ae6787f9db890b78b80202ff8a5b48265175f45254850273fe5e7973c81d3793"
+        }
+      ],
+      "tables_reviewed": 1,
+      "structure_path": "research/deployment/gb10-followup/notes/release-notes-structure.json",
+      "structure_sha256": "fafee05fccc3fc976a91bee13b9ae606d7dbbad858aad61b3c72985f036fe7e6",
+      "scope": "Complete extracted primary content of this bounded page only; linked documents and other tabs excluded."
+    },
+    {
+      "id": "vllm-advanced",
+      "url": "https://build.nvidia.com/spark/vllm/advanced",
+      "raw_path": "research/deployment/gb10-followup/raw/vllm-advanced.html",
+      "raw_sha256": "97d19b6027294ebd20aac473cb33b7733eadc39eb74ba7e4cd621ad90260da3f",
+      "text_path": "research/deployment/gb10-followup/text/vllm-advanced-streamed.txt",
+      "text_sha256": "accef10875bf6ab3ed929d2962adbe7a078226003010fd2f6b67f6c6537c94b0",
+      "line_count": 443,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 225,
+          "sha256": "6307fcf2d1572f6b8c7231eeb291dd44a83bed07903f519327a5c842e88d3734"
+        },
+        {
+          "start_line": 226,
+          "end_line": 443,
+          "sha256": "07624516516394dcb1445db39ed8a590eca877dc8ccf33f6ba919c3d412086e5"
+        }
+      ],
+      "tables_reviewed": 4,
+      "structure_path": "research/deployment/gb10-followup/notes/vllm-advanced-streamed-structure.json",
+      "structure_sha256": "bc45e519db73468435090a7f981d531a6f6e5621ce8f57d6a10de7f70e541130",
+      "scope": "Complete extracted primary content of this bounded page only; linked documents and other tabs excluded."
+    }
+  ],
+  "figures": [
+    {
+      "url": "https://docs.nvidia.com/dgx/dgx-spark/_images/rear-panel.png",
+      "resolved_url": "https://docs.nvidia.com/dgx/dgx-spark/_images/rear-panel.png",
+      "retrieved_at": "2026-11-06T02:51:05.681730+00:00",
+      "path": "research/deployment/gb10-followup/raw/rear-panel.png",
+      "sha256": "dac99ed41ddd57dfd886b974253a1ff6ba526ab56a48d6a82271a19260f1f582",
+      "bytes": 78931,
+      "source": "hardware-current",
+      "scope": "Single material image in selected bounded HTML pages; other pages have no content images.",
+      "visually_reviewed": true,
+      "review_method": "view_image opened retained PNG at readable resolution",
+      "observed_labels": [
+        "ON/OFF",
+        "Power",
+        "USB-C",
+        "HDMI",
+        "Ethernet",
+        "QSFP"
+      ],
+      "qualification": "Diagram identification only; no connector electrical/power or transfer-rate qualification."
+    }
+  ],
+  "integrity_files": [
+    {
+      "path": "research/deployment/gb10-followup/manifest.jsonl",
+      "sha256": "271a226fe8242fac7885b8545b9e18aa318ef2c902750ac5cb5669d2532c2b2a"
+    },
+    {
+      "path": "research/deployment/gb10-followup/figure-manifest.json",
+      "sha256": "48345994ef87844d44d540855c9e7b75c40d456e0684ecde3e018711479dda1f"
+    },
+    {
+      "path": "research/deployment/gb10-followup/acquire.py",
+      "sha256": "a92d9d772d912e8c87a62c87b7f6df4e1f758813f479b501db5a9e02c9248723"
+    },
+    {
+      "path": "research/deployment/gb10-followup/verify.py",
+      "sha256": "6f24619d40f635e0123249f9fd2421ac2d3a108c3e1a837ef77bcceda902f9b9"
+    },
+    {
+      "path": "research/deployment/gb10-followup/README.md",
+      "sha256": "a1328f5bcdc1de4d41e4227e603021798a3cbb188a32898fb53437f2c485ea23"
+    },
+    {
+      "path": "research/deployment/gb10-followup/notes/method-and-gaps.md",
+      "sha256": "a87e7990835448531657d29171e873362fb865fc489d92dfe0adffb4c04175c5"
+    },
+    {
+      "path": "research/deployment/gb10-followup/notes/source-status.json",
+      "sha256": "ced451030e4b6a02d1b774eab31c4e10d49d0c8fc1e116f974dc1279cc94135e"
+    },
+    {
+      "path": "research/deployment/gb10-followup/notes/acquisition-before-stream-extraction.jsonl",
+      "sha256": "c4fa13eb6c86658272c3cfa32fe6c6726b2ea4a7fa622b3b1e21c39318a9c877"
+    },
+    {
+      "path": "research/deployment/gb10-followup/notes/vllm-advanced-structure.json",
+      "sha256": "7deb2acd7ee2f3050955d3eb1a2077aac28049215465be67a0c17ebebd0e4ad2"
+    },
+    {
+      "path": "research/deployment/gb10-followup/text/vllm-advanced.txt",
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b"
+    },
+    {
+      "path": "docs/gb10-deployment-evidence.md",
+      "sha256": "e7b0da2072edcc06fe7a7528a4178e03aaa89fa015b751c040d137a439d2c651"
+    }
+  ],
+  "limitations": [
+    "Reader attestations are not proof of comprehension.",
+    "Mutable page snapshots are pinned bytes, not complete guides/repositories.",
+    "Hardware page is a same-byte revisit, not a new unique work.",
+    "Initial empty vLLM main-placeholder extraction is preserved; corrected streamed content is fully read.",
+    "No SDK/model/container/controller execution, ARM64 build, device I/O or physical measurement."
+  ]
+}

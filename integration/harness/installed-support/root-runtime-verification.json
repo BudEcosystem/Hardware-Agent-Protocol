@@ -1,0 +1,376 @@
+{
+  "created_at": "2026-11-06T03:00:19.854951+00:00",
+  "command": "python3 scripts/check_runtime.py",
+  "scope": "All local Python suites, real Linux UDS/CLI subprocess integration, original native compact C scenarios, synthetic devices and clocks",
+  "environment": {
+    "python": "3.12.3",
+    "platform": "Linux-7.0.0-42-generic-x86_64-with-glibc2.39",
+    "sqlite": "3.45.1",
+    "jsonschema": "4.25.1"
+  },
+  "tests": 289,
+  "failures": 0,
+  "errors": 0,
+  "skipped": 0,
+  "combined_runtime_crash_phases": [
+    "accepted",
+    "dispatch_claimed",
+    "plant_pending",
+    "plant_committed"
+  ],
+  "limitations": [
+    "No physical device, sensor, acquired controller or model execution",
+    "No power-loss durability proof",
+    "One Unix UID is one principal; no per-agent delegation",
+    "No bounded independent stop path",
+    "No remote transport, complete endpoint firmware, timing benchmark or Harness execution"
+  ],
+  "files": [
+    {
+      "path": "artifacts/verification/endpoint-scenarios-build/endpoint-scenarios-pipe",
+      "sha256": "d80b3fddc3c2f2215ffa8ea7f5ae7f4b176ba9edc49c18264e5eca8f81da6a17"
+    },
+    {
+      "path": "artifacts/verification/endpoint-scenarios-build/endpoint-scenarios-pipe-asan",
+      "sha256": "38eef713f5f6d4a209b7f2cd57577b08b59ccce9b7fe14101b23a1f6ea76ded6"
+    },
+    {
+      "path": "artifacts/verification/endpoint-scenarios-build/endpoint-scenarios-pipe-asan-traces.json",
+      "sha256": "23dfc34107806de10c3c4ef179ddb863e6ffea245ce054bba428947af7fa5a4a"
+    },
+    {
+      "path": "artifacts/verification/endpoint-scenarios-build/endpoint-scenarios-pipe-traces.json",
+      "sha256": "2876f60995b0374ef73492bd110c250cac71f8377bb35e05b8a682f98514cc56"
+    },
+    {
+      "path": "artifacts/verification/endpoint-scenarios.json",
+      "sha256": "0deb4e7bb8da142f0cc44517b96dc069d0e343949bf5b8513783f86414587f86"
+    },
+    {
+      "path": "examples/home-ventilation.json",
+      "sha256": "0fea4790e07934a3bd870f062afed9addb8662576889f464cf23db639d1d113d"
+    },
+    {
+      "path": "examples/manufacturing-inspection.json",
+      "sha256": "ba3a22fcb84911370c41b7f9ca38842ec86df4c7d350bfb946677c00549cb833"
+    },
+    {
+      "path": "examples/microscope-focus.json",
+      "sha256": "71fbc8427c26ed5d778ecc4419b26d71a021823b29da34f71127ad3c59ff7617"
+    },
+    {
+      "path": "examples/wot/home-ventilation.json",
+      "sha256": "884dc170bbd459f9491f8805de0a1cc32c8130b0d5b7e2b3da57dd1dbfc61547"
+    },
+    {
+      "path": "examples/wot/manufacturing-inspection.json",
+      "sha256": "e218faed52d118a85059b063203ae5cb145d093d4b1ec2721ccd230f20923ab1"
+    },
+    {
+      "path": "examples/wot/microscope-focus.json",
+      "sha256": "4f6c60cd820a865942975b0835ac2ac4fd8391f2d01faae4988af6686a06f5e4"
+    },
+    {
+      "path": "hms/__init__.py",
+      "sha256": "714fc1d320151a6b359191ace49a1831d94b81cdc949025ae7e9779ec401024c"
+    },
+    {
+      "path": "hms/__main__.py",
+      "sha256": "8e5a0f5fb07c1c13ecac624178fbe23d706aae53cf60e4bca5afd6784c668b7a"
+    },
+    {
+      "path": "hms/_vendor/__init__.py",
+      "sha256": "7ab04d709c532a727501797aac0d151cc68929478e33c25d382efcd6ffc0614d"
+    },
+    {
+      "path": "hms/_vendor/rfc8785/__init__.py",
+      "sha256": "fa44927afd547caf7547247078bcf28863d1e69caf116d258c532b3f20ffd154"
+    },
+    {
+      "path": "hms/_vendor/rfc8785/_impl.py",
+      "sha256": "c25bc3a046528482d53bee3487b837f31dd9c05f33e8f13288c7aab320932cec"
+    },
+    {
+      "path": "hms/api_contracts.py",
+      "sha256": "7e148fc007ce12d55a741a4acf246fd80268ce47db450632f14ece27b1381ddc"
+    },
+    {
+      "path": "hms/cli.py",
+      "sha256": "177d8a8acffa6f0538c6610bc6a442bcc508d41b694af57b59e85d35650e1784"
+    },
+    {
+      "path": "hms/client.py",
+      "sha256": "e468b7d14ecfbd44308fab2a44c68655490b2e029c8def86868330f274ab9d46"
+    },
+    {
+      "path": "hms/contracts.py",
+      "sha256": "e83689a9750b12eb0dabb73d8a152f4d32da7d1cedcade9d9999403b7f401f06"
+    },
+    {
+      "path": "hms/demo.py",
+      "sha256": "d323811feddaad377e3de2e5accb8ad754d692681f26798c8ca039c207d2c2a2"
+    },
+    {
+      "path": "hms/endpoint_binding.py",
+      "sha256": "e5cacf3a6071f9764c45981565a02110e29bb98e954f7acd594aeb7dde0b3243"
+    },
+    {
+      "path": "hms/endpoint_transport.py",
+      "sha256": "b3ea79243ca32ef4d28d950cf45b596e1089eb1933ef39a6ea34415f78a1a10a"
+    },
+    {
+      "path": "hms/endpoint_wire.py",
+      "sha256": "6ada46b9b2591c52741bac6e592b2b3f83804fdab8c7bd637627afcc5db29322"
+    },
+    {
+      "path": "hms/ipc.py",
+      "sha256": "551a984237284126dc6c3601998c3975aeeb7a345436718f77cdd3a956074ffb"
+    },
+    {
+      "path": "hms/journal.py",
+      "sha256": "e952cf3f5000768a7b05acfe4933d715b5cb0174b69ffa24e84e24b10ef97522"
+    },
+    {
+      "path": "hms/mcp.py",
+      "sha256": "a6dd850149800066c21552f0f1cf9fa377e32e5ce3fe916a84b16e6e4fc13d13"
+    },
+    {
+      "path": "hms/mcp_stdio.py",
+      "sha256": "34bbba15db2453d42d109a472f5fb2e2baeea4325f3f589cf156b5e49107c964"
+    },
+    {
+      "path": "hms/projections.py",
+      "sha256": "233eb7c5f5432b11b54889e38258b0685fef21479c662ab198dfe518d1fc129b"
+    },
+    {
+      "path": "hms/registry.py",
+      "sha256": "beda13e1ced09099f1d0f58f332ba088cbf0d18f13f64faa6a8520aa3393c11e"
+    },
+    {
+      "path": "hms/runtime.py",
+      "sha256": "9d25262d26fb7f6cf2960018bf3d4862ac34139768b1f6ee1ef6222e25d42a78"
+    },
+    {
+      "path": "hms/simulator.py",
+      "sha256": "4077b1ad50eb6714f6a6c4ec5da19d3794e2b2e827d6c45adadbf1e97bf25551"
+    },
+    {
+      "path": "hms/state_path.py",
+      "sha256": "3934b7c457c4a694a4e299fa03bba4268a72a4f825f95ddc22319a780278b1d6"
+    },
+    {
+      "path": "protocol/endpoint/endpoint.c",
+      "sha256": "19b6a357c02c48321da8a973d326cec7994628e871f437290e683ed6c68d748b"
+    },
+    {
+      "path": "protocol/endpoint/endpoint.h",
+      "sha256": "4b4122760ff4073207b26d4ecef3702fdff7dd2ce00219656bc262df8910b817"
+    },
+    {
+      "path": "protocol/endpoint/link.c",
+      "sha256": "30627d9406fd6d748f733f2f2bbce825755cdc9532137262f2ee812ac49fc151"
+    },
+    {
+      "path": "protocol/endpoint/link.h",
+      "sha256": "d3bae74a7e038f7102ec61ea466d47271583ece99f4d5b5ea0ae3c362492197a"
+    },
+    {
+      "path": "protocol/endpoint/scenario-manifest.json",
+      "sha256": "f82db3e3066e987b7dbb702396a434d00cd1a7cec5af29f25a17791fc2219c4e"
+    },
+    {
+      "path": "protocol/endpoint/scenario_fixture.c",
+      "sha256": "0bcf42c821339b6592d9c96eff9e415d01ac0fdcbf79f8eaaed201d771833f71"
+    },
+    {
+      "path": "protocol/endpoint/scenario_fixture.h",
+      "sha256": "7048c4a908be2e2b4bf5cd01062fecd798bb4b2c85e8a833fafd7a727619320f"
+    },
+    {
+      "path": "protocol/endpoint/vectors.json",
+      "sha256": "8c41c33992d7f1bdbf334d547130bcaad2efefcbf975a5989bab3a8fa5f91a0c"
+    },
+    {
+      "path": "protocol/serial/frame.c",
+      "sha256": "4bb8120c648852d3205f743df308ded521d64639607c7926c493c7cb8bb2771f"
+    },
+    {
+      "path": "protocol/serial/frame.h",
+      "sha256": "29870e0821d724f39116f6f2ff81b4245bd9810680b235e45f116b11615ec7d7"
+    },
+    {
+      "path": "protocol/serial/frame.py",
+      "sha256": "34ead95e1392e99f37c85699fd1448ac10d7b5e8d0ec79b01952732eb6fd9180"
+    },
+    {
+      "path": "research/mcp/raw/schema__2026-07-28__schema.json",
+      "sha256": "ef70b61f99b6d2e5e3b46863822eab08dff6a45bedc7a08914e0e5b133f40203"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/td-schema-1.1.json",
+      "sha256": "fd44f319f94c6f16f66978860ef2f9f4e0e9fd7fc5835a2f3840b9cf2002e0f1"
+    },
+    {
+      "path": "schemas/device-description.schema.json",
+      "sha256": "67d0d8317df0d5e65b1416cd51e4788baa790bab1dbdf9a8c07374d26f22180a"
+    },
+    {
+      "path": "schemas/invoke.schema.json",
+      "sha256": "ef6fa8c274c03eb176720a5f0d474b08fcbf22840af8f78270e6067f7056845a"
+    },
+    {
+      "path": "schemas/local-api.schema.json",
+      "sha256": "313454429d8d4247dd41ab61e82480f174c7685f03f5a4b077f2ad94ad80705e"
+    },
+    {
+      "path": "scripts/build_api_schema.py",
+      "sha256": "5156d0589614728159c5b87302bcefe7faf4af7b461a95f25ebf3fb98b243359"
+    },
+    {
+      "path": "scripts/check_descriptions.py",
+      "sha256": "a646e9b5cc46f5f0c9e532eb4a735bbcc9979820ff3832ea28c3d193bbacdf14"
+    },
+    {
+      "path": "scripts/check_endpoint_scenarios.py",
+      "sha256": "8de9d7a7e14884693c068ca02ff04c9ca4070729ab842276d73193ee9937a609"
+    },
+    {
+      "path": "scripts/check_runtime.py",
+      "sha256": "5a96de74f4424b3e06c88cb127c99e2ab03604d2ae8d41555b455651cdc25207"
+    },
+    {
+      "path": "scripts/check_wot_profile.py",
+      "sha256": "e133423791cf278350c14f3466a58e7347d967d62751d6bb035d0580e49aa637"
+    },
+    {
+      "path": "tests/endpoint_scenarios_pipe.c",
+      "sha256": "1239c93c95e15e4afa5279180407b2f61b50d2bc6541dae960bbd2fc1446c596"
+    },
+    {
+      "path": "tests/fixtures/host-intents.json",
+      "sha256": "25774e5c11562407efb6a89d39b45546a91714d4bd720e14104ca49756c5941e"
+    },
+    {
+      "path": "tests/fixtures/serial-frames.json",
+      "sha256": "96c8d05626baa4fe6b4787039b46f512c28167fad45e16fca135b47a87901fb5"
+    },
+    {
+      "path": "tests/journal_crash_driver.py",
+      "sha256": "79f5304e6474416248e4084a90e0a847e8f8a198275b7c0428c187b1e98d4095"
+    },
+    {
+      "path": "tests/journal_interruption_driver.py",
+      "sha256": "1c414d38df6bb3d63a53f2f69fba817dde4383b8a8b653777e3e889a6ea3ea91"
+    },
+    {
+      "path": "tests/journal_support.py",
+      "sha256": "6b38620c0986e4113a42386a86c8e2b65ea46f08f0bc38df528bd9bdc607fc77"
+    },
+    {
+      "path": "tests/runtime_crash_driver.py",
+      "sha256": "4faee6886224a01af4f6518a458d21381887f2c6df16463cdc1d06e28c3863fa"
+    },
+    {
+      "path": "tests/test_api_contracts.py",
+      "sha256": "850f5c2713d4003719e6d3e7867f57221626037461353be6761588fb8ceafa1e"
+    },
+    {
+      "path": "tests/test_api_review.py",
+      "sha256": "6507c53e8ee0505a8a9a5bf776ccf4071628092b73e4e241f6ea0321ff9c3ae2"
+    },
+    {
+      "path": "tests/test_contracts.py",
+      "sha256": "47d8f5918403b3b52900ec3da7c34a5e6a7e9ebe962d4789e7a3a9ee7463897e"
+    },
+    {
+      "path": "tests/test_descriptions.py",
+      "sha256": "64b188525915f0ed087f9b7d68770dfa6faaebde56f32f2a116ffadb34d490a6"
+    },
+    {
+      "path": "tests/test_endpoint_binding.py",
+      "sha256": "39cc5413e5dcf2548f093c328cf0d8813a6d95d94a84bbb8896a0b98c3216cd0"
+    },
+    {
+      "path": "tests/test_endpoint_binding_review.py",
+      "sha256": "f0b1046eb3a7d4111565856c03192855d125dd991bfd7d618b0443f1f372e008"
+    },
+    {
+      "path": "tests/test_endpoint_cli.py",
+      "sha256": "600e77f44bf6149f510ed309b0f42955f8f6ebe8687e701d9ad51b4c35ea7045"
+    },
+    {
+      "path": "tests/test_endpoint_journal.py",
+      "sha256": "83136c481246185b4b0e216a091fcd787a75ef0a634a51a2de88b92b787f526e"
+    },
+    {
+      "path": "tests/test_endpoint_mcp.py",
+      "sha256": "7c975250263a767f4b367aa30d6d890d54c860272bb1b14d739150e27b4050d7"
+    },
+    {
+      "path": "tests/test_endpoint_wire.py",
+      "sha256": "1a81339d142ce37b2765f34dec0fad2e2afa4f57ecfb2dad1b925d69384459c6"
+    },
+    {
+      "path": "tests/test_installed_support.py",
+      "sha256": "81fb8479611934895eae259df1fb07a2c6787c1329c869bac7609b5ee9e927ec"
+    },
+    {
+      "path": "tests/test_ipc.py",
+      "sha256": "29753b0f65563875529dfd406214568053a55e071cfa7eb1cab641871bb619f5"
+    },
+    {
+      "path": "tests/test_journal.py",
+      "sha256": "721325f6488950838df5362dd6897fd8aac004a7cd25700a95019059c7801f06"
+    },
+    {
+      "path": "tests/test_mcp.py",
+      "sha256": "3d0ffc97bdc1467360a134d2ae4ed39363202531c10d819231c5d92d3b84dba6"
+    },
+    {
+      "path": "tests/test_mcp_review.py",
+      "sha256": "59c29a35d3c4ca514cca128a3c0759c069683e9cde6d2e37d08a2bd6e31458af"
+    },
+    {
+      "path": "tests/test_registry_review.py",
+      "sha256": "c1796261010396d4d515e9434e59659f4c10741e378dd375b50a4a60b770824a"
+    },
+    {
+      "path": "tests/test_runtime.py",
+      "sha256": "0667fb062ad2f7bb659b09697b5f5b7716ce8dc570bc93d6094147fd4910a577"
+    },
+    {
+      "path": "tests/test_runtime_ipc.py",
+      "sha256": "0d99ca6de14099559c26016c72f22a890aaa9746eba540d55d6db2f4c9af1797"
+    },
+    {
+      "path": "tests/test_serial_frame.py",
+      "sha256": "53290b4f8e9fefb2ff68700211536bc0c661787d009c65ab50860c798a9539d9"
+    },
+    {
+      "path": "tests/test_simulator.py",
+      "sha256": "03c0ad1aab93816cd97a0836c96652fdac477e17b8defaff837850b36855d166"
+    },
+    {
+      "path": "tests/test_state_path_review.py",
+      "sha256": "bdf390ff157dc86afb82928bb4f2bccbb4aa67887fefd7a68fca51db4e543a9b"
+    },
+    {
+      "path": "tests/test_wot_profile.py",
+      "sha256": "f4c91c3786b7374d558502b84c61ce08b6fab31b6e63f50baa3efaa68e31ad1d"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "artifacts/verification/local-runtime-tests.txt",
+      "sha256": "88235a67d40ae5c3e775f5cd59a33dba5e88c64bce3ab9fd95c0ab96ac91cd46"
+    },
+    {
+      "path": "artifacts/verification/local-runtime-traces.json",
+      "sha256": "7d00b38fccf593fa10909b0f5be54df6fb87325359d52954782f8cf8ccc7386a"
+    },
+    {
+      "path": "artifacts/verification/compact-host-traces.json",
+      "sha256": "31f5f1fdf21991eda0311b8dd81dd3e413d1712b4c14171d0e990c338e44b4ff"
+    }
+  ]
+}

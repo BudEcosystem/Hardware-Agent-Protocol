@@ -1,0 +1,49 @@
+Press Releases
+Matter 1.5 Introduces Cameras, Closures, and Enhanced Energy Management Capabilities
+11/20/2025
+Today, the Connectivity Standards Alliance (Alliance) announces the release of Matter 1.5, expanding the standard with additional high-impact device categories and use cases, including support for cameras, closures, soil sensors, and new energy management capabilities. This update continues Matter’s mission to simplify smart home development, strengthen interoperability, and create richer, more sustainable connected experiences for consumers and developers alike.
+Following the quality-focused
+Matter 1.4.1
+and
+Matter 1.4.2
+updates released earlier this year, which delivered significant improvements to testing, certification, and developer tooling, Matter 1.5 marks the next major functional expansion of the standard. The release adds a number of the most requested device types and features, enabling manufacturers and ecosystems to develop, support, and certify these new experiences.
+These additions and enhancements reflect the ongoing collaboration among Alliance Members to make Matter both broader and stronger, expanding into new device categories while continuing to refine the foundation that makes the standard secure, reliable, and easy to develop against.
+What’s New in Matter 1.5
+Support for Cameras
+Matter 1.5 introduces one of the most anticipated additions to the specification: cameras. Developers can now build and certify cameras that interoperate directly with Matter-enabled ecosystems, without the need for custom APIs or integrations.
+Matter cameras support live video and audio streaming using established WebRTC technology, enabling two-way communication and both local and remote access via standard STUN and TURN protocols. The specification also defines support for multi-stream configurations, pan-tilt-zoom controls, detection and privacy zones, and flexible storage options, including continuous or event-based recording to local or cloud destinations.
+This latest release enables device makers to build cameras that offer Matter-based interoperability—without limiting their ability to innovate through their own apps and services—while providing consumers with greater flexibility to combine a diverse range of camera types and price points into a coordinated home experience.
+Enhanced Support for Closures
+Building on prior releases,1.5 introduces a revamped and unified approach to closures, covering a broad range of devices such as window shades, drapes, awnings, gates, and garage doors. Through a simplified, modular cluster design, manufacturers can represent different motion types (e.g., sliding, rotating, opening) and configurations (e.g., single or dual panels, nested mechanisms) using a small set of building blocks.
+This approach reduces development complexity and enables broader product differentiation, from basic blinds to sophisticated smart windows. For consumers, it means more consistent and flexible control of closures across apps and ecosystems, improved safety and security through precise position reporting, and enabling the key smart home use case of “did I remember to close the garage or lock the door” to a diversity of devices and types of homes.
+Soil Sensors for Smarter Water Management
+Matter 1.5 extends the standard’s reach into new garden and plant-care use cases with support for soil sensors. These devices can measure moisture and, optionally, temperature to help users maintain optimal conditions for indoor plants, gardens, and lawns. When combined with Matter-based water valves or irrigation systems, soil sensors can be used in automating watering intelligently, helping conserve water and improve plant health.
+Advancing Energy Management
+Building on the groundwork laid in earlier versions, Matter 1.5 introduces new capabilities for energy management, enabling devices to exchange standardized information about energy pricing, tariffs, and grid carbon intensity.
+The new electrical energy tariff device type allows data from utilities, grid operators, and energy services on real-time and forecasted pricing, tariff, and carbon data to be shared with devices in a Matter-defined format. Devices can use this data to estimate and report their true energy costs and carbon impact, or to automatically adjust their operation based on user preferences, tariff schedules, or regulatory requirements. This also allows real-time or predictive data from energy-producing devices, such as home solar systems, to be incorporated into household energy management and optimization.
+Enhanced smart metering support improves how devices measure and report power usage, with the ability to handle complex, time-varying tariffs and provide historical data for more accurate cost and consumption tracking. The specification also adds the ability for utilities to communicate grid connection details and power limits, allowing more coordinated demand management and compliance with regional energy regulations.
+Finally, new EV charging enhancements make features such as state-of-charge reporting and bi-directional charging certifiable under Matter, supporting upcoming requirements in markets like the EU and preparing homes for the next generation of vehicle-to-grid and energy-sharing scenarios.
+Together, these updates strengthen Matter’s role in enabling secure, standardized communication between smart home devices, utilities, and energy services, creating a consistent framework for more efficient, sustainable energy use.
+Improved Data Transport with TCP / Large Messages
+Matter 1.5 adds full support for operation over TCP transport, enabling more efficient and reliable transmission of large data sets. This enhancement benefits high-bandwidth or data-intensive devices, including cameras, but also for use cases such as performing faster firmware updates or handling richer data types like images. For developers and users, these enhancements allow for improved efficiency, performance, and battery life.
+Why It Matters
+Each release of Matter builds on the shared goal of making connected devices work better together—securely, locally, and reliably. Matter 1.5 reinforces that foundation while continuing to expand what’s possible in the connected home.
+For device makers, the new features simplify development across major product categories, reduce the need for custom integrations, and create new opportunities to innovate on top of a proven standard. The continued quality work in 1.4.1 and 1.4.2, paired with this expansion, gives developers both a stronger base and broader horizons.
+For consumers, the benefits are clear, including broader device choice, simpler setup, and confidence that products from different brands can work together to support real-world use cases, from managing energy and water use to monitoring their home and surroundings.
+Looking Ahead
+Building on the Alliance’s commitment to open collaboration and continuous improvement, Matter 1.5 marks another milestone, adding support for cameras, closures, soil sensors, and advanced energy features, now ready for implementation and certification.
+As the Matter footprint continues to grow, the Alliance remains focused on enabling new categories, enhancing developer tools and testing, and ensuring that every update strengthens the reliability and longevity of Matter in the home.
+The Matter 1.5 specification, SDK, and test tools are now available to Alliance Members. Device makers and platform developers are encouraged to explore the new capabilities, begin certification planning, and work with their partners to deliver the next generation of interoperable smart home experiences.
+Developers interested in learning more about these enhancements can access the Matter 1.5 specification documents
+here
+.
+Share
+LinkedIn
+Facebook
+Twitter
+Email
+Latest Alliance News
+Suzi Product Certification is Now Open
+September 2, 2026
+Read More
+See More News

@@ -1,0 +1,57 @@
+{
+  "archiveSha256": "a234c2a43dcd01ce54be665806f183b8e6ec4e966d2e3e0c3358b63023d6390c",
+  "extraction": "Exact bounded regular members from retained pinned official archive",
+  "files": [
+    {
+      "archiveMember": "ArduinoCore-avr-1.8.8/cores/arduino/wiring_digital.c",
+      "bytes": 4979,
+      "lfLines": 179,
+      "path": "source/cores/arduino/wiring_digital.c",
+      "readingStatus": "pending-full-read",
+      "sha256": "f56a12bb80e3179db3c4803a90b7c3c4ac6b14d4f23ababb121173ef0e27d26c"
+    },
+    {
+      "archiveMember": "ArduinoCore-avr-1.8.8/cores/arduino/wiring_analog.c",
+      "bytes": 7637,
+      "lfLines": 286,
+      "path": "source/cores/arduino/wiring_analog.c",
+      "readingStatus": "pending-full-read",
+      "sha256": "af985237cce8dcf22d1a1359bab6af274c780592feae73707c792c334ee63172"
+    },
+    {
+      "archiveMember": "ArduinoCore-avr-1.8.8/cores/arduino/wiring_private.h",
+      "bytes": 2255,
+      "lfLines": 72,
+      "path": "source/cores/arduino/wiring_private.h",
+      "readingStatus": "pending-full-read",
+      "sha256": "c416d346d436f2ba55507ba867a0fd6bf8d261440194a237fa318e20c5617bdc"
+    },
+    {
+      "archiveMember": "ArduinoCore-avr-1.8.8/cores/arduino/Arduino.h",
+      "bytes": 7613,
+      "lfLines": 260,
+      "path": "source/cores/arduino/Arduino.h",
+      "readingStatus": "pending-full-read",
+      "sha256": "335f45c59532cd7df39ce1435fbf1abf8d503d42ac6085a92e0f2ff75f5fffac"
+    },
+    {
+      "archiveMember": "ArduinoCore-avr-1.8.8/cores/arduino/wiring.c",
+      "bytes": 11951,
+      "lfLines": 392,
+      "path": "source/cores/arduino/wiring.c",
+      "readingStatus": "pending-full-read",
+      "sha256": "586bdf890ff6cd70d2a5457aef406517fff1113dcee51ea9f4f86cd54f8cc204"
+    },
+    {
+      "archiveMember": "ArduinoCore-avr-1.8.8/variants/standard/pins_arduino.h",
+      "bytes": 6437,
+      "lfLines": 254,
+      "path": "source/variants/standard/pins_arduino.h",
+      "readingStatus": "pending-full-read",
+      "sha256": "d313845f9916c1f21c8ba9848d40806f5caab52529ad510e81b3f15318441631"
+    }
+  ],
+  "sourceArchive": "research/constrained/avr/raw/avr-1.8.8.tar.bz2",
+  "sourceExecuted": false,
+  "sourceUrl": "https://downloads.arduino.cc/cores/staging/avr-1.8.8.tar.bz2"
+}

@@ -1,0 +1,4 @@
+hardware [ 'HardwareService', 'default' ]
+hardware-hms [ 'default' ]
+hardware-profile []
+tool-hardware [ 'Config', 'apply', 'inject', 'name' ]

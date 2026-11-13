@@ -1,0 +1,26 @@
+{
+  "files": [
+    {
+      "path": "research/host-contract/native-exception-review/README.md",
+      "bytes": 1690,
+      "sha256": "f91c0d840d94a023f1b5f71ab72022f47b2a67c0c0e17312529ac6fb82785147"
+    },
+    {
+      "path": "research/host-contract/native-exception-review/exceptions.rst",
+      "bytes": 55104,
+      "sha256": "a72affca78426f9f90c70efba697a34a3d07e0859d0c5a84d1d9614be198dc62"
+    },
+    {
+      "path": "research/host-contract/native-exception-review/previous-reading.json",
+      "bytes": 4157,
+      "sha256": "d637a5fa191da2e03b58d340cc4d6fbc24c3421472c29fadf7b3f2513735b41d"
+    },
+    {
+      "path": "research/host-contract/native-exception-review/reading.json",
+      "bytes": 5415,
+      "sha256": "2db309c4da123f42140cb1b5404695edf5c7166b786fb7d16b6fdc94464de1dd"
+    }
+  ],
+  "readingVerified": true,
+  "codeExecuted": false
+}

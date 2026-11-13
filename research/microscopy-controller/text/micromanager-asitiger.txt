@@ -1,0 +1,272 @@
+ASITiger
+Edit page
+History
+How do I edit this website?
+μManager Documentation
+News
+Downloads
+Nightly Builds
+Old Releases
+Installation Notes
+Source Code
+Learn
+Overview
+Why Micro-Manager?
+Who should use Micro-Manager
+Version 2.0
+User Guide
+Hardware Configuration Guide
+Plugins
+FAQ
+More Help Topics
+API
+API Transition Guide
+API, How do I?
+Javadoc
+API Events
+Writing Plugins
+Scripting
+Version 1.4
+User Guide
+Hardware Configuration Guide
+Plugins
+Tutorial (PDF)
+Advanced Methods
+FAQ
+More Help Topics
+Video Screencasts
+Programming
+Scripting
+Beanshell
+Example Beanshell scripts
+Python
+Matlab
+Multi-D Acq. Programming
+Source code
+Policies for inclusion of source code
+Source code repository history and tickets
+Building and Debugging Micro-Manager
+Device Adapters
+Overview
+Development Environment Setup
+Visual Studio project settings
+Writing device adapters
+Hub Device Adapters
+Device Codebase Design
+Testing communication with hardware
+Change log
+Search Paths
+Writing Plugins
+File Formats
+APIs
+2.0 MMStudio API Reference (Java/Beanshell)
+1.4 MMStudio API Reference (Java/Beanshell)
+Core API Reference (Java/Beanshell)
+Core API Reference (C++)
+Device API Reference (C++)
+Devices
+Hardware Configuration Guide
+Support
+Contact
+System Integrators
+Programming Services
+Editing the Wiki
+Advanced editing
+Buttons
+Citations
+Source Code
+Headers
+Icons
+Images
+Keyboard Shortcuts
+Linking
+Math Expressions
+Notices
+Pitfalls
+Symbols
+Tables
+Videos
+Whitespace
+Credits
+Papers citing MicroManager
+How to cite MicroManager
+ASITiger
+Page contents
+ASI Tiger
+Summary:
+For TG-1000 “Tiger” controller hub, providing access to various
+supported cards
+Author:
+Jon Daniels (jon at asiimaging.com)
+License:
+BSD
+Platforms:
+All platforms (uses serial port)
+Devices:
+XYStage, ZStage (motorized linear stage), Piezo, FWheel (FW-1000
+filterwheel), FSlider (filter slider), Turret, Scanner (MEMS
+micro-mirror), Port Switch, PLogic (digital I/O), LED, PMT, tunable lens
+(Optotune)
+Example Config File:
+None
+For “Tiger” or TG-1000 controller from ASI
+(manufacturer
+page
+).
+Controller has various cards that can be added as needed for any
+particular configuration, so the device adapter is a hub with peripheral
+devices.
+NB: there is a separate device adapter,
+ASIStage
+,
+for stand-alone MS-2000 controllers or older rack-mount controllers.
+Serial port settings are 115200 baud, no parity, 1 stop bit, no
+handshaking (for both RS-232 and USB).
+If you run into problems please contact the author at the address above.
+This device adapter is actively supported by the manufacturer.
+For TG-1000 systems the build-in USB connection is actually a USB to
+serial converter. You can find drivers for Windows, Mac OS X, and Linux
+at the
+Silicon labs
+website
+.
+This is the same as used for recent ASI ‘WK’ or ‘Whizkid’ controllers.
+TigerCommHub
+Property Notes
+SerialCommand: By default the command is sent only sent when a
+change is made; to resend same command you can add a space; change
+the property “OnlySendSerialCommandOnChange” property to “No” to
+change this behavior. This is due to the behavior of Micro-manager
+often refreshing the property values which can cause the command to
+be sent multiple times.
+Z Stages (piezo or motorized)
+The Z stage can be set up to receive trigger signals from many cameras
+(see documentation on Micro-Manager’s
+Hardware-based_synchronization
+feature). A BNC cable is connected from the camera’s TTL output to the
+controller’s trigger input on the corresponding card’s front panel of
+the Tiger controller. By synchronizing Z slices with camera exposures,
+you can acquire very fast Z stacks. Most ASI firmware includes the
+required ring buffer module with 50 positions; if you want to acquire Z
+stacks with more slices or do not have ring buffer support, please
+contact ASI directly
+for a
+firmware update. To use this feature, set the property “UseSequence” to
+value “Yes” under device “ZStage” in the Property Browser.
+There is a further feature designed for collecting sequential Z-stacks
+with minimal delay by eliminating serial communication between Z-stacks
+and relying completely on TTL. This is the “UseFastSequence” property.
+To use, first set the property value set to “No” (but “UseSequence” must
+be set to “Yes”) and run a Z-stack, or if you are scripting you need to
+invoke SendStageSequence(). This forces Micro-Manager to compute the
+ring buffer positions and send them to the controller. Then set the
+property value to “Armed” and perform desired acquisitions. Afterwards
+be sure to set the value back to “No” because the controller will not
+interact with Micro-Manager normally when set to “Armed” (sequence
+operations are short-circuited as is the widely-used API function
+Busy()).
+Known limitations
+CRISP supported was added 25-Sep-2013. Use requires both a
+Micro-manager build and card firmware after that date.
+LED illuminator support was added 20-May-2014. Use requires both a
+Micro-manager build and card firmware after that date.
+TTL-triggered piezo (and Z stage) sequences are supported as of
+2020-May-20 nightly build of Micro-Manager.
+Support
+Contact the author at
+jon_remove@asiimaging.com
+(remove the last part
+of the email address).
+GitHub
+Email
+© µManager
+Design:
+HTML5 UP
+μManager Documentation
+News
+Downloads
+Nightly Builds
+Old Releases
+Installation Notes
+Source Code
+Learn
+Overview
+Why Micro-Manager?
+Who should use Micro-Manager
+Version 2.0
+User Guide
+Hardware Configuration Guide
+Plugins
+FAQ
+More Help Topics
+API
+API Transition Guide
+API, How do I?
+Javadoc
+API Events
+Writing Plugins
+Scripting
+Version 1.4
+User Guide
+Hardware Configuration Guide
+Plugins
+Tutorial (PDF)
+Advanced Methods
+FAQ
+More Help Topics
+Video Screencasts
+Programming
+Scripting
+Beanshell
+Example Beanshell scripts
+Python
+Matlab
+Multi-D Acq. Programming
+Source code
+Policies for inclusion of source code
+Source code repository history and tickets
+Building and Debugging Micro-Manager
+Device Adapters
+Overview
+Development Environment Setup
+Visual Studio project settings
+Writing device adapters
+Hub Device Adapters
+Device Codebase Design
+Testing communication with hardware
+Change log
+Search Paths
+Writing Plugins
+File Formats
+APIs
+2.0 MMStudio API Reference (Java/Beanshell)
+1.4 MMStudio API Reference (Java/Beanshell)
+Core API Reference (Java/Beanshell)
+Core API Reference (C++)
+Device API Reference (C++)
+Devices
+Hardware Configuration Guide
+Support
+Contact
+System Integrators
+Programming Services
+Editing the Wiki
+Advanced editing
+Buttons
+Citations
+Source Code
+Headers
+Icons
+Images
+Keyboard Shortcuts
+Linking
+Math Expressions
+Notices
+Pitfalls
+Symbols
+Tables
+Videos
+Whitespace
+Credits
+Papers citing MicroManager
+How to cite MicroManager

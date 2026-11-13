@@ -1,0 +1,12 @@
+{
+  "scope": "Source, exact reading-range union and visual artifact integrity; not independent proof of comprehension.",
+  "reading_sha256": "5933031f2d69a6e56a1ab18b32935b5fc5d3af435fad7803c6297dff8be9eb54",
+  "source_files_verified": 2,
+  "prior_receipts_unchanged": true,
+  "new_lines": 484,
+  "cumulative_lines": 2780,
+  "total_lines": 42293,
+  "new_ranges_overlap_prior": false,
+  "images_verified": 10,
+  "coverage_complete": false
+}

@@ -1,0 +1,84 @@
+{
+  "schema": "hms-harness-procedure-acceptance-plan/1",
+  "status": "planned_not_executed",
+  "cases": [
+    {
+      "id": "catalog-parity",
+      "scope": "fourteen-tool increment",
+      "acceptance": "Native registry and actual PTC expose exactly14 hardware methods; schema source/mapping match; Loader disposal removes all14.",
+      "status": "not_run"
+    },
+    {
+      "id": "mixed-replay",
+      "scope": "fourteen-tool increment",
+      "acceptance": "Real Loader/native/PTC ordered mixed SQLite/native-C plan; exact parent replay and stable child IDs; one OP each native child and exactly one local effect.",
+      "status": "not_run"
+    },
+    {
+      "id": "gated-host-loss",
+      "scope": "fourteen-tool increment",
+      "acceptance": "Kill daemon after actual OP reply is gated before host receipt persist; endpoint survives; matching QUERY; no OP resend; interrupted until explicit resume.",
+      "status": "not_run"
+    },
+    {
+      "id": "sdk-persistence",
+      "scope": "fourteen-tool increment",
+      "acceptance": "Built named sdk profile, scripted model and durable work/Session reopen preserve full parent arguments, parent ID, prefix and model-visible history; report scripted model calls honestly.",
+      "status": "not_run"
+    },
+    {
+      "id": "checked-results",
+      "scope": "fourteen-tool increment",
+      "acceptance": "Malformed digest/ID/prefix/cursor/state/claims/events/cancel correlation rejected by checked Python bridge; uncertainty carrier retained.",
+      "status": "not_run"
+    },
+    {
+      "id": "cancel-authority",
+      "scope": "fourteen-tool increment",
+      "acceptance": "Revoked-read owner-safe cancel acknowledgement survives, denied child cancel stays visible, Harness work abort is not domain cancel.",
+      "status": "not_run"
+    },
+    {
+      "id": "complete-bounds",
+      "scope": "fourteen-tool increment",
+      "acceptance": "16-step and multibyte request/status/event/output-wrapper limits; no truncated success; loss after possible submit retains exact replay identity.",
+      "status": "not_run"
+    },
+    {
+      "id": "paused-route",
+      "scope": "fourteen-tool increment",
+      "acceptance": "Paused native accepted head cannot starve independent focus; original lease expires and releases unstarted claims with no fan OP.",
+      "status": "not_run"
+    },
+    {
+      "id": "no-planning-inference",
+      "scope": "PAT follow-on",
+      "acceptance": "Repeated eligible structured triggers make zero prepareCall/stream/decision-provider planning calls; separately count perception inference; novel/ambiguous inputs produce exception routing.",
+      "status": "not_run"
+    },
+    {
+      "id": "pat-crash-recovery",
+      "scope": "PAT follow-on",
+      "acceptance": "Persist digest, applicability/dependencies, bound inputs, fresh execution identities and exact envelope before submission; crash retains prefix and reconciles before revision.",
+      "status": "not_run"
+    },
+    {
+      "id": "io-resource-alias",
+      "scope": "domain follow-on",
+      "acceptance": "Raw GPIO/PWM/bus/high-level actuator aliases share correct claims; invalid electrical modes and incompatible pin/timer/DMA use refused before effect.",
+      "status": "not_run"
+    },
+    {
+      "id": "driver-hub-recovery",
+      "scope": "domain follow-on",
+      "acceptance": "Driver replacement, hub/network/inference-service loss and reboot preserve unknown external outcomes and invalidate dependent bindings/PAT eligibility.",
+      "status": "not_run"
+    },
+    {
+      "id": "streams-compute",
+      "scope": "domain follow-on",
+      "acceptance": "Buffer/backpressure/gap/lineage and CPU/GPU memory/queue budget behavior visible; independent stop capacity qualified separately on actual targets.",
+      "status": "not_run"
+    }
+  ]
+}

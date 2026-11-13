@@ -1,0 +1,9 @@
+{
+  "script": "render-diagrams.py",
+  "exitCode": 1,
+  "failure": "KeyError: could not find foreign type Context",
+  "location": "handle.render_document(context, viewport)",
+  "renderedImagesWritten": 0,
+  "sourceContentChanged": false,
+  "continuation": "render-diagrams02.py uses the installed librsvg pixbuf rendering path"
+}

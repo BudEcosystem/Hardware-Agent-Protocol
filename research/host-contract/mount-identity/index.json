@@ -1,0 +1,74 @@
+{
+  "files": [
+    {
+      "bytes": 802,
+      "path": "COUNTEREXAMPLE.json",
+      "sha256": "8664393784f245b9846f2233867204a13c750b8b2b94163e7ac62ffc9a3e04ab"
+    },
+    {
+      "bytes": 1223,
+      "path": "READING.json",
+      "sha256": "4db6cc92fb4b26a9869adfe12474d02073fbaf59f6e8daa24c5788676f1e482a"
+    },
+    {
+      "bytes": 4031,
+      "path": "README.md",
+      "sha256": "776ffa7e2d301781ef5c6453053d0cc4a0a044db155d216b2ffb5d96c138a2fb"
+    },
+    {
+      "bytes": 1605,
+      "path": "acquire.py",
+      "sha256": "832bacb84e54714292083db0791ebf7f7196974533c86b57bcf515fed060be60"
+    },
+    {
+      "bytes": 371,
+      "path": "counterexample-execution.json",
+      "sha256": "d9a5db22eb751957b882538c75f7c825b00193991367b81172b73cb245dd85a9"
+    },
+    {
+      "bytes": 12433,
+      "path": "fixed_block.reference.py",
+      "sha256": "b5173152c5505934275b89a4c1c2e54f4bd4fa75b9a60b8e7f149bd3456b42db"
+    },
+    {
+      "bytes": 1117,
+      "path": "host-observation.json",
+      "sha256": "f0a3ff94cd1d7e216570d88eddc2a761595da963dabfd8d1b541ac2094c17589"
+    },
+    {
+      "bytes": 1877,
+      "path": "mountinfo_counterexample.py",
+      "sha256": "882cca216b342d17c4ba00368fca662db34eff7244a63dc52dd18dadc4e479c9"
+    },
+    {
+      "bytes": 3705,
+      "path": "proc_pid_mountinfo.5",
+      "sha256": "190e9124ac7b358a9f9936fcbd8b2f740217c0ebb3a6ac1343551e7d11b5b38c"
+    },
+    {
+      "bytes": 2994,
+      "path": "sources.json",
+      "sha256": "3779b8c8908a3bde408af2a7dd73744ed4ef9bddc109471fafaeab82121252a6"
+    },
+    {
+      "bytes": 10337,
+      "path": "statfs.2",
+      "sha256": "3dc4ed703d7e2b5edee6765ea33152c89671b6cde5d3ea6f4236160700713b9d"
+    },
+    {
+      "bytes": 11556,
+      "path": "statmount.2",
+      "sha256": "1ccd96d38ea90229f3ae8dda9d7645329d2bfeed32307f679c53dfc75d4e140e"
+    },
+    {
+      "bytes": 19397,
+      "path": "statx.2",
+      "sha256": "9a826efa5d59d5e6996acac1b445a7df0d833077f933009e751f0c527b2cb228"
+    },
+    {
+      "bytes": 834,
+      "path": "tag.json",
+      "sha256": "46e11ed3df840ce260765d171735f759e88a6900cd7f4c8b8f53b5cb08198b16"
+    }
+  ]
+}

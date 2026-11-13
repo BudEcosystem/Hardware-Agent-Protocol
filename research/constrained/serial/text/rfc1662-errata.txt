@@ -1,0 +1,62 @@
+Errata
+RFC Number
+Errata ID
+Status
+All/Any
+Verified+Reported
+Verified
+Reported
+Held for Document Update
+Rejected
+Area Acronym
+All/Any
+app
+art
+gen
+int
+ops
+rai
+rtg
+sec
+tsv
+wit
+Type
+All/Any
+Editorial
+Technical
+WG Acronym
+Submitter Name
+Stream
+All/Any
+IAB
+INDEPENDENT
+IRTF
+Legacy
+Editorial
+Date Submitted
+Presentation
+Table
+Full Records
+Submit
+Verified (1)
+RFC 1662
+inline-errata
+Source of RFC:
+pppext (int)
+Errata-ID:
+542
+Status:
+Verified
+Type:
+Technical
+Reported By:
+Charles Cranford
+Date Reported:
+2002-03-07
+In the References Section:
+[1]   Simpson, W., Editor, "The Point-to-Point Protocol (PPP)", 
+         STD 50, RFC 1661, Daydreamer, July 1994.
+It should say:
+[1]   Simpson, W., Editor, "The Point-to-Point Protocol (PPP)", 
+         STD 51, RFC 1661, Daydreamer, July 1994.
+Report New Erratum

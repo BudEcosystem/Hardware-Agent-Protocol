@@ -1,0 +1,165 @@
+{
+  "scope": "Nine primary manuals fully read; 2311 LF lines; no acquired example executed",
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 6218,
+      "sha256": "30273f71c2216de96f40179d2d9d75582edd2458ff7e8e1b8ba15dc7ce19f239"
+    },
+    {
+      "path": "acquire.py",
+      "bytes": 2922,
+      "sha256": "56719c0eb8df058f7f69f592dd252e04f4ff7002d73e81875655398f17efb841"
+    },
+    {
+      "path": "acquisition.json",
+      "bytes": 12035,
+      "sha256": "ac9dcfd11f4b9746ffb38691f120a743e7c47d345c266815a721c87db8f13aa8"
+    },
+    {
+      "path": "close-acquisition.json",
+      "bytes": 1331,
+      "sha256": "adc13f79357d5f8989ba585793622f6f5a0b026917a6b4a3be0106d684462381"
+    },
+    {
+      "path": "raw/close.html",
+      "bytes": 18845,
+      "sha256": "20eea30e262be7d46294160b5ddbc90048e8185a4766276b15119365207d64c3"
+    },
+    {
+      "path": "raw/closedir.html",
+      "bytes": 10302,
+      "sha256": "358400ea94829713623382116d3916c92f2e178189824d2523253ceb11beda6a"
+    },
+    {
+      "path": "raw/dirfd.html",
+      "bytes": 10892,
+      "sha256": "f6dc54316686d0401aba4c3e7d9534ba8a6780b8b522981b270a97bfbf36bf9c"
+    },
+    {
+      "path": "raw/dup.html",
+      "bytes": 15840,
+      "sha256": "f0b886340b0471a181d135320ed5b3847de410ab05ca4a29b78780d1aa2aa2ae"
+    },
+    {
+      "path": "raw/fdopendir.html",
+      "bytes": 12977,
+      "sha256": "ec26d14cd175c8651fdf60a8f554323c6b860d3e212297443de55af9896ff0e0"
+    },
+    {
+      "path": "raw/fstatat.html",
+      "bytes": 25836,
+      "sha256": "0067346ded7cc8259ad614874993bd99b3edff372b61057d236c9dfe5e40501e"
+    },
+    {
+      "path": "raw/getuid.html",
+      "bytes": 11222,
+      "sha256": "215b3d7a42aed3b3bc34e6a562300eb9f9ddb767b194457be53c667fd5b2fd55"
+    },
+    {
+      "path": "raw/open.html",
+      "bytes": 76506,
+      "sha256": "d665489cadb85624d98fae03a8d8d06209030f32735cff8aeba949ad8491c789"
+    },
+    {
+      "path": "raw/readdir.html",
+      "bytes": 18760,
+      "sha256": "b9f2de8eee242e9ebe85c5dff4998cc3bb7dfd8c5eefb1da582d116edc5a58ee"
+    },
+    {
+      "path": "reading.json",
+      "bytes": 4682,
+      "sha256": "36279c6ff1d18e4acfc579573c54d7cb629b83570c458c32aa330c985627a26a"
+    },
+    {
+      "path": "surrounding/close.txt",
+      "bytes": 1778,
+      "sha256": "19d865b4c4cadd3c59eab12fee4bb5c8244718bcddae5e4cbf1ecd4966644cf7"
+    },
+    {
+      "path": "surrounding/closedir.txt",
+      "bytes": 940,
+      "sha256": "5b117d112ee5d8453dcf7ee3b5b78693260a081bd50c4b81a45acd2cc0a54001"
+    },
+    {
+      "path": "surrounding/dirfd.txt",
+      "bytes": 840,
+      "sha256": "a5f6b1fc90ed5e61d8fb5fcc124fb2504cd519f5dd63048b9e6455ee4e2ee7b7"
+    },
+    {
+      "path": "surrounding/dup.txt",
+      "bytes": 1204,
+      "sha256": "3d19fbecbf21da7d60b8f07b27cd88bb69df48edb723c3ff978dee30789aa382"
+    },
+    {
+      "path": "surrounding/fdopendir.txt",
+      "bytes": 1084,
+      "sha256": "ffe5e9b8e1cc531ab44203a446d024057e5bef76025a9508ff87a618e004fc6f"
+    },
+    {
+      "path": "surrounding/fstatat.txt",
+      "bytes": 2238,
+      "sha256": "3d94546703aaee69b914265cf1150585105b6419f7fccace8983a264cc020954"
+    },
+    {
+      "path": "surrounding/getuid.txt",
+      "bytes": 1425,
+      "sha256": "2dbbbaa1667bd01a75c6a8a44cfc0feb5f7bd8d0d1aea771982fca947eead020"
+    },
+    {
+      "path": "surrounding/open.txt",
+      "bytes": 4170,
+      "sha256": "56db5cfd9dc5619e3a409bde1b48260fb76f9da149ea0b0acf4b738f0af6a62e"
+    },
+    {
+      "path": "surrounding/readdir.txt",
+      "bytes": 1180,
+      "sha256": "366662dfa9d264fa53aa3646a8da0a5cb15273fb0edb904f71b0c512a3a20034"
+    },
+    {
+      "path": "text/close.txt",
+      "bytes": 7797,
+      "sha256": "bce90baaa9aa90ce9247b99f985ebd3ff1b0f18448d93946aa7d6e799c495a30"
+    },
+    {
+      "path": "text/closedir.txt",
+      "bytes": 2727,
+      "sha256": "c815f5b97fda7cb168cc43aef0826c7f9c8e1f0a153da443bae8986a4305e4b8"
+    },
+    {
+      "path": "text/dirfd.txt",
+      "bytes": 3406,
+      "sha256": "03c34966bc419114b395c6f6bca9a38059c6916e0aa12d5767873b43753a0047"
+    },
+    {
+      "path": "text/dup.txt",
+      "bytes": 6644,
+      "sha256": "cdcbbf34f8352ec08ce677253c45ea456c2258c5e92e0cd7242f9012c2730a7d"
+    },
+    {
+      "path": "text/fdopendir.txt",
+      "bytes": 4471,
+      "sha256": "ff215a151a3d126b9a48c67830947c7f757ac807d88e137dee7223b3e48e0066"
+    },
+    {
+      "path": "text/fstatat.txt",
+      "bytes": 12236,
+      "sha256": "3df11e73c4a538fb673984f3aaf01c4a0d79bb9c6f230902c0e74eb04e7707e8"
+    },
+    {
+      "path": "text/getuid.txt",
+      "bytes": 2346,
+      "sha256": "e3cba974a8f90c3f64fd255b91733c625823084d331252dc5cc858d2754b1320"
+    },
+    {
+      "path": "text/open.txt",
+      "bytes": 49056,
+      "sha256": "7eaeb81212e278b6b7dcf4d0cdd7595e52fba600147ef194479171a6e7382afc"
+    },
+    {
+      "path": "text/readdir.txt",
+      "bytes": 9210,
+      "sha256": "b382b63da3b3b326e5d562ebadb489a82b4e64f4556e37124d9d14a2bef90301"
+    }
+  ]
+}

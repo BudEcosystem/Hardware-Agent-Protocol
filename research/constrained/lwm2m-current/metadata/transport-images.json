@@ -1,0 +1,149 @@
+[
+  {
+    "index": 0,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/OMASpecWorks_logo.png",
+    "alt": null,
+    "title": null,
+    "parent_text": ""
+  },
+  {
+    "index": 1,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/protocol_stack.svg",
+    "alt": "The Protocol Stack of the LwM2M Enabler",
+    "title": null,
+    "parent_text": "Figure: 4.-1 The Protocol Stack of the LwM2M Enabler"
+  },
+  {
+    "index": 2,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/header_definition_SMS_no_token.svg",
+    "alt": "SMS header definition (no token) ",
+    "title": null,
+    "parent_text": "Figure: 5.3.2.1.1.-1 SMS header definition (no token)"
+  },
+  {
+    "index": 3,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/header_definition_SMS_token.svg",
+    "alt": "SMS header definition",
+    "title": null,
+    "parent_text": "Figure: 5.3.2.1.1.-2 SMS header definition"
+  },
+  {
+    "index": 4,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/client_initiated_bootstrap_exchange.svg",
+    "alt": "Example of Client initiated Bootstrap exchange",
+    "title": null,
+    "parent_text": "Figure: 6.4.2.-1 Example of Client initiated Bootstrap exchange"
+  },
+  {
+    "index": 5,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/client_initiated_bootstrap_exchange_with_bootstrap_pack.svg",
+    "alt": "Example of Client initiated Bootstrap with Bootstrap-Pack exchange",
+    "title": null,
+    "parent_text": "Figure: 6.4.2.-2 Example of Client initiated Bootstrap with Bootstrap-Pack exchange"
+  },
+  {
+    "index": 6,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/server_initiated_bootstrap_exchange.svg",
+    "alt": "Example of Server initiated Bootstrap exchange",
+    "title": null,
+    "parent_text": "Figure: 6.4.2.-3 Example of Server initiated Bootstrap exchange"
+  },
+  {
+    "index": 7,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/register_update_de-register_operation.svg",
+    "alt": "Example register, update and de-register operation exchanges (shorthand in \\[CoAP\\] example style, actual messages using CoAP binary headers",
+    "title": null,
+    "parent_text": "Figure: 6.4.3.-1 Example register, update and de-register operation exchanges (shorthand in [CoAP] example style, actual messages using CoAP binary headers)"
+  },
+  {
+    "index": 8,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/dm_se_interface_exchanges.svg",
+    "alt": "Example of Device Management & Service Enablement interface exchanges",
+    "title": null,
+    "parent_text": "Figure: 6.4.4.-1 Example of Device Management & Service Enablement interface exchanges"
+  },
+  {
+    "index": 9,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/object_creation_deletion.svg",
+    "alt": "Example of Object Creation and Deletion",
+    "title": null,
+    "parent_text": "Figure: 6.4.4.-2 Example of Object Creation and Deletion"
+  },
+  {
+    "index": 10,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/information_reporting_exchange.svg",
+    "alt": "Example of an Information Reporting exchange",
+    "title": null,
+    "parent_text": "Figure: 6.4.5.-1 Example of an Information Reporting exchange"
+  },
+  {
+    "index": 11,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/dm_se_interface_exchanges_queue_mode.svg",
+    "alt": "Example of Device Management & Service Enablement interface exchanges for Queue Mode",
+    "title": null,
+    "parent_text": "Figure: 6.5.-1 Example of Device Management & Service Enablement interface exchanges for Queue Mode"
+  },
+  {
+    "index": 12,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/information_reporting_exchange_queue_mode.svg",
+    "alt": "Example of an Information Reporting exchange for Queue Mode",
+    "title": null,
+    "parent_text": "Figure: 6.5.-2 Example of an Information Reporting exchange for Queue Mode"
+  },
+  {
+    "index": 13,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/queue_mode_sms_registration_update_trigger.svg",
+    "alt": "Example of Device Management & Service Enablement interface exchanges for Queue Mode with SMS Registration Update Trigger",
+    "title": null,
+    "parent_text": "Figure: 6.6.1.-1 Example of Device Management & Service Enablement interface exchanges for Queue Mode with SMS Registration Update Trigger"
+  },
+  {
+    "index": 14,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/mqtt_architecture.svg",
+    "alt": "Colocated MQTT Server / LwM2M Server Deployment",
+    "title": null,
+    "parent_text": "Figure: 8.1.-1 Colocated MQTT Server / LwM2M Server Deployment"
+  },
+  {
+    "index": 15,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/mqtt_architecture2.svg",
+    "alt": "Independent MQTT Server Deployment",
+    "title": null,
+    "parent_text": "Figure: 8.1.-2 Independent MQTT Server Deployment"
+  },
+  {
+    "index": 16,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/LoRaWAN_CON_Endpoint_to_Server.svg",
+    "alt": "Example of CoAP request from Endpoint using LoRaWAN confirmable messages",
+    "title": null,
+    "parent_text": "Figure: C.3.1.1-1 Example of CoAP request from Endpoint using LoRaWAN confirmable messages"
+  },
+  {
+    "index": 17,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/LoRaWAN_CON_Server_to_Endpoint.svg",
+    "alt": "Example of CoAP request from Application Server using LoRaWAN confirmable messages",
+    "title": null,
+    "parent_text": "Figure: C.3.1.2-1 Example of CoAP request from Application Server using LoRaWAN confirmable messages"
+  },
+  {
+    "index": 18,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/LoRaWAN_Endpoint_to_Server.svg",
+    "alt": "Example of CoAP request from Endpoint using LoRaWAN unconfirmable messages",
+    "title": null,
+    "parent_text": "Figure: C.3.2.1-1 Example of CoAP request from Endpoint using LoRaWAN unconfirmable messages"
+  },
+  {
+    "index": 19,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/LoRaWAN_Server_to_Endpoint.svg",
+    "alt": "Example of CoAP request from Application Server using LoRaWAN unconfirmable messages",
+    "title": null,
+    "parent_text": "Figure: C.3.2.2-1 Example of CoAP request from Application Server using LoRaWAN unconfirmable messages"
+  },
+  {
+    "index": 20,
+    "src": "./OMA-TS-LightweightM2M_Transport-V1_2_2-20240613-A_files/3gpp_NIDD_arc.svg",
+    "alt": "3GPP CIoT architecture and the LwM2M protocol stack",
+    "title": null,
+    "parent_text": "Figure: D.1-1 3GPP CIoT architecture and the LwM2M protocol stack"
+  }
+]

@@ -1,0 +1,198 @@
+{
+  "schema": "hms-harness-procedure-design-review/1",
+  "recorded_at": "2026-11-06T19:26:36.123946+00:00",
+  "status": "read_only_design_complete",
+  "input_count": 29,
+  "harness_source_hashes_unchanged": true,
+  "hms_context_changed": 1,
+  "context_drift": "integration/harness/procedure-design/context-drift.json",
+  "review": "integration/harness/procedure-design/README.md",
+  "acceptance_plan": "integration/harness/procedure-design/acceptance.json",
+  "harness_execution": false,
+  "builds_or_tests_run": false,
+  "source_checkout_modified": false,
+  "outputs": [
+    {
+      "path": "integration/harness/procedure-design/README.md",
+      "sha256": "eb3fabee31394b5f476a8855f39fd8a080261b6a2a92a60a781fb80a05c89efc",
+      "bytes": 18905
+    },
+    {
+      "path": "integration/harness/procedure-design/acceptance.json",
+      "sha256": "41af8fffbd884df159a95d092a32f1278a49a205427a3670c30567ef4c0cd6fd",
+      "bytes": 3822
+    },
+    {
+      "path": "integration/harness/procedure-design/context-current/docs/prompt-to-pat.md",
+      "sha256": "507eff71f4f13b61836bf6beed7963e39b0571b68d7b1f189bba70e16bc3f649",
+      "bytes": 10459
+    },
+    {
+      "path": "integration/harness/procedure-design/context-drift.json",
+      "sha256": "d77aeb35513c4760558c4205d1a5e791b3ecb26f83a1fad002ae7282d1bcf530",
+      "bytes": 1780
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/.git",
+      "sha256": "709eeb9cdefa4a32a106fd0f609913c1028ece590ede08f89f538efbdc707155",
+      "bytes": 83
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/AGENTS.md",
+      "sha256": "fde379298a5fea63f6d07fd4a1ed1531cc1d37496ca9bf13415d098c6c156eba",
+      "bytes": 19075
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/docs/architecture.md",
+      "sha256": "cc090bfe5849667dff825a33bddb2c8993a5309d954b4735bf528e76a8907c95",
+      "bytes": 21511
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/docs/subsystems/ptc-runtime.md",
+      "sha256": "925e72400fe801394524804e2adc9f4425db12bc80e43923bbd8cc8603e26426",
+      "bytes": 14572
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/AGENTS.md",
+      "sha256": "2ff622ab906b77680827135e64525f9c84d757c4e7cd9b685ab9ef04e81e55d1",
+      "bytes": 6577
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/AGENTS.md",
+      "sha256": "b5af970c070b34fa7ddc9ebd71f82769707b21d6d8f70388bb6605959003bbd0",
+      "bytes": 1848
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware/README.md",
+      "sha256": "0271a6fb3a5d4b617eeddba9f57be322cb37e58a0120797a2eab723d84d93acb",
+      "bytes": 1643
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware/src/index.ts",
+      "sha256": "109174fcf31dcfbf81235d404b3cf48da46623fef79247dc5d612a5acb28d715",
+      "bytes": 1400
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-hms/package.json",
+      "sha256": "343c45f42559e3765d6a56221008c8971bd7ce99e4af5be1af0f945ce531a30b",
+      "bytes": 1376
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-hms/src/bridge.ts",
+      "sha256": "e2e585d0e46f559aa1a73bda4523d3528671534c88be380608da6d699544ed21",
+      "bytes": 884
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-hms/src/index.ts",
+      "sha256": "14dc61db35c278142bbde2420871a4bb1ca960f319be3149a3bc83bbe00e670c",
+      "bytes": 4474
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-hms/src/reply.ts",
+      "sha256": "a4f159d293d3f2ae23d9a8539d469e05bc48d44f7d66314167f9c18a96cb0245",
+      "bytes": 1191
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-hms/tests/reply.spec.ts",
+      "sha256": "f496410aa1c61c6a949ba337e12ce70e402805c980311f30ec071e75016a262c",
+      "bytes": 1105
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-profile/README.md",
+      "sha256": "eb3380b15dd7e3ca94bdeb29720783aa2c992d3ae25441539ea440f31c0e6b99",
+      "bytes": 1605
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/hardware-profile/cordis.patch.yml",
+      "sha256": "22cb1172e71100e884f819695b9958be4ea2153d9a36ef2a881993b8aff787bc",
+      "bytes": 416
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/README.md",
+      "sha256": "f99993ad601a0dc718c963c8f70345538723e506e6317b1028166f5dd502cd8a",
+      "bytes": 1846
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/package.json",
+      "sha256": "dc85b5768958b8e46decd5bb890f3afff2a993359639a69f19c16fa9e6d93ad2",
+      "bytes": 1970
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/src/index.ts",
+      "sha256": "74a64b90e2748af19c96fbe72571ddf2f5b5099c597aa4bf3d34a6ab759b3eca",
+      "bytes": 4564
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/src/output-schema.ts",
+      "sha256": "b87a234e35f9d4135b637a93b4b7377e5a86b6829b31563808de32a156a6e4db",
+      "bytes": 44454
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/tests/hms-compact-multi-adapter.spec.ts",
+      "sha256": "749a63754ce16ef957f311fdbffd651811874bee52ed1826c2d8bbb671b43110",
+      "bytes": 16449
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/tests/hms-integration.spec.ts",
+      "sha256": "e57a5ff1208f48c02111c10b3602e64c766ac3693ec3be21c3a5f257bab51958",
+      "bytes": 16545
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/harness/packages/experimental/tool-hardware/tests/hms-sdk-profile.spec.ts",
+      "sha256": "9bb2294cf02f8fb7986d9ea3b8312a227bdff453877fe1c18e12a2bcce53175b",
+      "bytes": 15468
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/hms/docs/bounded-procedures.md",
+      "sha256": "d54152089532f1a45bba3e9747329ca16ae21e606e561a61c09ec111f4ba45e6",
+      "bytes": 8170
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/hms/docs/io-driver-hub-control.md",
+      "sha256": "79378ecf5091df717731eddce066f4a2a6ce73492378a6dc224f95e2215cd60a",
+      "bytes": 8030
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/hms/docs/prompt-to-pat.md",
+      "sha256": "6e8d30743a79037d2a6f11af1f4334bf9648f810ceb7a43ba4fac1685aa63262",
+      "bytes": 10135
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/hms/hms/api_contracts.py",
+      "sha256": "849a4fb9186bd836a1cb8e48a400d774e5e787a5d8c26ee5e487145492062a9b",
+      "bytes": 17881
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/hms/integration/harness/generate_schemas.py",
+      "sha256": "1a3a4cf49a1e4b635fa6d6d7c8eeae041ff61549a9cd83141325b83aa0d3e6fb",
+      "bytes": 4357
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/hms/integration/harness/multi-adapter/verification.json",
+      "sha256": "198cc7b46824edc6549378f2932ba06fb17f50ac78775127b494358fa8ffe5a9",
+      "bytes": 44062
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs/hms/schemas/local-api.schema.json",
+      "sha256": "1c8c29ca5bea858b92a9ce11304c8b0282051e9d43a21f4ae3a85743916d90d2",
+      "bytes": 77730
+    },
+    {
+      "path": "integration/harness/procedure-design/inputs.json",
+      "sha256": "8f35ca4e92717bd2574f4e8af643385dabe1a7b077374093de72a8826b61e558",
+      "bytes": 20267
+    }
+  ],
+  "findings": [
+    "Overlay exposes9methods while reviewed HMS schema exposes14.",
+    "Extend existing capability seam and regenerate projection; no AgentLoop business branch required.",
+    "PTC retained memory is not durable; exact parent envelope must precede mutation.",
+    "Keyless scripted AgentLoop testing does not establish zero-model-call PAT routing.",
+    "PAT artifact/binding and hierarchical I/O/driver/hub providers remain separate unimplemented follow-ons."
+  ],
+  "limitations": [
+    "Source/context inspection only; no execution or new integration success claim.",
+    "Reviewed source pins are historical point-in-time inputs; parent evolved only recorded research context during finalization.",
+    "No qualification of hardware, timing, deployment or physical effect."
+  ]
+}

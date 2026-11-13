@@ -1,0 +1,15 @@
+7.9 ContinuationPoint
+
+A ContinuationPoint is used to pause a Browse, QueryFirst or HistoryRead operation and allow it to be restarted later by calling BrowseNext, QueryNext or HistoryRead. Operations are paused when the number of results found exceeds the limits set by either the Client or the Server.
+
+The Client specifies the maximum number of results per operation in the request message. A Server shall not return more than this number of results but it may return fewer results. The Server allocates a ContinuationPoint if there are more results to return.
+
+
+          Servers shall support at least one ContinuationPoint per Session. Servers specify a maximum number of ContinuationPoints per Session in the ServerCapabilities Object defined in OPC 10000-5. ContinuationPoints remain active until the Client retrieves the remaining results, the Client releases the ContinuationPoint or the Session is closed. A Server shall automatically free ContinuationPoints from prior requests from a Session if they are needed to process a new request from this Session. The Server returns a Bad_ContinuationPointInvalid error if a Client tries to use a ContinuationPoint that has been released. A Client can avoid this situation by completing paused operations before starting new operations. For Session-less Service invocations, the ContinuationPoints are shared across all Session-less Service invocations from all Clients. The Server shall support at least the maximum number of ContinuationPoints it would allow for one Session. A Server may support an infinite number of ContinuationPoints by adding all information necessary to continue the operation into the ContinuationPoint. In this case the Server shall not allocate memory for a ContinuationPoint.
+
+Requests will often specify multiple operations that may or may not require a ContinuationPoint. A Server shall process the operations until it uses the maximum number of continuation points in this response. Once that happens the Server shall return a Bad_NoContinuationPoints error for any remaining operations. A Client can avoid this situation by sending requests with a number of operations that do not exeed the maximum number of ContinuationPoints per Session defined for the Service in the ServerCapabilities Object defined in OPC 10000-5.
+
+A Client restarts an operation by passing the ContinuationPoint back to the Server. Server should always be able to reuse the ContinuationPoint provided so Servers shall never return Bad_NoContinuationPoints error when continuing a previously halted operation.
+
+A ContinuationPoint is a subtype of the ByteString data type.
+

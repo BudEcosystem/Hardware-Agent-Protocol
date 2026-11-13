@@ -1,0 +1,33 @@
+{
+  "id": "limits",
+  "url": "https://sqlite.org/limits.html",
+  "finalUrl": "https://sqlite.org/limits.html",
+  "retrievedAt": "2026-11-08T01:23:42.793134+00:00",
+  "status": 200,
+  "headers": {
+    "Connection": "close",
+    "Date": "Sun, 08 Nov 2026 01:23:44 GMT",
+    "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+    "Cache-Control": "max-age=120",
+    "ETag": "\"m6ae24ec4s54ed\"",
+    "Content-type": "text/html; charset=utf-8",
+    "Content-length": "21741"
+  },
+  "rawPath": "raw/limits.html",
+  "rawBytes": 21741,
+  "rawSha256": "0cdbd54a89169177c50efd15854e5c1e0df6fe1a0e0706234e034dd923e0503b",
+  "textPath": "text/limits.txt",
+  "textBytes": 15345,
+  "textSha256": "a68b766197ec7a6729d3c5d257755c0868347e378d11d2fbb4e91b456669f2a1",
+  "lines": 362,
+  "visuals": [
+    {
+      "kind": "img",
+      "source": "images/sqlite370_banner.svg",
+      "identifier": null,
+      "text": ""
+    }
+  ],
+  "readingStatus": "acquired-not-yet-read",
+  "acquiredContentExecuted": false
+}

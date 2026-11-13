@@ -1,0 +1,87 @@
+# Device interoperability foundations for HMS
+
+Status: research synthesis and proposed design direction, 2026-11-06. This is an independent HMS design, not an implementation of Anthropic's unpublished MHS specification. Source copies, extraction hashes, repository commits, reading status, and unfinished work are in [the protocol corpus](../research/protocols/README.md). Long standards in this first corpus have **not** all been read in full. No interoperability or timing claim below is a measured implementation result.
+
+## Main conclusion
+
+The most reusable foundation is a **typed device interaction model** with discovery, observation, invocation, event streams, and operation status. No inspected evidence establishes an installed, universal hardware equivalent of Bash. Shells are useful adapters on systems that have them; serial links, GPIO, register access, and publish/subscribe are useful mechanisms but do not carry a device's physical meaning. An MCU can expose a few numeric commands while its hub supplies richer descriptions. A workstation can expose the same meanings through a native service. Universality should mean a common way to describe and negotiate these capabilities, not a requirement that every device execute the same software.
+
+A host should expose a compact tool surface such as `discover`, `describe`, `observe`, `invoke`, `watch`, and `operation_status/cancel`. The agent composes these operations into experiments and workflows. Typed parameters, explicit units, observed state, command ownership, and bounded local execution supply the properties that a text shell alone cannot provide. These are design proposals inferred from the comparison below.
+
+## What to reuse
+
+| Foundation | Existing abstraction and relevant evidence | Proposed HMS use | What it cannot establish by itself |
+| --- | --- | --- | --- |
+| W3C WoT TD 1.1 | Properties, actions, events; schema and protocol-binding metadata; a description can be hosted externally | Selected host description base, with required HMS execution semantics and separate envelopes | Physical safety, calibrated meaning, durable operation execution, or deterministic deadlines |
+| WoT Discovery | Separate initial endpoint discovery from authorized metadata exploration | Authenticated local/site registry with optional directory federation | A discovered address is not authority to operate a device |
+| OPC UA | Typed address-space objects, variables, methods and relationships; client/server and PubSub | Preserve industrial models and identifiers; bind operations to existing UA services | A basic Method is not inherently a durable asynchronous job |
+| ROS 2 actions | Client-created goal identifiers; feedback, result retrieval and cancel state machine | Map bounded skills and long-running operations; retain upstream goal ID | A cancellation request is not proof that movement stopped; cached results can expire |
+| ROS 2/DDS QoS | Reliability, history, durability, deadlines and liveliness have distinct roles | Negotiate telemetry and command channels per adapter | Reliable delivery is not a safety case or a guarantee of application deadlines |
+| micro-ROS / rclc | C client, embedded middleware agent, configurable callback ordering and triggers | Optional rich MCU profile; keep local callbacks and control loops below agent orchestration | Every Arduino is supported; arbitrary dynamic code or hard realtime is guaranteed |
+| MQTT 5 | Topic transport and delivery QoS between individual endpoints | Telemetry distribution and command/result envelopes where brokers already exist | QoS 2 does not prove exactly-once physical effects |
+| Sparkplug | Topic/payload/session-state conventions over MQTT | Industrial state and availability adapter; evaluate birth/death handling | A complete operation lifecycle or physical observation semantics |
+| Matter | Read/subscribe attributes/events, write attributes, invoke commands; fabric access control | Home-device adapter respecting existing commissioning and privileges | Any arbitrary instrument or factory machine is a Matter device |
+| Firmata | Dynamic pin mode/query/reporting and extensible byte commands; optional scheduler | Small-board development adapter or inspiration for a minimal endpoint | Raw pins reveal connected equipment identity or safe operating limits |
+| Zephyr shell | Configurable commands and multiple transports | Diagnostics and commissioning adapter, with typed command wrappers | A universal shell implementation or uniform command grammar |
+| CoAP and LwM2M | Base CoAP and selected update RFCs fully reviewed; retained LwM2M Core 1.2 fully reviewed | Proposed constrained-network and device-management bindings with explicit lifecycle/authority augmentation | Current transport/security and extension profiles, implementation and conformance remain unfinished |
+
+Evidence: [WoT TD](https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/), [WoT Discovery](https://www.w3.org/TR/2023/REC-wot-discovery-20231205/), [OPC UA overview](https://reference.opcfoundation.org/specs/OPC-10000-1/4.2), [OPC UA address space](https://reference.opcfoundation.org/specs/OPC-10000-3/full), [ROS actions](https://design.ros2.org/articles/actions.html), [ROS QoS source](https://github.com/ros2/ros2_documentation/blob/rolling/source/ROS-Framework/interfaces/topics/About-Quality-of-Service-Settings.rst), [micro-ROS architecture](https://micro.vulcanexus.org/docs/overview/features/), [MQTT 5](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html), [Sparkplug specification](https://sparkplug.eclipse.org/specification/), [Matter access control](https://project-chip.github.io/connectedhomeip-doc/guides/access-control-guide.html), [Firmata](https://github.com/firmata/protocol), [Zephyr shell](https://docs.zephyrproject.org/latest/services/shell/index.html). These sources support the existing abstractions; the HMS recommendations are original design analysis.
+
+## Semantic traps that the standard must address
+
+1. **Transport receipt, command acceptance, actuation, and observed completion are different facts.** A broker acknowledgement says something about message ownership. A device's response may only acknowledge command parsing. A motor driver may have emitted pulses without the shaft reaching its target. HMS should retain separate timestamps and evidence for each stage and never convert a successful transport result directly into physical completion. MQTT explicitly limits delivery semantics to a single sender/receiver exchange. [MQTT §4.3](https://docs.oasis-open.org/mqtt/mqtt/v5.0/os/mqtt-v5.0-os.html)
+2. **A command register is not a sensor.** Firmata's pin-state query returns commanded state, which the specification explicitly distinguishes from pin value. For microscope focus, an encoder observation must have a different capability and evidence type from requested steps. Without an encoder, the runtime can report a motion command completed according to the driver, with position estimated from commands; it cannot assert measured position. [Firmata core protocol](https://github.com/firmata/protocol/blob/7908873e8faae33111143aa6cc236148b12118f2/protocol.md)
+3. **Idempotence is physical and contextual.** Repeating `set_target(42)` can restart movement or extend a hold; repeating `dispense(10 µL)` consumes another sample. A stable operation ID plus request digest is needed to reject conflicting retries. Device reset and loss of a deduplication table create an unknown outcome, not permission to reissue an irreversible operation. This is an HMS proposal, beyond MQTT delivery guarantees.
+4. **WoT `safe` does not mean physically safe.** In TD 1.1 it denotes absence of resource-state change. HMS should call physical constraints `operating_envelope` or similarly explicit terms and never map `safe: true` to permission to energize hardware. [WoT TD §5.3.1.4](https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/#actionaffordance)
+5. **Cancel is a protocol transition, stop is a physical outcome.** Preserve separate `cancel_requested`, `cancel_accepted`, and terminal result/evidence. A stop operation may decelerate, retract, hold torque, or deenergize depending on the machine. An emergency circuit needs its own engineering; a remote cancellation message cannot certify its behavior. [ROS action state machine](https://design.ros2.org/articles/actions.html)
+6. **Freshness is part of every observation.** A cached value needs source time, receive time, validity/quality, clock uncertainty, and sequence or boot epoch. An event subscription does not universally supply an initial state; TD 1.1 notes that the underlying protocol determines this. Snapshot-plus-watch requires a sequence handoff or an explicit gap, otherwise an agent can miss a transition. [WoT TD §5.3.1.3](https://www.w3.org/TR/2023/REC-wot-thing-description11-20231205/#propertyaffordance)
+7. **A scheduler feature name is not a latency guarantee.** The inspected rclc implementation takes a snapshot of inputs before callbacks in LET mode, but its source explicitly says output data is not withheld until the end. The documentation also identifies incomplete aspects. Timing requires a chosen OS, bounded callbacks, memory strategy, middleware configuration, and measurements on the target. [Pinned executor source](https://github.com/ros2/rclc/blob/c34f5d9121e1190e2cb188a8f19e57eead1448c1/rclc/src/rclc/executor.c)
+
+## Proposed deployment profiles
+
+These names and divisions are HMS proposals, not upstream standards.
+
+| Profile | Where descriptions and policy live | Endpoint responsibilities | Agent placement |
+| --- | --- | --- | --- |
+| Tiny native MCU | Gateway holds full schemas, registry entry, history, units and calibration records | Bounded parser, operation opcode table, local limits, watchdog, status and boot identity where available | External hub or cloud through hub |
+| Rich MCU / RTOS | Compact endpoint description with gateway enrichment | Typed commands, local control loops, queues with fixed capacity, optional micro-ROS/CoAP transport | Small local policy if hardware permits; LLM generally external |
+| Linux SBC / instrument PC | Local service or nearby hub | Native driver integration, persistent operation log, image/stream service, OS isolation | Local model, hub model, or remote model |
+| GPU hub / GB10-class computer | Site registry and workflow executor | Adapter processes, local inference, scheduling and data processing; no direct claim of hard realtime | Models local to the hub |
+| PLC / robot controller | Native controller plus validated bridge and industrial namespace | Existing motion/safety programs, interlocks, vendor execution semantics | Supervisory agent outside deterministic control program |
+| Legacy GUI / file-drop system | Bridge process with controlled UI/file queue | Submission recognition, progress observations, conservative unknown-result handling | External agent; bridge advertises limited guarantees |
+
+The smallest device should not have to parse JSON-LD, maintain a distributed registry, or run an LLM. Conversely, an industrial controller's richer semantics should not be flattened into generic pin operations. Bindings may differ while operation meaning remains explicit.
+
+Each adapter must advertise capabilities it actually implements: observation quality, persistent deduplication, result retention, cancellation stages, reset detection, clock quality, supported numeric ranges, maximum frame/batch sizes, and offline behavior. Missing capability is a first-class state. The hub can supplement storage and authorization but cannot invent a missing local limit switch, encoder, or trustworthy reset identifier.
+
+## Dynamic Arduino commands
+
+The user needs dynamic device operations without recompiling for every experiment. There are three distinct mechanisms:
+
+- **Parameter changes to installed primitives:** configure a supported pin, read an ADC, set PWM, move a supported motor profile, or read a known bus peripheral. Firmata provides evidence that a reusable installed command interpreter is practical.
+- **Uploaded bounded programs:** a batch of typed operations, delays, sampling and bounded repeats can execute locally, avoiding one model round trip per step. Firmata's optional scheduler stores and replays message streams. An HMS version should add explicit duration and resource limits, validated device identity, operation IDs, cancellation policy and observable completion.
+- **New executable code or firmware:** installing a new driver, changing pin ownership, or replacing firmware is a management operation that changes the device's capabilities and trust assumptions. It requires versioned artifacts and revalidation; it is not equivalent to invoking an existing tool.
+
+[The Firmata scheduler specification](https://github.com/firmata/protocol/blob/7908873e8faae33111143aa6cc236148b12118f2/scheduler.md) supports delayed and repeated task execution, but it does not establish the stronger guarantees proposed here. The inspected Arduino parser dispatches bytes to registered callbacks; electrical semantics belong in those handlers and the attached circuit. [Pinned parser](https://github.com/firmata/arduino/blob/ebd19be71b3673ba16f884c00b0a2e940ef86157/FirmataParser.cpp)
+
+Do not infer a microscope from `pin 9 supports PWM`. Installation supplies the wiring/driver configuration, device identity, gearing, travel limits, direction convention, and calibration. Dynamic commands operate within that declared model. If hardware is changed, the configuration fingerprint and calibration validity change too.
+
+## Registry and tool-manager implications
+
+The registry should distinguish a device model, a particular physical instance, an adapter instance, and an active connection. A model tells the agent which operations exist. An instance adds serial identity, installation, calibration and approved envelopes. An adapter states what its binding can prove. A connection adds current reachability, boot epoch and negotiated limits. Conflating these records creates common failures: reconnecting to a different serial port device, treating old calibration as current, or restoring an operation against reset hardware.
+
+Tool selection should query this registry by capability and constraints, then return a small set of relevant descriptions. Loading every raw command into the model wastes context and obscures device ownership. Descriptions are data, not executable instructions to the agent. A schema can specify fields and units, but operator policy remains a separate decision.
+
+WoT Discovery's staged introduction/exploration provides a useful starting point. A network advertisement should identify an endpoint; full inventories and credentials belong behind authenticated access. Offline sites need a local registry, cached trusted models and explicit expiry, not a mandatory cloud lookup. [WoT Discovery architecture](https://www.w3.org/TR/2023/REC-wot-discovery-20231205/#architecture)
+
+## Performance implications and measurements to require
+
+Keep the LLM outside fast feedback loops. A single `focus_scan` can run a bounded local acquisition sequence and return image references and focus metrics. A single `run_motion_program` can let a controller manage motion timing. The model selects and evaluates skills; the endpoint executes time-sensitive parts.
+
+Separate descriptive metadata from compact execution frames, and separate small status events from image/point-cloud data. Negotiate buffering, queue capacity, decimation, stream loss policy and backpressure. A camera should not block a stop request behind megabytes of image data. Priority alone does not solve this if they share a saturated or blocked transport; measurements must include congestion.
+
+Report command acceptance latency, physical start latency, physical completion latency, jitter, sustained sample throughput, loss rate, CPU/RAM/flash consumption, and recovery behavior. Provide p50/p95/p99 and worst observed values with hardware, OS, firmware, transport, payload and load. No numeric target can honestly cover an AVR serial board, Wi-Fi lamp, industrial motion bus and GPU camera pipeline equally. Each declared profile needs its own measured service envelope and failure thresholds.
+
+## Follow-up required before a normative standard
+
+Full TD 1.1, Discovery, MQTT 5 and Sparkplug 3 readings now support the [WoT reuse decision](wot-reuse-decision.md) and [transport binding requirements](transport-guarantees.md), including source contradictions. The [CoAP](coap-binding.md) and [LwM2M](lwm2m-binding.md) reviews now add constrained binding proposals. WoT Architecture, current LwM2M companion transport/security and needed CoAP extensions remain in the reading queue. Expand OPC UA coverage to services, discovery, security, PubSub, device information and relevant companion specifications. Review OMG DDS/DDS-XRCE specifications and actual middleware support. Read Matter core and device/cluster definitions at a pinned version. Extend laboratory research and add SCPI/VISA, EPICS, Modbus, CANopen, EtherCAT, IO-Link, BACnet, KNX, BLE GATT, USB, sensor buses and hardware debug/bootloader workflows. Compare transport and management security, supply-chain updates and commissioning mechanisms. Implement at least one small-device and one rich-device binding and validate reset/retry/queue/ownership behavior before claiming conformance.

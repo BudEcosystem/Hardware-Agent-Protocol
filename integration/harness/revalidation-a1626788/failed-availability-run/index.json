@@ -1,0 +1,13 @@
+{
+  "scope": "Second 16-test run; 15 passed, native compact inspect prepare refused DEVICE_UNAVAILABLE. Failure preserved before adding read-only diagnostics. No diagnostic state available from this run.",
+  "files_sha256": {
+    "compact-capture.jsonl": "e4353f25a036c9087ff9ea746a5283565402e6eaa209ce1ebc3c65efe2b1c7c8",
+    "compact-launcher.py": "22f2609854f37c52b524d214dd947f4122ee7447959e4949703142aa6796db48",
+    "focused-tests.command.json": "9501ac07ae19e8f2373620f15d34860d6acbf820a7a4735f9b673f32e9249c04",
+    "focused-tests.log": "6cb0b60dfa7e81bcc1fc79638389da68706423845a7621f2d85b5b685dc007d3",
+    "hms-compact.spec.ts": "2fed5f38f47f6fd12ed352f3fceeab2d577ededb7ba9be214866cf1f7659fcd5",
+    "native-call-timings.jsonl": "1ee8ee9b05fe752c879a3702d668524c2c29a7d8625abe0370c965b05731865a",
+    "sdk-capture.jsonl": "60e3702533580b86813d92d5d0cd7c312faefcc649d9793608de7404fd4cafcd",
+    "session-capture.json": "1e2f3f9031412c8aecfc16ccbedd7daf01f983255c6a76d853a4d0b7dd81aaa8"
+  }
+}

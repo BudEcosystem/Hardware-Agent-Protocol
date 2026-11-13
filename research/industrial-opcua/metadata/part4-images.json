@@ -1,0 +1,262 @@
+[
+  {
+    "src": "/images/opclogo.png",
+    "alt": "OPC Foundation",
+    "parent": "<a aria-label=\"OPC Foundation home\" b-9bvyxychcn=\"\" href=\"/\">\n<img alt=\"OPC Foundation\" class=\"site-logo\" src=\"/images/opclogo.png\"/>\n</a>"
+  },
+  {
+    "src": "/img/51516becb6a1f638ac4972c7c8a0282379253d9c930132094479ca02fbfdbe69.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_1_discovery-service-set\"><img alt=\"\" class=\"figure-img\" src=\"/img/51516becb6a1f638ac4972c7c8a0282379253d9c930132094479ca02fbfdbe69.png\"/><figcaption>Figure 1 - Discovery Service Set</figcaption></figure>"
+  },
+  {
+    "src": "/img/9cc0c5dba750eee7993005a989a5803a8f18d1530543d8982505c44c7759fffe.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_2_securechannel-service-set\"><img alt=\"\" class=\"figure-img\" src=\"/img/9cc0c5dba750eee7993005a989a5803a8f18d1530543d8982505c44c7759fffe.png\"/><figcaption>Figure 2 - SecureChannel Service Set</figcaption></figure>"
+  },
+  {
+    "src": "/img/7bb97219fb780c647573b304936cfd4054e424533f86fa0ac780af35ad6d3f5b.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_3_session-service-set\"><img alt=\"\" class=\"figure-img\" src=\"/img/7bb97219fb780c647573b304936cfd4054e424533f86fa0ac780af35ad6d3f5b.png\"/><figcaption>Figure 3 - Session Service Set</figcaption></figure>"
+  },
+  {
+    "src": "/img/b6d8123795457576d59e67239b6c60d96b474c5c274a15aec1c7bbd60e9179a6.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_4_nodemanagement-service-set\"><img alt=\"\" class=\"figure-img\" src=\"/img/b6d8123795457576d59e67239b6c60d96b474c5c274a15aec1c7bbd60e9179a6.png\"/><figcaption>Figure 4 - NodeManagement Service Set</figcaption></figure>"
+  },
+  {
+    "src": "/img/ad7c94f2656719c2f51c017b57033107f855b8283fce57501b77313a960b2757.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_5_view-service-set\"><img alt=\"\" class=\"figure-img\" src=\"/img/ad7c94f2656719c2f51c017b57033107f855b8283fce57501b77313a960b2757.png\"/><figcaption>Figure 5 - View Service Set</figcaption></figure>"
+  },
+  {
+    "src": "/img/eb3ad913bc635d5d93e0aaa831ca7ad12abe4d35a0f5e9a7834bbf3260c64886.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_6_attribute-service-set\"><img alt=\"\" class=\"figure-img\" src=\"/img/eb3ad913bc635d5d93e0aaa831ca7ad12abe4d35a0f5e9a7834bbf3260c64886.png\"/><figcaption>Figure 6 - Attribute Service Set</figcaption></figure>"
+  },
+  {
+    "src": "/img/d1b70dc30dc1be38b7d25ddcd05d9997b4324a737e1c106706daafdedace19bf.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_7_method-service-set\"><img alt=\"\" class=\"figure-img\" src=\"/img/d1b70dc30dc1be38b7d25ddcd05d9997b4324a737e1c106706daafdedace19bf.png\"/><figcaption>Figure 7 - Method Service Set</figcaption></figure>"
+  },
+  {
+    "src": "/img/08a2ecb682f45a5bfbe07ca618165106223e5b3b08f1d2f569df56dd4a2b288f.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_8_monitoreditem-and-subscription-service-sets\"><img alt=\"\" class=\"figure-img\" src=\"/img/08a2ecb682f45a5bfbe07ca618165106223e5b3b08f1d2f569df56dd4a2b288f.png\"/><figcaption>Figure 8 - MonitoredItem and Subscription Service Sets</figcaption></figure>"
+  },
+  {
+    "src": "/img/3c2a2dd2960d913f90dfe386e9649f023d87a6510f06514c322ca4cd67a62d37.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_9_discovery-process\"><img alt=\"\" class=\"figure-img\" src=\"/img/3c2a2dd2960d913f90dfe386e9649f023d87a6510f06514c322ca4cd67a62d37.png\"/><figcaption>Figure 9 - Discovery process</figcaption></figure>"
+  },
+  {
+    "src": "/img/8fc52a04971b486441943082b3b006b569aeb885509cc270ecfced24c4ddc8a7.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_10_using-a-gateway-server\"><img alt=\"\" class=\"figure-img\" src=\"/img/8fc52a04971b486441943082b3b006b569aeb885509cc270ecfced24c4ddc8a7.png\"/><figcaption>Figure 10 - Using a Gateway Server</figcaption></figure>"
+  },
+  {
+    "src": "/img/606586da1a352645bd6dca6c1231a3f7b63131b75deffdc038d36658323ea255.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_11_the-registration-process-manually-launched-servers\"><img alt=\"\" class=\"figure-img\" src=\"/img/606586da1a352645bd6dca6c1231a3f7b63131b75deffdc038d36658323ea255.png\"/><figcaption>Figure 11 - The Registration Process - Manually Launched Servers</figcaption></figure>"
+  },
+  {
+    "src": "/img/e43bcce70422356bc5e71248bf7404480891042493ef778ccdac6bfa7a06a416.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_12_the-registration-process-automatically-launched-servers\"><img alt=\"\" class=\"figure-img\" src=\"/img/e43bcce70422356bc5e71248bf7404480891042493ef778ccdac6bfa7a06a416.png\"/><figcaption>Figure 12 - The Registration Process - Automatically Launched Servers</figcaption></figure>"
+  },
+  {
+    "src": "/img/e3728d3785491744727e3be9f3e6de0cb263de52fe65646992f962578a0f97d0.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_13_securechannel-and-session-services\"><img alt=\"\" class=\"figure-img\" src=\"/img/e3728d3785491744727e3be9f3e6de0cb263de52fe65646992f962578a0f97d0.png\"/><figcaption>Figure 13 - SecureChannel and Session Services</figcaption></figure>"
+  },
+  {
+    "src": "/img/2dad1a2e274f9c76c2b9d48ea60567bef353b2bd2e256da8758ee9188058b9a7.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_14_multiplexing-users-on-a-session\"><img alt=\"\" class=\"figure-img\" src=\"/img/2dad1a2e274f9c76c2b9d48ea60567bef353b2bd2e256da8758ee9188058b9a7.png\"/><figcaption>Figure 14 - Multiplexing users on a Session</figcaption></figure>"
+  },
+  {
+    "src": "/img/3c10aaded9ba0dcd7db9e3c7000603f63fff418ec07f9b584c44fd17878855bc.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_15_monitoreditem-model\"><img alt=\"\" class=\"figure-img\" src=\"/img/3c10aaded9ba0dcd7db9e3c7000603f63fff418ec07f9b584c44fd17878855bc.png\"/><figcaption>Figure 15 - MonitoredItem model</figcaption></figure>"
+  },
+  {
+    "src": "/img/339d2b10854bf339efb507bc85ada8b689b2864eac766b165e23e99ec96b3944.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_16_typical-delay-in-change-detection\"><img alt=\"\" class=\"figure-img\" src=\"/img/339d2b10854bf339efb507bc85ada8b689b2864eac766b165e23e99ec96b3944.png\"/><figcaption>Figure 16 - Typical delay in change detection</figcaption></figure>"
+  },
+  {
+    "src": "/img/861825395d9a49857ac3de1c33ac994609d866614892b048f2d8ea25c31b72bc.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_17_queue-overflow-handling\"><img alt=\"\" class=\"figure-img\" src=\"/img/861825395d9a49857ac3de1c33ac994609d866614892b048f2d8ea25c31b72bc.png\"/><figcaption>Figure 17 - Queue overflow handling</figcaption></figure>"
+  },
+  {
+    "src": "/img/0768223ca389a3b8c873ae3a8ae370fddfe910a0dfb4d58baf40b569858fc26b.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_18_triggering-model\"><img alt=\"\" class=\"figure-img\" src=\"/img/0768223ca389a3b8c873ae3a8ae370fddfe910a0dfb4d58baf40b569858fc26b.png\"/><figcaption>Figure 18 - Triggering model</figcaption></figure>"
+  },
+  {
+    "src": "/img/48d8164a88fff071ba796d7c9dc7b59de87a1fb038856f28cdd3c9c98be4f1b3.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_19_obtaining-and-installing-an-applicationinstancecertificate\"><img alt=\"\" class=\"figure-img\" src=\"/img/48d8164a88fff071ba796d7c9dc7b59de87a1fb038856f28cdd3c9c98be4f1b3.png\"/><figcaption>Figure 19 - Obtaining and installing an ApplicationInstanceCertificate</figcaption></figure>"
+  },
+  {
+    "src": "/img/b04b6f08348ef55c160b02a9aba4efd4641bb490beba58cb40c3109512df1440.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_20_determining-if-an-applicationinstancecertificate-is-trusted\"><img alt=\"\" class=\"figure-img\" src=\"/img/b04b6f08348ef55c160b02a9aba4efd4641bb490beba58cb40c3109512df1440.png\"/><figcaption>Figure 20 - Determining if an ApplicationInstanceCertificate is trusted</figcaption></figure>"
+  },
+  {
+    "src": "/img/d78d440a503d26a917267c1f8f276524ac01762fde4674ab46298c6f6cf69f1d.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_21_establishing-a-securechannel\"><img alt=\"\" class=\"figure-img\" src=\"/img/d78d440a503d26a917267c1f8f276524ac01762fde4674ab46298c6f6cf69f1d.png\"/><figcaption>Figure 21 - Establishing a SecureChannel</figcaption></figure>"
+  },
+  {
+    "src": "/img/c76592727d61d07309d1fed3a36fa93790822310fc2870118c78c7749437b6e5.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_22_establishing-a-session\"><img alt=\"\" class=\"figure-img\" src=\"/img/c76592727d61d07309d1fed3a36fa93790822310fc2870118c78c7749437b6e5.png\"/><figcaption>Figure 22 - Establishing a Session</figcaption></figure>"
+  },
+  {
+    "src": "/img/8823bc16b7b49376a7cc081d50d30e5221a354467d598fabf71d80a42c00e9d8.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_23_impersonating-a-user\"><img alt=\"\" class=\"figure-img\" src=\"/img/8823bc16b7b49376a7cc081d50d30e5221a354467d598fabf71d80a42c00e9d8.png\"/><figcaption>Figure 23 - Impersonating a User</figcaption></figure>"
+  },
+  {
+    "src": "/img/c9d32697eb56296fbbe3aab6907392b5b243b820f8da87af67eaac31695a8a39.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_24_indirect-handshake-with-an-identity-provider\"><img alt=\"\" class=\"figure-img\" src=\"/img/c9d32697eb56296fbbe3aab6907392b5b243b820f8da87af67eaac31695a8a39.png\"/><figcaption>Figure 24 - Indirect handshake with an Identity Provider</figcaption></figure>"
+  },
+  {
+    "src": "/img/f0d278ec670cb5523927591e425084e606c91cb25dceed40a7d031fd12caca69.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_25_direct-handshake-with-an-identity-provider\"><img alt=\"\" class=\"figure-img\" src=\"/img/f0d278ec670cb5523927591e425084e606c91cb25dceed40a7d031fd12caca69.png\"/><figcaption>Figure 25 - Direct handshake with an Identity Provider</figcaption></figure>"
+  },
+  {
+    "src": "/img/21c75130046b674752a318ee786bed6bef60a9983dcefb101b2fecdee2087fba.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_26_transparent-redundancy-setup-example\"><img alt=\"\" class=\"figure-img\" src=\"/img/21c75130046b674752a318ee786bed6bef60a9983dcefb101b2fecdee2087fba.png\"/><figcaption>Figure 26 - Transparent Redundancy setup example</figcaption></figure>"
+  },
+  {
+    "src": "/img/4e5918142ce143afe0f6efc57894a584794ed28e628121adafaa01d39ba8c6d5.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_27_non-transparent-redundancy-setup\"><img alt=\"\" class=\"figure-img\" src=\"/img/4e5918142ce143afe0f6efc57894a584794ed28e628121adafaa01d39ba8c6d5.png\"/><figcaption>Figure 27 - Non-Transparent Redundancy setup</figcaption></figure>"
+  },
+  {
+    "src": "/img/58353695611a2346434aa59b22d145e4ef5b8fad00d1cf95bc25028a82eba801.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_28_client-start-up-steps\"><img alt=\"\" class=\"figure-img\" src=\"/img/58353695611a2346434aa59b22d145e4ef5b8fad00d1cf95bc25028a82eba801.png\"/><figcaption>Figure 28 - Client Start-up steps</figcaption></figure>"
+  },
+  {
+    "src": "/img/98f7a0f8eb705081e70a5a0dcf9df92e9231b7fa3893c6182f115bd44011c269.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_29_cold-failover\"><img alt=\"\" class=\"figure-img\" src=\"/img/98f7a0f8eb705081e70a5a0dcf9df92e9231b7fa3893c6182f115bd44011c269.png\"/><figcaption>Figure 29 - Cold Failover</figcaption></figure>"
+  },
+  {
+    "src": "/img/6d1b29875b29648d0a8f0cfa5e8d886760e4aa4f94abb388193ef1a4b348b916.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_30_warm-failover\"><img alt=\"\" class=\"figure-img\" src=\"/img/6d1b29875b29648d0a8f0cfa5e8d886760e4aa4f94abb388193ef1a4b348b916.png\"/><figcaption>Figure 30 - Warm Failover</figcaption></figure>"
+  },
+  {
+    "src": "/img/df595318d3f0cfc3be388a9af2394a175bed7f203a75824af47cb7d67252c853.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_31_hot-failover\"><img alt=\"\" class=\"figure-img\" src=\"/img/df595318d3f0cfc3be388a9af2394a175bed7f203a75824af47cb7d67252c853.png\"/><figcaption>Figure 31 - Hot Failover</figcaption></figure>"
+  },
+  {
+    "src": "/img/b47d1fc04e4d472f0eae9be0643ca81b19124fc012d1054aba695e4585ee42ac.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_32_hotandmirrored-failover\"><img alt=\"\" class=\"figure-img\" src=\"/img/b47d1fc04e4d472f0eae9be0643ca81b19124fc012d1054aba695e4585ee42ac.png\"/><figcaption>Figure 32 - HotAndMirrored Failover</figcaption></figure>"
+  },
+  {
+    "src": "/img/503822cae698e9cc387a732c5c8373f5f5bbfcd78ccfd4b364b801d42ea951a3.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_33_server-proxy-for-redundancy\"><img alt=\"\" class=\"figure-img\" src=\"/img/503822cae698e9cc387a732c5c8373f5f5bbfcd78ccfd4b364b801d42ea951a3.png\"/><figcaption>Figure 33 - Server proxy for Redundancy</figcaption></figure>"
+  },
+  {
+    "src": "/img/a6a2e9fa6f710a702fed52716bb6916a21939a535e3eed2c9e1a7b8624abd4ad.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_34_transparent-network-redundancy\"><img alt=\"\" class=\"figure-img\" src=\"/img/a6a2e9fa6f710a702fed52716bb6916a21939a535e3eed2c9e1a7b8624abd4ad.png\"/><figcaption>Figure 34 - Transparent network Redundancy<br/></figcaption></figure>"
+  },
+  {
+    "src": "/img/fb42ed41caa096be94c5239dbe8a7bd64faa9782bc17c14315c682b088e0515e.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_35_non-transparent-network-redundancy\"><img alt=\"\" class=\"figure-img\" src=\"/img/fb42ed41caa096be94c5239dbe8a7bd64faa9782bc17c14315c682b088e0515e.png\"/><figcaption>Figure 35 - Non-transparent network Redundancy</figcaption></figure>"
+  },
+  {
+    "src": "/img/0daf26252444f36da452c11ad5506571d7256f58268af91e67c3318fa5825c0d.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_36_reconnect-sequence\"><img alt=\"\" class=\"figure-img\" src=\"/img/0daf26252444f36da452c11ad5506571d7256f58268af91e67c3318fa5825c0d.png\"/><figcaption>Figure 36 - Reconnect sequence</figcaption></figure>"
+  },
+  {
+    "src": "/img/7138c7b888f06ee49019b4f307de7ea915135427a556a91e68349c2d8a602066.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_37_logical-layers-of-a-server\"><img alt=\"\" class=\"figure-img\" src=\"/img/7138c7b888f06ee49019b4f307de7ea915135427a556a91e68349c2d8a602066.png\"/><figcaption>Figure 37 - Logical layers of a <em data-term=\"server\" id=\"t-20\">Server</em></figcaption></figure>"
+  },
+  {
+    "src": "/img/efb98c1eb092fc2d1bc68f7adb044175f68c49c9e075ae19916262928709416b.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_38_obtaining-a-sessionauthenticationtoken\"><img alt=\"\" class=\"figure-img\" src=\"/img/efb98c1eb092fc2d1bc68f7adb044175f68c49c9e075ae19916262928709416b.png\"/><figcaption>Figure 38 - Obtaining a SessionAuthenticationToken</figcaption></figure>"
+  },
+  {
+    "src": "/img/21a9aaa9237c2cbd8adfb9433a1318ee08e0fc91d84cea3c7834c43973eb1b15.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_39_encryptedsecret-layout\"><img alt=\"\" class=\"figure-img\" src=\"/img/21a9aaa9237c2cbd8adfb9433a1318ee08e0fc91d84cea3c7834c43973eb1b15.png\"/><figcaption>Figure 39 - EncryptedSecret layout</figcaption></figure>"
+  },
+  {
+    "src": "/img/b99ed2c144f70bfd4d4efdae5d015a69dca0ff7e356bbb518c4220bcc464514f.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_1_filter-logic-tree-example\"><img alt=\"\" class=\"figure-img\" src=\"/img/b99ed2c144f70bfd4d4efdae5d015a69dca0ff7e356bbb518c4220bcc464514f.png\"/><figcaption>Figure\u00a0B.1 - Filter logic tree example</figcaption></figure>"
+  },
+  {
+    "src": "/img/7965c99119ed4b277515a8d134fd94e09c43fa7cebc99bbc1ebedbce937f6da8.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_2_filter-logic-tree-example\"><img alt=\"\" class=\"figure-img\" src=\"/img/7965c99119ed4b277515a8d134fd94e09c43fa7cebc99bbc1ebedbce937f6da8.png\"/><figcaption>Figure\u00a0B.2 - Filter logic tree example</figcaption></figure>"
+  },
+  {
+    "src": "/img/6a0a21d8dfbe63a7dcd7824ce4be84ed21d53c051fcf946cfe727af7064f8c29.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_4_example-instance-nodes\"><img alt=\"\" class=\"figure-img\" src=\"/img/6a0a21d8dfbe63a7dcd7824ce4be84ed21d53c051fcf946cfe727af7064f8c29.png\"/><figcaption>Figure B.4 - Example Instance Nodes</figcaption></figure>"
+  },
+  {
+    "src": "/img/886578f82dc391b29162f786280cacc19d46f634ccadd79ba0faf2a12a11dc74.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_5_example-1-filter\"><img alt=\"\" class=\"figure-img\" src=\"/img/886578f82dc391b29162f786280cacc19d46f634ccadd79ba0faf2a12a11dc74.png\"/><figcaption>Figure B.5 - Example 1 Filter</figcaption></figure>"
+  },
+  {
+    "src": "/img/1d881cb2ac7f1ba8b761255ff03cf1980c4c0c681b611828ce3d4fb378ae8704.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_6_example-2-filter-logic-tree\"><img alt=\"\" class=\"figure-img\" src=\"/img/1d881cb2ac7f1ba8b761255ff03cf1980c4c0c681b611828ce3d4fb378ae8704.png\"/><figcaption>Figure B.6 - Example 2 filter logic tree</figcaption></figure>"
+  },
+  {
+    "src": "/img/52f5eb0afcd1e91a3a5da035daa6c4ea21b6773d982420a98c4c7868a247c971.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_7_example-3-filter-logic-tree\"><img alt=\"\" class=\"figure-img\" src=\"/img/52f5eb0afcd1e91a3a5da035daa6c4ea21b6773d982420a98c4c7868a247c971.png\"/><figcaption>Figure B.7 - Example 3 filter logic tree</figcaption></figure>"
+  },
+  {
+    "src": "/img/5deaa5df8b137d2b1a9cb093d97f8b4a64089dc55d836da6e357e0ab97abbef9.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_8_example-4-filter-logic-tree\"><img alt=\"\" class=\"figure-img\" src=\"/img/5deaa5df8b137d2b1a9cb093d97f8b4a64089dc55d836da6e357e0ab97abbef9.png\"/><figcaption>Figure B.8 - Example 4 filter logic tree</figcaption></figure>"
+  },
+  {
+    "src": "/img/125bfb08ef83bc5db1a742faba58c003b16296b0c1bc45edf1db56b1a295abbc.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_9_example-5-filter-logic-tree\"><img alt=\"\" class=\"figure-img\" src=\"/img/125bfb08ef83bc5db1a742faba58c003b16296b0c1bc45edf1db56b1a295abbc.png\"/><figcaption>Figure B.9 - Example 5 filter logic tree</figcaption></figure>"
+  },
+  {
+    "src": "/img/f478a9edbe74819c15979b2f0a0b0d605c7a40d2523f3e0fe2f097cba43c38ab.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_10_example-6-filter-logic-tree\"><img alt=\"\" class=\"figure-img\" src=\"/img/f478a9edbe74819c15979b2f0a0b0d605c7a40d2523f3e0fe2f097cba43c38ab.png\"/><figcaption>Figure B.10 - Example 6 filter logic tree</figcaption></figure>"
+  },
+  {
+    "src": "/img/8fecda7b4d71bcea21a11992b399da868260a46c02aa4a3651a0ff2335403b59.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_11_example-7-filter-logic-tree\"><img alt=\"\" class=\"figure-img\" src=\"/img/8fecda7b4d71bcea21a11992b399da868260a46c02aa4a3651a0ff2335403b59.png\"/><figcaption>Figure B.11 - Example 7 filter logic tree</figcaption></figure>"
+  },
+  {
+    "src": "/img/b794231208384077e3a1bf82ec21bc8420140c2e2daba8564856cd7c5386db3c.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_12_example-8-filter-logic-tree\"><img alt=\"\" class=\"figure-img\" src=\"/img/b794231208384077e3a1bf82ec21bc8420140c2e2daba8564856cd7c5386db3c.png\"/><figcaption>Figure B.12 - Example 8 filter logic tree</figcaption></figure>"
+  },
+  {
+    "src": "/img/26f91f8a1385a2688736c330efd39500226d8b5b2546099d31725ca754665583.png",
+    "alt": "",
+    "parent": "<figure id=\"fig_13_example-9-filter-logic-tree\"><img alt=\"\" class=\"figure-img\" src=\"/img/26f91f8a1385a2688736c330efd39500226d8b5b2546099d31725ca754665583.png\"/><figcaption>Figure B.13 - Example 9 filter logic tree</figcaption></figure>"
+  }
+]

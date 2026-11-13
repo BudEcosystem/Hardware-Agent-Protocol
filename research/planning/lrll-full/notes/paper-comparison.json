@@ -1,0 +1,27 @@
+{
+  "method": "Order-insensitive token multiset diagnostic; first form-feed-delimited publisher cover removed, listed metadata patterns removed, whitespace split. Ignores order, so cannot prove equivalence. Additional reading-order extracts are diagnostic only, not separately claimed full reading. Initial order-sensitive diagnostic retained with faulty first-title cover cut, not used to infer textual differences.",
+  "removed_patterns": [
+    "arXiv:2406\\.18746v2 \\[cs.RO\\] 15 Jul 2024",
+    "2024 IEEE International Conference on Robotics and Automation \\(ICRA\\)[^\\n]*",
+    "May 13-17, 2024\\. Yokohama, Japan",
+    "979-8-3503-8457-4/24/\\$31\\.00 ©2024 IEEE",
+    "Authorized licensed use limited to:[^\\n]*",
+    "^51[5-9]$",
+    "^52[0-2]$"
+  ],
+  "arxiv_only_tokens": {
+    "{g.t.tziafas,hamidreza.kasaei}@rug.nl": 1
+  },
+  "publisher_only_tokens": {
+    "{g.tziafas,h.kasaei}@rug.nl": 1
+  },
+  "arxiv_token_count": 7403,
+  "publisher_token_count": 7403,
+  "observed_version_differences": [
+    "Institution cover and IEEE headers, DOI, footers and page numbers versus arXiv version/date margin",
+    "Author correspondence changes from g.t.tziafas,hamidreza.kasaei to g.tziafas,h.kasaei",
+    "Extraction splits quotation marks, punctuation and superscripts differently; numeric tables and four figure meanings visually cross-checked"
+  ],
+  "equivalence_claim": false,
+  "note": "After the stated metadata removal, both extractions have 7403 tokens; multiset differences are solely the author correspondence token. Word order and semantics are not established by this equality."
+}

@@ -1,0 +1,282 @@
+[
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-06.png",
+    "sha256": "8c5ed4d19deeacb996a6af59b1c72f32e935ffdf4e8c4eaec1e64c2cf297a55c",
+    "pdf_page": 6,
+    "captions": [
+      "Table 1: Examples of EDHOC Message Sizes in Bytes"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-08.png",
+    "sha256": "5925615d74218f70a962fbf1ebd6c301e21de2612abca92c4e6b8917c76a1cb5",
+    "pdf_page": 8,
+    "captions": [
+      "Figure 1: MAC-then-Sign Variant of the SIGMA-I Protocol Used by the EDHOC Method 0"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-10.png",
+    "sha256": "8227c754e53f2713659e66fe1e37fb94fd568030abc7db3eabbe9fa6be848c91",
+    "pdf_page": 10,
+    "captions": [
+      "Figure 2: EDHOC Message Flow Including the Optional Fourth Message",
+      "Table 2: Authentication Keys for Method Types"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-11.png",
+    "sha256": "4ec653cc9641c2a6d514437bc7fa3e600dbeb58b4c96f3ec09e56ca365d14e6b",
+    "pdf_page": 11,
+    "captions": [
+      "Figure 3: One-Byte CBOR-Encoded Integers"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-16.png",
+    "sha256": "6c62c532a4ebf3cf70039f3c252ae91efe99232bc40c8373b06be54df8cf084d",
+    "pdf_page": 16,
+    "captions": [
+      "Figure 4: CCS Containing an X25519 Static Diffie-Hellman Key and an EUI-64 Identity"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-20.png",
+    "sha256": "cc7be2d8353ea09e68291a9d7576999e328d98ec154037e6dd8c04837e9e123b",
+    "pdf_page": 20,
+    "captions": [
+      "Figure 5: EAD Item"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-26.png",
+    "sha256": "dfebd14dc120e90a37791b3a2eceeed40ca6690dc3e1dc399bcede629ee7565f",
+    "pdf_page": 26,
+    "captions": [
+      "Figure 6: Key Derivations Using EDHOC_KDF"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-35.png",
+    "sha256": "8549a285f6e9365ff981561b55344045058cd12266aa2c8392bff8a16c380cda",
+    "pdf_page": 35,
+    "captions": [
+      "Figure 7: EDHOC Error Message"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-36.png",
+    "sha256": "c686a9f69a24282fce6c4539bd0db16ae2eb634f5f6a310a4dea29f8e84feec9",
+    "pdf_page": 36,
+    "captions": [
+      "Table 3: EDHOC Error Codes and Error Information"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-37.png",
+    "sha256": "eb25542902359af3a938144ca81fc9ccd85a60df6a62b8856530c8c95630c4fe",
+    "pdf_page": 37,
+    "captions": [
+      "Figure 8: Cipher Suite Negotiation Example 1"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-38.png",
+    "sha256": "0faa12afb3b6ec0fe0e66e807865190d114011c3f6862bc8228f09361cb76321",
+    "pdf_page": 38,
+    "captions": [
+      "Figure 9: Cipher Suite Negotiation Example 2"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-49.png",
+    "sha256": "7e76f2f5a85477b5d14cbb99d84ab5c0e073e929d636725b2bc488ec485ca3fc",
+    "pdf_page": 49,
+    "captions": [
+      "Table 4: EDHOC Exporter Labels",
+      "Table 5: Registration Procedures for EDHOC"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-50.png",
+    "sha256": "faabac4b86941a7c81d2322acf41ca4ed8faed632686a297cc0a6acdedaf7aef",
+    "pdf_page": 50,
+    "captions": [
+      "Table 6: EDHOC Cipher Suites"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-51.png",
+    "sha256": "b43735bcc3484769a15c9993e1616645b0a02df276a4a94679da90e07b1caef5",
+    "pdf_page": 51,
+    "captions": [
+      "Table 7: Registration Procedures for EDHOC Cipher Suites",
+      "Table 8: Registration Procedures for EDHOC Method"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-52.png",
+    "sha256": "5ff0c36b62c47a6948ca55d11040547f07094e2257dacad381baae3cc7d95f7a",
+    "pdf_page": 52,
+    "captions": [
+      "Table 9: Registration Procedures for EDHOC",
+      "Table 10: EDHOC EAD Labels",
+      "Table 11: Registration Procedures for EDHOC EAD"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-53.png",
+    "sha256": "a4f4873ea36e62dfe51d48aa708584daae93e317d041fdadc60290cbdc6db65f",
+    "pdf_page": 53,
+    "captions": [
+      "Table 12: COSE Header Parameter Labels"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-55.png",
+    "sha256": "f10051dbe549bbfddaea789bcdc7161ee628cb7e626e784c77e094343338f396",
+    "pdf_page": 55,
+    "captions": [
+      "Table 13: CoAP Content-Format IDs"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-62.png",
+    "sha256": "03688c28ca87cbc64020fad245ca2c502ceab9086e34e59c054ebf63584206b8",
+    "pdf_page": 62,
+    "captions": [
+      "Table 14: first part; caption on page 63"
+    ],
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "visual_review_status": "reviewed_figures_and_tables",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-63.png",
+    "sha256": "fa2920deb95000c3eb53d47dd8f845d20d213d353f4a95d228b2bd409c2946cf",
+    "pdf_page": 63,
+    "captions": [
+      "Table 14: Usage of Connection Identifiers in OSCORE"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-65.png",
+    "sha256": "bae818b212f2a106a250108789a34b3a6cce9c90ca35c762343b6993d1fe6fc3",
+    "pdf_page": 65,
+    "captions": [
+      "Figure 10: Example of the Forward Message Flow"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-66.png",
+    "sha256": "a4ff28e026b3aa4b66ed038a85b8b8a785322cf7ddc5e51f6e8c3ab299eabf51",
+    "pdf_page": 66,
+    "captions": [
+      "Figure 11: Example of the Reverse Message Flow"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-68.png",
+    "sha256": "4648316026fa9d35b60fa861b51b2d8f29a6d9da76da6dacbc763219d2aa250d",
+    "pdf_page": 68,
+    "captions": [
+      "Table 15: first part; caption on page 69"
+    ],
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "visual_review_status": "reviewed_figures_and_tables",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-69.png",
+    "sha256": "94fab5b866ad8fec6a18e443bff77798beb0520e0346a9c79ca4345cab5301e4",
+    "pdf_page": 69,
+    "captions": [
+      "Table 15: Examples of Use of CBOR and CDDL"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-79.png",
+    "sha256": "e092f998c3f03a98b4c0528d24aad2a36509f795e2fe9baf5f1c9ce2e0bf7cc9",
+    "pdf_page": 79,
+    "captions": [
+      "Figure 12: Initiator State Machine"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  },
+  {
+    "path": "research/constrained/edhoc-full/figures/rfc9528-page-81.png",
+    "sha256": "f2cb328eb8f4ca5918be22eaa35bbc098cc0f9d29847330a73973a6089aebffd",
+    "pdf_page": 81,
+    "captions": [
+      "Figure 13: Responder State Machine"
+    ],
+    "visual_review_status": "reviewed_figures_and_tables",
+    "render_method": "pdftoppm -singlefile -scale-to 1500 -png",
+    "scope": "Selected figure/table content and surrounding context, not full-PDF reading."
+  }
+]

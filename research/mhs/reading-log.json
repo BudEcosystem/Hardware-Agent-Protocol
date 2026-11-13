@@ -1,0 +1,30 @@
+[
+  {
+    "path": "research/mhs/text/anthropic-mhs-complete-content.txt",
+    "sha256": "75e196b8de5504e2671a22bd201c72714c27dd1c4f287fc8b6d67e3fceaae6f5",
+    "coverage": "full extracted text read",
+    "limitations": "no video playback or independent figure review",
+    "notes": "research/mhs/notes/findings.md"
+  },
+  {
+    "path": "research/mhs/text/official-mhs-site.txt",
+    "sha256": "b7e549873a3e6a55400a8816fde9d84cf565c665965b8c941b5d9dd9a19d6b74",
+    "coverage": "full extracted text read",
+    "limitations": "no video playback or independent figure review",
+    "notes": "research/mhs/notes/findings.md"
+  },
+  {
+    "path": "research/mhs/text/anthropic-science-update.txt",
+    "sha256": "703cbbda7ddd8b75b97a4883c5df71b08390abe5e4c9b509e5e20f8ab928061d",
+    "coverage": "full extracted text read",
+    "limitations": "no video playback or independent figure review",
+    "notes": "research/mhs/notes/findings.md"
+  },
+  {
+    "path": "research/mhs/text/aws-strands-physical.txt",
+    "sha256": "bc03a4c76d24f12feb494fada263afe031e8fe9253e60ce548b7a128faed9d66",
+    "coverage": "full extracted text read",
+    "limitations": "no video playback or independent figure review",
+    "notes": "research/mhs/notes/findings.md"
+  }
+]

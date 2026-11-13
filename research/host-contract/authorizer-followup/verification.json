@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "files": 14,
+  "fullyReadSources": 2,
+  "lfLines": 136,
+  "negativeCoverageChecks": 1,
+  "sqliteTestsExecuted": false,
+  "indexSha256": "447532902c69c636d6469575df77b007a054de15049488e810522c821fbbd1c3"
+}

@@ -1,0 +1,12 @@
+7.8 Counter
+
+This primitive data type is a UInt32 that represents the value of a counter. The initial value of a counter is specified by its use. Modulus arithmetic is used for all calculations, where the modulus is max value + 1. Therefore,
+
+
+          x + y = (x + y)mod(max value + 1)
+
+For example:
+
+- max value + 1 = 0
+- max value + 2 = 1
+

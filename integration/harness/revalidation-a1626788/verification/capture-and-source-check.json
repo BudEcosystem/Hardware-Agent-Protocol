@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "decoded_native_receipts": [
+    {
+      "operationId": "op:8a6bf0db69224056af97d591ed71f8c0",
+      "value": 25,
+      "sampleTick": 7436,
+      "operationOpFrames": 1,
+      "queriedAfterRestart": false
+    },
+    {
+      "operationId": "op:73d3f8bef18743488688544874c9badc",
+      "value": 42,
+      "sampleTick": 11613,
+      "operationOpFrames": 1,
+      "queriedAfterRestart": false
+    },
+    {
+      "operationId": "op:48209f85a14b4d9ca9c3129e5e24bf2a",
+      "value": 1,
+      "sampleTick": 15889,
+      "operationOpFrames": 1,
+      "queriedAfterRestart": false
+    },
+    {
+      "operationId": "op:67433fb8d55c4de9a76397d6874552df",
+      "value": 25,
+      "sampleTick": 5409,
+      "operationOpFrames": 1,
+      "queriedAfterRestart": true
+    },
+    {
+      "operationId": "op:7283beb74060477585f3f89a0f650b1c",
+      "value": 42,
+      "sampleTick": 10891,
+      "operationOpFrames": 1,
+      "queriedAfterRestart": true
+    },
+    {
+      "operationId": "op:630d6126865d4aa78d633d6d6a2f52fa",
+      "value": 1,
+      "sampleTick": 16081,
+      "operationOpFrames": 1,
+      "queriedAfterRestart": true
+    }
+  ],
+  "fixture_files": 44,
+  "live_hms_inputs": 32,
+  "package_files": 33,
+  "overlay_files": 38,
+  "scope": "Read-only captured-frame checks and exact post-run source/fixture/export hashes. No new action or hardware execution. One forwarded OP per operation; fan/focus values are not independent effect counters.",
+  "source_sha256": "c55307b3871e0ae88d990cf108a647a3b1a977c47d13fde4cb0dc29e40c8726b",
+  "capture_sha256": "94cd22f9172bae579ba84a4ee098404a4f130652942e6aa8528182a5a581c7ac"
+}

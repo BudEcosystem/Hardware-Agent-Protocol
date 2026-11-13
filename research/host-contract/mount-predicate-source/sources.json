@@ -1,0 +1,93 @@
+{
+  "acquiredCodeExecuted": false,
+  "files": [
+    {
+      "bytes": 7658,
+      "lfLines": 266,
+      "path": "linux/fs/mount.h",
+      "revision": "028ef9c96e96197026887c0f092424679298aae8",
+      "sha256": "86c7a133c56416124581546f79c3dda716dd6ae6704efe36e0d5701b96302f6b"
+    },
+    {
+      "bytes": 167602,
+      "lfLines": 6501,
+      "path": "linux/fs/namespace.c",
+      "revision": "028ef9c96e96197026887c0f092424679298aae8",
+      "sha256": "80f8495c5743372cf92ee7759ab2c15572dc84667da459fdb149cad8bff917f6"
+    },
+    {
+      "bytes": 27228,
+      "lfLines": 968,
+      "path": "linux/fs/stat.c",
+      "revision": "028ef9c96e96197026887c0f092424679298aae8",
+      "sha256": "47d331643ef846d014684819266beb580fd6da3e9430b0cdedebed53e99d9078"
+    },
+    {
+      "bytes": 1897,
+      "lfLines": 72,
+      "path": "linux/include/linux/stat.h",
+      "revision": "028ef9c96e96197026887c0f092424679298aae8",
+      "sha256": "189c21c895c453c9b1022da7b2d907e09dc4e0fef5e7bbd165dd32f930a30e1b"
+    },
+    {
+      "bytes": 7879,
+      "lfLines": 260,
+      "path": "linux/include/uapi/linux/stat.h",
+      "revision": "028ef9c96e96197026887c0f092424679298aae8",
+      "sha256": "c900a05e031d999074db5ac3567f651ce2cf2f9f9e0a686810d6453c9f8b9526"
+    },
+    {
+      "bytes": 2219,
+      "lfLines": 65,
+      "path": "glibc/io/bits/statx-generic.h",
+      "revision": "ef321e23c20eebc6d6fb4044425c00e6df27b05f",
+      "sha256": "2cab536381a2e5b16ec63266830890d948012e0ef2ee7e607c5500e25d8abf44"
+    },
+    {
+      "bytes": 1897,
+      "lfLines": 55,
+      "path": "glibc/io/bits/types/struct_statx.h",
+      "revision": "ef321e23c20eebc6d6fb4044425c00e6df27b05f",
+      "sha256": "d414d628034f1efb33effd2bbc85d2c0d1be9ea46d52cdc48fd99a93ecaa8acd"
+    },
+    {
+      "bytes": 3144,
+      "lfLines": 90,
+      "path": "glibc/io/statx_generic.c",
+      "revision": "ef321e23c20eebc6d6fb4044425c00e6df27b05f",
+      "sha256": "28f667cd5a97f98fd7f87924a4b017f8839d92ef1df09ccc91958603e5813b3d"
+    },
+    {
+      "bytes": 1400,
+      "lfLines": 39,
+      "path": "glibc/sysdeps/unix/sysv/linux/bits/statx.h",
+      "revision": "ef321e23c20eebc6d6fb4044425c00e6df27b05f",
+      "sha256": "aa197c11709c0ab300b5c9feb8ea06d173725fa45cf4fcb7a93080f3496c5314"
+    },
+    {
+      "bytes": 1294,
+      "lfLines": 38,
+      "path": "glibc/sysdeps/unix/sysv/linux/statx.c",
+      "revision": "ef321e23c20eebc6d6fb4044425c00e6df27b05f",
+      "sha256": "34e862df5538805afc57a3faa099baf9eeada8849f20c3477a421dd55afd4464"
+    }
+  ],
+  "glibc": {
+    "checkout": false,
+    "commit": "ef321e23c20eebc6d6fb4044425c00e6df27b05f",
+    "origin": "https://sourceware.org/git/glibc.git",
+    "partialObjectAcquisition": true,
+    "tag": "glibc-2.39",
+    "tagObject": "9609a435f3f9a07c1cf607ad5821b12f735abd69"
+  },
+  "initialAcquisitionFailure": {
+    "linuxFilesRetained": 5,
+    "status": 404,
+    "url": "https://gnu.googlesource.com/glibc/+/refs/tags/glibc-2.39?format=JSON"
+  },
+  "linux": {
+    "commit": "028ef9c96e96197026887c0f092424679298aae8",
+    "origin": "https://kernel.googlesource.com/pub/scm/linux/kernel/git/torvalds/linux",
+    "tag": "v7.0"
+  }
+}

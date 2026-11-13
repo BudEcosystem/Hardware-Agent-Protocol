@@ -1,0 +1,3603 @@
+diff --git a/docs/module-graph.md b/docs/module-graph.md
+index d83df7ea..7d3cfc86 100644
+--- a/docs/module-graph.md
++++ b/docs/module-graph.md
+@@ -231,6 +231,7 @@ flowchart TD
+     pkg_client_ui_tool["client-ui-tool"]
+     pkg_client_ui_trajectory["client-ui-trajectory"]
+     pkg_client_ui_user_questions["client-ui-user-questions"]
++    pkg_client_ui_voice_call["client-ui-voice-call"]
+     pkg_client_ui_workflow_run["client-ui-workflow-run"]
+     pkg_client_ui_workspace["client-ui-workspace"]
+     pkg_client_web["client-web"]
+@@ -300,6 +301,9 @@ flowchart TD
+     pkg_experimental_computer_use_cua_driver_native["experimental-computer-use-cua-driver-native"]
+     pkg_experimental_cot_translation_bundle["experimental-cot-translation-bundle"]
+     pkg_experimental_cua_macos["experimental-cua-macos"]
++    pkg_experimental_hardware["experimental-hardware"]
++    pkg_experimental_hardware_hms["experimental-hardware-hms"]
++    pkg_experimental_hardware_profile["experimental-hardware-profile"]
+     pkg_experimental_inspector["experimental-inspector"]
+     pkg_experimental_inspector_profile["experimental-inspector-profile"]
+     pkg_experimental_plugin_market_bundle["experimental-plugin-market-bundle"]
+@@ -311,6 +315,7 @@ flowchart TD
+     pkg_experimental_speech_to_text_sensevoice["experimental-speech-to-text-sensevoice"]
+     pkg_experimental_speech_to_text_waav["experimental-speech-to-text-waav"]
+     pkg_experimental_tool_agent_team["experimental-tool-agent-team"]
++    pkg_experimental_tool_hardware["experimental-tool-hardware"]
+     pkg_experimental_tool_worktree["experimental-tool-worktree"]
+     pkg_experimental_translator["experimental-translator"]
+     pkg_experimental_voice_input_bundle["experimental-voice-input-bundle"]
+@@ -499,6 +504,9 @@ flowchart TD
+     pkg_session_snapshot["session-snapshot"]
+     pkg_waav_fake["waav-fake"]
+   end
++  subgraph group_transport["packages/transport"]
++    pkg_transport_cli["transport-cli"]
++  end
+   subgraph group_typert["packages/typert"]
+     pkg_typert_generator["typert-generator"]
+     pkg_typert_loader["typert-loader"]
+@@ -518,6 +526,8 @@ flowchart TD
+     pkg_webhook_waav["webhook-waav"]
+   end
+   subgraph group_work["packages/work"]
++    pkg_channels["channels"]
++    pkg_channels_builtin["channels-builtin"]
+     pkg_content_convert["content-convert"]
+     pkg_executor_session["executor-session"]
+     pkg_intake["intake"]
+@@ -796,6 +806,7 @@ flowchart TD
+   pkg_environment --> pkg_session_projection
+   pkg_environment --> pkg_storage_domain
+   pkg_environment --> pkg_subprocess
++  pkg_experimental_hardware --> pkg_agent
+   pkg_commands --> pkg_agent
+   pkg_commands --> pkg_attachment
+   pkg_commands --> pkg_brand
+@@ -936,6 +947,10 @@ flowchart TD
+   pkg_compaction_image_offload --> pkg_compaction
+   pkg_compaction_image_offload --> pkg_llm
+   pkg_compaction_image_offload --> pkg_session
++  pkg_experimental_hardware_hms --> pkg_experimental_hardware
++  pkg_experimental_hardware_hms --> pkg_sandbox
++  pkg_experimental_hardware_hms --> pkg_sandbox_policy
++  pkg_experimental_hardware_hms --> pkg_subprocess
+   pkg_experimental_ptc_runtime_python --> pkg_ptc_runtime
+   pkg_experimental_ptc_runtime_python --> pkg_sandbox
+   pkg_experimental_ptc_runtime_python --> pkg_sandbox_policy
+@@ -1097,6 +1112,9 @@ flowchart TD
+   pkg_experimental_computer_use_cua_driver_native --> pkg_computer_use
+   pkg_experimental_computer_use_cua_driver_native --> pkg_system_prompt
+   pkg_experimental_computer_use_cua_driver_native --> pkg_tools
++  pkg_experimental_tool_hardware --> pkg_experimental_hardware
++  pkg_experimental_tool_hardware --> pkg_llm
++  pkg_experimental_tool_hardware --> pkg_tools
+   pkg_experimental_tool_worktree --> pkg_experimental_worktree
+   pkg_experimental_tool_worktree --> pkg_tools
+   pkg_cordis_host_runner --> pkg_agent
+@@ -1511,6 +1529,7 @@ flowchart TD
+   pkg_webhook_waav --> pkg_credentials
+   pkg_webhook_waav --> pkg_host_webserver
+   pkg_webhook_waav --> pkg_webhook
++  pkg_channels --> pkg_work_ids
+   pkg_intake --> pkg_agent_spec
+   pkg_intake --> pkg_brand
+   pkg_intake --> pkg_durable_timers
+@@ -1614,6 +1633,7 @@ flowchart TD
+   pkg_headless --> pkg_session
+   pkg_headless --> pkg_session_query
+   pkg_headless --> pkg_subagent
++  pkg_headless --> pkg_work_ids
+   pkg_session_reference --> pkg_agent
+   pkg_session_reference --> pkg_compaction
+   pkg_session_reference --> pkg_llm
+@@ -1685,6 +1705,7 @@ flowchart TD
+   pkg_tool_terminal --> pkg_terminal
+   pkg_tool_terminal --> pkg_tools
+   pkg_tool_terminal --> pkg_working_directory
++  pkg_channels_builtin --> pkg_channels
+   pkg_stream_turns --> pkg_agent
+   pkg_stream_turns --> pkg_agent_spec
+   pkg_stream_turns --> pkg_attachment
+@@ -1703,6 +1724,7 @@ flowchart TD
+   pkg_work_store --> pkg_agent_spec
+   pkg_work_store --> pkg_attachment
+   pkg_work_store --> pkg_brand
++  pkg_work_store --> pkg_channels
+   pkg_work_store --> pkg_durable_timers
+   pkg_work_store --> pkg_goal
+   pkg_work_store --> pkg_intake
+@@ -1731,17 +1753,6 @@ flowchart TD
+   pkg_workflow_ptc --> pkg_tools
+   pkg_workflow_ptc --> pkg_workflow
+   pkg_workflow_ptc --> pkg_working_directory
+-  pkg_api_voice --> pkg_agent
+-  pkg_api_voice --> pkg_agent_spec
+-  pkg_api_voice --> pkg_attachment
+-  pkg_api_voice --> pkg_content_convert
+-  pkg_api_voice --> pkg_llm
+-  pkg_api_voice --> pkg_session
+-  pkg_api_voice --> pkg_session_query
+-  pkg_api_voice --> pkg_stream_turns
+-  pkg_api_voice --> pkg_streams
+-  pkg_api_voice --> pkg_typert_protocol
+-  pkg_api_voice --> pkg_util_values
+   pkg_experimental_tool_agent_team --> pkg_agent
+   pkg_experimental_tool_agent_team --> pkg_experimental_agent_team
+   pkg_experimental_tool_agent_team --> pkg_session
+@@ -1751,9 +1762,6 @@ flowchart TD
+   pkg_tool_schedule --> pkg_schedule
+   pkg_tool_schedule --> pkg_subagent
+   pkg_tool_schedule --> pkg_tools
+-  pkg_sdk_client --> pkg_llm
+-  pkg_sdk_client --> pkg_sdk_protocol
+-  pkg_sdk_client --> pkg_session
+   pkg_sdk_jsonrpc_server --> pkg_agent
+   pkg_sdk_jsonrpc_server --> pkg_agent_session
+   pkg_sdk_jsonrpc_server --> pkg_attachment
+@@ -1794,12 +1802,27 @@ flowchart TD
+   pkg_work_executors --> pkg_durable_timers
+   pkg_work_executors --> pkg_work_ids
+   pkg_work_executors --> pkg_work_store
+-  pkg_subagent_budmh_sdk --> pkg_agent
+-  pkg_subagent_budmh_sdk --> pkg_llm
+-  pkg_subagent_budmh_sdk --> pkg_sdk_client
+-  pkg_subagent_budmh_sdk --> pkg_session
+-  pkg_subagent_budmh_sdk --> pkg_subagent
+-  pkg_subagent_budmh_sdk --> pkg_subprocess
++  pkg_api_voice --> pkg_agent
++  pkg_api_voice --> pkg_agent_spec
++  pkg_api_voice --> pkg_attachment
++  pkg_api_voice --> pkg_content_convert
++  pkg_api_voice --> pkg_llm
++  pkg_api_voice --> pkg_sdk_jsonrpc_server
++  pkg_api_voice --> pkg_sdk_protocol
++  pkg_api_voice --> pkg_session
++  pkg_api_voice --> pkg_session_delivery
++  pkg_api_voice --> pkg_session_query
++  pkg_api_voice --> pkg_stream_turns
++  pkg_api_voice --> pkg_streams
++  pkg_api_voice --> pkg_typert_protocol
++  pkg_api_voice --> pkg_util_values
++  pkg_transport_cli --> pkg_channels
++  pkg_transport_cli --> pkg_intake
++  pkg_transport_cli --> pkg_llm
++  pkg_transport_cli --> pkg_session
++  pkg_transport_cli --> pkg_work_executors
++  pkg_transport_cli --> pkg_work_ids
++  pkg_transport_cli --> pkg_work_store
+   pkg_executor_session --> pkg_agent
+   pkg_executor_session --> pkg_agent_session
+   pkg_executor_session --> pkg_brand
+@@ -1816,6 +1839,16 @@ flowchart TD
+   pkg_executor_session --> pkg_work_ids
+   pkg_executor_session --> pkg_work_store
+   pkg_executor_session --> pkg_workspace
++  pkg_sdk_client --> pkg_api_voice
++  pkg_sdk_client --> pkg_llm
++  pkg_sdk_client --> pkg_sdk_protocol
++  pkg_sdk_client --> pkg_session
++  pkg_subagent_budmh_sdk --> pkg_agent
++  pkg_subagent_budmh_sdk --> pkg_llm
++  pkg_subagent_budmh_sdk --> pkg_sdk_client
++  pkg_subagent_budmh_sdk --> pkg_session
++  pkg_subagent_budmh_sdk --> pkg_subagent
++  pkg_subagent_budmh_sdk --> pkg_subprocess
+ ```
+ 
+ <!-- BEGIN GENERATED module-graph:packages -->
+@@ -1922,6 +1955,7 @@ flowchart TD
+ | [`client-ui-tool`](../packages/client/ui-tool) | `client` | — |
+ | [`client-ui-trajectory`](../packages/client/ui-trajectory) | `client` | — |
+ | [`client-ui-user-questions`](../packages/client/ui-user-questions) | `client` | — |
++| [`client-ui-voice-call`](../packages/client/ui-voice-call) | `client` | — |
+ | [`client-ui-workflow-run`](../packages/client/ui-workflow-run) | `client` | — |
+ | [`client-ui-workspace`](../packages/client/ui-workspace) | `client` | — |
+ | [`client-web`](../packages/client/web) | `client` | — |
+@@ -1933,6 +1967,7 @@ flowchart TD
+ | [`experimental-client-ui-claude-code-mods`](../packages/experimental/client-ui-claude-code-mods) | `experimental` | — |
+ | [`experimental-client-ui-voice-input`](../packages/experimental/client-ui-voice-input) | `experimental` | — |
+ | [`experimental-cot-translation-bundle`](../packages/experimental/cot-translation-bundle) | `experimental` | — |
++| [`experimental-hardware-profile`](../packages/experimental/hardware-profile) | `experimental` | — |
+ | [`experimental-inspector`](../packages/experimental/inspector) | `experimental` | — |
+ | [`experimental-inspector-profile`](../packages/experimental/inspector-profile) | `experimental` | — |
+ | [`experimental-plugin-market-bundle`](../packages/experimental/plugin-market-bundle) | `experimental` | — |
+@@ -2062,6 +2097,7 @@ flowchart TD
+ | [`tmux-context`](../packages/context/tmux-context) | `context` | [`agent`](../packages/core/agent), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection), [`shell`](../packages/shell/shell) |
+ | [`deepseek-account`](../packages/credentials/deepseek-account) | `credentials` | [`agent`](../packages/core/agent), [`brand`](../packages/util/brand), [`llm`](../packages/llm/llm), [`util-values`](../packages/util/values) |
+ | [`environment`](../packages/environment/environment) | `environment` | [`agent`](../packages/core/agent), [`agent-spec`](../packages/agent/agent-spec), [`llm`](../packages/llm/llm), [`sandbox`](../packages/sandbox/sandbox), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection), [`storage-domain`](../packages/storage/storage-domain), [`subprocess`](../packages/subprocess/subprocess) |
++| [`experimental-hardware`](../packages/experimental/hardware) | `experimental` | [`agent`](../packages/core/agent) |
+ | [`commands`](../packages/interaction/commands) | `interaction` | [`agent`](../packages/core/agent), [`attachment`](../packages/attachment/attachment), [`brand`](../packages/util/brand), [`llm`](../packages/llm/llm), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`typert-protocol`](../packages/typert/protocol) |
+ | [`user-approval`](../packages/interaction/user-approval) | `interaction` | [`agent`](../packages/core/agent), [`brand`](../packages/util/brand), [`llm`](../packages/llm/llm), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection), [`system-prompt`](../packages/core/system-prompt) |
+ | [`jobs`](../packages/jobs/jobs) | `jobs` | [`agent`](../packages/core/agent), [`brand`](../packages/util/brand), [`session`](../packages/core/session), [`workspace`](../packages/workspace/workspace) |
+@@ -2093,6 +2129,7 @@ flowchart TD
+ | [`fs-sandbox`](../packages/fs/fs-sandbox) | `fs` | [`fs`](../packages/fs/fs), [`fs-local`](../packages/fs/fs-local), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy) |
+ | [`command-compact`](../packages/compaction/command-compact) | `compaction` | [`commands`](../packages/interaction/commands), [`compaction`](../packages/compaction/compaction) |
+ | [`compaction-image-offload`](../packages/compaction/compaction-image-offload) | `compaction` | [`agent`](../packages/core/agent), [`compaction`](../packages/compaction/compaction), [`llm`](../packages/llm/llm), [`session`](../packages/core/session) |
++| [`experimental-hardware-hms`](../packages/experimental/hardware-hms) | `experimental` | [`experimental-hardware`](../packages/experimental/hardware), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`subprocess`](../packages/subprocess/subprocess) |
+ | [`experimental-ptc-runtime-python`](../packages/experimental/ptc-runtime-python) | `experimental` | [`ptc-runtime`](../packages/ptc-runtime/ptc-runtime), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`subprocess`](../packages/subprocess/subprocess), [`timeout`](../packages/util/timeout), [`util-values`](../packages/util/values) |
+ | [`experimental-worktree`](../packages/experimental/worktree) | `experimental` | [`agent`](../packages/core/agent), [`fs`](../packages/fs/fs), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`subprocess`](../packages/subprocess/subprocess), [`working-directory`](../packages/session/working-directory) |
+ | [`session-title-all-prompts-llm`](../packages/experimental/session-title-all-prompts-llm) | `experimental` | [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-title`](../packages/session/session-title), [`session-title-llm`](../packages/session/session-title-llm) |
+@@ -2123,6 +2160,7 @@ flowchart TD
+ | [`experimental-browser-use-playwright-mcp`](../packages/experimental/browser-use-playwright-mcp) | `experimental` | [`agent`](../packages/core/agent), [`browser-use`](../packages/browser-use/browser-use), [`system-prompt`](../packages/core/system-prompt), [`tools`](../packages/core/tools), [`working-directory`](../packages/session/working-directory) |
+ | [`experimental-browser-use-stagehand-native`](../packages/experimental/browser-use-stagehand-native) | `experimental` | [`agent`](../packages/core/agent), [`browser-use`](../packages/browser-use/browser-use), [`system-prompt`](../packages/core/system-prompt), [`tools`](../packages/core/tools) |
+ | [`experimental-computer-use-cua-driver-native`](../packages/experimental/computer-use-cua-driver-native) | `experimental` | [`computer-use`](../packages/computer-use/computer-use), [`system-prompt`](../packages/core/system-prompt), [`tools`](../packages/core/tools) |
++| [`experimental-tool-hardware`](../packages/experimental/tool-hardware) | `experimental` | [`experimental-hardware`](../packages/experimental/hardware), [`llm`](../packages/llm/llm), [`tools`](../packages/core/tools) |
+ | [`experimental-tool-worktree`](../packages/experimental/tool-worktree) | `experimental` | [`experimental-worktree`](../packages/experimental/worktree), [`tools`](../packages/core/tools) |
+ | [`cordis-host-runner`](../packages/extensions/cordis-host-runner) | `extensions` | [`agent`](../packages/core/agent), [`brand`](../packages/util/brand), [`llm`](../packages/llm/llm), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`tools`](../packages/core/tools), [`typert-protocol`](../packages/typert/protocol), [`user-approval`](../packages/interaction/user-approval) |
+ | [`tool-search`](../packages/extensions/tool-search) | `extensions` | [`agent`](../packages/core/agent), [`tools`](../packages/core/tools) |
+@@ -2189,6 +2227,7 @@ flowchart TD
+ | [`terminal`](../packages/terminal/terminal) | `terminal` | [`agent`](../packages/core/agent), [`agent-residency`](../packages/preset/agent-residency), [`brand`](../packages/util/brand) |
+ | [`webhook-github`](../packages/webhook/webhook-github) | `webhook` | [`credentials`](../packages/credentials/credentials), [`host-webserver`](../packages/host/webserver), [`session`](../packages/core/session), [`webhook`](../packages/webhook/webhook) |
+ | [`webhook-waav`](../packages/webhook/webhook-waav) | `webhook` | [`credentials`](../packages/credentials/credentials), [`host-webserver`](../packages/host/webserver), [`webhook`](../packages/webhook/webhook) |
++| [`channels`](../packages/work/channels) | `work` | [`work-ids`](../packages/work/work-ids) |
+ | [`intake`](../packages/work/intake) | `work` | [`agent-spec`](../packages/agent/agent-spec), [`brand`](../packages/util/brand), [`durable-timers`](../packages/schedule/durable-timers), [`llm`](../packages/llm/llm), [`util-values`](../packages/util/values), [`work-ids`](../packages/work/work-ids) |
+ | [`streams`](../packages/work/streams) | `work` | [`agent`](../packages/core/agent), [`agent-residency`](../packages/preset/agent-residency), [`agent-session`](../packages/preset/agent-session), [`agent-spec`](../packages/agent/agent-spec), [`session`](../packages/core/session), [`shared-store`](../packages/storage/shared-store), [`util-values`](../packages/util/values) |
+ | [`goal-round-driver`](../packages/goal/goal-round-driver) | `goal` | [`agent`](../packages/core/agent), [`agent-residency`](../packages/preset/agent-residency), [`goal`](../packages/goal/goal), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent) |
+@@ -2201,7 +2240,7 @@ flowchart TD
+ | [`tool-subagent-control`](../packages/subagent/tool-subagent-control) | `subagent` | [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`tools`](../packages/core/tools) |
+ | [`hooks-claude-code`](../packages/hooks/hooks-claude-code) | `hooks` | [`agent`](../packages/core/agent), [`hook-protocol`](../packages/hooks/hook-protocol), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection), [`subagent`](../packages/subagent/subagent), [`tools`](../packages/core/tools), [`working-directory`](../packages/session/working-directory) |
+ | [`api-session-controller`](../packages/api/session-controller) | `api` | [`agent`](../packages/core/agent), [`agent-default-model`](../packages/core/agent-default-model), [`agent-preset-registry`](../packages/preset/agent-preset-registry), [`agent-residency`](../packages/preset/agent-residency), [`agent-session`](../packages/preset/agent-session), [`api-gateway`](../packages/api/gateway), [`api-workspace-controller`](../packages/api/workspace-controller), [`attachment`](../packages/attachment/attachment), [`client-connection`](../packages/client/connection), [`client-file-upload`](../packages/client/file-upload), [`commands`](../packages/interaction/commands), [`credentials`](../packages/credentials/credentials), [`file-reference`](../packages/context/file-reference), [`fs`](../packages/fs/fs), [`llm`](../packages/llm/llm), [`native-command`](../packages/util/native-command), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`session-persistence`](../packages/session/session-persistence), [`session-projection`](../packages/session/session-projection), [`session-projection-cache`](../packages/session/session-projection-cache), [`session-query`](../packages/session-query/session-query), [`session-title`](../packages/session/session-title), [`settings`](../packages/settings/settings), [`skill`](../packages/skill/skill), [`subagent`](../packages/subagent/subagent), [`typert-protocol`](../packages/typert/protocol), [`typert-registry`](../packages/typert/registry), [`util-time`](../packages/util/time), [`util-values`](../packages/util/values), [`util-workspace-path`](../packages/util/workspace-path), [`working-directory`](../packages/session/working-directory), [`workspace`](../packages/workspace/workspace) |
+-| [`headless`](../packages/bundle/headless) | `bundle` | [`agent`](../packages/core/agent), [`agent-preset-registry`](../packages/preset/agent-preset-registry), [`agent-session`](../packages/preset/agent-session), [`fs`](../packages/fs/fs), [`goal`](../packages/goal/goal), [`jobs`](../packages/jobs/jobs), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-query`](../packages/session-query/session-query), [`subagent`](../packages/subagent/subagent) |
++| [`headless`](../packages/bundle/headless) | `bundle` | [`agent`](../packages/core/agent), [`agent-preset-registry`](../packages/preset/agent-preset-registry), [`agent-session`](../packages/preset/agent-session), [`fs`](../packages/fs/fs), [`goal`](../packages/goal/goal), [`jobs`](../packages/jobs/jobs), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-query`](../packages/session-query/session-query), [`subagent`](../packages/subagent/subagent), [`work-ids`](../packages/work/work-ids) |
+ | [`session-reference`](../packages/context/session-reference) | `context` | [`agent`](../packages/core/agent), [`compaction`](../packages/compaction/compaction), [`llm`](../packages/llm/llm), [`output-retention`](../packages/util/output-retention), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection), [`session-projection-cache`](../packages/session/session-projection-cache), [`session-query`](../packages/session-query/session-query), [`session-title`](../packages/session/session-title), [`spill`](../packages/spill/spill), [`subagent`](../packages/subagent/subagent), [`system-prompt`](../packages/core/system-prompt), [`typert-protocol`](../packages/typert/protocol) |
+ | [`experimental-agent-team`](../packages/experimental/agent-team) | `experimental` | [`agent`](../packages/core/agent), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-persistence`](../packages/session/session-persistence), [`session-projection`](../packages/session/session-projection), [`subagent`](../packages/subagent/subagent) |
+ | [`tool-ralph`](../packages/experimental/tool-ralph) | `experimental` | [`agent`](../packages/core/agent), [`llm`](../packages/llm/llm), [`subagent`](../packages/subagent/subagent), [`system-prompt`](../packages/core/system-prompt), [`tools`](../packages/core/tools), [`workflow`](../packages/workflow/workflow) |
+@@ -2211,17 +2250,19 @@ flowchart TD
+ | [`tool-pwsh-persistent`](../packages/shell/tool-pwsh-persistent) | `shell` | [`agent`](../packages/core/agent), [`output-retention`](../packages/util/output-retention), [`terminal`](../packages/terminal/terminal), [`timeout`](../packages/util/timeout), [`tools`](../packages/core/tools), [`working-directory`](../packages/session/working-directory) |
+ | [`terminal-bash`](../packages/terminal/terminal-bash) | `terminal` | [`agent`](../packages/core/agent), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection), [`subprocess`](../packages/subprocess/subprocess), [`terminal`](../packages/terminal/terminal), [`working-directory`](../packages/session/working-directory) |
+ | [`tool-terminal`](../packages/terminal/tool-terminal) | `terminal` | [`agent`](../packages/core/agent), [`jobs`](../packages/jobs/jobs), [`llm`](../packages/llm/llm), [`output-retention`](../packages/util/output-retention), [`system-prompt`](../packages/core/system-prompt), [`terminal`](../packages/terminal/terminal), [`tools`](../packages/core/tools), [`working-directory`](../packages/session/working-directory) |
++| [`channels-builtin`](../packages/work/channels-builtin) | `work` | [`channels`](../packages/work/channels) |
+ | [`stream-turns`](../packages/work/stream-turns) | `work` | [`agent`](../packages/core/agent), [`agent-spec`](../packages/agent/agent-spec), [`attachment`](../packages/attachment/attachment), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-delivery`](../packages/work/session-delivery), [`session-projection`](../packages/session/session-projection), [`streams`](../packages/work/streams), [`tools`](../packages/core/tools), [`util-values`](../packages/util/values) |
+-| [`work-store`](../packages/work/work-store) | `work` | [`agent`](../packages/core/agent), [`agent-preset-registry`](../packages/preset/agent-preset-registry), [`agent-registry`](../packages/evolve/agent-registry), [`agent-residency`](../packages/preset/agent-residency), [`agent-session`](../packages/preset/agent-session), [`agent-spec`](../packages/agent/agent-spec), [`attachment`](../packages/attachment/attachment), [`brand`](../packages/util/brand), [`durable-timers`](../packages/schedule/durable-timers), [`goal`](../packages/goal/goal), [`intake`](../packages/work/intake), [`jobs`](../packages/jobs/jobs), [`llm`](../packages/llm/llm), [`pact-schema`](../packages/pact/pact-schema), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`session-delivery`](../packages/work/session-delivery), [`session-projection`](../packages/session/session-projection), [`shared-store`](../packages/storage/shared-store), [`structured-output`](../packages/guard/structured-output), [`subagent`](../packages/subagent/subagent), [`user-questions`](../packages/interaction/user-questions), [`util-time`](../packages/util/time), [`util-values`](../packages/util/values), [`work-ids`](../packages/work/work-ids), [`workspace`](../packages/workspace/workspace) |
++| [`work-store`](../packages/work/work-store) | `work` | [`agent`](../packages/core/agent), [`agent-preset-registry`](../packages/preset/agent-preset-registry), [`agent-registry`](../packages/evolve/agent-registry), [`agent-residency`](../packages/preset/agent-residency), [`agent-session`](../packages/preset/agent-session), [`agent-spec`](../packages/agent/agent-spec), [`attachment`](../packages/attachment/attachment), [`brand`](../packages/util/brand), [`channels`](../packages/work/channels), [`durable-timers`](../packages/schedule/durable-timers), [`goal`](../packages/goal/goal), [`intake`](../packages/work/intake), [`jobs`](../packages/jobs/jobs), [`llm`](../packages/llm/llm), [`pact-schema`](../packages/pact/pact-schema), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`session-delivery`](../packages/work/session-delivery), [`session-projection`](../packages/session/session-projection), [`shared-store`](../packages/storage/shared-store), [`structured-output`](../packages/guard/structured-output), [`subagent`](../packages/subagent/subagent), [`user-questions`](../packages/interaction/user-questions), [`util-time`](../packages/util/time), [`util-values`](../packages/util/values), [`work-ids`](../packages/work/work-ids), [`workspace`](../packages/workspace/workspace) |
+ | [`workflow-ptc`](../packages/workflow/workflow-ptc) | `workflow` | [`agent`](../packages/core/agent), [`llm`](../packages/llm/llm), [`ptc-runtime`](../packages/ptc-runtime/ptc-runtime), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`tools`](../packages/core/tools), [`workflow`](../packages/workflow/workflow), [`working-directory`](../packages/session/working-directory) |
+-| [`api-voice`](../packages/api/voice) | `api` | [`agent`](../packages/core/agent), [`agent-spec`](../packages/agent/agent-spec), [`attachment`](../packages/attachment/attachment), [`content-convert`](../packages/work/content-convert), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-query`](../packages/session-query/session-query), [`stream-turns`](../packages/work/stream-turns), [`streams`](../packages/work/streams), [`typert-protocol`](../packages/typert/protocol), [`util-values`](../packages/util/values) |
+ | [`experimental-tool-agent-team`](../packages/experimental/tool-agent-team) | `experimental` | [`agent`](../packages/core/agent), [`experimental-agent-team`](../packages/experimental/agent-team), [`session`](../packages/core/session), [`system-prompt`](../packages/core/system-prompt), [`tools`](../packages/core/tools) |
+ | [`tool-schedule`](../packages/schedule/tool-schedule) | `schedule` | [`llm`](../packages/llm/llm), [`schedule`](../packages/schedule/schedule), [`subagent`](../packages/subagent/subagent), [`tools`](../packages/core/tools) |
+-| [`sdk-client`](../packages/sdk/client) | `sdk` | [`llm`](../packages/llm/llm), [`sdk-protocol`](../packages/sdk/protocol), [`session`](../packages/core/session) |
+ | [`sdk-jsonrpc-server`](../packages/sdk/server) | `sdk` | [`agent`](../packages/core/agent), [`agent-session`](../packages/preset/agent-session), [`attachment`](../packages/attachment/attachment), [`llm`](../packages/llm/llm), [`llm-deepseek-api-key`](../packages/llm/llm-deepseek-api-key), [`scope`](../packages/core/scope), [`sdk-protocol`](../packages/sdk/protocol), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`working-directory`](../packages/session/working-directory) |
+ | [`client-test-runtime`](../packages/test-support/client-runtime) | `test-support` | [`api-gateway`](../packages/api/gateway), [`api-session-controller`](../packages/api/session-controller), [`api-workspace-controller`](../packages/api/workspace-controller), [`attachment`](../packages/attachment/attachment), [`client-audio`](../packages/client/audio), [`client-connection`](../packages/client/connection), [`client-hmr`](../packages/client/hmr), [`client-modules`](../packages/client/modules), [`client-store`](../packages/client/store), [`client-ui-chat`](../packages/client/ui-chat), [`client-ui-conversation`](../packages/client/ui-conversation), [`client-ui-renderer`](../packages/client/ui-renderer), [`client-ui-session`](../packages/client/ui-session), [`client-ui-settings`](../packages/client/ui-settings), [`client-ui-slots`](../packages/client/ui-slots), [`client-web`](../packages/client/web), [`remote-mock`](../packages/test-support/remote-mock), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`typert-protocol`](../packages/typert/protocol) |
+ | [`voice-waav`](../packages/waav/voice-waav) | `waav` | [`agent-spec`](../packages/agent/agent-spec), [`credentials`](../packages/credentials/credentials), [`launch-environment`](../packages/util/launch-environment), [`stream-turns`](../packages/work/stream-turns), [`streams`](../packages/work/streams), [`util-values`](../packages/util/values), [`waav`](../packages/waav/waav) |
+ | [`work-executors`](../packages/work/work-executors) | `work` | [`durable-timers`](../packages/schedule/durable-timers), [`work-ids`](../packages/work/work-ids), [`work-store`](../packages/work/work-store) |
+-| [`subagent-budmh-sdk`](../packages/subagent/subagent-budmh-sdk) | `subagent` | [`agent`](../packages/core/agent), [`llm`](../packages/llm/llm), [`sdk-client`](../packages/sdk/client), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`subprocess`](../packages/subprocess/subprocess) |
++| [`api-voice`](../packages/api/voice) | `api` | [`agent`](../packages/core/agent), [`agent-spec`](../packages/agent/agent-spec), [`attachment`](../packages/attachment/attachment), [`content-convert`](../packages/work/content-convert), [`llm`](../packages/llm/llm), [`sdk-jsonrpc-server`](../packages/sdk/server), [`sdk-protocol`](../packages/sdk/protocol), [`session`](../packages/core/session), [`session-delivery`](../packages/work/session-delivery), [`session-query`](../packages/session-query/session-query), [`stream-turns`](../packages/work/stream-turns), [`streams`](../packages/work/streams), [`typert-protocol`](../packages/typert/protocol), [`util-values`](../packages/util/values) |
++| [`transport-cli`](../packages/transport/transport-cli) | `transport` | [`channels`](../packages/work/channels), [`intake`](../packages/work/intake), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`work-executors`](../packages/work/work-executors), [`work-ids`](../packages/work/work-ids), [`work-store`](../packages/work/work-store) |
+ | [`executor-session`](../packages/work/executor-session) | `work` | [`agent`](../packages/core/agent), [`agent-session`](../packages/preset/agent-session), [`brand`](../packages/util/brand), [`durable-timers`](../packages/schedule/durable-timers), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-delivery`](../packages/work/session-delivery), [`session-persistence`](../packages/session/session-persistence), [`session-projection`](../packages/session/session-projection), [`session-title`](../packages/session/session-title), [`user-approval`](../packages/interaction/user-approval), [`user-questions`](../packages/interaction/user-questions), [`work-executors`](../packages/work/work-executors), [`work-ids`](../packages/work/work-ids), [`work-store`](../packages/work/work-store), [`workspace`](../packages/workspace/workspace) |
++| [`sdk-client`](../packages/sdk/client) | `sdk` | [`api-voice`](../packages/api/voice), [`llm`](../packages/llm/llm), [`sdk-protocol`](../packages/sdk/protocol), [`session`](../packages/core/session) |
++| [`subagent-budmh-sdk`](../packages/subagent/subagent-budmh-sdk) | `subagent` | [`agent`](../packages/core/agent), [`llm`](../packages/llm/llm), [`sdk-client`](../packages/sdk/client), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`subprocess`](../packages/subprocess/subprocess) |
+ <!-- END GENERATED module-graph:packages -->
+diff --git a/docs/module-graph.zh.md b/docs/module-graph.zh.md
+index 3168367e..ac03fffa 100644
+--- a/docs/module-graph.zh.md
++++ b/docs/module-graph.zh.md
+@@ -233,6 +233,7 @@ flowchart TD
+     pkg_client_ui_tool["client-ui-tool"]
+     pkg_client_ui_trajectory["client-ui-trajectory"]
+     pkg_client_ui_user_questions["client-ui-user-questions"]
++    pkg_client_ui_voice_call["client-ui-voice-call"]
+     pkg_client_ui_workflow_run["client-ui-workflow-run"]
+     pkg_client_ui_workspace["client-ui-workspace"]
+     pkg_client_web["client-web"]
+@@ -302,6 +303,9 @@ flowchart TD
+     pkg_experimental_computer_use_cua_driver_native["experimental-computer-use-cua-driver-native"]
+     pkg_experimental_cot_translation_bundle["experimental-cot-translation-bundle"]
+     pkg_experimental_cua_macos["experimental-cua-macos"]
++    pkg_experimental_hardware["experimental-hardware"]
++    pkg_experimental_hardware_hms["experimental-hardware-hms"]
++    pkg_experimental_hardware_profile["experimental-hardware-profile"]
+     pkg_experimental_inspector["experimental-inspector"]
+     pkg_experimental_inspector_profile["experimental-inspector-profile"]
+     pkg_experimental_plugin_market_bundle["experimental-plugin-market-bundle"]
+@@ -313,6 +317,7 @@ flowchart TD
+     pkg_experimental_speech_to_text_sensevoice["experimental-speech-to-text-sensevoice"]
+     pkg_experimental_speech_to_text_waav["experimental-speech-to-text-waav"]
+     pkg_experimental_tool_agent_team["experimental-tool-agent-team"]
++    pkg_experimental_tool_hardware["experimental-tool-hardware"]
+     pkg_experimental_tool_worktree["experimental-tool-worktree"]
+     pkg_experimental_translator["experimental-translator"]
+     pkg_experimental_voice_input_bundle["experimental-voice-input-bundle"]
+@@ -501,6 +506,9 @@ flowchart TD
+     pkg_session_snapshot["session-snapshot"]
+     pkg_waav_fake["waav-fake"]
+   end
++  subgraph group_transport["packages/transport"]
++    pkg_transport_cli["transport-cli"]
++  end
+   subgraph group_typert["packages/typert"]
+     pkg_typert_generator["typert-generator"]
+     pkg_typert_loader["typert-loader"]
+@@ -520,6 +528,8 @@ flowchart TD
+     pkg_webhook_waav["webhook-waav"]
+   end
+   subgraph group_work["packages/work"]
++    pkg_channels["channels"]
++    pkg_channels_builtin["channels-builtin"]
+     pkg_content_convert["content-convert"]
+     pkg_executor_session["executor-session"]
+     pkg_intake["intake"]
+@@ -798,6 +808,7 @@ flowchart TD
+   pkg_environment --> pkg_session_projection
+   pkg_environment --> pkg_storage_domain
+   pkg_environment --> pkg_subprocess
++  pkg_experimental_hardware --> pkg_agent
+   pkg_commands --> pkg_agent
+   pkg_commands --> pkg_attachment
+   pkg_commands --> pkg_brand
+@@ -938,6 +949,10 @@ flowchart TD
+   pkg_compaction_image_offload --> pkg_compaction
+   pkg_compaction_image_offload --> pkg_llm
+   pkg_compaction_image_offload --> pkg_session
++  pkg_experimental_hardware_hms --> pkg_experimental_hardware
++  pkg_experimental_hardware_hms --> pkg_sandbox
++  pkg_experimental_hardware_hms --> pkg_sandbox_policy
++  pkg_experimental_hardware_hms --> pkg_subprocess
+   pkg_experimental_ptc_runtime_python --> pkg_ptc_runtime
+   pkg_experimental_ptc_runtime_python --> pkg_sandbox
+   pkg_experimental_ptc_runtime_python --> pkg_sandbox_policy
+@@ -1099,6 +1114,9 @@ flowchart TD
+   pkg_experimental_computer_use_cua_driver_native --> pkg_computer_use
+   pkg_experimental_computer_use_cua_driver_native --> pkg_system_prompt
+   pkg_experimental_computer_use_cua_driver_native --> pkg_tools
++  pkg_experimental_tool_hardware --> pkg_experimental_hardware
++  pkg_experimental_tool_hardware --> pkg_llm
++  pkg_experimental_tool_hardware --> pkg_tools
+   pkg_experimental_tool_worktree --> pkg_experimental_worktree
+   pkg_experimental_tool_worktree --> pkg_tools
+   pkg_cordis_host_runner --> pkg_agent
+@@ -1513,6 +1531,7 @@ flowchart TD
+   pkg_webhook_waav --> pkg_credentials
+   pkg_webhook_waav --> pkg_host_webserver
+   pkg_webhook_waav --> pkg_webhook
++  pkg_channels --> pkg_work_ids
+   pkg_intake --> pkg_agent_spec
+   pkg_intake --> pkg_brand
+   pkg_intake --> pkg_durable_timers
+@@ -1616,6 +1635,7 @@ flowchart TD
+   pkg_headless --> pkg_session
+   pkg_headless --> pkg_session_query
+   pkg_headless --> pkg_subagent
++  pkg_headless --> pkg_work_ids
+   pkg_session_reference --> pkg_agent
+   pkg_session_reference --> pkg_compaction
+   pkg_session_reference --> pkg_llm
+@@ -1687,6 +1707,7 @@ flowchart TD
+   pkg_tool_terminal --> pkg_terminal
+   pkg_tool_terminal --> pkg_tools
+   pkg_tool_terminal --> pkg_working_directory
++  pkg_channels_builtin --> pkg_channels
+   pkg_stream_turns --> pkg_agent
+   pkg_stream_turns --> pkg_agent_spec
+   pkg_stream_turns --> pkg_attachment
+@@ -1705,6 +1726,7 @@ flowchart TD
+   pkg_work_store --> pkg_agent_spec
+   pkg_work_store --> pkg_attachment
+   pkg_work_store --> pkg_brand
++  pkg_work_store --> pkg_channels
+   pkg_work_store --> pkg_durable_timers
+   pkg_work_store --> pkg_goal
+   pkg_work_store --> pkg_intake
+@@ -1733,17 +1755,6 @@ flowchart TD
+   pkg_workflow_ptc --> pkg_tools
+   pkg_workflow_ptc --> pkg_workflow
+   pkg_workflow_ptc --> pkg_working_directory
+-  pkg_api_voice --> pkg_agent
+-  pkg_api_voice --> pkg_agent_spec
+-  pkg_api_voice --> pkg_attachment
+-  pkg_api_voice --> pkg_content_convert
+-  pkg_api_voice --> pkg_llm
+-  pkg_api_voice --> pkg_session
+-  pkg_api_voice --> pkg_session_query
+-  pkg_api_voice --> pkg_stream_turns
+-  pkg_api_voice --> pkg_streams
+-  pkg_api_voice --> pkg_typert_protocol
+-  pkg_api_voice --> pkg_util_values
+   pkg_experimental_tool_agent_team --> pkg_agent
+   pkg_experimental_tool_agent_team --> pkg_experimental_agent_team
+   pkg_experimental_tool_agent_team --> pkg_session
+@@ -1753,9 +1764,6 @@ flowchart TD
+   pkg_tool_schedule --> pkg_schedule
+   pkg_tool_schedule --> pkg_subagent
+   pkg_tool_schedule --> pkg_tools
+-  pkg_sdk_client --> pkg_llm
+-  pkg_sdk_client --> pkg_sdk_protocol
+-  pkg_sdk_client --> pkg_session
+   pkg_sdk_jsonrpc_server --> pkg_agent
+   pkg_sdk_jsonrpc_server --> pkg_agent_session
+   pkg_sdk_jsonrpc_server --> pkg_attachment
+@@ -1796,12 +1804,27 @@ flowchart TD
+   pkg_work_executors --> pkg_durable_timers
+   pkg_work_executors --> pkg_work_ids
+   pkg_work_executors --> pkg_work_store
+-  pkg_subagent_budmh_sdk --> pkg_agent
+-  pkg_subagent_budmh_sdk --> pkg_llm
+-  pkg_subagent_budmh_sdk --> pkg_sdk_client
+-  pkg_subagent_budmh_sdk --> pkg_session
+-  pkg_subagent_budmh_sdk --> pkg_subagent
+-  pkg_subagent_budmh_sdk --> pkg_subprocess
++  pkg_api_voice --> pkg_agent
++  pkg_api_voice --> pkg_agent_spec
++  pkg_api_voice --> pkg_attachment
++  pkg_api_voice --> pkg_content_convert
++  pkg_api_voice --> pkg_llm
++  pkg_api_voice --> pkg_sdk_jsonrpc_server
++  pkg_api_voice --> pkg_sdk_protocol
++  pkg_api_voice --> pkg_session
++  pkg_api_voice --> pkg_session_delivery
++  pkg_api_voice --> pkg_session_query
++  pkg_api_voice --> pkg_stream_turns
++  pkg_api_voice --> pkg_streams
++  pkg_api_voice --> pkg_typert_protocol
++  pkg_api_voice --> pkg_util_values
++  pkg_transport_cli --> pkg_channels
++  pkg_transport_cli --> pkg_intake
++  pkg_transport_cli --> pkg_llm
++  pkg_transport_cli --> pkg_session
++  pkg_transport_cli --> pkg_work_executors
++  pkg_transport_cli --> pkg_work_ids
++  pkg_transport_cli --> pkg_work_store
+   pkg_executor_session --> pkg_agent
+   pkg_executor_session --> pkg_agent_session
+   pkg_executor_session --> pkg_brand
+@@ -1818,6 +1841,16 @@ flowchart TD
+   pkg_executor_session --> pkg_work_ids
+   pkg_executor_session --> pkg_work_store
+   pkg_executor_session --> pkg_workspace
++  pkg_sdk_client --> pkg_api_voice
++  pkg_sdk_client --> pkg_llm
++  pkg_sdk_client --> pkg_sdk_protocol
++  pkg_sdk_client --> pkg_session
++  pkg_subagent_budmh_sdk --> pkg_agent
++  pkg_subagent_budmh_sdk --> pkg_llm
++  pkg_subagent_budmh_sdk --> pkg_sdk_client
++  pkg_subagent_budmh_sdk --> pkg_session
++  pkg_subagent_budmh_sdk --> pkg_subagent
++  pkg_subagent_budmh_sdk --> pkg_subprocess
+ ```
+ 
+ <!-- BEGIN GENERATED module-graph:packages -->
+@@ -1924,6 +1957,7 @@ flowchart TD
+ | [`client-ui-tool`](../packages/client/ui-tool) | `client` | — |
+ | [`client-ui-trajectory`](../packages/client/ui-trajectory) | `client` | — |
+ | [`client-ui-user-questions`](../packages/client/ui-user-questions) | `client` | — |
++| [`client-ui-voice-call`](../packages/client/ui-voice-call) | `client` | — |
+ | [`client-ui-workflow-run`](../packages/client/ui-workflow-run) | `client` | — |
+ | [`client-ui-workspace`](../packages/client/ui-workspace) | `client` | — |
+ | [`client-web`](../packages/client/web) | `client` | — |
+@@ -1935,6 +1969,7 @@ flowchart TD
+ | [`experimental-client-ui-claude-code-mods`](../packages/experimental/client-ui-claude-code-mods) | `experimental` | — |
+ | [`experimental-client-ui-voice-input`](../packages/experimental/client-ui-voice-input) | `experimental` | — |
+ | [`experimental-cot-translation-bundle`](../packages/experimental/cot-translation-bundle) | `experimental` | — |
++| [`experimental-hardware-profile`](../packages/experimental/hardware-profile) | `experimental` | — |
+ | [`experimental-inspector`](../packages/experimental/inspector) | `experimental` | — |
+ | [`experimental-inspector-profile`](../packages/experimental/inspector-profile) | `experimental` | — |
+ | [`experimental-plugin-market-bundle`](../packages/experimental/plugin-market-bundle) | `experimental` | — |
+@@ -2064,6 +2099,7 @@ flowchart TD
+ | [`tmux-context`](../packages/context/tmux-context) | `context` | [`agent`](../packages/core/agent), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection), [`shell`](../packages/shell/shell) |
+ | [`deepseek-account`](../packages/credentials/deepseek-account) | `credentials` | [`agent`](../packages/core/agent), [`brand`](../packages/util/brand), [`llm`](../packages/llm/llm), [`util-values`](../packages/util/values) |
+ | [`environment`](../packages/environment/environment) | `environment` | [`agent`](../packages/core/agent), [`agent-spec`](../packages/agent/agent-spec), [`llm`](../packages/llm/llm), [`sandbox`](../packages/sandbox/sandbox), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection), [`storage-domain`](../packages/storage/storage-domain), [`subprocess`](../packages/subprocess/subprocess) |
++| [`experimental-hardware`](../packages/experimental/hardware) | `experimental` | [`agent`](../packages/core/agent) |
+ | [`commands`](../packages/interaction/commands) | `interaction` | [`agent`](../packages/core/agent), [`attachment`](../packages/attachment/attachment), [`brand`](../packages/util/brand), [`llm`](../packages/llm/llm), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`typert-protocol`](../packages/typert/protocol) |
+ | [`user-approval`](../packages/interaction/user-approval) | `interaction` | [`agent`](../packages/core/agent), [`brand`](../packages/util/brand), [`llm`](../packages/llm/llm), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection), [`system-prompt`](../packages/core/system-prompt) |
+ | [`jobs`](../packages/jobs/jobs) | `jobs` | [`agent`](../packages/core/agent), [`brand`](../packages/util/brand), [`session`](../packages/core/session), [`workspace`](../packages/workspace/workspace) |
+@@ -2095,6 +2131,7 @@ flowchart TD
+ | [`fs-sandbox`](../packages/fs/fs-sandbox) | `fs` | [`fs`](../packages/fs/fs), [`fs-local`](../packages/fs/fs-local), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy) |
+ | [`command-compact`](../packages/compaction/command-compact) | `compaction` | [`commands`](../packages/interaction/commands), [`compaction`](../packages/compaction/compaction) |
+ | [`compaction-image-offload`](../packages/compaction/compaction-image-offload) | `compaction` | [`agent`](../packages/core/agent), [`compaction`](../packages/compaction/compaction), [`llm`](../packages/llm/llm), [`session`](../packages/core/session) |
++| [`experimental-hardware-hms`](../packages/experimental/hardware-hms) | `experimental` | [`experimental-hardware`](../packages/experimental/hardware), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`subprocess`](../packages/subprocess/subprocess) |
+ | [`experimental-ptc-runtime-python`](../packages/experimental/ptc-runtime-python) | `experimental` | [`ptc-runtime`](../packages/ptc-runtime/ptc-runtime), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`subprocess`](../packages/subprocess/subprocess), [`timeout`](../packages/util/timeout), [`util-values`](../packages/util/values) |
+ | [`experimental-worktree`](../packages/experimental/worktree) | `experimental` | [`agent`](../packages/core/agent), [`fs`](../packages/fs/fs), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`subprocess`](../packages/subprocess/subprocess), [`working-directory`](../packages/session/working-directory) |
+ | [`session-title-all-prompts-llm`](../packages/experimental/session-title-all-prompts-llm) | `experimental` | [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-title`](../packages/session/session-title), [`session-title-llm`](../packages/session/session-title-llm) |
+@@ -2125,6 +2162,7 @@ flowchart TD
+ | [`experimental-browser-use-playwright-mcp`](../packages/experimental/browser-use-playwright-mcp) | `experimental` | [`agent`](../packages/core/agent), [`browser-use`](../packages/browser-use/browser-use), [`system-prompt`](../packages/core/system-prompt), [`tools`](../packages/core/tools), [`working-directory`](../packages/session/working-directory) |
+ | [`experimental-browser-use-stagehand-native`](../packages/experimental/browser-use-stagehand-native) | `experimental` | [`agent`](../packages/core/agent), [`browser-use`](../packages/browser-use/browser-use), [`system-prompt`](../packages/core/system-prompt), [`tools`](../packages/core/tools) |
+ | [`experimental-computer-use-cua-driver-native`](../packages/experimental/computer-use-cua-driver-native) | `experimental` | [`computer-use`](../packages/computer-use/computer-use), [`system-prompt`](../packages/core/system-prompt), [`tools`](../packages/core/tools) |
++| [`experimental-tool-hardware`](../packages/experimental/tool-hardware) | `experimental` | [`experimental-hardware`](../packages/experimental/hardware), [`llm`](../packages/llm/llm), [`tools`](../packages/core/tools) |
+ | [`experimental-tool-worktree`](../packages/experimental/tool-worktree) | `experimental` | [`experimental-worktree`](../packages/experimental/worktree), [`tools`](../packages/core/tools) |
+ | [`cordis-host-runner`](../packages/extensions/cordis-host-runner) | `extensions` | [`agent`](../packages/core/agent), [`brand`](../packages/util/brand), [`llm`](../packages/llm/llm), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`tools`](../packages/core/tools), [`typert-protocol`](../packages/typert/protocol), [`user-approval`](../packages/interaction/user-approval) |
+ | [`tool-search`](../packages/extensions/tool-search) | `extensions` | [`agent`](../packages/core/agent), [`tools`](../packages/core/tools) |
+@@ -2191,6 +2229,7 @@ flowchart TD
+ | [`terminal`](../packages/terminal/terminal) | `terminal` | [`agent`](../packages/core/agent), [`agent-residency`](../packages/preset/agent-residency), [`brand`](../packages/util/brand) |
+ | [`webhook-github`](../packages/webhook/webhook-github) | `webhook` | [`credentials`](../packages/credentials/credentials), [`host-webserver`](../packages/host/webserver), [`session`](../packages/core/session), [`webhook`](../packages/webhook/webhook) |
+ | [`webhook-waav`](../packages/webhook/webhook-waav) | `webhook` | [`credentials`](../packages/credentials/credentials), [`host-webserver`](../packages/host/webserver), [`webhook`](../packages/webhook/webhook) |
++| [`channels`](../packages/work/channels) | `work` | [`work-ids`](../packages/work/work-ids) |
+ | [`intake`](../packages/work/intake) | `work` | [`agent-spec`](../packages/agent/agent-spec), [`brand`](../packages/util/brand), [`durable-timers`](../packages/schedule/durable-timers), [`llm`](../packages/llm/llm), [`util-values`](../packages/util/values), [`work-ids`](../packages/work/work-ids) |
+ | [`streams`](../packages/work/streams) | `work` | [`agent`](../packages/core/agent), [`agent-residency`](../packages/preset/agent-residency), [`agent-session`](../packages/preset/agent-session), [`agent-spec`](../packages/agent/agent-spec), [`session`](../packages/core/session), [`shared-store`](../packages/storage/shared-store), [`util-values`](../packages/util/values) |
+ | [`goal-round-driver`](../packages/goal/goal-round-driver) | `goal` | [`agent`](../packages/core/agent), [`agent-residency`](../packages/preset/agent-residency), [`goal`](../packages/goal/goal), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent) |
+@@ -2203,7 +2242,7 @@ flowchart TD
+ | [`tool-subagent-control`](../packages/subagent/tool-subagent-control) | `subagent` | [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`tools`](../packages/core/tools) |
+ | [`hooks-claude-code`](../packages/hooks/hooks-claude-code) | `hooks` | [`agent`](../packages/core/agent), [`hook-protocol`](../packages/hooks/hook-protocol), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection), [`subagent`](../packages/subagent/subagent), [`tools`](../packages/core/tools), [`working-directory`](../packages/session/working-directory) |
+ | [`api-session-controller`](../packages/api/session-controller) | `api` | [`agent`](../packages/core/agent), [`agent-default-model`](../packages/core/agent-default-model), [`agent-preset-registry`](../packages/preset/agent-preset-registry), [`agent-residency`](../packages/preset/agent-residency), [`agent-session`](../packages/preset/agent-session), [`api-gateway`](../packages/api/gateway), [`api-workspace-controller`](../packages/api/workspace-controller), [`attachment`](../packages/attachment/attachment), [`client-connection`](../packages/client/connection), [`client-file-upload`](../packages/client/file-upload), [`commands`](../packages/interaction/commands), [`credentials`](../packages/credentials/credentials), [`file-reference`](../packages/context/file-reference), [`fs`](../packages/fs/fs), [`llm`](../packages/llm/llm), [`native-command`](../packages/util/native-command), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`session-persistence`](../packages/session/session-persistence), [`session-projection`](../packages/session/session-projection), [`session-projection-cache`](../packages/session/session-projection-cache), [`session-query`](../packages/session-query/session-query), [`session-title`](../packages/session/session-title), [`settings`](../packages/settings/settings), [`skill`](../packages/skill/skill), [`subagent`](../packages/subagent/subagent), [`typert-protocol`](../packages/typert/protocol), [`typert-registry`](../packages/typert/registry), [`util-time`](../packages/util/time), [`util-values`](../packages/util/values), [`util-workspace-path`](../packages/util/workspace-path), [`working-directory`](../packages/session/working-directory), [`workspace`](../packages/workspace/workspace) |
+-| [`headless`](../packages/bundle/headless) | `bundle` | [`agent`](../packages/core/agent), [`agent-preset-registry`](../packages/preset/agent-preset-registry), [`agent-session`](../packages/preset/agent-session), [`fs`](../packages/fs/fs), [`goal`](../packages/goal/goal), [`jobs`](../packages/jobs/jobs), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-query`](../packages/session-query/session-query), [`subagent`](../packages/subagent/subagent) |
++| [`headless`](../packages/bundle/headless) | `bundle` | [`agent`](../packages/core/agent), [`agent-preset-registry`](../packages/preset/agent-preset-registry), [`agent-session`](../packages/preset/agent-session), [`fs`](../packages/fs/fs), [`goal`](../packages/goal/goal), [`jobs`](../packages/jobs/jobs), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-query`](../packages/session-query/session-query), [`subagent`](../packages/subagent/subagent), [`work-ids`](../packages/work/work-ids) |
+ | [`session-reference`](../packages/context/session-reference) | `context` | [`agent`](../packages/core/agent), [`compaction`](../packages/compaction/compaction), [`llm`](../packages/llm/llm), [`output-retention`](../packages/util/output-retention), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection), [`session-projection-cache`](../packages/session/session-projection-cache), [`session-query`](../packages/session-query/session-query), [`session-title`](../packages/session/session-title), [`spill`](../packages/spill/spill), [`subagent`](../packages/subagent/subagent), [`system-prompt`](../packages/core/system-prompt), [`typert-protocol`](../packages/typert/protocol) |
+ | [`experimental-agent-team`](../packages/experimental/agent-team) | `experimental` | [`agent`](../packages/core/agent), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-persistence`](../packages/session/session-persistence), [`session-projection`](../packages/session/session-projection), [`subagent`](../packages/subagent/subagent) |
+ | [`tool-ralph`](../packages/experimental/tool-ralph) | `experimental` | [`agent`](../packages/core/agent), [`llm`](../packages/llm/llm), [`subagent`](../packages/subagent/subagent), [`system-prompt`](../packages/core/system-prompt), [`tools`](../packages/core/tools), [`workflow`](../packages/workflow/workflow) |
+@@ -2213,17 +2252,19 @@ flowchart TD
+ | [`tool-pwsh-persistent`](../packages/shell/tool-pwsh-persistent) | `shell` | [`agent`](../packages/core/agent), [`output-retention`](../packages/util/output-retention), [`terminal`](../packages/terminal/terminal), [`timeout`](../packages/util/timeout), [`tools`](../packages/core/tools), [`working-directory`](../packages/session/working-directory) |
+ | [`terminal-bash`](../packages/terminal/terminal-bash) | `terminal` | [`agent`](../packages/core/agent), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`session`](../packages/core/session), [`session-projection`](../packages/session/session-projection), [`subprocess`](../packages/subprocess/subprocess), [`terminal`](../packages/terminal/terminal), [`working-directory`](../packages/session/working-directory) |
+ | [`tool-terminal`](../packages/terminal/tool-terminal) | `terminal` | [`agent`](../packages/core/agent), [`jobs`](../packages/jobs/jobs), [`llm`](../packages/llm/llm), [`output-retention`](../packages/util/output-retention), [`system-prompt`](../packages/core/system-prompt), [`terminal`](../packages/terminal/terminal), [`tools`](../packages/core/tools), [`working-directory`](../packages/session/working-directory) |
++| [`channels-builtin`](../packages/work/channels-builtin) | `work` | [`channels`](../packages/work/channels) |
+ | [`stream-turns`](../packages/work/stream-turns) | `work` | [`agent`](../packages/core/agent), [`agent-spec`](../packages/agent/agent-spec), [`attachment`](../packages/attachment/attachment), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-delivery`](../packages/work/session-delivery), [`session-projection`](../packages/session/session-projection), [`streams`](../packages/work/streams), [`tools`](../packages/core/tools), [`util-values`](../packages/util/values) |
+-| [`work-store`](../packages/work/work-store) | `work` | [`agent`](../packages/core/agent), [`agent-preset-registry`](../packages/preset/agent-preset-registry), [`agent-registry`](../packages/evolve/agent-registry), [`agent-residency`](../packages/preset/agent-residency), [`agent-session`](../packages/preset/agent-session), [`agent-spec`](../packages/agent/agent-spec), [`attachment`](../packages/attachment/attachment), [`brand`](../packages/util/brand), [`durable-timers`](../packages/schedule/durable-timers), [`goal`](../packages/goal/goal), [`intake`](../packages/work/intake), [`jobs`](../packages/jobs/jobs), [`llm`](../packages/llm/llm), [`pact-schema`](../packages/pact/pact-schema), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`session-delivery`](../packages/work/session-delivery), [`session-projection`](../packages/session/session-projection), [`shared-store`](../packages/storage/shared-store), [`structured-output`](../packages/guard/structured-output), [`subagent`](../packages/subagent/subagent), [`user-questions`](../packages/interaction/user-questions), [`util-time`](../packages/util/time), [`util-values`](../packages/util/values), [`work-ids`](../packages/work/work-ids), [`workspace`](../packages/workspace/workspace) |
++| [`work-store`](../packages/work/work-store) | `work` | [`agent`](../packages/core/agent), [`agent-preset-registry`](../packages/preset/agent-preset-registry), [`agent-registry`](../packages/evolve/agent-registry), [`agent-residency`](../packages/preset/agent-residency), [`agent-session`](../packages/preset/agent-session), [`agent-spec`](../packages/agent/agent-spec), [`attachment`](../packages/attachment/attachment), [`brand`](../packages/util/brand), [`channels`](../packages/work/channels), [`durable-timers`](../packages/schedule/durable-timers), [`goal`](../packages/goal/goal), [`intake`](../packages/work/intake), [`jobs`](../packages/jobs/jobs), [`llm`](../packages/llm/llm), [`pact-schema`](../packages/pact/pact-schema), [`scope`](../packages/core/scope), [`session`](../packages/core/session), [`session-delivery`](../packages/work/session-delivery), [`session-projection`](../packages/session/session-projection), [`shared-store`](../packages/storage/shared-store), [`structured-output`](../packages/guard/structured-output), [`subagent`](../packages/subagent/subagent), [`user-questions`](../packages/interaction/user-questions), [`util-time`](../packages/util/time), [`util-values`](../packages/util/values), [`work-ids`](../packages/work/work-ids), [`workspace`](../packages/workspace/workspace) |
+ | [`workflow-ptc`](../packages/workflow/workflow-ptc) | `workflow` | [`agent`](../packages/core/agent), [`llm`](../packages/llm/llm), [`ptc-runtime`](../packages/ptc-runtime/ptc-runtime), [`sandbox`](../packages/sandbox/sandbox), [`sandbox-policy`](../packages/sandbox/sandbox-policy), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`tools`](../packages/core/tools), [`workflow`](../packages/workflow/workflow), [`working-directory`](../packages/session/working-directory) |
+-| [`api-voice`](../packages/api/voice) | `api` | [`agent`](../packages/core/agent), [`agent-spec`](../packages/agent/agent-spec), [`attachment`](../packages/attachment/attachment), [`content-convert`](../packages/work/content-convert), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-query`](../packages/session-query/session-query), [`stream-turns`](../packages/work/stream-turns), [`streams`](../packages/work/streams), [`typert-protocol`](../packages/typert/protocol), [`util-values`](../packages/util/values) |
+ | [`experimental-tool-agent-team`](../packages/experimental/tool-agent-team) | `experimental` | [`agent`](../packages/core/agent), [`experimental-agent-team`](../packages/experimental/agent-team), [`session`](../packages/core/session), [`system-prompt`](../packages/core/system-prompt), [`tools`](../packages/core/tools) |
+ | [`tool-schedule`](../packages/schedule/tool-schedule) | `schedule` | [`llm`](../packages/llm/llm), [`schedule`](../packages/schedule/schedule), [`subagent`](../packages/subagent/subagent), [`tools`](../packages/core/tools) |
+-| [`sdk-client`](../packages/sdk/client) | `sdk` | [`llm`](../packages/llm/llm), [`sdk-protocol`](../packages/sdk/protocol), [`session`](../packages/core/session) |
+ | [`sdk-jsonrpc-server`](../packages/sdk/server) | `sdk` | [`agent`](../packages/core/agent), [`agent-session`](../packages/preset/agent-session), [`attachment`](../packages/attachment/attachment), [`llm`](../packages/llm/llm), [`llm-deepseek-api-key`](../packages/llm/llm-deepseek-api-key), [`scope`](../packages/core/scope), [`sdk-protocol`](../packages/sdk/protocol), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`working-directory`](../packages/session/working-directory) |
+ | [`client-test-runtime`](../packages/test-support/client-runtime) | `test-support` | [`api-gateway`](../packages/api/gateway), [`api-session-controller`](../packages/api/session-controller), [`api-workspace-controller`](../packages/api/workspace-controller), [`attachment`](../packages/attachment/attachment), [`client-audio`](../packages/client/audio), [`client-connection`](../packages/client/connection), [`client-hmr`](../packages/client/hmr), [`client-modules`](../packages/client/modules), [`client-store`](../packages/client/store), [`client-ui-chat`](../packages/client/ui-chat), [`client-ui-conversation`](../packages/client/ui-conversation), [`client-ui-renderer`](../packages/client/ui-renderer), [`client-ui-session`](../packages/client/ui-session), [`client-ui-settings`](../packages/client/ui-settings), [`client-ui-slots`](../packages/client/ui-slots), [`client-web`](../packages/client/web), [`remote-mock`](../packages/test-support/remote-mock), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`typert-protocol`](../packages/typert/protocol) |
+ | [`voice-waav`](../packages/waav/voice-waav) | `waav` | [`agent-spec`](../packages/agent/agent-spec), [`credentials`](../packages/credentials/credentials), [`launch-environment`](../packages/util/launch-environment), [`stream-turns`](../packages/work/stream-turns), [`streams`](../packages/work/streams), [`util-values`](../packages/util/values), [`waav`](../packages/waav/waav) |
+ | [`work-executors`](../packages/work/work-executors) | `work` | [`durable-timers`](../packages/schedule/durable-timers), [`work-ids`](../packages/work/work-ids), [`work-store`](../packages/work/work-store) |
+-| [`subagent-budmh-sdk`](../packages/subagent/subagent-budmh-sdk) | `subagent` | [`agent`](../packages/core/agent), [`llm`](../packages/llm/llm), [`sdk-client`](../packages/sdk/client), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`subprocess`](../packages/subprocess/subprocess) |
++| [`api-voice`](../packages/api/voice) | `api` | [`agent`](../packages/core/agent), [`agent-spec`](../packages/agent/agent-spec), [`attachment`](../packages/attachment/attachment), [`content-convert`](../packages/work/content-convert), [`llm`](../packages/llm/llm), [`sdk-jsonrpc-server`](../packages/sdk/server), [`sdk-protocol`](../packages/sdk/protocol), [`session`](../packages/core/session), [`session-delivery`](../packages/work/session-delivery), [`session-query`](../packages/session-query/session-query), [`stream-turns`](../packages/work/stream-turns), [`streams`](../packages/work/streams), [`typert-protocol`](../packages/typert/protocol), [`util-values`](../packages/util/values) |
++| [`transport-cli`](../packages/transport/transport-cli) | `transport` | [`channels`](../packages/work/channels), [`intake`](../packages/work/intake), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`work-executors`](../packages/work/work-executors), [`work-ids`](../packages/work/work-ids), [`work-store`](../packages/work/work-store) |
+ | [`executor-session`](../packages/work/executor-session) | `work` | [`agent`](../packages/core/agent), [`agent-session`](../packages/preset/agent-session), [`brand`](../packages/util/brand), [`durable-timers`](../packages/schedule/durable-timers), [`llm`](../packages/llm/llm), [`session`](../packages/core/session), [`session-delivery`](../packages/work/session-delivery), [`session-persistence`](../packages/session/session-persistence), [`session-projection`](../packages/session/session-projection), [`session-title`](../packages/session/session-title), [`user-approval`](../packages/interaction/user-approval), [`user-questions`](../packages/interaction/user-questions), [`work-executors`](../packages/work/work-executors), [`work-ids`](../packages/work/work-ids), [`work-store`](../packages/work/work-store), [`workspace`](../packages/workspace/workspace) |
++| [`sdk-client`](../packages/sdk/client) | `sdk` | [`api-voice`](../packages/api/voice), [`llm`](../packages/llm/llm), [`sdk-protocol`](../packages/sdk/protocol), [`session`](../packages/core/session) |
++| [`subagent-budmh-sdk`](../packages/subagent/subagent-budmh-sdk) | `subagent` | [`agent`](../packages/core/agent), [`llm`](../packages/llm/llm), [`sdk-client`](../packages/sdk/client), [`session`](../packages/core/session), [`subagent`](../packages/subagent/subagent), [`subprocess`](../packages/subprocess/subprocess) |
+ <!-- END GENERATED module-graph:packages -->
+diff --git a/packages/experimental/hardware-hms/README.i18n.yaml b/packages/experimental/hardware-hms/README.i18n.yaml
+new file mode 100644
+index 00000000..0d122487
+--- /dev/null
++++ b/packages/experimental/hardware-hms/README.i18n.yaml
+@@ -0,0 +1,37 @@
++# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
++# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
++# After editing either side, bring the other along and re-record with:
++#   pnpm run verify-translation-pairing --write packages/experimental/hardware-hms/README.md
++/:
++  en: 6157c824f8fe91ed
++  zh: 8554a7828a4530d2
++/budmh-experimental-hardware-hms:
++  en: 71f5017f0e3d7494
++  zh: 4d5147a78a3db42f
++/budmh-experimental-hardware-hms/summary:
++  en: cf0d9f4986fe9237
++  zh: 74d551d2a5ba4e2a
++/budmh-experimental-hardware-hms/use-this-package:
++  en: 5ef95b96e402a600
++  zh: 326932ba21717288
++/budmh-experimental-hardware-hms/understand-the-implementation:
++  en: f457f51be2b946a6
++  zh: 2ace7d4f461bfaee
++/budmh-experimental-hardware-hms/model-experience:
++  en: 215e7ba838619b7b
++  zh: 215e7ba838619b7b
++/budmh-experimental-hardware-hms/model-experience/hardware-tool-output:
++  en: 8e5c0b7523195825
++  zh: 8e5c0b7523195825
++/budmh-experimental-hardware-hms/model-experience/hardware-tool-output/what-the-model-sees:
++  en: 42dc44b1783d8024
++  zh: 2dc51d8ddff10074
++/budmh-experimental-hardware-hms/model-experience/hardware-tool-output/token-effect:
++  en: 07e3b374e1b1265d
++  zh: dd5078351e7fa6da
++/budmh-experimental-hardware-hms/model-experience/hardware-tool-output/kv-cache-effect:
++  en: c4b2084841cf3efc
++  zh: f2feb8119fb500be
++/budmh-experimental-hardware-hms/known-limitations-and-deferred-work:
++  en: 122b168b7472599f
++  zh: 3bd7a3796e75ac29
+diff --git a/packages/experimental/hardware-hms/README.md b/packages/experimental/hardware-hms/README.md
+new file mode 100644
+index 00000000..0ab62ebe
+--- /dev/null
++++ b/packages/experimental/hardware-hms/README.md
+@@ -0,0 +1,40 @@
++---
++description: "Local Linux HMS simulation provider using the checked Python client."
++kind: "package-reference"
++---
++
++# @budmh/experimental-hardware-hms
++
++English | [中文](README.zh.md)
++
++## Summary
++
++Local Linux HMS simulation provider using the checked Python client.
++
++## Use this package
++
++Configure absolute `hmsRoot` and `socketPath`; optional `pythonExecutable`, `timeoutMs` (5000), `graceMs` (1000), and `maxOutputBytes` (131072) bound each call. Mount local subprocess, sandbox, and sandbox-policy providers in the same execution world. The HMS source tree must provide `hms.client.Client`.
++
++## Understand the implementation
++
++Every call snapshots its parameters before awaiting, launches one bounded Python client, and validates the returned carrier. The client authenticates the local socket and validates method-specific results. No automatic retry occurs. Cancellation and disposal terminate and await the child, while the HMS operation may continue. Errors expose closed codes and `outcome: unconfirmed`; schema failures after delivery use `INVALID_RESPONSE`.
++
++## Model Experience
++
++### Hardware tool output
++
++#### What the model sees
++
++Through the hardware tools, the model receives call-specific canonical results, evidence strength, and attribution. This package never upgrades simulation evidence into a verified physical effect.
++
++#### Token effect
++
++Tool schemas are conditional on composition; transport limits bound result size. Native results and PTC dispatch records remain in the Session.
++
++#### KV Cache effect
++
++Results append to existing tool history. Composition or tool-schema changes can alter request prefixes; provider cache availability is outside this package.
++
++## Known Limitations and Deferred Work
++
++Local Linux, same-UID simulation only: no per-agent authentication, physical hardware, HTTP, or remote transport. Starting Python for each call has measurable cost; no latency guarantee applies.
+diff --git a/packages/experimental/hardware-hms/README.zh.md b/packages/experimental/hardware-hms/README.zh.md
+new file mode 100644
+index 00000000..913d53cd
+--- /dev/null
++++ b/packages/experimental/hardware-hms/README.zh.md
+@@ -0,0 +1,40 @@
++---
++description: "通过已验证的 Python 客户端访问本地 Linux HMS 仿真服务。"
++kind: "package-reference"
++---
++
++# @budmh/experimental-hardware-hms
++
++[English](README.md) | 中文
++
++## Summary
++
++通过已验证的 Python 客户端访问本地 Linux HMS 仿真服务。
++
++## Use this package
++
++配置绝对路径 `hmsRoot` 和 `socketPath`；可选的 `pythonExecutable`、`timeoutMs`（5000）、`graceMs`（1000）和 `maxOutputBytes`（131072）限制每次调用。在同一执行环境中挂载本地 subprocess、sandbox 和 sandbox-policy 提供者。HMS 源代码树必须提供 `hms.client.Client`。
++
++## Understand the implementation
++
++每次调用都在等待前快照参数，启动一个有界 Python 客户端，并验证返回信封。客户端认证本地套接字并验证对应方法的结果。不会自动重试。取消和卸载会终止并等待子进程退出，但 HMS 操作仍可能继续。错误只公开封闭格式的错误码和 `outcome: unconfirmed`；发送后的模式验证失败使用 `INVALID_RESPONSE`。
++
++## Model Experience
++
++### Hardware tool output
++
++#### What the model sees
++
++通过 hardware 工具，模型接收对应调用的规范结果、证据强度和归属标识。此包不会将仿真结果升级为经过验证的物理效果。
++
++#### Token effect
++
++工具模式随配置启用；结果大小受传输限制。原生结果和 PTC 派发记录保留在 Session 中。
++
++#### KV Cache effect
++
++结果追加到现有工具历史。配置或工具模式变化可能改变请求前缀；提供方的缓存可用性不受本包保证。
++
++## Known Limitations and Deferred Work
++
++仅支持本地 Linux、同 UID 的仿真，不支持每个智能体独立认证、真实硬件、HTTP 或远程传输。每次调用启动 Python 的成本可见；没有延迟保证。
+diff --git a/packages/experimental/hardware-hms/package.json b/packages/experimental/hardware-hms/package.json
+new file mode 100644
+index 00000000..666e72c3
+--- /dev/null
++++ b/packages/experimental/hardware-hms/package.json
+@@ -0,0 +1,49 @@
++{
++  "name": "@budmh/experimental-hardware-hms",
++  "description": "Experimental same-UID local HMS simulation hardware-hms",
++  "version": "0.2.1-rc.3",
++  "type": "module",
++  "main": "lib/index.js",
++  "types": "lib/types/index.d.ts",
++  "exports": {
++    ".": {
++      "types": "./lib/types/index.d.ts",
++      "default": "./lib/index.js"
++    },
++    "./src/*": "./src/*",
++    "./package.json": "./package.json"
++  },
++  "files": [
++    "lib/index.js",
++    "lib/types/**/*.d.ts"
++  ],
++  "license": "MIT",
++  "publishConfig": {
++    "access": "public"
++  },
++  "repository": {
++    "type": "git",
++    "url": "git+https://github.com/BudEcosystem/Bud-Meta-Harness.git",
++    "directory": "packages/experimental/hardware-hms"
++  },
++  "dependencies": {
++    "@budmh/experimental-hardware": "workspace:*",
++    "@budmh/timeout": "workspace:*",
++    "@budmh/schemastery": "workspace:~"
++  },
++  "peerDependencies": {
++    "@budmh/cordis": "workspace:~",
++    "@budmh/subprocess": "workspace:*",
++    "@budmh/sandbox": "workspace:*",
++    "@budmh/sandbox-policy": "workspace:*",
++    "@budmh/experimental-hardware": "workspace:*"
++  },
++  "devDependencies": {
++    "@budmh/cordis": "workspace:~",
++    "@budmh/subprocess": "workspace:*",
++    "@budmh/sandbox": "workspace:*",
++    "@budmh/sandbox-policy": "workspace:*",
++    "@budmh/experimental-hardware": "workspace:*",
++    "@budmh/util-values": "workspace:*"
++  }
++}
+diff --git a/packages/experimental/hardware-hms/src/bridge.ts b/packages/experimental/hardware-hms/src/bridge.ts
+new file mode 100644
+index 00000000..da4fb9ae
+--- /dev/null
++++ b/packages/experimental/hardware-hms/src/bridge.ts
+@@ -0,0 +1,19 @@
++/** The local Python client owns SO_PEERCRED authentication and method-result validation. */
++export const BRIDGE = String.raw`
++import json, sys
++from pathlib import Path
++sys.path.insert(0, sys.argv[1])
++from hms.contracts import parse_json, ContractError
++from hms.ipc import IpcError
++from hms.client import Client
++from hms.api_contracts import ResponseError
++try:
++    payload = parse_json(sys.stdin.buffer.read(65537))
++    result = Client(Path(sys.argv[2])).request(payload['method'], payload['params'])
++    output = {'ok': True, 'result': result}
++except ResponseError:
++    output = {'ok': False, 'error': {'code': 'INVALID_RESPONSE'}, 'outcome': 'unconfirmed'}
++except (IpcError, ContractError) as error:
++    output = {'ok': False, 'error': {'code': getattr(error, 'code', 'CONTRACT_ERROR')}, 'outcome': 'unconfirmed'}
++print(json.dumps(output, allow_nan=False, separators=(',', ':')))
++`
+diff --git a/packages/experimental/hardware-hms/src/index.ts b/packages/experimental/hardware-hms/src/index.ts
+new file mode 100644
+index 00000000..bd21f4d4
+--- /dev/null
++++ b/packages/experimental/hardware-hms/src/index.ts
+@@ -0,0 +1,74 @@
++/** Native Harness provider for an explicitly configured same-UID HMS simulation daemon. */
++import { isAbsolute } from 'node:path'
++import { Context } from '@budmh/cordis'
++import z from '@budmh/schemastery'
++import HardwareService from '@budmh/experimental-hardware'
++import type { HardwareCall, HardwareMethod, HardwareReply } from '@budmh/experimental-hardware'
++import { deadline } from '@budmh/timeout'
++import type {} from '@budmh/subprocess'
++import type {} from '@budmh/sandbox'
++import type {} from '@budmh/sandbox-policy'
++import type { JsonValue } from '@budmh/util-values'
++import { BRIDGE } from './bridge.ts'
++import { decodeBridgeReply, unconfirmed as uncertain } from './reply.ts'
++
++export interface Config {
++  hmsRoot: string
++  socketPath: string
++  pythonExecutable?: string
++  timeoutMs?: number
++  graceMs?: number
++  maxOutputBytes?: number
++}
++/** The subprocess and sandbox providers must share the configured local Linux execution world. */
++export default class HmsHardware extends HardwareService {
++  static inject = ['subprocess', 'sandbox', 'sandboxPolicy']
++  static Config: z<Config> = z.object({
++    hmsRoot: z.string().required(), socketPath: z.string().required(), pythonExecutable: z.string().default('python3'),
++    timeoutMs: z.number().default(5000), graceMs: z.number().default(1000), maxOutputBytes: z.number().default(131072),
++  })
++  private readonly config: Required<Config>
++  private readonly lifetime = new AbortController()
++  private readonly pending = new Set<Promise<HardwareReply>>()
++  constructor(ctx: Context, config: Config) {
++    super(ctx)
++    this.config = config as Required<Config>
++    if (!isAbsolute(config.hmsRoot) || !isAbsolute(config.socketPath)) throw new Error('hardware-hms: hmsRoot and socketPath must be absolute')
++    for (const key of ['timeoutMs', 'graceMs', 'maxOutputBytes'] as const) {
++      if (!Number.isSafeInteger(this.config[key]) || this.config[key] <= 0 || this.config[key] > 2147483647) throw new Error(`hardware-hms: ${key} must be a positive bounded integer`)
++    }
++    ctx.effect(() => async () => { this.lifetime.abort(); await Promise.allSettled(this.pending) })
++  }
++  override async request(method: HardwareMethod, params: Record<string, JsonValue>, call: HardwareCall): Promise<HardwareReply> {
++    // Snapshot synchronously before any await; retries must use the caller's original envelope.
++    const payload = JSON.stringify({ method, params })
++    if (Buffer.byteLength(payload) > 65536) return uncertain('REQUEST_TOO_LARGE')
++    const operation = this.send(payload, call)
++    this.pending.add(operation)
++    try { return await operation } finally { this.pending.delete(operation) }
++  }
++  private async send(payload: string, call: HardwareCall): Promise<HardwareReply> {
++    const signal = AbortSignal.any([this.lifetime.signal, call.signal])
++    using timeout = deadline(signal, this.config.timeoutMs, 'HMS_TIMEOUT')
++    try {
++      timeout.signal.throwIfAborted()
++      const policy = this.ctx.sandboxPolicy.resolve(call.agent ? { session: call.agent.session } : {})
++      const executable = await this.ctx.subprocess.resolveExecutable(this.config.pythonExecutable, undefined, timeout.signal)
++      const argv = [executable, '-I', '-c', BRIDGE, this.config.hmsRoot, this.config.socketPath]
++      const confined = policy.mode === 'danger-full-access' ? argv : (await this.ctx.sandbox.confine(argv, { ...policy, mode: policy.mode }, timeout.signal)).argv
++      timeout.signal.throwIfAborted()
++      const secretNames = Object.keys(process.env).filter(key => /KEY|SECRET|TOKEN|PASSWORD/i.test(key))
++      const env: NodeJS.ProcessEnv = Object.fromEntries(secretNames.map(key => [key, undefined]))
++      const child = this.ctx.subprocess.spawn({
++        argv: confined, cwd: this.config.hmsRoot, env, signal: timeout.signal, graceMs: this.config.graceMs,
++        stdio: { stdin: { data: payload }, stdout: { maxBytes: this.config.maxOutputBytes }, stderr: { maxBytes: 4096 } } })
++      try {
++        const outcome = await child.done
++        if (timeout.signal.aborted) return uncertain('TRANSPORT_INTERRUPTED')
++        const output = child.collected.stdout?.readFrom(0)
++        if (outcome.exitCode !== 0 || output === undefined || output.lossy) return uncertain('TRANSPORT_FAILURE')
++        return decodeBridgeReply(output.text)
++      } finally { child.terminate(); await child.waitForExit() }
++    } catch { return uncertain(timeout.signal.aborted ? 'TRANSPORT_INTERRUPTED' : 'TRANSPORT_FAILURE') }
++  }
++}
+diff --git a/packages/experimental/hardware-hms/src/reply.ts b/packages/experimental/hardware-hms/src/reply.ts
+new file mode 100644
+index 00000000..4b7a0a1c
+--- /dev/null
++++ b/packages/experimental/hardware-hms/src/reply.ts
+@@ -0,0 +1,14 @@
++/** Decode the trusted checked-client bridge's bounded JSON carrier. */
++import type { HardwareReply } from '@budmh/experimental-hardware'
++export function unconfirmed(code: string): HardwareReply { return { ok: false, error: { code }, outcome: 'unconfirmed' } }
++/** Malformed output never becomes operation success or a displayable arbitrary error string. */
++export function decodeBridgeReply(text: string): HardwareReply {
++  let reply: unknown
++  try { reply = JSON.parse(text) } catch { return unconfirmed('INVALID_RESPONSE') }
++  if (typeof reply !== 'object' || reply === null || !('ok' in reply)) return unconfirmed('INVALID_RESPONSE')
++  if (reply.ok === true && 'result' in reply && Object.keys(reply).length === 2) return reply as HardwareReply
++  if (reply.ok === false && Object.keys(reply).length === 3 && 'outcome' in reply && reply.outcome === 'unconfirmed'
++    && 'error' in reply && typeof reply.error === 'object' && reply.error !== null && Object.keys(reply.error).length === 1
++    && 'code' in reply.error && typeof reply.error.code === 'string' && /^[A-Z][A-Z0-9_]{0,63}$/.test(reply.error.code)) return unconfirmed(reply.error.code)
++  return unconfirmed('INVALID_RESPONSE')
++}
+diff --git a/packages/experimental/hardware-hms/tests/reply.spec.ts b/packages/experimental/hardware-hms/tests/reply.spec.ts
+new file mode 100644
+index 00000000..8376baac
+--- /dev/null
++++ b/packages/experimental/hardware-hms/tests/reply.spec.ts
+@@ -0,0 +1,15 @@
++import { expect, it } from 'vitest'
++import { decodeBridgeReply } from '../src/reply.ts'
++it.each([
++  '{', 'null', '{"ok":true}', '{"ok":true,"result":{},"extra":1}',
++  '{"ok":false,"error":{"code":"arbitrary text"},"outcome":"unconfirmed"}',
++  '{"ok":false,"error":{"code":"DENIED","detail":"private"},"outcome":"unconfirmed"}',
++  '{"ok":false,"error":{"code":"DENIED"},"outcome":"unconfirmed","extra":1}',
++  '{"ok":false,"error":{"code":"DENIED"},"outcome":"no_effect"}',
++])('contains malformed bridge output %s', (text) => {
++  expect(decodeBridgeReply(text)).toEqual({ ok: false, error: { code: 'INVALID_RESPONSE' }, outcome: 'unconfirmed' })
++})
++it('retains only a closed typed error and unmodified checked success', () => {
++  expect(decodeBridgeReply('{"ok":false,"error":{"code":"KEY_CONFLICT"},"outcome":"unconfirmed"}')).toEqual({ ok: false, error: { code: 'KEY_CONFLICT' }, outcome: 'unconfirmed' })
++  expect(decodeBridgeReply('{"ok":true,"result":{"mayHaveActed":true,"effectVerification":"unverified"}}')).toEqual({ ok: true, result: { mayHaveActed: true, effectVerification: 'unverified' } })
++})
+diff --git a/packages/experimental/hardware-hms/tsconfig.json b/packages/experimental/hardware-hms/tsconfig.json
+new file mode 100644
+index 00000000..abe00169
+--- /dev/null
++++ b/packages/experimental/hardware-hms/tsconfig.json
+@@ -0,0 +1,36 @@
++{
++  "extends": "../../../tsconfig.base.json",
++  "compilerOptions": {
++    "rootDir": "src",
++    "outDir": "lib/types"
++  },
++  "include": [
++    "src"
++  ],
++  "references": [
++    {
++      "path": "../../../vendor/cordis"
++    },
++    {
++      "path": "../hardware"
++    },
++    {
++      "path": "../../sandbox/sandbox"
++    },
++    {
++      "path": "../../sandbox/sandbox-policy"
++    },
++    {
++      "path": "../../../vendor/schemastery"
++    },
++    {
++      "path": "../../subprocess/subprocess"
++    },
++    {
++      "path": "../../util/timeout"
++    },
++    {
++      "path": "../../util/values"
++    }
++  ]
++}
+diff --git a/packages/experimental/hardware-profile/README.i18n.yaml b/packages/experimental/hardware-profile/README.i18n.yaml
+new file mode 100644
+index 00000000..2e32b6ba
+--- /dev/null
++++ b/packages/experimental/hardware-profile/README.i18n.yaml
+@@ -0,0 +1,37 @@
++# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
++# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
++# After editing either side, bring the other along and re-record with:
++#   pnpm run verify-translation-pairing --write packages/experimental/hardware-profile/README.md
++/:
++  en: 87ad5c180e69481d
++  zh: 0f5403c2a12ce013
++/budmh-experimental-hardware-profile:
++  en: b08dfbc9af31b2b7
++  zh: 1dcb1b869b0a2cfb
++/budmh-experimental-hardware-profile/summary:
++  en: 8caac47b00ebcef0
++  zh: 64cfcc23dbd3d2a7
++/budmh-experimental-hardware-profile/use-this-package:
++  en: 7dac3a2742060d7b
++  zh: 608c23b87db0b3bd
++/budmh-experimental-hardware-profile/understand-the-implementation:
++  en: 5ae7f96cb1319207
++  zh: 0e3b9e1836d8bcbf
++/budmh-experimental-hardware-profile/model-experience:
++  en: 215e7ba838619b7b
++  zh: 215e7ba838619b7b
++/budmh-experimental-hardware-profile/model-experience/hardware-tool-output:
++  en: 8e5c0b7523195825
++  zh: 8e5c0b7523195825
++/budmh-experimental-hardware-profile/model-experience/hardware-tool-output/what-the-model-sees:
++  en: 42dc44b1783d8024
++  zh: 2dc51d8ddff10074
++/budmh-experimental-hardware-profile/model-experience/hardware-tool-output/token-effect:
++  en: 07e3b374e1b1265d
++  zh: dd5078351e7fa6da
++/budmh-experimental-hardware-profile/model-experience/hardware-tool-output/kv-cache-effect:
++  en: c4b2084841cf3efc
++  zh: f2feb8119fb500be
++/budmh-experimental-hardware-profile/known-limitations-and-deferred-work:
++  en: 122b168b7472599f
++  zh: 3bd7a3796e75ac29
+diff --git a/packages/experimental/hardware-profile/README.md b/packages/experimental/hardware-profile/README.md
+new file mode 100644
+index 00000000..48235fdc
+--- /dev/null
++++ b/packages/experimental/hardware-profile/README.md
+@@ -0,0 +1,40 @@
++---
++description: "Explicit experimental profile layer for local HMS simulation."
++kind: "package-bundle"
++---
++
++# @budmh/experimental-hardware-profile
++
++English | [中文](README.zh.md)
++
++## Summary
++
++Explicit experimental profile layer for local HMS simulation.
++
++## Use this package
++
++Apply `cordis.patch.yml` after the base profile. Set `HMS_ROOT` and `HMS_SOCKET` to absolute paths before startup, or override the `hardware-hms` row. The layer mounts the native provider and tools; it does not launch or initialize HMS.
++
++## Understand the implementation
++
++Start the separate HMS simulation daemon explicitly. All participating processes under one POSIX UID share authority. The layer neither grants per-agent rights nor projects delegated device credentials.
++
++## Model Experience
++
++### Hardware tool output
++
++#### What the model sees
++
++Through the hardware tools, the model receives call-specific canonical results, evidence strength, and attribution. This package never upgrades simulation evidence into a verified physical effect.
++
++#### Token effect
++
++Tool schemas are conditional on composition; transport limits bound result size. Native results and PTC dispatch records remain in the Session.
++
++#### KV Cache effect
++
++Results append to existing tool history. Composition or tool-schema changes can alter request prefixes; provider cache availability is outside this package.
++
++## Known Limitations and Deferred Work
++
++Local Linux, same-UID simulation only: no per-agent authentication, physical hardware, HTTP, or remote transport. Starting Python for each call has measurable cost; no latency guarantee applies.
+diff --git a/packages/experimental/hardware-profile/README.zh.md b/packages/experimental/hardware-profile/README.zh.md
+new file mode 100644
+index 00000000..7e7a9d65
+--- /dev/null
++++ b/packages/experimental/hardware-profile/README.zh.md
+@@ -0,0 +1,40 @@
++---
++description: "显式启用本地 HMS 仿真的实验性配置层。"
++kind: "package-bundle"
++---
++
++# @budmh/experimental-hardware-profile
++
++[English](README.md) | 中文
++
++## Summary
++
++显式启用本地 HMS 仿真的实验性配置层。
++
++## Use this package
++
++在 base 配置后应用 `cordis.patch.yml`。启动前将 `HMS_ROOT` 和 `HMS_SOCKET` 设置为绝对路径，或覆盖 `hardware-hms` 配置行。本层挂载原生提供者和工具，不会启动或初始化 HMS。
++
++## Understand the implementation
++
++显式启动独立的 HMS 仿真守护进程。同一 POSIX UID 下的所有参与进程共享权限。本层既不授予每个智能体独立的权限，也不传递委托设备凭据。
++
++## Model Experience
++
++### Hardware tool output
++
++#### What the model sees
++
++通过 hardware 工具，模型接收对应调用的规范结果、证据强度和归属标识。此包不会将仿真结果升级为经过验证的物理效果。
++
++#### Token effect
++
++工具模式随配置启用；结果大小受传输限制。原生结果和 PTC 派发记录保留在 Session 中。
++
++#### KV Cache effect
++
++结果追加到现有工具历史。配置或工具模式变化可能改变请求前缀；提供方的缓存可用性不受本包保证。
++
++## Known Limitations and Deferred Work
++
++仅支持本地 Linux、同 UID 的仿真，不支持每个智能体独立认证、真实硬件、HTTP 或远程传输。每次调用启动 Python 的成本可见；没有延迟保证。
+diff --git a/packages/experimental/hardware-profile/cordis.patch.yml b/packages/experimental/hardware-profile/cordis.patch.yml
+new file mode 100644
+index 00000000..be81332e
+--- /dev/null
++++ b/packages/experimental/hardware-profile/cordis.patch.yml
+@@ -0,0 +1,10 @@
++# Apply after base, then configure hardware-hms with absolute hmsRoot/socketPath.
++# Same-UID simulation authority is shared; Session IDs are attribution only.
++- insert:
++    - id: hardware-hms
++      name: '@budmh/experimental-hardware-hms'
++      config:
++        hmsRoot: !!js process.env.HMS_ROOT
++        socketPath: !!js process.env.HMS_SOCKET
++    - id: tool-hardware
++      name: '@budmh/experimental-tool-hardware'
+diff --git a/packages/experimental/hardware-profile/package.json b/packages/experimental/hardware-profile/package.json
+new file mode 100644
+index 00000000..d494e7c0
+--- /dev/null
++++ b/packages/experimental/hardware-profile/package.json
+@@ -0,0 +1,46 @@
++{
++  "name": "@budmh/experimental-hardware-profile",
++  "description": "Experimental same-UID local HMS simulation hardware-profile",
++  "version": "0.2.1-rc.3",
++  "type": "module",
++  "main": "lib/index.js",
++  "types": "lib/types/index.d.ts",
++  "exports": {
++    ".": {
++      "types": "./lib/types/index.d.ts",
++      "default": "./lib/index.js"
++    },
++    "./src/*": "./src/*",
++    "./package.json": "./package.json",
++    "./cordis.patch.yml": "./cordis.patch.yml"
++  },
++  "files": [
++    "lib/index.js",
++    "lib/types/**/*.d.ts",
++    "cordis.patch.yml"
++  ],
++  "license": "MIT",
++  "publishConfig": {
++    "access": "public"
++  },
++  "repository": {
++    "type": "git",
++    "url": "git+https://github.com/BudEcosystem/Bud-Meta-Harness.git",
++    "directory": "packages/experimental/hardware-profile"
++  },
++  "dependencies": {
++    "@budmh/experimental-hardware-hms": "workspace:*",
++    "@budmh/experimental-tool-hardware": "workspace:*"
++  },
++  "peerDependencies": {
++    "@budmh/cordis": "workspace:~"
++  },
++  "devDependencies": {
++    "@budmh/cordis": "workspace:~"
++  },
++  "budmh": {
++    "bundle": {
++      "patch": "./cordis.patch.yml"
++    }
++  }
++}
+diff --git a/packages/experimental/hardware-profile/src/index.ts b/packages/experimental/hardware-profile/src/index.ts
+new file mode 100644
+index 00000000..d6df7cee
+--- /dev/null
++++ b/packages/experimental/hardware-profile/src/index.ts
+@@ -0,0 +1,2 @@
++/** Opt-in HMS simulation composition; runtime content is the bundle patch. */
++export {}
+diff --git a/packages/experimental/hardware-profile/tsconfig.json b/packages/experimental/hardware-profile/tsconfig.json
+new file mode 100644
+index 00000000..749cb020
+--- /dev/null
++++ b/packages/experimental/hardware-profile/tsconfig.json
+@@ -0,0 +1,11 @@
++{
++  "extends": "../../../tsconfig.base.json",
++  "compilerOptions": {
++    "rootDir": "src",
++    "outDir": "lib/types"
++  },
++  "include": [
++    "src"
++  ],
++  "references": []
++}
+diff --git a/packages/experimental/hardware/README.i18n.yaml b/packages/experimental/hardware/README.i18n.yaml
+new file mode 100644
+index 00000000..580b5696
+--- /dev/null
++++ b/packages/experimental/hardware/README.i18n.yaml
+@@ -0,0 +1,37 @@
++# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
++# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
++# After editing either side, bring the other along and re-record with:
++#   pnpm run verify-translation-pairing --write packages/experimental/hardware/README.md
++/:
++  en: 2d0ea9706771d5ea
++  zh: 2193a033f3de64d3
++/budmh-experimental-hardware:
++  en: b5c98d2b5374562c
++  zh: cf5eedcc59c83636
++/budmh-experimental-hardware/summary:
++  en: 956fd7d06d94fe44
++  zh: c0461fed30fa6c45
++/budmh-experimental-hardware/use-this-package:
++  en: 9803b55376fb1f15
++  zh: 9125b91349310a9d
++/budmh-experimental-hardware/understand-the-implementation:
++  en: a5e493562d4e5f12
++  zh: 63f53de8df085e60
++/budmh-experimental-hardware/model-experience:
++  en: 215e7ba838619b7b
++  zh: 215e7ba838619b7b
++/budmh-experimental-hardware/model-experience/hardware-tool-output:
++  en: 8e5c0b7523195825
++  zh: 8e5c0b7523195825
++/budmh-experimental-hardware/model-experience/hardware-tool-output/what-the-model-sees:
++  en: 42dc44b1783d8024
++  zh: 2dc51d8ddff10074
++/budmh-experimental-hardware/model-experience/hardware-tool-output/token-effect:
++  en: 07e3b374e1b1265d
++  zh: dd5078351e7fa6da
++/budmh-experimental-hardware/model-experience/hardware-tool-output/kv-cache-effect:
++  en: c4b2084841cf3efc
++  zh: f2feb8119fb500be
++/budmh-experimental-hardware/known-limitations-and-deferred-work:
++  en: 122b168b7472599f
++  zh: 3bd7a3796e75ac29
+diff --git a/packages/experimental/hardware/README.md b/packages/experimental/hardware/README.md
+new file mode 100644
+index 00000000..0ec3f945
+--- /dev/null
++++ b/packages/experimental/hardware/README.md
+@@ -0,0 +1,40 @@
++---
++description: "Typed service definition for independently authenticated hardware providers."
++kind: "package-reference"
++---
++
++# @budmh/experimental-hardware
++
++English | [中文](README.zh.md)
++
++## Summary
++
++Typed service definition for independently authenticated hardware providers.
++
++## Use this package
++
++Consumers inject `hardware` and call `request(method, params, { agent, signal })`. The provider owns authentication and response validation. Session identity supplies attribution and existing file policy only.
++
++## Understand the implementation
++
++The reply distinguishes a checked result from an unconfirmed error code. Accepted operations may continue after the caller stops waiting. Retain the original invoke envelope and inspect durable operation state before deciding what to do next.
++
++## Model Experience
++
++### Hardware tool output
++
++#### What the model sees
++
++Through the hardware tools, the model receives call-specific canonical results, evidence strength, and attribution. This package never upgrades simulation evidence into a verified physical effect.
++
++#### Token effect
++
++Tool schemas are conditional on composition; transport limits bound result size. Native results and PTC dispatch records remain in the Session.
++
++#### KV Cache effect
++
++Results append to existing tool history. Composition or tool-schema changes can alter request prefixes; provider cache availability is outside this package.
++
++## Known Limitations and Deferred Work
++
++Local Linux, same-UID simulation only: no per-agent authentication, physical hardware, HTTP, or remote transport. Starting Python for each call has measurable cost; no latency guarantee applies.
+diff --git a/packages/experimental/hardware/README.zh.md b/packages/experimental/hardware/README.zh.md
+new file mode 100644
+index 00000000..e2ddb5b4
+--- /dev/null
++++ b/packages/experimental/hardware/README.zh.md
+@@ -0,0 +1,40 @@
++---
++description: "独立认证硬件提供者的类型化服务定义。"
++kind: "package-reference"
++---
++
++# @budmh/experimental-hardware
++
++[English](README.md) | 中文
++
++## Summary
++
++独立认证硬件提供者的类型化服务定义。
++
++## Use this package
++
++消费者注入 `hardware` 并调用 `request(method, params, { agent, signal })`。提供者负责认证和响应验证。Session 标识仅用于归属记录和现有文件策略。
++
++## Understand the implementation
++
++回复区分已验证结果和状态未确认的错误码。调用方停止等待后，已接受的操作仍可能继续。保留原始 invoke 信封，并先检查持久化操作状态，再决定下一步。
++
++## Model Experience
++
++### Hardware tool output
++
++#### What the model sees
++
++通过 hardware 工具，模型接收对应调用的规范结果、证据强度和归属标识。此包不会将仿真结果升级为经过验证的物理效果。
++
++#### Token effect
++
++工具模式随配置启用；结果大小受传输限制。原生结果和 PTC 派发记录保留在 Session 中。
++
++#### KV Cache effect
++
++结果追加到现有工具历史。配置或工具模式变化可能改变请求前缀；提供方的缓存可用性不受本包保证。
++
++## Known Limitations and Deferred Work
++
++仅支持本地 Linux、同 UID 的仿真，不支持每个智能体独立认证、真实硬件、HTTP 或远程传输。每次调用启动 Python 的成本可见；没有延迟保证。
+diff --git a/packages/experimental/hardware/package.json b/packages/experimental/hardware/package.json
+new file mode 100644
+index 00000000..d07b2552
+--- /dev/null
++++ b/packages/experimental/hardware/package.json
+@@ -0,0 +1,40 @@
++{
++  "name": "@budmh/experimental-hardware",
++  "description": "Experimental same-UID local HMS simulation hardware",
++  "version": "0.2.1-rc.3",
++  "type": "module",
++  "main": "lib/index.js",
++  "types": "lib/types/index.d.ts",
++  "exports": {
++    ".": {
++      "types": "./lib/types/index.d.ts",
++      "default": "./lib/index.js"
++    },
++    "./src/*": "./src/*",
++    "./package.json": "./package.json"
++  },
++  "files": [
++    "lib/index.js",
++    "lib/types/**/*.d.ts"
++  ],
++  "license": "MIT",
++  "publishConfig": {
++    "access": "public"
++  },
++  "repository": {
++    "type": "git",
++    "url": "git+https://github.com/BudEcosystem/Bud-Meta-Harness.git",
++    "directory": "packages/experimental/hardware"
++  },
++  "dependencies": {
++    "@budmh/util-values": "workspace:*"
++  },
++  "peerDependencies": {
++    "@budmh/cordis": "workspace:~",
++    "@budmh/agent": "workspace:*"
++  },
++  "devDependencies": {
++    "@budmh/cordis": "workspace:~",
++    "@budmh/agent": "workspace:*"
++  }
++}
+diff --git a/packages/experimental/hardware/src/index.ts b/packages/experimental/hardware/src/index.ts
+new file mode 100644
+index 00000000..8f04928f
+--- /dev/null
++++ b/packages/experimental/hardware/src/index.ts
+@@ -0,0 +1,21 @@
++/** Typed local hardware service. Attribution never supplies HMS authority. */
++import { Context, Service } from '@budmh/cordis'
++import type { Agent } from '@budmh/agent'
++import type { JsonValue } from '@budmh/util-values'
++
++export type HardwareMethod = 'discover' | 'describe' | 'observe' | 'namespace' | 'prepare' | 'invoke' | 'operation' | 'events' | 'cancel'
++export type HardwareReply = { ok: true; result: JsonValue } | { ok: false; error: { code: string }; outcome: 'unconfirmed' }
++export interface HardwareCall { agent?: Agent; signal: AbortSignal }
++declare module '@budmh/cordis' { interface Context { hardware: HardwareService } }
++/** Providers authenticate independently. Session identity only selects existing file policy. */
++export abstract class HardwareService extends Service {
++  constructor(ctx: Context) { super(ctx, 'hardware') }
++  /**
++   * Send one bounded request without retry. Invoke params contain an already prepared immutable
++   * envelope. Cancellation stops waiting; it does not cancel a recorded HMS operation. Query
++   * its operationId or replay the exact retained envelope deliberately to resolve uncertainty.
++   * Successful replies retain HMS evidence and execution state; they do not prove physical effect.
++   */
++  abstract request(method: HardwareMethod, params: Record<string, JsonValue>, call: HardwareCall): Promise<HardwareReply>
++}
++export default HardwareService
+diff --git a/packages/experimental/hardware/tsconfig.json b/packages/experimental/hardware/tsconfig.json
+new file mode 100644
+index 00000000..43465f27
+--- /dev/null
++++ b/packages/experimental/hardware/tsconfig.json
+@@ -0,0 +1,21 @@
++{
++  "extends": "../../../tsconfig.base.json",
++  "compilerOptions": {
++    "rootDir": "src",
++    "outDir": "lib/types"
++  },
++  "include": [
++    "src"
++  ],
++  "references": [
++    {
++      "path": "../../core/agent"
++    },
++    {
++      "path": "../../../vendor/cordis"
++    },
++    {
++      "path": "../../util/values"
++    }
++  ]
++}
+diff --git a/packages/experimental/tool-hardware/README.i18n.yaml b/packages/experimental/tool-hardware/README.i18n.yaml
+new file mode 100644
+index 00000000..68ae05e1
+--- /dev/null
++++ b/packages/experimental/tool-hardware/README.i18n.yaml
+@@ -0,0 +1,37 @@
++# Bilingual-pair consistency record for README.md (docs/i18n/README.md): per heading
++# section, a hash of its English and Chinese blocks outside code blocks and generated regions.
++# After editing either side, bring the other along and re-record with:
++#   pnpm run verify-translation-pairing --write packages/experimental/tool-hardware/README.md
++/:
++  en: bbe1ef46f8663268
++  zh: a5de4d35a55d448c
++/budmh-experimental-tool-hardware:
++  en: 5d82f9be02eed704
++  zh: c67ab66a9088b616
++/budmh-experimental-tool-hardware/summary:
++  en: 34512c11ae71c6af
++  zh: c3069a82b513fa4d
++/budmh-experimental-tool-hardware/use-this-package:
++  en: ee6fd5873d6bc645
++  zh: 53dc967a09d53044
++/budmh-experimental-tool-hardware/understand-the-implementation:
++  en: 42156d0db170ad7b
++  zh: c2c9be6c694ceeec
++/budmh-experimental-tool-hardware/model-experience:
++  en: 215e7ba838619b7b
++  zh: 215e7ba838619b7b
++/budmh-experimental-tool-hardware/model-experience/hardware-tool-output:
++  en: 8e5c0b7523195825
++  zh: 8e5c0b7523195825
++/budmh-experimental-tool-hardware/model-experience/hardware-tool-output/what-the-model-sees:
++  en: 42dc44b1783d8024
++  zh: 2dc51d8ddff10074
++/budmh-experimental-tool-hardware/model-experience/hardware-tool-output/token-effect:
++  en: 07e3b374e1b1265d
++  zh: dd5078351e7fa6da
++/budmh-experimental-tool-hardware/model-experience/hardware-tool-output/kv-cache-effect:
++  en: c4b2084841cf3efc
++  zh: f2feb8119fb500be
++/budmh-experimental-tool-hardware/known-limitations-and-deferred-work:
++  en: 122b168b7472599f
++  zh: 3bd7a3796e75ac29
+diff --git a/packages/experimental/tool-hardware/README.md b/packages/experimental/tool-hardware/README.md
+new file mode 100644
+index 00000000..62c18efc
+--- /dev/null
++++ b/packages/experimental/tool-hardware/README.md
+@@ -0,0 +1,40 @@
++---
++description: "Native and PTC tools for HMS simulation discovery, observations and durable operations."
++kind: "package-reference"
++---
++
++# @budmh/experimental-tool-hardware
++
++English | [中文](README.zh.md)
++
++## Summary
++
++Native and PTC tools for HMS simulation discovery, observations and durable operations.
++
++## Use this package
++
++Mount the tools service and a hardware provider. Nine `hardware_*` tools expose discover, describe, observe, namespace, prepare, invoke, operation, events, and cancel. Prepare returns an immutable request without admitting it; invoke takes that complete request. Do not rebuild a request after uncertain delivery.
++
++## Understand the implementation
++
++Canonical JSON contains `ok` and either the full checked `result` or a typed `error` with unconfirmed outcome. The `attribution` object carries Session and tool-call IDs; HMS never receives those as authority. Registration is effect-scoped and unload removes every tool. Native and PTC results use the same values.
++
++## Model Experience
++
++### Hardware tool output
++
++#### What the model sees
++
++Through the hardware tools, the model receives call-specific canonical results, evidence strength, and attribution. This package never upgrades simulation evidence into a verified physical effect.
++
++#### Token effect
++
++Tool schemas are conditional on composition; transport limits bound result size. Native results and PTC dispatch records remain in the Session.
++
++#### KV Cache effect
++
++Results append to existing tool history. Composition or tool-schema changes can alter request prefixes; provider cache availability is outside this package.
++
++## Known Limitations and Deferred Work
++
++Local Linux, same-UID simulation only: no per-agent authentication, physical hardware, HTTP, or remote transport. Starting Python for each call has measurable cost; no latency guarantee applies.
+diff --git a/packages/experimental/tool-hardware/README.zh.md b/packages/experimental/tool-hardware/README.zh.md
+new file mode 100644
+index 00000000..05d9155a
+--- /dev/null
++++ b/packages/experimental/tool-hardware/README.zh.md
+@@ -0,0 +1,40 @@
++---
++description: "用于 HMS 仿真发现、观测和持久化操作的原生工具与 PTC 工具。"
++kind: "package-reference"
++---
++
++# @budmh/experimental-tool-hardware
++
++[English](README.md) | 中文
++
++## Summary
++
++用于 HMS 仿真发现、观测和持久化操作的原生工具与 PTC 工具。
++
++## Use this package
++
++挂载 tools 服务和硬件提供者。九个 `hardware_*` 工具公开 discover、describe、observe、namespace、prepare、invoke、operation、events 和 cancel。Prepare 返回不可变请求但不受理；invoke 接受该完整请求。发送结果不确定时，不要重建请求。
++
++## Understand the implementation
++
++规范 JSON 包含 `ok`，以及完整的已验证 `result` 或带未确认状态的类型化 `error`。`attribution` 对象携带 Session 和工具调用标识；HMS 不会将这些标识作为权限接收。注册由插件生命周期管理，卸载会删除所有工具。原生与 PTC 结果使用相同的值。
++
++## Model Experience
++
++### Hardware tool output
++
++#### What the model sees
++
++通过 hardware 工具，模型接收对应调用的规范结果、证据强度和归属标识。此包不会将仿真结果升级为经过验证的物理效果。
++
++#### Token effect
++
++工具模式随配置启用；结果大小受传输限制。原生结果和 PTC 派发记录保留在 Session 中。
++
++#### KV Cache effect
++
++结果追加到现有工具历史。配置或工具模式变化可能改变请求前缀；提供方的缓存可用性不受本包保证。
++
++## Known Limitations and Deferred Work
++
++仅支持本地 Linux、同 UID 的仿真，不支持每个智能体独立认证、真实硬件、HTTP 或远程传输。每次调用启动 Python 的成本可见；没有延迟保证。
+diff --git a/packages/experimental/tool-hardware/package.json b/packages/experimental/tool-hardware/package.json
+new file mode 100644
+index 00000000..2e76aa82
+--- /dev/null
++++ b/packages/experimental/tool-hardware/package.json
+@@ -0,0 +1,61 @@
++{
++  "name": "@budmh/experimental-tool-hardware",
++  "description": "Experimental same-UID local HMS simulation tool-hardware",
++  "version": "0.2.1-rc.3",
++  "type": "module",
++  "main": "lib/index.js",
++  "types": "lib/types/index.d.ts",
++  "exports": {
++    ".": {
++      "types": "./lib/types/index.d.ts",
++      "default": "./lib/index.js"
++    },
++    "./src/*": "./src/*",
++    "./package.json": "./package.json"
++  },
++  "files": [
++    "lib/index.js",
++    "lib/types/**/*.d.ts"
++  ],
++  "license": "MIT",
++  "publishConfig": {
++    "access": "public"
++  },
++  "repository": {
++    "type": "git",
++    "url": "git+https://github.com/BudEcosystem/Bud-Meta-Harness.git",
++    "directory": "packages/experimental/tool-hardware"
++  },
++  "dependencies": {
++    "@budmh/experimental-hardware": "workspace:*",
++    "@budmh/schemastery": "workspace:~"
++  },
++  "peerDependencies": {
++    "@budmh/cordis": "workspace:~",
++    "@budmh/tools": "workspace:*",
++    "@budmh/experimental-hardware": "workspace:*",
++    "@budmh/llm": "workspace:*"
++  },
++  "devDependencies": {
++    "@budmh/cordis": "workspace:~",
++    "@budmh/tools": "workspace:*",
++    "@budmh/experimental-hardware": "workspace:*",
++    "@budmh/cordis-plugin-include": "workspace:~",
++    "@budmh/cordis-plugin-loader": "workspace:~",
++    "@budmh/agent": "workspace:*",
++    "@budmh/agent-loop": "workspace:*",
++    "@budmh/fs-local": "workspace:*",
++    "@budmh/llm": "workspace:*",
++    "@budmh/sandbox-local": "workspace:*",
++    "@budmh/sandbox-policy": "workspace:*",
++    "@budmh/session": "workspace:*",
++    "@budmh/session-projection": "workspace:*",
++    "@budmh/subprocess-local": "workspace:*",
++    "@budmh/system-prompt": "workspace:*",
++    "@budmh/working-directory": "workspace:*",
++    "@budmh/ptc-runtime-node": "workspace:*",
++    "@budmh/experimental-hardware-hms": "workspace:*",
++    "@budmh/util-values": "workspace:*",
++    "js-yaml": "^4.3.2"
++  }
++}
+diff --git a/packages/experimental/tool-hardware/src/index.ts b/packages/experimental/tool-hardware/src/index.ts
+new file mode 100644
+index 00000000..01409aed
+--- /dev/null
++++ b/packages/experimental/tool-hardware/src/index.ts
+@@ -0,0 +1,50 @@
++/** Native and PTC tools retain canonical operation facts and typed uncertainty. */
++import type { Context } from '@budmh/cordis'
++import z from '@budmh/schemastery'
++import { HarnessError } from '@budmh/llm'
++import type { HardwareMethod } from '@budmh/experimental-hardware'
++import { parameterSchemaSpecToJsonSchema, valueSchemaSpecToJsonSchema, validateArgs } from '@budmh/tools'
++import type { ParameterSchemaSpec } from '@budmh/tools'
++import type { JsonValue } from '@budmh/util-values'
++import { hardwareOutputSchema } from './output-schema.ts'
++export const name = 'tool-hardware'
++export const inject = ['tools', 'hardware']
++export interface Config {}
++export const Config: z<Config> = z.object({})
++const interrupted = 'Hardware call interrupted; its outcome is unconfirmed. Inspect the operation or deliberately replay the unchanged retained request. Do not create a replacement operation key.'
++const text = { type: 'string', required: true } as const
++const integer = { type: 'integer', required: true } as const
++const object = { type: 'object', additionalProperties: true, required: true } as const
++const methods: Record<HardwareMethod, { description: string; parameters: ParameterSchemaSpec }> = {
++  discover: { description: 'List local simulation instances and pinned descriptions.', parameters: { capability: { type: 'string' }, limit: { type: 'integer' }, cursor: { type: 'string' } } },
++  describe: { description: 'Read a simulation instance description and semantic generations.', parameters: { instanceId: text, digest: { type: 'string' } } },
++  observe: { description: 'Read bounded-age simulation evidence, including quality and uncertainty.', parameters: { instanceId: text, property: text, maxAgeMs: integer, evidenceKind: text } },
++  namespace: { description: 'Allocate an expiring replay namespace before preparing an immutable request.', parameters: { expiresUnixMs: integer } },
++  prepare: { description: 'Prepare an immutable request with pinned generations. This does not admit or execute it. Retain the complete request unchanged for invoke and any deliberate replay.', parameters: { instanceId: text, actionId: text, arguments: object, operationKey: text, replayNamespace: text, timing: object, requiredEffect: text } },
++  invoke: { description: 'Submit a retained complete request once. Never reconstruct or change it after uncertain delivery. Acceptance is not completion or physical verification; query its operationId. Automatic retries are disabled.', parameters: { request: object } },
++  operation: { description: 'Read durable execution, cancellation, resource and effect-verification states. Completed simulation is not a verified physical effect.', parameters: { operationId: text } },
++  events: { description: 'Read bounded durable operation events after a sequence cursor.', parameters: { operationId: text, after: { type: 'integer' }, limit: { type: 'integer' } } },
++  cancel: { description: 'Request cancellation of an operation. Cancellation acceptance does not prove stopped hardware or rollback; inspect operation state and resources.', parameters: { operationId: text } },
++}
++/** Register effect-scoped tools. Session and call IDs are output attribution, never authority. */
++export function apply(ctx: Context): void {
++  for (const method of Object.keys(methods) as HardwareMethod[]) {
++    ctx.tools.register({
++      name: `hardware_${method}`, description: methods[method].description, parameters: { ...parameterSchemaSpecToJsonSchema(methods[method].parameters) },
++      output: { schema: valueSchemaSpecToJsonSchema(hardwareOutputSchema(method)), render: (_args, value) => [{ type: 'text', text: JSON.stringify(value) }] },
++      finalizeContent(_exec, result) {
++        if (result.isError && result.error.info?.code === 'ABORTED') return [{ type: 'text', text: interrupted }]
++        return undefined
++      },
++      async execute(args, exec) {
++        const violations = validateArgs(methods[method].parameters, args)
++        if (violations.length > 0) throw new Error(`hardware_${method}: invalid arguments`)
++        // The registry snapshots lossless JSON; the parameter schema above proves an object.
++        const params = args as Record<string, JsonValue>
++        const reply = await ctx.hardware.request(method, params, { ...(exec.agent ? { agent: exec.agent } : {}), signal: exec.signal })
++        if (exec.signal.aborted) throw new HarnessError(interrupted, 'HMS_OUTCOME_UNCONFIRMED')
++        return { ...reply, attribution: { sessionId: exec.agent?.session.id ?? null, callId: exec.callId } }
++      },
++    })
++  }
++}
+diff --git a/packages/experimental/tool-hardware/src/output-schema.ts b/packages/experimental/tool-hardware/src/output-schema.ts
+new file mode 100644
+index 00000000..fe027e9f
+--- /dev/null
++++ b/packages/experimental/tool-hardware/src/output-schema.ts
+@@ -0,0 +1,1512 @@
++/** Generated projection of HMS local-api.schema.json; full bounds and semantics remain in the checked Python client. */
++// Source SHA-256: bc24763b8209eb94d9a801d7a880bf3dbbf7f4ca24ac29dd322a8fac5895164e
++import type { HardwareMethod } from '@budmh/experimental-hardware'
++import type { ValueSchemaSpec } from '@budmh/tools'
++const results = JSON.parse(String.raw`{
++  "description": {
++    "type": "object",
++    "additionalProperties": false,
++    "properties": {
++      "instance": {
++        "type": "object",
++        "additionalProperties": false,
++        "properties": {
++          "id": {
++            "type": "string",
++            "required": true
++          },
++          "deployment": {
++            "type": "string",
++            "required": true
++          },
++          "type_digest": {
++            "type": "string",
++            "required": true
++          },
++          "identity_kind": {
++            "type": "string",
++            "enum": [
++              "simulation",
++              "gateway",
++              "device"
++            ],
++            "required": true
++          },
++          "identity_ref": {
++            "type": "string",
++            "required": true
++          },
++          "retired": {
++            "type": "integer",
++            "enum": [
++              0,
++              1
++            ],
++            "required": true
++          }
++        },
++        "required": true
++      },
++      "descriptionDigest": {
++        "type": "string",
++        "required": true
++      },
++      "type": {
++        "type": "object",
++        "additionalProperties": false,
++        "properties": {
++          "profile": {
++            "type": "string",
++            "const": "hms.type-bundle/0.1",
++            "required": true
++          },
++          "td": {
++            "type": "object",
++            "additionalProperties": true,
++            "required": true
++          },
++          "execution": {
++            "type": "object",
++            "additionalProperties": false,
++            "properties": {
++              "profile": {
++                "type": "string",
++                "const": "hms.execution-contract/0.1",
++                "required": true
++              },
++              "requiredFeatures": {
++                "type": "array",
++                "items": {
++                  "type": "string",
++                  "enum": [
++                    "binding-generations/1",
++                    "durable-operations/1",
++                    "host-invoke/0.1",
++                    "physical-evidence/1"
++                  ]
++                },
++                "required": true
++              },
++              "capabilities": {
++                "type": "array",
++                "items": {
++                  "type": "string"
++                },
++                "required": true
++              },
++              "properties": {
++                "type": "object",
++                "additionalProperties": true,
++                "required": true
++              },
++              "actions": {
++                "type": "object",
++                "additionalProperties": true,
++                "required": true
++              }
++            },
++            "required": true
++          }
++        },
++        "required": true
++      },
++      "binding": {
++        "oneOf": [
++          {
++            "type": "object",
++            "additionalProperties": false,
++            "properties": {
++              "profile": {
++                "type": "string",
++                "const": "hms.binding/0.1",
++                "required": true
++              },
++              "instanceId": {
++                "type": "string",
++                "required": true
++              },
++              "generation": {
++                "type": "string",
++                "required": true
++              },
++              "typeDigest": {
++                "type": "string",
++                "required": true
++              },
++              "calibrationRevision": {
++                "type": "string",
++                "required": true
++              },
++              "controlGeneration": {
++                "type": "string",
++                "required": true
++              },
++              "mode": {
++                "type": "string",
++                "enum": [
++                  "simulation",
++                  "uncommissioned"
++                ],
++                "required": true
++              },
++              "adapterId": {
++                "type": "string",
++                "required": true
++              },
++              "resourceMap": {
++                "type": "object",
++                "additionalProperties": true,
++                "required": true
++              },
++              "argumentSchemas": {
++                "type": "object",
++                "additionalProperties": true,
++                "required": true
++              }
++            }
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "required": true
++      },
++      "bindingActive": {
++        "type": "boolean",
++        "required": true
++      },
++      "presence": {
++        "oneOf": [
++          {
++            "type": "object",
++            "additionalProperties": false,
++            "properties": {
++              "session": {
++                "type": "string",
++                "required": true
++              },
++              "expires_ms": {
++                "type": "integer",
++                "required": true
++              }
++            }
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "required": true
++      },
++      "registryRevision": {
++        "type": "integer",
++        "required": true
++      }
++    }
++  },
++  "discovery": {
++    "type": "object",
++    "additionalProperties": false,
++    "properties": {
++      "items": {
++        "type": "array",
++        "items": {
++          "type": "object",
++          "additionalProperties": false,
++          "properties": {
++            "instanceId": {
++              "type": "string",
++              "required": true
++            },
++            "descriptionDigest": {
++              "type": "string",
++              "required": true
++            },
++            "identityKind": {
++              "type": "string",
++              "enum": [
++                "simulation",
++                "gateway",
++                "device"
++              ],
++              "required": true
++            },
++            "retired": {
++              "type": "boolean",
++              "required": true
++            },
++            "bindingGeneration": {
++              "oneOf": [
++                {
++                  "type": "string"
++                },
++                {
++                  "type": "null"
++                }
++              ],
++              "required": true
++            },
++            "bindingActive": {
++              "type": "boolean",
++              "required": true
++            },
++            "presence": {
++              "oneOf": [
++                {
++                  "type": "object",
++                  "additionalProperties": false,
++                  "properties": {
++                    "session": {
++                      "type": "string",
++                      "required": true
++                    },
++                    "expires_ms": {
++                      "type": "integer",
++                      "required": true
++                    }
++                  }
++                },
++                {
++                  "type": "null"
++                }
++              ],
++              "required": true
++            }
++          }
++        },
++        "required": true
++      },
++      "cursor": {
++        "oneOf": [
++          {
++            "type": "string"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "required": true
++      },
++      "registryRevision": {
++        "type": "integer",
++        "required": true
++      }
++    }
++  },
++  "events": {
++    "type": "object",
++    "additionalProperties": false,
++    "properties": {
++      "events": {
++        "type": "array",
++        "items": {
++          "oneOf": [
++            {
++              "type": "object",
++              "additionalProperties": false,
++              "properties": {
++                "operation_id": {
++                  "type": "string",
++                  "required": true
++                },
++                "sequence": {
++                  "type": "integer",
++                  "required": true
++                },
++                "time_ms": {
++                  "type": "integer",
++                  "required": true
++                },
++                "clock_status": {
++                  "type": "string",
++                  "enum": [
++                    "unqualified_host_clock",
++                    "regressed_clamped",
++                    "unavailable_clamped"
++                  ],
++                  "required": true
++                },
++                "kind": {
++                  "type": "string",
++                  "const": "accepted",
++                  "required": true
++                },
++                "payload": {
++                  "type": "object",
++                  "additionalProperties": false,
++                  "properties": {
++                    "digest": {
++                      "type": "string",
++                      "required": true
++                    }
++                  },
++                  "required": true
++                }
++              }
++            },
++            {
++              "type": "object",
++              "additionalProperties": false,
++              "properties": {
++                "operation_id": {
++                  "type": "string",
++                  "required": true
++                },
++                "sequence": {
++                  "type": "integer",
++                  "required": true
++                },
++                "time_ms": {
++                  "type": "integer",
++                  "required": true
++                },
++                "clock_status": {
++                  "type": "string",
++                  "enum": [
++                    "unqualified_host_clock",
++                    "regressed_clamped",
++                    "unavailable_clamped"
++                  ],
++                  "required": true
++                },
++                "kind": {
++                  "type": "string",
++                  "const": "dispatch_claimed",
++                  "required": true
++                },
++                "payload": {
++                  "type": "object",
++                  "additionalProperties": false,
++                  "properties": {
++                    "attemptId": {
++                      "type": "string",
++                      "required": true
++                    },
++                    "ownerEpoch": {
++                      "type": "integer",
++                      "required": true
++                    }
++                  },
++                  "required": true
++                }
++              }
++            },
++            {
++              "type": "object",
++              "additionalProperties": false,
++              "properties": {
++                "operation_id": {
++                  "type": "string",
++                  "required": true
++                },
++                "sequence": {
++                  "type": "integer",
++                  "required": true
++                },
++                "time_ms": {
++                  "type": "integer",
++                  "required": true
++                },
++                "clock_status": {
++                  "type": "string",
++                  "enum": [
++                    "unqualified_host_clock",
++                    "regressed_clamped",
++                    "unavailable_clamped"
++                  ],
++                  "required": true
++                },
++                "kind": {
++                  "type": "string",
++                  "const": "execution_evidence",
++                  "required": true
++                },
++                "payload": {
++                  "type": "object",
++                  "additionalProperties": false,
++                  "properties": {
++                    "state": {
++                      "type": "string",
++                      "enum": [
++                        "running",
++                        "completed",
++                        "failed",
++                        "canceled"
++                      ],
++                      "required": true
++                    },
++                    "evidence": {
++                      "type": "object",
++                      "additionalProperties": false,
++                      "properties": {
++                        "kind": {
++                          "type": "string",
++                          "enum": [
++                            "sensor",
++                            "controller",
++                            "simulation",
++                            "runtime"
++                          ],
++                          "required": true
++                        },
++                        "source": {
++                          "type": "string",
++                          "required": true
++                        },
++                        "reference": {
++                          "type": "string",
++                          "required": true
++                        },
++                        "assertions": {
++                          "type": "array",
++                          "items": {
++                            "type": "string",
++                            "enum": [
++                              "running",
++                              "completed",
++                              "failed",
++                              "terminated",
++                              "cancel_ack",
++                              "resources_quiescent",
++                              "physical_verified",
++                              "verification_failed",
++                              "disputed"
++                            ]
++                          },
++                          "required": true
++                        }
++                      },
++                      "required": true
++                    }
++                  },
++                  "required": true
++                }
++              }
++            },
++            {
++              "type": "object",
++              "additionalProperties": false,
++              "properties": {
++                "operation_id": {
++                  "type": "string",
++                  "required": true
++                },
++                "sequence": {
++                  "type": "integer",
++                  "required": true
++                },
++                "time_ms": {
++                  "type": "integer",
++                  "required": true
++                },
++                "clock_status": {
++                  "type": "string",
++                  "enum": [
++                    "unqualified_host_clock",
++                    "regressed_clamped",
++                    "unavailable_clamped"
++                  ],
++                  "required": true
++                },
++                "kind": {
++                  "type": "string",
++                  "const": "reconciled",
++                  "required": true
++                },
++                "payload": {
++                  "type": "object",
++                  "additionalProperties": false,
++                  "properties": {
++                    "state": {
++                      "type": "string",
++                      "enum": [
++                        "running",
++                        "completed",
++                        "failed",
++                        "canceled"
++                      ],
++                      "required": true
++                    },
++                    "evidence": {
++                      "type": "object",
++                      "additionalProperties": false,
++                      "properties": {
++                        "kind": {
++                          "type": "string",
++                          "enum": [
++                            "sensor",
++                            "controller",
++                            "simulation",
++                            "runtime"
++                          ],
++                          "required": true
++                        },
++                        "source": {
++                          "type": "string",
++                          "required": true
++                        },
++                        "reference": {
++                          "type": "string",
++                          "required": true
++                        },
++                        "assertions": {
++                          "type": "array",
++                          "items": {
++                            "type": "string",
++                            "enum": [
++                              "running",
++                              "completed",
++                              "failed",
++                              "terminated",
++                              "cancel_ack",
++                              "resources_quiescent",
++                              "physical_verified",
++                              "verification_failed",
++                              "disputed"
++                            ]
++                          },
++                          "required": true
++                        }
++                      },
++                      "required": true
++                    }
++                  },
++                  "required": true
++                }
++              }
++            },
++            {
++              "type": "object",
++              "additionalProperties": false,
++              "properties": {
++                "operation_id": {
++                  "type": "string",
++                  "required": true
++                },
++                "sequence": {
++                  "type": "integer",
++                  "required": true
++                },
++                "time_ms": {
++                  "type": "integer",
++                  "required": true
++                },
++                "clock_status": {
++                  "type": "string",
++                  "enum": [
++                    "unqualified_host_clock",
++                    "regressed_clamped",
++                    "unavailable_clamped"
++                  ],
++                  "required": true
++                },
++                "kind": {
++                  "type": "string",
++                  "const": "canceled_before_dispatch",
++                  "required": true
++                },
++                "payload": {
++                  "type": "object",
++                  "additionalProperties": false,
++                  "properties": {
++                    "proof": {
++                      "type": "string",
++                      "const": "exclusive_accepted_state",
++                      "required": true
++                    }
++                  },
++                  "required": true
++                }
++              }
++            },
++            {
++              "type": "object",
++              "additionalProperties": false,
++              "properties": {
++                "operation_id": {
++                  "type": "string",
++                  "required": true
++                },
++                "sequence": {
++                  "type": "integer",
++                  "required": true
++                },
++                "time_ms": {
++                  "type": "integer",
++                  "required": true
++                },
++                "clock_status": {
++                  "type": "string",
++                  "enum": [
++                    "unqualified_host_clock",
++                    "regressed_clamped",
++                    "unavailable_clamped"
++                  ],
++                  "required": true
++                },
++                "kind": {
++                  "type": "string",
++                  "const": "cancel_requested",
++                  "required": true
++                },
++                "payload": {
++                  "type": "object",
++                  "additionalProperties": false,
++                  "properties": {},
++                  "required": true
++                }
++              }
++            },
++            {
++              "type": "object",
++              "additionalProperties": false,
++              "properties": {
++                "operation_id": {
++                  "type": "string",
++                  "required": true
++                },
++                "sequence": {
++                  "type": "integer",
++                  "required": true
++                },
++                "time_ms": {
++                  "type": "integer",
++                  "required": true
++                },
++                "clock_status": {
++                  "type": "string",
++                  "enum": [
++                    "unqualified_host_clock",
++                    "regressed_clamped",
++                    "unavailable_clamped"
++                  ],
++                  "required": true
++                },
++                "kind": {
++                  "type": "string",
++                  "const": "cancel_ack",
++                  "required": true
++                },
++                "payload": {
++                  "type": "object",
++                  "additionalProperties": false,
++                  "properties": {
++                    "accepted": {
++                      "type": "boolean",
++                      "required": true
++                    },
++                    "evidence": {
++                      "type": "object",
++                      "additionalProperties": false,
++                      "properties": {
++                        "kind": {
++                          "type": "string",
++                          "enum": [
++                            "sensor",
++                            "controller",
++                            "simulation",
++                            "runtime"
++                          ],
++                          "required": true
++                        },
++                        "source": {
++                          "type": "string",
++                          "required": true
++                        },
++                        "reference": {
++                          "type": "string",
++                          "required": true
++                        },
++                        "assertions": {
++                          "type": "array",
++                          "items": {
++                            "type": "string",
++                            "enum": [
++                              "running",
++                              "completed",
++                              "failed",
++                              "terminated",
++                              "cancel_ack",
++                              "resources_quiescent",
++                              "physical_verified",
++                              "verification_failed",
++                              "disputed"
++                            ]
++                          },
++                          "required": true
++                        }
++                      },
++                      "required": true
++                    }
++                  },
++                  "required": true
++                }
++              }
++            },
++            {
++              "type": "object",
++              "additionalProperties": false,
++              "properties": {
++                "operation_id": {
++                  "type": "string",
++                  "required": true
++                },
++                "sequence": {
++                  "type": "integer",
++                  "required": true
++                },
++                "time_ms": {
++                  "type": "integer",
++                  "required": true
++                },
++                "clock_status": {
++                  "type": "string",
++                  "enum": [
++                    "unqualified_host_clock",
++                    "regressed_clamped",
++                    "unavailable_clamped"
++                  ],
++                  "required": true
++                },
++                "kind": {
++                  "type": "string",
++                  "const": "resources_released",
++                  "required": true
++                },
++                "payload": {
++                  "type": "object",
++                  "additionalProperties": false,
++                  "properties": {
++                    "evidence": {
++                      "type": "object",
++                      "additionalProperties": false,
++                      "properties": {
++                        "kind": {
++                          "type": "string",
++                          "enum": [
++                            "sensor",
++                            "controller",
++                            "simulation",
++                            "runtime"
++                          ],
++                          "required": true
++                        },
++                        "source": {
++                          "type": "string",
++                          "required": true
++                        },
++                        "reference": {
++                          "type": "string",
++                          "required": true
++                        },
++                        "assertions": {
++                          "type": "array",
++                          "items": {
++                            "type": "string",
++                            "enum": [
++                              "running",
++                              "completed",
++                              "failed",
++                              "terminated",
++                              "cancel_ack",
++                              "resources_quiescent",
++                              "physical_verified",
++                              "verification_failed",
++                              "disputed"
++                            ]
++                          },
++                          "required": true
++                        }
++                      },
++                      "required": true
++                    }
++                  },
++                  "required": true
++                }
++              }
++            },
++            {
++              "type": "object",
++              "additionalProperties": false,
++              "properties": {
++                "operation_id": {
++                  "type": "string",
++                  "required": true
++                },
++                "sequence": {
++                  "type": "integer",
++                  "required": true
++                },
++                "time_ms": {
++                  "type": "integer",
++                  "required": true
++                },
++                "clock_status": {
++                  "type": "string",
++                  "enum": [
++                    "unqualified_host_clock",
++                    "regressed_clamped",
++                    "unavailable_clamped"
++                  ],
++                  "required": true
++                },
++                "kind": {
++                  "type": "string",
++                  "const": "evidence_dispute",
++                  "required": true
++                },
++                "payload": {
++                  "type": "object",
++                  "additionalProperties": false,
++                  "properties": {
++                    "evidence": {
++                      "type": "object",
++                      "additionalProperties": false,
++                      "properties": {
++                        "kind": {
++                          "type": "string",
++                          "enum": [
++                            "sensor",
++                            "controller",
++                            "simulation",
++                            "runtime"
++                          ],
++                          "required": true
++                        },
++                        "source": {
++                          "type": "string",
++                          "required": true
++                        },
++                        "reference": {
++                          "type": "string",
++                          "required": true
++                        },
++                        "assertions": {
++                          "type": "array",
++                          "items": {
++                            "type": "string",
++                            "enum": [
++                              "running",
++                              "completed",
++                              "failed",
++                              "terminated",
++                              "cancel_ack",
++                              "resources_quiescent",
++                              "physical_verified",
++                              "verification_failed",
++                              "disputed"
++                            ]
++                          },
++                          "required": true
++                        }
++                      },
++                      "required": true
++                    }
++                  },
++                  "required": true
++                }
++              }
++            },
++            {
++              "type": "object",
++              "additionalProperties": false,
++              "properties": {
++                "operation_id": {
++                  "type": "string",
++                  "required": true
++                },
++                "sequence": {
++                  "type": "integer",
++                  "required": true
++                },
++                "time_ms": {
++                  "type": "integer",
++                  "required": true
++                },
++                "clock_status": {
++                  "type": "string",
++                  "enum": [
++                    "unqualified_host_clock",
++                    "regressed_clamped",
++                    "unavailable_clamped"
++                  ],
++                  "required": true
++                },
++                "kind": {
++                  "type": "string",
++                  "const": "recovery_unknown",
++                  "required": true
++                },
++                "payload": {
++                  "type": "object",
++                  "additionalProperties": false,
++                  "properties": {
++                    "reason": {
++                      "type": "string",
++                      "required": true
++                    }
++                  },
++                  "required": true
++                }
++              }
++            },
++            {
++              "type": "object",
++              "additionalProperties": false,
++              "properties": {
++                "operation_id": {
++                  "type": "string",
++                  "required": true
++                },
++                "sequence": {
++                  "type": "integer",
++                  "required": true
++                },
++                "time_ms": {
++                  "type": "integer",
++                  "required": true
++                },
++                "clock_status": {
++                  "type": "string",
++                  "enum": [
++                    "unqualified_host_clock",
++                    "regressed_clamped",
++                    "unavailable_clamped"
++                  ],
++                  "required": true
++                },
++                "kind": {
++                  "type": "string",
++                  "const": "outcome_unknown",
++                  "required": true
++                },
++                "payload": {
++                  "type": "object",
++                  "additionalProperties": false,
++                  "properties": {
++                    "reason": {
++                      "type": "string",
++                      "required": true
++                    }
++                  },
++                  "required": true
++                }
++              }
++            },
++            {
++              "type": "object",
++              "additionalProperties": false,
++              "properties": {
++                "operation_id": {
++                  "type": "string",
++                  "required": true
++                },
++                "sequence": {
++                  "type": "integer",
++                  "required": true
++                },
++                "time_ms": {
++                  "type": "integer",
++                  "required": true
++                },
++                "clock_status": {
++                  "type": "string",
++                  "enum": [
++                    "unqualified_host_clock",
++                    "regressed_clamped",
++                    "unavailable_clamped"
++                  ],
++                  "required": true
++                },
++                "kind": {
++                  "type": "string",
++                  "const": "rejected_before_dispatch",
++                  "required": true
++                },
++                "payload": {
++                  "type": "object",
++                  "additionalProperties": false,
++                  "properties": {
++                    "reason": {
++                      "type": "string",
++                      "required": true
++                    }
++                  },
++                  "required": true
++                }
++              }
++            }
++          ]
++        },
++        "required": true
++      },
++      "next": {
++        "type": "integer",
++        "required": true
++      },
++      "head": {
++        "type": "integer",
++        "required": true
++      },
++      "gap": {
++        "type": "boolean",
++        "const": false,
++        "required": true
++      }
++    }
++  },
++  "namespace": {
++    "type": "object",
++    "additionalProperties": false,
++    "properties": {
++      "token": {
++        "type": "string",
++        "required": true
++      },
++      "epoch": {
++        "type": "integer",
++        "required": true
++      },
++      "expiresUnixMs": {
++        "type": "integer",
++        "required": true
++      },
++      "authorityId": {
++        "type": "string",
++        "required": true
++      }
++    }
++  },
++  "observation": {
++    "type": "object",
++    "additionalProperties": false,
++    "properties": {
++      "protocol": {
++        "type": "string",
++        "const": "hms.observation/0.1",
++        "required": true
++      },
++      "instanceId": {
++        "type": "string",
++        "required": true
++      },
++      "propertyId": {
++        "type": "string",
++        "required": true
++      },
++      "value": {
++        "type": "json",
++        "required": true
++      },
++      "unit": {
++        "type": "string",
++        "required": true
++      },
++      "frame": {
++        "oneOf": [
++          {
++            "type": "string"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "required": true
++      },
++      "evidenceKind": {
++        "type": "string",
++        "enum": [
++          "physical_sensor",
++          "controller_measurement",
++          "command_echo",
++          "estimate",
++          "simulation"
++        ],
++        "required": true
++      },
++      "source": {
++        "type": "string",
++        "required": true
++      },
++      "quality": {
++        "type": "string",
++        "enum": [
++          "valid",
++          "stale",
++          "invalid",
++          "unknown"
++        ],
++        "required": true
++      },
++      "streamEpoch": {
++        "type": "string",
++        "required": true
++      },
++      "sequence": {
++        "type": "integer",
++        "required": true
++      },
++      "endpointSession": {
++        "type": "string",
++        "required": true
++      },
++      "controlGeneration": {
++        "type": "string",
++        "required": true
++      },
++      "bindingGeneration": {
++        "type": "string",
++        "required": true
++      },
++      "calibrationRevision": {
++        "type": "string",
++        "required": true
++      },
++      "acquisition": {
++        "type": "object",
++        "additionalProperties": false,
++        "properties": {
++          "clockDomain": {
++            "type": "string",
++            "required": true
++          },
++          "clockEpoch": {
++            "type": "string",
++            "required": true
++          },
++          "ticksMs": {
++            "type": "integer",
++            "required": true
++          }
++        },
++        "required": true
++      },
++      "receipt": {
++        "type": "object",
++        "additionalProperties": false,
++        "properties": {
++          "clockDomain": {
++            "type": "string",
++            "required": true
++          },
++          "clockEpoch": {
++            "type": "string",
++            "required": true
++          },
++          "ticksMs": {
++            "type": "integer",
++            "required": true
++          }
++        },
++        "required": true
++      },
++      "acquisitionLatencyBoundMs": {
++        "oneOf": [
++          {
++            "type": "integer"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "required": true
++      },
++      "clockUncertaintyMs": {
++        "oneOf": [
++          {
++            "type": "integer"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "required": true
++      },
++      "measurementUncertainty": {
++        "oneOf": [
++          {
++            "type": "object",
++            "additionalProperties": false,
++            "properties": {
++              "absolute": {
++                "type": "number",
++                "required": true
++              },
++              "unit": {
++                "type": "string",
++                "required": true
++              },
++              "method": {
++                "type": "string",
++                "required": true
++              }
++            }
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "required": true
++      },
++      "ageUpperBoundMs": {
++        "oneOf": [
++          {
++            "type": "integer"
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "required": true
++      }
++    }
++  },
++  "operation": {
++    "type": "object",
++    "additionalProperties": false,
++    "properties": {
++      "protocol": {
++        "type": "string",
++        "const": "hms.operation/0.1",
++        "required": true
++      },
++      "operationId": {
++        "type": "string",
++        "required": true
++      },
++      "requestDigest": {
++        "type": "string",
++        "required": true
++      },
++      "instanceId": {
++        "type": "string",
++        "required": true
++      },
++      "actionId": {
++        "type": "string",
++        "required": true
++      },
++      "executionState": {
++        "type": "string",
++        "enum": [
++          "accepted",
++          "dispatching",
++          "running",
++          "outcome_unknown",
++          "completed",
++          "failed",
++          "canceled",
++          "rejected_before_dispatch"
++        ],
++        "required": true
++      },
++      "cancellationState": {
++        "type": "string",
++        "enum": [
++          "not_requested",
++          "requested",
++          "acknowledged",
++          "rejected",
++          "confirmed"
++        ],
++        "required": true
++      },
++      "effectVerification": {
++        "type": "string",
++        "enum": [
++          "unverified",
++          "verified",
++          "failed"
++        ],
++        "required": true
++      },
++      "mayHaveActed": {
++        "type": "boolean",
++        "required": true
++      },
++      "eventSequence": {
++        "type": "integer",
++        "required": true
++      },
++      "resourceClaims": {
++        "type": "array",
++        "items": {
++          "type": "object",
++          "additionalProperties": false,
++          "properties": {
++            "resource": {
++              "type": "string",
++              "required": true
++            },
++            "fence": {
++              "type": "integer",
++              "required": true
++            }
++          }
++        },
++        "required": true
++      },
++      "result": {
++        "oneOf": [
++          {
++            "type": "object",
++            "additionalProperties": false,
++            "properties": {
++              "evidenceKind": {
++                "type": "string",
++                "enum": [
++                  "sensor",
++                  "controller",
++                  "simulation"
++                ],
++                "required": true
++              },
++              "output": {
++                "type": "object",
++                "additionalProperties": true,
++                "required": true
++              }
++            }
++          },
++          {
++            "type": "null"
++          }
++        ],
++        "required": true
++      }
++    }
++  },
++  "prepared": {
++    "type": "object",
++    "additionalProperties": false,
++    "properties": {
++      "request": {
++        "type": "object",
++        "additionalProperties": false,
++        "properties": {
++          "protocol": {
++            "type": "string",
++            "const": "hms.invoke/0.1",
++            "required": true
++          },
++          "replayNamespace": {
++            "type": "string",
++            "required": true
++          },
++          "operationKey": {
++            "type": "string",
++            "required": true
++          },
++          "intent": {
++            "type": "object",
++            "additionalProperties": false,
++            "properties": {
++              "instanceId": {
++                "type": "string",
++                "required": true
++              },
++              "endpointSession": {
++                "type": "string",
++                "required": true
++              },
++              "controlGeneration": {
++                "type": "string",
++                "required": true
++              },
++              "actionId": {
++                "type": "string",
++                "required": true
++              },
++              "descriptionDigest": {
++                "type": "string",
++                "required": true
++              },
++              "bindingGeneration": {
++                "type": "string",
++                "required": true
++              },
++              "calibrationRevision": {
++                "type": "string",
++                "required": true
++              },
++              "arguments": {
++                "type": "object",
++                "additionalProperties": true,
++                "required": true
++              },
++              "requiredEffect": {
++                "type": "string",
++                "enum": [
++                  "capability_completion",
++                  "physical_verified"
++                ],
++                "required": true
++              },
++              "timing": {
++                "type": "object",
++                "additionalProperties": false,
++                "properties": {
++                  "notBeforeUnixMs": {
++                    "type": "integer",
++                    "required": true
++                  },
++                  "latestStartUnixMs": {
++                    "type": "integer",
++                    "required": true
++                  },
++                  "latestCompletionUnixMs": {
++                    "type": "integer",
++                    "required": true
++                  },
++                  "maxRunMs": {
++                    "type": "integer",
++                    "required": true
++                  }
++                },
++                "required": true
++              }
++            },
++            "required": true
++          }
++        },
++        "required": true
++      },
++      "requestDigest": {
++        "type": "string",
++        "required": true
++      },
++      "admitted": {
++        "type": "boolean",
++        "const": false,
++        "required": true
++      }
++    }
++  }
++}`) as Record<string, ValueSchemaSpec>
++const methods = JSON.parse(String.raw`{
++  "discover": "discovery",
++  "describe": "description",
++  "observe": "observation",
++  "namespace": "namespace",
++  "prepare": "prepared",
++  "invoke": "operation",
++  "operation": "operation",
++  "cancel": "operation",
++  "events": "events"
++}`) as Record<HardwareMethod, string>
++const attribution: ValueSchemaSpec = { type: 'object', additionalProperties: false, properties: {
++  sessionId: { oneOf: [{ type: 'string' }, { type: 'null' }], required: true }, callId: { type: 'string', required: true },
++} }
++/** Closed carrier with method-specific identity, state, and evidence fields. */
++export function hardwareOutputSchema(method: HardwareMethod): ValueSchemaSpec {
++  const result = results[methods[method]]
++  if (result === undefined) throw new Error('hardware output schema missing')
++  return { oneOf: [
++    { type: 'object', additionalProperties: false, properties: {
++      ok: { type: 'boolean', const: true, required: true }, result: { ...result, required: true }, attribution: { ...attribution, required: true },
++    } },
++    { type: 'object', additionalProperties: false, properties: {
++      ok: { type: 'boolean', const: false, required: true }, outcome: { type: 'string', const: 'unconfirmed', required: true },
++      error: { type: 'object', additionalProperties: false, required: true, properties: { code: { type: 'string', required: true } } }, attribution: { ...attribution, required: true },
++    } },
++  ] }
++}
+diff --git a/packages/experimental/tool-hardware/tests/hms-integration.spec.ts b/packages/experimental/tool-hardware/tests/hms-integration.spec.ts
+new file mode 100644
+index 00000000..24f77907
+--- /dev/null
++++ b/packages/experimental/tool-hardware/tests/hms-integration.spec.ts
+@@ -0,0 +1,238 @@
++/** Actual Loader, native tools, Node PTC and Session replay against a local synthetic plant. */
++import { spawn, type ChildProcess } from 'node:child_process'
++import { once } from 'node:events'
++import { appendFile, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import { pathToFileURL } from 'node:url'
++import { afterEach, describe, expect, it, vi } from 'vitest'
++import { Context } from '@budmh/cordis'
++import Loader from '@budmh/cordis-plugin-loader'
++import Include, { entryListSchema } from '@budmh/cordis-plugin-include'
++import yaml from 'js-yaml'
++import AgentRegistry from '@budmh/agent'
++import AgentLoop from '@budmh/agent-loop'
++import LocalFileSystem from '@budmh/fs-local'
++import LlmRuntime, { LlmAdapter, ToolCallId, createUserMessage } from '@budmh/llm'
++import type { GenerateOptions, LlmResolvedModelInfo, StreamChunk } from '@budmh/llm'
++import LocalSandbox from '@budmh/sandbox-local'
++import SandboxPolicyService from '@budmh/sandbox-policy'
++import SessionStore, { Session, SessionId } from '@budmh/session'
++import SessionProjectionRegistry from '@budmh/session-projection'
++import LocalSubprocessRuntime from '@budmh/subprocess-local'
++import SystemPrompt from '@budmh/system-prompt'
++import ToolRuntime from '@budmh/tools'
++import WorkingDirectoryService from '@budmh/working-directory'
++import NodePtcRuntime from '@budmh/ptc-runtime-node'
++import HmsHardware from '@budmh/experimental-hardware-hms'
++import type { JsonValue } from '@budmh/util-values'
++import * as ToolHardware from '../src/index.ts'
++
++const hmsRoot = process.env.HMS_ROOT
++let context: Context | undefined
++let directory: string | undefined
++let daemon: ChildProcess | undefined
++let daemonError = ''
++afterEach(async () => {
++  await context?.fiber.dispose(); context = undefined
++  vi.unstubAllEnvs()
++  if (daemon) { const process = daemon; daemon = undefined; const exited = once(process, 'exit'); process.kill('SIGTERM'); const code: unknown = (await exited)[0]; expect(code, daemonError).toBe(0) }
++  if (directory) await rm(directory, { recursive: true, force: true }); directory = undefined
++})
++
++async function setup(mode: 'native' | 'ptc') {
++  directory = await mkdtemp(join(tmpdir(), 'hms-native-'))
++  const socketPath = join(directory, 'control.sock')
++  daemonError = ''
++  daemon = spawn('python3', ['-m', 'hms', 'serve', '--init-simulation', '--state-dir', join(directory, 'state'), '--socket', socketPath], { cwd: hmsRoot, stdio: ['ignore', 'pipe', 'pipe'] })
++  daemon.stderr!.on('data', (chunk) => { daemonError += String(chunk) })
++  const ready: unknown = (await once(daemon.stdout!, 'data'))[0]
++  expect(JSON.parse(String(ready))).toMatchObject({ ready: true, deployment: 'simulation:local' })
++  const modules = new Map<string, unknown>([
++    ['@budmh/agent', AgentRegistry], ['@budmh/session', SessionStore], ['@budmh/session-projection', SessionProjectionRegistry],
++    ['@budmh/system-prompt', SystemPrompt], ['@budmh/llm', LlmRuntime], ['@budmh/tools', ToolRuntime],
++    ['@budmh/fs-local', LocalFileSystem], ['@budmh/subprocess-local', LocalSubprocessRuntime], ['@budmh/sandbox-local', LocalSandbox],
++    ['@budmh/sandbox-policy', SandboxPolicyService], ['@budmh/working-directory', WorkingDirectoryService],
++    ['@budmh/ptc-runtime-node', NodePtcRuntime], ['@budmh/experimental-hardware-hms', HmsHardware],
++    ['@budmh/experimental-tool-hardware', ToolHardware], ['@budmh/agent-loop', AgentLoop],
++  ])
++  const rows = [...modules.keys()].filter(name => !name.startsWith('@budmh/experimental-')).map(name => ({ name: 'cordis:' + name,
++    ...name === '@budmh/tools' ? { config: { mode } } : {},
++    ...name === '@budmh/sandbox-policy' ? { config: { mode: 'danger-full-access' } } : {},
++    ...name === '@budmh/agent-loop' ? { config: { agents: [] } } : {},
++  }))
++  const patchPath = new URL('../../hardware-profile/cordis.patch.yml', import.meta.url)
++  const patches = yaml.load(await readFile(patchPath, 'utf8'), { schema: entryListSchema }) as { insert: { id: string; name: string; config?: Record<string, string> }[] }[]
++  for (const row of patches[0]!.insert) {
++    row.name = 'cordis:' + row.name
++
++  }
++  vi.stubEnv('HMS_SOCKET', socketPath)
++  const configPath = join(directory, 'cordis.yml')
++  await writeFile(configPath, JSON.stringify(rows))
++  context = new Context(); context.baseUrl = pathToFileURL(directory).href + '/'
++  await context.plugin(Loader)
++  context.loader.builtins.include = Include
++  for (const [name, plugin] of modules) context.loader.builtins[name] = plugin
++  await context.loader.create({ name: 'cordis:include', config: { path: pathToFileURL(configPath).href, patches } })
++  await context.loader.await()
++  const ctx = context
++  const agent = await ctx.agentLoop.create(SessionId('hms-integration'), {}, { cwd: directory })
++  let calls = 0
++  const invoke = async (method: string, args: Record<string, JsonValue>) => {
++    const start = performance.now()
++    const result = await ctx.tools.execute({ name: 'hardware_' + method, arguments: args, callId: ToolCallId(`hms-${++calls}`), agent, signal: new AbortController().signal })
++    if (process.env.HMS_TIMINGS) {
++      await appendFile(process.env.HMS_TIMINGS, JSON.stringify({ method, elapsedMs: performance.now() - start }) + '\n')
++    }
++    expect(result.isError, JSON.stringify(result)).not.toBe(true)
++    expect(result.content).toEqual([{ type: 'text', text: JSON.stringify(result.value) }])
++    return result.value as {
++      ok: boolean
++      result: Record<string, JsonValue>
++      error?: { code: string }
++      attribution: { sessionId: string; callId: string }
++    }
++  }
++  return { ctx, agent, invoke }
++}
++
++describe.skipIf(!hmsRoot || process.platform !== 'linux')('native HMS simulation integration', () => {
++  it('composes the opt-in profile, executes three scenarios, preserves replay and typed rejection, then unloads tools', async () => {
++    const { ctx, invoke } = await setup('native')
++    expect(await ctx.hardware.request('discover', {}, { signal: AbortSignal.abort() })).toEqual({ ok: false, error: { code: 'TRANSPORT_INTERRUPTED' }, outcome: 'unconfirmed' })
++    const before = await ctx.tools.execute({ name: 'hardware_invoke', arguments: { request: {} }, callId: ToolCallId('before-abort'), signal: AbortSignal.abort() })
++    expect(before.isError && before.error.info?.code).toBe('ABORTED_BEFORE_DISPATCH')
++    const controller = new AbortController()
++    const pending = vi.spyOn(ctx.hardware, 'request').mockImplementationOnce(async () => {
++      controller.abort(); return { ok: false, error: { code: 'TRANSPORT_INTERRUPTED' }, outcome: 'unconfirmed' }
++    })
++    try {
++      const interrupted = await ctx.tools.execute({ name: 'hardware_invoke', arguments: { request: {} }, callId: ToolCallId('after-abort'), signal: controller.signal })
++      expect(interrupted.isError && interrupted.error.info?.code).toBe('HMS_OUTCOME_UNCONFIRMED')
++      expect(JSON.stringify(interrupted.content)).toContain('outcome is unconfirmed')
++      expect(pending).toHaveBeenCalledTimes(1)
++    } finally { pending.mockRestore() }
++    const lateController = new AbortController()
++    const lateProvider = vi.spyOn(ctx.hardware, 'request').mockResolvedValueOnce({ ok: false, error: { code: 'TRANSPORT_FAILURE' }, outcome: 'unconfirmed' })
++    const disposeLateAbort = ctx.on('tools/post-execute', async (exec, _result, next) => {
++      const decision = await next()
++      if (exec.callId === 'late-abort') lateController.abort()
++      return decision
++    })
++    try {
++      const late = await ctx.tools.execute({ name: 'hardware_invoke', arguments: { request: {} }, callId: ToolCallId('late-abort'), signal: lateController.signal })
++      expect(late.isError && late.error.info?.code).toBe('ABORTED')
++      expect(JSON.stringify(late.content)).toContain('outcome is unconfirmed')
++    } finally { disposeLateAbort(); lateProvider.mockRestore() }
++    const discovered = await invoke('discover', { limit: 10 })
++    expect(discovered.ok).toBe(true); expect(discovered.result.items).toHaveLength(3)
++    await invoke('discover', { limit: 10 }); await invoke('discover', { limit: 10 })
++    const namespace = await invoke('namespace', { expiresUnixMs: Date.now() + 180000 })
++    const cases: [string, string, Record<string, JsonValue>][] = [
++      ['sim:home-fan', 'set_level', { level: 37, unit: 'percent' }],
++      ['sim:microscope', 'move_absolute', { position: 12.5, unit: 'um', frame: 'sim:microscope' }],
++      ['sim:inspection-cell', 'inspect', { recipe: 2, partId: 'synthetic-part' }],
++    ]
++    for (const [instanceId, actionId, args] of cases) {
++      const now = Date.now()
++      const params = { instanceId, actionId, arguments: args, operationKey: 'native-' + actionId, replayNamespace: namespace.result.token!, requiredEffect: 'capability_completion', timing: { notBeforeUnixMs: now, latestStartUnixMs: now + 60000, maxRunMs: 5000, latestCompletionUnixMs: now + 120000 } }
++      const prepared = await invoke('prepare', params)
++      expect(prepared.ok, JSON.stringify(prepared)).toBe(true)
++      const retained = JSON.stringify(prepared.result.request)
++      const accepted = await invoke('invoke', { request: JSON.parse(retained) as JsonValue })
++      expect(accepted.ok, JSON.stringify(accepted)).toBe(true)
++      const replayed = await invoke('invoke', { request: JSON.parse(retained) as JsonValue })
++      expect(replayed.result.operationId).toBe(accepted.result.operationId)
++      if (actionId === 'set_level') {
++        const changed = JSON.parse(retained) as { intent: { arguments: { level: number } } }; changed.intent.arguments.level = 38
++        expect((await invoke('invoke', { request: changed })).error?.code).toBe('KEY_CONFLICT')
++      }
++      let status = accepted
++      for (let i = 0; i < 40 && status.result.executionState !== 'completed'; i++) status = await invoke('operation', { operationId: accepted.result.operationId! })
++      expect(status.result.executionState).toBe('completed')
++      expect(status.result.effectVerification).toBe('unverified')
++      expect(status.result.result).toMatchObject({ evidenceKind: 'simulation' })
++      const denied = await invoke('prepare', { ...params, operationKey: 'denied-' + actionId, requiredEffect: 'physical_verified' })
++      expect(denied.ok).toBe(false); expect(denied.error?.code).toBeDefined()
++      expect(JSON.stringify(prepared.result.request)).toBe(retained)
++    }
++    const now = Date.now()
++    const later = await invoke('prepare', { instanceId: 'sim:home-fan', actionId: 'set_level', arguments: { level: 80, unit: 'percent' }, operationKey: 'future-cancel', replayNamespace: namespace.result.token!, requiredEffect: 'capability_completion', timing: { notBeforeUnixMs: now + 60000, latestStartUnixMs: now + 90000, maxRunMs: 5000, latestCompletionUnixMs: now + 100000 } })
++    const waiting = await invoke('invoke', { request: later.result.request! })
++    const canceled = await invoke('cancel', { operationId: waiting.result.operationId! })
++    expect(canceled.ok).toBe(true)
++    let stopped = canceled
++    for (let i = 0; i < 5 && stopped.result.executionState !== 'canceled'; i++) stopped = await invoke('operation', { operationId: waiting.result.operationId! })
++    expect(stopped.result.executionState).toBe('canceled')
++    expect(stopped.result.mayHaveActed).toBe(false)
++    const entry = [...ctx.loader.entries()].find(row => row.options.name === 'cordis:@budmh/experimental-tool-hardware')!
++    await entry.fiber!.dispose()
++    expect(ctx.tools.schemas().filter(tool => tool.name.startsWith('hardware_'))).toHaveLength(0)
++  }, 120000)
++
++  it('executes actual Node PTC and preserves canonical nested output in restored Session events', async () => {
++    const { ctx, agent } = await setup('ptc')
++    const result = await ctx.tools.execute({ name: 'run_code', arguments: { code: `const namespace = await tools.hardware_namespace({ expiresUnixMs: Date.now() + 180000 });
++const now = Date.now();
++const prepared = await tools.hardware_prepare({ instanceId: 'sim:home-fan', actionId: 'set_level', arguments: { level: 42, unit: 'percent' }, operationKey: 'ptc-fan', replayNamespace: namespace.result.token, requiredEffect: 'capability_completion', timing: { notBeforeUnixMs: now, latestStartUnixMs: now + 60000, maxRunMs: 5000, latestCompletionUnixMs: now + 120000 } });
++const retained = JSON.stringify(prepared.result.request);
++const admitted = await tools.hardware_invoke({ request: JSON.parse(retained) });
++const replayed = await tools.hardware_invoke({ request: JSON.parse(retained) });
++if (admitted.result.operationId !== replayed.result.operationId) throw new Error('replay identity changed');
++const status = await tools.hardware_operation({ operationId: admitted.result.operationId });
++if (status.result.executionState !== 'completed' || status.result.effectVerification !== 'unverified' || status.result.result.evidenceKind !== 'simulation') throw new Error('unexpected operation evidence');
++return { admitted, replayed, status };`, description: 'Inspect simulated instances' }, callId: ToolCallId('ptc-hms'), agent, signal: new AbortController().signal })
++    expect(result.isError, JSON.stringify(result)).not.toBe(true)
++    const events = agent.session.snapshotEvents()
++    const dispatch = events.filter(event => event.type === 'tool/ptc-dispatch')
++    expect(dispatch).toHaveLength(5)
++    const restored = Session.create(agent.session.id, events, agent.session.header)
++    expect(restored.snapshotEvents().filter(event => event.type !== 'session/end-seed')).toEqual(events)
++    expect(JSON.stringify(dispatch)).toContain('simulation')
++    expect(JSON.stringify(dispatch)).toContain('ptc-hms:ptc:')
++    expect(JSON.stringify(dispatch)).toContain('sim:home-fan')
++  }, 120000)
++
++  it('records native AgentLoop tool results and reconstructs model-visible history from a persisted Session', async () => {
++    const { ctx } = await setup('native')
++    class ScriptedAdapter extends LlmAdapter {
++      private turns = 0
++      override async resolveModel(provider: string, model: string): Promise<LlmResolvedModelInfo> {
++        return { provider, id: model, name: model }
++      }
++      async *stream(_options: GenerateOptions): AsyncIterable<StreamChunk> {
++        if (this.turns++ === 0) {
++          const id = ToolCallId('recorded-discover')
++          yield { type: 'block-start', index: 0, blockType: 'tool-call' }
++          yield { type: 'tool-call-delta', index: 0, id, name: 'hardware_discover', argumentsDelta: '{"limit":10}' }
++          yield { type: 'block-end', index: 0, block: { type: 'tool-call', id, name: 'hardware_discover', arguments: '{"limit":10}' } }
++          yield { type: 'finish', reason: { kind: 'tool-calls' } }
++        } else {
++          const text = 'Three simulation instances; no physical effect is verified.'
++          yield { type: 'block-start', index: 0, blockType: 'text' }
++          yield { type: 'text-delta', index: 0, text }
++          yield { type: 'block-end', index: 0, block: { type: 'text', text } }
++          yield { type: 'finish', reason: { kind: 'stop' } }
++        }
++      }
++    }
++    ctx.llm.registerAdapter(['hms-keyless'], new ScriptedAdapter())
++    const agent = await ctx.agentLoop.create(SessionId('hms-recorded'), { provider: 'hms-keyless', model: 'local-script' }, { cwd: directory! })
++    const idle = new Promise<void>((resolve) => { const dispose = ctx.on('agent/status', (event) => { if (event.agent === agent && event.status === 'idle') { dispose(); resolve() } }) })
++    agent.followup(createUserMessage({ content: [{ type: 'text', text: 'List the simulated hardware without acting.' }], source: { kind: 'user' } }))
++    await idle
++    const captured = { id: agent.session.id, header: agent.session.header, events: agent.session.snapshotEvents() }
++    const path = join(directory!, 'session-capture.json')
++    await writeFile(path, JSON.stringify(captured))
++    const reopened = JSON.parse(await readFile(path, 'utf8')) as typeof captured
++    const restored = Session.create(reopened.id, reopened.events, reopened.header)
++    expect(restored.deriveMessages()).toEqual(agent.session.deriveMessages())
++    const results = reopened.events.filter(event => event.type === 'tool/result')
++    expect(results).toHaveLength(1)
++    expect(JSON.stringify(results)).toContain('sim:inspection-cell')
++    expect(JSON.stringify(results)).toContain('recorded-discover')
++    expect(JSON.stringify(results)).toContain('hms-recorded')
++    if (process.env.HMS_CAPTURE) await writeFile(process.env.HMS_CAPTURE, JSON.stringify(captured, null, 2) + '\n')
++  }, 120000)
++})
+diff --git a/packages/experimental/tool-hardware/tsconfig.json b/packages/experimental/tool-hardware/tsconfig.json
+new file mode 100644
+index 00000000..235222f5
+--- /dev/null
++++ b/packages/experimental/tool-hardware/tsconfig.json
+@@ -0,0 +1,27 @@
++{
++  "extends": "../../../tsconfig.base.json",
++  "compilerOptions": {
++    "rootDir": "src",
++    "outDir": "lib/types"
++  },
++  "include": [
++    "src"
++  ],
++  "references": [
++    {
++      "path": "../../../vendor/cordis"
++    },
++    {
++      "path": "../hardware"
++    },
++    {
++      "path": "../../../vendor/schemastery"
++    },
++    {
++      "path": "../../core/tools"
++    },
++    {
++      "path": "../../llm/llm"
++    }
++  ]
++}
+diff --git a/pnpm-lock.yaml b/pnpm-lock.yaml
+index 53efc019..cf83cbbd 100644
+--- a/pnpm-lock.yaml
++++ b/pnpm-lock.yaml
+@@ -9859,6 +9859,60 @@ importers:
+         specifier: ^0.35.3
+         version: 0.35.5(@types/node@22.20.1)
+ 
++  packages/experimental/hardware:
++    dependencies:
++      '@budmh/util-values':
++        specifier: workspace:*
++        version: link:../../util/values
++    devDependencies:
++      '@budmh/agent':
++        specifier: workspace:*
++        version: link:../../core/agent
++      '@budmh/cordis':
++        specifier: workspace:~
++        version: link:../../../vendor/cordis
++
++  packages/experimental/hardware-hms:
++    dependencies:
++      '@budmh/experimental-hardware':
++        specifier: workspace:*
++        version: link:../hardware
++      '@budmh/schemastery':
++        specifier: link:../../../vendor/schemastery
++        version: link:../../../vendor/schemastery
++      '@budmh/timeout':
++        specifier: workspace:*
++        version: link:../../util/timeout
++    devDependencies:
++      '@budmh/cordis':
++        specifier: workspace:~
++        version: link:../../../vendor/cordis
++      '@budmh/sandbox':
++        specifier: workspace:*
++        version: link:../../sandbox/sandbox
++      '@budmh/sandbox-policy':
++        specifier: workspace:*
++        version: link:../../sandbox/sandbox-policy
++      '@budmh/subprocess':
++        specifier: workspace:*
++        version: link:../../subprocess/subprocess
++      '@budmh/util-values':
++        specifier: workspace:*
++        version: link:../../util/values
++
++  packages/experimental/hardware-profile:
++    dependencies:
++      '@budmh/experimental-hardware-hms':
++        specifier: workspace:*
++        version: link:../hardware-hms
++      '@budmh/experimental-tool-hardware':
++        specifier: workspace:*
++        version: link:../tool-hardware
++    devDependencies:
++      '@budmh/cordis':
++        specifier: workspace:~
++        version: link:../../../vendor/cordis
++
+   packages/experimental/inspector:
+     dependencies:
+       '@budmh/app-boot':
+@@ -10320,6 +10374,73 @@ importers:
+         specifier: workspace:*
+         version: link:../../core/tools
+ 
++  packages/experimental/tool-hardware:
++    dependencies:
++      '@budmh/experimental-hardware':
++        specifier: workspace:*
++        version: link:../hardware
++      '@budmh/schemastery':
++        specifier: link:../../../vendor/schemastery
++        version: link:../../../vendor/schemastery
++    devDependencies:
++      '@budmh/agent':
++        specifier: workspace:*
++        version: link:../../core/agent
++      '@budmh/agent-loop':
++        specifier: workspace:*
++        version: link:../../core/agent-loop
++      '@budmh/cordis':
++        specifier: workspace:~
++        version: link:../../../vendor/cordis
++      '@budmh/cordis-plugin-include':
++        specifier: workspace:~
++        version: link:../../../vendor/include
++      '@budmh/cordis-plugin-loader':
++        specifier: workspace:~
++        version: link:../../../vendor/loader
++      '@budmh/experimental-hardware-hms':
++        specifier: workspace:*
++        version: link:../hardware-hms
++      '@budmh/fs-local':
++        specifier: workspace:*
++        version: link:../../fs/fs-local
++      '@budmh/llm':
++        specifier: workspace:*
++        version: link:../../llm/llm
++      '@budmh/ptc-runtime-node':
++        specifier: workspace:*
++        version: link:../../ptc-runtime/ptc-runtime-node
++      '@budmh/sandbox-local':
++        specifier: workspace:*
++        version: link:../../sandbox/sandbox-local
++      '@budmh/sandbox-policy':
++        specifier: workspace:*
++        version: link:../../sandbox/sandbox-policy
++      '@budmh/session':
++        specifier: workspace:*
++        version: link:../../core/session
++      '@budmh/session-projection':
++        specifier: workspace:*
++        version: link:../../session/session-projection
++      '@budmh/subprocess-local':
++        specifier: workspace:*
++        version: link:../../subprocess/subprocess-local
++      '@budmh/system-prompt':
++        specifier: workspace:*
++        version: link:../../core/system-prompt
++      '@budmh/tools':
++        specifier: workspace:*
++        version: link:../../core/tools
++      '@budmh/util-values':
++        specifier: workspace:*
++        version: link:../../util/values
++      '@budmh/working-directory':
++        specifier: workspace:*
++        version: link:../../session/working-directory
++      js-yaml:
++        specifier: ^4.3.2
++        version: 4.3.2
++
+   packages/experimental/tool-ralph:
+     dependencies:
+       '@budmh/schemastery':
+diff --git a/tsconfig.base.json b/tsconfig.base.json
+index 2572cec1..5a581b40 100644
+--- a/tsconfig.base.json
++++ b/tsconfig.base.json
+@@ -361,6 +361,10 @@
+       "@budmh/experimental-claude-code-mods": ["./packages/experimental/claude-code-mods/src"],
+       "@budmh/experimental-agent-team-profile": ["./packages/experimental/agent-team-profile/src"],
+       "@budmh/experimental-tool-agent-team": ["./packages/experimental/tool-agent-team/src"],
++      "@budmh/experimental-hardware": ["./packages/experimental/hardware/src"],
++      "@budmh/experimental-hardware-hms": ["./packages/experimental/hardware-hms/src"],
++      "@budmh/experimental-tool-hardware": ["./packages/experimental/tool-hardware/src"],
++      "@budmh/experimental-hardware-profile": ["./packages/experimental/hardware-profile/src"],
+       "@budmh/experimental-worktree": ["./packages/experimental/worktree/src"],
+       "@budmh/experimental-tool-worktree": ["./packages/experimental/tool-worktree/src"],
+       "@budmh/experimental-webworker-runtime": ["./packages/experimental/webworker-runtime/src"],
+diff --git a/tsconfig.host.json b/tsconfig.host.json
+index 3d2185dc..6a78ce58 100644
+--- a/tsconfig.host.json
++++ b/tsconfig.host.json
+@@ -402,6 +402,10 @@
+     { "path": "./packages/workspace/workspace-shared-store" },
+     { "path": "./packages/session/session-title" },
+     { "path": "./packages/session/working-directory" },
++    { "path": "./packages/experimental/hardware" },
++    { "path": "./packages/experimental/hardware-hms" },
++    { "path": "./packages/experimental/hardware-profile" },
++    { "path": "./packages/experimental/tool-hardware" },
+     { "path": "./packages/experimental/worktree" },
+     { "path": "./packages/experimental/tool-worktree" },
+     { "path": "./packages/session/tool-working-directory" },

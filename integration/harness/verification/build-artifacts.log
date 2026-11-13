@@ -1,0 +1,308 @@
+$ tsx scripts/build.ts --scope artifacts
+run-gates: build:artifacts running 7 gate(s) with 7 worker(s) from 12 local default worker(s) of 16 CPU(s).
+run-gates: start native addon
+run-gates: PASS native addon (3.59s)
+run-gates: start host compiler
+
+== FAILED host compiler (261.00s) ==
+command: tsc -b <tsconfig.host.json references>
+outcome: exit 2
+packages/client/audio/src/ClipPlayer.tsx(7,18): error TS2307: Cannot find module 'clsx' or its corresponding type declarations.
+apps/cli/src/args.ts(20,63): error TS2307: Cannot find module 'commander' or its corresponding type declarations.
+apps/cli/src/args.ts(724,38): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+apps/cli/src/args.ts(725,39): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+apps/cli/src/args.ts(866,29): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+apps/cli/src/args.ts(872,36): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+apps/cli/src/args.ts(1143,11): error TS2322: Type 'string | undefined' is not assignable to type '"per-item" | "per-thread" | undefined'.
+  Type 'string' is not assignable to type '"per-item" | "per-thread" | undefined'.
+apps/cli/src/args.ts(1143,37): error TS2322: Type 'string | undefined' is not assignable to type '"exclusive" | "fan-out" | undefined'.
+  Type 'string' is not assignable to type '"exclusive" | "fan-out" | undefined'.
+apps/cli/src/args.ts(1206,74): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+apps/cli/src/args.ts(1206,129): error TS2345: Argument of type 'string | undefined' is not assignable to parameter of type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+apps/cli/src/args.ts(1222,59): error TS18046: 'error' is of type 'unknown'.
+apps/plugin-market-generator/src/cli.ts(13,71): error TS2307: Cannot find module 'commander' or its corresponding type declarations.
+apps/plugin-market-generator/src/cli.ts(107,12): error TS18046: 'error' is of type 'unknown'.
+apps/plugin-market-generator/src/metadata.ts(8,27): error TS2307: Cannot find module 'hosted-git-info' or its corresponding type declarations.
+apps/plugin-market-generator/src/metadata.ts(10,57): error TS2307: Cannot find module 'resolve.exports' or its corresponding type declarations.
+apps/plugin-market-generator/src/packages.ts(5,36): error TS2307: Cannot find module 'yaml' or its corresponding type declarations.
+apps/desktop-host/src/windows-cli-signals.ts(10,43): error TS2307: Cannot find module 'koffi' or its corresponding type declarations.
+apps/desktop/src/background-notice.ts(5,63): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/browser-guests.ts(3,82): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/browser-guests.ts(72,38): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(72,45): error TS7006: Parameter 'preferences' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(72,58): error TS7006: Parameter 'params' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(94,37): error TS7006: Parameter '_event' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(94,45): error TS7006: Parameter 'guest' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(111,37): error TS7031: Binding element 'url' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(111,42): error TS7031: Binding element 'postBody' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(113,70): error TS18048: 'lease' is possibly 'undefined'.
+apps/desktop/src/browser-guests.ts(120,40): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(123,34): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(123,41): error TS7006: Parameter 'url' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(123,46): error TS7006: Parameter '_inPlace' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(123,56): error TS7006: Parameter 'mainFrame' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(126,40): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(127,26): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(127,33): error TS7006: Parameter '_details' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(127,43): error TS7006: Parameter '_authInfo' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(127,54): error TS7006: Parameter 'callback' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(134,39): error TS7006: Parameter '_event' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(134,47): error TS7006: Parameter '_url' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(134,53): error TS7006: Parameter 'inPlace' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(134,62): error TS7006: Parameter 'mainFrame' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(142,49): error TS7006: Parameter '_contents' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(142,60): error TS7006: Parameter '_permission' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(142,73): error TS7006: Parameter 'callback' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(145,51): error TS7006: Parameter '_request' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(145,61): error TS7006: Parameter 'callback' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(146,41): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(147,48): error TS7006: Parameter 'details' implicitly has an 'any' type.
+apps/desktop/src/browser-guests.ts(147,57): error TS7006: Parameter 'callback' implicitly has an 'any' type.
+apps/desktop/src/command-management.ts(7,63): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/command-management.ts(186,33): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'UpdateDialogOptions'.
+apps/desktop/src/command-management.ts(190,33): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'UpdateDialogOptions'.
+apps/desktop/src/command-management.ts(204,11): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'UpdateDialogOptions'.
+apps/desktop/src/command-management.ts(217,9): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'UpdateDialogOptions'.
+apps/desktop/src/command-management.ts(232,9): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'UpdateDialogOptions'.
+apps/desktop/src/device-info.ts(12,39): error TS2339: Property 'getSystemVersion' does not exist on type 'Process'.
+apps/desktop/src/directory-picker.ts(3,53): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/directory-picker.ts(12,52): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/directory-picker.ts(25,10): error TS7031: Binding element 'canceled' implicitly has an 'any' type.
+apps/desktop/src/directory-picker.ts(25,20): error TS7031: Binding element 'filePaths' implicitly has an 'any' type.
+apps/desktop/src/fatal-recovery.ts(3,63): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/ipc.ts(4,41): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/keyboard.ts(2,133): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/keyboard.ts(80,51): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/keyboard.ts(86,52): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/keyboard.ts(91,51): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/keyboard.ts(97,53): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/keyboard.ts(125,32): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/keyboard.ts(125,47): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/keyboard.ts(128,33): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/main.ts(24,8): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/main.ts(118,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+apps/desktop/src/main.ts(155,94): error TS2339: Property 'resourcesPath' does not exist on type 'Process'.
+apps/desktop/src/main.ts(237,46): error TS7031: Binding element 'url' implicitly has an 'any' type.
+apps/desktop/src/main.ts(274,42): error TS7006: Parameter '_event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(274,52): error TS7031: Binding element 'isEditable' implicitly has an 'any' type.
+apps/desktop/src/main.ts(274,64): error TS7031: Binding element 'selectionText' implicitly has an 'any' type.
+apps/desktop/src/main.ts(274,79): error TS7031: Binding element 'editFlags' implicitly has an 'any' type.
+apps/desktop/src/main.ts(301,43): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(301,50): error TS7006: Parameter 'url' implicitly has an 'any' type.
+apps/desktop/src/main.ts(323,20): error TS2339: Property 'resourcesPath' does not exist on type 'Process'.
+apps/desktop/src/main.ts(371,76): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/main.ts(376,60): error TS2339: Property 'cancelId' does not exist on type 'UpdateDialogOptions'.
+apps/desktop/src/main.ts(377,60): error TS2353: Object literal may only specify known properties, and 'signal' does not exist in type 'UpdateDialogOptions'.
+apps/desktop/src/main.ts(384,32): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'UpdateDialogOptions'.
+apps/desktop/src/main.ts(389,24): error TS2339: Property 'resourcesPath' does not exist on type 'Process'.
+apps/desktop/src/main.ts(428,42): error TS18048: 'navigation' is possibly 'undefined'.
+apps/desktop/src/main.ts(428,73): error TS18048: 'navigation' is possibly 'undefined'.
+apps/desktop/src/main.ts(454,185): error TS7006: Parameter 'cookie' implicitly has an 'any' type.
+apps/desktop/src/main.ts(520,36): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'UpdateDialogOptions'.
+apps/desktop/src/main.ts(595,27): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/main.ts(663,28): error TS7006: Parameter 'request' implicitly has an 'any' type.
+apps/desktop/src/main.ts(686,43): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(693,43): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(702,47): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(706,47): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(711,111): error TS7006: Parameter 'details' implicitly has an 'any' type.
+apps/desktop/src/main.ts(711,120): error TS7006: Parameter 'callback' implicitly has an 'any' type.
+apps/desktop/src/main.ts(730,39): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(734,38): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(739,40): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(743,39): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(745,43): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(749,54): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(757,42): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(768,46): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(772,43): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(776,55): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(780,45): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(791,50): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(820,93): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'UpdateDialogOptions'.
+apps/desktop/src/main.ts(830,38): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'UpdateDialogOptions'.
+apps/desktop/src/main.ts(844,53): error TS2353: Object literal may only specify known properties, and 'title' does not exist in type 'UpdateDialogOptions'.
+apps/desktop/src/main.ts(892,55): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'UpdateDialogOptions'.
+apps/desktop/src/main.ts(898,41): error TS2353: Object literal may only specify known properties, and 'type' does not exist in type 'UpdateDialogOptions'.
+apps/desktop/src/main.ts(929,20): error TS2339: Property 'resourcesPath' does not exist on type 'Process'.
+apps/desktop/src/main.ts(987,109): error TS2339: Property 'resourcesPath' does not exist on type 'Process'.
+apps/desktop/src/main.ts(1013,46): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1045,48): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1075,25): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1096,47): error TS7006: Parameter 'details' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1100,45): error TS7006: Parameter '_event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1100,53): error TS7006: Parameter 'code' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1100,59): error TS7006: Parameter 'description' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1100,72): error TS7006: Parameter 'url' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1100,77): error TS7006: Parameter 'isMainFrame' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1105,45): error TS7006: Parameter '_event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1105,53): error TS7006: Parameter '_path' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1105,60): error TS7006: Parameter 'error' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1108,51): error TS7006: Parameter '_event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1108,59): error TS7006: Parameter 'details' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1232,23): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1232,30): error TS7006: Parameter 'url' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1237,23): error TS7006: Parameter '_event' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1237,31): error TS7006: Parameter 'hasVisibleWindows' implicitly has an 'any' type.
+apps/desktop/src/main.ts(1262,26): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/mandatory-update-window.ts(3,88): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/mandatory-update-window.ts(75,43): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/mandatory-update-window.ts(76,43): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/mandatory-update-window.ts(197,27): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/mandatory-update-window.ts(200,47): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/mandatory-update-window.ts(200,54): error TS7006: Parameter 'url' implicitly has an 'any' type.
+apps/desktop/src/microphone-permissions.ts(2,67): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/microphone-permissions.ts(17,38): error TS7006: Parameter 'contents' implicitly has an 'any' type.
+apps/desktop/src/microphone-permissions.ts(17,48): error TS7006: Parameter 'permission' implicitly has an 'any' type.
+apps/desktop/src/microphone-permissions.ts(17,60): error TS7006: Parameter 'origin' implicitly has an 'any' type.
+apps/desktop/src/microphone-permissions.ts(17,68): error TS7006: Parameter 'details' implicitly has an 'any' type.
+apps/desktop/src/microphone-permissions.ts(23,40): error TS7006: Parameter 'contents' implicitly has an 'any' type.
+apps/desktop/src/microphone-permissions.ts(23,50): error TS7006: Parameter 'permission' implicitly has an 'any' type.
+apps/desktop/src/microphone-permissions.ts(23,62): error TS7006: Parameter 'callback' implicitly has an 'any' type.
+apps/desktop/src/microphone-permissions.ts(23,72): error TS7006: Parameter 'details' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(4,93): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/platform-view.ts(88,36): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/platform-view.ts(111,49): error TS7006: Parameter '_contents' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(111,60): error TS7006: Parameter '_permission' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(111,73): error TS7006: Parameter 'callback' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(118,44): error TS7006: Parameter 'details' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(119,48): error TS7006: Parameter 'details' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(120,52): error TS7006: Parameter 'details' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(120,61): error TS7006: Parameter 'callback' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(131,82): error TS2345: Argument of type '{}' is not assignable to parameter of type 'string'.
+apps/desktop/src/platform-view.ts(145,46): error TS7031: Binding element 'url' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(160,43): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(160,50): error TS7006: Parameter 'url' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(161,43): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(161,50): error TS7006: Parameter 'url' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(162,49): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/platform-view.ts(197,70): error TS18047: 'event.senderFrame' is possibly 'null'.
+apps/desktop/src/policy-test-auth.ts(3,40): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/policy-test-auth.ts(37,54): error TS7006: Parameter '_contents' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(37,65): error TS7006: Parameter '_permission' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(37,78): error TS7006: Parameter 'callback' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(40,46): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(41,53): error TS7006: Parameter 'details' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(41,62): error TS7006: Parameter 'callback' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(93,38): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(95,40): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(95,47): error TS7006: Parameter 'input' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(101,35): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(101,42): error TS7006: Parameter 'url' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(104,35): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(104,42): error TS7006: Parameter 'url' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(107,41): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(108,27): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(108,34): error TS7006: Parameter '_details' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(108,44): error TS7006: Parameter '_authInfo' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(108,55): error TS7006: Parameter 'callback' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(109,35): error TS7006: Parameter '_event' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(109,43): error TS7006: Parameter 'code' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(109,49): error TS7006: Parameter '_description' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(109,63): error TS7006: Parameter 'url' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(109,68): error TS7006: Parameter 'mainFrame' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(113,34): error TS7006: Parameter '_event' implicitly has an 'any' type.
+apps/desktop/src/policy-test-auth.ts(113,42): error TS7006: Parameter 'value' implicitly has an 'any' type.
+apps/desktop/src/preload-app.ts(4,54): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/preload-app.ts(21,33): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/preload-app.ts(44,33): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/preload-app.ts(53,33): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/preload-app.ts(100,126): error TS2339: Property 'isMainFrame' does not exist on type 'Process'.
+apps/desktop/src/preload-browser.ts(2,29): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/preload-browser.ts(9,53): error TS7006: Parameter '_event' implicitly has an 'any' type.
+apps/desktop/src/preload-mandatory-overlay.ts(2,29): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/preload-mandatory-overlay.ts(49,28): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/preload-mandatory.ts(2,44): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/preload-mandatory.ts(11,29): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/preload-menu.ts(2,29): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/preload-platform-account.ts(2,44): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/preload-platform-account.ts(7,13): error TS2339: Property 'isMainFrame' does not exist on type 'Process'.
+apps/desktop/src/preload-platform-account.ts(11,47): error TS7006: Parameter '_event' implicitly has an 'any' type.
+apps/desktop/src/preload-platform.ts(3,29): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/preload-platform.ts(27,49): error TS7006: Parameter '_event' implicitly has an 'any' type.
+apps/desktop/src/preload-theme.ts(3,29): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/preload-update-dialog.ts(2,44): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/preload-update-dialog.ts(9,30): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/preload-welcome.ts(4,44): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/preload-welcome.ts(22,30): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/preload-windows.ts(3,29): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/quit-confirmation.ts(3,76): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/tray.ts(3,41): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/update-attention.ts(2,55): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/update-coordinator.ts(5,21): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/update-coordinator.ts(6,86): error TS2307: Cannot find module 'electron-updater' or its corresponding type declarations.
+apps/desktop/src/update-coordinator.ts(55,95): error TS2339: Property 'resourcesPath' does not exist on type 'Process'.
+apps/desktop/src/update-coordinator.ts(66,10): error TS7006: Parameter 'authInfo' implicitly has an 'any' type.
+apps/desktop/src/update-coordinator.ts(66,20): error TS7006: Parameter 'callback' implicitly has an 'any' type.
+apps/desktop/src/update-dialog.ts(2,122): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/update-dialog.ts(61,47): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/update-dialog.ts(62,48): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/update-dialog.ts(81,29): error TS2339: Property 'buttons' does not exist on type 'UpdateDialogOptions'.
+apps/desktop/src/update-dialog.ts(82,30): error TS2339: Property 'cancelId' does not exist on type 'UpdateDialogOptions'.
+apps/desktop/src/update-dialog.ts(83,34): error TS2339: Property 'signal' does not exist on type 'UpdateDialogOptions'.
+apps/desktop/src/update-dialog.ts(91,83): error TS2339: Property 'title' does not exist on type 'UpdateDialogOptions'.
+apps/desktop/src/update-dialog.ts(94,99): error TS2339: Property 'title' does not exist on type 'UpdateDialogOptions'.
+apps/desktop/src/update-dialog.ts(94,129): error TS2339: Property 'message' does not exist on type 'UpdateDialogOptions'.
+apps/desktop/src/update-dialog.ts(95,23): error TS2339: Property 'detail' does not exist on type 'UpdateDialogOptions'.
+apps/desktop/src/update-dialog.ts(102,17): error TS2339: Property 'signal' does not exist on type 'UpdateDialogOptions'.
+apps/desktop/src/update-dialog.ts(110,15): error TS2339: Property 'signal' does not exist on type 'UpdateDialogOptions'.
+apps/desktop/src/update-dialog.ts(114,47): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/update-dialog.ts(114,54): error TS7006: Parameter 'url' implicitly has an 'any' type.
+apps/desktop/src/update-http-executor.ts(2,38): error TS2307: Cannot find module 'electron-updater/out/electronHttpExecutor.js' or its corresponding type declarations.
+apps/desktop/src/update-http-executor.ts(3,53): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/update-http-executor.ts(18,12): error TS4112: This member cannot have an 'override' modifier because its containing class 'DesktopUpdateHttpExecutor' does not extend another class.
+apps/desktop/src/update-overlay.ts(2,31): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/update-overlay.ts(38,32): error TS2503: Cannot find namespace 'Electron'.
+apps/desktop/src/welcome-window.ts(6,108): error TS2307: Cannot find module 'electron' or its corresponding type declarations.
+apps/desktop/src/welcome-window.ts(81,49): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/welcome-window.ts(85,48): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/welcome-window.ts(95,49): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/welcome-window.ts(96,49): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/welcome-window.ts(101,43): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/welcome-window.ts(105,44): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/welcome-window.ts(106,45): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/welcome-window.ts(111,47): error TS7006: Parameter 'event' implicitly has an 'any' type.
+apps/desktop/src/welcome-window.ts(118,43): error TS7006: Parameter 'event' implicitly has an 'any' type.
+
+== SKIPPED Host bundle (0.00s) ==
+command: pnpm exec tsdown --config-loader native --env.BUDMH_BUILD_FACE host
+outcome: dependency failed or skipped: host-src
+
+== SKIPPED Desktop bundle (0.00s) ==
+command: pnpm --filter @budmh/desktop run bundle
+outcome: dependency failed or skipped: host-bundle
+
+== SKIPPED client compiler (0.00s) ==
+command: tsc -b <tsconfig.client.json references>
+outcome: dependency failed or skipped: desktop-bundle
+
+== SKIPPED Client bundle (0.00s) ==
+command: pnpm exec tsdown --config-loader native --env.BUDMH_BUILD_FACE client
+outcome: dependency failed or skipped: client-src
+
+== SKIPPED Web build (0.00s) ==
+command: pnpm run build:web
+outcome: dependency failed or skipped: client-bundle
+
+run-gates: 1 passed, 1 failed, 5 skipped in 264.64s.
+run-gates: unsuccessful gates:
+  - FAILED host compiler (261.00s, exit 2)
+    tsc -b <tsconfig.host.json references>
+  - SKIPPED Host bundle (0.00s, dependency failed or skipped: host-src)
+    pnpm exec tsdown --config-loader native --env.BUDMH_BUILD_FACE host
+  - SKIPPED Desktop bundle (0.00s, dependency failed or skipped: host-bundle)
+    pnpm --filter @budmh/desktop run bundle
+  - SKIPPED client compiler (0.00s, dependency failed or skipped: desktop-bundle)
+    tsc -b <tsconfig.client.json references>
+  - SKIPPED Client bundle (0.00s, dependency failed or skipped: client-src)
+    pnpm exec tsdown --config-loader native --env.BUDMH_BUILD_FACE client
+  - SKIPPED Web build (0.00s, dependency failed or skipped: client-bundle)
+    pnpm run build:web
+[ELIFECYCLE] Command failed with exit code 1.

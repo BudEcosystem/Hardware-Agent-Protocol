@@ -1,0 +1,25 @@
+{
+  "figures": [
+    {
+      "url": "https://docs.nvidia.com/dgx/dgx-spark/_images/rear-panel.png",
+      "resolved_url": "https://docs.nvidia.com/dgx/dgx-spark/_images/rear-panel.png",
+      "retrieved_at": "2026-11-06T02:51:05.681730+00:00",
+      "path": "research/deployment/gb10-followup/raw/rear-panel.png",
+      "sha256": "dac99ed41ddd57dfd886b974253a1ff6ba526ab56a48d6a82271a19260f1f582",
+      "bytes": 78931,
+      "source": "hardware-current",
+      "scope": "Single material image in selected bounded HTML pages; other pages have no content images.",
+      "visually_reviewed": true,
+      "review_method": "view_image opened retained PNG at readable resolution",
+      "observed_labels": [
+        "ON/OFF",
+        "Power",
+        "USB-C",
+        "HDMI",
+        "Ethernet",
+        "QSFP"
+      ],
+      "qualification": "Diagram identification only; no connector electrical/power or transfer-rate qualification."
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "status": "pass",
+  "checked_at": "2026-11-06T22:38:09.256547+00:00",
+  "retrieval_records": 8,
+  "successful_acquisitions": 8,
+  "hash_assertions": 82,
+  "unique_files_checked": 52,
+  "full_text_sources": 6,
+  "full_text_lf_lines": 2513,
+  "rfc9177_lf_lines": 2154,
+  "coverage_chunks": 14,
+  "figures": 20,
+  "tables": 5,
+  "selected_pdf_pages_reviewed": 21,
+  "total_pdf_pages": 41,
+  "negative_self_checks": 12,
+  "negative_cases": [
+    "missing_full_coverage",
+    "coverage_hash_mismatch",
+    "overlapping_coverage",
+    "out_of_range_coverage",
+    "unordered_coverage",
+    "boolean_range_index",
+    "false_full_pdf_text",
+    "false_full_registry_text",
+    "false_all_pdf_visual",
+    "incorrect_coverage_fraction",
+    "path_escape",
+    "file_hash_mismatch"
+  ],
+  "scope": "Offline archival hashes and declared coverage consistency; no Q-Block, crypto, controller, hardware or conformance execution."
+}

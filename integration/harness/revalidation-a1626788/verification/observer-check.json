@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "cases": [
+    {
+      "case": "read_waits_for_busy_then_reads",
+      "elapsed_seconds": 0.30578130100184353
+    },
+    {
+      "case": "busy_read_deadline_fails",
+      "elapsed_seconds": 0.15078955799981486
+    },
+    {
+      "case": "non_lock_error_propagates"
+    },
+    {
+      "case": "mutation_refused"
+    }
+  ],
+  "helper_sha256": "7d7bbba7a7465ee8039e47b2ca4e15b6e1ba648db5a70a9d51a7f165c8b40132",
+  "scope": "Test helper only; no HMS invocation, native C process or production changes. Genuine SQLite EXCLUSIVE lock and read-only connections."
+}

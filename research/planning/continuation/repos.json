@@ -1,0 +1,106 @@
+[
+  {
+    "id": "voxposer-demo",
+    "repository": "https://github.com/huangwl18/VoxPoser",
+    "commit": "e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce",
+    "tree_sha": "cf5cf3522a420d242010da73a231aee1abe80fd5",
+    "retrieved_at": "2026-11-05T23:32:21.959782+00:00",
+    "scope": "Ten selected complete files; not a whole repository or deployment audit",
+    "files": [
+      {
+        "repository_path": "README.md",
+        "path": "research/planning/continuation/repos/voxposer/README.md",
+        "sha256": "31050d71b94a82dc9aa5aa1cf90e16c69f69d977cc84d4398cf6929b6db32775",
+        "git_blob_sha": "3790b8c7af80c0d37400115d14566de1cfe9b089",
+        "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/README.md",
+        "bytes": 6193,
+        "reading_status": "unread"
+      },
+      {
+        "repository_path": "src/LMP.py",
+        "path": "research/planning/continuation/repos/voxposer/src/LMP.py",
+        "sha256": "e2c5fb4d7b04c26d57e0188b3ee3bddc60474fa136bc208f0ed3096668146e47",
+        "git_blob_sha": "abecbc7d6655fea2a7e92e4e8c6b366d6df6a1d5",
+        "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/LMP.py",
+        "bytes": 8263,
+        "reading_status": "unread"
+      },
+      {
+        "repository_path": "src/interfaces.py",
+        "path": "research/planning/continuation/repos/voxposer/src/interfaces.py",
+        "sha256": "81ccd350616d8325ba49abd259f682e1915bc59c41010139aa42160c3c52e475",
+        "git_blob_sha": "120d6251b38fe7fedb173371ce2e75ce16f91a1b",
+        "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/interfaces.py",
+        "bytes": 25406,
+        "reading_status": "unread"
+      },
+      {
+        "repository_path": "src/planners.py",
+        "path": "research/planning/continuation/repos/voxposer/src/planners.py",
+        "sha256": "885dba2543e53e2e0686a9fc675891eb636bd22b56556b9f1ea31af5e5c0802f",
+        "git_blob_sha": "ed066ebb01667c819588a457d08ccf9fdfc8d4b7",
+        "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/planners.py",
+        "bytes": 9031,
+        "reading_status": "unread"
+      },
+      {
+        "repository_path": "src/controllers.py",
+        "path": "research/planning/continuation/repos/voxposer/src/controllers.py",
+        "sha256": "588f6f033fc218e1ae65b48798310477882b47bcf7b0d3ea741e87ae7aec66a0",
+        "git_blob_sha": "5e4e679a38b500e64f8d8c41bff57b556d839a33",
+        "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/controllers.py",
+        "bytes": 9420,
+        "reading_status": "unread"
+      },
+      {
+        "repository_path": "src/dynamics_models.py",
+        "path": "research/planning/continuation/repos/voxposer/src/dynamics_models.py",
+        "sha256": "e785b59b5a00f9d26928a05f209a6f4ecf00a0797d7403043274bbec0f1a0e47",
+        "git_blob_sha": "40d1816160d0187c8dcdcae13e3c09914e4c5bcb",
+        "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/dynamics_models.py",
+        "bytes": 1575,
+        "reading_status": "unread"
+      },
+      {
+        "repository_path": "src/envs/rlbench_env.py",
+        "path": "research/planning/continuation/repos/voxposer/src/envs/rlbench_env.py",
+        "sha256": "d794e6e4591acc45540e0c80799e862d278787e50fff262e0fb2e39b2a1ca333",
+        "git_blob_sha": "01355e92596bd5a6ba560017a714988439101f10",
+        "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/envs/rlbench_env.py",
+        "bytes": 16805,
+        "reading_status": "unread"
+      },
+      {
+        "repository_path": "src/configs/rlbench_config.yaml",
+        "path": "research/planning/continuation/repos/voxposer/src/configs/rlbench_config.yaml",
+        "sha256": "3408ccf091646a5bfc0638edd8b33415111e1e0c9e0a728c0de54a91dc02e7b3",
+        "git_blob_sha": "0091eddac36e57a6b342d7b5da0336f9670f82e3",
+        "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/configs/rlbench_config.yaml",
+        "bytes": 3626,
+        "reading_status": "unread"
+      },
+      {
+        "repository_path": "src/prompts/rlbench/planner_prompt.txt",
+        "path": "research/planning/continuation/repos/voxposer/src/prompts/rlbench/planner_prompt.txt",
+        "sha256": "4857bd355b5aab271e8986732a0e7d0b7e9e3e39240feb0338a36304a2fc2d6f",
+        "git_blob_sha": "2668ac88ea7cc386e27d2a446eda7245127617a7",
+        "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/prompts/rlbench/planner_prompt.txt",
+        "bytes": 3734,
+        "reading_status": "unread"
+      },
+      {
+        "repository_path": "src/prompts/rlbench/composer_prompt.txt",
+        "path": "research/planning/continuation/repos/voxposer/src/prompts/rlbench/composer_prompt.txt",
+        "sha256": "06dcd423164a0927085eee0994d344aca872745c0c13b549108f710c9746d0ae",
+        "git_blob_sha": "36e1706e24f4521c0732d7da544dbc9d014897cc",
+        "url": "https://raw.githubusercontent.com/huangwl18/VoxPoser/e3a4c9e57b6ecb45f91e19c80510091c8cbbcbce/src/prompts/rlbench/composer_prompt.txt",
+        "bytes": 6065,
+        "reading_status": "unread"
+      }
+    ],
+    "commit_metadata_path": "research/planning/continuation/metadata/voxposer-commit.json",
+    "commit_metadata_sha256": "9cbc6695a1b0678539ee68a227dd68031ead2ec4d2a0ed65634c046f563e3eac",
+    "tree_metadata_path": "research/planning/continuation/metadata/voxposer-tree.json",
+    "tree_metadata_sha256": "02f497ed08585066cf786808ac8dfa30cc37df4581d904b5b5a813f483877472"
+  }
+]

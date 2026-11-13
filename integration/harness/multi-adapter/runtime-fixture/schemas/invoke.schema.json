@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/hms/schema/invoke/0.1",
+  "title": "Experimental HMS host invocation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol", "replayNamespace", "operationKey", "intent"],
+  "properties": {
+    "protocol": {"const": "hms.invoke/0.1"},
+    "replayNamespace": {"$ref": "#/$defs/id"},
+    "operationKey": {"$ref": "#/$defs/id"},
+    "intent": {"$ref": "#/$defs/intent"}
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}(?![\\s\\S])"},
+    "tick": {"type": "integer", "minimum": 0, "maximum": 9007199254740991},
+    "intent": {
+      "type": "object", "additionalProperties": false,
+      "required": ["instanceId", "endpointSession", "controlGeneration", "actionId", "descriptionDigest", "bindingGeneration", "calibrationRevision", "arguments", "timing", "requiredEffect"],
+      "properties": {
+        "instanceId": {"$ref": "#/$defs/id"},
+        "endpointSession": {"$ref": "#/$defs/id"},
+        "controlGeneration": {"$ref": "#/$defs/id"},
+        "actionId": {"$ref": "#/$defs/id"},
+        "descriptionDigest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}(?![\\s\\S])"},
+        "bindingGeneration": {"$ref": "#/$defs/id"},
+        "calibrationRevision": {"$ref": "#/$defs/id"},
+        "arguments": {"type": "object"},
+        "requiredEffect": {"enum": ["capability_completion", "physical_verified"]},
+        "timing": {
+          "type": "object", "additionalProperties": false,
+          "required": ["notBeforeUnixMs", "latestStartUnixMs", "maxRunMs", "latestCompletionUnixMs"],
+          "properties": {
+            "notBeforeUnixMs": {"$ref": "#/$defs/tick"},
+            "latestStartUnixMs": {"$ref": "#/$defs/tick"},
+            "latestCompletionUnixMs": {"$ref": "#/$defs/tick"},
+            "maxRunMs": {"type": "integer", "minimum": 1, "maximum": 4294967295}
+          }
+        }
+      }
+    }
+  }
+}

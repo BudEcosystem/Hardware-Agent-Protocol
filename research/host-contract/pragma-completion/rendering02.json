@@ -1,0 +1,37 @@
+{
+  "renderer": "System librsvg through PyGObject pixbuf",
+  "images": [
+    {
+      "source": "diagrams/pragma-stmt.svg",
+      "path": "diagrams/pragma-stmt.png",
+      "dimensions": [
+        1649,
+        200
+      ],
+      "bytes": 28032,
+      "sha256": "afb33d432be0f61f15ea8df35702cc3cac79954c202600aa3d28b5ee6414706a"
+    },
+    {
+      "source": "diagrams/pragma-value.svg",
+      "path": "diagrams/pragma-value.png",
+      "dimensions": [
+        529,
+        221
+      ],
+      "bytes": 12178,
+      "sha256": "f7d1cf750e5ca03083a505876690282e09d444c22eebbe2d3ae54fefba56b58d"
+    },
+    {
+      "source": "diagrams/signed-number.svg",
+      "path": "diagrams/signed-number.png",
+      "dimensions": [
+        585,
+        200
+      ],
+      "bytes": 10419,
+      "sha256": "db3fa6dbece375c008a024245ab2d3507b32bdff8701161f07e214bc15403974"
+    }
+  ],
+  "sourceScriptsExecuted": false,
+  "sourceExternalResourcesAllowed": false
+}

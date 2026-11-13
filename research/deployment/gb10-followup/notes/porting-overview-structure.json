@@ -1,0 +1,44 @@
+{
+  "selector": "article.bd-article",
+  "title": "System Overview \u2014 NVIDIA DGX Spark Porting Guide",
+  "tables": [],
+  "images": [],
+  "article_links": [
+    {
+      "text": "#",
+      "href": "#system-overview"
+    },
+    {
+      "text": "#",
+      "href": "#hardware"
+    },
+    {
+      "text": "#",
+      "href": "#cpu-architecture"
+    },
+    {
+      "text": "ARM Memory Ordering",
+      "href": "porting/memorder.html"
+    },
+    {
+      "text": "#",
+      "href": "#gpu"
+    },
+    {
+      "text": "#",
+      "href": "#system-architecture-memory-and-buses"
+    },
+    {
+      "text": "#",
+      "href": "#peripherals-networking-connectivity"
+    },
+    {
+      "text": "#",
+      "href": "#software"
+    },
+    {
+      "text": "DGX Spark Software Stack",
+      "href": "porting/software-requirements.html"
+    }
+  ]
+}

@@ -1,0 +1,147 @@
+{
+  "id": "attach",
+  "url": "https://sqlite.org/lang_attach.html",
+  "finalUrl": "https://sqlite.org/lang_attach.html",
+  "retrievedAt": "2026-11-08T01:31:11.638293+00:00",
+  "status": 200,
+  "headers": {
+    "Connection": "close",
+    "Date": "Sun, 08 Nov 2026 01:31:13 GMT",
+    "Last-Modified": "Wed, 28 Oct 2026 19:36:36 GMT",
+    "Cache-Control": "max-age=120",
+    "ETag": "\"m6ae24ec4s4ae0b\"",
+    "Content-type": "text/html; charset=utf-8",
+    "Content-length": "306699"
+  },
+  "rawPath": "raw/attach.html",
+  "rawBytes": 306699,
+  "rawSha256": "5ad54b7f4829c69c88f4bbf8b39c5b88e80740fc84a555ce9c23e5faf1e48138",
+  "textPath": "text/attach.txt",
+  "textBytes": 5565,
+  "textSha256": "7a48ecd5b49f987ae21b0b317429c5316990d2e7fe8bf1c8df5cbea2ebea0724",
+  "lines": 517,
+  "visuals": [
+    {
+      "kind": "img",
+      "source": "images/sqlite370_banner.svg",
+      "text": ""
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "ATTACH DATABASE expr AS schema-name"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "literal-value bind-parameter schema-name . table-name . column-name unary-operator expr expr binary-operator expr function-name ( function-arguments ) filter-clause over-clause ( expr ) , CAST ( expr AS type-name ) expr COLLATE collation-name expr NOT LIKE GLOB REGEXP MATCH expr expr ESCAPE expr expr ISNULL NOTNULL NOT NULL expr IS NOT DISTINCT FROM expr expr NOT BETWEEN expr AND expr expr NOT IN ( select-stmt ) expr , schema-name . table-function ( expr ) table-name , NOT EXISTS ( select-stmt ) CASE expr WHEN expr THEN expr ELSE expr END raise-function"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "FILTER ( WHERE expr )"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "DISTINCT expr , * ORDER BY ordering-term ,"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "expr COLLATE collation-name DESC ASC NULLS FIRST NULLS LAST"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "CURRENT_TIMESTAMP numeric-literal string-literal blob-literal NULL TRUE FALSE CURRENT_TIME CURRENT_DATE"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "OVER window-name ( base-window-name PARTITION BY expr , ORDER BY ordering-term , frame-spec )"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "GROUPS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING RANGE ROWS UNBOUNDED PRECEDING expr PRECEDING CURRENT ROW expr PRECEDING CURRENT ROW expr FOLLOWING expr PRECEDING CURRENT ROW expr FOLLOWING EXCLUDE CURRENT ROW EXCLUDE GROUP EXCLUDE TIES EXCLUDE NO OTHERS"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "expr COLLATE collation-name DESC ASC NULLS FIRST NULLS LAST"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "RAISE ( ROLLBACK , expr ) IGNORE ABORT FAIL"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "WITH RECURSIVE common-table-expression , SELECT DISTINCT result-column , ALL FROM table-or-subquery join-clause , WHERE expr GROUP BY expr HAVING expr , WINDOW window-name AS window-defn , VALUES ( expr ) , , compound-operator select-core ORDER BY LIMIT expr ordering-term , OFFSET expr , expr"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "table-name ( column-name ) AS NOT MATERIALIZED ( select-stmt ) ,"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "UNION UNION INTERSECT EXCEPT ALL"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "table-or-subquery join-operator table-or-subquery join-constraint"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "USING ( column-name ) , ON expr"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "NATURAL LEFT OUTER JOIN , RIGHT FULL INNER CROSS"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "expr COLLATE collation-name DESC ASC NULLS FIRST NULLS LAST"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "expr AS column-alias * table-name . *"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "schema-name . table-name AS table-alias INDEXED BY index-name NOT INDEXED table-function-name ( expr ) , AS table-alias ( select-stmt ) ( table-or-subquery ) , join-clause"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "( base-window-name PARTITION BY expr , ORDER BY ordering-term , frame-spec )"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "GROUPS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING RANGE ROWS UNBOUNDED PRECEDING expr PRECEDING CURRENT ROW expr PRECEDING CURRENT ROW expr FOLLOWING expr PRECEDING CURRENT ROW expr FOLLOWING EXCLUDE CURRENT ROW EXCLUDE GROUP EXCLUDE TIES EXCLUDE NO OTHERS"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "name ( signed-number , signed-number ) ( signed-number )"
+    },
+    {
+      "kind": "svg",
+      "source": null,
+      "text": "+ numeric-literal -"
+    }
+  ],
+  "readingStatus": "acquired-not-yet-read",
+  "acquiredContentExecuted": false
+}

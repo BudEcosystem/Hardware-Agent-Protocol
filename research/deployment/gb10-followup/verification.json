@@ -1,0 +1,14 @@
+{
+  "ok": true,
+  "reading_sha256": "b3792430ba31d4db68be60178109d83ea64e75401c3b53676559c3df5d2ffea0",
+  "sources": 6,
+  "complete_bounded_pages": 6,
+  "covered_lf_lines": 1013,
+  "coverage_chunk_hashes": 7,
+  "tables_reviewed": 8,
+  "figures_reviewed": 1,
+  "file_hash_assertions": 30,
+  "negative_metadata_checks": 6,
+  "local_links_checked": 8,
+  "scope": "Offline bytes and declared coverage integrity; not reading comprehension, publisher truth, compatibility or device qualification."
+}

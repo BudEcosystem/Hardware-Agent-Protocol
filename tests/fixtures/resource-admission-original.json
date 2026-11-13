@@ -1,0 +1,15 @@
+{
+  "profile": "hms.test.original-registry/1",
+  "files": [
+    {
+      "path": "hms/registry.py",
+      "bytes": 47018,
+      "sha256": "d72e58032cdc759ac4e1123e1c80eafe918916948e687331db935c4027738357"
+    },
+    {
+      "path": "research/protocols/wot-artifacts/td-schema-1.1.json",
+      "bytes": 34642,
+      "sha256": "fd44f319f94c6f16f66978860ef2f9f4e0e9fd7fc5835a2f3840b9cf2002e0f1"
+    }
+  ]
+}

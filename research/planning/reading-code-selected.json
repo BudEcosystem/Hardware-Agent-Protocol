@@ -1,0 +1,233 @@
+{
+  "record_kind": "selected_notebook_source_reading",
+  "reviewed_at": "2026-11-05T22:42:37.664305+00:00",
+  "commit": "d3a4bd8f0eceddda553e47085033b537935b283f",
+  "path_base": "repository_root",
+  "cell_index_convention": "Zero-based position in notebook JSON cells array. Only source fields were read; stored outputs and metadata were not read in full.",
+  "scope": "Selected files/cells only; no execution. Cell-source extraction is exact UTF-8 encoding of concatenated JSON source strings.",
+  "files": [
+    {
+      "path": "research/planning/repos/saycan/README.md",
+      "sha256": "f93b2693d63459683b473b8ffb78a5927d1050ab95eb505131f3784d52210cff",
+      "bytes": 1987,
+      "logical_lines": 11,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 11,
+          "sha256": "f93b2693d63459683b473b8ffb78a5927d1050ab95eb505131f3784d52210cff",
+          "bytes": 1987,
+          "status": "read_untruncated"
+        }
+      ]
+    },
+    {
+      "path": "research/planning/repos/code_as_policies/README.md",
+      "sha256": "44c43d47213693848edd1969042e60d9061ac9955993771c41e54b9f7c426e2c",
+      "bytes": 2096,
+      "logical_lines": 13,
+      "reading_status": "read_full",
+      "coverage_complete": true,
+      "coverage_ranges": [
+        {
+          "start_line": 1,
+          "end_line": 13,
+          "sha256": "44c43d47213693848edd1969042e60d9061ac9955993771c41e54b9f7c426e2c",
+          "bytes": 2096,
+          "status": "read_untruncated"
+        }
+      ]
+    }
+  ],
+  "notebooks": [
+    {
+      "path": "research/planning/repos/saycan/SayCan-Robot-Pick-Place.ipynb",
+      "sha256": "5f1b975f43197af538867e6cb1864a2fea354fe4540668e8be20c37e682d626c",
+      "total_cells": 56,
+      "reading_status": "selected_source_cells_read",
+      "selected_cells": [
+        {
+          "cell_index_zero_based": 41,
+          "cell_type": "code",
+          "path": "research/planning/code-excerpts/saycan-cell-041.txt",
+          "sha256": "463a48524e39d87a16eb9071b59e93711ccbf35ec89eb91cbc8fd85ac5ddb718",
+          "bytes": 2568,
+          "logical_lines": 73,
+          "coverage_complete": true,
+          "reading_status": "selected_cell_source_read_full",
+          "coverage_ranges": [
+            {
+              "start_line": 1,
+              "end_line": 73,
+              "sha256": "463a48524e39d87a16eb9071b59e93711ccbf35ec89eb91cbc8fd85ac5ddb718",
+              "bytes": 2568,
+              "status": "read_untruncated"
+            }
+          ]
+        },
+        {
+          "cell_index_zero_based": 43,
+          "cell_type": "code",
+          "path": "research/planning/code-excerpts/saycan-cell-043.txt",
+          "sha256": "48ca632a3ac5da14d493824e3e58c8731088340eae29fb7dfd97276d4eddd94c",
+          "bytes": 3022,
+          "logical_lines": 69,
+          "coverage_complete": true,
+          "reading_status": "selected_cell_source_read_full",
+          "coverage_ranges": [
+            {
+              "start_line": 1,
+              "end_line": 69,
+              "sha256": "48ca632a3ac5da14d493824e3e58c8731088340eae29fb7dfd97276d4eddd94c",
+              "bytes": 3022,
+              "status": "read_untruncated"
+            }
+          ]
+        },
+        {
+          "cell_index_zero_based": 44,
+          "cell_type": "code",
+          "path": "research/planning/code-excerpts/saycan-cell-044.txt",
+          "sha256": "3da69dd77ae52ea70618c1d49770c40f6e1084e28d8c31ec017c12782209fc64",
+          "bytes": 1103,
+          "logical_lines": 23,
+          "coverage_complete": true,
+          "reading_status": "selected_cell_source_read_full",
+          "coverage_ranges": [
+            {
+              "start_line": 1,
+              "end_line": 23,
+              "sha256": "3da69dd77ae52ea70618c1d49770c40f6e1084e28d8c31ec017c12782209fc64",
+              "bytes": 1103,
+              "status": "read_untruncated"
+            }
+          ]
+        },
+        {
+          "cell_index_zero_based": 49,
+          "cell_type": "code",
+          "path": "research/planning/code-excerpts/saycan-cell-049.txt",
+          "sha256": "6729238df0d286ad781bf54ddd0f4edb2bf7219352a1f5e2ca1a03e296b31fa8",
+          "bytes": 1484,
+          "logical_lines": 38,
+          "coverage_complete": true,
+          "reading_status": "selected_cell_source_read_full",
+          "coverage_ranges": [
+            {
+              "start_line": 1,
+              "end_line": 38,
+              "sha256": "6729238df0d286ad781bf54ddd0f4edb2bf7219352a1f5e2ca1a03e296b31fa8",
+              "bytes": 1484,
+              "status": "read_untruncated"
+            }
+          ]
+        },
+        {
+          "cell_index_zero_based": 51,
+          "cell_type": "code",
+          "path": "research/planning/code-excerpts/saycan-cell-051.txt",
+          "sha256": "45307e1c007dd5a0ce2df3bcb05e038db1ae02ef175531703db76b2385beefc1",
+          "bytes": 2283,
+          "logical_lines": 69,
+          "coverage_complete": true,
+          "reading_status": "selected_cell_source_read_full",
+          "coverage_ranges": [
+            {
+              "start_line": 1,
+              "end_line": 69,
+              "sha256": "45307e1c007dd5a0ce2df3bcb05e038db1ae02ef175531703db76b2385beefc1",
+              "bytes": 2283,
+              "status": "read_untruncated"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "research/planning/repos/code_as_policies/Interactive_Demo.ipynb",
+      "sha256": "2306281e405b0642400c039dde01684fd200188821eb8cbf243d00b140d2eb72",
+      "total_cells": 27,
+      "reading_status": "selected_source_cells_read",
+      "selected_cells": [
+        {
+          "cell_index_zero_based": 5,
+          "cell_type": "code",
+          "path": "research/planning/code-excerpts/code_as_policies-cell-005.txt",
+          "sha256": "b4f1d62b8f9b2b862facf77ac662a0b0e5f42c06863bb44f26c3485b01f94225",
+          "bytes": 7807,
+          "logical_lines": 239,
+          "coverage_complete": true,
+          "reading_status": "selected_cell_source_read_full",
+          "coverage_ranges": [
+            {
+              "start_line": 1,
+              "end_line": 239,
+              "sha256": "b4f1d62b8f9b2b862facf77ac662a0b0e5f42c06863bb44f26c3485b01f94225",
+              "bytes": 7807,
+              "status": "read_untruncated"
+            }
+          ]
+        },
+        {
+          "cell_index_zero_based": 12,
+          "cell_type": "code",
+          "path": "research/planning/code-excerpts/code_as_policies-cell-012.txt",
+          "sha256": "377a5deb351b4643bed8c76e1db5795ef031d7f8bebc8466e2e4ee1750b07c83",
+          "bytes": 3912,
+          "logical_lines": 110,
+          "coverage_complete": true,
+          "reading_status": "selected_cell_source_read_full",
+          "coverage_ranges": [
+            {
+              "start_line": 1,
+              "end_line": 110,
+              "sha256": "377a5deb351b4643bed8c76e1db5795ef031d7f8bebc8466e2e4ee1750b07c83",
+              "bytes": 3912,
+              "status": "read_untruncated"
+            }
+          ]
+        },
+        {
+          "cell_index_zero_based": 21,
+          "cell_type": "code",
+          "path": "research/planning/code-excerpts/code_as_policies-cell-021.txt",
+          "sha256": "de46a64d6888bdc12b07b809a4d8370bf4e439ad7fa0a3c82f8619084980efe4",
+          "bytes": 2860,
+          "logical_lines": 99,
+          "coverage_complete": true,
+          "reading_status": "selected_cell_source_read_full",
+          "coverage_ranges": [
+            {
+              "start_line": 1,
+              "end_line": 99,
+              "sha256": "de46a64d6888bdc12b07b809a4d8370bf4e439ad7fa0a3c82f8619084980efe4",
+              "bytes": 2860,
+              "status": "read_untruncated"
+            }
+          ]
+        },
+        {
+          "cell_index_zero_based": 23,
+          "cell_type": "code",
+          "path": "research/planning/code-excerpts/code_as_policies-cell-023.txt",
+          "sha256": "9adfce13f3afa9b2d4ddbd11ee027aa6a980ee72fccf183210a114ff6eaf664d",
+          "bytes": 1396,
+          "logical_lines": 40,
+          "coverage_complete": true,
+          "reading_status": "selected_cell_source_read_full",
+          "coverage_ranges": [
+            {
+              "start_line": 1,
+              "end_line": 40,
+              "sha256": "9adfce13f3afa9b2d4ddbd11ee027aa6a980ee72fccf183210a114ff6eaf664d",
+              "bytes": 1396,
+              "status": "read_untruncated"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

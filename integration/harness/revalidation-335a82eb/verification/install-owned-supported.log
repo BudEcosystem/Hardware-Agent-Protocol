@@ -1,0 +1,4 @@
+COMMAND: ['pnpm', 'install', '--frozen-lockfile', '--prefer-offline', '--ignore-scripts', '--force', '--store-dir=/home/bud/Desktop/bud/hms-harness-335a82eb/.task-state/pnpm-store', '--cache-dir=/home/bud/Desktop/bud/hms-harness-335a82eb/.task-state/pnpm-cache', '--config-dir=/home/bud/Desktop/bud/hms-harness-335a82eb/.task-state/pnpm-config', '--npmrc-auth-file=/home/bud/Desktop/bud/hms-harness-335a82eb/.task-state/empty.npmrc']
+! Corepack is about to download https://registry.npmjs.org/pnpm/-/pnpm-11.28.5.tgz
+[ERROR] Unknown options: 'config-dir', 'npmrc-auth-file'
+For help, run: pnpm help install

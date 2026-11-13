@@ -1,0 +1,34 @@
+Eclipse Tahu™ is a set of references implementations for the Sparkplug specification. It addresses the existence of legacy SCADA/DCS/ICS protocols and infrastructures and provides a much-needed definition of how best to apply MQTT into these existing industrial operational environments.
+Basic network architecture:
+Tahu is currently addressing the following features required for MQTT centric IIoT:
+Well-defined MQTT Topic Namespace applicable for the IIoT market
+In order to be interoperable across the plethora of OEM device manufacturers of industrial equipment and the SCADA/HMI/Control/Cloud Services backend components that desired to subscribe to the resulting information a well-defined MQTT topic namespace needs to be defined. The topic namespace needs to be both efficient yet applicable to the applications that currently exist in the industrial market. The topic namespace needs to provide both the contextual information all the way to an individual device in the field, but also provide topic “verbs” to efficiently manage the “life cycle” of an MQTT session.
+Efficient MQTT payload definition
+Staying with the original intent of MQTT, the payload specification needs to stay “lean and mean” to best utilize low bandwidth networks (VSAT, Radio, Cellular). Not only does the payload need to be efficient, it needs to recognize the fact that the primary purpose of IIoT solutions is to provide Industrial Process Variable information from devices in the field to both SCADA/DCS/FCS OT solutions as well as line of business IT solutions.
+MQTT STATE Management definition
+MQTT has the awareness of the current MQTT session built in using the LWT feature. But for STATE aware OT applications like SCADA/DCS/FCS, there needs to be a succinct definition on how best to use MQTT’s built in STATE awareness in an overall SCADA/DCS/ICS infrastructure.
+The Sparkplug specification provides all of the definitions and requirements listed above. In addition to the Sparkplug specification, Tahu will provide the required libraries and reference implementation code following the Sparkplug specification in:
+C
+Java
+Javascript
+Python
+Tutorials on getting the reference implementation code running on popular open hardware platforms like the Raspberry Pi will also be included in Tahu.
+State
+Incubating
+Industry Collaborations
+Internet of Things (IoT)
+Latest Releases
+From 2022-11-16 to 2022-11-16
+Name
+Date
+Review
+1.0.0
+2022-11-16
+Licenses
+Eclipse Public License 2.0
+The content of this open source project is received and distributed under the license(s) listed above. Some source code and binaries may be distributed under different terms. Specific license information is provided in file headers and in NOTICE files distributed with the project's binaries.
+Active Member Companies
+Member companies supporting this project over the last three months.
+Is your logo missing?
+Contribution Activity
+Commits on this project (last 12 months)

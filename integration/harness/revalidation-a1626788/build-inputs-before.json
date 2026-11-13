@@ -1,0 +1,5 @@
+{
+  "lockfile_sha256": "2dfb74be8e79e26445f2f8d175eb28d9abb272f80dc895e7b2258ff38c39df42",
+  "prior_overlay_patch_sha256": "1d22255765e284a2fd0ba6770e57c1ea69ca8b2763f1bc8a349d157994c7262d",
+  "compact_additive_patch_sha256": "867fa72d8bdfcc2ff99e1dd037bfc899dbe49734bcd4fda9b1e2d664df7f12b5"
+}

@@ -1,0 +1,31 @@
+4.2
+General
+OPC UA is a platform-independent standard that enables various systems and devices to communicate securely and reliably. It employs mechanisms for authentication, encryption, and integrity checks to ensure the identity of
+OPC UA Applications
+as well as identification of users and protect against attacks.
+Using the
+ClientServer
+model, OPC UA defines sets of
+Services
+that
+Servers
+provide, and it utilizes both OPC UA-defined and vendor-defined data types, along with flexible object models, to facilitate interoperability and dynamic information discovery by
+Clients
+. Supporting a variety of communication protocols and data encodings, such as TCP, HTTPS, WebSockets, XML/text, UA Binary, and JSON, OPC UA allows for trade-offs between portability and efficiency to suit different application requirements.
+Servers
+can provide access to both current and historical data, as well as
+Alarms
+and
+Events
+to notify
+Clients
+of important changes.
+In addition to the
+ClientServer
+model, OPC UA also supports information transfer from
+Publishers
+to
+Subscribers
+using the
+PubSub
+model.

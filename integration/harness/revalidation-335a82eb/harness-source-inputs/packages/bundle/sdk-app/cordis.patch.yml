@@ -1,0 +1,67 @@
+# The SDK application over budmh-base. Stdout belongs exclusively to JSON-RPC.
+
+- id: system-prompt
+  config:
+    personaPrefix: >-
+      You are an agent powered by the {{model}} model, and you take on tasks in any domain.
+      You have full access to every tool in this session: use them to find facts, do the work, and check the result, rather than answering from memory or asking for something a tool can find.
+
+- insert:
+    - id: sdk-app-startup
+      name: '@budmh/sdk-app'
+      config:
+        profile: sdk
+
+    - id: sdk-jsonrpc-server
+      name: '@budmh/sdk-jsonrpc-server'
+      inject: [sdkAppStartup, loader]
+      config:
+        maxTokensAsSuccess: !!js "process.env.BUDMH_MAX_TOKENS_AS_SUCCESS === undefined ? true : JSON.parse(process.env.BUDMH_MAX_TOKENS_AS_SUCCESS)"
+
+    # Voice calls of SDK sessions: the voice/* methods on ctx.sdkMethods. Inert
+    # until a client starts a call; a call needs a speech pipeline provider.
+    - id: api-voice-sdk
+      name: '@budmh/api-voice/sdk'
+
+    # Every agent/invoke and trigger/admit of an SDK client is a work item.
+    # The work store, its executor registry and session executor, the shipped
+    # Channel providers and the SDK transport admit the request, answer it
+    # with work/settled, and serve the work/* and trigger/* methods. An SDK
+    # runtime is the only process of its home, so it claims every effect row
+    # of the home (`claims: home`): it runs and recovers the home's items,
+    # and work/resume takes an item over as a CLI re-run does.
+    - id: work-store
+      name: '@budmh/work-store'
+      config:
+        claims: home
+        profile: !!js "ctx.get('profileContext')?.name ?? 'sdk'"
+    - id: work-executors
+      name: '@budmh/work-executors'
+      config:
+        claims: home
+    - id: executor-session
+      name: '@budmh/executor-session'
+    - id: channels-builtin
+      name: '@budmh/channels-builtin'
+    - id: transport-sdk
+      name: '@budmh/transport-sdk'
+
+- id: hmr
+  disabled: true
+
+# The packaged carrier supplies a default; BUDMH_PRIMARY_RUNTIME overrides it,
+# including an empty-string opt-out. Each row can be patched independently.
+- insert:
+    - id: workspace-dependencies
+      name: '@budmh/tool-workspace-dependencies'
+      disabled: !!js "!(process.env.BUDMH_PRIMARY_RUNTIME ?? process.env.BUDMH_BUNDLED_PRIMARY_RUNTIME)"
+      config:
+        source: !!js "process.getBuiltinModule('node:path').resolve(process.env.BUDMH_PRIMARY_RUNTIME ?? process.env.BUDMH_BUNDLED_PRIMARY_RUNTIME ?? '')"
+
+    - id: skill-office
+      name: '@budmh/skill-office'
+      disabled: !!js "!(process.env.BUDMH_PRIMARY_RUNTIME ?? process.env.BUDMH_BUNDLED_PRIMARY_RUNTIME) && !process.env.BUDMH_BUNDLED_OFFICE_CLI"
+      config:
+        assetRoot: !!js "process.env.BUDMH_BUNDLED_OFFICE_SKILLS ?? process.getBuiltinModule('node:path').resolve(process.env.BUDMH_PRIMARY_RUNTIME ?? process.env.BUDMH_BUNDLED_PRIMARY_RUNTIME ?? '', '..', 'office-skills')"
+        cli: !!js "process.env.BUDMH_BUNDLED_OFFICE_CLI === '' ? false : process.env.BUDMH_BUNDLED_OFFICE_CLI"
+        node: !!js "process.env.BUDMH_BUNDLED_OFFICE_NODE ?? process.getBuiltinModule('node:path').resolve(process.env.BUDMH_PRIMARY_RUNTIME ?? process.env.BUDMH_BUNDLED_PRIMARY_RUNTIME ?? '', 'dependencies', 'node', 'bin', process.platform === 'win32' ? 'node.exe' : 'node')"

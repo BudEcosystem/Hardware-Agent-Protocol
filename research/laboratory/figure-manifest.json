@@ -1,0 +1,72 @@
+[
+  {
+    "path": "research/laboratory/figures/labop-page-10.png",
+    "sha256": "ee7c4d0eab4034d14035fe0df83dbc9d0f968450842e8aa95b84fcd87776036f",
+    "derived_from": "research/laboratory/raw/labop-paper.pdf",
+    "method": "pdftoppm -scale-to 2100 -png -singlefile",
+    "visually_inspected": true
+  },
+  {
+    "path": "research/laboratory/figures/labop-page-11.png",
+    "sha256": "c7d963241b0421afb77e7295e59c9d7a8a099afe48c93eba6b6713a82805dc01",
+    "derived_from": "research/laboratory/raw/labop-paper.pdf",
+    "method": "pdftoppm -scale-to 2100 -png -singlefile",
+    "visually_inspected": true
+  },
+  {
+    "path": "research/laboratory/figures/labop-page-13.png",
+    "sha256": "1f21db8aa08b18b1c9105cb3b44b9c699bc023bb0f90b44bf78a59c42e769b8c",
+    "derived_from": "research/laboratory/raw/labop-paper.pdf",
+    "method": "pdftoppm -scale-to 2100 -png -singlefile",
+    "visually_inspected": true
+  },
+  {
+    "path": "research/laboratory/figures/labop-page-14.png",
+    "sha256": "26b432c28dddffd8ee41d770d9fe607aa741eeab244f02d3c07210c396540f3c",
+    "derived_from": "research/laboratory/raw/labop-paper.pdf",
+    "method": "pdftoppm -scale-to 2100 -png -singlefile",
+    "visually_inspected": true
+  },
+  {
+    "path": "research/laboratory/figures/labop-page-15.png",
+    "sha256": "89ef7f30eac8884ea55fb8697951c7960d2333bd8c845f4d439743da6c89a946",
+    "derived_from": "research/laboratory/raw/labop-paper.pdf",
+    "method": "pdftoppm -scale-to 2100 -png -singlefile",
+    "visually_inspected": true
+  },
+  {
+    "path": "research/laboratory/figures/labop-page-17.png",
+    "sha256": "53dfa51ce6ec2285c2656cbf1d6e4150ff8c5f2e13434f5056fe6f0354a180a7",
+    "derived_from": "research/laboratory/raw/labop-paper.pdf",
+    "method": "pdftoppm -scale-to 2100 -png -singlefile",
+    "visually_inspected": true
+  },
+  {
+    "path": "research/laboratory/figures/labop-page-18.png",
+    "sha256": "d896e27ddd0cab93be73bc348f62bc9da77ee2001a4294e21691b54d5a80b916",
+    "derived_from": "research/laboratory/raw/labop-paper.pdf",
+    "method": "pdftoppm -scale-to 2100 -png -singlefile",
+    "visually_inspected": true
+  },
+  {
+    "path": "research/laboratory/figures/labop-page-5.png",
+    "sha256": "0728f7aa07e42dd72b297d41f0816a13cbeae11a62d9d71deaf53822badfa6a7",
+    "derived_from": "research/laboratory/raw/labop-paper.pdf",
+    "method": "pdftoppm -scale-to 2100 -png -singlefile",
+    "visually_inspected": true
+  },
+  {
+    "path": "research/laboratory/figures/labop-page-6.png",
+    "sha256": "16eb1fc99ce8b0f5523717041f699438b69cba7048fce1e17e04216c4d2b363f",
+    "derived_from": "research/laboratory/raw/labop-paper.pdf",
+    "method": "pdftoppm -scale-to 2100 -png -singlefile",
+    "visually_inspected": true
+  },
+  {
+    "path": "research/laboratory/figures/labop-page-9.png",
+    "sha256": "335ba627707d06c664b78c619e41788cdbef2ff55da1a90ee23e6abbb1446d18",
+    "derived_from": "research/laboratory/raw/labop-paper.pdf",
+    "method": "pdftoppm -scale-to 2100 -png -singlefile",
+    "visually_inspected": true
+  }
+]

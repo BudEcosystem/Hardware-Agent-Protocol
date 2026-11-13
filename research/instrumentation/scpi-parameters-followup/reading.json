@@ -1,0 +1,116 @@
+{
+  "schema": "hms.scpi-parameter-reading/1",
+  "reviewed_at": "2026-11-07T21:05:08.445136+00:00",
+  "source_id": "scpi-99",
+  "raw_path": "research/instrumentation/raw/scpi-99.pdf",
+  "raw_sha256": "09b60c1400a973b1d0a983cdf8f2cb403bbe225b0acf4c01e4e324ab7833dece",
+  "text_path": "research/instrumentation/text/scpi-99.txt",
+  "text_sha256": "d7ec21e72944ca8485b83ccf00edfa1e068c0e08d3419e3dd408baedcc60b39c",
+  "line_count": 42293,
+  "line_counting": "LF-delimited original bytes with LF, CR, form feeds and final unterminated line preserved; not str.splitlines()",
+  "coverage_ranges": [
+    {
+      "start_line": 1571,
+      "end_line": 1710,
+      "sha256": "fcb65ffb7187f2d830fa919aedb9b4458c4d88a112681e45ae168d82d617fcd3"
+    },
+    {
+      "start_line": 1711,
+      "end_line": 1845,
+      "sha256": "1c1d07c7dc0cf64899bf5699dfa8cd5f5a8d66b8fe2c6d1dc79202ee0c2e2a85"
+    },
+    {
+      "start_line": 1846,
+      "end_line": 1981,
+      "sha256": "d268dceb6e0025b401601e9c9486a4b54b60eacc872a34500e25d0d1c842509f"
+    },
+    {
+      "start_line": 1982,
+      "end_line": 2054,
+      "sha256": "cd95b0b828cc32dc6aa67af89d7e20b7a19281aa9b722f25374b38c5b83fb37e"
+    }
+  ],
+  "new_covered_line_count": 484,
+  "coverage_complete": false,
+  "scope": "Complete retained Volume 1 Chapter7 only;819-page standard remains partial.",
+  "prior_receipts": [
+    {
+      "path": "research/instrumentation/reading-instrumentation.json",
+      "sha256": "2769ec5e615fef2b5547f43b6e44bd5d6bb4ffe7dbaf43056c1af59519e3e725"
+    },
+    {
+      "path": "research/instrumentation/scpi-headers-followup/reading.json",
+      "sha256": "46d2751aca88bf83f0e380c00806307a05637aaa8f01cd7a74cd5a73e09df33a"
+    }
+  ],
+  "prior_covered_line_count": 2296,
+  "cumulative_covered_line_count": 2780,
+  "pdf_page_count": 819,
+  "visually_reviewed_pdf_pages": [
+    34,
+    35,
+    36,
+    37,
+    38,
+    39,
+    40,
+    41,
+    42,
+    43
+  ],
+  "images": [
+    {
+      "pdf_page": 34,
+      "path": "research/instrumentation/scpi-parameters-followup/pages/scpi-034.png",
+      "sha256": "aeab231805b9d5e1b60d110d54c177d17ebb34d12f6282d7836aa969525dd9ed"
+    },
+    {
+      "pdf_page": 35,
+      "path": "research/instrumentation/scpi-parameters-followup/pages/scpi-035.png",
+      "sha256": "9e5d69019ff289d174be7dbad8c500d4f9186657aa9747f9dad14c6dec736096"
+    },
+    {
+      "pdf_page": 36,
+      "path": "research/instrumentation/scpi-parameters-followup/pages/scpi-036.png",
+      "sha256": "fbdb376fb50a9b25790cb0ae5125dbe57a9151729b08852dff2f5e731dae941c"
+    },
+    {
+      "pdf_page": 37,
+      "path": "research/instrumentation/scpi-parameters-followup/pages/scpi-037.png",
+      "sha256": "c3dc569733d602b161aac383b18f8140f30e641e630f589628e4e367ae37044b"
+    },
+    {
+      "pdf_page": 38,
+      "path": "research/instrumentation/scpi-parameters-followup/pages/scpi-038.png",
+      "sha256": "2b7fc97a1e414362745923b60c88d9710a78f71a340b308b6ba8edef6a32b307"
+    },
+    {
+      "pdf_page": 39,
+      "path": "research/instrumentation/scpi-parameters-followup/pages/scpi-039.png",
+      "sha256": "07d947ca21290138788060dbcbd27058860371466e5a208696aba5daa983055c"
+    },
+    {
+      "pdf_page": 40,
+      "path": "research/instrumentation/scpi-parameters-followup/pages/scpi-040.png",
+      "sha256": "ed1f22782ac5c97730621d3fdc8c768dea22288071ed367e647a1b1460636e83"
+    },
+    {
+      "pdf_page": 41,
+      "path": "research/instrumentation/scpi-parameters-followup/pages/scpi-041.png",
+      "sha256": "53f5dc3b0285e01354b080994c6d500160900a6d09a6663e4257f3e7e38d8e90"
+    },
+    {
+      "pdf_page": 42,
+      "path": "research/instrumentation/scpi-parameters-followup/pages/scpi-042.png",
+      "sha256": "ac1b4b66c5d3ab550d64edbe443a73da2c7c5f542bfa72f6a33e30a5a2a14da2"
+    },
+    {
+      "pdf_page": 43,
+      "path": "research/instrumentation/scpi-parameters-followup/pages/scpi-043.png",
+      "sha256": "20b9474b076116139bc94242837a1792616ba380e48531751b5fc547e5d488c7"
+    }
+  ],
+  "formulas_visually_reviewed": 3,
+  "acquired_code_executed": false,
+  "physical_device_executed": false
+}

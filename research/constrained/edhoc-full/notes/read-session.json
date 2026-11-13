@@ -1,0 +1,89 @@
+{
+  "rfc9528_completed_lf_ranges": [
+    [
+      1,
+      400
+    ],
+    [
+      401,
+      800
+    ],
+    [
+      801,
+      1200
+    ],
+    [
+      1201,
+      1600
+    ],
+    [
+      1601,
+      2000
+    ],
+    [
+      2001,
+      2400
+    ],
+    [
+      2401,
+      2800
+    ],
+    [
+      2801,
+      3200
+    ],
+    [
+      3201,
+      3400
+    ],
+    [
+      3401,
+      3700
+    ],
+    [
+      3701,
+      4000
+    ],
+    [
+      4001,
+      4350
+    ],
+    [
+      4351,
+      4671
+    ]
+  ],
+  "rfc9528_sha256": "16b0959ee791bba5b06a4368470f8eb296ac11b84101c82b9013073ec6defe9e",
+  "scope": "Manual sequential review of untruncated text output. An initial 3201–3600 combined output was truncated; it was discarded as coverage and reread as 3201–3400 plus 3401–3700. Complete RFC including references, Appendices A–I, acknowledgments and addresses.",
+  "other_completed_reads": {
+    "rfc9528-metadata": [
+      [
+        1,
+        38
+      ]
+    ],
+    "rfc9528-errata": [
+      [
+        1,
+        110
+      ]
+    ],
+    "iana-edhoc": [
+      [
+        1,
+        230
+      ],
+      [
+        231,
+        438
+      ]
+    ],
+    "rfc9528-status": [
+      [
+        1,
+        180
+      ]
+    ]
+  },
+  "pdf_visual_scope": "All 13 numbered figures and all 15 numbered tables, using 25 selected PDF pages. Entire 82-page PDF was not separately read page by page. PDF layout extraction was used as an index, not claimed as a sequential read."
+}

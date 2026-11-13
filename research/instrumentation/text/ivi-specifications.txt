@@ -1,0 +1,292 @@
+Specification Downloads | IVI Foundation
+Skip to main content
+Link
+Menu
+Expand
+(external link)
+Document
+Search
+Copy
+Copied
+Standards
+Driver Overview
+Driver Architecture
+Instrument Classes
+Measurement & Stimulus for Interchangeability
+Conformance
+The SCPI Standard
+VXI
+plug&play
+Member Company Resources
+Shared Components
+.NET Shared Components Warning
+Older IVI Shared Components
+Older .NET Shared Components
+IVI Foundation End-User License Agreement
+Specification Downloads
+Getting Started
+Driver Registry
+Browse the Driver Registry
+Register Your Driver
+Announcements
+About
+Charter
+Operation
+IPR Policy
+Contact Us
+How to join
+Current Members
+Security Reporting
+Home Page
+This page has links to all of the current IVI specifications, including specifications for drivers, protocols, SCPI, and VXI
+plug&play
+.
+IVI Operating Procedures
+IVI Driver Specifications
+IVI Specification Generations
+Generation 2026 Driver Specifications
+Generation 2014 Driver Architecture
+Generation 2014 Driver Instrument Classes
+IVI Protocol Specifications
+Standard Commands for Programmable Instruments (SCPI)
+VXI
+plug&play
+Specifications
+VISA Specifications
+Other VXI
+plug&play
+Specifications:
+IVI Operating Procedures
+The IVI Operating Procedures describes IVI Foundation rules and practices for conducting business. All discussions and business conducted in any forum within the foundation follow these procedures.
+Specification
+Document
+IVI-1.2: Operating Procedures
+github link
+IVI Driver Specifications
+This section contains specifications related to instrument drivers.
+IVI Specification Generations
+The IVI Generation item specifies a set of minimum IVI specification versions with which a specific driver must comply in order to claim compliance with a specific IVI Generation. The following documents describe the IVI Generations and the minimum specification versions required to claim compliance with each.
+Document
+Document
+Printable PDF
+What are IVI Generations?
+github link
+PDF
+IVI Generations Baseline Summary and Compliance Equivalence Tables
+github link
+PDF
+IVI-2026
+github link
+PDF
+IVI-2014
+github link
+PDF
+IVI-2003
+github link
+PDF
+Generation 2026 Driver Specifications
+In 2025 the IVI Foundation released new driver specifications that simplify the requirements for driver compliance. Although these new standards do not invalidate the earlier standards, they provide a streamlined path that aligns with common expectations for general purpose instrument drivers.
+In keeping with the IVI policy of dating IVI Generations the year after new specifications are published, these specifications establish IVI Generation 2026. For additional details, see
+IVI Generation 2026
+Document
+Specification
+PDF
+IVI Driver Core
+GitHub
+pdf
+IVI Driver ANSI-C
+GitHub
+pdf
+IVI Driver .NET
+GitHub
+pdf
+IVI Driver Python
+GitHub
+pdf
+Generation 2014 Driver Architecture
+Document
+Word
+PDF
+IVI-3.1: Driver Architecture Specification
+Word
+PDF
+IVI-3.2: Inherent Capabilities Specification
+Word
+PDF
+IVI-3.3: Standard Cross-Class Capabilities
+Word
+PDF
+IVI-3.4: API Style Guide
+Word
+PDF
+IVI-3.5: Configuration Server Specification
+Word
+PDF
+IVI-3.6: COM Session Factory Specification
+Word
+PDF
+IVI-3.9: C Shared Components Specification
+Word
+PDF
+IVI-3.10: Measurement and Stimulus Subsystems (IVI-MSS) Specification
+Word
+PDF
+IVI-3.12: Floating Point Services Specification
+Word
+PDF
+IVI-3.14: Primary Interop Assembly Specification
+Word
+PDF
+IVI-3.15: IviLxiSync Specification
+Word
+PDF
+IVI-3.17: Installation Requirements Specification
+Word
+PDF
+IVI-3.18: IVI.NET Utility Classes and Interfaces Specification
+Word
+PDF
+IVI-5.0: Glossary
+Word
+PDF
+IVI-3.7: IVI Event Server
+Obsolete
+Generation 2014 Driver Instrument Classes
+Document
+Word
+PDF
+IVI-4.1: IviScope Class Specification
+Word
+PDF
+IVI-4.2: IviDmm Class Specification
+Word
+PDF
+IVI-4.3: IviFgen Class Specification
+Word
+PDF
+IVI-4.4: IviDCPwr Class Specification
+Word
+PDF
+IVI-4.5: IviACPwr Class Specification
+Word
+PDF
+IVI-4.6: IviSwtch Class Specification
+Word
+PDF
+IVI-4.7: IviPwrMeter Class Specification
+Word
+PDF
+IVI-4.8: IviSpecAn Class Specification
+Word
+PDF
+IVI-4.10: IviRFSigGen Class Specification
+Word
+PDF
+IVI-4.12: IviCounter Class Specification
+Word
+PDF
+IVI-4.13: IviDownconverter Class Specification
+Word
+PDF
+IVI-4.14: IviUpconverter Class Specification
+Word
+PDF
+IVI-4.15: IviDigitizer Class Specification
+Word
+PDF
+IVI Protocol Specifications
+Document
+Word
+PDF
+IVI-6.1: High-Speed LAN Instrument Protocol (HiSLIP) v2.0 April 23, 2020
+Word
+PDF
+IVI-6.2: IVI Interoperability Requirements for USBTMC Specification
+Word
+PDF
+IVI-6.3: IVI VISA PXI Plug-in
+Word
+PDF
+IVI-6.4: IVI File Format Specification
+Word
+PDF
+IVI-6.5: SASL Mechanism Specification
+Word
+PDF
+Standard Commands for Programmable Instruments (SCPI)
+The SCPI specifications, formerly maintained by the SCPI Consortium are now maintained by the IVI Foundation.
+Document
+PDF
+SCPI-99
+PDF
+VXI
+plug&play
+Specifications
+The VXI
+plug&play
+specifications, formerly maintained by the VXIplug&play Systems Alliance are now maintained by the IVI Foundation.
+VISA Specifications
+Document
+Word
+PDF
+VPP-4.3: The VISA Library
+Word
+PDF
+VPP-4.3.2: VISA Implementation Specification For Textual Languages
+Word
+PDF
+VPP-4.3.3: VISA Implementation Specification For The G Language
+Word
+PDF
+VPP-4.3.4: VISA Implementation Specification For COM
+Word
+PDF
+VPP-4.3.5: VISA Shared Components
+Word
+PDF
+VPP-4.3.6: VISA Implementation Specification for .NET
+Word
+PDF
+Other VXI
+plug&play
+Specifications:
+Document
+Word
+PDF
+VPP-1: Charter Document
+Word
+PDF
+VPP-2: System Frameworks Specification
+Word
+PDF
+VPP-3.1: Instrument Drivers Architecture and Design Specification
+Word
+PDF
+VPP-3.2: Instrument Driver Functional Body Specification
+Word
+PDF
+VPP-3.3: Instrument Driver Interactive Developer Interface Specification
+Word
+PDF
+VPP-3.4: Instrument Driver Programmatic Developer Interface Specification
+Word
+PDF
+VPP-6: Installation and Packaging Specification
+Word
+PDF
+VPP-7: Soft Front Panel Specification
+Word
+PDF
+VPP-8: VXI Module/Mainframe to Receiver Interconnection
+Word
+PDF
+VPP-9: Instrument Vendor Abbreviations
+Word
+PDF
+Note:
+More information can be found on the VXI specification at:
+http://vxibus.org/specifications.html
+Back to top
+Copyright © 2001-2026 IVI Foundation
+privacy policy
+contact us

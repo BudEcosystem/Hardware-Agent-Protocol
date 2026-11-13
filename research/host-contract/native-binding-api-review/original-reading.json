@@ -1,0 +1,122 @@
+{
+  "totalAcquiredLfLines": 5360,
+  "totalReadLfLines": 356,
+  "complete": false,
+  "sources": [
+    {
+      "path": "exceptions.rst",
+      "url": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/exceptions.rst",
+      "finalUrl": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/exceptions.rst",
+      "bytes": 55104,
+      "sha256": "a72affca78426f9f90c70efba697a34a3d07e0859d0c5a84d1d9614be198dc62",
+      "lfLines": 1222,
+      "coverage": "partial",
+      "readRanges": [
+        {
+          "first": 621,
+          "last": 658,
+          "sha256": "79ae1279abd2bd4bb146708d46498e3c4de592b61104d662d4d7ea011e35e197"
+        }
+      ],
+      "readLfLines": 38,
+      "unreadLfLines": 1184
+    },
+    {
+      "path": "init.rst",
+      "url": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/init.rst",
+      "finalUrl": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/init.rst",
+      "bytes": 85456,
+      "sha256": "8f21d0e2d984511632289c654d9754bc7c7613e14bb72f652e13fcf4b38689b4",
+      "lfLines": 2191,
+      "coverage": "partial",
+      "readRanges": [
+        {
+          "first": 844,
+          "last": 922,
+          "sha256": "be6a507adbf07df20c99a16335173700b091ea02ac983209d107ddd9f6e1ebc3"
+        }
+      ],
+      "readLfLines": 79,
+      "unreadLfLines": 2112
+    },
+    {
+      "path": "module.rst",
+      "url": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/module.rst",
+      "finalUrl": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/module.rst",
+      "bytes": 24448,
+      "sha256": "3184dbc38a64ac92d84490fc9d105f0a970535c31c2cddd3f9de34a4405ae0d3",
+      "lfLines": 661,
+      "coverage": "partial",
+      "readRanges": [
+        {
+          "first": 130,
+          "last": 190,
+          "sha256": "f6f5c98a92d3b676951d7ebb12cce6357000235a89b16b82f84411489248725b"
+        }
+      ],
+      "readLfLines": 61,
+      "unreadLfLines": 600
+    },
+    {
+      "path": "sys.rst",
+      "url": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/sys.rst",
+      "finalUrl": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/sys.rst",
+      "bytes": 18051,
+      "sha256": "c0985bfc614fe38ced18bcfc84998398342aa3cf30de47a77e96b830d6968e65",
+      "lfLines": 465,
+      "coverage": "partial",
+      "readRanges": [
+        {
+          "first": 344,
+          "last": 379,
+          "sha256": "70b749a86830c5c1bb220c873eeecc2abd4cdbd3957cad7554614a15bfcba577"
+        }
+      ],
+      "readLfLines": 36,
+      "unreadLfLines": 429
+    },
+    {
+      "path": "long.rst",
+      "url": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/long.rst",
+      "finalUrl": "https://raw.githubusercontent.com/python/cpython/v3.12.3/Doc/c-api/long.rst",
+      "bytes": 12162,
+      "sha256": "f9272f1088fc3460d92904985a549b17422fd0260bf526cc59d6a52494cf4665",
+      "lfLines": 348,
+      "coverage": "partial",
+      "readRanges": [
+        {
+          "first": 1,
+          "last": 40,
+          "sha256": "bc3d5be21b647db13e98bffd311685b73ca5ed980454a64fc1b83301b3fb1f99"
+        },
+        {
+          "first": 249,
+          "last": 263,
+          "sha256": "8b56201df6068a4027cbd625b30cb99651384c05da9aa492587a9e0524900d7a"
+        }
+      ],
+      "readLfLines": 55,
+      "unreadLfLines": 293
+    },
+    {
+      "path": "pep-0475.rst",
+      "url": "https://raw.githubusercontent.com/python/peps/main/peps/pep-0475.rst",
+      "finalUrl": "https://raw.githubusercontent.com/python/peps/main/peps/pep-0475.rst",
+      "bytes": 16325,
+      "sha256": "5624e338889dc7208ae43b514450c16fe58628acbcd1b1c9ec7eba63570c6663",
+      "lfLines": 473,
+      "coverage": "partial",
+      "readRanges": [
+        {
+          "first": 146,
+          "last": 232,
+          "sha256": "da574e3eac7c1dd4bb08722bce7370fcd256c04aeab8257c62126d43703f20e3"
+        }
+      ],
+      "readLfLines": 87,
+      "unreadLfLines": 386
+    }
+  ],
+  "linkedReferencesFullyRead": false,
+  "acquiredCodeExecuted": false
+}

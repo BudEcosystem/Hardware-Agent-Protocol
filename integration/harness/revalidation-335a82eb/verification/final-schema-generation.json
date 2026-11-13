@@ -1,0 +1,13 @@
+{
+  "command": [
+    "python3",
+    "/home/bud/Desktop/bud/hms/integration/harness/revalidation-335a82eb/hms-final-freeze-snapshot/integration/harness/generate_schemas.py",
+    "TEMP_WORKTREE"
+  ],
+  "exit_code": 0,
+  "byte_identical": true,
+  "generator_sha256": "1a3a4cf49a1e4b635fa6d6d7c8eeae041ff61549a9cd83141325b83aa0d3e6fb",
+  "source_schema_sha256": "313454429d8d4247dd41ab61e82480f174c7685f03f5a4b077f2ad94ad80705e",
+  "output_sha256": "b87a234e35f9d4135b637a93b4b7377e5a86b6829b31563808de32a156a6e4db",
+  "scope": "Regenerated from the final immutable HMS snapshot into a temporary output path; compares complete bytes to final worktree and exported package source."
+}

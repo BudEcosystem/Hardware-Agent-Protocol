@@ -1,0 +1,12 @@
+{
+  "scope": "Artifact and reading-coverage integrity, not independent proof of comprehension.",
+  "reading_sha256": "46d2751aca88bf83f0e380c00806307a05637aaa8f01cd7a74cd5a73e09df33a",
+  "sources_verified": 2,
+  "prior_receipt_unchanged": true,
+  "new_lines": 600,
+  "cumulative_lines": 2296,
+  "total_lines": 42293,
+  "new_ranges_overlap_prior": false,
+  "images_verified": 12,
+  "coverage_complete": false
+}

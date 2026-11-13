@@ -1,0 +1,31 @@
+{
+  "captured_at": "2026-11-05T23:09:05.376056+00:00",
+  "scope": "Selected official Python socket and Linux man-pages sections; not complete-document reading or a full kernel/source audit.",
+  "entries": [
+    {
+      "url": "https://docs.python.org/3.12/library/socket.html",
+      "snapshot": "raw/python-socket-3.12.html",
+      "sha256": "8e09b258b3add5d5d0c066b020de31f668d4c783cd05f787a22bba8ba85b236c",
+      "bytes": 294557,
+      "reading_status": "partial",
+      "read_sections": [
+        "AF_UNIX pathname addresses",
+        "socket.getsockopt",
+        "socket.settimeout",
+        "socket.sendall"
+      ]
+    },
+    {
+      "url": "https://man7.org/linux/man-pages/man7/unix.7.html",
+      "snapshot": "raw/linux-unix-7.html",
+      "sha256": "3e1f055e2be8f0a84603a4976ab90bd4e7457ad76a38bd8b4dfe85b32410e4bd",
+      "bytes": 47026,
+      "reading_status": "partial",
+      "read_sections": [
+        "Pathname socket ownership and permissions",
+        "SO_PEERCRED",
+        "struct ucred"
+      ]
+    }
+  ]
+}
