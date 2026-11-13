@@ -66,6 +66,7 @@ class Sample:
     sequence: int
     uncertainty: float | None = None
     source: str | None = None
+    epoch: str | None = None  # the device's own boot epoch (BHMS-CMP-060); None: the hub's
 
 
 @dataclass
@@ -132,7 +133,7 @@ class ObservationHub:
                    receivedAt=iso(sample.received_ns), ageMs=age)
         if sample.uncertainty is not None:
             obs["uncertainty"] = sample.uncertainty
-        obs.update(sequence=sample.sequence, epoch=self.epoch)
+        obs.update(sequence=sample.sequence, epoch=sample.epoch or self.epoch)
         if sample.source is not None:
             obs["source"] = sample.source[:128]
         return obs
@@ -146,7 +147,8 @@ class ObservationHub:
 
     def _record(self, device: Device, spec: PropertySpec, value: Any, quality: str, *, evidence: str | None,
                 started_mono: float | None, acquired_ns: int | None, latency_ms: float | None,
-                uncertainty: float | None, source: str | None) -> Sample:
+                uncertainty: float | None, source: str | None, sequence: int | None = None,
+                epoch: str | None = None) -> Sample:
         state = self._slot(device.device_id, spec.name)
         if quality in ("valid", "stale"):
             if value is None and not _allows_null(spec.schema):
@@ -159,9 +161,9 @@ class ObservationHub:
             value = None
         if latency_ms is None:
             started_mono, acquired_ns, latency_ms = None, None, 0.0
-        state.sequence += 1
+        state.sequence = sequence if sequence is not None else state.sequence + 1
         sample = Sample(value, quality, evidence or spec.evidence, started_mono, acquired_ns, now_ns(),
-                        float(latency_ms), state.sequence, uncertainty, source)
+                        float(latency_ms), state.sequence, uncertainty, source, epoch)
         previous = state.sample
         state.sample = sample
         if quality == "valid":
@@ -193,7 +195,8 @@ class ObservationHub:
         if isinstance(value, Reading):
             return self._record(device, spec, value.value, value.quality, evidence=value.evidence,
                                 started_mono=started, acquired_ns=value.acquired_at_ns or acquired,
-                                latency_ms=value.latency_ms, uncertainty=value.uncertainty, source=value.source)
+                                latency_ms=value.latency_ms, uncertainty=value.uncertainty, source=value.source,
+                                sequence=value.sequence, epoch=value.epoch)
         return self._record(device, spec, value, "valid", evidence=None, started_mono=started, acquired_ns=acquired,
                             latency_ms=0.0, uncertainty=None, source=None)
 
@@ -210,15 +213,17 @@ class ObservationHub:
 
     async def publish(self, device: Device, prop: str, value: Any, *, quality: str = "valid",
                       uncertainty: float | None = None, source: str | None = None,
-                      latency_ms: float | None = 0.0, evidence: str | None = None) -> dict[str, Any]:
-        """Record a value the device pushed; returns its ``Observation``."""
+                      latency_ms: float | None = 0.0, evidence: str | None = None, sequence: int | None = None,
+                      epoch: str | None = None) -> dict[str, Any]:
+        """Record a value the device pushed; returns its ``Observation``. ``sequence`` and ``epoch`` are the device's
+        own numbering (a compact endpoint's VALUE sequence and boot epoch, BHMS-CMP-060)."""
         spec = self.spec(device, prop)
-        if quality not in ("valid", "invalid", "unknown"):
-            raise ValueError("publish quality must be valid, invalid or unknown")
+        if quality not in ("valid", "stale", "invalid", "unknown"):
+            raise ValueError("publish quality must be valid, stale, invalid or unknown")
         started = time.monotonic() - latency_ms / 1000 if latency_ms is not None else None
         sample = self._record(device, spec, value, quality, evidence=evidence, started_mono=started,
                               acquired_ns=now_ns() - int((latency_ms or 0) * 1e6), latency_ms=None if latency_ms is None
-                              else 0.0, uncertainty=uncertainty, source=source)
+                              else 0.0, uncertainty=uncertainty, source=source, sequence=sequence, epoch=epoch)
         return self.present(spec, sample)
 
     # ------------------------------------------------------------------ reads

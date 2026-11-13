@@ -1,0 +1,160 @@
+{
+  "deviceId": "bench-rig",
+  "name": "Compact bench rig",
+  "description": "A native test endpoint speaking BHMS-Compact: a synchronous setpoint, a cancellable timed move that needs a lease, a command that always runs to its end, a command with selectable outcomes and a sensor that can be disconnected.",
+  "capabilities": ["bhms.test.compact"],
+  "tags": ["bench-a"],
+  "resources": ["bench-rig/axis", "bench-rig/io"],
+  "identity": {"manufacturer": "Bud Labs", "model": "sim_bench", "firmwareVersion": "1.0.0"},
+  "properties": {
+    "level": {
+      "description": "The last level written by set_level, in 0.1 percent steps as a raw count.",
+      "schema": {"type": "integer", "x-bhms-unit": "1", "minimum": 0, "maximum": 65535},
+      "evidence": "reported",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {"index": 0, "type": "u16"}
+    },
+    "temp": {
+      "description": "Temperature of the simulated sensor; invalid while the sensor is disconnected.",
+      "schema": {"type": "number", "x-bhms-unit": "Cel"},
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {"index": 1, "type": "f32"}
+    },
+    "offset": {
+      "description": "A scaled signed property (0.1 percent per count) that always reads -12.3.",
+      "schema": {"type": "number", "x-bhms-unit": "%", "minimum": -3276.8, "maximum": 3276.7, "multipleOf": 0.1},
+      "evidence": "reported",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {"index": 2, "type": "i16", "scale": 0.1}
+    }
+  },
+  "actions": {
+    "set_level": {
+      "description": "Write the level (percent, 0.1 steps). Returns how many times it was written since boot.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["value"],
+        "properties": {"value": {"type": "number", "x-bhms-unit": "%", "minimum": 0, "maximum": 100, "multipleOf": 0.1}}
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["writes"],
+        "properties": {"writes": {"type": "integer", "x-bhms-unit": "1", "minimum": 0, "maximum": 255}}
+      },
+      "effect": "reversible",
+      "idempotency": "idempotent",
+      "cancel": "unsupported",
+      "completionEvidence": "reported",
+      "maxDurationMs": 3000,
+      "requiresLease": false,
+      "resources": ["bench-rig/io"],
+      "onLeaseLoss": "finish",
+      "compact": {"index": 0, "args": [{"name": "value", "type": "u16", "scale": 0.1}], "result": [{"name": "writes", "type": "u8"}]}
+    },
+    "move": {
+      "description": "Move to an angle over a duration. Runs asynchronously, reports progress, can be canceled (acknowledged first, then ended) and needs a lease.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["duration_ms", "target"],
+        "properties": {
+          "duration_ms": {"type": "integer", "x-bhms-unit": "ms", "minimum": 1, "maximum": 5000},
+          "target": {"type": "number", "x-bhms-unit": "deg", "minimum": -180, "maximum": 180, "multipleOf": 0.01}
+        }
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["reached"],
+        "properties": {"reached": {"type": "number", "x-bhms-unit": "deg", "minimum": -327.68, "maximum": 327.67, "multipleOf": 0.01}}
+      },
+      "effect": "reversible",
+      "idempotency": "absolute",
+      "cancel": "supported",
+      "completionEvidence": "reported",
+      "typicalDurationMs": 500,
+      "maxDurationMs": 8000,
+      "requiresLease": true,
+      "resources": ["bench-rig/axis"],
+      "onLeaseLoss": "cancel",
+      "compact": {
+        "index": 1,
+        "args": [{"name": "duration_ms", "type": "u16"}, {"name": "target", "type": "i16", "scale": 0.01}],
+        "result": [{"name": "reached", "type": "i16", "scale": 0.01}]
+      }
+    },
+    "probe": {
+      "description": "Run with a selectable outcome: 0 completes, 1 fails with device fault 7, 2 is rejected by a local precondition.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["mode"],
+        "properties": {"mode": {"type": "integer", "x-bhms-unit": "1", "minimum": 0, "maximum": 2}}
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["n"],
+        "properties": {"n": {"type": "integer", "x-bhms-unit": "1", "minimum": 0, "maximum": 255}}
+      },
+      "effect": "reversible",
+      "idempotency": "idempotent",
+      "cancel": "unsupported",
+      "completionEvidence": "reported",
+      "maxDurationMs": 3000,
+      "requiresLease": false,
+      "resources": ["bench-rig/io"],
+      "onLeaseLoss": "finish",
+      "compact": {"index": 2, "args": [{"name": "mode", "type": "u8"}], "result": [{"name": "n", "type": "u8"}]}
+    },
+    "lock": {
+      "description": "Occupy the axis for a duration; it cannot be canceled, only run out or be stopped.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["duration_ms"],
+        "properties": {"duration_ms": {"type": "integer", "x-bhms-unit": "ms", "minimum": 1, "maximum": 5000}}
+      },
+      "effect": "reversible",
+      "idempotency": "idempotent",
+      "cancel": "unsupported",
+      "completionEvidence": "reported",
+      "maxDurationMs": 8000,
+      "requiresLease": false,
+      "resources": ["bench-rig/axis"],
+      "onLeaseLoss": "finish",
+      "compact": {"index": 3, "args": [{"name": "duration_ms", "type": "u16"}], "result": []}
+    },
+    "sensor": {
+      "description": "Connect or disconnect the simulated temperature sensor.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["connected"],
+        "properties": {"connected": {"type": "boolean"}}
+      },
+      "effect": "reversible",
+      "idempotency": "idempotent",
+      "cancel": "unsupported",
+      "completionEvidence": "reported",
+      "maxDurationMs": 3000,
+      "requiresLease": false,
+      "resources": ["bench-rig/io"],
+      "onLeaseLoss": "finish",
+      "compact": {"index": 4, "args": [{"name": "connected", "type": "bool"}], "result": []}
+    }
+  },
+  "safety": {
+    "stop": "supported",
+    "stopEvidence": "measured",
+    "stopMaxDurationMs": 2000,
+    "onDisconnect": "unknown",
+    "summary": "Stop ends every active operation; the simulated axis holds its last position."
+  }
+}

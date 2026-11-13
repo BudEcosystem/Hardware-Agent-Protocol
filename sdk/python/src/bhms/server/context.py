@@ -39,6 +39,8 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
+from bhms.protocol.errors import CODES
+
 if TYPE_CHECKING:
     from bhms.server.device import Device
     from bhms.server.executor import Execution
@@ -69,11 +71,17 @@ class DeviceFault(Exception):
         effect: ``unknown`` (default), ``unverified`` or ``none`` (with ``proof``); ``verified`` only with
             ``observations`` (measured, valid) attached.
         observations: ``{property: Observation}`` proving a ``verified`` effect.
+        code: the BHMS code recorded in ``error.bhmsCode`` (default ``DEVICE_FAULT``; a bridge that learns *why* the device
+            refused, such as ``FENCED`` or ``OUT_OF_RANGE``, reports that code, with ``proof``).
     """
 
     def __init__(self, message: str, *, partial: str | None = None, hint: str | None = None, proof: str | None = None,
-                 effect: str = "unknown", observations: dict[str, dict[str, Any]] | None = None) -> None:
+                 effect: str = "unknown", observations: dict[str, dict[str, Any]] | None = None,
+                 code: str = "DEVICE_FAULT") -> None:
         super().__init__(message)
+        if code not in CODES:
+            raise ValueError(f"DeviceFault code {code!r} is not a BHMS error code")
+        self.code = code
         if effect not in ("none", "unverified", "unknown", "verified"):
             raise ValueError(f"DeviceFault effect must be none, unverified, unknown or verified, got {effect!r}")
         if observations:
@@ -98,7 +106,9 @@ class Reading:
     """A property value with explicit quality and provenance (returned by a getter instead of a bare value).
 
     ``acquired_at_ns``: device timestamp (wall clock ns) when known; ``latency_ms``: bounded acquisition latency added to
-    the age (BHMS-OBS-003; ``None`` = unbounded, which makes ``ageMs`` null and fails every ``maxAgeMs``).
+    the age (BHMS-OBS-003; ``None`` = unbounded, which makes ``ageMs`` null and fails every ``maxAgeMs``). ``sequence`` and
+    ``epoch`` are the device's own (BHMS-CMP-060: a compact endpoint's VALUE sequence and boot epoch); without them the
+    server numbers acquisitions itself.
     """
 
     value: Any
@@ -108,6 +118,8 @@ class Reading:
     source: str | None = None
     latency_ms: float | None = 0.0
     acquired_at_ns: int | None = None
+    sequence: int | None = None
+    epoch: str | None = None
 
 
 @dataclass(frozen=True)
@@ -204,6 +216,12 @@ class ActionContext:
         self._execution.mark_running(None)
         self._execution.server.journal.set_progress(self._execution.rec, {"stepsCompleted": steps,
                                                                           "stepsTotal": int(total)})
+
+    async def refuse_cancel(self, detail: str | None = None) -> None:
+        """Record that the device refused the cancellation request (``cancel.state: refused``, BHMS-OPS-052)."""
+        rec = self._execution.rec
+        if not rec.settled and rec.op["cancel"]["state"] == "requested":
+            self._execution.server.journal.set_cancel(rec, "refused", detail=detail)
 
     async def acknowledge_cancel(self, detail: str | None = None) -> None:
         """Record that the device received the cancellation request (``cancel.state: acknowledged``, BHMS-OPS-052)."""

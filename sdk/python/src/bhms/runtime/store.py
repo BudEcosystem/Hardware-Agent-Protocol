@@ -253,9 +253,15 @@ class Store:
         row = self._db.execute("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
         return row[0] if row else None
 
-    def meta_set(self, key: str, value: str) -> None:
-        with self.transaction():
-            self._write("INSERT OR REPLACE INTO meta(key, value) VALUES(?, ?)", (key, value))
+    def meta_set(self, key: str, value: str, *, barrier: bool = False) -> None:
+        self.meta_set_many({key: value}, barrier=barrier)
+
+    def meta_set_many(self, items: dict[str, str], *, barrier: bool = False) -> None:
+        """Write several meta entries in one transaction; ``barrier=True`` makes it durable before returning (a compact
+        bridge records an operation's handle this way before it sends the INVOKE)."""
+        with self.transaction(barrier=barrier):
+            for key, value in items.items():
+                self._write("INSERT OR REPLACE INTO meta(key, value) VALUES(?, ?)", (key, value))
 
     def meta_prefix(self, prefix: str) -> dict[str, str]:
         """Every meta entry whose key starts with ``prefix`` (a gateway's record of upstream leases)."""

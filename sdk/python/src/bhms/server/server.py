@@ -150,6 +150,18 @@ class DeviceServer:
             self._device_changed(dev)
         return dev
 
+    def device_from_description(self, description: dict[str, Any], **kw: Any) -> Device:
+        """Declare a device from a given description; see :meth:`Device.from_description` for ``kw``. Works before and
+        after :meth:`start` (a bridge declares its device once the endpoint has proven it is the described one)."""
+        device_id = description.get("deviceId")
+        if device_id in self.devices:
+            raise ValueError(f"device {device_id!r} is already declared (BHMS-DEV-001)")
+        dev = Device.from_description(self, description, **kw)
+        self.devices[dev.device_id] = dev
+        if self._started:
+            self._device_changed(dev)
+        return dev
+
     def extension(self, key: str, info: dict[str, Any], methods: dict[str, Any]) -> None:
         """Advertise extension ``key`` (``"<prefix>/<name>"``, BHMS-LIF-070) under ``capabilities.extensions`` and
         register its methods (``x-<name>/<method>`` or ``<prefix>/<name>/<method>``; ``handler(params, ctx)`` gets
