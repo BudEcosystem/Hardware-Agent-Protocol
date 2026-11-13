@@ -55,6 +55,12 @@ was returned for the same key.
 `kind` ∈ `state`, `cancel`, `effect`, `evidence`, `reconciliation`, `correction`,
 `step`, `stop`, `lease`.
 
+**Results are I-JSON.** An operation's `result` (and every JSON value a server records) MUST be
+I-JSON (RFC 7493): numbers are IEEE 754 doubles, so an integer outside ±2^53 (9007199254740991) or a
+non-finite number cannot be recorded. A server that is handed such a result MUST NOT complete the
+operation: it ends `failed` with `INTERNAL`, `mayHaveActed: true` and a message naming the member and
+the rule (return the value as a string, or as a float when rounding is acceptable).
+
 ## 6.3 States
 
 `state` ∈ `accepted`, `dispatching`, `running`, `completed`, `failed`,

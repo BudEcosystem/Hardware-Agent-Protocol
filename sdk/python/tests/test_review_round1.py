@@ -463,3 +463,170 @@ def test_checkpointer_is_restarted_when_its_thread_dies(tmp_path, monkeypatch): 
     cp.committed()
     assert cp._thread.is_alive()
     cp.stop()
+
+
+# --------------------------------------------------------------------------- fix round 2
+
+
+def _round2_device(srv):
+    from bhms.server.context import DeviceFault
+
+    st = {"ran": 0, "effect": "unknown", "fresh_error": False, "remaining": None}
+    dev = srv.device("ax", capabilities=["bhms.axis.linear"], resources=["ax"])
+    dev.report_alive()
+
+    @dev.property(unit="mm", evidence="measured")
+    def position() -> float:
+        if st["fresh_error"]:
+            raise MemoryError("sensor driver blew up")
+        return 1.0
+
+    @dev.action(effect="reversible", idempotency="absolute", max_duration_ms=5000)
+    async def fine(ctx) -> None:
+        st["ran"] += 1
+
+    @dev.action(effect="reversible", idempotency="absolute", max_duration_ms=5000)
+    async def fault(ctx) -> None:
+        raise DeviceFault("jam", effect=st["effect"])
+
+    @dev.action(effect="reversible", idempotency="absolute", max_duration_ms=5000)
+    async def big(ctx):
+        return {"ns": 2 ** 60}
+
+    @dev.action(effect="reversible", idempotency="relative", max_duration_ms=5000, blocking=True)
+    def timed(ctx) -> None:
+        st["remaining"] = ctx.remaining_ms
+
+    return st
+
+
+async def test_store_error_while_settling_keeps_the_resource_inhibited_until_unknown_is_durable(tmp_path):  # finding 3
+    srv, listener, client, st = await _open(tmp_path, "r7", _round2_device)
+    try:
+        real = srv.journal.transition
+        fail = {"on": True}
+
+        def flaky(rec, state, **kw):
+            if fail["on"] and state in ("completed", "unknown"):
+                raise StoreError("disk full")
+            return real(rec, state, **kw)
+
+        srv.journal.transition = flaky
+        op = (await client.actions_invoke("ax", "fine", {}, operation_key="f1", wait_ms=500)).operation
+        assert op.state == "dispatching" and st["ran"] == 1
+        assert srv.executor.inhibiting(("ax",)) == op.operation_id
+        with pytest.raises(BhmsError):  # journal not writable: refused, handler not run again
+            await client.actions_invoke("ax", "fine", {}, operation_key="f2")
+        fail["on"] = False  # the journal is writable again
+        with pytest.raises(BhmsError) as refused:
+            await client.actions_invoke("ax", "fine", {}, operation_key="f3")
+        assert refused.value.code == "STALE" and st["ran"] == 1, "the resource must stay inhibited"
+        again = (await client.operations_get(op.operation_id)).operation
+        assert again.state == "unknown" and again.error.bhms_code == "DEADLINE_EXCEEDED"
+        assert again.error.may_have_acted is True
+    finally:
+        await _close(srv, listener, client)
+
+
+async def test_background_retry_records_unknown_without_new_traffic(tmp_path):  # finding 3
+    srv, listener, client, st = await _open(tmp_path, "r7b", _round2_device)
+    try:
+        real = srv.journal.transition
+        fail = {"on": True}
+
+        def flaky(rec, state, **kw):
+            if fail["on"] and state in ("completed", "unknown"):
+                raise StoreError("disk full")
+            return real(rec, state, **kw)
+
+        srv.journal.transition = flaky
+        op = (await client.actions_invoke("ax", "fine", {}, operation_key="f1", wait_ms=500)).operation
+        fail["on"] = False
+        srv.executor._retry.cancel()
+        srv.executor._retry = None
+        srv.executor._retry_unsettled()
+        assert srv.journal.get(op.operation_id).state == "unknown" and not srv.executor._unsettled
+    finally:
+        await _close(srv, listener, client)
+
+
+@pytest.mark.parametrize("effect", ["verified", "bogus"])
+def test_device_fault_validates_its_effect(effect):  # finding 4
+    from bhms.server.context import DeviceFault
+    with pytest.raises(ValueError, match="effect"):
+        DeviceFault("jam", effect=effect)
+    with pytest.raises(ValueError, match="measured"):
+        DeviceFault("jam", effect="verified", observations={"p": {"evidence": "reported", "quality": "valid"}})
+    DeviceFault("jam", effect="verified", observations={"p": {"evidence": "measured", "quality": "valid"}})
+
+
+def test_journal_rejects_an_effect_outside_the_schema_enum(tmp_path):  # finding 4
+    store = Store(tmp_path / "e.db")
+    try:
+        journal = Journal(store)
+        rec = journal.create(principal="p", key="k", key_origin="client", kind="action", request_digest="sha256:x",
+                             arguments={}, device_id="ax", action="mv",
+                             private={"resources": ["ax"], "effectClass": "reversible"}, dispatch=True)
+        with pytest.raises(InvalidTransition, match="EffectCertainty"):
+            journal.transition(rec, "canceled", effect="bogus")
+        assert rec.state == "dispatching"
+    finally:
+        store.close()
+
+
+async def test_integer_beyond_2_53_is_refused_with_a_precise_message(tmp_path):  # fix (a)
+    srv, listener, client, _ = await _open(tmp_path, "r8", _round2_device)
+    try:
+        op = (await client.actions_invoke("ax", "big", {}, operation_key="b", wait_ms=1000)).operation
+        assert op.state == "failed" and op.error.may_have_acted is True
+        assert "result.ns" in op.error.message and "2^53" in op.error.message and "I-JSON" in op.error.message
+        assert "output schema" not in op.error.message
+    finally:
+        await _close(srv, listener, client)
+
+
+def test_recover_lists_each_program_once(tmp_path):  # fix (b)
+    path, prog_id, _ = _program_with_unknown_child(tmp_path, "reconciled-completed")
+    store = Store(path)
+    try:
+        changed = Journal(store).recover()
+        assert [r.id for r in changed].count(prog_id) == 1
+    finally:
+        store.close()
+
+
+def test_reconciled_observations_are_validated_whenever_present():  # fix (d)
+    with pytest.raises(ValueError, match="measured"):
+        Reconciled("completed", evidence="x", effect="unverified",
+                   observations={"p": {"evidence": "reported", "quality": "valid"}})
+
+
+async def test_unexpected_freshness_error_rejects_the_queued_operation(tmp_path):  # fix (e)
+    srv, listener, client, st = await _open(tmp_path, "r9", _gated_device)
+    try:
+        lease = (await client.leases_acquire(["ax"], 5000)).lease
+        await client.actions_invoke("ax", "a", {}, operation_key="a")
+        rb = await client.actions_invoke("ax", "b", {}, lease_id=lease.lease_id, operation_key="b")
+        real = srv.observations.require_fresh
+
+        async def boom(*a, **k):
+            raise MemoryError("driver blew up")
+
+        srv.observations.require_fresh = boom
+        st["agate"].set()
+        await asyncio.sleep(0.3)
+        op = (await client.operations_get(rb.operation.operation_id)).operation
+        assert op.state == "rejected" and op.error.bhms_code == "INTERNAL" and op.error.may_have_acted is False
+        assert not srv.executor._busy and not srv.executor._pending
+        srv.observations.require_fresh = real
+    finally:
+        await _close(srv, listener, client)
+
+
+async def test_remaining_ms_works_from_a_blocking_handlers_thread(tmp_path):  # fix (f)
+    srv, listener, client, st = await _open(tmp_path, "r10", _round2_device)
+    try:
+        op = (await client.actions_invoke("ax", "timed", {}, wait_ms=2000)).operation
+        assert op.state == "completed" and 0 < st["remaining"] <= 5000
+    finally:
+        await _close(srv, listener, client)

@@ -691,8 +691,6 @@ class ProgramRunner:
             child = await srv.executor.admit(run.principal, params, key, "derived", request_digest,
                                              parent_id=run.rec.id, deadline_ns=deadline_ns)
         except BhmsError as exc:
-            if run.rec.state == "accepted":
-                self._start_step(run, step, path)
             raise _StepFailed(exc.to_operation_error()) from None
         run.child = child
         self._start_step(run, step, path, child)

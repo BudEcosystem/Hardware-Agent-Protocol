@@ -66,13 +66,31 @@ class DeviceFault(Exception):
         partial: description of partial effects (recorded in history; BHMS-PRG-011 / "partial effects recorded").
         hint: what the caller should do next (default: read the device state before retrying).
         proof: device evidence that nothing happened; only then is ``mayHaveActed`` false (BHMS-OPS-009).
-        effect: ``unknown`` (default), ``unverified`` or ``none`` (with ``proof``).
+        effect: ``unknown`` (default), ``unverified`` or ``none`` (with ``proof``); ``verified`` only with
+            ``observations`` (measured, valid) attached.
+        observations: ``{property: Observation}`` proving a ``verified`` effect.
     """
 
     def __init__(self, message: str, *, partial: str | None = None, hint: str | None = None, proof: str | None = None,
-                 effect: str = "unknown") -> None:
+                 effect: str = "unknown", observations: dict[str, dict[str, Any]] | None = None) -> None:
         super().__init__(message)
+        if effect not in ("none", "unverified", "unknown", "verified"):
+            raise ValueError(f"DeviceFault effect must be none, unverified, unknown or verified, got {effect!r}")
+        if observations:
+            _check_observations(observations, "DeviceFault")
+        if effect == "verified" and not observations:
+            raise ValueError("DeviceFault(effect='verified') needs observations={property: Observation} that are "
+                             "measured and valid (BHMS-OPS-006); use effect='unverified' without a measurement")
         self.message, self.partial, self.hint, self.proof, self.effect = message, partial, hint, proof, effect
+        self.observations = observations
+
+
+def _check_observations(observations: dict[str, dict[str, Any]], owner: str) -> None:
+    """Observations that prove an effect are measured and valid (BHMS-OPS-006); refused when present but not."""
+    for name, obs in observations.items():
+        if not isinstance(obs, dict) or obs.get("evidence") != "measured" or obs.get("quality") != "valid":
+            raise ValueError(f"{owner} observations[{name!r}] must be a measured, valid Observation to count as "
+                             "evidence (BHMS-OPS-006)")
 
 
 @dataclass(frozen=True)
@@ -114,8 +132,11 @@ class Reconciled:
             raise ValueError("Reconciled.state must be completed, failed, canceled or running")
         if not self.evidence:
             raise ValueError("Reconciled needs evidence naming what proves the outcome (BHMS-OPS-005)")
-        if self.effect == "verified" and not (self.observations and all(
-                o.get("evidence") == "measured" and o.get("quality") == "valid" for o in self.observations.values())):
+        if self.effect not in (None, "none", "unverified", "unknown", "verified"):
+            raise ValueError(f"Reconciled effect must be none, unverified, unknown or verified, got {self.effect!r}")
+        if self.observations:
+            _check_observations(self.observations, "Reconciled")
+        if self.effect == "verified" and not self.observations:
             raise ValueError("Reconciled(effect='verified') needs observations={property: Observation} that are "
                              "measured and valid (BHMS-OPS-006); use effect='unverified' for a report without a "
                              "measurement")
@@ -161,7 +182,7 @@ class ActionContext:
     @property
     def remaining_ms(self) -> float:
         """Milliseconds until the earlier of ``maxDurationMs`` and the client deadline."""
-        return max(0.0, (self._execution.deadline - asyncio.get_running_loop().time()) * 1000)
+        return max(0.0, (self._execution.deadline - self._execution.loop.time()) * 1000)  # loop clock: thread-safe
 
     @property
     def cancel_reason(self) -> str | None:

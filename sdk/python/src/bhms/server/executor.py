@@ -32,6 +32,7 @@ import asyncio
 import contextlib
 import inspect
 import logging
+import math
 import threading
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
@@ -70,6 +71,7 @@ class Execution:
     timer: asyncio.TimerHandle | None = None
     grace: asyncio.TimerHandle | None = None
     deadline_hit: bool = False
+    stop_confirmed: bool = False  # a confirmed stop covered this operation (BHMS-OPS-042)
     evidence: dict[str, dict[str, Any]] = field(default_factory=dict)
     confirmed: list[bool] = field(default_factory=list)
     loop: asyncio.AbstractEventLoop = field(default_factory=asyncio.get_running_loop)
@@ -102,6 +104,8 @@ class Executor:
         self.cancel_grace_ms = cancel_grace_ms
         self._waiting: list[OperationRecord] = []
         self._queued: dict[str, _Queued] = {}
+        self._unsettled: dict[str, OperationRecord] = {}  # dispatched ops whose settlement could not be journaled
+        self._retry: asyncio.TimerHandle | None = None
         self._pending: dict[str, OperationRecord] = {}  # popped from _waiting, pre-dispatch checks in flight
         self._busy: dict[str, str] = {}
         self._running: dict[str, Execution] = {}
@@ -132,6 +136,12 @@ class Executor:
         if rec.terminal:
             self.lift_inhibition(rec)
 
+    def confirm_stop(self, device_id: str) -> None:
+        """A confirmed stop covers the device's running operations: if one ends ``unknown``, it does not inhibit."""
+        for execution in self._running.values():
+            if execution.device.device_id == device_id:
+                execution.stop_confirmed = True
+
     def lift_inhibition(self, rec: OperationRecord) -> None:
         for resource in rec.resources:
             ids = self._inhibited.get(resource)
@@ -148,7 +158,50 @@ class Executor:
                 return sorted(ids)[0]
         return None
 
+    def _hold_unsettled(self, rec: OperationRecord, *, lifted: bool = False) -> None:
+        """A settlement could not be journaled: the device acted but the record is not durable. Keep the resources
+        inhibited in memory (no new work is admitted on them) and keep trying to record ``unknown`` (BHMS-OPS-004/042)."""
+        if rec.state not in ("dispatching", "running"):
+            return
+        self._unsettled[rec.id] = rec
+        if lifted:
+            rec.private = {**rec.private, "inhibitionLifted": True}  # persisted with the unknown record
+        else:
+            for resource in rec.resources:
+                self._inhibited.setdefault(resource, set()).add(rec.id)
+        if self._retry is None:
+            self._retry = asyncio.get_running_loop().call_later(1.0, self._retry_unsettled)
+
+    def _retry_unsettled(self) -> None:
+        self._retry = None
+        self.flush_unsettled()
+        if self._unsettled:
+            self._retry = asyncio.get_running_loop().call_later(1.0, self._retry_unsettled)
+
+    def flush_unsettled(self) -> None:
+        """Durably record ``unknown`` for operations held by :meth:`_hold_unsettled`, as soon as the journal allows."""
+        for rec in list(self._unsettled.values()):
+            if rec.state in ("dispatching", "running"):
+                try:
+                    self.server.journal.transition(rec, "unknown", error=unknown_error(
+                        f"{rec.op.get('action')} finished (or failed) but its outcome could not be recorded in the "
+                        "journal; whether the device acted as intended is unknown"))
+                except StoreError as exc:
+                    self.server.journal_failed(exc)
+                    return
+                except Exception:  # noqa: BLE001 - keep holding it; the next attempt or a restart settles it
+                    log.exception("could not mark %s unknown", rec.id)
+                    return
+            del self._unsettled[rec.id]
+            if rec.private.get("inhibitionLifted") and rec.state == "unknown":
+                with contextlib.suppress(StoreError):
+                    self.server.journal.mark_private(rec, inhibitionLifted=True)  # make the lift durable
+            if rec.private.get("effectClass", "none") == "none" and rec.state == "unknown":
+                self.lift_inhibition(rec)
+
     def _check_inhibition(self, resources: tuple[str, ...]) -> None:
+        if self._unsettled:
+            self.flush_unsettled()
         blocking = self.inhibiting(resources)
         if blocking is not None:
             raise BhmsError("STALE", f"operation {blocking} on the same resources has an unknown outcome",
@@ -330,6 +383,10 @@ class Executor:
                                                                  queued.principal, rec.op.get("leaseId"))
                 except BhmsError as exc:
                     error = exc
+                except Exception as exc:  # noqa: BLE001 - settle it: an accepted op must never be left untracked
+                    log.exception("freshness check of %s failed", rec.id)
+                    error = BhmsError("INTERNAL", f"the freshness check failed unexpectedly ({type(exc).__name__}: "
+                                      f"{exc})"[:2000], hint="nothing was sent to the device; retry with a new key")
                 else:
                     error = self._recheck(rec, queued)
             if rec.state != "accepted":
@@ -436,7 +493,9 @@ class Executor:
             self._settle(execution, outcome)
         except StoreError as exc:
             self.server.journal_failed(exc)
-            log.error("could not record the outcome of %s; it is recovered as unknown at restart", execution.rec.id)
+            log.error("could not record the outcome of %s; holding its resources and retrying as unknown",
+                      execution.rec.id)
+            self._hold_unsettled(execution.rec, lifted=execution.stop_confirmed)
         except Exception as exc:  # noqa: BLE001 - whatever stops the outcome being recorded must not free the device
             log.exception("could not record the outcome of %s", execution.rec.id)
             self._settle_unknown(execution, exc)
@@ -454,8 +513,9 @@ class Executor:
             self.server.journal.transition(rec, "unknown", error=unknown_error(
                 f"{execution.spec.name} finished but its outcome could not be recorded "
                 f"({type(cause).__name__}: {cause}); whether the device acted as intended is unknown"))
-        except Exception:  # noqa: BLE001 - recovered as unknown at restart
-            log.exception("could not mark %s unknown; it is recovered as unknown at restart", rec.id)
+        except Exception:  # noqa: BLE001 - held and retried; recovered as unknown at restart at the latest
+            log.exception("could not mark %s unknown; holding its resources and retrying", rec.id)
+            self._hold_unsettled(rec, lifted=execution.stop_confirmed)
 
     @staticmethod
     def _claimed_effect(execution: Execution, effect: str) -> tuple[str, dict[str, Any] | None]:
@@ -519,14 +579,17 @@ class Executor:
 
     @staticmethod
     def _result_problem(device: Device, spec: ActionSpec, result: Any) -> str | None:
-        """Why ``result`` cannot be recorded (not JSON, or not the declared output), else None."""
+        """Why ``result`` cannot be recorded (not I-JSON, or not the declared output), else None."""
         try:
             canonical(result)
         except BhmsError as exc:
-            return f"it is not JSON-serialisable ({exc.message})"
+            where = _ijson_violation(result, "result")
+            if where:
+                return where
+            return f"the result is not JSON-serialisable ({exc.message})"
         if spec.output:
             for error in device.output_validator(spec.name).iter_errors(result):
-                return str(error.message)
+                return f"the result does not match the declared output schema: {error.message}"
         return None
 
     def _complete(self, execution: Execution, result: Any) -> None:
@@ -536,8 +599,8 @@ class Executor:
         problem = self._result_problem(execution.device, spec, result)
         if problem:
             journal.transition(rec, "failed", error=BhmsError(
-                "INTERNAL", f"{spec.name} returned a result that does not match its output schema: "
-                f"{problem}"[:2000], may_have_acted=True,
+                "INTERNAL", f"{spec.name} returned a result that cannot be recorded: {problem}"[:2000],
+                may_have_acted=True,
                 hint="the device acted but the server cannot report a valid result; read the device state")
                 .to_operation_error(), detail=f"invalid result {result!r}"[:1000])
             return
@@ -568,8 +631,9 @@ class Executor:
         error = BhmsError("DEVICE_FAULT", fault.message[:2000], may_have_acted=fault.proof is None,
                           hint=fault.hint or f"read {execution.device.device_id}'s state before retrying; partial "
                                              "effects are possible").to_operation_error()
-        journal.transition(execution.rec, "failed", error=error, effect=fault.effect if fault.proof is None else "none",
-                           proof=fault.proof)
+        effect = fault.effect if fault.proof is None else "none"
+        evidence = {"kind": "measured", "observations": fault.observations} if effect == "verified" else None
+        journal.transition(execution.rec, "failed", error=error, effect=effect, evidence=evidence, proof=fault.proof)
 
     def _on_deadline(self, execution: Execution) -> None:
         rec = execution.rec
@@ -740,6 +804,27 @@ class Executor:
         else:
             journal.transition(rec, answer.state, effect=answer.effect, evidence=evidence, kind="reconciliation",
                                detail=detail)
+
+
+def _ijson_violation(value: Any, path: str) -> str | None:
+    """Name the first member of ``value`` that breaks the I-JSON number rule (BHMS-OPS-008), else None."""
+    if isinstance(value, bool):
+        return None
+    if isinstance(value, int) and not -(2 ** 53 - 1) <= value <= 2 ** 53 - 1:
+        return (f"{path} is the integer {value}, beyond +/-2^53 (9007199254740991); results are I-JSON, so numbers must "
+                "be exactly representable as IEEE 754 doubles: return it as a string, or as a float if rounding is "
+                "acceptable")
+    if isinstance(value, float) and not math.isfinite(value):
+        return f"{path} is {value}; NaN and Infinity are not JSON numbers: return null or a string"
+    if isinstance(value, dict):
+        for key, item in value.items():
+            if found := _ijson_violation(item, f"{path}.{key}"):
+                return found
+    elif isinstance(value, (list, tuple)):
+        for index, item in enumerate(value):
+            if found := _ijson_violation(item, f"{path}[{index}]"):
+                return found
+    return None
 
 
 async def _call_hook(hook: Any, *args: Any) -> Any:

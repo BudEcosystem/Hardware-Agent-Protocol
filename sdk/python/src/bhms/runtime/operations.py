@@ -58,6 +58,7 @@ TRANSITIONS: dict[str, frozenset[str]] = {
     "unknown": frozenset({"running", "completed", "failed", "canceled"}),
     "completed": frozenset(), "failed": frozenset(), "canceled": frozenset(), "rejected": frozenset(),
 }
+_EFFECTS = frozenset({"none", "verified", "unverified", "unknown"})
 _DISPATCHED = frozenset({"dispatching", "running", "unknown", "completed", "failed"})
 _EFFECT_RANK = {"none": 0, "reversible": 1, "irreversible": 2, "hazardous": 3}
 _INTENT_INVOKE = ("deviceId", "action", "arguments", "deadlineMs", "require", "descriptionDigest")
@@ -403,6 +404,9 @@ class Journal:
                 new_effect = "none" if effect_class == "none" else "unverified"
         elif state == "dispatching" and effect_class != "none" and new_effect is None:
             new_effect = "unknown"
+        if new_effect is not None and new_effect not in _EFFECTS:
+            raise InvalidTransition(f"{rec.id}: effect {new_effect!r} is not one of {', '.join(sorted(_EFFECTS))} "
+                                    "(EffectCertainty)")
         if state == "completed":
             try:
                 canonical(result)  # the journal and the wire carry JSON: refuse what cannot be recorded (BHMS-OPS-008)
@@ -607,7 +611,8 @@ class Journal:
                 parent = self.get(row.id)
                 if parent is not None and parent.state == "unknown":
                     self._settle_parent_after_reconcile(parent.id)
-                    changed.append(parent)
+                    if parent not in changed:
+                        changed.append(parent)
         return changed
 
     def _step_summary(self, rec: OperationRecord) -> tuple[int | None, list[OperationRecord]]:

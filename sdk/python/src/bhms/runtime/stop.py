@@ -225,6 +225,7 @@ class StopController:
     def _lift(self, dev: Device) -> None:
         """A confirmed stop lifts the unknown-operation inhibition of the device (BHMS-OPS-042)."""
         srv = self.server
+        srv.executor.confirm_stop(dev.device_id)
         for rec in self._operations_on(dev):
             if rec.state == "unknown":
                 srv.executor.lift_inhibition(rec)
