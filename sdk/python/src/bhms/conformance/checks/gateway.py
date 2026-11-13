@@ -110,4 +110,10 @@ async def stalled_upstream(c: Context) -> None:
                          f"a stalled upstream must give DEVICE_UNAVAILABLE or BUSY, not {answered.describe()}")
     finally:
         os.kill(victim, signal.SIGCONT)
-    await asyncio.sleep(0.5)
+    deadline = time.monotonic() + 30  # a later answer to a liveness probe restores the upstream; the next checks need it
+    while time.monotonic() < deadline:
+        again = await asyncio.gather(*(c.call("properties/read", {"deviceId": d, "property": "counter", "fresh": True}) for d in devices))
+        if all(r.ok for r in again):
+            return
+        await asyncio.sleep(0.3)
+    c.fail("the stalled upstream was not restored within 30 s of resuming (a later answer to a liveness probe must restore it)")

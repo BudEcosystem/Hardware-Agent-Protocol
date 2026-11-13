@@ -6,7 +6,6 @@ import asyncio
 import json
 import sys
 
-import pytest
 from typer.testing import CliRunner
 
 from bhms.cli.main import app
@@ -16,15 +15,26 @@ from bhms.conformance.runner import RunOptions, run
 from bhms.testing.broken_devices import DEFECTS
 
 
-@pytest.fixture(scope="module")
-def reference_report():
+_REPORT = None
+
+
+async def reference():
     """One full core-profile run against the conformance device over stdio, shared by the report tests."""
-    import bhms.conformance.checks  # noqa: F401
+    global _REPORT
+    if _REPORT is None:
+        import bhms.conformance.checks  # noqa: F401
 
-    return asyncio.run(run(RunOptions(target="conformance-device", seed=7, strict=True)))
+        _REPORT = await run(RunOptions(target="conformance-device", seed=7, strict=True))
+    return _REPORT
 
 
-def test_python_reference_server_passes_every_core_check(reference_report):
+async def invoke(*args, env=None):
+    """One CLI command in a thread of its own (its asyncio.run must not meet the loop of the test)."""
+    return await asyncio.to_thread(lambda: CliRunner().invoke(app, list(args), env=env, catch_exceptions=False))
+
+
+async def test_python_reference_server_passes_every_core_check():
+    reference_report = await reference()
     failed = [(c.name, c.message) for c in reference_report.checks if c.status is Status.FAILED]
     assert failed == []
     assert reference_report.exit_code == 0 and not reference_report.must_failed
@@ -37,8 +47,8 @@ def test_python_reference_server_passes_every_core_check(reference_report):
     assert not any(r.status is Status.FAILED for r in reference_report.rows)
 
 
-def test_report_states_what_bhms_cnf_001_to_005_require(reference_report):
-    report = reference_report.to_json()
+async def test_report_states_what_bhms_cnf_001_to_005_require():
+    report = (await reference()).to_json()
     meta = report["conformance"]
     assert meta["protocolVersion"] == "2026-11-13"                                   # CNF-001
     assert {"core", "leases", "events", "programs", "registry"} <= set(meta["profiles"])
@@ -70,33 +80,32 @@ def test_every_core_must_is_covered_or_has_a_recorded_reason():
     assert len({s.name for s in REGISTRY}) == len(REGISTRY)
 
 
-def test_cli_runs_one_check_and_writes_the_json_report(tmp_path):
+async def test_cli_runs_one_check_and_writes_the_json_report(tmp_path):
     out = tmp_path / "report.json"
-    result = CliRunner().invoke(app, ["conformance", "conformance-device", "--only", "lifecycle.nan-tokens", "--json", str(out),
-                                      "--seed", "3"], env={"COLUMNS": "200"}, catch_exceptions=False)
+    result = await invoke("conformance", "conformance-device", "--only", "lifecycle.nan-tokens", "--json", str(out), "--seed", "3",
+                          env={"COLUMNS": "200"})
     assert result.exit_code == 0, result.output
     report = json.loads(out.read_text())
     assert [c["check"] for c in report["checks"] if c["status"] == "passed"][:1] == ["lifecycle.nan-tokens"]
     assert "lifecycle.nan-tokens" in result.output and "passed" in result.output
 
 
-def test_cli_exit_status_two_for_an_unreachable_target_and_a_bad_profile(tmp_path):
-    result = CliRunner().invoke(app, ["conformance", f"unix:{tmp_path}/nothing.sock"], catch_exceptions=False)
+async def test_cli_exit_status_two_for_an_unreachable_target_and_a_bad_profile(tmp_path):
+    result = await invoke("conformance", f"unix:{tmp_path}/nothing.sock")
     assert result.exit_code == 2 and "cannot reach" in result.output
-    result = CliRunner().invoke(app, ["conformance", "conformance-device", "--profile", "nonsense"], catch_exceptions=False)
+    result = await invoke("conformance", "conformance-device", "--profile", "nonsense")
     assert result.exit_code == 2
-    result = CliRunner().invoke(app, ["conformance", "--coverage", "--profile", "core"], catch_exceptions=False)
+    result = await invoke("conformance", "--coverage", "--profile", "core")
     assert result.exit_code == 0 and "BHMS-LIF-001" in result.output and "UNCOVERED" not in result.output
 
 
-def test_cli_exit_status_one_when_a_must_fails():
+async def test_cli_exit_status_one_when_a_must_fails():
     command = f"stdio:{sys.executable} -m bhms.testing.broken_devices batch-accepted"
-    result = CliRunner().invoke(app, ["conformance", command, "--only", "transport.batch-rejected"], env={"COLUMNS": "200"},
-                                catch_exceptions=False)
+    result = await invoke("conformance", command, "--only", "transport.batch-rejected", env={"COLUMNS": "200"})
     assert result.exit_code == 1 and "FAILED BHMS-TRN-002" in result.output
 
 
-def test_every_broken_server_fails_exactly_the_expected_checks():
+async def test_every_broken_server_fails_exactly_the_expected_checks():
     """Each deliberately broken server fails the checks recorded for it, and the requirement rows they name."""
 
     async def one(name: str):
@@ -105,12 +114,9 @@ def test_every_broken_server_fails_exactly_the_expected_checks():
         target = f"stdio:{sys.executable} -m bhms.testing.broken_devices {name}"
         return name, await run(RunOptions(target=target, only=only or ("none",), seed=5))
 
-    async def all_of_them():
-        return await asyncio.gather(*(one(n) for n in DEFECTS))
-
     import bhms.conformance.checks  # noqa: F401
 
-    for name, report in asyncio.run(all_of_them()):
+    for name, report in await asyncio.gather(*(one(n) for n in DEFECTS)):
         defect = DEFECTS[name]
         failed_checks = {c.name for c in report.checks if c.status is Status.FAILED}
         failed_rows = {r.id for r in report.rows if r.status is Status.FAILED}

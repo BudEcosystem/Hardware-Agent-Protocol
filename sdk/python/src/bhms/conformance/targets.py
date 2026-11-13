@@ -64,8 +64,13 @@ async def connect_url(url: str, token: str | None) -> Transport:
             if url.startswith(("ws://", "wss://")):
                 return await connect_websocket(url, token=token)
             if url.startswith(("http://", "https://")):
+                from urllib.parse import urlsplit
+
                 from bhms.transport.http import connect_http
 
+                parts = urlsplit(url)  # an HTTP transport only connects on its first POST: wait until the port accepts
+                with contextlib.closing(socket.create_connection((parts.hostname or "127.0.0.1", parts.port or 80), timeout=1)):
+                    pass
                 return await connect_http(url, token=token)
             raise TargetError(f"unsupported target {url!r}")
         except (OSError, TransportClosed) as exc:

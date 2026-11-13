@@ -231,3 +231,34 @@ async def bounded_requests(c: Context) -> None:
         prop = next(iter((await c.describe(device)).get("properties") or {"x": 0}))
         refusal = await c.call("subscriptions/listen", {"notifications": {"observations": [{"deviceId": device, "property": prop}] * (maximum + 1)}})
         c.expect(refusal.error is not None, f"a subscription with {maximum + 1} observation entries must be refused (maxObservations {maximum})")
+
+
+@check("transport.http-malformed-frames", ["BHMS-LIF-001", "BHMS-LIF-010", "BHMS-TRN-002"], profile="http", needs=("http",), generic=True)
+async def http_malformed(c: Context) -> None:
+    """The malformed-frame vectors POSTed raw: each is refused with the expected JSON-RPC error (the SDK's HTTP client
+    transport cannot carry them, so the generic checks skip on this binding)."""
+    import aiohttp
+
+    from bhms.conformance.checks._util import raw_bytes, vectors
+
+    headers = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream", "BHMS-Protocol-Version": PROTOCOL_VERSION,
+               "BHMS-Method": "devices/list"}
+    if c.target.token:
+        headers["Authorization"] = f"Bearer {c.target.token}"
+    problems = []
+    async with aiohttp.ClientSession() as session:
+        for vec in vectors("malformed")["vectors"]:
+            if vec["group"] not in ("nan", "utf8", "id", "batch"):
+                continue
+            body = raw_bytes(vec["raw"], vec.get("encoding"), c.wire.meta())
+            async with session.post(c.target.url, data=body, headers=headers) as response:
+                text = await response.read()
+                try:
+                    parsed = json.loads(text)
+                except ValueError:
+                    problems.append(f"{vec['name']}: HTTP {response.status} with a body that is not JSON")
+                    continue
+            error = parsed.get("error") if isinstance(parsed, dict) else None
+            if not error or error.get("code") not in vec["expect"]["rpcCodes"]:
+                problems.append(f"{vec['name']}: HTTP {response.status} {str(parsed)[:100]}")
+    c.expect(not problems, "; ".join(problems[:5]))

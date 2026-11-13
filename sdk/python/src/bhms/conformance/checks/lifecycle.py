@@ -13,6 +13,7 @@ from bhms.conformance.checks._util import raw_bytes, vectors
 from bhms.conformance.context import Context
 from bhms.conformance.core import check
 from bhms.protocol.version import PROTOCOL_VERSION
+from bhms.transport.base import TransportClosed
 
 CORE_METHODS = ("server/discover", "devices/list", "devices/describe", "properties/read", "actions/invoke", "operations/get",
                 "operations/wait", "operations/list", "operations/cancel", "stop", "subscriptions/listen")
@@ -28,8 +29,8 @@ async def _vector_group(c: Context, group: str) -> None:
             continue
         try:
             answers = await c.wire.exchange_raw(raw_bytes(vec["raw"], vec.get("encoding"), c.wire.meta()), timeout=5.0)
-        except (UnicodeError, ValueError) as exc:
-            c.skip(f"this binding cannot carry the malformed frame of vector {vec['name']!r} ({exc})")
+        except (UnicodeError, ValueError, TypeError, TransportClosed) as exc:
+            c.skip(f"this binding cannot carry the malformed frame of vector {vec['name']!r} ({type(exc).__name__}: {exc})")
         expect = vec["expect"]
         errors = [a for a in answers if isinstance(a, dict) and isinstance(a.get("error"), dict)]
         accepted = [a for a in answers if isinstance(a, dict) and "result" in a]
@@ -85,7 +86,8 @@ async def params_required(c: Context) -> None:
         response = await c.call("devices/list", {}, meta=meta)
         data = c.refused(response, "INVALID_ARGUMENT", may_have_acted=False)
         field = str(data.get("field", ""))
-        c.expect("protocolVersion" in field or "_meta" in field, f"the error must name _meta.bhms/protocolVersion, names {field!r}")
+        c.expect("protocolVersion" in field or "_meta" in field or "Protocol-Version" in field,
+                 f"the error must name _meta.bhms/protocolVersion (or, on HTTP, its header), names {field!r}")
 
 
 @check("lifecycle.unknown-and-unadvertised-methods", ["BHMS-LIF-013"], generic=True)

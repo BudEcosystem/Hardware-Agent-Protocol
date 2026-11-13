@@ -222,9 +222,9 @@ async def test_new_refuses_bad_names_and_existing_directories(tmp_path):
 
 async def test_every_command_is_registered_and_documented():
     result = await invoke("--help")
-    for command in ("new", "dev", "ls", "describe", "read", "call", "ops", "wait", "cancel", "stop", "gateway", "mcp", "doctor", "bench"):
+    for command in ("new", "dev", "ls", "describe", "read", "call", "ops", "wait", "cancel", "stop", "gateway", "mcp", "doctor", "bench", "conformance"):
         assert command in result.output
-    assert "conformance" not in result.output  # registered by Task 7 when its implementation exists
+    assert "conformance" in result.output
 
 
 async def test_bench_measures_real_round_trips(device_url):

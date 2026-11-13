@@ -389,4 +389,24 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-CNF-005 | MUST | core | A report MUST state whether devices were physical or simulated. (14) | inspection | Reports with simulated devices say so. |
 | BHMS-CNF-006 | MUST | core | An implementation's message validator MUST accept every valid example in `spec/bhms/examples/` and reject every `invalid-*` example. (14) | schema | Run the example corpus through the implementation's validator: valid accepted, invalid rejected. |
 
-Total: 247 requirements — agent 17, compact 17, fault 48, inspection 19, schema 11, transport 14, wire 121.
+Total: 250 requirements — agent 19, compact 17, fault 48, inspection 19, schema 11, transport 14, wire 122.
+
+## 14.5 The reference runner
+
+`bhms conformance <target>` (Python SDK, `sdk/python/src/bhms/conformance/`) is the language-neutral runner: it speaks raw
+JSON-RPC over any binding and never imports the implementation under test. Each check cites the requirement IDs it proves;
+`bhms conformance --coverage` prints, for every row of this index, the checks that cover it or the reason none does
+(`inspection`, `not-yet-testable`). The report lists every requirement of the claimed profiles with one status
+(BHMS-CNF-002), the schema digest, seed and reproducing command (BHMS-CNF-003) and whether devices are simulated
+(BHMS-CNF-005); the exit status is non-zero while a `MUST` row failed.
+
+Shared test vectors live in `spec/bhms/conformance/vectors/*.json` so that every SDK's own tests can reuse them:
+`malformed.json` (raw frames the server must refuse, BHMS-LIF-001/010/011, BHMS-TRN-002), `arguments.json` (argument
+refusals and acceptances of the conformance device, BHMS-DEV-043/044, BHMS-SEC-030), `programs.json` (invalid and valid
+programs, BHMS-PRG-001..017) and `canonical.json` (RFC 8785 digest vectors, BHMS-LIF-002).
+
+Checks marked generic use only a device's own description (digest stability, argument refusals derived from declared bounds,
+unknown members and actions, key idempotency on declared actions); the others use the documented behaviour of the
+conformance device and are not applicable to a server that does not serve it. Fault-injection checks use only the
+conformance device's `x-conformance/inject` extension; a gateway does not forward it, so fault checks are skipped (and
+reported as skipped) behind one.

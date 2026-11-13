@@ -2,6 +2,8 @@
 
 ## 2026-11-13 (v0.1)
 
+Conformance round (Task 7): §14.5 and the shared vectors `spec/bhms/conformance/vectors/`; the requirement-index total is corrected.
+
 Agent-surface round (Task 6): BHMS-AGT-014 (default read age) and AGT-051 (self-contained input schemas, top-level `oneOf` removed and enforced by the bridge); function results
 may carry `signature` (`bhms_describe`); `LEASE_REQUIRED` names the needed resources in `bound`.
 
