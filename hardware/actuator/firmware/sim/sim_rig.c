@@ -23,7 +23,13 @@ static void servo_reset_ram(sim_servo *s) {
     s->stalled = 0;
 }
 
-static int step_mode(const sim_servo *s) { return s->ram[STS_REG_OPERATING_MODE] == STS_MODE_STEP; }
+/* Multi-turn absolute operation (the knob): position mode with both angle limits 0, goal and
+ * present position as sign-magnitude counts. The relative step mode (3) is deliberately not
+ * modelled: the firmware must never select it. */
+static int step_mode(const sim_servo *s) {
+    return s->ram[STS_REG_OPERATING_MODE] == STS_MODE_POSITION && rg16(s, STS_REG_MIN_ANGLE) == 0 &&
+           rg16(s, STS_REG_MAX_ANGLE) == 0;
+}
 
 static void servo_write(sim_servo *s, unsigned addr, const uint8_t *d, size_t n) {
     size_t i;
@@ -69,6 +75,7 @@ static void servo_tick(sim_rig *r, sim_servo *s) {
     }
     v = rg16(s, STS_REG_GOAL_SPEED);
     if (v <= 0.0 || v > kNoLoadSteps) v = kNoLoadSteps;
+    v *= s->speed_scale;
     step = v / 1000.0;
     if (fabs(goal - s->pos) <= step) s->pos = goal;
     else s->pos += goal > s->pos ? step : -step;
@@ -94,7 +101,7 @@ static void servo_telemetry(sim_servo *s) {
     wr16(s, STS_REG_PRESENT_SPEED, moving ? sts_sm_encode(1000, 15) : 0u);
     wr16(s, STS_REG_PRESENT_LOAD, sts_sm_encode(s->stalled ? 300 : (moving ? 120 : 20), 10));
     s->ram[STS_REG_PRESENT_VOLTAGE] = 120;
-    s->ram[STS_REG_PRESENT_TEMP] = 32;
+    s->ram[STS_REG_PRESENT_TEMP] = s->temp_c;
     wr16(s, STS_REG_PRESENT_CURRENT, (uint16_t)(moving ? 40 : 5));
 }
 
@@ -105,17 +112,19 @@ static void rx_push(sim_rig *r, const uint8_t *b, size_t n) {
         r->rx[(r->rx_head + r->rx_len++) % SIM_RX_CAP] = b[i];
 }
 
-static void reply(sim_rig *r, uint8_t id, const uint8_t *params, size_t n) {
+static void reply_err(sim_rig *r, uint8_t id, uint8_t err, const uint8_t *params, size_t n) {
     uint8_t f[STS_FRAME_MAX];
     f[0] = 0xFF;
     f[1] = 0xFF;
     f[2] = id;
     f[3] = (uint8_t)(n + 2u);
-    f[4] = 0; /* no error bits */
+    f[4] = err;
     if (n) memcpy(&f[5], params, n);
     f[5 + n] = sts_checksum(&f[2], n + 3u);
     rx_push(r, f, n + 6u);
 }
+
+static void reply(sim_rig *r, uint8_t id, const uint8_t *params, size_t n) { reply_err(r, id, 0, params, n); }
 
 static void bus_frame(sim_rig *r, const uint8_t *f, size_t n) {
     uint8_t id, len, instr;
@@ -159,13 +168,14 @@ static void bus_frame(sim_rig *r, const uint8_t *f, size_t n) {
             if (np == 2u && p[0] + (unsigned)p[1] <= SIM_MEM) {
                 servo_telemetry(s);
                 ++s->reads;
-                reply(r, id, &s->ram[p[0]], p[1]);
+                reply_err(r, id, s->err_bits, &s->ram[p[0]], p[1]);
             }
             break;
         case STS_INSTR_WRITE:
             if (np >= 2u) {
                 servo_write(s, p[0], &p[1], np - 1u);
-                reply(r, id, 0, 0);
+                if (s->drop_acks > 0) --s->drop_acks; /* applied, but the ACK is lost */
+                else reply(r, id, 0, 0);
             }
             break;
         default:
@@ -246,6 +256,22 @@ static void h_led(void *c, uint8_t rr, uint8_t g, uint8_t b) {
     ++r->led_changes;
 }
 
+static int h_wdt(void *c) { return ((sim_rig *)c)->watchdog_reset; }
+static int h_cal_load(void *c, arm_cal *cal) {
+    sim_rig *r = (sim_rig *)c;
+    if (!r->cal_saved) return 0;
+    *cal = r->saved_cal;
+    return 1;
+}
+static int h_cal_save(void *c, const arm_cal *cal) {
+    sim_rig *r = (sim_rig *)c;
+    ++r->cal_saves;
+    if (r->rail_mv > 2000.0) ++r->cal_saves_while_powered; /* flash writes must never overlap a live rail */
+    r->saved_cal = *cal;
+    r->cal_saved = 1;
+    return 0;
+}
+
 void sim_rig_init(sim_rig *r) {
     unsigned i;
     memset(r, 0, sizeof *r);
@@ -261,6 +287,9 @@ void sim_rig_init(sim_rig *r) {
     r->hw.adc_read = h_adc;
     r->hw.ina_read = h_ina;
     r->hw.led = h_led;
+    r->hw.watchdog_reset = h_wdt;
+    r->hw.cal_load = h_cal_load;
+    r->hw.cal_save = h_cal_save;
     r->vin_mv = 12000;
     r->tool_r_id_ohm = -1.0;
     r->fsr_base = 100;
@@ -283,6 +312,8 @@ void sim_rig_init(sim_rig *r) {
         s->eeprom[STS_REG_MAX_TORQUE] = 0xE8;
         s->eeprom[STS_REG_MAX_TORQUE + 1u] = 0x03;
         s->pos = 2048.0;
+        s->speed_scale = 1.0;
+        s->temp_c = 32;
         servo_reset_ram(s);
     }
 }
@@ -309,6 +340,10 @@ void sim_rig_press_estop(sim_rig *r, int pressed) {
         ++r->estop_cuts;
     }
     r->estop_pressed = pressed != 0;
+}
+
+void sim_rig_jam(sim_rig *r, unsigned id) {
+    r->sv[id].block_lo = r->sv[id].block_hi = r->sv[id].pos;
 }
 
 void sim_rig_place(sim_rig *r, unsigned id, double raw) { r->sv[id].pos = raw; }

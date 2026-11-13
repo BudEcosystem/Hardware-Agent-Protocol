@@ -89,6 +89,13 @@ static uint8_t act_unmount(void *u, const bhms_value *v, bhms_call *c) {
     r = arm_cmd_tool_unmount(self(u)->a, &detail);
     return answer(self(u), r, detail, c);
 }
+static uint8_t act_calibrate(void *u, const bhms_value *v, bhms_call *c) {
+    uint8_t detail = 0;
+    arm_refusal r;
+    (void)v;
+    r = arm_cmd_calibrate(self(u)->a, &detail);
+    return answer(self(u), r, detail, c);
+}
 static uint8_t act_grip(void *u, const bhms_value *v, bhms_call *c) {
     uint8_t detail = 0;
     arm_refusal r;
@@ -148,6 +155,7 @@ static const bhms_action kActions[ARM_ACT_COUNT] BHMS_PROGMEM = {
     BHMS_ACTION(act_grip, act_cancel, LEASE, BHMS_FIELDS_REF(grip_args), BHMS_FIELDS_REF(grip_res)),
     BHMS_ACTION(act_turn, act_cancel, LEASE, BHMS_FIELDS_REF(turn_args), BHMS_FIELDS_REF(turn_res)),
     BHMS_ACTION(act_press, act_cancel, LEASE, BHMS_FIELDS_REF(press_args), BHMS_FIELDS_REF(press_res)),
+    BHMS_ACTION(act_calibrate, act_cancel, LEASE, BHMS_NO_FIELDS, BHMS_NO_FIELDS),
 };
 
 /* ---- Properties ------------------------------------------------------------------------- */
@@ -315,6 +323,42 @@ static uint8_t prop_pose_unknown(void *u, uint8_t f, bhms_value *o, bhms_sample 
     return BHMS_Q_VALID;
 }
 
+static uint8_t prop_calibrated(void *u, uint8_t f, bhms_value *o, bhms_sample *m) {
+    (void)f;
+    m->evidence = BHMS_VEV_REPORTED;
+    m->age_ms = 0;
+    o->u = self(u)->a->calibrated ? 1u : 0u;
+    return BHMS_Q_VALID;
+}
+static uint8_t prop_watchdog(void *u, uint8_t f, bhms_value *o, bhms_sample *m) {
+    (void)f;
+    m->evidence = BHMS_VEV_REPORTED;
+    m->age_ms = 0;
+    o->u = self(u)->a->watchdog_reset ? 1u : 0u;
+    return BHMS_Q_VALID;
+}
+static uint8_t prop_temp_warning(void *u, uint8_t f, bhms_value *o, bhms_sample *m) {
+    (void)f;
+    m->evidence = BHMS_VEV_MEASURED;
+    m->age_ms = 25u;
+    o->u = arm_temperature_warning(self(u)->a);
+    return arm_servos_powered(self(u)->a) ? BHMS_Q_VALID : BHMS_Q_UNKNOWN;
+}
+static uint8_t prop_servo_error(void *u, uint8_t f, bhms_value *o, bhms_sample *m) {
+    (void)f;
+    m->evidence = BHMS_VEV_MEASURED;
+    m->age_ms = BHMS_AGE_UNKNOWN;
+    o->u = ((uint32_t)self(u)->a->servo_err_id << 8) | self(u)->a->servo_err_bits;
+    return BHMS_Q_VALID;
+}
+static uint8_t prop_move_error(void *u, uint8_t f, bhms_value *o, bhms_sample *m) {
+    (void)f;
+    m->evidence = BHMS_VEV_MEASURED;
+    m->age_ms = BHMS_AGE_UNKNOWN;
+    o->f = self(u)->a->last_move_err;
+    return BHMS_Q_VALID;
+}
+
 #define PROP5(F, T) BHMS_PROPERTY(F##_j0, T), BHMS_PROPERTY(F##_j1, T), BHMS_PROPERTY(F##_j2, T), \
                     BHMS_PROPERTY(F##_j3, T), BHMS_PROPERTY(F##_j4, T)
 static const bhms_property kProps[ARM_PROP_COUNT] BHMS_PROGMEM = {
@@ -339,6 +383,11 @@ static const bhms_property kProps[ARM_PROP_COUNT] BHMS_PROGMEM = {
     BHMS_PROPERTY(prop_knob_sensor, BHMS_F32),
     BHMS_PROPERTY(prop_presser, BHMS_F32),
     BHMS_PROPERTY(prop_pose_unknown, BHMS_BOOL),
+    BHMS_PROPERTY(prop_calibrated, BHMS_BOOL),
+    BHMS_PROPERTY(prop_watchdog, BHMS_BOOL),
+    BHMS_PROPERTY(prop_temp_warning, BHMS_BOOL),
+    BHMS_PROPERTY(prop_servo_error, BHMS_U16),
+    BHMS_PROPERTY(prop_move_error, BHMS_F32),
 };
 
 /* ---- Stop and completion sink ------------------------------------------------------------- */

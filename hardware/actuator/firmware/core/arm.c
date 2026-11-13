@@ -23,11 +23,20 @@ enum {
     kGoalWraps = 100 /* write_arm_goals: the goal would wrap through the encoder boundary */
 };
 #define kSettleTolDeg 2.0f
+#define kFollowErrDeg 15.0f   /* measured pose may trail the commanded waypoint by at most this */
+#define kMeasSlackDeg 4.0f    /* limit slack on a measured pose (encoder noise, servo lag) */
+#define kGuardStaleMs 200u
+#define kTempWarnC 60u
 #define kHomeSpeedCapPct 30u
 #define kTempFaultC 70u
 
 /* ---- Small helpers ------------------------------------------------------------- */
 static uint8_t servo_id(unsigned s) { return kArmServos[s].servo_id; }
+
+/* Wrap-safe: true when time stamp `a` is earlier than `b` (the millisecond counter wraps). */
+static int before(uint32_t a, uint32_t b) { return (int32_t)(a - b) < 0; }
+
+static int write_arm_goals(arm *a, const arm_pose *q);
 
 static unsigned tool_servo_index(uint8_t tool_code) {
     switch (tool_code) {
@@ -42,10 +51,25 @@ int arm_servos_powered(const arm *a) {
     return a->pwr.state == PWR_ON && !a->pwr.latched && a->ina_ok && a->rail_mv >= PWR_RAIL_OK_MV;
 }
 
+static float worst_joint_error(const arm *a) {
+    unsigned j;
+    float worst = 0.0f;
+    for (j = 0; j < ARM_NUM_JOINTS; ++j) {
+        float e = fabsf(a->sv[j].pos_deg - a->q_goal.q[j]);
+        if (a->sv[j].valid && e > worst) worst = e;
+    }
+    return worst;
+}
+
 static void finish(arm *a, uint8_t status, uint8_t fault, uint8_t measured, float v0, float v1,
                    float v2) {
     arm_completion d;
     d.kind = a->op;
+    if (a->op == ARM_OP_MOVE || a->op == ARM_OP_HOME || a->op == ARM_OP_RELEASE) {
+        float err = worst_joint_error(a);
+        a->last_move_err = err;
+        if (status != ARM_DONE_COMPLETED) v0 = err; /* a failed move still reports the real error */
+    }
     d.status = status;
     d.fault = fault;
     d.measured = measured;
@@ -56,6 +80,15 @@ static void finish(arm *a, uint8_t status, uint8_t fault, uint8_t measured, floa
     a->op_step = 0;
     a->traj_active = 0;
     if (a->state == ARM_ST_MOVING || a->state == ARM_ST_ENABLING) a->state = ARM_ST_READY;
+    if (a->recovering) {
+        a->recovering = 0;
+        if (status == ARM_DONE_COMPLETED) { /* moved back inside the limits: the latch clears */
+            a->limit_latched = 0;
+            a->fault_code = ARM_FAULT_NONE;
+        } else if (a->limit_latched) {
+            a->state = ARM_ST_FAULT;
+        }
+    }
     if (a->sink != 0 && a->sink->finished != 0) a->sink->finished(a->sink->ctx, &d);
 }
 
@@ -176,9 +209,47 @@ static void servo_lost(arm *a, unsigned s) {
     }
 }
 
+/* Servo status-packet error bits that mean the joint is in trouble. The angle bit is not one:
+ * it only says the servo-side window rejected a goal, which the firmware never sends. */
+#define kFatalServoErr \
+    (STS_ERR_VOLTAGE | STS_ERR_SENSOR | STS_ERR_TEMPERATURE | STS_ERR_CURRENT | STS_ERR_OVERLOAD)
+
+static void write_freeze_at_measured(arm *a) {
+    arm_pose m;
+    unsigned j;
+    uint32_t now = a->hw->millis(a->hw->ctx);
+    /* The cached samples are up to one scan period old and a joint moves meanwhile: read fresh. */
+    for (j = 0; j < ARM_NUM_JOINTS; ++j) (void)telemetry_read(a, j, now);
+    for (j = 0; j < ARM_NUM_JOINTS; ++j) m.q[j] = a->sv[j].valid ? a->sv[j].pos_deg : a->q_cmd.q[j];
+    if (write_arm_goals(a, &m) == STSB_OK) a->q_cmd = m;
+}
+
+/* Freeze where the arm is (goal = measured), end the operation, latch a recoverable fault. */
+static void trip(arm *a, uint8_t fault, uint8_t limit_code) {
+    write_freeze_at_measured(a);
+    a->traj_active = 0;
+    a->move_limit = limit_code;
+    a->limit_latched = 1;
+    a->fault_code = fault;
+    a->state = ARM_ST_FAULT;
+    if (a->op != ARM_OP_NONE) finish(a, ARM_DONE_FAILED, fault, 1, 0, 0, 0);
+    a->state = ARM_ST_FAULT;
+}
+
+static void servo_error_check(arm *a, unsigned s) {
+    uint8_t bits = (uint8_t)(a->sv[s].error & kFatalServoErr);
+    if (s >= ARM_NUM_JOINTS || bits == 0 || !a->torque_on) return;
+    if (a->state != ARM_ST_READY && a->state != ARM_ST_MOVING) return;
+    a->servo_err_id = servo_id(s);
+    a->servo_err_bits = bits;
+    trip(a, ARM_FAULT_SERVO_ERROR, ARM_LIMIT_NONE);
+}
+
 static void scan_step(arm *a, uint32_t now) {
     unsigned tries, s;
-    if (!arm_servos_powered(a) || a->op == ARM_OP_ENABLE || a->op == ARM_OP_TOOL_MOUNT) return;
+    if (!arm_servos_powered(a) || a->op == ARM_OP_ENABLE || a->op == ARM_OP_CALIBRATE ||
+        a->op == ARM_OP_TOOL_MOUNT)
+        return;
     if (a->state != ARM_ST_READY && a->state != ARM_ST_MOVING && a->state != ARM_ST_PARKED &&
         a->state != ARM_ST_FAULT)
         return;
@@ -190,8 +261,10 @@ static void scan_step(arm *a, uint32_t now) {
         if (!scan_eligible(a, s)) continue;
         if (telemetry_read(a, s, now) != STSB_OK) {
             if (a->sv[s].fail_count >= kCommFailLimit) servo_lost(a, s);
-        } else if (a->sv[s].temp_c >= kTempFaultC && a->fault_code == ARM_FAULT_NONE) {
-            a->fault_code = ARM_FAULT_OVERTEMP; /* informational: the servo protects itself */
+        } else {
+            if (a->sv[s].temp_c >= kTempFaultC && a->fault_code == ARM_FAULT_NONE)
+                a->fault_code = ARM_FAULT_OVERTEMP; /* warning; motion is refused while hot */
+            servo_error_check(a, s);
         }
         return;
     }
@@ -207,7 +280,7 @@ static int cfg_targets(const arm *a, unsigned s, cfg_target *t) {
     int32_t lo, hi;
     t->rdt = 0;
     t->max_torque = kArmServos[s].torque_permille;
-    t->mode = s == ARM_S_KNOB ? STS_MODE_STEP : STS_MODE_POSITION;
+    t->mode = STS_MODE_POSITION; /* the knob is multi-turn absolute: position mode, window 0..0 */
     if (s == ARM_S_KNOB) { /* multi-turn: no servo-side angle window */
         t->min_raw = t->max_raw = 0;
         return 0;
@@ -355,8 +428,21 @@ void arm_init(arm *a, const arm_hw *hw, const arm_cal *cal, const arm_sink *sink
     a->hw = hw;
     a->sink = sink;
     sts_bus_init(&a->bus, hw);
-    if (cal != 0) a->cal = *cal;
-    else arm_cal_nominal(&a->cal);
+    arm_cal_nominal(&a->cal);
+    if (cal != 0) {
+        a->cal = *cal;
+        a->calibrated = 1;
+    } else if (hw->cal_load != 0 && hw->cal_load(hw->ctx, &a->cal)) {
+        a->calibrated = 1;
+    } else {
+        arm_cal_nominal(&a->cal); /* assumed zero: motion stays refused until calibrated */
+    }
+    if (hw->watchdog_reset != 0 && hw->watchdog_reset(hw->ctx)) {
+        /* The controller reset itself: servo power dropped and the arm may have fallen. The boot
+         * default (rail off, explicit enable) applies; the cause stays visible until an enable. */
+        a->watchdog_reset = 1;
+        a->fault_code = ARM_FAULT_WATCHDOG;
+    }
     power_init(&a->pwr);
     tool_id_init(&a->tid);
     a->state = ARM_ST_BOOT;
@@ -374,8 +460,22 @@ void arm_init(arm *a, const arm_hw *hw, const arm_cal *cal, const arm_sink *sink
 /* ---- Tool identity and power -------------------------------------------------------- */
 static void tool_step(arm *a, uint32_t now) {
     uint16_t code = a->hw->adc_read(a->hw->ctx, ARM_ADC_TOOL_ID);
+    uint8_t prev_id;
     if (!tool_id_update(&a->tid, now, code)) return;
+    prev_id = a->tool_id;
     a->tool_id = a->tid.stable;
+    if (a->tool_id != ARM_TOOL_NONE && prev_id != ARM_TOOL_NONE && prev_id != a->tool_id &&
+        (a->tool_state == TOOL_ST_POWERING || a->tool_state == TOOL_ST_READY ||
+         a->tool_state == TOOL_ST_UNMOUNTING)) {
+        /* A different tool appeared without an unmount: whatever was configured is wrong for
+         * it. Power it down; it must be mounted again (re-armed) before any tool action. */
+        a->hw->tool_en(a->hw->ctx, 0);
+        a->tool_state = TOOL_ST_DETECTED;
+        a->fault_code = ARM_FAULT_TOOL;
+        if (a->op == ARM_OP_TOOL_MOUNT || a->op >= ARM_OP_GRIP)
+            finish(a, ARM_DONE_FAILED, ARM_FAULT_TOOL, 1, 0, 0, 0);
+        return;
+    }
     if (a->tool_id == ARM_TOOL_NONE) {
         if (a->tool_state == TOOL_ST_POWERING || a->tool_state == TOOL_ST_READY ||
             a->tool_state == TOOL_ST_UNMOUNTING) {
@@ -394,9 +494,42 @@ static void tool_step(arm *a, uint32_t now) {
 }
 
 /* ---- Trajectories ---------------------------------------------------------------- */
+/* Measured pose of the five joints when every sample is fresh (and newer than `since`). */
+static int fresh_pose(const arm *a, arm_pose *m, uint32_t now, uint32_t since, int use_since) {
+    unsigned j;
+    for (j = 0; j < ARM_NUM_JOINTS; ++j) {
+        if (!a->sv[j].valid || (uint32_t)(now - a->sv[j].stamp_ms) > kGuardStaleMs) return 0;
+        if (use_since && before(a->sv[j].stamp_ms, since)) return 0;
+        m->q[j] = a->sv[j].pos_deg;
+    }
+    return 1;
+}
+
+/* A new motion starts from where the arm actually is when that diverges from the last command
+ * (a joint was pushed, jammed or lagged): waypoints and limit checks then relate to the real pose. */
+static void sync_cmd_to_measured(arm *a, uint32_t now) {
+    arm_pose m;
+    unsigned j;
+    int diverged = 0;
+    if (!fresh_pose(a, &m, now, 0, 0)) return;
+    for (j = 0; j < ARM_NUM_JOINTS; ++j)
+        if (fabsf(m.q[j] - a->q_cmd.q[j]) > 2.0f) diverged = 1;
+    if (diverged) a->q_cmd = m;
+}
+
 static void traj_start(arm *a, const arm_pose *goal, uint32_t pct, arm_op_kind kind, uint32_t now) {
     unsigned j;
     float t_ms = 0.0f;
+    a->recovering = (a->state == ARM_ST_FAULT && a->limit_latched) ? 1u : 0u;
+    sync_cmd_to_measured(a, now);
+    {
+        /* Starting outside a limit (moved by hand, pushed): only a move back inside is allowed, so
+         * the measured-pose limit check is off for this motion; the waypoint check still keeps it
+         * from getting worse and the following-error bound still applies. */
+        arm_pose m;
+        if (fresh_pose(a, &m, now, 0, 0) && arm_check_pose(&m, -kMeasSlackDeg) != ARM_LIMIT_NONE)
+            a->recovering = 1;
+    }
     a->q_start = a->q_cmd;
     a->q_goal = *goal;
     for (j = 0; j < ARM_NUM_JOINTS; ++j) {
@@ -414,7 +547,6 @@ static void traj_start(arm *a, const arm_pose *goal, uint32_t pct, arm_op_kind k
     a->traj_active = 1;
     a->last_progress = 0;
     a->progress_ms = now;
-    a->max_err_deg = 0.0f;
     a->servo_speed_steps = (uint16_t)(3064.0f * (float)pct / 100.0f * 1.25f + 100.0f);
     a->op = kind;
     a->op_step = 0;
@@ -475,7 +607,7 @@ static int settled(arm *a, float *max_err) {
     float worst = 0.0f;
     for (j = 0; j < ARM_NUM_JOINTS; ++j) {
         float e;
-        if (!a->sv[j].valid || a->sv[j].stamp_ms < a->op_t0) return 0;
+        if (!a->sv[j].valid || before(a->sv[j].stamp_ms, a->op_t0)) return 0;
         e = fabsf(a->sv[j].pos_deg - a->q_goal.q[j]);
         if (e > worst) worst = e;
         if (e > kSettleTolDeg || a->sv[j].moving) return 0;
@@ -484,7 +616,29 @@ static int settled(arm *a, float *max_err) {
     return 1;
 }
 
+/* Limits on the MEASURED pose while moving (the command checks only see what was asked for): a
+ * jammed or lagging joint can drive another into a coupled limit. On the first fresh sample that
+ * violates a limit (with slack) or trails its waypoint by more than the following-error bound,
+ * freeze at the measured pose, fail the motion and latch until an explicit recovery. */
+static void motion_guard(arm *a, uint32_t now) {
+    arm_pose m;
+    unsigned j;
+    uint8_t lim;
+    if (!a->torque_on || a->op == ARM_OP_NONE || !fresh_pose(a, &m, now, a->traj_t0, 1)) return;
+    for (j = 0; j < ARM_NUM_JOINTS; ++j)
+        if (fabsf(m.q[j] - a->q_cmd.q[j]) > kFollowErrDeg) {
+            trip(a, ARM_FAULT_FOLLOWING, (uint8_t)j);
+            return;
+        }
+    if (!a->recovering) {
+        lim = arm_check_pose(&m, -kMeasSlackDeg);
+        if (lim != ARM_LIMIT_NONE) trip(a, ARM_FAULT_LIMIT, lim);
+    }
+}
+
 static void move_step(arm *a, uint32_t now) {
+    motion_guard(a, now);
+    if (a->op == ARM_OP_NONE) return;
     if (a->traj_active) {
         traj_tick(a, now);
         return;
@@ -509,10 +663,16 @@ static void move_step(arm *a, uint32_t now) {
 }
 
 /* ---- Enable sequence --------------------------------------------------------------- */
+/* A failed enable never cuts a rail that was already on: the servos may be holding the arm and
+ * the arm falls when the rail drops (it cannot be parked when a servo does not answer). It
+ * returns to the state it came from (parked, or the latched fault); only an enable that
+ * switched the rail on itself switches it off again. */
 static void enable_abort(arm *a, uint8_t fault) {
+    arm_state back = a->enable_from == ARM_ST_PARKED ? ARM_ST_PARKED : ARM_ST_FAULT;
     a->fault_code = fault;
-    if (a->from_parked) {
-        a->state = ARM_ST_PARKED;
+    if (a->enable_rail_on) {
+        if (fault == ARM_FAULT_LIMIT) a->limit_latched = 1; /* recoverable by a move back inside */
+        a->state = back;
     } else {
         power_request_disable(&a->pwr);
         a->hw->servo_en(a->hw->ctx, 0);
@@ -521,7 +681,7 @@ static void enable_abort(arm *a, uint8_t fault) {
         a->state = ARM_ST_DISABLED;
     }
     finish(a, ARM_DONE_FAILED, fault, 0, 0, 0, 0);
-    a->state = a->from_parked ? ARM_ST_PARKED : ARM_ST_DISABLED;
+    a->state = a->enable_rail_on ? back : ARM_ST_DISABLED;
 }
 
 static void enable_step(arm *a, uint32_t now) {
@@ -549,7 +709,7 @@ static void enable_step(arm *a, uint32_t now) {
         if (rc == STSB_OK) {
             a->cfg_retry = 0;
             if (++a->op_aux >= ARM_NUM_JOINTS) {
-                a->op_step = 3;
+                a->op_step = a->op == ARM_OP_CALIBRATE ? 20u : 3u;
                 a->op_aux = 0;
                 cfg_reset(a);
             }
@@ -602,10 +762,64 @@ static void enable_step(arm *a, uint32_t now) {
         }
         a->torque_on = 1;
         a->pose_unknown = 0;
+        a->limit_latched = 0;
         a->fault_code = ARM_FAULT_NONE;
         a->state = ARM_ST_READY;
         for (j = 0; j < ARM_NUM_JOINTS; ++j) a->sv[j].valid = 0;
         finish(a, ARM_DONE_COMPLETED, 0, 1, 0, 0, 0);
+        break;
+    case 20: { /* calibrate: read every joint's raw position (torque stays off, nothing moves) */
+        if (telemetry_read(a, a->op_aux, now) != STSB_OK) {
+            if (++a->cfg_retry >= 5u) enable_abort(a, ARM_FAULT_SERVO_COMM);
+            break;
+        }
+        a->cfg_retry = 0;
+        if (++a->op_aux < ARM_NUM_JOINTS) break;
+        /* The arm rests at the rest pose: that raw position defines each joint's zero. */
+        a->cal_new = a->cal;
+        for (j = 0; j < ARM_NUM_JOINTS; ++j) {
+            const arm_servo_spec *sp = &kArmServos[j];
+            float rest_raw = (float)a->cal_new.sign[j] * kArmRestPose[j] * sp->ratio * ARM_SERVO_COUNTS / 360.0f;
+            a->cal_new.raw_zero[j] = (int16_t)(a->sv[j].raw_steps - (int32_t)lroundf(rest_raw));
+        }
+        /* Refuse a zero that would put a joint range across the encoder wrap (with 20 counts spare). */
+        for (j = 0; j < ARM_NUM_JOINTS; ++j) {
+            int32_t lo, hi;
+            if (arm_to_raw(&a->cal_new, j, kArmServos[j].lo_deg, &lo) != 0 ||
+                arm_to_raw(&a->cal_new, j, kArmServos[j].hi_deg, &hi) != 0 || lo < 20 || hi > 4075) {
+                enable_abort(a, ARM_FAULT_CALIBRATION);
+                return;
+            }
+        }
+        a->op_step = 21;
+        break;
+    }
+    case 21: /* flash writes mask interrupts: save only with the rail off (E-stop IRQ not needed) */
+        power_request_disable(&a->pwr);
+        a->hw->servo_en(a->hw->ctx, 0);
+        a->rail_applied = 0;
+        a->op_t0 = now;
+        a->op_step = 22;
+        break;
+    case 22:
+        if (a->ina_ok && a->rail_mv < PWR_RAIL_DEAD_MV && (uint32_t)(now - a->op_t0) >= 60u) {
+            a->op_step = 23;
+        } else if ((uint32_t)(now - a->op_t0) > 1000u) {
+            enable_abort(a, ARM_FAULT_CALIBRATION);
+        }
+        break;
+    case 23:
+        if (a->hw->cal_save == 0 || a->hw->cal_save(a->hw->ctx, &a->cal_new) != 0) {
+            enable_abort(a, ARM_FAULT_CALIBRATION);
+            break;
+        }
+        a->cal = a->cal_new;
+        a->calibrated = 1;
+        a->fault_code = ARM_FAULT_NONE;
+        a->state = ARM_ST_DISABLED;
+        for (j = 0; j < ARM_NUM_SERVOS; ++j) a->sv[j].valid = 0;
+        finish(a, ARM_DONE_COMPLETED, 0, 1, 0, 0, 0);
+        a->state = ARM_ST_DISABLED;
         break;
     default:
         break;
@@ -738,7 +952,7 @@ static void grip_step(arm *a, uint32_t now) {
     }
     case 2: {
         float width, err;
-        if (!v->valid || v->stamp_ms < a->op_t0) break;
+        if (!v->valid || before(v->stamp_ms, a->op_t0)) break;
         width = 2.0f * ARM_GRIPPER_PINION_R_MM * v->pos_deg * kDegToRad;
         err = fabsf(width - a->tool_target);
         if (!v->moving && err <= 1.0f) {
@@ -776,11 +990,12 @@ static void turn_step(arm *a, uint32_t now) {
     }
     case 2: {
         float err;
-        if (!v->valid || v->stamp_ms < a->op_t0) break;
+        if (!v->valid || before(v->stamp_ms, a->op_t0)) break;
         err = fabsf(v->pos_deg - a->tool_target);
         if (!v->moving && err <= 2.0f) finish(a, ARM_DONE_COMPLETED, 0, 1, v->pos_deg, 1.0f, 0);
-        else if (stalled(a, v, err, 2.0f, now)) /* the flexure/torque cap stopped it */
-            finish(a, ARM_DONE_COMPLETED, 0, 1, v->pos_deg, 0.0f, 0);
+        else if (stalled(a, v, err, 2.0f, now)) /* the torque cap / a stop held it short: a failure,
+                                                  * the angle reached stays readable as knob_angle_deg */
+            finish(a, ARM_DONE_FAILED, ARM_FAULT_STALL, 1, v->pos_deg, 0.0f, 0);
         else if ((uint32_t)(now - a->op_t0) > 30000u)
             finish(a, ARM_DONE_FAILED, ARM_FAULT_TIMEOUT, 1, v->pos_deg, 0, 0);
         break;
@@ -824,7 +1039,7 @@ static void press_step(arm *a, uint32_t now) {
     case 2: { /* watch the FSR: stop at the force limit, or at the depth */
         float f = fsr_pct(a);
         if (f > a->tool_peak) a->tool_peak = f;
-        if (v->valid && v->stamp_ms >= a->op_t0 &&
+        if (v->valid && !before(v->stamp_ms, a->op_t0) &&
             (f >= (float)a->tool_limit || (!v->moving && fabsf(presser_depth_mm(v->pos_deg) - a->tool_target) < 0.3f))) {
             a->tool_target = presser_depth_mm(v->pos_deg); /* depth actually reached */
             if (arm_to_raw(&a->cal, s, 0.0f, &raw) != 0 || write_tool_goal(a, s, raw, 800u) != STSB_OK)
@@ -832,13 +1047,18 @@ static void press_step(arm *a, uint32_t now) {
             a->op_t0 = now;
             a->op_step = 3;
         } else if ((uint32_t)(now - a->op_t0) > kToolOpTimeoutMs) {
-            finish(a, ARM_DONE_FAILED, ARM_FAULT_TIMEOUT, 1, 0, 0, 0);
+            /* Did not reach the depth or the force in time: pull the tip back before failing. */
+            a->op_aux = 1;
+            if (arm_to_raw(&a->cal, s, 0.0f, &raw) == 0) (void)write_tool_goal(a, s, raw, 800u);
+            a->op_t0 = now;
+            a->op_step = 3;
         }
         break;
     }
     case 3: /* retract to the closed stop */
-        if (v->valid && v->stamp_ms >= a->op_t0 + 100u && !v->moving && v->pos_deg < 3.0f)
-            finish(a, ARM_DONE_COMPLETED, 0, 1, a->tool_peak, a->tool_target, 0);
+        if (v->valid && !before(v->stamp_ms, a->op_t0 + 100u) && !v->moving && v->pos_deg < 3.0f)
+            finish(a, a->op_aux ? ARM_DONE_FAILED : ARM_DONE_COMPLETED, a->op_aux ? ARM_FAULT_TIMEOUT : 0,
+                   1, a->tool_peak, a->tool_target, 0);
         else if ((uint32_t)(now - a->op_t0) > kToolOpTimeoutMs)
             finish(a, ARM_DONE_FAILED, ARM_FAULT_TIMEOUT, 1, a->tool_peak, a->tool_target, 0);
         break;
@@ -878,7 +1098,7 @@ static void stop_check(arm *a, uint32_t now) {
         safe = 1;
         for (s = 0; s < ARM_NUM_SERVOS && safe; ++s) {
             if (!scan_eligible(a, s)) continue;
-            if (!a->sv[s].valid || a->sv[s].stamp_ms < a->stop_t0 || a->sv[s].moving) safe = 0;
+            if (!a->sv[s].valid || before(a->sv[s].stamp_ms, a->stop_t0) || a->sv[s].moving) safe = 0;
         }
     }
     if (safe) {
@@ -914,7 +1134,8 @@ void arm_tick(arm *a) {
     tool_step(a, now);
     idle_state(a);
     switch (a->op) {
-    case ARM_OP_ENABLE: enable_step(a, now); break;
+    case ARM_OP_ENABLE:
+    case ARM_OP_CALIBRATE: enable_step(a, now); break;
     case ARM_OP_MOVE:
     case ARM_OP_HOME:
     case ARM_OP_RELEASE: move_step(a, now); break;
@@ -932,13 +1153,26 @@ void arm_tick(arm *a) {
 }
 
 /* ---- Commands ------------------------------------------------------------------------ */
-static arm_refusal gate_motion(const arm *a, uint8_t *detail) {
+static unsigned hottest_joint_c(const arm *a) {
+    unsigned j, hot = 0;
+    for (j = 0; j < ARM_NUM_JOINTS; ++j)
+        if (a->sv[j].valid && a->sv[j].temp_c > hot) hot = a->sv[j].temp_c;
+    return hot;
+}
+
+/* allow_recover: a latched limit/following/servo fault still lets a move back inside run. */
+static arm_refusal gate_motion_ex(const arm *a, uint8_t *detail, int allow_recover) {
     *detail = ARM_WHY_NONE;
     switch (a->state) {
     case ARM_ST_READY: break;
     case ARM_ST_MOVING: return ARM_REFUSE_BUSY;
     case ARM_ST_ESTOP: *detail = a->pwr.latched && a->sense ? ARM_WHY_ESTOP_PRESSED : ARM_WHY_ESTOP_LATCHED; return ARM_REFUSE_INHIBITED;
-    case ARM_ST_FAULT: *detail = a->pwr.hard_fault ? ARM_WHY_HARD_FAULT : ARM_WHY_FAULT; return ARM_REFUSE_INHIBITED;
+    case ARM_ST_FAULT:
+        if (allow_recover && a->limit_latched && !a->pwr.hard_fault && a->torque_on &&
+            arm_servos_powered(a))
+            break;
+        *detail = a->pwr.hard_fault ? ARM_WHY_HARD_FAULT : ARM_WHY_FAULT;
+        return ARM_REFUSE_INHIBITED;
     case ARM_ST_PARKED: *detail = ARM_WHY_PARKED; return ARM_REFUSE_PRECONDITION;
     case ARM_ST_NO_POWER: *detail = ARM_WHY_NO_POWER; return ARM_REFUSE_PRECONDITION;
     default: *detail = ARM_WHY_NOT_ENABLED; return ARM_REFUSE_PRECONDITION;
@@ -948,8 +1182,14 @@ static arm_refusal gate_motion(const arm *a, uint8_t *detail) {
         return ARM_REFUSE_INHIBITED;
     }
     if (a->op != ARM_OP_NONE) return ARM_REFUSE_BUSY;
+    if (hottest_joint_c(a) >= kTempFaultC) { /* the servo protects itself at 70 C: do not ask for more */
+        *detail = ARM_WHY_OVERTEMP;
+        return ARM_REFUSE_INHIBITED;
+    }
     return ARM_OK;
 }
+
+static arm_refusal gate_motion(const arm *a, uint8_t *detail) { return gate_motion_ex(a, detail, 0); }
 
 arm_refusal arm_cmd_enable(arm *a, uint8_t *detail) {
     uint32_t now = a->hw->millis(a->hw->ctx);
@@ -962,8 +1202,13 @@ arm_refusal arm_cmd_enable(arm *a, uint8_t *detail) {
         *detail = ARM_WHY_STOPPING;
         return ARM_REFUSE_INHIBITED;
     }
+    if (!a->calibrated) { /* limits are relative to the joint zero: calibrate first */
+        *detail = ARM_WHY_NOT_CALIBRATED;
+        return ARM_REFUSE_PRECONDITION;
+    }
     power_step(a, now, 1); /* fresh sense, edge, rail and VIN; applies any E-stop first */
     react_power(a, now);
+    a->enable_rail_on = (a->pwr.state == PWR_ON && a->ina_ok && a->rail_mv >= PWR_RAIL_OK_MV) ? 1u : 0u;
     in.now_ms = now;
     in.sense = a->sense;
     in.edge = 0;
@@ -980,7 +1225,7 @@ arm_refusal arm_cmd_enable(arm *a, uint8_t *detail) {
     case PWR_REFUSE_BUSY: return ARM_REFUSE_BUSY;
     default: *detail = ARM_WHY_SENSE; return ARM_REFUSE_PRECONDITION;
     }
-    a->from_parked = a->state == ARM_ST_PARKED;
+    a->enable_from = a->state;
     if (a->tool_state == TOOL_ST_LOST || a->tool_state == TOOL_ST_UNMOUNTING) tool_off(a);
     a->op = ARM_OP_ENABLE;
     a->op_step = 0;
@@ -1003,6 +1248,48 @@ static arm_refusal check_goal(const float q[ARM_NUM_JOINTS], uint8_t *detail) {
     return ARM_OK;
 }
 
+/* Calibration: with the arm resting at the rest pose on its support and the rail off, power the
+ * rail with torque off, read every joint's raw position, define it as the rest pose, cut the rail
+ * and persist the zero offsets. Nothing moves; the arm needs an explicit enable afterwards. */
+arm_refusal arm_cmd_calibrate(arm *a, uint8_t *detail) {
+    uint32_t now = a->hw->millis(a->hw->ctx);
+    power_in in;
+    int r;
+    *detail = ARM_WHY_NONE;
+    if (a->op != ARM_OP_NONE) return ARM_REFUSE_BUSY;
+    if (a->state != ARM_ST_DISABLED && a->state != ARM_ST_NO_POWER && a->state != ARM_ST_ESTOP) {
+        *detail = ARM_WHY_NOT_DISABLED;
+        return ARM_REFUSE_PRECONDITION;
+    }
+    power_step(a, now, 1);
+    react_power(a, now);
+    in.now_ms = now;
+    in.sense = a->sense;
+    in.edge = 0;
+    in.ina_ok = a->ina_ok;
+    in.rail_mv = a->rail_mv;
+    in.rail_ma = a->rail_ma;
+    in.vin_mv = a->vin_mv;
+    r = power_request_enable(&a->pwr, &in);
+    switch (r) {
+    case PWR_ENABLE_OK: break;
+    case PWR_REFUSE_ESTOP: *detail = ARM_WHY_ESTOP_PRESSED; return ARM_REFUSE_INHIBITED;
+    case PWR_REFUSE_HARD_FAULT: *detail = ARM_WHY_HARD_FAULT; return ARM_REFUSE_INHIBITED;
+    case PWR_REFUSE_NO_POWER: *detail = ARM_WHY_NO_POWER; return ARM_REFUSE_PRECONDITION;
+    case PWR_REFUSE_BUSY: return ARM_REFUSE_BUSY;
+    default: *detail = ARM_WHY_SENSE; return ARM_REFUSE_PRECONDITION;
+    }
+    a->enable_rail_on = 0;
+    a->enable_from = a->state;
+    a->op = ARM_OP_CALIBRATE;
+    a->op_step = 0;
+    a->op_t1 = now;
+    a->state = ARM_ST_ENABLING;
+    a->hw->servo_en(a->hw->ctx, a->pwr.rail_cmd);
+    a->rail_applied = a->pwr.rail_cmd;
+    return ARM_OK;
+}
+
 arm_refusal arm_cmd_move(arm *a, const float q[ARM_NUM_JOINTS], uint8_t speed_pct, uint8_t *detail) {
     arm_pose goal;
     arm_refusal r;
@@ -1015,7 +1302,7 @@ arm_refusal arm_cmd_move(arm *a, const float q[ARM_NUM_JOINTS], uint8_t speed_pc
         *detail = 0xF0u;
         return ARM_REFUSE_RANGE;
     }
-    r = gate_motion(a, detail);
+    r = gate_motion_ex(a, detail, 1);
     if (r != ARM_OK) return r;
     memcpy(goal.q, q, sizeof goal.q);
     traj_start(a, &goal, speed_pct, ARM_OP_MOVE, a->hw->millis(a->hw->ctx));
@@ -1024,7 +1311,7 @@ arm_refusal arm_cmd_move(arm *a, const float q[ARM_NUM_JOINTS], uint8_t speed_pc
 
 arm_refusal arm_cmd_home(arm *a, uint8_t speed_pct, uint8_t *detail) {
     arm_pose goal;
-    arm_refusal r = gate_motion(a, detail);
+    arm_refusal r = gate_motion_ex(a, detail, 1);
     if (r != ARM_OK) return r;
     if (speed_pct < 5u || speed_pct > 100u) {
         *detail = 0xF0u;
@@ -1153,6 +1440,7 @@ arm_refusal arm_cmd_press(arm *a, float depth_mm, uint8_t force_limit_pct, uint8
     if (r != ARM_OK) return r;
     a->tool_target = depth_mm;
     a->tool_limit = force_limit_pct;
+    a->op_aux = 0;
     a->op = ARM_OP_PRESS;
     a->op_step = 0;
     a->cfg_retry = 0;
@@ -1168,9 +1456,11 @@ int arm_cancel(arm *a, int report) {
     a->traj_active = 0;
     switch (k) {
     case ARM_OP_ENABLE:
+    case ARM_OP_CALIBRATE:
         a->op = ARM_OP_NONE;
-        a->state = a->from_parked ? ARM_ST_PARKED : ARM_ST_DISABLED;
-        if (!a->from_parked) {
+        a->state = a->enable_rail_on ? (a->enable_from == ARM_ST_PARKED ? ARM_ST_PARKED : ARM_ST_FAULT)
+                                     : ARM_ST_DISABLED;
+        if (!a->enable_rail_on) {
             power_request_disable(&a->pwr);
             a->hw->servo_en(a->hw->ctx, 0);
             a->rail_applied = 0;
@@ -1228,6 +1518,8 @@ uint32_t arm_age_ms(const arm *a, const arm_servo_state *s) {
 }
 
 uint8_t arm_estop_state(const arm *a) { return a->pwr.estop; }
+
+uint8_t arm_temperature_warning(const arm *a) { return hottest_joint_c(a) >= kTempWarnC ? 1u : 0u; }
 
 uint8_t arm_tool_present(const arm *a) { return a->tool_id; }
 

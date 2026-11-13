@@ -19,5 +19,6 @@ ssh "$HOST" "cd $LAB && nice -n 10 docker run --rm --cpus=4 --user \$(id -u):\$(
     cmake -S /work/hardware/actuator/firmware/hal/rp2040 -B /out/rp2040 -G Ninja -DCMAKE_BUILD_TYPE=Release -DPICO_NO_PICOTOOL=1 >/out/configure.log 2>&1 || { tail -30 /out/configure.log; exit 1; }
     cmake --build /out/rp2040 -j4 2>&1 | tail -40
     arm-none-eabi-size /out/rp2040/bhms_arm.elf | tee /out/size.txt
+    python3 /work/hardware/actuator/firmware/tools/bin2uf2.py /out/rp2040/bhms_arm.bin /out/rp2040/bhms_arm.uf2
     ls -l /out/rp2040/bhms_arm.uf2 /out/rp2040/bhms_arm.bin
   '"

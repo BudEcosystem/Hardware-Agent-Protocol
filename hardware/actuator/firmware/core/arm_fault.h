@@ -21,7 +21,11 @@ enum {
     ARM_FAULT_NO_POWER = 14,       /* VIN below 9 V: no actuator power (not a hardware fault) */
     ARM_FAULT_POWER_SENSE = 15,    /* INA219 unreadable while the rail is on */
     ARM_FAULT_CONFIG = 16,         /* servo EEPROM limits did not read back after programming */
-    ARM_FAULT_TOOL = 17            /* tool missing, wrong, not powered or not answering */
+    ARM_FAULT_TOOL = 17,           /* tool missing, wrong, not powered or not answering */
+    ARM_FAULT_FOLLOWING = 18,      /* a joint trails its commanded waypoint by more than 15 deg (jam, lag) */
+    ARM_FAULT_WATCHDOG = 19,       /* the controller reset itself: the arm may have fallen, enable again */
+    ARM_FAULT_CALIBRATION = 20,    /* calibration failed or could not be stored */
+    ARM_FAULT_STALL = 21           /* a tool motion stopped short of its goal (torque cap, mechanical stop) */
 };
 
 #endif

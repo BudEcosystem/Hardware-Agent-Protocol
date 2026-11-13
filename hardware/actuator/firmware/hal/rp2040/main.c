@@ -18,10 +18,16 @@ int main(void) {
     int ina_rc = hw_init();
     stdio_init_all(); /* USB CDC */
     hw_epoch_init();
-    arm_init(&g_arm, hw_arm(), 0, 0); /* nominal calibration, see README */
+    arm_init(&g_arm, hw_arm(), 0, 0); /* stored calibration; refuses enable until calibrated */
     if (arm_device_init(&g_dev, &g_arm, hw_bhms()) != BHMS_OK) hw_halt();
     /* An unreadable INA219 means the rail can neither be verified nor supervised: arm_tick sees
      * ina_ok == 0 and every enable is refused (PRECONDITION, power_sense); nothing is energised. */
     (void)ina_rc;
-    for (;;) arm_device_poll(&g_dev);
+    /* From here a stuck loop resets the controller (the rail drops; see INTERFACE.md section 4). The
+     * watchdog is fed only after a complete pass: endpoint poll AND controller tick. */
+    hw_watchdog_start();
+    for (;;) {
+        arm_device_poll(&g_dev);
+        hw_feed();
+    }
 }

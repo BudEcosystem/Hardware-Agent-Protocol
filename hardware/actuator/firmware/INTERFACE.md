@@ -335,3 +335,77 @@ Tool contact PCB population (from `pcb/tool_contact.py`):
     flexure torque (knob turner), FSR force (button presser).
 * Tool change as an explicit procedure with the sequencing in §5. It is
   refused while the `estop` state is not `released`.
+
+## 9. Firmware behaviour that is part of the contract (Task 13b, fix round 1)
+
+### 9.1 Limits are enforced on the measured pose too
+
+The command checks (§3.2) only see what was asked for. A jammed or lagging joint can drive another
+into a coupled limit although every commanded waypoint is legal. While a motion runs, every fresh
+telemetry sample (all five joints within 200 ms, taken after the motion started) is checked:
+
+* the measured pose against the joint and coupled limits with 4 deg of slack (fault 12);
+* every joint against its commanded waypoint, bound 15 deg (fault 18, `move_limit` names the joint).
+
+On a violation the firmware writes goal = the freshly read position for every joint, ends the motion
+with that fault, and latches. A latched arm keeps holding; it accepts only `hold`, `enable`, and a
+`move_joints`/`home` back inside the limits (a motion that starts outside a limit, or from a latched
+fault, skips the limit check but keeps the waypoint check and the following-error bound). A completed
+recovery move clears the latch. A new motion starts from the measured pose when it differs from the
+last command by more than 2 deg. `move_error_deg` reports the real worst error also for a failed move.
+
+### 9.2 Servo status error bits, temperature
+
+A joint servo reporting overload, over-temperature, voltage, current or sensor error bits while
+torque is on freezes the arm the same way (fault 6; property `servo_error` = servo id << 8 | bits).
+Property `temperature_warning` is true at 60 C; motion is refused (INHIBITED, reason 16) at 70 C.
+
+### 9.3 Knob-turner mode (verify on hardware)
+
+The knob servo runs as **multi-turn absolute position**: Operating_Mode 0 (position) with Min and Max
+angle limit both 0; goal and present position are sign-magnitude counts (bit 15), 4096 per servo turn,
+so the output range is about +-1200 deg through the 2:1 spur (+-27 306 counts of +-32 767). All writes
+to it are absolute and therefore safe to repeat when an ACK is lost (the simulator can apply a write
+and drop its reply; no duplicate motion). Mode 3 is **not** used: it is, as far as the reviewer and
+the LeRobot Feetech driver convention indicate, a relative step mode in which a repeated or
+"goal = present" write would command motion. Source: the STS-series memory table (Operating_Mode,
+register 0x21; "position servo mode with both limits 0 = multi-turn") as used by the LeRobot Feetech
+driver; **not checked against the Feetech STS3215 manual or on hardware: verify before first use**.
+
+### 9.4 Calibration
+
+Every limit is relative to the joint zero (`joint = sign x (raw - raw_zero) x 360 / 4096 / ratio`).
+`raw_zero` and `sign` are stored in flash (two sectors below the boot counter, CRC'd records, newest
+valid wins, so a power cut during a save leaves the previous copy). Until a calibration is stored the
+property `calibrated` is false and `enable` is refused (PRECONDITION, reason 15). Procedure
+(`calibrate` action, lease): put the arm at the rest pose on its support (yaw 0, shoulder 30, elbow 90,
+wrist pitch 45, roll 0), rail off, E-stop released; the device powers the rail with torque off, reads
+the five raw positions, defines them as the rest pose, refuses a zero that would put a joint range
+across the encoder wrap (20 counts spare), switches the rail off and writes flash. Nothing moves.
+Enable afterwards. Flash writes mask interrupts, so they only happen with the rail off (the boot
+counter store at run time while the rail is on, i.e. a NEW_SESSION hello, is refused: the endpoint then
+does not claim PERSISTENT_EPOCH).
+
+### 9.5 Watchdog and controller reset
+
+The hardware watchdog (250 ms) is fed only after a full endpoint poll plus controller tick. A reset
+**drops the servo rail** (SERVO_EN pulls down in reset) and the unbraked arm falls; the rest pose is
+the support the arm lands on only if it was resting there, otherwise expect the arm to drop wherever
+it is. After a watchdog reset the boot defaults apply (rail off, torque off, explicit `enable`), the
+property `watchdog_reset` is true and `fault_code` reads 19 until the next successful enable;
+`pose_unknown` is true. Bus writes are time-bounded (3 ms) so nothing spins with interrupts off; a
+flash erase is fed before and takes tens of ms (worst case about 400 ms: only at boot or in the
+rail-off calibration save).
+
+### 9.6 Fault and refusal codes added
+
+| Fault | Meaning |
+|---|---|
+| 12 | a waypoint or the measured pose violated a limit |
+| 18 | following error: a joint trails its commanded waypoint by more than 15 deg |
+| 19 | watchdog reset |
+| 20 | calibration failed or could not be stored |
+| 21 | a tool motion stopped short of its goal (knob torque cap or stop) |
+
+Refusal reasons (ERROR.detail on INHIBITED/PRECONDITION): 15 not calibrated, 16 over-temperature,
+17 not disabled (calibrate needs rail off).

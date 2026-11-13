@@ -4,6 +4,7 @@
 #include <stdlib.h>
 
 #include "bhms_test.h"
+#include "cal_store.h"
 #include "epoch_flash.h"
 
 typedef struct {
@@ -147,10 +148,57 @@ static void test_crc(void) {
     CHECK(epoch_crc32((const uint8_t *)"123456789", 9) == 0xCBF43926u); /* standard CRC-32 check value */
 }
 
+
+/* The calibration store is the same record log with a payload: monotonic, CRC'd, power-fail safe,
+ * and at least the previous copy survives any torn save. */
+static void test_calibration_store(void) {
+    unsigned tear;
+    for (tear = 0; tear < 2; ++tear) {
+        flash_model f;
+        epoch_flash_ops o;
+        cal_store cs;
+        arm_cal want, got;
+        unsigned i, j;
+        fresh(&f);
+        f.tear = (int)tear;
+        cal_store_init(&cs, ops_for(&f, &o));
+        CHECK(cal_store_load(&cs, &got) == 0); /* erased: nothing stored */
+        arm_cal_nominal(&want);
+        for (i = 1; i <= 120; ++i) {
+            arm_cal next = want;
+            int ok;
+            for (j = 0; j < ARM_NUM_SERVOS; ++j) next.raw_zero[j] = (int16_t)(want.raw_zero[j] + (int)i);
+            f.fail_after = (i % 7u == 0u) ? (long)(i % 3u) : -1; /* a power cut on every 7th save */
+            ok = cal_store_save(&cs, &next) == 0;
+            f.fail_after = -1;
+            CHECK(cal_store_load(&cs, &got) == 1);
+            if (ok) {
+                CHECK(memcmp(&got, &next, sizeof got) == 0);
+                want = next;
+            } else {
+                CHECK(memcmp(&got, &want, sizeof got) == 0); /* the previous calibration survived */
+            }
+        }
+    }
+    {
+        flash_model f;
+        epoch_flash_ops o;
+        cal_store cs;
+        arm_cal bad, got;
+        fresh(&f);
+        cal_store_init(&cs, ops_for(&f, &o));
+        arm_cal_nominal(&bad);
+        bad.sign[2] = 3; /* implausible */
+        CHECK(cal_store_save(&cs, &bad) == 0);
+        CHECK(cal_store_load(&cs, &got) == 0); /* ignored */
+    }
+}
+
 int main(void) {
     test_crc();
     test_monotonic_and_wear();
     test_power_fail_everywhere();
     test_garbage_is_ignored();
+    test_calibration_store();
     TEST_FINISH("test_epoch");
 }

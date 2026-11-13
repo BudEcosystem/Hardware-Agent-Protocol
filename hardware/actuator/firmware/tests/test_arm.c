@@ -27,14 +27,23 @@ static void s_finished(void *c, const arm_completion *d) { tb *t = (tb *)c; t->d
 static void s_progress(void *c, uint8_t p) { (void)p; ++((tb *)c)->n_progress; }
 static void s_stop(void *c, uint8_t m) { tb *t = (tb *)c; t->stop_measured = m; ++t->n_stop_confirmed; }
 
+static int g_wdt;           /* next tb_init: the previous reset was the watchdog */
+static uint32_t g_start_ms; /* next tb_init: start the millisecond clock here */
+
 static void tb_init(tb *t) {
     memset(t, 0, sizeof *t);
     sim_rig_init(&t->rig);
+    t->rig.watchdog_reset = g_wdt;
+    t->rig.now_ms = g_start_ms;
     t->sink.ctx = t;
     t->sink.finished = s_finished;
     t->sink.progress = s_progress;
     t->sink.stop_confirmed = s_stop;
-    arm_init(&t->a, &t->rig.hw, 0, &t->sink);
+    {
+        arm_cal cal;
+        arm_cal_nominal(&cal);
+        arm_init(&t->a, &t->rig.hw, &cal, &t->sink);
+    }
 }
 
 static float joint_deg(tb *t, unsigned j) {
@@ -121,8 +130,8 @@ static void test_enable_sequence(void) {
     run(&t, 100);
     CHECK(arm_cmd_enable(&t.a, &d) == ARM_OK && t.a.state == ARM_ST_ENABLING);
     {
-        float q[5] = {0, 0, 0, 0, 0};
-        CHECK(arm_cmd_move(&t.a, q, 50, &d) == ARM_REFUSE_BUSY || d != 0 || 1); /* busy while enabling */
+        float q[5] = {0, 30, 90, 45, 0};
+        CHECK(arm_cmd_move(&t.a, q, 50, &d) == ARM_REFUSE_PRECONDITION && d == ARM_WHY_NOT_ENABLED); /* not yet */
     }
     CHECK(run_until_idle(&t, 4000));
     CHECK(t.done.kind == ARM_OP_ENABLE && t.done.status == ARM_DONE_COMPLETED && t.done.measured);
@@ -275,8 +284,8 @@ static void test_waypoint_layer_is_independent(void) {
     /* Corrupt the trajectory goal behind the command check (a memory fault, a bug): the
      * waypoint check must still stop the arm before a violating goal is written. */
     t.a.q_goal.q[ARM_J_ELBOW] = 140.0f;
-    t.a.traj_ms = 400;
-    CHECK(run_until_idle(&t, 3000));
+    t.a.traj_ms = 4000; /* slow enough for the servos to follow: only the waypoint check can object */
+    CHECK(run_until_idle(&t, 12000));
     CHECK(t.done.status == ARM_DONE_FAILED && t.done.fault == ARM_FAULT_LIMIT);
     CHECK(t.a.move_limit == ARM_J_ELBOW);
     {
@@ -519,7 +528,10 @@ static void test_knob_and_presser(void) {
     sim_rig_set_tool(&t.rig, 3300.0);
     run(&t, 150);
     CHECK(arm_cmd_tool_mount(&t.a, &d) == ARM_OK && run_until_idle(&t, 3000) && t.a.tool_state == TOOL_ST_READY);
-    CHECK(sim_rig_reg8(&t.rig, 7, STS_REG_OPERATING_MODE) == STS_MODE_STEP);
+    /* Multi-turn ABSOLUTE position mode (mode 0, both angle limits 0), never the relative step mode. */
+    CHECK(sim_rig_reg8(&t.rig, 7, STS_REG_OPERATING_MODE) == STS_MODE_POSITION);
+    CHECK(sim_rig_reg16(&t.rig, 7, STS_REG_MIN_ANGLE) == 0 && sim_rig_reg16(&t.rig, 7, STS_REG_MAX_ANGLE) == 0);
+    CHECK(fabs(sim_rig_pos(&t.rig, 7)) < 1.0); /* mounting commanded no motion (goal = present) */
     CHECK(sim_rig_reg16(&t.rig, 7, STS_REG_MAX_TORQUE) == 25); /* 2.5 %: keeps the flexure within +-25 deg */
     CHECK(arm_cmd_turn(&t.a, 1300, 10, &d) == ARM_REFUSE_RANGE && d == 0);
     CHECK(arm_cmd_turn(&t.a, 90, 26, &d) == ARM_REFUSE_RANGE && d == 1);
@@ -530,7 +542,9 @@ static void test_knob_and_presser(void) {
     /* A mechanical stop at 180 knob degrees: reached = false, position measured. */
     t.rig.sv[7].block_hi = 4096.0;
     CHECK(arm_cmd_turn(&t.a, 720, 20, &d) == ARM_OK && run_until_idle(&t, 30000));
-    CHECK(t.done.status == ARM_DONE_COMPLETED && t.done.values[1] < 0.5f && fabsf(t.done.values[0] - 180.0f) < 3.0f);
+    /* Stopped short: a FAILURE (stall), not a completion; the partial effect is readable. */
+    CHECK(t.done.status == ARM_DONE_FAILED && t.done.fault == ARM_FAULT_STALL);
+    CHECK(fabsf(t.a.sv[ARM_S_KNOB].pos_deg - 180.0f) < 3.0f && fabsf(t.done.values[0] - 180.0f) < 3.0f);
     t.rig.sv[7].block_hi = 1e9;
     CHECK(arm_cmd_turn(&t.a, -90, 25, &d) == ARM_OK && run_until_idle(&t, 30000));
     CHECK(fabsf(t.done.values[0] + 90.0f) < 3.0f);
@@ -574,6 +588,301 @@ static void test_cancel_tool_freezes(void) {
     }
 }
 
+
+/* ======================= Fix round 1 ======================================================== */
+
+/* Raw count of a joint angle under the nominal calibration. */
+static int32_t nominal_raw(unsigned j, float deg) {
+    arm_cal nom;
+    int32_t raw = 0;
+    arm_cal_nominal(&nom);
+    CHECK(arm_to_raw(&nom, j, deg, &raw) == 0);
+    return raw;
+}
+
+/* CRITICAL 1. A shoulder jammed at 90 deg while an accepted move drives the elbow toward 125 deg:
+ * the commanded poses are all legal, the MEASURED pose is not. The arm must freeze at the measured
+ * pose almost at once, fail with a distinct fault and refuse to carry on. */
+static void test_jammed_joint_is_caught_on_the_measured_pose(void) {
+    tb t;
+    uint8_t d = 0;
+    double elbow_goal_before;
+    uint32_t t0;
+    bring_up(&t);
+    CHECK(move(&t, 0, 90, 60, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+    sim_rig_jam(&t.rig, 2); /* the shoulder is obstructed where it stands */
+    run(&t, 60);
+    CHECK(move(&t, 0, 45, 125, 0, 0, 100, &d) == ARM_OK); /* every commanded waypoint is inside the limits */
+    t0 = t.rig.now_ms;
+    CHECK(run_until_idle(&t, 3000));
+    CHECK(t.rig.now_ms - t0 < 500); /* not after a 3 s timeout */
+    CHECK(t.done.status == ARM_DONE_FAILED);
+    CHECK(t.done.fault == ARM_FAULT_FOLLOWING || t.done.fault == ARM_FAULT_LIMIT);
+    CHECK(t.done.values[0] > 10.0f); /* the failed move reports its real error */
+    CHECK(t.a.state == ARM_ST_FAULT && t.a.limit_latched && !t.a.traj_active);
+    /* The elbow stopped well short of 125 deg and its goal was rewritten to where it was measured. */
+    CHECK(joint_deg(&t, ARM_J_ELBOW) < 100.0f);
+    elbow_goal_before = (double)sim_rig_reg16(&t.rig, 3, STS_REG_GOAL_POSITION);
+    CHECK(fabs(sim_rig_pos(&t.rig, 3) - elbow_goal_before) < 60.0); /* goal rewritten to the measured pose */
+    run(&t, 600);
+    CHECK(fabs(sim_rig_pos(&t.rig, 3) - elbow_goal_before) < 12.0); /* and it settles and stays there */
+    CHECK(t.a.torque_on && t.rig.servo_en_pin); /* holding, not dropped */
+    /* Latched: nothing but a move back inside, enable or hold. */
+    {
+        uint8_t dd = 0;
+        CHECK(arm_cmd_tool_mount(&t.a, &dd) == ARM_REFUSE_INHIBITED);
+        CHECK(arm_cmd_release(&t.a, &dd) == ARM_REFUSE_INHIBITED);
+    }
+}
+
+static void test_measured_limit_violation_without_following_error(void) {
+    tb t;
+    uint8_t d = 0;
+    bring_up(&t);
+    CHECK(move(&t, 0, 80, 90, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000)); /* sum 170 */
+    CHECK(move(&t, 0, 80, 94, 0, 0, 100, &d) == ARM_OK);                              /* sum 174: legal */
+    run(&t, 40);
+    /* The shoulder is pushed 12 deg beyond its waypoint (below the 15 deg following bound) while the
+     * elbow moves on: measured shoulder + elbow = 184 deg > 175 + 4 slack. */
+    sim_rig_place(&t.rig, 2, nominal_raw(ARM_J_SHOULDER, 92.0f));
+    CHECK(run_until_idle(&t, 2000));
+    CHECK(t.done.status == ARM_DONE_FAILED && t.done.fault == ARM_FAULT_LIMIT);
+    CHECK(t.a.move_limit == ARM_LIMIT_COUPLED_BASE + 0); /* forearm_pitch */
+    CHECK(t.a.state == ARM_ST_FAULT);
+}
+
+static void test_lagging_joint_following_error(void) {
+    tb t;
+    uint8_t d = 0;
+    bring_up(&t);
+    t.rig.sv[3].speed_scale = 0.08; /* a weak, sluggish elbow */
+    CHECK(move(&t, 0, 40, 120, 0, 0, 100, &d) == ARM_OK);
+    CHECK(run_until_idle(&t, 4000));
+    CHECK(t.done.status == ARM_DONE_FAILED && t.done.fault == ARM_FAULT_FOLLOWING);
+    CHECK(t.a.move_limit == ARM_J_ELBOW); /* the lagging joint is named */
+    CHECK(t.a.state == ARM_ST_FAULT);
+    CHECK(sim_rig_reg16(&t.rig, 3, STS_REG_GOAL_POSITION) < sim_rig_pos(&t.rig, 3) + 12.0); /* frozen near the measured pose */
+}
+
+static void test_recovery_from_a_latched_motion_fault(void) {
+    tb t;
+    uint8_t d = 0;
+    bring_up(&t);
+    CHECK(move(&t, 0, 90, 60, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+    sim_rig_jam(&t.rig, 2);
+    run(&t, 60);
+    CHECK(move(&t, 0, 45, 120, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 3000));
+    CHECK(t.a.state == ARM_ST_FAULT);
+    /* Still jammed: a recovery move is allowed to start but trips again (the shoulder cannot follow). */
+    CHECK(move(&t, 0, 60, 60, 0, 0, 100, &d) == ARM_OK);
+    CHECK(run_until_idle(&t, 3000));
+    CHECK(t.done.status == ARM_DONE_FAILED && t.a.state == ARM_ST_FAULT && t.a.limit_latched);
+    /* Free again: the move back inside runs, finishes and clears the latch. */
+    t.rig.sv[2].block_lo = -1e9;
+    t.rig.sv[2].block_hi = 1e9;
+    CHECK(move(&t, 0, 60, 60, 0, 0, 100, &d) == ARM_OK && t.a.recovering);
+    CHECK(run_until_idle(&t, 12000));
+    CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY && !t.a.limit_latched);
+    CHECK(t.a.fault_code == ARM_FAULT_NONE);
+    CHECK(move(&t, 10, 50, 70, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000)); /* normal again */
+}
+
+/* IMPORTANT 5. Servo status error bits and over-temperature. */
+static void test_servo_error_bits_and_overtemperature(void) {
+    tb t;
+    uint8_t d = 0;
+    bring_up(&t);
+    CHECK(move(&t, 60, 50, 70, 0, 0, 30, &d) == ARM_OK);
+    run(&t, 150);
+    t.rig.sv[3].err_bits = STS_ERR_OVERLOAD; /* the elbow servo reports an overload */
+    CHECK(run_until_idle(&t, 500));
+    CHECK(t.done.status == ARM_DONE_FAILED && t.done.fault == ARM_FAULT_SERVO_ERROR);
+    CHECK(t.a.servo_err_id == 3 && t.a.servo_err_bits == STS_ERR_OVERLOAD);
+    CHECK(t.a.state == ARM_ST_FAULT && !t.a.traj_active);
+    {
+        double p = sim_rig_pos(&t.rig, 1);
+        run(&t, 300);
+        CHECK(fabs(sim_rig_pos(&t.rig, 1) - p) < 12.0); /* frozen */
+    }
+    /* Over-temperature: warning at 60 C, motion refused at 70 C. */
+    bring_up(&t);
+    t.rig.sv[2].temp_c = 62;
+    run(&t, 120);
+    CHECK(arm_temperature_warning(&t.a) == 1);
+    CHECK(move(&t, 10, 40, 60, 0, 0, 50, &d) == ARM_OK && run_until_idle(&t, 12000));
+    t.rig.sv[2].temp_c = 71;
+    run(&t, 120);
+    CHECK(move(&t, 0, 40, 60, 0, 0, 50, &d) == ARM_REFUSE_INHIBITED && d == ARM_WHY_OVERTEMP);
+    t.rig.sv[2].temp_c = 40;
+    run(&t, 120);
+    CHECK(move(&t, 0, 40, 60, 0, 0, 50, &d) == ARM_OK);
+}
+
+/* IMPORTANT 2. Controller reset by the watchdog. */
+
+static void test_watchdog_reset_is_reported_and_needs_enable(void) {
+    tb t;
+    uint8_t d = 0;
+    g_wdt = 1;
+    tb_init(&t);
+    g_wdt = 0;
+    run(&t, 100);
+    CHECK(t.a.watchdog_reset && t.a.fault_code == ARM_FAULT_WATCHDOG && t.a.pose_unknown);
+    CHECK(t.a.state == ARM_ST_DISABLED && !t.rig.servo_en_pin && !t.a.torque_on); /* boot default */
+    CHECK(move(&t, 0, 30, 90, 45, 0, 50, &d) == ARM_REFUSE_PRECONDITION && d == ARM_WHY_NOT_ENABLED);
+    CHECK(arm_cmd_enable(&t.a, &d) == ARM_OK && run_until_idle(&t, 4000));
+    CHECK(t.a.state == ARM_ST_READY && t.a.fault_code == ARM_FAULT_NONE && !t.a.pose_unknown);
+}
+
+/* IMPORTANT 3. Absolute multi-turn mode and lost ACKs: a retried write must not repeat motion. */
+static void test_lost_acks_never_duplicate_motion(void) {
+    tb t;
+    uint8_t d = 0;
+    bring_up(&t);
+    sim_rig_set_tool(&t.rig, 3300.0);
+    run(&t, 150);
+    CHECK(arm_cmd_tool_mount(&t.a, &d) == ARM_OK);
+    t.rig.sv[7].drop_acks = 2; /* the torque-enable and goal-hold writes are applied, the ACKs lost */
+    CHECK(run_until_idle(&t, 3000) && t.a.tool_state == TOOL_ST_READY);
+    CHECK(fabs(sim_rig_pos(&t.rig, 7)) < 1.0); /* mounting moved nothing */
+    /* turn(360): the torque-limit write and the goal write each lose their ACK and are retried. */
+    t.rig.sv[7].drop_acks = 2;
+    CHECK(arm_cmd_turn(&t.a, 360, 20, &d) == ARM_OK && run_until_idle(&t, 30000));
+    CHECK(t.done.status == ARM_DONE_COMPLETED);
+    CHECK(fabs(sim_rig_pos(&t.rig, 7) - 8192.0) < 20.0); /* one turn, not two */
+    CHECK(fabsf(t.a.sv[ARM_S_KNOB].pos_deg - 360.0f) < 3.0f);
+    /* Cancelling a tool motion rewrites the goal to the measured position: no further travel. */
+    CHECK(arm_cmd_turn(&t.a, -300, 20, &d) == ARM_OK);
+    run(&t, 1500);
+    {
+        uint8_t m = 0;
+        double p;
+        CHECK(arm_stop(&t.a, &m) == ARM_STOP_INITIATED);
+        run(&t, 300);
+        p = sim_rig_pos(&t.rig, 7);
+        run(&t, 600);
+        CHECK(fabs(sim_rig_pos(&t.rig, 7) - p) < 2.0);
+    }
+    /* The arm's own configuration writes survive lost ACKs (absolute, idempotent). */
+    tb_init(&t);
+    t.rig.sv[2].drop_acks = 2;
+    t.rig.sv[4].drop_acks = 1;
+    run(&t, 50);
+    CHECK(arm_cmd_enable(&t.a, &d) == ARM_OK && run_until_idle(&t, 5000));
+    CHECK(t.done.status == ARM_DONE_COMPLETED && sim_rig_reg16(&t.rig, 2, STS_REG_MAX_TORQUE) == 780);
+}
+
+/* IMPORTANT 4. Calibration. */
+static void uncalibrated_tb(tb *t) {
+    memset(t, 0, sizeof *t);
+    sim_rig_init(&t->rig);
+    t->sink.ctx = t;
+    t->sink.finished = s_finished;
+    t->sink.progress = s_progress;
+    t->sink.stop_confirmed = s_stop;
+    arm_init(&t->a, &t->rig.hw, 0, &t->sink); /* nothing stored: nominal zero, not calibrated */
+}
+
+static void test_calibration(void) {
+    tb t;
+    uint8_t d = 0;
+    unsigned j;
+    arm_cal nom;
+    static const int off[5] = {0, 40, -25, 10, 0};
+    uncalibrated_tb(&t);
+    arm_cal_nominal(&nom);
+    for (j = 0; j < 5; ++j) sim_rig_place(&t.rig, j + 1u, nominal_raw(j, kArmRestPose[j]) + off[j]);
+    run(&t, 100);
+    CHECK(!t.a.calibrated && t.a.state == ARM_ST_DISABLED);
+    /* Limits are relative to the zero: no enable until it is known. */
+    CHECK(arm_cmd_enable(&t.a, &d) == ARM_REFUSE_PRECONDITION && d == ARM_WHY_NOT_CALIBRATED);
+    CHECK(!t.rig.servo_en_pin && !t.a.torque_on);
+    CHECK(arm_cmd_calibrate(&t.a, &d) == ARM_OK && t.a.op == ARM_OP_CALIBRATE);
+    CHECK(run_until_idle(&t, 6000));
+    CHECK(t.done.kind == ARM_OP_CALIBRATE && t.done.status == ARM_DONE_COMPLETED);
+    CHECK(t.a.calibrated && t.rig.cal_saves == 1);
+    CHECK(t.rig.cal_saves_while_powered == 0); /* flash only with the rail off */
+    CHECK(!t.rig.servo_en_pin && t.a.state == ARM_ST_DISABLED);
+    for (j = 0; j < 5; ++j) {
+        CHECK(sim_rig_reg8(&t.rig, j + 1u, STS_REG_TORQUE_ENABLE) == 0); /* nothing was ever torqued */
+        CHECK(t.rig.saved_cal.raw_zero[j] == nom.raw_zero[j] + off[j]);
+    }
+    /* Reboot: the stored calibration is loaded and the measured rest pose reads exactly the rest pose. */
+    arm_init(&t.a, &t.rig.hw, 0, &t.sink);
+    run(&t, 100);
+    CHECK(t.a.calibrated);
+    CHECK(arm_cmd_enable(&t.a, &d) == ARM_OK && run_until_idle(&t, 5000));
+    CHECK(t.done.status == ARM_DONE_COMPLETED);
+    for (j = 0; j < 5; ++j) CHECK(fabsf(t.a.q_cmd.q[j] - kArmRestPose[j]) < 0.3f);
+    CHECK(arm_cmd_calibrate(&t.a, &d) == ARM_REFUSE_PRECONDITION && d == ARM_WHY_NOT_DISABLED);
+    /* A zero that would put a joint across the encoder wrap is refused and nothing is stored. */
+    uncalibrated_tb(&t);
+    sim_rig_place(&t.rig, 2, 3900.0);
+    run(&t, 100);
+    CHECK(arm_cmd_calibrate(&t.a, &d) == ARM_OK && run_until_idle(&t, 6000));
+    CHECK(t.done.status == ARM_DONE_FAILED && t.done.fault == ARM_FAULT_CALIBRATION);
+    CHECK(!t.a.calibrated && t.rig.cal_saves == 0 && !t.rig.servo_en_pin && t.a.state == ARM_ST_DISABLED);
+}
+
+/* Enable-retry from a comm fault must not cut the rail that holds the arm. */
+static void test_failed_reenable_keeps_the_rail(void) {
+    tb t;
+    uint8_t d = 0;
+    bring_up(&t);
+    t.rig.drop_reply_mask = 1u << 3;
+    run(&t, 400);
+    CHECK(t.a.state == ARM_ST_FAULT && t.a.fault_code == ARM_FAULT_SERVO_COMM);
+    CHECK(arm_cmd_enable(&t.a, &d) == ARM_OK && run_until_idle(&t, 5000));
+    CHECK(t.done.status == ARM_DONE_FAILED && t.done.fault == ARM_FAULT_SERVO_COMM);
+    CHECK(t.rig.servo_en_pin && t.rig.rail_mv > 11000 && t.rig.falls == 0); /* still powered, nothing fell */
+    CHECK(sim_rig_reg8(&t.rig, 1, STS_REG_TORQUE_ENABLE) == 1);              /* the other joints still hold */
+    CHECK(t.a.state == ARM_ST_FAULT);
+}
+
+static void test_press_timeout_retracts_and_fails(void) {
+    tb t;
+    uint8_t d = 0;
+    bring_up(&t);
+    sim_rig_set_tool(&t.rig, 10000.0);
+    run(&t, 150);
+    CHECK(arm_cmd_tool_mount(&t.a, &d) == ARM_OK && run_until_idle(&t, 3000));
+    t.rig.sv[8].block_hi = 1024.0 + 60.0; /* the cam is blocked 5 deg out: the depth is never reached */
+    CHECK(arm_cmd_press(&t.a, 5.0f, 50, &d) == ARM_OK);
+    CHECK(run_until_idle(&t, 20000));
+    CHECK(t.done.status == ARM_DONE_FAILED && t.done.fault == ARM_FAULT_TIMEOUT);
+    t.rig.sv[8].block_hi = 1e9;
+    run(&t, 1500);
+    CHECK(sim_rig_pos(&t.rig, 8) < 1024.0 + 3.0 * 11.378); /* pulled back to the closed stop */
+}
+
+static void test_tool_swap_without_unmount(void) {
+    tb t;
+    uint8_t d = 0;
+    bring_up(&t);
+    sim_rig_set_tool(&t.rig, 1000.0);
+    run(&t, 150);
+    CHECK(arm_cmd_tool_mount(&t.a, &d) == ARM_OK && run_until_idle(&t, 3000) && t.a.tool_state == TOOL_ST_READY);
+    sim_rig_set_tool(&t.rig, 3300.0); /* swapped for another valid tool in one go */
+    run(&t, 120);
+    CHECK(!t.rig.tool_en_pin && t.a.tool_state == TOOL_ST_DETECTED && t.a.tool_id == ARM_TOOL_KNOB_TURNER);
+    CHECK(arm_cmd_turn(&t.a, 10, 5, &d) == ARM_REFUSE_PRECONDITION && d == ARM_WHY_TOOL_NOT_READY);
+    CHECK(arm_cmd_tool_mount(&t.a, &d) == ARM_OK && run_until_idle(&t, 3000) && t.a.tool_state == TOOL_ST_READY);
+}
+
+static void test_millisecond_counter_wrap(void) {
+    tb t;
+    uint8_t d = 0;
+    g_start_ms = 0xFFFFFF00u; /* a quarter second before the 32-bit counter wraps */
+    tb_init(&t);
+    g_start_ms = 0;
+    run(&t, 50);
+    CHECK(arm_cmd_enable(&t.a, &d) == ARM_OK && run_until_idle(&t, 5000));
+    CHECK(t.done.status == ARM_DONE_COMPLETED);
+    CHECK(move(&t, 30, 40, 60, 10, -20, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+    CHECK(t.done.status == ARM_DONE_COMPLETED && t.rig.now_ms < 0x80000000u); /* the counter wrapped on the way */
+    CHECK(t.a.state == ARM_ST_READY);
+}
+
 int main(void) {
     test_boot_states();
     test_enable_sequence();
@@ -591,5 +900,17 @@ int main(void) {
     test_tool_hot_unplug_and_estop();
     test_knob_and_presser();
     test_cancel_tool_freezes();
+    test_jammed_joint_is_caught_on_the_measured_pose();
+    test_measured_limit_violation_without_following_error();
+    test_lagging_joint_following_error();
+    test_recovery_from_a_latched_motion_fault();
+    test_servo_error_bits_and_overtemperature();
+    test_watchdog_reset_is_reported_and_needs_enable();
+    test_lost_acks_never_duplicate_motion();
+    test_calibration();
+    test_failed_reenable_keeps_the_rail();
+    test_press_timeout_retracts_and_fails();
+    test_tool_swap_without_unmount();
+    test_millisecond_counter_wrap();
     TEST_FINISH("test_arm");
 }

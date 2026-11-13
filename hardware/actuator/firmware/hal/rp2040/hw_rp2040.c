@@ -10,6 +10,8 @@
 #include "hardware/irq.h"
 #include "hardware/sync.h"
 #include "hardware/uart.h"
+#include "hardware/watchdog.h"
+#include "cal_store.h"
 #include "pico/stdlib.h"
 #include "pico/stdio/driver.h"
 #include "pico/stdio_usb.h"
@@ -59,18 +61,29 @@ static void bus_flush(void *c) {
  * release the driver within 5 us. Interrupts are off for the frame (<= 0.6 ms at 1 Mbps) so a USB
  * interrupt cannot delay the release into the servo's reply. The echo is drained as it arrives:
  * a 48-byte frame is longer than the 32-byte RX FIFO. */
+#define BUS_WRITE_BUDGET_US 3000u /* a 54-byte frame takes 0.54 ms: 3 ms is a stuck UART */
+
 static void __not_in_flash_func(bus_write)(void *c, const uint8_t *buf, size_t n) {
     uint32_t irq = save_and_disable_interrupts();
+    uint32_t t0 = time_us_32();
     size_t i;
     (void)c;
     gpio_put(PIN_BUS_TXEN_N, 0);
     for (i = 0; i < n; ++i) {
-        while (!uart_is_writable(uart0)) pump_rx();
+        /* Every wait is bounded by one budget: with interrupts off nothing may spin forever. */
+        while (!uart_is_writable(uart0)) {
+            pump_rx();
+            if ((uint32_t)(time_us_32() - t0) > BUS_WRITE_BUDGET_US) goto release;
+        }
         uart_get_hw(uart0)->dr = buf[i];
         pump_rx();
     }
-    while ((uart_get_hw(uart0)->fr & UART_UARTFR_BUSY_BITS) != 0) pump_rx();
-    gpio_put(PIN_BUS_TXEN_N, 1);
+    while ((uart_get_hw(uart0)->fr & UART_UARTFR_BUSY_BITS) != 0) {
+        pump_rx();
+        if ((uint32_t)(time_us_32() - t0) > BUS_WRITE_BUDGET_US) break;
+    }
+release:
+    gpio_put(PIN_BUS_TXEN_N, 1); /* always give the line back: the echo check reports a short frame */
     pump_rx();
     restore_interrupts(irq);
 }
@@ -139,8 +152,26 @@ static void led(void *c, uint8_t r, uint8_t g, uint8_t b) {
     gpio_put(PIN_LED_B, b == 0);
 }
 
+static int wdt_reset(void *c) { (void)c; return watchdog_caused_reboot(); }
+
+/* ---- Flash: boot counter and calibration (only with the servo rail off) ---------------------- */
+extern const epoch_flash_ops *flash_epoch_ops(void);
+extern const epoch_flash_ops *flash_cal_ops(void);
+static epoch_flash g_epoch;
+static cal_store g_cal;
+
+static int rail_on(void) { return gpio_get(PIN_SERVO_EN) != 0; }
+
+static int cal_load(void *c, arm_cal *cal) { (void)c; return cal_store_load(&g_cal, cal); }
+static int cal_save(void *c, const arm_cal *cal) {
+    (void)c;
+    if (rail_on()) return -1; /* flash writes mask the E-stop IRQ */
+    return cal_store_save(&g_cal, cal);
+}
+
 static const arm_hw g_hw = {0, millis, bus_flush, bus_write, bus_read, servo_en, tool_en,
-                            estop_sense, estop_edge, adc_read_ch, ina_read, led};
+                            estop_sense, estop_edge, adc_read_ch, ina_read, led,
+                            wdt_reset, cal_load, cal_save};
 
 const arm_hw *hw_arm(void) { return &g_hw; }
 
@@ -230,13 +261,22 @@ static int bhms_stop_pin(void *c) {
 }
 
 /* ---- Flash epoch -------------------------------------------------------------------------- */
-extern const epoch_flash_ops *flash_epoch_ops(void);
-static epoch_flash g_epoch;
+void hw_epoch_init(void) {
+    epoch_flash_init(&g_epoch, flash_epoch_ops());
+    cal_store_init(&g_cal, flash_cal_ops());
+}
 
-void hw_epoch_init(void) { epoch_flash_init(&g_epoch, flash_epoch_ops()); }
+void hw_watchdog_start(void) { watchdog_enable(WATCHDOG_MS, 1); }
+void hw_feed(void) { watchdog_update(); }
 
 static int ep_load(void *c, uint32_t *e) { (void)c; return epoch_flash_load(&g_epoch, e); }
-static int ep_store(void *c, uint32_t e) { (void)c; return epoch_flash_store(&g_epoch, e); }
+/* Boot-time stores happen with the rail off. A NEW_SESSION store at run time while the rail is on
+ * is refused (the IRQ must stay live); the endpoint then does not claim PERSISTENT_EPOCH. */
+static int ep_store(void *c, uint32_t e) {
+    (void)c;
+    if (rail_on()) return -1;
+    return epoch_flash_store(&g_epoch, e);
+}
 
 static const bhms_hal g_bhms = {0, usb_read, usb_write, bhms_millis, bhms_stop_pin, ep_load, ep_store};
 const bhms_hal *hw_bhms(void) { return &g_bhms; }

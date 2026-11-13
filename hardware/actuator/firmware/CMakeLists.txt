@@ -23,7 +23,7 @@ target_compile_options(bhms PRIVATE -Wall -Wextra -Wpedantic -Wshadow -Wconversi
 
 add_library(arm_core STATIC
   core/arm_params.c core/arm_limits.c core/sts.c core/power.c core/tool_id.c
-  core/epoch_flash.c core/arm.c core/arm_device.c)
+  core/epoch_flash.c core/cal_store.c core/arm.c core/arm_device.c)
 target_include_directories(arm_core PUBLIC core)
 target_link_libraries(arm_core PUBLIC bhms m)
 target_compile_options(arm_core PRIVATE -Wall -Wextra -Wpedantic -Wshadow -Wconversion -Werror)
@@ -66,6 +66,8 @@ if(Python3_FOUND)
   add_test(NAME tables_match_params_and_sidecar
            COMMAND ${CMAKE_COMMAND} -E env BHMS_DUMP_TABLES=$<TARGET_FILE:dump_tables>
                    ${Python3_EXECUTABLE} -B ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_tables.py)
+  add_test(NAME uf2_container
+           COMMAND ${Python3_EXECUTABLE} -B ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_uf2.py)
   add_test(NAME e2e_arm_pty
            COMMAND ${CMAKE_COMMAND} -E env BHMS_SIM_ARM=$<TARGET_FILE:sim_arm>
                    ${Python3_EXECUTABLE} -B ${CMAKE_CURRENT_SOURCE_DIR}/tests/test_e2e.py)

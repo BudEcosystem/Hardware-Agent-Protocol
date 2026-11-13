@@ -278,6 +278,28 @@ class ArmE2E(unittest.TestCase):
         a.invoke("enable")  # released: the enable goes through
         self.assertEqual(a.result(a.handle)["state"], ST["COMPLETED"])
 
+    def test_calibration_gate_and_procedure(self):
+        a = self.arm
+        a.close()
+        self.arm = a = Arm(self.tmp, extra=("--uncalibrated", "1"))
+        a.hello()
+        self.assertEqual(a.read("calibrated")["raw"], bytes([0]))
+        self.assertEqual(a.read("watchdog_reset")["raw"], bytes([0]))
+        # Until calibrated the limits would be relative to an assumed zero: enable is refused (reason 15).
+        a.invoke("enable")
+        e = a.error()
+        self.assertEqual((e["code"], e["detail"]), (CODE["PRECONDITION"], 15))
+        # The calibrate action needs a lease, then defines the rest pose and stores the offsets.
+        a.invoke("calibrate", lease=False)
+        self.assertEqual(a.error()["code"], CODE["LEASE_REQUIRED"])
+        hdl = a.invoke("calibrate")
+        r = a.result(hdl, 10)
+        self.assertEqual((r["state"], r["evidence"]), (ST["COMPLETED"], 2))
+        self.assertEqual(a.read("calibrated")["raw"], bytes([1]))
+        self.assertEqual([l for l in a.state_lines() if l.startswith("SERVO_EN")][-1], "SERVO_EN 0")
+        a.enable()  # now allowed
+        self.assertEqual(a.read("arm_state")["raw"], bytes([4]))
+
     def test_epoch_persists_across_reboot(self):
         a = self.arm
         self.assertEqual(a.hello()["epoch"], 1)

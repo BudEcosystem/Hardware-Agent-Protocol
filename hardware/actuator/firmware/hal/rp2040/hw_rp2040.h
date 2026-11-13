@@ -15,8 +15,12 @@ int hw_init(void);
 const arm_hw *hw_arm(void);
 /* The BHMS HAL: USB CDC transport, millis, E-stop pin latch, flash epoch. */
 const bhms_hal *hw_bhms(void);
-/* Open the epoch region; call before bhms_init. */
+/* Open the epoch and calibration regions; call before arm_init / bhms_init. */
 void hw_epoch_init(void);
+/* Start the hardware watchdog (after initialisation) and feed it. hw_feed is called once per
+ * main-loop pass, after a complete arm_device_poll, and nowhere else. */
+void hw_watchdog_start(void);
+void hw_feed(void);
 /* Blink the status LED red forever (initialisation failed); the rail stays off. */
 void hw_halt(void) __attribute__((noreturn));
 

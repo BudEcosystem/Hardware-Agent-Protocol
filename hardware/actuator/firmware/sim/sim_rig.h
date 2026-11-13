@@ -15,6 +15,7 @@
 #include <stdint.h>
 
 #include "arm_hw.h"
+#include "arm_params.h"
 
 #define SIM_MEM 0x50u
 #define SIM_RX_CAP 1024u
@@ -30,6 +31,10 @@ typedef struct {
     uint8_t stalled;
     uint32_t pings, reads, writes;
     double max_step_per_ms;   /* largest per-ms displacement observed */
+    double speed_scale;       /* 1.0 normal; < 1 a sluggish joint (lag); 0 a jammed one */
+    uint8_t err_bits;         /* status-packet error byte returned with every READ */
+    uint8_t temp_c;
+    unsigned drop_acks;       /* apply the next N WRITEs but swallow their ACK (lost reply) */
     int ignore_eeprom_writes; /* a servo whose EEPROM does not take writes (config must fail) */
 } sim_servo;
 
@@ -57,6 +62,10 @@ typedef struct sim_rig {
     /* Statistics */
     uint32_t frames, bad_frames, led_changes, estop_cuts;
     uint32_t servo_en_log_on;
+    int watchdog_reset;       /* the last reset was the watchdog */
+    arm_cal saved_cal;        /* the calibration store (flash) */
+    int cal_saved;
+    unsigned cal_saves, cal_saves_while_powered;
     int falls;                /* times the arm lost the rail with torque on */
 } sim_rig;
 
@@ -64,6 +73,8 @@ void sim_rig_init(sim_rig *r);
 /* Advance simulated time by ms (1 ms steps). */
 void sim_rig_advance(sim_rig *r, uint32_t ms);
 void sim_rig_press_estop(sim_rig *r, int pressed);
+/* Jam a servo where it is (a mechanical obstruction): it stops following its goal. */
+void sim_rig_jam(sim_rig *r, unsigned id);
 /* Mount a tool: R_ID in ohms (kArmTools), or < 0 to remove it. */
 void sim_rig_set_tool(sim_rig *r, double r_id_ohm);
 /* Servo helpers: position in raw steps, as the encoder would report. */

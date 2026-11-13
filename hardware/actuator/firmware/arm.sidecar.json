@@ -1,7 +1,7 @@
 {
   "deviceId": "bhms-arm",
   "name": "BHMS Arm",
-  "description": "A 5-axis desktop arm (STS3215 servos) with a quick-change tool flange (gripper, knob turner, button presser, slider pusher), driven by an RP2040 controller over BHMS-Compact. Joint ranges, three coupled pitch limits, the shoulder torque cap and the E-stop restart inhibit are enforced on the device. After an E-stop the arm may have moved: re-home before use. Faults: 1 estop, 2 estop_fault_contact_A_or_Q2, 3 servo_rail_fault, 4 overcurrent, 5 servo_comm, 6 servo_error, 7 tool_lost, 8 timeout, 9 overtemp, 10 stopped, 11 bus_collision, 12 limit, 13 selftest, 14 no_actuator_power, 15 power_sense, 16 servo_config, 17 tool.",
+  "description": "A 5-axis desktop arm (STS3215 servos) with a quick-change tool flange (gripper, knob turner, button presser, slider pusher), driven by an RP2040 controller over BHMS-Compact. Joint ranges, three coupled pitch limits, the shoulder torque cap and the E-stop restart inhibit are enforced on the device. After an E-stop the arm may have moved: re-home before use. Faults: 1 estop, 2 estop_fault_contact_A_or_Q2, 3 servo_rail_fault, 4 overcurrent, 5 servo_comm, 6 servo_error, 7 tool_lost, 8 timeout, 9 overtemp, 10 stopped, 11 bus_collision, 12 limit, 13 selftest, 14 no_actuator_power, 15 power_sense, 16 servo_config, 17 tool, 18 following_error, 19 watchdog_reset, 20 calibration, 21 stall.",
   "capabilities": [
     "bhms.arm.joints",
     "bhms.arm.tool"
@@ -537,7 +537,7 @@
       }
     },
     "fault_code": {
-      "description": "Last latched fault, 0 = none: 1 estop, 2 estop_fault_contact_A_or_Q2, 3 servo_rail_fault, 4 overcurrent, 5 servo_comm, 6 servo_error, 7 tool_lost, 8 timeout, 9 overtemp, 10 stopped, 11 bus_collision, 12 limit, 13 selftest, 14 no_actuator_power, 15 power_sense, 16 servo_config, 17 tool.",
+      "description": "Last latched fault, 0 = none: 1 estop, 2 estop_fault_contact_A_or_Q2, 3 servo_rail_fault, 4 overcurrent, 5 servo_comm, 6 servo_error, 7 tool_lost, 8 timeout, 9 overtemp, 10 stopped, 11 bus_collision, 12 limit, 13 selftest, 14 no_actuator_power, 15 power_sense, 16 servo_config, 17 tool, 18 following_error, 19 watchdog_reset, 20 calibration, 21 stall.",
       "schema": {
         "type": "integer",
         "x-bhms-unit": "1",
@@ -673,11 +673,82 @@
         "type": "bool",
         "index": 40
       }
+    },
+    "calibrated": {
+      "description": "True when the joint zero offsets come from a stored calibration. Until then every limit is relative to an assumed zero and enable is refused.",
+      "schema": {
+        "type": "boolean"
+      },
+      "evidence": "reported",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "bool",
+        "index": 41
+      }
+    },
+    "watchdog_reset": {
+      "description": "True when the controller reset itself (watchdog) since power-up: servo power dropped and the arm may have fallen; enable again.",
+      "schema": {
+        "type": "boolean"
+      },
+      "evidence": "reported",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "bool",
+        "index": 42
+      }
+    },
+    "temperature_warning": {
+      "description": "True when any joint servo is at or above 60 C. Motion is refused at 70 C.",
+      "schema": {
+        "type": "boolean"
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "bool",
+        "index": 43
+      }
+    },
+    "servo_error": {
+      "description": "Servo id (high byte) and status error bits (low byte: 1 voltage, 2 sensor, 4 temperature, 8 current, 0x20 overload) of the last servo-error fault.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "1",
+        "minimum": 0,
+        "maximum": 65535
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u16",
+        "index": 44
+      }
+    },
+    "move_error_deg": {
+      "description": "Worst joint error at the end of the last move, also when it failed.",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "deg",
+        "minimum": 0,
+        "maximum": 720
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 45
+      }
     }
   },
   "actions": {
     "move_joints": {
-      "description": "Move all five joints to absolute angles along a straight line in joint space, at speed_pct of the per-joint speed limit (servo no-load speed / ratio). The device refuses a goal outside any joint range or coupled limit (shoulder+elbow <= 175, elbow+wrist_pitch <= 165, shoulder+elbow+wrist_pitch <= 183 deg) with OUT_OF_RANGE: detail 0..4 = joint range of base_yaw, shoulder_pitch, elbow_pitch, wrist_pitch, wrist_roll; 16 = coupled forearm_pitch (shoulder+elbow <= 175 deg), 17 = hairpin (elbow+wrist_pitch <= 165 deg), 18 = tool_pitch (shoulder+elbow+wrist_pitch <= 183 deg); 240 = speed. Every interpolated waypoint is checked again on the device. Result: worst joint error at the end, measured.",
+      "description": "Move all five joints to absolute angles along a straight line in joint space, at speed_pct of the per-joint speed limit (servo no-load speed / ratio). The device refuses a goal outside any joint range or coupled limit with OUT_OF_RANGE: detail 0..4 = joint range of base_yaw, shoulder_pitch, elbow_pitch, wrist_pitch, wrist_roll; 16 = coupled forearm_pitch (shoulder+elbow <= 175 deg), 17 = hairpin (elbow+wrist_pitch <= 165 deg), 18 = tool_pitch (shoulder+elbow+wrist_pitch <= 183 deg); 240 = speed. Every waypoint and every fresh measured pose (4 deg slack) is checked on the device, with a 15 deg following-error bound: a jammed or lagging joint freezes the arm at its measured pose and fails the move (fault 12 or 18); the arm then accepts only a move back inside, enable or hold. Result: worst joint error at the end, measured.",
       "input": {
         "type": "object",
         "additionalProperties": false,
@@ -1154,7 +1225,7 @@
       "preconditions": "Gripper ready."
     },
     "turn": {
-      "description": "Turn the knob to an absolute multi-turn angle relative to the mount position, with a servo torque cap of torque_pct (at most 2.5 %, which keeps the spiral flexure within +-25 deg). reached is false when the torque cap stopped it short.",
+      "description": "Turn the knob to an absolute multi-turn angle relative to the mount position, with a servo torque cap of torque_pct (at most 2.5 %, which keeps the spiral flexure within +-25 deg). A move that stops short (torque cap, mechanical stop) fails with fault 21; the angle reached stays readable as knob_angle_deg.",
       "input": {
         "type": "object",
         "additionalProperties": false,
@@ -1329,6 +1400,42 @@
       ],
       "typicalDurationMs": 1200,
       "preconditions": "Button presser ready."
+    },
+    "calibrate": {
+      "description": "Calibrate the joint zero offsets. With the arm resting at the rest pose on its support (yaw 0, shoulder 30, elbow 90, wrist pitch 45, roll 0 deg) and the servo rail off, the device powers the rail with torque off, reads every joint's raw position, defines it as the rest pose, switches the rail off and stores the offsets in flash (two-copy, CRC). Nothing moves. Refused unless the arm is disabled. Enable is refused until the arm is calibrated.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "effect": "irreversible",
+      "idempotency": "idempotent",
+      "cancel": "supported",
+      "completionEvidence": "measured",
+      "maxDurationMs": 20000,
+      "requiresLease": true,
+      "resources": [
+        "bhms-arm/joints",
+        "bhms-arm/power"
+      ],
+      "onLeaseLoss": "hold",
+      "compact": {
+        "index": 10,
+        "args": [],
+        "result": []
+      },
+      "verifiedBy": [
+        "calibrated"
+      ],
+      "typicalDurationMs": 2500,
+      "preconditions": "Rail off, E-stop released, VIN >= 9 V; arm resting at the rest pose."
     }
   },
   "safety": {

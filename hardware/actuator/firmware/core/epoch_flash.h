@@ -40,8 +40,25 @@ typedef struct {
     int (*program_page)(void *ctx, unsigned sector, unsigned page, const uint8_t *data);
 } epoch_flash_ops;
 
+/* Generic record log over a two-sector region. Record page layout (little endian):
+ *   magic(4) seq(4) payload(payload_len <= EPOCH_MAX_PAYLOAD) crc32(4 over all bytes before it)
+ * The newest valid record (highest seq) wins. The epoch uses seq = the epoch and no payload;
+ * the calibration store uses a counter for seq and the calibration as payload. */
+#define EPOCH_MAX_PAYLOAD 64u
 typedef struct {
     const epoch_flash_ops *ops;
+    uint32_t magic;
+    uint8_t payload_len;
+} reclog;
+
+void reclog_init(reclog *l, const epoch_flash_ops *ops, uint32_t magic, uint8_t payload_len);
+/* Newest valid record: returns 1 and fills *seq and payload (payload_len bytes), else 0. */
+int reclog_latest(const reclog *l, uint32_t *seq, uint8_t *payload);
+/* Append a record with seq greater than the newest; verifies it by reading back. 0 on success. */
+int reclog_append(const reclog *l, uint32_t seq, const uint8_t *payload);
+
+typedef struct {
+    reclog log;
 } epoch_flash;
 
 void epoch_flash_init(epoch_flash *ef, const epoch_flash_ops *ops);

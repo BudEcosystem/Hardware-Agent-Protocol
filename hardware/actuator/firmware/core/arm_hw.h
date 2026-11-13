@@ -9,6 +9,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "arm_params.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -44,6 +46,15 @@ typedef struct arm_hw {
     int (*ina_read)(void *ctx, uint16_t *bus_reg, int16_t *current_reg);
 
     void (*led)(void *ctx, uint8_t r, uint8_t g, uint8_t b);
+
+    /* ---- Optional (NULL when the platform has none). */
+    /* Nonzero when the last reset was caused by the watchdog. */
+    int (*watchdog_reset)(void *ctx);
+    /* Persistent joint calibration: load returns 1 when a stored calibration exists. save
+     * returns 0 once it is durable; it may mask interrupts for tens of ms, so the core calls it
+     * only with the servo rail off. */
+    int (*cal_load)(void *ctx, arm_cal *cal);
+    int (*cal_save)(void *ctx, const arm_cal *cal);
 } arm_hw;
 
 #ifdef __cplusplus

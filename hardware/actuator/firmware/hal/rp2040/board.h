@@ -23,7 +23,14 @@
 #define INA219_ADDR 0x40u
 #define I2C_BAUD 400000u
 
-/* Persistent boot counter: the last two 4 KiB sectors of the 16 MiB W25Q128JV. */
+/* Flash use (16 MiB W25Q128JV), last four 4 KiB sectors: the boot counter in the last two, the joint
+ * calibration in the two before them. Both are written only with the servo rail off: a flash
+ * erase/program masks interrupts, and the E-stop IRQ must not be masked while the arm is live. */
 #define EPOCH_REGION_BYTES (2u * 4096u)
+#define CAL_REGION_BYTES (2u * 4096u)
+
+/* Hardware watchdog: reset the controller if the main loop stops completing. A reset drops the
+ * servo rail (SERVO_EN pulls down), so an unbraked arm falls; see INTERFACE.md section 4. */
+#define WATCHDOG_MS 250u
 
 #endif

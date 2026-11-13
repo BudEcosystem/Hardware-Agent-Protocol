@@ -6,10 +6,13 @@
 #include "board.h"
 #include "epoch_flash.h"
 #include "hardware/flash.h"
+#include "hardware/watchdog.h"
 #include "pico/flash.h"
 #include "pico/stdlib.h"
 
-#define REGION_OFFSET (PICO_FLASH_SIZE_BYTES - EPOCH_REGION_BYTES)
+/* Two regions at the end of the flash; the ops context is the region's byte offset. */
+static uint32_t g_epoch_offset = PICO_FLASH_SIZE_BYTES - EPOCH_REGION_BYTES;
+static uint32_t g_cal_offset = PICO_FLASH_SIZE_BYTES - EPOCH_REGION_BYTES - CAL_REGION_BYTES;
 
 typedef struct {
     uint32_t offset;
@@ -24,24 +27,25 @@ static void __not_in_flash_func(do_job)(void *p) {
 }
 
 static void f_read(void *c, uint32_t off, uint8_t *out, size_t n) {
-    (void)c;
-    memcpy(out, (const void *)(XIP_BASE + REGION_OFFSET + off), n);
+    memcpy(out, (const void *)(XIP_BASE + *(const uint32_t *)c + off), n);
 }
 
 static int f_erase(void *c, unsigned sector) {
-    flash_job j = {REGION_OFFSET + sector * FLASH_SECTOR_SIZE, 0, 0};
-    (void)c;
+    flash_job j = {*(const uint32_t *)c + sector * FLASH_SECTOR_SIZE, 0, 0};
+    watchdog_update(); /* an erase takes tens of ms (up to ~400 ms worst case) */
     return flash_safe_execute(do_job, &j, 1000) == PICO_OK ? 0 : -1;
 }
 
 static int f_program(void *c, unsigned sector, unsigned page, const uint8_t *data) {
-    flash_job j = {REGION_OFFSET + sector * FLASH_SECTOR_SIZE + page * FLASH_PAGE_SIZE, data, 1};
-    (void)c;
+    flash_job j = {*(const uint32_t *)c + sector * FLASH_SECTOR_SIZE + page * FLASH_PAGE_SIZE, data, 1};
+    watchdog_update();
     return flash_safe_execute(do_job, &j, 1000) == PICO_OK ? 0 : -1;
 }
 
-static const epoch_flash_ops g_ops = {0, f_read, f_erase, f_program};
-const epoch_flash_ops *flash_epoch_ops(void) { return &g_ops; }
+static const epoch_flash_ops g_epoch_ops = {&g_epoch_offset, f_read, f_erase, f_program};
+static const epoch_flash_ops g_cal_ops = {&g_cal_offset, f_read, f_erase, f_program};
+const epoch_flash_ops *flash_epoch_ops(void) { return &g_epoch_ops; }
+const epoch_flash_ops *flash_cal_ops(void) { return &g_cal_ops; }
 
 _Static_assert(EPOCH_SECTOR_BYTES == FLASH_SECTOR_SIZE, "epoch sectors are flash erase sectors");
 _Static_assert(EPOCH_PAGE_BYTES == FLASH_PAGE_SIZE, "epoch records are flash pages");

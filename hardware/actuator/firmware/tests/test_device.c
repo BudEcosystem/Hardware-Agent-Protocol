@@ -37,7 +37,11 @@ static void boot(board *b) {
     bhms_host_init(&b->host, 1);
     b->hal = b->host.hal;
     b->hal.stop_pin = pin_hook;
-    arm_init(&b->a, &b->rig.hw, 0, 0);
+    {
+        arm_cal cal;
+        arm_cal_nominal(&cal);
+        arm_init(&b->a, &b->rig.hw, &cal, 0);
+    }
     CHECK(arm_device_init(&b->dev, &b->a, &b->hal) == BHMS_OK);
 }
 
@@ -67,6 +71,15 @@ static const bhms_host_frame *find(const bhms_host_frame *f, int n, uint8_t type
     for (i = 0; i < n; ++i)
         if (f[i].payload[0] == type) return &f[i];
     return 0;
+}
+
+/* A frame the test needs: a missing one is a failure that ends the test (never silently skipped). */
+static const bhms_host_frame *must(const bhms_host_frame *f, const char *what) {
+    if (f == 0) {
+        fprintf(stderr, "FAIL missing frame: %s\n", what);
+        exit(1);
+    }
+    return f;
 }
 
 static void say_hello(board *b, bhms_hello *h) {
@@ -102,8 +115,7 @@ static void expect_error(board *b, uint8_t code, int detail) {
     int n = drain(b, f, 6);
     const bhms_host_frame *e = find(f, n, BHMS_MSG_ERROR);
     bhms_error er;
-    CHECK(e != 0);
-    if (e == 0) return;
+    e = must(e, "ERROR");
     CHECK(bhms_dec_error(e->payload, e->length, &er) == 0);
     CHECK(er.code == code);
     if (detail >= 0) {
@@ -142,8 +154,9 @@ static void bring_up(board *b) {
     pump(b, 3000);
     n = drain(b, f, 8);
     r = find(f, n, BHMS_MSG_RESULT);
-    CHECK(r != 0 && bhms_dec_result(r->payload, r->length, &res) == 0);
-    if (r) CHECK(res.state == BHMS_ST_COMPLETED && res.evidence == BHMS_EV_MEASURED);
+    r = must(r, "RESULT of enable");
+    CHECK(bhms_dec_result(r->payload, r->length, &res) == 0);
+    CHECK(res.state == BHMS_ST_COMPLETED && res.evidence == BHMS_EV_MEASURED);
     CHECK(b->a.state == ARM_ST_READY);
 }
 
@@ -209,8 +222,9 @@ static void test_limits_over_the_wire(void) {
     {
         const bhms_host_frame *r = find(f, n, BHMS_MSG_RESULT);
         bhms_result res;
-        CHECK(r != 0 && bhms_dec_result(r->payload, r->length, &res) == 0);
-        if (r) CHECK(res.state == BHMS_ST_COMPLETED && res.evidence == BHMS_EV_MEASURED && res.n_fields == 2);
+        r = must(r, "RESULT of move_joints");
+        CHECK(bhms_dec_result(r->payload, r->length, &res) == 0);
+        CHECK(res.state == BHMS_ST_COMPLETED && res.evidence == BHMS_EV_MEASURED && res.n_fields == 2);
     }
     {
         bhms_valuemsg v;
@@ -239,8 +253,9 @@ static void test_estop_over_the_wire(void) {
          * the arm reports it as the E-stop. */
         const bhms_host_frame *ack = find(f, n, BHMS_MSG_STOP_ACK);
         bhms_stop_ack sa;
-        CHECK(ack != 0 && ack->kind == BHMS_KIND_TELEMETRY);
-        CHECK(ack && bhms_dec_stop_ack(ack->payload, ack->length, &sa) == 0 && sa.canceled == 1);
+        ack = must(ack, "STOP_ACK on the pin edge");
+        CHECK(ack->kind == BHMS_KIND_TELEMETRY);
+        CHECK(bhms_dec_stop_ack(ack->payload, ack->length, &sa) == 0 && sa.canceled == 1);
         CHECK(find(f, n, BHMS_MSG_RESULT) != 0 || find(f, n, BHMS_MSG_STATUS) != 0);
     }
     CHECK(b.a.state == ARM_ST_ESTOP && !b.rig.servo_en_pin);
@@ -249,10 +264,9 @@ static void test_estop_over_the_wire(void) {
     {
         const bhms_host_frame *ack = find(f, n, BHMS_MSG_STOP_ACK);
         bhms_stop_ack sa;
-        if (ack) {
-            CHECK(bhms_dec_stop_ack(ack->payload, ack->length, &sa) == 0);
-            CHECK(sa.outcome == BHMS_STOPACK_CONFIRMED && sa.evidence == BHMS_EV_MEASURED);
-        }
+        ack = must(ack, "second STOP_ACK (confirmed) after the E-stop");
+        CHECK(bhms_dec_stop_ack(ack->payload, ack->length, &sa) == 0);
+        CHECK(sa.outcome == BHMS_STOPACK_CONFIRMED && sa.evidence == BHMS_EV_MEASURED);
     }
     /* The E-stop is observable as a measured property, with the latch. */
     CHECK(read_prop(&b, ARM_PROP_ESTOP_STATE, &v) && v.quality == BHMS_Q_VALID && v.value[0] == ESTOP_PRESSED);
@@ -296,16 +310,18 @@ static void test_stop_message_and_hold(void) {
     {
         const bhms_host_frame *ack = find(f, n, BHMS_MSG_STOP_ACK);
         bhms_stop_ack sa;
-        CHECK(ack && bhms_dec_stop_ack(ack->payload, ack->length, &sa) == 0);
-        if (ack) CHECK(sa.outcome == BHMS_STOPACK_INITIATED && sa.canceled == 1);
+        ack = must(ack, "STOP_ACK (initiated)");
+        CHECK(bhms_dec_stop_ack(ack->payload, ack->length, &sa) == 0);
+        CHECK(sa.outcome == BHMS_STOPACK_INITIATED && sa.canceled == 1);
     }
     pump(&b, 800);
     n = drain(&b, f, 10);
     {
         const bhms_host_frame *ack = find(f, n, BHMS_MSG_STOP_ACK);
         bhms_stop_ack sa;
-        CHECK(ack && bhms_dec_stop_ack(ack->payload, ack->length, &sa) == 0);
-        if (ack) CHECK(sa.outcome == BHMS_STOPACK_CONFIRMED && sa.evidence == BHMS_EV_MEASURED);
+        ack = must(ack, "STOP_ACK (confirmed)");
+        CHECK(bhms_dec_stop_ack(ack->payload, ack->length, &sa) == 0);
+        CHECK(sa.outcome == BHMS_STOPACK_CONFIRMED && sa.evidence == BHMS_EV_MEASURED);
     }
     /* The device fenced everything seen so far: the old lease is stale, a new one works. */
     invoke(&b, ARM_ACT_MOVE_JOINTS, 8, a, move_args(a, 0, 30, 90, 45, 0, 50));

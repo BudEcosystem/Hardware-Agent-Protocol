@@ -37,7 +37,8 @@ typedef enum {
 
 typedef enum {
     ARM_OP_NONE = 0, ARM_OP_ENABLE, ARM_OP_MOVE, ARM_OP_HOME, ARM_OP_RELEASE,
-    ARM_OP_TOOL_MOUNT, ARM_OP_TOOL_UNMOUNT, ARM_OP_GRIP, ARM_OP_TURN, ARM_OP_PRESS
+    ARM_OP_TOOL_MOUNT, ARM_OP_TOOL_UNMOUNT, ARM_OP_GRIP, ARM_OP_TURN, ARM_OP_PRESS,
+    ARM_OP_CALIBRATE
 } arm_op_kind;
 
 typedef enum {
@@ -73,7 +74,10 @@ enum {
     ARM_WHY_TOOL_MOUNTED = 11,   /* mount while mounted / unmount while not */
     ARM_WHY_TOOL_RESERVED = 12,  /* reserved or faulty tool ID */
     ARM_WHY_SENSE = 13,          /* INA219 not readable */
-    ARM_WHY_STOPPING = 14        /* a stop is still being confirmed */
+    ARM_WHY_STOPPING = 14,       /* a stop is still being confirmed */
+    ARM_WHY_NOT_CALIBRATED = 15, /* joint zero offsets unknown: run `calibrate` */
+    ARM_WHY_OVERTEMP = 16,       /* a joint servo is at or above 70 C */
+    ARM_WHY_NOT_DISABLED = 17    /* calibrate needs the rail off and the arm resting */
 };
 
 typedef struct {
@@ -126,7 +130,14 @@ typedef struct arm {
     uint8_t pose_unknown;      /* the arm may have moved while unpowered: re-home */
     uint8_t torque_on;
     uint8_t stop_pending;
-    uint8_t from_parked;
+    uint8_t enable_rail_on;    /* the rail was already on when enable/calibrate started */
+    arm_state enable_from;
+    uint8_t calibrated, watchdog_reset;
+    uint8_t limit_latched;     /* a limit / following / servo fault allows only a move back inside */
+    uint8_t recovering;
+    uint8_t servo_err_id, servo_err_bits;
+    float last_move_err;
+    arm_cal cal_new;
     uint32_t stop_t0;
 
     /* power sampling */
@@ -141,8 +152,7 @@ typedef struct arm {
     uint8_t traj_active;
     uint32_t traj_t0, traj_ms, traj_last_ms, progress_ms;
     uint8_t traj_pct, last_progress;
-    uint8_t move_limit;        /* limit code of the last refusal / in-flight violation */
-    float max_err_deg;
+    uint8_t move_limit;        /* limit code (or joint index for a following error) of the last trip */
 
     /* servo telemetry and configuration */
     arm_servo_state sv[ARM_NUM_SERVOS];
@@ -171,6 +181,8 @@ typedef struct arm {
 } arm;
 
 /* ---- Lifecycle ------------------------------------------------------------------ */
+/* `cal` non-NULL: use it (calibrated). NULL: load the stored calibration through the hw hook; when
+ * there is none the nominal zero is assumed and every enable is refused until `calibrate`. */
 void arm_init(arm *a, const arm_hw *hw, const arm_cal *cal, const arm_sink *sink);
 /* Advance the state machines. Bounded: at most one trajectory write plus one telemetry read
  * plus one configuration transaction per call. */
@@ -179,6 +191,7 @@ void arm_tick(arm *a);
 /* ---- Commands. Each returns ARM_OK (operation started or done) or a refusal with `*detail`.
  * None touches the bus. ------------------------------------------------------------ */
 arm_refusal arm_cmd_enable(arm *a, uint8_t *detail);
+arm_refusal arm_cmd_calibrate(arm *a, uint8_t *detail);
 arm_refusal arm_cmd_move(arm *a, const float q[ARM_NUM_JOINTS], uint8_t speed_pct, uint8_t *detail);
 arm_refusal arm_cmd_home(arm *a, uint8_t speed_pct, uint8_t *detail);
 arm_refusal arm_cmd_hold(arm *a, uint8_t *detail);
@@ -202,6 +215,7 @@ arm_stop_result arm_stop(arm *a, uint8_t *measured);
 /* Rail on, healthy and E-stop released: the servos can answer. */
 int arm_servos_powered(const arm *a);
 uint32_t arm_age_ms(const arm *a, const arm_servo_state *s);
+uint8_t arm_temperature_warning(const arm *a); /* any joint servo >= 60 C */
 uint8_t arm_estop_state(const arm *a);      /* estop_state: released/pressed/fault (measured) */
 uint8_t arm_tool_present(const arm *a);
 float arm_gripper_opening_mm(const arm *a, uint8_t *valid);

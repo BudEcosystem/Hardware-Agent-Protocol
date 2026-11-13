@@ -31,10 +31,11 @@ LIM = {j.name: (j.lower_deg, j.upper_deg) for j in ARM.joints}
 FAULTS = ("1 estop, 2 estop_fault_contact_A_or_Q2, 3 servo_rail_fault, 4 overcurrent, "
           "5 servo_comm, 6 servo_error, 7 tool_lost, 8 timeout, 9 overtemp, 10 stopped, "
           "11 bus_collision, 12 limit, 13 selftest, 14 no_actuator_power, 15 power_sense, "
-          "16 servo_config, 17 tool")
+          "16 servo_config, 17 tool, 18 following_error, 19 watchdog_reset, 20 calibration, 21 stall")
 WHY = ("1 estop_latched, 2 estop_pressed, 3 hard_fault, 4 fault, 5 not_enabled, 6 parked, "
        "7 no_actuator_power, 8 no_tool, 9 wrong_tool, 10 tool_not_ready, 11 tool_mounted, "
-       "12 tool_reserved, 13 power_sense, 14 stopping")
+       "12 tool_reserved, 13 power_sense, 14 stopping, 15 not_calibrated, 16 overtemp, "
+       "17 not_disabled")
 LIMITS = ("detail 0..4 = joint range of base_yaw, shoulder_pitch, elbow_pitch, wrist_pitch, "
           "wrist_roll; 16 = coupled forearm_pitch (shoulder+elbow <= 175 deg), "
           "17 = hairpin (elbow+wrist_pitch <= 165 deg), 18 = tool_pitch "
@@ -127,6 +128,19 @@ def build_properties():
                                    num("%", 0, 100), "measured", "f32")),
         ("pose_unknown", prop("True when the arm may have moved while unpowered (after an E-stop or "
                               "power loss): re-home before use.", {"type": "boolean"}, "reported", "bool")),
+        ("calibrated", prop("True when the joint zero offsets come from a stored calibration. Until then "
+                            "every limit is relative to an assumed zero and enable is refused.",
+                            {"type": "boolean"}, "reported", "bool")),
+        ("watchdog_reset", prop("True when the controller reset itself (watchdog) since power-up: servo "
+                                "power dropped and the arm may have fallen; enable again.",
+                                {"type": "boolean"}, "reported", "bool")),
+        ("temperature_warning", prop("True when any joint servo is at or above 60 C. Motion is refused "
+                                     "at 70 C.", {"type": "boolean"}, "measured", "bool")),
+        ("servo_error", prop("Servo id (high byte) and status error bits (low byte: 1 voltage, 2 sensor, "
+                             "4 temperature, 8 current, 0x20 overload) of the last servo-error fault.",
+                             num("1", 0, 65535, integer=True), "measured", "u16")),
+        ("move_error_deg", prop("Worst joint error at the end of the last move, also when it failed.",
+                                num("deg", 0, 720), "measured", "f32")),
     ]
     return props
 
@@ -162,9 +176,11 @@ def build_actions():
     move = action(
         "Move all five joints to absolute angles along a straight line in joint space, at speed_pct of "
         "the per-joint speed limit (servo no-load speed / ratio). The device refuses a goal outside any "
-        "joint range or coupled limit (shoulder+elbow <= 175, elbow+wrist_pitch <= 165, "
-        "shoulder+elbow+wrist_pitch <= 183 deg) with OUT_OF_RANGE: " + LIMITS + ". Every interpolated "
-        "waypoint is checked again on the device. Result: worst joint error at the end, measured.",
+        "joint range or coupled limit with OUT_OF_RANGE: " + LIMITS + ". Every waypoint and every "
+        "fresh measured pose (4 deg slack) is checked on the device, with a 15 deg following-error "
+        "bound: a jammed or lagging joint freezes the arm at its measured pose and fails the move "
+        "(fault 12 or 18); the arm then accepts only a move back inside, enable or hold. Result: "
+        "worst joint error at the end, measured.",
         jin, {"max_error_deg": num("deg", 0, 655.35, 0.01)}, "reversible", "absolute", "supported",
         "measured", 60000, True, ["bhms-arm/joints"],
         [field(n, "i16", 0.01) for n in J] + [field("speed_pct", "u8")],
@@ -221,7 +237,8 @@ def build_actions():
     turn = action(
         "Turn the knob to an absolute multi-turn angle relative to the mount position, with a servo "
         "torque cap of torque_pct (at most 2.5 %, which keeps the spiral flexure within +-25 deg). "
-        "reached is false when the torque cap stopped it short.",
+        "A move that stops short (torque cap, mechanical stop) fails with fault 21; the angle "
+        "reached stays readable as knob_angle_deg.",
         {"angle_deg": num("deg", -1200, 1200, 0.1), "torque_pct": num("%", 0.1, 2.5, 0.1)},
         {"angle_deg": num("deg", -1200, 1200, 0.1), "reached": {"type": "boolean"}},
         "hazardous", "absolute", "supported", "measured", 40000, True, ["bhms-arm/tool"],
@@ -238,9 +255,18 @@ def build_actions():
         [field("depth_mm", "u8", 0.1), field("force_limit_pct", "u8")],
         [field("peak_force_pct", "u8"), field("depth_mm", "u8", 0.1)], verified=["presser_force_pct"],
         typical=1200, pre="Button presser ready.")
+    calibrate = action(
+        "Calibrate the joint zero offsets. With the arm resting at the rest pose on its support (yaw 0, "
+        "shoulder 30, elbow 90, wrist pitch 45, roll 0 deg) and the servo rail off, the device powers the "
+        "rail with torque off, reads every joint's raw position, defines it as the rest pose, switches the "
+        "rail off and stores the offsets in flash (two-copy, CRC). Nothing moves. Refused unless the arm is "
+        "disabled. Enable is refused until the arm is calibrated.",
+        {}, {}, "irreversible", "idempotent", "supported", "measured", 20000, True,
+        ["bhms-arm/joints", "bhms-arm/power"], [], [], verified=["calibrated"], typical=2500,
+        pre="Rail off, E-stop released, VIN >= 9 V; arm resting at the rest pose.")
     return [("move_joints", move), ("home", home), ("hold", hold), ("release_torque", release),
             ("enable", enable), ("tool_mount", mount), ("tool_unmount", unmount), ("grip", grip),
-            ("turn", turn), ("press", press)]
+            ("turn", turn), ("press", press), ("calibrate", calibrate)]
 
 
 def build():

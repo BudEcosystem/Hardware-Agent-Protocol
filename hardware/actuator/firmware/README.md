@@ -14,7 +14,8 @@ core/power.[ch]        E-stop latch, boot self-test, rail/contact fault rules, I
 core/tool_id.[ch]      tool-ID windows and 5-sample debounce
 core/epoch_flash.[ch]  two-sector, page-per-record, CRC'd boot-epoch store (power-fail safe)
 core/arm.[ch]          the controller: enable sequence, trajectories, tool procedures, stop
-core/arm_device.[ch]   the BHMS device table: 10 actions, 41 properties, stop, fencing
+core/cal_store.[ch]    joint calibration in flash (same CRC'd record log as the epoch)
+core/arm_device.[ch]   the BHMS device table: 11 actions, 46 properties, stop, fencing
 arm.sidecar.json       BHMS description; core/arm_digest.h is generated from it (tools/gen_sidecar.py)
 hal/rp2040/            pico-sdk port: UART0 1 Mbps half-duplex, I2C INA219, ADC, E-stop IRQ, USB CDC, flash
 sim/                   host simulation of the board (8 STS servos, rail, INA219, E-stop, tools) + `sim_arm`
@@ -27,6 +28,8 @@ tests/                 C unit tests (ASan/UBSan), table-sync tests, pty end-to-e
   (once per boot), rail on, ping, program and **read back** every servo's angle window, torque cap
   (shoulder 780/1000), return delay; measure the pose and refuse (`FAILED`, fault 12) if it violates
   a joint or coupled limit with a 3 deg margin; set goal = present, torque on.
+* **Measured pose is enforced too**: while moving, a jammed or lagging joint (measured pose outside a limit, or
+  15 deg behind its waypoint) freezes the arm at the measured pose and latches (INTERFACE.md section 9.1).
 * **move_joints**: all five angles (0.01 deg), speed 5..100 %. Refused before it reaches the bus when a
   joint is out of range or a coupled limit is violated (`OUT_OF_RANGE`, detail names the limit:
   0..4 joint, 0x10 forearm_pitch, 0x11 hairpin, 0x12 tool_pitch). The firmware interpolates in joint
@@ -65,10 +68,14 @@ hardware/actuator/firmware/scripts/run_rp2040_on_worker.sh      # ships sources,
 
 Flash `bhms_arm.uf2` over BOOTSEL. The rail is never switched on at boot.
 
-Built for RP2040 (arm-none-eabi-gcc 13.2, pico-sdk 2.1.1, -Os): 46 276 bytes flash, 8.8 KB static RAM.
+Built for RP2040 (arm-none-eabi-gcc 13.2, pico-sdk 2.1.1, -Os): 49 508 bytes flash, about 9 KB static RAM
+(5 880 bss + ~3.1 KB data). The `.uf2` is produced by `tools/bin2uf2.py` (picotool needs git and network at
+configure time; the container build uses `-DPICO_NO_PICOTOOL=1`).
 
 ## Not done / needs hardware
 
-See the Task 13b report: servo register addresses and the step (multi-turn) mode of the knob servo
-are unverified against a physical STS3215; calibration (`raw_zero`, `sign`) is the nominal
-mid-range value and is not persisted; the FSR force scale is uncalibrated.
+See the Task 13b report: the servo register addresses and the knob servo's multi-turn absolute mode
+(position mode, both angle limits 0) are unverified against a physical STS3215 (INTERFACE.md section 9.3);
+the FSR force scale is uncalibrated. Calibration (`calibrate` action) must be run once per assembly:
+until then `enable` is refused. A controller reset or watchdog reset drops the servo rail and the arm
+falls (INTERFACE.md section 9.5).

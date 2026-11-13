@@ -2,7 +2,9 @@
  * (a pty), running against the simulated rig. Tests/test_e2e.py drives it with the Task 9a
  * Python harness; a SimLab adapter can attach to the same process through the control FIFO.
  *
- *   sim_arm [--epoch FILE] [--ctl FIFO] [--tool OHMS] [--vin MV]
+ *   sim_arm [--epoch FILE] [--ctl FIFO] [--tool OHMS] [--vin MV] [--uncalibrated 1]
+ * By default the arm starts calibrated (nominal zero); --uncalibrated boots with no stored calibration
+ * and the arm resting at the rest pose, so the `calibrate` action can be exercised.
  *
  * Control FIFO lines (the hardware the host cannot touch):
  *   estop 0|1    press / release the E-stop      tool OHMS|none   fit / remove a tool
@@ -69,6 +71,8 @@ int main(int argc, char **argv) {
     const char *epoch_path = NULL, *ctl_path = NULL;
     double tool = -1.0;
     unsigned vin = 12000;
+    int uncalibrated = 0;
+    arm_cal nominal;
     int ctl = -1, i;
     bhms_posix px;
     bhms_hal hal;
@@ -81,6 +85,7 @@ int main(int argc, char **argv) {
         else if (strcmp(argv[i], "--ctl") == 0) ctl_path = argv[i + 1];
         else if (strcmp(argv[i], "--tool") == 0) tool = atof(argv[i + 1]);
         else if (strcmp(argv[i], "--vin") == 0) vin = (unsigned)atoi(argv[i + 1]);
+        else if (strcmp(argv[i], "--uncalibrated") == 0) uncalibrated = atoi(argv[i + 1]);
         else return 2;
     }
     if (ctl_path != NULL) ctl = open(ctl_path, O_RDWR | O_NONBLOCK);
@@ -91,7 +96,15 @@ int main(int argc, char **argv) {
     hal = px.hal;
     hal.millis = sim_millis;
     hal.stop_pin = sim_stop_pin;
-    arm_init(&a, &g_rig.hw, 0, 0);
+    arm_cal_nominal(&nominal);
+    if (uncalibrated) {
+        for (i = 0; i < (int)ARM_NUM_JOINTS; ++i) {
+            int32_t raw;
+            if (arm_to_raw(&nominal, (unsigned)i, kArmRestPose[i], &raw) == 0)
+                sim_rig_place(&g_rig, (unsigned)i + 1u, (double)raw);
+        }
+    }
+    arm_init(&a, &g_rig.hw, uncalibrated ? 0 : &nominal, 0);
     if (arm_device_init(&dev, &a, &hal) != BHMS_OK) return 3;
     clock_gettime(CLOCK_MONOTONIC, &t0);
     for (;;) {

@@ -4,7 +4,7 @@
  *
  * Actions (all but `hold` require a lease; the device fences):
  *   0 move_joints  1 home  2 hold  3 release_torque  4 enable  5 tool_mount  6 tool_unmount
- *   7 grip  8 turn  9 press
+ *   7 grip  8 turn  9 press  10 calibrate
  * Properties: joint position/load/current/temperature/speed (5 each), VIN, rail V and I,
  * E-stop contact, E-stop state, latch, arm state, fault code, torque, tool id/state and
  * per-tool measurements.
@@ -23,6 +23,7 @@ extern "C" {
 enum {
     ARM_ACT_MOVE_JOINTS = 0, ARM_ACT_HOME, ARM_ACT_HOLD, ARM_ACT_RELEASE_TORQUE, ARM_ACT_ENABLE,
     ARM_ACT_TOOL_MOUNT, ARM_ACT_TOOL_UNMOUNT, ARM_ACT_GRIP, ARM_ACT_TURN, ARM_ACT_PRESS,
+    ARM_ACT_CALIBRATE,
     ARM_ACT_COUNT
 };
 
@@ -48,6 +49,11 @@ enum {
     ARM_PROP_KNOB_SENSOR = 38,
     ARM_PROP_PRESSER_FORCE = 39,
     ARM_PROP_POSE_UNKNOWN = 40,
+    ARM_PROP_CALIBRATED = 41,
+    ARM_PROP_WATCHDOG_RESET = 42,
+    ARM_PROP_TEMPERATURE_WARNING = 43,
+    ARM_PROP_SERVO_ERROR = 44,   /* u16: servo id << 8 | error bits of the last servo-error fault */
+    ARM_PROP_MOVE_ERROR = 45,    /* f32 deg: worst joint error at the end of the last move */
     ARM_PROP_COUNT
 };
 
