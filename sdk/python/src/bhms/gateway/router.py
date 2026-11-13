@@ -90,7 +90,7 @@ class Router:
         self.gateway = gateway
         self.by_upstream: dict[tuple[str, str], str] = {}  # (namespace, upstream operationId) -> gateway operationId
         self.unknown: dict[str, OperationRecord] = {}
-        self._reconciling: set[str] = set()
+        self._reconciling: dict[str, asyncio.Future[None]] = {}
         self._tasks: set[asyncio.Task[Any]] = set()
         self._reconcile_kick = asyncio.Event()
         self._reconciler: asyncio.Task[None] | None = None
@@ -446,7 +446,7 @@ class Router:
     async def _reconcile_loop(self) -> None:
         while True:
             with contextlib.suppress(asyncio.TimeoutError):
-                await asyncio.wait_for(self._reconcile_kick.wait(), 2.0)
+                await asyncio.wait_for(self._reconcile_kick.wait(), 0.5 if self.unknown else 2.0)
             self._reconcile_kick.clear()
             for rec in list(self.unknown.values()):
                 if self.gateway.upstreams[rec.private["upstream"]].available:
@@ -459,12 +459,17 @@ class Router:
     async def reconcile(self, rec: OperationRecord, *, timeout: float = 3.0) -> bool:
         """Ask the upstream for the truth about ``rec`` and record the answer; True when the record changed."""
         gw = self.gateway
-        if rec.terminal or rec.id in self._reconciling:
+        if rec.terminal:
+            return False
+        running = self._reconciling.get(rec.id)
+        if running is not None:  # one attempt at a time; a caller that needs the answer waits for it
+            with contextlib.suppress(asyncio.TimeoutError):
+                await asyncio.wait_for(asyncio.shield(running), timeout)
             return False
         up = gw.upstreams[rec.private["upstream"]]
         if not up.available:
             return False
-        self._reconciling.add(rec.id)
+        done = self._reconciling[rec.id] = asyncio.get_running_loop().create_future()
         try:
             before = (rec.state, rec.op["effect"], rec.op["cancel"]["state"])
             uid = rec.private.get("upstreamOperationId")
@@ -493,13 +498,14 @@ class Router:
                 self._note_unreconcilable(rec, "the upstream does not know this operation any more (its journal was "
                                                f"lost or pruned): {exc.message}")
             else:
-                log.info("reconciling %s: %s", rec.id, exc)
+                log.warning("reconciling %s: %s", rec.id, exc)
         except (TransportClosed, asyncio.TimeoutError) as exc:
-            log.info("reconciling %s: %r", rec.id, exc)
+            log.warning("reconciling %s: %r", rec.id, exc)
         except StoreError as exc:
             gw.journal_failed(exc)
         finally:
-            self._reconciling.discard(rec.id)
+            del self._reconciling[rec.id]
+            done.set_result(None)
         return False
 
     def _note_unreconcilable(self, rec: OperationRecord, why: str) -> None:
