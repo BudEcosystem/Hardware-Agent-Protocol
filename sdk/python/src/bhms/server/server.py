@@ -134,6 +134,8 @@ class DeviceServer:
         self._principals: weakref.WeakKeyDictionary[Session, Principal | None] = weakref.WeakKeyDictionary()
         self._journal_ok = True
         self._listeners: list[Any] = []
+        self._extensions: dict[str, dict[str, Any]] = {}
+        self._extension_methods: dict[str, Any] = {}
         self.rpc: RpcServer | None = None
 
     # ------------------------------------------------------------------ declaration
@@ -148,6 +150,15 @@ class DeviceServer:
             dev.description()
             self._device_changed(dev)
         return dev
+
+    def extension(self, key: str, info: dict[str, Any], methods: dict[str, Any]) -> None:
+        """Advertise extension ``key`` (``"<prefix>/<name>"``, BHMS-LIF-070) under ``capabilities.extensions`` and
+        register its methods (``x-<name>/<method>`` or ``<prefix>/<name>/<method>``; ``handler(params, ctx)`` gets
+        raw params). Declare before :meth:`start`. Extensions cannot weaken core guarantees (BHMS-LIF-071)."""
+        if self._started:
+            raise RuntimeError("declare extensions before start()")
+        self._extensions[key] = info
+        self._extension_methods.update(methods)
 
     def resources(self) -> set[str]:
         return {r for dev in self.devices.values() for r in dev.resources}
@@ -212,6 +223,8 @@ class DeviceServer:
             "events": {"retentionS": self.event_retention_s, "maxPageSize": self.max_page_size}}
         if self.programs_enabled:
             caps["programs"] = {"registry": True, "limits": self.program_limits}
+        if self._extensions:
+            caps["extensions"] = dict(self._extensions)
         info = {"name": self.name, "version": self.version}
         if self.title:
             info["title"] = self.title
@@ -226,6 +239,8 @@ class DeviceServer:
         from bhms.server import handlers
 
         handlers.register(self, rpc)
+        for method, handler in self._extension_methods.items():
+            rpc.register(method, handler)
         return rpc
 
     async def _check_liveness(self, dev: Device) -> None:
