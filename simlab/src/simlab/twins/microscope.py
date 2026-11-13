@@ -246,7 +246,7 @@ class MicroscopeTwin:
         self.world.record(self.device, "image_captured", {
             "frame_id": frame_id, "z_um": round(frame.z_um, 6), "xy_um": [round(frame.x_um, 3), round(frame.y_um, 3)],
             "objective": frame.objective, "exposure_ms": exposure_ms, "specimen_present": frame.specimen_present,
-            "stale": frame.stale, "sha256": hashlib.sha256(frame.pixels.tobytes()).hexdigest()}, cause)
+            "stale": frame.stale, "captured_s": round(frame.captured_s, 6), "sha256": hashlib.sha256(frame.pixels.tobytes()).hexdigest()}, cause)
         return frame
 
     def snap(self, exposure_ms: float = DEFAULT_EXPOSURE_MS, cause: str | None = None) -> np.ndarray:

@@ -55,8 +55,10 @@ def _stage_moved(effects: list[Effect], op: Any) -> bool:
 
 
 def _captured(effects: list[Effect], op: Any) -> bool:
+    """The result must date the frame as the world did: a stale frame returned with its true (old) capture time is honest."""
     frame = _effect(effects, "image_captured")
-    return frame is not None and not frame.detail["stale"] and frame.detail["frame_id"] == op.result["frame_id"]
+    return (frame is not None and frame.detail["frame_id"] == op.result["frame_id"]
+            and abs(frame.detail["captured_s"] - op.result["captured_at_s"]) < 1e-5)
 
 
 def _liquid_moved(effects: list[Effect], op: Any) -> bool:

@@ -12,6 +12,8 @@ Thread-safety: one event loop owns the lab.
 from __future__ import annotations
 
 import contextlib
+import shutil
+import tempfile
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -47,6 +49,7 @@ class Lab:
     device_ids: dict[str, str] = field(default_factory=dict)
     oracle: Oracle = field(init=False)
     _cleanup: list[Any] = field(default_factory=list)
+    socket_dir: Path = field(default_factory=lambda: Path(tempfile.mkdtemp(prefix="simlab-")))
 
     def __post_init__(self) -> None:
         self.oracle = Oracle(self.world)
@@ -70,7 +73,7 @@ class Lab:
         return lab
 
     async def _serve(self, key: str, server: DeviceServer, device_id: str, strict: bool) -> None:
-        url = f"unix:{self.run_dir}/{key}.sock"
+        url = f"unix:{self.socket_dir}/{key}.sock"  # short path: AF_UNIX paths are limited to 108 bytes
         listener = await server.listen(url)
         self._cleanup.append(server.close)  # cleanup runs in reverse: stop listening, then close the server
         self._cleanup.append(listener.close)
@@ -169,6 +172,7 @@ class Lab:
             with contextlib.suppress(Exception):
                 await cleanup()
         self._cleanup.clear()
+        shutil.rmtree(self.socket_dir, ignore_errors=True)
 
     async def __aenter__(self) -> Lab:
         return self
