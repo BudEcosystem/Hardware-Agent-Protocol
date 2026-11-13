@@ -54,7 +54,7 @@ consistent with BHMS-LSE-006 and BHMS-LSE-007:
 
 | Lease condition | Code |
 |---|---|
-| `leaseId` absent | `LEASE_REQUIRED` |
+| `leaseId` absent | `LEASE_REQUIRED` (`bound` lists the resources the lease must cover) |
 | `expired`, `released` or unknown `leaseId` | `LEASE_EXPIRED` |
 | `revoked` (by `stop` or policy) | `FENCED` |
 | `active` but its fence is below a resource's highest fence | `FENCED` |

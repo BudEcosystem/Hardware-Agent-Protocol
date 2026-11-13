@@ -5831,6 +5831,11 @@
           "maxLength": 200,
           "pattern": "^[^\\n]*$"
         },
+        "signature": {
+          "type": "string",
+          "description": "bhms_describe only: the compact signature block of BHMS-AGT-013 (function tools cannot carry it after the one-line summary).",
+          "maxLength": 4000
+        },
         "data": {
           "type": "object"
         },

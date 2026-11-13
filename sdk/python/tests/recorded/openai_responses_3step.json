@@ -1,0 +1,19 @@
+[
+  {"id": "resp_a1", "object": "response", "status": "completed", "model": "gpt-5.4-mini", "output": [
+    {"id": "rs_a1", "type": "reasoning", "summary": []},
+    {"id": "fc_a1", "type": "function_call", "status": "completed", "call_id": "call_a1", "name": "bhms_find",
+     "arguments": "{\"capability\": \"bhms.axis.*\"}"}],
+   "usage": {"input_tokens": 1900, "output_tokens": 60, "total_tokens": 1960}},
+  {"id": "resp_a2", "object": "response", "status": "completed", "model": "gpt-5.4-mini", "output": [
+    {"id": "fc_a2", "type": "function_call", "status": "completed", "call_id": "call_a2", "name": "bhms_describe",
+     "arguments": "{\"device_id\": \"axis-1\"}"}],
+   "usage": {"input_tokens": 2100, "output_tokens": 30, "total_tokens": 2130}},
+  {"id": "resp_a3", "object": "response", "status": "completed", "model": "gpt-5.4-mini", "output": [
+    {"id": "fc_a3", "type": "function_call", "status": "completed", "call_id": "call_a3", "name": "bhms_invoke",
+     "arguments": "{\"device_id\": \"axis-1\", \"action\": \"move_to\", \"arguments\": {\"position\": 25}, \"operation_key\": \"agent-move-1\"}"}],
+   "usage": {"input_tokens": 2900, "output_tokens": 45, "total_tokens": 2945}},
+  {"id": "resp_a4", "object": "response", "status": "completed", "model": "gpt-5.4-mini", "output": [
+    {"id": "msg_a4", "type": "message", "status": "completed", "role": "assistant", "content": [
+      {"type": "output_text", "text": "axis-1 is at 25 mm (effect verified by the encoder).", "annotations": []}]}],
+   "usage": {"input_tokens": 3300, "output_tokens": 20, "total_tokens": 3320}}
+]

@@ -275,6 +275,7 @@ class AgentFindData(_Wire):
 
 class AgentFunctionResult(_Wire):
     summary: _pattern(r"^[^\n]*$", max_length=200)
+    signature: Optional[str] = Field(default=None, max_length=4000)
     data: Optional[dict[str, Any]] = None
     error: Optional[OperationError] = None
 

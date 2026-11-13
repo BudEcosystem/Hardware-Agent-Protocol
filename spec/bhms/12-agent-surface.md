@@ -63,7 +63,9 @@ stop: supported (reported); on disconnect: stop
 
 **BHMS-AGT-010** Every tool result MUST begin with a one-line summary of at most 200
 characters and MUST carry the BHMS result as structured content (MCP
-`structuredContent`; for function tools, a JSON object `{summary, data}`).
+`structuredContent`; for function tools, a JSON object `{summary, data}`, which for
+`bhms_describe` also carries the signature block as `signature`, because a function
+result's summary is one line).
 
 **BHMS-AGT-011** A summary MUST state units for every quantity, the operation's
 `state` and `effect` for operation results, and `quality`, `evidence` and age for
@@ -136,3 +138,12 @@ resend the identical request with the same key and the `leaseId`.
 and input schemas as the MCP bridge. Because `arguments` and `program` are
 free-form objects, adapters MUST NOT declare these tools in a strict mode that
 forbids additional properties inside them.
+
+**BHMS-AGT-051** The published input schema of a tool is the `x-bhms-agent-tools`
+schema made self-contained: `$ref`s are inlined (a definition used more than once or
+a recursive one stays once under `$defs`) and a top-level `oneOf` is removed, because
+function-calling and several model APIs reject it. The bridge states the exactly-one
+rule in the tool description (`bhms_stop`: `device_ids` or `all`; `bhms_run_program`:
+`program` or `program_digest`) and enforces it itself, refusing a call that gives
+none or both before any request (BHMS-AGT-021). Both bridges publish the identical
+flattened schema.
