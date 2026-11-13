@@ -1649,6 +1649,20 @@
           ],
           "additionalProperties": false
         },
+        "authority": {
+          "type": "object",
+          "description": "The server serves several principals or enforces a scope policy (BHMS-SEC-010); absent means single-principal.",
+          "properties": {
+            "principals": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "principals"
+          ],
+          "additionalProperties": false
+        },
         "extensions": {
           "$ref": "#/$defs/Extensions"
         }

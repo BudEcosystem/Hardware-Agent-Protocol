@@ -74,15 +74,23 @@ def observe(recorder: Recorder, descriptions: dict[str, dict[str, Any]], *, stri
             stdio: bool = False) -> Observation:
     """Apply every observer to the recording."""
     obs = Observation()
-    _framing(recorder, obs, stdio)
-    _responses(recorder, obs, strict)
-    _times(recorder, obs)
-    _errors(recorder, obs)
-    _summaries(recorder, obs)
-    _observations(recorder, obs, descriptions)
-    _operation_invariants(recorder, obs, descriptions)
-    _stops(recorder, obs)
-    _notifications(recorder, obs)
+    steps = (
+        (lambda: _framing(recorder, obs, stdio), ("BHMS-TRN-001", "BHMS-LIF-052")),
+        (lambda: _responses(recorder, obs, strict), ("BHMS-LIF-012",)),
+        (lambda: _times(recorder, obs), ("BHMS-LIF-003",)),
+        (lambda: _errors(recorder, obs), ("BHMS-ERR-001", "BHMS-ERR-010")),
+        (lambda: _summaries(recorder, obs), ("BHMS-DEV-011",)),
+        (lambda: _observations(recorder, obs, descriptions), ("BHMS-OBS-005", "BHMS-OBS-001")),
+        (lambda: _operation_invariants(recorder, obs, descriptions), ("BHMS-OPS-001", "BHMS-OPS-008", "BHMS-OPS-009")),
+        (lambda: _stops(recorder, obs), ("BHMS-AUTH-022",)),
+        (lambda: _notifications(recorder, obs), ("BHMS-LIF-041", "BHMS-EVT-030")),
+    )
+    for step, ids in steps:
+        try:
+            step()
+        except Exception as exc:  # a response of an unforeseen shape is a finding about the target, never a crash of the runner
+            for rid in ids:
+                obs.bad(rid, f"a non-conforming message made the observer fail ({type(exc).__name__}: {exc})")
     return obs
 
 
@@ -311,7 +319,11 @@ def _stops(recorder: Recorder, obs: Observation) -> None:
     for seen in _inbound(recorder):
         msg = seen.message
         if isinstance(msg, dict) and (seen.request or {}).get("method") == "stop" and isinstance(msg.get("result"), dict):
-            for stop in msg["result"]["stops"]:
+            stops = msg["result"].get("stops")
+            if not isinstance(stops, list):
+                obs.bad("BHMS-AUTH-022", "a stop result without a stops array")
+                continue
+            for stop in stops:
                 if stop.get("outcome") == "confirmed" and stop.get("evidence") not in ("reported", "measured"):
                     obs.bad("BHMS-AUTH-022", f"{stop.get('deviceId')}: outcome confirmed with evidence {stop.get('evidence')!r}")
 

@@ -210,7 +210,7 @@
   "id": "BHMS-LIF-042",
   "area": "LIF",
   "level": "MUST",
-  "profile": "core",
+  "profile": "authority",
   "method": "wire",
   "summary": "A server MUST apply authorization to every notification at delivery time; revoking a principal's read scope ends delivery of what it no longer may see. (03)",
   "test": "Revoke read scope mid-subscription; notifications for the device stop."
@@ -525,7 +525,7 @@
   "id": "BHMS-DEV-010",
   "area": "DEV",
   "level": "MUST",
-  "profile": "core",
+  "profile": "authority",
   "method": "wire",
   "summary": "`devices/list` MUST return only devices the principal may read, and MUST NOT reveal through counts, cursors or errors that hidden devices exist. (04)",
   "test": "A principal without read on a device: absent from list, UNKNOWN_DEVICE on describe, page counts unchanged."
@@ -1056,7 +1056,7 @@
   "id": "BHMS-OPS-054",
   "area": "OPS",
   "level": "MUST",
-  "profile": "core",
+  "profile": "authority",
   "method": "wire",
   "summary": "Only the principal that created an operation, or one with the `admin` scope, MAY cancel it; others MUST receive `UNAUTHORIZED`. (06)",
   "test": "Cancel another principal's operation; UNAUTHORIZED. Cancel without holding the lease succeeds."
@@ -1191,7 +1191,7 @@
   "id": "BHMS-LSE-005",
   "area": "LSE",
   "level": "MUST",
-  "profile": "leases",
+  "profile": "authority",
   "method": "wire",
   "summary": "A lease belongs to the principal that acquired it. (07)",
   "test": "Use, renew and release another principal's lease; LEASE_CONFLICT each time."
@@ -1263,7 +1263,7 @@
   "id": "BHMS-AUTH-002",
   "area": "AUTH",
   "level": "MUST",
-  "profile": "core",
+  "profile": "authority",
   "method": "wire",
   "summary": "A server MUST answer a request outside the principal's scopes with `UNAUTHORIZED` naming the missing scope in `hint`, except that a device the principal may not `read`… (07)",
   "test": "Invoke outside scope: UNAUTHORIZED naming scope; unreadable device: UNKNOWN_DEVICE."
@@ -1272,7 +1272,7 @@
   "id": "BHMS-AUTH-003",
   "area": "AUTH",
   "level": "MUST",
-  "profile": "core",
+  "profile": "authority",
   "method": "wire",
   "summary": "An action with `effect: \"hazardous\"` MUST NOT be granted by an `invoke` pattern whose action part contains `*` or by a `cap:` pattern; the scope must name the action l… (07)",
   "test": "Grant invoke:oven-*/*; invoking a hazardous action is UNAUTHORIZED; invoke:oven-1/heat grants it."
@@ -1281,7 +1281,7 @@
   "id": "BHMS-AUTH-010",
   "area": "AUTH",
   "level": "MUST",
-  "profile": "core",
+  "profile": "authority",
   "method": "wire",
   "summary": "For every numeric or enumerated argument the server MUST enforce the **effective envelope**: the intersection of the device's schema bounds, the principal's policy bou… (07)",
   "test": "Policy narrows volume to 200 uL; 250 is OUT_OF_RANGE with bound maximum 200; inside a program the program bound applies."
@@ -1290,7 +1290,7 @@
   "id": "BHMS-AUTH-011",
   "area": "AUTH",
   "level": "MUST",
-  "profile": "core",
+  "profile": "authority",
   "method": "wire",
   "summary": "Policy can only narrow: an envelope computed from policy or a program MUST NOT exceed the device's declared bounds, and an empty intersection MUST make the action unav… (07)",
   "test": "Load a policy that widens a device bound; rejected. Disjoint bounds make the action UNAUTHORIZED."
@@ -1299,7 +1299,7 @@
   "id": "BHMS-AUTH-012",
   "area": "AUTH",
   "level": "MUST",
-  "profile": "core",
+  "profile": "authority",
   "method": "wire",
   "summary": "A fresh read of a property with `readEffect: \"transaction\"` MUST require an `invoke` scope matching `<deviceId>/<property>` in addition to `read`. (07)",
   "test": "Fresh transaction read with read-only scope; UNAUTHORIZED."
@@ -1308,7 +1308,7 @@
   "id": "BHMS-AUTH-013",
   "area": "AUTH",
   "level": "MUST",
-  "profile": "core",
+  "profile": "authority",
   "method": "fault",
   "summary": "Revoking a scope MUST deny new admissions immediately. (07)",
   "test": "Revoke a scope while an operation runs and a request queues; queued admission denied, running one continues (HMS AUTH-03)."
@@ -1434,7 +1434,7 @@
   "id": "BHMS-PRG-006",
   "area": "PRG",
   "level": "MUST",
-  "profile": "programs",
+  "profile": "authority",
   "method": "wire",
   "summary": "Before the first step, the server MUST verify that the caller has `programs:run` and an `invoke` scope for every `invoke` step and every fresh `transaction` read, and… (08)",
   "test": "Run without programs:run, without a step's invoke scope, without a covering lease; refused before step 1."
@@ -1533,7 +1533,7 @@
   "id": "BHMS-PRG-021",
   "area": "PRG",
   "level": "MUST",
-  "profile": "registry",
+  "profile": "authority",
   "method": "wire",
   "summary": "Registration MUST NOT grant authority: running a registered program re-checks the runner's scopes, envelope and lease (BHMS-PRG-005, BHMS-PRG-006) at each run. (08)",
   "test": "Register as an admin, run as a principal lacking a step scope; UNAUTHORIZED."
@@ -1605,7 +1605,7 @@
   "id": "BHMS-EVT-013",
   "area": "EVT",
   "level": "MUST",
-  "profile": "events",
+  "profile": "authority",
   "method": "wire",
   "summary": "Event visibility MUST follow device read authority: an event about a device the principal cannot read MUST be skipped, without affecting cursor continuity (`gap` stays… (09)",
   "test": "Events of unreadable devices are skipped without gap."
@@ -2073,7 +2073,7 @@
   "id": "BHMS-SEC-010",
   "area": "SEC",
   "level": "MUST",
-  "profile": "core",
+  "profile": "authority",
   "method": "wire",
   "summary": "Policy MUST default to deny: a principal with no matching scope has no access beyond `server/discover`. (13)",
   "test": "A principal with no scopes can only call server/discover."
@@ -2145,7 +2145,7 @@
   "id": "BHMS-SEC-040",
   "area": "SEC",
   "level": "MUST",
-  "profile": "core",
+  "profile": "authority",
   "method": "wire",
   "summary": "The `stop` scope MUST be grantable independently of every other scope; a principal with only `stop` can stop devices but not invoke actions, and a principal with `invo… (13)",
   "test": "Principal with only stop can stop but not invoke; principal with invoke but no stop cannot stop."

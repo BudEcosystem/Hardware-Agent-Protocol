@@ -359,3 +359,24 @@ async def lease_expiry_before_dispatch(c: Context) -> None:
     await c.settle(busy["operationId"], 6)
     await asyncio.sleep(0.05)
     c.expect(await c.counter(axis) == base + 1, "the rejected operation must not have reached the device")
+
+
+@check("operations.cancel-is-not-confirmation", ["BHMS-OPS-052"], needs=("faults",))
+async def cancel_is_not_confirmation(c: Context) -> None:
+    """A cancellation the device never acts on is not `canceled`: the operation stays in flight and completes; it is never
+    confirmed canceled without termination evidence."""
+    import asyncio
+
+    axis = c.axis()
+    await c.inject("deaf_next")
+    op = await c.invoke_op(axis, "slow_move", {"duration_ms": 1500})
+    asked = (await c.ok("operations/cancel", {"operationId": op["operationId"]}))["operation"]
+    c.expect(asked["state"] in ("dispatching", "running") and asked["cancel"]["state"] in ("requested", "acknowledged"),
+             f"a cancel request leaves the operation in flight: {asked['state']}/{asked['cancel']}")
+    await asyncio.sleep(0.6)
+    mid = await c.get_op(op["operationId"])
+    c.expect(mid["state"] != "canceled" and mid["cancel"]["state"] != "confirmed",
+             f"without termination evidence the operation must not become canceled: {mid['state']}/{mid['cancel']}")
+    final = await c.settle(op["operationId"], 8)
+    c.expect(final["state"] == "completed" and final["cancel"]["state"] != "confirmed",
+             f"completion that raced the cancel wins cleanly: {final['state']}/{final['cancel']}")

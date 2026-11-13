@@ -2213,6 +2213,27 @@
      }
     }
    ]
+  },
+  "queued": {
+   "bhmsProgram": "2026-11-13",
+   "name": "conf_queued",
+   "description": "conformance program",
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+   },
+   "maxDurationMs": 1000,
+   "steps": [
+    {
+     "kind": "invoke",
+     "deviceId": "{{axis}}",
+     "action": "pulse",
+     "arguments": {
+      "count": 1
+     }
+    }
+   ]
   }
  }
 }

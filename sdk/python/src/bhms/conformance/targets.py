@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import json
 import os
 import shutil
 import signal
@@ -32,12 +33,13 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from bhms.testing.gateway_fixture import NAMESPACES, ROLES, TOKEN_PREFIX, Role, gateway_toml
+from bhms.testing.gateway_fixture import (NAMESPACES, ROLES, TOKEN_PREFIX, Role, device_policy_document, device_roles, gateway_toml,
+                                          localize_roles)
 from bhms.transport import connect_tcp, connect_unix, connect_websocket, spawn_stdio
 from bhms.transport.base import Transport, TransportClosed
 
 URL_PREFIXES = ("unix:", "tcp://", "ws://", "wss://", "http://", "https://")
-BUILTINS = ("conformance-device", "conformance-device:stdio", "conformance-device:ws", "conformance-device:unix",
+BUILTINS = ("conformance-device", "conformance-device:stdio", "conformance-device:ws", "conformance-device:unix", "conformance-device:principals",
             "gateway", "gateway:stdio", "gateway:http", "agent-bridge", "mcp:<bridge command>")
 
 
@@ -51,10 +53,10 @@ def free_port() -> int:
         return int(sock.getsockname()[1])
 
 
-async def connect_url(url: str, token: str | None) -> Transport:
+async def connect_url(url: str, token: str | None, *, attempts: int = 100) -> Transport:
     """Open a transport to ``url`` (retried briefly: a freshly spawned server may not accept yet)."""
     last: Exception | None = None
-    for _ in range(100):
+    for _ in range(attempts):
         try:
             if url.startswith("unix:"):
                 path = url[5:]
@@ -100,6 +102,8 @@ class Target:
     tokens: dict[str, str] = field(default_factory=dict)
     """role -> bearer token of the principals a built-in gateway fixture defines (see :data:`ROLES`)."""
     config_path: Path | None = None
+    policy_path: Path | None = None
+    """A ``conformance-device --principals`` fixture: its policy document (SIGHUP re-reads it)."""
     flavour: str = ""
     is_gateway: bool = False
     """A gateway fixture (explicit metadata; the runner never guesses from device ids)."""
@@ -252,12 +256,16 @@ class Target:
         return process.pid if process is not None else None
 
     async def reload_policy(self, principals: dict[str, Role]) -> None:
-        """Rewrite the principals of the gateway configuration and send SIGHUP (the gateway applies it without a restart,
-        BHMS-SEC-012)."""
-        if self.config_path is None or self._process is None:
-            raise TargetError("only a gateway fixture started by the runner can reload its policy")
-        urls = {ns: up.url or "" for ns, up in self.upstreams.items()}
-        self.config_path.write_text(gateway_toml(self.flavour, self.url, self.state_dir, principals, urls))
+        """Rewrite the principals (a gateway's configuration, or a ``--principals`` device's policy file) and send SIGHUP (applied
+        to new admissions without a restart, BHMS-SEC-012). ``principals`` are written for the gateway (ids under ``u0/``)."""
+        if self._process is None or (self.config_path is None and self.policy_path is None):
+            raise TargetError("only a fixture started by the runner with a reloadable policy can reload it")
+        if self.policy_path is not None:
+            self.policy_path.write_text(json.dumps(device_policy_document(localize_roles(principals))))
+        else:
+            assert self.config_path is not None
+            urls = {ns: up.url or "" for ns, up in self.upstreams.items()}
+            self.config_path.write_text(gateway_toml(self.flavour, self.url, self.state_dir, principals, urls))
         self._process.send_signal(signal.SIGHUP)
         await asyncio.sleep(0.5)
 
@@ -369,12 +377,19 @@ def _conformance_device(flavour: str, keep: str | None) -> Target:
         url = f"ws://127.0.0.1:{free_port()}"
         target = Target("conformance-device:ws", "ws", url=url, command=_device_command(url, "--state-dir", str(state)), state_dir=state,
                         token=TOKEN_PREFIX + "admin", env={"BHMS_TOKEN": TOKEN_PREFIX + "admin"})
+    elif flavour == "principals":
+        url = f"ws://127.0.0.1:{free_port()}"
+        policy = work / "policy.json"
+        policy.write_text(json.dumps(device_policy_document(device_roles())))
+        target = Target("conformance-device:principals", "ws", url=url,
+                        command=_device_command(url, "--state-dir", str(state), "--principals", str(policy)), state_dir=state,
+                        token=TOKEN_PREFIX + "admin", tokens={role: TOKEN_PREFIX + role for role in ROLES}, policy_path=policy)
     elif flavour == "unix":
         url = f"unix:{work / 'device.sock'}"
         target = Target("conformance-device:unix", "unix", url=url, command=_device_command(url, "--state-dir", str(state)),
                         state_dir=state)
     else:
-        raise TargetError(f"unknown conformance-device flavour {flavour!r} (stdio, ws, unix)")
+        raise TargetError(f"unknown conformance-device flavour {flavour!r} (stdio, ws, unix, principals)")
     target.work_dir, target.log_path, target.notes_owned, target.simulated = work, log, keep is None, True
     return target
 
@@ -405,7 +420,7 @@ def _gateway_fleet(flavour: str, keep: str | None) -> Target:
     if flavour == "stdio":
         spare = work / "gateway-spare.toml"
         (work / "spare-state").mkdir(exist_ok=True)
-        spare.write_text(gateway_toml("stdio", None, work / "spare-state", ROLES, urls))
+        spare.write_text(gateway_toml("stdio", None, work / "spare-state", ROLES, {}))  # own upstream processes
         return Target(f"gateway:{flavour}", "stdio", command=command, extra_command=[sys.executable, "-m", "bhms.gateway", str(spare)],
                       **common)
     return Target(f"gateway:{flavour}", "ws" if flavour == "ws" else "http", token=tokens["admin"], url=url, command=command,
@@ -416,4 +431,4 @@ def _agent_bridge(keep: str | None) -> Target:
     """The Python MCP bridge (``bhms mcp``) in front of a WebSocket conformance device."""
     device = _conformance_device("ws", keep)
     command = [sys.executable, "-m", "bhms", "mcp", device.url or "", "--token", device.token or ""]
-    return Target("agent-bridge", "mcp", bridge_command=command, device=device, work_dir=device.work_dir)
+    return Target("agent-bridge", "mcp", bridge_command=command, device=device, work_dir=device.work_dir, simulated=True)

@@ -72,7 +72,8 @@ def rows(results: list[CheckResult], profiles: list[str], unavailable: dict[str,
         elif rid in EXEMPT:
             kind, reason = EXEMPT[rid]
             status = Status.NOT_APPLICABLE if kind == NOT_APPLICABLE else Status.SKIPPED
-            out.append(RequirementRow(status=status, reason=f"{kind}: {reason}", **base))
+            # inspection rows need review evidence; a row no check can prove yet blocks the claim like an unrun one (R30)
+            out.append(RequirementRow(status=status, reason=f"{kind}: {reason}", unproven=kind == UNTESTABLE, **base))
         else:
             out.append(RequirementRow(status=Status.SKIPPED, reason="no automated check implemented for this requirement",
                                       unproven=True, **base))

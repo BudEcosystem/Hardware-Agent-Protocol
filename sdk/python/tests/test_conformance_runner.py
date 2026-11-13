@@ -40,15 +40,16 @@ async def test_python_reference_server_passes_every_core_check():
     failed = [(c.name, c.message) for c in reference_report.checks if c.status is Status.FAILED]
     assert failed == []
     assert not reference_report.must_failed
-    # a single-principal stdio server cannot prove the authority rows: the claim is honestly unsupported (exit 3)
-    unproven = {r.id for r in reference_report.unproven_must}
-    assert reference_report.exit_code == 3 and {"BHMS-SEC-001", "BHMS-SEC-010", "BHMS-AUTH-002", "BHMS-SEC-040"} <= unproven
-    assert not reference_report.claims["core"]["claimable"] and reference_report.claims["programs"]["claimable"]
+    # a single-principal stdio server is a complete core claim: no authority profile, nothing unproven (R27)
+    assert reference_report.exit_code == 0 and not reference_report.unproven_must
+    assert all(claim["claimable"] for claim in reference_report.claims.values())
+    assert set(reference_report.claims) == {"core", "leases", "events", "programs", "registry"}
+    assert reference_report.meta["authority"].startswith("single-principal") and reference_report.meta["reportKind"] == "conformance"
     passed = [c for c in reference_report.checks if c.status is Status.PASSED]
     assert len(passed) >= 70
     skipped = [c.name for c in reference_report.checks if c.status is Status.SKIPPED]
     # a stdio conformance device offers faults, restart and a state directory; only the multi-principal checks need the gateway fixture
-    assert all(name.startswith("authority.") or name == "transport.no-token-in-logs" for name in skipped), skipped
+    assert skipped == []  # nothing the reference device offers is left unrun
     assert {r.status for r in reference_report.rows} <= {Status.PASSED, Status.SKIPPED, Status.NOT_APPLICABLE}
     assert not any(r.status is Status.FAILED for r in reference_report.rows)
 
@@ -68,8 +69,8 @@ async def test_report_states_what_bhms_cnf_001_to_005_require():
     for row in report["requirements"]:
         if row["status"] in ("skipped", "not-applicable"):
             assert row["reason"], row["id"]                                          # a skipped row says why
-    assert report["formatVersion"] == 1 and report["exitCode"] == 3 and report["summary"]["mustFailed"] == 0
-    assert report["summary"]["mustUnproven"] > 0 and report["claims"]["core"]["unproven"]
+    assert report["formatVersion"] == 1 and report["exitCode"] == 0 and report["summary"]["mustFailed"] == 0
+    assert report["summary"]["mustUnproven"] == 0 and report["claims"]["core"]["claimable"] and meta["reportKind"] == "conformance"
 
 
 def test_every_core_must_is_covered_or_has_a_recorded_reason():
@@ -120,12 +121,34 @@ async def test_cli_exit_status_one_when_a_must_fails():
     assert result.exit_code == 1 and "FAILED BHMS-TRN-002" in result.output
 
 
-@pytest.mark.timeout(900)
-async def test_every_broken_server_fails_exactly_the_expected_checks():
-    """Each deliberately broken server, run against the FULL applicable check set, fails exactly the recorded checks."""
+async def test_every_broken_server_fails_the_expected_checks():
+    """Each deliberately broken server, run against its own checks (plus those that drive observer defects), fails exactly them."""
     import bhms.conformance.checks  # noqa: F401
 
     assert len(DEFECTS) >= 20
+
+    async def one(name: str):
+        defect = DEFECTS[name]
+        only = tuple(c for c in (*defect.checks, *defect.drive) if c != "observers.all-traffic")
+        target = f"stdio:{sys.executable} -m bhms.testing.broken_devices {name}"
+        return name, await run(RunOptions(target=target, only=only or ("none",), seed=5))
+
+    for name, report in await asyncio.gather(*(one(n) for n in DEFECTS)):
+        defect = DEFECTS[name]
+        failed_checks = {c.name for c in report.checks if c.status is Status.FAILED}
+        failed_rows = {r.id for r in report.rows if r.status is Status.FAILED}
+        assert failed_checks == set(defect.checks), f"{name}: failed {sorted(failed_checks)}"
+        assert set(defect.requirements) <= failed_rows, f"{name}: rows {sorted(failed_rows)}"
+        assert report.exit_code == 1, name
+
+
+@pytest.mark.slow
+@pytest.mark.timeout(1800)
+async def test_every_broken_server_fails_exactly_the_expected_checks_in_the_full_set():
+    """Slow (about 5 minutes): every defect against the FULL applicable check set fails exactly ``Defect.full``.
+    Run it with ``python3 -m pytest -m slow`` (nightly), not in the default suite."""
+    import bhms.conformance.checks  # noqa: F401
+
     slots = asyncio.Semaphore(6)
 
     async def one(name: str):
@@ -135,7 +158,6 @@ async def test_every_broken_server_fails_exactly_the_expected_checks():
     for name, report in await asyncio.gather(*(one(n) for n in DEFECTS)):
         defect = DEFECTS[name]
         failed_checks = {c.name for c in report.checks if c.status is Status.FAILED}
-        failed_rows = {r.id for r in report.rows if r.status is Status.FAILED}
-        assert failed_checks == set(defect.checks), f"{name}: failed {sorted(failed_checks)}"
-        assert set(defect.requirements) <= failed_rows, f"{name}: rows {sorted(failed_rows)}"
+        assert failed_checks == set(defect.full), f"{name}: failed {sorted(failed_checks)}"
+        assert set(defect.requirements) <= {r.id for r in report.rows if r.status is Status.FAILED}, name
         assert report.exit_code == 1, name

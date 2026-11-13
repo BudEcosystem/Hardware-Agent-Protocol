@@ -135,3 +135,18 @@ async def required_fresh(c: Context) -> None:
     finally:
         await c.ok("leases/release", {"leaseId": lease["leaseId"]})
     c.expect(await c.counter(c.axis()) == base + 1, "only the one valid dispense may have reached the device")
+
+
+@check("observations.evidence-not-stronger", ["BHMS-OBS-002"], needs=("faults",))
+async def evidence_not_stronger(c: Context) -> None:
+    """With the encoder gone, an observation does not claim a measurement: quality invalid with no value (or weaker
+    evidence); and a disagreeing encoder never turns a move into a verified effect."""
+    axis = c.axis()
+    await c.inject("sensor_invalid")
+    gone = c.result(await c.read(axis, "position", fresh=True))["observation"]
+    c.expect(gone["quality"] in ("invalid", "unknown") and gone["value"] is None or gone["evidence"] != "measured",
+             f"an unplugged encoder must not produce a measured observation: {gone}")
+    await c.inject("sensor_valid")
+    await c.inject("encoder_disagrees")
+    moved = await c.run(axis, "move_to", {"position": 41.0})
+    c.expect(moved["effect"] != "verified", f"a measurement that contradicts the command cannot verify the effect: {moved['effect']}")

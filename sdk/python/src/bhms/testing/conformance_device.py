@@ -1,7 +1,7 @@
 """``conformance-device``: the deterministic simulated device server every BHMS SDK ships (Task 7 targets it).
 
 Run it with ``python -m bhms.testing.conformance_device [unix:/path | ws://127.0.0.1:port] [--state-dir DIR]
-[--memory] [--gateway]`` (stdio by default), or build it in-process with :func:`build`.
+[--memory] [--gateway] [--principals POLICY.json]`` (stdio by default), or build it in-process with :func:`build`.
 
 Behavioural contract (the conformance runner relies on every line of it):
 
@@ -66,9 +66,18 @@ Faults — ``x-conformance/inject {"fault": <name>}`` (not an operation; works e
     The command log and recorded results are device-side state: with ``--state-dir`` they survive a kill of the server
     process (``<state-dir>/command-log.json``), so the reconcile hook answers honestly after a restart (a command whose log
     shows ``start`` without ``done`` reconciles to ``failed`` with ``mayHaveActed: true``); ``counter``, ``pulses``,
-    ``fifo_reads``, ``stops`` and ``holds`` are per process and restart at 0. Fault ``change_description`` revises the axis
+    ``fifo_reads``, ``stops`` and ``holds`` are per process and restart at 0. Fault ``deaf_next`` makes the next ``slow_move`` ignore cancellation (it runs its full duration and completes: a cancel is
+acknowledged by nobody, BHMS-OPS-052). Faults ``bad_digest`` / ``good_digest`` make ``axis-1`` serve a description digest that is
+not the digest of the description (BHMS-SEC-022 at a gateway) / serve the right one again. ``x-conformance/counters`` also returns
+``trace``: the ``traceparent``/``tracestate`` of the last request that carried one (BHMS-LIF-018; set only when serving through
+``main``). Fault ``change_description`` revises the axis
     description (declares the event type ``conformance.revised`` with a new revision number in its description): new digest,
     ``devicesListChanged`` notification (BHMS-DEV-023); it is not undone by ``none`` and, with ``--state-dir``, survives a restart.
+
+``--principals POLICY.json`` serves several principals (a ``GatewayPolicy`` document ``{"principals": {name: {tokens, scopes,
+bounds?}}}`` over WebSocket with bearer tokens); the device then advertises ``capabilities.authority`` and SIGHUP applies the
+file's current content to new admissions. ``--gateway`` makes same-uid Unix peers a gateway (may use ``g-`` keys).
+``bhms.testing.gateway_fixture.device_roles()`` is the set of principals the conformance runner uses.
 
 Extension shape (``capabilities.extensions["org.bhms/conformance"]``, version 2): ``{"version": "2", "faults": [...],
 "devices": ["axis-1", "pump-1"]}``. The runner identifies the conformance device only by this declaration (or, behind a
@@ -93,7 +102,8 @@ from bhms.server.decorators import Range
 from bhms.server.server import DeviceServer
 
 FAULTS = ("none", "sensor_invalid", "sensor_valid", "sensor_stale", "encoder_disagrees", "fail_next", "crash_next",
-          "hang_next", "journal_readonly", "journal_writable", "offline", "online", "change_description")
+          "hang_next", "journal_readonly", "journal_writable", "offline", "online", "change_description", "deaf_next",
+          "bad_digest", "good_digest")
 EXTENSION_VERSION = "2"
 
 
@@ -115,6 +125,8 @@ class Simulator:
     halt: asyncio.Event = field(default_factory=asyncio.Event)
     holds: int = 0
     revision: int = 0
+    bad_digest: bool = False
+    trace: dict[str, str] = field(default_factory=dict)
     path: Path | None = None
 
     def load(self, path: Path) -> None:
@@ -197,7 +209,10 @@ def build(*, state_dir: str | None = None, memory: bool = False, **server_kw: An
             sim.revision += 1
             axis.event("conformance.revised", description=f"axis description revision {sim.revision}")
             sim._persist()
-        elif fault in ("fail_next", "crash_next", "hang_next"):
+        elif fault in ("bad_digest", "good_digest"):
+            sim.bad_digest = fault == "bad_digest"
+            axis.invalidate()
+        elif fault in ("fail_next", "crash_next", "hang_next", "deaf_next"):
             sim.armed.add(fault)
         elif fault in ("journal_readonly", "journal_writable"):
             srv.store.set_writable(fault == "journal_writable")
@@ -210,8 +225,9 @@ def build(*, state_dir: str | None = None, memory: bool = False, **server_kw: An
     async def counters(params: dict[str, Any], ctx: Any) -> dict[str, Any]:
         srv.authenticate(ctx)
         return {"resultType": "complete", "counter": sim.counter, "pulses": sim.pulses, "fifo_reads": sim.fifo_reads,
-                "stops": sim.stops, "holds": sim.holds, "log": [list(entry) for entry in sim.log]}
+                "stops": sim.stops, "holds": sim.holds, "trace": sim.trace, "log": [list(entry) for entry in sim.log]}
 
+    srv._conformance_sim = sim  # type: ignore[attr-defined]
     srv.extension("org.bhms/conformance", {"version": EXTENSION_VERSION, "faults": list(FAULTS), "devices": ["axis-1", "pump-1"]},
                   {"x-conformance/inject": inject, "x-conformance/counters": counters})
     return srv, sim
@@ -231,6 +247,13 @@ def _axis(srv: DeviceServer, sim: Simulator) -> None:
                       description="Deterministic simulated linear axis with device-side command counters.",
                       identity={"manufacturer": "BHMS", "model": "conformance-axis", "firmwareVersion": "1"})
     axis.report_alive()
+    plain_description = axis.description
+
+    def description() -> dict[str, Any]:
+        found = plain_description()
+        return {**found, "digest": "sha256:" + "0" * 64} if sim.bad_digest else found
+
+    axis.description = description  # fault bad_digest serves a digest that is not the digest of the description
 
     @axis.liveness
     def alive() -> bool:
@@ -283,7 +306,10 @@ def _axis(srv: DeviceServer, sim: Simulator) -> None:
     async def slow_move(ctx, duration_ms: Range(1, 60_000, unit="ms", integer=True) = 1000) -> None:
         """Move slowly for duration_ms; honours cancellation within 5 ms."""
         sim.begin(ctx.operation_id)
-        if await ctx.wait_cancelled(duration_ms / 1000):
+        if "deaf_next" in sim.armed:  # acknowledges nothing: it never notices a cancellation (BHMS-OPS-052)
+            sim.armed.discard("deaf_next")
+            await asyncio.sleep(duration_ms / 1000)
+        elif await ctx.wait_cancelled(duration_ms / 1000):
             raise Canceled(effect="unverified", detail=f"canceled ({ctx.cancel_reason})")
         await sim.end(ctx.operation_id, {}, ctx.cancelled)
 
@@ -374,24 +400,60 @@ def _pump(srv: DeviceServer, sim: Simulator) -> None:
         return await sim.end(ctx.operation_id, {"dispensed": measured if measured is not None else volume}, ctx.cancelled)
 
 
+async def _serve(srv: DeviceServer, url: str | None, policy_file: str | None) -> None:
+    """Serve ``url`` (stdio when None); with a policy file, SIGHUP applies its current content (BHMS-SEC-012)."""
+    import signal
+
+    from bhms.runtime.authority import Policy
+
+    if policy_file:
+        loop = asyncio.get_running_loop()
+
+        def reload() -> None:
+            try:
+                srv.set_policy(Policy.from_document(json.loads(Path(policy_file).read_text())))
+            except Exception as exc:  # a policy that cannot be applied keeps the current one (BHMS-SEC-011)
+                print(f"conformance-device: policy not applied: {exc}", file=sys.stderr)
+
+        loop.add_signal_handler(signal.SIGHUP, reload)
+    await srv.start()
+    sim_state = getattr(srv, "_conformance_sim", None)
+    if sim_state is not None:
+        dispatch = srv.rpc.dispatch  # type: ignore[union-attr]
+
+        async def traced(ctx: Any) -> Any:
+            meta = ctx.params.get("_meta") if isinstance(ctx.params, dict) else None
+            if isinstance(meta, dict) and meta.get("traceparent") and not str(ctx.method).startswith("x-conformance/"):
+                sim_state.trace = {k: meta[k] for k in ("traceparent", "tracestate") if isinstance(meta.get(k), str)}
+            return await dispatch(ctx)
+
+        srv.rpc.dispatch = traced  # type: ignore[union-attr,method-assign]
+    await srv.serve(url)
+
+
 def main(argv: list[str] | None = None) -> None:
     """Command-line entry point (``python -m bhms.testing.conformance_device``)."""
     parser = argparse.ArgumentParser(prog="conformance-device", description=__doc__.split("\n\n")[0])
     parser.add_argument("url", nargs="?", default=None, help="unix:<path> or ws://127.0.0.1:<port>; stdio if absent")
     parser.add_argument("--state-dir", default=None, help="directory of the durable store")
     parser.add_argument("--memory", action="store_true", help="non-durable in-memory store (new epoch each start)")
+    parser.add_argument("--principals", default=None, metavar="POLICY.json",
+                        help="serve several principals from a policy document ({\"principals\": {name: {tokens, scopes, bounds?}}}); "
+                        "SIGHUP re-reads it (applies to new admissions at once): the device then advertises capabilities.authority")
     parser.add_argument("--gateway", action="store_true",
                         help="treat same-uid Unix peers as a gateway (may use g- keys), as an upstream of a gateway on this host")
     args = parser.parse_args(argv)
     extra: dict[str, Any] = {}
     if args.gateway:
-        import os
+        from bhms.testing.gateway_fleet import gateway_uid_policy
 
+        extra["policy"] = gateway_uid_policy()
+    if args.principals:
         from bhms.runtime.authority import Policy
 
-        extra["policy"] = Policy({"gateway": {"uids": [os.getuid()], "scopes": ["admin"], "gateway": True}})
+        extra["policy"] = Policy.from_document(json.loads(Path(args.principals).read_text()))
     srv, _ = build(state_dir=args.state_dir, memory=args.memory, **extra)
-    srv.run(args.url)
+    asyncio.run(_serve(srv, args.url, args.principals))
 
 
 if __name__ == "__main__":

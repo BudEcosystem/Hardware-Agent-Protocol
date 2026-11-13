@@ -119,7 +119,7 @@ class Router:
         journal.on_discard.append(lambda rec: self.unknown.pop(rec.id, None))
         for rec in journal.unknown_operations():
             self.unknown[rec.id] = rec
-        for row in journal.store.operations_in_states(["dispatching", "running", "unknown"]):
+        for row in journal.store.operations_in_states(["accepted", "dispatching", "running", "unknown"]):
             uid = row.private.get("upstreamOperationId")
             if uid:
                 self.by_upstream[(row.private["upstream"], uid)] = row.id

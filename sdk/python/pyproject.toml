@@ -38,4 +38,6 @@ bhms = ["protocol/bhms.schema.json", "templates/new/*.tmpl", "conformance/requir
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
 timeout = 120
+addopts = "-m 'not slow'"
+markers = ["slow: full-set broken-fixture runs (about 5 minutes); run with `python3 -m pytest -m slow`"]
 testpaths = ["tests"]

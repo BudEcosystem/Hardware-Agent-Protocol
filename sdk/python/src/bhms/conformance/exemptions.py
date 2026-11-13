@@ -14,8 +14,6 @@ _COMPACT = (UNTESTABLE, "BHMS-Compact frame and endpoint behaviour: needs a comp
             "provide (Task 9b); the static layout rules BHMS-DEV-070/071 are checked by compact.layout-rules")
 
 EXEMPT: dict[str, tuple[str, str]] = {
-    "BHMS-LIF-018": (UNTESTABLE, "traceparent/tracestate propagation is observable only at the upstream; the conformance device does not echo "
-                     "request metadata"),
     "BHMS-LIF-022": (INSPECTION, "client behaviour (SHOULD)"),
     "BHMS-LIF-053": (INSPECTION, "client behaviour"),
     "BHMS-LIF-071": (INSPECTION, "review of each extension against the core guarantees"),
@@ -25,25 +23,19 @@ EXEMPT: dict[str, tuple[str, str]] = {
     "BHMS-DEV-050": (INSPECTION, "review of driver acquisition effects (the transaction property of the conformance device is exercised by "
                      "observations.retained-after-effect)"),
     "BHMS-DEV-051": (INSPECTION, "review of evidence declarations against driver behaviour"),
-    "BHMS-OBS-002": (UNTESTABLE, "needs a property that echoes a commanded setpoint when its sensor is unplugged; the conformance device has "
-                     "none"),
     "BHMS-OPS-036": (INSPECTION, "client behaviour (key reuse and retention)"),
-    "BHMS-OPS-052": (UNTESTABLE, "needs a device that acknowledges a cancel and then loses the termination evidence; the conformance device has "
-                     "no such fault"),
-    "BHMS-LSE-011": (UNTESTABLE, "needs a partitioned gateway and a second path to the device to replay a superseded holder's command"),
     "BHMS-PRG-006": (UNTESTABLE, "the only multi-principal target (the gateway fixture) does not serve programs"),
-    "BHMS-PRG-012": (UNTESTABLE, "needs a program whose steps take longer than its declared maxDurationMs; step durations of the conformance "
-                     "device are bounded by their declared maxima"),
     "BHMS-PRG-021": (UNTESTABLE, "the only multi-principal target (the gateway fixture) does not serve programs"),
     "BHMS-EVT-013": (UNTESTABLE, "the v0.1 scope grammar has no per-device read scope, so no event can be hidden from a principal"),
     "BHMS-ERR-002": (INSPECTION, "client SDKs dispatch on bhmsCode (code review and SDK unit test)"),
     "BHMS-AGT-050": (UNTESTABLE, "needs the function-tool definitions of an adapter as data; the Python adapter is compared with the MCP bridge in "
                      "tests/test_openai_tools.py"),
+    "BHMS-SEC-002": (INSPECTION, "constant-time comparison and hashed storage need code review; transport.no-token-in-logs reports token leaks in "
+                     "captured logs as a warning, never as a pass"),
     "BHMS-SEC-004": (INSPECTION, "deployment configuration of non-loopback listeners"),
     "BHMS-SEC-020": (UNTESTABLE, "needs a hostile device whose text contains instructions; the runner's conformance device has benign text "
                      "(the Python bridge is tested with injected text in tests/test_bridge_render.py)"),
-    "BHMS-SEC-021": (UNTESTABLE, "needs a device whose description carries a pathological schema (deep nesting, remote $ref)"),
-    "BHMS-SEC-022": (UNTESTABLE, "needs a gateway with a malicious upstream; verified for the Python gateway in tests/test_conformance_gateway.py"),
+    "BHMS-SEC-021": (INSPECTION, "applies to the validator of a client or gateway; needs review of its depth, size and fetch limits (tests/test_schema_module.py covers the Python validator); a device whose description carries a pathological schema (deep nesting, remote $ref)"),
     "BHMS-SEC-042": (INSPECTION, "documentation and tool descriptions never call software stop an emergency stop"),
     "BHMS-CNF-001": (INSPECTION, "a property of the report the runner writes (tests/test_conformance_runner.py::test_report_states_what_bhms_cnf_001_to_005_require), not of the target"),
     "BHMS-CNF-002": (INSPECTION, "a property of the report the runner writes (tests/test_conformance_runner.py::test_report_states_what_bhms_cnf_001_to_005_require), not of the target"),
@@ -51,7 +43,7 @@ EXEMPT: dict[str, tuple[str, str]] = {
     "BHMS-CNF-004": (INSPECTION, "a property of the report the runner writes: the exit status is non-zero while any MUST row of a claimed "
                      "profile failed"),
     "BHMS-CNF-005": (INSPECTION, "a property of the report the runner writes (tests/test_conformance_runner.py::test_report_states_what_bhms_cnf_001_to_005_require), not of the target"),
-    "BHMS-CNF-006": (UNTESTABLE, "needs the implementation's own message validator; the Python SDK asserts it in tests/test_schema_examples.py"),
+    "BHMS-CNF-006": (INSPECTION, "needs the implementation's own message validator; the Python SDK asserts it in tests/test_schema_examples.py"),
     "BHMS-SEC-050": (INSPECTION, "documentation statement about FCS-16"),
     **{f"BHMS-CMP-{n}": _COMPACT for n in ("001", "002", "003", "010", "011", "020", "021", "022", "023", "030", "031", "032", "033", "034",
                                            "035", "040", "041", "050", "051", "060")},

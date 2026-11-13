@@ -59,18 +59,29 @@ async def test_a_wrong_description_digest_from_an_upstream_is_not_served(tmp_pat
 
 async def test_a_retained_transaction_observation_needs_only_read_authority(tmp_path):  # BHMS-OBS-011
     """Found by observations.retained-after-effect: the gateway demanded invoke scope and a lease for every read."""
-    async with rig(tmp_path, ("a",), conformance=True) as r:
+    from bhms.runtime.authority import token_digest
+    from helpers.gateway_rig import principals
+
+    doc = {**principals(), "reader": {"tokens": [token_digest("tok-reader")], "scopes": ["read"]}}
+    async with rig(tmp_path, ("a",), conformance=True, principals_doc=doc) as r:
         admin = await r.client(token="tok-admin")
-        reader = await r.client(token="tok-b")  # agent-b: read, lease, invoke:*/* ; use the admin for the acquisition
+        reader = await r.client(token="tok-reader")  # read scope only: no invoke, no lease
+        with pytest.raises(BhmsError) as nothing_retained:
+            await reader.properties_read("a/axis-1", "fifo")
+        assert nothing_retained.value.code == "UNAUTHORIZED"  # nothing is retained yet: a new transaction would be needed
         lease = (await admin.leases_acquire(["a/axis-1/motion"], 30_000)).lease
         popped = (await admin.properties_read("a/axis-1", "fifo", fresh=True)).observation
         await admin.leases_release(lease.lease_id)
         again = (await reader.properties_read("a/axis-1", "fifo")).observation
-        assert again.value == popped.value and again.sequence == popped.sequence
-        assert again.age_ms >= popped.age_ms
-        with pytest.raises(BhmsError) as refused:
-            await reader.properties_read("a/axis-1", "fifo", fresh=True)  # a new acquisition still needs the lease
-        assert refused.value.code == "LEASE_REQUIRED"
+        assert again.value == popped.value and again.sequence == popped.sequence and again.age_ms >= popped.age_ms
+        within = (await reader.properties_read("a/axis-1", "fifo", max_age_ms=60_000)).observation
+        assert within.sequence == popped.sequence
+        with pytest.raises(BhmsError) as fresh:
+            await reader.properties_read("a/axis-1", "fifo", fresh=True)  # a new acquisition needs invoke authority (BHMS-AUTH-012)
+        assert fresh.value.code == "UNAUTHORIZED"
+        with pytest.raises(BhmsError) as too_old:
+            await reader.properties_read("a/axis-1", "fifo", max_age_ms=0)
+        assert too_old.value.code == "UNAUTHORIZED"
 
 
 async def test_an_operation_that_misses_its_deadline_in_the_upstream_queue_is_rejected_through_the_gateway(tmp_path):  # OPS-070
@@ -85,3 +96,31 @@ async def test_an_operation_that_misses_its_deadline_in_the_upstream_queue_is_re
         assert settled.state == "rejected" and settled.effect == "none"
         assert settled.error.bhms_code == "DEADLINE_EXCEEDED" and settled.error.may_have_acted is False
         await client.operations_wait(busy.operation_id, 5000)
+
+
+async def test_an_operation_queued_upstream_survives_a_gateway_restart_indexed_and_unknown(tmp_path):
+    """The gateway now records upstream-queued operations as ``accepted``; after a restart they are found, moved to ``unknown``
+    (BHMS-OPS-080) and indexed by their upstream operation id so that the upstream's notifications reconcile them."""
+    async with rig(tmp_path, ("a",), conformance=True) as r:
+        client = await r.client(token="tok-admin")
+        busy = (await client.actions_invoke("a/axis-1", "slow_move", {"duration_ms": 1500})).operation
+        queued = (await client.actions_invoke("a/axis-1", "pulse", {"count": 1})).operation
+        assert queued.state == "accepted"
+        config = r.gateway.config
+        await client.close()
+        await r.gateway.close()
+        second = Gateway(config)
+        await second.start()
+        try:
+            record = second.journal.get(queued.operation_id)
+            assert record is not None and record.state == "unknown"
+            upstream_id = record.private["upstreamOperationId"]
+            assert second.router.by_upstream[("a", upstream_id)] == queued.operation_id
+            for _ in range(150):  # the upstream finishes both operations; its notifications reconcile the gateway's record
+                if second.journal.get(queued.operation_id).state != "unknown":
+                    break
+                await asyncio.sleep(0.1)
+            assert second.journal.get(queued.operation_id).state in ("completed", "running")
+            assert second.journal.get(busy.operation_id).state != "accepted"
+        finally:
+            await second.close()

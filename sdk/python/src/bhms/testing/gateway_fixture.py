@@ -40,14 +40,17 @@ NAMESPACES = ("u0", "u1")
 
 def gateway_toml(flavour: str, url: str | None, state: Path | None, principals: dict[str, Role],
                  upstream_urls: dict[str, str]) -> str:
-    """The configuration of the fixture gateway; ``upstream_urls`` maps namespace to the upstream's ``unix:`` URL."""
+    """The configuration of the fixture gateway; ``upstream_urls`` maps namespace to the upstream's ``unix:`` URL; empty means each upstream is a stdio child of this gateway."""
     from bhms.runtime.authority import token_digest
 
     listen = {"stdio": '"stdio"', "ws": f'"{url}"', "http": f'"{url}"'}[flavour]
     lines = ["[gateway]", 'id = "conformance-gateway"', f'state_dir = "{state}"', f"listen = [{listen}]", "upstream_timeout_ms = 10000",
              'instructions = "Conformance gateway: two simulated conformance devices."', ""]
     for name in NAMESPACES:
-        lines += ["[[upstream]]", f'name = "{name}"', f'url = "{upstream_urls[name]}"', ""]
+        if upstream_urls:
+            lines += ["[[upstream]]", f'name = "{name}"', f'url = "{upstream_urls[name]}"', ""]
+        else:  # the spare gateway of a stdio fixture owns its upstreams: separate processes, separate lease arbitration
+            lines += ["[[upstream]]", f'name = "{name}"', 'stdio = "{python} -m bhms.testing.conformance_device --memory"', ""]
     for role, spec in principals.items():
         lines += [f"[principals.{role}]", f'tokens = ["{token_digest(TOKEN_PREFIX + role)}"]',
                   "scopes = [" + ", ".join(f'"{s}"' for s in spec.scopes) + "]"]
@@ -59,3 +62,31 @@ def gateway_toml(flavour: str, url: str | None, state: Path | None, principals: 
             lines.append("bounds = { " + ", ".join(parts) + " }")
         lines.append("")
     return "\n".join(lines)
+
+
+def localize_roles(roles: dict[str, Role]) -> dict[str, Role]:
+    """Roles written for the gateway (ids under ``u0/``) as a single device server sees them: no namespace, and ``agent``
+    may invoke only on ``axis-1`` (so ``pump-1`` is outside its grant)."""
+    def local(text: str) -> str:
+        return text.replace("u0/*/*", "axis-1/*").replace("u0/", "")
+
+    return {name: Role(tuple(local(s) for s in role.scopes),
+                       {local(action): members for action, members in role.bounds.items()}) for name, role in roles.items()}
+
+
+def device_roles() -> dict[str, Role]:
+    """The principals for ``conformance-device --principals``."""
+    return localize_roles(ROLES)
+
+
+def device_policy_document(principals: dict[str, Role]) -> dict[str, dict[str, object]]:
+    """A ``GatewayPolicy`` document (``{"principals": ...}``) for :class:`bhms.runtime.authority.Policy.from_document`."""
+    from bhms.runtime.authority import token_digest
+
+    out: dict[str, dict[str, object]] = {}
+    for name, role in principals.items():
+        entry: dict[str, object] = {"tokens": [token_digest(TOKEN_PREFIX + name)], "scopes": list(role.scopes)}
+        if role.bounds:
+            entry["bounds"] = {action: members for action, members in role.bounds.items()}
+        out[name] = entry
+    return {"principals": out}

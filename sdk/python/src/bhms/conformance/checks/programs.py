@@ -174,3 +174,21 @@ async def _paged(c: Context):
         cursor = page.get("nextCursor")
         if not cursor:
             return
+
+
+@check("programs.max-duration-enforced", ["BHMS-PRG-012"], profile="programs")
+async def program_max_duration(c: Context) -> None:
+    """The program's own maxDurationMs is enforced while a step waits behind busy work: it ends failed DEADLINE_EXCEEDED, the
+    waiting step never starts."""
+    import asyncio
+
+    axis = c.axis()
+    base = await c.counter(axis)
+    busy = await c.invoke_op(axis, "slow_move", {"duration_ms": 2500})
+    op = await _run(c, _program(c, vectors("programs")["valid"]["queued"]))
+    err = op.get("error") or {}
+    c.expect(op["state"] in ("failed", "unknown") and err.get("bhmsCode") == "DEADLINE_EXCEEDED",
+             f"a program that exceeded its maxDurationMs must end failed/DEADLINE_EXCEEDED: {op['state']} {err}")
+    await c.settle(busy["operationId"], 8)
+    await asyncio.sleep(0.2)
+    c.expect(await c.counter(axis) == base + 1, "the waiting step must not start after the program's time ran out")

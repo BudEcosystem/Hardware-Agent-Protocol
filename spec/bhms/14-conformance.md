@@ -18,10 +18,14 @@ A conformance claim names the protocol version and the profiles it covers.
 | `events` | servers advertising `events` | `core` + `events` |
 | `programs` | servers advertising `programs` | `core` + `programs` |
 | `registry` | servers advertising `programs.registry` | `programs` + `registry` |
-| `gateway` | servers advertising `gateway` | `core` + `gateway` |
+| `authority` | servers that serve more than one principal or enforce a scope policy (advertising `authority`) | `core` + `authority` |
+| `gateway` | servers advertising `gateway` | `core` + `authority` + `gateway` |
 | `compact` | BHMS-Compact gateways and endpoints | `compact` |
 | `ws`, `http` | WebSocket and Streamable HTTP bindings | `ws` / `http` |
 | `agent` | MCP bridges and function-tool adapters | `agent` |
+
+`authority` applies to servers that serve more than one principal or enforce a scope policy, and they say so with `capabilities.authority`. A server that does
+not advertise it is single-principal: every authenticated caller has full authority, and the report says so. A gateway always claims `authority`.
 
 ## 14.2 Test methods
 
@@ -58,7 +62,11 @@ that reproduces it.
 passed or is `not-applicable` with a reason. A row a test could have proven but did not
 run (`skipped`: missing means, no declared conformance device, effects not allowed) is
 unproven and blocks the claim; a row whose method is `inspection` additionally needs
-review evidence that no test run can supply.
+review evidence that no test run can supply. A `MUST` row that no check can prove yet (`not-yet-testable`) blocks the claim exactly like a skipped one.
+
+A conformance **claim** is made against an implementation that hosts the conformance device (BHMS-CNF-001: the conformance device is declared with the
+extension `org.bhms/conformance`, or asserted behind a gateway). Against arbitrary real devices the runner can only run the generic checks and produces a
+**generic report**, which is labelled `claim: false` and never supports a profile claim.
 
 **BHMS-CNF-005** A report MUST state whether devices were physical or simulated.
 Passing against simulated devices is not evidence of physical behaviour
@@ -99,7 +107,7 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-LIF-031 | MUST | core | A server MUST mint every durable identifier itself. (03) | wire | Try to supply operationId/leaseId/cursor values the server never minted; expect INVALID_ARGUMENT or LEASE_EXPIRED. |
 | BHMS-LIF-040 | MUST | core | A server MUST send `notifications/subscriptions/acknowledged` as the first message of a subscription, carrying `_meta["bhms/subscriptionId"]` equal to the listen reque… (03) | wire | Open a listen; first message is the acknowledgement with the subscription id and refused entries for bad filters. |
 | BHMS-LIF-041 | MUST | core | A server MUST NOT send a notification type the client did not request, and MUST tag every notification on the subscription with `_meta["bhms/subscriptionId"]`. (03) | wire | Subscribe to operations only; trigger list changes and events; only operation notifications arrive, all tagged. |
-| BHMS-LIF-042 | MUST | core | A server MUST apply authorization to every notification at delivery time; revoking a principal's read scope ends delivery of what it no longer may see. (03) | wire | Revoke read scope mid-subscription; notifications for the device stop. |
+| BHMS-LIF-042 | MUST | authority | A server MUST apply authorization to every notification at delivery time; revoking a principal's read scope ends delivery of what it no longer may see. (03) | wire | Revoke read scope mid-subscription; notifications for the device stop. |
 | BHMS-LIF-043 | MUST | core | A server MUST NOT deliver observations for one `(deviceId, property)` more often than `max(minIntervalMs, capabilities.observations.minIntervalMs)`. (03) | fault | Subscribe at minIntervalMs 100 to a 50 Hz property and stop reading; rate floor holds, memory bounded, terminal operation notifications retained, and the subscription ends with a listen result endReason overflow rather than blocking the device. |
 | BHMS-LIF-044 | MUST | core | A subscription ends in exactly one of three ways: the client sends `notifications/cancelled` for its id or closes its stream (the server then sends nothing more, BHMS-… (03) | wire | Server shutdown and overflow each end the subscription with exactly one listen result carrying endReason (shutdown/overflow; unauthorized after credential revocation) and nothing after it; after a client cancel nothing is sent. |
 | BHMS-LIF-045 | MUST | core | Subscription state MUST NOT outlive the listen request. (03) | fault | Reconnect after transport loss; no notifications until a new listen; events.after resumes without loss. |
@@ -144,7 +152,7 @@ sentence of the requirement; the chapter text is normative.
 |---|---|---|---|---|---|
 | BHMS-DEV-001 | MUST | core | A `deviceId` MUST be unique within a server and MUST survive address, transport and process changes of the device. (04) | fault | Restart the device server and change its address; deviceId unchanged. Swap hardware; new digest and device.replaced event. |
 | BHMS-DEV-002 | MUST | gateway | A gateway that aggregates servers MUST keep `deviceId`s unique across upstreams; it SHOULD prefix upstream ids (`<upstream>/<deviceId>`) on collision and MUST keep the… (04) | wire | Aggregate two upstreams exposing the same id; gateway ids unique and stable across gateway restart. |
-| BHMS-DEV-010 | MUST | core | `devices/list` MUST return only devices the principal may read, and MUST NOT reveal through counts, cursors or errors that hidden devices exist. (04) | wire | A principal without read on a device: absent from list, UNKNOWN_DEVICE on describe, page counts unchanged. |
+| BHMS-DEV-010 | MUST | authority | `devices/list` MUST return only devices the principal may read, and MUST NOT reveal through counts, cursors or errors that hidden devices exist. (04) | wire | A principal without read on a device: absent from list, UNKNOWN_DEVICE on describe, page counts unchanged. |
 | BHMS-DEV-011 | MUST | core | A `DeviceSummary` SHOULD be at most 1 600 bytes of canonical JSON (about 400 tokens), and MUST be at most 4 096 bytes. (04) | wire | Measure canonical size of every DeviceSummary (<= 4096; report > 1600). |
 | BHMS-DEV-012 | MUST | core | `status: "online"` MUST mean the server has had evidence of the device's reachability within its declared liveness interval. (04) | fault | Disconnect a device; status leaves online within its liveness interval. |
 | BHMS-DEV-020 | MUST | core | A `DeviceDescription` MUST be immutable for a given `digest`: two describe results with the same digest MUST be byte-identical in canonical JSON. (04) | wire | Describe twice and after restart; canonical bytes identical for the same digest. |
@@ -213,7 +221,7 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-OPS-051 | MUST | core | Cancelling an operation whose action declares `cancel: "unsupported"` MUST set `cancel.state: "refused"` (not an error) and MUST NOT change `state`. (06) | wire | Cancel an action with cancel unsupported; cancel.state refused, state unchanged. |
 | BHMS-OPS-052 | MUST | core | `acknowledged` MUST mean only that the device or adapter received the request. (06) | fault | Drop the termination evidence after acknowledgement; state not canceled; completion racing cancel wins cleanly (HMS CANCEL-01). |
 | BHMS-OPS-053 | MUST | core | Cancelling a settled-terminal operation MUST return it unchanged. (06) | wire | Cancel a completed operation (unchanged) and an unknown operation (request recorded). |
-| BHMS-OPS-054 | MUST | core | Only the principal that created an operation, or one with the `admin` scope, MAY cancel it; others MUST receive `UNAUTHORIZED`. (06) | wire | Cancel another principal's operation; UNAUTHORIZED. Cancel without holding the lease succeeds. |
+| BHMS-OPS-054 | MUST | authority | Only the principal that created an operation, or one with the `admin` scope, MAY cancel it; others MUST receive `UNAUTHORIZED`. (06) | wire | Cancel another principal's operation; UNAUTHORIZED. Cancel without holding the lease succeeds. |
 | BHMS-OPS-055 | MUST | agent | `canceled` MUST NOT be presented as "safe" or "at rest". (06) | agent | Bridge summaries for canceled operations never say stopped or safe. |
 | BHMS-OPS-060 | MUST | core | `operations/wait` MUST return as soon as the operation is settled, or when `timeoutMs` elapses, whichever is first. (06) | wire | wait on a running operation with a short timeout returns it non-settled without error; timeout above maxWaitMs is OUT_OF_RANGE. |
 | BHMS-OPS-061 | MUST | core | `waitMs` on `actions/invoke` and `programs/run` MUST behave like `operations/wait` after admission; a server MUST NOT fail an admitted operation because the response w… (06) | wire | invoke with waitMs shorter than the action returns accepted/running without failing it. |
@@ -233,7 +241,7 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-LSE-002 | MUST | leases | A server MUST NOT grant two `active` leases that share a resource. (07) | wire | Two principals acquire overlapping resources; one gets LEASE_CONFLICT naming resources and expiry, no holder id (HMS LEASE-01). |
 | BHMS-LSE-003 | MUST | leases | Every granted lease MUST receive a `fence` strictly greater than every fence the server has issued before, across restarts (a server-wide monotonic counter). (07) | fault | Fences strictly increase across acquires and across a server restart; renew keeps the fence. |
 | BHMS-LSE-004 | MUST | leases | `ttlMs` outside `[capabilities.leases.minTtlMs, maxTtlMs]` and `waitMs` above `maxWaitMs` MUST be refused with `OUT_OF_RANGE`. (07) | wire | ttlMs below min/above max and waitMs above max are OUT_OF_RANGE; unknown resource names its index. |
-| BHMS-LSE-005 | MUST | leases | A lease belongs to the principal that acquired it. (07) | wire | Use, renew and release another principal's lease; LEASE_CONFLICT each time. |
+| BHMS-LSE-005 | MUST | authority | A lease belongs to the principal that acquired it. (07) | wire | Use, renew and release another principal's lease; LEASE_CONFLICT each time. |
 | BHMS-LSE-006 | MUST | leases | Lease expiry MUST be evaluated on the server's monotonic clock. (07) | fault | Step the wall clock; expiry follows the monotonic clock. Renew expired (LEASE_EXPIRED) and revoked (FENCED) leases. |
 | BHMS-LSE-007 | MUST | leases | An unknown `leaseId` MUST be answered with `LEASE_EXPIRED` (servers may forget leases after they end). (07) | wire | Use a fabricated leaseId; LEASE_EXPIRED. |
 | BHMS-LSE-010 | MUST | leases | For an action with `requiresLease: true`, the server MUST check at admission and again immediately before dispatch that `leaseId` is `active`, is held by the caller, c… (07) | wire | Invoke with no lease (LEASE_REQUIRED), expired/released/unknown (LEASE_EXPIRED), revoked by stop and superseded (FENCED), foreign and non-covering (LEASE_CONFLICT); no dispatch in any case. |
@@ -246,12 +254,12 @@ sentence of the requirement; the chapter text is normative.
 | ID | Level | Profile | Requirement | Method | Test |
 |---|---|---|---|---|---|
 | BHMS-AUTH-001 | MUST | core | A server MUST derive the principal only from the transport (BHMS-SEC-001) and MUST NOT accept any request member, argument, `_meta` key or device-provided text as iden… (07) | wire | Put identity claims in arguments, _meta and clientInfo; authorization decisions unchanged (HMS AUTH-01). |
-| BHMS-AUTH-002 | MUST | core | A server MUST answer a request outside the principal's scopes with `UNAUTHORIZED` naming the missing scope in `hint`, except that a device the principal may not `read`… (07) | wire | Invoke outside scope: UNAUTHORIZED naming scope; unreadable device: UNKNOWN_DEVICE. |
-| BHMS-AUTH-003 | MUST | core | An action with `effect: "hazardous"` MUST NOT be granted by an `invoke` pattern whose action part contains `*` or by a `cap:` pattern; the scope must name the action l… (07) | wire | Grant invoke:oven-*/*; invoking a hazardous action is UNAUTHORIZED; invoke:oven-1/heat grants it. |
-| BHMS-AUTH-010 | MUST | core | For every numeric or enumerated argument the server MUST enforce the **effective envelope**: the intersection of the device's schema bounds, the principal's policy bou… (07) | wire | Policy narrows volume to 200 uL; 250 is OUT_OF_RANGE with bound maximum 200; inside a program the program bound applies. |
-| BHMS-AUTH-011 | MUST | core | Policy can only narrow: an envelope computed from policy or a program MUST NOT exceed the device's declared bounds, and an empty intersection MUST make the action unav… (07) | wire | Load a policy that widens a device bound; rejected. Disjoint bounds make the action UNAUTHORIZED. |
-| BHMS-AUTH-012 | MUST | core | A fresh read of a property with `readEffect: "transaction"` MUST require an `invoke` scope matching `<deviceId>/<property>` in addition to `read`. (07) | wire | Fresh transaction read with read-only scope; UNAUTHORIZED. |
-| BHMS-AUTH-013 | MUST | core | Revoking a scope MUST deny new admissions immediately. (07) | fault | Revoke a scope while an operation runs and a request queues; queued admission denied, running one continues (HMS AUTH-03). |
+| BHMS-AUTH-002 | MUST | authority | A server MUST answer a request outside the principal's scopes with `UNAUTHORIZED` naming the missing scope in `hint`, except that a device the principal may not `read`… (07) | wire | Invoke outside scope: UNAUTHORIZED naming scope; unreadable device: UNKNOWN_DEVICE. |
+| BHMS-AUTH-003 | MUST | authority | An action with `effect: "hazardous"` MUST NOT be granted by an `invoke` pattern whose action part contains `*` or by a `cap:` pattern; the scope must name the action l… (07) | wire | Grant invoke:oven-*/*; invoking a hazardous action is UNAUTHORIZED; invoke:oven-1/heat grants it. |
+| BHMS-AUTH-010 | MUST | authority | For every numeric or enumerated argument the server MUST enforce the **effective envelope**: the intersection of the device's schema bounds, the principal's policy bou… (07) | wire | Policy narrows volume to 200 uL; 250 is OUT_OF_RANGE with bound maximum 200; inside a program the program bound applies. |
+| BHMS-AUTH-011 | MUST | authority | Policy can only narrow: an envelope computed from policy or a program MUST NOT exceed the device's declared bounds, and an empty intersection MUST make the action unav… (07) | wire | Load a policy that widens a device bound; rejected. Disjoint bounds make the action UNAUTHORIZED. |
+| BHMS-AUTH-012 | MUST | authority | A fresh read of a property with `readEffect: "transaction"` MUST require an `invoke` scope matching `<deviceId>/<property>` in addition to `read`. (07) | wire | Fresh transaction read with read-only scope; UNAUTHORIZED. |
+| BHMS-AUTH-013 | MUST | authority | Revoking a scope MUST deny new admissions immediately. (07) | fault | Revoke a scope while an operation runs and a request queues; queued admission denied, running one continues (HMS AUTH-03). |
 | BHMS-AUTH-014 | MUST | gateway | A gateway forwarding a request MUST enforce its own policy for the client principal before forwarding, but only after its own key lookup, and MUST namespace idempotency keys per client principal with the pinned deterministic formula (g- + base32(sha256(gatewayId, principal, clientKey))[:26]). (07) | wire | Two clients use the same operationKey through a gateway; upstream sees the two pinned keys and two operations; revoke the scope and replay: the original operation is returned. |
 | BHMS-AUTH-020 | MUST | core | `stop` MUST require the `stop` scope (or `admin`) and MUST NOT require, wait for, or be blocked by any lease, queue, in-flight operation, or held resource. (07) | fault | Hold every resource with long leases from another principal and saturate the queue; stop still dispatches within its budget. |
 | BHMS-AUTH-021 | MUST | core | For each target device a server MUST, in this order: dispatch the device's stop procedure (when `safety.stop` is `supported`); move its `accepted` operations to `cance… (07) | wire | Stop a device with accepted, running and unknown operations and active leases; check order effects, history entries, revocations and event. |
@@ -270,7 +278,7 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-PRG-003 | MUST | programs | A `repeat.times` reference MUST name a required integer input whose schema `minimum` is at least 1 and `maximum` at most `maxRepeat`; validation MUST use that maximum… (08) | wire | repeat.times referencing an input with maximum 2000, minimum 0, a non-integer or an optional input is refused. |
 | BHMS-PRG-004 | MUST | programs | The server MUST compute the worst-case duration as the sum, over the flattened steps with repeats multiplied out, of the per-kind durations in §8.2, and MUST refuse th… (08) | wire | Declared maxDurationMs one ms below the computed worst case is OUT_OF_RANGE with bound = computed value. |
 | BHMS-PRG-005 | MUST | programs | For every literal argument the server MUST check the action `input` and the caller's effective envelope at validation time. (08) | wire | Literal out of range and an input whose bounds exceed the action envelope are refused before any step. |
-| BHMS-PRG-006 | MUST | programs | Before the first step, the server MUST verify that the caller has `programs:run` and an `invoke` scope for every `invoke` step and every fresh `transaction` read, and… (08) | wire | Run without programs:run, without a step's invoke scope, without a covering lease; refused before step 1. |
+| BHMS-PRG-006 | MUST | authority | Before the first step, the server MUST verify that the caller has `programs:run` and an `invoke` scope for every `invoke` step and every fresh `transaction` read, and… (08) | wire | Run without programs:run, without a step's invoke scope, without a covering lease; refused before step 1. |
 | BHMS-PRG-007 | MUST | programs | The program `digest` MUST be the BHMS digest of the program object. (08) | schema | Program digests in results equal the JCS digest of the program. |
 | BHMS-PRG-010 | MUST | programs | Steps MUST execute strictly in order, one at a time. (08) | wire | Child operations appear in order with parentOperationId and derived keys matching the formula. |
 | BHMS-PRG-011 | MUST | programs | When a step fails, the program MUST start no further step. (08) | fault | Fail step 3 of 5 after an irreversible step 2; steps 4-5 never start; effects of 1-2 recorded (HMS PLAN-01). |
@@ -281,7 +289,7 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-PRG-016 | MUST | programs | The program operation's `effect` MUST be `none` if no effectful child was dispatched, `unknown` if any child is `unknown`, `verified` if every effectful child is `veri… (08) | wire | Aggregate effect for programs with no effects, all verified, mixed and one unknown child. |
 | BHMS-PRG-017 | MUST | programs | A server MUST NOT resume a program after a restart. (08) | fault | SIGKILL between steps (program ends failed INTERNAL with the last completed step), before any step (rejected), and during a step whose child becomes unknown (program unknown; settles failed once the child is reconciled); never resumes. |
 | BHMS-PRG-020 | MUST | registry | A `digest` that is not registered MUST be refused with `INVALID_ARGUMENT`, `field: "digest"`. (08) | wire | programs/get and run with an unregistered digest; INVALID_ARGUMENT field digest. |
-| BHMS-PRG-021 | MUST | registry | Registration MUST NOT grant authority: running a registered program re-checks the runner's scopes, envelope and lease (BHMS-PRG-005, BHMS-PRG-006) at each run. (08) | wire | Register as an admin, run as a principal lacking a step scope; UNAUTHORIZED. |
+| BHMS-PRG-021 | MUST | authority | Registration MUST NOT grant authority: running a registered program re-checks the runner's scopes, envelope and lease (BHMS-PRG-005, BHMS-PRG-006) at each run. (08) | wire | Register as an admin, run as a principal lacking a step scope; UNAUTHORIZED. |
 | BHMS-PRG-022 | MAY | programs | Idempotency for `programs/run` follows §6.4 with the intent `{method, digest, arguments, deadlineMs?}`; an inline program and its registered digest with the same argum… (08) | wire | Run inline then by digest with the same key and arguments; replayed true. |
 
 ### EVT
@@ -294,7 +302,7 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-EVT-010 | MUST | events | A server MUST return events in cursor order, starting strictly after `after`. (09) | wire | events/read after a cursor returns strictly later events in order. |
 | BHMS-EVT-011 | MUST | events | When `after` is older than the oldest retained event, or the log was reset (new `epoch`), the server MUST set `gap: true`. (09) | fault | Read from a cursor older than retention and across a server epoch reset; gap true (HMS STREAM-01). |
 | BHMS-EVT-012 | MUST | events | A server MUST retain events for at least `capabilities.events.retentionS` seconds. (09) | wire | Events older than retentionS minus margin are still returned. |
-| BHMS-EVT-013 | MUST | events | Event visibility MUST follow device read authority: an event about a device the principal cannot read MUST be skipped, without affecting cursor continuity (`gap` stays… (09) | wire | Events of unreadable devices are skipped without gap. |
+| BHMS-EVT-013 | MUST | authority | Event visibility MUST follow device read authority: an event about a device the principal cannot read MUST be skipped, without affecting cursor continuity (`gap` stays… (09) | wire | Events of unreadable devices are skipped without gap. |
 | BHMS-EVT-020 | MUST | events | With `subscriptions/listen` `events.after`, the server MUST first deliver retained events after that cursor, then live events, with no duplicate and no omission betwee… (09) | fault | Listen with events.after while events are produced concurrently; no duplicate or missing cursor across the replay/live seam. |
 | BHMS-EVT-030 | MUST | core | Observation notifications MUST NOT carry values larger than 64 KiB of canonical JSON; larger data MUST be returned by reference. (09) | wire | Observation notifications above 64 KiB never occur (size check on the stream). |
 
@@ -366,7 +374,7 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-SEC-002 | MUST | core | A server MUST compare bearer tokens in constant time, MUST store only their hashes, and MUST NOT log, echo or return a token. (13) | inspection | Code review: constant-time compare, hashed storage; log scan for tokens during the suite. |
 | BHMS-SEC-003 | MUST | core | A stdio server MUST treat its parent as the only principal and MUST NOT open additional listeners unless configured to. (13) | transport | stdio server opens no listening sockets (inspect /proc/net). |
 | BHMS-SEC-004 | MUST | core | A server on a non-loopback network address MUST use TLS (or an equivalent authenticated, encrypted channel) and bearer or mutual-TLS authentication. (13) | inspection | Non-loopback deployment configuration requires TLS and authentication. |
-| BHMS-SEC-010 | MUST | core | Policy MUST default to deny: a principal with no matching scope has no access beyond `server/discover`. (13) | wire | A principal with no scopes can only call server/discover. |
+| BHMS-SEC-010 | MUST | authority | Policy MUST default to deny: a principal with no matching scope has no access beyond `server/discover`. (13) | wire | A principal with no scopes can only call server/discover. |
 | BHMS-SEC-011 | MUST | gateway | Policy bounds MUST only narrow (BHMS-AUTH-011); a policy that widens a device bound MUST be rejected when loaded. (13) | wire | Policy widening a device bound fails to load. |
 | BHMS-SEC-012 | MUST | gateway | A policy change MUST take effect for new admissions without a restart and MUST be recorded as a `policy.changed` event. (13) | wire | Change the policy at runtime; new admissions follow it; policy.changed event emitted. |
 | BHMS-SEC-020 | MUST | agent | No implementation may derive authority, bounds, scopes, lease decisions or stop decisions from untrusted text. (13) | agent | Device text containing instructions never alters authorization or bridge behaviour (prompt-injection fixture). |
@@ -374,7 +382,7 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-SEC-022 | MUST | gateway | A gateway MUST verify that an upstream's description digest is correct (BHMS-DEV-021) before serving it, and MUST NOT let an upstream description widen a bound set by… (13) | wire | Upstream serving a wrong digest or a widened bound is refused/not served. |
 | BHMS-SEC-030 | MUST | core | A server MUST NOT treat any argument as an authority claim. (13) | wire | Send authorized/override/force arguments; INVALID_ARGUMENT, no effect. |
 | BHMS-SEC-031 | MUST | agent | Every refusal MUST be decided by the server; a bridge MUST NOT retry a refused request with different authority. (13) | agent | Bridge never retries a refused request with other credentials (bridge log). |
-| BHMS-SEC-040 | MUST | core | The `stop` scope MUST be grantable independently of every other scope; a principal with only `stop` can stop devices but not invoke actions, and a principal with `invo… (13) | wire | Principal with only stop can stop but not invoke; principal with invoke but no stop cannot stop. |
+| BHMS-SEC-040 | MUST | authority | The `stop` scope MUST be grantable independently of every other scope; a principal with only `stop` can stop devices but not invoke actions, and a principal with `invo… (13) | wire | Principal with only stop can stop but not invoke; principal with invoke but no stop cannot stop. |
 | BHMS-SEC-041 | MUST | core | Stop MUST remain available when the operation journal, the policy store or an upstream is degraded (BHMS-AUTH-025), but MUST still be authenticated and authorized. (13) | fault | Degrade journal, policy store and an upstream; authenticated stop still works. |
 | BHMS-SEC-042 | MUST | core | Software stop is not a safety function. (13) | inspection | Documentation and tool descriptions never call stop an emergency stop. |
 | BHMS-SEC-050 | MUST | compact | The FCS-16 detects corruption, not forgery. (13) | inspection | Deployment review: compact links are exclusive physical links. |
@@ -408,11 +416,10 @@ Shared test vectors live in `spec/bhms/conformance/vectors/*.json` so that every
 refusals and acceptances of the conformance device, BHMS-DEV-043/044, BHMS-SEC-030), `programs.json` (invalid and valid
 programs, BHMS-PRG-001..017) and `canonical.json` (RFC 8785 digest vectors, BHMS-LIF-002).
 
-Checks marked generic use only a device's own description (digest stability, argument refusals derived from declared bounds,
-unknown members and actions, key idempotency on declared actions); the others use the documented behaviour of the
-conformance device and are not applicable to a server that does not serve it. Fault-injection checks use only the
-conformance device's `x-conformance/inject` extension; a gateway does not forward it, so fault checks are skipped (and
-reported as skipped) behind one.
+Checks marked generic use only a device's own description (digest stability, argument refusals that cannot execute, unknown members and
+actions, framing); the others use the documented behaviour of the conformance device and run only on a target that declares it (or with
+`--allow-effects`; unproven otherwise). The `authority` checks need several principals with known credentials: the built-in gateway fixture and
+`conformance-device --principals` define them.
 
 The runner identifies the conformance device **only by declaration**: the `org.bhms/conformance` extension in
 `server/discover` (`{version, faults, devices}`), or, behind a gateway, an explicit `--conformance-device <id>`; device names are

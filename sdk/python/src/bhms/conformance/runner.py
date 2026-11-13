@@ -84,12 +84,16 @@ class Report:
     def claims(self) -> dict[str, dict[str, Any]]:
         """Per profile: whether the run supports claiming it (no MUST row failed or unproven) and what is outside automation."""
         out: dict[str, dict[str, Any]] = {}
+        generic = self.meta.get("reportKind") == "generic"
         for profile in self.meta.get("profiles", []):
             rows = [r for r in self.rows if r.profile == profile]
             failed = [r.id for r in rows if r.status is Status.FAILED and r.level == "MUST"]
             unproven = [r.id for r in rows if r.unproven and r.level == "MUST"]
             review = [r.id for r in rows if r.status is Status.SKIPPED and not r.unproven and r.level == "MUST"]
-            out[profile] = {"claimable": not failed and not unproven, "failed": failed, "unproven": unproven, "needsReview": review}
+            out[profile] = {"claimable": not failed and not unproven and not generic, "failed": failed, "unproven": unproven,
+                            "needsReview": review}
+            if generic:
+                out[profile]["reason"] = "generic report: the target does not host the conformance device, so no profile claim is made"
         return out
 
     @property
@@ -131,6 +135,9 @@ def expand_profiles(selected: tuple[str, ...], caps: dict[str, Any], kind: str) 
             chosen.append("http")
         if "gateway" in caps and "gateway" not in chosen:
             chosen.append("gateway")
+    if "gateway" in chosen and "authority" not in chosen:  # a gateway always claims authority
+        chosen.append("authority")
+        unavailable.pop("authority", None)
     return chosen, unavailable
 
 
@@ -146,6 +153,8 @@ def _has_capability(caps: dict[str, Any], capability: str) -> bool:
 def _gate(spec: CheckSpec, ctx: Context, opts: RunOptions) -> str | tuple[Status, str] | None:
     """``None`` to run; otherwise the status and reason the check gets without running."""
     caps = ctx.caps
+    if spec.profile == "authority" and not _has_capability(caps, "authority") and ctx.is_gateway:
+        return Status.SKIPPED, "unproven: a gateway claims the authority profile but advertises no capabilities.authority"
     if spec.profile in CAPABILITY_PROFILES and not _has_capability(caps, CAPABILITY_PROFILES[spec.profile]):
         return Status.NOT_APPLICABLE, f"capability {CAPABILITY_PROFILES[spec.profile]} is not advertised"
     effectful = spec.effects or not spec.generic
@@ -181,9 +190,11 @@ def _gate(spec: CheckSpec, ctx: Context, opts: RunOptions) -> str | tuple[Status
             return Status.SKIPPED, "unproven: this check restarts the server or breaks its own journal; behind a gateway that is the gateway's, not the devices'"
         if need == "agent" and ctx.agent is None:
             return Status.SKIPPED, "unproven: the target is not an agent bridge (use agent-bridge or mcp:<command> with --device)"
+        if need.startswith("cap:") and not _has_capability(caps, need[4:]):
+            return Status.NOT_APPLICABLE, f"capability {need[4:]} is not advertised"
         if need == "principals" and not ctx.has_principals:
             return Status.SKIPPED, "unproven: needs several principals with known credentials (the built-in gateway fixture defines them)"
-        if need == "policy" and ctx.target.config_path is None:
+        if need == "policy" and ctx.target.config_path is None and ctx.target.policy_path is None:
             return Status.SKIPPED, "unproven: needs to reload a gateway policy; only the built-in gateway fixture allows that"
         if need == "wipe" and ctx.target.state_dir is None:
             return Status.SKIPPED, "unproven: needs the durable state directory of a runner-started server"
@@ -265,18 +276,34 @@ async def run(opts: RunOptions) -> Report:
                           fatal=f"server/discover failed: {first.describe()}")
         fault_wires: dict[str, Wire] = {}
         owner = target.device if target.kind == "mcp" and target.device else target
-        for namespace, upstream in owner.upstreams.items():
-            fault_wires[namespace] = Wire(await connect_url(upstream.url or "", upstream.token), recorder, f"upstream-{namespace}").start()
-        for item in opts.upstreams:
-            namespace, sep, spec = item.partition("=")
-            if not sep:
-                return Report(_meta(opts, target, None, seed, command, [], {}), [], [], fatal=f"--upstream {item!r} must be NAMESPACE=TARGET")
-            fixture = resolve(spec, token=opts.token)
-            fault_wires[namespace] = Wire(await fixture.open_base(), recorder, f"upstream-{namespace}").start()
-            extra_targets.append(fixture)
+        try:
+            for namespace, upstream in owner.upstreams.items():
+                fault_wires[namespace] = Wire(await connect_url(upstream.url or "", upstream.token, attempts=30), recorder, f"upstream-{namespace}").start()
+            for item in opts.upstreams:
+                namespace, sep, spec = item.partition("=")
+                if not sep or not namespace or not spec:
+                    raise TargetError(f"--upstream {item!r} must be NAMESPACE=TARGET")
+                fixture = resolve(spec, token=opts.token)
+                extra_targets.append(fixture)
+                fault_wires[namespace] = Wire(await fixture.open_base(), recorder, f"upstream-{namespace}").start()
+        except (TargetError, OSError, TransportClosed, asyncio.TimeoutError, ValueError) as exc:
+            for wire_open in fault_wires.values():
+                with contextlib.suppress(Exception):
+                    await wire_open.close()
+            for fixture in extra_targets:
+                await fixture.aclose()
+            extra_targets.clear()
+            with contextlib.suppress(Exception):
+                await wire.close()
+            return Report(_meta(opts, target, None, seed, command, [], {}), [], [], fatal=f"--upstream: {exc}")
         ctx = Context(owner, recorder, wire, first.result, strict=opts.strict, allow_effects=opts.allow_effects, seed=seed,
                       asserted=opts.conformance_device, fault_wires=fault_wires, physical=opts.physical, physical_ok=opts.physical_ok)
         await ctx.locate()
+        known = {d["deviceId"] for d in await ctx.devices()}
+        missing = [d for d in opts.conformance_device if d not in known]
+        if missing:
+            return Report(_meta(opts, target, ctx, seed, command, [], {}), [], [],
+                          fatal=f"--conformance-device: the target serves no device {', '.join(missing)}; it serves {sorted(known)[:8]}")
         if target.kind == "mcp":
             from bhms.conformance.agentwire import AgentWire
 
@@ -348,6 +375,9 @@ def _meta(opts: RunOptions, target: Target | None, ctx: Context | None, seed: in
         "seed": seed,
         "strict": opts.strict,
         "allowUnproven": opts.allow_unproven,
+        "reportKind": "conformance" if ctx is not None and ctx.conformance_declared else "generic",
+        "authority": ("single-principal: every authenticated caller has full authority" if ctx is not None
+                      and not ctx.caps.get("authority") else (f"{ctx.caps['authority']['principals']} principals" if ctx else None)),
         "only": list(opts.only),
         "command": command,
         "runnerPython": sys.version.split()[0],
@@ -388,6 +418,10 @@ def render(report: Report, *, verbose: bool = False, console: Any = None) -> Non
               highlight=False)
     out.print(f"requirements: {counts['passed']} passed, {counts['failed']} failed, {counts['skipped']} skipped, "
               f"{counts['not-applicable']} not-applicable   MUST failures: {len(report.must_failed)}", highlight=False)
+    if meta.get("reportKind") == "generic":
+        out.print("[yellow]generic report: the target does not host the conformance device (no extension, no --conformance-device); "
+                  "this is not a conformance claim[/]", highlight=False)
+    out.print(f"authority: {meta.get('authority')}", highlight=False)
     for profile, claim in report.claims.items():
         verdict = "[green]supported[/]" if claim["claimable"] else (
             f"[bold red]NOT supported[/] ({len(claim['failed'])} MUST failed, {len(claim['unproven'])} MUST unproven)")

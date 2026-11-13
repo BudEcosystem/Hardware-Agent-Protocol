@@ -222,6 +222,9 @@ class DeviceServer:
             "events": {"retentionS": self.event_retention_s, "maxPageSize": self.max_page_size}}
         if self.programs_enabled:
             caps["programs"] = {"registry": True, "limits": self.program_limits}
+        authority = self.policy.authority_capability()
+        if authority:
+            caps["authority"] = authority
         if self._extensions:
             caps["extensions"] = dict(self._extensions)
         info = {"name": self.name, "version": self.version}

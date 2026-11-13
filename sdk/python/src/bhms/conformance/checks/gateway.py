@@ -103,3 +103,123 @@ async def stalled_upstream(c: Context) -> None:
             return
         await asyncio.sleep(0.3)
     c.fail("the stalled upstream was not restored within 30 s of resuming (a later answer to a liveness probe must restore it)")
+
+
+def _local(device: str) -> str:
+    """The upstream's own id of a gateway device id (``u0/axis-1`` -> ``axis-1``)."""
+    return device.split("/", 1)[1]
+
+
+@check("gateway.trace-context-propagated", ["BHMS-LIF-018"], profile="gateway", needs=("gateway", "faults"))
+async def trace_context(c: Context) -> None:
+    """traceparent and tracestate sent to the gateway reach the upstream unchanged."""
+    axis = c.axis()
+    trace = {"traceparent": "00-4bf92f3577b34da6a3ce929d0e0e4736-00f067aa0ba902b7-01", "tracestate": f"conf={c.unique('t')}"}
+    c.result(await c.call("properties/read", {"deviceId": axis, "property": "counter", "fresh": True}, meta=c.wire.meta(**trace)))
+    seen = (await c.counters(axis)).get("trace", {})
+    c.expect(seen == trace, f"the upstream saw {seen}, the client sent {trace}")
+
+
+@check("gateway.fence-forwarded", ["BHMS-LSE-011"], profile="gateway", needs=("gateway", "faults", "leases"))
+async def fence_forwarded(c: Context) -> None:
+    """The gateway forwards its lease to the enforcement point: the upstream's own record of the operation carries a lease id
+    and a fence (so a superseded holder can be rejected there)."""
+    axis = c.axis()
+    key = c.unique("fence")
+    lease = (await c.ok("leases/acquire", {"resources": [f"{axis}/clamp"], "ttlMs": 30_000}))["lease"]
+    try:
+        op = await c.run(axis, "clamp", {"force": 3}, leaseId=lease["leaseId"], operationKey=key)
+    finally:
+        await c.ok("leases/release", {"leaseId": lease["leaseId"]})
+    c.expect(op["state"] == "completed", f"clamp under the gateway lease ended {op['state']}")
+    wire = c._fault_wire(axis)
+    upstream_ops = (await c.ok("operations/list", {"deviceId": _local(axis), "limit": 50}, wire=wire))["operations"]
+    forwarded = [o for o in upstream_ops if o["action"] == "clamp" and o.get("leaseId") and isinstance(o.get("fence"), int)]
+    c.expect(forwarded, "the upstream recorded no clamp operation under a lease with a fence: the gateway did not forward it")
+
+
+@check("gateway.refuses-wrong-upstream-digest", ["BHMS-SEC-022"], profile="gateway", needs=("gateway", "faults"), timeout=60)
+async def wrong_upstream_digest(c: Context) -> None:
+    """A description whose upstream digest is not the digest of the description is not served: an upstream that revises its
+    description while serving a wrong digest does not change what the gateway serves; the revision is served once the digest is
+    right."""
+    import asyncio
+    import time
+
+    victim, healthy = c.axis_ids[-1], c.axis_ids[0]
+    c.expect(victim != healthy, "needs two upstreams")
+
+    async def revision() -> str:
+        c._descriptions.pop(victim, None)
+        events = (await c.describe(victim)).get("events") or {}
+        return str((events.get("conformance.revised") or {}).get("description", ""))
+
+    before = await revision()
+    await c.inject("bad_digest", victim)
+    try:
+        await c.inject("change_description", victim)  # a new description body, advertised with a digest that does not match it
+        await asyncio.sleep(2.5)
+        c.expect(await revision() == before, "the gateway served a description whose upstream digest is wrong (BHMS-SEC-022)")
+        c.expect(any(d["deviceId"] == healthy for d in await c.devices(refresh=True)), "the other upstream's devices must stay served")
+    finally:
+        await c.inject("good_digest", victim)
+    deadline = time.monotonic() + 10
+    now = before
+    while now == before and time.monotonic() < deadline:
+        await asyncio.sleep(0.3)
+        now = await revision()
+    c.expect(now != before, "the revised description must be served once the upstream's digest is right again")
+
+
+@check("gateway.restart-recovery", ["BHMS-OPS-005", "BHMS-OPS-034", "BHMS-OPS-063", "BHMS-OPS-080", "BHMS-OPS-081", "BHMS-LSE-003",
+                                    "BHMS-DEV-001", "BHMS-EVT-011", "BHMS-LIF-045"],
+       profile="gateway", needs=("gateway", "restart", "durable"), timeout=120)
+async def gateway_restart(c: Context) -> None:
+    """Kill the gateway (its upstreams are independent processes and survive) with a keyed completed operation, a running one
+    and a lease: same epoch and records after restart; the in-flight operation passes through unknown and is reconciled with the
+    upstream without a re-send (the device's counter does not move); a wiped state is a new epoch and a gap."""
+    import asyncio
+
+    axis = c.axis()
+    key = c.unique("gw-durable")
+    done = await c.ok("actions/invoke", {"deviceId": axis, "action": "pulse", "arguments": {"count": 1}, "operationKey": key, "waitMs": 3000})
+    running = await c.invoke_op(axis, "slow_move", {"duration_ms": 20_000})
+    lease = (await c.ok("leases/acquire", {"resources": [f"{axis}/clamp"], "ttlMs": 60_000}))["lease"]
+    counter_before = await c.counter(axis)
+    cursor = (await c.ok("events/read", {"limit": 500}))["cursor"] if "events" in c.caps else None
+    epoch = c.discover_result["epoch"]
+    digest = (await c.describe(axis))["digest"]
+    await c.reconnect_base(await c.target.restart(kill=True))
+    await c.locate()
+    c.expect(c.discover_result["epoch"] == epoch, f"a durable gateway keeps its epoch across a restart: {epoch} -> {c.discover_result['epoch']}")
+    c.expect(c.axis() == axis and (await c.describe(axis))["digest"] == digest, "device ids and digests must survive a gateway restart")
+    again = await c.ok("actions/invoke", {"deviceId": axis, "action": "pulse", "arguments": {"count": 1}, "operationKey": key})
+    c.expect(again["replayed"] is True and again["operation"]["operationId"] == done["operation"]["operationId"],
+             "a key must survive a gateway restart (replayed true, same operation)")
+    c.expect((await c.get_op(done["operation"]["operationId"]))["state"] == "completed", "a settled operation must survive a gateway restart")
+    deadline = asyncio.get_running_loop().time() + 15
+    while True:  # the in-flight operation is found dispatching/running at start: unknown, then reconciled with the upstream
+        interrupted = await c.get_op(running["operationId"])
+        kinds = [(h.get("kind"), h.get("state")) for h in interrupted.get("history", [])]
+        if ("state", "unknown") in kinds and interrupted["state"] != "unknown" or asyncio.get_running_loop().time() > deadline:
+            break
+        await asyncio.sleep(0.3)
+    c.expect(("state", "unknown") in kinds, f"in-flight work must pass through unknown after a restart (BHMS-OPS-080); history: {kinds}")
+    if interrupted["state"] != "unknown":
+        c.expect(any(k == "reconciliation" for k, _ in kinds), f"leaving unknown needs a reconciliation entry (BHMS-OPS-005); history: {kinds}")
+        c.expect((interrupted.get("error") or {}).get("mayHaveActed") is not False or interrupted["state"] != "failed",
+                 "a command the upstream is still executing must not reconcile to a failure with mayHaveActed false")
+    c.expect(await c.counter(axis) == counter_before, "the restarted gateway re-sent a command to the device (BHMS-OPS-081)")
+    fresh = (await c.ok("leases/acquire", {"resources": [f"{axis}/motion"], "ttlMs": 5_000}))["lease"]
+    c.expect(fresh["fence"] > lease["fence"], f"fences must increase across a gateway restart: {lease['fence']} -> {fresh['fence']}")
+    await c.ok("leases/release", {"leaseId": fresh["leaseId"]})
+    await c.ok("stop", {"reason": "conformance: end the in-flight operation", "deviceIds": [axis]})
+    await c.target.stop_base(kill=False)
+    await c.target.wipe_state()
+    await c.reconnect_base(await c.target.open_base())
+    await c.locate()
+    c.expect(c.discover_result["epoch"] != epoch, "a wiped gateway store must start a new epoch")
+    if cursor is not None:
+        response = await c.call("events/read", {"after": cursor})
+        c.expect(response.ok and response.result["gap"] is True or response.code == "INVALID_ARGUMENT",
+                 f"reading from a cursor of an earlier epoch is a gap (or INVALID_ARGUMENT): {response.describe()}")

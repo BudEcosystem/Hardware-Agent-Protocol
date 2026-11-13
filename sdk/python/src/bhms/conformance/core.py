@@ -19,8 +19,9 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any
 
-PROFILES = ("core", "leases", "events", "programs", "registry", "gateway", "compact", "ws", "http", "agent")
-CAPABILITY_PROFILES = {"leases": "leases", "events": "events", "programs": "programs", "registry": "programs.registry"}
+PROFILES = ("core", "authority", "leases", "events", "programs", "registry", "gateway", "compact", "ws", "http", "agent")
+CAPABILITY_PROFILES = {"leases": "leases", "events": "events", "programs": "programs", "registry": "programs.registry",
+                       "authority": "authority"}
 
 
 class Status(str, Enum):

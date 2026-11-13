@@ -76,6 +76,10 @@ class GatewayCapability(_Wire):
     upstreams: NonNegInt
 
 
+class AuthorityCapability(_Wire):
+    principals: PosInt
+
+
 class ServerCapabilities(_Wire):
     devices: Optional[DevicesCapability] = None
     observations: Optional[ObservationsCapability] = None
@@ -87,6 +91,7 @@ class ServerCapabilities(_Wire):
     programs: Optional[ProgramsCapability] = None
     compact: Optional[CompactCapability] = None
     gateway: Optional[GatewayCapability] = None
+    authority: Optional[AuthorityCapability] = None
     extensions: Optional[Extensions] = None
 
 

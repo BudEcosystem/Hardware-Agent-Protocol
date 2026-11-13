@@ -26,27 +26,15 @@ def _axis(c: Context, namespace: str = "u0") -> str:
     return c.axis()
 
 
-@check("authority.credentials-required", ["BHMS-SEC-001"], needs=NEEDS, generic=True)
-async def credentials_required(c: Context) -> None:
-    """A network request without a valid credential is refused; discover alone may be answered without a principal."""
-    import websockets
-    from websockets.exceptions import InvalidStatus
-
-    if c.target.kind == "ws":
-        for token in (None, "wrong-token"):
-            try:
-                conn = await websockets.connect(c.target.url, subprotocols=["bhms"],
-                                                additional_headers={"Authorization": f"Bearer {token}"} if token else None)
-            except InvalidStatus as exc:
-                c.expect(exc.response.status_code == 401, f"HTTP {exc.response.status_code} for token {token!r}, expected 401")
-            else:
-                await conn.close()
-                c.fail(f"a WebSocket upgrade with token {token!r} was accepted")
-    else:
-        c.skip("the credential check is implemented for WebSocket targets")
+def _outside_grant(c: Context) -> tuple[str, str, dict[str, object]]:
+    """A device, action and arguments outside what the ``agent`` role may invoke (behind the gateway: the other upstream; on a
+    single device server: ``pump-1``)."""
+    if c.is_gateway:
+        return _axis(c, "u1"), "pulse", {"count": 1}
+    return c.pump(), "dispense", {"volume": 5.0}
 
 
-@check("authority.default-deny", ["BHMS-SEC-010", "BHMS-AUTH-002", "BHMS-DEV-010"], needs=NEEDS)
+@check("authority.default-deny", ["BHMS-SEC-010", "BHMS-AUTH-002", "BHMS-DEV-010"], profile="authority", needs=NEEDS)
 async def default_deny(c: Context) -> None:
     """A principal with no scopes sees nothing and can do nothing beyond server/discover."""
     async with c.fresh_wire("nobody") as wire:
@@ -66,10 +54,11 @@ async def default_deny(c: Context) -> None:
         c.expect(ops.error is not None or ops.result["operations"] == [], "a principal with no scopes must see no operations", ("BHMS-SEC-010",))
 
 
-@check("authority.scope-refusals", ["BHMS-AUTH-002", "BHMS-AUTH-012"], needs=NEEDS)
+@check("authority.scope-refusals", ["BHMS-AUTH-002", "BHMS-AUTH-012"], profile="authority", needs=NEEDS)
 async def scope_refusals(c: Context) -> None:
     """UNAUTHORIZED names the missing scope; a fresh transaction read needs invoke scope as well as read."""
-    device, other = _axis(c, "u0"), _axis(c, "u1")
+    device = _axis(c, "u0")
+    other, other_action, other_args = _outside_grant(c)
     async with c.fresh_wire("reader") as reader:
         response = await reader.request("actions/invoke", {"deviceId": device, "action": "pulse", "arguments": {"count": 1}})
         data = c.refused(response, "UNAUTHORIZED", what="invoke with read scope only", ids=("BHMS-AUTH-002",))
@@ -78,12 +67,13 @@ async def scope_refusals(c: Context) -> None:
         data = c.refused(response, "UNAUTHORIZED", what="fresh transaction read with read scope only", ids=("BHMS-AUTH-012",))
         c.expect("invoke" in (data.get("hint", "") + response.error["message"]), "the refusal must name the invoke scope", ("BHMS-AUTH-012",))
     async with c.fresh_wire("agent") as agent:
-        response = await agent.request("actions/invoke", {"deviceId": other, "action": "pulse", "arguments": {"count": 1}})
+        response = await agent.request("actions/invoke", {"deviceId": other, "action": other_action, "arguments": other_args})
         c.refused(response, "UNAUTHORIZED", what="invoke outside the granted pattern", ids=("BHMS-AUTH-002",))
-        c.expect(f"invoke:{other}/pulse" in json.dumps(response.error) or "invoke" in response.data.get("hint", ""), "the refusal must name the scope", ("BHMS-AUTH-002",))
+        c.expect(f"invoke:{other}/{other_action}" in json.dumps(response.error) or "invoke" in response.data.get("hint", ""),
+                 "the refusal must name the scope", ("BHMS-AUTH-002",))
 
 
-@check("authority.effective-envelope", ["BHMS-AUTH-010", "BHMS-AUTH-011"], needs=NEEDS)
+@check("authority.effective-envelope", ["BHMS-AUTH-010", "BHMS-AUTH-011"], profile="authority", needs=NEEDS)
 async def effective_envelope(c: Context) -> None:
     """Policy bounds narrow the device bounds: beyond them OUT_OF_RANGE with the policy bound, inside they work, and the
     served description shows the narrowed bound, never a wider one."""
@@ -102,7 +92,7 @@ async def effective_envelope(c: Context) -> None:
     c.expect(maximum <= declared, f"policy must only narrow: served maximum {maximum} exceeds the device's {declared}", ("BHMS-AUTH-011",))
 
 
-@check("authority.stop-scope-independence", ["BHMS-SEC-040", "BHMS-AUTH-020"], needs=NEEDS)
+@check("authority.stop-scope-independence", ["BHMS-SEC-040", "BHMS-AUTH-020"], profile="authority", needs=NEEDS)
 async def stop_scope(c: Context) -> None:
     """stop is a scope of its own; with it, stop is not blocked by another principal's leases or queue."""
     device = _axis(c)
@@ -124,7 +114,7 @@ async def stop_scope(c: Context) -> None:
                  f"stop must proceed and revoke the other principal's lease: {stops[0]}", ("BHMS-AUTH-020",))
 
 
-@check("authority.ownership", ["BHMS-OPS-054", "BHMS-OPS-062", "BHMS-LSE-005"], needs=NEEDS)
+@check("authority.ownership", ["BHMS-OPS-054", "BHMS-OPS-062", "BHMS-LSE-005"], profile="authority", needs=NEEDS)
 async def ownership(c: Context) -> None:
     """Operations and leases belong to their creator: others cannot see, cancel, renew, release or use them."""
     device = _axis(c)
@@ -144,7 +134,7 @@ async def ownership(c: Context) -> None:
         await agent.request("leases/release", {"leaseId": lease["leaseId"]})
 
 
-@check("authority.key-isolation", ["BHMS-AUTH-014", "BHMS-OPS-030"], needs=NEEDS)
+@check("authority.key-isolation", ["BHMS-AUTH-014", "BHMS-OPS-030"], profile="authority", needs=NEEDS)
 async def key_isolation(c: Context) -> None:
     """The same operationKey from two principals is two operations (keys are per principal)."""
     device = _axis(c)
@@ -161,7 +151,7 @@ async def key_isolation(c: Context) -> None:
     c.expect(await c.counter(device) == before + 2, "each principal's request must have acted exactly once", ("BHMS-AUTH-014",))
 
 
-@check("authority.policy-changes", ["BHMS-AUTH-013", "BHMS-SEC-012", "BHMS-SEC-011"], needs=("principals", "policy"), timeout=60)
+@check("authority.policy-changes", ["BHMS-AUTH-013", "BHMS-SEC-012", "BHMS-SEC-011"], profile="authority", needs=("principals", "policy"), timeout=60)
 async def policy_changes(c: Context) -> None:
     """A reloaded policy applies to new admissions at once (running work continues), is recorded as policy.changed, and a
     policy that widens a device bound does not take effect."""
@@ -184,10 +174,12 @@ async def policy_changes(c: Context) -> None:
             restored = await agent.request("actions/invoke", {"deviceId": device, "action": "pulse", "arguments": {"count": 1}, "waitMs": 1000})
             c.expect(restored.ok, f"restoring the policy must take effect without a restart: {restored.describe()}", ("BHMS-SEC-012",))
             await c.target.reload_policy(widened)
-            served = (await agent.request("devices/describe", {"deviceId": device})).result["description"]
-            maximum = served["actions"]["move_to"]["input"]["properties"]["position"]["maximum"]
             narrow = ROLES["agent"].bounds["u0/axis-1/move_to"]["position"]["maximum"]
-            c.expect(maximum == narrow, f"a policy that widens a bound must be rejected at load; the served maximum became {maximum}, not {narrow}",
+            beyond = await agent.request("actions/invoke", {"deviceId": device, "action": "move_to", "arguments": {"position": narrow + 50}})
+            data = c.refused(beyond, "OUT_OF_RANGE", what="a value beyond the old bound after a policy that widens it was offered",
+                             ids=("BHMS-SEC-011",))
+            c.expect(isinstance(data.get("bound"), dict) and data["bound"].get("maximum") == narrow,
+                     f"a policy that widens a device bound must be rejected at load; the effective bound became {data.get('bound')}, not {narrow}",
                      ("BHMS-SEC-011",))
         finally:
             with contextlib.suppress(Exception):
@@ -195,7 +187,7 @@ async def policy_changes(c: Context) -> None:
             await asyncio.sleep(0.1)
 
 
-@check("authority.hazardous-needs-literal-scope", ["BHMS-AUTH-003"], needs=NEEDS)
+@check("authority.hazardous-needs-literal-scope", ["BHMS-AUTH-003"], profile="authority", needs=NEEDS)
 async def hazardous_literal(c: Context) -> None:
     """A glob invoke scope grants ordinary actions but never a hazardous one; only a scope naming it literally does."""
     device = _axis(c)
@@ -213,7 +205,7 @@ async def hazardous_literal(c: Context) -> None:
         await exact.request("leases/release", {"leaseId": lease["leaseId"]})
 
 
-@check("authority.read-revocation-ends-delivery", ["BHMS-LIF-042"], needs=("principals", "policy"), timeout=60)
+@check("authority.read-revocation-ends-delivery", ["BHMS-LIF-042"], profile="authority", needs=("principals", "policy"), timeout=60)
 async def read_revocation(c: Context) -> None:
     """Notifications are authorized at delivery: after a principal's read scope is revoked, nothing more reaches it."""
     if "events" not in c.caps:
@@ -234,3 +226,53 @@ async def read_revocation(c: Context) -> None:
         finally:
             await c.target.reload_policy(ROLES)
             await stream.cancel()
+
+
+def _program(steps: list[dict[str, object]], name: str) -> dict[str, object]:
+    return {"bhmsProgram": "2026-11-13", "name": name, "description": "authority conformance program",
+            "input": {"type": "object", "additionalProperties": False, "properties": {}}, "maxDurationMs": 60_000, "steps": steps}
+
+
+@check("authority.programs-need-authority", ["BHMS-PRG-006", "BHMS-PRG-021"], profile="authority", needs=("principals", "cap:programs"))
+async def programs_authority(c: Context) -> None:
+    """programs:run, an invoke scope for every step and a covering lease are checked before step 1, at every run, whoever
+    registered the program."""
+    device, pump = _axis(c), c.pump()
+    base = await c.counter(device)
+    own = _program([{"kind": "invoke", "deviceId": device, "action": "pulse", "arguments": {"count": 1}}], "auth_own")
+    outside = _program([{"kind": "invoke", "deviceId": pump, "action": "dispense", "arguments": {"volume": 5.0}}], "auth_outside")
+    leased = _program([{"kind": "invoke", "deviceId": device, "action": "clamp", "arguments": {"force": 5}}], "auth_leased")
+    async with c.fresh_wire("reader") as reader, c.fresh_wire("agent") as agent:
+        c.refused(await reader.request("programs/run", {"program": own, "arguments": {}}), "UNAUTHORIZED",
+                  what="a program run without programs:run", ids=("BHMS-PRG-006",))
+        c.refused(await agent.request("programs/run", {"program": outside, "arguments": {}}), "UNAUTHORIZED",
+                  what="a program with a step outside the invoke grant", ids=("BHMS-PRG-006",))
+        refused = await agent.request("programs/run", {"program": leased, "arguments": {}})
+        c.refused(refused, "LEASE_REQUIRED", what="a program whose step needs a lease, run without one", ids=("BHMS-PRG-006",))
+        info = (await c.ok("programs/register", {"program": own}))["info"]
+        c.refused(await reader.request("programs/run", {"digest": info["digest"], "arguments": {}}), "UNAUTHORIZED",
+                  what="running a registered program without programs:run", ids=("BHMS-PRG-021",))
+        registered = (await c.ok("programs/register", {"program": outside}))["info"]
+        c.refused(await agent.request("programs/run", {"digest": registered["digest"], "arguments": {}}), "UNAUTHORIZED",
+                  what="registration must not grant the step authority", ids=("BHMS-PRG-021",))
+    c.expect(await c.counter(device) == base, "a refused program reached the device")
+
+
+@check("authority.events-visibility", ["BHMS-EVT-013"], profile="authority", needs=("principals", "cap:events"))
+async def events_visibility(c: Context) -> None:
+    """Events about devices a principal may not read are skipped without breaking cursor continuity (no gap, no error naming
+    them)."""
+    device = _axis(c)
+    before = (await c.ok("events/read", {"limit": 1}))["cursor"]
+    await c.ok("stop", {"reason": "conformance visibility", "deviceIds": [device]})
+    mine = (await c.ok("events/read", {"after": before, "limit": 100}))["events"]
+    c.expect(any(e.get("deviceId") == device for e in mine), "the administrator must see the stop event")
+    async with c.fresh_wire("nobody") as nobody:
+        response = await nobody.request("events/read", {"after": before, "limit": 100})
+        if response.ok:
+            seen = response.result["events"]
+            c.expect(not [e for e in seen if e.get("deviceId") == device] and response.result["gap"] is False,
+                     "events of an unreadable device must be skipped without a gap")
+        else:
+            c.expect(response.code in ("UNAUTHORIZED", "UNKNOWN_DEVICE") and device not in json.dumps(response.error),
+                     f"a principal without read scope gets no events and no hint of the device: {response.describe()}")

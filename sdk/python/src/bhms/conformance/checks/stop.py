@@ -78,3 +78,13 @@ async def stop_under_load(c: Context) -> None:
     c.expect(stopped["outcome"] in ("confirmed", "initiated") and len(handled) >= 20, f"stop under load: {stopped['outcome']}, handled {len(handled)} operations")
     for lease in leases:
         c.expect(lease["leaseId"] in stopped["revokedLeases"], "the held lease must be revoked by stop")
+
+
+@check("stop.target-validation", ["BHMS-AUTH-026", "BHMS-LIF-015"])
+async def stop_target_validation(c: Context) -> None:
+    """Device-specific (these two requests would stop real devices on a server that ignored the defect): stop needs exactly one
+    target, and a reason."""
+    axis = c.axis()
+    c.refused(await c.call("stop", {"reason": "closed"}), "INVALID_ARGUMENT", what="stop without a target")
+    c.refused(await c.call("stop", {"reason": "closed", "deviceIds": [axis], "scope": "all"}), "INVALID_ARGUMENT", what="stop with two targets")
+    c.refused(await c.call("stop", {"deviceIds": [axis]}), "INVALID_ARGUMENT", what="stop without a reason")

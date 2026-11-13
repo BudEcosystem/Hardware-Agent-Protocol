@@ -277,16 +277,48 @@ async def unix_socket_mode(c: Context) -> None:
     c.expect(mode & 0o077 == 0, f"the socket {path} has mode {mode:04o}: wider than a policy that grants only the owner")
 
 
-@check("transport.no-token-in-logs", ["BHMS-SEC-002"], generic=True)
+@check("transport.no-token-in-logs", [], generic=True)
 async def no_token_in_logs(c: Context) -> None:
-    """No bearer token of the run appears in the log of any server the runner started (partial: constant-time comparison and
-    hashed storage need code review)."""
+    """A finding only (BHMS-SEC-002 is an inspection row, never an automated pass): a bearer token of the run that appears in the
+    log of a server the runner started is reported as a warning. Servers without a token or log are not affected."""
     targets = [c.target, *c.target.upstreams.values(), *(([c.target.device]) if c.target.device else [])]
     logs = [t.log_path for t in targets if t.log_path is not None and t.log_path.is_file()]
     tokens = {tok for t in targets for tok in (t.token, *t.tokens.values()) if tok}
-    if not logs or not tokens:
-        c.skip("no server log captured by the runner, or no bearer token in use")
     for log in logs:
         text = log.read_text(errors="replace")
         leaked = [tok[:8] + "..." for tok in tokens if tok in text]
-        c.expect(not leaked, f"{log.name} contains bearer tokens: {leaked}")
+        if leaked:
+            c.warn(f"BHMS-SEC-002: {log.name} contains bearer tokens: {leaked}")
+
+
+
+@check("security.credentials-required", ["BHMS-SEC-001"], generic=True)
+async def credentials_required(c: Context) -> None:
+    """A request on a network transport without a valid credential is refused (WebSocket upgrade: HTTP 401; Streamable HTTP:
+    401 for everything except server/discover). Stdio and Unix peers are identified by the transport itself."""
+    if c.target.kind not in ("ws", "http"):
+        c.not_applicable("the principal of this binding comes from the transport itself (stdio parent, socket peer credential)")
+    if c.target.kind == "ws":
+        import websockets
+        from websockets.exceptions import InvalidStatus
+
+        for token in (None, "not-a-valid-token-" + c.unique("t")):
+            try:
+                conn = await websockets.connect(c.target.url, subprotocols=["bhms"],
+                                                additional_headers={"Authorization": f"Bearer {token}"} if token else None)
+            except InvalidStatus as exc:
+                c.expect(exc.response.status_code == 401, f"HTTP {exc.response.status_code} for token {token!r}, expected 401")
+            else:
+                await conn.close()
+                c.fail(f"a WebSocket upgrade with token {token!r} was accepted")
+        return
+    import aiohttp
+
+    request = {"jsonrpc": "2.0", "id": 1, "method": "devices/list", "params": {"_meta": c.wire.meta()}}
+    headers = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream", "BHMS-Protocol-Version": PROTOCOL_VERSION,
+               "BHMS-Method": "devices/list"}
+    async with aiohttp.ClientSession() as session:
+        for token in (None, "not-a-valid-token-" + c.unique("t")):
+            async with session.post(c.target.url, data=json.dumps(request),
+                                    headers={**headers, **({"Authorization": f"Bearer {token}"} if token else {})}) as response:
+                c.expect(response.status == 401, f"a request with token {token!r} got HTTP {response.status}, expected 401")

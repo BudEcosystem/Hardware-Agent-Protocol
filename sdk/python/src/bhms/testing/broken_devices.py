@@ -6,9 +6,10 @@
 A defect is a pair of message transforms (and, for one, a patch of the lease manager), so the implementation under test is
 the real SDK with exactly one behaviour changed; the conformance runner knows nothing about it.
 
-Each defect records ``checks``: the runner checks that must fail (``observers.all-traffic`` is the whole-run observer, fed by
-the ``drive`` checks) and ``requirements``: the requirement IDs that must come out failed.
-``tests/test_conformance_broken.py`` runs the runner against every defect and asserts exactly that.
+Each defect records ``checks`` (the runner checks that fail when only those and its ``drive`` checks run; ``observers.all-traffic``
+is the whole-run observer, fed by the ``drive`` checks), ``full`` (the set that fails against the full check set) and
+``requirements`` (the requirement IDs that must come out failed). ``tests/test_conformance_runner.py`` asserts the first in
+the default suite and the second in the ``slow`` test (``python3 -m pytest -m slow``).
 
 Thread-safety: one event loop.
 """
@@ -54,6 +55,8 @@ class Defect:
     outgoing: Callable[[Message, State], list[Message]] | None = None
     patch: Callable[[Any], None] | None = None
     delay_stop_s: float = 0.0
+    full: tuple[str, ...] = ()
+    """Every check that fails when the runner runs its FULL applicable check set (measured; the slow test asserts it)."""
     drive: tuple[str, ...] = ()
     """Checks to run so that the traffic that exposes the defect exists (for defects only an observer can see)."""
 
@@ -379,6 +382,7 @@ _EXACT: dict[str, tuple[str, ...]] = {
         "programs.registry",
         "programs.validation-refusals",
         "stop.closed-parameters",
+        "stop.target-validation",
     ),
     "fabricated-cursor-accepted": (
         "lifecycle.cursors-and-ordering",
@@ -403,7 +407,7 @@ _EXACT: dict[str, tuple[str, ...]] = {
         "operations.wait-semantics",
     ),
 }
-DEFECTS = {name: replace(defect, checks=_EXACT.get(name, defect.checks)) for name, defect in DEFECTS.items()}
+DEFECTS = {name: replace(defect, full=_EXACT.get(name, defect.checks)) for name, defect in DEFECTS.items()}
 
 
 # ---------------------------------------------------------------------- the wrapper

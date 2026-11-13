@@ -183,3 +183,29 @@ def test_exit_status_and_claims_distinguish_failed_unproven_and_outside_automati
     should = Report(meta, [], [row("BHMS-DEV-033", Status.FAILED, level="SHOULD")])
     assert should.exit_code == 0  # a SHOULD finding does not fail the run
     assert Report(meta, [], [], fatal="x").exit_code == 2
+
+
+def test_a_row_no_check_can_prove_yet_blocks_the_claim_and_a_generic_report_never_claims():
+    from bhms.conformance.core import RequirementRow
+    from bhms.conformance.runner import Report
+
+    untestable = RequirementRow(id="BHMS-EVT-013", level="MUST", profile="events", method="wire", status=Status.SKIPPED, unproven=True,
+                                reason="not-yet-testable: x")
+    inspected = RequirementRow(id="BHMS-SEC-004", level="MUST", profile="events", method="inspection", status=Status.SKIPPED,
+                               reason="inspection: x")
+    passed = RequirementRow(id="BHMS-EVT-001", level="MUST", profile="events", method="wire", status=Status.PASSED)
+    blocked = Report({"profiles": ["events"]}, [], [passed, untestable, inspected])
+    assert not blocked.claims["events"]["claimable"] and blocked.claims["events"]["unproven"] == ["BHMS-EVT-013"] and blocked.exit_code == 3
+    review = Report({"profiles": ["events"]}, [], [passed, inspected])
+    assert review.claims["events"]["claimable"] and review.claims["events"]["needsReview"] == ["BHMS-SEC-004"]
+    generic = Report({"profiles": ["events"], "reportKind": "generic"}, [], [passed])
+    assert not generic.claims["events"]["claimable"] and "generic report" in generic.claims["events"]["reason"]
+
+
+def test_a_stop_result_without_stops_and_other_non_conforming_shapes_are_findings_not_crashes():
+    broken = _recording(_response("stop", {"resultType": "complete"}))
+    assert _bad(broken, "BHMS-AUTH-022")
+    weird = _recording(_response("devices/list", {"resultType": "complete", "devices": [5, "x", None]}),
+                       _response("operations/get", {"resultType": "complete", "operation": {"state": "completed", "history": [1, 2]}}))
+    findings = observers.observe(weird, {}).findings  # must return, whatever the shapes
+    assert isinstance(findings, dict)
