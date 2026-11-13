@@ -1,0 +1,2218 @@
+{
+ "description": "Programs for the conformance device. {{axis}} is the deviceId of axis-1. `invalid`: programs/run must be refused with a JSON-RPC error (expect.codes, naming expect.field when given and, for bound, carrying that bound) without creating an operation or touching the device. `valid`: programs the runner executes to observe ordering, failure, effect aggregation, waitUntil/assert, cancellation and restart behaviour.",
+ "invalid": [
+  {
+   "name": "unknown step kind",
+   "ids": [
+    "BHMS-PRG-001",
+    "BHMS-PRG-002"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {}
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "jump",
+      "target": 1
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT"
+    ],
+    "field": "program.steps[0]"
+   }
+  },
+  {
+   "name": "unknown member in a step",
+   "ids": [
+    "BHMS-PRG-002"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {}
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "sleep",
+      "durationMs": 10,
+      "extra": 1
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT"
+    ],
+    "field": "program.steps[0]"
+   }
+  },
+  {
+   "name": "unknown device",
+   "ids": [
+    "BHMS-PRG-002"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {}
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "invoke",
+      "deviceId": "no-such-device",
+      "action": "pulse",
+      "arguments": {
+       "count": 1
+      }
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "UNKNOWN_DEVICE",
+     "INVALID_ARGUMENT"
+    ],
+    "field": "program.steps[0]"
+   }
+  },
+  {
+   "name": "unknown action",
+   "ids": [
+    "BHMS-PRG-002"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {}
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "invoke",
+      "deviceId": "{{axis}}",
+      "action": "no_such_action",
+      "arguments": {}
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "UNKNOWN_ACTION",
+     "INVALID_ARGUMENT"
+    ],
+    "field": "program.steps[0]"
+   }
+  },
+  {
+   "name": "unknown property",
+   "ids": [
+    "BHMS-PRG-002"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {}
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "read",
+      "deviceId": "{{axis}}",
+      "property": "no_such_property",
+      "saveAs": "x"
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT",
+     "UNKNOWN_ACTION"
+    ],
+    "field": "program.steps[0]"
+   }
+  },
+  {
+   "name": "undefined variable",
+   "ids": [
+    "BHMS-PRG-002"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {}
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "invoke",
+      "deviceId": "{{axis}}",
+      "action": "pulse",
+      "arguments": {
+       "count": "${nope}"
+      }
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT",
+     "OUT_OF_RANGE"
+    ],
+    "field": "program.steps[0].arguments.count"
+   }
+  },
+  {
+   "name": "variable defined later",
+   "ids": [
+    "BHMS-PRG-002"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {}
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "assert",
+      "predicate": {
+       "op": "eq",
+       "left": "${later}",
+       "right": 1
+      },
+      "message": "m"
+     },
+     {
+      "kind": "read",
+      "deviceId": "{{axis}}",
+      "property": "counter",
+      "saveAs": "later"
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT"
+    ],
+    "field": "program.steps[0]"
+   }
+  },
+  {
+   "name": "saveAs shadows an input",
+   "ids": [
+    "BHMS-PRG-002"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "n"
+     ],
+     "properties": {
+      "n": {
+       "type": "integer",
+       "x-bhms-unit": "1",
+       "minimum": 1,
+       "maximum": 3
+      }
+     }
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "read",
+      "deviceId": "{{axis}}",
+      "property": "counter",
+      "saveAs": "n"
+     }
+    ]
+   },
+   "arguments": {
+    "n": 1
+   },
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT"
+    ],
+    "field": "program.steps[0]"
+   }
+  },
+  {
+   "name": "variable defined twice",
+   "ids": [
+    "BHMS-PRG-002"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {}
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "read",
+      "deviceId": "{{axis}}",
+      "property": "counter",
+      "saveAs": "v"
+     },
+     {
+      "kind": "read",
+      "deviceId": "{{axis}}",
+      "property": "counter",
+      "saveAs": "v"
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT"
+    ],
+    "field": "program.steps[1]"
+   }
+  },
+  {
+   "name": "predicate nested deeper than 4",
+   "ids": [
+    "BHMS-PRG-002"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {}
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "assert",
+      "predicate": {
+       "not": {
+        "not": {
+         "not": {
+          "not": {
+           "not": {
+            "op": "eq",
+            "left": 1,
+            "right": 1
+           }
+          }
+         }
+        }
+       }
+      },
+      "message": "m"
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT"
+    ],
+    "field": "program.steps[0]"
+   }
+  },
+  {
+   "name": "repeat.times input maximum above maxRepeat",
+   "ids": [
+    "BHMS-PRG-003"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "n"
+     ],
+     "properties": {
+      "n": {
+       "type": "integer",
+       "x-bhms-unit": "1",
+       "minimum": 1,
+       "maximum": 2000
+      }
+     }
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "repeat",
+      "times": "${n}",
+      "steps": [
+       {
+        "kind": "sleep",
+        "durationMs": 1
+       }
+      ]
+     }
+    ]
+   },
+   "arguments": {
+    "n": 1
+   },
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT",
+     "OUT_OF_RANGE"
+    ],
+    "field": "program.steps[0].times"
+   }
+  },
+  {
+   "name": "repeat.times input minimum below 1",
+   "ids": [
+    "BHMS-PRG-003"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "n"
+     ],
+     "properties": {
+      "n": {
+       "type": "integer",
+       "x-bhms-unit": "1",
+       "minimum": 0,
+       "maximum": 3
+      }
+     }
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "repeat",
+      "times": "${n}",
+      "steps": [
+       {
+        "kind": "sleep",
+        "durationMs": 1
+       }
+      ]
+     }
+    ]
+   },
+   "arguments": {
+    "n": 1
+   },
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT",
+     "OUT_OF_RANGE"
+    ],
+    "field": "program.steps[0].times"
+   }
+  },
+  {
+   "name": "repeat.times input is not an integer",
+   "ids": [
+    "BHMS-PRG-003"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "n"
+     ],
+     "properties": {
+      "n": {
+       "type": "number",
+       "x-bhms-unit": "1",
+       "minimum": 1,
+       "maximum": 3
+      }
+     }
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "repeat",
+      "times": "${n}",
+      "steps": [
+       {
+        "kind": "sleep",
+        "durationMs": 1
+       }
+      ]
+     }
+    ]
+   },
+   "arguments": {
+    "n": 1
+   },
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT",
+     "OUT_OF_RANGE"
+    ],
+    "field": "program.steps[0].times"
+   }
+  },
+  {
+   "name": "repeat.times input is optional",
+   "ids": [
+    "BHMS-PRG-003"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {
+      "n": {
+       "type": "integer",
+       "x-bhms-unit": "1",
+       "minimum": 1,
+       "maximum": 3
+      }
+     }
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "repeat",
+      "times": "${n}",
+      "steps": [
+       {
+        "kind": "sleep",
+        "durationMs": 1
+       }
+      ]
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT",
+     "OUT_OF_RANGE"
+    ],
+    "field": "program.steps[0].times"
+   }
+  },
+  {
+   "name": "declared maxDurationMs one below the worst case",
+   "ids": [
+    "BHMS-PRG-004"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {}
+    },
+    "maxDurationMs": 999,
+    "steps": [
+     {
+      "kind": "sleep",
+      "durationMs": 1000
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "OUT_OF_RANGE"
+    ],
+    "field": "program.maxDurationMs",
+    "bound": 1000
+   }
+  },
+  {
+   "name": "literal argument above the action bound",
+   "ids": [
+    "BHMS-PRG-005"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {}
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "invoke",
+      "deviceId": "{{axis}}",
+      "action": "pulse",
+      "arguments": {
+       "count": 500
+      }
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "OUT_OF_RANGE",
+     "INVALID_ARGUMENT"
+    ],
+    "field": "program.steps[0].arguments.count"
+   }
+  },
+  {
+   "name": "input bounds wider than the action bound",
+   "ids": [
+    "BHMS-PRG-005"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "n"
+     ],
+     "properties": {
+      "n": {
+       "type": "integer",
+       "x-bhms-unit": "1",
+       "minimum": 1,
+       "maximum": 500
+      }
+     }
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "invoke",
+      "deviceId": "{{axis}}",
+      "action": "pulse",
+      "arguments": {
+       "count": "${n}"
+      }
+     }
+    ]
+   },
+   "arguments": {
+    "n": 1
+   },
+   "expect": {
+    "codes": [
+     "OUT_OF_RANGE"
+    ],
+    "field": "program.steps[0].arguments.count"
+   }
+  },
+  {
+   "name": "argument for the program input out of range",
+   "ids": [
+    "BHMS-PRG-001"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "n"
+     ],
+     "properties": {
+      "n": {
+       "type": "integer",
+       "x-bhms-unit": "1",
+       "minimum": 1,
+       "maximum": 3
+      }
+     }
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "invoke",
+      "deviceId": "{{axis}}",
+      "action": "pulse",
+      "arguments": {
+       "count": "${n}"
+      }
+     }
+    ]
+   },
+   "arguments": {
+    "n": 99
+   },
+   "expect": {
+    "codes": [
+     "OUT_OF_RANGE",
+     "INVALID_ARGUMENT"
+    ],
+    "field": "arguments.n"
+   }
+  },
+  {
+   "name": "program input missing its required argument",
+   "ids": [
+    "BHMS-PRG-001"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "required": [
+      "n"
+     ],
+     "properties": {
+      "n": {
+       "type": "integer",
+       "x-bhms-unit": "1",
+       "minimum": 1,
+       "maximum": 3
+      }
+     }
+    },
+    "maxDurationMs": 60000,
+    "steps": [
+     {
+      "kind": "invoke",
+      "deviceId": "{{axis}}",
+      "action": "pulse",
+      "arguments": {
+       "count": "${n}"
+      }
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT"
+    ]
+   }
+  },
+  {
+   "name": "no steps",
+   "ids": [
+    "BHMS-PRG-001"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {}
+    },
+    "maxDurationMs": 60000,
+    "steps": []
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT"
+    ],
+    "field": "program.steps"
+   }
+  },
+  {
+   "name": "more steps than maxSteps",
+   "ids": [
+    "BHMS-PRG-002"
+   ],
+   "program": {
+    "bhmsProgram": "2026-11-13",
+    "name": "conf_prog",
+    "description": "conformance program",
+    "input": {
+     "type": "object",
+     "additionalProperties": false,
+     "properties": {}
+    },
+    "maxDurationMs": 600000,
+    "steps": [
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     },
+     {
+      "kind": "sleep",
+      "durationMs": 1
+     }
+    ]
+   },
+   "arguments": {},
+   "expect": {
+    "codes": [
+     "INVALID_ARGUMENT",
+     "OUT_OF_RANGE"
+    ],
+    "field": "program.steps"
+   }
+  }
+ ],
+ "valid": {
+  "ordered": {
+   "bhmsProgram": "2026-11-13",
+   "name": "conf_ordered",
+   "description": "conformance program",
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+   },
+   "maxDurationMs": 60000,
+   "steps": [
+    {
+     "kind": "invoke",
+     "deviceId": "{{axis}}",
+     "action": "pulse",
+     "arguments": {
+      "count": 1
+     }
+    },
+    {
+     "kind": "sleep",
+     "durationMs": 20
+    },
+    {
+     "kind": "invoke",
+     "deviceId": "{{axis}}",
+     "action": "pulse",
+     "arguments": {
+      "count": 2
+     }
+    },
+    {
+     "kind": "read",
+     "deviceId": "{{axis}}",
+     "property": "counter",
+     "saveAs": "c"
+    }
+   ]
+  },
+  "failing": {
+   "bhmsProgram": "2026-11-13",
+   "name": "conf_failing",
+   "description": "conformance program",
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+   },
+   "maxDurationMs": 60000,
+   "steps": [
+    {
+     "kind": "invoke",
+     "deviceId": "{{axis}}",
+     "action": "pulse",
+     "arguments": {
+      "count": 1
+     }
+    },
+    {
+     "kind": "invoke",
+     "deviceId": "{{axis}}",
+     "action": "fault",
+     "arguments": {}
+    },
+    {
+     "kind": "invoke",
+     "deviceId": "{{axis}}",
+     "action": "pulse",
+     "arguments": {
+      "count": 1
+     }
+    }
+   ]
+  },
+  "assert_false": {
+   "bhmsProgram": "2026-11-13",
+   "name": "conf_assert",
+   "description": "conformance program",
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+   },
+   "maxDurationMs": 60000,
+   "steps": [
+    {
+     "kind": "assert",
+     "predicate": {
+      "op": "eq",
+      "left": 1,
+      "right": 2
+     },
+     "message": "conformance assert message"
+    }
+   ]
+  },
+  "no_effect": {
+   "bhmsProgram": "2026-11-13",
+   "name": "conf_noeffect",
+   "description": "conformance program",
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+   },
+   "maxDurationMs": 60000,
+   "steps": [
+    {
+     "kind": "sleep",
+     "durationMs": 10
+    }
+   ]
+  },
+  "wait_until_invalid": {
+   "bhmsProgram": "2026-11-13",
+   "name": "conf_wait",
+   "description": "conformance program",
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+   },
+   "maxDurationMs": 1000,
+   "steps": [
+    {
+     "kind": "waitUntil",
+     "deviceId": "{{axis}}",
+     "property": "position",
+     "predicate": {
+      "op": "ge",
+      "left": "${observed.value}",
+      "right": 0
+     },
+     "timeoutMs": 300,
+     "pollMs": 50
+    }
+   ]
+  },
+  "long": {
+   "bhmsProgram": "2026-11-13",
+   "name": "conf_long",
+   "description": "conformance program",
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+   },
+   "maxDurationMs": 120000,
+   "steps": [
+    {
+     "kind": "invoke",
+     "deviceId": "{{axis}}",
+     "action": "slow_move",
+     "arguments": {
+      "duration_ms": 4000
+     }
+    },
+    {
+     "kind": "invoke",
+     "deviceId": "{{axis}}",
+     "action": "pulse",
+     "arguments": {
+      "count": 1
+     }
+    }
+   ]
+  },
+  "interrupted": {
+   "bhmsProgram": "2026-11-13",
+   "name": "conf_interrupted",
+   "description": "conformance program",
+   "input": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {}
+   },
+   "maxDurationMs": 60000,
+   "steps": [
+    {
+     "kind": "invoke",
+     "deviceId": "{{axis}}",
+     "action": "pulse",
+     "arguments": {
+      "count": 1
+     }
+    },
+    {
+     "kind": "sleep",
+     "durationMs": 8000
+    },
+    {
+     "kind": "invoke",
+     "deviceId": "{{axis}}",
+     "action": "pulse",
+     "arguments": {
+      "count": 1
+     }
+    }
+   ]
+  }
+ }
+}

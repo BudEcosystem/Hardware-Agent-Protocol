@@ -1,0 +1,273 @@
+{
+ "description": "Raw messages the runner sends byte for byte. {{meta}} is replaced by the request _meta object, {{version}} by the protocol version; encoding latin-1 turns each character into one byte (so a character above U+007F becomes an invalid UTF-8 sequence). expect.rpcCodes lists the acceptable JSON-RPC error codes; when -32602 is listed the error data must carry expect.bhmsCode. A response is required: the server must refuse, never accept.",
+ "vectors": [
+  {
+   "name": "nan-token",
+   "group": "nan",
+   "ids": [
+    "BHMS-LIF-001"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":9001,\"method\":\"devices/list\",\"params\":{\"_meta\":{{meta}},\"limit\":NaN}}",
+   "expect": {
+    "rpcCodes": [
+     -32700,
+     -32602
+    ],
+    "bhmsCode": "INVALID_ARGUMENT"
+   },
+   "why": "NaN is not an RFC 8259 number"
+  },
+  {
+   "name": "infinity-token",
+   "group": "nan",
+   "ids": [
+    "BHMS-LIF-001"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":9002,\"method\":\"devices/list\",\"params\":{\"_meta\":{{meta}},\"limit\":Infinity}}",
+   "expect": {
+    "rpcCodes": [
+     -32700,
+     -32602
+    ],
+    "bhmsCode": "INVALID_ARGUMENT"
+   }
+  },
+  {
+   "name": "negative-infinity-token",
+   "group": "nan",
+   "ids": [
+    "BHMS-LIF-001"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":9003,\"method\":\"devices/list\",\"params\":{\"_meta\":{{meta}},\"limit\":-Infinity}}",
+   "expect": {
+    "rpcCodes": [
+     -32700,
+     -32602
+    ],
+    "bhmsCode": "INVALID_ARGUMENT"
+   }
+  },
+  {
+   "name": "invalid-utf8",
+   "group": "utf8",
+   "ids": [
+    "BHMS-LIF-001"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":9004,\"method\":\"devices/list\",\"params\":{\"_meta\":{{meta}},\"filter\":{\"text\":\"caféÿþ\"}}}",
+   "expect": {
+    "rpcCodes": [
+     -32700,
+     -32602
+    ],
+    "bhmsCode": "INVALID_ARGUMENT"
+   },
+   "encoding": "latin-1",
+   "why": "bytes E9 FF FE are not UTF-8"
+  },
+  {
+   "name": "truncated-json",
+   "group": "utf8",
+   "ids": [
+    "BHMS-LIF-001"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":9005,\"method\":\"devices/list\",\"params\":{\"_meta\":{{meta}}",
+   "expect": {
+    "rpcCodes": [
+     -32700
+    ]
+   }
+  },
+  {
+   "name": "id-null",
+   "group": "id",
+   "ids": [
+    "BHMS-LIF-010"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":null,\"method\":\"devices/list\",\"params\":{\"_meta\":{{meta}}}}",
+   "expect": {
+    "rpcCodes": [
+     -32600
+    ]
+   },
+   "why": "a request id is a string or an integer, never null"
+  },
+  {
+   "name": "id-object",
+   "group": "id",
+   "ids": [
+    "BHMS-LIF-010"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":{\"a\":1},\"method\":\"devices/list\",\"params\":{\"_meta\":{{meta}}}}",
+   "expect": {
+    "rpcCodes": [
+     -32600
+    ]
+   }
+  },
+  {
+   "name": "id-array",
+   "group": "id",
+   "ids": [
+    "BHMS-LIF-010"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":[1],\"method\":\"devices/list\",\"params\":{\"_meta\":{{meta}}}}",
+   "expect": {
+    "rpcCodes": [
+     -32600
+    ]
+   }
+  },
+  {
+   "name": "id-boolean",
+   "group": "id",
+   "ids": [
+    "BHMS-LIF-010"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":true,\"method\":\"devices/list\",\"params\":{\"_meta\":{{meta}}}}",
+   "expect": {
+    "rpcCodes": [
+     -32600
+    ]
+   }
+  },
+  {
+   "name": "batch-array",
+   "group": "batch",
+   "ids": [
+    "BHMS-TRN-002"
+   ],
+   "raw": "[{\"jsonrpc\":\"2.0\",\"id\":9006,\"method\":\"devices/list\",\"params\":{\"_meta\":{{meta}}}},{\"jsonrpc\":\"2.0\",\"id\":9007,\"method\":\"devices/list\",\"params\":{\"_meta\":{{meta}}}}]",
+   "expect": {
+    "rpcCodes": [
+     -32600
+    ]
+   },
+   "why": "senders MUST NOT send batches; the answer is one -32600 error with id null"
+  },
+  {
+   "name": "batch-empty",
+   "group": "batch",
+   "ids": [
+    "BHMS-TRN-002"
+   ],
+   "raw": "[]",
+   "expect": {
+    "rpcCodes": [
+     -32600
+    ]
+   }
+  },
+  {
+   "name": "not-an-object",
+   "group": "batch",
+   "ids": [
+    "BHMS-TRN-002"
+   ],
+   "raw": "\"hello\"",
+   "expect": {
+    "rpcCodes": [
+     -32600
+    ]
+   }
+  },
+  {
+   "name": "jsonrpc-version",
+   "group": "shape",
+   "ids": [
+    "BHMS-LIF-010"
+   ],
+   "raw": "{\"jsonrpc\":\"1.0\",\"id\":9008,\"method\":\"devices/list\",\"params\":{\"_meta\":{{meta}}}}",
+   "expect": {
+    "rpcCodes": [
+     -32600
+    ]
+   }
+  },
+  {
+   "name": "missing-method",
+   "group": "shape",
+   "ids": [
+    "BHMS-LIF-010"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":9009,\"params\":{\"_meta\":{{meta}}}}",
+   "expect": {
+    "rpcCodes": [
+     -32600
+    ]
+   }
+  },
+  {
+   "name": "params-missing",
+   "group": "params",
+   "ids": [
+    "BHMS-LIF-011"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":9010,\"method\":\"devices/list\"}",
+   "expect": {
+    "rpcCodes": [
+     -32602
+    ],
+    "bhmsCode": "INVALID_ARGUMENT"
+   },
+   "why": "params with _meta bhms/protocolVersion is required on every request"
+  },
+  {
+   "name": "params-array",
+   "group": "params",
+   "ids": [
+    "BHMS-LIF-011"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":9011,\"method\":\"devices/list\",\"params\":[]}",
+   "expect": {
+    "rpcCodes": [
+     -32602,
+     -32600
+    ],
+    "bhmsCode": "INVALID_ARGUMENT"
+   }
+  },
+  {
+   "name": "meta-missing",
+   "group": "params",
+   "ids": [
+    "BHMS-LIF-011"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":9012,\"method\":\"devices/list\",\"params\":{}}",
+   "expect": {
+    "rpcCodes": [
+     -32602
+    ],
+    "bhmsCode": "INVALID_ARGUMENT"
+   }
+  },
+  {
+   "name": "protocol-version-missing",
+   "group": "params",
+   "ids": [
+    "BHMS-LIF-011"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":9013,\"method\":\"devices/list\",\"params\":{\"_meta\":{\"bhms/clientInfo\":{\"name\":\"bhms-conformance\",\"version\":\"0.1.0\"}}}}",
+   "expect": {
+    "rpcCodes": [
+     -32602
+    ],
+    "bhmsCode": "INVALID_ARGUMENT"
+   }
+  },
+  {
+   "name": "protocol-version-not-a-string",
+   "group": "params",
+   "ids": [
+    "BHMS-LIF-011"
+   ],
+   "raw": "{\"jsonrpc\":\"2.0\",\"id\":9014,\"method\":\"devices/list\",\"params\":{\"_meta\":{\"bhms/protocolVersion\":20261113}}}",
+   "expect": {
+    "rpcCodes": [
+     -32602,
+     -32015
+    ]
+   },
+   "why": "a version is a string; the server answers INVALID_ARGUMENT or UNSUPPORTED_VERSION"
+  }
+ ]
+}
