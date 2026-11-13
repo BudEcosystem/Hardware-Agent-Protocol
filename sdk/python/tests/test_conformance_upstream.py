@@ -70,3 +70,28 @@ async def test_upstream_errors_are_clean_fatal_reports(tmp_path):
         assert result.exit_code == 2 and "NAMESPACE=TARGET" in result.output
     finally:
         await _stop(procs)
+
+
+async def test_a_malformed_function_tools_file_is_a_clean_error_and_exit_2(tmp_path):
+    import json
+
+    cases = {
+        "absent.json": (None, "cannot read"),
+        "not-json.json": ("{nope", "not JSON"),
+        "object.json": (json.dumps({"name": "bhms_find"}), "must be a JSON list"),
+        "scalar-entry.json": (json.dumps(["bhms_find"]), "entry 0"),
+        "no-name.json": (json.dumps([{"type": "function", "function": {"name": "bhms_find", "parameters": {}}},
+                                     {"type": "function", "function": {"description": "nameless"}}]), "entry 1"),
+        "bad-name.json": (json.dumps([{"name": 5}]), "entry 0"),
+        "function-not-object.json": (json.dumps([{"type": "function", "function": "bhms_find"}]), "entry 0"),
+    }
+    for name, (text, expected) in cases.items():
+        path = tmp_path / name
+        if text is not None:
+            path.write_text(text)
+        report = await run(RunOptions(target="agent-bridge", function_tools=str(path)))
+        assert report.fatal.startswith("--function-tools") and expected in report.fatal, (name, report.fatal)
+        assert report.exit_code == 2 and not report.checks
+    result = await asyncio.to_thread(lambda: CliRunner().invoke(app, ["conformance", "agent-bridge", "--function-tools", str(tmp_path / "no-name.json")],
+                                                                catch_exceptions=False))
+    assert result.exit_code == 2 and "--function-tools" in result.output and "Traceback" not in result.output
