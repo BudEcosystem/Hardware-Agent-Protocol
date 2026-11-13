@@ -156,6 +156,8 @@ typedef struct {
     uint8_t evidence;                    /* BHMS_EV_* on DONE/FAILED */
     uint8_t fault;                       /* device fault number on FAILED */
     uint8_t error;                       /* BHMS_E_* on REJECTED (default PRECONDITION) */
+    uint8_t detail;                      /* ERROR.detail on REJECTED (default 0): lets a
+                                          * callback name the limit or condition it refused */
 } bhms_call;
 
 enum {

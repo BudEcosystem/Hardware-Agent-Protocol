@@ -17,7 +17,7 @@ static struct {
     uint8_t quality;
     uint16_t adc;
     uint8_t fresh_seen;
-    uint8_t reject_error;
+    uint8_t reject_error, reject_detail;
 } g;
 
 static uint8_t led_run(void *u, const bhms_value *a, bhms_call *c) {
@@ -42,6 +42,7 @@ static uint8_t fail_run(void *u, const bhms_value *a, bhms_call *c) {
 static uint8_t reject_run(void *u, const bhms_value *a, bhms_call *c) {
     (void)u; (void)a;
     c->error = g.reject_error;
+    c->detail = g.reject_detail;
     return BHMS_RUN_REJECTED;
 }
 static uint8_t progress_run(void *u, const bhms_value *a, bhms_call *c) {
@@ -433,6 +434,18 @@ static void test_invoke_validation(void) {
     g.reject_error = BHMS_E_INHIBITED;
     invoke(&r, e, 1, 3, 0, 0, 0, 0);
     expect_error(&r, BHMS_MSG_INVOKE, 1, BHMS_E_INHIBITED);
+    /* The callback can name the limit it refused through call->detail. */
+    g.reject_error = BHMS_E_OUT_OF_RANGE;
+    g.reject_detail = 0x11;
+    invoke(&r, e, 1, 3, 0, 0, 0, 0);
+    {
+        bhms_host_frame ef;
+        bhms_error de;
+        CHECK(next(&r, &ef) == 1 && ef.payload[0] == BHMS_MSG_ERROR);
+        CHECK(bhms_dec_error(ef.payload, ef.length, &de) == 0);
+        CHECK(de.code == BHMS_E_OUT_OF_RANGE && de.detail == 0x11);
+    }
+    g.reject_detail = 0;
     g.reject_error = BHMS_E_HANDLE_UNKNOWN; /* callbacks may not forge protocol codes */
     invoke(&r, e, 1, 3, 0, 0, 0, 0);
     expect_error(&r, BHMS_MSG_INVOKE, 1, BHMS_E_PRECONDITION);

@@ -335,3 +335,159 @@ Tool contact PCB population (from `pcb/tool_contact.py`):
     flexure torque (knob turner), FSR force (button presser).
 * Tool change as an explicit procedure with the sequencing in §5. It is
   refused while the `estop` state is not `released`.
+
+## 9. Firmware behaviour that is part of the contract (Task 13b, fix round 1)
+
+### 9.1 Limits are enforced on the measured pose too
+
+The command checks (§3.2) only see what was asked for. A jammed or lagging joint can drive another
+into a coupled limit although every commanded waypoint is legal, and an arm can be pushed. **On every
+fresh telemetry sample, in every powered state with torque on** (holding, moving, tool operations),
+all five joints (each sample at most 200 ms old) are checked:
+
+* the measured pose against the joint and coupled limits with 4 deg of slack: fault 12 during a
+  motion, fault 22 (`displaced`) while holding or in a tool operation;
+* while moving, every joint against its commanded waypoint, bound 15 deg: fault 18 (`move_limit`
+  names the joint).
+
+On a violation the firmware writes goal = the freshly read position for every joint (up to three
+attempts; if the freeze write cannot be confirmed the fault becomes 11 `bus_collision`), stops a tool
+servo that was moving, ends the operation and **latches** ("recovery-only"). A latched arm keeps
+holding and accepts exactly these ways out, none of which needs a power cycle:
+
+* `move_joints` / `home` to a goal inside the limits: never refused because of earlier attempts, and
+  bounded as described under "Fault episode" below. A completed recovery move clears the latch; a
+  recovery that is cancelled (`hold`, STOP) or fails leaves the arm latched and holding.
+* `release_torque` (lease, hazardous): the arm cannot be parked from a jam or a displacement, so torque
+  goes off at once and **the arm drops: support it first**. The arm is then PARKED (rail on, torque
+  off, `pose_unknown`). An `enable` after it re-energises only if the measured pose is inside the 3 deg
+  enable margin; **if the arm still rests outside the margin that `enable` fails with fault 12 and the
+  arm stays PARKED with torque off** (it is not re-energised outside the limits, and motion commands
+  answer PRECONDITION, reason 6 `parked`). Move the arm inside by hand, torque being off, and `enable`
+  again.
+* `enable` while latched: if the measured pose is inside the 3 deg margin it re-energises normally
+  (READY, the episode ends). If it is outside, the enable fails (fault 12, pose limit) and the arm stays
+  in this same latched recovery-only state (rail on, torque on, the fault episode unchanged), which
+  accepts the recovery move above. It never cuts the rail.
+* `hold` is acknowledged (the arm is already frozen). Everything else is refused (INHIBITED).
+
+**Fault episode: retries cannot ratchet the arm outward, whatever the goals.** The straight path to a
+goal inside the (convex) limits never increases the excess *as commanded*, but with a jammed joint the
+arm does not follow the command: shoulder stuck at 90 deg, goal (45, 125), and the elbow alone drives
+`forearm_pitch` further out. A check of the goal or of its path therefore cannot bound this; the
+firmware keeps a memory that no goal resets:
+
+* An episode starts at the first latch and records the measured excess at that moment, `E0` (degrees
+  beyond the worst joint or coupled limit; 0 when the latch was a following error inside the limits).
+  It ends only when the measured pose is back inside **every** limit (excess 0) with the arm READY, or
+  when an `enable` puts torque on inside the enable margin. A recovery move that completes inside its
+  2 deg settle tolerance but still measures outside a limit clears the latch and not the episode; a
+  new latch before the episode has ended keeps `E0` (it can only be lowered); a push while latched,
+  `enable`, a cancelled or failed move do not change it.
+* **Cap: 3 deg.** While the measured excess is at or below `E0 + 3`, a recovery goal runs as one
+  straight move and the guard trips it as soon as the measured excess passes
+  `min(best excess reached in this motion + 1 deg, max(E0 + 3, excess at the start + 0.5))`.
+* **Above the cap no commanded motion can make it worse.** A recovery goal is then executed in
+  stages: a stage commands only joints whose motion cannot enlarge the violation of any limit
+  *whichever joints fail to move or stop on the way* (the test covers the whole box between the
+  measured pose and the goal, not just the straight path); the other joints keep their present
+  command. When the stage is reached as measured, the rest is planned again from the new measured
+  pose (at most 4 stages, then the straight move to the goal). Shoulder stuck at 90, goal (45, 125):
+  the stage is "shoulder to 45"; it fails on the jam (fault 18 or a settle timeout) with the elbow
+  where it was. Once the jam is removed the very same goal, or `home`, completes: shoulder first,
+  then the elbow. Reason 19 (`retry_no_progress`) is the refusal for "above the cap and no joint may
+  move toward this goal"; with the present limits a goal inside the limits always has such a joint,
+  so the code is defensive and not expected on the wire. Reason 18 (`recovery_worse`, the straight
+  path itself increases the excess) is likewise unreachable while the limits are convex.
+* **Worst case.** Everything a client can cause in one episode is bounded by
+  `E0 + 3 (cap) + 0.5 (hysteresis) + overshoot of ONE trip`, the overshoot being what the joint travels
+  until the guard's next sample of it (about 30 ms): at 100 % speed at most shoulder 2.7, elbow 4.0,
+  wrist pitch 8.1 deg (90 / 135 / 269 deg/s x 0.03 s), so `E0 + 6.2 / 7.5 / 11.6` deg by arithmetic. In
+  the simulator the trips that cross the cap happen early in a move, at low speed: the largest value
+  measured over every retry pattern below is `E0 + 3.65` deg, and the tests assert `E0 + 3 + 1.5`.
+  An external push is not a client action and is not bounded by this (the arm freezes where it is
+  measured after each further 0.5 to 1 deg); the cap still applies to what the client does afterwards.
+  Simulator runs (shoulder jammed at 90 deg unless noted; 40 attempts each; round-3 firmware in
+  brackets): elbow goal alternating 124/125 at 100 %: 3.15 deg [38.8]; at 50 %: 3.24 [38.7];
+  alternating 120/125 at 25 %: 3.02 [34.8]; goal drifting 0.6 deg per attempt: 3.15 [26.5]; shoulder
+  pushed to 97 deg and blocked (`E0` = 12.0), `home` and `move(0, 80, 95)` alternating: 15.34, i.e.
+  `E0 + 3.34` [17.3 after 12 attempts and rising].
+
+**Overshoot of a single trip.** The guard sees a violation on the next telemetry sample of the joint
+(each joint about every 25 ms) and trips when the excess is more than its threshold (4 deg slack when
+unlatched; the episode rule above when latched). The arm therefore ends up resting past the threshold
+by what the joint travels in one sample period: measured 0.1-1.6 deg in the simulator for the
+shoulder/elbow jam at up to 100 % speed; the worst case by arithmetic is joint speed times about
+30 ms: shoulder 2.7, elbow 4, wrist pitch 8 deg. The servo-side angle windows (§3.1) add
+a second layer: a joint pushed past its window is pulled back toward the window edge by the servo
+itself while the goal is frozen at the measured pose (seen in the simulator), so a displaced arm may
+drift back inside the joint range on its own; that is intended and not an error. The 1 deg band, 4 deg
+slack, 3 deg episode cap, 0.5 deg hysteresis, 15 deg following-error bound and the 200 ms sample age
+are simulator-chosen values and are **to be verified on the hardware** with real servo latency and encoder noise. `move_error_deg` reports
+the real worst error also for a failed move; a new motion starts from the measured pose when it
+differs from the last command by more than 2 deg.
+
+### 9.2 Servo status error bits, temperature
+
+A joint servo reporting overload, over-temperature, voltage, current or sensor error bits while
+torque is on freezes the arm the same way (fault 6; property `servo_error` = servo id << 8 | bits).
+Property `temperature_warning` is true at 60 C; motion is refused (INHIBITED, reason 16) at 70 C.
+
+### 9.3 Knob-turner mode (verify on hardware)
+
+The knob servo runs as **multi-turn absolute position**: Operating_Mode 0 (position) with Min and Max
+angle limit both 0; goal and present position are sign-magnitude counts (bit 15), 4096 per servo turn,
+so the output range is +-1000 deg through the 2:1 spur (+-22 756 counts). The goal is the mount position (the
+zero, whatever it was) plus the turn and must stay inside +-28 000 counts: +-7 servo turns are +-28 672 counts, and
+the 15-bit magnitude would otherwise wrap; `turn` is refused (OUT_OF_RANGE) when zero + target exceeds it,
+so with the knob mounted 8000 counts from zero only about +-900 deg remain on one side. The +-7 turn limit itself is
+also to be verified on the servo. All writes
+to it are absolute and therefore safe to repeat when an ACK is lost (the simulator can apply a write
+and drop its reply; no duplicate motion). Mode 3 is **not** used: it is, as far as the reviewer and
+the LeRobot Feetech driver convention indicate, a relative step mode in which a repeated or
+"goal = present" write would command motion. Source: the STS-series memory table (Operating_Mode,
+register 0x21; "position servo mode with both limits 0 = multi-turn") as used by the LeRobot Feetech
+driver; **not checked against the Feetech STS3215 manual or on hardware: verify before first use**.
+
+### 9.4 Calibration
+
+Every limit is relative to the joint zero (`joint = sign x (raw - raw_zero) x 360 / 4096 / ratio`).
+`raw_zero` and `sign` are stored in flash (two sectors below the boot counter, CRC'd records, newest
+valid wins, so a power cut during a save leaves the previous copy). Until a calibration is stored the
+property `calibrated` is false and `enable` is refused (PRECONDITION, reason 15). Procedure
+(`calibrate` action, lease): put the arm at the rest pose on its support (yaw 0, shoulder 30, elbow 90,
+wrist pitch 45, roll 0), rail off, E-stop released; the device powers the rail with torque off, reads
+the five raw positions, defines them as the rest pose, refuses a zero that would put a joint range
+across the encoder wrap (20 counts spare), switches the rail off and writes flash. Nothing moves.
+Enable afterwards. Flash writes mask interrupts, so they only happen with the rail off (the boot
+counter store at run time while the rail is on, i.e. a NEW_SESSION hello, is refused: the endpoint then
+does not claim PERSISTENT_EPOCH).
+
+### 9.5 Watchdog and controller reset
+
+The hardware watchdog (250 ms) is fed only after a full endpoint poll plus controller tick. A reset
+**drops the servo rail** (SERVO_EN pulls down in reset) and the unbraked arm falls; the rest pose is
+the support the arm lands on only if it was resting there, otherwise expect the arm to drop wherever
+it is. After a watchdog reset the boot defaults apply (rail off, torque off, explicit `enable`), the
+property `watchdog_reset` is true and `fault_code` reads 19 until the next successful `enable`, which clears
+both (and nothing else does); `pose_unknown` is true. Only a reset armed by the firmware's own watchdog
+counts: a BOOTSEL/UF2 reboot is not reported as fault 19. Bus writes are time-bounded (3 ms) so nothing spins with interrupts off; a
+flash sector erase takes tens of ms (worst case about 400 ms): the epoch/calibration store brackets every
+erase with hooks that stretch the watchdog to 2500 ms and restore 250 ms afterwards (also if the erase
+fails): `flash_safe_execute` may itself wait up to 1000 ms for the lockout and the erase itself takes up to
+about 400 ms. Erases happen only with the rail off.
+
+### 9.6 Fault and refusal codes added
+
+| Fault | Meaning |
+|---|---|
+| 12 | a waypoint or the measured pose violated a limit |
+| 18 | following error: a joint trails its commanded waypoint by more than 15 deg |
+| 19 | watchdog reset |
+| 20 | calibration failed or could not be stored |
+| 21 | a tool motion stopped short of its goal (knob torque cap or stop) |
+| 22 | measured pose outside a limit while holding or in a tool operation (displaced) |
+
+Refusal reasons (ERROR.detail on INHIBITED/PRECONDITION): 15 not calibrated, 16 over-temperature,
+17 not disabled (calibrate needs rail off), 18 recovery goal would worsen the limit excess along its path, 19 the same
+recovery goal already made the pose worse and nothing has improved since.

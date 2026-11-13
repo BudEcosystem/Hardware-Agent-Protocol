@@ -28,7 +28,7 @@ powered or certified, and no PCB has been manufactured.
   board that has known open routing (`pcb/<board>/known_open.json`) and
   writes `DO_NOT_FABRICATE.md` instead.
 * The arm falls when the E-stop cuts power (no brake): `docs/design.md` §9.
-* Firmware is Task 13b. Its contract is `firmware/INTERFACE.md`.
+* Firmware (Task 13b): `firmware/` (README.md). Its contract is `firmware/INTERFACE.md`.
 
 | | |
 |---|---|
@@ -49,7 +49,7 @@ sim/            gen_mjcf.py -> bhms_arm*.xml, scene_pick.xml; test_arm.py; resul
 pcb/            controller.py, tool_contact.py (circuits + placement), KiCad writers, router glue, DRC
 pcb/<board>/    .kicad_sch/.kicad_pcb/.kicad_pro (KiCad 8 format), netlist, reports, fab/ (Gerber, drill, pos)
 bom/            build_bom.py -> bom.csv
-firmware/       INTERFACE.md (pin map, bus, E-stop, tool ID) for Task 13b
+firmware/       RP2040 firmware: portable core, host simulator and tests, pico-sdk port; INTERFACE.md is the contract
 docs/           design.md (requirements, torque budget, safety, decisions), assembly.md, img/
 verify.sh       regenerate + verify everything
 ```

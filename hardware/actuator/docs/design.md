@@ -373,6 +373,16 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
     atmospheres, or for handling hazardous materials. Do not operate it
     near faces or eyes.
 
+* **A controller reset drops the arm.** SERVO_EN pulls down in reset (that is the safe default for
+  every other failure), so a watchdog reset, brown-out or firmware crash cuts the servo rail and the
+  unbraked arm falls. The firmware enables a 250 ms watchdog fed only after a complete control pass,
+  reports the reset (`watchdog_reset`, fault 19, cleared by the next successful enable) and requires an explicit
+  enable afterwards. Rev B
+  should add the brake or a self-holding rest (docs section 12). Until then, park the arm at the rest
+  pose (forearm on the support) whenever it is unattended.
+* **Limits are checked on the measured pose** as well as on the commanded one, and the joint zero
+  comes from a stored calibration (`firmware/INTERFACE.md` section 9).
+
 ## 10. Verification results
 
 All rows are produced by `verify.sh` (run end to end, exit 0; see the
