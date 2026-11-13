@@ -360,7 +360,7 @@ static void handle_invoke(bhms_endpoint *ep, const uint8_t *p, size_t n, uint32_
             call.error == BHMS_E_SESSION_MISMATCH || call.error == BHMS_E_HANDLE_CONFLICT ||
             call.error == 0)
             call.error = ret == BHMS_RUN_REJECTED ? BHMS_E_PRECONDITION : BHMS_E_INTERNAL;
-        send_error(ep, BHMS_MSG_INVOKE, inv.handle, call.error, 0);
+        send_error(ep, BHMS_MSG_INVOKE, inv.handle, call.error, call.detail);
         break;
     }
 }
