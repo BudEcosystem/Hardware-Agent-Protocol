@@ -105,6 +105,52 @@ class NativeEndpoint:
         return sum(1 for line in self.effects() if line.startswith(prefix))
 
 
+class ProcessStream:
+    """A child process speaking compact on its stdin/stdout (a firmware simulator, or ``ssh host docker run -i ...`` to one on
+    another machine): a :class:`~bhms.transport.compact.ByteStream` for ``CompactBridge(opener=...)``. Its stderr lines are
+    kept in :attr:`stderr` (the simulators report effects there)."""
+
+    def __init__(self, process: asyncio.subprocess.Process) -> None:
+        self.process = process
+        self.stderr: list[str] = []
+        self._pump = asyncio.get_running_loop().create_task(self._collect())
+
+    async def _collect(self) -> None:
+        assert self.process.stderr is not None
+        while line := await self.process.stderr.readline():
+            self.stderr.append(line.decode(errors="replace").rstrip())
+
+    async def read(self) -> bytes:
+        assert self.process.stdout is not None
+        return await self.process.stdout.read(4096)
+
+    def write(self, data: bytes) -> None:
+        assert self.process.stdin is not None
+        if not self.process.stdin.is_closing():
+            self.process.stdin.write(data)
+
+    async def close(self) -> None:
+        if self.process.returncode is None:
+            self.process.terminate()
+            try:
+                await asyncio.wait_for(self.process.wait(), 5)
+            except asyncio.TimeoutError:
+                self.process.kill()
+                await self.process.wait()
+        self._pump.cancel()
+        await asyncio.gather(self._pump, return_exceptions=True)
+        transport = getattr(self.process, "_transport", None)
+        if transport is not None:
+            transport.close()  # no ResourceWarning for a killed child
+
+
+async def spawn_process_stream(command: str) -> ProcessStream:
+    """Run ``command`` (shell syntax) and speak compact over its stdin/stdout."""
+    process = await asyncio.create_subprocess_shell(command, stdin=asyncio.subprocess.PIPE, stdout=asyncio.subprocess.PIPE,
+                                                    stderr=asyncio.subprocess.PIPE)
+    return ProcessStream(process)
+
+
 @dataclass
 class Seen:
     """One frame the wire carried: direction, decoded message (None if it did not decode), exact bytes and the fate."""
@@ -281,4 +327,4 @@ class Wire:
         return [s for s in self.log if isinstance(s.message, kind) and (direction is None or s.direction == direction)]
 
 
-__all__ = ["NativeEndpoint", "NativeUnavailable", "Seen", "TO_DEVICE", "TO_GATEWAY", "Wire", "build_native"]
+__all__ = ["NativeEndpoint", "NativeUnavailable", "ProcessStream", "Seen", "TO_DEVICE", "TO_GATEWAY", "Wire", "build_native", "spawn_process_stream"]
