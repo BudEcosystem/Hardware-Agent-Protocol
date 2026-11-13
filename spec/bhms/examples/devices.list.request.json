@@ -1,0 +1,23 @@
+{
+  "$comment": "List online liquid-handling devices.",
+  "against": "#/$defs/DevicesListRequest",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "devices/list",
+    "params": {
+      "_meta": {
+        "bhms/protocolVersion": "2026-11-13",
+        "bhms/clientInfo": {
+          "name": "bhms-cli",
+          "version": "0.1.0"
+        }
+      },
+      "filter": {
+        "capability": "bhms.liquid.*",
+        "status": "online"
+      },
+      "limit": 50
+    }
+  }
+}

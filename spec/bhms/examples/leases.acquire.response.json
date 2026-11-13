@@ -1,0 +1,22 @@
+{
+  "$comment": "Granted with a fresh fence.",
+  "against": "#/$defs/LeasesAcquireResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 11,
+    "result": {
+      "resultType": "complete",
+      "lease": {
+        "leaseId": "lease-12",
+        "resources": [
+          "pump-1/plunger"
+        ],
+        "fence": 412,
+        "state": "active",
+        "acquiredAt": "2026-11-13T09:29:59.000Z",
+        "expiresAt": "2026-11-13T09:31:59.000Z",
+        "ttlMs": 120000
+      }
+    }
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "$comment": "programs/run takes exactly one of program or digest (08 8.5).",
+  "against": "#/$defs/ProgramsRunParams",
+  "message": {
+    "_meta": {
+      "bhms/protocolVersion": "2026-11-13",
+      "bhms/clientInfo": {
+        "name": "bhms-cli",
+        "version": "0.1.0"
+      }
+    },
+    "program": {
+      "bhmsProgram": "2026-11-13",
+      "name": "focus_scan",
+      "description": "Step the focus axis and record the position at each step.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "start",
+          "steps"
+        ],
+        "properties": {
+          "start": {
+            "type": "number",
+            "x-bhms-unit": "um",
+            "minimum": 0,
+            "maximum": 5000
+          },
+          "steps": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 50
+          }
+        }
+      },
+      "maxDurationMs": 140000,
+      "steps": [
+        {
+          "kind": "invoke",
+          "id": "home",
+          "deviceId": "focus-1",
+          "action": "move_to",
+          "arguments": {
+            "position": "${start}"
+          }
+        },
+        {
+          "kind": "waitUntil",
+          "deviceId": "focus-1",
+          "property": "position",
+          "predicate": {
+            "op": "within",
+            "left": "${observed.value}",
+            "right": "${start}",
+            "tolerance": 1
+          },
+          "timeoutMs": 2000,
+          "pollMs": 50
+        },
+        {
+          "kind": "repeat",
+          "times": "${steps}",
+          "as": "i",
+          "steps": [
+            {
+              "kind": "invoke",
+              "deviceId": "focus-1",
+              "action": "move_by",
+              "arguments": {
+                "distance": 10
+              },
+              "saveAs": "moved"
+            },
+            {
+              "kind": "sleep",
+              "durationMs": 100
+            },
+            {
+              "kind": "read",
+              "deviceId": "focus-1",
+              "property": "position",
+              "fresh": true,
+              "timeoutMs": 500,
+              "saveAs": "pos"
+            },
+            {
+              "kind": "assert",
+              "predicate": {
+                "all": [
+                  {
+                    "op": "eq",
+                    "left": "${pos.quality}",
+                    "right": "valid"
+                  },
+                  {
+                    "not": {
+                      "op": "gt",
+                      "left": "${pos.value}",
+                      "right": 9000
+                    }
+                  }
+                ]
+              },
+              "message": "focus position invalid or beyond 9000 um"
+            }
+          ]
+        }
+      ],
+      "output": {
+        "lastPosition": "${pos.value}"
+      }
+    },
+    "digest": "sha256:85e36d7ad99536f3857125838338bb8768e51182304fe54668309864f5b6f3df",
+    "arguments": {}
+  }
+}

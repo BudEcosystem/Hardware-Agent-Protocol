@@ -1,0 +1,18 @@
+{
+  "$comment": "OUT_OF_RANGE must use -32602 (BHMS-ERR-001).",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 9,
+    "error": {
+      "code": -32001,
+      "message": "too big",
+      "data": {
+        "bhmsCode": "OUT_OF_RANGE",
+        "mayHaveActed": false,
+        "retry": "never",
+        "hint": "smaller"
+      }
+    }
+  }
+}

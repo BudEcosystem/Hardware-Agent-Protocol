@@ -1,0 +1,18 @@
+{
+  "$comment": "bhmsCode must be one of the defined codes (BHMS-ERR-010).",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 9,
+    "error": {
+      "code": -32018,
+      "message": "x",
+      "data": {
+        "bhmsCode": "EXPLODED",
+        "mayHaveActed": true,
+        "retry": "never",
+        "hint": "x"
+      }
+    }
+  }
+}

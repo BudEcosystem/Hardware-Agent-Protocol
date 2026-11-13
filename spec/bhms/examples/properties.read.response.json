@@ -1,0 +1,22 @@
+{
+  "$comment": "A measured, valid observation with age and sequence.",
+  "against": "#/$defs/PropertiesReadResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 4,
+    "result": {
+      "resultType": "complete",
+      "observation": {
+        "value": 101.3,
+        "unit": "kPa",
+        "evidence": "measured",
+        "quality": "valid",
+        "acquiredAt": "2026-11-13T09:30:05.000Z",
+        "receivedAt": "2026-11-13T09:30:05.004Z",
+        "ageMs": 120,
+        "sequence": 44812,
+        "epoch": "pump-1:boot-41"
+      }
+    }
+  }
+}

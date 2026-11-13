@@ -1,0 +1,57 @@
+{
+  "$comment": "Function-tool result: one-line summary plus the BHMS result.",
+  "against": "#/$defs/AgentFunctionResult",
+  "message": {
+    "summary": "pump-1.dispense op-7f3a completed: 50.1 uL dispensed (effect verified, 2.1 s)",
+    "data": {
+      "resultType": "complete",
+      "operation": {
+        "operationId": "op-7f3a",
+        "operationKey": "dispense-a1",
+        "keyOrigin": "client",
+        "kind": "action",
+        "deviceId": "pump-1",
+        "action": "dispense",
+        "arguments": {
+          "volume": 50,
+          "rate": 100
+        },
+        "requestDigest": "sha256:b3f5e979b6a86c564121143d985518f2475abc0454dba4d6fb6f9d31d6eb6778",
+        "state": "completed",
+        "cancel": {
+          "state": "none"
+        },
+        "effect": "verified",
+        "evidence": {
+          "kind": "measured",
+          "observations": {
+            "dispensed_volume": {
+              "value": 50.1,
+              "unit": "uL",
+              "evidence": "measured",
+              "quality": "valid",
+              "acquiredAt": "2026-11-13T09:30:02.120Z",
+              "receivedAt": "2026-11-13T09:30:02.125Z",
+              "ageMs": 20,
+              "uncertainty": 0.3,
+              "sequence": 9121,
+              "epoch": "pump-1:boot-41",
+              "source": "flow-sensor"
+            }
+          }
+        },
+        "require": {
+          "effect": "verified"
+        },
+        "leaseId": "lease-12",
+        "fence": 412,
+        "result": {
+          "dispensed": 50.1
+        },
+        "createdAt": "2026-11-13T09:30:00.012Z",
+        "updatedAt": "2026-11-13T09:30:02.140Z"
+      },
+      "replayed": false
+    }
+  }
+}

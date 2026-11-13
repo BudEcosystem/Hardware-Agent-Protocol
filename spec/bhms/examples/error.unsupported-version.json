@@ -1,0 +1,22 @@
+{
+  "$comment": "UNSUPPORTED_VERSION in reply to devices/list.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 116,
+    "error": {
+      "code": -32015,
+      "message": "protocol version 2025-01-01 is not supported",
+      "data": {
+        "bhmsCode": "UNSUPPORTED_VERSION",
+        "field": "_meta.bhms/protocolVersion",
+        "bound": [
+          "2026-11-13"
+        ],
+        "mayHaveActed": false,
+        "retry": "never",
+        "hint": "retry with bhms/protocolVersion 2026-11-13"
+      }
+    }
+  }
+}

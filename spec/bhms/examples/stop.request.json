@@ -1,0 +1,24 @@
+{
+  "$comment": "Stop two devices; never waits on leases.",
+  "against": "#/$defs/StopRequest",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 10,
+    "method": "stop",
+    "params": {
+      "_meta": {
+        "bhms/protocolVersion": "2026-11-13",
+        "bhms/clientInfo": {
+          "name": "bhms-cli",
+          "version": "0.1.0"
+        }
+      },
+      "deviceIds": [
+        "pump-1",
+        "focus-1"
+      ],
+      "reason": "operator saw a leak",
+      "waitMs": 300
+    }
+  }
+}

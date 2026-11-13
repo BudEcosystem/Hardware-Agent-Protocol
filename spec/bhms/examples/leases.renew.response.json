@@ -1,0 +1,22 @@
+{
+  "$comment": "Same fence, later expiry.",
+  "against": "#/$defs/LeasesRenewResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 12,
+    "result": {
+      "resultType": "complete",
+      "lease": {
+        "leaseId": "lease-12",
+        "resources": [
+          "pump-1/plunger"
+        ],
+        "fence": 412,
+        "state": "active",
+        "acquiredAt": "2026-11-13T09:29:59.000Z",
+        "expiresAt": "2026-11-13T09:32:30.000Z",
+        "ttlMs": 120000
+      }
+    }
+  }
+}

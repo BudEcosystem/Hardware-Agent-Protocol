@@ -1,0 +1,38 @@
+{
+  "$comment": "Cancellation acknowledged by the device; the operation is still running until termination is observed.",
+  "against": "#/$defs/OperationsCancelResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 9,
+    "result": {
+      "resultType": "complete",
+      "operation": {
+        "operationId": "op-7f3a",
+        "operationKey": "dispense-a1",
+        "keyOrigin": "client",
+        "kind": "action",
+        "deviceId": "pump-1",
+        "action": "dispense",
+        "arguments": {
+          "volume": 50,
+          "rate": 100
+        },
+        "requestDigest": "sha256:b3f5e979b6a86c564121143d985518f2475abc0454dba4d6fb6f9d31d6eb6778",
+        "state": "running",
+        "cancel": {
+          "state": "acknowledged",
+          "reason": "wrong reagent",
+          "requestedAt": "2026-11-13T09:30:01.000Z"
+        },
+        "effect": "unverified",
+        "require": {
+          "effect": "verified"
+        },
+        "leaseId": "lease-12",
+        "fence": 412,
+        "createdAt": "2026-11-13T09:30:00.012Z",
+        "updatedAt": "2026-11-13T09:30:01.004Z"
+      }
+    }
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "$comment": "A program step operation rejected at the pre-dispatch recheck (no effect).",
+  "against": "#/$defs/Operation",
+  "message": {
+    "operationId": "op-p001-3",
+    "operationKey": "d-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "keyOrigin": "derived",
+    "kind": "action",
+    "deviceId": "focus-1",
+    "action": "move_by",
+    "parentOperationId": "op-p001",
+    "arguments": {
+      "distance": 10
+    },
+    "requestDigest": "sha256:62468d1ea8e1f947a26fc30cbf1244305536772d09a7879506e375be0b5f9276",
+    "state": "rejected",
+    "cancel": {
+      "state": "none"
+    },
+    "effect": "none",
+    "error": {
+      "bhmsCode": "FENCED",
+      "message": "lease-9 was revoked before dispatch",
+      "mayHaveActed": false,
+      "retry": "never",
+      "hint": "the device was stopped"
+    },
+    "createdAt": "2026-11-13T09:40:03.300Z",
+    "updatedAt": "2026-11-13T09:40:03.301Z"
+  }
+}

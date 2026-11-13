@@ -1,0 +1,5761 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:bhms:schema:2026-11-13",
+  "title": "BHMS protocol 2026-11-13",
+  "description": "Normative JSON Schema for BHMS v0.1 (spec/bhms). A message that fails this schema is a bug in its sender.",
+  "x-bhms-protocolVersion": "2026-11-13",
+  "x-bhms-methods": {
+    "server/discover": {
+      "params": "#/$defs/DiscoverParams",
+      "result": "#/$defs/DiscoverResult",
+      "request": "#/$defs/DiscoverRequest",
+      "response": "#/$defs/DiscoverResponse",
+      "tier": "core"
+    },
+    "devices/list": {
+      "params": "#/$defs/DevicesListParams",
+      "result": "#/$defs/DevicesListResult",
+      "request": "#/$defs/DevicesListRequest",
+      "response": "#/$defs/DevicesListResponse",
+      "tier": "core"
+    },
+    "devices/describe": {
+      "params": "#/$defs/DevicesDescribeParams",
+      "result": "#/$defs/DevicesDescribeResult",
+      "request": "#/$defs/DevicesDescribeRequest",
+      "response": "#/$defs/DevicesDescribeResponse",
+      "tier": "core"
+    },
+    "properties/read": {
+      "params": "#/$defs/PropertiesReadParams",
+      "result": "#/$defs/PropertiesReadResult",
+      "request": "#/$defs/PropertiesReadRequest",
+      "response": "#/$defs/PropertiesReadResponse",
+      "tier": "core"
+    },
+    "actions/invoke": {
+      "params": "#/$defs/ActionsInvokeParams",
+      "result": "#/$defs/ActionsInvokeResult",
+      "request": "#/$defs/ActionsInvokeRequest",
+      "response": "#/$defs/ActionsInvokeResponse",
+      "tier": "core"
+    },
+    "operations/get": {
+      "params": "#/$defs/OperationsGetParams",
+      "result": "#/$defs/OperationsGetResult",
+      "request": "#/$defs/OperationsGetRequest",
+      "response": "#/$defs/OperationsGetResponse",
+      "tier": "core"
+    },
+    "operations/wait": {
+      "params": "#/$defs/OperationsWaitParams",
+      "result": "#/$defs/OperationsWaitResult",
+      "request": "#/$defs/OperationsWaitRequest",
+      "response": "#/$defs/OperationsWaitResponse",
+      "tier": "core"
+    },
+    "operations/list": {
+      "params": "#/$defs/OperationsListParams",
+      "result": "#/$defs/OperationsListResult",
+      "request": "#/$defs/OperationsListRequest",
+      "response": "#/$defs/OperationsListResponse",
+      "tier": "core"
+    },
+    "operations/cancel": {
+      "params": "#/$defs/OperationsCancelParams",
+      "result": "#/$defs/OperationsCancelResult",
+      "request": "#/$defs/OperationsCancelRequest",
+      "response": "#/$defs/OperationsCancelResponse",
+      "tier": "core"
+    },
+    "stop": {
+      "params": "#/$defs/StopParams",
+      "result": "#/$defs/StopResult",
+      "request": "#/$defs/StopRequest",
+      "response": "#/$defs/StopResponse",
+      "tier": "core"
+    },
+    "subscriptions/listen": {
+      "params": "#/$defs/SubscriptionsListenParams",
+      "result": "#/$defs/SubscriptionsListenResult",
+      "request": "#/$defs/SubscriptionsListenRequest",
+      "response": "#/$defs/SubscriptionsListenResponse",
+      "tier": "core"
+    },
+    "leases/acquire": {
+      "params": "#/$defs/LeasesAcquireParams",
+      "result": "#/$defs/LeasesAcquireResult",
+      "request": "#/$defs/LeasesAcquireRequest",
+      "response": "#/$defs/LeasesAcquireResponse",
+      "tier": "optional",
+      "capability": "leases"
+    },
+    "leases/renew": {
+      "params": "#/$defs/LeasesRenewParams",
+      "result": "#/$defs/LeasesRenewResult",
+      "request": "#/$defs/LeasesRenewRequest",
+      "response": "#/$defs/LeasesRenewResponse",
+      "tier": "optional",
+      "capability": "leases"
+    },
+    "leases/release": {
+      "params": "#/$defs/LeasesReleaseParams",
+      "result": "#/$defs/LeasesReleaseResult",
+      "request": "#/$defs/LeasesReleaseRequest",
+      "response": "#/$defs/LeasesReleaseResponse",
+      "tier": "optional",
+      "capability": "leases"
+    },
+    "events/read": {
+      "params": "#/$defs/EventsReadParams",
+      "result": "#/$defs/EventsReadResult",
+      "request": "#/$defs/EventsReadRequest",
+      "response": "#/$defs/EventsReadResponse",
+      "tier": "optional",
+      "capability": "events"
+    },
+    "programs/run": {
+      "params": "#/$defs/ProgramsRunParams",
+      "result": "#/$defs/ProgramsRunResult",
+      "request": "#/$defs/ProgramsRunRequest",
+      "response": "#/$defs/ProgramsRunResponse",
+      "tier": "optional",
+      "capability": "programs"
+    },
+    "programs/register": {
+      "params": "#/$defs/ProgramsRegisterParams",
+      "result": "#/$defs/ProgramsRegisterResult",
+      "request": "#/$defs/ProgramsRegisterRequest",
+      "response": "#/$defs/ProgramsRegisterResponse",
+      "tier": "optional",
+      "capability": "programs.registry"
+    },
+    "programs/get": {
+      "params": "#/$defs/ProgramsGetParams",
+      "result": "#/$defs/ProgramsGetResult",
+      "request": "#/$defs/ProgramsGetRequest",
+      "response": "#/$defs/ProgramsGetResponse",
+      "tier": "optional",
+      "capability": "programs.registry"
+    },
+    "programs/list": {
+      "params": "#/$defs/ProgramsListParams",
+      "result": "#/$defs/ProgramsListResult",
+      "request": "#/$defs/ProgramsListRequest",
+      "response": "#/$defs/ProgramsListResponse",
+      "tier": "optional",
+      "capability": "programs.registry"
+    }
+  },
+  "x-bhms-notifications": {
+    "notifications/subscriptions/acknowledged": {
+      "params": "#/$defs/SubscriptionsAcknowledgedNotificationParams",
+      "notification": "#/$defs/SubscriptionsAcknowledgedNotification",
+      "direction": "server-to-client"
+    },
+    "notifications/devices/listChanged": {
+      "params": "#/$defs/DevicesListChangedNotificationParams",
+      "notification": "#/$defs/DevicesListChangedNotification",
+      "direction": "server-to-client"
+    },
+    "notifications/operation": {
+      "params": "#/$defs/OperationNotificationParams",
+      "notification": "#/$defs/OperationNotification",
+      "direction": "server-to-client"
+    },
+    "notifications/observation": {
+      "params": "#/$defs/ObservationNotificationParams",
+      "notification": "#/$defs/ObservationNotification",
+      "direction": "server-to-client"
+    },
+    "notifications/event": {
+      "params": "#/$defs/EventNotificationParams",
+      "notification": "#/$defs/EventNotification",
+      "direction": "server-to-client"
+    },
+    "notifications/cancelled": {
+      "params": "#/$defs/CancelledNotificationParams",
+      "notification": "#/$defs/CancelledNotification",
+      "direction": "both"
+    }
+  },
+  "x-bhms-errors": {
+    "INVALID_ARGUMENT": {
+      "code": -32602,
+      "retry": "never"
+    },
+    "OUT_OF_RANGE": {
+      "code": -32602,
+      "retry": "never"
+    },
+    "UNIT_MISMATCH": {
+      "code": -32602,
+      "retry": "never"
+    },
+    "UNKNOWN_DEVICE": {
+      "code": -32001,
+      "retry": "never"
+    },
+    "UNKNOWN_ACTION": {
+      "code": -32002,
+      "retry": "never"
+    },
+    "UNSUPPORTED": {
+      "code": -32003,
+      "retry": "never"
+    },
+    "LEASE_REQUIRED": {
+      "code": -32004,
+      "retry": "never"
+    },
+    "LEASE_CONFLICT": {
+      "code": -32005,
+      "retry": "backoff"
+    },
+    "LEASE_EXPIRED": {
+      "code": -32006,
+      "retry": "never"
+    },
+    "FENCED": {
+      "code": -32007,
+      "retry": "never"
+    },
+    "KEY_CONFLICT": {
+      "code": -32008,
+      "retry": "never"
+    },
+    "STALE": {
+      "code": -32009,
+      "retry": "after-reconcile"
+    },
+    "DEVICE_UNAVAILABLE": {
+      "code": -32010,
+      "retry": "backoff"
+    },
+    "UNAUTHORIZED": {
+      "code": -32011,
+      "retry": "never"
+    },
+    "BUSY": {
+      "code": -32012,
+      "retry": "backoff"
+    },
+    "DEADLINE_EXCEEDED": {
+      "code": -32013,
+      "retry": "after-reconcile"
+    },
+    "INTERNAL": {
+      "code": -32014,
+      "retry": "never"
+    },
+    "UNSUPPORTED_VERSION": {
+      "code": -32015,
+      "retry": "never"
+    },
+    "UNVERIFIED": {
+      "code": -32016,
+      "retry": "after-reconcile"
+    },
+    "DEVICE_FAULT": {
+      "code": -32017,
+      "retry": "after-reconcile"
+    }
+  },
+  "x-bhms-agent-tools": {
+    "bhms_find": {
+      "description": "Find devices (and saved programs) by text, capability, tag or status. Start here.",
+      "input": "#/$defs/AgentFindInput",
+      "result": "#/$defs/AgentFindData"
+    },
+    "bhms_describe": {
+      "description": "Describe one device: its actions with argument units and bounds, properties, effects, lease and stop behaviour.",
+      "input": "#/$defs/AgentDescribeInput",
+      "result": "#/$defs/DevicesDescribeResult"
+    },
+    "bhms_read": {
+      "description": "Read a device property. The result says how the value was obtained (measured, reported, commanded...), its quality and age.",
+      "input": "#/$defs/AgentReadInput",
+      "result": "#/$defs/PropertiesReadResult"
+    },
+    "bhms_invoke": {
+      "description": "Invoke a device action and wait up to wait_ms for the outcome. Pass operation_key when you may retry; after a timeout call bhms_operation, or repeat this call with the SAME operation_key and identical arguments: it returns the original operation instead of acting twice.",
+      "input": "#/$defs/AgentInvokeInput",
+      "result": "#/$defs/ActionsInvokeResult"
+    },
+    "bhms_operation": {
+      "description": "Get an operation's current state, or wait up to wait_ms for it to settle. Use this instead of re-invoking.",
+      "input": "#/$defs/AgentOperationInput",
+      "result": "#/$defs/OperationsWaitResult"
+    },
+    "bhms_cancel": {
+      "description": "Ask one operation to stop. Cancellation is a request: check the returned cancel.state. Use bhms_stop to halt a device.",
+      "input": "#/$defs/AgentCancelInput",
+      "result": "#/$defs/OperationsCancelResult"
+    },
+    "bhms_stop": {
+      "description": "Stop devices now: runs their stop procedure, ends their operations and revokes their leases. Not an emergency stop.",
+      "input": "#/$defs/AgentStopInput",
+      "result": "#/$defs/StopResult"
+    },
+    "bhms_run_program": {
+      "description": "Run a bounded program (inline or by program_digest from bhms_find) as one operation. The whole program is validated before any step runs.",
+      "input": "#/$defs/AgentRunProgramInput",
+      "result": "#/$defs/ProgramsRunResult"
+    }
+  },
+  "$defs": {
+    "RequestId": {
+      "description": "JSON-RPC request id; never null.",
+      "type": [
+        "string",
+        "integer"
+      ]
+    },
+    "ProtocolVersion": {
+      "type": "string",
+      "description": "Protocol version date string.",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$"
+    },
+    "Time": {
+      "type": "string",
+      "description": "RFC 3339 UTC timestamp ending in Z.",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]{1,9})?Z$"
+    },
+    "Digest": {
+      "type": "string",
+      "description": "sha256 over RFC 8785 canonical JSON.",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "DeviceId": {
+      "type": "string",
+      "description": "Device identifier.",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$"
+    },
+    "ResourceId": {
+      "type": "string",
+      "description": "Exclusive resource identifier.",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$"
+    },
+    "Name": {
+      "type": "string",
+      "description": "Action, property or program name (snake_case).",
+      "pattern": "^[a-z][a-z0-9_]{0,63}$"
+    },
+    "EventType": {
+      "type": "string",
+      "description": "Event type.",
+      "pattern": "^[a-z][a-z0-9_]*(\\.[a-z0-9_]+)*$",
+      "maxLength": 64
+    },
+    "CapabilityId": {
+      "type": "string",
+      "description": "Namespaced capability id.",
+      "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)+$",
+      "maxLength": 128
+    },
+    "Tag": {
+      "type": "string",
+      "description": "Free-form label.",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "OperationKey": {
+      "type": "string",
+      "description": "Idempotency key.",
+      "pattern": "^[A-Za-z0-9._:~-]{1,128}$"
+    },
+    "Cursor": {
+      "type": "string",
+      "description": "Opaque server-minted cursor.",
+      "minLength": 1,
+      "maxLength": 512
+    },
+    "ServerId": {
+      "type": "string",
+      "description": "Opaque server-minted identifier (operationId, leaseId).",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "VariableName": {
+      "type": "string",
+      "description": "Program variable name.",
+      "pattern": "^[a-z_][A-Za-z0-9_]{0,63}$"
+    },
+    "Reference": {
+      "type": "string",
+      "description": "Program value reference ${path}.",
+      "pattern": "^\\$\\{[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z0-9_]+|\\[[0-9]+\\])*\\}$"
+    },
+    "ExtensionKey": {
+      "type": "string",
+      "description": "Extension identifier: reverse-DNS prefix, '/', name; the bhms/ prefix is reserved.",
+      "pattern": "^(?!bhms/)[a-z][a-z0-9-]*(\\.[a-z][a-z0-9-]*)*/[A-Za-z0-9]([A-Za-z0-9._-]*[A-Za-z0-9])?$"
+    },
+    "Extensions": {
+      "description": "Map of extension identifiers to settings objects.",
+      "type": "object",
+      "propertyNames": {
+        "$ref": "#/$defs/ExtensionKey"
+      },
+      "additionalProperties": {
+        "type": "object"
+      }
+    },
+    "JsonSchema": {
+      "description": "An embedded JSON Schema 2020-12 document (x-bhms-unit on physical numbers).",
+      "type": [
+        "object",
+        "boolean"
+      ]
+    },
+    "ObjectSchema": {
+      "description": "A closed object JSON Schema (type object, additionalProperties false).",
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "object"
+        },
+        "additionalProperties": {
+          "const": false
+        }
+      },
+      "required": [
+        "type",
+        "additionalProperties"
+      ]
+    },
+    "Implementation": {
+      "type": "object",
+      "description": "Software identity; display and logging only.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 200
+        }
+      },
+      "required": [
+        "name",
+        "version"
+      ],
+      "additionalProperties": false
+    },
+    "ClientCapabilities": {
+      "type": "object",
+      "description": "Capabilities a client declares per request.",
+      "properties": {
+        "extensions": {
+          "$ref": "#/$defs/Extensions"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ResultType": {
+      "description": "Result kind; only 'complete' in this version.",
+      "const": "complete"
+    },
+    "RequestMeta": {
+      "description": "Per-request metadata. bhms/protocolVersion is required.",
+      "type": "object",
+      "properties": {
+        "bhms/protocolVersion": {
+          "$ref": "#/$defs/ProtocolVersion"
+        },
+        "bhms/clientInfo": {
+          "$ref": "#/$defs/Implementation"
+        },
+        "bhms/clientCapabilities": {
+          "$ref": "#/$defs/ClientCapabilities"
+        },
+        "traceparent": {
+          "type": "string",
+          "maxLength": 256
+        },
+        "tracestate": {
+          "type": "string",
+          "maxLength": 512
+        }
+      },
+      "required": [
+        "bhms/protocolVersion"
+      ],
+      "propertyNames": {
+        "anyOf": [
+          {
+            "enum": [
+              "bhms/protocolVersion",
+              "bhms/clientInfo",
+              "bhms/clientCapabilities"
+            ]
+          },
+          {
+            "pattern": "^(?!bhms/).+"
+          }
+        ]
+      }
+    },
+    "ResultMeta": {
+      "description": "Result metadata.",
+      "type": "object",
+      "properties": {
+        "bhms/serverInfo": {
+          "$ref": "#/$defs/Implementation"
+        },
+        "bhms/subscriptionId": {
+          "$ref": "#/$defs/RequestId"
+        }
+      },
+      "propertyNames": {
+        "anyOf": [
+          {
+            "enum": [
+              "bhms/serverInfo",
+              "bhms/subscriptionId"
+            ]
+          },
+          {
+            "pattern": "^(?!bhms/).+"
+          }
+        ]
+      }
+    },
+    "SubscriptionMeta": {
+      "description": "Metadata of a notification delivered on a subscription.",
+      "type": "object",
+      "properties": {
+        "bhms/subscriptionId": {
+          "$ref": "#/$defs/RequestId"
+        }
+      },
+      "required": [
+        "bhms/subscriptionId"
+      ],
+      "propertyNames": {
+        "anyOf": [
+          {
+            "enum": [
+              "bhms/subscriptionId"
+            ]
+          },
+          {
+            "pattern": "^(?!bhms/).+"
+          }
+        ]
+      }
+    },
+    "NotificationMeta": {
+      "description": "Metadata of a notification outside a subscription.",
+      "type": "object",
+      "propertyNames": {
+        "pattern": "^(?!bhms/).+"
+      }
+    },
+    "BhmsErrorCode": {
+      "type": "string",
+      "enum": [
+        "INVALID_ARGUMENT",
+        "OUT_OF_RANGE",
+        "UNIT_MISMATCH",
+        "UNKNOWN_DEVICE",
+        "UNKNOWN_ACTION",
+        "UNSUPPORTED",
+        "LEASE_REQUIRED",
+        "LEASE_CONFLICT",
+        "LEASE_EXPIRED",
+        "FENCED",
+        "KEY_CONFLICT",
+        "STALE",
+        "DEVICE_UNAVAILABLE",
+        "UNAUTHORIZED",
+        "BUSY",
+        "DEADLINE_EXCEEDED",
+        "INTERNAL",
+        "UNSUPPORTED_VERSION",
+        "UNVERIFIED",
+        "DEVICE_FAULT"
+      ],
+      "description": "BHMS error code (10-errors.md)."
+    },
+    "RetryClass": {
+      "type": "string",
+      "enum": [
+        "never",
+        "same-key",
+        "after-reconcile",
+        "backoff"
+      ],
+      "description": "How to retry."
+    },
+    "ErrorData": {
+      "type": "object",
+      "description": "data of a BHMS error response.",
+      "properties": {
+        "bhmsCode": {
+          "$ref": "#/$defs/BhmsErrorCode"
+        },
+        "field": {
+          "type": "string",
+          "description": "Path of the offending member from params.",
+          "maxLength": 512
+        },
+        "bound": {
+          "description": "The violated bound, expected value or supported set."
+        },
+        "operationId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "mayHaveActed": {
+          "type": "boolean",
+          "description": "Whether a device may have acted because of the request."
+        },
+        "retry": {
+          "$ref": "#/$defs/RetryClass"
+        },
+        "hint": {
+          "type": "string",
+          "description": "What to do next.",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "bhmsCode",
+        "mayHaveActed",
+        "retry",
+        "hint"
+      ],
+      "additionalProperties": false
+    },
+    "OperationError": {
+      "type": "object",
+      "description": "Error recorded in an operation, a DeviceStop or an agent refusal.",
+      "properties": {
+        "bhmsCode": {
+          "$ref": "#/$defs/BhmsErrorCode"
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "field": {
+          "type": "string",
+          "description": "Path of the offending member from params.",
+          "maxLength": 512
+        },
+        "bound": {
+          "description": "The violated bound, expected value or supported set."
+        },
+        "operationId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "mayHaveActed": {
+          "type": "boolean",
+          "description": "Whether a device may have acted because of the request."
+        },
+        "retry": {
+          "$ref": "#/$defs/RetryClass"
+        },
+        "hint": {
+          "type": "string",
+          "description": "What to do next.",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "bhmsCode",
+        "message",
+        "mayHaveActed",
+        "retry",
+        "hint"
+      ],
+      "additionalProperties": false
+    },
+    "ErrorObject": {
+      "description": "JSON-RPC error object. BHMS codes carry ErrorData whose bhmsCode matches the number; DEVICE_FAULT and UNVERIFIED occur only inside operations (BHMS-ERR-012).",
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer"
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 2000
+        },
+        "data": {}
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "code": {
+                "enum": [
+                  -32001,
+                  -32002,
+                  -32003,
+                  -32004,
+                  -32005,
+                  -32006,
+                  -32007,
+                  -32008,
+                  -32009,
+                  -32010,
+                  -32011,
+                  -32012,
+                  -32013,
+                  -32014,
+                  -32015,
+                  -32016,
+                  -32017,
+                  -32602
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/ErrorData"
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "else": {
+            "properties": {
+              "data": {
+                "not": {
+                  "type": "object",
+                  "required": [
+                    "bhmsCode"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "INVALID_ARGUMENT"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32602
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "OUT_OF_RANGE"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32602
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "UNIT_MISMATCH"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32602
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "UNKNOWN_DEVICE"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32001
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "UNKNOWN_ACTION"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32002
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "UNSUPPORTED"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32003
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "LEASE_REQUIRED"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32004
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "LEASE_CONFLICT"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32005
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "LEASE_EXPIRED"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32006
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "FENCED"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32007
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "KEY_CONFLICT"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32008
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "STALE"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32009
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "DEVICE_UNAVAILABLE"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32010
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "UNAUTHORIZED"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32011
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "BUSY"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32012
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "DEADLINE_EXCEEDED"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32013
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "INTERNAL"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32014
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "UNSUPPORTED_VERSION"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32015
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "UNVERIFIED"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32016
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "data": {
+                "properties": {
+                  "bhmsCode": {
+                    "const": "DEVICE_FAULT"
+                  }
+                },
+                "required": [
+                  "bhmsCode"
+                ]
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "then": {
+            "properties": {
+              "code": {
+                "const": -32017
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "data": {
+              "properties": {
+                "bhmsCode": {
+                  "not": {
+                    "enum": [
+                      "DEVICE_FAULT",
+                      "UNVERIFIED"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "JSONRPCRequest": {
+      "type": "object",
+      "description": "Any request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "JSONRPCNotification": {
+      "type": "object",
+      "description": "Any notification.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "method": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "method"
+      ],
+      "additionalProperties": false
+    },
+    "JSONRPCResultResponse": {
+      "type": "object",
+      "description": "Any result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "type": "object",
+          "properties": {
+            "resultType": {
+              "$ref": "#/$defs/ResultType"
+            }
+          },
+          "required": [
+            "resultType"
+          ]
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "JSONRPCErrorResponse": {
+      "type": "object",
+      "description": "Any error response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RequestId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "error": {
+          "$ref": "#/$defs/ErrorObject"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "error"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramLimits": {
+      "type": "object",
+      "description": "Program limits (08-programs.md 8.1); servers may advertise lower values only.",
+      "properties": {
+        "maxSteps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 256
+        },
+        "maxRepeat": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "maxDepth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "maxExecutedSteps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4096
+        },
+        "maxVariables": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "maxProgramBytes": {
+          "type": "integer",
+          "minimum": 1024,
+          "maximum": 65536
+        },
+        "maxDurationMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400000
+        }
+      },
+      "required": [
+        "maxSteps",
+        "maxRepeat",
+        "maxDepth",
+        "maxExecutedSteps",
+        "maxVariables",
+        "maxProgramBytes",
+        "maxDurationMs"
+      ],
+      "additionalProperties": false
+    },
+    "ServerCapabilities": {
+      "type": "object",
+      "description": "Server capabilities (03-lifecycle.md 3.5).",
+      "properties": {
+        "devices": {
+          "type": "object",
+          "properties": {
+            "listChanged": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "listChanged"
+          ],
+          "additionalProperties": false
+        },
+        "observations": {
+          "type": "object",
+          "properties": {
+            "subscribe": {
+              "type": "boolean"
+            },
+            "minIntervalMs": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "subscribe",
+            "minIntervalMs"
+          ],
+          "additionalProperties": false
+        },
+        "operations": {
+          "type": "object",
+          "properties": {
+            "durable": {
+              "type": "boolean"
+            },
+            "cancel": {
+              "type": "boolean"
+            },
+            "keyRetentionS": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "durable",
+            "cancel",
+            "keyRetentionS"
+          ],
+          "additionalProperties": false
+        },
+        "stop": {
+          "type": "object",
+          "properties": {},
+          "additionalProperties": false
+        },
+        "subscriptions": {
+          "type": "object",
+          "properties": {
+            "maxObservations": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxOperationIds": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "maxObservations",
+            "maxOperationIds"
+          ],
+          "additionalProperties": false
+        },
+        "leases": {
+          "type": "object",
+          "properties": {
+            "minTtlMs": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxTtlMs": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "maxWaitMs": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "minTtlMs",
+            "maxTtlMs",
+            "maxWaitMs"
+          ],
+          "additionalProperties": false
+        },
+        "events": {
+          "type": "object",
+          "properties": {
+            "retentionS": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "maxPageSize": {
+              "type": "integer",
+              "minimum": 1
+            }
+          },
+          "required": [
+            "retentionS",
+            "maxPageSize"
+          ],
+          "additionalProperties": false
+        },
+        "programs": {
+          "type": "object",
+          "properties": {
+            "registry": {
+              "type": "boolean"
+            },
+            "limits": {
+              "$ref": "#/$defs/ProgramLimits"
+            }
+          },
+          "required": [
+            "registry",
+            "limits"
+          ],
+          "additionalProperties": false
+        },
+        "compact": {
+          "type": "object",
+          "properties": {
+            "links": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "links"
+          ],
+          "additionalProperties": false
+        },
+        "gateway": {
+          "type": "object",
+          "properties": {
+            "crossDeviceLeases": {
+              "type": "boolean"
+            },
+            "upstreams": {
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          "required": [
+            "crossDeviceLeases",
+            "upstreams"
+          ],
+          "additionalProperties": false
+        },
+        "extensions": {
+          "$ref": "#/$defs/Extensions"
+        }
+      },
+      "required": [
+        "operations",
+        "stop",
+        "subscriptions"
+      ],
+      "additionalProperties": false
+    },
+    "Limits": {
+      "type": "object",
+      "description": "Hard limits applied to every request.",
+      "properties": {
+        "maxMessageBytes": {
+          "type": "integer",
+          "minimum": 1048576
+        },
+        "maxPageSize": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxWaitMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "maxMessageBytes",
+        "maxPageSize",
+        "maxWaitMs"
+      ],
+      "additionalProperties": false
+    },
+    "Scope": {
+      "type": "string",
+      "description": "Authorization scope (07-leases-and-authority.md 7.4).",
+      "pattern": "^(read|lease|stop|admin|programs:run|programs:register|invoke:.+|stop:.+)$"
+    },
+    "Principal": {
+      "type": "object",
+      "description": "The authenticated principal and its effective scopes.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Scope"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "id",
+        "scopes"
+      ],
+      "additionalProperties": false
+    },
+    "DiscoverParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        }
+      },
+      "required": [
+        "_meta"
+      ],
+      "additionalProperties": false
+    },
+    "DiscoverResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "supportedVersions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProtocolVersion"
+          },
+          "minItems": 1,
+          "uniqueItems": true
+        },
+        "serverInfo": {
+          "$ref": "#/$defs/Implementation"
+        },
+        "capabilities": {
+          "$ref": "#/$defs/ServerCapabilities"
+        },
+        "epoch": {
+          "type": "string",
+          "description": "Identity of the server's durable state.",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "limits": {
+          "$ref": "#/$defs/Limits"
+        },
+        "instructions": {
+          "type": "string",
+          "description": "Guidance for models; untrusted.",
+          "maxLength": 8000
+        },
+        "principal": {
+          "$ref": "#/$defs/Principal"
+        }
+      },
+      "required": [
+        "resultType",
+        "supportedVersions",
+        "serverInfo",
+        "capabilities",
+        "epoch",
+        "limits"
+      ],
+      "additionalProperties": false
+    },
+    "DiscoverRequest": {
+      "type": "object",
+      "description": "server/discover request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "server/discover"
+        },
+        "params": {
+          "$ref": "#/$defs/DiscoverParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "DiscoverResponse": {
+      "type": "object",
+      "description": "server/discover result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/DiscoverResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "DeviceStatus": {
+      "type": "string",
+      "enum": [
+        "online",
+        "offline",
+        "degraded",
+        "unknown"
+      ]
+    },
+    "EffectClass": {
+      "type": "string",
+      "enum": [
+        "none",
+        "reversible",
+        "irreversible",
+        "hazardous"
+      ],
+      "description": "Physical effect class of an action."
+    },
+    "Idempotency": {
+      "type": "string",
+      "enum": [
+        "idempotent",
+        "absolute",
+        "relative",
+        "toggle"
+      ],
+      "description": "What a duplicate execution does."
+    },
+    "EvidenceKind": {
+      "type": "string",
+      "enum": [
+        "measured",
+        "reported",
+        "commanded",
+        "estimated",
+        "simulated"
+      ],
+      "description": "How an observed value was obtained."
+    },
+    "CompletionEvidence": {
+      "type": "string",
+      "enum": [
+        "measured",
+        "reported",
+        "none"
+      ],
+      "description": "Evidence available for completion."
+    },
+    "DeviceSummary": {
+      "type": "object",
+      "description": "Compact device summary for lists (<= 400 tokens).",
+      "properties": {
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 280
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CapabilityId"
+          },
+          "uniqueItems": true
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Tag"
+          },
+          "uniqueItems": true
+        },
+        "status": {
+          "$ref": "#/$defs/DeviceStatus"
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Name"
+          },
+          "uniqueItems": true
+        },
+        "properties": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Name"
+          },
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "deviceId",
+        "name",
+        "summary",
+        "capabilities",
+        "tags",
+        "status",
+        "digest",
+        "actions",
+        "properties"
+      ],
+      "additionalProperties": false
+    },
+    "DevicesListFilter": {
+      "type": "object",
+      "properties": {
+        "capability": {
+          "type": "string",
+          "description": "Exact id or prefix ending in .*",
+          "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)*(\\.\\*)?$",
+          "maxLength": 128
+        },
+        "tag": {
+          "$ref": "#/$defs/Tag"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "status": {
+          "$ref": "#/$defs/DeviceStatus"
+        }
+      },
+      "additionalProperties": false
+    },
+    "DevicesListParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "filter": {
+          "$ref": "#/$defs/DevicesListFilter"
+        },
+        "cursor": {
+          "$ref": "#/$defs/Cursor"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        }
+      },
+      "required": [
+        "_meta"
+      ],
+      "additionalProperties": false
+    },
+    "DevicesListResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "devices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DeviceSummary"
+          }
+        },
+        "nextCursor": {
+          "$ref": "#/$defs/Cursor"
+        }
+      },
+      "required": [
+        "resultType",
+        "devices"
+      ],
+      "additionalProperties": false
+    },
+    "DevicesListRequest": {
+      "type": "object",
+      "description": "devices/list request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "devices/list"
+        },
+        "params": {
+          "$ref": "#/$defs/DevicesListParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "DevicesListResponse": {
+      "type": "object",
+      "description": "devices/list result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/DevicesListResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "CompactType": {
+      "type": "string",
+      "enum": [
+        "u8",
+        "i8",
+        "u16",
+        "i16",
+        "u32",
+        "i32",
+        "f32",
+        "bool"
+      ],
+      "description": "BHMS-Compact wire type."
+    },
+    "CompactField": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "$ref": "#/$defs/Name"
+        },
+        "type": {
+          "$ref": "#/$defs/CompactType"
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "name",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "CompactActionLayout": {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CompactField"
+          }
+        },
+        "result": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CompactField"
+          }
+        }
+      },
+      "required": [
+        "index",
+        "args",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "CompactValue": {
+      "type": "object",
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255
+        },
+        "type": {
+          "$ref": "#/$defs/CompactType"
+        },
+        "scale": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "index",
+        "type"
+      ],
+      "additionalProperties": false
+    },
+    "PropertyDescription": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "schema": {
+          "$ref": "#/$defs/JsonSchema"
+        },
+        "evidence": {
+          "$ref": "#/$defs/EvidenceKind"
+        },
+        "observable": {
+          "type": "boolean"
+        },
+        "maxRateHz": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "readEffect": {
+          "type": "string",
+          "enum": [
+            "none",
+            "transaction"
+          ]
+        },
+        "requiresLease": {
+          "type": "boolean"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ResourceId"
+          },
+          "uniqueItems": true
+        },
+        "compact": {
+          "$ref": "#/$defs/CompactValue"
+        }
+      },
+      "required": [
+        "description",
+        "schema",
+        "evidence",
+        "observable",
+        "readEffect"
+      ],
+      "additionalProperties": false
+    },
+    "ActionDescription": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "input": {
+          "$ref": "#/$defs/ObjectSchema"
+        },
+        "output": {
+          "$ref": "#/$defs/JsonSchema"
+        },
+        "effect": {
+          "$ref": "#/$defs/EffectClass"
+        },
+        "idempotency": {
+          "$ref": "#/$defs/Idempotency"
+        },
+        "cancel": {
+          "type": "string",
+          "enum": [
+            "supported",
+            "unsupported"
+          ]
+        },
+        "completionEvidence": {
+          "$ref": "#/$defs/CompletionEvidence"
+        },
+        "verifiedBy": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Name"
+          },
+          "uniqueItems": true
+        },
+        "typicalDurationMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxDurationMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "requiresLease": {
+          "type": "boolean"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ResourceId"
+          },
+          "uniqueItems": true
+        },
+        "onLeaseLoss": {
+          "type": "string",
+          "enum": [
+            "finish",
+            "stop",
+            "hold"
+          ]
+        },
+        "preconditions": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "compact": {
+          "$ref": "#/$defs/CompactActionLayout"
+        }
+      },
+      "required": [
+        "description",
+        "input",
+        "effect",
+        "idempotency",
+        "cancel",
+        "completionEvidence",
+        "maxDurationMs",
+        "requiresLease",
+        "resources"
+      ],
+      "additionalProperties": false
+    },
+    "EventTypeDescription": {
+      "type": "object",
+      "properties": {
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "data": {
+          "$ref": "#/$defs/JsonSchema"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "SafetyDescription": {
+      "type": "object",
+      "properties": {
+        "stop": {
+          "type": "string",
+          "enum": [
+            "supported",
+            "unsupported"
+          ]
+        },
+        "stopEvidence": {
+          "$ref": "#/$defs/CompletionEvidence"
+        },
+        "stopMaxDurationMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "onDisconnect": {
+          "type": "string",
+          "enum": [
+            "continue",
+            "hold",
+            "stop",
+            "unknown"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 1000
+        }
+      },
+      "required": [
+        "stop",
+        "stopEvidence",
+        "onDisconnect",
+        "summary"
+      ],
+      "additionalProperties": false
+    },
+    "DeviceIdentity": {
+      "type": "object",
+      "properties": {
+        "manufacturer": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "model": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "serialNumber": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "hardwareRevision": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "firmwareVersion": {
+          "type": "string",
+          "maxLength": 128
+        }
+      },
+      "additionalProperties": false
+    },
+    "DeviceDescription": {
+      "type": "object",
+      "description": "Immutable device description; digest covers everything except digest.",
+      "properties": {
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 4000
+        },
+        "capabilities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CapabilityId"
+          },
+          "uniqueItems": true
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Tag"
+          },
+          "uniqueItems": true
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ResourceId"
+          },
+          "uniqueItems": true
+        },
+        "identity": {
+          "$ref": "#/$defs/DeviceIdentity"
+        },
+        "properties": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/Name"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/PropertyDescription"
+          }
+        },
+        "actions": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/Name"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/ActionDescription"
+          }
+        },
+        "events": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/EventType"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/EventTypeDescription"
+          }
+        },
+        "safety": {
+          "$ref": "#/$defs/SafetyDescription"
+        },
+        "extensions": {
+          "$ref": "#/$defs/Extensions"
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "deviceId",
+        "name",
+        "description",
+        "capabilities",
+        "tags",
+        "resources",
+        "properties",
+        "actions",
+        "safety",
+        "digest"
+      ],
+      "additionalProperties": false
+    },
+    "DevicesDescribeParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "_meta",
+        "deviceId"
+      ],
+      "additionalProperties": false
+    },
+    "DevicesDescribeResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "description": {
+          "$ref": "#/$defs/DeviceDescription"
+        }
+      },
+      "required": [
+        "resultType",
+        "description"
+      ],
+      "additionalProperties": false
+    },
+    "DevicesDescribeRequest": {
+      "type": "object",
+      "description": "devices/describe request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "devices/describe"
+        },
+        "params": {
+          "$ref": "#/$defs/DevicesDescribeParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "DevicesDescribeResponse": {
+      "type": "object",
+      "description": "devices/describe result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/DevicesDescribeResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Quality": {
+      "type": "string",
+      "enum": [
+        "valid",
+        "stale",
+        "invalid",
+        "unknown"
+      ]
+    },
+    "Observation": {
+      "type": "object",
+      "description": "Immutable record of a property value and how it was known.",
+      "properties": {
+        "value": {
+          "description": "Value, null when quality is invalid or unknown."
+        },
+        "unit": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 32
+        },
+        "evidence": {
+          "$ref": "#/$defs/EvidenceKind"
+        },
+        "quality": {
+          "$ref": "#/$defs/Quality"
+        },
+        "acquiredAt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Time"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "receivedAt": {
+          "$ref": "#/$defs/Time"
+        },
+        "ageMs": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 0
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "uncertainty": {
+          "type": "number",
+          "minimum": 0
+        },
+        "sequence": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "epoch": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "source": {
+          "type": "string",
+          "maxLength": 128
+        }
+      },
+      "required": [
+        "value",
+        "evidence",
+        "quality",
+        "acquiredAt",
+        "receivedAt",
+        "ageMs",
+        "sequence",
+        "epoch"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "quality": {
+                "enum": [
+                  "invalid",
+                  "unknown"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "value": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "value"
+            ]
+          },
+          "then": {
+            "required": [
+              "unit"
+            ]
+          }
+        }
+      ]
+    },
+    "PropertiesReadParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "property": {
+          "$ref": "#/$defs/Name"
+        },
+        "maxAgeMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fresh": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "_meta",
+        "deviceId",
+        "property"
+      ],
+      "additionalProperties": false
+    },
+    "PropertiesReadResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "observation": {
+          "$ref": "#/$defs/Observation"
+        }
+      },
+      "required": [
+        "resultType",
+        "observation"
+      ],
+      "additionalProperties": false
+    },
+    "PropertiesReadRequest": {
+      "type": "object",
+      "description": "properties/read request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "properties/read"
+        },
+        "params": {
+          "$ref": "#/$defs/PropertiesReadParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "PropertiesReadResponse": {
+      "type": "object",
+      "description": "properties/read result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/PropertiesReadResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OperationState": {
+      "type": "string",
+      "enum": [
+        "accepted",
+        "dispatching",
+        "running",
+        "completed",
+        "failed",
+        "canceled",
+        "rejected",
+        "unknown"
+      ]
+    },
+    "CancelState": {
+      "type": "string",
+      "enum": [
+        "none",
+        "requested",
+        "acknowledged",
+        "refused",
+        "confirmed"
+      ]
+    },
+    "EffectCertainty": {
+      "type": "string",
+      "enum": [
+        "none",
+        "verified",
+        "unverified",
+        "unknown"
+      ]
+    },
+    "CancelInfo": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "$ref": "#/$defs/CancelState"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "requestedAt": {
+          "$ref": "#/$defs/Time"
+        }
+      },
+      "required": [
+        "state"
+      ],
+      "additionalProperties": false
+    },
+    "OperationEvidence": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/CompletionEvidence"
+        },
+        "observations": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/Name"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/Observation"
+          }
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "Requirement": {
+      "type": "object",
+      "properties": {
+        "effect": {
+          "const": "verified"
+        }
+      },
+      "required": [
+        "effect"
+      ],
+      "additionalProperties": false
+    },
+    "Progress": {
+      "type": "object",
+      "properties": {
+        "stepsCompleted": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "stepsTotal": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "stepsCompleted",
+        "stepsTotal"
+      ],
+      "additionalProperties": false
+    },
+    "HistoryEntry": {
+      "type": "object",
+      "properties": {
+        "seq": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "at": {
+          "$ref": "#/$defs/Time"
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "state",
+            "cancel",
+            "effect",
+            "evidence",
+            "reconciliation",
+            "correction",
+            "step",
+            "stop",
+            "lease"
+          ]
+        },
+        "state": {
+          "$ref": "#/$defs/OperationState"
+        },
+        "cancel": {
+          "$ref": "#/$defs/CancelState"
+        },
+        "effect": {
+          "$ref": "#/$defs/EffectCertainty"
+        },
+        "detail": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "stepIndex": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "childOperationId": {
+          "$ref": "#/$defs/ServerId"
+        }
+      },
+      "required": [
+        "seq",
+        "at",
+        "kind"
+      ],
+      "additionalProperties": false
+    },
+    "Operation": {
+      "type": "object",
+      "description": "Durable record of one physical intent (06-operations.md).",
+      "properties": {
+        "operationId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "operationKey": {
+          "$ref": "#/$defs/OperationKey"
+        },
+        "keyOrigin": {
+          "type": "string",
+          "enum": [
+            "client",
+            "server",
+            "derived"
+          ]
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "action",
+            "program"
+          ]
+        },
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "action": {
+          "$ref": "#/$defs/Name"
+        },
+        "programDigest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "parentOperationId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "arguments": {
+          "type": "object"
+        },
+        "requestDigest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "state": {
+          "$ref": "#/$defs/OperationState"
+        },
+        "cancel": {
+          "$ref": "#/$defs/CancelInfo"
+        },
+        "effect": {
+          "$ref": "#/$defs/EffectCertainty"
+        },
+        "evidence": {
+          "$ref": "#/$defs/OperationEvidence"
+        },
+        "require": {
+          "$ref": "#/$defs/Requirement"
+        },
+        "leaseId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "fence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "deadlineAt": {
+          "$ref": "#/$defs/Time"
+        },
+        "result": {
+          "description": "Present exactly when completed."
+        },
+        "error": {
+          "$ref": "#/$defs/OperationError"
+        },
+        "progress": {
+          "$ref": "#/$defs/Progress"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/Time"
+        },
+        "updatedAt": {
+          "$ref": "#/$defs/Time"
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/HistoryEntry"
+          }
+        }
+      },
+      "required": [
+        "operationId",
+        "operationKey",
+        "keyOrigin",
+        "kind",
+        "arguments",
+        "requestDigest",
+        "state",
+        "cancel",
+        "effect",
+        "createdAt",
+        "updatedAt"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "action"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "deviceId",
+              "action"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "program"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "programDigest"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "completed"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "result"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "result"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "failed",
+                  "rejected",
+                  "unknown"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "enum": [
+                  "rejected"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "effect": {
+                "const": "none"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "unknown"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "effect": {
+                "const": "unknown"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "ActionsInvokeParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "action": {
+          "$ref": "#/$defs/Name"
+        },
+        "arguments": {
+          "type": "object"
+        },
+        "operationKey": {
+          "$ref": "#/$defs/OperationKey"
+        },
+        "leaseId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "deadlineMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "waitMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "require": {
+          "$ref": "#/$defs/Requirement"
+        },
+        "descriptionDigest": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "_meta",
+        "deviceId",
+        "action",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    "ActionsInvokeResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "operation": {
+          "$ref": "#/$defs/Operation"
+        },
+        "replayed": {
+          "type": "boolean",
+          "description": "True when an existing operation was returned."
+        }
+      },
+      "required": [
+        "resultType",
+        "operation",
+        "replayed"
+      ],
+      "additionalProperties": false
+    },
+    "ActionsInvokeRequest": {
+      "type": "object",
+      "description": "actions/invoke request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "actions/invoke"
+        },
+        "params": {
+          "$ref": "#/$defs/ActionsInvokeParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "ActionsInvokeResponse": {
+      "type": "object",
+      "description": "actions/invoke result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/ActionsInvokeResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsGetParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "operationId": {
+          "$ref": "#/$defs/ServerId"
+        }
+      },
+      "required": [
+        "_meta",
+        "operationId"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsGetResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "operation": {
+          "$ref": "#/$defs/Operation"
+        }
+      },
+      "required": [
+        "resultType",
+        "operation"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsGetRequest": {
+      "type": "object",
+      "description": "operations/get request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "operations/get"
+        },
+        "params": {
+          "$ref": "#/$defs/OperationsGetParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsGetResponse": {
+      "type": "object",
+      "description": "operations/get result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/OperationsGetResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsWaitParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "operationId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "_meta",
+        "operationId",
+        "timeoutMs"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsWaitResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "operation": {
+          "$ref": "#/$defs/Operation"
+        }
+      },
+      "required": [
+        "resultType",
+        "operation"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsWaitRequest": {
+      "type": "object",
+      "description": "operations/wait request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "operations/wait"
+        },
+        "params": {
+          "$ref": "#/$defs/OperationsWaitParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsWaitResponse": {
+      "type": "object",
+      "description": "operations/wait result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/OperationsWaitResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsListParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "state": {
+          "$ref": "#/$defs/OperationState"
+        },
+        "parentOperationId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "cursor": {
+          "$ref": "#/$defs/Cursor"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        }
+      },
+      "required": [
+        "_meta"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsListResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "operations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Operation"
+          }
+        },
+        "nextCursor": {
+          "$ref": "#/$defs/Cursor"
+        }
+      },
+      "required": [
+        "resultType",
+        "operations"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsListRequest": {
+      "type": "object",
+      "description": "operations/list request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "operations/list"
+        },
+        "params": {
+          "$ref": "#/$defs/OperationsListParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsListResponse": {
+      "type": "object",
+      "description": "operations/list result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/OperationsListResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsCancelParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "operationId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "_meta",
+        "operationId"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsCancelResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "operation": {
+          "$ref": "#/$defs/Operation"
+        }
+      },
+      "required": [
+        "resultType",
+        "operation"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsCancelRequest": {
+      "type": "object",
+      "description": "operations/cancel request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "operations/cancel"
+        },
+        "params": {
+          "$ref": "#/$defs/OperationsCancelParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsCancelResponse": {
+      "type": "object",
+      "description": "operations/cancel result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/OperationsCancelResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "DeviceStop": {
+      "type": "object",
+      "description": "Per-device stop outcome.",
+      "properties": {
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "confirmed",
+            "initiated",
+            "unsupported",
+            "failed"
+          ]
+        },
+        "evidence": {
+          "$ref": "#/$defs/CompletionEvidence"
+        },
+        "canceledOperations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ServerId"
+          }
+        },
+        "revokedLeases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ServerId"
+          }
+        },
+        "detail": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "error": {
+          "$ref": "#/$defs/OperationError"
+        }
+      },
+      "required": [
+        "deviceId",
+        "outcome",
+        "evidence",
+        "canceledOperations",
+        "revokedLeases"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "confirmed"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "enum": [
+                  "measured",
+                  "reported"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "outcome": {
+                "const": "failed"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "error"
+            ]
+          }
+        }
+      ]
+    },
+    "StopParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "deviceIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DeviceId"
+          },
+          "minItems": 1,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "scope": {
+          "const": "all"
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "waitMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "_meta",
+        "reason"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": [
+            "deviceIds"
+          ]
+        },
+        {
+          "required": [
+            "scope"
+          ]
+        }
+      ]
+    },
+    "StopResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "stops": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DeviceStop"
+          }
+        }
+      },
+      "required": [
+        "resultType",
+        "stops"
+      ],
+      "additionalProperties": false
+    },
+    "StopRequest": {
+      "type": "object",
+      "description": "stop request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "stop"
+        },
+        "params": {
+          "$ref": "#/$defs/StopParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "StopResponse": {
+      "type": "object",
+      "description": "stop result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/StopResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "SubscriptionFilter": {
+      "type": "object",
+      "description": "Which notifications a subscription delivers.",
+      "properties": {
+        "devicesListChanged": {
+          "type": "boolean"
+        },
+        "operations": {
+          "type": "object",
+          "properties": {
+            "operationIds": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ServerId"
+              },
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "deviceIds": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/DeviceId"
+              },
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "all": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        },
+        "observations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "deviceId": {
+                "$ref": "#/$defs/DeviceId"
+              },
+              "property": {
+                "$ref": "#/$defs/Name"
+              },
+              "minIntervalMs": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "deviceId",
+              "property"
+            ],
+            "additionalProperties": false
+          },
+          "maxItems": 256
+        },
+        "events": {
+          "type": "object",
+          "properties": {
+            "deviceIds": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/DeviceId"
+              },
+              "maxItems": 256,
+              "uniqueItems": true
+            },
+            "types": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/EventType"
+              },
+              "maxItems": 32,
+              "uniqueItems": true
+            },
+            "after": {
+              "$ref": "#/$defs/Cursor"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "RefusedFilter": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "bhmsCode": {
+          "$ref": "#/$defs/BhmsErrorCode"
+        },
+        "hint": {
+          "type": "string",
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "path",
+        "bhmsCode",
+        "hint"
+      ],
+      "additionalProperties": false
+    },
+    "SubscriptionsListenParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "notifications": {
+          "$ref": "#/$defs/SubscriptionFilter"
+        }
+      },
+      "required": [
+        "_meta",
+        "notifications"
+      ],
+      "additionalProperties": false
+    },
+    "SubscriptionsListenResult": {
+      "type": "object",
+      "description": "Graceful end of a subscription.",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/SubscriptionMeta"
+        }
+      },
+      "required": [
+        "resultType",
+        "_meta"
+      ],
+      "additionalProperties": false
+    },
+    "SubscriptionsListenRequest": {
+      "type": "object",
+      "description": "subscriptions/listen request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "subscriptions/listen"
+        },
+        "params": {
+          "$ref": "#/$defs/SubscriptionsListenParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "SubscriptionsListenResponse": {
+      "type": "object",
+      "description": "subscriptions/listen result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/SubscriptionsListenResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Lease": {
+      "type": "object",
+      "properties": {
+        "leaseId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ResourceId"
+          },
+          "minItems": 1,
+          "maxItems": 64,
+          "uniqueItems": true
+        },
+        "fence": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "state": {
+          "type": "string",
+          "enum": [
+            "active",
+            "released",
+            "expired",
+            "revoked"
+          ]
+        },
+        "acquiredAt": {
+          "$ref": "#/$defs/Time"
+        },
+        "expiresAt": {
+          "$ref": "#/$defs/Time"
+        },
+        "ttlMs": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "leaseId",
+        "resources",
+        "fence",
+        "state",
+        "acquiredAt",
+        "expiresAt",
+        "ttlMs"
+      ],
+      "additionalProperties": false
+    },
+    "LeasesAcquireParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ResourceId"
+          },
+          "minItems": 1,
+          "maxItems": 64,
+          "uniqueItems": true
+        },
+        "ttlMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "waitMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "_meta",
+        "resources",
+        "ttlMs"
+      ],
+      "additionalProperties": false
+    },
+    "LeasesAcquireResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "lease": {
+          "$ref": "#/$defs/Lease"
+        }
+      },
+      "required": [
+        "resultType",
+        "lease"
+      ],
+      "additionalProperties": false
+    },
+    "LeasesAcquireRequest": {
+      "type": "object",
+      "description": "leases/acquire request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "leases/acquire"
+        },
+        "params": {
+          "$ref": "#/$defs/LeasesAcquireParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "LeasesAcquireResponse": {
+      "type": "object",
+      "description": "leases/acquire result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/LeasesAcquireResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "LeasesRenewParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "leaseId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "ttlMs": {
+          "type": "integer",
+          "minimum": 1
+        }
+      },
+      "required": [
+        "_meta",
+        "leaseId",
+        "ttlMs"
+      ],
+      "additionalProperties": false
+    },
+    "LeasesRenewResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "lease": {
+          "$ref": "#/$defs/Lease"
+        }
+      },
+      "required": [
+        "resultType",
+        "lease"
+      ],
+      "additionalProperties": false
+    },
+    "LeasesRenewRequest": {
+      "type": "object",
+      "description": "leases/renew request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "leases/renew"
+        },
+        "params": {
+          "$ref": "#/$defs/LeasesRenewParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "LeasesRenewResponse": {
+      "type": "object",
+      "description": "leases/renew result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/LeasesRenewResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "LeasesReleaseParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "leaseId": {
+          "$ref": "#/$defs/ServerId"
+        }
+      },
+      "required": [
+        "_meta",
+        "leaseId"
+      ],
+      "additionalProperties": false
+    },
+    "LeasesReleaseResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "lease": {
+          "$ref": "#/$defs/Lease"
+        }
+      },
+      "required": [
+        "resultType",
+        "lease"
+      ],
+      "additionalProperties": false
+    },
+    "LeasesReleaseRequest": {
+      "type": "object",
+      "description": "leases/release request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "leases/release"
+        },
+        "params": {
+          "$ref": "#/$defs/LeasesReleaseParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "LeasesReleaseResponse": {
+      "type": "object",
+      "description": "leases/release result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/LeasesReleaseResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Event": {
+      "type": "object",
+      "properties": {
+        "cursor": {
+          "$ref": "#/$defs/Cursor"
+        },
+        "time": {
+          "$ref": "#/$defs/Time"
+        },
+        "type": {
+          "$ref": "#/$defs/EventType"
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "info",
+            "warning",
+            "error",
+            "critical"
+          ]
+        },
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "operationId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "data": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "cursor",
+        "time",
+        "type",
+        "severity"
+      ],
+      "additionalProperties": false
+    },
+    "EventsReadParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "after": {
+          "$ref": "#/$defs/Cursor"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        },
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EventType"
+          },
+          "maxItems": 32,
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "_meta"
+      ],
+      "additionalProperties": false
+    },
+    "EventsReadResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Event"
+          }
+        },
+        "cursor": {
+          "$ref": "#/$defs/Cursor"
+        },
+        "gap": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "resultType",
+        "events",
+        "cursor",
+        "gap"
+      ],
+      "additionalProperties": false
+    },
+    "EventsReadRequest": {
+      "type": "object",
+      "description": "events/read request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "events/read"
+        },
+        "params": {
+          "$ref": "#/$defs/EventsReadParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "EventsReadResponse": {
+      "type": "object",
+      "description": "events/read result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/EventsReadResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "Predicate": {
+      "description": "Program predicate.",
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "type": "string",
+              "enum": [
+                "eq",
+                "ne",
+                "lt",
+                "le",
+                "gt",
+                "ge"
+              ]
+            },
+            "left": {},
+            "right": {}
+          },
+          "required": [
+            "op",
+            "left",
+            "right"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "op": {
+              "const": "within"
+            },
+            "left": {},
+            "right": {},
+            "tolerance": {}
+          },
+          "required": [
+            "op",
+            "left",
+            "right",
+            "tolerance"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "all": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Predicate"
+              },
+              "minItems": 1,
+              "maxItems": 16
+            }
+          },
+          "required": [
+            "all"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "any": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Predicate"
+              },
+              "minItems": 1,
+              "maxItems": 16
+            }
+          },
+          "required": [
+            "any"
+          ],
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "properties": {
+            "not": {
+              "$ref": "#/$defs/Predicate"
+            }
+          },
+          "required": [
+            "not"
+          ],
+          "additionalProperties": false
+        }
+      ]
+    },
+    "InvokeStep": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "invoke"
+        },
+        "id": {
+          "$ref": "#/$defs/Name"
+        },
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "action": {
+          "$ref": "#/$defs/Name"
+        },
+        "arguments": {
+          "type": "object"
+        },
+        "saveAs": {
+          "$ref": "#/$defs/VariableName"
+        }
+      },
+      "required": [
+        "kind",
+        "deviceId",
+        "action",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    "ReadStep": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "read"
+        },
+        "id": {
+          "$ref": "#/$defs/Name"
+        },
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "property": {
+          "$ref": "#/$defs/Name"
+        },
+        "maxAgeMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "fresh": {
+          "type": "boolean"
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 60000
+        },
+        "saveAs": {
+          "$ref": "#/$defs/VariableName"
+        }
+      },
+      "required": [
+        "kind",
+        "deviceId",
+        "property",
+        "saveAs"
+      ],
+      "additionalProperties": false
+    },
+    "WaitUntilStep": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "waitUntil"
+        },
+        "id": {
+          "$ref": "#/$defs/Name"
+        },
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "property": {
+          "$ref": "#/$defs/Name"
+        },
+        "predicate": {
+          "$ref": "#/$defs/Predicate"
+        },
+        "timeoutMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600000
+        },
+        "pollMs": {
+          "type": "integer",
+          "minimum": 10
+        },
+        "saveAs": {
+          "$ref": "#/$defs/VariableName"
+        }
+      },
+      "required": [
+        "kind",
+        "deviceId",
+        "property",
+        "predicate",
+        "timeoutMs"
+      ],
+      "additionalProperties": false
+    },
+    "AssertStep": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "assert"
+        },
+        "id": {
+          "$ref": "#/$defs/Name"
+        },
+        "predicate": {
+          "$ref": "#/$defs/Predicate"
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "kind",
+        "predicate",
+        "message"
+      ],
+      "additionalProperties": false
+    },
+    "SleepStep": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "sleep"
+        },
+        "id": {
+          "$ref": "#/$defs/Name"
+        },
+        "durationMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 3600000
+        }
+      },
+      "required": [
+        "kind",
+        "durationMs"
+      ],
+      "additionalProperties": false
+    },
+    "RepeatStep": {
+      "type": "object",
+      "properties": {
+        "kind": {
+          "const": "repeat"
+        },
+        "id": {
+          "$ref": "#/$defs/Name"
+        },
+        "times": {
+          "anyOf": [
+            {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            {
+              "$ref": "#/$defs/Reference"
+            }
+          ]
+        },
+        "as": {
+          "$ref": "#/$defs/VariableName"
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Step"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        }
+      },
+      "required": [
+        "kind",
+        "times",
+        "steps"
+      ],
+      "additionalProperties": false
+    },
+    "Step": {
+      "description": "One program step, discriminated by kind.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/InvokeStep"
+        },
+        {
+          "$ref": "#/$defs/ReadStep"
+        },
+        {
+          "$ref": "#/$defs/WaitUntilStep"
+        },
+        {
+          "$ref": "#/$defs/AssertStep"
+        },
+        {
+          "$ref": "#/$defs/SleepStep"
+        },
+        {
+          "$ref": "#/$defs/RepeatStep"
+        }
+      ]
+    },
+    "Program": {
+      "type": "object",
+      "description": "Bounded program (08-programs.md).",
+      "properties": {
+        "bhmsProgram": {
+          "$ref": "#/$defs/ProtocolVersion"
+        },
+        "name": {
+          "$ref": "#/$defs/Name"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "input": {
+          "$ref": "#/$defs/ObjectSchema"
+        },
+        "maxDurationMs": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 86400000
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Step"
+          },
+          "minItems": 1,
+          "maxItems": 256
+        },
+        "output": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/VariableName"
+          }
+        }
+      },
+      "required": [
+        "bhmsProgram",
+        "name",
+        "description",
+        "input",
+        "maxDurationMs",
+        "steps"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramInfo": {
+      "type": "object",
+      "description": "Validated program summary; a tool definition.",
+      "properties": {
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "name": {
+          "$ref": "#/$defs/Name"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "input": {
+          "$ref": "#/$defs/ObjectSchema"
+        },
+        "effect": {
+          "$ref": "#/$defs/EffectClass"
+        },
+        "worstCaseDurationMs": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "maxDurationMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "stepCount": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "maxExecutedSteps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "devices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DeviceId"
+          },
+          "uniqueItems": true
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ResourceId"
+          },
+          "uniqueItems": true
+        },
+        "requiresLease": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "digest",
+        "name",
+        "description",
+        "input",
+        "effect",
+        "worstCaseDurationMs",
+        "maxDurationMs",
+        "stepCount",
+        "maxExecutedSteps",
+        "devices",
+        "resources",
+        "requiresLease"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsRunParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "program": {
+          "$ref": "#/$defs/Program"
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "arguments": {
+          "type": "object"
+        },
+        "operationKey": {
+          "$ref": "#/$defs/OperationKey"
+        },
+        "leaseId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "deadlineMs": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "waitMs": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": [
+        "_meta",
+        "arguments"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": [
+            "program"
+          ]
+        },
+        {
+          "required": [
+            "digest"
+          ]
+        }
+      ]
+    },
+    "ProgramsRunResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "operation": {
+          "$ref": "#/$defs/Operation"
+        },
+        "replayed": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "resultType",
+        "operation",
+        "replayed"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsRunRequest": {
+      "type": "object",
+      "description": "programs/run request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "programs/run"
+        },
+        "params": {
+          "$ref": "#/$defs/ProgramsRunParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsRunResponse": {
+      "type": "object",
+      "description": "programs/run result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/ProgramsRunResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsRegisterParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "program": {
+          "$ref": "#/$defs/Program"
+        }
+      },
+      "required": [
+        "_meta",
+        "program"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsRegisterResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "info": {
+          "$ref": "#/$defs/ProgramInfo"
+        }
+      },
+      "required": [
+        "resultType",
+        "info"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsRegisterRequest": {
+      "type": "object",
+      "description": "programs/register request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "programs/register"
+        },
+        "params": {
+          "$ref": "#/$defs/ProgramsRegisterParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsRegisterResponse": {
+      "type": "object",
+      "description": "programs/register result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/ProgramsRegisterResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsGetParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "digest": {
+          "$ref": "#/$defs/Digest"
+        }
+      },
+      "required": [
+        "_meta",
+        "digest"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsGetResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "program": {
+          "$ref": "#/$defs/Program"
+        },
+        "info": {
+          "$ref": "#/$defs/ProgramInfo"
+        }
+      },
+      "required": [
+        "resultType",
+        "program",
+        "info"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsGetRequest": {
+      "type": "object",
+      "description": "programs/get request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "programs/get"
+        },
+        "params": {
+          "$ref": "#/$defs/ProgramsGetParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsGetResponse": {
+      "type": "object",
+      "description": "programs/get result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/ProgramsGetResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsListParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "cursor": {
+          "$ref": "#/$defs/Cursor"
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 1000
+        }
+      },
+      "required": [
+        "_meta"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsListResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "programs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProgramInfo"
+          }
+        },
+        "nextCursor": {
+          "$ref": "#/$defs/Cursor"
+        }
+      },
+      "required": [
+        "resultType",
+        "programs"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsListRequest": {
+      "type": "object",
+      "description": "programs/list request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "programs/list"
+        },
+        "params": {
+          "$ref": "#/$defs/ProgramsListParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "ProgramsListResponse": {
+      "type": "object",
+      "description": "programs/list result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/ProgramsListResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "SubscriptionsAcknowledgedNotificationParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/SubscriptionMeta"
+        },
+        "notifications": {
+          "$ref": "#/$defs/SubscriptionFilter"
+        },
+        "refused": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/RefusedFilter"
+          }
+        },
+        "eventsGap": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "_meta",
+        "notifications"
+      ],
+      "additionalProperties": false
+    },
+    "SubscriptionsAcknowledgedNotification": {
+      "type": "object",
+      "description": "notifications/subscriptions/acknowledged notification.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "method": {
+          "const": "notifications/subscriptions/acknowledged"
+        },
+        "params": {
+          "$ref": "#/$defs/SubscriptionsAcknowledgedNotificationParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "DevicesListChangedNotificationParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/SubscriptionMeta"
+        }
+      },
+      "required": [
+        "_meta"
+      ],
+      "additionalProperties": false
+    },
+    "DevicesListChangedNotification": {
+      "type": "object",
+      "description": "notifications/devices/listChanged notification.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "method": {
+          "const": "notifications/devices/listChanged"
+        },
+        "params": {
+          "$ref": "#/$defs/DevicesListChangedNotificationParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "OperationNotificationParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/SubscriptionMeta"
+        },
+        "operation": {
+          "$ref": "#/$defs/Operation"
+        }
+      },
+      "required": [
+        "_meta",
+        "operation"
+      ],
+      "additionalProperties": false
+    },
+    "OperationNotification": {
+      "type": "object",
+      "description": "notifications/operation notification.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "method": {
+          "const": "notifications/operation"
+        },
+        "params": {
+          "$ref": "#/$defs/OperationNotificationParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "ObservationNotificationParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/SubscriptionMeta"
+        },
+        "deviceId": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "property": {
+          "$ref": "#/$defs/Name"
+        },
+        "observation": {
+          "$ref": "#/$defs/Observation"
+        }
+      },
+      "required": [
+        "_meta",
+        "deviceId",
+        "property",
+        "observation"
+      ],
+      "additionalProperties": false
+    },
+    "ObservationNotification": {
+      "type": "object",
+      "description": "notifications/observation notification.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "method": {
+          "const": "notifications/observation"
+        },
+        "params": {
+          "$ref": "#/$defs/ObservationNotificationParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "EventNotificationParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/SubscriptionMeta"
+        },
+        "event": {
+          "$ref": "#/$defs/Event"
+        }
+      },
+      "required": [
+        "_meta",
+        "event"
+      ],
+      "additionalProperties": false
+    },
+    "EventNotification": {
+      "type": "object",
+      "description": "notifications/event notification.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "method": {
+          "const": "notifications/event"
+        },
+        "params": {
+          "$ref": "#/$defs/EventNotificationParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "CancelledNotificationParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/NotificationMeta"
+        },
+        "requestId": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "requestId"
+      ],
+      "additionalProperties": false
+    },
+    "CancelledNotification": {
+      "type": "object",
+      "description": "notifications/cancelled notification.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "method": {
+          "const": "notifications/cancelled"
+        },
+        "params": {
+          "$ref": "#/$defs/CancelledNotificationParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "ArgumentBound": {
+      "type": "object",
+      "description": "Narrowing bound for one argument.",
+      "properties": {
+        "minimum": {
+          "type": "number"
+        },
+        "maximum": {
+          "type": "number"
+        },
+        "enum": {
+          "type": "array",
+          "items": {},
+          "minItems": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "PolicyPrincipal": {
+      "type": "object",
+      "properties": {
+        "tokens": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Digest"
+          },
+          "uniqueItems": true
+        },
+        "uids": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "uniqueItems": true
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Scope"
+          },
+          "uniqueItems": true
+        },
+        "bounds": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}/[a-z][a-z0-9_]{0,63}$"
+          },
+          "additionalProperties": {
+            "type": "object",
+            "propertyNames": {
+              "$ref": "#/$defs/Name"
+            },
+            "additionalProperties": {
+              "$ref": "#/$defs/ArgumentBound"
+            }
+          }
+        }
+      },
+      "required": [
+        "scopes"
+      ],
+      "additionalProperties": false
+    },
+    "GatewayPolicy": {
+      "type": "object",
+      "description": "Gateway authorization policy document (13-security.md 13.2).",
+      "properties": {
+        "principals": {
+          "type": "object",
+          "propertyNames": {
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/PolicyPrincipal"
+          }
+        }
+      },
+      "required": [
+        "principals"
+      ],
+      "additionalProperties": false
+    },
+    "AgentFindInput": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "Words to match in names, summaries and tags.",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "capability": {
+          "type": "string",
+          "description": "Capability id, or prefix ending in .*",
+          "maxLength": 128
+        },
+        "tag": {
+          "$ref": "#/$defs/Tag"
+        },
+        "status": {
+          "$ref": "#/$defs/DeviceStatus"
+        },
+        "cursor": {
+          "$ref": "#/$defs/Cursor"
+        }
+      },
+      "additionalProperties": false
+    },
+    "AgentDescribeInput": {
+      "type": "object",
+      "properties": {
+        "device_id": {
+          "$ref": "#/$defs/DeviceId"
+        }
+      },
+      "required": [
+        "device_id"
+      ],
+      "additionalProperties": false
+    },
+    "AgentReadInput": {
+      "type": "object",
+      "properties": {
+        "device_id": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "property": {
+          "$ref": "#/$defs/Name"
+        },
+        "max_age_ms": {
+          "type": "integer",
+          "description": "Maximum acceptable age.",
+          "minimum": 0
+        },
+        "fresh": {
+          "type": "boolean",
+          "description": "Require a new measurement."
+        }
+      },
+      "required": [
+        "device_id",
+        "property"
+      ],
+      "additionalProperties": false
+    },
+    "AgentInvokeInput": {
+      "type": "object",
+      "properties": {
+        "device_id": {
+          "$ref": "#/$defs/DeviceId"
+        },
+        "action": {
+          "$ref": "#/$defs/Name"
+        },
+        "arguments": {
+          "type": "object",
+          "description": "Arguments per the action's input schema; numbers in the declared unit, or {value, unit}."
+        },
+        "operation_key": {
+          "$ref": "#/$defs/OperationKey",
+          "description": "Optional idempotency key. Reuse the same key with identical arguments to retry safely."
+        },
+        "wait_ms": {
+          "type": "integer",
+          "description": "Milliseconds to wait for the outcome (default 5000, max 60000).",
+          "minimum": 0,
+          "maximum": 60000
+        },
+        "require_verified": {
+          "type": "boolean",
+          "description": "Fail unless the effect is verified by measurement."
+        }
+      },
+      "required": [
+        "device_id",
+        "action",
+        "arguments"
+      ],
+      "additionalProperties": false
+    },
+    "AgentOperationInput": {
+      "type": "object",
+      "properties": {
+        "operation_id": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "wait_ms": {
+          "type": "integer",
+          "description": "Milliseconds to wait for the outcome (default 5000, max 60000).",
+          "minimum": 0,
+          "maximum": 60000
+        }
+      },
+      "required": [
+        "operation_id"
+      ],
+      "additionalProperties": false
+    },
+    "AgentCancelInput": {
+      "type": "object",
+      "properties": {
+        "operation_id": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "operation_id"
+      ],
+      "additionalProperties": false
+    },
+    "AgentStopInput": {
+      "type": "object",
+      "properties": {
+        "device_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DeviceId"
+          },
+          "minItems": 1,
+          "maxItems": 256,
+          "uniqueItems": true
+        },
+        "all": {
+          "const": true
+        },
+        "reason": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": [
+            "device_ids"
+          ]
+        },
+        {
+          "required": [
+            "all"
+          ]
+        }
+      ]
+    },
+    "AgentRunProgramInput": {
+      "type": "object",
+      "properties": {
+        "program": {
+          "$ref": "#/$defs/Program"
+        },
+        "program_digest": {
+          "$ref": "#/$defs/Digest"
+        },
+        "arguments": {
+          "type": "object"
+        },
+        "operation_key": {
+          "$ref": "#/$defs/OperationKey",
+          "description": "Optional idempotency key. Reuse the same key with identical arguments to retry safely."
+        },
+        "wait_ms": {
+          "type": "integer",
+          "description": "Milliseconds to wait for the outcome (default 5000, max 60000).",
+          "minimum": 0,
+          "maximum": 60000
+        }
+      },
+      "required": [
+        "arguments"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": [
+            "program"
+          ]
+        },
+        {
+          "required": [
+            "program_digest"
+          ]
+        }
+      ]
+    },
+    "AgentFindData": {
+      "type": "object",
+      "description": "Structured content of bhms_find.",
+      "properties": {
+        "devices": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/DeviceSummary"
+          }
+        },
+        "programs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ProgramInfo"
+          }
+        },
+        "nextCursor": {
+          "$ref": "#/$defs/Cursor"
+        }
+      },
+      "required": [
+        "devices"
+      ],
+      "additionalProperties": false
+    },
+    "AgentFunctionResult": {
+      "type": "object",
+      "description": "Result of a function-tool call: summary plus data or error.",
+      "properties": {
+        "summary": {
+          "type": "string",
+          "maxLength": 200,
+          "pattern": "^[^\\n]*$"
+        },
+        "data": {
+          "type": "object"
+        },
+        "error": {
+          "$ref": "#/$defs/OperationError"
+        }
+      },
+      "required": [
+        "summary"
+      ],
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": [
+            "data"
+          ]
+        },
+        {
+          "required": [
+            "error"
+          ]
+        }
+      ]
+    }
+  }
+}

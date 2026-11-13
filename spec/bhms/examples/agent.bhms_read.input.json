@@ -1,0 +1,9 @@
+{
+  "$comment": "Model-facing bhms_read input (snake_case).",
+  "against": "#/$defs/AgentReadInput",
+  "message": {
+    "device_id": "pump-1",
+    "property": "pressure",
+    "max_age_ms": 500
+  }
+}

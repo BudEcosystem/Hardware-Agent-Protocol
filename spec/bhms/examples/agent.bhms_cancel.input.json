@@ -1,0 +1,8 @@
+{
+  "$comment": "Model-facing bhms_cancel input (snake_case).",
+  "against": "#/$defs/AgentCancelInput",
+  "message": {
+    "operation_id": "op-7f3a",
+    "reason": "wrong reagent"
+  }
+}

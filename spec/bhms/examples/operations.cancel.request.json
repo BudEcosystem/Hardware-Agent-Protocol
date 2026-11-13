@@ -1,0 +1,20 @@
+{
+  "$comment": "Ask a running dispense to stop.",
+  "against": "#/$defs/OperationsCancelRequest",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 9,
+    "method": "operations/cancel",
+    "params": {
+      "_meta": {
+        "bhms/protocolVersion": "2026-11-13",
+        "bhms/clientInfo": {
+          "name": "bhms-cli",
+          "version": "0.1.0"
+        }
+      },
+      "operationId": "op-7f3a",
+      "reason": "wrong reagent"
+    }
+  }
+}

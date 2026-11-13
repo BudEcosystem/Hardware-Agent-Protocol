@@ -1,0 +1,10 @@
+{
+  "$comment": "params lacks _meta (BHMS-LIF-011).",
+  "against": "#/$defs/DevicesListRequest",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "devices/list",
+    "params": {}
+  }
+}

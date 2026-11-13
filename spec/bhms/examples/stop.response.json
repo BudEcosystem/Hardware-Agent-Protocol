@@ -1,0 +1,34 @@
+{
+  "$comment": "pump-1 confirmed by its controller, focus-1 still decelerating.",
+  "against": "#/$defs/StopResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 10,
+    "result": {
+      "resultType": "complete",
+      "stops": [
+        {
+          "deviceId": "pump-1",
+          "outcome": "confirmed",
+          "evidence": "reported",
+          "canceledOperations": [
+            "op-7f3a"
+          ],
+          "revokedLeases": [
+            "lease-12"
+          ]
+        },
+        {
+          "deviceId": "focus-1",
+          "outcome": "initiated",
+          "evidence": "none",
+          "canceledOperations": [],
+          "revokedLeases": [
+            "lease-9"
+          ],
+          "detail": "decelerating"
+        }
+      ]
+    }
+  }
+}

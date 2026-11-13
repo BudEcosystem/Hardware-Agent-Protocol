@@ -1,0 +1,22 @@
+{
+  "$comment": "OUT_OF_RANGE in reply to actions/invoke.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 101,
+    "error": {
+      "code": -32602,
+      "message": "volume 1500 uL is above the maximum 1000 uL",
+      "data": {
+        "bhmsCode": "OUT_OF_RANGE",
+        "field": "arguments.volume",
+        "bound": {
+          "maximum": 1000
+        },
+        "mayHaveActed": false,
+        "retry": "never",
+        "hint": "send a volume between 1 and 1000 uL, or split into two dispenses"
+      }
+    }
+  }
+}

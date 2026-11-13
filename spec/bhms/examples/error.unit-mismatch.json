@@ -1,0 +1,20 @@
+{
+  "$comment": "UNIT_MISMATCH in reply to actions/invoke.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 102,
+    "error": {
+      "code": -32602,
+      "message": "volume given in mL; pump-1.dispense takes uL",
+      "data": {
+        "bhmsCode": "UNIT_MISMATCH",
+        "field": "arguments.volume",
+        "bound": "uL",
+        "mayHaveActed": false,
+        "retry": "never",
+        "hint": "0.05 mL is 50 uL: send {\"value\": 50, \"unit\": \"uL\"}"
+      }
+    }
+  }
+}

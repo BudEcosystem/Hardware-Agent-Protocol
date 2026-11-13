@@ -1,0 +1,19 @@
+{
+  "$comment": "UNKNOWN_ACTION in reply to actions/invoke.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 104,
+    "error": {
+      "code": -32002,
+      "message": "pump-1 has no action 'aspirate'",
+      "data": {
+        "bhmsCode": "UNKNOWN_ACTION",
+        "field": "action",
+        "mayHaveActed": false,
+        "retry": "never",
+        "hint": "pump-1 actions: dispense"
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "$comment": "deviceId is always a literal, so resources are known before the run (08 8.2).",
+  "against": "#/$defs/InvokeStep",
+  "message": {
+    "kind": "invoke",
+    "deviceId": "${target}",
+    "action": "move_by",
+    "arguments": {
+      "distance": 1
+    }
+  }
+}

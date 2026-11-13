@@ -1,0 +1,43 @@
+{
+  "$comment": "First message of a subscription: the honoured filter and what was refused.",
+  "against": "#/$defs/SubscriptionsAcknowledgedNotification",
+  "message": {
+    "jsonrpc": "2.0",
+    "method": "notifications/subscriptions/acknowledged",
+    "params": {
+      "_meta": {
+        "bhms/subscriptionId": "sub-1"
+      },
+      "notifications": {
+        "devicesListChanged": true,
+        "operations": {
+          "deviceIds": [
+            "pump-1"
+          ]
+        },
+        "observations": [
+          {
+            "deviceId": "pump-1",
+            "property": "pressure",
+            "minIntervalMs": 500
+          }
+        ],
+        "events": {
+          "after": "ev-000120",
+          "types": [
+            "device.fault",
+            "stop"
+          ]
+        }
+      },
+      "refused": [
+        {
+          "path": "observations[1]",
+          "bhmsCode": "INVALID_ARGUMENT",
+          "hint": "pump-1 has no property valve_state; properties: dispensed_volume, pressure"
+        }
+      ],
+      "eventsGap": false
+    }
+  }
+}

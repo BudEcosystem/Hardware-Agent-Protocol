@@ -1,0 +1,24 @@
+{
+  "$comment": "A device-specific event.",
+  "against": "#/$defs/EventNotification",
+  "message": {
+    "jsonrpc": "2.0",
+    "method": "notifications/event",
+    "params": {
+      "_meta": {
+        "bhms/subscriptionId": "sub-1"
+      },
+      "event": {
+        "cursor": "ev-000121",
+        "time": "2026-11-13T09:31:00.000Z",
+        "type": "bubble.detected",
+        "severity": "warning",
+        "deviceId": "pump-1",
+        "message": "air in line",
+        "data": {
+          "sizeUl": 2.5
+        }
+      }
+    }
+  }
+}

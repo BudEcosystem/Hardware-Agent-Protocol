@@ -1,0 +1,87 @@
+{
+  "$comment": "A server supports at least one version.",
+  "against": "#/$defs/DiscoverResult",
+  "message": {
+    "resultType": "complete",
+    "supportedVersions": [],
+    "serverInfo": {
+      "name": "bhms-gateway",
+      "version": "0.1.0",
+      "title": "Bench A gateway"
+    },
+    "capabilities": {
+      "devices": {
+        "listChanged": true
+      },
+      "observations": {
+        "subscribe": true,
+        "minIntervalMs": 50
+      },
+      "operations": {
+        "durable": true,
+        "cancel": true,
+        "keyRetentionS": 86400
+      },
+      "stop": {},
+      "subscriptions": {
+        "maxObservations": 64,
+        "maxOperationIds": 256
+      },
+      "leases": {
+        "minTtlMs": 1000,
+        "maxTtlMs": 600000,
+        "maxWaitMs": 30000
+      },
+      "events": {
+        "retentionS": 604800,
+        "maxPageSize": 500
+      },
+      "programs": {
+        "registry": true,
+        "limits": {
+          "maxSteps": 256,
+          "maxRepeat": 1000,
+          "maxDepth": 4,
+          "maxExecutedSteps": 4096,
+          "maxVariables": 64,
+          "maxProgramBytes": 65536,
+          "maxDurationMs": 3600000
+        }
+      },
+      "compact": {
+        "links": 2
+      },
+      "gateway": {
+        "crossDeviceLeases": true,
+        "upstreams": 3
+      },
+      "extensions": {
+        "com.example/calibration": {
+          "version": "1"
+        }
+      }
+    },
+    "epoch": "gw-2026-11-01-a",
+    "limits": {
+      "maxMessageBytes": 1048576,
+      "maxPageSize": 500,
+      "maxWaitMs": 60000
+    },
+    "instructions": "Bench A: pumps and a microscope. Acquire a lease before dispensing; use stop if anything looks wrong.",
+    "principal": {
+      "id": "lab-agent",
+      "scopes": [
+        "read",
+        "lease",
+        "invoke:pump-*/dispense",
+        "programs:run"
+      ]
+    },
+    "_meta": {
+      "bhms/serverInfo": {
+        "name": "bhms-gateway",
+        "version": "0.1.0"
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$comment": "UNKNOWN_DEVICE in reply to devices/describe.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 103,
+    "error": {
+      "code": -32001,
+      "message": "no device 'pump-9'",
+      "data": {
+        "bhmsCode": "UNKNOWN_DEVICE",
+        "field": "deviceId",
+        "mayHaveActed": false,
+        "retry": "never",
+        "hint": "call devices/list to see available devices"
+      }
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$comment": "Model-facing bhms_invoke input (snake_case).",
+  "against": "#/$defs/AgentInvokeInput",
+  "message": {
+    "device_id": "pump-1",
+    "action": "dispense",
+    "arguments": {
+      "volume": {
+        "value": 50,
+        "unit": "uL"
+      }
+    },
+    "operation_key": "dispense-a1",
+    "wait_ms": 10000,
+    "require_verified": true
+  }
+}

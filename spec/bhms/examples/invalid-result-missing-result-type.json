@@ -1,0 +1,11 @@
+{
+  "$comment": "Every result carries resultType (BHMS-LIF-012).",
+  "against": "#/$defs/DevicesListResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+      "devices": []
+    }
+  }
+}

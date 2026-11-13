@@ -1,0 +1,8 @@
+{
+  "$comment": "Model-facing bhms_operation input (snake_case).",
+  "against": "#/$defs/AgentOperationInput",
+  "message": {
+    "operation_id": "op-7f3a",
+    "wait_ms": 30000
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "$comment": "Fences start at 1 (BHMS-LSE-003).",
+  "against": "#/$defs/Lease",
+  "message": {
+    "leaseId": "lease-12",
+    "resources": [
+      "pump-1/plunger"
+    ],
+    "fence": 0,
+    "state": "active",
+    "acquiredAt": "2026-11-13T09:29:59.000Z",
+    "expiresAt": "2026-11-13T09:31:59.000Z",
+    "ttlMs": 120000
+  }
+}

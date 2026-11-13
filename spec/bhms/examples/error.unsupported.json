@@ -1,0 +1,19 @@
+{
+  "$comment": "UNSUPPORTED in reply to actions/invoke.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 105,
+    "error": {
+      "code": -32003,
+      "message": "require.effect verified is not available: action reports completion only",
+      "data": {
+        "bhmsCode": "UNSUPPORTED",
+        "field": "require.effect",
+        "mayHaveActed": false,
+        "retry": "never",
+        "hint": "omit require, or use a device whose completionEvidence is measured"
+      }
+    }
+  }
+}

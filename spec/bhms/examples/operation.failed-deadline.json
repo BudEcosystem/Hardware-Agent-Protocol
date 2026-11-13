@@ -1,0 +1,36 @@
+{
+  "$comment": "maxDurationMs elapsed while running; the server cancelled it (BHMS-DEV-030, BHMS-OPS-071).",
+  "against": "#/$defs/Operation",
+  "message": {
+    "operationId": "op-7f3d",
+    "operationKey": "op-7f3d-key",
+    "keyOrigin": "client",
+    "kind": "action",
+    "deviceId": "pump-1",
+    "action": "dispense",
+    "arguments": {
+      "volume": 50,
+      "rate": 100
+    },
+    "requestDigest": "sha256:b3f5e979b6a86c564121143d985518f2475abc0454dba4d6fb6f9d31d6eb6778",
+    "state": "failed",
+    "cancel": {
+      "state": "none"
+    },
+    "effect": "unverified",
+    "require": {
+      "effect": "verified"
+    },
+    "leaseId": "lease-12",
+    "fence": 412,
+    "createdAt": "2026-11-13T09:30:00.012Z",
+    "updatedAt": "2026-11-13T09:30:30.000Z",
+    "error": {
+      "bhmsCode": "DEADLINE_EXCEEDED",
+      "message": "dispense exceeded maxDurationMs 60000 ms; cancellation confirmed",
+      "mayHaveActed": true,
+      "retry": "after-reconcile",
+      "hint": "read pump-1.dispensed_volume to see what was delivered before retrying"
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "$comment": "BHMS codes carry data with bhmsCode, mayHaveActed, retry and hint (BHMS-ERR-001).",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 9,
+    "error": {
+      "code": -32010,
+      "message": "offline"
+    }
+  }
+}

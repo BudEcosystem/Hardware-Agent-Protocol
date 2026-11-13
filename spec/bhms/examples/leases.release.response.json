@@ -1,0 +1,22 @@
+{
+  "$comment": "The released lease.",
+  "against": "#/$defs/LeasesReleaseResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 13,
+    "result": {
+      "resultType": "complete",
+      "lease": {
+        "leaseId": "lease-12",
+        "resources": [
+          "pump-1/plunger"
+        ],
+        "fence": 412,
+        "state": "released",
+        "acquiredAt": "2026-11-13T09:29:59.000Z",
+        "expiresAt": "2026-11-13T09:30:40.000Z",
+        "ttlMs": 120000
+      }
+    }
+  }
+}

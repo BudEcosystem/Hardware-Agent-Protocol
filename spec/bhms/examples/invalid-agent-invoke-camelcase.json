@@ -1,0 +1,9 @@
+{
+  "$comment": "Agent tool inputs are snake_case (12 12.1).",
+  "against": "#/$defs/AgentInvokeInput",
+  "message": {
+    "deviceId": "pump-1",
+    "action": "dispense",
+    "arguments": {}
+  }
+}

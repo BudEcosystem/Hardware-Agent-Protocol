@@ -1,0 +1,24 @@
+{
+  "$comment": "params are closed; an authority claim is an unknown member (BHMS-LIF-015, BHMS-SEC-030).",
+  "against": "#/$defs/ActionsInvokeRequest",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 5,
+    "method": "actions/invoke",
+    "params": {
+      "_meta": {
+        "bhms/protocolVersion": "2026-11-13",
+        "bhms/clientInfo": {
+          "name": "bhms-cli",
+          "version": "0.1.0"
+        }
+      },
+      "deviceId": "pump-1",
+      "action": "dispense",
+      "arguments": {
+        "volume": 50
+      },
+      "authorized": true
+    }
+  }
+}

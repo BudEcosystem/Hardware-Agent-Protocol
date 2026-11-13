@@ -1,0 +1,27 @@
+{
+  "$comment": "Sensor failed: quality invalid with value null, delivered despite the rate floor.",
+  "against": "#/$defs/ObservationNotification",
+  "message": {
+    "jsonrpc": "2.0",
+    "method": "notifications/observation",
+    "params": {
+      "_meta": {
+        "bhms/subscriptionId": "sub-1"
+      },
+      "deviceId": "pump-1",
+      "property": "pressure",
+      "observation": {
+        "value": null,
+        "unit": "kPa",
+        "evidence": "measured",
+        "quality": "invalid",
+        "acquiredAt": null,
+        "receivedAt": "2026-11-13T09:31:10.000Z",
+        "ageMs": null,
+        "sequence": 44813,
+        "epoch": "pump-1:boot-41",
+        "source": "pressure-sensor"
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "$comment": "KEY_CONFLICT in reply to actions/invoke.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 110,
+    "error": {
+      "code": -32008,
+      "message": "operationKey dispense-a1 was used for a different request",
+      "data": {
+        "bhmsCode": "KEY_CONFLICT",
+        "field": "operationKey",
+        "operationId": "op-7f3a",
+        "mayHaveActed": false,
+        "retry": "never",
+        "hint": "use a new operationKey for a new intent; op-7f3a holds the original"
+      }
+    }
+  }
+}

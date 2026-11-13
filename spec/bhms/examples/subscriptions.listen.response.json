@@ -1,0 +1,14 @@
+{
+  "$comment": "Graceful end of the subscription (server shutdown).",
+  "against": "#/$defs/SubscriptionsListenResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": "sub-1",
+    "result": {
+      "resultType": "complete",
+      "_meta": {
+        "bhms/subscriptionId": "sub-1"
+      }
+    }
+  }
+}

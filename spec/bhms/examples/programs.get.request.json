@@ -1,0 +1,19 @@
+{
+  "$comment": "Fetch a registered program.",
+  "against": "#/$defs/ProgramsGetRequest",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 17,
+    "method": "programs/get",
+    "params": {
+      "_meta": {
+        "bhms/protocolVersion": "2026-11-13",
+        "bhms/clientInfo": {
+          "name": "bhms-cli",
+          "version": "0.1.0"
+        }
+      },
+      "digest": "sha256:85e36d7ad99536f3857125838338bb8768e51182304fe54668309864f5b6f3df"
+    }
+  }
+}

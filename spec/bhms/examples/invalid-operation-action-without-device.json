@@ -1,0 +1,49 @@
+{
+  "$comment": "Action operations name their device (BHMS-OPS schema).",
+  "against": "#/$defs/Operation",
+  "message": {
+    "operationId": "op-7f3a",
+    "operationKey": "dispense-a1",
+    "keyOrigin": "client",
+    "kind": "action",
+    "action": "dispense",
+    "arguments": {
+      "volume": 50,
+      "rate": 100
+    },
+    "requestDigest": "sha256:b3f5e979b6a86c564121143d985518f2475abc0454dba4d6fb6f9d31d6eb6778",
+    "state": "completed",
+    "cancel": {
+      "state": "none"
+    },
+    "effect": "verified",
+    "evidence": {
+      "kind": "measured",
+      "observations": {
+        "dispensed_volume": {
+          "value": 50.1,
+          "unit": "uL",
+          "evidence": "measured",
+          "quality": "valid",
+          "acquiredAt": "2026-11-13T09:30:02.120Z",
+          "receivedAt": "2026-11-13T09:30:02.125Z",
+          "ageMs": 20,
+          "uncertainty": 0.3,
+          "sequence": 9121,
+          "epoch": "pump-1:boot-41",
+          "source": "flow-sensor"
+        }
+      }
+    },
+    "require": {
+      "effect": "verified"
+    },
+    "leaseId": "lease-12",
+    "fence": 412,
+    "result": {
+      "dispensed": 50.1
+    },
+    "createdAt": "2026-11-13T09:30:00.012Z",
+    "updatedAt": "2026-11-13T09:30:02.140Z"
+  }
+}

@@ -1,0 +1,49 @@
+{
+  "$comment": "ProgramInfo: a tool definition with the computed worst case.",
+  "against": "#/$defs/ProgramsRegisterResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 16,
+    "result": {
+      "resultType": "complete",
+      "info": {
+        "digest": "sha256:85e36d7ad99536f3857125838338bb8768e51182304fe54668309864f5b6f3df",
+        "name": "focus_scan",
+        "description": "Step the focus axis and record the position at each step.",
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "start",
+            "steps"
+          ],
+          "properties": {
+            "start": {
+              "type": "number",
+              "x-bhms-unit": "um",
+              "minimum": 0,
+              "maximum": 5000
+            },
+            "steps": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "effect": "reversible",
+        "worstCaseDurationMs": 137000,
+        "maxDurationMs": 140000,
+        "stepCount": 7,
+        "maxExecutedSteps": 202,
+        "devices": [
+          "focus-1"
+        ],
+        "resources": [
+          "focus-1/axis"
+        ],
+        "requiresLease": true
+      }
+    }
+  }
+}

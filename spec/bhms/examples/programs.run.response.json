@@ -1,0 +1,37 @@
+{
+  "$comment": "Still running after waitMs; progress counts executed steps against the worst case for these arguments.",
+  "against": "#/$defs/ProgramsRunResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 15,
+    "result": {
+      "resultType": "complete",
+      "operation": {
+        "operationId": "op-p001",
+        "operationKey": "scan-2026-11-13-a",
+        "keyOrigin": "client",
+        "kind": "program",
+        "programDigest": "sha256:85e36d7ad99536f3857125838338bb8768e51182304fe54668309864f5b6f3df",
+        "arguments": {
+          "start": 1200,
+          "steps": 20
+        },
+        "requestDigest": "sha256:580e4cde45d4805e9425d9456d28f8f26a1c62543ce71fbe3c51320ff7badb39",
+        "state": "running",
+        "cancel": {
+          "state": "none"
+        },
+        "effect": "verified",
+        "leaseId": "lease-9",
+        "fence": 399,
+        "progress": {
+          "stepsCompleted": 14,
+          "stepsTotal": 82
+        },
+        "createdAt": "2026-11-13T09:40:00.000Z",
+        "updatedAt": "2026-11-13T09:40:03.200Z"
+      },
+      "replayed": false
+    }
+  }
+}

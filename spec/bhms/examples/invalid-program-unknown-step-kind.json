@@ -1,0 +1,40 @@
+{
+  "$comment": "No arbitrary code: only the six step kinds exist (BHMS-PRG-002).",
+  "against": "#/$defs/Program",
+  "message": {
+    "bhmsProgram": "2026-11-13",
+    "name": "focus_scan",
+    "description": "Step the focus axis and record the position at each step.",
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "start",
+        "steps"
+      ],
+      "properties": {
+        "start": {
+          "type": "number",
+          "x-bhms-unit": "um",
+          "minimum": 0,
+          "maximum": 5000
+        },
+        "steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        }
+      }
+    },
+    "maxDurationMs": 140000,
+    "steps": [
+      {
+        "kind": "python",
+        "code": "import os"
+      }
+    ],
+    "output": {
+      "lastPosition": "${pos.value}"
+    }
+  }
+}

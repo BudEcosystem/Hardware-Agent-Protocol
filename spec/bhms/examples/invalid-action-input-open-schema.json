@@ -1,0 +1,64 @@
+{
+  "$comment": "Action input must be a closed object schema (BHMS-DEV-040).",
+  "against": "#/$defs/ActionDescription",
+  "message": {
+    "description": "Dispense a volume at a rate. Stops early on over-pressure.",
+    "input": {
+      "type": "object",
+      "properties": {
+        "volume": {
+          "type": "number"
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dispensed"
+      ],
+      "properties": {
+        "dispensed": {
+          "type": "number",
+          "x-bhms-unit": "uL"
+        }
+      }
+    },
+    "effect": "irreversible",
+    "idempotency": "relative",
+    "cancel": "supported",
+    "completionEvidence": "measured",
+    "verifiedBy": [
+      "dispensed_volume"
+    ],
+    "typicalDurationMs": 2000,
+    "maxDurationMs": 60000,
+    "requiresLease": true,
+    "resources": [
+      "pump-1/plunger"
+    ],
+    "onLeaseLoss": "finish",
+    "preconditions": "Syringe loaded and primed.",
+    "compact": {
+      "index": 0,
+      "args": [
+        {
+          "name": "volume",
+          "type": "u16",
+          "scale": 0.1
+        },
+        {
+          "name": "rate",
+          "type": "u16"
+        }
+      ],
+      "result": [
+        {
+          "name": "dispensed",
+          "type": "u16",
+          "scale": 0.1
+        }
+      ]
+    }
+  }
+}

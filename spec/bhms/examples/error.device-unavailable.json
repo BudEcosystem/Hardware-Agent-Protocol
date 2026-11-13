@@ -1,0 +1,18 @@
+{
+  "$comment": "DEVICE_UNAVAILABLE in reply to properties/read.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 112,
+    "error": {
+      "code": -32010,
+      "message": "pump-1 is offline",
+      "data": {
+        "bhmsCode": "DEVICE_UNAVAILABLE",
+        "mayHaveActed": false,
+        "retry": "backoff",
+        "hint": "the gateway lost the serial link at 09:31:02Z; retry later"
+      }
+    }
+  }
+}

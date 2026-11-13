@@ -1,0 +1,12 @@
+{
+  "$comment": "Model-facing bhms_run_program input (snake_case).",
+  "against": "#/$defs/AgentRunProgramInput",
+  "message": {
+    "program_digest": "sha256:85e36d7ad99536f3857125838338bb8768e51182304fe54668309864f5b6f3df",
+    "arguments": {
+      "start": 1200,
+      "steps": 20
+    },
+    "operation_key": "scan-2026-11-13-a"
+  }
+}

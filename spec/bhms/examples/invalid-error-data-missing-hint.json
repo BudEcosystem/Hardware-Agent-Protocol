@@ -1,0 +1,17 @@
+{
+  "$comment": "hint is required (BHMS-ERR-001).",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 9,
+    "error": {
+      "code": -32010,
+      "message": "offline",
+      "data": {
+        "bhmsCode": "DEVICE_UNAVAILABLE",
+        "mayHaveActed": false,
+        "retry": "backoff"
+      }
+    }
+  }
+}

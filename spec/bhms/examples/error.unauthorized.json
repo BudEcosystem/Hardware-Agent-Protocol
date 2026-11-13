@@ -1,0 +1,18 @@
+{
+  "$comment": "UNAUTHORIZED in reply to actions/invoke.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 113,
+    "error": {
+      "code": -32011,
+      "message": "principal lab-agent may not invoke focus-1/move_to",
+      "data": {
+        "bhmsCode": "UNAUTHORIZED",
+        "mayHaveActed": false,
+        "retry": "never",
+        "hint": "missing scope invoke:focus-1/move_to; ask an operator"
+      }
+    }
+  }
+}

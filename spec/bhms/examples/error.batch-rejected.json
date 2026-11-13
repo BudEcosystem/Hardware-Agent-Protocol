@@ -1,0 +1,12 @@
+{
+  "$comment": "Answer to a JSON-RPC batch array (BHMS-TRN-002); id is null.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": null,
+    "error": {
+      "code": -32600,
+      "message": "batches are not supported"
+    }
+  }
+}

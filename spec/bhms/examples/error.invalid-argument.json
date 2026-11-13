@@ -1,0 +1,19 @@
+{
+  "$comment": "INVALID_ARGUMENT in reply to actions/invoke.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 100,
+    "error": {
+      "code": -32602,
+      "message": "unknown argument 'speed' for pump-1.dispense",
+      "data": {
+        "bhmsCode": "INVALID_ARGUMENT",
+        "field": "arguments.speed",
+        "mayHaveActed": false,
+        "retry": "never",
+        "hint": "dispense takes volume (uL) and rate (uL/min)"
+      }
+    }
+  }
+}

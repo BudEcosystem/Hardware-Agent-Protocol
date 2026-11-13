@@ -1,0 +1,35 @@
+{
+  "$comment": "One page of summaries with a cursor for the next page.",
+  "against": "#/$defs/DevicesListResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+      "resultType": "complete",
+      "devices": [
+        {
+          "deviceId": "pump-1",
+          "name": "Syringe pump 1",
+          "summary": "Syringe pump on bench A, 1-1000 uL, measured flow.",
+          "capabilities": [
+            "bhms.liquid.dispense"
+          ],
+          "tags": [
+            "bench-a",
+            "liquid"
+          ],
+          "status": "online",
+          "digest": "sha256:5399cb6f8b10dd022b6c01c571c4aea195f20bebbd82b82a84027d0e760e9c24",
+          "actions": [
+            "dispense"
+          ],
+          "properties": [
+            "dispensed_volume",
+            "pressure"
+          ]
+        }
+      ],
+      "nextCursor": "c2Vlaz0x"
+    }
+  }
+}

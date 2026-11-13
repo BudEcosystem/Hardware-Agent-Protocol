@@ -1,0 +1,14 @@
+{
+  "$comment": "Numeric values carry their unit (BHMS-OBS-005).",
+  "against": "#/$defs/Observation",
+  "message": {
+    "value": 101.3,
+    "evidence": "measured",
+    "quality": "valid",
+    "acquiredAt": "2026-11-13T09:30:05.000Z",
+    "receivedAt": "2026-11-13T09:30:05.004Z",
+    "ageMs": 120,
+    "sequence": 44812,
+    "epoch": "pump-1:boot-41"
+  }
+}

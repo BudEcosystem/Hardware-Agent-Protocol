@@ -1,0 +1,7 @@
+{
+  "$comment": "bhms_stop needs device_ids or all.",
+  "against": "#/$defs/AgentStopInput",
+  "message": {
+    "reason": "x"
+  }
+}

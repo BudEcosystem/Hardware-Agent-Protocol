@@ -1,0 +1,19 @@
+{
+  "$comment": "LEASE_REQUIRED in reply to actions/invoke.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 106,
+    "error": {
+      "code": -32004,
+      "message": "pump-1.dispense requires a lease on pump-1/plunger",
+      "data": {
+        "bhmsCode": "LEASE_REQUIRED",
+        "field": "leaseId",
+        "mayHaveActed": false,
+        "retry": "never",
+        "hint": "call leases/acquire with resources [\"pump-1/plunger\"], then pass its leaseId"
+      }
+    }
+  }
+}

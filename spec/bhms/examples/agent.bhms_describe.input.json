@@ -1,0 +1,7 @@
+{
+  "$comment": "Model-facing bhms_describe input (snake_case).",
+  "against": "#/$defs/AgentDescribeInput",
+  "message": {
+    "device_id": "pump-1"
+  }
+}

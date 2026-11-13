@@ -1,0 +1,13 @@
+{
+  "$comment": "The device list or a description digest changed.",
+  "against": "#/$defs/DevicesListChangedNotification",
+  "message": {
+    "jsonrpc": "2.0",
+    "method": "notifications/devices/listChanged",
+    "params": {
+      "_meta": {
+        "bhms/subscriptionId": "sub-1"
+      }
+    }
+  }
+}

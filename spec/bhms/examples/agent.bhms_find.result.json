@@ -1,0 +1,69 @@
+{
+  "$comment": "Structured content of a bhms_find result.",
+  "against": "#/$defs/AgentFindData",
+  "message": {
+    "devices": [
+      {
+        "deviceId": "pump-1",
+        "name": "Syringe pump 1",
+        "summary": "Syringe pump on bench A, 1-1000 uL, measured flow.",
+        "capabilities": [
+          "bhms.liquid.dispense"
+        ],
+        "tags": [
+          "bench-a",
+          "liquid"
+        ],
+        "status": "online",
+        "digest": "sha256:5399cb6f8b10dd022b6c01c571c4aea195f20bebbd82b82a84027d0e760e9c24",
+        "actions": [
+          "dispense"
+        ],
+        "properties": [
+          "dispensed_volume",
+          "pressure"
+        ]
+      }
+    ],
+    "programs": [
+      {
+        "digest": "sha256:85e36d7ad99536f3857125838338bb8768e51182304fe54668309864f5b6f3df",
+        "name": "focus_scan",
+        "description": "Step the focus axis and record the position at each step.",
+        "input": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "start",
+            "steps"
+          ],
+          "properties": {
+            "start": {
+              "type": "number",
+              "x-bhms-unit": "um",
+              "minimum": 0,
+              "maximum": 5000
+            },
+            "steps": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            }
+          }
+        },
+        "effect": "reversible",
+        "worstCaseDurationMs": 137000,
+        "maxDurationMs": 140000,
+        "stepCount": 7,
+        "maxExecutedSteps": 202,
+        "devices": [
+          "focus-1"
+        ],
+        "resources": [
+          "focus-1/axis"
+        ],
+        "requiresLease": true
+      }
+    ]
+  }
+}

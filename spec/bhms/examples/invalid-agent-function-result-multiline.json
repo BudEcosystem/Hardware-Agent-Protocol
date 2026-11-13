@@ -1,0 +1,8 @@
+{
+  "$comment": "The summary is one line (BHMS-AGT-010).",
+  "against": "#/$defs/AgentFunctionResult",
+  "message": {
+    "summary": "line one\nline two",
+    "data": {}
+  }
+}

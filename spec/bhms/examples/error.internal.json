@@ -1,0 +1,18 @@
+{
+  "$comment": "INTERNAL in reply to devices/list.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 115,
+    "error": {
+      "code": -32014,
+      "message": "internal error while reading the device registry",
+      "data": {
+        "bhmsCode": "INTERNAL",
+        "mayHaveActed": false,
+        "retry": "never",
+        "hint": "report this to the server operator with the request id"
+      }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$comment": "FENCED in reply to actions/invoke.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 109,
+    "error": {
+      "code": -32007,
+      "message": "lease lease-12 was revoked by a stop",
+      "data": {
+        "bhmsCode": "FENCED",
+        "field": "leaseId",
+        "mayHaveActed": false,
+        "retry": "never",
+        "hint": "the device was stopped; check its state, then acquire a new lease"
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "$comment": "Only resultType complete exists in this version (BHMS-LIF-012).",
+  "against": "#/$defs/DevicesListResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "result": {
+      "resultType": "input_required",
+      "devices": []
+    }
+  }
+}

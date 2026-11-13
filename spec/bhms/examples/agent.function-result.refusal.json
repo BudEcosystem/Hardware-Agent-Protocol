@@ -1,0 +1,18 @@
+{
+  "$comment": "Function-tool refusal carrying the BHMS error unchanged.",
+  "against": "#/$defs/AgentFunctionResult",
+  "message": {
+    "summary": "Refused: volume 1500 uL is above the maximum 1000 uL. Next: send a volume between 1 and 1000 uL",
+    "error": {
+      "bhmsCode": "OUT_OF_RANGE",
+      "message": "volume 1500 uL is above the maximum 1000 uL",
+      "field": "arguments.volume",
+      "bound": {
+        "maximum": 1000
+      },
+      "mayHaveActed": false,
+      "retry": "never",
+      "hint": "send a volume between 1 and 1000 uL"
+    }
+  }
+}

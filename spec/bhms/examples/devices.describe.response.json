@@ -1,0 +1,165 @@
+{
+  "$comment": "Immutable description; digest = sha256 over JCS of the description without digest. Includes BHMS-Compact layouts.",
+  "against": "#/$defs/DevicesDescribeResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 3,
+    "result": {
+      "resultType": "complete",
+      "description": {
+        "deviceId": "pump-1",
+        "name": "Syringe pump 1",
+        "description": "Single-channel syringe pump on bench A with a gravimetric flow sensor.",
+        "capabilities": [
+          "bhms.liquid.dispense"
+        ],
+        "tags": [
+          "bench-a",
+          "liquid"
+        ],
+        "resources": [
+          "pump-1/plunger"
+        ],
+        "identity": {
+          "manufacturer": "Bud Labs",
+          "model": "SP-1",
+          "firmwareVersion": "1.4.2"
+        },
+        "properties": {
+          "dispensed_volume": {
+            "description": "Volume dispensed since the last dispense started, from the flow sensor.",
+            "schema": {
+              "type": "number",
+              "x-bhms-unit": "uL",
+              "minimum": 0,
+              "maximum": 6000
+            },
+            "evidence": "measured",
+            "observable": true,
+            "maxRateHz": 20,
+            "readEffect": "none",
+            "compact": {
+              "index": 0,
+              "type": "u16",
+              "scale": 0.1
+            }
+          },
+          "pressure": {
+            "description": "Line pressure upstream of the needle.",
+            "schema": {
+              "type": "number",
+              "x-bhms-unit": "kPa",
+              "minimum": 0,
+              "maximum": 500
+            },
+            "evidence": "measured",
+            "observable": true,
+            "maxRateHz": 50,
+            "readEffect": "none",
+            "compact": {
+              "index": 1,
+              "type": "f32"
+            }
+          }
+        },
+        "actions": {
+          "dispense": {
+            "description": "Dispense a volume at a rate. Stops early on over-pressure.",
+            "input": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "volume"
+              ],
+              "properties": {
+                "volume": {
+                  "type": "number",
+                  "x-bhms-unit": "uL",
+                  "minimum": 1,
+                  "maximum": 1000
+                },
+                "rate": {
+                  "type": "number",
+                  "x-bhms-unit": "uL/min",
+                  "minimum": 1,
+                  "maximum": 500,
+                  "default": 100
+                }
+              }
+            },
+            "output": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "dispensed"
+              ],
+              "properties": {
+                "dispensed": {
+                  "type": "number",
+                  "x-bhms-unit": "uL"
+                }
+              }
+            },
+            "effect": "irreversible",
+            "idempotency": "relative",
+            "cancel": "supported",
+            "completionEvidence": "measured",
+            "verifiedBy": [
+              "dispensed_volume"
+            ],
+            "typicalDurationMs": 2000,
+            "maxDurationMs": 60000,
+            "requiresLease": true,
+            "resources": [
+              "pump-1/plunger"
+            ],
+            "onLeaseLoss": "finish",
+            "preconditions": "Syringe loaded and primed.",
+            "compact": {
+              "index": 0,
+              "args": [
+                {
+                  "name": "volume",
+                  "type": "u16",
+                  "scale": 0.1
+                },
+                {
+                  "name": "rate",
+                  "type": "u16"
+                }
+              ],
+              "result": [
+                {
+                  "name": "dispensed",
+                  "type": "u16",
+                  "scale": 0.1
+                }
+              ]
+            }
+          }
+        },
+        "events": {
+          "bubble.detected": {
+            "description": "The bubble sensor saw air in the line.",
+            "data": {
+              "type": "object",
+              "properties": {
+                "sizeUl": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "safety": {
+          "stop": "supported",
+          "stopEvidence": "reported",
+          "stopMaxDurationMs": 200,
+          "onDisconnect": "stop",
+          "summary": "Stop halts the plunger motor; the firmware also halts after 500 ms without a gateway frame."
+        },
+        "digest": "sha256:5399cb6f8b10dd022b6c01c571c4aea195f20bebbd82b82a84027d0e760e9c24"
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$comment": "repeat.times is at most 1000 (08 8.1).",
+  "against": "#/$defs/RepeatStep",
+  "message": {
+    "kind": "repeat",
+    "times": 1001,
+    "steps": [
+      {
+        "kind": "sleep",
+        "durationMs": 1
+      }
+    ]
+  }
+}

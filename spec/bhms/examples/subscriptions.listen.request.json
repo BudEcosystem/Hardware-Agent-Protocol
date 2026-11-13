@@ -1,0 +1,44 @@
+{
+  "$comment": "Open a notification stream: list changes, pump-1 operations, pressure at most every 500 ms, faults and stops after a cursor.",
+  "against": "#/$defs/SubscriptionsListenRequest",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": "sub-1",
+    "method": "subscriptions/listen",
+    "params": {
+      "_meta": {
+        "bhms/protocolVersion": "2026-11-13",
+        "bhms/clientInfo": {
+          "name": "bhms-cli",
+          "version": "0.1.0"
+        }
+      },
+      "notifications": {
+        "devicesListChanged": true,
+        "operations": {
+          "deviceIds": [
+            "pump-1"
+          ]
+        },
+        "observations": [
+          {
+            "deviceId": "pump-1",
+            "property": "pressure",
+            "minIntervalMs": 500
+          },
+          {
+            "deviceId": "pump-1",
+            "property": "valve_state"
+          }
+        ],
+        "events": {
+          "after": "ev-000120",
+          "types": [
+            "device.fault",
+            "stop"
+          ]
+        }
+      }
+    }
+  }
+}

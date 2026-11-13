@@ -1,0 +1,19 @@
+{
+  "$comment": "STALE in reply to actions/invoke.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 111,
+    "error": {
+      "code": -32009,
+      "message": "focus-1 has an unresolved unknown operation op-19c2 on focus-1/axis",
+      "data": {
+        "bhmsCode": "STALE",
+        "operationId": "op-19c2",
+        "mayHaveActed": false,
+        "retry": "after-reconcile",
+        "hint": "read focus-1.position and reconcile, or stop focus-1, before moving again"
+      }
+    }
+  }
+}

@@ -1,0 +1,91 @@
+{
+  "$comment": "Operation with its full history.",
+  "against": "#/$defs/OperationsGetResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 6,
+    "result": {
+      "resultType": "complete",
+      "operation": {
+        "operationId": "op-7f3a",
+        "operationKey": "dispense-a1",
+        "keyOrigin": "client",
+        "kind": "action",
+        "deviceId": "pump-1",
+        "action": "dispense",
+        "arguments": {
+          "volume": 50,
+          "rate": 100
+        },
+        "requestDigest": "sha256:b3f5e979b6a86c564121143d985518f2475abc0454dba4d6fb6f9d31d6eb6778",
+        "state": "completed",
+        "cancel": {
+          "state": "none"
+        },
+        "effect": "verified",
+        "evidence": {
+          "kind": "measured",
+          "observations": {
+            "dispensed_volume": {
+              "value": 50.1,
+              "unit": "uL",
+              "evidence": "measured",
+              "quality": "valid",
+              "acquiredAt": "2026-11-13T09:30:02.120Z",
+              "receivedAt": "2026-11-13T09:30:02.125Z",
+              "ageMs": 20,
+              "uncertainty": 0.3,
+              "sequence": 9121,
+              "epoch": "pump-1:boot-41",
+              "source": "flow-sensor"
+            }
+          }
+        },
+        "require": {
+          "effect": "verified"
+        },
+        "leaseId": "lease-12",
+        "fence": 412,
+        "result": {
+          "dispensed": 50.1
+        },
+        "createdAt": "2026-11-13T09:30:00.012Z",
+        "updatedAt": "2026-11-13T09:30:02.140Z",
+        "history": [
+          {
+            "seq": 1,
+            "at": "2026-11-13T09:30:00.012Z",
+            "kind": "state",
+            "state": "accepted"
+          },
+          {
+            "seq": 2,
+            "at": "2026-11-13T09:30:00.013Z",
+            "kind": "state",
+            "state": "dispatching"
+          },
+          {
+            "seq": 3,
+            "at": "2026-11-13T09:30:00.040Z",
+            "kind": "state",
+            "state": "running",
+            "detail": "device acknowledged handle 17"
+          },
+          {
+            "seq": 4,
+            "at": "2026-11-13T09:30:02.140Z",
+            "kind": "evidence",
+            "effect": "verified",
+            "detail": "flow sensor 50.1 uL"
+          },
+          {
+            "seq": 5,
+            "at": "2026-11-13T09:30:02.140Z",
+            "kind": "state",
+            "state": "completed"
+          }
+        ]
+      }
+    }
+  }
+}

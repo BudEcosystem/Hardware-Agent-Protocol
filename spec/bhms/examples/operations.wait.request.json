@@ -1,0 +1,20 @@
+{
+  "$comment": "Wait up to 30 s for the operation to settle.",
+  "against": "#/$defs/OperationsWaitRequest",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 7,
+    "method": "operations/wait",
+    "params": {
+      "_meta": {
+        "bhms/protocolVersion": "2026-11-13",
+        "bhms/clientInfo": {
+          "name": "bhms-cli",
+          "version": "0.1.0"
+        }
+      },
+      "operationId": "op-7f3a",
+      "timeoutMs": 30000
+    }
+  }
+}

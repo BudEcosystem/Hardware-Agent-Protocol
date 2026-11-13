@@ -1,0 +1,11 @@
+{
+  "$comment": "A confirmed stop needs reported or measured evidence (BHMS-AUTH-022).",
+  "against": "#/$defs/DeviceStop",
+  "message": {
+    "deviceId": "pump-1",
+    "outcome": "confirmed",
+    "evidence": "none",
+    "canceledOperations": [],
+    "revokedLeases": []
+  }
+}

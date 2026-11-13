@@ -1,0 +1,12 @@
+{
+  "$comment": "Plain JSON-RPC error without BHMS data.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 120,
+    "error": {
+      "code": -32601,
+      "message": "method not found: devices/delete"
+    }
+  }
+}

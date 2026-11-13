@@ -1,0 +1,25 @@
+{
+  "$comment": "unknown operations carry error (BHMS-OPS-009).",
+  "against": "#/$defs/Operation",
+  "message": {
+    "operationId": "op-19c2",
+    "operationKey": "focus-scan-3",
+    "keyOrigin": "client",
+    "kind": "action",
+    "deviceId": "focus-1",
+    "action": "move_by",
+    "arguments": {
+      "distance": 10
+    },
+    "requestDigest": "sha256:62468d1ea8e1f947a26fc30cbf1244305536772d09a7879506e375be0b5f9276",
+    "state": "unknown",
+    "cancel": {
+      "state": "none"
+    },
+    "effect": "unknown",
+    "leaseId": "lease-9",
+    "fence": 398,
+    "createdAt": "2026-11-13T09:10:00.000Z",
+    "updatedAt": "2026-11-13T09:10:02.100Z"
+  }
+}

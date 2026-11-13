@@ -1,0 +1,8 @@
+{
+  "$comment": "Model-facing bhms_stop input (snake_case).",
+  "against": "#/$defs/AgentStopInput",
+  "message": {
+    "all": true,
+    "reason": "liquid on the bench"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "$comment": "A missing measurement is null, never zero (BHMS-OBS-001).",
+  "against": "#/$defs/Observation",
+  "message": {
+    "value": 0,
+    "unit": "uL",
+    "evidence": "measured",
+    "quality": "invalid",
+    "acquiredAt": "2026-11-13T09:30:02.120Z",
+    "receivedAt": "2026-11-13T09:30:02.125Z",
+    "ageMs": 20,
+    "uncertainty": 0.3,
+    "sequence": 9121,
+    "epoch": "pump-1:boot-41",
+    "source": "flow-sensor"
+  }
+}

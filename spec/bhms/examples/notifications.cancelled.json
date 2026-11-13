@@ -1,0 +1,12 @@
+{
+  "$comment": "Client abandons request 7 (an operations/wait); the operation itself continues.",
+  "against": "#/$defs/CancelledNotification",
+  "message": {
+    "jsonrpc": "2.0",
+    "method": "notifications/cancelled",
+    "params": {
+      "requestId": 7,
+      "reason": "client timeout"
+    }
+  }
+}

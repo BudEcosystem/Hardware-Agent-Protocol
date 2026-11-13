@@ -1,0 +1,34 @@
+{
+  "$comment": "Dispense 50 uL under a lease, with an idempotency key, a quantity object for volume, and a demand for verified effect.",
+  "against": "#/$defs/ActionsInvokeRequest",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 5,
+    "method": "actions/invoke",
+    "params": {
+      "_meta": {
+        "bhms/protocolVersion": "2026-11-13",
+        "bhms/clientInfo": {
+          "name": "bhms-cli",
+          "version": "0.1.0"
+        }
+      },
+      "deviceId": "pump-1",
+      "action": "dispense",
+      "arguments": {
+        "volume": {
+          "value": 50,
+          "unit": "uL"
+        },
+        "rate": 100
+      },
+      "operationKey": "dispense-a1",
+      "leaseId": "lease-12",
+      "waitMs": 5000,
+      "require": {
+        "effect": "verified"
+      },
+      "descriptionDigest": "sha256:5399cb6f8b10dd022b6c01c571c4aea195f20bebbd82b82a84027d0e760e9c24"
+    }
+  }
+}

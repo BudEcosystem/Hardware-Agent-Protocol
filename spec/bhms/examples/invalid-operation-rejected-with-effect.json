@@ -1,0 +1,32 @@
+{
+  "$comment": "Rejected operations have effect none (BHMS-OPS-006).",
+  "against": "#/$defs/Operation",
+  "message": {
+    "operationId": "op-19c2",
+    "operationKey": "focus-scan-3",
+    "keyOrigin": "client",
+    "kind": "action",
+    "deviceId": "focus-1",
+    "action": "move_by",
+    "arguments": {
+      "distance": 10
+    },
+    "requestDigest": "sha256:62468d1ea8e1f947a26fc30cbf1244305536772d09a7879506e375be0b5f9276",
+    "state": "rejected",
+    "cancel": {
+      "state": "none"
+    },
+    "effect": "unverified",
+    "error": {
+      "bhmsCode": "DEADLINE_EXCEEDED",
+      "message": "no reply from focus-1 after dispatch",
+      "mayHaveActed": true,
+      "retry": "after-reconcile",
+      "hint": "read focus-1.position before moving again; do not resend move_by"
+    },
+    "leaseId": "lease-9",
+    "fence": 398,
+    "createdAt": "2026-11-13T09:10:00.000Z",
+    "updatedAt": "2026-11-13T09:10:02.100Z"
+  }
+}

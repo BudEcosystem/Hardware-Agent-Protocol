@@ -1,0 +1,18 @@
+{
+  "$comment": "BUSY in reply to actions/invoke.",
+  "against": "#/$defs/JSONRPCErrorResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 114,
+    "error": {
+      "code": -32012,
+      "message": "pump-1 queue is full (4 active operations)",
+      "data": {
+        "bhmsCode": "BUSY",
+        "mayHaveActed": false,
+        "retry": "backoff",
+        "hint": "retry after an operation settles"
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "$comment": "Renew the lease.",
+  "against": "#/$defs/LeasesRenewRequest",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 12,
+    "method": "leases/renew",
+    "params": {
+      "_meta": {
+        "bhms/protocolVersion": "2026-11-13",
+        "bhms/clientInfo": {
+          "name": "bhms-cli",
+          "version": "0.1.0"
+        }
+      },
+      "leaseId": "lease-12",
+      "ttlMs": 120000
+    }
+  }
+}

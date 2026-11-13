@@ -1,0 +1,35 @@
+{
+  "$comment": "A gateway policy narrowing the agent's dispense volume to 200 uL.",
+  "against": "#/$defs/GatewayPolicy",
+  "message": {
+    "principals": {
+      "lab-agent": {
+        "tokens": [
+          "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+        ],
+        "scopes": [
+          "read",
+          "lease",
+          "invoke:pump-*/dispense",
+          "programs:run"
+        ],
+        "bounds": {
+          "pump-1/dispense": {
+            "volume": {
+              "maximum": 200
+            }
+          }
+        }
+      },
+      "operator": {
+        "uids": [
+          1000
+        ],
+        "scopes": [
+          "admin",
+          "stop"
+        ]
+      }
+    }
+  }
+}
