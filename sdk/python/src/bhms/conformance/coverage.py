@@ -1,7 +1,7 @@
 """Requirement rows: which checks cover which ID, and why some IDs have no automated check.
 
 :func:`rows` folds the check results of a run into one status per requirement of the claimed profiles (BHMS-CNF-002).
-``EXEMPT`` lists every ID that no check can prove, with the reason; ``tests/test_conformance_coverage.py`` asserts that every
+``EXEMPT`` lists every ID that no check can prove, with the reason; ``tests/test_conformance_runner.py::test_every_core_must_is_covered_or_has_a_recorded_reason`` asserts that every
 other ``core`` MUST is covered by at least one registered check and that no exemption is stale.
 
 Thread-safety: pure functions.
@@ -58,13 +58,14 @@ def rows(results: list[CheckResult], profiles: list[str], unavailable: dict[str,
         elif passed:
             out.append(RequirementRow(status=Status.PASSED, checks=tuple(r.name for r in passed), **base))
         elif entries and all(r.status is Status.FAILED for r, _ in entries):
-            out.append(RequirementRow(status=Status.SKIPPED, checks=tuple(r.name for r, _ in entries), **base,
+            out.append(RequirementRow(status=Status.SKIPPED, checks=tuple(r.name for r, _ in entries), unproven=True, **base,
                                       reason=f"{entries[0][0].name} failed on another requirement before this one was proven"))
         elif entries:
             skipped = [r for r, _ in entries if r.status is Status.SKIPPED]
             chosen = skipped[0] if skipped else entries[0][0]
             status = Status.SKIPPED if skipped else Status.NOT_APPLICABLE
-            out.append(RequirementRow(status=status, reason=chosen.message, checks=tuple(r.name for r, _ in entries), **base))
+            out.append(RequirementRow(status=status, reason=chosen.message, checks=tuple(r.name for r, _ in entries),
+                                      unproven=status is Status.SKIPPED, **base))
         elif rid == "BHMS-TRN-010" and ctx is not None and ctx.target.kind != "stdio":
             out.append(RequirementRow(status=Status.NOT_APPLICABLE, reason="stdio framing only; the other bindings frame messages themselves",
                                       **base))
@@ -73,5 +74,6 @@ def rows(results: list[CheckResult], profiles: list[str], unavailable: dict[str,
             status = Status.NOT_APPLICABLE if kind == NOT_APPLICABLE else Status.SKIPPED
             out.append(RequirementRow(status=status, reason=f"{kind}: {reason}", **base))
         else:
-            out.append(RequirementRow(status=Status.SKIPPED, reason="no automated check implemented for this requirement", **base))
+            out.append(RequirementRow(status=Status.SKIPPED, reason="no automated check implemented for this requirement",
+                                      unproven=True, **base))
     return out

@@ -17,8 +17,9 @@ The gateway is a BHMS server, so the operations it admits are ordinary records o
   :meth:`convert_pending` when a same-key retry or a restart finds it (BHMS-OPS-033, BHMS-OPS-080). So a crash between send
   and answer leaves an operation (``unknown``, resources inhibited) that is reconciled by re-sending the same upstream key.
 * :meth:`ForwardJournal.mirror` — applies an upstream operation snapshot to the gateway's record along the legal
-  transitions of §6.3 only: ``accepted`` upstream (queued) is ``dispatching`` here, ``rejected`` upstream is ``failed`` with
-  proof of no effect (a dispatched operation cannot be ``rejected``), a stale snapshot never regresses a state, and
+  transitions of §6.3 only: ``accepted`` upstream (queued) is ``accepted`` here, ``rejected`` upstream is ``rejected`` here while
+  the gateway's record is still ``accepted`` (an operation the gateway already showed as ``dispatching`` can only end
+  ``failed`` with proof of no effect), a stale snapshot never regresses a state, and
   leaving ``unknown`` is a ``reconciliation`` entry naming the upstream as evidence (BHMS-OPS-005).
 * :meth:`ForwardJournal.recover_forwarded` — after a restart every operation found ``dispatching`` or ``running`` is
   ``unknown`` (BHMS-OPS-080) until the router reconciles it with the upstream; the stock ``Journal.recover`` (which
@@ -149,20 +150,20 @@ class ForwardJournal(Journal):
     def _record(self, *, principal: str, key: str, key_origin: str, request_digest: str, arguments: dict[str, Any],
                 device_id: str, action: str, private: dict[str, Any], require: dict[str, Any] | None,
                 lease_id: str | None, fence: int | None, deadline_ns: int | None,
-                admitted: dict[str, Any] | None) -> OperationRecord:
-        """Record a request the gateway has forwarded: ``accepted`` then ``dispatching`` (the command left for the
-        upstream). The durable intent is the pending-forward row written (with a barrier) before sending; this record
+                admitted: dict[str, Any] | None, dispatch: bool = True) -> OperationRecord:
+        """Record a request the gateway has forwarded: ``accepted`` then, unless the upstream reports that it only queued
+        it (``dispatch=False``), ``dispatching`` (the command left for the upstream). The durable intent is the pending-forward row written (with a barrier) before sending; this record
         replaces it in one transaction, so no barrier is needed here."""
         return self.create(principal=principal, key=key, key_origin=key_origin, kind="action",
                            request_digest=request_digest, arguments=arguments, private=private, device_id=device_id,
                            action=action, admitted=admitted, require=require, lease_id=lease_id, fence=fence,
-                           deadline_ns=deadline_ns, dispatch=True, barrier=False)
+                           deadline_ns=deadline_ns, dispatch=dispatch, barrier=False)
 
     def admit_forwarded(self, *, upstream_op: dict[str, Any], **request: Any) -> OperationRecord:
         """Record an operation the upstream admitted, in the state the upstream reports; the pending row goes away in
         the same transaction."""
         with self._unit():
-            rec = self._record(**request)
+            rec = self._record(**request, dispatch=upstream_op.get("state") != "accepted")
             self.mirror(rec, upstream_op, source="forward reply")
             self.pending_delete(request["principal"], request["key"])
         return rec
@@ -193,7 +194,10 @@ class ForwardJournal(Journal):
             changed = True
         current, theirs = rec.state, upstream_op.get("state")
         try:
-            if theirs in ("accepted", "dispatching", None) or (current == "unknown" and theirs == "unknown"):
+            if theirs == "dispatching" and current == "accepted":
+                self.transition(rec, "dispatching", detail=f"{source}: upstream {rec.private.get('upstream')} sent it to the device")
+                changed = True
+            elif theirs in ("accepted", "dispatching", None) or (current == "unknown" and theirs == "unknown"):
                 pass  # still queued or still unknown upstream: nothing new to record
             elif current == "running" and theirs == "running":
                 pass  # a stale or repeated snapshot never regresses or repeats a state
@@ -208,6 +212,17 @@ class ForwardJournal(Journal):
         return changed
 
     def _advance(self, rec: OperationRecord, up: dict[str, Any], theirs: str, source: str) -> None:
+        if rec.state == "accepted":
+            before_dispatch = theirs == "rejected" or (theirs == "canceled" and up.get("effect") == "none")
+            if theirs == "rejected":
+                error = dict(up.get("error") or BhmsError("INTERNAL", "the upstream rejected the operation without an error",
+                                                          may_have_acted=False).to_operation_error())
+                error["mayHaveActed"] = False
+                self.transition(rec, "rejected", error=error, effect="none", kind="state",
+                                proof=f"{source}: upstream {rec.private.get('upstream')} rejected it before dispatch (no effect)")
+                return
+            if not before_dispatch:
+                self.transition(rec, "dispatching", detail=f"{source}: upstream {rec.private.get('upstream')} reports {theirs}")
         reconciling = rec.state == "unknown"
         kind = "reconciliation" if reconciling else "state"
         detail = f"{source}: upstream {rec.private.get('upstream')} reports {theirs}"
@@ -250,8 +265,10 @@ class ForwardJournal(Journal):
 
     def link_lost(self, rec: OperationRecord, cause: str) -> bool:
         """Move a ``dispatching``/``running`` operation to ``unknown`` because the upstream link failed (BHMS-OPS-004)."""
-        if rec.state not in ("dispatching", "running"):
+        if rec.state not in ("accepted", "dispatching", "running"):
             return False
+        if rec.state == "accepted":
+            self.transition(rec, "dispatching", detail="the upstream link failed while the operation was queued upstream")
         self.transition(rec, "unknown", error=unknown_error(cause))
         return True
 

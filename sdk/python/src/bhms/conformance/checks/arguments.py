@@ -45,7 +45,7 @@ async def _count_ops(c: Context) -> int:
     return await c.operations_count()
 
 
-@check("arguments.refusals-from-description", ["BHMS-DEV-043", "BHMS-DEV-044", "BHMS-OPS-040", "BHMS-ERR-003", "BHMS-ERR-011"], generic=True)
+@check("arguments.refusals-from-description", ["BHMS-DEV-043", "BHMS-DEV-044", "BHMS-OPS-040", "BHMS-ERR-003", "BHMS-ERR-011"], generic=True, effects=True)
 async def refusals_from_description(c: Context) -> None:
     """Out-of-range, wrong-type, wrong-unit, unknown and missing members derived from every declared input are refused
     with the right code, naming the field, with mayHaveActed false, and no operation is created."""
@@ -102,6 +102,26 @@ async def refusals_from_description(c: Context) -> None:
     after = await _count_ops(c)
     c.expect(after == before, f"refused invokes created {after - before} operations (BHMS-OPS-040)")
     c.expect(not problems, "; ".join(problems[:6]))
+
+
+@check("arguments.unexecutable-refusals", ["BHMS-OPS-040", "BHMS-ERR-004", "BHMS-DEV-044"], generic=True)
+async def unexecutable_refusals(c: Context) -> None:
+    """Requests that name no existing device or action are refused, create no operation and cannot execute even on a server
+    that validates nothing: unknown action, unknown device, malformed device id, arguments of the wrong JSON type."""
+    summaries = await c.devices()
+    real = summaries[0]["deviceId"] if summaries else "no_such_device"
+    before = await _count_ops(c)
+    cases = [("unknown action", real, "no_such_action", {}, {"UNKNOWN_ACTION"}),
+             ("unknown device", "no_such_device", "no_such_action", {}, {"UNKNOWN_DEVICE"}),
+             ("arguments not an object", "no_such_device", "no_such_action", ["not", "an", "object"], {"INVALID_ARGUMENT", "UNKNOWN_DEVICE"}),
+             ("arguments a string", real, "no_such_action", "x", {"INVALID_ARGUMENT", "UNKNOWN_ACTION"})]
+    for label, device, action, arguments, codes in cases:
+        response = await c.call("actions/invoke", {"deviceId": device, "action": action, "arguments": arguments})
+        c.expect(response.code in codes and response.data.get("mayHaveActed") is False,
+                 f"{label}: expected {sorted(codes)} with mayHaveActed false, got {response.describe()}", ("BHMS-ERR-004", "BHMS-DEV-044"))
+    bad_id = await c.call("actions/invoke", {"deviceId": "bad id/with spaces", "action": "no_such_action", "arguments": {}})
+    c.expect(bad_id.code in ("INVALID_ARGUMENT", "UNKNOWN_DEVICE"), f"a malformed deviceId: {bad_id.describe()}", ("BHMS-DEV-044",))
+    c.expect(await _count_ops(c) == before, "a refused request created an operation (BHMS-OPS-040)", ("BHMS-OPS-040",))
 
 
 def _codes(expected: Any) -> set[str]:

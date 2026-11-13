@@ -46,13 +46,15 @@ async def credentials_required(c: Context) -> None:
         c.skip("the credential check is implemented for WebSocket targets")
 
 
-@check("authority.default-deny", ["BHMS-SEC-010", "BHMS-AUTH-002"], needs=NEEDS, generic=True)
+@check("authority.default-deny", ["BHMS-SEC-010", "BHMS-AUTH-002", "BHMS-DEV-010"], needs=NEEDS)
 async def default_deny(c: Context) -> None:
     """A principal with no scopes sees nothing and can do nothing beyond server/discover."""
     async with c.fresh_wire("nobody") as wire:
         c.result(await wire.request("server/discover", {}), "discover without scopes")
         listing = c.result(await wire.request("devices/list", {}), "devices/list without scopes")
-        c.expect(listing["devices"] == [], f"a principal with no scopes must see no devices, saw {len(listing['devices'])}", ("BHMS-SEC-010",))
+        c.expect(listing["devices"] == [], f"a principal with no scopes must see no devices, saw {len(listing['devices'])}", ("BHMS-SEC-010", "BHMS-DEV-010"))
+        c.expect(("nextCursor" not in listing) and "total" not in listing, "devices/list must not reveal hidden devices through counts or cursors",
+                 ("BHMS-DEV-010",))
         device = _axis(c)
         c.refused(await wire.request("properties/read", {"deviceId": device, "property": "position"}), "UNKNOWN_DEVICE",
                   what="read by a principal without read scope", ids=("BHMS-AUTH-002", "BHMS-SEC-010"))
@@ -191,3 +193,44 @@ async def policy_changes(c: Context) -> None:
             with contextlib.suppress(Exception):
                 await c.target.reload_policy(ROLES)
             await asyncio.sleep(0.1)
+
+
+@check("authority.hazardous-needs-literal-scope", ["BHMS-AUTH-003"], needs=NEEDS)
+async def hazardous_literal(c: Context) -> None:
+    """A glob invoke scope grants ordinary actions but never a hazardous one; only a scope naming it literally does."""
+    device = _axis(c)
+    async with c.fresh_wire("globber") as glob, c.fresh_wire("exact") as exact:
+        lease = c.result(await glob.request("leases/acquire", {"resources": [f"{device}/clamp"], "ttlMs": 30_000}))["lease"]
+        ok = await glob.request("actions/invoke", {"deviceId": device, "action": "clamp", "arguments": {"force": 5}, "leaseId": lease["leaseId"], "waitMs": 2000})
+        c.expect(ok.ok, f"the glob scope must grant an ordinary action: {ok.describe()}", ("BHMS-AUTH-003",))
+        refused = await glob.request("actions/invoke", {"deviceId": device, "action": "overdrive", "arguments": {"force": 5}, "leaseId": lease["leaseId"]})
+        c.refused(refused, "UNAUTHORIZED", what="a hazardous action under a glob scope", ids=("BHMS-AUTH-003",))
+        await glob.request("leases/release", {"leaseId": lease["leaseId"]})
+        lease = c.result(await exact.request("leases/acquire", {"resources": [f"{device}/clamp"], "ttlMs": 30_000}))["lease"]
+        granted = await exact.request("actions/invoke", {"deviceId": device, "action": "overdrive", "arguments": {"force": 5}, "leaseId": lease["leaseId"], "waitMs": 2000})
+        c.expect(granted.ok and granted.result["operation"]["state"] == "completed",
+                 f"a scope naming the hazardous action must grant it: {granted.describe()}", ("BHMS-AUTH-003",))
+        await exact.request("leases/release", {"leaseId": lease["leaseId"]})
+
+
+@check("authority.read-revocation-ends-delivery", ["BHMS-LIF-042"], needs=("principals", "policy"), timeout=60)
+async def read_revocation(c: Context) -> None:
+    """Notifications are authorized at delivery: after a principal's read scope is revoked, nothing more reaches it."""
+    if "events" not in c.caps:
+        c.not_applicable("the server does not advertise events")
+    device = _axis(c)
+    revoked = {**ROLES, "reader": Role(())}
+    async with c.fresh_wire("reader") as reader:
+        stream, _ = await reader.listen({"events": {}})
+        try:
+            await c.ok("stop", {"reason": "conformance delivery", "deviceIds": [device]})
+            seen = await stream.until(lambda n: n["method"] == "notifications/event", 3.0)
+            c.expect(seen is not None, "the reader must receive events while it has read scope")
+            await c.target.reload_policy(revoked)
+            stream.drain()
+            await c.ok("stop", {"reason": "conformance after revocation", "deviceIds": [device]})
+            late = await stream.until(lambda n: n["method"] == "notifications/event", 1.5)
+            c.expect(late is None, "an event was delivered after the principal's read scope was revoked")
+        finally:
+            await c.target.reload_policy(ROLES)
+            await stream.cancel()

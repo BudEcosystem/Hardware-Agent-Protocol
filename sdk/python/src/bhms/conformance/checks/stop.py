@@ -17,7 +17,7 @@ async def stop_semantics(c: Context) -> None:
     lease = (await c.ok("leases/acquire", {"resources": [f"{axis}/clamp"], "ttlMs": 60_000}))["lease"] if has_leases else None
     running = await c.invoke_op(axis, "slow_move", {"duration_ms": 5000})
     queued = [await c.invoke_op(axis, "move_to", {"position": 10 + i}) for i in range(3)]
-    c.expect(c.is_gateway or all(q["state"] == "accepted" for q in queued), "the operations behind the busy resource must be queued")
+    c.expect(all(q["state"] == "accepted" for q in queued), "the operations behind the busy resource must be queued")
     started = time.monotonic()
     result = await c.ok("stop", {"reason": "conformance stop", "deviceIds": [axis, "no_such_device", pump]})
     elapsed = time.monotonic() - started
@@ -30,7 +30,7 @@ async def stop_semantics(c: Context) -> None:
     c.expect(stopped["outcome"] in ("confirmed", "initiated"), f"axis-1 has a stop procedure, outcome {stopped['outcome']}")
     handled = set(stopped["canceledOperations"]) | set(stopped.get("cancelRequestedOperations", []))
     c.expect({q["operationId"] for q in queued} <= handled, f"queued operations must be canceled by stop: {sorted(handled)}")
-    c.expect(c.is_gateway or sorted(stopped["canceledOperations"]) == sorted(q["operationId"] for q in queued),
+    c.expect(sorted(stopped["canceledOperations"]) == sorted(q["operationId"] for q in queued),
              f"operations that never dispatched are canceled, not merely asked to cancel: {stopped['canceledOperations']}")
     c.expect(running["operationId"] in handled, "the running operation must have cancellation requested by stop")
     if lease:
@@ -40,7 +40,7 @@ async def stop_semantics(c: Context) -> None:
     c.expect(final["state"] == "canceled", f"the running operation ended {final['state']}")
     for q in queued:
         got = await c.settle(q["operationId"], 5)
-        c.expect(got["state"] == "canceled" and (c.is_gateway or got["effect"] == "none"), f"queued operation after stop: {got['state']}/{got['effect']}")
+        c.expect(got["state"] == "canceled" and got["effect"] == "none", f"queued operation after stop: {got['state']}/{got['effect']}")
         c.expect(any(h.get("kind") == "stop" for h in got["history"]), "a stop must leave a history entry on the operations it touched")
     everything = await c.ok("stop", {"reason": "conformance stop all", "scope": "all"})
     c.expect({s["deviceId"] for s in everything["stops"]} >= {axis, pump}, "scope all must cover every device")
@@ -50,14 +50,12 @@ async def stop_semantics(c: Context) -> None:
 
 @check("stop.closed-parameters", ["BHMS-AUTH-026", "BHMS-LIF-015"], generic=True)
 async def stop_parameters(c: Context) -> None:
-    """Stop accepts only reason, deviceIds or scope, waitMs: motion parameters and ambiguous targets are refused."""
-    devices = await c.devices()
-    target = devices[0]["deviceId"] if devices else "no_such_device"
+    """Stop accepts only reason, deviceIds or scope, waitMs: motion parameters are refused (aimed at a device that does not exist)."""
+    target = "no_such_device"  # a lax server that ignores an extra member still has nothing to stop
     for extra in ({"position": 5}, {"setpoint": 1}, {"action": "move_to"}, {"arguments": {"position": 1}}):
         response = await c.call("stop", {"reason": "closed", "deviceIds": [target], **extra})
         c.refused(response, "INVALID_ARGUMENT", what=f"stop with {extra}")
-    c.refused(await c.call("stop", {"reason": "closed"}), "INVALID_ARGUMENT", what="stop without a target")
-    c.refused(await c.call("stop", {"reason": "closed", "deviceIds": [target], "scope": "all"}), "INVALID_ARGUMENT", what="stop with two targets")
+    # no case without a target or with scope "all": a server that ignored the defect could stop every device
     c.refused(await c.call("stop", {"deviceIds": [target]}), "INVALID_ARGUMENT", what="stop without a reason")
 
 

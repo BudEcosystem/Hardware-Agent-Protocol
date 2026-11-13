@@ -55,7 +55,10 @@ the implementation commit, the transport, the random seed and the exact command
 that reproduces it.
 
 **BHMS-CNF-004** A profile MAY be claimed only when every row of that profile has
-passed or is `not-applicable` with a reason.
+passed or is `not-applicable` with a reason. A row a test could have proven but did not
+run (`skipped`: missing means, no declared conformance device, effects not allowed) is
+unproven and blocks the claim; a row whose method is `inspection` additionally needs
+review evidence that no test run can supply.
 
 **BHMS-CNF-005** A report MUST state whether devices were physical or simulated.
 Passing against simulated devices is not evidence of physical behaviour
@@ -398,7 +401,7 @@ JSON-RPC over any binding and never imports the implementation under test. Each 
 `bhms conformance --coverage` prints, for every row of this index, the checks that cover it or the reason none does
 (`inspection`, `not-yet-testable`). The report lists every requirement of the claimed profiles with one status
 (BHMS-CNF-002), the schema digest, seed and reproducing command (BHMS-CNF-003) and whether devices are simulated
-(BHMS-CNF-005); the exit status is non-zero while a `MUST` row failed.
+(BHMS-CNF-005); the exit status is 1 while a `MUST` row failed, 3 when none failed but a `MUST` row that a check could have proven was skipped (the claim is unsupported), 2 when the target cannot be reached.
 
 Shared test vectors live in `spec/bhms/conformance/vectors/*.json` so that every SDK's own tests can reuse them:
 `malformed.json` (raw frames the server must refuse, BHMS-LIF-001/010/011, BHMS-TRN-002), `arguments.json` (argument
@@ -410,3 +413,10 @@ unknown members and actions, key idempotency on declared actions); the others us
 conformance device and are not applicable to a server that does not serve it. Fault-injection checks use only the
 conformance device's `x-conformance/inject` extension; a gateway does not forward it, so fault checks are skipped (and
 reported as skipped) behind one.
+
+The runner identifies the conformance device **only by declaration**: the `org.bhms/conformance` extension in
+`server/discover` (`{version, faults, devices}`), or, behind a gateway, an explicit `--conformance-device <id>`; device names are
+never trusted. On a target that does not declare itself, device-specific and effectful checks are skipped (unproven) unless
+`--allow-effects` is given, and on a target reported `--physical` they additionally need `--physical-ok`. Behind a gateway the
+runner reaches the conformance devices directly with `--upstream NAMESPACE=TARGET` to inject faults while observing through
+the gateway (the gateway does not forward `x-conformance/*`).

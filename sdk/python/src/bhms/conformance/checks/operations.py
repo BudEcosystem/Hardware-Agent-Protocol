@@ -94,7 +94,7 @@ async def concurrent_same_key(c: Context) -> None:
     c.expect(await c.counter(axis) == base + 1, "20 concurrent identical invokes must have exactly one device effect")
 
 
-@check("operations.cancel-queued", ["BHMS-OPS-050", "BHMS-OPS-006", "BHMS-OPS-001"], needs=("direct",))
+@check("operations.cancel-queued", ["BHMS-OPS-050", "BHMS-OPS-006", "BHMS-OPS-001"], needs=())
 async def cancel_queued(c: Context) -> None:
     """Cancelling an accepted operation: canceled, confirmed, effect none, never dispatched."""
     axis = c.axis()
@@ -110,7 +110,7 @@ async def cancel_queued(c: Context) -> None:
     c.expect(await c.counter(axis) == base + 1, "the cancelled queued operation must not have reached the device")
 
 
-@check("operations.cancel-states", ["BHMS-OPS-051", "BHMS-OPS-053", "BHMS-OPS-062", "BHMS-OPS-001"])
+@check("operations.cancel-states", ["BHMS-OPS-051", "BHMS-OPS-053", "BHMS-OPS-062", "BHMS-OPS-001"], needs=("faults",))
 async def cancel_states(c: Context) -> None:
     """Running: cancel requested then confirmed. Unsupported: refused, state unchanged. Settled: unchanged. Unknown id:
     INVALID_ARGUMENT operationId."""
@@ -191,7 +191,7 @@ async def device_fault(c: Context) -> None:
     c.expect(await c.counter(axis) == base + 1, "the fault action acted once")
 
 
-@check("operations.deadline-before-dispatch", ["BHMS-OPS-070"], needs=("direct",))
+@check("operations.deadline-before-dispatch", ["BHMS-OPS-070"])
 async def deadline_before_dispatch(c: Context) -> None:
     """A deadline that passes before dispatch rejects the operation: DEADLINE_EXCEEDED, mayHaveActed false, effect none."""
     axis = c.axis()
@@ -281,7 +281,7 @@ async def journal_unwritable(c: Context) -> None:
 
 @check("operations.restart-recovery", ["BHMS-OPS-034", "BHMS-OPS-063", "BHMS-OPS-080", "BHMS-OPS-081", "BHMS-OPS-005", "BHMS-LSE-003",
                                        "BHMS-OBS-004", "BHMS-DEV-001", "BHMS-EVT-011", "BHMS-LIF-045"],
-       needs=("restart", "durable"), timeout=90)
+       needs=("restart", "durable", "direct"), timeout=90)
 async def restart_recovery(c: Context) -> None:
     """Kill the server with work in flight and restart it on the same state: epoch unchanged, records and keys kept,
     in-flight work unknown and never re-sent, fences keep increasing, observation epoch changes; a wiped store gets a new
@@ -337,3 +337,25 @@ async def restart_recovery(c: Context) -> None:
     else:
         c.expect(response.code == "INVALID_ARGUMENT", f"a cursor of an earlier epoch is a gap or INVALID_ARGUMENT, got {response.describe()}")
     c.expect((await c.ok("leases/acquire", {"resources": [f"{c.axis()}/clamp"], "ttlMs": 60000}))["lease"]["fence"] >= 1, "lease after wipe")
+
+
+@check("operations.lease-expiry-before-dispatch", ["BHMS-OPS-041"])
+async def lease_expiry_before_dispatch(c: Context) -> None:
+    """A lease that expires while the operation waits behind a busy resource is re-checked at dispatch: the operation is
+    rejected with LEASE_EXPIRED, mayHaveActed false, effect none, and no command reaches the device."""
+    import asyncio
+
+    axis = c.axis()
+    base = await c.counter(axis)
+    ttl = max(int(c.caps["leases"].get("minTtlMs", 50)), 250)
+    busy = await c.invoke_op(axis, "slow_move", {"duration_ms": ttl + 700})
+    lease = (await c.ok("leases/acquire", {"resources": [f"{axis}/motion"], "ttlMs": ttl}))["lease"]
+    waiting = await c.invoke_op(axis, "guard_finish", {"duration_ms": 100}, leaseId=lease["leaseId"])
+    c.expect(waiting["state"] == "accepted", f"the guarded operation must queue behind the busy motion resource, is {waiting['state']}")
+    op = await c.settle(waiting["operationId"], 6)
+    err = op.get("error") or {}
+    c.expect(op["state"] == "rejected" and err.get("bhmsCode") == "LEASE_EXPIRED" and err.get("mayHaveActed") is False and op["effect"] == "none",
+             f"a lease lost before dispatch must reject the operation: {op['state']} {err} effect {op['effect']}")
+    await c.settle(busy["operationId"], 6)
+    await asyncio.sleep(0.05)
+    c.expect(await c.counter(axis) == base + 1, "the rejected operation must not have reached the device")

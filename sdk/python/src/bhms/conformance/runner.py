@@ -2,8 +2,8 @@
 
 ``run(RunOptions)`` returns a :class:`Report`; :func:`render` prints it with rich and :meth:`Report.to_json` is the CI
 artefact (BHMS-CNF-001..005: protocol version, profiles, transports, implementation, schema digest, seed, reproducing
-command, simulated or physical devices, one status per requirement). Exit status: 0 when no MUST row failed, 1 when one
-did (``--require-all`` also fails on skipped MUST rows), 2 when the target cannot be reached or does not speak BHMS.
+command, simulated or physical devices, one status per requirement). Exit status: 0 when no MUST row failed or is unproven, 1 when one
+failed, 3 when none failed but MUST rows a check could have proven were skipped (the profile claim is unsupported), 2 when the target cannot be reached or does not speak BHMS.
 
 Thread-safety: one event loop; one run at a time per process.
 """
@@ -23,7 +23,7 @@ from bhms.conformance import coverage, observers, requirements
 from bhms.conformance.context import CONFORMANCE_EXTENSION, Context
 from bhms.conformance.core import (CAPABILITY_PROFILES, REGISTRY, CheckFailed, CheckResult, CheckSpec, NotApplicable,
                                    RequirementRow, Skipped, Status)
-from bhms.conformance.targets import Target, TargetError, resolve
+from bhms.conformance.targets import Target, TargetError, connect_url, resolve
 from bhms.conformance.wire import Recorder, Wire
 from bhms.protocol.canonical import digest as jcs_digest
 from bhms.protocol.schema import load_schema
@@ -47,8 +47,14 @@ class RunOptions:
     device_target: str | None = None
     """``--device``: the BHMS target an ``mcp:`` bridge fronts."""
     argv: tuple[str, ...] = ()
-    require_all: bool = False
+    allow_unproven: bool = False
+    """Exit 0 although MUST rows the runner could have proven were skipped (the report still says the claim is unsupported)."""
     check_timeout: float | None = None
+    conformance_device: tuple[str, ...] = ()
+    """``--conformance-device``: device ids asserted to be conformance devices (behind a gateway the extension is not visible)."""
+    upstreams: tuple[str, ...] = ()
+    """``--upstream NAMESPACE=TARGET``: direct connections to the conformance devices behind a gateway (fault injection)."""
+    physical_ok: bool = False
 
 
 @dataclass
@@ -70,20 +76,38 @@ class Report:
         return [r for r in self.rows if r.status is Status.FAILED and r.level == "MUST"]
 
     @property
+    def unproven_must(self) -> list[RequirementRow]:
+        """MUST rows a check could have proven but did not (skipped): a profile claim (BHMS-CNF-004) needs them proven."""
+        return [r for r in self.rows if r.unproven and r.level == "MUST"]
+
+    @property
+    def claims(self) -> dict[str, dict[str, Any]]:
+        """Per profile: whether the run supports claiming it (no MUST row failed or unproven) and what is outside automation."""
+        out: dict[str, dict[str, Any]] = {}
+        for profile in self.meta.get("profiles", []):
+            rows = [r for r in self.rows if r.profile == profile]
+            failed = [r.id for r in rows if r.status is Status.FAILED and r.level == "MUST"]
+            unproven = [r.id for r in rows if r.unproven and r.level == "MUST"]
+            review = [r.id for r in rows if r.status is Status.SKIPPED and not r.unproven and r.level == "MUST"]
+            out[profile] = {"claimable": not failed and not unproven, "failed": failed, "unproven": unproven, "needsReview": review}
+        return out
+
+    @property
     def exit_code(self) -> int:
+        """0 supported, 1 a MUST row failed, 2 unreachable, 3 no failure but MUST rows unproven (claim not supported)."""
         if self.fatal:
             return 2
         if self.must_failed:
             return 1
-        if self.meta.get("requireAll") and any(r.status is Status.SKIPPED and r.level == "MUST" for r in self.rows):
-            return 1
+        if self.unproven_must and not self.meta.get("allowUnproven"):
+            return 3
         return 0
 
     def to_json(self) -> dict[str, Any]:
-        return {"conformance": self.meta, "fatal": self.fatal, "summary": {**self.counts, "mustFailed": len(self.must_failed)},
+        return {"formatVersion": 1, "conformance": self.meta, "claims": self.claims, "fatal": self.fatal, "summary": {**self.counts, "mustFailed": len(self.must_failed), "mustUnproven": len(self.unproven_must)},
                 "checks": [c.to_json() for c in self.checks],
                 "requirements": [{"id": r.id, "level": r.level, "profile": r.profile, "method": r.method, "status": r.status.value,
-                                  "reason": r.reason, "checks": list(r.checks)} for r in self.rows],
+                                  "reason": r.reason, "checks": list(r.checks), "unproven": r.unproven} for r in self.rows],
                 "exitCode": self.exit_code}
 
 
@@ -124,16 +148,21 @@ def _gate(spec: CheckSpec, ctx: Context, opts: RunOptions) -> str | tuple[Status
     caps = ctx.caps
     if spec.profile in CAPABILITY_PROFILES and not _has_capability(caps, CAPABILITY_PROFILES[spec.profile]):
         return Status.NOT_APPLICABLE, f"capability {CAPABILITY_PROFILES[spec.profile]} is not advertised"
-    if not spec.generic:
-        if not ctx.is_conformance_device:
-            return Status.NOT_APPLICABLE, "needs the conformance device (axis-1 and pump-1); this target serves other devices"
-    elif spec.effects and not ctx.is_conformance_device and not opts.allow_effects:
-        return Status.SKIPPED, "executes actions on devices that are not the conformance device; pass --allow-effects"
+    effectful = spec.effects or not spec.generic
+    if effectful and not ctx.effects_allowed:
+        if ctx.physical and not ctx.physical_ok and (ctx.conformance_declared or ctx.allow_effects):
+            return Status.SKIPPED, "unproven: the devices are declared physical and this check moves or changes them; pass --physical-ok"
+        return Status.SKIPPED, ("unproven: this check executes actions and the target does not declare itself a conformance device "
+                                "(extension org.bhms/conformance, or --conformance-device behind a gateway); pass --allow-effects to run "
+                                "it against devices you accept it may move")
+    if not spec.generic and not ctx.is_conformance_device:
+        return Status.SKIPPED, "unproven: no conformance device (axis-1 and pump-1) was found on this target"
     for need in spec.needs:
         if need == "faults" and not ctx.has_extension:
-            return Status.SKIPPED, f"needs fault injection (extension {CONFORMANCE_EXTENSION}); not available on this target"
+            return Status.SKIPPED, (f"unproven: needs fault injection (extension {CONFORMANCE_EXTENSION}, or --upstream behind a "
+                                    "gateway); not available on this target")
         if need == "restart" and not ctx.target.controllable:
-            return Status.SKIPPED, "needs to restart the server; the runner did not start this target"
+            return Status.SKIPPED, "unproven: needs to restart the server; the runner did not start this target"
         if need == "durable" and not (ctx.caps.get("operations") or {}).get("durable"):
             return Status.NOT_APPLICABLE, "the server does not advertise durable operations"
         if need == "persistent" and not ctx.target.persistent:
@@ -149,15 +178,15 @@ def _gate(spec: CheckSpec, ctx: Context, opts: RunOptions) -> str | tuple[Status
         if need == "gateway" and not ctx.is_gateway:
             return Status.NOT_APPLICABLE, "the target is not a gateway"
         if need == "direct" and ctx.is_gateway:
-            return Status.NOT_APPLICABLE, "applies to a device server, not to a gateway"
+            return Status.SKIPPED, "unproven: this check restarts the server or breaks its own journal; behind a gateway that is the gateway's, not the devices'"
         if need == "agent" and ctx.agent is None:
-            return Status.SKIPPED, "the target is not an agent bridge (use agent-bridge or mcp:<command> with --device)"
+            return Status.SKIPPED, "unproven: the target is not an agent bridge (use agent-bridge or mcp:<command> with --device)"
         if need == "principals" and not ctx.has_principals:
-            return Status.SKIPPED, "needs several principals with known credentials (the built-in gateway fixture defines them)"
+            return Status.SKIPPED, "unproven: needs several principals with known credentials (the built-in gateway fixture defines them)"
         if need == "policy" and ctx.target.config_path is None:
-            return Status.SKIPPED, "needs to reload a gateway policy; only the built-in gateway fixture allows that"
+            return Status.SKIPPED, "unproven: needs to reload a gateway policy; only the built-in gateway fixture allows that"
         if need == "wipe" and ctx.target.state_dir is None:
-            return Status.SKIPPED, "needs the durable state directory of a runner-started server"
+            return Status.SKIPPED, "unproven: needs the durable state directory of a runner-started server"
     return None
 
 
@@ -179,7 +208,7 @@ async def _run_one(spec: CheckSpec, ctx: Context, opts: RunOptions) -> CheckResu
     except NotApplicable as exc:
         result = CheckResult(status=Status.NOT_APPLICABLE, message=str(exc), **base)  # type: ignore[arg-type]
     except Skipped as exc:
-        result = CheckResult(status=Status.SKIPPED, message=str(exc), **base)  # type: ignore[arg-type]
+        result = CheckResult(status=Status.SKIPPED, message=str(exc) if str(exc).startswith("unproven") else f"unproven: {exc}", **base)  # type: ignore[arg-type]
     except asyncio.TimeoutError:
         result = CheckResult(status=Status.FAILED, message=f"timed out after {timeout:.0f}s", **base)  # type: ignore[arg-type]
     except TransportClosed as exc:
@@ -222,6 +251,7 @@ async def run(opts: RunOptions) -> Report:
     recorder = Recorder()
     ctx: Context | None = None
     agent = None
+    extra_targets: list[Target] = []
     try:
         if target.kind == "mcp" and target.device is None and opts.device_target:
             target.device = resolve(opts.device_target, token=opts.token)
@@ -233,8 +263,19 @@ async def run(opts: RunOptions) -> Report:
         if first.result is None:
             return Report(_meta(opts, target, None, seed, command, [], {}), [], [],
                           fatal=f"server/discover failed: {first.describe()}")
-        ctx = Context(target.device if target.kind == "mcp" and target.device else target, recorder, wire, first.result,
-                      strict=opts.strict, allow_effects=opts.allow_effects, seed=seed)
+        fault_wires: dict[str, Wire] = {}
+        owner = target.device if target.kind == "mcp" and target.device else target
+        for namespace, upstream in owner.upstreams.items():
+            fault_wires[namespace] = Wire(await connect_url(upstream.url or "", upstream.token), recorder, f"upstream-{namespace}").start()
+        for item in opts.upstreams:
+            namespace, sep, spec = item.partition("=")
+            if not sep:
+                return Report(_meta(opts, target, None, seed, command, [], {}), [], [], fatal=f"--upstream {item!r} must be NAMESPACE=TARGET")
+            fixture = resolve(spec, token=opts.token)
+            fault_wires[namespace] = Wire(await fixture.open_base(), recorder, f"upstream-{namespace}").start()
+            extra_targets.append(fixture)
+        ctx = Context(owner, recorder, wire, first.result, strict=opts.strict, allow_effects=opts.allow_effects, seed=seed,
+                      asserted=opts.conformance_device, fault_wires=fault_wires, physical=opts.physical, physical_ok=opts.physical_ok)
         await ctx.locate()
         if target.kind == "mcp":
             from bhms.conformance.agentwire import AgentWire
@@ -272,6 +313,11 @@ async def run(opts: RunOptions) -> Report:
         if ctx is not None:
             with contextlib.suppress(Exception):
                 await ctx.wire.close()
+        for wire in (ctx.fault_wires.values() if ctx is not None else ()):
+            with contextlib.suppress(Exception):
+                await wire.close()
+        for fixture in extra_targets:
+            await fixture.aclose()
         await target.aclose()
 
 
@@ -298,10 +344,11 @@ def _meta(opts: RunOptions, target: Target | None, ctx: Context | None, seed: in
         "target": opts.target,
         "implementation": {"name": info.get("name"), "version": info.get("version"), "commit": opts.commit},
         "schemaDigest": jcs_digest(load_schema()),
-        "devices": "physical" if opts.physical else "simulated",
+        "devices": "physical" if opts.physical else ("simulated" if target is not None and target.simulated else "unknown"),
         "seed": seed,
         "strict": opts.strict,
-        "requireAll": opts.require_all,
+        "allowUnproven": opts.allow_unproven,
+        "only": list(opts.only),
         "command": command,
         "runnerPython": sys.version.split()[0],
         "epoch": ctx.discover_result.get("epoch") if ctx else None,
@@ -341,12 +388,17 @@ def render(report: Report, *, verbose: bool = False, console: Any = None) -> Non
               highlight=False)
     out.print(f"requirements: {counts['passed']} passed, {counts['failed']} failed, {counts['skipped']} skipped, "
               f"{counts['not-applicable']} not-applicable   MUST failures: {len(report.must_failed)}", highlight=False)
+    for profile, claim in report.claims.items():
+        verdict = "[green]supported[/]" if claim["claimable"] else (
+            f"[bold red]NOT supported[/] ({len(claim['failed'])} MUST failed, {len(claim['unproven'])} MUST unproven)")
+        review = f"; {len(claim['needsReview'])} MUST rows need review evidence" if claim["needsReview"] else ""
+        out.print(f"claim {profile}: {verdict}{review}", highlight=False)
     for row in report.rows:
         if row.status is Status.FAILED:
             out.print(f"[red]FAILED[/] {row.id} ({row.level}): {row.reason}", highlight=False)
-    if verbose:
+    if verbose or (report.unproven_must and not meta.get("only")):
         for row in report.rows:
-            if row.status in (Status.SKIPPED, Status.NOT_APPLICABLE):
+            if row.status in (Status.SKIPPED, Status.NOT_APPLICABLE) and (verbose or (row.unproven and row.level == "MUST")):
                 out.print(f"[{STYLE[row.status]}]{row.status.value}[/] {row.id} ({row.level}): {row.reason}", highlight=False)
 
 

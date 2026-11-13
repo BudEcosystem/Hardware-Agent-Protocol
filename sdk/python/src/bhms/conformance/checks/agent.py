@@ -12,7 +12,7 @@ import time
 from typing import Any
 
 from bhms.conformance.context import Context
-from bhms.conformance.core import NotApplicable, check
+from bhms.conformance.core import Skipped, check
 from bhms.protocol import schema as bhms_schema
 
 TOOLS = ("bhms_find", "bhms_describe", "bhms_read", "bhms_invoke", "bhms_operation", "bhms_cancel", "bhms_stop", "bhms_run_program")
@@ -22,7 +22,7 @@ FORBIDDEN_WORDS = re.compile(r"\bdone\b|(?<!not )(?<!retry-)\b(safe|at rest)\b|f
 
 def _agent(c: Context) -> Any:
     if c.agent is None:
-        raise NotApplicable("the target is not an agent bridge")
+        raise Skipped("unproven: the target is not an agent bridge")
     return c.agent
 
 
@@ -111,9 +111,12 @@ async def summaries(c: Context) -> None:
     for device in await c.devices():
         c.expect(f'"{device["name"][:60]}"' in find or device["deviceId"] in find, f"device names must appear quoted: {find}", ("BHMS-AGT-012",))
     block = outcomes["describe"].text
+    elided = "(elided" in block  # the bridge keeps a signature within 400 tokens by dropping details, and says so
     for action, spec in description["actions"].items():
         line = next((ln for ln in block.splitlines() if ln.startswith(f"action {action}(")), "")
         c.expect(line, f"the signature block lacks action {action}", ("BHMS-AGT-013",))
+        if elided:
+            continue
         for needle in ("effect=", "repeat=", "lease=", "cancel=", "evidence=", "max="):
             c.expect(needle in line, f"{action}: the signature must state {needle[:-1]}: {line}", ("BHMS-AGT-013",))
         for member, schema in (spec["input"].get("properties") or {}).items():
@@ -121,7 +124,8 @@ async def summaries(c: Context) -> None:
                      f"{action}: argument {member} with its unit must be in the signature: {line}", ("BHMS-AGT-013",))
     for prop in description["properties"]:
         c.expect(any(ln.startswith(f"property {prop}") for ln in block.splitlines()), f"the signature block lacks property {prop}", ("BHMS-AGT-013",))
-    c.expect(len(block) / 3.5 <= 400, f"the signature block should stay within 400 tokens, is about {len(block) / 3.5:.0f}", ("BHMS-AGT-013",))
+    c.expect(elided or len(block) / 3.5 <= 400, f"the signature block should stay within 400 tokens or announce its elision, is about "
+             f"{len(block) / 3.5:.0f}", ("BHMS-AGT-013",))
     op_id = slow.structured["operation"]["operationId"]
     cancelled = await agent.call("bhms_cancel", {"operation_id": op_id, "reason": "conformance"})
     await c.settle(op_id, 6)
@@ -147,7 +151,7 @@ async def refusals(c: Context) -> None:
         c.expect(refused.is_error, f"bad arguments must be refused: {arguments}", ("BHMS-AGT-021",))
         c.expect(re.search(r"e\.g\.|example|for example", refused.text, re.I), f"the refusal must show a corrected example: {refused.text[:200]}", ("BHMS-AGT-021",))
     c.expect(await c.counter(axis) == base and await c.operations_count() == ops, "an out-of-schema call reached the device", ("BHMS-AGT-021",))
-    if c.has_extension:
+    if c.has_extension:  # a fault channel to the device behind the bridge
         await c.inject("crash_next")
         unknown = await agent.call("bhms_invoke", {"device_id": axis, "action": "pulse", "arguments": {"count": 1}})
         c.expect(re.search(r"outcome unknown", unknown.summary, re.I), f"an unknown outcome must say so: {unknown.summary}", ("BHMS-AGT-020",))

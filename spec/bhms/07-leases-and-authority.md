@@ -206,8 +206,11 @@ BHMS-DEV-002, BHMS-LSE-011, BHMS-LSE-013, BHMS-AUTH-014 and BHMS-SEC-022/061:
   same key, or a restart) becomes an `unknown` operation (BHMS-OPS-004, BHMS-OPS-080) whose resources are inhibited
   (BHMS-OPS-042). The gateway reconciles by re-sending the **same** upstream request only while the upstream's epoch is
   unchanged (BHMS-OPS-081) and never after a cancellation was requested, a stop covered the operation, or its deadline passed.
-  The gateway mirrors the upstream along the legal transitions of §6.3: an upstream `accepted` is `dispatching` at the
-  gateway, and an upstream `rejected` becomes `failed` with `effect: "none"`.
+  The gateway mirrors the upstream along the legal transitions of §6.3: an upstream `accepted` (queued, nothing sent to
+  the device) is `accepted` at the gateway until the upstream dispatches it, and an upstream `rejected` is `rejected` at the
+  gateway with `effect: "none"` (a refusal before dispatch stays a refusal before dispatch); only an operation the gateway had
+  already shown as `dispatching` can end `failed` with `effect: "none"`. A retained observation of a `transaction` property
+  that the gateway relayed is served to a principal with read authority only (BHMS-OBS-011), with `ageMs` advanced.
 - *Leases.* The gateway lease is arbitrated at the gateway; the upstream leases are held for it, in ascending resource order,
   before it is granted, and the upstream's own lease id and fence are what is forwarded (BHMS-LSE-011, BHMS-LSE-013).
 - *Stop.* Fanned out to every upstream at once on a path that bypasses queues and concurrency limits; a device whose upstream

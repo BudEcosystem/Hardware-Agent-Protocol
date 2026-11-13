@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import sys
 
+import pytest
+
 from bhms.conformance.core import Status
 from bhms.conformance.runner import RunOptions, run
 from bhms.conformance.targets import resolve
@@ -18,9 +20,8 @@ async def _run_all():
 
         async def one(name):
             target = "mcp:" + " ".join([sys.executable, "-m", "bhms.testing.broken_bridges", name, "--", *bridge])
-            only = DEFECTS[name].checks
             return name, await run(RunOptions(target=target, profiles=("agent",), device_target=device.url, token=device.token,
-                                              only=only, seed=9))
+                                              seed=9))
 
         results = []
         for name in DEFECTS:  # one device, so one bridge at a time
@@ -30,6 +31,7 @@ async def _run_all():
         await device.aclose()
 
 
+@pytest.mark.timeout(900)
 async def test_every_broken_bridge_fails_the_expected_agent_check():
     import bhms.conformance.checks  # noqa: F401
 

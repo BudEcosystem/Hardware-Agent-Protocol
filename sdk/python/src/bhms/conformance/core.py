@@ -93,6 +93,8 @@ class RequirementRow:
     status: Status
     reason: str = ""
     checks: tuple[str, ...] = ()
+    unproven: bool = False
+    """Skipped although an automated check exists: the claim is unsupported until it runs (exemptions are not unproven)."""
 
 
 REGISTRY: list[CheckSpec] = []

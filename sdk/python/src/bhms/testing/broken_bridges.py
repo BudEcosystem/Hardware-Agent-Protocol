@@ -15,7 +15,7 @@ import json
 import re
 import sys
 from collections.abc import Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from typing import Any
 
 Message = dict[str, Any]
@@ -106,6 +106,16 @@ DEFECTS: dict[str, BridgeDefect] = {d.name: d for d in (
     BridgeDefect("no-retry-instructions", "tool descriptions do not say how to retry safely",
                  ("agent.tool-surface",), ("BHMS-AGT-031",), to_client=_no_retry_instructions),
 )}
+
+
+# Measured against the full agent profile (asserted by tests/test_conformance_broken_bridges.py): a defect that removes the
+# structured content trips every check that reads it.
+_EXACT = {
+    "no-structured-content": ("agent.freshness-and-keys", "agent.no-authority-from-arguments", "agent.refusals",
+                              "agent.results-and-summaries", "agent.wait-and-leases"),
+    "done-for-running": ("agent.results-and-summaries", "agent.wait-and-leases"),
+}
+DEFECTS = {name: replace(defect, checks=_EXACT.get(name, defect.checks)) for name, defect in DEFECTS.items()}
 
 
 async def proxy(defect: BridgeDefect, command: list[str]) -> int:

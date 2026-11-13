@@ -4,7 +4,10 @@ from __future__ import annotations
 
 import asyncio
 
+import pytest
+
 from bhms.client.client import Client
+from bhms.protocol.errors import BhmsError
 from bhms.gateway import Gateway, GatewayConfig, UpstreamConfig
 from bhms.testing.broken_devices import DEFECTS, Mutator
 from bhms.testing.conformance_device import build
@@ -52,3 +55,33 @@ async def test_a_wrong_description_digest_from_an_upstream_is_not_served(tmp_pat
         await broken.close()
     assert "good/axis-1" in ids
     assert not [i for i in ids if i.startswith("bad/")], f"a description with a wrong digest was served: {ids}"
+
+
+async def test_a_retained_transaction_observation_needs_only_read_authority(tmp_path):  # BHMS-OBS-011
+    """Found by observations.retained-after-effect: the gateway demanded invoke scope and a lease for every read."""
+    async with rig(tmp_path, ("a",), conformance=True) as r:
+        admin = await r.client(token="tok-admin")
+        reader = await r.client(token="tok-b")  # agent-b: read, lease, invoke:*/* ; use the admin for the acquisition
+        lease = (await admin.leases_acquire(["a/axis-1/motion"], 30_000)).lease
+        popped = (await admin.properties_read("a/axis-1", "fifo", fresh=True)).observation
+        await admin.leases_release(lease.lease_id)
+        again = (await reader.properties_read("a/axis-1", "fifo")).observation
+        assert again.value == popped.value and again.sequence == popped.sequence
+        assert again.age_ms >= popped.age_ms
+        with pytest.raises(BhmsError) as refused:
+            await reader.properties_read("a/axis-1", "fifo", fresh=True)  # a new acquisition still needs the lease
+        assert refused.value.code == "LEASE_REQUIRED"
+
+
+async def test_an_operation_that_misses_its_deadline_in_the_upstream_queue_is_rejected_through_the_gateway(tmp_path):  # OPS-070
+    """Found while reviewing the conformance run: the gateway showed upstream ``accepted`` as ``dispatching`` and mapped an
+    upstream ``rejected`` to ``failed``; a refusal before dispatch must stay ``rejected`` with effect none."""
+    async with rig(tmp_path, ("a",), conformance=True) as r:
+        client = await r.client(token="tok-admin")
+        busy = (await client.actions_invoke("a/axis-1", "slow_move", {"duration_ms": 900})).operation
+        queued = (await client.actions_invoke("a/axis-1", "pulse", {"count": 1}, deadline_ms=150)).operation
+        assert queued.state == "accepted"
+        settled = (await client.operations_wait(queued.operation_id, 5000)).operation
+        assert settled.state == "rejected" and settled.effect == "none"
+        assert settled.error.bhms_code == "DEADLINE_EXCEEDED" and settled.error.may_have_acted is False
+        await client.operations_wait(busy.operation_id, 5000)

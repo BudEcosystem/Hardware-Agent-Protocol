@@ -340,6 +340,8 @@ class Upstream:
                     cursor = (params.get("event") or {}).get("cursor")
                     if cursor:
                         self.event_cursor = cursor
+                    if (params.get("event") or {}).get("type") in ("device.online", "device.offline", "device.degraded"):
+                        self._resync.set()  # the served status follows the device's (BHMS-DEV-012)
                 self.hooks.notification(self, method, params)
         finally:
             await stream.cancel()

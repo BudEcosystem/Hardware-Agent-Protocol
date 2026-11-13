@@ -136,3 +136,31 @@ async def close_keeps_state(c: Context) -> None:
     renewed = (await c.ok("leases/renew", {"leaseId": lease["leaseId"], "ttlMs": 60_000}))["lease"]
     c.expect(renewed["state"] == "active", "closing the connection released the lease")
     await c.ok("leases/release", {"leaseId": lease["leaseId"]})
+
+
+@check("leases.loss-behaviour", ["BHMS-LSE-012"], profile="leases", needs=("faults",), timeout=90)
+async def loss_behaviour(c: Context) -> None:
+    """Losing the lease of a running operation applies its onLeaseLoss: cancel ends it canceled, finish lets it complete,
+    hold commands the device to hold and ends it failed with LEASE_EXPIRED; nothing new starts under the lost lease."""
+    import asyncio
+
+    axis = c.axis()
+    resource = f"{axis}/motion"
+    ttl = max(_min_ttl(c), 300)
+    holds_before = (await c.counters(axis)).get("holds", 0)
+    outcomes = {}
+    for mode, duration in (("cancel", ttl + 6000), ("finish", ttl + 700), ("hold", ttl + 6000)):
+        lease = await _acquire(c, [resource], ttl)
+        op = await c.invoke_op(axis, f"guard_{mode}", {"duration_ms": duration}, leaseId=lease["leaseId"])
+        c.expect(op["state"] in ("dispatching", "running"), f"guard_{mode} should start at once, is {op['state']}")
+        outcomes[mode] = await c.settle(op["operationId"], 15)
+        await asyncio.sleep(0.3)  # the lease is certainly lost by now, whichever side's clock ran out first
+        again = await c.invoke(axis, f"guard_{mode}", {"duration_ms": 10}, leaseId=lease["leaseId"])
+        c.refused(again, "LEASE_EXPIRED", what=f"a new guard_{mode} under the lost lease")
+    c.expect(outcomes["cancel"]["state"] == "canceled", f"onLeaseLoss cancel: the operation ended {outcomes['cancel']['state']}")
+    c.expect(outcomes["finish"]["state"] == "completed", f"onLeaseLoss finish: the operation ended {outcomes['finish']['state']}")
+    err = outcomes["hold"].get("error") or {}
+    c.expect(outcomes["hold"]["state"] == "failed" and err.get("bhmsCode") == "LEASE_EXPIRED",
+             f"onLeaseLoss hold: the operation ended {outcomes['hold']['state']} {err}")
+    await asyncio.sleep(0.05)
+    c.expect((await c.counters(axis)).get("holds", 0) == holds_before + 1, "onLeaseLoss hold must command the device to hold exactly once")

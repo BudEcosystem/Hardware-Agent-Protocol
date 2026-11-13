@@ -163,3 +163,23 @@ def test_requirement_status_folding():
     assert folded["BHMS-LIF-013"].status is Status.NOT_APPLICABLE
     assert folded["BHMS-LIF-002"].status is Status.SKIPPED and "no automated check" in folded["BHMS-LIF-002"].reason
     assert folded["BHMS-TRN-021"].status is Status.SKIPPED and folded["BHMS-TRN-021"].reason.startswith("inspection")
+
+
+def test_exit_status_and_claims_distinguish_failed_unproven_and_outside_automation():
+    from bhms.conformance.core import RequirementRow
+    from bhms.conformance.runner import Report
+
+    def row(rid, status, level="MUST", unproven=False, profile="core"):
+        return RequirementRow(id=rid, level=level, profile=profile, method="wire", status=status, unproven=unproven)
+
+    meta = {"profiles": ["core"]}
+    passed = Report(meta, [], [row("BHMS-LIF-001", Status.PASSED), row("BHMS-TRN-021", Status.SKIPPED)])  # inspection: outside automation
+    assert passed.exit_code == 0 and passed.claims["core"]["claimable"] and passed.claims["core"]["needsReview"] == ["BHMS-TRN-021"]
+    unproven = Report(meta, [], [row("BHMS-LIF-001", Status.PASSED), row("BHMS-OPS-030", Status.SKIPPED, unproven=True)])
+    assert unproven.exit_code == 3 and not unproven.claims["core"]["claimable"] and unproven.claims["core"]["unproven"] == ["BHMS-OPS-030"]
+    assert Report({**meta, "allowUnproven": True}, [], unproven.rows).exit_code == 0
+    failed = Report(meta, [], [row("BHMS-LIF-001", Status.FAILED), row("BHMS-OPS-030", Status.SKIPPED, unproven=True)])
+    assert failed.exit_code == 1 and failed.claims["core"]["failed"] == ["BHMS-LIF-001"]
+    should = Report(meta, [], [row("BHMS-DEV-033", Status.FAILED, level="SHOULD")])
+    assert should.exit_code == 0  # a SHOULD finding does not fail the run
+    assert Report(meta, [], [], fatal="x").exit_code == 2

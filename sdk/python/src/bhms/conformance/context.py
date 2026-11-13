@@ -30,8 +30,14 @@ class Context:
     """State shared by the checks of one run."""
 
     def __init__(self, target: Target, recorder: Recorder, wire: Wire, discover: dict[str, Any], *, strict: bool = False,
-                 allow_effects: bool = False, seed: int = 0, device_target: Target | None = None) -> None:
+                 allow_effects: bool = False, seed: int = 0, device_target: Target | None = None,
+                 asserted: tuple[str, ...] = (), fault_wires: dict[str, Wire] | None = None, physical: bool = False,
+                 physical_ok: bool = False) -> None:
         self.target, self.recorder, self.wire = target, recorder, wire
+        self.asserted = tuple(asserted) or tuple(target.conformance_devices)
+        self.fault_wires = dict(fault_wires or {})
+        """namespace ('' for a direct server) -> a connection to the conformance device that owns it (fault channel)."""
+        self.physical, self.physical_ok = physical, physical_ok
         self.discover_result = discover
         self.strict, self.allow_effects, self.seed = strict, allow_effects, seed
         self.rand = random.Random(seed)
@@ -59,8 +65,26 @@ class Context:
         return self.discover_result.get("limits", {})
 
     @property
-    def has_extension(self) -> bool:
+    def declares_extension(self) -> bool:
+        """The server itself declares the conformance extension (capabilities.extensions)."""
         return CONFORMANCE_EXTENSION in (self.caps.get("extensions") or {})
+
+    @property
+    def conformance_declared(self) -> bool:
+        """The target is a conformance device by declaration: the extension, or an explicit assertion of device ids."""
+        return self.declares_extension or bool(self.asserted)
+
+    @property
+    def effects_allowed(self) -> bool:
+        """Effectful checks may run: the target declares itself a conformance device, or ``--allow-effects`` was given; on a
+        physical target ``--physical-ok`` is also required."""
+        permitted = self.conformance_declared or self.allow_effects
+        return permitted and (not self.physical or self.physical_ok)
+
+    @property
+    def has_extension(self) -> bool:
+        """A fault-injection channel exists (the server's own extension or a direct connection to an upstream)."""
+        return self.declares_extension or bool(self.fault_wires)
 
     @property
     def has_principals(self) -> bool:
@@ -72,7 +96,7 @@ class Context:
 
     @property
     def is_gateway(self) -> bool:
-        return "gateway" in self.caps or "/" in (self.axis_id or "")
+        return self.target.is_gateway or "gateway" in self.caps
 
     def unique(self, prefix: str = "k") -> str:
         """A key that no earlier request of this run (or earlier run) used."""
@@ -174,13 +198,23 @@ class Context:
         return {d["deviceId"]: await self.describe(d["deviceId"]) for d in await self.devices()}
 
     async def locate(self) -> None:
-        """Find the conformance device's ``axis-1`` and ``pump-1`` (a gateway serves them as ``<ns>/axis-1``)."""
+        """Find the conformance device's ``axis-1`` and ``pump-1`` (a gateway serves them as ``<ns>/axis-1``). Devices are
+        taken for conformance devices only by declaration (the extension's device list, or the ids asserted with
+        ``--conformance-device``); with ``--allow-effects`` and no declaration, by name."""
         self.axis_id = self.pump_id = None
-        self.axis_ids: list[str] = []
-        self.pump_ids: list[str] = []
+        self.axis_ids = []
+        self.pump_ids = []
+        if not self.effects_allowed:
+            return
+        extension = (self.caps.get("extensions") or {}).get(CONFORMANCE_EXTENSION) or {}
+        names = set(extension.get("devices") or ["axis-1", "pump-1"]) if self.declares_extension else None
         for summary in await self.devices():
             device_id = summary["deviceId"]
             tail = device_id.rsplit("/", 1)[-1]
+            if self.declares_extension and tail not in (names or ()):
+                continue
+            if not self.declares_extension and self.asserted and device_id not in self.asserted:
+                continue
             if tail == "axis-1" and "move_to" in summary.get("actions", []):
                 self.axis_ids.append(device_id)
             if tail == "pump-1" and "dispense" in summary.get("actions", []):
@@ -250,18 +284,33 @@ class Context:
 
     # ------------------------------------------------------------------ faults (conformance extension)
 
-    async def inject(self, fault: str) -> None:
-        """Arm or clear a fault with the conformance extension (not available behind a gateway)."""
-        if not self.has_extension:
-            raise Skipped("the target has no fault-injection channel (extension org.bhms/conformance not advertised)")
-        await self.ok("x-conformance/inject", {"fault": fault})
+    def _fault_wire(self, device: str | None) -> Wire:
+        if self.declares_extension and not self.fault_wires:
+            return self.wire
+        namespace = (device or self.axis_id or "").split("/", 1)[0] if "/" in (device or self.axis_id or "") else ""
+        wire = self.fault_wires.get(namespace) or self.fault_wires.get("")
+        if wire is None:
+            raise Skipped("the target has no fault-injection channel (extension org.bhms/conformance not declared and no --upstream "
+                          f"connection for {namespace or 'this server'!r})")
+        return wire
+
+    async def inject(self, fault: str, device: str | None = None) -> None:
+        """Arm or clear a fault in the conformance device that owns ``device`` (default: axis-1): through the server's own
+        extension, or, behind a gateway, through the runner's direct connection to that upstream (``--upstream``)."""
+        await self.ok("x-conformance/inject", {"fault": fault}, wire=self._fault_wire(device))
+
+    async def counters(self, device: str | None = None) -> dict[str, Any]:
+        """The conformance extension's device-side counters (``holds``, ``log`` ...)."""
+        return await self.ok("x-conformance/counters", {}, wire=self._fault_wire(device))
 
     async def reset(self) -> None:
-        """Clear faults, cancel running operations and release leases so that the next check starts clean."""
-        if self.has_extension:
-            with contextlib.suppress(Exception):
-                await self.inject("none")
-                await self.inject("journal_writable")
+        """Clear faults, cancel running operations and release leases so that the next check starts clean (conformance
+        devices only: nothing is sent to a device the runner has not identified as one)."""
+        if self.has_extension and (self.axis_id or self.pump_id):
+            for wire in (self.fault_wires.values() if self.fault_wires else [self.wire]):
+                with contextlib.suppress(Exception):
+                    await self.ok("x-conformance/inject", {"fault": "none"}, wire=wire)
+                    await self.ok("x-conformance/inject", {"fault": "journal_writable"}, wire=wire)
         if self.axis_id or self.pump_id:
             with contextlib.suppress(Exception):
                 await self.call("stop", {"reason": "conformance reset", "deviceIds": [*self.axis_ids, *self.pump_ids]})

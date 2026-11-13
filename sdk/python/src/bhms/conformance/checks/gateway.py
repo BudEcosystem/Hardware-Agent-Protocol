@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import contextlib
 import os
 import signal
 import time
@@ -69,25 +68,13 @@ async def cross_upstream_lease(c: Context) -> None:
         await c.ok("leases/release", {"leaseId": blocker["leaseId"]})
 
 
-def _children(pid: int) -> list[int]:
-    out: list[int] = []
-    task_dir = f"/proc/{pid}/task"
-    with contextlib.suppress(OSError):
-        for tid in os.listdir(task_dir):
-            with contextlib.suppress(OSError), open(f"{task_dir}/{tid}/children") as handle:
-                out.extend(int(x) for x in handle.read().split())
-    return sorted(set(out))
-
-
 @check("gateway.stalled-upstream-isolated", ["BHMS-SEC-061"], profile="gateway", needs=("gateway", "restart"), timeout=60)
 async def stalled_upstream(c: Context) -> None:
     """With one upstream process stopped (SIGSTOP), requests to the other upstream keep their latency."""
-    pid = c.target.server_pid()
-    if pid is None or not os.path.isdir(f"/proc/{pid}"):
-        c.skip("the runner cannot find the gateway's process tree (needs Linux /proc)")
-    children = _children(pid)
-    if len(children) < 2:
-        c.skip(f"expected two upstream processes under the gateway, found {len(children)}")
+    victims = {ns: up.server_pid() for ns, up in c.target.upstreams.items()}
+    if len(victims) < 2 or not all(pid and os.path.isdir(f"/proc/{pid}") for pid in victims.values()):
+        c.skip("the runner cannot find the upstream processes (needs the built-in gateway fixture on Linux)")
+    children = [victims[ns] for ns in sorted(victims)]
     devices = [devs[0] for devs in list(_namespaces(c).values())[:2]]
     victim = children[0]
     os.kill(victim, signal.SIGSTOP)

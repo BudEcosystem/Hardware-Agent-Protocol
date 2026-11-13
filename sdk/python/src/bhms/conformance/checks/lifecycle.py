@@ -128,7 +128,8 @@ async def notification_no_response(c: Context) -> None:
 
 
 def _method_params(c: Context, device: str, description: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    prop = next(iter(description.get("properties") or {"x": 0}))
+    props = description.get("properties") or {}
+    prop = next((n for n, p in props.items() if p.get("readEffect", "none") == "none"), "no_such_property")  # never a transaction
     return {
         "devices/list": {}, "devices/describe": {"deviceId": device}, "properties/read": {"deviceId": device, "property": prop},
         "operations/get": {"operationId": "op-none"}, "operations/wait": {"operationId": "op-none", "timeoutMs": 1},
@@ -271,9 +272,7 @@ async def minted_ids(c: Context) -> None:
     c.refused(response, "INVALID_ARGUMENT", field="operationId", what="operations/get of an invented id")
     response = await c.call("devices/list", {"cursor": "fabricated-cursor"})
     c.refused(response, "INVALID_ARGUMENT", field="cursor", what="devices/list with an invented cursor")
-    desc = await c.describe(device) if summaries else {}
-    action = next(iter(desc.get("actions") or {"x": 0}))
-    response = await c.invoke(device, action, {}, operationId="op-invented")
+    response = await c.invoke(device, "no_such_action", {}, operationId="op-invented")
     c.refused(response, "INVALID_ARGUMENT", what="actions/invoke with an operationId member")
 
 

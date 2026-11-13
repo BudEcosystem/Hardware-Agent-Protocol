@@ -5,7 +5,8 @@ The target is ``stdio:<command>``, ``unix:<path>``, ``tcp://host:port``, ``ws://
 ``agent-bridge``). ``--profile`` is repeatable (default ``core``; the capability profiles the server advertises are added
 automatically); ``--json FILE`` writes the machine-readable report; ``--strict`` validates every message against the JSON Schema;
 ``--coverage`` prints which checks cover which requirement without running anything. Exit status: 0 no MUST failure, 1 a MUST
-requirement failed, 2 the target could not be reached.
+requirement failed, 2 the target could not be reached, 3 nothing failed but MUST rows a check could have proven were
+skipped (the profile claim is unsupported; --allow-unproven exits 0).
 """
 
 from __future__ import annotations
@@ -42,7 +43,13 @@ def register(app: typer.Typer) -> None:
             keep_state: Annotated[str | None, typer.Option(help="Directory for the state of fixtures the runner starts.")] = None,
             physical: Annotated[bool, typer.Option("--physical", help="State in the report that the devices are physical.")] = False,
             commit: Annotated[str, typer.Option(help="Implementation commit to record in the report.")] = "unknown",
-            require_all: Annotated[bool, typer.Option("--require-all", help="Also fail when a MUST requirement was skipped.")] = False,
+            allow_unproven: Annotated[bool, typer.Option("--allow-unproven", help="Exit 0 although MUST rows that a check could have "
+                                                         "proven were skipped (the report still says the claim is unsupported).")] = False,
+            conformance_device: Annotated[list[str] | None, typer.Option("--conformance-device", help="Device id asserted to be a "
+                                          "conformance device (behind a gateway the extension is not visible); repeatable.")] = None,
+            upstream: Annotated[list[str] | None, typer.Option("--upstream", help="NAMESPACE=TARGET: a direct connection to the "
+                                                                "conformance device behind a gateway namespace (fault injection); repeatable.")] = None,
+            physical_ok: Annotated[bool, typer.Option("--physical-ok", help="With --physical: allow checks that move or change the devices.")] = False,
             verbose: Annotated[bool, typer.Option("--verbose", "-v", help="Also list passed checks' requirements and skipped rows.")] = False,
             list_coverage: Annotated[bool, typer.Option("--coverage", help="Print the requirement coverage table and exit.")] = False,
     ) -> None:
@@ -62,15 +69,17 @@ def register(app: typer.Typer) -> None:
             raise typer.Exit(2)
         options = RunOptions(target=target, profiles=chosen, strict=strict, allow_effects=allow_effects, token=token, seed=seed,
                              only=tuple(only or ()), keep_state=keep_state, physical=physical, commit=commit,
-                             device_target=device, argv=("bhms", "conformance", *sys.argv[2:]), require_all=require_all)
+                             device_target=device, argv=("bhms", "conformance", *sys.argv[2:]), allow_unproven=allow_unproven, conformance_device=tuple(conformance_device or ()),
+                             upstreams=tuple(upstream or ()), physical_ok=physical_ok)
         try:
             report = asyncio.run(run_conformance(options))
         except KeyboardInterrupt:
             raise typer.Exit(130) from None
-        render(report, verbose=verbose, console=console)
+        to_stdout = json_out is not None and str(json_out) == "-"
+        render(report, verbose=verbose, console=Console(highlight=False, width=console.width, stderr=True) if to_stdout else console)
         if json_out is not None:
             text = json.dumps(report.to_json(), indent=2, ensure_ascii=False)
-            if str(json_out) == "-":
+            if to_stdout:
                 typer.echo(text)
             else:
                 json_out.write_text(text + "\n")

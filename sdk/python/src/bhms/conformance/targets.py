@@ -32,6 +32,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from bhms.testing.gateway_fixture import NAMESPACES, ROLES, TOKEN_PREFIX, Role, gateway_toml
 from bhms.transport import connect_tcp, connect_unix, connect_websocket, spawn_stdio
 from bhms.transport.base import Transport, TransportClosed
 
@@ -94,11 +95,18 @@ class Target:
     env: dict[str, str] = field(default_factory=dict)
     log_path: Path | None = None
     work_dir: Path | None = None
-    simulated: bool = True
+    simulated: bool | None = None
+    """True for fixtures the runner starts; None (unknown) for a target it did not start."""
     tokens: dict[str, str] = field(default_factory=dict)
     """role -> bearer token of the principals a built-in gateway fixture defines (see :data:`ROLES`)."""
     config_path: Path | None = None
     flavour: str = ""
+    is_gateway: bool = False
+    """A gateway fixture (explicit metadata; the runner never guesses from device ids)."""
+    conformance_devices: tuple[str, ...] = ()
+    """Device ids the fixture asserts to be conformance devices (a gateway does not forward the extension)."""
+    upstreams: dict[str, Target] = field(default_factory=dict)
+    """Gateway fixture: the device servers behind it, by namespace, started by the runner."""
     bridge_command: list[str] | None = None
     """kind ``mcp``: the MCP bridge process the runner talks to (stdio)."""
     device: Target | None = None
@@ -159,6 +167,10 @@ class Target:
     async def open_base(self) -> Transport:
         """The connection the runner uses for most checks (starts the server first when the runner owns it). For an agent
         bridge it is the connection to the device the bridge fronts."""
+        for upstream in self.upstreams.values():
+            if upstream._process is None:
+                await upstream._start_server()
+                await upstream._ready()
         if self.kind == "mcp":
             if self.device is None:
                 raise TargetError("an agent target needs the BHMS target it fronts: pass --device")
@@ -244,7 +256,8 @@ class Target:
         BHMS-SEC-012)."""
         if self.config_path is None or self._process is None:
             raise TargetError("only a gateway fixture started by the runner can reload its policy")
-        self.config_path.write_text(gateway_toml(self.flavour, self.url, self.state_dir, principals))
+        urls = {ns: up.url or "" for ns, up in self.upstreams.items()}
+        self.config_path.write_text(gateway_toml(self.flavour, self.url, self.state_dir, principals, urls))
         self._process.send_signal(signal.SIGHUP)
         await asyncio.sleep(0.5)
 
@@ -278,7 +291,14 @@ class Target:
             return False
         return True
 
+    async def _ready(self) -> None:
+        """Wait until the server this target started accepts connections (a probe connection, closed at once)."""
+        probe = await connect_url(self.url or "", self.token)
+        await probe.close()
+
     async def aclose(self) -> None:
+        for upstream in self.upstreams.values():
+            await upstream.aclose()
         if self.device is not None:
             await self.device.aclose()
         for transport in [self._base, *self._extras]:
@@ -312,7 +332,7 @@ def resolve(spec: str, *, token: str | None = None, keep_state: str | None = Non
     if spec.startswith("stdio:"):
         import shlex
 
-        return Target(spec, "stdio", token, command=shlex.split(spec[6:]), simulated=True)
+        return Target(spec, "stdio", token, command=shlex.split(spec[6:]))
     if spec.startswith(URL_PREFIXES):
         kind = "unix" if spec.startswith("unix:") else "tcp" if spec.startswith("tcp://") else "ws" if spec.startswith("ws") else "http"
         return Target(spec, kind, token, url=spec)
@@ -355,73 +375,41 @@ def _conformance_device(flavour: str, keep: str | None) -> Target:
                         state_dir=state)
     else:
         raise TargetError(f"unknown conformance-device flavour {flavour!r} (stdio, ws, unix)")
-    target.work_dir, target.log_path, target.notes_owned = work, log, keep is None
+    target.work_dir, target.log_path, target.notes_owned, target.simulated = work, log, keep is None, True
     return target
 
 
-@dataclass(frozen=True)
-class Role:
-    """A principal of the gateway fixture: its scopes and, optionally, bounds that narrow device bounds."""
-
-    scopes: tuple[str, ...]
-    bounds: dict[str, dict[str, dict[str, float]]] = field(default_factory=dict)
-
-
-ROLES: dict[str, Role] = {
-    "admin": Role(("admin",)),
-    "agent": Role(("read", "lease", "invoke:u0/*/*", "programs:run"),
-                  {"u0/axis-1/move_to": {"position": {"maximum": 100}}}),
-    "reader": Role(("read",)),
-    "stopper": Role(("stop",)),
-    "nobody": Role(()),
-}
-TOKEN_PREFIX = "conformance-token-"
-
-
-def gateway_toml(flavour: str, url: str | None, state: Path | None, principals: dict[str, Role]) -> str:
-    """The configuration of the built-in gateway: two conformance devices as ``u0`` and ``u1`` plus the given principals."""
-    from bhms.runtime.authority import token_digest
-
-    listen = {"stdio": '"stdio"', "ws": f'"{url}"', "http": f'"{url}"'}[flavour]
-    lines = ["[gateway]", 'id = "conformance-gateway"', f'state_dir = "{state}"', f"listen = [{listen}]", "upstream_timeout_ms = 10000",
-             'instructions = "Conformance gateway: two simulated conformance devices."', ""]
-    for name in ("u0", "u1"):
-        lines += ["[[upstream]]", f'name = "{name}"', 'stdio = "{python} -m bhms.testing.conformance_device --memory"', ""]
-    for role, spec in principals.items():
-        lines += [f"[principals.{role}]", f'tokens = ["{token_digest(TOKEN_PREFIX + role)}"]',
-                  "scopes = [" + ", ".join(f'"{s}"' for s in spec.scopes) + "]"]
-        if spec.bounds:
-            parts = []
-            for action, members in spec.bounds.items():
-                inner = ", ".join(f"{m} = {{ {', '.join(f'{k} = {v}' for k, v in b.items())} }}" for m, b in members.items())
-                parts.append(f'"{action}" = {{ {inner} }}')
-            lines.append("bounds = { " + ", ".join(parts) + " }")
-        lines.append("")
-    return "\n".join(lines)
-
-
 def _gateway_fleet(flavour: str, keep: str | None) -> Target:
+    """A gateway over two conformance devices that the runner also starts (on Unix sockets) and can reach directly."""
     if flavour not in ("ws", "stdio", "http"):
         raise TargetError(f"unknown gateway flavour {flavour!r} (ws, stdio, http)")
     work = _workspace("gateway", keep)
     state = work / "gateway-state"
     state.mkdir(exist_ok=True)
+    upstreams: dict[str, Target] = {}
+    urls: dict[str, str] = {}
+    for namespace in NAMESPACES:
+        url = f"unix:{work / (namespace + '.sock')}"
+        urls[namespace] = url
+        upstreams[namespace] = Target(f"upstream:{namespace}", "unix", url=url, work_dir=work, log_path=work / f"{namespace}.log",
+                                      command=_device_command(url, "--memory", "--gateway"))
     port = free_port()
     url = None if flavour == "stdio" else (f"ws://127.0.0.1:{port}" if flavour == "ws" else f"http://127.0.0.1:{port}/bhms")
     config = work / "gateway.toml"
-    config.write_text(gateway_toml(flavour, url, state, ROLES))
+    config.write_text(gateway_toml(flavour, url, state, ROLES, urls))
     command = [sys.executable, "-m", "bhms.gateway", str(config)]
     tokens = {role: TOKEN_PREFIX + role for role in ROLES}
+    asserted = tuple(f"{ns}/{name}" for ns in NAMESPACES for name in ("axis-1", "pump-1"))
+    common = dict(state_dir=state, work_dir=work, log_path=work / "gateway.log", notes_owned=keep is None, config_path=config,
+                  flavour=flavour, is_gateway=True, simulated=True, conformance_devices=asserted, upstreams=upstreams)
     if flavour == "stdio":
         spare = work / "gateway-spare.toml"
         (work / "spare-state").mkdir(exist_ok=True)
-        spare.write_text(gateway_toml("stdio", None, work / "spare-state", ROLES))
+        spare.write_text(gateway_toml("stdio", None, work / "spare-state", ROLES, urls))
         return Target(f"gateway:{flavour}", "stdio", command=command, extra_command=[sys.executable, "-m", "bhms.gateway", str(spare)],
-                      state_dir=state, work_dir=work, log_path=work / "gateway.log", notes_owned=keep is None, config_path=config,
-                      flavour=flavour)
+                      **common)
     return Target(f"gateway:{flavour}", "ws" if flavour == "ws" else "http", token=tokens["admin"], url=url, command=command,
-                  state_dir=state, work_dir=work, log_path=work / "gateway.log", notes_owned=keep is None, tokens=tokens,
-                  config_path=config, flavour=flavour)
+                  tokens=tokens, **common)
 
 
 def _agent_bridge(keep: str | None) -> Target:

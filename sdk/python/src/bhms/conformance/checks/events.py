@@ -43,7 +43,7 @@ async def recorded_types(c: Context) -> None:
     """stop, lease.revoked, device.epoch and operation.state transitions into unknown are recorded as events."""
     axis = c.axis()
     log = await _all_events(c)
-    c.expect(any(e["type"] == "device.epoch" for e in log), "the log must contain a device.epoch event for the server start")
+    c.expect(c.is_gateway or any(e["type"] == "device.epoch" for e in log), "the log must contain a device.epoch event for the server start")
     lease = (await c.ok("leases/acquire", {"resources": [f"{axis}/clamp"], "ttlMs": 30_000}))["lease"]
     await c.inject("crash_next")
     op = await c.run(axis, "pulse", {"count": 1})

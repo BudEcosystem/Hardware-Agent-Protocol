@@ -6,6 +6,7 @@ import asyncio
 import json
 import sys
 
+import pytest
 from typer.testing import CliRunner
 
 from bhms.cli.main import app
@@ -33,16 +34,21 @@ async def invoke(*args, env=None):
     return await asyncio.to_thread(lambda: CliRunner().invoke(app, list(args), env=env, catch_exceptions=False))
 
 
+@pytest.mark.timeout(900)
 async def test_python_reference_server_passes_every_core_check():
     reference_report = await reference()
     failed = [(c.name, c.message) for c in reference_report.checks if c.status is Status.FAILED]
     assert failed == []
-    assert reference_report.exit_code == 0 and not reference_report.must_failed
+    assert not reference_report.must_failed
+    # a single-principal stdio server cannot prove the authority rows: the claim is honestly unsupported (exit 3)
+    unproven = {r.id for r in reference_report.unproven_must}
+    assert reference_report.exit_code == 3 and {"BHMS-SEC-001", "BHMS-SEC-010", "BHMS-AUTH-002", "BHMS-SEC-040"} <= unproven
+    assert not reference_report.claims["core"]["claimable"] and reference_report.claims["programs"]["claimable"]
     passed = [c for c in reference_report.checks if c.status is Status.PASSED]
     assert len(passed) >= 70
     skipped = [c.name for c in reference_report.checks if c.status is Status.SKIPPED]
     # a stdio conformance device offers faults, restart and a state directory; only the multi-principal checks need the gateway fixture
-    assert all(name.startswith("authority.") for name in skipped), skipped
+    assert all(name.startswith("authority.") or name == "transport.no-token-in-logs" for name in skipped), skipped
     assert {r.status for r in reference_report.rows} <= {Status.PASSED, Status.SKIPPED, Status.NOT_APPLICABLE}
     assert not any(r.status is Status.FAILED for r in reference_report.rows)
 
@@ -62,7 +68,8 @@ async def test_report_states_what_bhms_cnf_001_to_005_require():
     for row in report["requirements"]:
         if row["status"] in ("skipped", "not-applicable"):
             assert row["reason"], row["id"]                                          # a skipped row says why
-    assert report["exitCode"] == 0 and report["summary"]["mustFailed"] == 0
+    assert report["formatVersion"] == 1 and report["exitCode"] == 3 and report["summary"]["mustFailed"] == 0
+    assert report["summary"]["mustUnproven"] > 0 and report["claims"]["core"]["unproven"]
 
 
 def test_every_core_must_is_covered_or_has_a_recorded_reason():
@@ -82,12 +89,20 @@ def test_every_core_must_is_covered_or_has_a_recorded_reason():
 
 async def test_cli_runs_one_check_and_writes_the_json_report(tmp_path):
     out = tmp_path / "report.json"
-    result = await invoke("conformance", "conformance-device", "--only", "lifecycle.nan-tokens", "--json", str(out), "--seed", "3",
+    result = await invoke("conformance", "conformance-device", "--only", "lifecycle.nan-tokens", "--json", str(out), "--seed", "3", "--allow-unproven",
                           env={"COLUMNS": "200"})
     assert result.exit_code == 0, result.output
     report = json.loads(out.read_text())
     assert [c["check"] for c in report["checks"] if c["status"] == "passed"][:1] == ["lifecycle.nan-tokens"]
     assert "lifecycle.nan-tokens" in result.output and "passed" in result.output
+
+
+async def test_json_to_stdout_is_parseable_and_the_table_goes_to_stderr():
+    result = await invoke("conformance", "conformance-device", "--only", "lifecycle.nan-tokens", "--json", "-", "--seed", "3",
+                          env={"COLUMNS": "200"})
+    report = json.loads(result.stdout)
+    assert report["formatVersion"] == 1 and report["conformance"]["seed"] == 3 and report["claims"]
+    assert "lifecycle.nan-tokens" in result.stderr and result.exit_code == 3  # one check run: the claim is unsupported
 
 
 async def test_cli_exit_status_two_for_an_unreachable_target_and_a_bad_profile(tmp_path):
@@ -105,16 +120,17 @@ async def test_cli_exit_status_one_when_a_must_fails():
     assert result.exit_code == 1 and "FAILED BHMS-TRN-002" in result.output
 
 
+@pytest.mark.timeout(900)
 async def test_every_broken_server_fails_exactly_the_expected_checks():
-    """Each deliberately broken server fails the checks recorded for it, and the requirement rows they name."""
+    """Each deliberately broken server, run against the FULL applicable check set, fails exactly the recorded checks."""
+    import bhms.conformance.checks  # noqa: F401
+
+    assert len(DEFECTS) >= 20
+    slots = asyncio.Semaphore(6)
 
     async def one(name: str):
-        defect = DEFECTS[name]
-        only = tuple(c for c in (*defect.checks, *defect.drive) if c != "observers.all-traffic")
-        target = f"stdio:{sys.executable} -m bhms.testing.broken_devices {name}"
-        return name, await run(RunOptions(target=target, only=only or ("none",), seed=5))
-
-    import bhms.conformance.checks  # noqa: F401
+        async with slots:
+            return name, await run(RunOptions(target=f"stdio:{sys.executable} -m bhms.testing.broken_devices {name}", seed=5))
 
     for name, report in await asyncio.gather(*(one(n) for n in DEFECTS)):
         defect = DEFECTS[name]
@@ -123,4 +139,3 @@ async def test_every_broken_server_fails_exactly_the_expected_checks():
         assert failed_checks == set(defect.checks), f"{name}: failed {sorted(failed_checks)}"
         assert set(defect.requirements) <= failed_rows, f"{name}: rows {sorted(failed_rows)}"
         assert report.exit_code == 1, name
-        assert len(DEFECTS) >= 20

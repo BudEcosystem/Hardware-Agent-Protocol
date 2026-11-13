@@ -175,7 +175,11 @@ async def status_follows_reachability(c: Context) -> None:
     refused = await c.invoke(axis, "pulse", {"count": 1})
     c.refused(refused, "DEVICE_UNAVAILABLE", what="invoke on an offline device")
     await c.inject("online")
-    back = [d for d in (await c.ok("devices/list", {"filter": {"status": "online"}}))["devices"] if d["deviceId"] == axis]
+    deadline = time.monotonic() + 5
+    back: list[dict[str, Any]] = []
+    while not back and time.monotonic() < deadline:
+        back = [d for d in (await c.ok("devices/list", {"filter": {"status": "online"}}))["devices"] if d["deviceId"] == axis]
+        await asyncio.sleep(0.1)
     c.expect(back, "the device must be online again after it reconnects")
 
 
@@ -241,3 +245,25 @@ async def compact_layouts(c: Context) -> None:
     if not found:
         c.not_applicable("no device of this target is served from a BHMS-Compact endpoint (no compact layouts in any description)")
     c.expect(not problems, "; ".join(f"{rid}: {msg}" for rid, msg in problems[:5]), tuple(sorted({rid for rid, _ in problems})))
+
+
+@check("devices.description-change", ["BHMS-DEV-023"], needs=("faults",))
+async def description_change(c: Context) -> None:
+    """A change to a description produces a new digest, a devicesListChanged notification, and STALE for the old digest."""
+    axis = c.axis()
+    before = (await c.describe(axis))["digest"]
+    stream, _ = await c.wire.listen({"devicesListChanged": True})
+    try:
+        await c.inject("change_description")
+        notified = await stream.until(lambda n: n["method"] == "notifications/devices/listChanged", 3.0)
+    finally:
+        await stream.cancel()
+    c._descriptions.clear()
+    c._summaries = None
+    after = (await c.describe(axis))["digest"]
+    c.expect(after != before, "a changed description must have a new digest")
+    c.expect(notified is not None, "devicesListChanged must fire when a description changes")
+    listed = next(d for d in await c.devices(refresh=True) if d["deviceId"] == axis)
+    c.expect(listed["digest"] == after, "the list summary must carry the new digest")
+    stale = await c.call("devices/describe", {"deviceId": axis, "digest": before})
+    c.refused(stale, "STALE", field="digest", what="describe with the superseded digest")

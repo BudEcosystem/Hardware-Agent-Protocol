@@ -1,6 +1,6 @@
 """Deliberately broken BHMS servers: the conformance device with one defect each, to prove a check fails for the right reason.
 
-``python -m bhms.testing.broken_devices <defect>`` serves the conformance device over stdio (in-memory journal) behind a
+``python -m bhms.testing.broken_devices <defect> [--undeclared] [--log FILE]`` serves the conformance device over stdio (in-memory journal) behind a
 :class:`Mutator`, a transport wrapper that rewrites the JSON messages between the client and a healthy
 :class:`~bhms.server.server.DeviceServer` (``--list`` names the defects; ``--expect`` prints the check each one must fail).
 A defect is a pair of message transforms (and, for one, a patch of the lease manager), so the implementation under test is
@@ -20,7 +20,7 @@ import json
 import math
 import sys
 from collections.abc import Callable
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from bhms.protocol import schema as bhms_schema
@@ -64,6 +64,8 @@ class Defect:
 def _clamp(msg: Any, state: State) -> Any:
     if isinstance(msg, dict) and msg.get("method") == "actions/invoke":
         params = msg["params"]
+        if not isinstance(params.get("arguments"), dict):
+            return msg
         for (action, member), (low, high) in BOUNDS.items():
             value = params.get("arguments", {}).get(member)
             if params.get("action") == action and isinstance(value, (int, float)) and not isinstance(value, bool):
@@ -159,8 +161,8 @@ def _remember_methods(msg: Any, state: State) -> Any:
 
 def _confirmed_without_evidence(msg: Message, state: State) -> list[Message]:
     result = msg.get("result")
-    if isinstance(result, dict):
-        for stop in result.get("stops") or []:
+    if isinstance(result, dict) and isinstance(result.get("stops"), list):
+        for stop in result["stops"]:
             if stop.get("outcome") == "unsupported":
                 stop["outcome"] = "confirmed"
     return [msg]
@@ -317,14 +319,102 @@ DEFECTS: dict[str, Defect] = {d.name: d for d in (
 )}
 
 
+# The checks each defect fails when the runner runs its FULL applicable check set (measured, asserted by
+# tests/test_conformance_runner.py): the defect's own checks plus the checks that legitimately trip over the same breakage.
+_EXACT: dict[str, tuple[str, ...]] = {
+    "replayed-always-false": (
+        "leases.key-lookup-before-lease",
+        "operations.concurrent-same-key",
+        "operations.idempotency",
+        "programs.registry",
+    ),
+    "unrequested-notifications": (
+        "events.no-notification-without-listen",
+        "lifecycle.subscription-stream",
+    ),
+    "lease-not-enforced": (
+        "leases.enforcement-at-admission",
+        "leases.loss-behaviour",
+        "operations.lease-expiry-before-dispatch",
+    ),
+    "stale-served-as-fresh": (
+        "observations.read-semantics",
+        "observations.required-fresh",
+        "observations.retained-after-effect",
+        "observations.stale-and-invalid-sensors",
+        "observations.subscription-delivery",
+    ),
+    "wrong-description-digest": (
+        "descriptions.digest-and-immutability",
+        "descriptions.stale-digest",
+        "devices.description-change",
+    ),
+    "no-may-have-acted": (
+        "arguments.refusals-from-description",
+        "arguments.unexecutable-refusals",
+        "arguments.vectors-refusals",
+        "descriptions.stale-digest",
+        "devices.description-change",
+        "devices.status-follows-reachability",
+        "leases.enforcement-at-admission",
+        "leases.grant-renew-release",
+        "leases.loss-behaviour",
+        "leases.parameter-bounds",
+        "lifecycle.cursors-and-ordering",
+        "lifecycle.meta-keys",
+        "lifecycle.minted-identifiers",
+        "lifecycle.params-and-meta-required",
+        "lifecycle.version-negotiation",
+        "limits.bounded-requests",
+        "observations.read-semantics",
+        "observations.required-fresh",
+        "observations.retained-after-effect",
+        "observations.stale-and-invalid-sensors",
+        "observers.all-traffic",
+        "operations.cancel-states",
+        "operations.idempotency",
+        "operations.lost-reply-becomes-unknown",
+        "operations.require-verified",
+        "operations.wait-semantics",
+        "programs.registry",
+        "programs.validation-refusals",
+        "stop.closed-parameters",
+    ),
+    "fabricated-cursor-accepted": (
+        "lifecycle.cursors-and-ordering",
+        "lifecycle.minted-identifiers",
+    ),
+    "stop-waits-for-leases": (
+        "stop.not-blocked-by-load",
+        "stop.semantics",
+    ),
+    "any-version-accepted": (
+        "lifecycle.params-and-meta-required",
+        "lifecycle.version-negotiation",
+    ),
+    "unknown-members-ignored": (
+        "lifecycle.closed-params",
+        "lifecycle.minted-identifiers",
+        "stop.closed-parameters",
+    ),
+    "terminal-reopens": (
+        "observers.all-traffic",
+        "operations.completion-evidence",
+        "operations.wait-semantics",
+    ),
+}
+DEFECTS = {name: replace(defect, checks=_EXACT.get(name, defect.checks)) for name, defect in DEFECTS.items()}
+
+
 # ---------------------------------------------------------------------- the wrapper
 
 
 class Mutator(Transport):
     """Server-side transport whose messages pass through a :class:`Defect`."""
 
-    def __init__(self, inner: Transport, defect: Defect) -> None:
+    def __init__(self, inner: Transport, defect: Defect, *, undeclared: bool = False, log: str | None = None) -> None:
         self.inner, self.defect, self.state = inner, defect, State()
+        self.undeclared, self.log = undeclared, log
         self.peer, self.max_message_bytes = inner.peer, inner.max_message_bytes
         self._queue: list[bytes] = []
 
@@ -338,6 +428,11 @@ class Mutator(Transport):
             if self.defect.incoming is not None:
                 msg = self.defect.incoming(msg, self.state)
                 data = json.dumps(msg).encode()
+            if self.log and isinstance(msg, dict) and msg.get("method") in ("actions/invoke", "stop", "programs/run"):
+                with open(self.log, "a") as handle:  # what reached the device-facing handler, after the defect's rewrite
+                    params = msg.get("params") or {}
+                    handle.write(json.dumps({"method": msg["method"], "action": params.get("action"), "deviceId": params.get("deviceId"),
+                                             "deviceIds": params.get("deviceIds"), "scope": params.get("scope")}) + "\n")
             if self.defect.delay_stop_s and isinstance(msg, dict) and msg.get("method") == "stop" and self.state.leases_active:
                 await asyncio.sleep(self.defect.delay_stop_s)
             return data
@@ -348,6 +443,13 @@ class Mutator(Transport):
         except ValueError:
             await self.inner.send(data)
             return
+        if self.undeclared and isinstance(msg, dict) and isinstance(msg.get("result"), dict):
+            extensions = (msg["result"].get("capabilities") or {}).get("extensions")
+            if isinstance(extensions, dict):
+                extensions.pop("org.bhms/conformance", None)
+                if not extensions:
+                    msg["result"]["capabilities"].pop("extensions")
+            data = json.dumps(msg).encode()
         if self.defect.outgoing is None or not isinstance(msg, dict):
             await self.inner.send(data)
             return
@@ -361,8 +463,9 @@ class Mutator(Transport):
         self.inner.abort()
 
 
-async def serve(defect: Defect) -> None:
-    """Serve the conformance device over stdio with ``defect`` applied."""
+async def serve(defect: Defect, *, undeclared: bool = False, log: str | None = None) -> None:
+    """Serve the conformance device over stdio with ``defect`` applied. ``undeclared`` hides the ``org.bhms/conformance``
+    extension (a lax server that is not declared a conformance device); ``log`` records every ``actions/invoke``, ``stop`` and ``programs/run`` received (JSON lines)."""
     from bhms.transport.stdio import stdio_server_transport
 
     server, _ = conformance_device.build(memory=True)
@@ -371,7 +474,7 @@ async def serve(defect: Defect) -> None:
         defect.patch(server)
     try:
         assert server.rpc is not None
-        await server.rpc.handle_connection(Mutator(await stdio_server_transport(), defect))
+        await server.rpc.handle_connection(Mutator(await stdio_server_transport(), defect, undeclared=undeclared, log=log))
     except TransportClosed:
         pass
     finally:
@@ -386,7 +489,8 @@ def main(argv: list[str] | None = None) -> None:
         return
     if args[0] not in DEFECTS:
         raise SystemExit(f"unknown defect {args[0]!r}; --list shows them")
-    asyncio.run(serve(DEFECTS[args[0]]))
+    log = args[args.index("--log") + 1] if "--log" in args else None
+    asyncio.run(serve(DEFECTS[args[0]], undeclared="--undeclared" in args, log=log))
 
 
 if __name__ == "__main__":

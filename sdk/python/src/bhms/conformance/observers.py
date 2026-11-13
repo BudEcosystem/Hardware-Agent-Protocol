@@ -310,7 +310,7 @@ def _stops(recorder: Recorder, obs: Observation) -> None:
     obs.ok("BHMS-AUTH-022")
     for seen in _inbound(recorder):
         msg = seen.message
-        if isinstance(msg, dict) and isinstance(msg.get("result"), dict) and "stops" in msg["result"]:
+        if isinstance(msg, dict) and (seen.request or {}).get("method") == "stop" and isinstance(msg.get("result"), dict):
             for stop in msg["result"]["stops"]:
                 if stop.get("outcome") == "confirmed" and stop.get("evidence") not in ("reported", "measured"):
                     obs.bad("BHMS-AUTH-022", f"{stop.get('deviceId')}: outcome confirmed with evidence {stop.get('evidence')!r}")

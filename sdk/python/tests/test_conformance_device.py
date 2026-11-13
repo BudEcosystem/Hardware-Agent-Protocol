@@ -43,7 +43,7 @@ async def test_descriptions_are_valid_and_compact(device):  # BHMS-DEV-011, DEV-
         schema.validate("DeviceDescription", desc.model_dump(by_alias=True, exclude_unset=True))
         assert desc.digest == summary.digest
     caps = client.server.capabilities
-    assert caps.extensions["org.bhms/conformance"]["version"] == "1"
+    assert caps.extensions["org.bhms/conformance"]["version"] == "2"
     filtered = await client.devices_list(filter={"capability": "bhms.axis.*"})
     assert [d.device_id for d in filtered.devices] == ["axis-1"]
     page = await client.devices_list(limit=1)

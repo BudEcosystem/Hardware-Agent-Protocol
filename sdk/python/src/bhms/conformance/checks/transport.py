@@ -180,7 +180,7 @@ async def http_close_cancels_wait(c: Context) -> None:
     c.expect((await c.settle(mine[0]["operationId"]))["state"] == "completed", "closing the stream must not cancel the operation")
 
 
-@check("transport.stdio-opens-no-listeners", ["BHMS-SEC-003"], needs=("stdio", "direct"), generic=True)
+@check("transport.stdio-opens-no-listeners", ["BHMS-SEC-003"], needs=("stdio",), generic=True)
 async def stdio_no_listeners(c: Context) -> None:
     """A stdio server treats its parent as the only principal and opens no listening socket (Linux /proc inspection)."""
     import os
@@ -262,3 +262,31 @@ async def http_malformed(c: Context) -> None:
             if not error or error.get("code") not in vec["expect"]["rpcCodes"]:
                 problems.append(f"{vec['name']}: HTTP {response.status} {str(parsed)[:100]}")
     c.expect(not problems, "; ".join(problems[:5]))
+
+
+@check("transport.unix-socket-permissions", ["BHMS-TRN-022"], needs=("socket",), generic=True)
+async def unix_socket_mode(c: Context) -> None:
+    """A Unix-domain socket the runner started is not accessible to group or others (the default policy grants the owner)."""
+    import os
+    import stat
+
+    if c.target.kind != "unix" or not c.target.url or not c.target.controllable:
+        c.skip("the runner can inspect the socket file only of a Unix target it started")
+    path = c.target.url[5:].removeprefix("//")
+    mode = stat.S_IMODE(os.stat(path).st_mode)
+    c.expect(mode & 0o077 == 0, f"the socket {path} has mode {mode:04o}: wider than a policy that grants only the owner")
+
+
+@check("transport.no-token-in-logs", ["BHMS-SEC-002"], generic=True)
+async def no_token_in_logs(c: Context) -> None:
+    """No bearer token of the run appears in the log of any server the runner started (partial: constant-time comparison and
+    hashed storage need code review)."""
+    targets = [c.target, *c.target.upstreams.values(), *(([c.target.device]) if c.target.device else [])]
+    logs = [t.log_path for t in targets if t.log_path is not None and t.log_path.is_file()]
+    tokens = {tok for t in targets for tok in (t.token, *t.tokens.values()) if tok}
+    if not logs or not tokens:
+        c.skip("no server log captured by the runner, or no bearer token in use")
+    for log in logs:
+        text = log.read_text(errors="replace")
+        leaked = [tok[:8] + "..." for tok in tokens if tok in text]
+        c.expect(not leaked, f"{log.name} contains bearer tokens: {leaked}")

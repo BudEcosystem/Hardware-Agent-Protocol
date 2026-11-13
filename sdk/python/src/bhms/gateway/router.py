@@ -102,6 +102,9 @@ class Router:
         self._retry_at: dict[str, float] = {}
         self._early: OrderedDict[tuple[str, str], dict[str, Any]] = OrderedDict()  # notifications seen before indexing
         self.unknown: dict[str, OperationRecord] = {}
+        # Retained observations of transaction properties (BHMS-OBS-011): last relayed sample per (device, property), valid
+        # for the upstream epoch it came from; bounded.
+        self._retained: OrderedDict[tuple[str, str], tuple[dict[str, Any], str | None, float]] = OrderedDict()
         self._reconciling: dict[str, asyncio.Future[None]] = {}
         self._tasks: set[asyncio.Task[Any]] = set()
         self._reconcile_kick = asyncio.Event()
@@ -201,24 +204,48 @@ class Router:
         principal = gw.auth.authenticate(ctx)
         entry = self._visible(principal, params.device_id)
         spec = entry.properties.get(params.property)
-        if spec is not None and spec.read_effect == "transaction":
+        up = gw.upstreams[entry.namespace]
+        retained_key = (entry.device_id, params.property)
+        transaction = spec is not None and spec.read_effect == "transaction"
+        if transaction:
+            served = self._retained_observation(retained_key, up, params.max_age_ms, params.fresh)
+            if served is not None:  # BHMS-OBS-011: the retained observation needs only read authority
+                return {"observation": served}
             if not principal.can_invoke(entry.device_id, params.property, entry.capabilities):
                 raise refusal("UNAUTHORIZED", "scope:invoke",
                               f"a read of {entry.device_id}.{params.property} may start a device transaction",
-                              field="property", hint=f"ask for scope invoke:{entry.device_id}/{params.property}; the "
-                              "gateway cannot know whether a retained observation exists, so it requires the scope for "
-                              "every read of a transaction property (BHMS-AUTH-012)")
+                              field="property", hint=f"ask for scope invoke:{entry.device_id}/{params.property}; no "
+                              "retained observation satisfies this read, so a new acquisition (a device transaction) is "
+                              "needed (BHMS-AUTH-012)")
             resources = spec.resources
             lease = gw.leases.manager.held_by(principal.id, resources)
             if lease is None:
                 raise BhmsError("LEASE_REQUIRED", f"reading {entry.device_id}.{params.property} needs a lease on "
                                 f"{', '.join(resources)}", field="property",
                                 hint=f"acquire a lease on {', '.join(resources)} with leases/acquire first")
-        up = gw.upstreams[entry.namespace]
         forward = {k: v for k, v in ctx.params.items() if k != "_meta"}
         forward["deviceId"] = entry.upstream_id
         reply = await up.call("properties/read", forward, trace=trace_of(ctx))
+        if transaction:
+            self._retained[retained_key] = (reply["observation"], up.epoch, time.monotonic())
+            self._retained.move_to_end(retained_key)
+            while len(self._retained) > 4096:
+                self._retained.popitem(last=False)
         return {"observation": reply["observation"]}
+
+    def _retained_observation(self, key: tuple[str, str], up: Upstream, max_age_ms: int | None,
+                              fresh: bool | None) -> dict[str, Any] | None:
+        """The retained sample of a transaction property with ``ageMs`` advanced by the time it was held, or None when
+        nothing retained satisfies the request (``fresh`` always needs a new acquisition)."""
+        held = self._retained.get(key)
+        if held is None or fresh or held[1] != up.epoch:
+            return None
+        observation, _, at = held
+        aged = dict(observation)
+        aged["ageMs"] = int(observation.get("ageMs", 0) + (time.monotonic() - at) * 1000)
+        if max_age_ms is not None and aged["ageMs"] > max_age_ms:
+            return None
+        return aged
 
     # ------------------------------------------------------------------ actions/invoke
 
@@ -513,7 +540,7 @@ class Router:
         """Operations in flight on ``up`` become ``unknown`` (BHMS-OPS-004)."""
         journal = self.gateway.journal
         for rec in journal.live():
-            if rec.private.get("upstream") == up.name and rec.state in ("dispatching", "running"):
+            if rec.private.get("upstream") == up.name and rec.state in ("accepted", "dispatching", "running"):
                 try:
                     journal.link_lost(rec, f"upstream {up.name} is {up.status} ({cause}); the device may have acted")
                 except StoreError as exc:
@@ -741,7 +768,7 @@ class Router:
         wanted = {e.device_id for e in entries}
         live_by_device: dict[str, list[OperationRecord]] = {}
         for rec in gw.journal.live():  # one pass over the live operations, one query for the unknown ones
-            if rec.op.get("deviceId") in wanted and rec.state in ("dispatching", "running", "unknown"):
+            if rec.op.get("deviceId") in wanted and rec.state in ("accepted", "dispatching", "running", "unknown"):
                 live_by_device.setdefault(rec.op["deviceId"], []).append(rec)
         for row in gw.journal.store.operations_in_states(["unknown"]):  # unknown operations are not "live": one query
             device = row.record.get("deviceId")
