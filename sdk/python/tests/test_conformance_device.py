@@ -98,7 +98,7 @@ async def test_hang_is_released_by_stop_and_crash_is_unknown_then_reconciled(dev
     op = (await client.actions_invoke("axis-1", "pulse", {"count": 1}, wait_ms=50)).operation
     assert op.state == "dispatching"
     stop = (await client.stop("release", device_ids=["axis-1"], wait_ms=1000)).stops[0]
-    assert stop.outcome == "confirmed" and op.operation_id in stop.canceled_operations
+    assert stop.outcome == "confirmed" and op.operation_id in stop.cancel_requested_operations
     done = (await client.operations_wait(op.operation_id, 2000)).operation
     assert done.state == "canceled"
     await client.request("x-conformance/inject", {"fault": "crash_next"})

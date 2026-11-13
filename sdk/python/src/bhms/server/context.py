@@ -34,6 +34,7 @@ Thread-safety: a context belongs to one operation on the server's event loop.
 from __future__ import annotations
 
 import asyncio
+import threading
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -106,12 +107,18 @@ class Reconciled:
     message: str | None = None
     may_have_acted: bool = True
     code: str = "DEVICE_FAULT"
+    observations: dict[str, dict[str, Any]] | None = None
 
     def __post_init__(self) -> None:
         if self.state not in ("completed", "failed", "canceled", "running"):
             raise ValueError("Reconciled.state must be completed, failed, canceled or running")
         if not self.evidence:
             raise ValueError("Reconciled needs evidence naming what proves the outcome (BHMS-OPS-005)")
+        if self.effect == "verified" and not (self.observations and all(
+                o.get("evidence") == "measured" and o.get("quality") == "valid" for o in self.observations.values())):
+            raise ValueError("Reconciled(effect='verified') needs observations={property: Observation} that are "
+                             "measured and valid (BHMS-OPS-006); use effect='unverified' for a report without a "
+                             "measurement")
 
 
 class ActionContext:
@@ -204,8 +211,16 @@ class ActionContext:
         return await self.device.publish(property, value, **kw)
 
     def emit(self, event_type: str, data: dict[str, Any] | None = None, **kw: Any) -> dict[str, Any]:
-        """Append a declared device event tied to this operation."""
-        return self.device.emit(event_type, data, operation_id=self.operation_id, **kw)
+        """Append a declared device event tied to this operation (callable from a ``blocking=True`` handler's thread,
+        where it is marshalled to the event loop and blocks until recorded)."""
+        loop = self._execution.loop
+        if threading.get_ident() == self._execution.loop_thread:
+            return self.device.emit(event_type, data, operation_id=self.operation_id, **kw)
+
+        async def on_loop() -> dict[str, Any]:  # the journal belongs to the event loop's thread
+            return self.device.emit(event_type, data, operation_id=self.operation_id, **kw)
+
+        return asyncio.run_coroutine_threadsafe(on_loop(), loop).result()
 
     async def wait_cancelled(self, timeout: float | None = None) -> bool:
         """Sleep up to ``timeout`` seconds, waking early on cancellation; returns whether it was cancelled."""

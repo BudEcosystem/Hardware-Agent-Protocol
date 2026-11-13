@@ -168,6 +168,7 @@ class DeviceStop(_Wire):
     outcome: Literal["confirmed", "initiated", "unsupported", "failed"]
     evidence: CompletionEvidence
     canceled_operations: list[ServerId]
+    cancel_requested_operations: Optional[list[ServerId]] = None
     revoked_leases: list[ServerId]
     detail: Optional[_text(1000)] = None
     error: Optional[OperationError] = None

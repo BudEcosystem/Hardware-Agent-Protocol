@@ -41,6 +41,7 @@ import contextlib
 import fcntl
 import os
 import secrets
+import logging
 import sqlite3
 import threading
 from collections.abc import Iterator, Sequence
@@ -51,6 +52,7 @@ from typing import Any
 import orjson
 
 DURABILITY_MODES = ("dispatch", "full", "process")
+log = logging.getLogger("bhms.store")
 _SCHEMA_VERSION = "1"
 
 _DDL = """
@@ -128,6 +130,7 @@ class Store:
         self._db.executescript(_DDL)
         self._in_txn = False
         self._promote = False
+        self._owner = threading.get_ident()
         self._checkpointer: _Checkpointer | None = None
         if self.path is not None:
             self._db.execute("PRAGMA wal_autocheckpoint=0")
@@ -187,6 +190,11 @@ class Store:
 
         Nested use joins the outer transaction (a barrier inside makes the outer commit a barrier).
         """
+        if threading.get_ident() != self._owner:
+            # The in-transaction flag is not locked: a second thread could join another thread's transaction and
+            # return from a barrier before it is durable (BHMS-OPS-003).
+            raise StoreError("the journal may only be written from the thread that opened it (the event loop); "
+                             "marshal calls from worker threads with loop.call_soon_threadsafe")
         if self._in_txn:
             if barrier and self.durability != "process" and self._sync != "FULL":
                 # SQLite cannot change the safety level inside a transaction: promote after the outer commit.
@@ -421,6 +429,11 @@ class _Checkpointer:
         self._thread.start()
 
     def committed(self) -> None:
+        if not self._stopping and not self._thread.is_alive():
+            # The thread died (it never does on an ordinary error): restart it, or the WAL would grow unbounded.
+            log.error("the WAL checkpoint thread died; restarting it")
+            self._thread = threading.Thread(target=self._loop, name="bhms-store-checkpoint", daemon=True)
+            self._thread.start()
         self._pending += 1
         if self._pending >= self._every:
             self._pending = 0
@@ -428,13 +441,15 @@ class _Checkpointer:
 
     def _loop(self) -> None:
         db = sqlite3.connect(str(self._path), isolation_level=None)
-        db.execute("PRAGMA busy_timeout=5000")
         try:
+            db.execute("PRAGMA busy_timeout=5000")
             while not self._stopping:
                 self._wake.wait(self._interval)
                 self._wake.clear()
-                with contextlib.suppress(sqlite3.Error):
+                try:
                     db.execute("PRAGMA wal_checkpoint(PASSIVE)").fetchall()
+                except sqlite3.Error as exc:
+                    log.warning("WAL checkpoint failed: %s", exc)
             with contextlib.suppress(sqlite3.Error):
                 db.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchall()
         finally:

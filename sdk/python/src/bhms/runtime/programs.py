@@ -608,11 +608,15 @@ class ProgramRunner:
             except BhmsError as exc:
                 raise _StepFailed(exc.to_operation_error()) from None
 
+    def _begin(self, run: _Run) -> None:
+        """Move the program to ``running`` (a barrier commit via ``dispatching``) before its first step can act."""
+        if run.rec.state == "accepted":
+            self.server.journal.transition(run.rec, "dispatching")
+            self.server.journal.transition(run.rec, "running", detail="first step started")
+
     def _start_step(self, run: _Run, step: Step, path: str, child: OperationRecord | None = None) -> None:
         journal = self.server.journal
-        if run.rec.state == "accepted":
-            journal.transition(run.rec, "dispatching")
-            journal.transition(run.rec, "running", detail="first step started")
+        self._begin(run)
         journal.annotate(run.rec, "step", f"{step.raw['kind']} {path}", step_index=step.index,
                          child_operation_id=child.id if child is not None else None)
 
@@ -680,6 +684,9 @@ class ProgramRunner:
         request_digest = intent_digest("actions/invoke", {"deviceId": params.device_id, "action": params.action,
                                                           "arguments": arguments})
         deadline_ns = now_ns() + int(max(0.0, run.deadline - time.monotonic()) * 1e9)
+        # The program is durably dispatching before its first child exists, so a crash never leaves a dispatched child
+        # under a program that still reads accepted (BHMS-PRG-017, BHMS-OPS-080).
+        self._begin(run)
         try:
             child = await srv.executor.admit(run.principal, params, key, "derived", request_digest,
                                              parent_id=run.rec.id, deadline_ns=deadline_ns)

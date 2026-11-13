@@ -43,8 +43,11 @@ class SubprocessTransport(StreamTransport):
             if action is not None:
                 with contextlib.suppress(ProcessLookupError):
                     action()
+            # After SIGKILL the child only lingers while stuck in the kernel (for example in an fsync on a stalled disk):
+            # wait longer so it is reaped rather than leaked as a running subprocess.
+            limit = self._grace_s if action != self.process.kill else max(self._grace_s, 10.0)
             with contextlib.suppress(asyncio.TimeoutError):
-                await asyncio.wait_for(self.process.wait(), self._grace_s)
+                await asyncio.wait_for(self.process.wait(), limit)
         self.abort()
 
     def abort(self) -> None:

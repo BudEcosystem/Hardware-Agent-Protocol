@@ -409,6 +409,10 @@ def build_action(fn: Callable[..., Any], *, effect: str, idempotency: str, max_d
     _choice(cancel, ("supported", "unsupported"), "cancel", owner)
     if on_lease_loss is not None:
         _choice(on_lease_loss, ON_LEASE_LOSS, "on_lease_loss", owner)
+        if on_lease_loss == "cancel" and cancel == "unsupported":
+            raise DescriptionError(f"{owner}: on_lease_loss='cancel' needs cancel='supported'; an action that cannot be "
+                                   "canceled would keep running after losing its lease. Declare cancel='supported' "
+                                   "and honour ctx.cancelled, or use on_lease_loss='finish' or 'hold'")
     if max_duration_ms is None:
         if effect != "none":
             raise DescriptionError(f"{owner}: an action with a physical effect must declare max_duration_ms "

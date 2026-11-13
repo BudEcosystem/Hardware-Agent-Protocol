@@ -40,7 +40,7 @@ async def test_stop_runs_the_procedure_and_requests_cancellation_of_running_work
     stop = res.stops[0]
     types.DeviceStop.model_validate(types.to_wire(stop))
     assert (stop.outcome, stop.evidence) == ("confirmed", "reported") and axis.stops == 1
-    assert running.operation_id in stop.canceled_operations
+    assert running.operation_id in stop.cancel_requested_operations
     done = (await client.operations_wait(running.operation_id, 2000)).operation
     assert done.state in ("completed", "canceled")  # the stop procedure opened the gate: completion may win
     kinds = [h.kind for h in done.history]
@@ -75,7 +75,7 @@ async def test_confirmed_stop_lifts_the_unknown_inhibition(env):  # BHMS-OPS-042
         err = exc
     assert err is not None and err.code == "STALE"
     stop = (await client.stop("reset", device_ids=["axis-1"], wait_ms=1000)).stops[0]
-    assert op.operation_id in stop.canceled_operations
+    assert op.operation_id in stop.cancel_requested_operations
     ok = (await client.actions_invoke("axis-1", "move_to", {"target": 1}, wait_ms=2000)).operation
     assert ok.state == "completed"
     unknown = (await client.operations_get(op.operation_id)).operation
@@ -145,7 +145,7 @@ async def test_stop_is_not_blocked_by_leases_or_a_saturated_queue(env):  # BHMS-
     start = time.monotonic()
     stop = (await client.stop("now", device_ids=["axis-1"], wait_ms=1000)).stops[0]
     assert stop.outcome == "confirmed" and time.monotonic() - start < 0.5
-    assert len(stop.canceled_operations) == 9 and axis.commands["move_to"] == 0
+    assert len(stop.canceled_operations) + len(stop.cancel_requested_operations or []) == 9 and axis.commands["move_to"] == 0
 
 
 async def test_stop_scope_is_independent(tmp_path):  # BHMS-SEC-040, AUTH-020

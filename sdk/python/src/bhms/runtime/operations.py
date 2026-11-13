@@ -46,7 +46,7 @@ from collections import OrderedDict
 from collections.abc import AsyncIterator, Callable, Iterable
 from typing import Any
 
-from bhms.protocol.canonical import digest
+from bhms.protocol.canonical import canonical, digest
 from bhms.protocol.errors import BhmsError
 from bhms.protocol.types import SETTLED_STATES, TERMINAL_STATES
 from bhms.runtime.store import Store, StoredOperation
@@ -62,6 +62,15 @@ _DISPATCHED = frozenset({"dispatching", "running", "unknown", "completed", "fail
 _EFFECT_RANK = {"none": 0, "reversible": 1, "irreversible": 2, "hazardous": 3}
 _INTENT_INVOKE = ("deviceId", "action", "arguments", "deadlineMs", "require", "descriptionDigest")
 _UNSET = object()
+
+
+def _measured(evidence: dict[str, Any] | None) -> bool:
+    """True for operation evidence that proves an effect: kind ``measured`` and a measured, valid observation."""
+    if not evidence or evidence.get("kind") != "measured":
+        return False
+    observations = evidence.get("observations")
+    return bool(observations) and all(o.get("evidence") == "measured" and o.get("quality") == "valid"
+                                      for o in observations.values())
 
 
 class InvalidTransition(RuntimeError):
@@ -395,7 +404,17 @@ class Journal:
         elif state == "dispatching" and effect_class != "none" and new_effect is None:
             new_effect = "unknown"
         if state == "completed":
+            try:
+                canonical(result)  # the journal and the wire carry JSON: refuse what cannot be recorded (BHMS-OPS-008)
+            except BhmsError as exc:
+                raise InvalidTransition(f"{rec.id}: the result is not JSON-serialisable: {exc}") from None
+            if rec.op.get("require", {}).get("effect") == "verified" and new_effect != "verified":
+                raise InvalidTransition(f"{rec.id}: the intent requires a verified effect; completed needs "
+                                        "effect verified with measured evidence (BHMS-OPS-006)")
             op["result"] = result
+        if new_effect == "verified" and not _measured(evidence if evidence is not None else rec.op.get("evidence")):
+            raise InvalidTransition(f"{rec.id}: effect verified needs evidence of kind measured with at least one "
+                                    "observation (BHMS-OPS-006)")
         if state in ("failed", "rejected", "unknown"):
             op["error"] = error
         else:
@@ -581,6 +600,14 @@ class Journal:
             if rec.op["kind"] == "program":
                 self._settle_program_after_restart(rec)
                 changed.append(rec)
+        # A crash between the last child's reconciliation commit and the program's own settle leaves a program
+        # ``unknown`` although every child is resolved (BHMS-PRG-017).
+        for row in self.store.operations_in_states(["unknown"]):
+            if row.record.get("kind") == "program":
+                parent = self.get(row.id)
+                if parent is not None and parent.state == "unknown":
+                    self._settle_parent_after_reconcile(parent.id)
+                    changed.append(parent)
         return changed
 
     def _step_summary(self, rec: OperationRecord) -> tuple[int | None, list[OperationRecord]]:
@@ -596,11 +623,15 @@ class Journal:
         return last_completed, children
 
     def _settle_program_after_restart(self, rec: OperationRecord) -> None:
+        children = self.children(rec.id)
         if rec.state == "accepted":
-            self.transition(rec, "rejected", error=BhmsError(
-                "INTERNAL", "the server restarted before the program's first step", may_have_acted=False,
-                hint="no step ran; run the program again").to_operation_error())
-            return
+            if not children:
+                self.transition(rec, "rejected", error=BhmsError(
+                    "INTERNAL", "the server restarted before the program's first step", may_have_acted=False,
+                    hint="no step ran; run the program again").to_operation_error())
+                return
+            # A child exists although the program never recorded dispatching: consult the children, not the parent.
+            self.transition(rec, "dispatching")
         last, children = self._step_summary(rec)
         if any(c.state == "unknown" for c in children):
             self.transition(rec, "unknown", error=unknown_error(

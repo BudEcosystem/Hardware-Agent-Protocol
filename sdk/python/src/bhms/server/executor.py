@@ -32,11 +32,13 @@ import asyncio
 import contextlib
 import inspect
 import logging
+import threading
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from bhms.protocol.canonical import canonical
 from bhms.protocol.errors import BhmsError
-from bhms.runtime.operations import OperationRecord, now_ns, unknown_error
+from bhms.runtime.operations import InvalidTransition, OperationRecord, now_ns, unknown_error
 from bhms.runtime.store import StoreError
 from bhms.server.context import ActionContext, Canceled, DeviceFault, Reconciled
 from bhms.server.decorators import ActionSpec
@@ -70,6 +72,8 @@ class Execution:
     deadline_hit: bool = False
     evidence: dict[str, dict[str, Any]] = field(default_factory=dict)
     confirmed: list[bool] = field(default_factory=list)
+    loop: asyncio.AbstractEventLoop = field(default_factory=asyncio.get_running_loop)
+    loop_thread: int = field(default_factory=threading.get_ident)
 
     def mark_running(self, detail: str | None) -> None:
         if self.rec.state == "dispatching":
@@ -98,6 +102,7 @@ class Executor:
         self.cancel_grace_ms = cancel_grace_ms
         self._waiting: list[OperationRecord] = []
         self._queued: dict[str, _Queued] = {}
+        self._pending: dict[str, OperationRecord] = {}  # popped from _waiting, pre-dispatch checks in flight
         self._busy: dict[str, str] = {}
         self._running: dict[str, Execution] = {}
         self._inhibited: dict[str, set[str]] = {}
@@ -307,13 +312,28 @@ class Executor:
                 continue
             for resource in resources:
                 self._busy[resource] = rec.id  # reserved while the pre-dispatch checks run
+            self._pending[rec.id] = rec  # still visible to stop and cancel until the dispatch commit
             self._spawn(self._dispatch_queued(rec, queued))
 
     async def _dispatch_queued(self, rec: OperationRecord, queued: _Queued) -> None:
+        """Pre-dispatch checks, then the dispatch commit, for an operation taken off the queue.
+
+        ``require_fresh`` awaits a device read, during which ``stop``, ``operations/cancel`` or a lease revocation may
+        end the operation. So the synchronous checks run again after that await, with no await between them and the
+        barrier commit of ``dispatching`` (BHMS-OPS-041, BHMS-AUTH-021).
+        """
         try:
+            error = self._recheck(rec, queued)
+            if error is None and queued.spec.requires_fresh and rec.state == "accepted":
+                try:
+                    await self.server.observations.require_fresh(queued.device, queued.spec.requires_fresh,
+                                                                 queued.principal, rec.op.get("leaseId"))
+                except BhmsError as exc:
+                    error = exc
+                else:
+                    error = self._recheck(rec, queued)
             if rec.state != "accepted":
-                return
-            error = await self._recheck(rec, queued)
+                return  # stopped or canceled while the checks ran: nothing is sent
             if error is not None:
                 self._reject(rec, error)
                 return
@@ -327,12 +347,13 @@ class Executor:
             self._start(rec, queued.device, queued.spec, queued.admitted, reserved=True)
             return
         finally:
+            self._pending.pop(rec.id, None)
             if rec.id not in self._running:
                 self._release(rec)
                 self.pump()
 
-    async def _recheck(self, rec: OperationRecord, queued: _Queued) -> BhmsError | None:
-        """BHMS-OPS-041: the time-dependent checks immediately before dispatch."""
+    def _recheck(self, rec: OperationRecord, queued: _Queued) -> BhmsError | None:
+        """BHMS-OPS-041: the time-dependent checks immediately before dispatch (synchronous)."""
         deadline_ns = rec.private.get("deadlineNs")
         if deadline_ns is not None and now_ns() >= deadline_ns:
             return BhmsError("DEADLINE_EXCEEDED", "the deadline passed before dispatch; nothing was sent",
@@ -344,9 +365,6 @@ class Executor:
                 raise BhmsError("DEVICE_UNAVAILABLE", f"{queued.device.device_id} went offline before dispatch",
                                 hint="nothing was sent; retry when the device is back")
             self._check_inhibition(queued.spec.resources)
-            if queued.spec.requires_fresh:
-                await self.server.observations.require_fresh(queued.device, queued.spec.requires_fresh,
-                                                             queued.principal, rec.op.get("leaseId"))
             self.server.require_journal()
         except BhmsError as exc:
             return exc
@@ -419,10 +437,34 @@ class Executor:
         except StoreError as exc:
             self.server.journal_failed(exc)
             log.error("could not record the outcome of %s; it is recovered as unknown at restart", execution.rec.id)
+        except Exception as exc:  # noqa: BLE001 - whatever stops the outcome being recorded must not free the device
+            log.exception("could not record the outcome of %s", execution.rec.id)
+            self._settle_unknown(execution, exc)
         finally:
             self.pump()
         if aborted:
             raise asyncio.CancelledError
+
+    def _settle_unknown(self, execution: Execution, cause: BaseException) -> None:
+        """The outcome could not be journaled: the operation becomes ``unknown`` (resources inhibited, BHMS-OPS-042)."""
+        rec = execution.rec
+        if rec.state not in ("dispatching", "running"):
+            return
+        try:
+            self.server.journal.transition(rec, "unknown", error=unknown_error(
+                f"{execution.spec.name} finished but its outcome could not be recorded "
+                f"({type(cause).__name__}: {cause}); whether the device acted as intended is unknown"))
+        except Exception:  # noqa: BLE001 - recovered as unknown at restart
+            log.exception("could not mark %s unknown; it is recovered as unknown at restart", rec.id)
+
+    @staticmethod
+    def _claimed_effect(execution: Execution, effect: str) -> tuple[str, dict[str, Any] | None]:
+        """A handler's claim of a ``verified`` effect stands only with measured, confirming evidence (BHMS-OPS-006)."""
+        if effect != "verified":
+            return effect, None
+        if execution.confirmed and all(execution.confirmed) and execution.evidence:
+            return "verified", {"kind": "measured", "observations": execution.evidence}
+        return "unverified", None
 
     def _settle(self, execution: Execution, outcome: tuple[str, Any]) -> None:
         rec, spec = execution.rec, execution.spec
@@ -437,7 +479,8 @@ class Executor:
             elif kind == "returned":
                 self._complete(execution, value)
             elif kind == "canceled":
-                journal.transition(rec, "canceled", effect=value.effect, detail=value.detail)
+                effect, evidence = self._claimed_effect(execution, value.effect)
+                journal.transition(rec, "canceled", effect=effect, evidence=evidence, detail=value.detail)
             elif kind == "fault":
                 self._fault(execution, value)
             else:
@@ -454,10 +497,8 @@ class Executor:
                                                 f"{self._late_detail(kind, value)}")
 
     def _partial_effect(self, kind: str, value: Any) -> str:
-        if kind == "canceled":
+        if kind in ("canceled", "fault"):
             return value.effect if value.effect != "verified" else "unverified"
-        if kind == "fault":
-            return value.effect
         return "unverified"
 
     @staticmethod
@@ -476,15 +517,27 @@ class Executor:
                          may_have_acted=True, hint=f"read {execution.device.device_id}'s state to see what was done "
                                                    "before deciding to retry").to_operation_error()
 
+    @staticmethod
+    def _result_problem(device: Device, spec: ActionSpec, result: Any) -> str | None:
+        """Why ``result`` cannot be recorded (not JSON, or not the declared output), else None."""
+        try:
+            canonical(result)
+        except BhmsError as exc:
+            return f"it is not JSON-serialisable ({exc.message})"
+        if spec.output:
+            for error in device.output_validator(spec.name).iter_errors(result):
+                return str(error.message)
+        return None
+
     def _complete(self, execution: Execution, result: Any) -> None:
         rec, spec, journal = execution.rec, execution.spec, self.server.journal
         if result is None and spec.output is None:
             result = {}
-        errors = list(execution.device.output_validator(spec.name).iter_errors(result)) if spec.output else []
-        if errors:
+        problem = self._result_problem(execution.device, spec, result)
+        if problem:
             journal.transition(rec, "failed", error=BhmsError(
                 "INTERNAL", f"{spec.name} returned a result that does not match its output schema: "
-                f"{errors[0].message}"[:2000], may_have_acted=True,
+                f"{problem}"[:2000], may_have_acted=True,
                 hint="the device acted but the server cannot report a valid result; read the device state")
                 .to_operation_error(), detail=f"invalid result {result!r}"[:1000])
             return
@@ -582,10 +635,15 @@ class Executor:
         return True
 
     def queued_for(self, device_id: str) -> list[OperationRecord]:
-        return [rec for rec in self._waiting if rec.op.get("deviceId") == device_id]
+        """``accepted`` operations of a device that have not dispatched: queued, or in their pre-dispatch checks."""
+        both = [*self._waiting, *self._pending.values()]
+        return [rec for rec in both if rec.op.get("deviceId") == device_id and rec.state == "accepted"]
 
     def cancel_queued(self, rec: OperationRecord, detail: str) -> None:
-        """Cancel a queued operation without dispatch (stop, BHMS-AUTH-021)."""
+        """Cancel a queued operation without dispatch (stop, BHMS-AUTH-021).
+
+        An operation in its pre-dispatch checks sees the new state and sends nothing (see ``_dispatch_queued``).
+        """
         if rec.state == "accepted":
             self._drop_queued(rec)
             self.server.journal.transition(rec, "canceled", detail=detail)
@@ -641,27 +699,47 @@ class Executor:
                 log.exception("reconcile hook of %s failed for %s", device.device_id, rec.id)
                 continue
             if isinstance(answer, Reconciled):
-                self.apply_reconciliation(rec, answer)
+                try:
+                    self.apply_reconciliation(rec, answer)
+                except (ValueError, InvalidTransition):
+                    log.exception("reconcile answer of %s for %s was refused; it stays unknown", device.device_id,
+                                  rec.id)
+                    continue
                 changed.append(rec)
         return changed
 
     def apply_reconciliation(self, rec: OperationRecord, answer: Reconciled) -> None:
+        """Record a ``Reconciled`` answer; the invariants of ``Journal.transition`` apply as to any completion."""
         journal = self.server.journal
         detail = f"reconciled from device evidence: {answer.evidence}"
+        device = self.server.devices.get(rec.op.get("deviceId", ""))
+        spec = device.actions.get(rec.op.get("action", "")) if device is not None else None
+        evidence = {"kind": "measured", "observations": answer.observations} if answer.observations else None
         if answer.state == "completed":
-            journal.transition(rec, "completed", result=answer.result if answer.result is not None else {},
-                               effect=answer.effect or ("none" if rec.private.get("effectClass") == "none"
-                                                        else "unverified"),
+            result = answer.result if answer.result is not None else {}
+            problem = self._result_problem(device, spec, result) if device is not None and spec is not None else None
+            if problem:
+                raise ValueError(f"Reconciled.result of {rec.id} cannot be recorded: {problem}")
+            effect = answer.effect or ("none" if rec.private.get("effectClass") == "none" else "unverified")
+            if rec.op.get("require", {}).get("effect") == "verified" and effect != "verified":
+                journal.transition(rec, "failed", error=BhmsError(
+                    "UNVERIFIED", f"{rec.op.get('action')} was found to have finished, but the required verified "
+                    "effect could not be established", may_have_acted=True,
+                    hint="read the device state before deciding what to do").to_operation_error(),
+                    effect=effect, kind="reconciliation", detail=detail)
+                return
+            journal.transition(rec, "completed", result=result, effect=effect, evidence=evidence,
                                kind="reconciliation", detail=detail)
         elif answer.state == "failed":
             error = BhmsError(answer.code if answer.code in ("DEVICE_FAULT", "DEADLINE_EXCEEDED", "INTERNAL")
                               else "DEVICE_FAULT", (answer.message or answer.evidence)[:2000],
                               may_have_acted=answer.may_have_acted,
                               hint="read the device state before retrying").to_operation_error()
-            journal.transition(rec, "failed", error=error, effect=answer.effect, kind="reconciliation", detail=detail,
-                               proof=None if answer.may_have_acted else answer.evidence)
+            journal.transition(rec, "failed", error=error, effect=answer.effect, evidence=evidence, kind="reconciliation",
+                               detail=detail, proof=None if answer.may_have_acted else answer.evidence)
         else:
-            journal.transition(rec, answer.state, effect=answer.effect, kind="reconciliation", detail=detail)
+            journal.transition(rec, answer.state, effect=answer.effect, evidence=evidence, kind="reconciliation",
+                               detail=detail)
 
 
 async def _call_hook(hook: Any, *args: Any) -> Any:

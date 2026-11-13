@@ -134,7 +134,10 @@ that two clients' keys cannot collide upstream.
 
 `stop {deviceIds | scope: "all", reason, waitMs?}` → `{stops: DeviceStop[]}`.
 
-`DeviceStop = {deviceId, outcome, evidence, canceledOperations, revokedLeases, detail?, error?}`,
+`DeviceStop = {deviceId, outcome, evidence, canceledOperations, cancelRequestedOperations?, revokedLeases, detail?, error?}`,
+`canceledOperations` lists operations moved to `canceled` (they had not dispatched);
+`cancelRequestedOperations` lists `dispatching`, `running` and `unknown` operations on which a
+cancellation was requested (their outcome is not yet known),
 `outcome` ∈ `confirmed` (the stop procedure finished, with `evidence`),
 `initiated` (dispatched, not yet confirmed), `unsupported` (no stop procedure;
 operations were still cancelled and leases revoked), `failed` (could not be

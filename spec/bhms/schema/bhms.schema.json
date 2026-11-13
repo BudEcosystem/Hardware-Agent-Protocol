@@ -3626,6 +3626,13 @@
             "$ref": "#/$defs/ServerId"
           }
         },
+        "cancelRequestedOperations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ServerId"
+          },
+          "description": "Operations in flight or unknown whose cancellation was requested; not yet canceled."
+        },
         "revokedLeases": {
           "type": "array",
           "items": {

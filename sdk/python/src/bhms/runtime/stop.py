@@ -1,13 +1,16 @@
 """The ``stop`` fast path (spec/bhms/07-leases-and-authority.md §7.5, 13-security.md §13.5).
 
 :class:`StopController` never waits for, or is blocked by, a lease, a queue, an in-flight operation or a held resource
-(BHMS-AUTH-020): it takes no lock, dispatches each device's commissioned stop procedure (``@device.on_stop``) as its own
-task first, and only then does the bookkeeping of BHMS-AUTH-021 in this order:
+(BHMS-AUTH-020): it takes no lock, dispatches each device's commissioned stop procedure (``@device.on_stop``)
+first (a synchronous handler has run before any journal write; a coroutine handler takes its first step before one),
+and only then does the bookkeeping of BHMS-AUTH-021 in this order:
 
 1. dispatch the stop procedure (when ``safety.stop`` is ``supported``);
-2. move the device's ``accepted`` operations to ``canceled`` (``effect: none``);
+2. move the device's ``accepted`` operations (queued, or in their pre-dispatch checks) to ``canceled``
+   (``effect: none``; listed in ``canceledOperations``);
 3. append a ``stop`` history entry and a cancellation request to its ``dispatching``/``running``/``unknown`` operations
-   (setting ``ctx.cancelled`` of running handlers) and stop programs with steps on it (BHMS-PRG-014);
+   (setting ``ctx.cancelled`` of running handlers; listed in ``cancelRequestedOperations``: only requested, not
+   confirmed) and stop programs with steps on it (BHMS-PRG-014);
 4. revoke every active lease covering its resources, raising their fences;
 5. record a ``stop`` event.
 
@@ -74,13 +77,14 @@ class StopController:
         else:
             targets = list(dict.fromkeys(params.device_ids))
         # 1. dispatch every stop procedure before any bookkeeping
-        procedures: dict[str, asyncio.Task[Any] | None] = {}
+        procedures: dict[str, asyncio.Future[Any] | None] = {}
         for device_id in targets:
             dev = srv.devices.get(device_id)
             if dev is not None and principal.can_stop(device_id) and dev.stop_spec is not None:
-                procedures[device_id] = self._spawn(_run_procedure(dev, params.reason))
+                procedures[device_id] = self._begin_procedure(dev, params.reason)
             else:
                 procedures[device_id] = None
+        await asyncio.sleep(0)  # coroutine procedures take their first step before any journal write (AUTH-025)
         results = []
         for device_id in targets:
             results.append(self._settle_device(principal, device_id, params.reason, procedures[device_id]))
@@ -94,6 +98,21 @@ class StopController:
             out.append(self._outcome(device_id, result, procedures[device_id], params.reason, degraded))
         return out
 
+    def _begin_procedure(self, dev: Device, reason: str) -> asyncio.Future[Any]:
+        """Call the stop handler now: a synchronous one has run (or raised) when this returns, with no journal write
+        before it; an awaitable one is spawned as a task. The returned future carries the outcome."""
+        assert dev.stop_spec is not None
+        done: asyncio.Future[Any] = asyncio.get_running_loop().create_future()
+        try:
+            outcome = dev.stop_spec.handler(StopContext(dev, reason))
+        except Exception as exc:  # noqa: BLE001 - reported as outcome "failed"
+            done.set_exception(exc)
+            return done
+        if inspect.isawaitable(outcome):
+            return self._spawn(_await(outcome))
+        done.set_result(outcome)
+        return done
+
     def _spawn(self, coro: Any) -> asyncio.Task[Any]:
         task = asyncio.get_running_loop().create_task(coro)
         self.tasks.add(task)
@@ -101,7 +120,7 @@ class StopController:
         return task
 
     def _settle_device(self, principal: Principal, device_id: str, reason: str,
-                       procedure: asyncio.Task[Any] | None) -> tuple[dict[str, Any], bool]:
+                       procedure: asyncio.Future[Any] | None) -> tuple[dict[str, Any], bool]:
         srv = self.server
         dev = srv.devices.get(device_id)
         if dev is None or not principal.can_stop(device_id):
@@ -111,7 +130,8 @@ class StopController:
             return {"deviceId": device_id, "outcome": "failed", "evidence": "none", "canceledOperations": [],
                     "revokedLeases": [], "error": error.to_operation_error()}, False
         degraded = False
-        canceled: list[str] = []
+        canceled: list[str] = []  # moved to ``canceled`` (they had not dispatched)
+        requested: list[str] = []  # in flight or unknown: a cancellation was requested, the outcome is not yet known
         journal = srv.journal
         # 2. accepted (queued) operations: canceled without dispatch
         for rec in srv.executor.queued_for(device_id):
@@ -128,7 +148,7 @@ class StopController:
                 journal.annotate(rec, "stop", f"stop: {reason}")
                 if rec.op["cancel"]["state"] in ("none", "refused"):
                     journal.set_cancel(rec, "requested", reason=f"stop: {reason}")
-                canceled.append(rec.id)
+                requested.append(rec.id)
             except StoreError as exc:
                 degraded = True
                 srv.journal_failed(exc)
@@ -146,7 +166,10 @@ class StopController:
             srv.journal_failed(exc)
         if procedure is not None:
             procedure.add_done_callback(lambda task: self._finished(dev, reason, task))
-        return {"deviceId": device_id, "canceledOperations": canceled, "revokedLeases": revoked}, degraded
+        partial: dict[str, Any] = {"deviceId": device_id, "canceledOperations": canceled, "revokedLeases": revoked}
+        if requested:
+            partial["cancelRequestedOperations"] = requested
+        return partial, degraded
 
     def _operations_on(self, dev: Device) -> list[Any]:
         srv = self.server
@@ -160,7 +183,7 @@ class StopController:
                     found[rec.id] = rec
         return list(found.values())
 
-    def _outcome(self, device_id: str, partial: dict[str, Any], procedure: asyncio.Task[Any] | None, reason: str,
+    def _outcome(self, device_id: str, partial: dict[str, Any], procedure: asyncio.Future[Any] | None, reason: str,
                  degraded: bool) -> dict[str, Any]:
         srv = self.server
         if "outcome" in partial:
@@ -185,7 +208,7 @@ class StopController:
             result["detail"] = "degraded-audit"
         return result
 
-    def _finished(self, dev: Device, reason: str, task: asyncio.Task[Any]) -> None:
+    def _finished(self, dev: Device, reason: str, task: asyncio.Future[Any]) -> None:
         srv = self.server
         if task.cancelled():
             return
@@ -216,12 +239,8 @@ class StopController:
             await asyncio.wait(list(self.tasks), timeout=5.0)
 
 
-async def _run_procedure(dev: Device, reason: str) -> Any:
-    assert dev.stop_spec is not None
-    outcome = dev.stop_spec.handler(StopContext(dev, reason))
-    if inspect.isawaitable(outcome):
-        outcome = await outcome
-    return outcome
+async def _await(outcome: Any) -> Any:
+    return await outcome
 
 
 __all__ = ["StopContext", "StopController"]
