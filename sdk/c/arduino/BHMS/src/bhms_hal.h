@@ -22,7 +22,11 @@ typedef struct bhms_hal {
     /* Free-running millisecond counter (wraps at 2^32). */
     uint32_t (*millis)(void *ctx);
     /* Hardware stop input: nonzero while asserted. NULL when there is none.
-     * Polled by bhms_poll on every call. */
+     * Polled by bhms_poll on every call. The HAL MUST latch the asserting edge
+     * (from a pin-change ISR or a hardware capture) and keep reporting nonzero
+     * until it has been read once: a pulse shorter than one poll interval, or
+     * one that arrives during a long callback, must not be lost. The endpoint
+     * cannot do this itself; it only sees what this hook returns. */
     int (*stop_pin)(void *ctx);
     /* Persistent boot counter (EEPROM/flash). epoch_load returns 0 and stores
      * the last value (erased 0xFFFFFFFF must be reported as 0) or nonzero when

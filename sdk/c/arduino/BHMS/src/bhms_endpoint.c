@@ -99,28 +99,33 @@ static void reset_session_state(bhms_endpoint *ep) {
     ep->max_fence = 0;
     ep->tx_seq = 0;
     ep->stop_pending = 0;
+    ep->stamp_clock = 0;
 }
 
 /* Advance and (when the platform has a store) persist the epoch. */
-static void advance_epoch(bhms_endpoint *ep, uint32_t from) {
+/* `allow` is false when the stored counter could not be read (so the new value
+ * may repeat an earlier one) or persistence was already lost: PERSISTENT_EPOCH
+ * is then not claimed (BHMS-CMP-020) and no store is attempted. */
+static void advance_epoch(bhms_endpoint *ep, uint32_t from, int allow) {
     ep->epoch = next_epoch(from);
-    if (ep->hal->epoch_load != 0 && ep->hal->epoch_store != 0)
+    if (allow && ep->hal->epoch_load != 0 && ep->hal->epoch_store != 0)
         ep->persistent = ep->hal->epoch_store(ep->hal->ctx, ep->epoch) == 0 ? 1u : 0u;
     else
         ep->persistent = 0;
 }
 
-bhms_err bhms_init(bhms_endpoint *ep, const bhms_device *dev, const bhms_hal *hal) {
+/* ep->dev stays NULL until everything succeeded; bhms_poll and the application
+ * calls are no-ops on an endpoint whose dev is NULL. */
+static bhms_err init_checked(bhms_endpoint *ep, const bhms_device *dev, const bhms_hal *hal) {
     uint8_t i, j;
     uint32_t stored = 0;
-    if (ep == 0 || dev == 0 || hal == 0 || hal->uart_read == 0 || hal->uart_write == 0 ||
+    int load_ok = 0;
+    if (dev == 0 || hal == 0 || hal->uart_read == 0 || hal->uart_write == 0 ||
         hal->millis == 0)
         return BHMS_ERR_INVALID;
     if ((dev->n_actions != 0 && dev->actions == 0) ||
         (dev->n_properties != 0 && dev->properties == 0))
         return BHMS_ERR_INVALID;
-    memset(ep, 0, sizeof *ep);
-    ep->dev = dev;
     ep->hal = hal;
     for (i = 0; i < dev->n_actions; ++i) {
         bhms_action a;
@@ -154,12 +159,22 @@ bhms_err bhms_init(bhms_endpoint *ep, const bhms_device *dev, const bhms_hal *ha
     }
     /* Boot counter first: no operation can be accepted before the epoch exists. */
     if (hal->epoch_load != 0 && hal->epoch_store != 0) {
-        if (hal->epoch_load(hal->ctx, &stored) != 0) stored = 0;
-        if (stored == 0xFFFFFFFFu) stored = 0; /* erased cell */
+        load_ok = hal->epoch_load(hal->ctx, &stored) == 0;
+        if (!load_ok || stored == 0xFFFFFFFFu) stored = 0; /* unreadable or erased cell */
     }
-    advance_epoch(ep, stored);
+    advance_epoch(ep, stored, load_ok);
     reset_session_state(ep);
+    ep->dev = dev;
     return BHMS_OK;
+}
+
+bhms_err bhms_init(bhms_endpoint *ep, const bhms_device *dev, const bhms_hal *hal) {
+    bhms_err err;
+    if (ep == 0) return BHMS_ERR_INVALID;
+    memset(ep, 0, sizeof *ep);
+    err = init_checked(ep, dev, hal);
+    if (err != BHMS_OK) memset(ep, 0, sizeof *ep); /* leave an inert endpoint */
+    return err;
 }
 
 /* ---- Argument decoding and local limits ------------------------------------- */
@@ -275,12 +290,11 @@ static void handle_invoke(bhms_endpoint *ep, const uint8_t *p, size_t n, uint32_
         send_error(ep, BHMS_MSG_INVOKE, inv.handle, BHMS_E_MALFORMED, 0);
         return;
     }
-    if (inv.fence > ep->max_fence) ep->max_fence = inv.fence;
-    if (ep->inhibit || ep->pin_asserted) {
-        send_error(ep, BHMS_MSG_INVOKE, inv.handle, BHMS_E_INHIBITED, 0);
-        return;
-    }
-    if ((ep->dev->flags & BHMS_DEV_FENCING) != 0) { /* BHMS-CMP-040 */
+    /* BHMS-CMP-040: the fence is judged, and the floor raised, before any later
+     * refusal (INHIBITED, EXPIRED, OUT_OF_RANGE, BUSY): a refused INVOKE with a
+     * newer fence still fences older leases. Frames refused above this point
+     * (bad handle, action or length) never touch the fence state. */
+    if ((ep->dev->flags & BHMS_DEV_FENCING) != 0) {
         if (inv.fence != 0 && inv.fence < ep->fence_floor) {
             send_error(ep, BHMS_MSG_INVOKE, inv.handle, BHMS_E_FENCED, 0);
             return;
@@ -289,6 +303,13 @@ static void handle_invoke(bhms_endpoint *ep, const uint8_t *p, size_t n, uint32_
             send_error(ep, BHMS_MSG_INVOKE, inv.handle, BHMS_E_LEASE_REQUIRED, 0);
             return;
         }
+    }
+    if (inv.fence > ep->max_fence) ep->max_fence = inv.fence;
+    if ((ep->dev->flags & BHMS_DEV_FENCING) != 0 && inv.fence > ep->fence_floor)
+        ep->fence_floor = inv.fence;
+    if (ep->inhibit || ep->pin_asserted) {
+        send_error(ep, BHMS_MSG_INVOKE, inv.handle, BHMS_E_INHIBITED, 0);
+        return;
     }
     if (inv.ttl_ms != 0 && (uint32_t)(ep->hal->millis(ep->hal->ctx) - rx_ms) > inv.ttl_ms) {
         send_error(ep, BHMS_MSG_INVOKE, inv.handle, BHMS_E_EXPIRED, 0);
@@ -304,8 +325,6 @@ static void handle_invoke(bhms_endpoint *ep, const uint8_t *p, size_t n, uint32_
         return;
     }
     /* Accepted: from here the handle is consumed. */
-    if ((ep->dev->flags & BHMS_DEV_FENCING) != 0 && inv.fence > ep->fence_floor)
-        ep->fence_floor = inv.fence;
     prev_last = ep->last_handle;
     ep->last_handle = inv.handle;
     memset(e, 0, sizeof *e);
@@ -322,7 +341,7 @@ static void handle_invoke(bhms_endpoint *ep, const uint8_t *p, size_t n, uint32_
     call.evidence = BHMS_EV_REPORTED;
     call.error = BHMS_E_PRECONDITION;
     ret = a.run(ep->dev->user, args, &call);
-    if (e->state != BHMS_ST_ACCEPTED) return; /* the callback finished it itself */
+    if (e->state >= BHMS_ST_COMPLETED) return; /* the callback finished it itself */
     switch (ret) {
     case BHMS_RUN_DONE:
         finish_entry(ep, e, BHMS_ST_COMPLETED, call.evidence, 0, call.results, BHMS_KIND_STATUS);
@@ -442,7 +461,7 @@ static void handle_hello_req(bhms_endpoint *ep, const uint8_t *p) {
     }
     /* BHMS-CMP-023: honoured only when nothing is active, otherwise ignored. */
     if ((req.flags & BHMS_HELLO_REQ_NEW_SESSION) != 0 && active_count(ep) == 0) {
-        advance_epoch(ep, ep->epoch);
+        advance_epoch(ep, ep->epoch, ep->persistent);
         reset_session_state(ep);
     }
     if ((ep->dev->flags & BHMS_DEV_FENCING) != 0) flags |= BHMS_HELLO_FENCING;
@@ -508,8 +527,11 @@ static void dispatch(bhms_endpoint *ep, const uint8_t *raw, uint32_t rx_ms) {
 
 void bhms_poll(bhms_endpoint *ep) {
     uint16_t budget;
-    uint32_t now = ep->hal->millis(ep->hal->ctx);
-    int pin = ep->hal->stop_pin != 0 && ep->hal->stop_pin(ep->hal->ctx) != 0;
+    uint32_t now;
+    int pin;
+    if (ep == 0 || ep->dev == 0) return; /* not initialised (or init failed) */
+    now = ep->hal->millis(ep->hal->ctx);
+    pin = ep->hal->stop_pin != 0 && ep->hal->stop_pin(ep->hal->ctx) != 0;
 
     if (pin && !ep->pin_asserted) {
         ep->pin_asserted = 1;
@@ -544,8 +566,10 @@ void bhms_poll(bhms_endpoint *ep) {
 /* ---- Application-facing completion API -------------------------------------- */
 bhms_err bhms_op_finish(bhms_endpoint *ep, uint16_t handle, uint8_t state, uint8_t evidence,
                         uint8_t fault, const bhms_value *results) {
-    bhms_entry *e = find(ep, handle);
+    bhms_entry *e;
     bhms_action a;
+    if (ep == 0 || ep->dev == 0) return BHMS_ERR_INVALID;
+    e = find(ep, handle);
     if (state < BHMS_ST_COMPLETED || state > BHMS_ST_REJECTED) return BHMS_ERR_INVALID;
     if (e == 0) return BHMS_ERR_NO_ENTRY;
     if (!is_active(e)) return BHMS_ERR_STATE;
@@ -556,7 +580,9 @@ bhms_err bhms_op_finish(bhms_endpoint *ep, uint16_t handle, uint8_t state, uint8
 }
 
 bhms_err bhms_op_progress(bhms_endpoint *ep, uint16_t handle, uint8_t percent) {
-    bhms_entry *e = find(ep, handle);
+    bhms_entry *e;
+    if (ep == 0 || ep->dev == 0) return BHMS_ERR_INVALID;
+    e = find(ep, handle);
     if (percent > 100u) return BHMS_ERR_INVALID;
     if (e == 0) return BHMS_ERR_NO_ENTRY;
     if (!is_active(e)) return BHMS_ERR_STATE;
@@ -572,7 +598,7 @@ bhms_err bhms_publish(bhms_endpoint *ep, uint8_t property_index) {
     bhms_sample meta;
     uint8_t quality, k;
     uint8_t b[BHMS_LEN_VALUE_FIXED + 4u];
-    if (property_index >= ep->dev->n_properties) return BHMS_ERR_INVALID;
+    if (ep == 0 || ep->dev == 0 || property_index >= ep->dev->n_properties) return BHMS_ERR_INVALID;
     pgm_copy(&prop, &ep->dev->properties[property_index], sizeof prop);
     v.u = 0;
     meta.evidence = BHMS_VEV_MEASURED;
@@ -590,10 +616,13 @@ bhms_err bhms_publish(bhms_endpoint *ep, uint8_t property_index) {
 
 void bhms_stop_confirmed(bhms_endpoint *ep, uint8_t evidence) {
     uint8_t b[BHMS_LEN_STOP_ACK];
-    if (!ep->stop_pending) return;
+    if (ep == 0 || ep->dev == 0 || !ep->stop_pending) return;
     ep->stop_pending = 0;
     send(ep, BHMS_KIND_TELEMETRY, b,
          bhms_enc_stop_ack(b, BHMS_STOPACK_CONFIRMED, evidence, ep->stop_count));
 }
 
-void bhms_set_inhibit(bhms_endpoint *ep, uint8_t inhibited) { ep->inhibit = inhibited ? 1u : 0u; }
+void bhms_set_inhibit(bhms_endpoint *ep, uint8_t inhibited) {
+    if (ep == 0 || ep->dev == 0) return;
+    ep->inhibit = inhibited ? 1u : 0u;
+}

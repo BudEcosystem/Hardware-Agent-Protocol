@@ -13,6 +13,7 @@ static struct {
     uint8_t cancel_mode; /* returns BHMS_CANCEL_* */
     uint8_t stop_mode;   /* BHMS_STOPACK_* */
     unsigned stops;
+    bhms_endpoint *ep; /* for callbacks that call back into the library */
     uint8_t quality;
     uint16_t adc;
     uint8_t fresh_seen;
@@ -42,6 +43,12 @@ static uint8_t reject_run(void *u, const bhms_value *a, bhms_call *c) {
     (void)u; (void)a;
     c->error = g.reject_error;
     return BHMS_RUN_REJECTED;
+}
+static uint8_t progress_run(void *u, const bhms_value *a, bhms_call *c) {
+    (void)u; (void)a;
+    /* Reporting progress from inside run, then finishing synchronously. */
+    CHECK(bhms_op_progress(g.ep, c->handle, 50) == BHMS_OK);
+    return BHMS_RUN_DONE;
 }
 static uint8_t adc_read(void *u, uint8_t fresh, bhms_value *o, bhms_sample *m) {
     (void)u;
@@ -73,15 +80,16 @@ static const bhms_action kActions[] BHMS_PROGMEM = {
                 BHMS_FIELDS_REF(move_res)),
     BHMS_ACTION(fail_run, 0, 0, BHMS_NO_FIELDS, BHMS_NO_FIELDS),
     BHMS_ACTION(reject_run, 0, 0, BHMS_NO_FIELDS, BHMS_NO_FIELDS),
+    BHMS_ACTION(progress_run, 0, 0, BHMS_NO_FIELDS, BHMS_NO_FIELDS),
 };
 static const bhms_property kProps[] BHMS_PROGMEM = {
     BHMS_PROPERTY(adc_read, BHMS_U16),
     BHMS_PROPERTY(temp_read, BHMS_F32),
 };
 static const bhms_device kDev = {
-    {0xde, 0xad, 0xbe, 0xef, 1, 2, 3, 4}, BHMS_DEV_FENCING, kActions, 4, kProps, 2, dev_stop, 0};
+    {0xde, 0xad, 0xbe, 0xef, 1, 2, 3, 4}, BHMS_DEV_FENCING, kActions, 5, kProps, 2, dev_stop, 0};
 static const bhms_device kDevNoStop = {
-    {0xde, 0xad, 0xbe, 0xef, 1, 2, 3, 4}, 0, kActions, 4, kProps, 2, 0, 0};
+    {0xde, 0xad, 0xbe, 0xef, 1, 2, 3, 4}, 0, kActions, 5, kProps, 2, 0, 0};
 
 /* ---- Harness ---------------------------------------------------------------- */
 typedef struct {
@@ -97,6 +105,7 @@ static void rig_boot(rig *r, int persistent, const bhms_device *dev) {
     g.cancel_mode = BHMS_CANCEL_ACK;
     g.stop_mode = BHMS_STOPACK_CONFIRMED;
     g.reject_error = BHMS_E_PRECONDITION;
+    g.ep = &r->ep;
     bhms_host_init(&r->host, persistent);
     r->gseq = 0;
     CHECK(bhms_init(&r->ep, dev, &r->host.hal) == BHMS_OK);
@@ -923,6 +932,165 @@ static void test_random_input(void) {
 #undef RND
 }
 
+/* I1: progress reported inside run followed by DONE must not wedge the slot. */
+static void test_progress_inside_run(void) {
+    rig r;
+    bhms_hello h;
+    bhms_host_frame f;
+    rig_boot(&r, 1, &kDev);
+    uint64_t e = hello(&r, 0, 1, &h);
+    for (uint16_t hnd = 1; hnd <= 6; ++hnd) { /* more than BHMS_MAX_ACTIVE: no slot may leak */
+        invoke(&r, e, hnd, 4, 0, 0, 0, 0);
+        CHECK(next(&r, &f) == 1 && f.kind == BHMS_KIND_TELEMETRY && f.payload[0] == BHMS_MSG_STATUS);
+        CHECK(next(&r, &f) == 1 && f.kind == BHMS_KIND_STATUS && f.payload[0] == BHMS_MSG_RESULT);
+        CHECK(f.payload[3] == BHMS_ST_COMPLETED);
+    }
+    for (unsigned i = 0; i < BHMS_RING_SIZE; ++i)
+        CHECK(r.ep.ring[i].stamp == 0 || r.ep.ring[i].state == BHMS_ST_COMPLETED);
+    hello(&r, BHMS_HELLO_REQ_NEW_SESSION, 2, &h); /* honoured: nothing active */
+    CHECK(h.epoch == e + 1);
+}
+
+/* I2: a failed init leaves an inert endpoint, never a live unsafe one. */
+static void test_failed_init_is_inert(void) {
+    rig r;
+    uint8_t b[16];
+    bhms_host_frame f;
+    memset(&r, 0, sizeof r);
+    bhms_host_init(&r.host, 0);
+    BHMS_FIELDS(wide) = {BHMS_U32(), BHMS_U32(), BHMS_U32(), BHMS_U32(), BHMS_U32(), BHMS_U32(),
+                         BHMS_U32(), BHMS_U32()}; /* 32 bytes > BHMS_MAX_ARGS */
+    static const bhms_action acts[] = {
+        BHMS_ACTION(led_run, 0, 0, BHMS_FIELDS_REF(wide), BHMS_NO_FIELDS)};
+    bhms_device dev = {{0}, 0, acts, 1, 0, 0, 0, 0};
+    CHECK(bhms_init(&r.ep, &dev, &r.host.hal) == BHMS_ERR_INVALID);
+    CHECK(r.ep.dev == 0);
+    bhms_host_feed_frame(&r.host, 1, 1, 0, 0, b, bhms_enc_hello_req(b, 0, 1));
+    bhms_poll(&r.ep);
+    CHECK(next(&r, &f) == 0); /* silent: no HELLO with epoch 0 */
+    uint8_t inv[64];
+    size_t n = bhms_enc_invoke(inv, 1, 0, 0, 0, (const uint8_t[32]){0}, 32);
+    bhms_host_feed_frame(&r.host, 1, 1, 0, 1, inv, n);
+    bhms_poll(&r.ep);
+    CHECK(next(&r, &f) == 0 && g.led_calls == 0);
+    CHECK(bhms_op_finish(&r.ep, 1, BHMS_ST_COMPLETED, 0, 0, 0) == BHMS_ERR_INVALID);
+    CHECK(bhms_op_progress(&r.ep, 1, 1) == BHMS_ERR_INVALID);
+    CHECK(bhms_publish(&r.ep, 0) == BHMS_ERR_INVALID);
+    bhms_stop_confirmed(&r.ep, 0);
+    bhms_set_inhibit(&r.ep, 1);
+    CHECK(r.ep.inhibit == 0);
+    /* A failing HAL check: poll must not dereference the missing hal. */
+    memset(&r.ep, 0xA5, sizeof r.ep);
+    r.ep.dev = 0;
+    bhms_poll(&r.ep);
+    bhms_hal bad = r.host.hal;
+    bad.millis = 0;
+    dev.n_actions = 0;
+    CHECK(bhms_init(&r.ep, &dev, &bad) == BHMS_ERR_INVALID);
+    bhms_poll(&r.ep);
+    CHECK(next(&r, &f) == 0);
+}
+
+/* I3 + M6: a refused INVOKE still raises the fence floor; nothing else is consumed. */
+static void test_fence_floor_on_refusal(void) {
+    rig r;
+    bhms_hello h;
+    bhms_host_frame f;
+    uint8_t a[8];
+    rig_boot(&r, 1, &kDev);
+    uint64_t e = hello(&r, 0, 1, &h);
+    memcpy(a, kMoveArgs, 7);
+    float over = 500.0f;
+    memcpy(a, &over, 4);
+    invoke(&r, e, 1, 1, 5, 0, a, 7); /* fence 5, OUT_OF_RANGE */
+    expect_error(&r, BHMS_MSG_INVOKE, 1, BHMS_E_OUT_OF_RANGE);
+    CHECK(r.ep.last_handle == 0 && r.ep.fence_floor == 5);
+    invoke(&r, e, 1, 0, 4, 0, kOn, 1); /* older lease holder: fenced */
+    expect_error(&r, BHMS_MSG_INVOKE, 1, BHMS_E_FENCED);
+    invoke(&r, e, 1, 0, 5, 0, kOn, 1);
+    CHECK(next(&r, &f) == 1 && f.payload[0] == BHMS_MSG_RESULT);
+
+    /* BUSY refusal raises it too. */
+    invoke(&r, e, 2, 1, 10, 0, kMoveArgs, 7);
+    CHECK(next(&r, &f) == 1);
+    invoke(&r, e, 3, 1, 11, 0, kMoveArgs, 7);
+    CHECK(next(&r, &f) == 1);
+    invoke(&r, e, 4, 1, 12, 0, kMoveArgs, 7);
+    expect_error(&r, BHMS_MSG_INVOKE, 4, BHMS_E_BUSY);
+    CHECK(r.ep.fence_floor == 12);
+    invoke(&r, e, 4, 0, 11, 0, kOn, 1);
+    expect_error(&r, BHMS_MSG_INVOKE, 4, BHMS_E_FENCED);
+
+    /* INHIBITED refusal raises it. */
+    bhms_set_inhibit(&r.ep, 1);
+    invoke(&r, e, 4, 0, 20, 0, kOn, 1);
+    expect_error(&r, BHMS_MSG_INVOKE, 4, BHMS_E_INHIBITED);
+    CHECK(r.ep.fence_floor == 20);
+    bhms_set_inhibit(&r.ep, 0);
+
+    /* EXPIRED refusal raises it. */
+    uint8_t b[64], wire[HMS_FRAME_WIRE_MAX];
+    size_t n = bhms_enc_invoke(b, 4, 0, 30, 10, kOn, 1);
+    size_t w = bhms_frame_encode(wire, sizeof wire, 1, 1, e, 50, b, n);
+    r.host.now_ms = 1000;
+    bhms_host_feed(&r.host, wire, 5);
+    bhms_poll(&r.ep);
+    r.host.now_ms = 1100;
+    bhms_host_feed(&r.host, wire + 5, w - 5);
+    bhms_poll(&r.ep);
+    expect_error(&r, BHMS_MSG_INVOKE, 4, BHMS_E_EXPIRED);
+    CHECK(r.ep.fence_floor == 30);
+
+    /* M6: frames refused before the fence check never move the fence state. */
+    invoke(&r, e, 9, 9, 0xFFFFFFFFu, 0, kOn, 1); /* unknown action */
+    expect_error(&r, BHMS_MSG_INVOKE, 9, BHMS_E_UNKNOWN_ACTION);
+    invoke(&r, e, 9, 0, 0xFFFFFFFFu, 0, kOn2, 2); /* bad length */
+    expect_error(&r, BHMS_MSG_INVOKE, 9, BHMS_E_MALFORMED);
+    CHECK(r.ep.fence_floor == 30 && r.ep.max_fence == 30);
+    CHECK(bhms_op_finish(&r.ep, 2, BHMS_ST_FAILED, 0, 1, 0) == BHMS_OK);
+    CHECK(bhms_op_finish(&r.ep, 3, BHMS_ST_FAILED, 0, 1, 0) == BHMS_OK);
+    CHECK(next(&r, &f) == 1 && next(&r, &f) == 1);
+    invoke(&r, e, 4, 0, 31, 0, kOn, 1);
+    CHECK(next(&r, &f) == 1 && f.payload[0] == BHMS_MSG_RESULT);
+}
+
+/* M6: saturation is explicit. A STOP after fence 0xFFFFFFFF pins the floor there:
+ * only that fence value (and no lower one) is admitted for the rest of the epoch. */
+static void test_fence_saturation(void) {
+    rig r;
+    bhms_hello h;
+    bhms_host_frame f;
+    uint8_t b[8];
+    rig_boot(&r, 1, &kDev);
+    uint64_t e = hello(&r, 0, 1, &h);
+    invoke(&r, e, 1, 0, 0xFFFFFFFFu, 0, kOn, 1);
+    CHECK(next(&r, &f) == 1 && f.payload[0] == BHMS_MSG_RESULT);
+    gsend(&r, e, b, bhms_enc_stop(b, 0));
+    CHECK(next(&r, &f) == 1);
+    CHECK(r.ep.fence_floor == 0xFFFFFFFFu);
+    invoke(&r, e, 2, 0, 0xFFFFFFFEu, 0, kOn, 1);
+    expect_error(&r, BHMS_MSG_INVOKE, 2, BHMS_E_FENCED);
+    invoke(&r, e, 2, 0, 0xFFFFFFFFu, 0, kOn, 1);
+    CHECK(next(&r, &f) == 1 && f.payload[0] == BHMS_MSG_RESULT);
+}
+
+/* I4: an unreadable boot counter must not be reported as persistent. */
+static void test_load_failure_not_persistent(void) {
+    rig r;
+    bhms_hello h;
+    rig_boot(&r, 1, &kDev);
+    r.host.eeprom = 77;
+    r.host.eeprom_writes = 0;
+    r.host.load_fails = 1;
+    CHECK(bhms_init(&r.ep, &kDev, &r.host.hal) == BHMS_OK);
+    hello(&r, 0, 1, &h);
+    CHECK(h.epoch == 1 && (h.flags & BHMS_HELLO_PERSISTENT_EPOCH) == 0);
+    CHECK(r.host.eeprom == 77 && r.host.eeprom_writes == 0); /* nothing stored over the cell */
+    hello(&r, BHMS_HELLO_REQ_NEW_SESSION, 2, &h); /* stays non-persistent after NEW_SESSION */
+    CHECK(h.epoch == 2 && (h.flags & BHMS_HELLO_PERSISTENT_EPOCH) == 0);
+    CHECK(r.ep.stamp_clock == 0); /* M9 */
+}
+
 /* Frame sizes against the 64-byte budget (spec 11.3). */
 static void test_wire_budget(void) {
     rig r;
@@ -938,7 +1106,7 @@ static void test_wire_budget(void) {
     CHECK(total_before == 24 + 24); /* HELLO frame: 48 bytes on the wire */
 }
 
-#define RUN(t) do { if (getenv("BHMS_T_VERBOSE")) fprintf(stderr, "== %s\n", #t); t(); } while (0)
+#define RUN(t) do { const char *only_ = getenv("BHMS_T_ONLY"); if (only_ != NULL && strcmp(only_, #t) != 0) break; if (getenv("BHMS_T_VERBOSE")) fprintf(stderr, "== %s\n", #t); t(); } while (0)
 
 int main(void) {
     RUN(test_hello_and_epoch);
@@ -959,6 +1127,11 @@ int main(void) {
     RUN(test_link_faults);
     RUN(test_poll_bounded);
     RUN(test_init_validation);
+    RUN(test_progress_inside_run);
+    RUN(test_failed_init_is_inert);
+    RUN(test_fence_floor_on_refusal);
+    RUN(test_fence_saturation);
+    RUN(test_load_failure_not_persistent);
     RUN(test_random_input);
     RUN(test_wire_budget);
     TEST_FINISH("test_endpoint");

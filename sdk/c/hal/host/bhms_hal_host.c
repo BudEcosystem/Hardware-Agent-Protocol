@@ -27,7 +27,7 @@ static int h_pin(void *ctx) { return ((bhms_host *)ctx)->pin; }
 
 static int h_epoch_load(void *ctx, uint32_t *epoch) {
     bhms_host *h = (bhms_host *)ctx;
-    if (!h->has_eeprom) return -1;
+    if (!h->has_eeprom || h->load_fails) return -1;
     *epoch = h->eeprom == 0xFFFFFFFFu ? 0u : h->eeprom;
     return 0;
 }

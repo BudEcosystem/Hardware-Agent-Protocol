@@ -18,7 +18,7 @@ COMMON="-Os -ffunction-sections -fdata-sections -flto -fno-fat-lto-objects -DF_C
 build() { # name mcu variant board_define
     name=$1; mcu=$2; variant=$3; board=$4
     d="$OUT/$name"; mkdir -p "$d/core" "$d/lib"
-    inc="-I$CORE/cores/arduino -I$CORE/variants/$variant -I$CORE/libraries/EEPROM/src -I$LIB"
+    inc="-I$(dirname "$SKETCH") -I$CORE/cores/arduino -I$CORE/variants/$variant -I$CORE/libraries/EEPROM/src -I$LIB"
     flags="-mmcu=$mcu $COMMON -D$board $inc"
     for f in "$CORE"/cores/arduino/*.c; do
         avr-gcc -c -w -std=gnu11 $flags "$f" -o "$d/core/$(basename "$f").o"

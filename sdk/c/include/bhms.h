@@ -262,8 +262,12 @@ typedef enum {
 bhms_err bhms_init(bhms_endpoint *ep, const bhms_device *dev, const bhms_hal *hal);
 
 /* Service the link: drain up to BHMS_POLL_MAX_BYTES from the UART, process
- * complete frames, enforce the frame deadline, watch the stop pin. Call often
- * (at least every ~10 ms at 115200 baud on a 64-byte UART FIFO-less MCU). */
+ * complete frames, enforce the frame deadline, watch the stop pin. Call often:
+ * a 64-byte UART RX buffer fills in about 5.5 ms at 115200 baud (10 bits per
+ * byte), so the gap between polls, INCLUDING any callback run inside bhms_poll,
+ * must stay under that or bytes (possibly a STOP frame) are lost. Callbacks that
+ * can take longer than about 5 ms must return BHMS_RUN_STARTED and work from the
+ * main loop. Scale the figure with baud rate and buffer size. */
 void bhms_poll(bhms_endpoint *ep);
 
 /* Finish an asynchronous operation (after BHMS_RUN_STARTED or a cancel ACK):

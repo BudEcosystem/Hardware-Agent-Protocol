@@ -17,6 +17,7 @@ typedef struct {
     uint32_t eeprom; /* persisted epoch cell */
     int has_eeprom;  /* 0 => the HAL reports no persistent store */
     int store_fails; /* epoch_store returns failure */
+    int load_fails;  /* epoch_load returns failure */
     unsigned eeprom_writes;
     int pin; /* stop input level */
     int tx_per_millis; /* if nonzero, each uart_write advances the clock by this many ms */

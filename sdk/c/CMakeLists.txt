@@ -45,12 +45,15 @@ target_link_libraries(bhms_hal_posix PUBLIC bhms)
 target_include_directories(bhms_hal_posix PUBLIC hal/host)
 add_executable(sim_device tests/host/sim_device.c)
 target_link_libraries(sim_device PRIVATE bhms_hal_posix)
+target_include_directories(sim_device PRIVATE arduino/BHMS/examples/LedAnalog)
 if(BHMS_BUILD_TESTS)
   find_package(Python3 COMPONENTS Interpreter)
   if(Python3_FOUND)
     add_test(NAME e2e_native_pty
              COMMAND ${CMAKE_COMMAND} -E env BHMS_SIM_DEVICE=$<TARGET_FILE:sim_device>
                      ${Python3_EXECUTABLE} -B ${CMAKE_CURRENT_SOURCE_DIR}/tests/host/test_e2e.py)
+    add_test(NAME description_mirror
+             COMMAND ${Python3_EXECUTABLE} -B ${CMAKE_CURRENT_SOURCE_DIR}/tests/host/test_description_mirror.py)
   endif()
   add_test(NAME arduino_library_in_sync
            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/scripts/sync_arduino.sh --check)

@@ -311,16 +311,24 @@ compact test vectors for Task 9.
 `sdk/c` (BHMS-Compact C library, Task 9a) settled the points the layouts leave
 open; other endpoints should match them so one gateway handles all of them.
 
-- **Refusals consume nothing.** An INVOKE answered with an ERROR other than
-  `HANDLE_UNKNOWN`, `SESSION_MISMATCH` and `HANDLE_CONFLICT` neither advances
-  `lastHandle` nor occupies a ring entry; the same handle may be retried. Check
-  order for a new handle: ring replay, `HANDLE_UNKNOWN`, action index, exact
-  argument length (`MALFORMED`), `INHIBITED`, fence (`FENCED`, `LEASE_REQUIRED`),
-  start TTL (`EXPIRED`, measured from the first byte of the frame at the
-  endpoint), argument decoding and local limits (`OUT_OF_RANGE` or, for a `bool`
-  byte other than 0/1, `MALFORMED`; `detail` is the argument index), then
-  `BUSY`. `UNKNOWN_ACTION` and `UNKNOWN_PROPERTY` put the bad index in `detail`.
-  A non-finite `f32` argument is `OUT_OF_RANGE`.
+- **Refusals consume nothing, but the fence is judged first.** An INVOKE answered
+  with an ERROR other than `HANDLE_UNKNOWN`, `SESSION_MISMATCH` and
+  `HANDLE_CONFLICT` neither advances `lastHandle` nor occupies a ring entry; the
+  same handle may be retried. Check order for a new handle: ring replay,
+  `HANDLE_UNKNOWN`, action index, exact argument length (`MALFORMED`), fence
+  (`FENCED`, `LEASE_REQUIRED`), then the floor is raised to the fence and
+  the largest fence seen is recorded, then `INHIBITED`, start TTL (`EXPIRED`,
+  measured from the first byte of the frame at the endpoint), argument decoding
+  and local limits (`OUT_OF_RANGE` or, for a `bool` byte other than 0/1,
+  `MALFORMED`; `detail` is the argument index) and `BUSY`. So a refusal after the
+  fence check still fences older lease holders (BHMS-CMP-040), while a frame
+  refused before it (bad handle, action or length) never touches fence state.
+  `UNKNOWN_ACTION` and `UNKNOWN_PROPERTY` put the bad index in `detail`. A
+  non-finite `f32` argument is `OUT_OF_RANGE`.
+- **Fence saturation.** The floor and the largest fence seen are u32 and saturate
+  at `0xFFFFFFFF`. After a STOP that follows fence `0xFFFFFFFF` the floor stays
+  there: only that fence value is admitted for the rest of the epoch, so a
+  gateway MUST start a new session (BHMS-CMP-041) before its fences approach 2^32.
 - **Replies and unsolicited frames.** Replies to a control frame use kind 02. An
   operation that finishes later (after `STATUS running`) sends its RESULT, and
   progress STATUS frames, as kind 03. A `HELLO_REQ` whose compact version is not 1
@@ -330,7 +338,9 @@ open; other endpoints should match them so one gateway handles all of them.
   A hardware stop input asserting sends the same sequence with the ack as
   kind 03 and, while it is asserted, INVOKE answers `INHIBITED`.
 - **Epoch counter.** An erased cell (`0xFFFFFFFF`) counts as 0; the incremented
-  epoch skips 0. `PERSISTENT_EPOCH` is advertised only when the new value was
-  durably stored; a failed store clears it for that boot.
+  epoch skips 0. `PERSISTENT_EPOCH` is advertised only when the stored counter
+  was read successfully and the new value was durably stored; an unreadable
+  counter (the epoch may repeat) or a failed store clears it for that boot, and
+  it is not regained by a later `NEW_SESSION`.
 - **Sequence.** The endpoint frame counter restarts at 0 with each epoch,
   including a `NEW_SESSION` (its HELLO is sequence 0).

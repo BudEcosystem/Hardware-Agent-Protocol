@@ -37,7 +37,8 @@ static const bhms_property props[] BHMS_PROGMEM = { BHMS_PROPERTY(adc_read, BHMS
 static const bhms_device dev = { {0x23,0x8a,...}, /*flags*/0, actions, 1, props, 1,
                                  /*stop*/0, /*user*/0 };
 bhms_endpoint ep;
-bhms_init(&ep, &dev, &hal);         /* persists the new boot epoch first */
+if (bhms_init(&ep, &dev, &hal) != BHMS_OK) halt();  /* persists the new boot epoch first;
+                                                      a failed init leaves an inert endpoint */
 for (;;) bhms_poll(&ep);            /* drain UART, process frames, watch stop pin */
 ```
 
@@ -55,7 +56,9 @@ Field limits are in wire units (`BHMS_U16_RANGE(0, 1000)` for a `u16` field with
 `bhms_op_progress`, `bhms_publish` (unsolicited VALUE), `bhms_stop_confirmed`,
 `bhms_set_inhibit`. The description sidecar JSON (with `compact` layouts) must
 use the same indices, types and scales; `tools/bhms_digest.py sidecar.json --check`
-validates it against the BHMS device model and prints the `digest8` initialiser.
+validates it against the BHMS device model and prints the `digest8` initialiser;
+`--header out.h` writes `#define BHMS_DIGEST8 {...}` for the firmware to `#include`
+(the example's `led_analog_digest.h`; a test keeps it equal to the sidecar).
 An integer wire field without `scale` needs a `type: integer` (or `multipleOf: 1`)
 schema in the sidecar (BHMS-DEV-071).
 
@@ -76,7 +79,8 @@ The Arduino wrapper (`arduino/BHMS/src/BHMSDevice.h`) maps these onto a `Stream`
 `EEPROM` (4 bytes at a configurable address), `millis()` and a digital pin.
 `examples/LedAnalog` is the acceptance sketch (LED action, analog-read property).
 The wrapper header is `BHMSDevice.h`, not `BHMS.h`, to avoid clashing with
-`bhms.h` on case-insensitive filesystems. `library.properties` has no `url` yet.
+`bhms.h` on case-insensitive filesystems. `library.properties` has no `url` yet and lists only the `avr` architecture until
+Task 13b supplies and tests an RP2040 HAL.
 
 ## Build and test
 
@@ -92,6 +96,8 @@ cmake --build build && ctest --test-dir build --output-on-failure
 * `e2e_native_pty`: `tests/host/test_e2e.py` drives the native `sim_device` over
   a pty; the harness (`tests/host/bhms_host.py`) is an independent struct-based
   implementation of the layouts using `protocol/serial/frame.py`.
+* `description_mirror`: BHMS-DEV-071 mirroring of the example sidecar and the canonical
+  spec example, and the generated digest header.
 * `arduino_library_in_sync`: the Arduino copies equal the sources
   (`scripts/sync_arduino.sh` regenerates them).
 
@@ -114,4 +120,18 @@ a file) and runs the same `test_e2e.py` against the firmware.
   (default 16); `bhms_init` rejects a table that exceeds them. The protocol
   allows 182 bytes; raise the macros if needed (RAM grows by ring size times it).
 * `bhms_poll` runs callbacks inline and writes replies synchronously; a slow
-  callback delays the link by its duration.
+  callback delays the link by its duration. A 64-byte UART RX buffer fills in about
+  5.5 ms at 115200 baud, so any callback (or other main-loop work between polls)
+  longer than about 5 ms drops bytes, possibly a STOP frame. Such actions must
+  return `BHMS_RUN_STARTED` and do their work from the main loop in small steps.
+* The hardware stop input must be latched by the HAL (pin-change ISR or capture)
+  and held until read once; a pulse that arrives while a callback is running would
+  otherwise be lost. The Arduino wrapper does this on interrupt-capable pins
+  (Uno: 2 and 3); other pins are level-polled only.
+* `bhms_init` failure (table exceeds the bounds, missing HAL hook) leaves the
+  endpoint inert: `bhms_poll` and the application calls do nothing. Check the
+  return value; the example sketch blinks the LED fast and halts.
+* `PERSISTENT_EPOCH` is advertised only if the stored counter was read and the new
+  value stored; the stored read-back in the Arduino wrapper makes AVR EEPROM
+  durable. Other cores whose `EEPROM.put` is RAM-only until a commit need a
+  HAL that commits, which is why `library.properties` lists only `avr`.

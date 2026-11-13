@@ -10,6 +10,10 @@
  *   void setup() { Serial.begin(115200); bhms.begin(); }
  *   void loop()  { bhms.poll(); }
  *
+ * Stop pin: the asserting edge is latched in an interrupt (on interrupt-capable
+ * pins) and reported to the endpoint on its next poll, so short pulses are not lost.
+ * Long handlers still delay the endpoint's reaction (see sdk/c/README.md).
+ *
  * Thread-safety: call begin() and poll() from the main loop only.
  */
 #ifndef BHMS_DEVICE_H
@@ -42,7 +46,15 @@ public:
         hal_.stop_pin = stop_pin_ >= 0 ? &BHMSDevice::stopPin : 0;
         hal_.epoch_load = eeprom_addr_ >= 0 ? &BHMSDevice::epochLoad : 0;
         hal_.epoch_store = eeprom_addr_ >= 0 ? &BHMSDevice::epochStore : 0;
-        if (stop_pin_ >= 0) pinMode(stop_pin_, stop_low_ ? INPUT_PULLUP : INPUT);
+        if (stop_pin_ >= 0) {
+            pinMode(stop_pin_, stop_low_ ? INPUT_PULLUP : INPUT);
+            /* Latch the asserting edge in an ISR: a stop pulse shorter than one pass
+             * of loop() (or a long handler) must still stop the device. Pins without
+             * an interrupt (digitalPinToInterrupt == NOT_AN_INTERRUPT) are level-polled. */
+            if (digitalPinToInterrupt(stop_pin_) != NOT_AN_INTERRUPT)
+                attachInterrupt(digitalPinToInterrupt(stop_pin_), &BHMSDevice::stopIsr,
+                                stop_low_ ? FALLING : RISING);
+        }
         return bhms_init(&ep_, &dev_, &hal_);
     }
 
@@ -57,9 +69,19 @@ private:
     static int uartRead(void *ctx) { return self(ctx).port_.read(); }
     static void uartWrite(void *ctx, const uint8_t *buf, size_t n) { self(ctx).port_.write(buf, n); }
     static uint32_t now(void *) { return millis(); }
+    static volatile uint8_t &latch() {
+        static volatile uint8_t v; /* set by the ISR, consumed by stopPin() */
+        return v;
+    }
+    static void stopIsr() { latch() = 1; }
     static int stopPin(void *ctx) {
         BHMSDevice &d = self(ctx);
-        return (digitalRead(d.stop_pin_) == LOW) == d.stop_low_;
+        uint8_t latched;
+        noInterrupts();
+        latched = latch();
+        latch() = 0;
+        interrupts();
+        return latched || ((digitalRead(d.stop_pin_) == LOW) == d.stop_low_);
     }
     static int epochLoad(void *ctx, uint32_t *epoch) {
         uint32_t v = 0;
