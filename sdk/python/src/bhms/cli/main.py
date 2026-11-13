@@ -10,9 +10,10 @@ app = typer.Typer(name="bhms", no_args_is_help=True, add_completion=False, prett
                   epilog="Targets (--url / BHMS_URL): unix:/path, ws://host:port, http://host:port/bhms, a server .py or a "
                          "gateway .toml. Exit status: 0 ok, 1 refused or failed, 2 usage, 3 not settled (running or unknown).")
 
-from bhms.cli import commands, doctor, inspector, scaffold, serve  # noqa: E402  (they register on `app`)
+from bhms.cli import bench, commands, doctor, inspector, scaffold, serve  # noqa: E402  (they register on `app`)
 
 commands.register(app)
+bench.register(app)
 doctor.register(app)
 scaffold.register(app)
 inspector.register(app)

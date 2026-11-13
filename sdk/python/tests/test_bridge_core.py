@@ -563,3 +563,35 @@ async def test_a_push_only_property_falls_back_to_its_retained_observation_with_
     finally:
         await client.close()
         await srv.close()
+
+
+async def test_a_changed_description_is_refused_and_the_cache_is_dropped(tmp_path):  # BHMS-DEV digest, AGT-021
+    srv = DeviceServer("changing", state_dir=tmp_path)
+    dev = srv.device("d-1", resources=["d-1"])
+    dev.report_alive()
+
+    @dev.action(effect="reversible", idempotency="absolute", max_duration_ms=1000)
+    async def poke(ctx, level: Range(0, 10, unit="1", integer=True)) -> None:
+        return None
+
+    await srv.start()
+    client = await Client.from_transport(await connect_in_process(srv.rpc))
+    bridge = AgentBridge(client)
+    try:
+        await bridge.call("bhms_describe", {"device_id": "d-1"})  # caches the description
+        dev.invalidate()
+        dev._description = None
+
+        @dev.action(effect="reversible", idempotency="absolute", max_duration_ms=1000)
+        async def other(ctx) -> None:
+            return None
+
+        dev.invalidate()
+        stale = await bridge.call("bhms_invoke", {"device_id": "d-1", "action": "poke", "arguments": {"level": 3}})
+        assert stale.error["bhmsCode"] == "STALE" and "bhms_describe again" in stale.error["hint"]
+        ok = await bridge.call("bhms_invoke", {"device_id": "d-1", "action": "poke", "arguments": {"level": 3}})
+        assert ok.error is None and ok.data["operation"]["state"] == "completed"
+    finally:
+        await bridge.aclose()
+        await client.close()
+        await srv.close()

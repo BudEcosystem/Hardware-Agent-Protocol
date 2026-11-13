@@ -105,7 +105,7 @@ class Inspector:
         try:
             async with subscription:
                 async for note in subscription:
-                    self._show(note.method, note.params)
+                    await self._show(note.method, note.params)
         except asyncio.CancelledError:
             raise
         except Exception as exc:
@@ -113,11 +113,13 @@ class Inspector:
             return
         self.console.print(f"[yellow]live feed ended ({subscription.end_reason}); `reload` or restart to listen again[/]")
 
-    def _show(self, method: str, params: Any) -> None:
+    async def _show(self, method: str, params: Any) -> None:
         if method == "notifications/operation":
             op = to_wire(params.operation)
             style = STATE_STYLE.get(op["state"], "white")
-            self.console.print(f"[dim]▸[/] [{style}]{escape(render.summarize_operation(op, keyed=True))}[/]")
+            description = await self.bridge.description_for_operation(op) if self.bridge and op["state"] == "completed" else None
+            line = render.summarize_operation(op, keyed=True, description=description, wait_hint=False)
+            self.console.print(f"[dim]▸[/] [{style}]{escape(line)}[/]")
         elif method == "notifications/event":
             e = params.event
             where = f" {e.device_id}" if e.device_id else ""

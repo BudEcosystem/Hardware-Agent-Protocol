@@ -331,7 +331,7 @@ def _error_parts(error: dict[str, Any]) -> tuple[str, str]:
 
 
 def summarize_operation(op: dict[str, Any], *, replayed: bool = False, description: dict[str, Any] | None = None,
-                        keyed: bool = True, show_key: bool = False) -> str:
+                        keyed: bool = True, show_key: bool = False, wait_hint: bool = True) -> str:
     """``pump-1.dispense op-7f3a completed: dispensed 50 uL (effect verified, 2.1 s)``.
 
     States the operation's ``state`` and ``effect``; ``replayed`` adds the word (AGT-011); ``keyed=False`` appends
@@ -366,7 +366,7 @@ def summarize_operation(op: dict[str, Any], *, replayed: bool = False, descripti
         where = f"{int(prog * 100)}% " if isinstance(prog, (int, float)) else ""
         waited = f"after {duration(took)} " if took else ""
         body = f"{where}{waited}(effect {effect})"
-        nxt = f'call bhms_operation(operation_id="{op_id}", wait_ms=30000)'
+        nxt = f'call bhms_operation(operation_id="{op_id}", wait_ms=30000)' if wait_hint else ""
         text = compose(f"{subject} {op_id} " + (f"replayed: {state}" if replayed else state), body, nxt, suffix,
                        next_first=True)
     return text

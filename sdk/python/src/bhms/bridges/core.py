@@ -272,8 +272,11 @@ class AgentBridge:
                              "original operation instead of acting again)" if key else
                              "no operation_key was given, so a repeat could act twice: read the device's properties to "
                              "see whether it acted")
-        elif exc.code in ("UNKNOWN_DEVICE", "STALE") and exc.field in ("deviceId", "device_id", None):
-            self._descriptions.pop(str(arguments.get("device_id", "")), None)
+        elif exc.code in ("UNKNOWN_DEVICE", "STALE") and exc.field in ("deviceId", "device_id", "descriptionDigest", None):
+            self._descriptions.pop(str(arguments.get("device_id", "")), None)  # re-describe before the next attempt
+            if exc.field == "descriptionDigest":
+                error["hint"] = ("the device description changed since it was cached: call bhms_describe again and "
+                                 "re-check the arguments; " + error["hint"]).strip()[:2000]
         return ToolResult(render.summarize_refusal(error), error=error)
 
     def _check_input(self, name: str, arguments: dict[str, Any]) -> None:
@@ -388,7 +391,8 @@ class AgentBridge:
     def _wait(self, args: dict[str, Any]) -> int:
         return max(0, min(int(args.get("wait_ms", DEFAULT_WAIT_MS)), self.max_wait_ms, MAX_WAIT_MS))
 
-    async def _desc_for_op(self, op: dict[str, Any]) -> dict[str, Any] | None:
+    async def description_for_operation(self, op: dict[str, Any]) -> dict[str, Any] | None:
+        """The description of the device ``op`` acted on (None for programs or when it cannot be fetched)."""
         device = op.get("deviceId")
         if not device:
             return None
@@ -400,7 +404,7 @@ class AgentBridge:
     async def _operation_result(self, result: Any, *, tool: str, replayed: bool = False, keyed: bool = True) -> ToolResult:
         data = to_wire(result)
         op = data["operation"]
-        desc = await self._desc_for_op(op) if op.get("state") == "completed" else None
+        desc = await self.description_for_operation(op) if op.get("state") == "completed" else None
         summary = render.summarize_operation(op, replayed=replayed, description=desc, keyed=keyed,
                                              show_key=tool in ("bhms_invoke", "bhms_run_program"))
         failed = op.get("state") in ("failed", "rejected", "unknown")
@@ -534,8 +538,6 @@ class AgentBridge:
             if not exc.may_have_acted:
                 await self._release(lease.lease_id)  # nothing was admitted: nothing to protect
             raise  # may have acted: keep the lease until its TTL, never release under a possibly running operation
-        except BaseException:
-            raise
         op = result.operation
         if op.state in SETTLED_STATES:
             await self._release(lease.lease_id)

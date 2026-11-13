@@ -238,7 +238,8 @@ async def test_the_default_client_is_built_from_the_key_and_the_loop_never_logs_
             made.append(api_key)
 
     import bhms.bridges.openai_tools as module
-    import openai
+
+    openai = pytest.importorskip("openai")
 
     monkeypatch.setattr(openai, "AsyncOpenAI", Fake)
     with caplog.at_level(logging.DEBUG):
