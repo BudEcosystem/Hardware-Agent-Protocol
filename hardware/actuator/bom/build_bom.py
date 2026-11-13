@@ -44,6 +44,8 @@ HARDWARE = [
     ("Arm", "Serial bus servo 12 V, 30 kg.cm, 4096-count magnetic encoder", "Feetech", "STS3215 (12 V, C018 1:345)", 5, 18.00,
      "IDs 1-5; variant code to confirm with supplier at order time"),
     ("Arm", "Deep-groove ball bearing 8x22x7", "generic (e.g. SKF)", "608-2RS", 4, 0.50, "shoulder and elbow shafts"),
+    ("Arm", "Shoulder pinion, machined steel (C45), 17T module 1.5, 14 mm face, 4 x M2 on a 14 mm circle (CNC service, drawing = cad/out/pinion_shoulder.step)",
+     "CNC service (custom)", "pinion_shoulder.step", 1, 18.00, "ESTIMATE of a one-off turned and milled part; replaces the printed pinion (stress, design.md section 4)"),
     ("Arm", "Deep-groove ball bearing 4x13x5", "generic (e.g. SKF)", "624-2RS", 3, 0.60, "2 pinion supports, wrist idler"),
     ("Arm", "Deep-groove ball bearing 30x42x7", "generic (e.g. SKF)", "6806-2RS", 1, 3.00, "yaw turntable"),
     ("Arm", "Hex bolt M8x70, partial thread, 8.8, zinc", "generic", "ISO 4014 M8x70", 2, 0.40, "shoulder/elbow shafts"),

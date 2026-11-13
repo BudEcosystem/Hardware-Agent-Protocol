@@ -3,11 +3,11 @@
  "note": "STEP files embed a timestamp, so their hashes change on every run",
  "files": {
   "assembly.json": {
-   "sha256": "738e1f62fcdff122a18b7668b7f0d3a0007d2de3a3d049700e1bfc149a61ed7a",
-   "bytes": 28958
+   "sha256": "6d38289a7bcb87c5c1c6e5374ee8c46feb1ec446a630e5083a6d3f648ca064c8",
+   "bytes": 29910
   },
   "base_plate.step": {
-   "sha256": "b3a4b66096e21f5b9b6dd92bc0a2dc80da39436f9dec342c183a9cafc0066e63",
+   "sha256": "af6ba4237e20bc8bd82531bdebe2cd09250fcc269af1eb910b412ac7f86a2162",
    "bytes": 328351
   },
   "base_plate.stl": {
@@ -15,7 +15,7 @@
    "bytes": 337184
   },
   "base_shell.step": {
-   "sha256": "bf068eb9a2e10ec16bd8eace2ab0f1178200ed2c73ea9efc7c4e00d0c3d84099",
+   "sha256": "7d8baf6f2429b631b2145d38b3ab6f5a9e41d3e7a556aaad35a80218dab8de09",
    "bytes": 477930
   },
   "base_shell.stl": {
@@ -23,7 +23,7 @@
    "bytes": 243284
   },
   "cable_clip.step": {
-   "sha256": "06fcbc788896da97dfce7d06a6aa73be124f5e9c7a1c50a6fc55fcd5259a6d2e",
+   "sha256": "9ad40d947661826daafb82d9a8a8909e13d19d21ef7175fc0645eef4f37c97c5",
    "bytes": 42901
   },
   "cable_clip.stl": {
@@ -31,7 +31,7 @@
    "bytes": 2284
   },
   "clamp_body.step": {
-   "sha256": "c7bd2a39a7d5042aa8818f0067493de6183d86a5f03ff297f281b102c3dd4487",
+   "sha256": "db87254c0dc8c1e77eb68f0b2b94fbb9fe900be3f592025aba2f52f42a229fa3",
    "bytes": 67702
   },
   "clamp_body.stl": {
@@ -39,7 +39,7 @@
    "bytes": 28484
   },
   "clamp_knob.step": {
-   "sha256": "8d97d2eff533fbd8d89ff6f8e8588e7605230bf03bbd2c08f0490268024bd7d3",
+   "sha256": "5b96e9a02dd7fe4cb68631b3d084657347461726cd07b52b29a135757426ab82",
    "bytes": 304070
   },
   "clamp_knob.stl": {
@@ -47,7 +47,7 @@
    "bytes": 28284
   },
   "clamp_pad.step": {
-   "sha256": "e9a9997294ee2b385b2fad4ceb4e0e1eebf0eb729d89690cbfa7a24792626d8a",
+   "sha256": "cf26499b74bbdd74067746b85d9771bd71c8b451b296fe217e4e390e56fd3faf",
    "bytes": 13362
   },
   "clamp_pad.stl": {
@@ -55,11 +55,11 @@
    "bytes": 37684
   },
   "clearance.json": {
-   "sha256": "d46f284aeb259d1f5de74a49b579595e11b3675c0eb2949ca45b6747ea4b84fe",
-   "bytes": 20671
+   "sha256": "bc568782f39b5b5fe8429f018df77800f11c35da7cd668f25a31795714587be5",
+   "bytes": 19746
   },
   "flange_arm.step": {
-   "sha256": "acd3dd07ee97aab0d5fb0719c12431a2d03a2dd1f1c43dc75c3afa0b9360134f",
+   "sha256": "7dbe6ae72cd26531092ca740e792863c3f0972bec4f711a356c4e95d36c6e2a1",
    "bytes": 279330
   },
   "flange_arm.stl": {
@@ -67,15 +67,15 @@
    "bytes": 253484
   },
   "forearm.step": {
-   "sha256": "e8f5292e4376db65a4b829dd4e139d3a68c07de085d26d1dc76e32cc0aa492c2",
-   "bytes": 2300099
+   "sha256": "203dbd431113185dadab83d6d606a92f012fac4e14b6d985d9664778287f8580",
+   "bytes": 2299965
   },
   "forearm.stl": {
-   "sha256": "67e18cdb3773e8e048a800d75b491659cfef56a6b839382edfb5b4e5f92f9154",
+   "sha256": "83b3110c431e6104966431cfef052f59eb6125898638c23532d791b02eec70e4",
    "bytes": 316884
   },
   "gripper_body.step": {
-   "sha256": "3f9891e7b8b3b16531bb2615e0ddc4ff051a6a89d3ee50583d732cbf54699518",
+   "sha256": "7b86aa0ba6ba74d86fffaf0263cb9056fa97f31ebdb826eecc8f03648b99099b",
    "bytes": 724080
   },
   "gripper_body.stl": {
@@ -83,7 +83,7 @@
    "bytes": 221384
   },
   "gripper_finger.step": {
-   "sha256": "93f21ecfe4a0cb75dfc019078224f958598b0a47b420b8390f5368864cdc58ea",
+   "sha256": "0c04852247eb7197b511159416723a79f49e7915d600f704e61fd29b5a4550bb",
    "bytes": 234287
   },
   "gripper_finger.stl": {
@@ -91,7 +91,7 @@
    "bytes": 34084
   },
   "gripper_pinion.step": {
-   "sha256": "1f47e5d8a27ba307f6a792fbd859ad2c5103be35e9d10a5f575c069fa2dfe04d",
+   "sha256": "d32fe231ab383f829bd87d8f863daa86b8457d02eb1c2268332944a3d588087b",
    "bytes": 1560656
   },
   "gripper_pinion.stl": {
@@ -99,7 +99,7 @@
    "bytes": 191084
   },
   "gripper_rack.step": {
-   "sha256": "18e5b0d523be5fd2f8c290397de165b955347d3ebbd7e659b0481341278647ac",
+   "sha256": "4d7d06bcb580c3d2804e2c9e40525aea0f40766bbe5abf43ae2968977d86ab8f",
    "bytes": 265810
   },
   "gripper_rack.stl": {
@@ -107,7 +107,7 @@
    "bytes": 26484
   },
   "knob_body.step": {
-   "sha256": "73b6a924ce1e5a0f7170cf71b1eef7e0709002edc5e952f6072dbe5061de96e9",
+   "sha256": "55f65adadcff8723027016f627612832969f05b981d03c2ede3b1d338f24e089",
    "bytes": 657553
   },
   "knob_body.stl": {
@@ -115,7 +115,7 @@
    "bytes": 312084
   },
   "knob_collet.step": {
-   "sha256": "93fdd1184bd245d9fb2c65ba600a8a4fceba6f3cf466261a04aea7ae5dfd63fe",
+   "sha256": "935119209712880be18cc4653cc9c43b7e8b8c0a235a47d05e515aed3fc3502b",
    "bytes": 1020844
   },
   "knob_collet.stl": {
@@ -123,7 +123,7 @@
    "bytes": 280884
   },
   "knob_collet_hub.step": {
-   "sha256": "e32a37fa52cb91d72b28d40045d0dce22167fbd3b24f80f0724f80e1852a318c",
+   "sha256": "26f4141d809615f74679841302e18dec69047fb1901650886d63a936df506704",
    "bytes": 86549
   },
   "knob_collet_hub.stl": {
@@ -131,7 +131,7 @@
    "bytes": 94084
   },
   "knob_magnet_cap.step": {
-   "sha256": "58f0667269c37385f524277300e691853b111d20d30a394e8c476ee892e1906b",
+   "sha256": "95bee3fd3fc3bcb6c44b08c079dc8cebebe0d6a1d2ee725e9b590136c13b5829",
    "bytes": 13373
   },
   "knob_magnet_cap.stl": {
@@ -139,7 +139,7 @@
    "bytes": 37684
   },
   "knob_output_gear.step": {
-   "sha256": "3a3be8ca2e076838f684169fd1d6bbeb42093c7fbf511e6e3f7c3f4a78b4ff04",
+   "sha256": "1dcb523c81ea4a787925b5fb0ef1fdd48aa2528825e10fa1eaef81d41f1e3f33",
    "bytes": 3579013
   },
   "knob_output_gear.stl": {
@@ -147,7 +147,7 @@
    "bytes": 243684
   },
   "knob_servo_gear.step": {
-   "sha256": "dd671d61b5d51c052413b9a24ab76a48fc48cdf0e9469727e76f3019b0297a7c",
+   "sha256": "b0569575a8d1945649601967fea3635e021267da77f5b11d4140c91b5d7e666a",
    "bytes": 1286518
   },
   "knob_servo_gear.stl": {
@@ -159,11 +159,11 @@
    "bytes": 13929
   },
   "parts.json": {
-   "sha256": "93114673a10131ed1184bf1fe67fd00fa7658c75206234af645da96bc3eae5c2",
-   "bytes": 16149
+   "sha256": "d451a78beae2b21d454acafb57fd87914f01a53798514c54f20f719a34aab206",
+   "bytes": 16128
   },
   "pinion_elbow.step": {
-   "sha256": "3be02244f78d4b3d26ef264610bf9d984fca39f28e9ef117bb63aa3bb7cb2312",
+   "sha256": "ee6963c5c9964545121859bf73908d31a5c371c0b208a438dd6fadf923dee0e8",
    "bytes": 1149531
   },
   "pinion_elbow.stl": {
@@ -171,7 +171,7 @@
    "bytes": 194184
   },
   "pinion_shoulder.step": {
-   "sha256": "531b9442bc5395483fec2b4979999f4fbe01f27ea591a06e3a3e9e8dcc014481",
+   "sha256": "b299241dc5d5e521894aa4af19ab4291f613db3ee14a7ebd4f29dec8265e014e",
    "bytes": 1149500
   },
   "pinion_shoulder.stl": {
@@ -179,7 +179,7 @@
    "bytes": 194184
   },
   "pod_lid.step": {
-   "sha256": "1812ed69a7c1483f6cbf9850df7954e42a2af63129779874619f14abee101d95",
+   "sha256": "2992ebc1417007ce9af12d5b49178626279da1bbc09af65b61f814d606bc7363",
    "bytes": 55810
   },
   "pod_lid.stl": {
@@ -187,7 +187,7 @@
    "bytes": 68084
   },
   "presser_body.step": {
-   "sha256": "88a4ec9f0b674f61695f682c34f7b64070176b8439c9d8df22f04add797e5953",
+   "sha256": "d5989005095445c2279b3d1073a3bc3d8d330024c3110b2b97f9b28876e10809",
    "bytes": 692273
   },
   "presser_body.stl": {
@@ -195,7 +195,7 @@
    "bytes": 194284
   },
   "presser_cam.step": {
-   "sha256": "c9814154369b1d98a02f180c1cfb5f7a9ec51478e9af0de1170533f2ff4da6c9",
+   "sha256": "12e96fa985103da12fef50c3a6da634c59468dd5f57a8424eac4ddf301359522",
    "bytes": 42038
   },
   "presser_cam.stl": {
@@ -203,7 +203,7 @@
    "bytes": 126884
   },
   "presser_plunger.step": {
-   "sha256": "ca555022b1d44c1a8616d9cd40e42a226e892032c8272714a4df554552c21ebe",
+   "sha256": "84a7bb004049c890d0caf523f90f11bd62a41429f8e3c84bd155361a4eeac25a",
    "bytes": 41525
   },
   "presser_plunger.stl": {
@@ -211,7 +211,7 @@
    "bytes": 24684
   },
   "presser_tip_cap.step": {
-   "sha256": "0df27232f72120b8749af983f7dcb957d7ffd3e2f3de021fc6ff33d48f9aa25b",
+   "sha256": "511674dca89d01290dc36a4616bd483e9f0a1064944363e824433a9593b9c4d4",
    "bytes": 24029
   },
   "presser_tip_cap.stl": {
@@ -219,7 +219,7 @@
    "bytes": 25884
   },
   "pusher_body.step": {
-   "sha256": "bd4748dd90f7c5b8b754f3ad6e4a06a5d1bf7b08f286bcdab779999a02004b6a",
+   "sha256": "38e8842ad196715b8eea402440626ebbd5278ebf83cec0909b7d90ccbe382244",
    "bytes": 506345
   },
   "pusher_body.stl": {
@@ -227,7 +227,7 @@
    "bytes": 130484
   },
   "pusher_pad.step": {
-   "sha256": "adfe225e587545fe5999ce554cca644ff4a3d4c3edf589901b8f2415021b3eb8",
+   "sha256": "623bd9e7d4321a772f7c3f5f69ce39a1e2b737475d80f1641c0f5ca46be1f47e",
    "bytes": 30252
   },
   "pusher_pad.stl": {
@@ -235,7 +235,7 @@
    "bytes": 1484
   },
   "ref_sts3215.step": {
-   "sha256": "b25e2cdd05c94bcdd52d34c79db49458054dc25e99576773d78ca743250b03d8",
+   "sha256": "9377710409d0eac0997c9919673abc83c2dfb1ce7b5248b4378c820bc3287c25",
    "bytes": 23298
   },
   "ref_sts3215.stl": {
@@ -243,7 +243,7 @@
    "bytes": 25884
   },
   "servo_lid.step": {
-   "sha256": "55d94f6469e78464ef395a6ac71275175a32f2c7a62dc4e2a9979d2e0d64a8c0",
+   "sha256": "8b0b75406633341d2d0c7148546a80e9b941b036225a17a9e4dde61bfcc5de3f",
    "bytes": 45154
   },
   "servo_lid.stl": {
@@ -251,7 +251,7 @@
    "bytes": 52884
   },
   "tolerance_coupon.step": {
-   "sha256": "3aac4d1b91965fbc7424e6501094d0db446b07a8c17a4ef8ac356c55a9157bc3",
+   "sha256": "18fd3eee7e48de6da670111cb9ac51582723e51d6c3cd7a97d1a808282f77ec9",
    "bytes": 77132
   },
   "tolerance_coupon.stl": {
@@ -259,7 +259,7 @@
    "bytes": 143284
   },
   "tool_rack.step": {
-   "sha256": "0e5d5add20074755d3b1a1308869f26d38768ba69c2f2cbcd3eaf34597368b5f",
+   "sha256": "91a07d50101bcb5eb20dd9de3647358bbad9b29eca4abe9da5b9aca08199e314",
    "bytes": 311410
   },
   "tool_rack.stl": {
@@ -267,11 +267,11 @@
    "bytes": 114084
   },
   "torque_budget.json": {
-   "sha256": "2df49bc5a0256a94ce00ab5256f70c836fe163464dc6f4baf1ea762db41bf713",
-   "bytes": 16426
+   "sha256": "9722a96668a9f081fcb1b5710ff63f81f31b70114d041a07da161cf73849ad96",
+   "bytes": 18495
   },
   "turret.step": {
-   "sha256": "e141b39294ef91232fdf1d21626013bccba5b4245b0512ac32c8c6be4473f65c",
+   "sha256": "bb6307e0eec874d1e022ecc8d2ca36cb5193a78b728602367d1141df4caafd3a",
    "bytes": 485938
   },
   "turret.stl": {
@@ -279,15 +279,15 @@
    "bytes": 284284
   },
   "upper_arm.step": {
-   "sha256": "9eec31e7bd7ed3e3f4df66fb1fa6f52dc6e24d2021bd3d7f4bd82f2588952a22",
-   "bytes": 3585955
+   "sha256": "c81f0b74c29bf1a2172fe04f3cea31d3fa9affc3c224e545e682bdf258e04af2",
+   "bytes": 3585861
   },
   "upper_arm.stl": {
-   "sha256": "b3421ea600a64f2fd3a5858b5067f4f4b05590ef79d2d3b8142d61b76afba557",
+   "sha256": "27e5b419a84231681acab77fe2334e985f66f9cd70456555682a007931a6dc26",
    "bytes": 397784
   },
   "wrist_bracket.step": {
-   "sha256": "bab4a0d26ce62b2a02d8b39534fd50afbce40931d879e144ec2febce5f312342",
+   "sha256": "7cfbbff3ba89a285a5986870eca5cc1a6012f4258632671e72935ee38635687b",
    "bytes": 419936
   },
   "wrist_bracket.stl": {

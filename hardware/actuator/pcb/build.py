@@ -333,6 +333,38 @@ class ToolMissing(RuntimeError):
     pass
 
 
+class KnownOpenError(RuntimeError):
+    """known_open.json is unparseable, legacy or has unknown keys: fail hard, never treat it as empty."""
+
+
+def file_sha256(path: Path) -> str:
+    import hashlib
+
+    return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def check_gate(name: str) -> list[str]:
+    """Reasons why fabrication files must not be written for ``name`` (empty list = go): the most
+    recent ``check`` of exactly this board file must have run, with KiCad, and found zero problems."""
+    b = BOARDS[name]()
+    d = out_dir(name)
+    rep_path = d / "check_report.json"
+    if not rep_path.exists():
+        return ["no check has been run for this board (run pcb/build.py check)"]
+    rep = json.loads(rep_path.read_text())
+    reasons = []
+    pcb = d / f"{b.name}.kicad_pcb"
+    if rep.get("pcb_sha256") != file_sha256(pcb):
+        reasons.append("the board changed since the last check (re-run pcb/build.py check)")
+    if rep.get("kicad", {}).get("skipped") or "erc" not in rep.get("kicad", {}):
+        reasons.append("the last check did not run KiCad ERC/DRC")
+    if rep.get("problems") is None:
+        reasons.append("the last check report has no result")
+    elif rep["problems"]:
+        reasons += [f"last check: {x}" for x in rep["problems"]]
+    return reasons
+
+
 def allow_no_kicad() -> bool:
     return os.environ.get("ALLOW_NO_KICAD") == "1"
 
@@ -347,6 +379,8 @@ def kicad_checks(name: str) -> dict:
         if not allow_no_kicad():
             raise ToolMissing("kicad-cli not found: install KiCad 10 (or set ALLOW_NO_KICAD=1 to skip the KiCad checks, "
                               "which is reported as SKIPPED)")
+        for stale in ("erc.json", "drc.json"):  # reports of an earlier run would look current
+            (d / stale).unlink(missing_ok=True)
         return {"kicad_cli": None, "skipped": True}
     out: dict = {"kicad_cli": None, "skipped": False}
     ver = subprocess.run([cli, "version"], capture_output=True, text=True).stdout.strip().splitlines()[-1]
@@ -393,8 +427,20 @@ def known_open_items(name: str) -> dict:
     p = HERE / name / "known_open.json"
     if not p.exists():
         return {"messages": [], "kicad_unconnected": 0}
-    data = json.loads(p.read_text())
-    return {"messages": data.get("messages", []), "kicad_unconnected": int(data.get("kicad_unconnected", 0))}
+    try:
+        data = json.loads(p.read_text())
+    except ValueError as e:
+        raise KnownOpenError(f"{p}: not valid JSON ({e})") from e
+    allowed = {"note", "messages", "kicad_unconnected"}
+    extra = set(data) - allowed if isinstance(data, dict) else None
+    if extra is None or extra or "messages" not in data or "kicad_unconnected" not in data:
+        raise KnownOpenError(f"{p}: unknown or legacy schema (keys {sorted(data) if isinstance(data, dict) else type(data).__name__}); "
+                             f"expected exactly 'messages' (list of exact scripted-DRC messages), 'kicad_unconnected' (int) and an optional 'note'. "
+                             f"Delete the file if the board has no open items")
+    if not isinstance(data["messages"], list) or not all(isinstance(m, str) for m in data["messages"]) \
+            or not isinstance(data["kicad_unconnected"], int):
+        raise KnownOpenError(f"{p}: 'messages' must be a list of strings and 'kicad_unconnected' an int")
+    return {"messages": data["messages"], "kicad_unconnected": data["kicad_unconnected"]}
 
 
 def fab(name: str) -> bool:
@@ -405,19 +451,19 @@ def fab(name: str) -> bool:
     b = BOARDS[name]()
     fabd = d / "fab"
     guard = d / "DO_NOT_FABRICATE.md"
-    ko = known_open_items(name)
+    ko = known_open_items(name)  # raises KnownOpenError on a malformed file
+    reasons = check_gate(name)
     if ko["messages"] or ko["kicad_unconnected"]:
+        reasons = [f"known open item: {m}" for m in ko["messages"]] + \
+                  [f"known_open.json allows {ko['kicad_unconnected']} KiCad unconnected items"] + reasons
+    if reasons:
         if fabd.exists():
             shutil.rmtree(fabd)
-        guard.write_text(
-            f"# DO NOT FABRICATE: {b.name}\n\n"
-            "This board is not completely routed, so no Gerber/drill files are generated.\n"
-            f"Open items (pcb/{name}/known_open.json):\n\n"
-            + "".join(f"* {m}\n" for m in ko["messages"])
-            + f"\nKiCad DRC reports {ko['kicad_unconnected']} unconnected items.\n\n"
-            "Finish the routing, empty known_open.json and re-run `pcb/build.py fab`.\n")
-        print(f"[{name}] DO NOT FABRICATE: known open items, fab outputs not generated ({guard.name} written)")
-        return True
+        guard.write_text(f"# DO NOT FABRICATE: {b.name}\n\nNo Gerber/drill files are generated because:\n\n"
+                         + "".join(f"* {m}\n" for m in reasons)
+                         + "\nFix the board, run `pcb/build.py check` until it reports no problems, then `pcb/build.py fab`.\n")
+        print(f"[{name}] DO NOT FABRICATE: fab outputs not generated ({guard.name} written): " + "; ".join(reasons))
+        return False
     guard.unlink(missing_ok=True)
     cli = kicad_cli()
     if cli is None:
@@ -488,6 +534,8 @@ def main() -> int:
             problems = [f"scripted DRC: {v}" for v in fresh] + [f"known_open.json is stale (no longer reported): {m}" for m in vanished]
             problems += [f"netlist ERC: {e}" for e in report["erc_problems"]]
             k = report["kicad"]
+            if k.get("error"):
+                problems.append(f"KiCad checks did not run: {k['error']}")
             if k.get("skipped"):
                 print(f"[{name}] SKIPPED: KiCad ERC/DRC (kicad-cli missing, ALLOW_NO_KICAD=1)")
             elif "erc" in k:
@@ -499,6 +547,7 @@ def main() -> int:
                 if k["drc"]["unconnected"] != ko["kicad_unconnected"]:
                     problems.append(f"KiCad DRC: {k['drc']['unconnected']} unconnected items (known_open.json allows {ko['kicad_unconnected']})")
             report["problems"] = problems
+            report["pcb_sha256"] = file_sha256(out_dir(name) / f"{BOARDS[name]().name}.kicad_pcb")
             (out_dir(name) / "check_report.json").write_text(json.dumps(report, indent=1))
             ke = k.get("erc", {})
             kd = k.get("drc", {})
@@ -518,7 +567,10 @@ def main() -> int:
         if step == "summary":
             rep = json.loads((out_dir(name) / "check_report.json").read_text())
             k = rep.get("kicad", {})
-            if k.get("skipped"):
+            if "erc" not in k and not k.get("skipped"):
+                print(f"[{name}] FAILED: the last check has no KiCad result ({k.get('error', 'kicad-cli missing or crashed')})")
+                rc = 1
+            elif k.get("skipped"):
                 print(f"[{name}] SKIPPED KiCad ERC/DRC (ALLOW_NO_KICAD=1); scripted DRC findings {len(rep['drc_violations'])}")
             else:
                 e, d = k["erc"], k["drc"]
@@ -532,5 +584,13 @@ def main() -> int:
     return rc
 
 
+def run() -> int:
+    try:
+        return main()
+    except KnownOpenError as e:
+        print(f"FAILED: {e}")
+        return 1
+
+
 if __name__ == "__main__":
-    sys.exit(main())
+    sys.exit(run())

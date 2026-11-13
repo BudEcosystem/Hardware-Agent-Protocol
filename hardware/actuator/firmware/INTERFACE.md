@@ -113,9 +113,12 @@ as inputs with pull-downs.
 * Program Min/Max_Angle_Limit to the joint range × ratio, plus the
   calibration offset. The servo then rejects out-of-range goals itself:
   the second soft limit, behind the firmware's own limit check.
-* Recommended Max_Torque_Limit (EEPROM): 100 % for IDs 1, 3, 4, 5; **68 %
-  for ID 2** (shoulder, about 2.0 N·m at the servo: keeps the PETG 17-tooth
-  pinion below about 25 MPa, docs/design.md §4). For ID 6, at
+* Max_Torque_Limit (EEPROM and firmware): 100 % for IDs 1, 3, 4, 5; **78 %
+  for ID 2** (shoulder, 2.29 N·m at the servo). This number is a design
+  requirement, not a recommendation: below about 76 % the shoulder fails the
+  2× margin for 250 g + gripper at full reach (1.113 N·m needed), and above
+  78 % the PETG shoulder gear is over 0.5 × yield (docs/design.md §4). Write
+  780 of 1000 to the register and have the firmware read it back at boot. For ID 6, at
   most 15 % (≈ 20 N per finger). For ID 7, 2.5 % (keeps the spiral
   flexure within ±25°). For ID 8, 20 %.
 * The shoulder servo's travel is 345° of the 360° available. Calibrate so
@@ -146,17 +149,20 @@ as inputs with pull-downs.
 
   | Name | Sum | Limit | What it prevents |
   |---|---|---|---|
-  | forearm_pitch | shoulder + elbow | ≤ 195 | forearm swinging into the base |
-  | hairpin | elbow + wrist_pitch | ≤ 185 | tool or wrist folding back onto the upper arm |
-  | tool_pitch | shoulder + elbow + wrist_pitch | ≤ 190 | tool reaching the turret/base (straight down is 180) |
+  | forearm_pitch | shoulder + elbow | ≤ 175 | forearm swinging into the base |
+  | hairpin | elbow + wrist_pitch | ≤ 165 | tool or wrist folding back onto the upper arm |
+  | tool_pitch | shoulder + elbow + wrist_pitch | ≤ 183 | tool reaching the turret/base (straight down is 180) |
 
   The lower side of each sum cannot be reached inside the single-joint
   limits, so no lower limit is needed (they are stored as −180). The
   numbers live in `cad/params.py` (`Arm.coupled_limits`); the MJCF exports
   them as `coupled_<name>_deg` / `coupled_<name>_joints`. Basis: 2000 seeded
-  random poses inside all limits per tool (four tool configurations) and
-  1386 named/sweep checks show 0 collisions at allowed poses, while poses
-  just outside collide (docs/design.md §10). The servos' own angle
+  random poses inside all limits plus 150 poses ON each limit surface, per
+  tool, and 1386 named/sweep checks show 0 collisions and at least 3 mm
+  clearance at allowed poses between links that can approach each other,
+  while poses outside collide (docs/design.md §10). The first collision
+  on a surface was found at 195/185/190 (first draft of these limits), so
+  they were backed off to the values above. The servos' own angle
   registers cannot express these sums, so this check is firmware only and
   has no second layer; apply it before the first torque-enable after
   every boot, and apply it with a few degrees of margin to the *measured*

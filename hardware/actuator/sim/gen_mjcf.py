@@ -13,8 +13,8 @@ TCPs.  Writes:
 Only the standard library is needed, so this runs anywhere.
 
 Actuator model (STS3215, 12 V; see docs/design.md):
-  * position servo per joint, joint-side force limit = stall torque x gear
-    ratio x gear efficiency;
+  * position servo per joint, joint-side force limit = enforced Max_Torque_Limit
+    (fraction of stall, Joint.torque_limit) x stall torque x gear ratio x gear efficiency;
   * joint-side stiffness kp = kp_servo * ratio^2 * efficiency, critically
     damped (dampratio = 1);
   * armature = rotor inertia reflected through the 1:345 servo gearbox and
@@ -59,7 +59,7 @@ TOOL_LINKS = {
     "button_presser": ["button_presser", "presser_plunger"],
     "slider_pusher": ["slider_pusher"],
 }
-RGBA = {"PLA": "0.85 0.85 0.82 1", "PETG": "0.22 0.47 0.78 1", "TPU": "0.12 0.12 0.12 1", "servo": "0.06 0.06 0.06 1"}
+RGBA = {"steel": "0.62 0.64 0.67 1", "PLA": "0.85 0.85 0.82 1", "PETG": "0.22 0.47 0.78 1", "TPU": "0.12 0.12 0.12 1", "servo": "0.06 0.06 0.06 1"}
 
 
 def fmt(v) -> str:
@@ -74,11 +74,12 @@ CUBE_POS = (0.24, 0.0, CUBE_HALF)
 PLACE_POS = (0.18, 0.16, CUBE_HALF)
 
 
-def joint_limits(servo: dict, gear: dict, ratio: float) -> tuple[float, float]:
-    """(joint-side force limit N m, joint no-load speed rad/s) for a servo
-    behind a printed reduction of ``ratio`` (same efficiency for every pair)."""
+def joint_limits(servo: dict, gear: dict, ratio: float, torque_limit: float = 1.0) -> tuple[float, float]:
+    """(joint-side force limit N m, joint no-load speed rad/s) for a servo behind a
+    reduction of ``ratio`` (same efficiency for every pair).  ``torque_limit`` is the
+    enforced Max_Torque_Limit as a fraction of stall: the force limit follows it."""
     eff = gear["efficiency"] if ratio > 1.0 else 1.0
-    return servo["stall_torque_nm"] * ratio * eff, servo["no_load_speed_rad_s"] / ratio
+    return servo["stall_torque_nm"] * torque_limit * ratio * eff, servo["no_load_speed_rad_s"] / ratio
 
 
 def build(asm: dict, tool: str, scene: bool = False) -> ET.ElementTree:
@@ -161,10 +162,11 @@ def build(asm: dict, tool: str, scene: bool = False) -> ET.ElementTree:
         b = add_link(parent, lk, n["pos"])
         lo, hi = (math.radians(x) for x in n["range_deg"])
         ratio = n["ratio"]
-        fmax, wmax = joint_limits(servo, gear, ratio)
+        _, wmax = joint_limits(servo, gear, ratio)
+        fmax_full = servo["stall_torque_nm"] * ratio * (gear["efficiency"] if ratio > 1.0 else 1.0)
         ET.SubElement(b, "joint", name=n["joint"], type="hinge", axis=fmt(n["axis"]), range=fmt([lo, hi]),
                       armature=fmt(ROTOR_INERTIA * (SERVO_GEARBOX * ratio) ** 2),
-                      frictionloss=fmt(SERVO_FRICTION * ratio), damping=fmt(max(0.05, fmax / wmax)))
+                      frictionloss=fmt(SERVO_FRICTION * ratio), damping=fmt(max(0.05, fmax_full / wmax)))  # DC line: stall torque / no-load speed
         speed_limits[n["joint"]] = wmax
         parent = b
     flange = bodies["flange"]
@@ -210,7 +212,7 @@ def build(asm: dict, tool: str, scene: bool = False) -> ET.ElementTree:
         n = tree[lk]
         ratio = n["ratio"]
         eff = gear["efficiency"] if ratio > 1.0 else 1.0
-        fmax, _ = joint_limits(servo, gear, ratio)
+        fmax, _ = joint_limits(servo, gear, ratio, n.get("torque_limit", 1.0))
         kp = KP_SERVO * ratio ** 2 * eff
         lo, hi = (math.radians(x) for x in n["range_deg"])
         ET.SubElement(actuator, "position", name=n["joint"], joint=n["joint"], kp=fmt(kp), dampratio="1",

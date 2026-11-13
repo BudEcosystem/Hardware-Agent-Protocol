@@ -5,9 +5,11 @@
  "sweep_step_deg": 5.0,
  "checks": {
   "named_and_sweeps": 1386,
-  "random": 10000
+  "random": 10000,
+  "boundary": 1800
  },
  "worker_processes": 7,
+ "required_clearance_mm": 3.0,
  "coupled_limits": [
   {
    "name": "forearm_pitch",
@@ -16,7 +18,7 @@
     "elbow_pitch"
    ],
    "lo_deg": -180.0,
-   "hi_deg": 195.0
+   "hi_deg": 175.0
   },
   {
    "name": "hairpin",
@@ -25,7 +27,7 @@
     "wrist_pitch"
    ],
    "lo_deg": -180.0,
-   "hi_deg": 185.0
+   "hi_deg": 165.0
   },
   {
    "name": "tool_pitch",
@@ -35,7 +37,7 @@
     "wrist_pitch"
    ],
    "lo_deg": -180.0,
-   "hi_deg": 190.0
+   "hi_deg": 183.0
   }
  ],
  "excluded_pairs": [
@@ -62,9 +64,9 @@
  ],
  "collisions_at_allowed_poses": [],
  "forbidden_pose_collisions": {
-  "poses_with_hits": 192,
+  "poses_with_hits": 134,
   "pitch_sum_range_deg": [
-   108.2,
+   127.3,
    299.1
   ],
   "pairs": [
@@ -73,7 +75,6 @@
    "button_presser: base:base_plate <-> button_presser:ref_sts3215",
    "button_presser: base:base_plate <-> button_presser:servo_lid",
    "button_presser: base:base_plate <-> flange:flange_arm",
-   "button_presser: base:base_plate <-> forearm:forearm",
    "button_presser: base:base_plate <-> presser_plunger:presser_plunger",
    "button_presser: base:base_plate <-> presser_plunger:presser_tip_cap",
    "button_presser: base:base_plate <-> wrist:ref_sts3215",
@@ -84,8 +85,6 @@
    "button_presser: base:base_shell <-> button_presser:ref_sts3215",
    "button_presser: base:base_shell <-> button_presser:servo_lid",
    "button_presser: base:base_shell <-> flange:flange_arm",
-   "button_presser: base:base_shell <-> forearm:forearm",
-   "button_presser: base:base_shell <-> forearm:ref_sts3215",
    "button_presser: base:base_shell <-> presser_plunger:presser_plunger",
    "button_presser: base:base_shell <-> presser_plunger:presser_tip_cap",
    "button_presser: base:base_shell <-> wrist:ref_sts3215",
@@ -129,10 +128,7 @@
    "button_presser: turret:ref_sts3215 <-> presser_plunger:presser_tip_cap",
    "button_presser: turret:servo_lid <-> button_presser:presser_body",
    "button_presser: turret:servo_lid <-> button_presser:presser_cam",
-   "button_presser: turret:servo_lid <-> button_presser:ref_sts3215",
-   "button_presser: turret:servo_lid <-> button_presser:servo_lid",
    "button_presser: turret:servo_lid <-> presser_plunger:presser_plunger",
-   "button_presser: turret:servo_lid <-> presser_plunger:presser_tip_cap",
    "button_presser: turret:turret <-> button_presser:presser_body",
    "button_presser: turret:turret <-> button_presser:presser_cam",
    "button_presser: turret:turret <-> button_presser:ref_sts3215",
@@ -146,7 +142,6 @@
    "button_presser: upper_arm:upper_arm <-> button_presser:servo_lid",
    "button_presser: upper_arm:upper_arm <-> presser_plunger:presser_plunger",
    "gripper: base:base_plate <-> flange:flange_arm",
-   "gripper: base:base_plate <-> forearm:forearm",
    "gripper: base:base_plate <-> gripper:gripper_body",
    "gripper: base:base_plate <-> gripper:gripper_pinion",
    "gripper: base:base_plate <-> gripper:ref_sts3215",
@@ -159,8 +154,6 @@
    "gripper: base:base_plate <-> wrist:servo_lid",
    "gripper: base:base_plate <-> wrist:wrist_bracket",
    "gripper: base:base_shell <-> flange:flange_arm",
-   "gripper: base:base_shell <-> forearm:forearm",
-   "gripper: base:base_shell <-> forearm:ref_sts3215",
    "gripper: base:base_shell <-> gripper:gripper_body",
    "gripper: base:base_shell <-> gripper:gripper_pinion",
    "gripper: base:base_shell <-> gripper:ref_sts3215",
@@ -204,7 +197,6 @@
    "gripper: turret:pinion_shoulder <-> gripper:gripper_body",
    "gripper: turret:pinion_shoulder <-> gripper:gripper_pinion",
    "gripper: turret:pinion_shoulder <-> gripper:ref_sts3215",
-   "gripper: turret:pinion_shoulder <-> gripper:servo_lid",
    "gripper: turret:pinion_shoulder <-> gripper_finger_a:gripper_finger",
    "gripper: turret:pinion_shoulder <-> gripper_finger_a:gripper_rack",
    "gripper: turret:pinion_shoulder <-> gripper_finger_b:gripper_finger",
@@ -224,7 +216,6 @@
    "gripper: turret:servo_lid <-> gripper_finger_a:gripper_finger",
    "gripper: turret:servo_lid <-> gripper_finger_a:gripper_rack",
    "gripper: turret:servo_lid <-> gripper_finger_b:gripper_finger",
-   "gripper: turret:servo_lid <-> gripper_finger_b:gripper_rack",
    "gripper: turret:turret <-> flange:flange_arm",
    "gripper: turret:turret <-> gripper:gripper_body",
    "gripper: turret:turret <-> gripper:gripper_pinion",
@@ -243,7 +234,6 @@
    "gripper: upper_arm:upper_arm <-> gripper_finger_b:gripper_finger",
    "gripper: upper_arm:upper_arm <-> gripper_finger_b:gripper_rack",
    "knob_turner: base:base_plate <-> flange:flange_arm",
-   "knob_turner: base:base_plate <-> forearm:forearm",
    "knob_turner: base:base_plate <-> knob_output:knob_collet",
    "knob_turner: base:base_plate <-> knob_output:knob_collet_hub",
    "knob_turner: base:base_plate <-> knob_output:knob_magnet_cap",
@@ -256,8 +246,6 @@
    "knob_turner: base:base_plate <-> wrist:servo_lid",
    "knob_turner: base:base_plate <-> wrist:wrist_bracket",
    "knob_turner: base:base_shell <-> flange:flange_arm",
-   "knob_turner: base:base_shell <-> forearm:forearm",
-   "knob_turner: base:base_shell <-> forearm:ref_sts3215",
    "knob_turner: base:base_shell <-> knob_output:knob_collet",
    "knob_turner: base:base_shell <-> knob_output:knob_collet_hub",
    "knob_turner: base:base_shell <-> knob_output:knob_magnet_cap",
@@ -302,7 +290,6 @@
    "knob_turner: turret:pinion_shoulder <-> knob_output:knob_collet_hub",
    "knob_turner: turret:pinion_shoulder <-> knob_output:knob_output_gear",
    "knob_turner: turret:pinion_shoulder <-> knob_turner:knob_body",
-   "knob_turner: turret:pinion_shoulder <-> knob_turner:knob_servo_gear",
    "knob_turner: turret:pinion_shoulder <-> knob_turner:ref_sts3215",
    "knob_turner: turret:ref_sts3215 <-> knob_output:knob_collet",
    "knob_turner: turret:ref_sts3215 <-> knob_output:knob_collet_hub",
@@ -315,8 +302,6 @@
    "knob_turner: turret:servo_lid <-> knob_output:knob_collet_hub",
    "knob_turner: turret:servo_lid <-> knob_output:knob_output_gear",
    "knob_turner: turret:servo_lid <-> knob_turner:knob_body",
-   "knob_turner: turret:servo_lid <-> knob_turner:knob_servo_gear",
-   "knob_turner: turret:servo_lid <-> knob_turner:ref_sts3215",
    "knob_turner: turret:turret <-> flange:flange_arm",
    "knob_turner: turret:turret <-> knob_output:knob_collet",
    "knob_turner: turret:turret <-> knob_output:knob_collet_hub",
@@ -334,15 +319,12 @@
    "knob_turner: upper_arm:upper_arm <-> knob_turner:ref_sts3215",
    "knob_turner: upper_arm:upper_arm <-> knob_turner:servo_lid",
    "slider_pusher: base:base_plate <-> flange:flange_arm",
-   "slider_pusher: base:base_plate <-> forearm:forearm",
    "slider_pusher: base:base_plate <-> slider_pusher:pusher_body",
    "slider_pusher: base:base_plate <-> slider_pusher:pusher_pad",
    "slider_pusher: base:base_plate <-> wrist:ref_sts3215",
    "slider_pusher: base:base_plate <-> wrist:servo_lid",
    "slider_pusher: base:base_plate <-> wrist:wrist_bracket",
    "slider_pusher: base:base_shell <-> flange:flange_arm",
-   "slider_pusher: base:base_shell <-> forearm:forearm",
-   "slider_pusher: base:base_shell <-> forearm:ref_sts3215",
    "slider_pusher: base:base_shell <-> slider_pusher:pusher_body",
    "slider_pusher: base:base_shell <-> slider_pusher:pusher_pad",
    "slider_pusher: base:base_shell <-> wrist:ref_sts3215",

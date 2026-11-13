@@ -13,7 +13,7 @@ generated outputs. Numbers marked *estimate* are not datasheet values.
 | R1 | 5 revolute joints + tool flange | yaw, shoulder pitch, elbow pitch, wrist pitch, wrist roll; bayonet flange | MJCF loads (`sim/test_arm.py`) |
 | R2 | STS3215-class servos, 12 V, magnetic encoder, current feedback | Feetech STS3215 12 V (C018, 1:345), 8 in total (5 arm + 3 tools) | BOM |
 | R3 | Reach ≈ 400 mm | shoulder axis → flange face 400 mm (180 + 140 + 80) | `params.Arm.reach` |
-| R4 | 250 g at full reach with a 2× margin (Controller ruling R13) | 250 g carried object, tool excluded, 70 mm beyond the flange, plus the 159 g gripper; shoulder 3:1 and elbow 2:1 spur reductions | §4 torque table (margins 2.64× / 3.61× / 4.64×), MuJoCo gravity hold |
+| R4 | 250 g at full reach with a 2× margin (Controller ruling R13) | 250 g carried object, tool excluded, 70 mm beyond the flange, plus the 159 g gripper; shoulder 3:1 and elbow 2:1 spur reductions | §4 torque table (margins against the enforced torque limits: 2.06× / 3.62× / 4.64×), MuJoCo gravity hold |
 | R5 | Parametric CAD in build123d, STL + STEP, printer tolerances | 34 part modules, `cad/build.py`, `Printer` fits, tolerance coupon | trimesh: 34/34 watertight single bodies |
 | R6 | Printed base clamp + cable routing | C-clamp on the base tongue; rear cable grooves + clips; service loops | CAD |
 | R7 | MJCF from the same CAD (masses, inertias, limits, actuators) | `sim/gen_mjcf.py` reads `cad/out/assembly.json` | MuJoCo load + hold + pick |
@@ -79,10 +79,13 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
 * **Coupled pitch limits.** The single-joint ranges above are not
   collision-free together. The CAD sampling (§10) gives three limits on
   sums of joint angles, which the firmware must enforce
-  (INTERFACE.md §3.2): shoulder + elbow ≤ 195° (forearm into the base),
-  elbow + wrist_pitch ≤ 185° (tool or wrist folding onto the upper arm),
-  shoulder + elbow + wrist_pitch ≤ 190° (tool into the turret or base;
-  straight down is 180°). They are in `Arm.coupled_limits` and the MJCF.
+  (INTERFACE.md §3.2): shoulder + elbow ≤ 175° (forearm into the base),
+  elbow + wrist_pitch ≤ 165° (tool or wrist folding onto the upper arm),
+  shoulder + elbow + wrist_pitch ≤ 183° (tool into the turret or base;
+  straight down is 180°). A dense boundary sweep (150 poses on each
+  surface) showed that the first draft, 195/185/190, still collided or
+  came within 3 mm on its surfaces, so the limits were backed off and a
+  3 mm clearance is now required at every allowed pose. They are in `Arm.coupled_limits` and the MJCF.
 * **Elbow limit.** The +125° limit comes from the CAD interference check:
   at 135–140° the forearm touches the elbow servo lid.
 * **Picking from the table.** The gripper points straight down at radii
@@ -120,16 +123,21 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
   | carried object | 250.0 g | 470.0 mm | 1.153 N·m |
   | **joint total** | | | **3.071 N·m** |
 
-  Servo torque = 3.071 / (3 × 0.92) = 1.113 N·m; margin = 2.94 / 1.113 =
-  **2.64×**. With the previous 2:1 shoulder the same load gives
-  3.071 / (2 × 0.92) = 1.669 N·m and a margin of 1.76×, which fails the
-  2× requirement; this is why the shoulder is now 3:1.
+  Servo torque = 3.071 / (3 × 0.92) = 1.113 N·m. The shoulder servo's
+  Max_Torque_Limit is enforced at **78 % of stall = 2.293 N·m** (servo
+  EEPROM and firmware, INTERFACE.md §3.1), so the margin is
+  2.293 / 1.113 = **2.06×** against what the servo can actually deliver,
+  not 2.64× against stall. With the previous 2:1 shoulder the same load
+  gives 3.071 / (2 × 0.92) = 1.669 N·m and 1.76×, which fails the 2×
+  requirement; this is why the shoulder is now 3:1. 78 % is the largest
+  limit that still passes the gear stress criterion below and the
+  smallest that passes R13 (76 % would be 2.007× with no reserve).
 
-| Joint | Static joint torque (N·m) | Ratio × η | Servo torque (N·m) | Required with 2× (N·m) | STS3215 stall (N·m) | Margin vs stall | Est. holding current (A) |
+| Joint | Static joint torque (N·m) | Ratio × η | Servo torque (N·m) | Required with 2× (N·m) | Enforced servo limit (N·m) | Margin vs enforced limit | Est. holding current (A) |
 |---|---|---|---|---|---|---|---|
-| shoulder_pitch | 3.07 | 3 × 0.92 | 1.11 | 2.23 | 2.94 | 2.64× | 1.17 |
-| elbow_pitch | 1.50 | 2 × 0.92 | 0.81 | 1.63 | 2.94 | 3.61× | 0.90 |
-| wrist_pitch | 0.63 | 1 × 1.00 | 0.63 | 1.27 | 2.94 | 4.64× | 0.73 |
+| shoulder_pitch | 3.07 | 3 × 0.92 | 1.11 | 2.23 | 2.29 (78 % of stall 2.94) | 2.06× | 1.17 |
+| elbow_pitch | 1.50 | 2 × 0.92 | 0.81 | 1.63 | 2.94 (100 %) | 3.62× | 0.90 |
+| wrist_pitch | 0.63 | 1 × 1.00 | 0.63 | 1.27 | 2.94 (100 %) | 4.64× | 0.73 |
 | base_yaw, wrist_roll | 0 (no gravity load) | 1 | — | — | 2.94 | dynamic only | idle |
 
 * **Other tools, no object** (shoulder margin): knob turner (241 g)
@@ -153,18 +161,36 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
   above the STS3215's continuous rating, taken as 1/3 of stall
   (0.98 N·m, *estimate*). The arm can hold that pose but should not dwell
   in it; the firmware monitors servo temperature (INTERFACE.md §3.1).
-* **Gear teeth.** Lewis bending stress, σ = F / (b m Y), face width b =
-  14 mm, Y = 0.30 for 17 teeth, F = servo torque / pinion pitch radius:
-  * Shoulder pinion (module 1.5, r = 12.75 mm) at the rated load:
-    F = 1.113 / 0.01275 = 87 N, σ = 87 / (14 × 1.5 × 0.30) = 13.9 MPa.
-  * Shoulder pinion at servo stall: F = 231 N, σ = 36.7 MPa, which is
-    only 1.2–1.4× below the 45–50 MPa PETG yield. The shoulder
-    Max_Torque_Limit is therefore set to 68 % (about 2.0 N·m, σ = 25 MPa,
-    factor about 1.9) in INTERFACE.md §3.1.
-  * Elbow pinion (module 2, r = 17 mm) at servo stall: F = 173 N,
-    σ = 173 / (14 × 2 × 0.30) ≈ 21 MPa, factor about 2.2.
-  * Gears are PETG at 100 % infill; a nylon or CF-PETG print of the
-    shoulder pinion is the first upgrade if wear shows.
+* **Gear teeth, at the enforced torque limit** (`cad/torque_budget.py`
+  prints the same table and fails if a row exceeds its limit). Method:
+  F = enforced servo torque limit / pinion pitch radius; Lewis bending
+  stress σ = F / (b m Y) with face width b = 14 mm and Y from Shigley
+  Table 14-2 (17 teeth 0.303, 34 teeth 0.371, 51 teeth 0.410, 20° full
+  depth); thin-rim factor K_B from AGMA 2001: K_B = 1 if the backup ratio
+  m_B = rim thickness / whole depth (2.25 m) is at least 1.2, otherwise
+  K_B = 1.6 ln(2.242 / m_B). Criterion: σ K_B ≤ 0.5 × yield. Static
+  loads only (no dynamic or overload factor). Yield values: PETG printed
+  in-plane 45 MPa (low end of 45–50), machined C45 steel 300 MPa
+  (handbook value, *estimate* until the supplier's certificate is seen).
+
+  | Stage | Part | Material | Limit | F | Y | m_B | K_B | σ | σ K_B | Yield | σ K_B / yield |
+  |---|---|---|---|---|---|---|---|---|---|---|---|
+  | shoulder (m 1.5) | pinion 17T | steel | 2.293 N·m | 179.9 N | 0.303 | 0.47 | 2.51 | 28.3 MPa | 71.0 MPa | 300 | 0.24 |
+  | shoulder | gear 51T | PETG | 2.293 N·m | 179.9 N | 0.410 | 1.20 | 1.00 | 20.9 MPa | 20.9 MPa | 45 | 0.46 |
+  | elbow (m 2) | pinion 17T | PETG | 2.940 N·m | 172.9 N | 0.303 | 1.16 | 1.06 | 20.4 MPa | 21.6 MPa | 45 | 0.48 |
+  | elbow | gear 34T | PETG | 2.940 N·m | 172.9 N | 0.371 | 1.20 | 1.00 | 16.6 MPa | 16.6 MPa | 45 | 0.37 |
+
+  Worked example, shoulder pinion: F = 2.293 / 0.01275 m = 179.9 N;
+  σ = 179.9 / (14 × 1.5 × 0.303) = 28.3 MPa. The four M2 head-access
+  bores (bolt circle 14 mm plus bore radius 2.3 mm: outer edge at
+  r = 9.3 mm) leave a rim of 10.875 − 9.3 = 1.575 mm under the tooth roots,
+  m_B = 1.575 / 3.375 = 0.47, K_B = 1.6 ln(2.242 / 0.47) = 2.51, so
+  σ K_B = 71 MPa. A PETG pinion would be at 1.6 × yield, so the shoulder
+  pinion is a machined steel part (D4). The shoulder gear's lightening holes
+  were repositioned so that the rim under its roots is 1.2 whole depths
+  (4.05 mm), so no rim correction applies there. The elbow
+  stage was not changed except for the same hole rule (its gear rim was
+  1.25 mm before: K_B 3.3, which would have failed at the 100 % limit).
 * **Supply.** The worst-case holding current is about 3.1 *estimate* (all
   joints, rated case); the PSU is rated 6 A and the fuse 5 A.
 
@@ -356,8 +382,8 @@ check written in this tree rather than a third-party tool.
 |---|---|---|
 | All parts build as valid single solids | build123d 0.13 / OpenCASCADE (OCP 8.0.1) | 34/34 |
 | STL watertight, consistent winding, one body, volume vs B-rep | trimesh 5.2.1 (`cad/check_meshes.py`) | 34/34 pass; max volume error 0.30 % (0.296); largest STL 0.40 MB; total 1576 g, about 51.5 h printing (estimate) |
-| Interference: single-joint sweeps (5° steps, every joint) and named poses, 2000 seeded random poses inside all limits (joint and coupled) plus 500 outside, each at 4 tools (gripper and presser at both extremes) | OpenCASCADE booleans, OBB pre-filter (`cad/check_clearance.py`, 1386 + 10000 tool-pose checks) | **0 collisions at allowed poses** (any pair of solids on different links, tolerance 1 mm³); 6697 collisions in 192 poses outside the coupled limits, which justify them. The check exits 1 on any collision at an allowed pose |
-| Torque budget, 2× margin, R13 load (250 g object + 159 g gripper) | `cad/torque_budget.py` (own script) | shoulder 2.64×, elbow 3.61×, wrist 4.64×; other tools without object: shoulder ≥ 3.55× |
+| Interference: single-joint sweeps (5° steps, every joint) and named poses, 2000 seeded random poses inside all limits (joint and coupled) plus 500 outside, plus 150 poses on each of the 3 coupled-limit surfaces, each at 4 tools (gripper and presser at both extremes) | OpenCASCADE booleans and exact minimum distance, OBB pre-filter (`cad/check_clearance.py`, 1386 + 10000 + 1800 tool-pose checks) | **0 collisions and 0 closer than 3 mm at allowed poses** (any pair of solids on different links that can approach each other; overlap tolerance 1 mm³); 4849 collisions in 134 poses outside the coupled limits, which justify them. The check exits 1 on any collision or clearance violation at an allowed pose |
+| Torque budget, 2× margin, R13 load (250 g object + 159 g gripper) | `cad/torque_budget.py` (own script) | shoulder 2.06× (against the enforced 78 % limit; 2.64× against stall), elbow 3.62×, wrist 4.64×; gear stress at the enforced limits ≤ 0.48 × yield incl. rim factor; other tools without object: shoulder ≥ 2.9× |
 | MJCF loads (5 models) | MuJoCo 4.0.1 | pass |
 | Gravity hold, 5 poses, rated load | MuJoCo (`sim/test_arm.py`) | max error 1.21° (outstretched), max actuator utilisation 0.38 of the force limit; pass. MuJoCo and the budget agree on the joint torques to four digits |
 | Speed limit (full-range step, gravity off) | MuJoCo | peak 4.65 / 1.55 / 2.32 / 4.65 / 4.65 rad/s against limits 4.70 / 1.57 / 2.35 / 4.70 / 4.70 (within 1 %); pass |
@@ -373,9 +399,13 @@ check written in this tree rather than a third-party tool.
 What the checks do not cover: the hull collision proxies in MuJoCo are
 conservative; the pour islands "isolated copper" check relies on KiCad;
 DRC does not check electrical function (no SPICE or board bring-up); the
-hole-to-hole figures are from the JLCPCB published capabilities as
-recalled when writing the rules and must be re-checked against their
-current table before ordering.
+fab figures come from the JLCPCB capabilities page fetched on 2026-11-13
+(https://jlcpcb.com/capabilities/Capabilities: 2-layer 1 oz 0.10/0.10 mm
+track/space, via hole 0.15 mm min (0.2 preferred), via hole-to-hole 0.2 mm,
+pad hole-to-hole 0.45 mm). The rules here are stricter than that page (0.127
+mm track/space, 0.3 mm via drill, hole-to-hole 0.254 mm same net / 0.5 mm
+between different nets, KiCad min_hole_to_hole 0.254 mm), so KiCad's
+setting was not raised to 0.5 mm. Re-check the page before ordering.
 
 ## 11. Decisions
 
@@ -383,7 +413,7 @@ current table before ordering.
   (Controller ruling R13, which replaced the earlier ISO 9283
   "tool included" reading). It acts 70 mm beyond the flange; the heaviest
   tool, the 159 g gripper, is added on top (§4). Consequence: the 2:1
-  shoulder gave 1.76×, so the shoulder became 3:1 (margin 2.64×) and its
+  shoulder gave 1.76×, so the shoulder became 3:1 (margin 2.06× against its enforced 78 % torque limit) and its
   range was reduced (D3). Reach stayed at 400 mm.
 * **D2. Reach is measured to the flange, not to the TCP.** The arm is
   tool-agnostic, and the TCPs differ by tool (78–136 mm).
@@ -399,9 +429,14 @@ current table before ordering.
   * Rejected for the R13 payload: a dual-STS3215 shoulder (second drive
     train, load sharing between two position servos) and a shorter arm
     (breaks the 400 mm requirement).
-* **D4. Printed spur gears, not herringbone.** They are easier to print
-  and check. The axial load is zero. Wear is accepted: PETG at 100 %
-  infill, with the pinion as the replaceable part.
+* **D4. Printed spur gears, not herringbone; machined steel shoulder
+  pinion.** Printed gears are easier to print and check; the axial load is
+  zero. Wear is accepted: PETG at 100 % infill, the elbow pinion and both
+  gears being replaceable. The shoulder pinion carries 180 N through a
+  1.6 mm rim (the four M2 head bores sit under the teeth), so it is a
+  machined steel part (one CNC piece, drawn by `cad/out/pinion_shoulder.step`);
+  a PETG pinion would be at 1.6 × yield. PA-CF was rejected: it would still
+  need a yield above 140 MPa to meet 0.5 × yield with the rim factor.
 * **D5. Servo cradles with lids instead of the servo's own screw
   bosses.** The exact STS3215 mounting threads are not verified here; a
   clamped pocket tolerates envelope error.

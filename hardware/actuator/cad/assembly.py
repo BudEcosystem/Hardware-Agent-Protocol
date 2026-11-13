@@ -22,7 +22,7 @@ from parts import tool_gripper as gripper
 from parts import tool_knob_turner as knob
 from parts import tool_slider_pusher as pusher
 
-DENSITY = {"PLA": 1.24, "PETG": 1.27, "TPU": 1.21, "servo": 1.0}  # g/cm^3 (servo: unused)
+DENSITY = {"PLA": 1.24, "PETG": 1.27, "TPU": 1.21, "servo": 1.0, "steel": 7.85}  # g/cm^3 (servo: unused)
 
 
 @dataclass
@@ -104,8 +104,8 @@ def build_assembly(p: Params) -> Assembly:
         PartDef("clamp_pad", clamp.clamp_pad, "PETG", [("base", Pos(clamp_sx, 0, -30.0 - 6.0))], "pad face down"),
         PartDef("clamp_knob", clamp.clamp_knob, "PLA", [("base", Pos(clamp_sx, 0, z_low - clamp.JAW_T - 22.0))], "flat"),
         PartDef("turret", arm.turret, "PETG", [("turret", IDENTITY)], "disc down"),
-        PartDef("pinion_shoulder", arm.pinion_shoulder, "PETG", [("turret", arm.pinion_location(p, sh))],
-                "horn face down, 100% infill"),
+        PartDef("pinion_shoulder", arm.pinion_shoulder, "steel", [("turret", arm.pinion_location(p, sh))],
+                "machined steel, not printed (drawing = this STEP)", printed=False),
         PartDef("pinion_elbow", arm.pinion_elbow, "PETG", [("upper_arm", arm.pinion_location(p, L1))],
                 "horn face down, 100% infill"),
         PartDef("upper_arm", arm.upper_arm, "PETG", [("upper_arm", IDENTITY)], "on its side (+y face down), supports under clevis"),
@@ -151,6 +151,9 @@ def build_assembly(p: Params) -> Assembly:
     # ---- purchased hardware that moves with a link (mass model) ----------
     for name, (link, loc) in servo_locs.items():
         asm.hardware.append(HardwareMass(f"STS3215 ({name})", link, p.servo.mass_g, loc * servo_body(p), "datasheet mass"))
+    pin = arm.pinion_shoulder(p)
+    asm.hardware.append(HardwareMass("shoulder pinion (machined steel)", "turret", DENSITY["steel"] * pin.volume / 1000.0,
+                                     arm.pinion_location(p, sh) * pin, "density 7.85 g/cm3, solid"))
     zb = base.deck_top(p) - BEARING_6806.width
     asm.hardware.append(HardwareMass("6806-2RS yaw bearing", "base", BEARING_6806.mass_g, _bearing_solid_z(BEARING_6806, zb)))
     for link, axis_z in (("turret", sh), ("upper_arm", L1)):
@@ -194,19 +197,19 @@ def kinematic_tree(p: Params) -> list[dict]:
     t = p.tools
     return [
         {"link": "turret", "parent": "base", "pos": [0, 0, a.base_height], "joint": "base_yaw", "axis": [0, 0, 1],
-         "range_deg": [j["base_yaw"].lower_deg, j["base_yaw"].upper_deg], "ratio": j["base_yaw"].ratio, "servo_id": j["base_yaw"].servo_id},
+         "range_deg": [j["base_yaw"].lower_deg, j["base_yaw"].upper_deg], "ratio": j["base_yaw"].ratio, "servo_id": j["base_yaw"].servo_id, "torque_limit": j["base_yaw"].torque_limit},
         {"link": "upper_arm", "parent": "turret", "pos": [0, 0, a.shoulder_height], "joint": "shoulder_pitch", "axis": [0, 1, 0],
          "range_deg": [j["shoulder_pitch"].lower_deg, j["shoulder_pitch"].upper_deg], "ratio": j["shoulder_pitch"].ratio,
-         "servo_id": j["shoulder_pitch"].servo_id},
+         "servo_id": j["shoulder_pitch"].servo_id, "torque_limit": j["shoulder_pitch"].torque_limit},
         {"link": "forearm", "parent": "upper_arm", "pos": [0, 0, a.l_upper], "joint": "elbow_pitch", "axis": [0, 1, 0],
          "range_deg": [j["elbow_pitch"].lower_deg, j["elbow_pitch"].upper_deg], "ratio": j["elbow_pitch"].ratio,
-         "servo_id": j["elbow_pitch"].servo_id},
+         "servo_id": j["elbow_pitch"].servo_id, "torque_limit": j["elbow_pitch"].torque_limit},
         {"link": "wrist", "parent": "forearm", "pos": [0, 0, a.l_fore], "joint": "wrist_pitch", "axis": [0, 1, 0],
          "range_deg": [j["wrist_pitch"].lower_deg, j["wrist_pitch"].upper_deg], "ratio": j["wrist_pitch"].ratio,
-         "servo_id": j["wrist_pitch"].servo_id},
+         "servo_id": j["wrist_pitch"].servo_id, "torque_limit": j["wrist_pitch"].torque_limit},
         {"link": "flange", "parent": "wrist", "pos": [0, 0, a.l_wrist], "joint": "wrist_roll", "axis": [0, 0, 1],
          "range_deg": [j["wrist_roll"].lower_deg, j["wrist_roll"].upper_deg], "ratio": j["wrist_roll"].ratio,
-         "servo_id": j["wrist_roll"].servo_id},
+         "servo_id": j["wrist_roll"].servo_id, "torque_limit": j["wrist_roll"].torque_limit},
         # Tool sub-trees (attached to "flange" by the generator, one at a time).
         {"link": "gripper_finger_a", "parent": "gripper", "pos": [0, 0, 0], "joint": "gripper_a", "type": "slide",
          "axis": [0, 1, 0], "range_mm": [0.0, t.gripper_stroke], "servo_id": 6},

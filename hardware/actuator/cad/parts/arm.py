@@ -109,6 +109,46 @@ def _geared_clevis(p: Params, axis_z: float, z_bottom: float, g: Gear) -> tuple[
     return union(sides), union(cuts)
 
 
+GEAR_HOLE_R = 2.0  # lightening hole radius in the driven gear web
+RIM_RATIO = 1.2  # minimum rim thickness under the tooth roots, in whole tooth depths
+
+
+def root_radius(m: float, teeth: int) -> float:
+    return m * (teeth - 2.5) / 2.0
+
+
+def whole_depth(m: float) -> float:
+    return 2.25 * m
+
+
+def gear_hole_circle_r(g: Gear) -> float:
+    r = root_radius(g.module, g.gear_teeth) - RIM_RATIO * whole_depth(g.module) - GEAR_HOLE_R
+    if r - GEAR_HOLE_R <= HUB_R + 0.05:
+        raise ValueError("no room for lightening holes between hub and rim: drop them for this gear")
+    return r
+
+
+def pinion_bore_outer_r(p: Params) -> float:
+    """Outer edge of the four M2 head-access bores in the pinion (bolt circle radius + bore radius)."""
+    return p.servo.horn_bolt_circle_d / 2 + HEAD_D[2.0] / 2 + 0.3
+
+
+def gear_rims(p: Params) -> dict:
+    """Rim thickness under the tooth roots for each gear stage, for the stress check
+    (cad/torque_budget.py).  rim / whole depth is the AGMA backup ratio m_B."""
+    out = {}
+    for name, g in (("shoulder", p.shoulder_gear), ("elbow", p.gear)):
+        h = whole_depth(g.module)
+        pin_rim = root_radius(g.module, g.pinion_teeth) - pinion_bore_outer_r(p)
+        gear_rim = root_radius(g.module, g.gear_teeth) - (gear_hole_circle_r(g) + GEAR_HOLE_R)
+        out[name] = {"module": g.module, "pinion_teeth": g.pinion_teeth, "gear_teeth": g.gear_teeth,
+                     "face_mm": g.face_width, "whole_depth_mm": h,
+                     "pinion_root_r_mm": root_radius(g.module, g.pinion_teeth), "pinion_rim_mm": pin_rim,
+                     "pinion_m_B": pin_rim / h, "gear_root_r_mm": root_radius(g.module, g.gear_teeth),
+                     "gear_rim_mm": gear_rim, "gear_m_B": gear_rim / h}
+    return out
+
+
 def geared_hub(p: Params, g: Gear) -> Part:
     """Hub of a geared distal link at its own origin (joint axis = y):
     hub boss, integral driven gear in GEAR_Y, inner-race spacer bosses
@@ -122,10 +162,12 @@ def geared_hub(p: Params, g: Gear) -> Part:
     spacers = cyl_y(5.8, -HUB_HALF - reach, -HUB_HALF + 0.01) + cyl_y(5.8, HUB_HALF - 0.01, HUB_HALF + reach)
     part = hub + gear + spacers
     part -= cyl_y(CLEARANCE_D[8.0] / 2, -40, 40)
-    # Lightening holes in the gear web (between hub and tooth ring).
-    r_mid = (HUB_R + g.module * (g.gear_teeth / 2 - 1.25)) / 2 + 1.0
+    # Lightening holes in the gear web.  They sit inside the tooth ring with a
+    # rim of at least 1.2 tooth depths below the tooth roots (AGMA backup ratio
+    # m_B >= 1.2, so no thin-rim stress factor).
+    r_mid = gear_hole_circle_r(g)
     for x, z in bolt_circle(6, 2 * r_mid, 30.0):
-        part -= cyl_y(2.5, GEAR_Y[0] - 1, GEAR_Y[1] + 0.01, x, z)
+        part -= cyl_y(GEAR_HOLE_R, GEAR_Y[0] - 1, GEAR_Y[1] + 0.01, x, z)
     return part
 
 

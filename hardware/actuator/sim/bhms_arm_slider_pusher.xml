@@ -43,6 +43,7 @@
   <mesh name="turret" file="turret.stl" scale="0.001 0.001 0.001" />
   <mesh name="upper_arm" file="upper_arm.stl" scale="0.001 0.001 0.001" />
   <mesh name="wrist_bracket" file="wrist_bracket.stl" scale="0.001 0.001 0.001" />
+  <material name="steel" rgba="0.62 0.64 0.67 1" />
   <material name="PLA" rgba="0.85 0.85 0.82 1" />
   <material name="PETG" rgba="0.22 0.47 0.78 1" />
   <material name="TPU" rgba="0.12 0.12 0.12 1" />
@@ -60,14 +61,14 @@
    <geom class="visual" name="base_servo_lid_6" mesh="servo_lid" pos="0 0 0.0555" quat="1 0 0 0" material="PLA" />
    <geom class="visual" name="base_ref_sts3215_7" mesh="ref_sts3215" pos="0 0 0.0555" quat="1 0 0 0" material="servo" />
    <body name="turret" pos="0 0 0.07" childclass="bhms">
-    <inertial pos="-0.00426728 0.00487109 0.0308984" mass="0.208617" fullinertia="0.000263889 0.000228055 0.000201918 1.05613e-05 -4.60358e-06 8.27319e-06" />
+    <inertial pos="-0.00356192 0.00236034 0.0305846" mass="0.249929" fullinertia="0.000274532 0.000232304 0.000213064 1.27965e-05 -4.32423e-06 7.27885e-06" />
     <geom class="visual" name="turret_turret_0" mesh="turret" pos="0 0 0" quat="1 0 0 0" material="PETG" />
-    <geom class="visual" name="turret_pinion_shoulder_1" mesh="pinion_shoulder" pos="0 -0.003 0.029" quat="0.707107 0.707107 0 0" material="PETG" />
+    <geom class="visual" name="turret_pinion_shoulder_1" mesh="pinion_shoulder" pos="0 -0.003 0.029" quat="0.707107 0.707107 0 0" material="steel" />
     <geom class="visual" name="turret_servo_lid_2" mesh="servo_lid" pos="0 0.004 0.029" quat="0.707107 0.707107 0 0" material="PLA" />
     <geom class="visual" name="turret_ref_sts3215_3" mesh="ref_sts3215" pos="0 0.004 0.029" quat="0.707107 0.707107 0 0" material="servo" />
     <joint name="base_yaw" type="hinge" axis="0 0 1" range="-2.61799 2.61799" armature="0.0119025" frictionloss="0.03" damping="0.625532" />
     <body name="upper_arm" pos="0 0 0.08" childclass="bhms">
-     <inertial pos="-0.00231341 0.00293755 0.0822" mass="0.306632" fullinertia="0.00141679 0.0013683 0.00015943 1.27543e-05 3.18305e-05 -5.16262e-05" />
+     <inertial pos="-0.0023134 0.0029286 0.0821243" mass="0.306661" fullinertia="0.00141823 0.00136987 0.000159525 1.27599e-05 3.18856e-05 -5.19627e-05" />
      <geom class="visual" name="upper_arm_pinion_elbow_0" mesh="pinion_elbow" pos="0 -0.003 0.129" quat="0.707107 0.707107 0 0" material="PETG" />
      <geom class="visual" name="upper_arm_upper_arm_1" mesh="upper_arm" pos="0 0 0" quat="1 0 0 0" material="PETG" />
      <geom class="visual" name="upper_arm_servo_lid_2" mesh="servo_lid" pos="0 0.004 0.129" quat="0.707107 0.707107 0 0" material="PLA" />
@@ -76,7 +77,7 @@
      <geom class="visual" name="upper_arm_ref_sts3215_5" mesh="ref_sts3215" pos="0 0.004 0.129" quat="0.707107 0.707107 0 0" material="servo" />
      <joint name="shoulder_pitch" type="hinge" axis="0 1 0" range="-0.349066 1.65806" armature="0.107122" frictionloss="0.09" damping="5.1794" />
      <body name="forearm" pos="0 0 0.18" childclass="bhms">
-      <inertial pos="-0.000255398 0.000325796 0.060331" mass="0.216773" fullinertia="0.000780113 0.000762378 6.03735e-05 5.26912e-08 3.46952e-06 -1.06205e-05" />
+      <inertial pos="-0.000256489 0.000312026 0.0602577" mass="0.216802" fullinertia="0.000780962 0.000763394 6.05499e-05 5.33862e-08 3.48142e-06 -1.08079e-05" />
       <geom class="visual" name="forearm_forearm_0" mesh="forearm" pos="0 0 0" quat="1 0 0 0" material="PETG" />
       <geom class="visual" name="forearm_servo_lid_1" mesh="servo_lid" pos="0 -0.0175 0.14" quat="0.5 0.5 -0.5 0.5" material="PLA" />
       <geom class="visual" name="forearm_cable_clip_2" mesh="cable_clip" pos="-0.014 0 0.0377" quat="1 0 0 0" material="PETG" />
@@ -137,16 +138,16 @@
   <numeric name="max_speed_elbow_pitch" data="2.35" />
   <numeric name="max_speed_wrist_pitch" data="4.7" />
   <numeric name="max_speed_wrist_roll" data="4.7" />
-  <numeric name="coupled_forearm_pitch_deg" data="-180 195" />
+  <numeric name="coupled_forearm_pitch_deg" data="-180 175" />
   <text name="coupled_forearm_pitch_joints" data="shoulder_pitch+elbow_pitch" />
-  <numeric name="coupled_hairpin_deg" data="-180 185" />
+  <numeric name="coupled_hairpin_deg" data="-180 165" />
   <text name="coupled_hairpin_joints" data="elbow_pitch+wrist_pitch" />
-  <numeric name="coupled_tool_pitch_deg" data="-180 190" />
+  <numeric name="coupled_tool_pitch_deg" data="-180 183" />
   <text name="coupled_tool_pitch_joints" data="shoulder_pitch+elbow_pitch+wrist_pitch" />
  </custom>
  <actuator>
   <position name="base_yaw" joint="base_yaw" kp="30" dampratio="1" forcerange="-2.94 2.94" ctrlrange="-2.61799 2.61799" />
-  <position name="shoulder_pitch" joint="shoulder_pitch" kp="248.4" dampratio="1" forcerange="-8.1144 8.1144" ctrlrange="-0.349066 1.65806" />
+  <position name="shoulder_pitch" joint="shoulder_pitch" kp="248.4" dampratio="1" forcerange="-6.32923 6.32923" ctrlrange="-0.349066 1.65806" />
   <position name="elbow_pitch" joint="elbow_pitch" kp="110.4" dampratio="1" forcerange="-5.4096 5.4096" ctrlrange="-0.0872665 2.18166" />
   <position name="wrist_pitch" joint="wrist_pitch" kp="30" dampratio="1" forcerange="-2.94 2.94" ctrlrange="-1.74533 1.74533" />
   <position name="wrist_roll" joint="wrist_roll" kp="30" dampratio="1" forcerange="-2.94 2.94" ctrlrange="-2.61799 2.61799" />

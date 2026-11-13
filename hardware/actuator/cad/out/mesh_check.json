@@ -2,8 +2,8 @@
  "parts": 34,
  "failures": 0,
  "totals": {
-  "mass_model_g": 1575.904406022583,
-  "print_time_h_est": 51.47437211093349
+  "mass_model_g": 1568.969636823282,
+  "print_time_h_est": 51.217687659011816
  },
  "results": {
   "base_plate": {
@@ -124,14 +124,14 @@
    "is_volume": true,
    "bodies": 1,
    "triangles": 6336,
-   "volume_cm3_mesh": 167.71609608189317,
-   "volume_rel_err": 0.00022974278507272426,
+   "volume_cm3_mesh": 168.2100771468573,
+   "volume_rel_err": 0.00023393953642045337,
    "euler_number": -14,
    "stl_bytes": 316884,
-   "mass_model_g": 110.12940649562569,
+   "mass_model_g": 110.15873169225073,
    "qty": 1,
    "material": "PETG",
-   "print_time_h_est": 3.5500721470949155,
+   "print_time_h_est": 3.550988444952216,
    "problems": []
   },
   "gripper_body": {
@@ -320,10 +320,10 @@
    "volume_rel_err": 0.00017509434694428237,
    "euler_number": -6,
    "stl_bytes": 194184,
-   "mass_model_g": 6.993419592551506,
+   "mass_model_g": 0.0,
    "qty": 1,
-   "material": "PETG",
-   "print_time_h_est": 0.25851704763628003,
+   "material": "steel",
+   "print_time_h_est": 0.0,
    "problems": []
   },
   "pod_lid": {
@@ -524,14 +524,14 @@
    "is_volume": true,
    "bodies": 1,
    "triangles": 7954,
-   "volume_cm3_mesh": 253.43863528300022,
-   "volume_rel_err": 8.567832860818794e-05,
+   "volume_cm3_mesh": 253.9326162277561,
+   "volume_rel_err": 8.87399104227219e-05,
    "euler_number": -18,
    "stl_bytes": 397784,
-   "mass_model_g": 164.30947035950348,
+   "mass_model_g": 164.33879555612856,
    "qty": 1,
    "material": "PETG",
-   "print_time_h_est": 5.279445861751765,
+   "print_time_h_est": 5.280362159609066,
    "problems": []
   },
   "wrist_bracket": {

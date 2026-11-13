@@ -30,8 +30,10 @@ Every number in this guide comes from `cad/params.py`. Part files are in
   If the nominal seat is loose or splits, change `Printer.press_fit`.
   If screws or lids bind, change `Printer.fit_clearance`. Then rerun
   `cad/build.py`.
-* Print gears in PETG (or PA-CF) at 100 % infill. In PLA the 17-tooth
-  pinion creeps under sustained holding torque.
+* Print gears in PETG at 100 % infill (the shoulder pinion is machined
+  steel, not printed). In PLA the 17-tooth pinion creeps under sustained
+  holding torque. Set the shoulder servo Max_Torque_Limit to 78 % before
+  the first torque-enable (INTERFACE.md §3.1).
 * Print orientations, quantities, modelled masses and print-time
   estimates are listed per part in `cad/out/parts.json`. They are also in
   the "Printed part" rows of `bom/bom.csv`. All filament together is about
@@ -81,8 +83,9 @@ Every number in this guide comes from `cad/params.py`. Part files are in
 
 1. Place the shoulder servo (ID 2) in the turret cradle. Its output faces
    −y (toward the gear plane) and its lid is on top. Screw on the lid.
-2. Bolt the `pinion_shoulder` (17 teeth, module 1.5) to the servo horn (4 × M2 through the pinion
-   counterbores). Put a 624-2RS into the −y cheek seat. Insert M4×12 with
+2. Bolt the `pinion_shoulder` (17 teeth, module 1.5, machined STEEL, not
+   printed: order it to `cad/out/pinion_shoulder.step`) to the servo horn
+   (4 × M2 through the pinion counterbores). Put a 624-2RS into the −y cheek seat. Insert M4×12 with
    an M4 washer from outside, through the bearing, into the pinion stub
    insert. The washer must bear on the inner race only.
 3. Press a 608-2RS into each cheek, flush with the outer face.

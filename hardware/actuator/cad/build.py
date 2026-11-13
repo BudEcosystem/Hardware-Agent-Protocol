@@ -38,6 +38,7 @@ from OCP.GProp import GProp_GProps  # noqa: E402
 
 from assembly import DENSITY, build_assembly, kinematic_tree, tool_info  # noqa: E402
 from params import DEFAULT, Params  # noqa: E402
+from parts import arm as arm_parts  # noqa: E402
 
 OUT = HERE / "out"
 STL_TOL = 0.02  # mm chordal deviation
@@ -180,6 +181,7 @@ def main() -> int:
             "tools": tool_info(p),
             "servo": asdict(p.servo),
             "gear": {**asdict(p.gear), "ratio": p.gear.ratio, "center_distance": p.gear.center_distance},
+            "gear_rims": arm_parts.gear_rims(p),
             "shoulder_gear": {**asdict(p.shoulder_gear), "ratio": p.shoulder_gear.ratio,
                               "center_distance": p.shoulder_gear.center_distance},
             "arm": {k: v for k, v in asdict(p.arm).items() if k != "joints"},

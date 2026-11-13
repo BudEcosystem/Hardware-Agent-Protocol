@@ -2,7 +2,7 @@
 	(version "E")
 	(design
 		(source "/home/jithin/hms-lab/hardware/actuator/pcb/controller/bhms_controller.kicad_sch")
-		(date "2026-11-13T19:15:13")
+		(date "2026-11-13T19:40:04")
 		(tool "Eeschema 10.0.6+dfsg-1")
 		(sheet
 			(number "1")

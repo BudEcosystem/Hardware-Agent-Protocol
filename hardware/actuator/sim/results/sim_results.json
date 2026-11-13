@@ -5,31 +5,31 @@
    "nbody": 10,
    "njnt": 7,
    "nu": 6,
-   "total_mass_kg": 1.4896508599999998
+   "total_mass_kg": 1.5310208599999997
   },
   "bhms_arm_knob_turner.xml": {
    "nbody": 9,
    "njnt": 6,
    "nu": 6,
-   "total_mass_kg": 1.5713451999999999
+   "total_mass_kg": 1.6127151999999998
   },
   "bhms_arm_button_presser.xml": {
    "nbody": 9,
    "njnt": 6,
    "nu": 6,
-   "total_mass_kg": 1.4637026299999998
+   "total_mass_kg": 1.5050726299999997
   },
   "bhms_arm_slider_pusher.xml": {
    "nbody": 8,
    "njnt": 5,
    "nu": 5,
-   "total_mass_kg": 1.3721162
+   "total_mass_kg": 1.4134862
   },
   "scene_pick.xml": {
    "nbody": 11,
    "njnt": 8,
    "nu": 6,
-   "total_mass_kg": 1.5396508599999996
+   "total_mass_kg": 1.5810208599999998
   }
  },
  "gravity_hold": {
@@ -44,41 +44,41 @@
      "wrist_pitch": 0.0
     },
     "error_deg": {
-     "base_yaw": -4.529937325064391e-08,
-     "shoulder_pitch": 0.7065657238103036,
-     "elbow_pitch": 0.7750369760650136,
-     "wrist_pitch": 1.2071142852985528,
-     "wrist_roll": 2.850739507128247e-05
+     "base_yaw": -4.533983280056231e-08,
+     "shoulder_pitch": 0.7064985584348334,
+     "elbow_pitch": 0.7749650128506047,
+     "wrist_pitch": 1.2071143066990757,
+     "wrist_roll": 2.8507397865755536e-05
     },
     "gravity_torque_nm": {
      "base_yaw": 0.0,
-     "shoulder_pitch": -3.071431291027258,
-     "elbow_pitch": -1.4965081378152583,
-     "wrist_pitch": -0.6333027697152283,
+     "shoulder_pitch": -3.0711394197350654,
+     "elbow_pitch": -1.4963694049169025,
+     "wrist_pitch": -0.6333027697152285,
      "wrist_roll": -1.5084117481233787e-05
     },
     "actuator_torque_nm": {
-     "base_yaw": 2.1788096971329613e-08,
-     "shoulder_pitch": -3.0637861143530927,
-     "elbow_pitch": -1.4935664225139027,
-     "wrist_pitch": -0.6321135001251156,
-     "wrist_roll": -1.4939324361805062e-05
+     "base_yaw": 2.180790791701239e-08,
+     "shoulder_pitch": -3.0634948993759394,
+     "elbow_pitch": -1.4934277715072761,
+     "wrist_pitch": -0.6321135151864431,
+     "wrist_roll": -1.4939325847280953e-05
     },
     "force_limit_nm": {
      "base_yaw": 2.94,
-     "shoulder_pitch": 8.1144,
+     "shoulder_pitch": 6.32923,
      "elbow_pitch": 5.4096,
      "wrist_pitch": 2.94,
      "wrist_roll": 2.94
     },
     "utilization": {
-     "base_yaw": 7.410917337186944e-09,
-     "shoulder_pitch": 0.3775739567131387,
-     "elbow_pitch": 0.2760955380275626,
-     "wrist_pitch": 0.21500459187929102,
-     "wrist_roll": 5.081402844151382e-06
+     "base_yaw": 7.417655754085847e-09,
+     "shoulder_pitch": 0.48402331711376256,
+     "elbow_pitch": 0.2760699074806411,
+     "wrist_pitch": 0.21500459700219154,
+     "wrist_roll": 5.0814033494152904e-06
     },
-    "max_abs_error_deg": 1.2071142852985528,
+    "max_abs_error_deg": 1.2071143066990757,
     "pass": true
    },
    "home": {
@@ -88,41 +88,41 @@
      "wrist_pitch": 90.0
     },
     "error_deg": {
-     "base_yaw": -1.2235655025318062e-08,
-     "shoulder_pitch": 0.19679385690798915,
-     "elbow_pitch": 0.4459360028064417,
-     "wrist_pitch": -0.0007215076629897638,
-     "wrist_roll": -3.157002426042539e-07
+     "base_yaw": -1.2248156601556264e-08,
+     "shoulder_pitch": 0.19676178814929599,
+     "elbow_pitch": 0.4458646067138499,
+     "wrist_pitch": -0.0007193773822587156,
+     "wrist_roll": -3.1565556963514827e-07
     },
     "gravity_torque_nm": {
      "base_yaw": 0.0,
-     "shoulder_pitch": -0.862926107115994,
-     "elbow_pitch": -0.8698849830155212,
-     "wrist_pitch": -0.006679614915491294,
+     "shoulder_pitch": -0.8627867461590712,
+     "elbow_pitch": -0.8697462501171651,
+     "wrist_pitch": -0.006679614915491072,
      "wrist_roll": -6.698693813526629e-21
     },
     "actuator_torque_nm": {
-     "base_yaw": 5.917879510821346e-09,
-     "shoulder_pitch": -0.8537594507382946,
-     "elbow_pitch": -0.8595188730687084,
-     "wrist_pitch": 0.0003808491297263572,
-     "wrist_roll": 1.6562418654620193e-07
+     "base_yaw": 5.924201268007528e-09,
+     "shoulder_pitch": -0.8536203842441622,
+     "elbow_pitch": -0.859381304008366,
+     "wrist_pitch": 0.00037973335631846794,
+     "wrist_roll": 1.6560056381058523e-07
     },
     "force_limit_nm": {
      "base_yaw": 2.94,
-     "shoulder_pitch": 8.1144,
+     "shoulder_pitch": 6.32923,
      "elbow_pitch": 5.4096,
      "wrist_pitch": 2.94,
      "wrist_roll": 2.94
     },
     "utilization": {
-     "base_yaw": 2.012884187354199e-09,
-     "shoulder_pitch": 0.10521535181138404,
-     "elbow_pitch": 0.15888769466664973,
-     "wrist_pitch": 0.0001295405203150875,
-     "wrist_roll": 5.6334757328640115e-08
+     "base_yaw": 2.0150344449005196e-09,
+     "shoulder_pitch": 0.13486954720308192,
+     "elbow_pitch": 0.158862264124587,
+     "wrist_pitch": 0.0001291610055504993,
+     "wrist_roll": 5.63267223845528e-08
     },
-    "max_abs_error_deg": 0.4459360028064417,
+    "max_abs_error_deg": 0.4458646067138499,
     "pass": true
    },
    "forward_45": {
@@ -133,41 +133,41 @@
      "wrist_pitch": 0.0
     },
     "error_deg": {
-     "base_yaw": -4.3703174933773006e-08,
-     "shoulder_pitch": 0.6016838210383487,
-     "elbow_pitch": 0.7748971376097351,
-     "wrist_pitch": 1.2069239605461266,
-     "wrist_roll": 2.8509200704682e-05
+     "base_yaw": -4.328049193882523e-08,
+     "shoulder_pitch": 0.6016263868257067,
+     "elbow_pitch": 0.7748251899030809,
+     "wrist_pitch": 1.2069240121965437,
+     "wrist_roll": 2.8509201813118132e-05
     },
     "gravity_torque_nm": {
      "base_yaw": 0.0,
-     "shoulder_pitch": -2.605226310961172,
-     "elbow_pitch": -1.4965081378152583,
-     "wrist_pitch": -0.6333027697152281,
-     "wrist_roll": -1.5084117481210801e-05
+     "shoulder_pitch": -2.6049788487616024,
+     "elbow_pitch": -1.4963694049169023,
+     "wrist_pitch": -0.6333027697152283,
+     "wrist_roll": -1.5084117481259374e-05
     },
     "actuator_torque_nm": {
-     "base_yaw": 2.1059729959915785e-08,
-     "shoulder_pitch": -2.6091028198943604,
-     "elbow_pitch": -1.4933239524879411,
-     "wrist_pitch": -0.6320250841721209,
-     "wrist_roll": -1.4940298447419162e-05
+     "base_yaw": 2.0856717242168088e-08,
+     "shoulder_pitch": -2.6088537882470177,
+     "elbow_pitch": -1.4931853270891935,
+     "wrist_pitch": -0.632025113330587,
+     "wrist_roll": -1.49402991064234e-05
     },
     "force_limit_nm": {
      "base_yaw": 2.94,
-     "shoulder_pitch": 8.1144,
+     "shoulder_pitch": 6.32923,
      "elbow_pitch": 5.4096,
      "wrist_pitch": 2.94,
      "wrist_roll": 2.94
     },
     "utilization": {
-     "base_yaw": 7.163173455753668e-09,
-     "shoulder_pitch": 0.3215398328766588,
-     "elbow_pitch": 0.2760507158547658,
-     "wrist_pitch": 0.21497451842589146,
-     "wrist_roll": 5.081734165788831e-06
+     "base_yaw": 7.094121510941527e-09,
+     "shoulder_pitch": 0.4121913389538724,
+     "elbow_pitch": 0.2760250900416285,
+     "wrist_pitch": 0.21497452834373706,
+     "wrist_roll": 5.081734389939932e-06
     },
-    "max_abs_error_deg": 1.2069239605461266,
+    "max_abs_error_deg": 1.2069240121965437,
     "pass": true
    },
    "folded_back": {
@@ -178,41 +178,41 @@
      "wrist_pitch": -45.0
     },
     "error_deg": {
-     "base_yaw": 3.219401976342912e-08,
-     "shoulder_pitch": 0.22379696157435142,
-     "elbow_pitch": 0.7175514885245905,
-     "wrist_pitch": 1.0592877767976994,
-     "wrist_roll": 2.5192115835666097e-05
+     "base_yaw": 3.243936775155722e-08,
+     "shoulder_pitch": 0.22377517973211997,
+     "elbow_pitch": 0.7174825252905375,
+     "wrist_pitch": 1.0592869031492693,
+     "wrist_roll": 2.519209352470489e-05
     },
     "gravity_torque_nm": {
      "base_yaw": 0.0,
-     "shoulder_pitch": -0.9647075417344402,
-     "elbow_pitch": -1.3790494063119143,
+     "shoulder_pitch": -0.9646131838808251,
+     "elbow_pitch": -1.378916019983428,
      "wrist_pitch": -0.5451164794026881,
      "wrist_roll": -1.306322893241535e-05
     },
     "actuator_torque_nm": {
-     "base_yaw": -1.548300332387953e-08,
-     "shoulder_pitch": -0.9707948873685552,
-     "elbow_pitch": -1.3828869433218074,
-     "wrist_pitch": -0.5547533692289797,
-     "wrist_roll": -1.3202210198456228e-05
+     "base_yaw": -1.560167817160618e-08,
+     "shoulder_pitch": -0.970700419817291,
+     "elbow_pitch": -1.3827540636918627,
+     "wrist_pitch": -0.5547529100650159,
+     "wrist_roll": -1.3202198537606133e-05
     },
     "force_limit_nm": {
      "base_yaw": 2.94,
-     "shoulder_pitch": 8.1144,
+     "shoulder_pitch": 6.32923,
      "elbow_pitch": 5.4096,
      "wrist_pitch": 2.94,
      "wrist_roll": 2.94
     },
     "utilization": {
-     "base_yaw": 5.266327661183513e-09,
-     "shoulder_pitch": 0.11963852994288614,
-     "elbow_pitch": 0.2556357112026411,
-     "wrist_pitch": 0.18869162218672778,
-     "wrist_roll": 4.490547686549737e-06
+     "base_yaw": 5.306693255648361e-09,
+     "shoulder_pitch": 0.15336785356469762,
+     "elbow_pitch": 0.25561114753250935,
+     "wrist_pitch": 0.18869146600850883,
+     "wrist_roll": 4.490543720274195e-06
     },
-    "max_abs_error_deg": 1.0592877767976994,
+    "max_abs_error_deg": 1.0592869031492693,
     "pass": true
    },
    "rear_limit": {
@@ -223,41 +223,41 @@
      "wrist_pitch": 0.0
     },
     "error_deg": {
-     "base_yaw": 9.749362016435728e-08,
-     "shoulder_pitch": 0.09835903456819246,
-     "elbow_pitch": 0.5041799640039666,
-     "wrist_pitch": 0.7874276473264935,
-     "wrist_roll": 1.8861448112391182e-05
+     "base_yaw": 9.776879335407218e-08,
+     "shoulder_pitch": 0.0983494388127345,
+     "elbow_pitch": 0.5041315572227919,
+     "wrist_pitch": 0.7874267582912237,
+     "wrist_roll": 1.886142623082053e-05
     },
     "gravity_torque_nm": {
      "base_yaw": 0.0,
-     "shoulder_pitch": -0.4112093098520522,
-     "elbow_pitch": -0.956403956772285,
-     "wrist_pitch": -0.40196229166492986,
-     "wrist_roll": -9.695883819993423e-06
+     "shoulder_pitch": -0.41117008713222114,
+     "elbow_pitch": -0.9563129478190457,
+     "wrist_pitch": -0.4019622916649299,
+     "wrist_roll": -9.695883819993206e-06
     },
     "actuator_torque_nm": {
-     "base_yaw": -4.7219993244899535e-08,
-     "shoulder_pitch": -0.4268596811167811,
-     "elbow_pitch": -0.9717548532550495,
-     "wrist_pitch": -0.4124094680236478,
-     "wrist_roll": -9.884659360899712e-06
+     "base_yaw": -4.735316151331828e-08,
+     "shoulder_pitch": -0.4268180569075781,
+     "elbow_pitch": -0.9716615811263267,
+     "wrist_pitch": -0.4124090008046541,
+     "wrist_roll": -9.884647888241997e-06
     },
     "force_limit_nm": {
      "base_yaw": 2.94,
-     "shoulder_pitch": 8.1144,
+     "shoulder_pitch": 6.32923,
      "elbow_pitch": 5.4096,
      "wrist_pitch": 2.94,
      "wrist_roll": 2.94
     },
     "utilization": {
-     "base_yaw": 1.60612221921427e-08,
-     "shoulder_pitch": 0.052605205698114596,
-     "elbow_pitch": 0.1796352508974877,
-     "wrist_pitch": 0.14027532925974415,
-     "wrist_roll": 3.36212903431963e-06
+     "base_yaw": 1.6106517521536832e-08,
+     "shoulder_pitch": 0.06743601621485996,
+     "elbow_pitch": 0.1796180089334381,
+     "wrist_pitch": 0.14027517034171907,
+     "wrist_roll": 3.362125132055101e-06
     },
-    "max_abs_error_deg": 0.7874276473264935,
+    "max_abs_error_deg": 0.7874267582912237,
     "pass": true
    }
   },
@@ -265,15 +265,15 @@
  },
  "torque_budget_crosscheck": {
   "shoulder_pitch": {
-   "mujoco_nm": 3.071431291027258,
-   "budget_nm": 3.0714288247866968
+   "mujoco_nm": 3.0711394197350654,
+   "budget_nm": 3.071137828198455
   },
   "elbow_pitch": {
-   "mujoco_nm": 1.4965081378152583,
-   "budget_nm": 1.4965069325761862
+   "mujoco_nm": 1.4963694049169025,
+   "budget_nm": 1.4963682892503674
   },
   "wrist_pitch": {
-   "mujoco_nm": 0.6333027697152283,
+   "mujoco_nm": 0.6333027697152285,
    "budget_nm": 0.6333022077961379
   }
  },
@@ -282,117 +282,117 @@
   "joints": {
    "base_yaw": {
     "limit_rad_s": 4.7,
-    "peak_rad_s": 4.652040061571843,
+    "peak_rad_s": 4.652040061538522,
     "pass": true
    },
    "shoulder_pitch": {
     "limit_rad_s": 1.56667,
-    "peak_rad_s": 1.549557987543641,
+    "peak_rad_s": 1.2047884168965066,
     "pass": true
    },
    "elbow_pitch": {
     "limit_rad_s": 2.35,
-    "peak_rad_s": 2.3247160436347247,
+    "peak_rad_s": 2.3247158941662103,
     "pass": true
    },
    "wrist_pitch": {
     "limit_rad_s": 4.7,
-    "peak_rad_s": 4.65224108122113,
+    "peak_rad_s": 4.65224108152797,
     "pass": true
    },
    "wrist_roll": {
     "limit_rad_s": 4.7,
-    "peak_rad_s": 4.652040186497264,
+    "peak_rad_s": 4.6520401864968495,
     "pass": true
    }
   },
   "pass": true
  },
  "keepout": {
-  "samples_inside_limit": 343,
+  "samples_inside_limit": 324,
   "contacts_inside_limit": 0,
-  "samples_outside_limit": 57,
+  "samples_outside_limit": 76,
   "contacts_outside_limit": 27,
   "wrist_curl_30_100_100_contacts": true,
   "coupled_limits": {
    "coupled_forearm_pitch": [
     -180.0,
-    195.0
+    175.0
    ],
    "coupled_hairpin": [
     -180.0,
-    185.0
+    165.0
    ],
    "coupled_tool_pitch": [
     -180.0,
-    190.0
+    183.0
    ]
   },
   "pass": true
  },
  "keepout_other_tools": {
   "knob_turner": {
-   "samples_inside_limit": 343,
+   "samples_inside_limit": 324,
    "contacts_inside_limit": 0,
-   "samples_outside_limit": 57,
+   "samples_outside_limit": 76,
    "contacts_outside_limit": 26,
    "wrist_curl_30_100_100_contacts": true,
    "coupled_limits": {
     "coupled_forearm_pitch": [
      -180.0,
-     195.0
+     175.0
     ],
     "coupled_hairpin": [
      -180.0,
-     185.0
+     165.0
     ],
     "coupled_tool_pitch": [
      -180.0,
-     190.0
+     183.0
     ]
    },
    "pass": true
   },
   "button_presser": {
-   "samples_inside_limit": 343,
+   "samples_inside_limit": 324,
    "contacts_inside_limit": 0,
-   "samples_outside_limit": 57,
+   "samples_outside_limit": 76,
    "contacts_outside_limit": 24,
    "wrist_curl_30_100_100_contacts": true,
    "coupled_limits": {
     "coupled_forearm_pitch": [
      -180.0,
-     195.0
+     175.0
     ],
     "coupled_hairpin": [
      -180.0,
-     185.0
+     165.0
     ],
     "coupled_tool_pitch": [
      -180.0,
-     190.0
+     183.0
     ]
    },
    "pass": true
   },
   "slider_pusher": {
-   "samples_inside_limit": 343,
+   "samples_inside_limit": 324,
    "contacts_inside_limit": 0,
-   "samples_outside_limit": 57,
+   "samples_outside_limit": 76,
    "contacts_outside_limit": 19,
    "wrist_curl_30_100_100_contacts": false,
    "coupled_limits": {
     "coupled_forearm_pitch": [
      -180.0,
-     195.0
+     175.0
     ],
     "coupled_hairpin": [
      -180.0,
-     185.0
+     165.0
     ],
     "coupled_tool_pitch": [
      -180.0,
-     190.0
+     183.0
     ]
    },
    "pass": true
@@ -412,16 +412,16 @@
    0.0005
   ],
   "final_m": [
-   0.18048396605431646,
-   0.15860053344369632,
-   0.01239224457978384
+   0.18048386780694006,
+   0.15860081252616176,
+   0.012392244579783846
   ],
-  "xy_error_m": 0.0014807868799875117,
-  "final_z_m": 0.01239224457978384,
-  "lift_z_m": 0.08170485127459565,
-  "grasp_width_m": 0.022884399237406122,
-  "carry_slip_m": 5.995158783445292e-05,
-  "ik_max_pos_err_m": 8.298928075576964e-05,
+  "xy_error_m": 0.0014804910136636544,
+  "final_z_m": 0.012392244579783846,
+  "lift_z_m": 0.0817049005012244,
+  "grasp_width_m": 0.022884399156532988,
+  "carry_slip_m": 5.995502561254376e-05,
+  "ik_max_pos_err_m": 8.298928075591681e-05,
   "plan_deg": {
    "pre_grasp": [
     0.0,
@@ -453,7 +453,7 @@
    ]
   },
   "sim_time_s": 12.000000000000677,
-  "cube_quat_w": 0.999994873850611,
+  "cube_quat_w": 0.9999948737500679,
   "pass": true
  },
  "pass": true

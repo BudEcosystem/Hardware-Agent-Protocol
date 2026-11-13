@@ -33,8 +33,8 @@ powered or certified, and no PCB has been manufactured.
 | | |
 |---|---|
 | Reach (shoulder axis → flange) | 400 mm (180 + 140 + 80) |
-| Rated load | 250 g carried object, tool excluded, 70 mm beyond the flange, plus the 159 g gripper. Static 2× margin vs stall at every joint (shoulder 2.64×, elbow 3.61×, wrist 4.64×) |
-| Joints | yaw ±150°, shoulder −20…+95° (3:1), elbow −5…+125° (2:1), wrist pitch ±100°, wrist roll ±150°, plus coupled pitch limits (`firmware/INTERFACE.md` §3.2) |
+| Rated load | 250 g carried object, tool excluded, 70 mm beyond the flange, plus the 159 g gripper. Static 2× margin against the enforced servo torque limits at every joint (shoulder 2.06× at its 78 % limit, elbow 3.62×, wrist 4.64×); machined steel shoulder pinion |
+| Joints | yaw ±150°, shoulder −20…+95° (3:1), elbow −5…+125° (2:1), wrist pitch ±100°, wrist roll ±150°, plus coupled pitch limits (shoulder+elbow ≤ 175°, elbow+wrist ≤ 165°, sum of all three ≤ 183°; `firmware/INTERFACE.md` §3.2) |
 | Tool flange | 3-lug bayonet locked by a +30° wrist roll; 6 pogo contacts: 12 V, GND, bus, AUX1, AUX2, tool ID |
 | Controller | RP2040, 16 MB flash, USB-C, 12 V in with fuse/TVS/reverse protection, half-duplex servo bus, INA219 rail sensing, hardware E-stop loop, tool port, RGB LED, SWD |
 | Cost (estimate) | see `bom/bom.csv` totals |

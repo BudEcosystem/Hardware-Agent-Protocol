@@ -116,6 +116,9 @@ class Joint:
     upper_deg: float
     ratio: float  # servo turns per joint turn
     servo_id: int
+    # Enforced Max_Torque_Limit as a fraction of servo stall (programmed into the
+    # servo EEPROM and by the firmware).  Margins and the MJCF force limit use it.
+    torque_limit: float = 1.0
 
     @property
     def servo_span_deg(self) -> float:
@@ -160,7 +163,9 @@ class Arm:
     payload_tool: str = "gripper"  # tool whose CAD mass is added to the payload
     joints: tuple[Joint, ...] = (
         Joint("base_yaw", -150.0, 150.0, 1.0, 1),
-        Joint("shoulder_pitch", -20.0, 95.0, 3.0, 2),
+        # 78 % of stall = 2.29 N.m at the servo: 2.06x the 1.113 N.m the rated case needs
+        # (R13 needs >= 2x) while the gear teeth stay at <= 0.5x yield (docs/design.md section 4).
+        Joint("shoulder_pitch", -20.0, 95.0, 3.0, 2, 0.78),
         Joint("elbow_pitch", -5.0, 125.0, 2.0, 3),
         Joint("wrist_pitch", -100.0, 100.0, 1.0, 4),
         Joint("wrist_roll", -150.0, 150.0, 1.0, 5),
@@ -174,9 +179,9 @@ class Arm:
     # folds into the base or the tool/forearm folds back into the upper arm
     # or the turret.
     coupled_limits: tuple[CoupledLimit, ...] = (
-        CoupledLimit("forearm_pitch", ("shoulder_pitch", "elbow_pitch"), -180.0, 195.0),
-        CoupledLimit("hairpin", ("elbow_pitch", "wrist_pitch"), -180.0, 185.0),
-        CoupledLimit("tool_pitch", ("shoulder_pitch", "elbow_pitch", "wrist_pitch"), -180.0, 190.0),
+        CoupledLimit("forearm_pitch", ("shoulder_pitch", "elbow_pitch"), -180.0, 175.0),
+        CoupledLimit("hairpin", ("elbow_pitch", "wrist_pitch"), -180.0, 165.0),
+        CoupledLimit("tool_pitch", ("shoulder_pitch", "elbow_pitch", "wrist_pitch"), -180.0, 183.0),
     )
 
     def coupled_ok(self, q: dict[str, float]) -> bool:

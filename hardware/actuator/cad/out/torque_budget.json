@@ -8,29 +8,30 @@
    "reach_to_flange_m": 0.4,
    "joints": {
     "shoulder_pitch": {
-     "joint_torque_nm": 3.0714288247866968,
+     "joint_torque_nm": 3.071137828198455,
      "ratio": 3.0,
      "efficiency": 0.92,
-     "servo_torque_nm": 1.1128365307198176,
-     "required_with_2x_nm": 2.225673061439635,
+     "servo_torque_nm": 1.112731097173353,
+     "required_with_2x_nm": 2.225462194346706,
      "stall_nm": 2.94,
-     "margin_vs_stall": 2.641897456491939,
+     "enforced_limit_nm": 2.2932,
+     "margin_vs_stall": 2.0608752697083483,
      "rated_continuous_nm": 0.98,
      "within_rated_continuous": false,
-     "holding_current_a_est": 1.17199273229371,
+     "holding_current_a_est": 1.171895905567365,
      "pass": true,
      "contributions": [
       {
        "link": "upper_arm",
-       "mass_kg": 0.3066315613844739,
-       "lever_m": 0.08220001857430877,
-       "torque_nm": 0.24726222760488867
+       "mass_kg": 0.306660886581099,
+       "lever_m": 0.08212430148082689,
+       "torque_nm": 0.24705809191026526
       },
       {
        "link": "forearm",
-       "mass_kg": 0.21677293547842486,
-       "lever_m": 0.24033102604925327,
-       "torque_nm": 0.511074140251769
+       "mass_kg": 0.21680226067504987,
+       "lever_m": 0.2402576777547556,
+       "torque_nm": 0.5109872793581506
       },
       {
        "link": "wrist",
@@ -59,23 +60,24 @@
      ]
     },
     "elbow_pitch": {
-     "joint_torque_nm": 1.4965069325761862,
+     "joint_torque_nm": 1.4963682892503674,
      "ratio": 2.0,
      "efficiency": 0.92,
-     "servo_torque_nm": 0.8133189850957533,
-     "required_with_2x_nm": 1.6266379701915066,
+     "servo_torque_nm": 0.8132436354621562,
+     "required_with_2x_nm": 1.6264872709243123,
      "stall_nm": 2.94,
-     "margin_vs_stall": 3.6148178683593244,
+     "enforced_limit_nm": 2.94,
+     "margin_vs_stall": 3.6151527928395466,
      "rated_continuous_nm": 0.98,
      "within_rated_continuous": true,
-     "holding_current_a_est": 0.8969255985573245,
+     "holding_current_a_est": 0.896856399914225,
      "pass": true,
      "contributions": [
       {
        "link": "forearm",
-       "mass_kg": 0.21677293547842486,
-       "lever_m": 0.06033102604925329,
-       "torque_nm": 0.12829649078396638
+       "mass_kg": 0.21680226067504987,
+       "lever_m": 0.0602576777547556,
+       "torque_nm": 0.12815784745814746
       },
       {
        "link": "wrist",
@@ -110,6 +112,7 @@
      "servo_torque_nm": 0.6333022077961379,
      "required_with_2x_nm": 1.2666044155922758,
      "stall_nm": 2.94,
+     "enforced_limit_nm": 2.94,
      "margin_vs_stall": 4.64233341334947,
      "rated_continuous_nm": 0.98,
      "within_rated_continuous": true,
@@ -159,7 +162,7 @@
      "note": "no static gravity load; dynamic only"
     }
    },
-   "worst_case_holding_current_a_est": 3.100522399235243,
+   "worst_case_holding_current_a_est": 3.1003563738657984,
    "pass": true
   },
   "knob_turner, no object": {
@@ -170,29 +173,30 @@
    "reach_to_flange_m": 0.4,
    "joints": {
     "shoulder_pitch": {
-     "joint_torque_nm": 2.2837591994698956,
+     "joint_torque_nm": 2.2834682028816538,
      "ratio": 3.0,
      "efficiency": 0.92,
-     "servo_torque_nm": 0.8274489853151795,
-     "required_with_2x_nm": 1.654897970630359,
+     "servo_torque_nm": 0.8273435517687151,
+     "required_with_2x_nm": 1.6546871035374302,
      "stall_nm": 2.94,
-     "margin_vs_stall": 3.5530891356161844,
+     "enforced_limit_nm": 2.2932,
+     "margin_vs_stall": 2.7717627037734704,
      "rated_continuous_nm": 0.98,
      "within_rated_continuous": true,
-     "holding_current_a_est": 0.9099021293710833,
+     "holding_current_a_est": 0.9098053026447385,
      "pass": true,
      "contributions": [
       {
        "link": "upper_arm",
-       "mass_kg": 0.3066315613844739,
-       "lever_m": 0.08220001857430877,
-       "torque_nm": 0.24726222760488867
+       "mass_kg": 0.306660886581099,
+       "lever_m": 0.08212430148082689,
+       "torque_nm": 0.24705809191026526
       },
       {
        "link": "forearm",
-       "mass_kg": 0.21677293547842486,
-       "lever_m": 0.24033102604925327,
-       "torque_nm": 0.511074140251769
+       "mass_kg": 0.21680226067504987,
+       "lever_m": 0.2402576777547556,
+       "torque_nm": 0.5109872793581506
       },
       {
        "link": "wrist",
@@ -215,23 +219,24 @@
      ]
     },
     "elbow_pitch": {
-     "joint_torque_nm": 1.0060313742422604,
+     "joint_torque_nm": 1.0058927309164414,
      "ratio": 2.0,
      "efficiency": 0.92,
-     "servo_torque_nm": 0.5467561816534023,
-     "required_with_2x_nm": 1.0935123633068047,
+     "servo_torque_nm": 0.5466808320198051,
+     "required_with_2x_nm": 1.0933616640396102,
      "stall_nm": 2.94,
-     "margin_vs_stall": 5.377168285705298,
+     "enforced_limit_nm": 2.94,
+     "margin_vs_stall": 5.377909426854552,
      "rated_continuous_nm": 0.98,
      "within_rated_continuous": true,
-     "holding_current_a_est": 0.6521230239674104,
+     "holding_current_a_est": 0.6520538253243109,
      "pass": true,
      "contributions": [
       {
        "link": "forearm",
-       "mass_kg": 0.21677293547842486,
-       "lever_m": 0.06033102604925329,
-       "torque_nm": 0.12829649078396638
+       "mass_kg": 0.21680226067504987,
+       "lever_m": 0.0602576777547556,
+       "torque_nm": 0.12815784745814746
       },
       {
        "link": "wrist",
@@ -260,6 +265,7 @@
      "servo_torque_nm": 0.37397759044889317,
      "required_with_2x_nm": 0.7479551808977863,
      "stall_nm": 2.94,
+     "enforced_limit_nm": 2.94,
      "margin_vs_stall": 7.861433612829732,
      "rated_continuous_nm": 0.98,
      "within_rated_continuous": true,
@@ -303,7 +309,7 @@
      "note": "no static gravity load; dynamic only"
     }
    },
-   "worst_case_holding_current_a_est": 2.3554739608935997,
+   "worst_case_holding_current_a_est": 2.3553079355241553,
    "pass": true
   },
   "button_presser, no object": {
@@ -314,29 +320,30 @@
    "reach_to_flange_m": 0.4,
    "joints": {
     "shoulder_pitch": {
-     "joint_torque_nm": 1.8006193576139626,
+     "joint_torque_nm": 1.8003283610257208,
      "ratio": 3.0,
      "efficiency": 0.92,
-     "servo_torque_nm": 0.6523983179760734,
-     "required_with_2x_nm": 1.3047966359521468,
+     "servo_torque_nm": 0.652292884429609,
+     "required_with_2x_nm": 1.304585768859218,
      "stall_nm": 2.94,
-     "margin_vs_stall": 4.506449386811301,
+     "enforced_limit_nm": 2.2932,
+     "margin_vs_stall": 3.5155986746739787,
      "rated_continuous_nm": 0.98,
      "within_rated_continuous": true,
-     "holding_current_a_est": 0.7491413124270062,
+     "holding_current_a_est": 0.7490444857006614,
      "pass": true,
      "contributions": [
       {
        "link": "upper_arm",
-       "mass_kg": 0.3066315613844739,
-       "lever_m": 0.08220001857430877,
-       "torque_nm": 0.24726222760488867
+       "mass_kg": 0.306660886581099,
+       "lever_m": 0.08212430148082689,
+       "torque_nm": 0.24705809191026526
       },
       {
        "link": "forearm",
-       "mass_kg": 0.21677293547842486,
-       "lever_m": 0.24033102604925327,
-       "torque_nm": 0.511074140251769
+       "mass_kg": 0.21680226067504987,
+       "lever_m": 0.2402576777547556,
+       "torque_nm": 0.5109872793581506
       },
       {
        "link": "wrist",
@@ -359,23 +366,24 @@
      ]
     },
     "elbow_pitch": {
-     "joint_torque_nm": 0.7129660163307225,
+     "joint_torque_nm": 0.7128273730049037,
      "ratio": 2.0,
      "efficiency": 0.92,
-     "servo_torque_nm": 0.3874815306145231,
-     "required_with_2x_nm": 0.7749630612290462,
+     "servo_torque_nm": 0.38740618098092594,
+     "required_with_2x_nm": 0.7748123619618519,
      "stall_nm": 2.94,
-     "margin_vs_stall": 7.587458414694841,
+     "enforced_limit_nm": 2.94,
+     "margin_vs_stall": 7.588934158344654,
      "rated_continuous_nm": 0.98,
      "within_rated_continuous": true,
-     "holding_current_a_est": 0.5058503852582356,
+     "holding_current_a_est": 0.5057811866151362,
      "pass": true,
      "contributions": [
       {
        "link": "forearm",
-       "mass_kg": 0.21677293547842486,
-       "lever_m": 0.06033102604925329,
-       "torque_nm": 0.12829649078396638
+       "mass_kg": 0.21680226067504987,
+       "lever_m": 0.0602576777547556,
+       "torque_nm": 0.12815784745814746
       },
       {
        "link": "wrist",
@@ -404,6 +412,7 @@
      "servo_torque_nm": 0.22874794227188483,
      "required_with_2x_nm": 0.45749588454376966,
      "stall_nm": 2.94,
+     "enforced_limit_nm": 2.94,
      "margin_vs_stall": 12.85257463214939,
      "rated_continuous_nm": 0.98,
      "within_rated_continuous": true,
@@ -447,7 +456,7 @@
      "note": "no static gravity load; dynamic only"
     }
    },
-   "worst_case_holding_current_a_est": 1.915066338547177,
+   "worst_case_holding_current_a_est": 1.9149003131777327,
    "pass": true
   },
   "slider_pusher, no object": {
@@ -458,29 +467,30 @@
    "reach_to_flange_m": 0.4,
    "joints": {
     "shoulder_pitch": {
-     "joint_torque_nm": 1.3968807006640531,
+     "joint_torque_nm": 1.3965897040758113,
      "ratio": 3.0,
      "efficiency": 0.92,
-     "servo_torque_nm": 0.5061161958927728,
-     "required_with_2x_nm": 1.0122323917855456,
+     "servo_torque_nm": 0.5060107623463084,
+     "required_with_2x_nm": 1.0120215246926167,
      "stall_nm": 2.94,
-     "margin_vs_stall": 5.808942736586277,
+     "enforced_limit_nm": 2.2932,
+     "margin_vs_stall": 4.531919418801923,
      "rated_continuous_nm": 0.98,
      "within_rated_continuous": true,
-     "holding_current_a_est": 0.6148005880647914,
+     "holding_current_a_est": 0.6147037613384465,
      "pass": true,
      "contributions": [
       {
        "link": "upper_arm",
-       "mass_kg": 0.3066315613844739,
-       "lever_m": 0.08220001857430877,
-       "torque_nm": 0.24726222760488867
+       "mass_kg": 0.306660886581099,
+       "lever_m": 0.08212430148082689,
+       "torque_nm": 0.24705809191026526
       },
       {
        "link": "forearm",
-       "mass_kg": 0.21677293547842486,
-       "lever_m": 0.24033102604925327,
-       "torque_nm": 0.511074140251769
+       "mass_kg": 0.21680226067504987,
+       "lever_m": 0.2402576777547556,
+       "torque_nm": 0.5109872793581506
       },
       {
        "link": "wrist",
@@ -503,23 +513,24 @@
      ]
     },
     "elbow_pitch": {
-     "joint_torque_nm": 0.47095066310608047,
+     "joint_torque_nm": 0.47081201978026155,
      "ratio": 2.0,
      "efficiency": 0.92,
-     "servo_torque_nm": 0.2559514473402611,
-     "required_with_2x_nm": 0.5119028946805222,
+     "servo_torque_nm": 0.25587609770666386,
+     "required_with_2x_nm": 0.5117521954133277,
      "stall_nm": 2.94,
-     "margin_vs_stall": 11.486553526269272,
+     "enforced_limit_nm": 2.94,
+     "margin_vs_stall": 11.489936052449938,
      "rated_continuous_nm": 0.98,
      "within_rated_continuous": true,
-     "holding_current_a_est": 0.3850574516390153,
+     "holding_current_a_est": 0.3849882529959158,
      "pass": true,
      "contributions": [
       {
        "link": "forearm",
-       "mass_kg": 0.21677293547842486,
-       "lever_m": 0.06033102604925329,
-       "torque_nm": 0.12829649078396638
+       "mass_kg": 0.21680226067504987,
+       "lever_m": 0.0602576777547556,
+       "torque_nm": 0.12815784745814746
       },
       {
        "link": "wrist",
@@ -548,6 +559,7 @@
      "servo_torque_nm": 0.11251738083356194,
      "required_with_2x_nm": 0.22503476166712388,
      "stall_nm": 2.94,
+     "enforced_limit_nm": 2.94,
      "margin_vs_stall": 26.1292964537533,
      "rated_continuous_nm": 0.98,
      "within_rated_continuous": true,
@@ -591,9 +603,79 @@
      "note": "no static gravity load; dynamic only"
     }
    },
-   "worst_case_holding_current_a_est": 1.5531903282244248,
+   "worst_case_holding_current_a_est": 1.5530243028549804,
    "pass": true
   }
  },
+ "gear_stress": [
+  {
+   "stage": "shoulder",
+   "part": "pinion",
+   "material": "steel",
+   "teeth": 17,
+   "limit_nm": 2.2932,
+   "force_n": 179.85882352941178,
+   "lewis_y": 0.303,
+   "m_B": 0.46666666666666645,
+   "K_B": 2.5112134027149846,
+   "sigma_lewis_mpa": 28.26635604736945,
+   "sigma_eff_mpa": 70.98285215206792,
+   "yield_mpa": 300.0,
+   "allowed_mpa": 150.0,
+   "fraction_of_yield": 0.23660950717355975,
+   "pass": true
+  },
+  {
+   "stage": "shoulder",
+   "part": "gear",
+   "material": "PETG",
+   "teeth": 51,
+   "limit_nm": 2.2932,
+   "force_n": 179.85882352941178,
+   "lewis_y": 0.4103,
+   "m_B": 1.199999999999999,
+   "K_B": 1.000074828569623,
+   "sigma_lewis_mpa": 20.87425269888604,
+   "sigma_eff_mpa": 20.875814689357448,
+   "yield_mpa": 45.0,
+   "allowed_mpa": 22.5,
+   "fraction_of_yield": 0.46390699309683214,
+   "pass": true
+  },
+  {
+   "stage": "elbow",
+   "part": "pinion",
+   "material": "PETG",
+   "teeth": 17,
+   "limit_nm": 2.94,
+   "force_n": 172.94117647058823,
+   "lewis_y": 0.303,
+   "m_B": 1.1555555555555554,
+   "K_B": 1.0604593533421771,
+   "sigma_lewis_mpa": 20.3843913803145,
+   "sigma_eff_mpa": 21.616818501442165,
+   "yield_mpa": 45.0,
+   "allowed_mpa": 22.5,
+   "fraction_of_yield": 0.48037374447649256,
+   "pass": true
+  },
+  {
+   "stage": "elbow",
+   "part": "gear",
+   "material": "PETG",
+   "teeth": 34,
+   "limit_nm": 2.94,
+   "force_n": 172.94117647058823,
+   "lewis_y": 0.371,
+   "m_B": 1.1999999999999997,
+   "K_B": 1.0000748285696222,
+   "sigma_lewis_mpa": 16.64816870144284,
+   "sigma_eff_mpa": 16.6494144600936,
+   "yield_mpa": 45.0,
+   "allowed_mpa": 22.5,
+   "fraction_of_yield": 0.36998698800207996,
+   "pass": true
+  }
+ ],
  "pass": true
 }

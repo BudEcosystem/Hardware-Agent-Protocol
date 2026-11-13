@@ -154,21 +154,21 @@
   ]
  },
  "pinion_shoulder": {
-  "material": "PETG",
+  "material": "steel",
   "qty": 1,
   "solids": 1,
   "volume_cm3": 6.153609210032424,
   "area_cm2": 43.57793854076821,
-  "mass_model_g": 6.993419592551506,
-  "printed": true,
-  "solid_equivalent_g": 7.815083696741179,
+  "mass_model_g": 0.0,
+  "printed": false,
+  "solid_equivalent_g": 0.0,
   "bbox_mm": [
    28.322474753010347,
    28.443811036388933,
    19.2
   ],
-  "print_time_h_est": 0.25851704763628003,
-  "orientation": "horn face down, 100% infill",
+  "print_time_h_est": 0.0,
+  "orientation": "machined steel, not printed (drawing = this STEP)",
   "centroid_mm": [
    -2.609749092454682e-16,
    8.019618298717399e-17,
@@ -201,44 +201,44 @@
   "material": "PETG",
   "qty": 1,
   "solids": 1,
-  "volume_cm3": 253.46035134227165,
-  "area_cm2": 634.9932180174163,
-  "mass_model_g": 164.30947035950348,
+  "volume_cm3": 253.95515218521243,
+  "area_cm2": 633.5009615069611,
+  "mass_model_g": 164.33879555612856,
   "printed": true,
-  "solid_equivalent_g": 321.89464620468505,
+  "solid_equivalent_g": 322.5230432752198,
   "bbox_mm": [
    81.44679825770827,
    69.8,
    237.7434834863774
   ],
-  "print_time_h_est": 5.279445861751765,
+  "print_time_h_est": 5.280362159609066,
   "orientation": "on its side (+y face down), supports under clevis",
   "centroid_mm": [
-   0.2143325165147431,
-   -1.8682522229815093,
-   64.94820133197699
+   0.21391491557643855,
+   -1.8840959482220718,
+   64.8099895481626
   ]
  },
  "forearm": {
   "material": "PETG",
   "qty": 1,
   "solids": 1,
-  "volume_cm3": 167.75463649929137,
-  "area_cm2": 433.2104423452913,
-  "mass_model_g": 110.12940649562569,
+  "volume_cm3": 168.2494373422321,
+  "area_cm2": 431.71818583483605,
+  "mass_model_g": 110.15873169225073,
   "printed": true,
-  "solid_equivalent_g": 213.04838835410004,
+  "solid_equivalent_g": 213.67678542463477,
   "bbox_mm": [
    71.98757766280757,
    52.300000000000004,
    195.00194593074485
   ],
-  "print_time_h_est": 3.5500721470949155,
+  "print_time_h_est": 3.550988444952216,
   "orientation": "on its side (-y face down)",
   "centroid_mm": [
-   0.8275385064308308,
-   -0.8953165865994104,
-   40.4375087612881
+   0.8251048177539684,
+   -0.9220923375250576,
+   40.29844856585555
   ]
  },
  "wrist_bracket": {

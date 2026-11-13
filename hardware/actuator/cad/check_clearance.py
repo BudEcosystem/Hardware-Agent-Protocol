@@ -20,6 +20,11 @@ A cheap oriented-bounding-box separating-axis test removes almost all
 pairs; the survivors go to the exact OpenCASCADE boolean (cached by the
 relative pose of the two links).
 
+At allowed poses the check also requires a minimum clearance of ``CLEARANCE_MM`` (3 mm,
+exact distance) between links that can approach each other (not both in the wrist sub-tree),
+on the random allowed poses and on seeded poses lying ON each coupled-limit surface (the
+worst case of that limit).  A closer approach fails the check like a collision.
+
 Poses inside every single-joint limit but outside the coupled limits
 ``Arm.coupled_limits`` (sums of joint angles, see firmware/INTERFACE.md §3.2)
 are *forbidden*: collisions there are expected and are reported as the
@@ -46,6 +51,7 @@ sys.path.insert(0, str(HERE))
 
 import numpy as np  # noqa: E402
 from build123d import Location, Part, Pos, Rot  # noqa: E402
+from OCP.BRepExtrema import BRepExtrema_DistShapeShape  # noqa: E402
 from OCP.BRepGProp import BRepGProp  # noqa: E402
 from OCP.GProp import GProp_GProps  # noqa: E402
 
@@ -54,6 +60,9 @@ from parts import tool_button_presser as presser  # noqa: E402
 from params import DEFAULT  # noqa: E402
 
 TOL_MM3 = 1.0
+CLEARANCE_MM = 3.0  # minimum distance required at allowed poses between links that can approach each other
+WRIST_SUBTREE = {"wrist", "flange", "gripper", "gripper_finger_a", "gripper_finger_b", "knob_turner", "knob_output",
+                 "button_presser", "presser_plunger", "slider_pusher"}
 ARM_LINKS = ["base", "turret", "upper_arm", "forearm", "wrist", "flange"]
 TOOL_LINKS = {"gripper": ["gripper", "gripper_finger_a", "gripper_finger_b"],
               "knob_turner": ["knob_turner", "knob_output"],
@@ -83,6 +92,13 @@ def hops(a: str, b: str) -> int:
     return ca.index(common) + cb.index(common)
 # Faces in contact by design (horn faces against pinions/brackets) are
 # coplanar and give zero overlap volume, so they need no exclusion.
+
+
+def distance_mm(a, b) -> float:
+    """Exact minimum distance between two solids (mm)."""
+    d = BRepExtrema_DistShapeShape(a.wrapped, b.wrapped)
+    d.Perform()
+    return float(d.Value())
 
 
 def volume(shape: Part | None) -> float:
@@ -133,6 +149,7 @@ def fk(p, q: dict[str, float], tool_q: dict[str, float]) -> dict[str, Location]:
 N_ALLOWED = 2000  # random poses inside the coupled limits (must be collision free)
 N_FORBIDDEN = 500  # random poses outside them (collisions expected)
 N_RANDOM = N_ALLOWED + N_FORBIDDEN
+N_BOUNDARY = 150  # poses per coupled-limit surface (all four tools each)
 SEED = 20261113
 SWEEP_STEP_DEG = 5.0
 
@@ -176,6 +193,25 @@ def random_poses(p, n_allowed: int = N_ALLOWED, n_forbidden: int = N_FORBIDDEN,
         if len(bucket) < cap:
             bucket.append(q)
     return [(f"random{i}", q) for i, q in enumerate(inside + outside)]
+
+
+def boundary_poses(p, n_per_limit: int = N_BOUNDARY, seed: int = SEED + 2) -> list[tuple[str, dict[str, float]]]:
+    """Seeded poses ON each coupled-limit surface (sum of the limit's joints = its upper bound),
+    all other joints random inside every limit: the worst case for that limit."""
+    rng = random.Random(seed)
+    J = {j.name: j for j in p.arm.joints}
+    out = []
+    for c in p.arm.coupled_limits:
+        made = 0
+        while made < n_per_limit:
+            q = {j.name: rng.uniform(j.lower_deg, j.upper_deg) for j in p.arm.joints}
+            solve = rng.choice(c.joints)
+            q[solve] = c.hi - sum(q[j] for j in c.joints if j != solve)
+            if not (J[solve].lower_deg <= q[solve] <= J[solve].upper_deg) or not p.arm.coupled_ok(q):
+                continue
+            out.append((f"boundary_{c.name}_{made}", q))
+            made += 1
+    return out
 
 
 def tool_states(p, tool: str, rng: random.Random) -> dict[str, float]:
@@ -234,7 +270,11 @@ class Checker:
             self.items[lk] = rows
 
     def pose_hits(self, tool: str, q: dict[str, float], tool_q: dict[str, float], pose_name: str,
-                  pairs_filter) -> list[dict]:
+                  pairs_filter, clear_mm: float = 0.0) -> list[dict]:
+        """Collisions (overlap volume > TOL_MM3) and, when ``clear_mm`` > 0, near misses
+        (closest distance < ``clear_mm``) between solids on different links.  The clearance
+        requirement applies to pairs that can approach each other (not both inside the wrist
+        sub-tree, whose relative pose only depends on the fully swept roll/tool actuators)."""
         p = self.p
         links = ARM_LINKS + TOOL_LINKS[tool]
         loc = fk(p, q, tool_q)
@@ -243,6 +283,7 @@ class Checker:
         for la, lb in itertools.combinations(links, 2):
             if not pairs_filter(la, lb):
                 continue
+            need = clear_mm if (clear_mm > 0 and not (la in WRIST_SUBTREE and lb in WRIST_SUBTREE) and hops(la, lb) >= 2) else 0.0
             for na, sa, ca, ha, fa in self.items.get(la, []):
                 Ta = mats[fa]
                 wa = Ta[:3, :3] @ ca + Ta[:3, 3]
@@ -251,18 +292,27 @@ class Checker:
                         continue
                     Tb = mats[fb]
                     wb = Tb[:3, :3] @ cb + Tb[:3, 3]
-                    if not obb_overlap(wa, Ta[:3, :3], ha, wb, Tb[:3, :3], hb):
+                    touching = obb_overlap(wa, Ta[:3, :3], ha, wb, Tb[:3, :3], hb)
+                    if not touching and not (need and obb_overlap(wa, Ta[:3, :3], ha + need, wb, Tb[:3, :3], hb + need)):
                         continue
                     rel = np.linalg.inv(Ta) @ Tb
                     key = (na, nb, tuple(np.round(rel, 3).ravel()))
-                    v = self.cache.get(key)
-                    if v is None:
+                    v = self.cache.get(key) if touching else 0.0
+                    if touching and v is None:
                         v = volume((loc[fa] * sa) & (loc[fb] * sb))
                         self.cache[key] = v
+                    base = {"tool": tool, "pose": pose_name, "a": na, "b": nb, "hops": hops(la, lb),
+                            "q": {k: round(x, 2) for k, x in q.items()}, "tool_q": tool_q}
                     if v > TOL_MM3:
-                        hits.append({"tool": tool, "pose": pose_name, "a": na, "b": nb, "overlap_mm3": round(v, 2),
-                                     "hops": hops(la, lb), "q": {k: round(x, 2) for k, x in q.items()},
-                                     "tool_q": tool_q})
+                        hits.append({**base, "overlap_mm3": round(v, 2), "kind": "collision", "distance_mm": 0.0})
+                    elif need:
+                        dkey = ("d",) + key
+                        d = self.cache.get(dkey)
+                        if d is None:
+                            d = distance_mm(loc[fa] * sa, loc[fb] * sb)
+                            self.cache[dkey] = d
+                        if d < need:
+                            hits.append({**base, "overlap_mm3": 0.0, "kind": "clearance", "distance_mm": round(d, 2)})
         return hits
 
 
@@ -282,7 +332,7 @@ def _init_worker() -> None:
 def _run_task(task) -> list[dict]:
     tool, name, q, tq, mode = task
     pairs = (lambda a, b: True) if mode == "all" else (lambda a, b: hops(a, b) >= 2)
-    return _WORKER["chk"].pose_hits(tool, q, tq, name, pairs)
+    return _WORKER["chk"].pose_hits(tool, q, tq, name, pairs, clear_mm=CLEARANCE_MM if mode == "clear" else 0.0)
 
 
 def main() -> int:
@@ -300,7 +350,12 @@ def main() -> int:
     for pose_name, q in random_poses(p):
         for tool in TOOL_CONFIGS:
             n_checks["random"] += 1
-            tasks.append((tool, pose_name, q, tool_states(p, tool, rng), "far"))
+            tasks.append((tool, pose_name, q, tool_states(p, tool, rng), "clear" if pitch_sum_ok(p, q) else "far"))
+    n_checks["boundary"] = 0
+    for pose_name, q in boundary_poses(p):
+        for tool in TOOL_CONFIGS:
+            n_checks["boundary"] += 1
+            tasks.append((tool, pose_name, q, tool_states(p, tool, rng), "clear"))
     hits_allowed, hits_forbidden = [], []
     ctx = multiprocessing.get_context("spawn")
     with concurrent.futures.ProcessPoolExecutor(max_workers=jobs, mp_context=ctx, initializer=_init_worker) as pool:
@@ -308,12 +363,12 @@ def main() -> int:
             for h in hits:
                 (hits_allowed if pitch_sum_ok(p, task[2]) else hits_forbidden).append(h)
     for h in hits_allowed:
-        print(f"COLLISION {h['tool']:15s} {h['pose']:26s} {h['a']} <-> {h['b']}: {h['overlap_mm3']} mm3  q={h['q']}")
+        print(f"{h['kind'].upper():9s} {h['distance_mm']:.2f} mm {h['tool']:15s} {h['pose']:26s} {h['a']} <-> {h['b']}: {h['overlap_mm3']} mm3  q={h['q']}")
     forbidden_poses = sorted({h["pose"] for h in hits_forbidden})
     sums = lambda hs: sorted({round(h["q"].get("shoulder_pitch", 0) + h["q"].get("elbow_pitch", 0) + h["q"].get("wrist_pitch", 0), 1)
                               for h in hs})  # noqa: E731
     report = {"tolerance_mm3": TOL_MM3, "n_random_poses": N_RANDOM, "seed": SEED, "sweep_step_deg": SWEEP_STEP_DEG,
-              "checks": n_checks, "worker_processes": jobs,
+              "checks": n_checks, "worker_processes": jobs, "required_clearance_mm": CLEARANCE_MM,
               "coupled_limits": [{"name": c.name, "joints": list(c.joints), "lo_deg": c.lo, "hi_deg": c.hi} for c in p.arm.coupled_limits],
               "excluded_pairs": sorted(list(map(list, EXCLUDE))),
               "collisions_at_allowed_poses": hits_allowed,
@@ -330,7 +385,9 @@ def main() -> int:
         print("derive (extreme joint sums over all colliding poses):", report["derive"])
     (HERE / "out" / "clearance.json").write_text(json.dumps(report, indent=1))
     print(f"{n_checks['named_and_sweeps']} named/sweep + {n_checks['random']} random pose/tool combinations; "
-          f"{len(hits_allowed)} collisions at allowed poses; {len(hits_forbidden)} (in {len(forbidden_poses)} poses) at "
+          f"{sum(h['kind'] == 'collision' for h in hits_allowed)} collisions and "
+          f"{sum(h['kind'] == 'clearance' for h in hits_allowed)} clearance < {CLEARANCE_MM} mm at allowed poses "
+          f"({n_checks['boundary']} of them on the limit surfaces); {len(hits_forbidden)} (in {len(forbidden_poses)} poses) at "
           f"poses forbidden by the coupled limits {[(c.name, c.lo, c.hi) for c in p.arm.coupled_limits]}")
     return 1 if hits_allowed else 0
 

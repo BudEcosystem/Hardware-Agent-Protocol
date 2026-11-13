@@ -1,6 +1,7 @@
 section,item,manufacturer,mpn,qty,unit_usd,ext_usd,price_source,notes
 Arm,"Serial bus servo 12 V, 30 kg.cm, 4096-count magnetic encoder",Feetech,"STS3215 (12 V, C018 1:345)",5,18.0,90.0,"estimate (typical 2026 distributor price, not a quote)",IDs 1-5; variant code to confirm with supplier at order time
 Arm,Deep-groove ball bearing 8x22x7,generic (e.g. SKF),608-2RS,4,0.5,2.0,"estimate (typical 2026 distributor price, not a quote)",shoulder and elbow shafts
+Arm,"Shoulder pinion, machined steel (C45), 17T module 1.5, 14 mm face, 4 x M2 on a 14 mm circle (CNC service, drawing = cad/out/pinion_shoulder.step)",CNC service (custom),pinion_shoulder.step,1,18.0,18.0,"estimate (typical 2026 distributor price, not a quote)","ESTIMATE of a one-off turned and milled part; replaces the printed pinion (stress, design.md section 4)"
 Arm,Deep-groove ball bearing 4x13x5,generic (e.g. SKF),624-2RS,3,0.6,1.8,"estimate (typical 2026 distributor price, not a quote)","2 pinion supports, wrist idler"
 Arm,Deep-groove ball bearing 30x42x7,generic (e.g. SKF),6806-2RS,1,3.0,3.0,"estimate (typical 2026 distributor price, not a quote)",yaw turntable
 Arm,"Hex bolt M8x70, partial thread, 8.8, zinc",generic,ISO 4014 M8x70,2,0.4,0.8,"estimate (typical 2026 distributor price, not a quote)",shoulder/elbow shafts
@@ -22,12 +23,11 @@ Arm,"Servo extension lead 3-pin 5264, 400 mm",Feetech,accessory,2,1.5,3.0,"estim
 Arm,Cable tie 2.5 x 100 mm,generic,,10,0.02,0.2,"estimate (typical 2026 distributor price, not a quote)",
 Arm,Printed part cable_clip (PETG),self-printed,cad/out/cable_clip.stl,8,0.01,0.08,"filament estimate: CAD mass model x 1.1, 22 USD/kg","0.4 g each, ~0.0 h each (estimate); orientation: flat"
 Arm,Printed part flange_arm (PETG),self-printed,cad/out/flange_arm.stl,1,0.52,0.52,"filament estimate: CAD mass model x 1.1, 22 USD/kg","21.5 g each, ~0.7 h each (estimate); orientation: socket mouth up"
-Arm,Printed part forearm (PETG),self-printed,cad/out/forearm.stl,1,2.665,2.67,"filament estimate: CAD mass model x 1.1, 22 USD/kg","110.1 g each, ~3.6 h each (estimate); orientation: on its side (-y face down)"
+Arm,Printed part forearm (PETG),self-printed,cad/out/forearm.stl,1,2.666,2.67,"filament estimate: CAD mass model x 1.1, 22 USD/kg","110.2 g each, ~3.6 h each (estimate); orientation: on its side (-y face down)"
 Arm,Printed part pinion_elbow (PETG),self-printed,cad/out/pinion_elbow.stl,1,0.258,0.26,"filament estimate: CAD mass model x 1.1, 22 USD/kg","10.7 g each, ~0.4 h each (estimate); orientation: horn face down, 100% infill"
-Arm,Printed part pinion_shoulder (PETG),self-printed,cad/out/pinion_shoulder.stl,1,0.169,0.17,"filament estimate: CAD mass model x 1.1, 22 USD/kg","7.0 g each, ~0.3 h each (estimate); orientation: horn face down, 100% infill"
 Arm,Printed part servo_lid (PLA),self-printed,cad/out/servo_lid.stl,8,0.136,1.09,"filament estimate: CAD mass model x 1.1, 20 USD/kg","6.2 g each, ~0.2 h each (estimate); orientation: flat"
 Arm,Printed part turret (PETG),self-printed,cad/out/turret.stl,1,2.743,2.74,"filament estimate: CAD mass model x 1.1, 22 USD/kg","113.3 g each, ~3.8 h each (estimate); orientation: disc down"
-Arm,Printed part upper_arm (PETG),self-printed,cad/out/upper_arm.stl,1,3.976,3.98,"filament estimate: CAD mass model x 1.1, 22 USD/kg","164.3 g each, ~5.3 h each (estimate); orientation: on its side (+y face down), supports under clevis"
+Arm,Printed part upper_arm (PETG),self-printed,cad/out/upper_arm.stl,1,3.977,3.98,"filament estimate: CAD mass model x 1.1, 22 USD/kg","164.3 g each, ~5.3 h each (estimate); orientation: on its side (+y face down), supports under clevis"
 Arm,Printed part wrist_bracket (PETG),self-printed,cad/out/wrist_bracket.stl,1,0.885,0.89,"filament estimate: CAD mass model x 1.1, 22 USD/kg","36.6 g each, ~1.2 h each (estimate); orientation: bridge down"
 Base & safety,Hex bolt M8x60 + hex nut (clamp screw),generic,ISO 4017 M8x60 / ISO 4032 M8,1,0.45,0.45,"estimate (typical 2026 distributor price, not a quote)",
 Base & safety,Adhesive rubber foot 10 mm,3M,SJ5302,6,0.15,0.9,"estimate (typical 2026 distributor price, not a quote)",
@@ -148,7 +148,7 @@ Slider pusher,Printed part pusher_body (PETG),self-printed,cad/out/pusher_body.s
 Slider pusher,Printed part pusher_pad (TPU),self-printed,cad/out/pusher_pad.stl,1,0.078,0.08,"filament estimate: CAD mass model x 1.1, 32 USD/kg","2.2 g each, ~0.1 h each (estimate); orientation: flat, TPU 95A"
 Fixtures,Printed part tolerance_coupon (PLA),self-printed,cad/out/tolerance_coupon.stl,1,0.506,0.51,"filament estimate: CAD mass model x 1.1, 20 USD/kg","23.0 g each, ~0.8 h each (estimate); orientation: flat"
 Fixtures,Printed part tool_rack (PETG),self-printed,cad/out/tool_rack.stl,1,7.931,7.93,"filament estimate: CAD mass model x 1.1, 22 USD/kg","327.7 g each, ~10.4 h each (estimate); orientation: on its back rail, supports under plate"
-Arm,TOTAL Arm,,,,,131.89,sum of estimates,
+Arm,TOTAL Arm,,,,,149.72,sum of estimates,
 Base & safety,TOTAL Base & safety,,,,,75.31,sum of estimates,
 Controller,TOTAL Controller,,,,,16.51,sum of estimates,
 Gripper,TOTAL Gripper,,,,,22.44,sum of estimates,
@@ -156,5 +156,5 @@ Knob turner,TOTAL Knob turner,,,,,30.92,sum of estimates,
 Button presser,TOTAL Button presser,,,,,28.9,sum of estimates,
 Slider pusher,TOTAL Slider pusher,,,,,1.97,sum of estimates,
 Fixtures,TOTAL Fixtures,,,,,8.44,sum of estimates,
-TOTAL,"TOTAL arm (arm + base & safety + controller, no tools)",,,,,223.71,sum of estimates,
-TOTAL,TOTAL arm with all four tools and fixtures,,,,,316.38,sum of estimates,
+TOTAL,"TOTAL arm (arm + base & safety + controller, no tools)",,,,,241.54,sum of estimates,
+TOTAL,TOTAL arm with all four tools and fixtures,,,,,334.21,sum of estimates,
