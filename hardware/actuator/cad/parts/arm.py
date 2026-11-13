@@ -39,7 +39,7 @@ from common import (
     spur_gear_profile,
     union,
 )
-from params import BEARING_608, BEARING_624, BEARING_6806, Params
+from params import BEARING_608, BEARING_624, BEARING_6806, Gear, Params
 from parts.base import SPIGOT_LEN
 
 HUB_HALF = 17.0  # half width of a hub between cheeks (= link width / 2)
@@ -83,7 +83,7 @@ def pinion_location(p: Params, axis_z: float) -> Location:
     return Pos(0.0, GEAR_Y[1], zs) * Rot(X=90)
 
 
-def _geared_clevis(p: Params, axis_z: float, z_bottom: float) -> tuple[Part, Part]:
+def _geared_clevis(p: Params, axis_z: float, z_bottom: float, g: Gear) -> tuple[Part, Part]:
     """(solid, cut) for a two-cheek clevis that carries a geared joint at
     (0, 0, axis_z) and its pinion servo, in the proximal link frame."""
     sides = []
@@ -103,17 +103,16 @@ def _geared_clevis(p: Params, axis_z: float, z_bottom: float) -> tuple[Part, Par
     sides.append(loc * solid)
     cuts.append(loc * cut)
     # Pinion running clearance through anything between the cheeks.
-    cuts.append(cyl_y(p.gear.module * (p.gear.pinion_teeth / 2 + 1) + 1.5, GEAR_Y[0] - 0.5, GEAR_Y[1] + 0.5, 0.0, zs))
+    cuts.append(cyl_y(g.module * (g.pinion_teeth / 2 + 1) + 1.5, GEAR_Y[0] - 0.5, GEAR_Y[1] + 0.5, 0.0, zs))
     # Driven-gear running clearance (the distal hub's gear sweeps here).
-    cuts.append(cyl_y(p.gear.module * (p.gear.gear_teeth / 2 + 1) + 1.0, -HUB_HALF - 0.5, HUB_HALF + 0.5, 0.0, axis_z))
+    cuts.append(cyl_y(g.module * (g.gear_teeth / 2 + 1) + 1.0, -HUB_HALF - 0.5, HUB_HALF + 0.5, 0.0, axis_z))
     return union(sides), union(cuts)
 
 
-def geared_hub(p: Params) -> Part:
+def geared_hub(p: Params, g: Gear) -> Part:
     """Hub of a geared distal link at its own origin (joint axis = y):
     hub boss, integral driven gear in GEAR_Y, inner-race spacer bosses
     and the M8 shaft bore."""
-    g = p.gear
     hub = cyl_y(HUB_R, -HUB_HALF, HUB_HALF)
     gear = Pos(0, GEAR_Y[1], 0) * Rot(X=90) * prism_xy(
         spur_gear_profile(g.module, g.gear_teeth, g.pressure_angle_deg, g.backlash), 0.0, GEAR_Y[1] - GEAR_Y[0])
@@ -156,7 +155,7 @@ def turret(p: Params) -> Part:
     disc = cyl_z(a.turret_d / 2, 0.0, TURRET_DISC_T)
     land = cyl_z(16.8, -0.5, 0.01)  # sits on the 6806 inner race
     spigot = cyl_z(BEARING_6806.bore / 2 - p.printer.press_fit, -SPIGOT_LEN, -0.49)
-    solid, cut = _geared_clevis(p, a.shoulder_height, 0.0)
+    solid, cut = _geared_clevis(p, a.shoulder_height, 0.0, p.shoulder_gear)
     part = disc + land + spigot + solid
     part -= cut
     # Yaw horn: bolts from the top through counterbores (M2 x 12).
@@ -170,13 +169,12 @@ def turret(p: Params) -> Part:
     return part
 
 
-def pinion(p: Params) -> Part:
+def pinion(p: Params, g: Gear) -> Part:
     """Driving pinion, bolted to the servo horn (z=0 face).  An outboard
     stub carries an M4 heat-set insert; an M4 x 12 screw through a 624-2RS
     in the opposite cheek (and an M4 washer that bears on the inner race
     only) supports the pinion against the mesh separating force.
     Part frame: axis z, horn face z = 0, gear z in [0, face]."""
-    g = p.gear
     w = GEAR_Y[1] - GEAR_Y[0]
     part = prism_xy(spur_gear_profile(g.module, g.pinion_teeth, g.pressure_angle_deg, g.backlash), 0.0, w)
     # Stub reaches to 0.8 mm (washer) short of the 624 inner face.
@@ -198,9 +196,9 @@ def upper_arm(p: Params) -> Part:
     a = p.arm
     L = a.l_upper
     zs = L - p.gear.center_distance
-    clevis, cut = _geared_clevis(p, L, zs - 26.0)
+    clevis, cut = _geared_clevis(p, L, zs - 26.0, p.gear)
     beam_top = zs - 14.0
-    part = geared_hub(p) + _beam(HUB_R - 2.0, beam_top, p) + clevis
+    part = geared_hub(p, p.shoulder_gear) + _beam(HUB_R - 2.0, beam_top, p) + clevis
     # Web joining the beam to the clevis cheeks below the servo.
     part += box(-24.0, 24.0, -HUB_HALF - CHEEK_GAP - CHEEK_T, HUB_HALF + CHEEK_GAP + CHEEK_T, zs - 26.0, zs - 16.0)
     part -= cut
@@ -232,7 +230,7 @@ def forearm(p: Params) -> Part:
     loc = wrist_servo_location(p)
     cradle = loc * solid
     cb = cradle.bounding_box()
-    part = geared_hub(p) + _beam(HUB_R - 2.0, cb.min.Z, p) + cradle
+    part = geared_hub(p, p.gear) + _beam(HUB_R - 2.0, cb.min.Z, p) + cradle
     # Idler boss on +y, coaxial with the wrist pitch axis.  The 624 sits in
     # the boss; the bracket's M4 x 16 screw passes its inner race and is
     # locked by a nyloc nut that turns in the 9 mm cavity behind it.
@@ -328,3 +326,11 @@ def flange_arm(p: Params) -> Part:
         ang = 60.0 + 120.0 * i
         body -= Rot(Z=ang) * box(f.pogo_circle_r + 3.0, f.socket_od / 2 + 1, -2.5, 2.5, zf - 0.01, zf + 2.0)
     return body
+
+
+def pinion_shoulder(p: Params) -> Part:
+    return pinion(p, p.shoulder_gear)
+
+
+def pinion_elbow(p: Params) -> Part:
+    return pinion(p, p.gear)

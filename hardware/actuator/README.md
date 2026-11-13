@@ -15,19 +15,26 @@ the same parameters and CAD solids that produce the printed parts.
 
 ![arm](docs/img/arm_grasp.png)
 
-**Status.** Design only (Task 13a). Nothing has been printed, assembled or
-powered.
+**Status.** Design only (Task 13a). Nothing has been printed, assembled,
+powered or certified, and no PCB has been manufactured.
 
-* CAD, MJCF and PCB were checked by tools: OpenCASCADE, trimesh, MuJoCo
-  4.0.1, KiCad 10.0.6 `kicad-cli`, Freerouting 1.9.0, and the scripted
+* CAD, MJCF and PCBs are checked by tools: OpenCASCADE, trimesh, MuJoCo
+  4.0.1, KiCad 10.0.6 `kicad-cli`, Freerouting 1.9.0 and the scripted
   checks in this tree. Results are in `docs/design.md` §10.
+* Both PCBs are fully routed (the controller needed a scripted completion
+  pass after the autorouter, `pcb/finish.py`) with 0 KiCad ERC/DRC errors.
+  They have not been reviewed by a person: read `docs/design.md` §12 (O7)
+  before ordering. `pcb/build.py fab` refuses to write Gerbers for any
+  board that has known open routing (`pcb/<board>/known_open.json`) and
+  writes `DO_NOT_FABRICATE.md` instead.
+* The arm falls when the E-stop cuts power (no brake): `docs/design.md` §9.
 * Firmware is Task 13b. Its contract is `firmware/INTERFACE.md`.
 
 | | |
 |---|---|
 | Reach (shoulder axis → flange) | 400 mm (180 + 140 + 80) |
-| Rated load | 250 g at the flange, tool included, CoM 50 mm out. Static 2× margin vs stall at every joint (shoulder 2.33×) |
-| Joints | yaw ±150°, shoulder −75…+95° (2:1), elbow −5…+125° (2:1), wrist pitch ±100°, wrist roll ±150° |
+| Rated load | 250 g carried object, tool excluded, 70 mm beyond the flange, plus the 159 g gripper. Static 2× margin vs stall at every joint (shoulder 2.64×, elbow 3.61×, wrist 4.64×) |
+| Joints | yaw ±150°, shoulder −20…+95° (3:1), elbow −5…+125° (2:1), wrist pitch ±100°, wrist roll ±150°, plus coupled pitch limits (`firmware/INTERFACE.md` §3.2) |
 | Tool flange | 3-lug bayonet locked by a +30° wrist roll; 6 pogo contacts: 12 V, GND, bus, AUX1, AUX2, tool ID |
 | Controller | RP2040, 16 MB flash, USB-C, 12 V in with fuse/TVS/reverse protection, half-duplex servo bus, INA219 rail sensing, hardware E-stop loop, tool port, RGB LED, SWD |
 | Cost (estimate) | see `bom/bom.csv` totals |
@@ -57,6 +64,13 @@ unpacked from the Ubuntu .debs:
 CAD_PY=~/venvs/cad/bin/python SIM_PY=~/venvs/arm/bin/python \
 FREEROUTING="xvfb-run -a java -jar freerouting-1.9.0.jar" ./verify.sh
 ```
+
+With `FREEROUTING` unset (or `SKIP_ROUTE=1`) `verify.sh` imports the
+committed Freerouting sessions (`pcb/*/*.ses`) instead of re-routing, which
+reproduces the committed boards exactly. A missing `kicad-cli` fails the
+run unless `ALLOW_NO_KICAD=1` is set; then the KiCad ERC/DRC/Gerber steps
+are reported as SKIPPED in the summary. The interference check uses
+`CLEARANCE_JOBS` worker processes (default 6) and takes about 10 minutes.
 
 Each step is also a plain script: `cad/build.py`, `cad/check_meshes.py`,
 `cad/check_clearance.py`, `cad/torque_budget.py`, `sim/gen_mjcf.py`,

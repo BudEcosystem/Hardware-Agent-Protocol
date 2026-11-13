@@ -18,7 +18,7 @@
         "min_via_diameter": 0.45,
         "min_through_hole_diameter": 0.3,
         "min_via_annular_width": 0.1,
-        "min_hole_to_hole": 0.5,
+        "min_hole_to_hole": 0.254,
         "min_copper_edge_clearance": 0.3,
         "min_hole_clearance": 0.15,
         "min_silk_clearance": 0.0,
@@ -44,6 +44,7 @@
       },
       "track_widths": [
         0.0,
+        0.15,
         0.2,
         0.25,
         0.4,
@@ -56,7 +57,7 @@
           "drill": 0.0
         },
         {
-          "diameter": 0.6,
+          "diameter": 0.5,
           "drill": 0.3
         },
         {
@@ -74,9 +75,9 @@
     "classes": [
       {
         "name": "Default",
-        "clearance": 0.15,
-        "track_width": 0.2,
-        "via_diameter": 0.6,
+        "clearance": 0.13,
+        "track_width": 0.15,
+        "via_diameter": 0.5,
         "via_drill": 0.3,
         "microvia_diameter": 0.3,
         "microvia_drill": 0.1,
@@ -92,7 +93,7 @@
       },
       {
         "name": "Power_1mm",
-        "clearance": 0.3,
+        "clearance": 0.2,
         "track_width": 1.0,
         "via_diameter": 0.8,
         "via_drill": 0.4,
@@ -110,7 +111,7 @@
       },
       {
         "name": "Power_1.5mm",
-        "clearance": 0.3,
+        "clearance": 0.2,
         "track_width": 1.5,
         "via_diameter": 0.8,
         "via_drill": 0.4,

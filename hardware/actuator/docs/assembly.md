@@ -4,6 +4,13 @@ Every number in this guide comes from `cad/params.py`. Part files are in
 `cad/out/` (STL for printing, STEP for CAD). Regenerate them with
 `python cad/build.py`. Purchased parts are listed in `bom/bom.csv`.
 
+> **Before ordering boards.** The Gerbers in `pcb/*/fab/` come from an
+> autorouted layout that passed KiCad DRC with 0 errors but has not been
+> reviewed by a person (docs/design.md §12, O7), and no board has been
+> built. If `pcb/<board>/DO_NOT_FABRICATE.md` exists, that board is
+> unfinished and has no Gerbers: do not order it. Do not rely on the E-stop
+> to park the arm: it falls when power is cut (docs/design.md §9).
+
 > **Safety first.** The servo rail carries 12 V at up to 5 A. Keep the
 > E-stop wired and within reach from the first power-up onwards. With J2
 > unplugged the servo rail cannot turn on; that is intentional.
@@ -70,11 +77,11 @@ Every number in this guide comes from `cad/params.py`. Part files are in
    tip. Hook the clamp's locating pin into the tongue hole. Tighten
    against the table underside (tables up to 45 mm thick).
 
-## 4. Turret and shoulder (geared 2:1)
+## 4. Turret and shoulder (geared 3:1)
 
 1. Place the shoulder servo (ID 2) in the turret cradle. Its output faces
    −y (toward the gear plane) and its lid is on top. Screw on the lid.
-2. Bolt the `pinion` to the servo horn (4 × M2 through the pinion
+2. Bolt the `pinion_shoulder` (17 teeth, module 1.5) to the servo horn (4 × M2 through the pinion
    counterbores). Put a 624-2RS into the −y cheek seat. Insert M4×12 with
    an M4 washer from outside, through the bearing, into the pinion stub
    insert. The washer must bear on the inner race only.
@@ -86,8 +93,8 @@ Every number in this guide comes from `cad/params.py`. Part files are in
 ## 5. Upper arm (shoulder side) and elbow
 
 1. With the shoulder servo at mid-range (raw 2048) and the upper arm at
-   the middle of its range (+10°), slide the upper arm hub between the
-   cheeks. Its 34-tooth gear meshes with the pinion.
+   the middle of its range (+37.5°), slide the upper arm hub between the
+   cheeks. Its 51-tooth gear meshes with the pinion.
 2. Insert the M8×70 bolt with a washer from one side, through 608, hub
    and 608. Fit the washer and nyloc nut. Tighten until the bearings turn
    smoothly with no axial play. The hub spacers press only on the inner
@@ -199,5 +206,6 @@ Every number in this guide comes from `cad/params.py`. Part files are in
    same for chain B (IDs 4–5).
 6. Calibrate the joint zeros: put each link in its zero pose (`docs/design.md`
    §3) and store raw_zero. Write the servo angle limits.
-7. Load a 250 g test mass on the gripper (gripper + 90 g) and check the
-   holding currents: under about 1.4 A at the shoulder servo, outstretched.
+7. Hang a 250 g test mass in the closed gripper, 70 mm beyond the flange,
+   and check the holding currents outstretched: about 1.2 A at the shoulder
+   servo (the tool is the 159 g gripper, the 250 g is the object).

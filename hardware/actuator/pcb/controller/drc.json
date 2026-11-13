@@ -1,7 +1,7 @@
 {
     "$schema": "https://schemas.kicad.org/drc.v1.json",
     "coordinate_units": "mm",
-    "date": "2026-11-13T16:56:31",
+    "date": "2026-11-13T19:04:22",
     "ignored_checks": [
         {
             "description": "Footprint has no courtyard defined",
@@ -56,1394 +56,37 @@
     "kicad_version": "10.0.6",
     "schematic_parity": [],
     "source": "bhms_controller.kicad_pcb",
-    "unconnected_items": [
-        {
-            "description": "Missing connection between items",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                },
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "error",
-            "type": "unconnected_items"
-        },
-        {
-            "description": "Missing connection between items",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                },
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "error",
-            "type": "unconnected_items"
-        },
-        {
-            "description": "Missing connection between items",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                },
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "error",
-            "type": "unconnected_items"
-        },
-        {
-            "description": "Missing connection between items",
-            "items": [
-                {
-                    "description": "Track [/GND] on F.Cu, length 1.0290 mm",
-                    "pos": {
-                        "x": 156.2974,
-                        "y": 131.7276
-                    },
-                    "uuid": "704f4da3-79a7-53aa-94a0-251afdfea20e"
-                },
-                {
-                    "description": "Track [/GND] on F.Cu, length 0.3843 mm",
-                    "pos": {
-                        "x": 157.025,
-                        "y": 127.4
-                    },
-                    "uuid": "a0d29246-c62c-5d3f-b2e9-36bdcd774b8d"
-                }
-            ],
-            "severity": "error",
-            "type": "unconnected_items"
-        },
-        {
-            "description": "Missing connection between items",
-            "items": [
-                {
-                    "description": "Track [/GND] on F.Cu, length 0.6315 mm",
-                    "pos": {
-                        "x": 161.0,
-                        "y": 132.806
-                    },
-                    "uuid": "72240a29-9267-5131-855c-bdc4eb8829ff"
-                },
-                {
-                    "description": "Via [/GND] on F.Cu - B.Cu",
-                    "pos": {
-                        "x": 160.6684,
-                        "y": 134.8316
-                    },
-                    "uuid": "6b9fe09b-9931-5ba6-baff-14745ddfdcc4"
-                }
-            ],
-            "severity": "error",
-            "type": "unconnected_items"
-        },
-        {
-            "description": "Missing connection between items",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                },
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "error",
-            "type": "unconnected_items"
-        },
-        {
-            "description": "Missing connection between items",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                },
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "error",
-            "type": "unconnected_items"
-        },
-        {
-            "description": "Missing connection between items",
-            "items": [
-                {
-                    "description": "Pad 50 [/+1V1] of U1 on F.Cu",
-                    "pos": {
-                        "x": 161.8,
-                        "y": 126.5625
-                    },
-                    "uuid": "152e8402-4e2b-5b8a-ae21-991061498195"
-                },
-                {
-                    "description": "Track [/+1V1] on F.Cu, length 0.5426 mm",
-                    "pos": {
-                        "x": 159.2,
-                        "y": 125.025
-                    },
-                    "uuid": "2e4672e7-95aa-51d0-bfc6-d4169acc178b"
-                }
-            ],
-            "severity": "error",
-            "type": "unconnected_items"
-        },
-        {
-            "description": "Missing connection between items",
-            "items": [
-                {
-                    "description": "Track [/+1V1] on F.Cu, length 1.3375 mm",
-                    "pos": {
-                        "x": 163.8,
-                        "y": 126.5625
-                    },
-                    "uuid": "36a412e0-2ef1-56e3-bf95-22ddf8b5c189"
-                },
-                {
-                    "description": "Pad 50 [/+1V1] of U1 on F.Cu",
-                    "pos": {
-                        "x": 161.8,
-                        "y": 126.5625
-                    },
-                    "uuid": "152e8402-4e2b-5b8a-ae21-991061498195"
-                }
-            ],
-            "severity": "error",
-            "type": "unconnected_items"
-        },
-        {
-            "description": "Missing connection between items",
-            "items": [
-                {
-                    "description": "Pad 55 [/QSPI_SD1] of U1 on F.Cu",
-                    "pos": {
-                        "x": 159.8,
-                        "y": 126.5625
-                    },
-                    "uuid": "58e0f1c1-b5d0-5d3f-9866-1b6570fe94df"
-                },
-                {
-                    "description": "Pad 2 [/QSPI_SD1] of U2 on F.Cu",
-                    "pos": {
-                        "x": 172.365,
-                        "y": 125.5875
-                    },
-                    "uuid": "a3ee7338-cab2-5566-a6e0-4f201ae2d2f9"
-                }
-            ],
-            "severity": "error",
-            "type": "unconnected_items"
-        },
-        {
-            "description": "Missing connection between items",
-            "items": [
-                {
-                    "description": "Pad 1 [/VIN_RAW] of F1 on F.Cu",
-                    "pos": {
-                        "x": 105.0,
-                        "y": 118.455
-                    },
-                    "uuid": "c98d270c-e883-5a87-86fe-fb27e3d2b4ee"
-                },
-                {
-                    "description": "PTH pad 1 [/VIN_RAW] of J1",
-                    "pos": {
-                        "x": 111.46,
-                        "y": 106.0
-                    },
-                    "uuid": "69f98664-931f-5c5f-a3b0-42a465c7b8d5"
-                }
-            ],
-            "severity": "error",
-            "type": "unconnected_items"
-        }
-    ],
+    "unconnected_items": [],
     "violations": [
         {
-            "description": "Isolated copper fill",
+            "description": "Via is not connected or connected on only one layer",
             "items": [
                 {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
+                    "description": "Via [/QSPI_SCLK] on F.Cu - B.Cu",
                     "pos": {
-                        "x": 100.3,
-                        "y": 100.3
+                        "x": 161.0594,
+                        "y": 125.3661
                     },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
+                    "uuid": "2b427d8a-01dc-56af-a511-4659407684c6"
                 }
             ],
             "severity": "warning",
-            "type": "isolated_copper"
+            "type": "via_dangling"
         },
         {
-            "description": "Isolated copper fill",
+            "description": "Via is not connected or connected on only one layer",
             "items": [
                 {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
+                    "description": "Via [/TOOL_AUX1] on F.Cu - B.Cu",
                     "pos": {
-                        "x": 100.3,
-                        "y": 100.3
+                        "x": 159.3269,
+                        "y": 144.4517
                     },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
+                    "uuid": "79575e7f-a265-5869-a891-62b10991fed8"
                 }
             ],
             "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on F.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "eda2082a-57be-53b9-94e9-364e4ee5f1e8"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Isolated copper fill",
-            "items": [
-                {
-                    "description": "Zone [/GND] on B.Cu, priority 0",
-                    "pos": {
-                        "x": 100.3,
-                        "y": 100.3
-                    },
-                    "uuid": "baac609e-a243-5981-ac91-f7d6e2e61427"
-                }
-            ],
-            "severity": "warning",
-            "type": "isolated_copper"
-        },
-        {
-            "description": "Drilled hole too close to other hole (board setup constraints min 0.5000 mm; actual 0.4923 mm)",
-            "items": [
-                {
-                    "description": "Via [/I2C_SDA] on F.Cu - B.Cu",
-                    "pos": {
-                        "x": 127.7557,
-                        "y": 140.6218
-                    },
-                    "uuid": "049cf8c3-59b2-5609-ab7f-219dcf8c8635"
-                },
-                {
-                    "description": "Via [/GND] on F.Cu - B.Cu",
-                    "pos": {
-                        "x": 127.7811,
-                        "y": 139.8299
-                    },
-                    "uuid": "721d425f-ae03-5e88-84a4-59beae282d4f"
-                }
-            ],
-            "severity": "warning",
-            "type": "hole_to_hole"
+            "type": "via_dangling"
         },
         {
             "description": "Silkscreen clipped by solder mask",
@@ -1886,6 +529,29 @@
             "description": "Silkscreen clipped by solder mask",
             "items": [
                 {
+                    "description": "Reference field of R9",
+                    "pos": {
+                        "x": 166.07,
+                        "y": 146.5
+                    },
+                    "uuid": "1d9df23e-9ad4-5605-b753-e019c89412d6"
+                },
+                {
+                    "description": "Pad 3 [/TOOL_ID_C] of U7 on F.Cu",
+                    "pos": {
+                        "x": 166.0,
+                        "y": 145.45
+                    },
+                    "uuid": "7c5a6e3b-7b9e-50d0-a563-9704b553808b"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
                     "description": "Reference field of R27",
                     "pos": {
                         "x": 160.0,
@@ -1958,7 +624,7 @@
                     "description": "Reference field of C48",
                     "pos": {
                         "x": 161.77,
-                        "y": 135.75
+                        "y": 138.0
                     },
                     "uuid": "86bc9e76-dcdd-59ef-a08c-728dcf2fb75c"
                 },
@@ -1966,7 +632,7 @@
                     "description": "Pad 1 [/+3V3] of C42 on F.Cu",
                     "pos": {
                         "x": 161.6,
-                        "y": 136.525
+                        "y": 138.775
                     },
                     "uuid": "be9f3720-3b15-5036-a57a-62442a8afb3d"
                 }
@@ -1981,7 +647,7 @@
                     "description": "Reference field of C48",
                     "pos": {
                         "x": 161.77,
-                        "y": 135.75
+                        "y": 138.0
                     },
                     "uuid": "86bc9e76-dcdd-59ef-a08c-728dcf2fb75c"
                 },
@@ -1989,7 +655,7 @@
                     "description": "Pad 2 [/GND] of C42 on F.Cu",
                     "pos": {
                         "x": 161.6,
-                        "y": 134.975
+                        "y": 137.225
                     },
                     "uuid": "03c2088f-4802-5f80-aff7-e026681fb1ec"
                 }
@@ -2001,20 +667,158 @@
             "description": "Silkscreen clipped by solder mask",
             "items": [
                 {
-                    "description": "Polygon of U1 on F.Silkscreen",
+                    "description": "Reference field of C27",
                     "pos": {
-                        "x": 157.86,
-                        "y": 127.4
+                        "x": 153.0,
+                        "y": 132.07
                     },
-                    "uuid": "3648db19-05fa-4bef-8a35-953928d9dcc6"
+                    "uuid": "d54bc95a-6676-5526-9c9c-a26e2d3bdb49"
                 },
                 {
-                    "description": "Pad 2 [/GND] of C40 on F.Cu",
+                    "description": "Pad 1 [/+3V3] of C41 on F.Cu",
                     "pos": {
-                        "x": 157.025,
-                        "y": 127.4
+                        "x": 153.225,
+                        "y": 131.0
                     },
-                    "uuid": "e04259cf-557a-5e1e-ad88-32f8dcc5720e"
+                    "uuid": "a794ca60-d0b3-5b6a-bf0e-f8a0a2393857"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of C50",
+                    "pos": {
+                        "x": 164.17,
+                        "y": 122.0
+                    },
+                    "uuid": "40522a62-ff8b-588c-9647-49bd19ebbe0f"
+                },
+                {
+                    "description": "Pad 1 [/+1V1] of C51 on F.Cu",
+                    "pos": {
+                        "x": 164.0,
+                        "y": 122.775
+                    },
+                    "uuid": "24269b18-de54-51c0-89e7-fd993879c6f4"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of C51",
+                    "pos": {
+                        "x": 162.57,
+                        "y": 122.0
+                    },
+                    "uuid": "6ec0725c-c358-5387-8d51-d17b8d3aa6cf"
+                },
+                {
+                    "description": "Pad 1 [/+3V3] of C46 on F.Cu",
+                    "pos": {
+                        "x": 162.4,
+                        "y": 122.775
+                    },
+                    "uuid": "5ce17407-c7b9-5fdd-8bba-3cb6a92b2be1"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of C47",
+                    "pos": {
+                        "x": 165.77,
+                        "y": 122.0
+                    },
+                    "uuid": "5b2b3926-77e4-5343-b85d-305f43f11d6c"
+                },
+                {
+                    "description": "Pad 1 [/+3V3] of C50 on F.Cu",
+                    "pos": {
+                        "x": 165.6,
+                        "y": 122.775
+                    },
+                    "uuid": "334df014-a75a-5219-a515-cdd9a0df1e59"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of C47",
+                    "pos": {
+                        "x": 165.77,
+                        "y": 122.0
+                    },
+                    "uuid": "5b2b3926-77e4-5343-b85d-305f43f11d6c"
+                },
+                {
+                    "description": "Pad 2 [/GND] of C50 on F.Cu",
+                    "pos": {
+                        "x": 165.6,
+                        "y": 121.225
+                    },
+                    "uuid": "10508685-1f56-54c9-9915-8d29521b77f3"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of C46",
+                    "pos": {
+                        "x": 160.97,
+                        "y": 122.0
+                    },
+                    "uuid": "401ef124-cf2d-5a94-b87a-4ba73b46b1b7"
+                },
+                {
+                    "description": "Pad 1 [/+3V3] of C45 on F.Cu",
+                    "pos": {
+                        "x": 160.8,
+                        "y": 122.775
+                    },
+                    "uuid": "adcf6d00-0dfa-5402-9e05-ef066269feba"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of C46",
+                    "pos": {
+                        "x": 160.97,
+                        "y": 122.0
+                    },
+                    "uuid": "401ef124-cf2d-5a94-b87a-4ba73b46b1b7"
+                },
+                {
+                    "description": "Pad 2 [/GND] of C45 on F.Cu",
+                    "pos": {
+                        "x": 160.8,
+                        "y": 121.225
+                    },
+                    "uuid": "bca2560a-0c85-5566-9f29-be4f5c9ea709"
                 }
             ],
             "severity": "warning",
@@ -2027,7 +831,7 @@
                     "description": "Reference field of C45",
                     "pos": {
                         "x": 159.37,
-                        "y": 124.25
+                        "y": 122.0
                     },
                     "uuid": "d9bf995c-2c96-504c-b9b5-7d87ca3abee7"
                 },
@@ -2035,9 +839,101 @@
                     "description": "Pad 1 [/+1V1] of C49 on F.Cu",
                     "pos": {
                         "x": 159.2,
-                        "y": 125.025
+                        "y": 122.775
                     },
                     "uuid": "b9f25788-e058-56e8-9c3c-2e50b811ad12"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of C51",
+                    "pos": {
+                        "x": 162.57,
+                        "y": 122.0
+                    },
+                    "uuid": "6ec0725c-c358-5387-8d51-d17b8d3aa6cf"
+                },
+                {
+                    "description": "Pad 2 [/GND] of C46 on F.Cu",
+                    "pos": {
+                        "x": 162.4,
+                        "y": 121.225
+                    },
+                    "uuid": "96f4202c-0757-5d8b-b0d4-e30f6c49b967"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of C50",
+                    "pos": {
+                        "x": 164.17,
+                        "y": 122.0
+                    },
+                    "uuid": "40522a62-ff8b-588c-9647-49bd19ebbe0f"
+                },
+                {
+                    "description": "Pad 2 [/GND] of C51 on F.Cu",
+                    "pos": {
+                        "x": 164.0,
+                        "y": 121.225
+                    },
+                    "uuid": "46cde1c1-2608-59eb-9d5d-e9b54b00485e"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of C44",
+                    "pos": {
+                        "x": 170.0,
+                        "y": 125.97
+                    },
+                    "uuid": "52a59898-371f-58a0-ae53-89b24f605d55"
+                },
+                {
+                    "description": "Pad 1 [/QSPI_SS] of U2 on F.Cu",
+                    "pos": {
+                        "x": 171.095,
+                        "y": 125.5875
+                    },
+                    "uuid": "cbca7818-a619-5ef3-9157-fa2516ee9922"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of C45",
+                    "pos": {
+                        "x": 159.37,
+                        "y": 122.0
+                    },
+                    "uuid": "d9bf995c-2c96-504c-b9b5-7d87ca3abee7"
+                },
+                {
+                    "description": "Pad 2 [/GND] of C49 on F.Cu",
+                    "pos": {
+                        "x": 159.2,
+                        "y": 121.225
+                    },
+                    "uuid": "54eca52d-d2d5-531e-b2c7-7de7f00002b5"
                 }
             ],
             "severity": "warning",
@@ -2078,12 +974,12 @@
                     "uuid": "c25b3664-0b17-5a81-afcd-d15146b44668"
                 },
                 {
-                    "description": "Pad 1 [/XIN] of Y1 on F.Cu",
+                    "description": "Pad 2 [/GND] of Y1 on F.Cu",
                     "pos": {
-                        "x": 151.9,
+                        "x": 154.1,
                         "y": 122.35
                     },
-                    "uuid": "d904ca7b-6351-5ab6-bd98-4b7c6c60f40d"
+                    "uuid": "f6f7d371-77b9-58d8-a76b-c8f5303a2203"
                 }
             ],
             "severity": "warning",
@@ -2101,311 +997,12 @@
                     "uuid": "c25b3664-0b17-5a81-afcd-d15146b44668"
                 },
                 {
-                    "description": "Pad 2 [/GND] of Y1 on F.Cu",
+                    "description": "Pad 1 [/XIN] of Y1 on F.Cu",
                     "pos": {
-                        "x": 154.1,
+                        "x": 151.9,
                         "y": 122.35
                     },
-                    "uuid": "f6f7d371-77b9-58d8-a76b-c8f5303a2203"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Reference field of U1",
-                    "pos": {
-                        "x": 162.0,
-                        "y": 125.17
-                    },
-                    "uuid": "3e0d494b-2e98-53c5-baf4-1da08177b718"
-                },
-                {
-                    "description": "Pad 1 [/+3V3] of C45 on F.Cu",
-                    "pos": {
-                        "x": 160.8,
-                        "y": 125.025
-                    },
-                    "uuid": "adcf6d00-0dfa-5402-9e05-ef066269feba"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Reference field of C46",
-                    "pos": {
-                        "x": 160.97,
-                        "y": 124.25
-                    },
-                    "uuid": "401ef124-cf2d-5a94-b87a-4ba73b46b1b7"
-                },
-                {
-                    "description": "Pad 1 [/+3V3] of C45 on F.Cu",
-                    "pos": {
-                        "x": 160.8,
-                        "y": 125.025
-                    },
-                    "uuid": "adcf6d00-0dfa-5402-9e05-ef066269feba"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Reference field of C51",
-                    "pos": {
-                        "x": 162.57,
-                        "y": 124.25
-                    },
-                    "uuid": "6ec0725c-c358-5387-8d51-d17b8d3aa6cf"
-                },
-                {
-                    "description": "Pad 1 [/+3V3] of C46 on F.Cu",
-                    "pos": {
-                        "x": 162.4,
-                        "y": 125.025
-                    },
-                    "uuid": "5ce17407-c7b9-5fdd-8bba-3cb6a92b2be1"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Reference field of U1",
-                    "pos": {
-                        "x": 162.0,
-                        "y": 125.17
-                    },
-                    "uuid": "3e0d494b-2e98-53c5-baf4-1da08177b718"
-                },
-                {
-                    "description": "Pad 1 [/+3V3] of C46 on F.Cu",
-                    "pos": {
-                        "x": 162.4,
-                        "y": 125.025
-                    },
-                    "uuid": "5ce17407-c7b9-5fdd-8bba-3cb6a92b2be1"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Reference field of C51",
-                    "pos": {
-                        "x": 162.57,
-                        "y": 124.25
-                    },
-                    "uuid": "6ec0725c-c358-5387-8d51-d17b8d3aa6cf"
-                },
-                {
-                    "description": "Pad 2 [/GND] of C46 on F.Cu",
-                    "pos": {
-                        "x": 162.4,
-                        "y": 123.475
-                    },
-                    "uuid": "96f4202c-0757-5d8b-b0d4-e30f6c49b967"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Reference field of C47",
-                    "pos": {
-                        "x": 165.77,
-                        "y": 124.25
-                    },
-                    "uuid": "5b2b3926-77e4-5343-b85d-305f43f11d6c"
-                },
-                {
-                    "description": "Pad 1 [/+3V3] of C50 on F.Cu",
-                    "pos": {
-                        "x": 165.6,
-                        "y": 125.025
-                    },
-                    "uuid": "334df014-a75a-5219-a515-cdd9a0df1e59"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Reference field of C47",
-                    "pos": {
-                        "x": 165.77,
-                        "y": 124.25
-                    },
-                    "uuid": "5b2b3926-77e4-5343-b85d-305f43f11d6c"
-                },
-                {
-                    "description": "Pad 2 [/GND] of C50 on F.Cu",
-                    "pos": {
-                        "x": 165.6,
-                        "y": 123.475
-                    },
-                    "uuid": "10508685-1f56-54c9-9915-8d29521b77f3"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Reference field of C50",
-                    "pos": {
-                        "x": 164.17,
-                        "y": 124.25
-                    },
-                    "uuid": "40522a62-ff8b-588c-9647-49bd19ebbe0f"
-                },
-                {
-                    "description": "Pad 1 [/+1V1] of C51 on F.Cu",
-                    "pos": {
-                        "x": 164.0,
-                        "y": 125.025
-                    },
-                    "uuid": "24269b18-de54-51c0-89e7-fd993879c6f4"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Reference field of C50",
-                    "pos": {
-                        "x": 164.17,
-                        "y": 124.25
-                    },
-                    "uuid": "40522a62-ff8b-588c-9647-49bd19ebbe0f"
-                },
-                {
-                    "description": "Pad 2 [/GND] of C51 on F.Cu",
-                    "pos": {
-                        "x": 164.0,
-                        "y": 123.475
-                    },
-                    "uuid": "46cde1c1-2608-59eb-9d5d-e9b54b00485e"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Reference field of C44",
-                    "pos": {
-                        "x": 167.75,
-                        "y": 125.97
-                    },
-                    "uuid": "52a59898-371f-58a0-ae53-89b24f605d55"
-                },
-                {
-                    "description": "Pad 1 [/+3V3] of C47 on F.Cu",
-                    "pos": {
-                        "x": 167.2,
-                        "y": 125.025
-                    },
-                    "uuid": "67355d43-05ff-50fa-a655-2f388f5f23fd"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Reference field of R9",
-                    "pos": {
-                        "x": 166.07,
-                        "y": 146.5
-                    },
-                    "uuid": "1d9df23e-9ad4-5605-b753-e019c89412d6"
-                },
-                {
-                    "description": "Pad 3 [/TOOL_ID_C] of U7 on F.Cu",
-                    "pos": {
-                        "x": 166.0,
-                        "y": 145.45
-                    },
-                    "uuid": "7c5a6e3b-7b9e-50d0-a563-9704b553808b"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Reference field of C46",
-                    "pos": {
-                        "x": 160.97,
-                        "y": 124.25
-                    },
-                    "uuid": "401ef124-cf2d-5a94-b87a-4ba73b46b1b7"
-                },
-                {
-                    "description": "Pad 2 [/GND] of C45 on F.Cu",
-                    "pos": {
-                        "x": 160.8,
-                        "y": 123.475
-                    },
-                    "uuid": "bca2560a-0c85-5566-9f29-be4f5c9ea709"
-                }
-            ],
-            "severity": "warning",
-            "type": "silk_over_copper"
-        },
-        {
-            "description": "Silkscreen clipped by solder mask",
-            "items": [
-                {
-                    "description": "Reference field of C45",
-                    "pos": {
-                        "x": 159.37,
-                        "y": 124.25
-                    },
-                    "uuid": "d9bf995c-2c96-504c-b9b5-7d87ca3abee7"
-                },
-                {
-                    "description": "Pad 2 [/GND] of C49 on F.Cu",
-                    "pos": {
-                        "x": 159.2,
-                        "y": 123.475
-                    },
-                    "uuid": "54eca52d-d2d5-531e-b2c7-7de7f00002b5"
+                    "uuid": "d904ca7b-6351-5ab6-bd98-4b7c6c60f40d"
                 }
             ],
             "severity": "warning",
@@ -2507,20 +1104,20 @@
             "description": "Silkscreen clipped by solder mask",
             "items": [
                 {
-                    "description": "Reference field of D8",
+                    "description": "Reference field of C40",
                     "pos": {
-                        "x": 144.0,
-                        "y": 118.57
+                        "x": 154.0,
+                        "y": 125.97
                     },
-                    "uuid": "c95467cd-58e4-5590-be2b-9df9deaf1944"
+                    "uuid": "9c176a40-5d25-57e3-8689-84a40ed02038"
                 },
                 {
-                    "description": "Pad 2 [/5V_SYS] of D7 on F.Cu",
+                    "description": "Pad 2 [/GND] of C20 on F.Cu",
                     "pos": {
-                        "x": 144.7875,
-                        "y": 118.5
+                        "x": 153.775,
+                        "y": 125.0
                     },
-                    "uuid": "49584a00-b35f-5222-9b8e-d604b9c2955d"
+                    "uuid": "ea8bcd60-cf1f-59d5-bf22-b655bcb87ee6"
                 }
             ],
             "severity": "warning",
@@ -2544,6 +1141,29 @@
                         "y": 118.5
                     },
                     "uuid": "0a40348e-9c40-5f4b-a887-6b303f117cb1"
+                }
+            ],
+            "severity": "warning",
+            "type": "silk_over_copper"
+        },
+        {
+            "description": "Silkscreen clipped by solder mask",
+            "items": [
+                {
+                    "description": "Reference field of D8",
+                    "pos": {
+                        "x": 144.0,
+                        "y": 118.57
+                    },
+                    "uuid": "c95467cd-58e4-5590-be2b-9df9deaf1944"
+                },
+                {
+                    "description": "Pad 2 [/5V_SYS] of D7 on F.Cu",
+                    "pos": {
+                        "x": 144.7875,
+                        "y": 118.5
+                    },
+                    "uuid": "49584a00-b35f-5222-9b8e-d604b9c2955d"
                 }
             ],
             "severity": "warning",

@@ -6,6 +6,7 @@
   "min_via_diameter": 0.45,
   "min_annular": 0.075,
   "min_hole_to_hole": 0.5,
+  "min_hole_to_hole_same_net": 0.254,
   "edge_clearance": 0.3
  },
  "items_checked": 126,
@@ -15,16 +16,20 @@
  "erc_problems": [],
  "kicad": {
   "kicad_cli": "10.0.6",
+  "skipped": false,
   "erc": {
    "errors": 0,
    "warnings": 0,
+   "unconnected": 0,
    "by_type": {}
   },
   "drc": {
    "errors": 0,
    "warnings": 0,
+   "unconnected": 0,
    "by_type": {}
   }
  },
- "accepted_known_open": []
+ "accepted_known_open": [],
+ "problems": []
 }

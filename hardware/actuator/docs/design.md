@@ -1,7 +1,8 @@
 # BHMS Arm — design
 
-Status: design complete, verified by tools and by scripts. **Not built,
-not powered, not certified.** Every number below either comes from
+Status: design complete and verified by tools and by scripts (§10); both
+PCBs are routed and pass KiCad DRC but have not been reviewed by a person
+(§12, O7). **Not built, not powered, not certified.** Every number below either comes from
 `cad/params.py` or was measured by one of the scripts in this tree on the
 generated outputs. Numbers marked *estimate* are not datasheet values.
 
@@ -12,8 +13,8 @@ generated outputs. Numbers marked *estimate* are not datasheet values.
 | R1 | 5 revolute joints + tool flange | yaw, shoulder pitch, elbow pitch, wrist pitch, wrist roll; bayonet flange | MJCF loads (`sim/test_arm.py`) |
 | R2 | STS3215-class servos, 12 V, magnetic encoder, current feedback | Feetech STS3215 12 V (C018, 1:345), 8 in total (5 arm + 3 tools) | BOM |
 | R3 | Reach ≈ 400 mm | shoulder axis → flange face 400 mm (180 + 140 + 80) | `params.Arm.reach` |
-| R4 | 250 g at full reach with a 2× margin | 250 g rated load (tool included) at 50 mm beyond the flange; shoulder and elbow 2:1 spur reductions | §4 torque table, MuJoCo gravity hold |
-| R5 | Parametric CAD in build123d, STL + STEP, printer tolerances | 33 part modules, `cad/build.py`, `Printer` fits, tolerance coupon | trimesh: 33/33 watertight single bodies |
+| R4 | 250 g at full reach with a 2× margin (Controller ruling R13) | 250 g carried object, tool excluded, 70 mm beyond the flange, plus the 159 g gripper; shoulder 3:1 and elbow 2:1 spur reductions | §4 torque table (margins 2.64× / 3.61× / 4.64×), MuJoCo gravity hold |
+| R5 | Parametric CAD in build123d, STL + STEP, printer tolerances | 34 part modules, `cad/build.py`, `Printer` fits, tolerance coupon | trimesh: 34/34 watertight single bodies |
 | R6 | Printed base clamp + cable routing | C-clamp on the base tongue; rear cable grooves + clips; service loops | CAD |
 | R7 | MJCF from the same CAD (masses, inertias, limits, actuators) | `sim/gen_mjcf.py` reads `cad/out/assembly.json` | MuJoCo load + hold + pick |
 | R8 | Quick-change flange: power, 2-wire bus, tool-ID resistor | 6 pogo contacts: 12 V, GND, BUS, AUX1, AUX2, TOOL_ID | CAD, PCB |
@@ -36,9 +37,11 @@ The design has four groups:
     controller PCB. The PCB connectors line up with cut-outs in the pod's
     rear wall; both use `params.Controller`.
 * **Turret and links**:
-  * Shoulder and elbow are identical geared joints. A 17-tooth module-2
-    pinion on the servo horn drives a 34-tooth gear printed into the next
-    link's hub. The hub turns on an M8 shaft in two 608-2RS bearings.
+  * Shoulder and elbow are geared joints with the same 51 mm centre
+    distance. A pinion on the servo horn drives a gear printed into the
+    next link's hub. The shoulder is 17:51 at module 1.5 (3:1), the elbow
+    17:34 at module 2 (2:1). The hub turns on an M8 shaft in two 608-2RS
+    bearings.
   * The pinion has an outboard 624-2RS support against the mesh
     separating force.
   * The wrist pitch is direct drive. Its bracket rides on the servo horn
@@ -61,7 +64,7 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
 | Joint | Parent → child offset | Axis | Range (deg) | Ratio | Servo span |
 |---|---|---|---|---|---|
 | base_yaw | world → turret: z 70 mm | z | −150 … +150 | 1 | 300° |
-| shoulder_pitch | turret → upper arm: z 80 mm (shoulder axis 150 mm above the table) | y | −75 … +95 | 2 | 340° |
+| shoulder_pitch | turret → upper arm: z 80 mm (shoulder axis 150 mm above the table) | y | −20 … +95 | 3 | 345° |
 | elbow_pitch | upper arm → forearm: z 180 mm | y | −5 … +125 | 2 | 260° |
 | wrist_pitch | forearm → wrist: z 140 mm | y | −100 … +100 | 1 | 200° |
 | wrist_roll | wrist → flange face: z 80 mm | z | −150 … +150 | 1 | 300° |
@@ -69,7 +72,17 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
 * **Absolute position at power-up.** Every geared joint keeps its servo
   span below 360°, so the servo's 12-bit single-turn encoder still gives
   an absolute joint angle at power-up. No homing switches are needed.
-  This is why the reduction is 2:1 and not 3:1 (decision D3).
+  The 3:1 shoulder keeps its 345° span (115° × 3) just inside one servo
+  turn only because the shoulder range was cut to −20 … +95°; this is the
+  price of the R13 payload (decisions D1, D3). The 15° of spare servo
+  travel must be split between the two ends when calibrating.
+* **Coupled pitch limits.** The single-joint ranges above are not
+  collision-free together. The CAD sampling (§10) gives three limits on
+  sums of joint angles, which the firmware must enforce
+  (INTERFACE.md §3.2): shoulder + elbow ≤ 195° (forearm into the base),
+  elbow + wrist_pitch ≤ 185° (tool or wrist folding onto the upper arm),
+  shoulder + elbow + wrist_pitch ≤ 190° (tool into the turret or base;
+  straight down is 180°). They are in `Arm.coupled_limits` and the MJCF.
 * **Elbow limit.** The +125° limit comes from the CAD interference check:
   at 135–140° the forearm touches the elbow servo lid.
 * **Picking from the table.** The gripper points straight down at radii
@@ -84,40 +97,76 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
   masses and centres of mass come from the CAD solids (printed-part mass
   model, §5) plus purchased hardware (servos 55 g, bearings, shafts,
   harness).
-* **Load case.** The arm is outstretched horizontally (shoulder 90°,
-  elbow 0°, wrist 0°). The rated load of 250 g, tool included, acts
-  50 mm beyond the flange. Including the tool follows the ISO 9283
-  convention. The gripper tool weighs 160 g, which leaves 90 g for the
-  grasped object.
+* **Load case (Controller ruling R13).** The arm is outstretched
+  horizontally (shoulder 90°, elbow 0°, wrist 0°). It carries a 250 g
+  *object* with its centre 70 mm beyond the flange (the middle of the
+  gripper finger pads), and the object **excludes the tool**. The heaviest
+  object-carrying tool, the gripper with both fingers (158.9 g, centre
+  50 mm beyond the flange), is added from the CAD mass model. The other
+  three tools are checked with their own mass and no object.
 * **Servo torque.** Servo torque = joint torque / (ratio × gear
-  efficiency). Printed-spur efficiency is taken as 0.92.
+  efficiency). Printed-spur efficiency is taken as 0.92 for both pairs
+  (*estimate*).
+* **Arithmetic, shoulder** (T = m g × lever; lever = distance from the
+  shoulder axis along the horizontal arm to the centre of mass):
+
+  | Item | Mass | Lever | Torque |
+  |---|---|---|---|
+  | upper arm (incl. elbow servo, shaft) | 306.6 g | 82.2 mm | 0.247 N·m |
+  | forearm | 216.8 g | 240.3 mm | 0.511 N·m |
+  | wrist | 97.8 g | 362.5 mm | 0.348 N·m |
+  | flange | 28.5 g | 400.4 mm | 0.112 N·m |
+  | gripper + fingers | 158.9 g | 449.7 mm | 0.701 N·m |
+  | carried object | 250.0 g | 470.0 mm | 1.153 N·m |
+  | **joint total** | | | **3.071 N·m** |
+
+  Servo torque = 3.071 / (3 × 0.92) = 1.113 N·m; margin = 2.94 / 1.113 =
+  **2.64×**. With the previous 2:1 shoulder the same load gives
+  3.071 / (2 × 0.92) = 1.669 N·m and a margin of 1.76×, which fails the
+  2× requirement; this is why the shoulder is now 3:1.
 
 | Joint | Static joint torque (N·m) | Ratio × η | Servo torque (N·m) | Required with 2× (N·m) | STS3215 stall (N·m) | Margin vs stall | Est. holding current (A) |
 |---|---|---|---|---|---|---|---|
-| shoulder_pitch | 2.32 | 2 × 0.92 | 1.26 | 2.52 | 2.94 | 2.33× | 1.31 |
-| elbow_pitch | 1.03 | 2 × 0.92 | 0.56 | 1.12 | 2.94 | 5.27× | 0.66 |
-| wrist_pitch | 0.38 | 1 × 1.00 | 0.38 | 0.76 | 2.94 | 7.70× | 0.50 |
+| shoulder_pitch | 3.07 | 3 × 0.92 | 1.11 | 2.23 | 2.94 | 2.64× | 1.17 |
+| elbow_pitch | 1.50 | 2 × 0.92 | 0.81 | 1.63 | 2.94 | 3.61× | 0.90 |
+| wrist_pitch | 0.63 | 1 × 1.00 | 0.63 | 1.27 | 2.94 | 4.64× | 0.73 |
 | base_yaw, wrist_roll | 0 (no gravity load) | 1 | — | — | 2.94 | dynamic only | idle |
 
-* **Cross-check against MuJoCo.** MuJoCo's gravity torques in the same
-  pose are 2.39 / 1.09 / 0.45 N·m. They are slightly higher because the
-  simulation test puts the extra payload at the gripper TCP, 124 mm out,
-  not at 50 mm.
-* **Direct-drive comparison.** Without the 2:1 reductions the shoulder
-  would need 4.6 N·m with margin, and the elbow 2.1 N·m. A single
-  STS3215 meets neither with a 2× margin.
-* **Thermal limit.** The worst-case shoulder servo torque, 1.26 N·m, is
+* **Other tools, no object** (shoulder margin): knob turner (241 g)
+  3.55×, button presser (133 g) 4.51×, slider pusher (41 g) 5.81×.
+* **Cross-check against MuJoCo.** The gravity hold test uses the same
+  load case (object as a point mass 70 mm beyond the flange, gripper from
+  the model). MuJoCo's gravity torques in the outstretched pose are
+  3.0714 / 1.4965 / 0.6333 N·m, equal to the budget's 3.0714 / 1.4965 /
+  0.6333 N·m to four digits.
+* **Why 3:1 on the shoulder.** Options considered for R13: (a) 3:1 spur
+  reduction, (b) a second STS3215 on the shoulder, (c) reduced reach.
+  (a) was chosen because it reuses the 51 mm gear centre distance of the
+  elbow, so the clevis, servo cradle and bearings did not change (only
+  module 2 → 1.5 and 34 → 51 teeth). (b) needs a mirrored second drive
+  train and servo-to-servo load sharing. (c) would break the 400 mm
+  requirement. The cost of (a) is the shoulder range (D3).
+* **Direct-drive comparison.** Without the reductions the shoulder would
+  need 6.1 N·m with margin, and the elbow 3.0 N·m. A single STS3215
+  meets neither with a 2× margin.
+* **Thermal limit.** The worst-case shoulder servo torque, 1.11 N·m, is
   above the STS3215's continuous rating, taken as 1/3 of stall
   (0.98 N·m, *estimate*). The arm can hold that pose but should not dwell
   in it; the firmware monitors servo temperature (INTERFACE.md §3.1).
-* **Gear teeth.** Lewis bending stress at the 17-tooth pinion at full
-  servo stall:
-  * F = 2.94 / 0.017 = 173 N.
-  * σ = F / (b m Y) = 173 / (14 × 2 × 0.30) ≈ 21 MPa.
-  * PETG yields around 45–50 MPa, a factor of about 2.2. This is why the
-    gears are PETG at 100 % infill.
-* **Supply.** The worst-case holding current is about 2.8 A *estimate*;
-  the PSU is rated 6 A and the fuse 5 A.
+* **Gear teeth.** Lewis bending stress, σ = F / (b m Y), face width b =
+  14 mm, Y = 0.30 for 17 teeth, F = servo torque / pinion pitch radius:
+  * Shoulder pinion (module 1.5, r = 12.75 mm) at the rated load:
+    F = 1.113 / 0.01275 = 87 N, σ = 87 / (14 × 1.5 × 0.30) = 13.9 MPa.
+  * Shoulder pinion at servo stall: F = 231 N, σ = 36.7 MPa, which is
+    only 1.2–1.4× below the 45–50 MPa PETG yield. The shoulder
+    Max_Torque_Limit is therefore set to 68 % (about 2.0 N·m, σ = 25 MPa,
+    factor about 1.9) in INTERFACE.md §3.1.
+  * Elbow pinion (module 2, r = 17 mm) at servo stall: F = 173 N,
+    σ = 173 / (14 × 2 × 0.30) ≈ 21 MPa, factor about 2.2.
+  * Gears are PETG at 100 % infill; a nylon or CF-PETG print of the
+    shoulder pinion is the first upgrade if wear shows.
+* **Supply.** The worst-case holding current is about 3.1 *estimate* (all
+  joints, rated case); the PSU is rated 6 A and the fuse 5 A.
 
 ## 5. Mass model and print estimates
 
@@ -223,8 +272,10 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
 
 * **Board and power.**
   * 80 × 56 mm, 2-layer, JLCPCB standard rules (0.127/0.127 mm minimum).
-    Default net class 0.2 mm track / 0.15 mm clearance. Power nets use
-    1.5 mm tracks (the tool rail 1.0 mm). GND pours on both layers.
+    Default net class 0.15 mm track / 0.13 mm clearance, vias 0.5/0.3 mm.
+    Power nets use 1.5 mm tracks (the tool rail 1.0 mm) with 0.2 mm
+    clearance. GND pours on both layers; pour islands without a pad or via
+    are removed, and stitching vias join the rest.
   * 12 V input chain: screw terminal → 5 A NANO2 fuse → SMBJ15CA
     bidirectional TVS → AOD4185 reverse-polarity P-FET (gate clamped by a
     12 V zener) → 470 µF.
@@ -245,6 +296,22 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
   * The tool rail is downstream of Q2.
   * Firmware can switch the rail off at any time. It cannot switch the
     rail on while the loop is open.
+* **The arm falls when the E-stop cuts power.** There is no brake on any
+  joint. Without power the STS3215 holds nothing, and neither the 3:1
+  nor the 2:1 printed gear train is self-locking (backdrive friction has
+  not been measured). Outstretched with the rated load the shoulder sees
+  3.1 N·m, so the arm drops under gravity and can hit the table, the
+  workpiece or a hand. What to do:
+  * Treat the E-stop as an emergency measure, not a normal stop. For a
+    normal stop, drive the arm to the rest pose first (shoulder 90° or
+    less, elbow 90°, forearm resting on the support) and then cut power.
+  * Place a soft stop (foam block or table surface) under the forearm
+    rest pose so the fall from any pose ends within about 100 mm.
+  * Keep hands, faces and fragile objects out of the swept volume
+    (a 400 mm radius around the shoulder axis, which is 150 mm above the table, plus the tool) whenever the
+    rail is live.
+  * A brake or counterbalance spring is not part of this design (open
+    issue O9).
 * **E-stop observation (a measured property, not an assumption).**
   * Contact B of the same switch is read on GPIO8.
   * The actual rail voltage and current are read from the INA219 on the
@@ -281,35 +348,57 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
 
 ## 10. Verification results
 
+All rows are produced by `verify.sh` (run end to end, exit 0; see the
+fix-round section of the task report for the log). "Own script" means a
+check written in this tree rather than a third-party tool.
+
 | Check | Tool | Result |
 |---|---|---|
-| All parts build as valid single solids | build123d 0.13 / OpenCASCADE (OCP 8.0.1) | 33/33 |
-| STL watertight, consistent winding, one body, volume vs B-rep | trimesh 5.2.1 (`cad/check_meshes.py`) | 33/33 pass; max volume error 0.30 %; largest STL 0.35 MB |
-| Cross-link interference, 17 poses × 6 tool states | OpenCASCADE booleans (`cad/check_clearance.py`) | 0 design defects; 6 workspace self-collisions at one extreme pose (`wrist_curl`: tool reaches the turret), which motion planning must avoid |
-| Torque budget, 2× margin | `cad/torque_budget.py` | pass: shoulder 2.33×, elbow 5.27×, wrist 7.70× |
+| All parts build as valid single solids | build123d 0.13 / OpenCASCADE (OCP 8.0.1) | 34/34 |
+| STL watertight, consistent winding, one body, volume vs B-rep | trimesh 5.2.1 (`cad/check_meshes.py`) | 34/34 pass; max volume error 0.30 % (0.296); largest STL 0.40 MB; total 1576 g, about 51.5 h printing (estimate) |
+| Interference: single-joint sweeps (5° steps, every joint) and named poses, 2000 seeded random poses inside all limits (joint and coupled) plus 500 outside, each at 4 tools (gripper and presser at both extremes) | OpenCASCADE booleans, OBB pre-filter (`cad/check_clearance.py`, 1386 + 10000 tool-pose checks) | **0 collisions at allowed poses** (any pair of solids on different links, tolerance 1 mm³); 6697 collisions in 192 poses outside the coupled limits, which justify them. The check exits 1 on any collision at an allowed pose |
+| Torque budget, 2× margin, R13 load (250 g object + 159 g gripper) | `cad/torque_budget.py` (own script) | shoulder 2.64×, elbow 3.61×, wrist 4.64×; other tools without object: shoulder ≥ 3.55× |
 | MJCF loads (5 models) | MuJoCo 4.0.1 | pass |
-| Gravity hold, 4 poses, rated load | MuJoCo (`sim/test_arm.py`) | max error 1.24° (outstretched), max actuator utilisation 0.44 of the force limit; pass |
-| Pick and place of a 50 g cube | MuJoCo, contact (friction) grasp, **no weld** | xy error 2.1 mm, lifted 82 mm, slip 0.03 mm; pass |
+| Gravity hold, 5 poses, rated load | MuJoCo (`sim/test_arm.py`) | max error 1.21° (outstretched), max actuator utilisation 0.38 of the force limit; pass. MuJoCo and the budget agree on the joint torques to four digits |
+| Speed limit (full-range step, gravity off) | MuJoCo | peak 4.65 / 1.55 / 2.32 / 4.65 / 4.65 rad/s against limits 4.70 / 1.57 / 2.35 / 4.70 / 4.70 (within 1 %); pass |
+| Keep-out in simulation (tool/forearm/wrist hulls vs base and turret hulls) | MuJoCo contacts | 0 of 343 random in-limit poses in contact (every tool); `wrist_curl` (30°, 100°, 100°) is in contact for gripper, knob turner and presser |
+| Pick and place of a 50 g cube | MuJoCo, contact (friction) grasp, **no weld** | xy error 1.5 mm, lifted 82 mm, slip 0.1 mm; pass |
 | Schematic ERC | KiCad 10.0.6 `kicad-cli sch erc` (all severities) | 0 errors, 0 warnings on both boards |
-| PCB DRC + schematic parity | KiCad 10.0.6 `kicad-cli pcb drc --schematic-parity` | **tool_contact: 0 errors, 0 warnings, fully routed.** **controller: 11 errors, all unconnected items (not clearance/width/drill), 132 warnings (silk_over_copper 57, isolated_copper 74, hole_to_hole 1); not fully routed (see below)** |
-| PCB DRC (independent) | `pcb/drc.py`: widths, vias, hole spacing, clearance, edge, connectivity incl. pours | tool_contact 0 violations (min clearance 0.153 mm); controller 5 findings, all listed in `pcb/controller/known_open.json`: open nets VIN_RAW (F1.1 to J1.1), +1V1 (3 groups at U1.23/45/50), QSPI_SD1 (U1.55 to U2.2), GND (17 pour islands) and one via pair 0.492 mm apart (rule 0.5 mm) |
-| Netlist ERC (independent) | `pcb/circuit.py:erc` | 0 problems on both boards |
-| Gerbers, drill, position files | KiCad 10.0.6 `kicad-cli` | `pcb/*/fab/`; **controller Gerbers are from the incompletely routed board and must not be ordered** |
+| PCB DRC + schematic parity | KiCad 10.0.6 `kicad-cli pcb drc --schematic-parity` | **controller: 0 errors, 0 unconnected items, 58 warnings** (56 silk_over_copper, 2 via_dangling). **tool_contact: 0 errors, 0 warnings.** Both boards are completely routed |
+| PCB DRC (independent) | `pcb/drc.py` (own script): widths, vias, hole spacing (0.5 mm different nets, 0.254 mm same net), clearance, edge, connectivity incl. pours | 0 findings on both boards; min clearance seen 0.132 mm (controller), 0.153 mm (tool_contact) against the 0.127 mm rule |
+| Netlist ERC (independent) | `pcb/circuit.py:erc` (own script) | 0 problems on both boards |
+| Gerbers, drill, position files | KiCad 10.0.6 `kicad-cli` | `pcb/*/fab/` for both boards |
+| Routing | Freerouting 1.9.0 + `pcb/finish.py` (own script) | controller: router 945 segments / 121 vias, completion pass +57 / +10 (3 vias removed for the hole-to-hole rule, 1 net ripped up and re-routed, 4 pour stitching connections), total 1002 / 131, 1822 mm of copper; tool_contact: 85 / 6, no completion needed |
+
+What the checks do not cover: the hull collision proxies in MuJoCo are
+conservative; the pour islands "isolated copper" check relies on KiCad;
+DRC does not check electrical function (no SPICE or board bring-up); the
+hole-to-hole figures are from the JLCPCB published capabilities as
+recalled when writing the rules and must be re-checked against their
+current table before ordering.
 
 ## 11. Decisions
 
-* **D1. The rated load includes the tool**, with its CoM 50 mm beyond the
-  flange (the ISO 9283 convention). With the object counted on top of the
-  gripper, the shoulder would need a 3:1 reduction, and absolute encoding
-  would be lost (see D3).
+* **D1. The rated load is a 250 g carried object, excluding the tool**
+  (Controller ruling R13, which replaced the earlier ISO 9283
+  "tool included" reading). It acts 70 mm beyond the flange; the heaviest
+  tool, the 159 g gripper, is added on top (§4). Consequence: the 2:1
+  shoulder gave 1.76×, so the shoulder became 3:1 (margin 2.64×) and its
+  range was reduced (D3). Reach stayed at 400 mm.
 * **D2. Reach is measured to the flange, not to the TCP.** The arm is
   tool-agnostic, and the TCPs differ by tool (78–136 mm).
-* **D3. Shoulder and elbow are 2:1 geared, and the other joints are
-  direct.**
-  * A 2:1 reduction keeps each servo span under 360°, so the joint angle
-    stays absolute at power-up.
-  * 3:1 would need homing hardware or multi-turn bookkeeping.
+* **D3. Shoulder 3:1, elbow 2:1, the other joints direct.**
+  * A joint's servo span must stay under 360° so the joint angle stays
+    absolute at power-up (single-turn encoder). With 3:1 that allows at
+    most 120° of joint range, so the shoulder range is −20 … +95° (115°,
+    345° of servo travel). The arm can no longer lean back more than 20°
+    behind the vertical; the stowed pose uses the elbow instead (the home
+    keyframe is shoulder 90°, elbow 90°).
+  * The elbow is 2:1: 130° × 2 = 260°.
   * Belt drives were rejected because they add tensioners and length.
+  * Rejected for the R13 payload: a dual-STS3215 shoulder (second drive
+    train, load sharing between two position servos) and a shorter arm
+    (breaks the 400 mm requirement).
 * **D4. Printed spur gears, not herringbone.** They are easier to print
   and check. The axial load is zero. Wear is accepted: PETG at 100 %
   infill, with the pinion as the replaceable part.
@@ -337,17 +426,33 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
   20240108/20231120, with post-v8 tokens stripped from library copies).
   They are checked with KiCad 10.0.6, the only KiCad obtainable on the
   build machine. They have not been opened in an actual KiCad 8 install.
-* **D12. Freerouting 1.9.0 (Java, under Xvfb) for autorouting.**
+* **D12. Freerouting 1.9.0 (Java, under Xvfb) for autorouting, plus a
+  scripted completion pass.**
   * The 2.5.0 native CLI crashed with a GraalVM serialization error.
   * The 2.5.0 jar needs Java 25, which is not installed.
   * The SES routes are imported by `pcb/build.py`'s own parser into the
     KiCad 8 file.
+  * On the controller Freerouting leaves a few connections open around the
+    RP2040 and ignores the fab's hole-to-hole rule. `pcb/finish.py`
+    therefore (1) removes one via of every too-close pair, (2) joins every
+    open net with an A* maze router on a 0.05 mm grid that uses the same
+    copper model as the scripted DRC, ripping up and re-routing a blocking
+    net when needed, and (3) joins ground-pour islands to the main pour
+    with stitching vias. KiCad's DRC judges the result.
+  * To give the router room, the RP2040 decoupling capacitors sit 8 mm
+    from the QFN centre (`CAP_OFFSET`) instead of 5.75 mm: a 3 mm fan-out
+    channel between the pin row and the capacitor ring. The price is a
+    longer loop to each capacitor.
   * Pours are filled with KiCad's `pcbnew` zone filler and copied in.
 * **D13. Prices are estimates.** No live distributor quote was possible
   offline; every row of the BOM says so.
-* **D14. Arm geoms do not self-collide in MJCF.** Self-clearance is
-  checked exactly in CAD instead. Convex hulls of U-shaped links give
-  false contacts.
+* **D14. Arm-vs-arm collision in MJCF is limited to tool/forearm/wrist
+  against the static base and turret.** The remaining link pairs do not
+  collide in MJCF, because convex hulls of U-shaped links give false
+  contacts between neighbours; their clearance is checked exactly in CAD
+  (`cad/check_clearance.py`). The keep-out pairs use hulls of the CAD
+  meshes (contype 8 against contype 4 / conaffinity 8) and are checked by
+  `sim/test_arm.py` against the coupled limits.
 
 ## 12. Open issues and what still needs physical work
 
@@ -368,11 +473,14 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
 * **O6. Signal integrity of the 1 Mbps bus over the full harness** (about
   1.2 m with the service loop) is not simulated. Scope it on first
   power-up.
-* **O8. Controller routing is unfinished.** Freerouting 1.9.0 (150 passes,
-  then a 60-pass continuation that stalled) left VIN_RAW, +1V1, QSPI_SD1
-  and 17 GND pour islands open around the RP2040. Finish by hand in KiCad
-  (or loosen the placement around U1 and re-route), then clear
-  `pcb/controller/known_open.json` so verify.sh fails on any open net.
-* **O7. Routing quality.** The board is autorouted. A human review of the
-  switch-node loop (U3/L1/C6), the crystal and the USB pair is
-  recommended before ordering.
+* **O9. No brake or counterbalance.** The arm falls on E-stop (§9). A
+  counterbalance spring on the shoulder would also lower the holding
+  current; it is not designed.
+* **O7. Routing quality.** Both boards are autorouted (the controller
+  with a scripted completion pass, D12) and pass DRC, but no person has
+  reviewed them. Check by hand before ordering: the switch-node loop
+  (U3/L1/C6), the crystal, the USB pair (no length or impedance control),
+  the long meanders the completion router adds on a few signals
+  (e.g. ESTOP_SENSE_F, XOUT), the RP2040 decoupling loops (capacitors sit
+  8 mm out, D12), and the 56 silk-over-copper warnings. Run the first-power-up
+  checks in `docs/assembly.md` on the first board.

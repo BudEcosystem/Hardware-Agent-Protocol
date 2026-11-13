@@ -97,7 +97,7 @@ as inputs with pull-downs.
 | ID | Joint | Chain / port | Ratio (servo:joint) | Joint range (deg) | Servo span (deg) |
 |---|---|---|---|---|---|
 | 1 | base_yaw | A / J4 | 1 | −150 … +150 | 300 |
-| 2 | shoulder_pitch | A / J4 | 2 (17:34 spur) | −75 … +95 | 340 |
+| 2 | shoulder_pitch | A / J4 | 3 (17:51 spur, module 1.5) | −20 … +95 | 345 |
 | 3 | elbow_pitch | A / J4 | 2 (17:34 spur) | −5 … +125 | 260 |
 | 4 | wrist_pitch | B / J5 | 1 | −100 … +100 | 200 |
 | 5 | wrist_roll | B / J5 | 1 | −150 … +150 | 300 |
@@ -113,13 +113,54 @@ as inputs with pull-downs.
 * Program Min/Max_Angle_Limit to the joint range × ratio, plus the
   calibration offset. The servo then rejects out-of-range goals itself:
   the second soft limit, behind the firmware's own limit check.
-* Recommended Max_Torque_Limit (EEPROM): 100 % for IDs 1–5. For ID 6, at
+* Recommended Max_Torque_Limit (EEPROM): 100 % for IDs 1, 3, 4, 5; **68 %
+  for ID 2** (shoulder, about 2.0 N·m at the servo: keeps the PETG 17-tooth
+  pinion below about 25 MPa, docs/design.md §4). For ID 6, at
   most 15 % (≈ 20 N per finger). For ID 7, 2.5 % (keeps the spiral
   flexure within ±25°). For ID 8, 20 %.
-* Holding at full outstretched reach with the rated 250 g load needs
-  1.26 N·m at the shoulder servo. That is above the STS3215 continuous
+* The shoulder servo's travel is 345° of the 360° available. Calibrate so
+  the 15° spare is split between the two joint limits (about 7° each), and
+  never let the servo wrap through the 0/4095 boundary inside the joint
+  range.
+* Holding at full outstretched reach with the rated load (250 g object plus
+  the 159 g gripper) needs 1.11 N·m at the shoulder servo. That is above the STS3215 continuous
   rating (about 1/3 of stall). Monitor Present_Temperature, and do not
   park the arm outstretched.
+
+### 3.2 Speed limit and coupled joint limits
+
+* **Speed limit.** Do not command a joint faster than the STS3215 no-load
+  speed divided by the ratio: 4.71 rad/s at the servo (45 rpm, vendor
+  figure recorded in `cad/params.py`, *estimate* until measured), so
+  4.71 rad/s for yaw, wrist pitch and roll, 2.35 rad/s for the elbow and
+  1.57 rad/s for the shoulder. The MJCF encodes the same limits as
+  `max_speed_<joint>` and `sim/test_arm.py` checks them.
+* **Coupled limits.** Every joint inside its own range is not enough:
+  with the folded arm the forearm reaches the base, or the tool reaches the
+  turret, base or upper arm. `cad/check_clearance.py` found such poses
+  inside every single-joint limit (for example shoulder 30°, elbow 100°,
+  wrist +100°: gripper fingers 98 mm³ and the presser tip 212 mm³ inside
+  the turret). Angles are in degrees, zero is the "candle" pose, positive
+  tilts toward +x. The firmware must reject any goal (and any interpolated
+  waypoint) that violates one of:
+
+  | Name | Sum | Limit | What it prevents |
+  |---|---|---|---|
+  | forearm_pitch | shoulder + elbow | ≤ 195 | forearm swinging into the base |
+  | hairpin | elbow + wrist_pitch | ≤ 185 | tool or wrist folding back onto the upper arm |
+  | tool_pitch | shoulder + elbow + wrist_pitch | ≤ 190 | tool reaching the turret/base (straight down is 180) |
+
+  The lower side of each sum cannot be reached inside the single-joint
+  limits, so no lower limit is needed (they are stored as −180). The
+  numbers live in `cad/params.py` (`Arm.coupled_limits`); the MJCF exports
+  them as `coupled_<name>_deg` / `coupled_<name>_joints`. Basis: 2000 seeded
+  random poses inside all limits per tool (four tool configurations) and
+  1386 named/sweep checks show 0 collisions at allowed poses, while poses
+  just outside collide (docs/design.md §10). The servos' own angle
+  registers cannot express these sums, so this check is firmware only and
+  has no second layer; apply it before the first torque-enable after
+  every boot, and apply it with a few degrees of margin to the *measured*
+  pose when the arm is moved by hand.
 
 ## 4. E-stop
 
@@ -164,6 +205,12 @@ J2.3 ESTOP_SENSE ── contact B (NC) ── J2.4 GND          (status to GPIO8
   released:
   1. Enable for 50 ms and check that the rail rises above 10 V.
   2. Disable and check that it falls below 2 V within 50 ms.
+* **The arm falls when the rail drops.** There is no brake on any joint,
+  and the gear trains are not self-locking. Firmware must not use the
+  E-stop as a normal stop: before cutting SERVO_EN deliberately (shutdown,
+  fault), move to the rest pose (shoulder ≤ 90°, elbow 90°, forearm on the
+  support) at reduced speed, then disable. Report `estop` as "arm may have
+  moved: re-home before use" and never assume the pose after a rail cut.
 * After the rail returns, every servo has rebooted. Before torque-enabling
   each servo, set its Goal_Position to its Present_Position.
 

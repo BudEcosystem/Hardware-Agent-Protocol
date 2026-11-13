@@ -31,6 +31,13 @@ sys.path.insert(0, str(ROOT / "cad"))
 
 EST = "estimate (typical 2026 distributor price, not a quote)"
 
+
+def fab_ref(board: str) -> str:
+    """What to give the PCB maker.  A board that is not completely routed has no Gerbers."""
+    if (ROOT / "pcb" / board / "DO_NOT_FABRICATE.md").exists():
+        return f"NOT ORDERABLE: pcb/{board} is incomplete (see pcb/{board}/DO_NOT_FABRICATE.md)"
+    return f"pcb/{board}/fab (Gerbers)"
+
 # (section, item, manufacturer, mpn, qty, unit_usd, notes)
 HARDWARE = [
     # ---- arm: actuators and bearings ----
@@ -139,8 +146,8 @@ def tool_pcb_rows(netlist: dict) -> list[dict]:
     rows = []
     for tool, section in TOOL_SECTION.items():
         rows.append({"section": section, "item": "Tool contact PCB, 28 mm round, 2-layer 1.6 mm ENIG", "manufacturer": "JLCPCB",
-                     "mpn": "pcb/tool_contact/fab (Gerbers)", "qty": 1, "unit_usd": 1.00,
-                     "price_source": EST + " (5-board panel price / 5)", "notes": "ENIG required for the pogo pads"})
+                     "mpn": fab_ref("tool_contact"), "qty": 1, "unit_usd": 1.00,
+                     "price_source": EST + " (5-board panel price / 5)", "notes": "ENIG required for the pogo pads; autorouted, KiCad DRC clean, not human-reviewed"})
         for ref, p in parts.items():
             if not p["mpn"]:
                 continue
@@ -166,8 +173,8 @@ def main() -> int:
         rows.append({"section": section, "item": item, "manufacturer": mfr, "mpn": mpn, "qty": qty, "unit_usd": unit,
                      "price_source": EST, "notes": notes})
     rows.append({"section": "Controller", "item": "Controller PCB 80 x 56 mm, 2-layer 1.6 mm, HASL lead-free", "manufacturer": "JLCPCB",
-                 "mpn": "pcb/controller/fab (Gerbers)", "qty": 1, "unit_usd": 2.00, "price_source": EST + " (5-board order / 5)",
-                 "notes": "JLCPCB standard 2-layer rules"})
+                 "mpn": fab_ref("controller"), "qty": 1, "unit_usd": 2.00, "price_source": EST + " (5-board order / 5)",
+                 "notes": "JLCPCB standard 2-layer rules; autorouted + scripted completion, KiCad DRC clean, not human-reviewed (design.md O7)"})
     rows += pcb_rows(ctrl, "Controller", "Controller")
     rows += tool_pcb_rows(tool)
     rows += printed_rows(parts)

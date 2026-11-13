@@ -135,27 +135,49 @@
   "material": "PETG",
   "qty": 1,
   "solids": 1,
-  "volume_cm3": 150.20841383595234,
-  "area_cm2": 526.6634179676761,
-  "mass_model_g": 113.41385910028953,
+  "volume_cm3": 150.16119253736295,
+  "area_cm2": 526.1465655772497,
+  "mass_model_g": 113.34072997251627,
   "printed": true,
-  "solid_equivalent_g": 190.76468557165947,
+  "solid_equivalent_g": 190.70471452245096,
   "bbox_mm": [
    110.0,
    110.0,
    105.5
   ],
-  "print_time_h_est": 3.7635317960345436,
+  "print_time_h_est": 3.761246796416582,
   "orientation": "disc down",
   "centroid_mm": [
-   -1.928941153278518,
-   -1.0038465020613698,
-   20.93477629673793
+   -1.9302691179762668,
+   -1.0055644134428636,
+   20.92848939279213
   ]
  },
- "pinion": {
+ "pinion_shoulder": {
   "material": "PETG",
-  "qty": 2,
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 6.153609210032424,
+  "area_cm2": 43.57793854076821,
+  "mass_model_g": 6.993419592551506,
+  "printed": true,
+  "solid_equivalent_g": 7.815083696741179,
+  "bbox_mm": [
+   28.322474753010347,
+   28.443811036388933,
+   19.2
+  ],
+  "print_time_h_est": 0.25851704763628003,
+  "orientation": "horn face down, 100% infill",
+  "centroid_mm": [
+   -2.609749092454682e-16,
+   8.019618298717399e-17,
+   7.318246428448176
+  ]
+ },
+ "pinion_elbow": {
+  "material": "PETG",
+  "qty": 1,
   "solids": 1,
   "volume_cm3": 11.496012303035734,
   "area_cm2": 59.04181997295361,
@@ -179,22 +201,22 @@
   "material": "PETG",
   "qty": 1,
   "solids": 1,
-  "volume_cm3": 241.74314046410302,
-  "area_cm2": 602.7507037932196,
-  "mass_model_g": 156.40558159748392,
+  "volume_cm3": 253.46035134227165,
+  "area_cm2": 634.9932180174163,
+  "mass_model_g": 164.30947035950348,
   "printed": true,
-  "solid_equivalent_g": 307.0137883894108,
+  "solid_equivalent_g": 321.89464620468505,
   "bbox_mm": [
-   77.6937888314038,
+   81.44679825770827,
    69.8,
-   233.90194593074486
+   237.7434834863774
   ],
-  "print_time_h_est": 5.032480208645292,
+  "print_time_h_est": 5.279445861751765,
   "orientation": "on its side (+y face down), supports under clevis",
   "centroid_mm": [
-   0.22574784392998842,
-   -1.4757219308198943,
-   68.36549236926714
+   0.2143325165147431,
+   -1.8682522229815093,
+   64.94820133197699
   ]
  },
  "forearm": {

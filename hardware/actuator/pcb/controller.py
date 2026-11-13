@@ -67,7 +67,7 @@ def rp2040_pin_numbers() -> dict[str, list[str]]:
 
 QFN = "Package_DFN_QFN:QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm"
 CAP_PITCH = 1.6  # 0603 courtyard width 1.46 mm + margin
-CAP_OFFSET = 5.75  # QFN courtyard 4.13 + half 0603 courtyard length 1.48 + gap
+CAP_OFFSET = 8.0  # 0603 decaps sit 8 mm from the QFN centre: leaves a 3 mm fan-out channel between the pin row and the caps
 
 
 def place_decaps(u1_pos, pins: list[str]) -> list[tuple[tuple[float, float], float]]:

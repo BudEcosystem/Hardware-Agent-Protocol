@@ -19,7 +19,21 @@ Actuator model (STS3215, 12 V; see docs/design.md):
     damped (dampratio = 1);
   * armature = rotor inertia reflected through the 1:345 servo gearbox and
     the printed reduction (estimate);
-  * frictionloss = gearbox friction reflected to the joint (estimate).
+  * frictionloss = gearbox friction reflected to the joint (estimate);
+  * velocity limit: viscous joint damping = joint force limit / joint no-load
+    speed (the DC-motor torque-speed line), so the joint cannot exceed
+    no_load_speed / ratio.  No-load speed 4.71 rad/s (45 rpm, 0.222 s/60 deg
+    at 12 V) is the vendor figure recorded in cad/params.py, ESTIMATE until
+    measured on the physical servo.  The limits are also exported as <custom>
+    numerics (max_speed_<joint>, rad/s).
+
+Collision: arm geoms keep contype 2 / conaffinity 0 (table and cube only).
+Extra "keepout" geoms (convex hulls of the CAD meshes of the forearm, wrist,
+flange and the tool) have contype 8 and collide with the static base and
+turret hulls (contype 4 / conaffinity 8), so tool-vs-base/turret
+intersections are real contacts in simulation.  The coupled joint-sum limits
+(Arm.coupled_limits) are exported as the custom numerics coupled_<name>_deg
+([lo, hi]) with the joints of the sum in the custom text coupled_<name>_joints.
 """
 
 from __future__ import annotations
@@ -60,6 +74,13 @@ CUBE_POS = (0.24, 0.0, CUBE_HALF)
 PLACE_POS = (0.18, 0.16, CUBE_HALF)
 
 
+def joint_limits(servo: dict, gear: dict, ratio: float) -> tuple[float, float]:
+    """(joint-side force limit N m, joint no-load speed rad/s) for a servo
+    behind a printed reduction of ``ratio`` (same efficiency for every pair)."""
+    eff = gear["efficiency"] if ratio > 1.0 else 1.0
+    return servo["stall_torque_nm"] * ratio * eff, servo["no_load_speed_rad_s"] / ratio
+
+
 def build(asm: dict, tool: str, scene: bool = False) -> ET.ElementTree:
     servo = asm["servo"]
     gear = asm["gear"]
@@ -77,6 +98,10 @@ def build(asm: dict, tool: str, scene: bool = False) -> ET.ElementTree:
     default = ET.SubElement(root, "default")
     d = ET.SubElement(default, "default", attrib={"class": "bhms"})
     ET.SubElement(d, "geom", contype="2", conaffinity="0", group="3", density="0")
+    dk = ET.SubElement(d, "default", attrib={"class": "keepout"})
+    ET.SubElement(dk, "geom", type="mesh", contype="8", conaffinity="0", group="4", density="0")
+    ds = ET.SubElement(d, "default", attrib={"class": "static"})
+    ET.SubElement(ds, "geom", type="mesh", contype="4", conaffinity="8", group="4", density="0")
     dv = ET.SubElement(d, "default", attrib={"class": "visual"})
     ET.SubElement(dv, "geom", type="mesh", contype="0", conaffinity="0", group="2", density="0")
     dp = ET.SubElement(d, "default", attrib={"class": "pad"})
@@ -126,6 +151,7 @@ def build(asm: dict, tool: str, scene: bool = False) -> ET.ElementTree:
         bodies[name] = b
         return b
 
+    speed_limits: dict[str, float] = {}
     base = add_link(world, "base", [0, 0, 0])
     # Base is bolted/clamped to the table: no free joint.
     chain = ["turret", "upper_arm", "forearm", "wrist", "flange"]
@@ -135,9 +161,11 @@ def build(asm: dict, tool: str, scene: bool = False) -> ET.ElementTree:
         b = add_link(parent, lk, n["pos"])
         lo, hi = (math.radians(x) for x in n["range_deg"])
         ratio = n["ratio"]
+        fmax, wmax = joint_limits(servo, gear, ratio)
         ET.SubElement(b, "joint", name=n["joint"], type="hinge", axis=fmt(n["axis"]), range=fmt([lo, hi]),
                       armature=fmt(ROTOR_INERTIA * (SERVO_GEARBOX * ratio) ** 2),
-                      frictionloss=fmt(SERVO_FRICTION * ratio), damping="0.05")
+                      frictionloss=fmt(SERVO_FRICTION * ratio), damping=fmt(max(0.05, fmax / wmax)))
+        speed_limits[n["joint"]] = wmax
         parent = b
     flange = bodies["flange"]
     ET.SubElement(flange, "site", name="flange", pos="0 0 0", size="0.004", rgba="0 1 0 1", group="1")
@@ -146,10 +174,25 @@ def build(asm: dict, tool: str, scene: bool = False) -> ET.ElementTree:
     # self-clearance is verified in CAD by cad/check_clearance.py.
     for lk in ["upper_arm", "forearm", "wrist", "flange"]:
         for i, m in enumerate(links[lk]["meshes"]):
-            if m["mesh"] in ("servo_lid", "cable_clip", "pinion"):
+            if m["mesh"] in ("servo_lid", "cable_clip") or m["mesh"].startswith("pinion"):
                 continue
             ET.SubElement(bodies[lk], "geom", type="mesh", name=f"{lk}_col_{i}", mesh=m["mesh"], pos=fmt(m["pos"]),
                           quat=fmt(m["quat"]))
+
+    # Static hulls (base, turret) and keepout hulls (forearm ... tool).
+    skip = ("servo_lid", "cable_clip")
+    for lk in ("base", "turret"):
+        for i, m in enumerate(links[lk]["meshes"]):
+            if m["mesh"] in skip or m["mesh"].startswith("ref_"):
+                continue
+            ET.SubElement(bodies[lk], "geom", attrib={"class": "static", "name": f"{lk}_static_{i}", "mesh": m["mesh"],
+                                                      "pos": fmt(m["pos"]), "quat": fmt(m["quat"])})
+    for lk in ("forearm", "wrist", "flange"):
+        for i, m in enumerate(links[lk]["meshes"]):
+            if m["mesh"] in skip:
+                continue
+            ET.SubElement(bodies[lk], "geom", attrib={"class": "keepout", "name": f"{lk}_keepout_{i}", "mesh": m["mesh"],
+                                                      "pos": fmt(m["pos"]), "quat": fmt(m["quat"])})
 
     # Tool
     tinfo = asm["tools"][tool]
@@ -167,7 +210,7 @@ def build(asm: dict, tool: str, scene: bool = False) -> ET.ElementTree:
         n = tree[lk]
         ratio = n["ratio"]
         eff = gear["efficiency"] if ratio > 1.0 else 1.0
-        fmax = servo["stall_torque_nm"] * ratio * eff
+        fmax, _ = joint_limits(servo, gear, ratio)
         kp = KP_SERVO * ratio ** 2 * eff
         lo, hi = (math.radians(x) for x in n["range_deg"])
         ET.SubElement(actuator, "position", name=n["joint"], joint=n["joint"], kp=fmt(kp), dampratio="1",
@@ -222,6 +265,16 @@ def build(asm: dict, tool: str, scene: bool = False) -> ET.ElementTree:
         ET.SubElement(sensor, "actuatorfrc", name="press_force", actuator="presser")
         ET.SubElement(sensor, "touch", name="fsr", site="fsr")
 
+    for lk in TOOL_LINKS[tool]:
+        for i, m in enumerate(links[lk]["meshes"]):
+            ET.SubElement(bodies[lk], "geom", attrib={"class": "keepout", "name": f"{lk}_keepout_{i}", "mesh": m["mesh"],
+                                                      "pos": fmt(m["pos"]), "quat": fmt(m["quat"])})
+    custom = ET.SubElement(root, "custom")
+    for jn, w in speed_limits.items():
+        ET.SubElement(custom, "numeric", name=f"max_speed_{jn}", data=fmt(w))
+    for c in asm["coupled_limits"]:
+        ET.SubElement(custom, "numeric", name=f"coupled_{c['name']}_deg", data=fmt([c["lo_deg"], c["hi_deg"]]))
+        ET.SubElement(custom, "text", name=f"coupled_{c['name']}_joints", data="+".join(c["joints"]))
     root.append(actuator)
     if len(equality):
         root.append(equality)

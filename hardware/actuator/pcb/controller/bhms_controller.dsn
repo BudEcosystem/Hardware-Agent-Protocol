@@ -26,11 +26,12 @@
     )
     (plane /GND (polygon B.Cu 0  100300 -100300  179700 -100300  179700 -155700  100300 -155700
             100300 -100300))
-    (via "Via[0-1]_600:300_um" "Via[0-1]_800:400_um")
+    (via "Via[0-1]_500:300_um" "Via[0-1]_800:400_um")
     (rule
-      (width 200)
-      (clearance 150)
-      (clearance 37.5 (type smd_smd))
+      (width 150)
+      (clearance 130)
+      (clearance 32.5 (type smd_smd))
+      (clearance 300 (type via_via))
     )
   )
   (placement
@@ -103,10 +104,10 @@
       (place C26 147500 -134500 front 0 (PN 100nF))
       (place C27 153000 -133500 front 0 (PN 100nF))
       (place C5 124000 -105000 front 0 (PN 100nF))
-      (place C40 156250 -127400 front 0 (PN 100nF))
-      (place C41 156250 -131000 front 0 (PN 100nF))
-      (place C43 167750 -131000 front 0 (PN 100nF))
-      (place C44 167750 -127400 front 0 (PN 100nF))
+      (place C40 154000 -127400 front 0 (PN 100nF))
+      (place C41 154000 -131000 front 0 (PN 100nF))
+      (place C43 170000 -131000 front 0 (PN 100nF))
+      (place C44 170000 -127400 front 0 (PN 100nF))
       (place C20 153000 -125000 front 0 (PN 15pF))
     )
     (component "Diode_SMD:D_SOD-123::1"
@@ -127,14 +128,14 @@
       (place C23 129500 -140500 front 90 (PN 100nF))
       (place C7 120800 -105000 front 90 (PN 100nF))
       (place C10 144000 -127500 front 90 (PN 1uF))
-      (place C42 161600 -135750 front 90 (PN 100nF))
-      (place C45 160800 -124250 front 90 (PN 100nF))
-      (place C46 162400 -124250 front 90 (PN 100nF))
-      (place C47 167200 -124250 front 90 (PN 100nF))
-      (place C48 163200 -135750 front 90 (PN 100nF))
-      (place C49 159200 -124250 front 90 (PN 100nF))
-      (place C50 165600 -124250 front 90 (PN 1uF))
-      (place C51 164000 -124250 front 90 (PN 1uF))
+      (place C42 161600 -138000 front 90 (PN 100nF))
+      (place C45 160800 -122000 front 90 (PN 100nF))
+      (place C46 162400 -122000 front 90 (PN 100nF))
+      (place C47 167200 -122000 front 90 (PN 100nF))
+      (place C48 163200 -138000 front 90 (PN 100nF))
+      (place C49 159200 -122000 front 90 (PN 100nF))
+      (place C50 165600 -122000 front 90 (PN 1uF))
+      (place C51 164000 -122000 front 90 (PN 1uF))
       (place C12 177500 -116500 front 90 (PN 100nF))
       (place C19 149200 -121500 front 90 (PN 15pF))
       (place C25 156000 -113000 front 90 (PN 4.7uF))
@@ -1416,9 +1417,9 @@
       (shape (rect F.Cu -980 -1575 980 1575))
       (attach off)
     )
-    (padstack "Via[0-1]_600:300_um"
-      (shape (circle F.Cu 600))
-      (shape (circle B.Cu 600))
+    (padstack "Via[0-1]_500:300_um"
+      (shape (circle F.Cu 500))
+      (shape (circle B.Cu 500))
       (attach off)
     )
     (padstack "Via[0-1]_800:400_um"
@@ -1711,11 +1712,11 @@
       "unconnected-(U1-GPIO23-Pad35)" "unconnected-(U1-GPIO24-Pad36)" "unconnected-(U1-GPIO25-Pad37)"
       "unconnected-(U1-GPIO3-Pad5)" "unconnected-(U1-GPIO9-Pad12)" "unconnected-(U4-NC-Pad4)"
       (circuit
-        (use_via "Via[0-1]_600:300_um")
+        (use_via "Via[0-1]_500:300_um")
       )
       (rule
-        (width 200)
-        (clearance 150)
+        (width 150)
+        (clearance 130)
       )
     )
     (class Power_1mm /V_TOOL
@@ -1724,7 +1725,7 @@
       )
       (rule
         (width 1000)
-        (clearance 300)
+        (clearance 200)
       )
     )
     (class Power_1.5mm /VIN /VIN_F /VIN_RAW /V_SERVO /V_SW
@@ -1733,7 +1734,7 @@
       )
       (rule
         (width 1500)
-        (clearance 300)
+        (clearance 200)
       )
     )
   )

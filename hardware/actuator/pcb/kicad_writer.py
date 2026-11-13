@@ -421,7 +421,7 @@ def _zone(board: Board, net: str, net_id: int, layer: str, fill: list | None) ->
     z = ["zone", ["net", net_id], ["net_name", Q(kname(net))], ["layer", Q(layer)], ["uuid", uid(board.name, "zone", net, layer)],
          ["hatch", "edge", 0.5], ["priority", 0], ["connect_pads", ["clearance", 0.3]], ["min_thickness", 0.25],
          ["filled_areas_thickness", "no"],
-         ["fill", "yes", ["thermal_gap", 0.4], ["thermal_bridge_width", 0.4], ["island_removal_mode", 1],
+         ["fill", "yes", ["thermal_gap", 0.4], ["thermal_bridge_width", 0.4], ["island_removal_mode", 0],
           ["island_area_min", 2.0]],
          ["polygon", pts]]
     if fill:
@@ -435,7 +435,7 @@ def _zone(board: Board, net: str, net_id: int, layer: str, fill: list | None) ->
 
 FAB_RULES = {  # JLCPCB standard 2-layer, 1 oz (checked against their published capabilities)
     "min_track_width": 0.127, "min_clearance": 0.127, "min_via_diameter": 0.45, "min_through_hole_diameter": 0.3,
-    "min_via_annular_width": 0.1, "min_hole_to_hole": 0.5, "min_copper_edge_clearance": 0.3, "min_hole_clearance": 0.15,
+    "min_via_annular_width": 0.1, "min_hole_to_hole": 0.254, "min_copper_edge_clearance": 0.3, "min_hole_clearance": 0.15,
     "min_silk_clearance": 0.0, "min_text_height": 0.8, "min_text_thickness": 0.08, "min_microvia_diameter": 0.2,
     "min_microvia_drill": 0.1, "min_resolved_spokes": 1, "max_error": 0.005, "solder_mask_to_copper_clearance": 0.0,
     "allow_blind_buried_vias": False, "allow_microvias": False, "use_height_for_length_calcs": True,
@@ -444,7 +444,7 @@ FAB_RULES = {  # JLCPCB standard 2-layer, 1 oz (checked against their published 
 
 def write_project(board: Board, path: Path) -> None:
     classes = [{
-        "name": "Default", "clearance": 0.15, "track_width": 0.2, "via_diameter": 0.6, "via_drill": 0.3,
+        "name": "Default", "clearance": 0.13, "track_width": 0.15, "via_diameter": 0.5, "via_drill": 0.3,
         "microvia_diameter": 0.3, "microvia_drill": 0.1, "diff_pair_width": 0.2, "diff_pair_gap": 0.25,
         "diff_pair_via_gap": 0.25, "wire_width": 6, "bus_width": 12, "line_style": 0, "pcb_color": "rgba(0, 0, 0, 0.000)",
         "schematic_color": "rgba(0, 0, 0, 0.000)", "priority": 2147483647,
@@ -453,7 +453,7 @@ def write_project(board: Board, path: Path) -> None:
     widths = sorted(set(board.power_nets.values()))
     for w in widths:
         name = f"Power_{w:g}mm"
-        classes.append({**classes[0], "name": name, "clearance": 0.3, "track_width": w, "via_diameter": 0.8, "via_drill": 0.4,
+        classes.append({**classes[0], "name": name, "clearance": 0.2, "track_width": w, "via_diameter": 0.8, "via_drill": 0.4,
                         "priority": 1})
         for net, wn in board.power_nets.items():
             if wn == w:
@@ -468,8 +468,8 @@ def write_project(board: Board, path: Path) -> None:
                 "rule_severities": {"lib_footprint_issues": "ignore", "lib_footprint_mismatch": "ignore",
                                     "silk_overlap": "ignore", "silk_over_copper": "warning", "silk_edge_clearance": "ignore",
                                     "text_height": "ignore", "text_thickness": "ignore"},
-                "track_widths": [0.0, 0.2, 0.25, 0.4] + widths, "via_dimensions": [{"diameter": 0.0, "drill": 0.0},
-                                                                                     {"diameter": 0.6, "drill": 0.3},
+                "track_widths": [0.0, 0.15, 0.2, 0.25, 0.4] + widths, "via_dimensions": [{"diameter": 0.0, "drill": 0.0},
+                                                                                     {"diameter": 0.5, "drill": 0.3},
                                                                                      {"diameter": 0.8, "drill": 0.4}],
             },
         },

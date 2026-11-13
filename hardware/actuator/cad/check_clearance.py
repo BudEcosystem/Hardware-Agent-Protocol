@@ -1,24 +1,50 @@
 #!/usr/bin/env python3
-"""Exact B-rep interference check of the assembled arm at many poses.
+"""Exact B-rep interference check of the assembled arm.
 
 Every printed part and every servo envelope is placed by forward
 kinematics; each pair of solids on *different* links is intersected with
 OpenCASCADE and any overlap above ``TOL_MM3`` is reported.  Pairs that
 mesh by design (pinion against the driven gear) are excluded and listed.
 
-    python cad/check_clearance.py     # writes cad/out/clearance.json, exit 1 on interference
+Two pose sets are checked, for each of the four tools (tool actuator at a
+random position in its stroke):
+
+* named poses and single-joint sweeps (every joint over its full range in
+  5 deg steps, all others at zero) - these cover the adjacent-link pairs,
+  whose relative pose depends on one joint only;
+* ``N_RANDOM`` seeded random poses over the whole joint box - these cover
+  every pair of links two or more joints apart (tool vs turret/base/
+  forearm, wrist vs base, ...).
+
+A cheap oriented-bounding-box separating-axis test removes almost all
+pairs; the survivors go to the exact OpenCASCADE boolean (cached by the
+relative pose of the two links).
+
+Poses inside every single-joint limit but outside the coupled limits
+``Arm.coupled_limits`` (sums of joint angles, see firmware/INTERFACE.md §3.2)
+are *forbidden*: collisions there are expected and are reported as the
+justification for the limits.  ANY collision
+at an allowed pose, adjacent or not, fails the check (exit 1).
+
+    python cad/check_clearance.py          # writes cad/out/clearance.json
+    python cad/check_clearance.py --derive # also prints the extreme angle sums at which collisions occur
 """
 
 from __future__ import annotations
 
+import concurrent.futures
 import itertools
 import json
+import multiprocessing
+import os
+import random
 import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 
+import numpy as np  # noqa: E402
 from build123d import Location, Part, Pos, Rot  # noqa: E402
 from OCP.BRepGProp import BRepGProp  # noqa: E402
 from OCP.GProp import GProp_GProps  # noqa: E402
@@ -35,7 +61,7 @@ TOOL_LINKS = {"gripper": ["gripper", "gripper_finger_a", "gripper_finger_b"],
               "slider_pusher": ["slider_pusher"]}
 # Gear meshes are line contacts at the pitch point; their phase is not
 # modelled, so these pairs are checked by the gear geometry instead.
-EXCLUDE = {("turret:pinion", "upper_arm:upper_arm"), ("upper_arm:pinion", "forearm:forearm"),
+EXCLUDE = {("turret:pinion_shoulder", "upper_arm:upper_arm"), ("upper_arm:pinion_elbow", "forearm:forearm"),
            ("knob_turner:knob_servo_gear", "knob_output:knob_output_gear"),
            ("gripper:gripper_pinion", "gripper_finger_a:gripper_rack"),
            ("gripper:gripper_pinion", "gripper_finger_b:gripper_rack")}
@@ -104,6 +130,17 @@ def fk(p, q: dict[str, float], tool_q: dict[str, float]) -> dict[str, Location]:
     return loc
 
 
+N_ALLOWED = 2000  # random poses inside the coupled limits (must be collision free)
+N_FORBIDDEN = 500  # random poses outside them (collisions expected)
+N_RANDOM = N_ALLOWED + N_FORBIDDEN
+SEED = 20261113
+SWEEP_STEP_DEG = 5.0
+
+def pitch_sum_ok(p, q: dict[str, float]) -> bool:
+    """Inside every coupled limit of ``Arm.coupled_limits``."""
+    return p.arm.coupled_ok(q)
+
+
 def poses(p) -> list[tuple[str, dict[str, float]]]:
     out = [("zero", {})]
     for j in p.arm.joints:
@@ -113,65 +150,189 @@ def poses(p) -> list[tuple[str, dict[str, float]]]:
         ("reach_forward", {"shoulder_pitch": 90.0, "elbow_pitch": 0.0, "wrist_pitch": 0.0}),
         ("table_pick_near", {"shoulder_pitch": 15.0, "elbow_pitch": 122.0, "wrist_pitch": 40.0}),
         ("table_pick_far", {"shoulder_pitch": 55.0, "elbow_pitch": 95.0, "wrist_pitch": 30.0}),
-        ("folded_back", {"shoulder_pitch": -75.0, "elbow_pitch": 125.0, "wrist_pitch": -100.0}),
+        ("folded_back", {"shoulder_pitch": -20.0, "elbow_pitch": 125.0, "wrist_pitch": -100.0}),
         ("wrist_curl", {"shoulder_pitch": 30.0, "elbow_pitch": 100.0, "wrist_pitch": 100.0}),
         ("wrist_curl_neg", {"shoulder_pitch": 30.0, "elbow_pitch": 100.0, "wrist_pitch": -100.0}),
     ]
+    for j in p.arm.joints:  # single-joint sweeps (adjacent-link pairs)
+        a = j.lower_deg
+        while a <= j.upper_deg + 1e-9:
+            out.append((f"sweep {j.name}={a:.1f}", {j.name: a}))
+            a += SWEEP_STEP_DEG
     return out
 
 
-def check(p, tool: str, tool_q: dict[str, float], solids, pose_list) -> list[dict]:
-    links = ARM_LINKS + TOOL_LINKS[tool]
-    hits = []
-    for pose_name, q in pose_list:
+def random_poses(p, n_allowed: int = N_ALLOWED, n_forbidden: int = N_FORBIDDEN,
+                 seed: int = SEED) -> list[tuple[str, dict[str, float]]]:
+    """Seeded uniform samples of the joint box: ``n_allowed`` inside the coupled
+    pitch limits (these must be collision free) and ``n_forbidden`` outside them
+    (collisions expected: they justify the limits)."""
+    rng = random.Random(seed)
+    inside, outside = [], []
+    while len(inside) < n_allowed or len(outside) < n_forbidden:
+        q = {j.name: rng.uniform(j.lower_deg, j.upper_deg) for j in p.arm.joints}
+        bucket = inside if pitch_sum_ok(p, q) else outside
+        cap = n_allowed if bucket is inside else n_forbidden
+        if len(bucket) < cap:
+            bucket.append(q)
+    return [(f"random{i}", q) for i, q in enumerate(inside + outside)]
+
+
+def tool_states(p, tool: str, rng: random.Random) -> dict[str, float]:
+    t = p.tools
+    if tool == "gripper":
+        return {"gripper": rng.uniform(0.0, t.gripper_stroke)}
+    if tool == "knob_turner":
+        return {"knob": rng.uniform(-180.0, 180.0)}
+    if tool == "button_presser":
+        return {"presser": -rng.uniform(0.0, t.presser_stroke)}
+    return {}
+
+
+def matrix(loc: Location) -> np.ndarray:
+    t = loc.wrapped.Transformation()
+    m = np.eye(4)
+    for i in range(3):
+        for j in range(4):
+            m[i, j] = t.Value(i + 1, j + 1)
+    return m
+
+
+def obb_overlap(ca, ra, ha, cb, rb, hb) -> bool:
+    """Separating-axis test of two oriented boxes (centre, rotation, half extents)."""
+    r = ra.T @ rb
+    ar = np.abs(r) + 1e-9
+    t = ra.T @ (cb - ca)
+    for i in range(3):
+        if abs(t[i]) > ha[i] + hb @ ar[i]:
+            return False
+    for j in range(3):
+        if abs(t[:] @ r[:, j]) > ha @ ar[:, j] + hb[j]:
+            return False
+    for i in range(3):
+        for j in range(3):
+            i1, i2, j1, j2 = (i + 1) % 3, (i + 2) % 3, (j + 1) % 3, (j + 2) % 3
+            if abs(t[i2] * r[i1, j] - t[i1] * r[i2, j]) > ha[i1] * ar[i2, j] + ha[i2] * ar[i1, j] + hb[j1] * ar[i, j2] + hb[j2] * ar[i, j1]:
+                return False
+    return True
+
+
+class Checker:
+    def __init__(self, p, solids) -> None:
+        self.p = p
+        self.solids = solids
+        self.cache: dict[tuple, float] = {}
+        # (link, name, solid, centre, half extents, frame key)
+        self.items: dict[str, list] = {}
+        for lk, lst in solids.items():
+            rows = []
+            for n, s in lst:
+                bb = s.bounding_box()
+                c = np.array([(bb.min.X + bb.max.X) / 2, (bb.min.Y + bb.max.Y) / 2, (bb.min.Z + bb.max.Z) / 2])
+                h = np.array([(bb.max.X - bb.min.X) / 2, (bb.max.Y - bb.min.Y) / 2, (bb.max.Z - bb.min.Z) / 2])
+                rows.append((n, s, c, h, "presser_cam" if n.endswith(":presser_cam") else lk))
+            self.items[lk] = rows
+
+    def pose_hits(self, tool: str, q: dict[str, float], tool_q: dict[str, float], pose_name: str,
+                  pairs_filter) -> list[dict]:
+        p = self.p
+        links = ARM_LINKS + TOOL_LINKS[tool]
         loc = fk(p, q, tool_q)
-        placed = {lk: [(n, (loc["presser_cam"] if n.endswith(":presser_cam") else loc[lk]) * s)
-                       for n, s in solids.get(lk, [])] for lk in links}
-        boxes = {lk: [(n, s, s.bounding_box()) for n, s in v] for lk, v in placed.items()}
+        mats = {k: matrix(v) for k, v in loc.items()}
+        hits = []
         for la, lb in itertools.combinations(links, 2):
-            for (na, sa, ba), (nb, sb, bb) in itertools.product(boxes[la], boxes[lb]):
-                if (na, nb) in EXCLUDE or (nb, na) in EXCLUDE:
-                    continue
-                if (ba.max.X < bb.min.X or bb.max.X < ba.min.X or ba.max.Y < bb.min.Y or bb.max.Y < ba.min.Y
-                        or ba.max.Z < bb.min.Z or bb.max.Z < ba.min.Z):
-                    continue
-                v = volume(sa & sb)
-                if v > TOL_MM3:
-                    # Within two joints of each other a collision is a design
-                    # defect; farther apart it is a workspace self-collision
-                    # that motion planning must avoid (MJCF has the geometry).
-                    kind = "defect" if hops(la, lb) <= 2 else "self_collision"
-                    hits.append({"tool": tool, "pose": pose_name, "a": na, "b": nb, "overlap_mm3": round(v, 2),
-                                 "kind": kind})
-    return hits
+            if not pairs_filter(la, lb):
+                continue
+            for na, sa, ca, ha, fa in self.items.get(la, []):
+                Ta = mats[fa]
+                wa = Ta[:3, :3] @ ca + Ta[:3, 3]
+                for nb, sb, cb, hb, fb in self.items.get(lb, []):
+                    if (na, nb) in EXCLUDE or (nb, na) in EXCLUDE:
+                        continue
+                    Tb = mats[fb]
+                    wb = Tb[:3, :3] @ cb + Tb[:3, 3]
+                    if not obb_overlap(wa, Ta[:3, :3], ha, wb, Tb[:3, :3], hb):
+                        continue
+                    rel = np.linalg.inv(Ta) @ Tb
+                    key = (na, nb, tuple(np.round(rel, 3).ravel()))
+                    v = self.cache.get(key)
+                    if v is None:
+                        v = volume((loc[fa] * sa) & (loc[fb] * sb))
+                        self.cache[key] = v
+                    if v > TOL_MM3:
+                        hits.append({"tool": tool, "pose": pose_name, "a": na, "b": nb, "overlap_mm3": round(v, 2),
+                                     "hops": hops(la, lb), "q": {k: round(x, 2) for k, x in q.items()},
+                                     "tool_q": tool_q})
+        return hits
+
+
+TOOL_CONFIGS = {"gripper": [{"gripper": 0.0}, {"gripper": 30.0}], "knob_turner": [{"knob": 0.0}],
+                "button_presser": [{"presser": 0.0}, {"presser": -8.0}], "slider_pusher": [{}]}
+
+
+_WORKER: dict = {}
+
+
+def _init_worker() -> None:
+    """Per-process state: the solids are built once in every worker."""
+    p = DEFAULT
+    _WORKER["chk"] = Checker(p, link_solids(p))
+
+
+def _run_task(task) -> list[dict]:
+    tool, name, q, tq, mode = task
+    pairs = (lambda a, b: True) if mode == "all" else (lambda a, b: hops(a, b) >= 2)
+    return _WORKER["chk"].pose_hits(tool, q, tq, name, pairs)
 
 
 def main() -> int:
+    derive = "--derive" in sys.argv
     p = DEFAULT
-    solids = link_solids(p)
-    all_hits = []
-    pose_list = poses(p)
-    n_checks = 0
-    for tool, tq_list in (("gripper", [{"gripper": 0.0}, {"gripper": p.tools.gripper_stroke}]),
-                          ("knob_turner", [{"knob": 0.0}]),
-                          ("button_presser", [{"presser": 0.0}, {"presser": -p.tools.presser_stroke}]),
-                          ("slider_pusher", [{}])):
-        for tq in tq_list:
-            hits = check(p, tool, tq, solids, pose_list)
-            n_checks += len(pose_list)
+    jobs = int(os.environ.get("CLEARANCE_JOBS", "6"))  # worker processes (keep <= 8 on the shared machine)
+    rng = random.Random(SEED + 1)
+    tasks = []
+    n_checks = {"named_and_sweeps": 0, "random": 0}
+    for tool, cfgs in TOOL_CONFIGS.items():
+        for pose_name, q in poses(p):
+            for tq in cfgs:
+                n_checks["named_and_sweeps"] += 1
+                tasks.append((tool, pose_name, q, tq, "all"))
+    for pose_name, q in random_poses(p):
+        for tool in TOOL_CONFIGS:
+            n_checks["random"] += 1
+            tasks.append((tool, pose_name, q, tool_states(p, tool, rng), "far"))
+    hits_allowed, hits_forbidden = [], []
+    ctx = multiprocessing.get_context("spawn")
+    with concurrent.futures.ProcessPoolExecutor(max_workers=jobs, mp_context=ctx, initializer=_init_worker) as pool:
+        for task, hits in zip(tasks, pool.map(_run_task, tasks, chunksize=25)):
             for h in hits:
-                h["tool_q"] = tq
-                print(f"{h['kind'].upper():14s} {h['tool']:15s} {h['pose']:22s} {h['a']} <-> {h['b']}: {h['overlap_mm3']} mm3")
-            all_hits += hits
-    defects = [h for h in all_hits if h["kind"] == "defect"]
-    report = {"tolerance_mm3": TOL_MM3, "poses": [n for n, _ in pose_list], "pose_tool_combinations": n_checks,
-              "excluded_pairs": sorted(list(map(list, EXCLUDE))), "defects": defects,
-              "self_collisions": [h for h in all_hits if h["kind"] != "defect"],
+                (hits_allowed if pitch_sum_ok(p, task[2]) else hits_forbidden).append(h)
+    for h in hits_allowed:
+        print(f"COLLISION {h['tool']:15s} {h['pose']:26s} {h['a']} <-> {h['b']}: {h['overlap_mm3']} mm3  q={h['q']}")
+    forbidden_poses = sorted({h["pose"] for h in hits_forbidden})
+    sums = lambda hs: sorted({round(h["q"].get("shoulder_pitch", 0) + h["q"].get("elbow_pitch", 0) + h["q"].get("wrist_pitch", 0), 1)
+                              for h in hs})  # noqa: E731
+    report = {"tolerance_mm3": TOL_MM3, "n_random_poses": N_RANDOM, "seed": SEED, "sweep_step_deg": SWEEP_STEP_DEG,
+              "checks": n_checks, "worker_processes": jobs,
+              "coupled_limits": [{"name": c.name, "joints": list(c.joints), "lo_deg": c.lo, "hi_deg": c.hi} for c in p.arm.coupled_limits],
+              "excluded_pairs": sorted(list(map(list, EXCLUDE))),
+              "collisions_at_allowed_poses": hits_allowed,
+              "forbidden_pose_collisions": {"poses_with_hits": len(forbidden_poses),
+                                            "pitch_sum_range_deg": [sums(hits_forbidden)[0], sums(hits_forbidden)[-1]] if hits_forbidden else None,
+                                            "pairs": sorted({f"{h['tool']}: {h['a']} <-> {h['b']}" for h in hits_forbidden})},
               "joint_limits_deg": {j.name: [j.lower_deg, j.upper_deg] for j in p.arm.joints}}
+    if derive:
+        every = hits_allowed + hits_forbidden
+        report["derive"] = {}
+        for c in p.arm.coupled_limits:
+            sums_c = sorted(round(sum(h["q"].get(j, 0.0) for j in c.joints), 1) for h in every)
+            report["derive"][c.name] = {"min_sum_at_hit": sums_c[0] if sums_c else None, "max_sum_at_hit": sums_c[-1] if sums_c else None}
+        print("derive (extreme joint sums over all colliding poses):", report["derive"])
     (HERE / "out" / "clearance.json").write_text(json.dumps(report, indent=1))
-    print(f"{n_checks} pose/tool combinations, {len(defects)} design defects, "
-          f"{len(all_hits) - len(defects)} workspace self-collisions")
-    return 1 if defects else 0
+    print(f"{n_checks['named_and_sweeps']} named/sweep + {n_checks['random']} random pose/tool combinations; "
+          f"{len(hits_allowed)} collisions at allowed poses; {len(hits_forbidden)} (in {len(forbidden_poses)} poses) at "
+          f"poses forbidden by the coupled limits {[(c.name, c.lo, c.hi) for c in p.arm.coupled_limits]}")
+    return 1 if hits_allowed else 0
 
 
 if __name__ == "__main__":

@@ -1,9 +1,9 @@
 {
- "parts": 33,
+ "parts": 34,
  "failures": 0,
  "totals": {
-  "mass_model_g": 1571.7587888379567,
-  "print_time_h_est": 51.34483776570706
+  "mass_model_g": 1575.904406022583,
+  "print_time_h_est": 51.47437211093349
  },
  "results": {
   "base_plate": {
@@ -294,7 +294,7 @@
    "print_time_h_est": 0.1489400145721682,
    "problems": []
   },
-  "pinion": {
+  "pinion_elbow": {
    "watertight": true,
    "winding_consistent": true,
    "is_volume": true,
@@ -305,9 +305,25 @@
    "euler_number": -6,
    "stl_bytes": 194184,
    "mass_model_g": 10.678562042171306,
-   "qty": 2,
+   "qty": 1,
    "material": "PETG",
    "print_time_h_est": 0.373663355898366,
+   "problems": []
+  },
+  "pinion_shoulder": {
+   "watertight": true,
+   "winding_consistent": true,
+   "is_volume": true,
+   "bodies": 1,
+   "triangles": 3882,
+   "volume_cm3_mesh": 6.154686672218405,
+   "volume_rel_err": 0.00017509434694428237,
+   "euler_number": -6,
+   "stl_bytes": 194184,
+   "mass_model_g": 6.993419592551506,
+   "qty": 1,
+   "material": "PETG",
+   "print_time_h_est": 0.25851704763628003,
    "problems": []
   },
   "pod_lid": {
@@ -491,15 +507,15 @@
    "winding_consistent": true,
    "is_volume": true,
    "bodies": 1,
-   "triangles": 5640,
-   "volume_cm3_mesh": 150.08398721997895,
-   "volume_rel_err": 0.000828359828826241,
+   "triangles": 5684,
+   "volume_cm3_mesh": 150.03736870319534,
+   "volume_rel_err": 0.0008246060921286907,
    "euler_number": -18,
-   "stl_bytes": 282084,
-   "mass_model_g": 113.41385910028953,
+   "stl_bytes": 284284,
+   "mass_model_g": 113.34072997251627,
    "qty": 1,
    "material": "PETG",
-   "print_time_h_est": 3.7635317960345436,
+   "print_time_h_est": 3.761246796416582,
    "problems": []
   },
   "upper_arm": {
@@ -507,15 +523,15 @@
    "winding_consistent": true,
    "is_volume": true,
    "bodies": 1,
-   "triangles": 6982,
-   "volume_cm3_mesh": 241.7214249411982,
-   "volume_rel_err": 8.982891040106565e-05,
+   "triangles": 7954,
+   "volume_cm3_mesh": 253.43863528300022,
+   "volume_rel_err": 8.567832860818794e-05,
    "euler_number": -18,
-   "stl_bytes": 349184,
-   "mass_model_g": 156.40558159748392,
+   "stl_bytes": 397784,
+   "mass_model_g": 164.30947035950348,
    "qty": 1,
    "material": "PETG",
-   "print_time_h_est": 5.032480208645292,
+   "print_time_h_est": 5.279445861751765,
    "problems": []
   },
   "wrist_bracket": {

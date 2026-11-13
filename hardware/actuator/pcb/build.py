@@ -32,6 +32,7 @@ from kicad_writer import write_pcb, write_project, write_schematic  # noqa: E402
 from kicadlib import courtyard_bbox  # noqa: E402
 from sexpr import find, find_all, loads  # noqa: E402
 
+FAB_HOLE_TO_HOLE = 0.5  # mm, JLCPCB different-net hole spacing (drc.FAB)
 BOARDS = {"controller": controller.build, "tool_contact": tool_contact.build}
 
 
@@ -155,6 +156,56 @@ def parse_ses(ses: Path, origin: tuple[float, float]) -> tuple[list[dict], list[
     return tracks, vias
 
 
+def _polys_by_net(fills: dict) -> dict[str, list]:
+    out: dict[str, list] = {}
+    for (net, layer), polys in fills.items():
+        for fp in polys:
+            pts = [(float(xy[1]), float(xy[2])) for xy in find_all(find(fp, "pts"), "xy")]
+            if len(pts) >= 3:
+                out.setdefault(net, []).append((layer, pts))
+    return out
+
+
+def finish_board(b, res: Resolved, pcb: Path, tracks: list, vias: list, rounds: int = 8):
+    """Completion pass (pcb/finish.py): fix via pairs that violate the fab hole-to-hole rule, join the
+    nets the router left open (with rip-up of blocking nets), then stitch the ground pours with vias,
+    re-filling the pours after each round.  Returns the new track/via lists (board coordinates) and a log."""
+    import finish
+    from drc import load_items
+
+    ox, oy = b.origin
+    log: list[str] = []
+
+    def to_board(ts, vs):
+        return ([{**t, "x1": t["x1"] - ox, "y1": t["y1"] - oy, "x2": t["x2"] - ox, "y2": t["y2"] - oy} for t in ts],
+                [{**v, "x": v["x"] - ox, "y": v["y"] - oy} for v in vs])
+
+    write_pcb(b, res, pcb, [], [], zone_layers=())
+    items, holes, pads_by_net, _zones, edge = load_items(pcb)
+    state = finish.State(items, holes, pads_by_net, edge, b.zone_nets, b.power_nets, log)
+    state.tracks = [{**t, "x1": t["x1"] + ox, "y1": t["y1"] + oy, "x2": t["x2"] + ox, "y2": t["y2"] + oy} for t in tracks]
+    state.vias = [{**v, "x": v["x"] + ox, "y": v["y"] + oy} for v in vias]
+    for _ in range(6):  # via pairs closer than the hole-to-hole rule: rip up one via, re-route below
+        if not state.repair_holes():
+            break
+    state.complete_signals()
+    n_spur = state.prune_spurs()
+    log.append(f"pruned {n_spur} dangling track segments")
+    for rnd in range(rounds):
+        tb, vb = to_board(state.tracks, state.vias)
+        write_pcb(b, res, pcb, tb, vb)
+        fills = fill_zones(pcb)
+        polys = {n: p for n, p in _polys_by_net(fills).items() if n in b.zone_nets}
+        made = finish.stitch_pours(state, polys)
+        log.append(f"stitching round {rnd + 1}: {made} connections")
+        if not made:
+            break
+    n_spur = state.prune_spurs()
+    log.append(f"final prune: {n_spur} dangling track segments")
+    tb, vb = to_board(state.tracks, state.vias)
+    return tb, vb, log
+
+
 def fill_zones(pcb: Path) -> dict:
     """Fill copper zones with pcbnew and return the filled polygons per
     (net, layer) as s-expressions to embed into the KiCad 8 file."""
@@ -191,6 +242,15 @@ def make_dsn(name: str) -> Path:
     write_pcb(b, res, pcb, zone_layers=("B.Cu",))
     dsn = d / f"{b.name}.dsn"
     export_dsn(pcb, dsn)
+    # Specctra has no hole-to-hole rule: JLCPCB wants 0.5 mm between the holes of
+    # different nets, i.e. (0.5 - (via - drill)) = 0.3 mm of copper gap between
+    # 0.5/0.3 mm vias.  The default class gets that as a via_via clearance.
+    text = dsn.read_text()
+    gap_um = round(1000 * (FAB_HOLE_TO_HOLE - (0.5 - 0.3)))
+    patched = text.replace("(clearance 32.5 (type smd_smd))", f"(clearance 32.5 (type smd_smd))\n      (clearance {gap_um} (type via_via))", 1)
+    if patched == text:
+        raise RuntimeError("could not add the via_via clearance to the DSN (exporter format changed?)")
+    dsn.write_text(patched)
     return dsn
 
 
@@ -227,9 +287,14 @@ def route(name: str, run: bool = True) -> None:
     # pcbnew's Specctra export writes coordinates in um with y inverted and
     # an offset to the board origin; recover it from a component placement.
     tracks, vias = parse_ses(ses, _dsn_origin(dsn, res))
+    n_router = (len(tracks), len(vias))
+    tracks, vias, finish_log = finish_board(b, res, pcb, tracks, vias)
     write_pcb(b, res, pcb, tracks, vias)
     fills = fill_zones(pcb)
     write_pcb(b, res, pcb, tracks, vias, fills)
+    (d / "finish.log").write_text("\n".join(finish_log) + "\n")
+    print(f"[{name}] router: {n_router[0]} segments, {n_router[1]} vias; completion pass added "
+          f"{len(tracks) - n_router[0]} segments, {len(vias) - n_router[1]} vias ({len(finish_log)} log lines, pcb/{name}/finish.log)")
     (d / "routing.json").write_text(json.dumps({"tracks": len(tracks), "vias": len(vias),
                                                  "track_length_mm": sum(((t["x2"] - t["x1"]) ** 2 + (t["y2"] - t["y1"]) ** 2) ** 0.5
                                                                         for t in tracks)}, indent=1))
@@ -264,36 +329,53 @@ def kicad_cli() -> str | None:
     return shutil.which("kicad-cli")
 
 
+class ToolMissing(RuntimeError):
+    pass
+
+
+def allow_no_kicad() -> bool:
+    return os.environ.get("ALLOW_NO_KICAD") == "1"
+
+
 def kicad_checks(name: str) -> dict:
+    """Run kicad-cli ERC and DRC.  A missing kicad-cli is a failure unless
+    ALLOW_NO_KICAD=1, in which case the result says ``skipped``."""
     cli = kicad_cli()
     d = out_dir(name)
     b = BOARDS[name]()
-    out = {"kicad_cli": None}
     if cli is None:
-        return out
+        if not allow_no_kicad():
+            raise ToolMissing("kicad-cli not found: install KiCad 10 (or set ALLOW_NO_KICAD=1 to skip the KiCad checks, "
+                              "which is reported as SKIPPED)")
+        return {"kicad_cli": None, "skipped": True}
+    out: dict = {"kicad_cli": None, "skipped": False}
     ver = subprocess.run([cli, "version"], capture_output=True, text=True).stdout.strip().splitlines()[-1]
     out["kicad_cli"] = ver
     sch = d / f"{b.name}.kicad_sch"
     pcb = d / f"{b.name}.kicad_pcb"
     erc_json = d / "erc.json"
     drc_json = d / "drc.json"
-    subprocess.run([cli, "sch", "erc", "--format", "json", "--severity-all", "-o", str(erc_json), str(sch)],
-                   capture_output=True, text=True)
-    subprocess.run([cli, "pcb", "drc", "--format", "json", "--severity-all", "--schematic-parity", "-o", str(drc_json),
-                    str(pcb)], capture_output=True, text=True)
-    for key, path in (("erc", erc_json), ("drc", drc_json)):
-        if path.exists():
-            data = json.loads(path.read_text())
-            items = []
-            for sec in ("violations", "unconnected_items", "schematic_parity"):
-                for v in data.get(sec, []):
-                    items.append((sec, v.get("severity"), v.get("type"), v.get("description")))
-            for sheet in data.get("sheets", []):
-                for v in sheet.get("violations", []):
-                    items.append(("violations", v.get("severity"), v.get("type"), v.get("description")))
-            out[key] = {"errors": sum(1 for i in items if i[1] == "error"),
-                        "warnings": sum(1 for i in items if i[1] == "warning"),
-                        "by_type": _count(items)}
+    for path in (erc_json, drc_json):
+        path.unlink(missing_ok=True)
+    r1 = subprocess.run([cli, "sch", "erc", "--format", "json", "--severity-all", "-o", str(erc_json), str(sch)],
+                        capture_output=True, text=True)
+    r2 = subprocess.run([cli, "pcb", "drc", "--format", "json", "--severity-all", "--schematic-parity", "-o", str(drc_json),
+                         str(pcb)], capture_output=True, text=True)
+    for key, path, r in (("erc", erc_json, r1), ("drc", drc_json, r2)):
+        if not path.exists():
+            raise RuntimeError(f"kicad-cli {key} produced no report (exit {r.returncode}): {r.stderr[-500:]}")
+        data = json.loads(path.read_text())
+        items = []
+        for sec in ("violations", "unconnected_items", "schematic_parity"):
+            for v in data.get(sec, []):
+                items.append((sec, v.get("severity"), v.get("type"), v.get("description")))
+        for sheet in data.get("sheets", []):
+            for v in sheet.get("violations", []):
+                items.append(("violations", v.get("severity"), v.get("type"), v.get("description")))
+        out[key] = {"errors": sum(1 for i in items if i[1] == "error"),
+                    "warnings": sum(1 for i in items if i[1] == "warning"),
+                    "unconnected": sum(1 for i in items if i[0] == "unconnected_items"),
+                    "by_type": _count(items)}
     return out
 
 
@@ -305,16 +387,47 @@ def _count(items) -> dict:
     return dict(sorted(c.items()))
 
 
-def fab(name: str) -> None:
-    cli = kicad_cli()
-    if cli is None:
-        print("kicad-cli not available: no Gerbers produced")
-        return
+def known_open_items(name: str) -> dict:
+    """Acknowledged unfinished routing: exact scripted-DRC messages and the
+    exact KiCad unconnected-item count.  Empty for a finished board."""
+    p = HERE / name / "known_open.json"
+    if not p.exists():
+        return {"messages": [], "kicad_unconnected": 0}
+    data = json.loads(p.read_text())
+    return {"messages": data.get("messages", []), "kicad_unconnected": int(data.get("kicad_unconnected", 0))}
+
+
+def fab(name: str) -> bool:
+    """Gerber/drill/position/netlist/PDF export with kicad-cli.  Returns
+    True on success.  Refuses to emit fabrication files while the board has
+    known open items: removes any stale fab/ and writes DO_NOT_FABRICATE.md."""
     d = out_dir(name)
     b = BOARDS[name]()
+    fabd = d / "fab"
+    guard = d / "DO_NOT_FABRICATE.md"
+    ko = known_open_items(name)
+    if ko["messages"] or ko["kicad_unconnected"]:
+        if fabd.exists():
+            shutil.rmtree(fabd)
+        guard.write_text(
+            f"# DO NOT FABRICATE: {b.name}\n\n"
+            "This board is not completely routed, so no Gerber/drill files are generated.\n"
+            f"Open items (pcb/{name}/known_open.json):\n\n"
+            + "".join(f"* {m}\n" for m in ko["messages"])
+            + f"\nKiCad DRC reports {ko['kicad_unconnected']} unconnected items.\n\n"
+            "Finish the routing, empty known_open.json and re-run `pcb/build.py fab`.\n")
+        print(f"[{name}] DO NOT FABRICATE: known open items, fab outputs not generated ({guard.name} written)")
+        return True
+    guard.unlink(missing_ok=True)
+    cli = kicad_cli()
+    if cli is None:
+        if allow_no_kicad():
+            print(f"[{name}] SKIPPED: kicad-cli not available, no Gerbers produced (ALLOW_NO_KICAD=1)")
+            return True
+        print(f"[{name}] FAILED: kicad-cli not found, no Gerbers produced")
+        return False
     pcb = d / f"{b.name}.kicad_pcb"
     sch = d / f"{b.name}.kicad_sch"
-    fabd = d / "fab"
     if fabd.exists():
         shutil.rmtree(fabd)
     fabd.mkdir()
@@ -330,18 +443,19 @@ def fab(name: str) -> None:
         [cli, "pcb", "export", "pdf", "--layers", "F.Cu,B.Cu,Edge.Cuts,F.SilkS", "--mode-single", "-o",
          str(d / f"{b.name}-layout.pdf"), str(pcb)],
     ]
+    ok = True
     for cmd in cmds:
         r = subprocess.run(cmd, capture_output=True, text=True)
         if r.returncode != 0:
+            ok = False
             print("FAILED:", " ".join(cmd), r.stdout[-2000:], r.stderr[-2000:])
+    needed = [f"{b.name}-F_Cu.gtl", f"{b.name}-B_Cu.gbl", f"{b.name}-Edge_Cuts.gm1", f"{b.name}-PTH.drl"]
+    missing = [n for n in needed if not (fabd / n).exists()]
+    if missing:
+        ok = False
+        print(f"FAILED: missing fabrication outputs {missing}")
     print(f"[{name}] fab outputs: {sorted(p.name for p in fabd.iterdir())}")
-
-
-def _known_open(name: str) -> list[str]:
-    """Prefixes of scripted-DRC messages that are acknowledged as unfinished
-    routing (the autorouter could not complete them); anything else fails."""
-    p = HERE / name / "known_open.json"
-    return json.loads(p.read_text())["prefixes"] if p.exists() else []
+    return ok
 
 
 def main() -> int:
@@ -361,22 +475,60 @@ def main() -> int:
             from drc import run_checks
 
             report = run_checks(name, BOARDS[name])
-            report["kicad"] = kicad_checks(name)
-            (out_dir(name) / "check_report.json").write_text(json.dumps(report, indent=1))
+            try:
+                report["kicad"] = kicad_checks(name)
+            except ToolMissing as e:
+                print(f"[{name}] FAILED: {e}")
+                report["kicad"] = {"kicad_cli": None, "skipped": False, "error": str(e)}
+                rc = 1
+            ko = known_open_items(name)
+            fresh = [v for v in report["drc_violations"] if v not in ko["messages"]]
+            vanished = [m for m in ko["messages"] if m not in report["drc_violations"]]  # known_open.json must stay exact
+            report["accepted_known_open"] = [v for v in report["drc_violations"] if v in ko["messages"]]
+            problems = [f"scripted DRC: {v}" for v in fresh] + [f"known_open.json is stale (no longer reported): {m}" for m in vanished]
+            problems += [f"netlist ERC: {e}" for e in report["erc_problems"]]
             k = report["kicad"]
-            print(f"[{name}] scripted DRC violations: {len(report['drc_violations'])}, ERC problems: {len(report['erc_problems'])}; "
-                  f"kicad-cli: ERC {k.get('erc', {}).get('errors')} err / DRC {k.get('drc', {}).get('errors')} err")
-            known = _known_open(name)
-            fresh = [v for v in report["drc_violations"] if not any(v.startswith(k) for k in known)]
-            report["accepted_known_open"] = [v for v in report["drc_violations"] if v not in fresh]
+            if k.get("skipped"):
+                print(f"[{name}] SKIPPED: KiCad ERC/DRC (kicad-cli missing, ALLOW_NO_KICAD=1)")
+            elif "erc" in k:
+                if k["erc"]["errors"] or k["erc"]["warnings"]:
+                    problems.append(f"KiCad ERC: {k['erc']['errors']} errors, {k['erc']['warnings']} warnings: {k['erc']['by_type']}")
+                other = k["drc"]["errors"] - k["drc"]["unconnected"]
+                if other:
+                    problems.append(f"KiCad DRC: {other} non-connectivity errors: {k['drc']['by_type']}")
+                if k["drc"]["unconnected"] != ko["kicad_unconnected"]:
+                    problems.append(f"KiCad DRC: {k['drc']['unconnected']} unconnected items (known_open.json allows {ko['kicad_unconnected']})")
+            report["problems"] = problems
             (out_dir(name) / "check_report.json").write_text(json.dumps(report, indent=1))
-            if report["accepted_known_open"]:
-                print(f"[{name}] WARNING: {len(report['accepted_known_open'])} KNOWN OPEN items (pcb/{name}/known_open.json): "
-                      "board is NOT fabrication-ready until they are routed by hand")
-            if fresh or report["erc_problems"]:
+            ke = k.get("erc", {})
+            kd = k.get("drc", {})
+            print(f"[{name}] scripted DRC findings: {len(report['drc_violations'])}, ERC problems: {len(report['erc_problems'])}; "
+                  f"kicad-cli: ERC {ke.get('errors')} err {ke.get('warnings')} warn / DRC {kd.get('errors')} err "
+                  f"({kd.get('unconnected')} unconnected) {kd.get('warnings')} warn")
+            if report["accepted_known_open"] or ko["kicad_unconnected"]:
+                print(f"[{name}] WARNING: board is NOT fully routed ({len(ko['messages'])} known open items, "
+                      f"{ko['kicad_unconnected']} KiCad unconnected); do not fabricate")
+            for pr in problems:
+                print(f"[{name}] FAILED: {pr}")
+            if problems:
                 rc = 1
         if step in ("fab", "all"):
-            fab(name)
+            if not fab(name):
+                rc = 1
+        if step == "summary":
+            rep = json.loads((out_dir(name) / "check_report.json").read_text())
+            k = rep.get("kicad", {})
+            if k.get("skipped"):
+                print(f"[{name}] SKIPPED KiCad ERC/DRC (ALLOW_NO_KICAD=1); scripted DRC findings {len(rep['drc_violations'])}")
+            else:
+                e, d = k["erc"], k["drc"]
+                ko = known_open_items(name)
+                print(f"[{name}] KiCad {k['kicad_cli']}: ERC {e['errors']} err/{e['warnings']} warn; DRC {d['errors']} err "
+                      f"({d['unconnected']} unconnected)/{d['warnings']} warn; scripted DRC findings {len(rep['drc_violations'])}; "
+                      f"known open items {len(ko['messages'])}; fab outputs "
+                      f"{'NOT generated (DO_NOT_FABRICATE.md)' if (out_dir(name) / 'DO_NOT_FABRICATE.md').exists() else 'present'}")
+            if rep.get("problems"):
+                rc = 1
     return rc
 
 

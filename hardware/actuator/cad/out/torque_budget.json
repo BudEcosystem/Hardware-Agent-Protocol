@@ -1,141 +1,599 @@
 {
- "case": "outstretched horizontal, 250 g rated load (tool included) at 50 mm beyond flange",
- "reach_to_flange_m": 0.4,
- "joints": {
-  "shoulder_pitch": {
-   "joint_torque_nm": 2.3216406512174093,
-   "ratio": 2.0,
-   "efficiency": 0.92,
-   "servo_torque_nm": 1.2617612234877225,
-   "required_with_2x_nm": 2.523522446975445,
-   "stall_nm": 2.94,
-   "margin_vs_stall": 2.3300763609404167,
-   "rated_continuous_nm": 0.98,
-   "within_rated_continuous": false,
-   "holding_current_a_est": 1.308760307284643,
-   "pass": true,
-   "contributions": [
-    {
-     "link": "upper_arm",
-     "mass_kg": 0.29872767262245437,
-     "lever_m": 0.08444567539850648,
-     "torque_nm": 0.2474696113340538
+ "cases": {
+  "gripper + 250 g object (rated, R13)": {
+   "tool": "gripper",
+   "tool_mass_g": 158.87246961065145,
+   "tool_com_mm": 49.74530004293011,
+   "object_g": 250.0,
+   "reach_to_flange_m": 0.4,
+   "joints": {
+    "shoulder_pitch": {
+     "joint_torque_nm": 3.0714288247866968,
+     "ratio": 3.0,
+     "efficiency": 0.92,
+     "servo_torque_nm": 1.1128365307198176,
+     "required_with_2x_nm": 2.225673061439635,
+     "stall_nm": 2.94,
+     "margin_vs_stall": 2.641897456491939,
+     "rated_continuous_nm": 0.98,
+     "within_rated_continuous": false,
+     "holding_current_a_est": 1.17199273229371,
+     "pass": true,
+     "contributions": [
+      {
+       "link": "upper_arm",
+       "mass_kg": 0.3066315613844739,
+       "lever_m": 0.08220001857430877,
+       "torque_nm": 0.24726222760488867
+      },
+      {
+       "link": "forearm",
+       "mass_kg": 0.21677293547842486,
+       "lever_m": 0.24033102604925327,
+       "torque_nm": 0.511074140251769
+      },
+      {
+       "link": "wrist",
+       "mass_kg": 0.09775016478212266,
+       "lever_m": 0.36249270935607136,
+       "torque_nm": 0.34760481352508465
+      },
+      {
+       "link": "flange",
+       "mass_kg": 0.02847874466364189,
+       "lever_m": 0.40041697155116046,
+       "torque_nm": 0.11186708610650169
+      },
+      {
+       "link": "tool (gripper)",
+       "mass_kg": 0.15887246961065146,
+       "lever_m": 0.4497453000429301,
+       "torque_nm": 0.7009455572984528
+      },
+      {
+       "link": "carried object",
+       "mass_kg": 0.25,
+       "lever_m": 0.47000000000000003,
+       "torque_nm": 1.1526750000000001
+      }
+     ]
     },
-    {
-     "link": "forearm",
-     "mass_kg": 0.21677293547842486,
-     "lever_m": 0.24033102604925327,
-     "torque_nm": 0.511074140251769
+    "elbow_pitch": {
+     "joint_torque_nm": 1.4965069325761862,
+     "ratio": 2.0,
+     "efficiency": 0.92,
+     "servo_torque_nm": 0.8133189850957533,
+     "required_with_2x_nm": 1.6266379701915066,
+     "stall_nm": 2.94,
+     "margin_vs_stall": 3.6148178683593244,
+     "rated_continuous_nm": 0.98,
+     "within_rated_continuous": true,
+     "holding_current_a_est": 0.8969255985573245,
+     "pass": true,
+     "contributions": [
+      {
+       "link": "forearm",
+       "mass_kg": 0.21677293547842486,
+       "lever_m": 0.06033102604925329,
+       "torque_nm": 0.12829649078396638
+      },
+      {
+       "link": "wrist",
+       "mass_kg": 0.09775016478212266,
+       "lever_m": 0.18249270935607134,
+       "torque_nm": 0.17499757255281245
+      },
+      {
+       "link": "flange",
+       "mass_kg": 0.02847874466364189,
+       "lever_m": 0.2204169715511605,
+       "torque_nm": 0.06157931877944284
+      },
+      {
+       "link": "tool (gripper)",
+       "mass_kg": 0.15887246961065146,
+       "lever_m": 0.2697453000429301,
+       "torque_nm": 0.4204085504599644
+      },
+      {
+       "link": "carried object",
+       "mass_kg": 0.25,
+       "lever_m": 0.29000000000000004,
+       "torque_nm": 0.7112250000000001
+      }
+     ]
     },
-    {
-     "link": "wrist",
-     "mass_kg": 0.09775016478212266,
-     "lever_m": 0.36249270935607136,
-     "torque_nm": 0.34760481352508465
+    "wrist_pitch": {
+     "joint_torque_nm": 0.6333022077961379,
+     "ratio": 1.0,
+     "efficiency": 1.0,
+     "servo_torque_nm": 0.6333022077961379,
+     "required_with_2x_nm": 1.2666044155922758,
+     "stall_nm": 2.94,
+     "margin_vs_stall": 4.64233341334947,
+     "rated_continuous_nm": 0.98,
+     "within_rated_continuous": true,
+     "holding_current_a_est": 0.7316040683842083,
+     "pass": true,
+     "contributions": [
+      {
+       "link": "wrist",
+       "mass_kg": 0.09775016478212266,
+       "lever_m": 0.04249270935607133,
+       "torque_nm": 0.040747496241045164
+      },
+      {
+       "link": "flange",
+       "mass_kg": 0.02847874466364189,
+       "lever_m": 0.08041697155116045,
+       "torque_nm": 0.022466610858397046
+      },
+      {
+       "link": "tool (gripper)",
+       "mass_kg": 0.15887246961065146,
+       "lever_m": 0.1297453000429301,
+       "torque_nm": 0.20221310069669562
+      },
+      {
+       "link": "carried object",
+       "mass_kg": 0.25,
+       "lever_m": 0.15000000000000002,
+       "torque_nm": 0.36787500000000006
+      }
+     ]
     },
-    {
-     "link": "flange",
-     "mass_kg": 0.02847874466364189,
-     "lever_m": 0.40041697155116046,
-     "torque_nm": 0.11186708610650169
+    "base_yaw": {
+     "joint_torque_nm": 0.0,
+     "ratio": 1.0,
+     "servo_torque_nm": 0.0,
+     "margin_vs_stall": null,
+     "pass": true,
+     "note": "no static gravity load; dynamic only"
     },
-    {
-     "link": "payload (incl. tool)",
-     "mass_kg": 0.25,
-     "lever_m": 0.45,
-     "torque_nm": 1.103625
+    "wrist_roll": {
+     "joint_torque_nm": 0.0,
+     "ratio": 1.0,
+     "servo_torque_nm": 0.0,
+     "margin_vs_stall": null,
+     "pass": true,
+     "note": "no static gravity load; dynamic only"
     }
-   ]
+   },
+   "worst_case_holding_current_a_est": 3.100522399235243,
+   "pass": true
   },
-  "elbow_pitch": {
-   "joint_torque_nm": 1.0270483821162217,
-   "ratio": 2.0,
-   "efficiency": 0.92,
-   "servo_torque_nm": 0.5581784685414248,
-   "required_with_2x_nm": 1.1163569370828497,
-   "stall_nm": 2.94,
-   "margin_vs_stall": 5.267132585179269,
-   "rated_continuous_nm": 0.98,
-   "within_rated_continuous": true,
-   "holding_current_a_est": 0.6626128792727372,
-   "pass": true,
-   "contributions": [
-    {
-     "link": "forearm",
-     "mass_kg": 0.21677293547842486,
-     "lever_m": 0.06033102604925329,
-     "torque_nm": 0.12829649078396638
+  "knob_turner, no object": {
+   "tool": "knob_turner",
+   "tool_mass_g": 240.56684780587423,
+   "tool_com_mm": 51.681630636126684,
+   "object_g": 0.0,
+   "reach_to_flange_m": 0.4,
+   "joints": {
+    "shoulder_pitch": {
+     "joint_torque_nm": 2.2837591994698956,
+     "ratio": 3.0,
+     "efficiency": 0.92,
+     "servo_torque_nm": 0.8274489853151795,
+     "required_with_2x_nm": 1.654897970630359,
+     "stall_nm": 2.94,
+     "margin_vs_stall": 3.5530891356161844,
+     "rated_continuous_nm": 0.98,
+     "within_rated_continuous": true,
+     "holding_current_a_est": 0.9099021293710833,
+     "pass": true,
+     "contributions": [
+      {
+       "link": "upper_arm",
+       "mass_kg": 0.3066315613844739,
+       "lever_m": 0.08220001857430877,
+       "torque_nm": 0.24726222760488867
+      },
+      {
+       "link": "forearm",
+       "mass_kg": 0.21677293547842486,
+       "lever_m": 0.24033102604925327,
+       "torque_nm": 0.511074140251769
+      },
+      {
+       "link": "wrist",
+       "mass_kg": 0.09775016478212266,
+       "lever_m": 0.36249270935607136,
+       "torque_nm": 0.34760481352508465
+      },
+      {
+       "link": "flange",
+       "mass_kg": 0.02847874466364189,
+       "lever_m": 0.40041697155116046,
+       "torque_nm": 0.11186708610650169
+      },
+      {
+       "link": "tool (knob_turner)",
+       "mass_kg": 0.24056684780587423,
+       "lever_m": 0.4516816306361267,
+       "torque_nm": 1.0659509319816514
+      }
+     ]
     },
-    {
-     "link": "wrist",
-     "mass_kg": 0.09775016478212266,
-     "lever_m": 0.18249270935607134,
-     "torque_nm": 0.17499757255281245
+    "elbow_pitch": {
+     "joint_torque_nm": 1.0060313742422604,
+     "ratio": 2.0,
+     "efficiency": 0.92,
+     "servo_torque_nm": 0.5467561816534023,
+     "required_with_2x_nm": 1.0935123633068047,
+     "stall_nm": 2.94,
+     "margin_vs_stall": 5.377168285705298,
+     "rated_continuous_nm": 0.98,
+     "within_rated_continuous": true,
+     "holding_current_a_est": 0.6521230239674104,
+     "pass": true,
+     "contributions": [
+      {
+       "link": "forearm",
+       "mass_kg": 0.21677293547842486,
+       "lever_m": 0.06033102604925329,
+       "torque_nm": 0.12829649078396638
+      },
+      {
+       "link": "wrist",
+       "mass_kg": 0.09775016478212266,
+       "lever_m": 0.18249270935607134,
+       "torque_nm": 0.17499757255281245
+      },
+      {
+       "link": "flange",
+       "mass_kg": 0.02847874466364189,
+       "lever_m": 0.2204169715511605,
+       "torque_nm": 0.06157931877944284
+      },
+      {
+       "link": "tool (knob_turner)",
+       "mass_kg": 0.24056684780587423,
+       "lever_m": 0.2716816306361267,
+       "torque_nm": 0.6411579921260386
+      }
+     ]
     },
-    {
-     "link": "flange",
-     "mass_kg": 0.02847874466364189,
-     "lever_m": 0.2204169715511605,
-     "torque_nm": 0.06157931877944284
+    "wrist_pitch": {
+     "joint_torque_nm": 0.37397759044889317,
+     "ratio": 1.0,
+     "efficiency": 1.0,
+     "servo_torque_nm": 0.37397759044889317,
+     "required_with_2x_nm": 0.7479551808977863,
+     "stall_nm": 2.94,
+     "margin_vs_stall": 7.861433612829732,
+     "rated_continuous_nm": 0.98,
+     "within_rated_continuous": true,
+     "holding_current_a_est": 0.493448807555106,
+     "pass": true,
+     "contributions": [
+      {
+       "link": "wrist",
+       "mass_kg": 0.09775016478212266,
+       "lever_m": 0.04249270935607133,
+       "torque_nm": 0.040747496241045164
+      },
+      {
+       "link": "flange",
+       "mass_kg": 0.02847874466364189,
+       "lever_m": 0.08041697155116045,
+       "torque_nm": 0.022466610858397046
+      },
+      {
+       "link": "tool (knob_turner)",
+       "mass_kg": 0.24056684780587423,
+       "lever_m": 0.1316816306361267,
+       "torque_nm": 0.310763483349451
+      }
+     ]
     },
-    {
-     "link": "payload (incl. tool)",
-     "mass_kg": 0.25,
-     "lever_m": 0.27,
-     "torque_nm": 0.6621750000000001
+    "base_yaw": {
+     "joint_torque_nm": 0.0,
+     "ratio": 1.0,
+     "servo_torque_nm": 0.0,
+     "margin_vs_stall": null,
+     "pass": true,
+     "note": "no static gravity load; dynamic only"
+    },
+    "wrist_roll": {
+     "joint_torque_nm": 0.0,
+     "ratio": 1.0,
+     "servo_torque_nm": 0.0,
+     "margin_vs_stall": null,
+     "pass": true,
+     "note": "no static gravity load; dynamic only"
     }
-   ]
+   },
+   "worst_case_holding_current_a_est": 2.3554739608935997,
+   "pass": true
   },
-  "wrist_pitch": {
-   "joint_torque_nm": 0.3820391070994422,
-   "ratio": 1.0,
-   "efficiency": 1.0,
-   "servo_torque_nm": 0.3820391070994422,
-   "required_with_2x_nm": 0.7640782141988844,
-   "stall_nm": 2.94,
-   "margin_vs_stall": 7.69554724991737,
-   "rated_continuous_nm": 0.98,
-   "within_rated_continuous": true,
-   "holding_current_a_est": 0.5008522412137735,
-   "pass": true,
-   "contributions": [
-    {
-     "link": "wrist",
-     "mass_kg": 0.09775016478212266,
-     "lever_m": 0.04249270935607133,
-     "torque_nm": 0.040747496241045164
+  "button_presser, no object": {
+   "tool": "button_presser",
+   "tool_mass_g": 132.92471169510577,
+   "tool_com_mm": 46.943960224031265,
+   "object_g": 0.0,
+   "reach_to_flange_m": 0.4,
+   "joints": {
+    "shoulder_pitch": {
+     "joint_torque_nm": 1.8006193576139626,
+     "ratio": 3.0,
+     "efficiency": 0.92,
+     "servo_torque_nm": 0.6523983179760734,
+     "required_with_2x_nm": 1.3047966359521468,
+     "stall_nm": 2.94,
+     "margin_vs_stall": 4.506449386811301,
+     "rated_continuous_nm": 0.98,
+     "within_rated_continuous": true,
+     "holding_current_a_est": 0.7491413124270062,
+     "pass": true,
+     "contributions": [
+      {
+       "link": "upper_arm",
+       "mass_kg": 0.3066315613844739,
+       "lever_m": 0.08220001857430877,
+       "torque_nm": 0.24726222760488867
+      },
+      {
+       "link": "forearm",
+       "mass_kg": 0.21677293547842486,
+       "lever_m": 0.24033102604925327,
+       "torque_nm": 0.511074140251769
+      },
+      {
+       "link": "wrist",
+       "mass_kg": 0.09775016478212266,
+       "lever_m": 0.36249270935607136,
+       "torque_nm": 0.34760481352508465
+      },
+      {
+       "link": "flange",
+       "mass_kg": 0.02847874466364189,
+       "lever_m": 0.40041697155116046,
+       "torque_nm": 0.11186708610650169
+      },
+      {
+       "link": "tool (button_presser)",
+       "mass_kg": 0.13292471169510578,
+       "lever_m": 0.44694396022403127,
+       "torque_nm": 0.5828110901257187
+      }
+     ]
     },
-    {
-     "link": "flange",
-     "mass_kg": 0.02847874466364189,
-     "lever_m": 0.08041697155116045,
-     "torque_nm": 0.022466610858397046
+    "elbow_pitch": {
+     "joint_torque_nm": 0.7129660163307225,
+     "ratio": 2.0,
+     "efficiency": 0.92,
+     "servo_torque_nm": 0.3874815306145231,
+     "required_with_2x_nm": 0.7749630612290462,
+     "stall_nm": 2.94,
+     "margin_vs_stall": 7.587458414694841,
+     "rated_continuous_nm": 0.98,
+     "within_rated_continuous": true,
+     "holding_current_a_est": 0.5058503852582356,
+     "pass": true,
+     "contributions": [
+      {
+       "link": "forearm",
+       "mass_kg": 0.21677293547842486,
+       "lever_m": 0.06033102604925329,
+       "torque_nm": 0.12829649078396638
+      },
+      {
+       "link": "wrist",
+       "mass_kg": 0.09775016478212266,
+       "lever_m": 0.18249270935607134,
+       "torque_nm": 0.17499757255281245
+      },
+      {
+       "link": "flange",
+       "mass_kg": 0.02847874466364189,
+       "lever_m": 0.2204169715511605,
+       "torque_nm": 0.06157931877944284
+      },
+      {
+       "link": "tool (button_presser)",
+       "mass_kg": 0.13292471169510578,
+       "lever_m": 0.2669439602240313,
+       "torque_nm": 0.34809263421450093
+      }
+     ]
     },
-    {
-     "link": "payload (incl. tool)",
-     "mass_kg": 0.25,
-     "lever_m": 0.13,
-     "torque_nm": 0.318825
+    "wrist_pitch": {
+     "joint_torque_nm": 0.22874794227188483,
+     "ratio": 1.0,
+     "efficiency": 1.0,
+     "servo_torque_nm": 0.22874794227188483,
+     "required_with_2x_nm": 0.45749588454376966,
+     "stall_nm": 2.94,
+     "margin_vs_stall": 12.85257463214939,
+     "rated_continuous_nm": 0.98,
+     "within_rated_continuous": true,
+     "holding_current_a_est": 0.3600746408619351,
+     "pass": true,
+     "contributions": [
+      {
+       "link": "wrist",
+       "mass_kg": 0.09775016478212266,
+       "lever_m": 0.04249270935607133,
+       "torque_nm": 0.040747496241045164
+      },
+      {
+       "link": "flange",
+       "mass_kg": 0.02847874466364189,
+       "lever_m": 0.08041697155116045,
+       "torque_nm": 0.022466610858397046
+      },
+      {
+       "link": "tool (button_presser)",
+       "mass_kg": 0.13292471169510578,
+       "lever_m": 0.12694396022403126,
+       "torque_nm": 0.1655338351724426
+      }
+     ]
+    },
+    "base_yaw": {
+     "joint_torque_nm": 0.0,
+     "ratio": 1.0,
+     "servo_torque_nm": 0.0,
+     "margin_vs_stall": null,
+     "pass": true,
+     "note": "no static gravity load; dynamic only"
+    },
+    "wrist_roll": {
+     "joint_torque_nm": 0.0,
+     "ratio": 1.0,
+     "servo_torque_nm": 0.0,
+     "margin_vs_stall": null,
+     "pass": true,
+     "note": "no static gravity load; dynamic only"
     }
-   ]
+   },
+   "worst_case_holding_current_a_est": 1.915066338547177,
+   "pass": true
   },
-  "base_yaw": {
-   "joint_torque_nm": 0.0,
-   "ratio": 1.0,
-   "servo_torque_nm": 0.0,
-   "margin_vs_stall": null,
-   "pass": true,
-   "note": "no static gravity load; dynamic only"
-  },
-  "wrist_roll": {
-   "joint_torque_nm": 0.0,
-   "ratio": 1.0,
-   "servo_torque_nm": 0.0,
-   "margin_vs_stall": null,
-   "pass": true,
-   "note": "no static gravity load; dynamic only"
+  "slider_pusher, no object": {
+   "tool": "slider_pusher",
+   "tool_mass_g": 41.33828983234242,
+   "tool_com_mm": 41.57778984464793,
+   "object_g": 0.0,
+   "reach_to_flange_m": 0.4,
+   "joints": {
+    "shoulder_pitch": {
+     "joint_torque_nm": 1.3968807006640531,
+     "ratio": 3.0,
+     "efficiency": 0.92,
+     "servo_torque_nm": 0.5061161958927728,
+     "required_with_2x_nm": 1.0122323917855456,
+     "stall_nm": 2.94,
+     "margin_vs_stall": 5.808942736586277,
+     "rated_continuous_nm": 0.98,
+     "within_rated_continuous": true,
+     "holding_current_a_est": 0.6148005880647914,
+     "pass": true,
+     "contributions": [
+      {
+       "link": "upper_arm",
+       "mass_kg": 0.3066315613844739,
+       "lever_m": 0.08220001857430877,
+       "torque_nm": 0.24726222760488867
+      },
+      {
+       "link": "forearm",
+       "mass_kg": 0.21677293547842486,
+       "lever_m": 0.24033102604925327,
+       "torque_nm": 0.511074140251769
+      },
+      {
+       "link": "wrist",
+       "mass_kg": 0.09775016478212266,
+       "lever_m": 0.36249270935607136,
+       "torque_nm": 0.34760481352508465
+      },
+      {
+       "link": "flange",
+       "mass_kg": 0.02847874466364189,
+       "lever_m": 0.40041697155116046,
+       "torque_nm": 0.11186708610650169
+      },
+      {
+       "link": "tool (slider_pusher)",
+       "mass_kg": 0.04133828983234242,
+       "lever_m": 0.44157778984464796,
+       "torque_nm": 0.1790724331758091
+      }
+     ]
+    },
+    "elbow_pitch": {
+     "joint_torque_nm": 0.47095066310608047,
+     "ratio": 2.0,
+     "efficiency": 0.92,
+     "servo_torque_nm": 0.2559514473402611,
+     "required_with_2x_nm": 0.5119028946805222,
+     "stall_nm": 2.94,
+     "margin_vs_stall": 11.486553526269272,
+     "rated_continuous_nm": 0.98,
+     "within_rated_continuous": true,
+     "holding_current_a_est": 0.3850574516390153,
+     "pass": true,
+     "contributions": [
+      {
+       "link": "forearm",
+       "mass_kg": 0.21677293547842486,
+       "lever_m": 0.06033102604925329,
+       "torque_nm": 0.12829649078396638
+      },
+      {
+       "link": "wrist",
+       "mass_kg": 0.09775016478212266,
+       "lever_m": 0.18249270935607134,
+       "torque_nm": 0.17499757255281245
+      },
+      {
+       "link": "flange",
+       "mass_kg": 0.02847874466364189,
+       "lever_m": 0.2204169715511605,
+       "torque_nm": 0.06157931877944284
+      },
+      {
+       "link": "tool (slider_pusher)",
+       "mass_kg": 0.04133828983234242,
+       "lever_m": 0.26157778984464797,
+       "torque_nm": 0.10607728098985883
+      }
+     ]
+    },
+    "wrist_pitch": {
+     "joint_torque_nm": 0.11251738083356194,
+     "ratio": 1.0,
+     "efficiency": 1.0,
+     "servo_torque_nm": 0.11251738083356194,
+     "required_with_2x_nm": 0.22503476166712388,
+     "stall_nm": 2.94,
+     "margin_vs_stall": 26.1292964537533,
+     "rated_continuous_nm": 0.98,
+     "within_rated_continuous": true,
+     "holding_current_a_est": 0.2533322885206181,
+     "pass": true,
+     "contributions": [
+      {
+       "link": "wrist",
+       "mass_kg": 0.09775016478212266,
+       "lever_m": 0.04249270935607133,
+       "torque_nm": 0.040747496241045164
+      },
+      {
+       "link": "flange",
+       "mass_kg": 0.02847874466364189,
+       "lever_m": 0.08041697155116045,
+       "torque_nm": 0.022466610858397046
+      },
+      {
+       "link": "tool (slider_pusher)",
+       "mass_kg": 0.04133828983234242,
+       "lever_m": 0.12157778984464793,
+       "torque_nm": 0.04930327373411973
+      }
+     ]
+    },
+    "base_yaw": {
+     "joint_torque_nm": 0.0,
+     "ratio": 1.0,
+     "servo_torque_nm": 0.0,
+     "margin_vs_stall": null,
+     "pass": true,
+     "note": "no static gravity load; dynamic only"
+    },
+    "wrist_roll": {
+     "joint_torque_nm": 0.0,
+     "ratio": 1.0,
+     "servo_torque_nm": 0.0,
+     "margin_vs_stall": null,
+     "pass": true,
+     "note": "no static gravity load; dynamic only"
+    }
+   },
+   "worst_case_holding_current_a_est": 1.5531903282244248,
+   "pass": true
   }
  },
- "worst_case_holding_current_a_est": 2.7722254277711538,
  "pass": true
 }

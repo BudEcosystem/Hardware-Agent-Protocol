@@ -180,11 +180,17 @@ def main() -> int:
             "tools": tool_info(p),
             "servo": asdict(p.servo),
             "gear": {**asdict(p.gear), "ratio": p.gear.ratio, "center_distance": p.gear.center_distance},
+            "shoulder_gear": {**asdict(p.shoulder_gear), "ratio": p.shoulder_gear.ratio,
+                              "center_distance": p.shoulder_gear.center_distance},
             "arm": {k: v for k, v in asdict(p.arm).items() if k != "joints"},
-            "payload": {"mass_g": p.arm.payload_g, "offset_mm": p.arm.payload_offset},
+            "payload": {"mass_g": p.arm.payload_g, "offset_mm": p.arm.payload_offset, "tool": p.arm.payload_tool},
+            "coupled_limits": [{"name": c.name, "joints": list(c.joints), "lo_deg": c.lo, "hi_deg": c.hi} for c in p.arm.coupled_limits],
         }
         (OUT / "assembly.json").write_text(json.dumps(assembly, indent=1))
         (OUT / "parts.json").write_text(json.dumps(parts_info, indent=1))
+        for f in OUT.iterdir():  # stale outputs of parts that no longer exist (e.g. renamed)
+            if f.suffix in {".stl", ".step"} and f.stem not in parts_info:
+                f.unlink()
         manifest = {}
         for f in sorted(OUT.iterdir()):
             if f.suffix in {".stl", ".step", ".json"} and f.name != "manifest.json":

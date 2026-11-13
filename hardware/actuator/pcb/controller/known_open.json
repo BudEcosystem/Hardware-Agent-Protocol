@@ -1,2 +1,0 @@
-{"note": "Freerouting 1.9.0 (150 passes, then a 60-pass continuation) left these open. Hand-route in KiCad before ordering; Gerbers in fab/ are therefore NOT for fabrication.",
- "prefixes": ["unconnected net VIN_RAW", "unconnected net GND", "unconnected net +1V1", "unconnected net QSPI_SD1", "hole-to-hole 0.49"]}

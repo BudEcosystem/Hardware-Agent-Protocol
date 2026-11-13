@@ -23,7 +23,7 @@ from circuit import Resolved, erc
 from sexpr import find, find_all, loads
 
 FAB = {"min_track": 0.127, "min_clearance": 0.127, "min_via_drill": 0.3, "min_via_diameter": 0.45,  # JLCPCB std 2-layer
-       "min_annular": 0.075, "min_hole_to_hole": 0.5, "edge_clearance": 0.3}
+       "min_annular": 0.075, "min_hole_to_hole": 0.5, "min_hole_to_hole_same_net": 0.254, "edge_clearance": 0.3}
 HERE = Path(__file__).resolve().parent
 
 
@@ -100,7 +100,7 @@ def load_items(pcb_path: Path):
     tree = loads(pcb_path.read_text())
     net_names = {int(n[1]): str(n[2]).lstrip("/") for n in find_all(tree, "net")}
     items: list[Item] = []
-    holes: list[tuple[float, float, float, str]] = []
+    holes: list[tuple[float, float, float, str, str]] = []
     pads_by_net: dict[str, list[Item]] = defaultdict(list)
     for fp in find_all(tree, "footprint"):
         at = find(fp, "at")
@@ -129,7 +129,7 @@ def load_items(pcb_path: Path):
             if drill is not None:
                 dv = [float(x) for x in drill[1:] if not isinstance(x, list) and x != "oval"]
                 if dv:
-                    holes.append((cx, cy, dv[0], f"{ref}.{pad[1]}"))
+                    holes.append((cx, cy, dv[0], f"{ref}.{pad[1]}", net))
             if not cu:
                 continue
             shape = str(pad[3])
@@ -166,7 +166,7 @@ def load_items(pcb_path: Path):
         net = net_names[int(find(v, "net")[1])]
         c = (float(at[1]), float(at[2]))
         items.append(Item("via", net, {"F.Cu", "B.Cu"}, c, c, size / 2))
-        holes.append((c[0], c[1], drill, f"via@{c[0]:.2f},{c[1]:.2f}"))
+        holes.append((c[0], c[1], drill, f"via@{c[0]:.2f},{c[1]:.2f}", net))
         items[-1].ref = f"via@{c[0]:.2f},{c[1]:.2f}:{drill}"
     zones = []
     for z in find_all(tree, "zone"):
@@ -182,6 +182,87 @@ def load_items(pcb_path: Path):
             s, e = find(r, "start"), find(r, "end")
             edge = (float(s[1]), float(s[2]), float(e[1]), float(e[2]))
     return items, holes, pads_by_net, zones, edge
+
+
+THERMAL_REACH = 0.45  # thermal gap 0.4 mm + a little: the pour edge lies this far from a relieved pad
+
+
+def _pad_extent(it: Item) -> float:
+    if it.poly:
+        return max(math.hypot(x - it.a[0], y - it.a[1]) for x, y in it.poly) + it.r
+    return it.r + math.hypot(it.b[0] - it.a[0], it.b[1] - it.a[1]) / 2
+
+
+def _near_poly(pt, poly, reach: float) -> bool:
+    """True if the point is within ``reach`` of the polygon outline."""
+    return min(_seg_seg(pt, pt, p, q) for p, q in zip(poly, poly[1:] + poly[:1])) <= reach
+
+
+def spatial_grid(items: list[Item], cell: float = 2.0) -> dict[tuple[int, int], list[int]]:
+    grid: dict[tuple[int, int], list[int]] = defaultdict(list)
+    for idx, it in enumerate(items):
+        x0, y0, x1, y1 = it.bbox
+        for gx in range(int(math.floor((x0 - 0.2) / cell)), int(math.floor((x1 + 0.2) / cell)) + 1):
+            for gy in range(int(math.floor((y0 - 0.2) / cell)), int(math.floor((y1 + 0.2) / cell)) + 1):
+                grid[(gx, gy)].append(idx)
+    return grid
+
+
+def union_find(items: list[Item], grid) :
+    """Union touching same-net copper (pads, tracks, vias) that share a layer;
+    returns the ``find`` function mapping an item index to its group root."""
+    parent = list(range(len(items)))
+
+    def findp(i):
+        while parent[i] != i:
+            parent[i] = parent[parent[i]]
+            i = parent[i]
+        return i
+
+    for idxs in grid.values():
+        for i in range(len(idxs)):
+            for j in range(i + 1, len(idxs)):
+                A, B = items[idxs[i]], items[idxs[j]]
+                if A.net and A.net == B.net and (A.layers & B.layers) and _core_dist(A, B) <= A.r + B.r + 1e-3:
+                    parent[findp(idxs[i])] = findp(idxs[j])
+    return findp
+
+
+def pour_components(items: list[Item], polys, net: str, findp):
+    """Union-find over a pour net's copper (``items`` joined by ``findp``) and its filled polygons
+    ``polys`` = [(layer, points)].  Returns a list of components, each a list of ('i', item index) /
+    ('z', polygon index) nodes."""
+    parent: dict = {}
+
+    def f(a):
+        parent.setdefault(a, a)
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    def u(a, b):
+        parent[f(a)] = f(b)
+
+    net_items = [k for k, it in enumerate(items) if it.net == net]
+    for k in net_items:
+        u(("i", k), ("i", findp(k)))
+    for zi in range(len(polys)):
+        f(("z", zi))
+    for k in net_items:
+        it = items[k]
+        sample = [it.a, it.b] + list(it.poly or [])
+        for zi, (layer, pts) in enumerate(polys):
+            if layer in it.layers and any(_inside(pt, pts) for pt in sample):
+                u(("i", k), ("z", zi))
+            elif it.kind == "pad" and layer in it.layers and _near_poly(it.a, pts, _pad_extent(it) + THERMAL_REACH):
+                u(("i", k), ("z", zi))  # thermal-relief pad: spokes bridge the gap between pad and pour
+            elif it.kind == "via" and _inside(it.a, pts):
+                u(("i", k), ("z", zi))
+    comps: dict = defaultdict(list)
+    for a in list(parent):
+        comps[f(a)].append(a)
+    return list(comps.values())
 
 
 def run_checks(name: str, build_fn) -> dict:
@@ -202,20 +283,16 @@ def run_checks(name: str, build_fn) -> dict:
                 violations.append(f"via diameter {2 * it.r} < {FAB['min_via_diameter']} at {it.a}")
             if (2 * it.r - drill) / 2 < FAB["min_annular"] - 1e-6:
                 violations.append(f"via annular ring {(2 * it.r - drill) / 2:.3f} at {it.a}")
-    for i, (x1, y1, d1, r1) in enumerate(holes):
-        for x2, y2, d2, r2 in holes[i + 1:]:
+    for i, (x1, y1, d1, r1, n1) in enumerate(holes):
+        for x2, y2, d2, r2, n2 in holes[i + 1:]:
             gap = math.hypot(x1 - x2, y1 - y2) - d1 / 2 - d2 / 2
             same_part = r1.split(".")[0] == r2.split(".")[0] and not r1.startswith("via")
-            if gap < FAB["min_hole_to_hole"] - 1e-6 and not same_part and gap > -1e-6:
+            # JLCPCB capability: hole-to-hole 0.5 mm between different nets, 0.254 mm within one net.
+            need = FAB["min_hole_to_hole_same_net"] if (n1 and n1 == n2) else FAB["min_hole_to_hole"]
+            if gap < need - 1e-6 and not same_part and gap > -1e-6:
                 violations.append(f"hole-to-hole {gap:.3f} mm between {r1} and {r2}")
     # Clearance (spatial hash on 2 mm cells).
-    cell = 2.0
-    grid: dict[tuple[int, int], list[int]] = defaultdict(list)
-    for idx, it in enumerate(items):
-        x0, y0, x1, y1 = it.bbox
-        for gx in range(int(math.floor((x0 - 0.2) / cell)), int(math.floor((x1 + 0.2) / cell)) + 1):
-            for gy in range(int(math.floor((y0 - 0.2) / cell)), int(math.floor((y1 + 0.2) / cell)) + 1):
-                grid[(gx, gy)].append(idx)
+    grid = spatial_grid(items)
     checked = set()
     min_seen = math.inf
     for idxs in grid.values():
@@ -251,20 +328,7 @@ def run_checks(name: str, build_fn) -> dict:
                 if g < FAB["edge_clearance"] - 1e-6 and it.kind != "pad":
                     violations.append(f"{it.kind} {it.net} {g:.3f} mm from the board edge")
     # Connectivity (union-find over touching copper of the same net).
-    parent = list(range(len(items)))
-
-    def findp(i):
-        while parent[i] != i:
-            parent[i] = parent[parent[i]]
-            i = parent[i]
-        return i
-
-    for idxs in grid.values():
-        for i in range(len(idxs)):
-            for j in range(i + 1, len(idxs)):
-                A, B = items[idxs[i]], items[idxs[j]]
-                if A.net and A.net == B.net and (A.layers & B.layers) and _core_dist(A, B) <= A.r + B.r + 1e-3:
-                    parent[findp(idxs[i])] = findp(idxs[j])
+    findp = union_find(items, grid)
     zone_of: dict[str, list] = defaultdict(list)
     for net, layer, pts in zones:
         zone_of[net].append((layer, pts))
@@ -277,31 +341,13 @@ def run_checks(name: str, build_fn) -> dict:
         if len(groups) <= 1:
             continue
         if net in zone_of:
-            # Groups touching the same filled pour are joined.  A group touches
-            # the pour if any of its items has a point inside a fill polygon.
-            def touches(group_root) -> set:
-                hit = set()
-                for k, it in enumerate(items):
-                    if findp(k) != group_root:
-                        continue
-                    for zi, (layer, pts) in enumerate(zone_of[net]):
-                        if layer in it.layers and (_inside(it.a, pts) or (it.poly and any(_inside(c, pts) for c in it.poly))):
-                            hit.add(zi)
-                return hit
-            hits = {g: touches(g) for g in groups}
-            # Merge groups sharing any fill polygon index.
-            roots = list(groups)
-            comp = {g: g for g in roots}
-            for g1 in roots:
-                for g2 in roots:
-                    if g1 < g2 and hits[g1] & hits[g2]:
-                        a, b = comp[g1], comp[g2]
-                        for k in comp:
-                            if comp[k] == b:
-                                comp[k] = a
-            if len(set(comp.values())) <= 1:
-                continue
-            unconnected.append(f"net {net}: {len(set(comp.values()))} islands")
+            # Union of the net's copper and its filled pour polygons (a via or track end inside a polygon
+            # joins it; a via joins the polygons of both layers).  Components holding pads must be one.
+            comps = pour_components(items, zone_of[net], net, findp)
+            pad_comps = [sorted(items[i].ref for kind, i in c if kind == "i" and items[i].kind == "pad") for c in comps]
+            pad_comps = [c for c in pad_comps if c]
+            if len(pad_comps) > 1:
+                unconnected.append(f"net {net}: {len(pad_comps)} islands: " + "; ".join(",".join(c[:4]) for c in pad_comps))
         else:
             unconnected.append(f"net {net}: {len(groups)} unconnected groups: "
                                + "; ".join(",".join(p.ref for p in g) for g in groups.values()))

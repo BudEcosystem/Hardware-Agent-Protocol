@@ -1,0 +1,13 @@
+hole spacing: removed via at (171.74, 120.12) on QSPI_SCLK
+hole spacing: removed via at (159.99, 124.89) on QSPI_SD0
+hole spacing: removed via at (166.27, 128.76) on TOOL_AUX1
+QSPI_SCLK: routed 14 segments, 2 vias, width 0.2 mm
+QSPI_SD0: routed 22 segments, 2 vias, width 0.2 mm
+QSPI_SD2: routed 13 segments, 4 vias, width 0.2 mm
+QSPI_SD0: ripped up and re-routed QSPI_SD2 (11 items)
+TOOL_AUX1: routed 24 segments, 2 vias, width 0.2 mm
+VIN_RAW: routed 11 segments, 1 vias, width 1.5 mm
+pruned 0 dangling track segments
+stitching round 1: 4 connections
+stitching round 2: 0 connections
+final prune: 0 dangling track segments

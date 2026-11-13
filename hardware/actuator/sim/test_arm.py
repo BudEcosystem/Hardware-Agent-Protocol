@@ -2,11 +2,18 @@
 """Acceptance test for the generated BHMS Arm MJCF (MuJoCo >= 3.2).
 
 1. Load every generated model.
-2. Gravity hold: with the rated end-effector load (250 g including the
-   tool, at or beyond 50 mm from the flange) the position servos hold 4
-   poses; the joint error stays below HOLD_TOL_DEG and no actuator
-   saturates.  MuJoCo's gravity torques are cross-checked against the
-   static torque budget (cad/out/torque_budget.json) where available.
+2. Gravity hold: with the rated load (Controller ruling R13: a 250 g carried
+   OBJECT, excluding the 159 g gripper, 70 mm beyond the flange) the
+   position servos hold 5 poses; the joint error stays below HOLD_TOL_DEG
+   and no actuator saturates.  MuJoCo's gravity torques are cross-checked
+   against the static torque budget (cad/out/torque_budget.json).
+2b. Speed limit: a full-range step command never drives a joint faster than
+   the STS3215 no-load speed / ratio (<custom> max_speed_<joint>); gravity is
+   switched off for this test (the limit is the servo's own drive speed).
+2c. Keep-out: random poses inside the joint limits AND the coupled
+   pitch limits (forearm: shoulder+elbow, tool: shoulder+elbow+wrist) produce no contact between the forearm/wrist/flange/tool
+   and the static base/turret; a pose outside the coupled limits
+   (wrist_curl) does, proving the collision pairs are live.
 3. Pick and place a 50 g cube with the parallel gripper by contact
    (friction) grasp - no weld - from (0.24, 0) to (0.18, 0.16) m.
 
@@ -17,8 +24,8 @@ from __future__ import annotations
 
 import json
 import math
+import random
 import sys
-import time
 from pathlib import Path
 
 import mujoco
@@ -27,14 +34,18 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
 HOLD_TOL_DEG = 2.0
-PAYLOAD_TOTAL_KG = 0.250  # rated load at the flange, including the tool
-PAYLOAD_OFFSET_M = 0.050
+ASM = HERE.parent / "cad" / "out" / "assembly.json"
+_PAY = json.loads(ASM.read_text())["payload"]
+PAYLOAD_OBJECT_KG = _PAY["mass_g"] / 1000.0  # carried object, tool excluded (R13)
+PAYLOAD_OFFSET_M = _PAY["offset_mm"] / 1000.0
+SPEED_TOL = 1.03  # measured peak speed / datasheet limit
 ARM_JOINTS = ["base_yaw", "shoulder_pitch", "elbow_pitch", "wrist_pitch", "wrist_roll"]
 HOLD_POSES = {
     "horizontal_reach": {"shoulder_pitch": 90.0, "elbow_pitch": 0.0, "wrist_pitch": 0.0},
     "home": {"shoulder_pitch": 0.0, "elbow_pitch": 90.0, "wrist_pitch": 90.0},
     "forward_45": {"base_yaw": 60.0, "shoulder_pitch": 45.0, "elbow_pitch": 45.0, "wrist_pitch": 0.0},
-    "folded_back": {"base_yaw": -90.0, "shoulder_pitch": -60.0, "elbow_pitch": 120.0, "wrist_pitch": -45.0},
+    "folded_back": {"base_yaw": -90.0, "shoulder_pitch": -15.0, "elbow_pitch": 120.0, "wrist_pitch": -45.0},
+    "rear_limit": {"base_yaw": 0.0, "shoulder_pitch": -20.0, "elbow_pitch": 60.0, "wrist_pitch": 0.0},
 }
 
 
@@ -44,14 +55,12 @@ def tool_mass(model: mujoco.MjModel) -> float:
 
 
 def model_with_payload(path: Path) -> tuple[mujoco.MjModel, float]:
-    """Add a point load so the end-effector total is the rated payload,
-    placed at max(TCP, 50 mm) along the tool axis (conservative)."""
-    base = mujoco.MjModel.from_xml_path(str(path))
-    extra = PAYLOAD_TOTAL_KG - tool_mass(base)
-    tcp_z = float(base.site_pos[base.site("tcp").id][2])
+    """Add the 250 g carried object as a point mass PAYLOAD_OFFSET_M beyond
+    the flange (centre of the finger pads); the tool mass is already in the model."""
+    extra = PAYLOAD_OBJECT_KG
     spec = mujoco.MjSpec.from_file(str(path))
     flange = spec.body("flange")
-    b = flange.add_body(name="payload", pos=[0.0, 0.0, max(tcp_z, PAYLOAD_OFFSET_M)])
+    b = flange.add_body(name="payload", pos=[0.0, 0.0, PAYLOAD_OFFSET_M])
     b.add_geom(type=mujoco.mjtGeom.mjGEOM_SPHERE, size=[0.015, 0, 0], mass=extra, contype=0, conaffinity=0,
                rgba=[0.9, 0.1, 0.1, 1])
     return spec.compile(), extra
@@ -68,7 +77,7 @@ def set_arm(model, data, q_deg: dict[str, float]) -> np.ndarray:
 
 def gravity_hold(path: Path) -> dict:
     model, extra = model_with_payload(path)
-    out = {"payload_added_kg": extra, "tool_mass_kg": PAYLOAD_TOTAL_KG - extra, "poses": {}}
+    out = {"object_kg": extra, "tool_mass_kg": tool_mass(model), "object_offset_m": PAYLOAD_OFFSET_M, "poses": {}}
     ok = True
     for name, pose in HOLD_POSES.items():
         data = mujoco.MjData(model)
@@ -89,6 +98,80 @@ def gravity_hold(path: Path) -> dict:
                               "pass": pose_ok}
     out["pass"] = ok
     return out
+
+
+def speed_limit(path: Path) -> dict:
+    """Step every arm joint from one limit to the other; the peak joint speed
+    must stay within the datasheet no-load speed / ratio."""
+    model = mujoco.MjModel.from_xml_path(str(path))
+    model.opt.gravity[:] = 0.0  # the limit is the servo's own drive speed; gravity assist is not part of the datasheet figure
+    out = {"gravity": "off", "joints": {}}
+    ok = True
+    for jn in ARM_JOINTS:
+        w_max = float(model.numeric(f"max_speed_{jn}").data[0])
+        lo, hi = (float(x) for x in model.jnt_range[model.joint(jn).id])
+        data = mujoco.MjData(model)
+        data.qpos[model.joint(jn).qposadr[0]] = lo
+        data.ctrl[model.actuator(jn).id] = lo
+        mujoco.mj_forward(model, data)
+        data.ctrl[model.actuator(jn).id] = hi
+        peak = 0.0
+        for _ in range(int(1.5 / model.opt.timestep)):
+            mujoco.mj_step(model, data)
+            peak = max(peak, abs(float(data.qvel[model.joint(jn).dofadr[0]])))
+        good = peak <= SPEED_TOL * w_max
+        ok &= good
+        out["joints"][jn] = {"limit_rad_s": w_max, "peak_rad_s": peak, "pass": good}
+    out["pass"] = ok
+    return out
+
+
+def keepout(path: Path, require_curl: bool = True, n: int = 400, seed: int = 7) -> dict:
+    """Contact between keepout geoms (forearm..tool) and static geoms
+    (base, turret) at random in-limit poses, inside and outside the coupled limit."""
+    model = mujoco.MjModel.from_xml_path(str(path))
+    limits = []
+    for i in range(model.ntext):
+        name = mujoco.mj_id2name(model, mujoco.mjtObj.mjOBJ_TEXT, i)
+        if name.startswith("coupled_") and name.endswith("_joints"):
+            adr, size = int(model.text_adr[i]), int(model.text_size[i])
+            joints = bytes(model.text_data[adr:adr + size]).split(b"\0")[0].decode().split("+")
+            lo, hi = (float(x) for x in model.numeric(name[: -len("_joints")] + "_deg").data)
+            limits.append((name[: -len("_joints")], joints, lo, hi))
+    assert limits, "no coupled limits in the model"
+    cls_static = {g for g in range(model.ngeom) if (model.geom_contype[g] & 4) and model.geom_conaffinity[g] & 8}
+    cls_keep = {g for g in range(model.ngeom) if model.geom_contype[g] & 8}
+    rng = random.Random(seed)
+    data = mujoco.MjData(model)
+    inside_hits = outside_hits = inside_n = outside_n = 0
+    for _ in range(n):
+        q = {}
+        for jn in ARM_JOINTS:
+            lo, hi = (float(x) for x in model.jnt_range[model.joint(jn).id])
+            q[jn] = rng.uniform(lo, hi)
+        within = all(lo <= math.degrees(sum(q[j] for j in joints)) <= hi for _, joints, lo, hi in limits)
+        for jn in ARM_JOINTS:
+            data.qpos[model.joint(jn).qposadr[0]] = q[jn]
+        mujoco.mj_forward(model, data)
+        hit = any((c.geom1 in cls_static and c.geom2 in cls_keep) or (c.geom2 in cls_static and c.geom1 in cls_keep)
+                  for c in data.contact[: data.ncon])
+        if within:
+            inside_n += 1
+            inside_hits += hit
+        else:
+            outside_n += 1
+            outside_hits += hit
+    # Named forbidden pose from the CAD check (shoulder 30, elbow 100, wrist +100).
+    data = mujoco.MjData(model)
+    for jn, deg in (("shoulder_pitch", 30.0), ("elbow_pitch", 100.0), ("wrist_pitch", 100.0)):
+        data.qpos[model.joint(jn).qposadr[0]] = math.radians(deg)
+    mujoco.mj_forward(model, data)
+    curl = any((c.geom1 in cls_static and c.geom2 in cls_keep) or (c.geom2 in cls_static and c.geom1 in cls_keep)
+               for c in data.contact[: data.ncon])
+    ok = inside_hits == 0 and (curl or not require_curl)
+    return {"samples_inside_limit": inside_n, "contacts_inside_limit": inside_hits, "samples_outside_limit": outside_n,
+            "contacts_outside_limit": outside_hits, "wrist_curl_30_100_100_contacts": bool(curl),
+            "coupled_limits": {b: [lo, hi] for b, _, lo, hi in limits}, "pass": bool(ok)}
 
 
 # ---------------------------------------------------------------------------
@@ -199,7 +282,6 @@ def pick_and_place(path: Path) -> dict:
     ik_err = max(e1, e2, e3, e4)
 
     log: list = []
-    t0 = time.time()
     run_segment(arm, q_home, plan["pre_grasp"], 0.02, open_w, 1.5, log, cube)
     run_segment(arm, plan["pre_grasp"], plan["grasp"], open_w, open_w, 1.0, log, cube)
     run_segment(arm, plan["grasp"], plan["grasp"], open_w, closed, 0.6, log, cube, hold=0.5)
@@ -212,7 +294,6 @@ def pick_and_place(path: Path) -> dict:
     n_carry1 = len(log)
     run_segment(arm, plan["place"], plan["place"], closed, open_w, 0.5, log, cube, hold=0.5)
     run_segment(arm, plan["place"], plan["pre_place"], open_w, open_w, 1.0, log, cube)
-    wall = time.time() - t0
 
     final = data.xpos[cube].copy()
     carry = log[n_lift0:n_carry1]
@@ -233,7 +314,6 @@ def pick_and_place(path: Path) -> dict:
         "ik_max_pos_err_m": ik_err,
         "plan_deg": {k: np.degrees(v).round(2).tolist() for k, v in plan.items()},
         "sim_time_s": float(data.time),
-        "wall_time_s": wall,
         "cube_quat_w": upright,
     }
     result["pass"] = bool(xy_err < 0.015 and abs(final[2] - half) < 0.004 and lift_z > start[2] + 0.04 and slip < 0.01
@@ -254,14 +334,28 @@ def main() -> int:
         budget = json.loads(budget_path.read_text())
         hz = report["gravity_hold"]["poses"]["horizontal_reach"]["gravity_torque_nm"]
         report["torque_budget_crosscheck"] = {
-            jn: {"mujoco_nm": abs(hz[jn]), "budget_nm": budget["joints"][jn]["joint_torque_nm"]}
-            for jn in ("shoulder_pitch", "elbow_pitch", "wrist_pitch") if jn in budget.get("joints", {})}
+            jn: {"mujoco_nm": abs(hz[jn]),
+                 "budget_nm": budget["cases"]["gripper + 250 g object (rated, R13)"]["joints"][jn]["joint_torque_nm"]}
+            for jn in ("shoulder_pitch", "elbow_pitch", "wrist_pitch")}
+    report["speed_limit"] = speed_limit(HERE / "bhms_arm.xml")
+    report["keepout"] = keepout(HERE / "bhms_arm.xml")
+    report["keepout_other_tools"] = {t: keepout(HERE / f"bhms_arm_{t}.xml", require_curl=False) for t in ("knob_turner", "button_presser", "slider_pusher")}
     report["pick_and_place"] = pick_and_place(HERE / "scene_pick.xml")
-    report["pass"] = bool(report["gravity_hold"]["pass"] and report["pick_and_place"]["pass"])
+    report["pass"] = bool(report["gravity_hold"]["pass"] and report["pick_and_place"]["pass"] and report["speed_limit"]["pass"]
+                          and report["keepout"]["pass"] and all(v["pass"] for v in report["keepout_other_tools"].values()))
     (RESULTS / "sim_results.json").write_text(json.dumps(report, indent=1))
     for name, r in report["gravity_hold"]["poses"].items():
         print(f"hold {name:17s} max err {r['max_abs_error_deg']:.3f} deg  max util "
               f"{max(r['utilization'].values()):.2f}  {'PASS' if r['pass'] else 'FAIL'}")
+    for jn, r in report["speed_limit"]["joints"].items():
+        print(f"speed {jn:15s} peak {r['peak_rad_s']:.2f} rad/s vs limit {r['limit_rad_s']:.2f}  {'PASS' if r['pass'] else 'FAIL'}")
+    ko = report["keepout"]
+    print(f"keepout gripper: {ko['contacts_inside_limit']}/{ko['samples_inside_limit']} contacts inside the coupled limit, "
+          f"{ko['contacts_outside_limit']}/{ko['samples_outside_limit']} outside, wrist_curl contact {ko['wrist_curl_30_100_100_contacts']}  "
+          f"{'PASS' if ko['pass'] else 'FAIL'}")
+    for t, r in report["keepout_other_tools"].items():
+        print(f"keepout {t}: {r['contacts_inside_limit']}/{r['samples_inside_limit']} inside, wrist_curl contact "
+              f"{r['wrist_curl_30_100_100_contacts']}  {'PASS' if r['pass'] else 'FAIL'}")
     pp = report["pick_and_place"]
     print(f"pick&place xy err {pp['xy_error_m'] * 1000:.1f} mm, lift {pp['lift_z_m']:.3f} m, slip {pp['carry_slip_m'] * 1000:.1f} mm "
           f"{'PASS' if pp['pass'] else 'FAIL'}")

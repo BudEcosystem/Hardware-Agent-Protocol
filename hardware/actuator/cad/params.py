@@ -123,6 +123,16 @@ class Joint:
 
 
 @dataclass(frozen=True)
+class CoupledLimit:
+    """Window on the sum of several joint angles (degrees)."""
+
+    name: str
+    joints: tuple[str, ...]
+    lo: float
+    hi: float
+
+
+@dataclass(frozen=True)
 class Arm:
     """Kinematic layout.  Zero pose is the 'candle': every link vertical."""
 
@@ -141,15 +151,37 @@ class Arm:
     link_depth: float = 32.0  # outer depth (in the swing plane)
     link_wall: float = 2.4
     cable_channel: tuple[float, float] = (10.0, 7.0)
+    # Rated load (Controller ruling R13): a 250 g carried OBJECT at the
+    # gripper grasp point, EXCLUDING the tool (the heaviest tool, the 160 g
+    # gripper, is added from the CAD mass model).  The 250 g CoM sits at the
+    # centre of the finger pads, 70 mm beyond the flange face.
     payload_g: float = 250.0
-    payload_offset: float = 50.0  # payload CoM beyond the flange face
+    payload_offset: float = 70.0
+    payload_tool: str = "gripper"  # tool whose CAD mass is added to the payload
     joints: tuple[Joint, ...] = (
         Joint("base_yaw", -150.0, 150.0, 1.0, 1),
-        Joint("shoulder_pitch", -75.0, 95.0, 2.0, 2),
+        Joint("shoulder_pitch", -20.0, 95.0, 3.0, 2),
         Joint("elbow_pitch", -5.0, 125.0, 2.0, 3),
         Joint("wrist_pitch", -100.0, 100.0, 1.0, 4),
         Joint("wrist_roll", -150.0, 150.0, 1.0, 5),
     )
+
+    # Coupled pitch limits, derived by cad/check_clearance.py from ~10000
+    # pose/tool collision tests and documented in firmware/INTERFACE.md §3.2.
+    # Each single joint stays in its own range and, in addition, the sum of
+    # the listed joint angles stays in [lo, hi] (angles in degrees from the
+    # vertical "candle" pose, positive toward +x).  Outside them the forearm
+    # folds into the base or the tool/forearm folds back into the upper arm
+    # or the turret.
+    coupled_limits: tuple[CoupledLimit, ...] = (
+        CoupledLimit("forearm_pitch", ("shoulder_pitch", "elbow_pitch"), -180.0, 195.0),
+        CoupledLimit("hairpin", ("elbow_pitch", "wrist_pitch"), -180.0, 185.0),
+        CoupledLimit("tool_pitch", ("shoulder_pitch", "elbow_pitch", "wrist_pitch"), -180.0, 190.0),
+    )
+
+    def coupled_ok(self, q: dict[str, float]) -> bool:
+        """True if the joint angles ``q`` (deg, missing = 0) satisfy every coupled limit."""
+        return all(c.lo <= sum(q.get(j, 0.0) for j in c.joints) <= c.hi for c in self.coupled_limits)
 
     @property
     def reach(self) -> float:
@@ -273,7 +305,10 @@ class Controller:
 class Params:
     printer: Printer = field(default_factory=Printer)
     servo: Servo = field(default_factory=Servo)
-    gear: Gear = field(default_factory=Gear)
+    gear: Gear = field(default_factory=Gear)  # elbow: 17:34, module 2, 2:1
+    # Shoulder: 17:51 at module 1.5 gives 3:1 on the SAME centre distance
+    # (51 mm) as the elbow pair, so the clevis geometry is unchanged.
+    shoulder_gear: Gear = field(default_factory=lambda: Gear(module=1.5, pinion_teeth=17, gear_teeth=51))
     arm: Arm = field(default_factory=Arm)
     flange: Flange = field(default_factory=Flange)
     tools: Tools = field(default_factory=Tools)
