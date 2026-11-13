@@ -530,6 +530,8 @@ class Executor:
         rec, spec = execution.rec, execution.spec
         journal = self.server.journal
         kind, value = outcome
+        if spec.effect != "none":
+            self.server.observations.after_effect(execution.device)  # BHMS-OBS-006: nothing retained predates the effect
         if rec.state in ("dispatching", "running"):
             if execution.deadline_hit and kind != "crashed":
                 journal.transition(rec, "failed", error=self._deadline_error(execution, terminated=True),

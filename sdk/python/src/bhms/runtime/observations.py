@@ -101,6 +101,17 @@ class ObservationHub:
             state = self._state[(device_id, prop)] = _PropertyState()
         return state
 
+    def after_effect(self, device: Device) -> None:
+        """Forget the retained samples of ``device`` that can be acquired on demand (BHMS-OBS-006).
+
+        An action that may have changed the device has just finished: a sample taken before it must not be presented as
+        the current state, so the next plain read acquires a new one. Push-only properties (no getter) keep theirs.
+        """
+        for prop, spec in device.properties.items():
+            state = self._state.get((device.device_id, prop))
+            if state is not None and spec.getter is not None:
+                state.sample = None
+
     # ------------------------------------------------------------------ presentation
 
     def present(self, spec: PropertySpec, sample: Sample) -> dict[str, Any]:

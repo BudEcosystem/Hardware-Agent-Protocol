@@ -2,7 +2,7 @@
 
 ## 2026-11-13 (v0.1)
 
-Agent-surface round (Task 6): BHMS-AGT-051 (self-contained input schemas, top-level `oneOf` removed and enforced by the bridge); function results
+Agent-surface round (Task 6): BHMS-AGT-014 (default read age) and AGT-051 (self-contained input schemas, top-level `oneOf` removed and enforced by the bridge); function results
 may carry `signature` (`bhms_describe`); `LEASE_REQUIRED` names the needed resources in `bound`.
 
 Gateway round (Task 5): BHMS-AUTH-014 pins the upstream key formula and states that the gateway's own key lookup precedes

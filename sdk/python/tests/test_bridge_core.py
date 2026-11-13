@@ -465,3 +465,101 @@ async def test_describe_and_programs_through_a_registered_program(rig):
     again = await bridge.call("bhms_run_program", {"program_digest": digest, "arguments": {}, "operation_key": "prog-1"})
     assert again.data["replayed"] is True and "replayed" in again.summary
     assert (await client.request("x-conformance/counters"))["counter"] == 2
+
+
+# ---------------------------------------------------------------------------------------------- reading after acting
+
+async def test_a_read_after_an_effect_is_the_post_effect_reading(tmp_path):  # BHMS-OBS-006 (found by the inspector pty test)
+    srv = DeviceServer("stage", state_dir=tmp_path)
+    dev = srv.device("stage-1", resources=["stage-1"])
+    dev.report_alive()
+    where = {"um": 0.0}
+
+    @dev.property(unit="um", evidence="simulated")
+    def position() -> float:
+        return where["um"]
+
+    @dev.action(effect="reversible", idempotency="absolute", max_duration_ms=1000)
+    async def move_to(ctx, target: Range(0, 200, unit="um")) -> None:  # the handler does not re-read the property itself
+        where["um"] = target
+
+    await srv.start()
+    client = await Client.from_transport(await connect_in_process(srv.rpc))
+    bridge = AgentBridge(client)
+    try:
+        before = (await client.properties_read("stage-1", "position")).observation
+        assert before.value == 0
+        done = await bridge.call("bhms_invoke", {"device_id": "stage-1", "action": "move_to", "arguments": {"target": 42.5},
+                                                 "operation_key": "obs-6"})
+        assert not done.is_error
+        plain = (await client.properties_read("stage-1", "position")).observation  # no options
+        assert plain.value == 42.5 and plain.sequence > before.sequence  # not the retained pre-move sample
+        read = await bridge.call("bhms_read", {"device_id": "stage-1", "property": "position"})
+        assert read.summary.startswith("stage-1.position = 42.5 um (simulated, valid,")
+    finally:
+        await bridge.aclose()
+        await client.close()
+        await srv.close()
+
+
+async def test_push_only_properties_keep_their_retained_sample_after_an_effect(tmp_path):  # BHMS-OBS-006
+    srv = DeviceServer("push-only", state_dir=tmp_path)
+    dev = srv.device("d-1", resources=["d-1"])
+    dev.report_alive()
+    dev.property(name="level", schema=Range(0, 100, unit="%"), evidence="reported")
+
+    @dev.action(effect="reversible", idempotency="absolute", max_duration_ms=1000)
+    async def poke(ctx) -> None:
+        return None
+
+    await srv.start()
+    client = await Client.from_transport(await connect_in_process(srv.rpc))
+    try:
+        await dev.publish("level", 40)
+        first = (await client.properties_read("d-1", "level")).observation
+        assert (await client.actions_invoke("d-1", "poke", {}, wait_ms=1000)).operation.state == "completed"
+        again = (await client.properties_read("d-1", "level")).observation
+        assert again.value == 40 and again.sequence == first.sequence  # not re-acquirable: its age says how old it is
+    finally:
+        await client.close()
+        await srv.close()
+
+
+async def test_a_default_read_asks_for_a_recent_value_except_for_transaction_properties(rig):  # BHMS-AGT-014
+    srv, sim, client, bridge = rig
+    sent = []
+    real = client.properties_read
+
+    async def spy(device, prop, **kw):
+        sent.append((prop, kw))
+        return await real(device, prop, **kw)
+
+    client.properties_read = spy
+    await bridge.call("bhms_read", {"device_id": "pump-1", "property": "pressure"})
+    await bridge.call("bhms_read", {"device_id": "pump-1", "property": "pressure", "max_age_ms": 5000})
+    await bridge.call("bhms_read", {"device_id": "pump-1", "property": "pressure", "fresh": True})
+    await bridge.call("bhms_read", {"device_id": "axis-1", "property": "fifo"})  # transaction: never made fresh by default
+    assert sent[0] == ("pressure", {"max_age_ms": 1000, "fresh": None})
+    assert sent[1] == ("pressure", {"max_age_ms": 5000, "fresh": None}) and sent[2] == ("pressure", {"max_age_ms": None, "fresh": True})
+    assert sent[3] == ("fifo", {"max_age_ms": None, "fresh": None})
+    assert "at most 1000 ms old" in next(t for t in bridge.tool_definitions() if t.name == "bhms_read").description
+
+
+async def test_a_push_only_property_falls_back_to_its_retained_observation_with_its_age(tmp_path):  # BHMS-AGT-014
+    srv = DeviceServer("push-only", state_dir=tmp_path)
+    dev = srv.device("d-1", resources=["d-1"])
+    dev.report_alive()
+    dev.property(name="level", schema=Range(0, 100, unit="%"), evidence="reported")
+    await srv.start()
+    client = await Client.from_transport(await connect_in_process(srv.rpc))
+    bridge = AgentBridge(client)
+    try:
+        await dev.publish("level", 40)
+        await asyncio.sleep(1.2)
+        read = await bridge.call("bhms_read", {"device_id": "d-1", "property": "level"})
+        assert read.error is None and read.summary.startswith("d-1.level = 40 % (reported,") and " s old)" in read.summary
+        explicit = await bridge.call("bhms_read", {"device_id": "d-1", "property": "level", "max_age_ms": 100})
+        assert explicit.error["bhmsCode"] == "STALE"  # an explicit requirement is never silently relaxed
+    finally:
+        await client.close()
+        await srv.close()

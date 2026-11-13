@@ -47,6 +47,13 @@ restarts or wraps.
 **BHMS-OBS-005** When `value` is a number, `unit` MUST be present and equal to the
 property schema's `x-bhms-unit`.
 
+**BHMS-OBS-006** When an operation whose action's `effect` is not `none` settles on a
+device, the server MUST NOT afterwards return, as the retained observation of one of
+that device's properties that it can acquire on demand, a sample acquired before the
+operation settled; the next read without `maxAgeMs` or `fresh` acquires a new one.
+(Properties the device only publishes keep their latest sample: its age says how old
+it is.)
+
 ## 5.2 `properties/read`
 
 `{deviceId, property, maxAgeMs?, fresh?}` → `{observation}`.

@@ -35,6 +35,7 @@ from bhms.transport.base import TransportClosed
 
 log = logging.getLogger("bhms.bridge")
 
+READ_MAX_AGE_MS = 1000  # BHMS-AGT-014
 DEFAULT_WAIT_MS = 5000
 MAX_WAIT_MS = 60_000
 LEASE_TTL_MS = 15_000
@@ -54,6 +55,7 @@ _EXACTLY_ONE = {
     "bhms_stop": ("device_ids", "all", "Give exactly one of device_ids or all."),
     "bhms_run_program": ("program", "program_digest", "Give exactly one of program or program_digest."),
 }
+_NOTES = {"bhms_read": f"Without max_age_ms the bridge asks for a reading at most {READ_MAX_AGE_MS} ms old."}
 
 
 @dataclass(frozen=True, slots=True)
@@ -163,6 +165,8 @@ def tool_definitions(capabilities: Any | None = None) -> list[ToolDef]:
         description = spec["description"]
         if name in _EXACTLY_ONE:
             description += " " + _EXACTLY_ONE[name][2]
+        if name in _NOTES:
+            description += " " + _NOTES[name]
         tools.append(ToolDef(name, description, input_schema_for(name), dict(_ANNOTATIONS[name], openWorldHint=True)))
     return tools
 
@@ -342,8 +346,29 @@ class AgentBridge:
     async def _bhms_read(self, args: dict[str, Any]) -> ToolResult:
         device, prop = args["device_id"], args["property"]
         kw = {"max_age_ms": args.get("max_age_ms"), "fresh": args.get("fresh")}
+        defaulted = False
+        if kw["max_age_ms"] is None and not kw["fresh"]:
+            # BHMS-AGT-014: not a retained sample from before the last action; transaction reads are never made fresh here
+            spec = ((await self._described(device)).get("properties") or {}).get(prop) or {}
+            if spec.get("readEffect", "none") == "none":
+                kw["max_age_ms"], defaulted = READ_MAX_AGE_MS, True
         try:
-            result = await self.client.properties_read(device, prop, **kw)
+            result = await self._read(device, prop, kw)
+        except BhmsError as exc:
+            if not (defaulted and exc.code == "STALE" and exc.field == "maxAgeMs"):
+                raise
+            result = await self._read(device, prop, {"max_age_ms": None, "fresh": None})  # push-only: its age is stated
+        return ToolResult(render.summarize_observation(device, prop, to_wire(result.observation)), to_wire(result))
+
+    async def _described(self, device: str) -> dict[str, Any]:
+        try:
+            return await self.description(device)
+        except BhmsError:
+            return {}  # the read below reports the unknown device itself
+
+    async def _read(self, device: str, prop: str, kw: dict[str, Any]) -> Any:
+        try:
+            return await self.client.properties_read(device, prop, **kw)
         except BhmsError as exc:
             if exc.code != "LEASE_REQUIRED":
                 raise
@@ -354,10 +379,9 @@ class AgentBridge:
                 raise
             lease = await self._acquire(resources)
             try:
-                result = await self.client.properties_read(device, prop, **kw)
+                return await self.client.properties_read(device, prop, **kw)
             finally:
                 await self._release(lease.lease_id)
-        return ToolResult(render.summarize_observation(device, prop, to_wire(result.observation)), to_wire(result))
 
     # ------------------------------------------------------------------ operations
 

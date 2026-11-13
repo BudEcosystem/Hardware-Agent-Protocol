@@ -84,6 +84,14 @@ argument names, types, units, bounds, `effect`, `idempotency`, `requiresLease`,
 unit and evidence, within 400 tokens; when a device is too large, it MUST list all
 names and say which details were elided.
 
+**BHMS-AGT-014** `bhms_read` without `max_age_ms` and `fresh` SHOULD NOT hand a model a
+retained observation older than 1000 ms as if it were the current state: for a
+property with `readEffect: "none"` the bridge asks for `maxAgeMs: 1000` (a narrowing
+of what the model asked for) and, when the server cannot acquire the property on
+demand (`STALE` naming `maxAgeMs`), returns the retained observation, whose summary
+states its age. A read of a `transaction` property is never made fresh by default
+(BHMS-AUTH-012).
+
 ## 12.3 Refusals
 
 A refusal is a tool result with MCP `isError: true` (function tools:
