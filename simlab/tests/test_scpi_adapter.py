@@ -1,6 +1,5 @@
 """SCPI adapter against a scripted SCPI-over-TCP balance serving the load cell model."""
 
-import asyncio
 
 import pytest
 

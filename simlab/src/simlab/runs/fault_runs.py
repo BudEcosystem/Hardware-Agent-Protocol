@@ -32,7 +32,6 @@ from simlab.faults import At, Fault, OnEvent
 from simlab.lab import Lab
 from simlab.oracle import Oracle, Verdict
 from simlab.runs.judge import judge_operations
-from simlab.runs.multidevice import summarize
 
 ACCEPTABLE = {Verdict.CONSISTENT.value, Verdict.HONEST_UNKNOWN.value}
 

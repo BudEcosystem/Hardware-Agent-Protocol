@@ -344,7 +344,7 @@ def build_server(world: World, scope: MicroscopeTwin | None = None, *, state_dir
     @dev.action(effect="none", idempotency="relative", completion_evidence="reported", cancel="unsupported",
                 max_duration_ms=5000, typical_duration_ms=100)
     async def snap(ctx, exposure_ms: Range(1, 500, unit="ms") = 20) -> {  # noqa: F821
-            "frame_id": str, "mean_counts": "1", "focus_score": "1", "captured_at_s": "s", "device_time_s": "s"}:
+            "frame_id": str, "mean_counts": "1", "focus_score": "1", "captured_at_s": "s", "device_time_s": "s"}:  # noqa: F821
         """Capture a frame and store it. ``captured_at_s`` is the camera's capture time; compare it with
         ``device_time_s``: a frozen camera returns an old frame."""
         host.begin(ctx)
