@@ -12,6 +12,7 @@ from typing import Any
 from bhms.client.client import Client
 from bhms.gateway import Gateway, GatewayConfig, UpstreamConfig
 from bhms.runtime.authority import token_digest
+from bhms.testing.conformance_device import build as conformance_build
 from helpers.devices import Axis, build
 
 UID = os.getuid()
@@ -60,12 +61,16 @@ def principals(*, agent_scopes: list[str] | None = None, bounds: dict[str, Any] 
 @contextlib.asynccontextmanager
 async def rig(tmp_path: Path, names: tuple[str, ...] = ("a", "b"), *, principals_doc: dict[str, Any] | None = None,
               upstream_kw: dict[str, Any] | None = None, gateway_kw: dict[str, Any] | None = None,
-              memory: bool = False, devices_kw: dict[str, Any] | None = None) -> AsyncIterator[Rig]:
+              memory: bool = False, devices_kw: dict[str, Any] | None = None,
+              conformance: bool = False) -> AsyncIterator[Rig]:
     """Start one device server per name (devices ``axis-1``) and a gateway over them; everything closes on exit."""
     upstreams = []
     servers, axes, listeners = {}, {}, {}
     for name in names:
-        srv, axis = build(tmp_path / name, name=f"up-{name}", **(devices_kw or {}))
+        if conformance:
+            srv, axis = conformance_build(state_dir=str(tmp_path / name), **(devices_kw or {}))
+        else:
+            srv, axis = build(tmp_path / name, name=f"up-{name}", **(devices_kw or {}))
         path = str(tmp_path / f"{name}.sock")
         listeners[name] = await srv.listen(f"unix:{path}")
         servers[name], axes[name] = srv, axis

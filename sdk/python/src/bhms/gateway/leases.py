@@ -40,6 +40,7 @@ from bhms.gateway.policy import unauthorized
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.authority import Principal
 from bhms.runtime.leases import Lease, LeaseManager
+from bhms.runtime.store import StoreError
 from bhms.transport.base import TransportClosed
 
 if TYPE_CHECKING:
@@ -94,6 +95,7 @@ class GatewayLeases:
         started = time.monotonic()
         lease = await self.manager.acquire(principal, resources, ttl_ms, wait_ms)
         held: list[UpstreamLease] = []
+        namespace = ""
         try:
             for namespace in sorted({r.split("/", 1)[0] for r in lease.resources}):
                 mine = tuple(sorted(r for r in lease.resources if r.split("/", 1)[0] == namespace))
@@ -115,7 +117,7 @@ class GatewayLeases:
             await self._release_all(held)
             self.manager.release(principal, lease.lease_id)
             if isinstance(exc, BhmsError):
-                raise _translate(exc, held_namespace=namespace) from None  # noqa: F821 - bound by the loop above
+                raise _translate(exc, held_namespace=namespace) from None
             if isinstance(exc, (TransportClosed, asyncio.TimeoutError)):
                 raise BhmsError("DEVICE_UNAVAILABLE", f"the lease could not be acquired on upstream {namespace!r}",
                                 may_have_acted=False, hint="no lease is held; retry (gateway rule: "
@@ -124,6 +126,8 @@ class GatewayLeases:
         self._upstream[lease.lease_id] = {u.namespace: u for u in held}
         for item in held:
             self._reverse[item.lease_id] = lease.lease_id
+            with contextlib.suppress(StoreError):  # so a restarted gateway can release what it left upstream
+                self.gateway.store.meta_set(f"uplease:{item.namespace}:{item.lease_id}", "1")
         return lease
 
     async def renew(self, principal: Principal, lease_id: str, ttl_ms: int,
@@ -175,12 +179,41 @@ class GatewayLeases:
             task.add_done_callback(self._tasks.discard)
         self.gateway.lease_ended(lease, reason)
 
+    def _forget(self, namespace: str, upstream_lease_id: str) -> None:
+        self._reverse.pop(upstream_lease_id, None)
+        with contextlib.suppress(StoreError):
+            self.gateway.store.meta_delete(f"uplease:{namespace}:{upstream_lease_id}")
+
+    async def release_orphans(self, namespace: str) -> int:
+        """Release upstream leases a previous incarnation of the gateway acquired and no longer tracks; they would
+        otherwise block their resources until their TTL. Returns how many were released."""
+        up = self.gateway.upstreams[namespace]
+        prefix = f"uplease:{namespace}:"
+        count = 0
+        for key in self.gateway.store.meta_prefix(prefix):
+            lease_id = key[len(prefix):]
+            if lease_id in self._reverse:
+                continue
+            try:
+                await up.call("leases/release", {"leaseId": lease_id}, priority=True, timeout=2.0)
+                count += 1
+            except (TransportClosed, asyncio.TimeoutError):
+                return count
+            except BhmsError:
+                pass
+            self._forget(namespace, lease_id)
+        return count
+
     async def _release_all(self, held: list[UpstreamLease], trace: dict[str, Any] | None = None) -> None:
         async def one(item: UpstreamLease) -> None:
             up = self.gateway.upstreams[item.namespace]
-            with contextlib.suppress(BhmsError, TransportClosed, asyncio.TimeoutError):
+            try:
                 await up.call("leases/release", {"leaseId": item.lease_id}, priority=True, trace=trace, timeout=2.0)
-            self._reverse.pop(item.lease_id, None)
+            except (TransportClosed, asyncio.TimeoutError):
+                return  # unreachable: stays recorded, released when the upstream is back (or expires by its TTL)
+            except BhmsError:
+                pass  # the upstream no longer knows it: nothing to release
+            self._forget(item.namespace, item.lease_id)
 
         await asyncio.gather(*(one(i) for i in reversed(held)))
 

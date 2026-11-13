@@ -116,7 +116,8 @@ class Router:
             task.cancel()
         await asyncio.gather(*([self._reconciler] if self._reconciler else []), *self._tasks, return_exceptions=True)
 
-    def _spawn(self, coro: Any) -> None:
+    def spawn(self, coro: Any) -> None:
+        """Run ``coro`` in the background; it is cancelled when the gateway closes."""
         task = asyncio.get_running_loop().create_task(coro)
         self._tasks.add(task)
         task.add_done_callback(self._tasks.discard)

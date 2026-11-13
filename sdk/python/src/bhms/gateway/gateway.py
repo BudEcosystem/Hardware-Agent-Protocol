@@ -361,6 +361,7 @@ class Gateway:
                     self.record("device.online", device_id=entry.device_id,
                                 message=f"{entry.device_id} is online again (upstream {up.name})")
             self.router.upstream_back(up)
+            self.router.spawn(self.leases.release_orphans(up.name))
 
     def upstream_catalog(self, up: Upstream) -> None:
         if self.catalog.replace_upstream(up.name, up.descriptions, up.summaries) and self._started:

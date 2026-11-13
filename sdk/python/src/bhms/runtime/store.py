@@ -257,6 +257,15 @@ class Store:
         with self.transaction():
             self._write("INSERT OR REPLACE INTO meta(key, value) VALUES(?, ?)", (key, value))
 
+    def meta_prefix(self, prefix: str) -> dict[str, str]:
+        """Every meta entry whose key starts with ``prefix`` (a gateway's record of upstream leases)."""
+        rows = self._db.execute("SELECT key, value FROM meta WHERE key >= ? AND key < ?", (prefix, prefix + "\U0010ffff"))
+        return dict(rows.fetchall())
+
+    def meta_delete(self, key: str) -> None:
+        with self.transaction():
+            self._write("DELETE FROM meta WHERE key=?", (key,))
+
     def next_counter(self, name: str) -> int:
         """Increment and return a server-wide monotonic counter (fences, BHMS-LSE-003); committed as a barrier."""
         with self.transaction(barrier=True):
