@@ -31,6 +31,8 @@
  * Thread-safety: one event loop; declare devices before `start()` (later declarations are announced with
  * `notifications/devices/listChanged`).
  */
+import { randomBytes } from "node:crypto";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 import { BhmsError, JsonRpcError } from "../errors.js";
@@ -278,12 +280,28 @@ export class DeviceServer {
       listener = await listenTcp(host.replace(/^\[|\]$/g, ""), Number(port), (t) => { this.serve(t); }, { maxMessageBytes: this.opts.maxMessageBytes });
     } else if (url.startsWith("ws://")) {
       const u = new URL(url);
+      this.ensureToken();
       listener = await listenWebSocket(u.hostname.replace(/^\[|\]$/g, ""), Number(u.port || 80), (t) => { this.serve(t); }, { token: this.opts.token, maxMessageBytes: this.opts.maxMessageBytes });
     } else {
       throw new RangeError(`unsupported url ${JSON.stringify(url)}; use stdio, unix:<path>, tcp://127.0.0.1:<port> or ws://127.0.0.1:<port>`);
     }
     this.listeners.push(listener);
     return listener.address;
+  }
+
+  /**
+   * A WebSocket listener always requires a bearer token (BHMS-TRN-031, BHMS-SEC-001): one passed as `token`, taken from
+   * `$BHMS_TOKEN`, or else generated and written to `<stateDir>/<name>.token` with mode 0600. Tokens are never logged
+   * (BHMS-SEC-002); only the file's path is.
+   */
+  private ensureToken(): void {
+    if (this.opts.token) return;
+    const dir = this.opts.stateDir ?? defaultStateDir();
+    mkdirSync(dir, { recursive: true, mode: 0o700 });
+    const path = join(dir, `${this.name}.token`);
+    this.opts.token = randomBytes(24).toString("base64url");
+    writeFileSync(path, this.opts.token + "\n", { mode: 0o600 });
+    this.log(`bearer token written to ${path} (mode 0600); clients pass it as Authorization: Bearer`);
   }
 
   /** Stop listening and close every connection. Physical work in flight is never cancelled (BHMS-TRN-005); it is awaited

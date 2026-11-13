@@ -100,3 +100,18 @@ test("subscriptions: acknowledged first, operation notifications tagged, events 
   const ev = await client.eventsRead({ limit: 5 });
   assert.equal(typeof ev.cursor, "string");
 });
+
+test("byte-for-byte parity: the TS and Python conformance devices describe themselves with identical digests", { skip }, async () => {
+  const { rig } = await import("./harness.js");
+  const r = await rig();
+  try {
+    for (const id of ["axis-1", "pump-1"]) {
+      const py = (await client.devicesDescribe(id)).description;
+      const ts = (await r.client.devicesDescribe(id)).description;
+      assert.equal(ts.digest, py.digest, `${id}: JCS(description) is identical, so every schema, unit, bound and default matches`);
+    }
+    const { programs: _programs, ...pyRest } = client.discovered!.capabilities;
+    void _programs;
+    assert.deepEqual(r.client.discovered!.capabilities, pyRest, "capabilities are identical apart from programs (not implemented in this SDK)");
+  } finally { await r.close(); }
+});
