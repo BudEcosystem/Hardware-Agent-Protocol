@@ -15,7 +15,7 @@ from __future__ import annotations
 EXECUTION_START: frozenset[str] = frozenset({
     "move_started", "grip", "z_move", "xy_move", "objective_changed", "tip_picked", "tip_ejected", "transferred",
     "discarded", "thermal_command", "spin_started", "spin_abort_requested", "lid_opened", "lid_closed", "tared",
-    "container_moved",
+    "container_moved", "actuator_turn",
 })
 
 OBSERVATION: frozenset[str] = frozenset({

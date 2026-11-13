@@ -207,7 +207,18 @@ def _abort_requested(effects: list[Effect], op: Any) -> bool:
     return _last(effects, "spin_abort_requested") is not None or _last(effects, "spin_abort_ignored") is not None
 
 
+def _knob_turned(effects: list[Effect], op: Any) -> bool:
+    """The Actuator Node drove the commanded knob through the commanded number of revolutions (what the node did; what the
+    axis then did is the microscope's business)."""
+    started = _last(effects, "actuator_turn")
+    return (started is not None and started.detail["joint"] == op.arguments["knob"]
+            and abs(started.detail["revolutions"] - float(op.arguments["revolutions"])) < 1e-9)
+
+
 RULES: dict[tuple[str, str], Rule] = {
+    ("knob-1", "turn"): Rule(_knob_turned),
+    ("notice-1", "post"): Rule(lambda effects, op: not effects),
+    ("clock-1", "wait"): Rule(lambda effects, op: not effects),
     ("arm-1", "move_to_site"): Rule(_moved, _values_of("move_finished", lambda t, op: _close(op.result["error_mm"],
                                                                                               t.detail["error_mm"], 0.5))),
     ("arm-1", "close_gripper"): Rule(_grip_closed, _values_of(

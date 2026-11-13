@@ -155,6 +155,9 @@ def make_server(world: World, name: str, *, state_dir: str | Path | None, durabi
     device must use. State lives under ``state_dir`` (a fresh directory per run)."""
     if not name.startswith("simlab-"):
         raise ValueError(f"SimLab server names start with 'simlab-', got {name!r}")
+    into = kw.pop("into", None)
+    if into is not None:  # several twins on one server (a workcell): programs run inside one server (BHMS spec 08)
+        return into
     return DeviceServer(name, title=title or name, state_dir=state_dir, durability=durability,
                         instructions=f"SimLab: SIMULATED devices on a shared simulated bench (world seed {world.seed}); "
                                      "nothing here is physical and no reading is evidence about a real device.", **kw)

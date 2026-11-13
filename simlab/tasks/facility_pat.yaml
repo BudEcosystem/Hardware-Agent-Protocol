@@ -1,0 +1,40 @@
+# UC6 (closed-loop optimization with PAT promotion) and UC11 (facility conditions through Home Assistant).
+id: uc6-closed-loop-pat
+uc: UC6
+title: Closed-loop assay optimization, promoted to a PAT
+devices: [cell]
+setup: uc6
+check: none
+scripted: pat
+params: {target_a: 0.6}
+budget_tokens: 120000
+max_steps: 40
+prompt: unused (UC6 builds one prompt per round, see agents/pat.py)
+---
+id: uc11-facility-fluorescence
+uc: UC11
+title: Lights off for fluorescence imaging, restored after
+devices: [microscope]
+setup: uc11
+check: uc11
+scripted: uc11
+params: {ha: true}
+result_fields: "`frame_id` (the frame you took in the dark), `lights_restored` (true only if you read the lights back on) and `manual_override_detected` (true if a light was switched by someone else while you worked)"
+prompt: |
+  Fluorescence imaging needs the room dark. The facility device (facility-1) controls the bench light (light.bed_light) and the
+  room lights (light.kitchen_lights); both are on now. Turn both lights off, read each back to confirm it is off, snap one frame
+  with the microscope (the specimen is in focus), then restore both lights to on and read them back. Restore the lights even if
+  the imaging fails. If a person switches a light while you work, their switch wins: do not override it, say so in the result
+  and report the run as failed, because the image is not valid.
+---
+id: uc11-facility-imaging-fails
+extends: uc11-facility-fluorescence
+title: The camera fails during imaging (lights must still be restored)
+fault_class: F7
+faults:
+  - {target: scope, kind: sensor_disconnect, at_s: 0.0}
+---
+id: uc11-facility-manual-press
+extends: uc11-facility-fluorescence
+title: A person presses the bench light's switch (the manual press wins)
+params: {ha: true, manual_press: true}

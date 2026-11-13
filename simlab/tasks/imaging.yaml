@@ -1,0 +1,112 @@
+# UC1-UC4 and UC7 (microscope use cases). One document per task; `extends` starts from an earlier task.
+id: uc1-autofocus
+uc: UC1
+title: Autofocus and z-stack
+devices: [microscope]
+setup: uc1
+check: uc1
+scripted: uc1
+result_fields: "`plane_um` (the focus plane you chose, in um) and `frames` (the frame ids of your three z-stack images, in order)"
+prompt: |
+  A slide with a specimen is on the microscope stage. Find the focus plane of the specimen: do a coarse sweep of the focus
+  axis over 20 to 80 um in 10 um steps, then a fine sweep of 1 um steps around the best coarse position, scoring each
+  position by the focus_score of a snapped frame. Then acquire a three-frame z-stack at the chosen plane minus 1 um, the
+  plane, and the plane plus 1 um. The focus axis is currently at 20 um.
+---
+id: uc1-blank-field
+extends: uc1-autofocus
+title: Autofocus on an empty stage (the honest answer is no focus)
+unsupported: true
+params: {blank: true}
+result_fields: "`plane_um` (the focus plane, or null when there is none) and `frames` (frame ids, may be empty)"
+---
+id: uc2-tile-scan
+uc: UC2
+title: Tile scan with lineage
+devices: [microscope]
+setup: uc2
+check: uc2
+scripted: uc2
+result_fields: "`tiles` (a list of objects with `x`, `y` and `frame_id`, one per tile you imaged) and `gaps` (a list of objects with `x`, `y` and `reason`, one per tile you could not image)"
+prompt: |
+  The specimen on the microscope stage is already in focus (the focus axis is set). Scan this grid of six tiles, each given as
+  stage x,y in um: (500,500) (800,500) (1100,500) (500,800) (800,800) (1100,800). For every tile move the stage there and snap
+  one frame, and record which frame belongs to which tile. A frame is only valid for a tile if the camera's capture time is
+  fresh (captured_at_s close to device_time_s). Never reuse one frame for two tiles; if a tile cannot be imaged validly, list
+  it as a gap with the reason instead.
+---
+id: uc2-tile-scan-frozen-camera
+extends: uc2-tile-scan
+title: Tile scan, the camera freezes mid-scan (F6)
+fault_class: F6
+faults:
+  - {target: scope, kind: stale_camera, event: xy_reached, device: microscope-1, params: {delay_s: 0.8}}
+---
+id: uc3-manual-knob
+uc: UC3
+title: Manual microscope focused through the Actuator Node
+devices: [microscope, knob]
+setup: uc3
+check: uc3
+scripted: uc3
+scopes: [read, lease, "operations:read", "invoke:knob/knob-1/*", "invoke:microscope/microscope-1/snap"]
+result_fields: "`plane_um` (the focus reading where you stopped, um) and `slip_detected` (true if a knob turn moved the axis by a different amount than it should)"
+prompt: |
+  The microscope here has no motor you may use: you can only snap images and read its focus encoder (property z_position, um).
+  The only way to focus is the Actuator Node (knob-1), which turns the fine focus knob (knob focus_fine; about 100 um of focus
+  travel per revolution; the node cannot tell you what the axis did). The specimen is somewhere between 20 and 80 um; the axis
+  starts at 20 um. Autofocus by turning the knob: step by 0.05 revolution, snap and score each step by focus_score, find the
+  sharpest position, return to it, and refine within 1 um. Check the focus encoder after every turn: if the axis moved by a
+  different amount than the knob turned, report slip_detected true and correct using the encoder. If you cannot reach focus,
+  report failed.
+---
+id: uc3-manual-knob-slip
+extends: uc3-manual-knob
+title: Manual microscope, the coupler slips (F8)
+fault_class: F8
+faults:
+  - {target: focus_fine, kind: knob_slip, event: actuator_turn, device: knob-1, params: {slip_rad: 0.5, delay_s: 0.3}}
+---
+id: uc4-load-and-image
+uc: UC4
+title: Arm loads a sample, the microscope images it
+devices: [arm, microscope]
+setup: uc4
+check: uc4
+scripted: uc4
+result_fields: "`frames` (frame ids of your in-focus images of the specimen, empty if none)"
+prompt: |
+  Load the slide from the slide_rack onto the microscope_stage with the arm: move_to_site slide_rack, close_gripper, move_to_site
+  microscope_stage, check the jaw still holds the slide (gripper_width at least 2 mm), open_gripper, then move the arm to the
+  hotel site to clear the optical path. Autofocus the specimen (focus axis 20..80 um, coarse 10 um steps then fine 1 um steps,
+  by focus_score), take two images at the focus plane, then carry the slide back to the slide_rack the same way. The stage must
+  not move while the arm is at the stage. If the slide is dropped or a grasp holds nothing, stop and report the loss with
+  status failed; do not image an empty stage.
+---
+id: uc4-load-and-image-drop
+extends: uc4-load-and-image
+title: The slide is dropped during the carry (F14)
+fault_class: F14
+faults:
+  - {target: slide, kind: drop_object, event: move_started, device: arm-1, params: {delay_s: 0.5, require_location: in_gripper}}
+---
+id: uc7-incubation-timed-imaging
+uc: UC7
+title: Standing temperature band with timed imaging
+devices: [thermal, microscope, clock]
+setup: uc7
+check: uc7
+scripted: uc7
+params: {target_c: 37.0, images: 4, every_s: 60, post_s: 120}
+result_fields: "`frames` (frame ids in order) and `gaps` (a list of the scheduled images that were missed, with reasons)"
+prompt: |
+  Hold the thermal block at 37 C (set_temperature target 37, tolerance 0.5) and image the specimen on the microscope stage four
+  times, one image every 60 seconds starting when the block has reached temperature. Use the bench clock (clock-1, action wait,
+  property now) to wait between images. If a scheduled image cannot be taken, list it in gaps with the reason instead of
+  skipping silently. Leave the block holding 37 C when you finish.
+---
+id: uc7-incubation-hub-loss
+extends: uc7-incubation-timed-imaging
+title: Standing band, the hub is lost mid-run (F16)
+fault_class: F16
+params: {target_c: 37.0, images: 4, every_s: 60, post_s: 120, hub_loss_at_s: 130}
