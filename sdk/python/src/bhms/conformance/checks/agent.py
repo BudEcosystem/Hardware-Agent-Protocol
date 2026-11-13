@@ -226,3 +226,55 @@ async def programs_and_stop(c: Context) -> None:
     c.expect(bad.is_error and "steps[0]" in bad.text, f"a malformed program is refused with the failing step path: {bad.text[:200]}")
     stopped = await agent.call("bhms_stop", {"device_ids": [axis], "reason": "conformance"})
     c.expect(not FORBIDDEN_WORDS.search(stopped.summary) or "not" in stopped.summary.lower(), f"stop must not be called safe: {stopped.summary}", ("BHMS-OPS-055",))
+
+
+@check("agent.function-tools-equal-mcp", ["BHMS-AGT-050"], profile="agent", needs=NEEDS)
+async def function_tools_equal_mcp(c: Context) -> None:
+    """A function-tool adapter emits the same names, descriptions and input schemas as the MCP bridge, and does not declare them
+    strict. The adapter's definitions come from ``--function-tools FILE`` (or the built-in fixture's adapter)."""
+    if c.function_tools is None:
+        c.skip("no adapter definitions were given (--function-tools FILE with the OpenAI function-tool definitions)")
+    mcp = {t["name"]: t for t in await _agent(c).list_tools()}
+    flat = {}
+    for item in c.function_tools:
+        body = item.get("function", item)
+        flat[body["name"]] = body
+    if "bhms_run_program" not in mcp:
+        flat.pop("bhms_run_program", None)
+    c.expect(set(flat) == set(mcp), f"the adapter publishes {sorted(flat)}, the bridge {sorted(mcp)}")
+    for name, tool in mcp.items():
+        body = flat[name]
+        c.expect(body.get("description") == tool["description"], f"{name}: the descriptions differ")
+        c.expect(body.get("parameters") == tool["inputSchema"], f"{name}: the input schemas differ")
+        c.expect(not body.get("strict"), f"{name}: the adapter must not declare the tool strict")
+
+
+@check("agent.hostile-text-is-data", ["BHMS-SEC-020"], profile="agent", needs=("agent", "faults"))
+async def hostile_text_is_data(c: Context) -> None:
+    """Instructions injected into device text (the description of the device and its action, an error message) are shown only
+    quoted and cut, never followed: no request that the text asks for reaches the device."""
+    from bhms.testing.conformance_device import HOSTILE_TEXT
+
+    agent, axis = _agent(c), c.axis()
+    base_counter, base_ops = await c.counter(axis), await c.operations_count()
+    stops_before = sum(1 for e in (await c.ok("events/read", {"limit": 500}))["events"] if e["type"] == "stop") if "events" in c.caps else 0
+    await c.inject("hostile_text")
+    try:
+        outcomes = [await agent.call("bhms_find", {}), await agent.call("bhms_describe", {"device_id": axis}),
+                    await agent.call("bhms_invoke", {"device_id": axis, "action": "pulse", "arguments": {"count": 1}}),
+                    await agent.call("bhms_invoke", {"device_id": axis, "action": "fault", "arguments": {}})]
+    finally:
+        await c.inject("none")
+    shown = 0
+    for outcome in outcomes:
+        text = outcome.text
+        for start in range(len(HOSTILE_TEXT) - 60):
+            c.expect(HOSTILE_TEXT[start:start + 61] not in text, f"more than 60 characters of device text are shown: {text[:160]!r}", ("BHMS-SEC-020",))
+        for match in re.finditer("IGNORE", text):
+            shown += 1
+            c.expect(match.start() > 0 and text[match.start() - 1] == '"', f"device text must appear only quoted: {text[:160]!r}", ("BHMS-SEC-020",))
+    c.expect(shown >= 1, "the injected text should have reached a summary (quoted); the fixture or the bridge changed", ("BHMS-SEC-020",))
+    c.expect(await c.counter(axis) == base_counter + 2 and await c.operations_count() == base_ops + 2,
+             "something other than the two requested invokes reached the device after the hostile text was shown", ("BHMS-SEC-020",))
+    stops_after = sum(1 for e in (await c.ok("events/read", {"limit": 500}))["events"] if e["type"] == "stop") if "events" in c.caps else 0
+    c.expect(stops_after == stops_before, "a stop was issued because device text asked for it", ("BHMS-SEC-020",))

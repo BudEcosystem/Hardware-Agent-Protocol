@@ -209,3 +209,38 @@ def test_a_stop_result_without_stops_and_other_non_conforming_shapes_are_finding
                        _response("operations/get", {"resultType": "complete", "operation": {"state": "completed", "history": [1, 2]}}))
     findings = observers.observe(weird, {}).findings  # must return, whatever the shapes
     assert isinstance(findings, dict)
+
+
+def test_embedded_schemas_are_bounded_and_never_fetched():  # BHMS-SEC-021
+    from bhms.protocol.schema import schema_bounds_problem
+
+    assert schema_bounds_problem({"type": "object", "properties": {"a": {"type": "number"}}, "$ref": "#/$defs/x"}) is None
+    node: dict = {"type": "number"}
+    for _ in range(31):
+        node = {"type": "object", "properties": {"x": node}}
+    assert schema_bounds_problem(node) is None
+    assert "deeper than 32" in schema_bounds_problem({"type": "object", "properties": {"x": node}})
+    assert "leaves the document" in schema_bounds_problem({"items": {"$ref": "http://example.invalid/x.json"}})
+    wide = {"anyOf": [{"type": "integer"} for _ in range(10_001)]}
+    assert "more than 10000" in schema_bounds_problem(wide)
+    assert schema_bounds_problem(True) is None and schema_bounds_problem({"properties": {"x": 5}}) is None
+
+
+def test_the_authority_capability_carries_no_member():
+    from bhms.runtime.authority import Policy
+
+    assert Policy().authority_capability() is None
+    assert Policy({"a": {"scopes": ["admin"]}}).authority_capability() is None  # one administrator: single-principal
+    assert Policy({"a": {"scopes": ["admin"]}, "b": {"scopes": ["read"]}}).authority_capability() == {}
+
+
+def test_a_gateway_refuses_an_upstream_description_with_a_hostile_schema():
+    from bhms.gateway.upstreams import _description_problem
+    from bhms.protocol.canonical import digest
+
+    node: dict = {"$ref": "http://example.invalid/x"}
+    for _ in range(40):
+        node = {"type": "object", "properties": {"x": node}}
+    description = {"deviceId": "d", "actions": {"a": {"input": node}}, "properties": {}, "resources": [], "capabilities": [], "safety": {}}
+    description["digest"] = digest(description)
+    assert "not acceptable" in (_description_problem(description, "d") or "")

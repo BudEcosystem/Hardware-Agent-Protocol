@@ -332,10 +332,8 @@ async def restart_recovery(c: Context) -> None:
     await c.locate()
     c.expect(c.discover_result["epoch"] != epoch_before, "a wiped store must start a new epoch")
     response = await c.call("events/read", {"after": cursor})
-    if response.ok:
-        c.expect(response.result["gap"] is True, "reading from a cursor of an earlier epoch must report gap true")
-    else:
-        c.expect(response.code == "INVALID_ARGUMENT", f"a cursor of an earlier epoch is a gap or INVALID_ARGUMENT, got {response.describe()}")
+    c.expect(response.ok and response.result["gap"] is True,
+             f"reading from a cursor of an earlier epoch must report gap true (BHMS-EVT-011): {response.describe()}")
     c.expect((await c.ok("leases/acquire", {"resources": [f"{c.axis()}/clamp"], "ttlMs": 60000}))["lease"]["fence"] >= 1, "lease after wipe")
 
 

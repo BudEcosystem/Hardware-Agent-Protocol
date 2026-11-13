@@ -1651,16 +1651,8 @@
         },
         "authority": {
           "type": "object",
-          "description": "The server serves several principals or enforces a scope policy (BHMS-SEC-010); absent means single-principal.",
-          "properties": {
-            "principals": {
-              "type": "integer",
-              "minimum": 1
-            }
-          },
-          "required": [
-            "principals"
-          ],
+          "description": "The server serves several principals or enforces a scope policy (conformance profile authority); absent means single-principal. Carries no members: a caller learns nothing about the principals.",
+          "properties": {},
           "additionalProperties": false
         },
         "extensions": {

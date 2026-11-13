@@ -113,6 +113,8 @@ class Target:
     """Gateway fixture: the device servers behind it, by namespace, started by the runner."""
     bridge_command: list[str] | None = None
     """kind ``mcp``: the MCP bridge process the runner talks to (stdio)."""
+    function_tools_command: list[str] | None = None
+    """kind ``mcp``: a command that prints the function-tool definitions of the bridge's adapter as JSON (BHMS-AGT-050)."""
     device: Target | None = None
     """kind ``mcp``: the BHMS target the bridge fronts (the runner also talks to it for counters and faults)."""
     notes: list[str] = field(default_factory=list)
@@ -431,4 +433,7 @@ def _agent_bridge(keep: str | None) -> Target:
     """The Python MCP bridge (``bhms mcp``) in front of a WebSocket conformance device."""
     device = _conformance_device("ws", keep)
     command = [sys.executable, "-m", "bhms", "mcp", device.url or "", "--token", device.token or ""]
-    return Target("agent-bridge", "mcp", bridge_command=command, device=device, work_dir=device.work_dir, simulated=True)
+    adapter = [sys.executable, "-c", "import json; from bhms.bridges.openai_tools import tools_for_openai; "
+               "print(json.dumps(tools_for_openai()))"]
+    return Target("agent-bridge", "mcp", bridge_command=command, device=device, work_dir=device.work_dir, simulated=True,
+                  function_tools_command=adapter)

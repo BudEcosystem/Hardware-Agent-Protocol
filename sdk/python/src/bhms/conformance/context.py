@@ -48,6 +48,7 @@ class Context:
         self.extra_wires: list[Wire] = []
         self.restarts = 0
         self.agent: Any = None
+        self.function_tools: list[dict[str, Any]] | None = None
         self.warnings: list[str] = []
         self.axis_id: str | None = None
         self.pump_id: str | None = None

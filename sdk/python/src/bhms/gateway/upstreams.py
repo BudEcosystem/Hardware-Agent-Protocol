@@ -39,6 +39,7 @@ from bhms.jsonrpc.session import ClientStream
 from bhms.protocol.canonical import digest
 from bhms.protocol.errors import BhmsError
 from bhms.protocol.types import to_wire
+from bhms.protocol.schema import schema_bounds_problem
 from bhms.transport.base import Transport, TransportClosed
 
 log = logging.getLogger("bhms.gateway.upstream")
@@ -427,6 +428,13 @@ def _description_problem(description: dict[str, Any], expected_id: str) -> str |
     body = {k: v for k, v in description.items() if k != "digest"}
     if digest(body) != description.get("digest"):
         return "its digest does not match its content"
+    embedded = [a.get("input") for a in description["actions"].values()] + [a.get("output") for a in description["actions"].values()] + [
+        p.get("schema") for p in description["properties"].values() if isinstance(p, dict)] + [
+        e.get("data") for e in (description.get("events") or {}).values() if isinstance(e, dict)]
+    for node in embedded:
+        problem = schema_bounds_problem(node)  # BHMS-SEC-021: bounded, and no remote $ref (never fetched)
+        if problem:
+            return f"an embedded schema is not acceptable: {problem}"
     return None
 
 

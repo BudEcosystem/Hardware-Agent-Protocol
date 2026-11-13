@@ -166,7 +166,7 @@ class Gateway:
             "events": {"retentionS": cfg.event_retention_s, "maxPageSize": cfg.max_page_size},
             "gateway": {"crossDeviceLeases": True, "upstreams": len(cfg.upstreams)}}
         authority = self.policy.policy.authority_capability()
-        if authority:
+        if authority is not None:
             caps["authority"] = authority
 
         def principal(peer: Any) -> dict[str, Any] | None:

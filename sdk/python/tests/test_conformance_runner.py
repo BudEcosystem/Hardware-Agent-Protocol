@@ -88,6 +88,14 @@ def test_every_core_must_is_covered_or_has_a_recorded_reason():
     assert len({s.name for s in REGISTRY}) == len(REGISTRY)
 
 
+def test_inspection_exemptions_match_the_index_so_nothing_is_silently_downgraded():
+    index = requirements.by_id()
+    for rid, (kind, _) in coverage.EXEMPT.items():
+        if kind == "inspection":
+            assert index[rid]["method"] == "inspection", f"{rid} is exempt as inspection but the index says {index[rid]['method']}"
+        assert kind != "not-applicable" or rid == "BHMS-EVT-013"  # the one row that v0.1 cannot exercise (read is one global scope)
+
+
 async def test_cli_runs_one_check_and_writes_the_json_report(tmp_path):
     out = tmp_path / "report.json"
     result = await invoke("conformance", "conformance-device", "--only", "lifecycle.nan-tokens", "--json", str(out), "--seed", "3", "--allow-unproven",

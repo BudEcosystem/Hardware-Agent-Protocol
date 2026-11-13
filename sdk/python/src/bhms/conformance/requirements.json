@@ -2245,8 +2245,8 @@
   "area": "CNF",
   "level": "MUST",
   "profile": "core",
-  "method": "schema",
+  "method": "inspection",
   "summary": "An implementation's message validator MUST accept every valid example in `spec/bhms/examples/` and reject every `invalid-*` example. (14)",
-  "test": "Run the example corpus through the implementation's validator: valid accepted, invalid rejected."
+  "test": "Run the example corpus through the implementation's validator: valid accepted, invalid rejected. The validator is a library of the implementation and cannot be driven over the wire, so this row needs review evidence (the SDK's own test suite) and is never an automated pass."
  }
 ]

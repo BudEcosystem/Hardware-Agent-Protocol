@@ -25,7 +25,7 @@ A conformance claim names the protocol version and the profiles it covers.
 | `agent` | MCP bridges and function-tool adapters | `agent` |
 
 `authority` applies to servers that serve more than one principal or enforce a scope policy, and they say so with `capabilities.authority`. A server that does
-not advertise it is single-principal: every authenticated caller has full authority, and the report says so. A gateway always claims `authority`.
+not advertise it is single-principal: every authenticated caller has full authority, and the report says so. A gateway always claims `authority`. A server or gateway that can be reached only over stdio has a single principal (the parent) and therefore cannot demonstrate `authority`, nor `gateway`, which requires it.
 
 ## 14.2 Test methods
 
@@ -66,7 +66,7 @@ review evidence that no test run can supply. A `MUST` row that no check can prov
 
 A conformance **claim** is made against an implementation that hosts the conformance device (BHMS-CNF-001: the conformance device is declared with the
 extension `org.bhms/conformance`, or asserted behind a gateway). Against arbitrary real devices the runner can only run the generic checks and produces a
-**generic report**, which is labelled `claim: false` and never supports a profile claim.
+**generic report**: its JSON says `conformance.reportKind: "generic"` and every profile `claimable: false`, and it never supports a profile claim.
 
 **BHMS-CNF-005** A report MUST state whether devices were physical or simulated.
 Passing against simulated devices is not evidence of physical behaviour
@@ -398,9 +398,9 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-CNF-003 | MUST | core | Each result MUST record the requirement ID, the schema digest, the implementation commit, the transport, the random seed and the exact command that reproduces it. (14) | inspection | Report records the evidence fields. |
 | BHMS-CNF-004 | MAY | core | A profile MAY be claimed only when every row of that profile has passed or is `not-applicable` with a reason. (14) | inspection | Profile claims are backed by passing rows for all of the profile's IDs. |
 | BHMS-CNF-005 | MUST | core | A report MUST state whether devices were physical or simulated. (14) | inspection | Reports with simulated devices say so. |
-| BHMS-CNF-006 | MUST | core | An implementation's message validator MUST accept every valid example in `spec/bhms/examples/` and reject every `invalid-*` example. (14) | schema | Run the example corpus through the implementation's validator: valid accepted, invalid rejected. |
+| BHMS-CNF-006 | MUST | core | An implementation's message validator MUST accept every valid example in `spec/bhms/examples/` and reject every `invalid-*` example. (14) | inspection | Run the example corpus through the implementation's validator: valid accepted, invalid rejected. The validator is a library of the implementation and cannot be driven over the wire, so this row needs review evidence (the SDK's own test suite) and is never an automated pass. |
 
-Total: 250 requirements — agent 19, compact 17, fault 48, inspection 19, schema 11, transport 14, wire 122.
+Total: 250 requirements — agent 19, compact 17, fault 48, inspection 20, schema 10, transport 14, wire 122.
 
 ## 14.5 The reference runner
 
@@ -409,7 +409,7 @@ JSON-RPC over any binding and never imports the implementation under test. Each 
 `bhms conformance --coverage` prints, for every row of this index, the checks that cover it or the reason none does
 (`inspection`, `not-yet-testable`). The report lists every requirement of the claimed profiles with one status
 (BHMS-CNF-002), the schema digest, seed and reproducing command (BHMS-CNF-003) and whether devices are simulated
-(BHMS-CNF-005); the exit status is 1 while a `MUST` row failed, 3 when none failed but a `MUST` row that a check could have proven was skipped (the claim is unsupported), 2 when the target cannot be reached.
+(BHMS-CNF-005); the exit status is 1 while a `MUST` row failed, 3 when none failed but a `MUST` row that a check could have proven was skipped, or that no check can prove yet (`not-yet-testable`), so the claim is unsupported, 2 when the target cannot be reached.
 
 Shared test vectors live in `spec/bhms/conformance/vectors/*.json` so that every SDK's own tests can reuse them:
 `malformed.json` (raw frames the server must refuse, BHMS-LIF-001/010/011, BHMS-TRN-002), `arguments.json` (argument

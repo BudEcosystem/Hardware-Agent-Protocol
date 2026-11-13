@@ -55,6 +55,8 @@ class RunOptions:
     upstreams: tuple[str, ...] = ()
     """``--upstream NAMESPACE=TARGET``: direct connections to the conformance devices behind a gateway (fault injection)."""
     physical_ok: bool = False
+    function_tools: str | None = None
+    """``--function-tools FILE``: the OpenAI function-tool definitions of the bridge's adapter (JSON list), for BHMS-AGT-050."""
 
 
 @dataclass
@@ -309,6 +311,7 @@ async def run(opts: RunOptions) -> Report:
 
             assert target.bridge_command is not None
             ctx.agent = agent = await AgentWire(target.bridge_command).start()
+            ctx.function_tools = await _function_tools(opts, target)
             profiles, unavailable = ["agent"], {}
         else:
             profiles, unavailable = expand_profiles(opts.profiles, ctx.caps, target.kind)
@@ -348,6 +351,21 @@ async def run(opts: RunOptions) -> Report:
         await target.aclose()
 
 
+async def _function_tools(opts: RunOptions, target: Target) -> list[dict[str, Any]] | None:
+    """The adapter's function-tool definitions: from ``--function-tools FILE`` or the fixture's adapter command; None when absent."""
+    import json
+    from pathlib import Path
+
+    if opts.function_tools:
+        return json.loads(Path(opts.function_tools).read_text())
+    if target.function_tools_command:
+        process = await asyncio.create_subprocess_exec(*target.function_tools_command, stdout=asyncio.subprocess.PIPE,
+                                                       stderr=asyncio.subprocess.DEVNULL)
+        out, _ = await process.communicate()
+        return json.loads(out) if process.returncode == 0 and out.strip() else None
+    return None
+
+
 def _observer_results(findings: Any, profiles: list[str], ctx: Context) -> list[CheckResult]:
     index = requirements.by_id()
     wanted = {rid: msgs for rid, msgs in findings.findings.items() if rid in index and index[rid]["profile"] in profiles}
@@ -377,7 +395,7 @@ def _meta(opts: RunOptions, target: Target | None, ctx: Context | None, seed: in
         "allowUnproven": opts.allow_unproven,
         "reportKind": "conformance" if ctx is not None and ctx.conformance_declared else "generic",
         "authority": ("single-principal: every authenticated caller has full authority" if ctx is not None
-                      and not ctx.caps.get("authority") else (f"{ctx.caps['authority']['principals']} principals" if ctx else None)),
+                      and not ctx.caps.get("authority") else ("multi-principal: a scope policy is enforced" if ctx else None)),
         "only": list(opts.only),
         "command": command,
         "runnerPython": sys.version.split()[0],

@@ -49,6 +49,8 @@ def register(app: typer.Typer) -> None:
                                           "conformance device (behind a gateway the extension is not visible); repeatable.")] = None,
             upstream: Annotated[list[str] | None, typer.Option("--upstream", help="NAMESPACE=TARGET: a direct connection to the "
                                                                 "conformance device behind a gateway namespace (fault injection); repeatable.")] = None,
+            function_tools: Annotated[Path | None, typer.Option("--function-tools", help="Agent profile: JSON list of the OpenAI "
+                                                                 "function-tool definitions of the bridge's adapter (BHMS-AGT-050).")] = None,
             physical_ok: Annotated[bool, typer.Option("--physical-ok", help="With --physical: allow checks that move or change the devices.")] = False,
             verbose: Annotated[bool, typer.Option("--verbose", "-v", help="Also list passed checks' requirements and skipped rows.")] = False,
             list_coverage: Annotated[bool, typer.Option("--coverage", help="Print the requirement coverage table and exit.")] = False,
@@ -70,7 +72,8 @@ def register(app: typer.Typer) -> None:
         options = RunOptions(target=target, profiles=chosen, strict=strict, allow_effects=allow_effects, token=token, seed=seed,
                              only=tuple(only or ()), keep_state=keep_state, physical=physical, commit=commit,
                              device_target=device, argv=("bhms", "conformance", *sys.argv[2:]), allow_unproven=allow_unproven, conformance_device=tuple(conformance_device or ()),
-                             upstreams=tuple(upstream or ()), physical_ok=physical_ok)
+                             upstreams=tuple(upstream or ()), physical_ok=physical_ok,
+                             function_tools=str(function_tools) if function_tools else None)
         try:
             report = asyncio.run(run_conformance(options))
         except KeyboardInterrupt:

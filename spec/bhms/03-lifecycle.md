@@ -120,7 +120,7 @@ supported with defaults.
 | `programs` | `registry: bool`, `limits` | `programs/run`; `programs/register`, `programs/get`, `programs/list` when `registry` |
 | `compact` | `links` | the server bridges BHMS-Compact endpoints |
 | `gateway` | `crossDeviceLeases: bool`, `upstreams` | the server aggregates other servers |
-| `authority` | `principals` (count, at least 1) | the server serves more than one principal or enforces a scope policy (conformance profile `authority`); absent means single-principal: every authenticated caller has full authority |
+| `authority` | `{}` (no members) | the server serves more than one principal or enforces a scope policy (conformance profile `authority`); absent means single-principal: every authenticated caller has full authority |
 | `extensions` | `{"<prefix>/<name>": object}` | negotiated extensions |
 
 **BHMS-LIF-023** A server MUST advertise `operations`, `stop` and `subscriptions`.

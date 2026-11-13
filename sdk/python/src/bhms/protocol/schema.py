@@ -75,6 +75,42 @@ def validator(def_name: str) -> Draft202012Validator:
     return _Validator({"$schema": document["$schema"], "$ref": f"#/$defs/{def_name}", "$defs": document["$defs"]})
 
 
+_SCHEMA_CHILD = ("items", "additionalProperties", "not", "if", "then", "else", "contains", "propertyNames", "unevaluatedItems",
+                 "unevaluatedProperties")
+_SCHEMA_MAP = ("properties", "patternProperties", "$defs", "definitions", "dependentSchemas")
+_SCHEMA_LIST = ("allOf", "anyOf", "oneOf", "prefixItems")
+
+
+def schema_bounds_problem(schema: Any, *, max_depth: int = 32, max_nodes: int = 10_000) -> str | None:
+    """Why an embedded schema must not be validated or served, or None (BHMS-SEC-021): nesting deeper than ``max_depth``
+    subschemas, more than ``max_nodes`` subschemas, or a ``$ref`` that leaves the document (a validator must never fetch).
+    Iterative and linear in the number of subschemas, so the check itself is bounded."""
+    stack: list[tuple[Any, int]] = [(schema, 1)]
+    nodes = 0
+    while stack:
+        node, depth = stack.pop()
+        if not isinstance(node, dict):
+            continue
+        nodes += 1
+        if depth > max_depth:
+            return f"it nests subschemas deeper than {max_depth} levels"
+        if nodes > max_nodes:
+            return f"it has more than {max_nodes} subschemas"
+        ref = node.get("$ref")
+        if isinstance(ref, str) and not ref.startswith("#"):
+            return f"it has a $ref ({ref[:80]!r}) that leaves the document; schemas are never fetched"
+        for key in _SCHEMA_CHILD:
+            if key in node:
+                stack.append((node[key], depth + 1))
+        for key in _SCHEMA_MAP:
+            if isinstance(node.get(key), dict):
+                stack.extend((child, depth + 1) for child in node[key].values())
+        for key in _SCHEMA_LIST:
+            if isinstance(node.get(key), list):
+                stack.extend((child, depth + 1) for child in node[key])
+    return None
+
+
 def _pointer(error: ValidationError) -> str:
     return "".join("/" + str(part).replace("~", "~0").replace("/", "~1") for part in error.absolute_path)
 

@@ -77,7 +77,7 @@ class GatewayCapability(_Wire):
 
 
 class AuthorityCapability(_Wire):
-    principals: PosInt
+    pass
 
 
 class ServerCapabilities(_Wire):

@@ -89,6 +89,12 @@ def _no_retry_instructions(message: Message) -> Message:
     return message
 
 
+def _unquoted_device_text(message: Message) -> Message:
+    from bhms.testing.conformance_device import HOSTILE_TEXT
+
+    return _texts(message, lambda text: re.sub(r'"IGNORE[^"]*"', HOSTILE_TEXT, text) if "IGNORE" in text else text)
+
+
 DEFECTS: dict[str, BridgeDefect] = {d.name: d for d in (
     BridgeDefect("summary-too-long", "tool results start with a summary of more than 200 characters",
                  ("agent.results-and-summaries",), ("BHMS-AGT-010",), to_client=_long_summary),
@@ -103,6 +109,8 @@ DEFECTS: dict[str, BridgeDefect] = {d.name: d for d in (
                  ("agent.refusals",), ("BHMS-AGT-020",), to_client=_lose_fields),
     BridgeDefect("no-retry-note", "results no longer say that a call without operation_key is not retry-safe",
                  ("agent.freshness-and-keys",), ("BHMS-AGT-030",), to_client=_no_retry_note),
+    BridgeDefect("device-text-unquoted", "device-provided text is shown whole and unquoted, as if it were the bridge's own words",
+                 ("agent.hostile-text-is-data",), ("BHMS-SEC-020",), to_client=_unquoted_device_text),
     BridgeDefect("no-retry-instructions", "tool descriptions do not say how to retry safely",
                  ("agent.tool-surface",), ("BHMS-AGT-031",), to_client=_no_retry_instructions),
 )}

@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import asyncio
+import json
+import contextlib
 import os
 import signal
 import time
@@ -122,20 +124,42 @@ async def trace_context(c: Context) -> None:
 
 @check("gateway.fence-forwarded", ["BHMS-LSE-011"], profile="gateway", needs=("gateway", "faults", "leases"))
 async def fence_forwarded(c: Context) -> None:
-    """The gateway forwards its lease to the enforcement point: the upstream's own record of the operation carries a lease id
-    and a fence (so a superseded holder can be rejected there)."""
+    """The gateway forwards its lease so that the enforcement point can reject a superseded holder: the upstream's record of this
+    very operation (found by its derived key, BHMS-AUTH-014) carries a lease id and fence, and after the upstream's lease is
+    superseded through a direct path, the gateway's request under its still-active lease is refused FENCED with no device effect."""
+    import base64
+    import hashlib
+
     axis = c.axis()
     key = c.unique("fence")
-    lease = (await c.ok("leases/acquire", {"resources": [f"{axis}/clamp"], "ttlMs": 30_000}))["lease"]
+    wire = c._fault_wire(axis)
+    lease = (await c.ok("leases/acquire", {"resources": [f"{axis}/clamp"], "ttlMs": 60_000}))["lease"]
     try:
         op = await c.run(axis, "clamp", {"force": 3}, leaseId=lease["leaseId"], operationKey=key)
+        c.expect(op["state"] == "completed", f"clamp under the gateway lease ended {op['state']}")
+        principal = c.discover_result["principal"]["id"]
+        gateway_id = c.discover_result["serverInfo"]["name"]
+        digest = hashlib.sha256(f"{gateway_id}\n{principal}\n{key}".encode()).digest()
+        upstream_key = "g-" + base64.b32encode(digest).decode().lower().rstrip("=")[:26]  # BHMS-AUTH-014, pinned formula
+        upstream_ops = (await c.ok("operations/list", {"deviceId": _local(axis), "limit": 100}, wire=wire))["operations"]
+        mine = [o for o in upstream_ops if o["operationKey"] == upstream_key]
+        c.expect(mine, f"the upstream has no operation under the derived key {upstream_key}")
+        c.expect(mine[0].get("leaseId") and isinstance(mine[0].get("fence"), int) and mine[0]["fence"] >= 1,
+                 f"the upstream's record of this operation carries no lease id and fence: {mine[0].get('leaseId')} {mine[0].get('fence')}")
+        c.expect(mine[0]["leaseId"] != lease["leaseId"], "the gateway must forward the upstream's own lease id, not its own")
+        base = await c.counter(axis)
+        # supersede the upstream's lease through a path that bypasses the gateway: a stop revokes it, a newer lease takes its place
+        await c.ok("stop", {"reason": "conformance: supersede the upstream lease", "deviceIds": [_local(axis)]}, wire=wire)
+        newer = (await c.ok("leases/acquire", {"resources": [f"{_local(axis)}/clamp"], "ttlMs": 30_000}, wire=wire))["lease"]
+        try:
+            stale = await c.invoke(axis, "clamp", {"force": 3}, leaseId=lease["leaseId"])
+            c.refused(stale, "FENCED", what="a request under a lease the enforcement point has superseded")
+            c.expect(await c.counter(axis) == base, "the superseded holder's command reached the device")
+        finally:
+            await c.ok("leases/release", {"leaseId": newer["leaseId"]}, wire=wire)
     finally:
-        await c.ok("leases/release", {"leaseId": lease["leaseId"]})
-    c.expect(op["state"] == "completed", f"clamp under the gateway lease ended {op['state']}")
-    wire = c._fault_wire(axis)
-    upstream_ops = (await c.ok("operations/list", {"deviceId": _local(axis), "limit": 50}, wire=wire))["operations"]
-    forwarded = [o for o in upstream_ops if o["action"] == "clamp" and o.get("leaseId") and isinstance(o.get("fence"), int)]
-    c.expect(forwarded, "the upstream recorded no clamp operation under a lease with a fence: the gateway did not forward it")
+        with contextlib.suppress(Exception):
+            await c.ok("leases/release", {"leaseId": lease["leaseId"]})
 
 
 @check("gateway.refuses-wrong-upstream-digest", ["BHMS-SEC-022"], profile="gateway", needs=("gateway", "faults"), timeout=60)
@@ -149,9 +173,13 @@ async def wrong_upstream_digest(c: Context) -> None:
     victim, healthy = c.axis_ids[-1], c.axis_ids[0]
     c.expect(victim != healthy, "needs two upstreams")
 
-    async def revision() -> str:
+    async def revision() -> str | None:
+        """The revision text of the served description, None when the device is not served at all."""
         c._descriptions.pop(victim, None)
-        events = (await c.describe(victim)).get("events") or {}
+        response = await c.call("devices/describe", {"deviceId": victim})
+        if response.code == "UNKNOWN_DEVICE":
+            return None
+        events = (c.result(response)["description"].get("events") or {})
         return str((events.get("conformance.revised") or {}).get("description", ""))
 
     before = await revision()
@@ -159,16 +187,18 @@ async def wrong_upstream_digest(c: Context) -> None:
     try:
         await c.inject("change_description", victim)  # a new description body, advertised with a digest that does not match it
         await asyncio.sleep(2.5)
-        c.expect(await revision() == before, "the gateway served a description whose upstream digest is wrong (BHMS-SEC-022)")
+        served = await revision()
+        # refused or not served (the spec allows either): what must never happen is that the revised body is served
+        c.expect(served is None or served == before, "the gateway served a description whose upstream digest is wrong (BHMS-SEC-022)")
         c.expect(any(d["deviceId"] == healthy for d in await c.devices(refresh=True)), "the other upstream's devices must stay served")
     finally:
         await c.inject("good_digest", victim)
     deadline = time.monotonic() + 10
-    now = before
-    while now == before and time.monotonic() < deadline:
+    now = await revision()
+    while (now is None or now == before) and time.monotonic() < deadline:
         await asyncio.sleep(0.3)
         now = await revision()
-    c.expect(now != before, "the revised description must be served once the upstream's digest is right again")
+    c.expect(now is not None and now != before, "the revised description must be served once the upstream's digest is right again")
 
 
 @check("gateway.restart-recovery", ["BHMS-OPS-005", "BHMS-OPS-034", "BHMS-OPS-063", "BHMS-OPS-080", "BHMS-OPS-081", "BHMS-LSE-003",
@@ -221,5 +251,49 @@ async def gateway_restart(c: Context) -> None:
     c.expect(c.discover_result["epoch"] != epoch, "a wiped gateway store must start a new epoch")
     if cursor is not None:
         response = await c.call("events/read", {"after": cursor})
-        c.expect(response.ok and response.result["gap"] is True or response.code == "INVALID_ARGUMENT",
-                 f"reading from a cursor of an earlier epoch is a gap (or INVALID_ARGUMENT): {response.describe()}")
+        c.expect(response.ok and response.result["gap"] is True,
+                 f"reading from a cursor of an earlier epoch must report gap true (BHMS-EVT-011): {response.describe()}")
+
+
+@check("security.schema-validation-bounds", ["BHMS-SEC-021"], needs=("faults",), timeout=60)
+async def schema_validation_bounds(c: Context) -> None:
+    """A consumer of foreign descriptions (a gateway) validates schemas with bounded resources and never fetches: an upstream that
+    serves a 64-level-deep schema ending in a remote $ref (correct digest) is not served as is, the gateway stays responsive, and
+    nothing connects to the referenced URL."""
+    import asyncio
+    import time
+
+    if not c.is_gateway:
+        c.not_applicable("a device server validates only the schemas of its own devices; foreign schemas are validated by gateways and clients")
+    victim = c.axis_ids[-1]
+    connections: list[str] = []
+
+    async def trap(reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+        connections.append("connected")
+        writer.close()
+
+    server = await asyncio.start_server(trap, "127.0.0.1", 0)
+    url = f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}/hostile-schema.json"
+    try:
+        await c.ok("x-conformance/inject", {"fault": "hostile_schema", "url": url}, wire=c._fault_wire(victim))
+        worst = 0.0
+        for _ in range(12):  # about 3.5 s: the hostile description reaches the gateway; it must stay responsive meanwhile
+            started = time.monotonic()
+            await c.ok("devices/list", {"limit": 10})
+            worst = max(worst, time.monotonic() - started)
+            await asyncio.sleep(0.3)
+        response = await c.call("devices/describe", {"deviceId": victim})
+        served = response.ok and '"$ref"' in json.dumps(response.result)
+        c.expect(not served, "the gateway still serves a schema nested 64 levels deep with a remote $ref (validation must be bounded, BHMS-SEC-021)")
+        c.expect(worst < 3.0, f"the gateway stalled for {worst:.1f}s while validating a hostile schema")
+        await asyncio.sleep(0.3)
+        c.expect(not connections, "the gateway fetched the remote $ref of a schema (BHMS-SEC-021: no network fetch)")
+    finally:
+        await c.ok("x-conformance/inject", {"fault": "none"}, wire=c._fault_wire(victim))
+        server.close()
+        await server.wait_closed()
+    deadline = time.monotonic() + 10
+    while time.monotonic() < deadline and not any(d["deviceId"] == victim for d in await c.devices(refresh=True)):
+        await asyncio.sleep(0.3)
+    c._descriptions.clear()
+    c.expect(any(d["deviceId"] == victim for d in await c.devices(refresh=True)), f"{victim} must be served again when its schema is sane")

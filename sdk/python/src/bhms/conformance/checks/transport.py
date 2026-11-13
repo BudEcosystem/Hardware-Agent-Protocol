@@ -296,6 +296,9 @@ async def no_token_in_logs(c: Context) -> None:
 async def credentials_required(c: Context) -> None:
     """A request on a network transport without a valid credential is refused (WebSocket upgrade: HTTP 401; Streamable HTTP:
     401 for everything except server/discover). Stdio and Unix peers are identified by the transport itself."""
+    if c.target.kind == "tcp":
+        c.not_applicable("a TCP loopback listener identifies the peer by its address; bearer authentication on TCP is required only beyond "
+                         "loopback (BHMS-TRN-021, a deployment check), and the runner has no bearer path on TCP to test")
     if c.target.kind not in ("ws", "http"):
         c.not_applicable("the principal of this binding comes from the transport itself (stdio parent, socket peer credential)")
     if c.target.kind == "ws":

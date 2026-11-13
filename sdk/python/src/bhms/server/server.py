@@ -223,7 +223,7 @@ class DeviceServer:
         if self.programs_enabled:
             caps["programs"] = {"registry": True, "limits": self.program_limits}
         authority = self.policy.authority_capability()
-        if authority:
+        if authority is not None:
             caps["authority"] = authority
         if self._extensions:
             caps["extensions"] = dict(self._extensions)

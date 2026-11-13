@@ -256,23 +256,3 @@ async def programs_authority(c: Context) -> None:
         c.refused(await agent.request("programs/run", {"digest": registered["digest"], "arguments": {}}), "UNAUTHORIZED",
                   what="registration must not grant the step authority", ids=("BHMS-PRG-021",))
     c.expect(await c.counter(device) == base, "a refused program reached the device")
-
-
-@check("authority.events-visibility", ["BHMS-EVT-013"], profile="authority", needs=("principals", "cap:events"))
-async def events_visibility(c: Context) -> None:
-    """Events about devices a principal may not read are skipped without breaking cursor continuity (no gap, no error naming
-    them)."""
-    device = _axis(c)
-    before = (await c.ok("events/read", {"limit": 1}))["cursor"]
-    await c.ok("stop", {"reason": "conformance visibility", "deviceIds": [device]})
-    mine = (await c.ok("events/read", {"after": before, "limit": 100}))["events"]
-    c.expect(any(e.get("deviceId") == device for e in mine), "the administrator must see the stop event")
-    async with c.fresh_wire("nobody") as nobody:
-        response = await nobody.request("events/read", {"after": before, "limit": 100})
-        if response.ok:
-            seen = response.result["events"]
-            c.expect(not [e for e in seen if e.get("deviceId") == device] and response.result["gap"] is False,
-                     "events of an unreadable device must be skipped without a gap")
-        else:
-            c.expect(response.code in ("UNAUTHORIZED", "UNKNOWN_DEVICE") and device not in json.dumps(response.error),
-                     f"a principal without read scope gets no events and no hint of the device: {response.describe()}")

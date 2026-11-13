@@ -180,12 +180,11 @@ class Policy:
         return tuple(e.principal for e in self._entries)
 
     def authority_capability(self) -> dict[str, int] | None:
-        """``capabilities.authority`` (conformance profile ``authority``): advertised when the policy defines more than one
-        principal or any principal that is not an administrator; ``None`` for a single-principal server."""
+        """``capabilities.authority`` (conformance profile ``authority``): ``{}`` when the policy defines more than one principal or
+        any principal that is not an administrator, ``None`` for a single-principal server. It carries no member: a caller learns
+        nothing about how many principals exist."""
         entries = self.principals
-        if len(entries) > 1 or any("admin" not in p.scopes for p in entries):
-            return {"principals": len(entries)}
-        return None
+        return {} if len(entries) > 1 or any("admin" not in p.scopes for p in entries) else None
 
     def by_token(self, token: str | None) -> Principal | None:
         """The principal holding ``token`` (constant-time comparison of digests, BHMS-SEC-002)."""
