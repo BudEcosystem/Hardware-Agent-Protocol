@@ -61,3 +61,34 @@ def test_unserializable_rejected_as_invalid_argument():
     with pytest.raises(BhmsError) as ei:
         canonical({"x": object()})
     assert ei.value.code == "INVALID_ARGUMENT"
+
+
+# --------------------------------------------------------------------------- fast path == reference (Task 4)
+
+import rfc8785  # noqa: E402
+from hypothesis import given, settings  # noqa: E402
+from hypothesis import strategies as st  # noqa: E402
+
+_json = st.recursive(
+    st.none() | st.booleans() | st.integers(min_value=-(2 ** 53) + 1, max_value=2 ** 53 - 1)
+    | st.floats(allow_nan=False, allow_infinity=False) | st.text(),
+    lambda children: st.lists(children, max_size=5) | st.dictionaries(st.text(), children, max_size=5),
+    max_leaves=30)
+
+
+@given(_json)
+@settings(max_examples=2000, deadline=None)
+def test_fast_path_is_byte_identical_to_the_reference(value):
+    try:
+        expected = rfc8785.dumps(value)
+    except rfc8785.CanonicalizationError:
+        with pytest.raises(BhmsError):
+            canonical(value)
+        return
+    assert canonical(value) == expected
+
+
+@pytest.mark.parametrize("value", [5.0, -0.0, 1e-4, 9.999e15, 1e16, 2 ** 53 + 0.0, 123456789012345680000.0, 0.1,
+                                   1 / 3, 50.1, -7.25e-5, {"퟿": 1, "": 2, "\U0001f600": 3, "a": 4}])
+def test_fast_path_edge_values(value):
+    assert canonical(value) == rfc8785.dumps(value)
