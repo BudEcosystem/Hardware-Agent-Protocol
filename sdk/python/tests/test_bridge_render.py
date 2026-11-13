@@ -86,8 +86,35 @@ def test_stop_summary_never_claims_more_than_confirmed():
               "revokedLeases": []}, {"deviceId": "pump-1", "outcome": "initiated", "evidence": "none", "canceledOperations": [],
                                      "revokedLeases": []}]
     text = check(render.summarize_stop(stops))
-    assert text.startswith("stop: arm-1 confirmed, pump-1 initiated (2 operations canceled)")
-    assert "not confirmed stopped" in text
+    assert text.startswith("stop not confirmed on 1 of 2 devices (1 initiated)") and "pump-1 initiated" in text
+    assert "(2 operations canceled)" in text and "stopped" not in text and "Next:" in text
+    assert check(render.summarize_stop(stops[:1])).startswith("stop: 1 confirmed") and "arm-1 confirmed" in render.summarize_stop(stops[:1])
+
+
+def test_a_failed_stop_among_many_confirmed_is_never_hidden():
+    stops = [{"deviceId": f"device-number-{i}", "outcome": "confirmed", "canceledOperations": []} for i in range(12)]
+    stops.append({"deviceId": "zz-last", "outcome": "failed", "canceledOperations": []})
+    stops.append({"deviceId": "yy-unsupported", "outcome": "unsupported", "canceledOperations": []})
+    text = check(render.summarize_stop(stops))
+    assert "2 of 14" in text and "zz-last FAILED" in text and "1 failed" in text and "Next:" in text and "stopped" not in text
+
+
+def test_protected_clauses_survive_long_ids_and_many_result_fields():  # AGT-011, AGT-020, AGT-030
+    long_op = op(operationId="op-" + "9" * 40, deviceId="d" * 100, action="a" * 60, keyOrigin="server",
+                 result={f"channel_{i}_reading": 1.5 * i for i in range(12)})
+    for replayed in (False, True):
+        text = check(render.summarize_operation(long_op, replayed=replayed, keyed=False, show_key=True))
+        assert "(effect verified" in text and "(not retry-safe: no operation_key)" in text and ("replayed" in text) == replayed
+        assert "completed" in text and long_op["operationId"] in text
+    err = {"bhmsCode": "DEVICE_FAULT", "message": "m" * 400, "mayHaveActed": True, "retry": "after-reconcile", "hint": "h" * 400}
+    failed = op(operationId="op-" + "9" * 40, deviceId="d" * 100, action="a" * 60, state="failed", effect="unknown", result=None,
+                error=err)
+    for replayed in (False, True):
+        text = check(render.summarize_operation(failed, replayed=replayed, keyed=False, show_key=True))
+        assert "; outcome unknown \u2014 check before retrying)" in text and "(effect unknown" in text and "not retry-safe" in text
+        assert "Next:" in text and "failed" in text and ("replayed" in text) == replayed
+    unknown = op(state="unknown", effect="unknown", result=None, operationId="op-" + "9" * 40)
+    assert "outcome unknown \u2014 check before retrying" in check(render.summarize_operation(unknown, keyed=False, show_key=True))
 
 
 def test_refusal_summary_carries_message_and_hint_within_the_limit():

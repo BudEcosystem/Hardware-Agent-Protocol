@@ -109,6 +109,8 @@ class AgentRun:
     input_tokens: int = 0
     output_tokens: int = 0
     requests: int = 0
+    last_input: int = 0  # input tokens of the latest request: the next one carries at least this plus its answer
+    last_output: int = 0
     stopped: str = "final"
     api: str = "responses"
     model: str = ""
@@ -176,10 +178,17 @@ async def run_agent(client: Client | AgentBridge, model: str, task: str, budget:
     return run
 
 
-def _left(budget: int, run: AgentRun, cap: int) -> int | None:
-    """Output-token cap for the next request, or None when the budget cannot pay for one."""
-    remaining = budget - run.tokens
-    return None if remaining < MIN_OUTPUT_TOKENS else min(cap, remaining)
+def _left(budget: int, run: AgentRun, cap: int, new_chars: int) -> int | None:
+    """Output-token cap for the next request, or None when the budget cannot pay for one (the budget is a ceiling).
+
+    The next request re-sends everything before it: at least the previous request's input and answer, plus the
+    ``new_chars`` about to be added (task and tools for the first request, tool results afterwards), counted pessimistically
+    at 3 characters per token. Its output is capped to what remains after that, so ``run.tokens`` cannot pass ``budget``
+    unless the model's tokenizer is denser than the estimate.
+    """
+    estimated_input = run.last_input + run.last_output + (new_chars + 2) // 3
+    room = budget - run.tokens - estimated_input
+    return None if room < MIN_OUTPUT_TOKENS else min(cap, room)
 
 
 async def _execute(bridge: AgentBridge, run: AgentRun, name: str, raw: Any) -> str:
@@ -201,7 +210,8 @@ async def _loop_responses(bridge: AgentBridge, llm: Any, model: str, task: str, 
     pending: list[dict[str, Any]] = [{"role": "user", "content": task}]
     previous: str | None = None
     while True:
-        room = _left(budget, run, cap)
+        room = _left(budget, run, cap, sum(len(json.dumps(p)) for p in pending) + (
+            len(json.dumps(tools)) + len(system) if previous is None else 0))
         if room is None:
             run.stopped = "budget"
             return
@@ -214,6 +224,7 @@ async def _loop_responses(bridge: AgentBridge, llm: Any, model: str, task: str, 
         used_in, used_out = _usage(response)
         run.input_tokens += used_in
         run.output_tokens += used_out
+        run.last_input, run.last_output = used_in, used_out
         previous = response.get("id")
         calls = [item for item in response.get("output") or [] if item.get("type") == "function_call"]
         if not calls:
@@ -247,8 +258,10 @@ def _responses_text(response: dict[str, Any]) -> str:
 async def _loop_chat(bridge: AgentBridge, llm: Any, model: str, task: str, budget: int, tools: list[dict[str, Any]],
                      run: AgentRun, max_steps: int, system: str, cap: int) -> None:
     messages: list[dict[str, Any]] = [{"role": "system", "content": system}, {"role": "user", "content": task}]
+    sent = 0  # messages already sent in an earlier request
     while True:
-        room = _left(budget, run, cap)
+        room = _left(budget, run, cap, sum(len(json.dumps(m)) for m in messages[sent:]) + (
+            len(json.dumps(tools)) if not run.requests else 0))
         if room is None:
             run.stopped = "budget"
             return
@@ -256,9 +269,11 @@ async def _loop_chat(bridge: AgentBridge, llm: Any, model: str, task: str, budge
             model=model, messages=messages, tools=tools, max_completion_tokens=max(room, MIN_OUTPUT_TOKENS),
             parallel_tool_calls=False))
         run.requests += 1
+        sent = len(messages)
         used_in, used_out = _usage(response)
         run.input_tokens += used_in
         run.output_tokens += used_out
+        run.last_input, run.last_output = used_in, used_out
         message = (response.get("choices") or [{}])[0].get("message") or {}
         calls = message.get("tool_calls") or []
         if not calls:

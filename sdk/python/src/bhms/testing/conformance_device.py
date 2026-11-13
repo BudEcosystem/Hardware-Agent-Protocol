@@ -22,7 +22,9 @@ Device ``axis-1`` — a simulated linear axis (resources ``axis-1/motion``, ``ax
       command — after the fault ``sensor_stale`` every acquisition carries 10 000 ms of latency, so observations are
       ``stale``, fail every ``maxAgeMs`` ≤ 10 000 and fail ``requiresFresh``.
     * ``fifo`` (``1``, ``readEffect: transaction``, ``requiresLease``, resources ``axis-1/motion``): each fresh
-      acquisition pops one value and increments ``fifo_reads`` (a device transaction).
+      acquisition pops one value and increments ``fifo_reads`` (a device transaction). BHMS-OBS-006: an action settling on
+      ``axis-1`` forgets the retained ``position``/``temperature`` samples (next plain read acquires a new one) but never the
+      retained ``fifo`` sample: a plain read of ``fifo`` stays a retained read (BHMS-OBS-011) and leaves ``fifo_reads`` alone.
     * ``move_to(position: 0–200 mm, multipleOf 0.1)`` — ``absolute``, ``reversible``, ``completionEvidence: measured``
       (``verifiedBy: position``), ``cancel: supported``, ``maxDurationMs`` 5000; takes 20 ms; verified when the encoder
       agrees within 0.05 mm.

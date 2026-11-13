@@ -105,11 +105,12 @@ class ObservationHub:
         """Forget the retained samples of ``device`` that can be acquired on demand (BHMS-OBS-006).
 
         An action that may have changed the device has just finished: a sample taken before it must not be presented as
-        the current state, so the next plain read acquires a new one. Push-only properties (no getter) keep theirs.
+        the current state, so the next plain read acquires a new one. Push-only properties (no getter) keep theirs, and so do ``readEffect: transaction`` properties: a plain
+        read of them must stay a retained read (BHMS-OBS-011), never start a device transaction.
         """
         for prop, spec in device.properties.items():
             state = self._state.get((device.device_id, prop))
-            if state is not None and spec.getter is not None:
+            if state is not None and spec.getter is not None and spec.read_effect != "transaction":
                 state.sample = None
 
     # ------------------------------------------------------------------ presentation

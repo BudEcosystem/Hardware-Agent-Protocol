@@ -8,16 +8,25 @@ from __future__ import annotations
 
 import json
 
+import pytest
+
 from bhms.bridges import AgentBridge, render, tool_definitions
 from bhms.client.client import Client
 from bhms.protocol.types import to_wire
 from bhms.testing.conformance_device import build
 from bhms.testing.memory import connect_in_process
 
-# Measured on 2026-11-13 with bytes/4 (compact JSON of {name, description, parameters}); a regression guard, not a target.
-TOOL_TOKEN_CEILING = {"bhms_find": 200, "bhms_describe": 120, "bhms_read": 200, "bhms_invoke": 350, "bhms_operation": 150,
-                      "bhms_cancel": 130, "bhms_stop": 160, "bhms_run_program": 1800}
-ALL_TOOLS_CEILING = 3200
+# R19 ceilings, measured with tiktoken o200k_base on 2026-11-13 (compact JSON of {name, description, parameters}).
+TOTAL_CEILING = 1500
+SINGLE_CEILING = 400
+
+
+def encoder():
+    tiktoken = pytest.importorskip("tiktoken")
+    try:
+        return tiktoken.get_encoding("o200k_base")
+    except Exception as exc:  # the encoding file is downloaded once; skip, never fake, when it is unavailable
+        pytest.skip(f"o200k_base unavailable: {exc}")
 
 
 def tokens(text: str) -> int:
@@ -25,17 +34,26 @@ def tokens(text: str) -> int:
 
 
 def definition_tokens() -> dict[str, int]:
-    return {t.name: tokens(json.dumps({"name": t.name, "description": t.description, "parameters": t.input_schema},
-                                      separators=(",", ":"), ensure_ascii=False)) for t in tool_definitions()}
+    enc = encoder()
+    return {t.name: len(enc.encode(json.dumps({"name": t.name, "description": t.description, "parameters": t.input_schema},
+                                              separators=(",", ":"), ensure_ascii=False))) for t in tool_definitions()}
 
 
-def test_at_most_eight_tools_and_each_definition_stays_within_its_ceiling():
+def test_at_most_eight_tools_within_the_token_ceilings():
     sizes = definition_tokens()
     assert len(sizes) == 8
-    for name, size in sizes.items():
-        assert size <= TOOL_TOKEN_CEILING[name], (name, size)
-    assert sum(sizes.values()) <= ALL_TOOLS_CEILING, sizes
-    print("tool definition tokens (bytes/4):", sizes, "total", sum(sizes.values()))
+    assert all(size <= SINGLE_CEILING for size in sizes.values()), sizes
+    assert sum(sizes.values()) <= TOTAL_CEILING, sizes
+    print("tool definition tokens (o200k_base):", sizes, "total", sum(sizes.values()))
+
+
+def test_the_program_grammar_is_on_demand_and_small_enough_to_attach_to_a_refusal():
+    from bhms.bridges.grammar import PROGRAM_GRAMMAR
+
+    run = next(t for t in tool_definitions() if t.name == "bhms_run_program")
+    assert run.input_schema["properties"]["program"]["type"] == "object" and "$defs" not in run.input_schema
+    assert "bhms://grammar/program" in run.description
+    assert len(encoder().encode(PROGRAM_GRAMMAR)) <= 600
 
 
 async def test_device_summaries_and_signature_blocks_fit_their_budgets(tmp_path):

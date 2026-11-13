@@ -86,7 +86,7 @@ def test_new_then_dev_then_invoke_end_to_end_in_a_pseudo_terminal(tmp_path, env)
 
         term.send("describe 1")
         described = term.expect("bhms> ")
-        assert "action move_to(target: number um 0..200 step 0.1)" in described and "effect=reversible" in described
+        assert "action move_to(target: number um 0..200)" in described and "effect=reversible" in described and "cancel=no" in described
 
         term.send("read 1 position")
         assert "demo-stage.position = 0 um (simulated, valid," in term.expect("bhms> ")
@@ -97,14 +97,13 @@ def test_new_then_dev_then_invoke_end_to_end_in_a_pseudo_terminal(tmp_path, env)
         term.send("1")
         assert "1. move_to" in term.expect("action (number or name): ")
         term.send("1")
-        prompt = term.expect("target: number um 0..200 step 0.1: ")  # the label shows type, unit and bounds
+        prompt = term.expect("target: number um 0..200: ")  # the label shows type, unit and bounds
         assert "required" not in prompt
         term.send("500")
-        assert "above the maximum 200 um" in term.expect("target: number um 0..200 step 0.1: ")  # validated as you type
+        assert "above the maximum 200 um" in term.expect("target: number um 0..200: ")  # validated as you type
         term.send("42.5")
         result = term.expect("bhms> ", timeout=30)
         assert "operation_key insp-" in result and "completed: position 42.5 um" in result and "retry-safe" in result
-        assert "▸" in result or True  # the live feed line may arrive just before or after the prompt
 
         term.send("ops")
         ops = term.expect("bhms> ")
@@ -116,7 +115,7 @@ def test_new_then_dev_then_invoke_end_to_end_in_a_pseudo_terminal(tmp_path, env)
         term.send("describe ghost")
         assert "Refused:" in term.expect("bhms> ")
         term.send("stop all")
-        assert "stop: demo-stage confirmed" in term.expect("bhms> ")
+        assert "stop not confirmed on 1 of 1 devices (1 unsupported)" in term.expect("bhms> ")  # honest: no stop procedure declared
         term.send("quit")
     finally:
         code = term.close()
