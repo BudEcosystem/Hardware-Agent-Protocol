@@ -2,6 +2,10 @@
 
 ## 2026-11-13 (v0.1)
 
+Gateway round (Task 5): BHMS-AUTH-014 pins the upstream key formula and states that the gateway's own key lookup precedes
+policy; scope `operations:read`; §7.6 (gateways); BHMS-TRN-040 rejects a missing header too; BHMS-DEV-002 says a gateway
+serves its own description.
+
 First normative version.
 
 - JSON-RPC 2.0, stateless requests with `params._meta["bhms/protocolVersion"]`;

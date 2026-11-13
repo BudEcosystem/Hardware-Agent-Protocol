@@ -71,8 +71,8 @@ A server MAY expose one HTTP endpoint (conventionally `/bhms`).
 **BHMS-TRN-040** Each client message MUST be an HTTP POST with
 `Content-Type: application/json` and headers `BHMS-Protocol-Version` and
 `BHMS-Method` mirroring `params._meta["bhms/protocolVersion"]` and `method`.
-A server MUST reject a mismatch between header and body with HTTP 400 and error
-`INVALID_ARGUMENT` naming the header.
+A server MUST reject a missing header, or a mismatch between header and body, with
+HTTP 400 and error `INVALID_ARGUMENT` naming the header.
 
 **BHMS-TRN-041** The response to an ordinary request MUST be either
 `application/json` (one response) or `text/event-stream` whose events each carry

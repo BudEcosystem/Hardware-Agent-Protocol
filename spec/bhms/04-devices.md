@@ -25,7 +25,9 @@ existing `deviceId` to a replacement physical device without a change of
 
 **BHMS-DEV-002** A gateway that aggregates servers MUST keep `deviceId`s unique
 across upstreams; it SHOULD prefix upstream ids (`<upstream>/<deviceId>`) on
-collision and MUST keep the mapping stable across restarts.
+collision and MUST keep the mapping stable across restarts. A gateway serves its own
+description of each device (prefixed `deviceId` and resource ids, its own `digest`,
+BHMS-DEV-021); see §7.6.
 
 ## 4.2 `devices/list`
 

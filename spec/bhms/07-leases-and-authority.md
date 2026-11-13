@@ -90,6 +90,7 @@ gateway policy grants each principal **scopes**:
 | `stop` or `stop:<deviceGlob>` | `stop` on all or matching devices |
 | `programs:run` | `programs/run` (each step also needs its `invoke` scope) |
 | `programs:register` | `programs/register` |
+| `operations:read` | `operations/get`, `operations/wait`, `operations/list` and operation notifications for other principals' operations (never `operations/cancel`, BHMS-OPS-054) |
 | `admin` | everything, plus other principals' operations |
 
 `<pattern>` is `<deviceGlob>/<actionGlob>` (split at the last `/`) or
@@ -124,11 +125,19 @@ require an `invoke` scope matching `<deviceId>/<property>` in addition to `read`
 already admitted continue under their recorded authority and lease policy; a
 server SHOULD revoke the leases of a principal whose `lease` scope is revoked.
 
-**BHMS-AUTH-014** A gateway forwarding a request MUST enforce its own policy for
-the client principal before forwarding, and MUST namespace idempotency keys per
-client principal when forwarding (for example
-`upstreamKey = "g-" + first 32 hex digits of sha256(principal + "\n" + operationKey)`), so
-that two clients' keys cannot collide upstream.
+**BHMS-AUTH-014** A gateway forwarding a request MUST enforce its own policy for the client principal before
+forwarding, but only *after* its own `(principal, operationKey)` lookup (BHMS-OPS-033): a retry of an admitted request
+returns the original operation even when the principal's scope was revoked since. It MUST namespace idempotency keys per
+client principal when forwarding, so that two clients' keys cannot collide upstream, and the derivation MUST be
+deterministic so that a restarted gateway re-sends the same upstream key and the upstream deduplicates. The pinned
+formula is
+
+```
+upstreamKey = "g-" + lowercase(base32(sha256(gatewayId "\n" principal "\n" clientKey)))[0:26]
+```
+
+(`base32` is RFC 4648 without padding; `gatewayId` is the gateway's configured identity; the result is 28 characters of
+`[g\-a-z2-7]`, a valid `operationKey`). A request without a client key gets a gateway-generated one first (BHMS-OPS-035).
 
 ## 7.5 Stop
 
@@ -177,3 +186,27 @@ ordinary new operations until the journal is writable.
 
 **BHMS-AUTH-026** A stop MUST NOT accept parameters that command motion,
 setpoints or any effect other than the device's commissioned stop procedure.
+
+## 7.6 Gateways (notes)
+
+A gateway is a server whose devices are its upstreams' devices. What differs from a device server, normatively covered by
+BHMS-DEV-002, BHMS-LSE-011, BHMS-LSE-013, BHMS-AUTH-014 and BHMS-SEC-022/061:
+
+- *Ids.* A device is `<namespace>/<upstreamDeviceId>`; its resources are `<namespace>/<upstreamResourceId>`. Scope patterns
+  split at the **last** `/` (§7.4), so `invoke:bench/*/*` means any action of any device of namespace `bench`, while
+  `invoke:bench/*` names a device `bench`, which does not exist, and matches nothing. `stop:<glob>` matches the whole
+  device id (`stop:bench/*`).
+- *Descriptions.* The gateway serves its own description of a device: ids prefixed, the principal's narrowed bounds written
+  into the input schemas (an empty envelope removes the action, BHMS-AUTH-011), and the digest recomputed over those bytes
+  (BHMS-DEV-021), so the description (and `descriptionDigest` pin) differ per principal that has bounds.
+- *Operations.* A refusal by the gateway or by the upstream before it created anything creates no operation (BHMS-OPS-040).
+  The gateway records an operation once the upstream answered, or — when no answer arrived — as `unknown` (BHMS-OPS-004),
+  keeping the upstream request and the upstream's epoch; it reconciles by re-sending the **same** upstream request only while
+  the upstream's epoch is unchanged (BHMS-OPS-081). The gateway mirrors the upstream along the legal transitions of §6.3: an
+  upstream `accepted` is `dispatching` at the gateway, and an upstream `rejected` becomes `failed` with `effect: "none"`.
+- *Leases.* The gateway lease is arbitrated at the gateway; the upstream leases are held for it, in ascending resource order,
+  before it is granted, and the upstream's own lease id and fence are what is forwarded (BHMS-LSE-011, BHMS-LSE-013).
+- *Stop.* Fanned out to every upstream at once on a path that bypasses queues and concurrency limits; a device whose upstream
+  has not answered within the deadline reports `initiated`, never `confirmed` (BHMS-AUTH-022).
+- *Events.* A gateway re-records its upstreams' events in its own log with its own cursors and ids (BHMS-EVT-001).
+
