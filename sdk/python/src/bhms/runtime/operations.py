@@ -157,6 +157,25 @@ def program_effect(children: Iterable[OperationRecord]) -> str:
     return "unverified"
 
 
+def program_outcome(children: Iterable[OperationRecord]) -> dict[str, Any]:
+    """``effect`` (and, when ``verified``, the ``evidence``) to record on a program from its children (BHMS-PRG-016).
+
+    A program is ``verified`` only when every effectful child is; the journal then requires measured evidence on the
+    program itself (BHMS-OPS-006), so the children's measured observations are carried up under ``s<n>_<property>``
+    (``n`` counts the effectful children in order).
+    """
+    kids = list(children)
+    effect = program_effect(kids)
+    if effect != "verified":
+        return {"effect": effect}
+    observations: dict[str, Any] = {}
+    effectful = [c for c in kids if c.private.get("effectClass", "none") != "none" and c.dispatched]
+    for index, child in enumerate(effectful, 1):
+        for prop, observation in ((child.op.get("evidence") or {}).get("observations") or {}).items():
+            observations[f"s{index}_{prop}"] = observation
+    return {"effect": "verified", "evidence": {"kind": "measured", "observations": observations}}
+
+
 def most_severe(effects: Iterable[str]) -> str:
     return max(effects, key=lambda e: _EFFECT_RANK[e], default="none")
 
@@ -654,7 +673,7 @@ class Journal:
         error = BhmsError("INTERNAL", "server restarted during the program", may_have_acted=acted,
                           hint=f"{where}; inspect the child operations (operations/list parentOperationId) before "
                                "running a compensating program; programs are never resumed").to_operation_error()
-        self.transition(rec, "failed", error=error, effect=program_effect(children), kind=kind, detail=detail,
+        self.transition(rec, "failed", error=error, **program_outcome(children), kind=kind, detail=detail,
                         proof=None if acted else "no effectful step was dispatched")
 
     def _settle_parent_after_reconcile(self, parent_id: str) -> None:
@@ -669,4 +688,4 @@ class Journal:
 
 
 __all__ = ["TRANSITIONS", "InvalidTransition", "Journal", "OperationRecord", "derived_key", "intent_digest", "iso",
-           "key_conflict_error", "most_severe", "new_id", "now_ns", "program_effect", "server_key", "unknown_error"]
+           "key_conflict_error", "most_severe", "new_id", "now_ns", "program_effect", "program_outcome", "server_key", "unknown_error"]

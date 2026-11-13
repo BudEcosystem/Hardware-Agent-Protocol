@@ -39,7 +39,7 @@ from bhms.protocol import types
 from bhms.protocol.canonical import canonical, digest
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.operations import (OperationRecord, derived_key, intent_digest, key_conflict_error, most_severe,
-                                     now_ns, program_effect, server_key, unknown_error)
+                                     now_ns, program_outcome, server_key, unknown_error)
 from bhms.runtime.store import StoreError
 from bhms.server.validation import ArgumentValidator, check_units, effective_bounds
 
@@ -539,7 +539,7 @@ class ProgramRunner:
             try:
                 await self._steps(run, run.plan.steps, "")
                 output = resolve(run.plan.program.get("output") or {}, run.variables)
-                journal.transition(run.rec, "completed", result=output, effect=self._effect(run))
+                journal.transition(run.rec, "completed", result=output, **self._outcome(run))
             except _Halted:
                 self._halt(run)
             except _StepUnknown:
@@ -566,8 +566,8 @@ class ProgramRunner:
     def _children(self, run: _Run) -> list[OperationRecord]:
         return self.server.journal.children(run.rec.id)
 
-    def _effect(self, run: _Run) -> str:
-        return program_effect(self._children(run))
+    def _outcome(self, run: _Run) -> dict[str, Any]:
+        return program_outcome(self._children(run))
 
     def _acted(self, run: _Run) -> bool:
         return any(c.dispatched and c.private.get("effectClass", "none") != "none" for c in self._children(run))
@@ -581,7 +581,7 @@ class ProgramRunner:
         if run.rec.state == "accepted":
             journal.transition(run.rec, "rejected", error={**payload, "mayHaveActed": False})
             return
-        journal.transition(run.rec, "failed", error=payload, effect=self._effect(run),
+        journal.transition(run.rec, "failed", error=payload, **self._outcome(run),
                            proof=None if acted else "no effectful step was dispatched")
 
     def _halt(self, run: _Run) -> None:
@@ -591,7 +591,7 @@ class ProgramRunner:
         if run.rec.state == "accepted":
             journal.transition(run.rec, "canceled", detail="canceled before the first step")
         else:
-            journal.transition(run.rec, "canceled", effect=self._effect(run),
+            journal.transition(run.rec, "canceled", **self._outcome(run),
                                detail=f"no further steps after {run.done} completed step(s)")
 
     def _check_boundary(self, run: _Run) -> None:

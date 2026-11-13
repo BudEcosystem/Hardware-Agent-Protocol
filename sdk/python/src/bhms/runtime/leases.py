@@ -207,7 +207,7 @@ class LeaseManager:
         """The admission/pre-dispatch check of BHMS-LSE-010; returns the lease or raises its exact refusal."""
         needed = list(resources)
         if lease_id is None:
-            raise BhmsError("LEASE_REQUIRED", f"this needs a lease on {', '.join(needed)}", field="leaseId",
+            raise BhmsError("LEASE_REQUIRED", f"this needs a lease on {', '.join(needed)}", field="leaseId", bound=needed,
                             hint=f"acquire a lease on {', '.join(needed)} with leases/acquire and pass its leaseId")
         lease = self.get(lease_id)
         if lease is None or lease.state in ("expired", "released"):
