@@ -41,6 +41,7 @@ class Context:
         self._descriptions: dict[str, dict[str, Any]] = {}
         self.extra_wires: list[Wire] = []
         self.restarts = 0
+        self.agent: Any = None
         self.warnings: list[str] = []
         self.axis_id: str | None = None
         self.pump_id: str | None = None
@@ -62,6 +63,10 @@ class Context:
         return CONFORMANCE_EXTENSION in (self.caps.get("extensions") or {})
 
     @property
+    def has_principals(self) -> bool:
+        return bool(self.target.tokens)
+
+    @property
     def is_conformance_device(self) -> bool:
         return self.axis_id is not None and self.pump_id is not None
 
@@ -80,12 +85,13 @@ class Context:
         """Record a SHOULD-level finding of the running check (reported with the result; the check still passes)."""
         self.warnings.append(message)
 
-    def fail(self, message: str) -> None:
-        raise CheckFailed(message)
+    def fail(self, message: str, ids: tuple[str, ...] = ()) -> None:
+        raise CheckFailed(message, ids)
 
-    def expect(self, condition: Any, message: str) -> None:
+    def expect(self, condition: Any, message: str, ids: tuple[str, ...] = ()) -> None:
+        """Assert; ``ids`` names the requirement(s) of the running check that this assertion proves."""
         if not condition:
-            raise CheckFailed(message)
+            raise CheckFailed(message, ids)
 
     def skip(self, reason: str) -> None:
         raise Skipped(reason)
@@ -93,24 +99,22 @@ class Context:
     def not_applicable(self, reason: str) -> None:
         raise NotApplicable(reason)
 
-    def result(self, response: Response, what: str = "") -> dict[str, Any]:
-        """The result of a response that must be a success."""
+    def result(self, response: Response, what: str = "", ids: tuple[str, ...] = ()) -> dict[str, Any]:
+        """The result of a response that must be a success (``ids``: the requirements a failure is about)."""
         if response.result is None:
-            raise CheckFailed(f"{what or response.request.get('method', 'request')} should succeed but got: {response.describe()}")
+            raise CheckFailed(f"{what or response.request.get('method', 'request')} should succeed but got: {response.describe()}", ids)
         return response.result
 
     def refused(self, response: Response, code: str, *, field: str | None = None, may_have_acted: bool | None = False,
-                what: str = "") -> dict[str, Any]:
+                what: str = "", ids: tuple[str, ...] = ()) -> dict[str, Any]:
         """Assert that ``response`` is the BHMS error ``code`` (naming ``field`` when given) and return its ``data``."""
         label = what or response.request.get("method", "request")
-        if response.error is None:
-            raise CheckFailed(f"{label} should be refused with {code} but got: {response.describe()}")
-        if response.code != code:
-            raise CheckFailed(f"{label} should be refused with {code} but got: {response.describe()}")
+        if response.error is None or response.code != code:
+            raise CheckFailed(f"{label} should be refused with {code} but got: {response.describe()}", ids)
         if field is not None and response.data.get("field") != field:
-            raise CheckFailed(f"{label}: {code} should name field {field!r}, named {response.data.get('field')!r}")
+            raise CheckFailed(f"{label}: {code} should name field {field!r}, named {response.data.get('field')!r}", ids)
         if may_have_acted is not None and response.data.get("mayHaveActed") is not may_have_acted:
-            raise CheckFailed(f"{label}: {code} should carry mayHaveActed {may_have_acted}, carries {response.data.get('mayHaveActed')!r}")
+            raise CheckFailed(f"{label}: {code} should carry mayHaveActed {may_have_acted}, carries {response.data.get('mayHaveActed')!r}", ids)
         return response.data
 
     # ------------------------------------------------------------------ requests
@@ -123,9 +127,9 @@ class Context:
         return self.result(await self.call(method, params, **kw), method)
 
     @contextlib.asynccontextmanager
-    async def fresh_wire(self) -> AsyncIterator[Wire]:
-        """A new connection (a new server process for stdio targets)."""
-        wire = Wire(await self.target.connect_extra(), self.recorder, f"extra{len(self.extra_wires) + 1}").start()
+    async def fresh_wire(self, role: str | None = None) -> AsyncIterator[Wire]:
+        """A new connection (a new server process for stdio targets); ``role`` selects a principal of a gateway fixture."""
+        wire = Wire(await self.target.connect_extra(role), self.recorder, f"extra{len(self.extra_wires) + 1}").start()
         self.extra_wires.append(wire)
         try:
             yield wire

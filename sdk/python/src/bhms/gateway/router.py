@@ -83,6 +83,11 @@ def _tag(exc: BhmsError, rule: str) -> BhmsError:
                      hint=f"{exc.hint} [rule: {rule}]")
 
 
+def _reason(reason: str | None) -> dict[str, str]:
+    """The optional ``reason`` member of a forwarded ``operations/cancel``: omitted, never ``null`` (the upstream refuses null)."""
+    return {"reason": reason} if reason else {}
+
+
 class Router:
     """The handlers of a gateway; see the module docstring."""
 
@@ -436,8 +441,7 @@ class Router:
         try:
             if uid is None or not up.available:
                 raise up.unavailable() if uid is not None else TransportClosed("not forwarded yet")
-            reply = await up.call("operations/cancel", {"operationId": uid, "reason": params.reason},
-                                  trace=trace_of(ctx))
+            reply = await up.call("operations/cancel", {"operationId": uid, **_reason(params.reason)}, trace=trace_of(ctx))
             self._apply(rec, reply["operation"], "operations/cancel")
         except (BhmsError, TransportClosed, asyncio.TimeoutError) as exc:
             if isinstance(exc, BhmsError) and not exc.may_have_acted and exc.code != "DEVICE_UNAVAILABLE":
@@ -586,7 +590,7 @@ class Router:
             if rec.private.get("cancelRequested") and not rec.terminal and rec.op["cancel"]["state"] in (
                     "none", "requested") and rec.private.get("upstreamOperationId"):
                 reply = await up.call("operations/cancel", {
-                    "operationId": rec.private["upstreamOperationId"], "reason": rec.private.get("cancelReason")},
+                    "operationId": rec.private["upstreamOperationId"], **_reason(rec.private.get("cancelReason"))},
                     timeout=timeout)
                 gw.journal.mark_private(rec, cancelRequested=False)
                 self._apply(rec, reply["operation"], "operations/cancel")

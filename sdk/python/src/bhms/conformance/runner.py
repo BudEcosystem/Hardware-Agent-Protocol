@@ -45,6 +45,7 @@ class RunOptions:
     physical: bool = False
     commit: str = "unknown"
     device_target: str | None = None
+    """``--device``: the BHMS target an ``mcp:`` bridge fronts."""
     argv: tuple[str, ...] = ()
     require_all: bool = False
     check_timeout: float | None = None
@@ -149,6 +150,12 @@ def _gate(spec: CheckSpec, ctx: Context, opts: RunOptions) -> str | tuple[Status
             return Status.NOT_APPLICABLE, "the target is not a gateway"
         if need == "direct" and ctx.is_gateway:
             return Status.NOT_APPLICABLE, "applies to a device server, not to a gateway"
+        if need == "agent" and ctx.agent is None:
+            return Status.SKIPPED, "the target is not an agent bridge (use agent-bridge or mcp:<command> with --device)"
+        if need == "principals" and not ctx.has_principals:
+            return Status.SKIPPED, "needs several principals with known credentials (the built-in gateway fixture defines them)"
+        if need == "policy" and ctx.target.config_path is None:
+            return Status.SKIPPED, "needs to reload a gateway policy; only the built-in gateway fixture allows that"
         if need == "wipe" and ctx.target.state_dir is None:
             return Status.SKIPPED, "needs the durable state directory of a runner-started server"
     return None
@@ -167,7 +174,8 @@ async def _run_one(spec: CheckSpec, ctx: Context, opts: RunOptions) -> CheckResu
         await asyncio.wait_for(spec.fn(ctx), timeout)
         result = CheckResult(status=Status.PASSED, **base)  # type: ignore[arg-type]
     except CheckFailed as exc:
-        result = CheckResult(status=Status.FAILED, message=str(exc), **base)  # type: ignore[arg-type]
+        result = CheckResult(status=Status.FAILED, message=str(exc), failed_ids=tuple(i for i in exc.ids if i in spec.ids),
+                             **base)  # type: ignore[arg-type]
     except NotApplicable as exc:
         result = CheckResult(status=Status.NOT_APPLICABLE, message=str(exc), **base)  # type: ignore[arg-type]
     except Skipped as exc:
@@ -213,7 +221,10 @@ async def run(opts: RunOptions) -> Report:
         return Report(_meta(opts, None, None, seed, command, [], {}), [], [], fatal=str(exc))
     recorder = Recorder()
     ctx: Context | None = None
+    agent = None
     try:
+        if target.kind == "mcp" and target.device is None and opts.device_target:
+            target.device = resolve(opts.device_target, token=opts.token)
         try:
             wire = Wire(await target.open_base(), recorder).start()
             first = await wire.request("server/discover", timeout=30)
@@ -222,13 +233,17 @@ async def run(opts: RunOptions) -> Report:
         if first.result is None:
             return Report(_meta(opts, target, None, seed, command, [], {}), [], [],
                           fatal=f"server/discover failed: {first.describe()}")
-        device_target = None
-        if opts.device_target:
-            device_target = resolve(opts.device_target, token=opts.token)
-        ctx = Context(target, recorder, wire, first.result, strict=opts.strict, allow_effects=opts.allow_effects, seed=seed,
-                      device_target=device_target)
+        ctx = Context(target.device if target.kind == "mcp" and target.device else target, recorder, wire, first.result,
+                      strict=opts.strict, allow_effects=opts.allow_effects, seed=seed)
         await ctx.locate()
-        profiles, unavailable = expand_profiles(opts.profiles, ctx.caps, target.kind)
+        if target.kind == "mcp":
+            from bhms.conformance.agentwire import AgentWire
+
+            assert target.bridge_command is not None
+            ctx.agent = agent = await AgentWire(target.bridge_command).start()
+            profiles, unavailable = ["agent"], {}
+        else:
+            profiles, unavailable = expand_profiles(opts.profiles, ctx.caps, target.kind)
         import bhms.conformance.checks  # noqa: F401  (registers the checks)
 
         specs = [s for s in REGISTRY if s.profile in profiles and (not opts.only or any(w in s.name for w in opts.only))]
@@ -251,6 +266,9 @@ async def run(opts: RunOptions) -> Report:
         report = Report(_meta(opts, target, ctx, seed, command, profiles, unavailable), results, rows)
         return report
     finally:
+        if agent is not None:
+            with contextlib.suppress(Exception):
+                await agent.close()
         if ctx is not None:
             with contextlib.suppress(Exception):
                 await ctx.wire.close()

@@ -31,7 +31,12 @@ class Status(str, Enum):
 
 
 class CheckFailed(AssertionError):
-    """The behaviour under test violates a requirement."""
+    """The behaviour under test violates a requirement. ``ids`` narrows the failure to the requirements of the check that the
+    failing assertion is about; the others are then reported as not proven (the check stopped before proving them)."""
+
+    def __init__(self, message: str, ids: tuple[str, ...] = ()) -> None:
+        super().__init__(message)
+        self.ids = ids
 
 
 class Skipped(Exception):

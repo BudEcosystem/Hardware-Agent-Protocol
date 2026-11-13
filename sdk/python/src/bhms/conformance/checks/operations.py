@@ -11,7 +11,7 @@ import asyncio
 import time
 
 from bhms.conformance.context import SETTLED, TERMINAL, Context
-from bhms.conformance.core import check
+from bhms.conformance.core import CheckFailed, check
 
 
 @check("operations.completion-evidence", ["BHMS-OPS-006", "BHMS-OPS-008", "BHMS-OPS-001", "BHMS-OPS-002", "BHMS-OPS-053", "BHMS-LIF-046"])
@@ -46,29 +46,38 @@ async def idempotency(c: Context) -> None:
     key = c.unique("idem")
     base = await c.counter(axis)
     first = await c.ok("actions/invoke", {"deviceId": axis, "action": "pulse", "arguments": {"count": 3}, "operationKey": key, "waitMs": 2000})
-    c.expect(first["replayed"] is False and first["operation"]["keyOrigin"] == "client", "the first invoke is not a replay")
+    c.expect(first["replayed"] is False and first["operation"]["keyOrigin"] == "client", "the first invoke is not a replay", ("BHMS-OPS-030",))
     for _ in range(2):
         again = await c.ok("actions/invoke", {"deviceId": axis, "action": "pulse", "arguments": {"count": 3}, "operationKey": key, "waitMs": 2000})
-        c.expect(again["replayed"] is True, "a repeated key must return replayed true")
-        c.expect(again["operation"]["operationId"] == first["operation"]["operationId"], "a repeated key must return the same operation")
-    c.expect(await c.counter(axis) == base + 1, f"three identical keyed invokes must have exactly one device effect (counter {base} -> {await c.counter(axis)})")
+        c.expect(again["replayed"] is True, "a repeated key must return replayed true", ("BHMS-OPS-030",))
+        c.expect(again["operation"]["operationId"] == first["operation"]["operationId"], "a repeated key must return the same operation",
+                 ("BHMS-OPS-030",))
+    c.expect(await c.counter(axis) == base + 1, f"three identical keyed invokes must have exactly one device effect (counter {base} -> {await c.counter(axis)})",
+             ("BHMS-OPS-030",))
     ops = await c.operations_count(deviceId=axis)
     conflict = await c.invoke(axis, "pulse", {"count": 4}, operationKey=key)
-    data = c.refused(conflict, "KEY_CONFLICT", may_have_acted=None)
+    try:
+        data = c.refused(conflict, "KEY_CONFLICT", may_have_acted=None)
+    except CheckFailed as exc:
+        raise CheckFailed(str(exc), ("BHMS-OPS-031",)) from None
     c.expect(data.get("operationId") == first["operation"]["operationId"], f"KEY_CONFLICT must carry the existing operationId, carries {data.get('operationId')!r}")
-    c.expect(data.get("mayHaveActed") is True, "KEY_CONFLICT on a dispatched operation carries mayHaveActed true")
+    c.expect(data.get("mayHaveActed") is True, "KEY_CONFLICT on a dispatched operation carries mayHaveActed true", ("BHMS-OPS-031", "BHMS-OPS-040"))
     other = await c.invoke(axis, "slow_move", {"duration_ms": 5}, operationKey=key)
     c.refused(other, "KEY_CONFLICT", may_have_acted=None, what="same key, other action")
-    c.expect(await c.operations_count(deviceId=axis) == ops, "KEY_CONFLICT created an operation")
-    c.expect(await c.counter(axis) == base + 1, "KEY_CONFLICT reached the device")
+    c.expect(await c.operations_count(deviceId=axis) == ops, "KEY_CONFLICT created an operation", ("BHMS-OPS-031", "BHMS-OPS-040"))
+    c.expect(await c.counter(axis) == base + 1, "KEY_CONFLICT reached the device", ("BHMS-OPS-031",))
     one = await c.ok("actions/invoke", {"deviceId": axis, "action": "pulse", "arguments": {"count": 1}, "waitMs": 2000})
     two = await c.ok("actions/invoke", {"deviceId": axis, "action": "pulse", "arguments": {"count": 1}, "waitMs": 2000})
-    c.expect(one["operation"]["keyOrigin"] == two["operation"]["keyOrigin"] == "server", "without a key the server must mint one (keyOrigin server)")
+    c.expect(one["operation"]["keyOrigin"] == two["operation"]["keyOrigin"] == "server", "without a key the server must mint one (keyOrigin server)",
+             ("BHMS-OPS-035",))
     c.expect(one["operation"]["operationId"] != two["operation"]["operationId"] and not two["replayed"],
-             "a re-sent request without a key is a new operation")
-    c.expect(one["operation"]["operationKey"] != two["operation"]["operationKey"], "server-minted keys must be unique")
+             "a re-sent request without a key is a new operation", ("BHMS-OPS-035",))
+    c.expect(one["operation"]["operationKey"] != two["operation"]["operationKey"], "server-minted keys must be unique", ("BHMS-OPS-035",))
     reserved = await c.invoke(axis, "pulse", {"count": 1}, operationKey="d-reserved")
-    c.refused(reserved, "INVALID_ARGUMENT", field="operationKey", what="a d- operation key")
+    try:
+        c.refused(reserved, "INVALID_ARGUMENT", field="operationKey", what="a d- operation key")
+    except CheckFailed as exc:
+        raise CheckFailed(str(exc), ("BHMS-OPS-037",)) from None
 
 
 @check("operations.concurrent-same-key", ["BHMS-OPS-032"])
@@ -85,10 +94,9 @@ async def concurrent_same_key(c: Context) -> None:
     c.expect(await c.counter(axis) == base + 1, "20 concurrent identical invokes must have exactly one device effect")
 
 
-@check("operations.cancel-states", ["BHMS-OPS-050", "BHMS-OPS-051", "BHMS-OPS-053", "BHMS-OPS-062", "BHMS-OPS-001", "BHMS-OPS-006"])
-async def cancel_states(c: Context) -> None:
-    """Cancelling accepted: canceled, confirmed, effect none, no dispatch. Running: requested then confirmed. Unsupported:
-    refused, state unchanged. Settled: unchanged. Unknown id: INVALID_ARGUMENT operationId."""
+@check("operations.cancel-queued", ["BHMS-OPS-050", "BHMS-OPS-006", "BHMS-OPS-001"], needs=("direct",))
+async def cancel_queued(c: Context) -> None:
+    """Cancelling an accepted operation: canceled, confirmed, effect none, never dispatched."""
     axis = c.axis()
     base = await c.counter(axis)
     running = await c.invoke_op(axis, "slow_move", {"duration_ms": 3000})
@@ -97,17 +105,29 @@ async def cancel_states(c: Context) -> None:
     cancelled = (await c.ok("operations/cancel", {"operationId": queued["operationId"], "reason": "conformance"}))["operation"]
     c.expect(cancelled["state"] == "canceled" and cancelled["cancel"]["state"] == "confirmed" and cancelled["effect"] == "none",
              f"cancelling an accepted operation: {cancelled['state']}/{cancelled['cancel']}/{cancelled['effect']}")
+    await c.ok("operations/cancel", {"operationId": running["operationId"]})
+    await c.settle(running["operationId"], 5)
+    c.expect(await c.counter(axis) == base + 1, "the cancelled queued operation must not have reached the device")
+
+
+@check("operations.cancel-states", ["BHMS-OPS-051", "BHMS-OPS-053", "BHMS-OPS-062", "BHMS-OPS-001"])
+async def cancel_states(c: Context) -> None:
+    """Running: cancel requested then confirmed. Unsupported: refused, state unchanged. Settled: unchanged. Unknown id:
+    INVALID_ARGUMENT operationId."""
+    axis = c.axis()
+    running = await c.invoke_op(axis, "slow_move", {"duration_ms": 3000})
     asked = (await c.ok("operations/cancel", {"operationId": running["operationId"]}))["operation"]
     c.expect(asked["cancel"]["state"] in ("requested", "acknowledged", "confirmed"), f"cancel of a running operation: {asked['cancel']}")
     final = await c.settle(running["operationId"], 5)
     c.expect(final["state"] == "canceled" and final["cancel"]["state"] == "confirmed", f"a cancellable operation must end canceled/confirmed: {final['state']}/{final['cancel']}")
-    c.expect(await c.counter(axis) == base + 1, "the cancelled queued operation must not have reached the device")
+    again = (await c.ok("operations/cancel", {"operationId": running["operationId"]}))["operation"]
+    c.expect(again["state"] == "canceled", "cancelling a canceled operation returns it unchanged", ("BHMS-OPS-053",))
     await c.inject("hang_next")
     stuck = await c.invoke_op(axis, "pulse", {"count": 1})
     refused = (await c.ok("operations/cancel", {"operationId": stuck["operationId"]}))["operation"]
     c.expect(refused["cancel"]["state"] == "refused" and refused["state"] not in TERMINAL,
-             f"cancel of an action declaring cancel unsupported must be refused and leave the state: {refused['state']}/{refused['cancel']}")
-    c.expect((await c.get_op(stuck["operationId"]))["state"] in ("dispatching", "running"), "the refused cancel changed the state")
+             f"cancel of an action declaring cancel unsupported must be refused and leave the state: {refused['state']}/{refused['cancel']}", ("BHMS-OPS-051",))
+    c.expect((await c.get_op(stuck["operationId"]))["state"] in ("dispatching", "running"), "the refused cancel changed the state", ("BHMS-OPS-051",))
     for method in ("operations/get", "operations/cancel"):
         response = await c.call(method, {"operationId": "op-" + "f" * 24})
         c.refused(response, "INVALID_ARGUMENT", field="operationId", what=f"{method} of an unknown operation")
@@ -171,10 +191,9 @@ async def device_fault(c: Context) -> None:
     c.expect(await c.counter(axis) == base + 1, "the fault action acted once")
 
 
-@check("operations.deadlines", ["BHMS-OPS-070", "BHMS-OPS-071"])
-async def deadlines(c: Context) -> None:
-    """A deadline that passes before dispatch rejects with mayHaveActed false; during execution it cancels (failed
-    DEADLINE_EXCEEDED, mayHaveActed true)."""
+@check("operations.deadline-before-dispatch", ["BHMS-OPS-070"], needs=("direct",))
+async def deadline_before_dispatch(c: Context) -> None:
+    """A deadline that passes before dispatch rejects the operation: DEADLINE_EXCEEDED, mayHaveActed false, effect none."""
     axis = c.axis()
     base = await c.counter(axis)
     busy = await c.invoke_op(axis, "slow_move", {"duration_ms": 900})
@@ -186,7 +205,12 @@ async def deadlines(c: Context) -> None:
              f"a deadline passing before dispatch: {op['state']} {err} effect {op['effect']}")
     await c.settle(busy["operationId"], 5)
     c.expect(await c.counter(axis) == base + 1, "the rejected operation must not have reached the device")
-    long = await c.run(axis, "slow_move", {"duration_ms": 5000}, deadlineMs=200)
+
+
+@check("operations.deadline-while-running", ["BHMS-OPS-071"])
+async def deadline_while_running(c: Context) -> None:
+    """A deadline that passes during execution requests cancellation: failed DEADLINE_EXCEEDED, mayHaveActed true."""
+    long = await c.run(c.axis(), "slow_move", {"duration_ms": 5000}, deadlineMs=200)
     err = long.get("error") or {}
     c.expect(long["state"] in ("failed", "unknown") and err.get("bhmsCode") == "DEADLINE_EXCEEDED" and err.get("mayHaveActed") is True,
              f"a deadline passing while running: {long['state']} {err}")

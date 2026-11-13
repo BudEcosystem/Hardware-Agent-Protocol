@@ -52,10 +52,15 @@ async def _vector_group(c: Context, group: str) -> None:
     c.result(await c.call("devices/list", {"limit": 1}), "devices/list after malformed frames")
 
 
-@check("lifecycle.nan-and-invalid-utf8", ["BHMS-LIF-001"], generic=True)
-async def nan_and_utf8(c: Context) -> None:
-    """NaN/Infinity tokens, invalid UTF-8 and truncated JSON are refused, never accepted."""
+@check("lifecycle.nan-tokens", ["BHMS-LIF-001"], generic=True)
+async def nan_tokens(c: Context) -> None:
+    """NaN and Infinity tokens are refused, never accepted."""
     await _vector_group(c, "nan")
+
+
+@check("lifecycle.invalid-utf8-and-truncation", ["BHMS-LIF-001"], generic=True)
+async def invalid_utf8(c: Context) -> None:
+    """Invalid UTF-8 and truncated JSON are refused, never accepted."""
     await _vector_group(c, "utf8")
 
 
@@ -362,11 +367,12 @@ async def subscription_stream(c: Context) -> None:
     axis = c.axis()
     stream, ack = await c.wire.listen({"operations": {"deviceIds": [axis]},
                                        "observations": [{"deviceId": axis, "property": "no_such_property"}]})
-    c.expect(ack.get("method") == "notifications/subscriptions/acknowledged", f"the first message must be the acknowledgement, was {ack.get('method')}")
-    c.expect(ack["params"]["_meta"].get("bhms/subscriptionId") == stream.id, "the acknowledgement must carry the listen request id")
+    c.expect(ack.get("method") == "notifications/subscriptions/acknowledged", f"the first message must be the acknowledgement, was {ack.get('method')}",
+             ("BHMS-LIF-040",))
+    c.expect(ack["params"]["_meta"].get("bhms/subscriptionId") == stream.id, "the acknowledgement must carry the listen request id", ("BHMS-LIF-040",))
     refused = ack["params"].get("refused") or []
     c.expect(any("no_such_property" in json.dumps(r) or "observations" in r.get("path", "") for r in refused),
-             f"the unknown observation filter must be listed in refused, ack={json.dumps(ack['params'])[:240]}")
+             f"the unknown observation filter must be listed in refused, ack={json.dumps(ack['params'])[:240]}", ("BHMS-OBS-020", "BHMS-LIF-040"))
     op = await c.invoke_op(axis, "pulse", {"count": 1})
     seen = []
     deadline = asyncio.get_running_loop().time() + 3
@@ -377,19 +383,19 @@ async def subscription_stream(c: Context) -> None:
         if any(n["params"]["operation"]["state"] in ("completed", "failed") for n in seen if n["method"] == "notifications/operation"):
             break
     kinds = {n["method"] for n in seen}
-    c.expect(kinds <= {"notifications/operation"}, f"notifications of types that were not requested arrived: {kinds}")
+    c.expect(kinds <= {"notifications/operation"}, f"notifications of types that were not requested arrived: {kinds}", ("BHMS-LIF-041",))
     states = [n["params"]["operation"]["state"] for n in seen if n["params"]["operation"]["operationId"] == op["operationId"]]
-    c.expect(states and states[-1] == "completed", f"the operation's notifications should end with completed, were {states}")
-    c.expect(all("history" not in n["params"]["operation"] for n in seen), "operation notifications must omit history")
+    c.expect(states and states[-1] == "completed", f"the operation's notifications should end with completed, were {states}", ("BHMS-OPS-090",))
+    c.expect(all("history" not in n["params"]["operation"] for n in seen), "operation notifications must omit history", ("BHMS-OPS-090",))
     order = ["accepted", "dispatching", "running", "completed"]
     positions = [order.index(s) for s in states if s in order]
-    c.expect(positions == sorted(positions), f"operation notifications arrived out of order: {states}")
+    c.expect(positions == sorted(positions), f"operation notifications arrived out of order: {states}", ("BHMS-OPS-090",))
     # BHMS-LIF-046: the durable record exists without any subscription
     await stream.cancel()
     await asyncio.sleep(0.15)
     stream.drain()
     quiet = await c.invoke_op(axis, "pulse", {"count": 1})
-    c.expect(await stream.next(0.4) is None, "the server sent a notification after the client cancelled the subscription")
-    c.expect(not stream.final.done(), "the server sent a final result after the client cancelled the subscription")
+    c.expect(await stream.next(0.4) is None, "the server sent a notification after the client cancelled the subscription", ("BHMS-LIF-044",))
+    c.expect(not stream.final.done(), "the server sent a final result after the client cancelled the subscription", ("BHMS-LIF-044",))
     settled = await c.settle(quiet["operationId"])
-    c.expect(settled["state"] == "completed", "an operation's outcome must be retrievable with operations/get without a subscription")
+    c.expect(settled["state"] == "completed", "an operation's outcome must be retrievable with operations/get without a subscription", ("BHMS-LIF-046",))

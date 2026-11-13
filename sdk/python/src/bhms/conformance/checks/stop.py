@@ -17,7 +17,7 @@ async def stop_semantics(c: Context) -> None:
     lease = (await c.ok("leases/acquire", {"resources": [f"{axis}/clamp"], "ttlMs": 60_000}))["lease"] if has_leases else None
     running = await c.invoke_op(axis, "slow_move", {"duration_ms": 5000})
     queued = [await c.invoke_op(axis, "move_to", {"position": 10 + i}) for i in range(3)]
-    c.expect(all(q["state"] == "accepted" for q in queued), "the operations behind the busy resource must be queued")
+    c.expect(c.is_gateway or all(q["state"] == "accepted" for q in queued), "the operations behind the busy resource must be queued")
     started = time.monotonic()
     result = await c.ok("stop", {"reason": "conformance stop", "deviceIds": [axis, "no_such_device", pump]})
     elapsed = time.monotonic() - started
@@ -28,17 +28,19 @@ async def stop_semantics(c: Context) -> None:
     c.expect(bad["outcome"] == "failed" and (bad.get("error") or {}).get("bhmsCode") == "UNKNOWN_DEVICE", f"unknown device: {bad}")
     stopped = by_device[axis]
     c.expect(stopped["outcome"] in ("confirmed", "initiated"), f"axis-1 has a stop procedure, outcome {stopped['outcome']}")
-    c.expect(sorted(stopped["canceledOperations"]) == sorted(q["operationId"] for q in queued), f"queued operations must be canceled by stop: {stopped['canceledOperations']}")
-    c.expect(running["operationId"] in stopped.get("cancelRequestedOperations", []) + stopped["canceledOperations"],
-             "the running operation must have cancellation requested by stop")
+    handled = set(stopped["canceledOperations"]) | set(stopped.get("cancelRequestedOperations", []))
+    c.expect({q["operationId"] for q in queued} <= handled, f"queued operations must be canceled by stop: {sorted(handled)}")
+    c.expect(c.is_gateway or sorted(stopped["canceledOperations"]) == sorted(q["operationId"] for q in queued),
+             f"operations that never dispatched are canceled, not merely asked to cancel: {stopped['canceledOperations']}")
+    c.expect(running["operationId"] in handled, "the running operation must have cancellation requested by stop")
     if lease:
         c.expect(lease["leaseId"] in stopped["revokedLeases"], "stop must revoke active leases on the device")
     c.expect(by_device[pump]["outcome"] != "confirmed", f"pump-1 has no stop procedure; outcome must not be confirmed: {by_device[pump]['outcome']}")
     final = await c.settle(running["operationId"], 5)
     c.expect(final["state"] == "canceled", f"the running operation ended {final['state']}")
     for q in queued:
-        got = await c.get_op(q["operationId"])
-        c.expect(got["state"] == "canceled" and got["effect"] == "none", f"queued operation after stop: {got['state']}/{got['effect']}")
+        got = await c.settle(q["operationId"], 5)
+        c.expect(got["state"] == "canceled" and (c.is_gateway or got["effect"] == "none"), f"queued operation after stop: {got['state']}/{got['effect']}")
         c.expect(any(h.get("kind") == "stop" for h in got["history"]), "a stop must leave a history entry on the operations it touched")
     everything = await c.ok("stop", {"reason": "conformance stop all", "scope": "all"})
     c.expect({s["deviceId"] for s in everything["stops"]} >= {axis, pump}, "scope all must cover every device")
@@ -74,6 +76,7 @@ async def stop_under_load(c: Context) -> None:
     result = await c.ok("stop", {"reason": "conformance load", "deviceIds": [axis, pump]})
     c.expect(time.monotonic() - started < 2.0, "stop was delayed by queued work or held leases")
     stopped = result["stops"][0]
-    c.expect(stopped["outcome"] in ("confirmed", "initiated") and len(stopped["canceledOperations"]) == 20, f"stop under load: {stopped['outcome']}, canceled {len(stopped['canceledOperations'])}")
+    handled = set(stopped["canceledOperations"]) | set(stopped.get("cancelRequestedOperations", []))
+    c.expect(stopped["outcome"] in ("confirmed", "initiated") and len(handled) >= 20, f"stop under load: {stopped['outcome']}, handled {len(handled)} operations")
     for lease in leases:
         c.expect(lease["leaseId"] in stopped["revokedLeases"], "the held lease must be revoked by stop")

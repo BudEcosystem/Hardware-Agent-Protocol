@@ -153,3 +153,91 @@ async def events_declared(c: Context) -> None:
             c.expect(kind in declared or kind.startswith(("device.", "stop", "operation.", "lease.", "policy.", "program.", "upstream.")),
                      f"event type {kind!r} is neither a core type nor declared in a description")
     json.dumps(result)
+
+
+@check("devices.status-follows-reachability", ["BHMS-DEV-012"], needs=("faults",))
+async def status_follows_reachability(c: Context) -> None:
+    """A device that stops being reachable leaves status online within seconds and refuses new work (DEVICE_UNAVAILABLE)."""
+    import asyncio
+    import time
+
+    axis = c.axis()
+    await c.inject("offline")
+    started = time.monotonic()
+    status = "online"
+    while time.monotonic() - started < 5:
+        listing = await c.ok("devices/list", {"filter": {"status": "offline"}})
+        status = next((d["status"] for d in listing["devices"] if d["deviceId"] == axis), "online")
+        if status != "online":
+            break
+        await asyncio.sleep(0.1)
+    c.expect(status != "online", "a disconnected device must not stay online (BHMS-DEV-012)")
+    refused = await c.invoke(axis, "pulse", {"count": 1})
+    c.refused(refused, "DEVICE_UNAVAILABLE", what="invoke on an offline device")
+    await c.inject("online")
+    back = [d for d in (await c.ok("devices/list", {"filter": {"status": "online"}}))["devices"] if d["deviceId"] == axis]
+    c.expect(back, "the device must be online again after it reconnects")
+
+
+def compact_problems(description: dict[str, Any]) -> list[tuple[str, str]]:
+    """``(requirement id, problem)`` for every violation of the compact-layout rules in one description."""
+    ranges = {"u8": (0, 255), "i8": (-128, 127), "u16": (0, 65535), "i16": (-32768, 32767), "u32": (0, 2**32 - 1),
+              "i32": (-(2**31), 2**31 - 1), "f32": (float("-inf"), float("inf")), "bool": (0, 1)}
+    out: list[tuple[str, str]] = []
+    device = description.get("deviceId")
+
+    def mirror(label: str, schema: dict[str, Any], field_type: str, scale: float | None) -> None:
+        if scale is None:
+            return
+        if abs(schema.get("multipleOf", 0) - scale) > 1e-12 * max(1.0, scale):
+            out.append(("BHMS-DEV-071", f"{label}: scale {scale} must be mirrored by multipleOf (is {schema.get('multipleOf')!r})"))
+        low, high = ranges[field_type]
+        if "minimum" not in schema or "maximum" not in schema or schema["minimum"] < low * scale - 1e-9 or schema["maximum"] > high * scale + 1e-9:
+            out.append(("BHMS-DEV-071", f"{label}: minimum/maximum must lie inside the {field_type} range times {scale}"))
+
+    action_indices: list[int] = []
+    for name, action in (description.get("actions") or {}).items():
+        layout = action.get("compact")
+        if not layout:
+            continue
+        action_indices.append(layout["index"])
+        schema = action.get("input") or {}
+        members = set((schema.get("properties") or {}))
+        names = [f["name"] for f in layout["args"]]
+        if sorted(names) != sorted(members):
+            out.append(("BHMS-DEV-070", f"{device}.{name}: args {names} must map every input member {sorted(members)} exactly once"))
+        for field in layout["args"]:
+            member = (schema.get("properties") or {}).get(field["name"], {})
+            if field["name"] in members and field["name"] not in (schema.get("required") or []) and "default" not in member:
+                out.append(("BHMS-DEV-070", f"{device}.{name}.{field['name']}: a mapped member must be required or declare a default"))
+            mirror(f"{device}.{name}.{field['name']}", member, field["type"], field.get("scale"))
+        output = (action.get("output") or {}).get("properties") or {}
+        for field in layout["result"]:
+            if field["name"] not in output:
+                out.append(("BHMS-DEV-070", f"{device}.{name}: result field {field['name']!r} names no output member"))
+            else:
+                mirror(f"{device}.{name} result {field['name']}", output[field["name"]], field["type"], field.get("scale"))
+    property_indices = []
+    for name, prop in (description.get("properties") or {}).items():
+        layout = prop.get("compact")
+        if layout:
+            property_indices.append(layout["index"])
+            mirror(f"{device}.{name}", prop.get("schema") or {}, layout["type"], layout.get("scale"))
+    for label, indices in (("action", action_indices), ("property", property_indices)):
+        if len(indices) != len(set(indices)):
+            out.append(("BHMS-DEV-070", f"{device}: {label} indices must be unique: {sorted(indices)}"))
+    return out
+
+
+@check("compact.layout-rules", ["BHMS-DEV-070", "BHMS-DEV-071"], profile="compact", generic=True)
+async def compact_layouts(c: Context) -> None:
+    """Compact layouts map every input member once, name output members and are mirrored by multipleOf and bounds."""
+    found = False
+    problems: list[tuple[str, str]] = []
+    for description in (await c.descriptions()).values():
+        found = found or any(a.get("compact") for a in (description.get("actions") or {}).values()) or any(
+            p.get("compact") for p in (description.get("properties") or {}).values())
+        problems.extend(compact_problems(description))
+    if not found:
+        c.not_applicable("no device of this target is served from a BHMS-Compact endpoint (no compact layouts in any description)")
+    c.expect(not problems, "; ".join(f"{rid}: {msg}" for rid, msg in problems[:5]), tuple(sorted({rid for rid, _ in problems})))

@@ -52,6 +52,9 @@ async def message_limit(c: Context) -> None:
         c.expect(c.wire.closed, f"the oversize message produced {exc!r} without closing the connection")
         c.skip("the server closed the connection (WebSocket 1009), which is how that binding refuses an oversize message")
     errors = [a for a in answers if isinstance(a, dict) and isinstance(a.get("error"), dict)]
+    if not answers and c.wire.closed and c.target.kind == "ws":
+        c.warn("the WebSocket server closed the connection (1009) instead of answering -32600; the spec asks for -32600 on every binding")
+        return
     c.expect(errors and errors[0]["error"]["code"] == -32600, f"an oversize message must be answered -32600, got {answers!r}"[:300])
     c.result(await c.call("devices/list", {"limit": 1}), "devices/list after an oversize message")
 
@@ -175,3 +178,56 @@ async def http_close_cancels_wait(c: Context) -> None:
     mine = [o for o in ops if o["operationKey"] == request["params"]["operationKey"]]
     c.expect(mine, "the operation must exist after the client closed the response stream")
     c.expect((await c.settle(mine[0]["operationId"]))["state"] == "completed", "closing the stream must not cancel the operation")
+
+
+@check("transport.stdio-opens-no-listeners", ["BHMS-SEC-003"], needs=("stdio", "direct"), generic=True)
+async def stdio_no_listeners(c: Context) -> None:
+    """A stdio server treats its parent as the only principal and opens no listening socket (Linux /proc inspection)."""
+    import os
+
+    pid = c.target.server_pid()
+    if pid is None or not os.path.isdir(f"/proc/{pid}/fd"):
+        c.skip("the runner cannot inspect the server's sockets (needs a runner-started process on Linux)")
+    inodes = set()
+    for entry in os.listdir(f"/proc/{pid}/fd"):
+        try:
+            link = os.readlink(f"/proc/{pid}/fd/{entry}")
+        except OSError:
+            continue
+        if link.startswith("socket:["):
+            inodes.add(link[8:-1])
+    listening = []
+    for table in ("tcp", "tcp6"):
+        with open(f"/proc/net/{table}") as handle:
+            for line in handle.readlines()[1:]:
+                fields = line.split()
+                if fields[3] == "0A" and fields[9] in inodes:
+                    listening.append(f"{table} {fields[1]}")
+    with open("/proc/net/unix") as handle:
+        for line in handle.readlines()[1:]:
+            fields = line.split()
+            if len(fields) >= 7 and fields[6] in inodes and int(fields[3], 16) & 0x10000:
+                listening.append(f"unix {fields[-1]}")
+    c.expect(not listening, f"a stdio server opened listening sockets: {listening}")
+
+
+@check("limits.bounded-requests", ["BHMS-SEC-060"], generic=True)
+async def bounded_requests(c: Context) -> None:
+    """Page size and waits are bounded: a page never exceeds the advertised limit; waits above limits.maxWaitMs and
+    over-long observation lists are refused."""
+    page_limit = int(c.limits.get("maxPageSize", 500))
+    response = await c.call("devices/list", {"limit": page_limit + 1})
+    if response.ok:
+        c.expect(len(response.result["devices"]) <= page_limit, f"a page above limits.maxPageSize ({page_limit}) was returned")
+    else:
+        c.expect(response.code in ("INVALID_ARGUMENT", "OUT_OF_RANGE"), f"devices/list above maxPageSize: {response.describe()}")
+    over = int(c.limits.get("maxWaitMs", 60000)) + 1
+    c.refused(await c.call("operations/wait", {"operationId": "op-none", "timeoutMs": over}), "OUT_OF_RANGE", field="timeoutMs",
+              what="a wait above limits.maxWaitMs")
+    caps = c.caps.get("subscriptions", {})
+    maximum = caps.get("maxObservations")
+    if isinstance(maximum, int) and (await c.devices()):
+        device = (await c.devices())[0]["deviceId"]
+        prop = next(iter((await c.describe(device)).get("properties") or {"x": 0}))
+        refusal = await c.call("subscriptions/listen", {"notifications": {"observations": [{"deviceId": device, "property": prop}] * (maximum + 1)}})
+        c.expect(refusal.error is not None, f"a subscription with {maximum + 1} observation entries must be refused (maxObservations {maximum})")

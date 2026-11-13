@@ -57,11 +57,17 @@ def rows(results: list[CheckResult], profiles: list[str], unavailable: dict[str,
                                       checks=tuple(r.name for r, _ in failed), **base))
         elif passed:
             out.append(RequirementRow(status=Status.PASSED, checks=tuple(r.name for r in passed), **base))
+        elif entries and all(r.status is Status.FAILED for r, _ in entries):
+            out.append(RequirementRow(status=Status.SKIPPED, checks=tuple(r.name for r, _ in entries), **base,
+                                      reason=f"{entries[0][0].name} failed on another requirement before this one was proven"))
         elif entries:
             skipped = [r for r, _ in entries if r.status is Status.SKIPPED]
             chosen = skipped[0] if skipped else entries[0][0]
             status = Status.SKIPPED if skipped else Status.NOT_APPLICABLE
             out.append(RequirementRow(status=status, reason=chosen.message, checks=tuple(r.name for r, _ in entries), **base))
+        elif rid == "BHMS-TRN-010" and ctx is not None and ctx.target.kind != "stdio":
+            out.append(RequirementRow(status=Status.NOT_APPLICABLE, reason="stdio framing only; the other bindings frame messages themselves",
+                                      **base))
         elif rid in EXEMPT:
             kind, reason = EXEMPT[rid]
             status = Status.NOT_APPLICABLE if kind == NOT_APPLICABLE else Status.SKIPPED

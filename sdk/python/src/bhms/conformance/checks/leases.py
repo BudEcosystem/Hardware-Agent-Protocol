@@ -8,6 +8,11 @@ from bhms.conformance.context import Context
 from bhms.conformance.core import check
 
 
+def _min_ttl(c: Context) -> int:
+    """The shortest lease the server grants (a lease that must expire during a check uses it)."""
+    return int(c.caps["leases"].get("minTtlMs", 50))
+
+
 async def _acquire(c: Context, resources: list[str], ttl: int, **kw: int) -> dict:
     return (await c.ok("leases/acquire", {"resources": resources, "ttlMs": ttl, **kw}))["lease"]
 
@@ -36,8 +41,8 @@ async def grant_renew_release(c: Context) -> None:
         fences.append(lease["fence"])
         await c.ok("leases/release", {"leaseId": lease["leaseId"]})
     c.expect(all(b > a for a, b in zip(fences, fences[1:])), f"fences must strictly increase: {fences}")
-    short = await _acquire(c, [clamp], int(c.caps["leases"].get("minTtlMs", 50)))
-    await asyncio.sleep(max(0.25, c.caps["leases"].get("minTtlMs", 50) / 1000 * 3))
+    short = await _acquire(c, [clamp], _min_ttl(c))
+    await asyncio.sleep(_min_ttl(c) / 1000 * 2 + 0.2)
     c.refused(await c.call("leases/renew", {"leaseId": short["leaseId"], "ttlMs": 1000}), "LEASE_EXPIRED", what="renew of an expired lease")
     c.expect((await _acquire(c, [clamp], 30_000))["fence"] > fences[-1], "a lease acquired after expiry has a higher fence")
 
@@ -91,8 +96,8 @@ async def enforcement(c: Context) -> None:
     await c.ok("leases/release", {"leaseId": wrong["leaseId"]})
     await c.ok("leases/release", {"leaseId": lease["leaseId"]})
     c.refused(await c.invoke(axis, "clamp", {"force": 10}, leaseId=lease["leaseId"]), "LEASE_EXPIRED", what="clamp with a released lease")
-    short = await _acquire(c, [clamp], int(c.caps["leases"].get("minTtlMs", 50)))
-    await asyncio.sleep(0.3)
+    short = await _acquire(c, [clamp], _min_ttl(c))
+    await asyncio.sleep(_min_ttl(c) / 1000 * 2 + 0.2)
     c.refused(await c.invoke(axis, "clamp", {"force": 10}, leaseId=short["leaseId"]), "LEASE_EXPIRED", what="clamp with an expired lease")
     revoked = await _acquire(c, [clamp], 30_000)
     stop = (await c.ok("stop", {"reason": "conformance: revoke", "deviceIds": [axis]}))["stops"][0]
@@ -107,11 +112,11 @@ async def key_lookup_first(c: Context) -> None:
     """A same-key retry returns the original operation even after its lease has expired (the key lookup precedes the
     lease check), instead of LEASE_EXPIRED."""
     axis = c.axis()
-    lease = await _acquire(c, [f"{axis}/clamp"], int(c.caps["leases"].get("minTtlMs", 50)) * 4)
+    lease = await _acquire(c, [f"{axis}/clamp"], _min_ttl(c) * 4)
     key = c.unique("lease-replay")
     params = {"deviceId": axis, "action": "clamp", "arguments": {"force": 5}, "operationKey": key, "leaseId": lease["leaseId"], "waitMs": 3000}
     first = await c.ok("actions/invoke", params)
-    await asyncio.sleep(0.6)
+    await asyncio.sleep(_min_ttl(c) / 1000 * 4 + 0.3)
     again = await c.ok("actions/invoke", params)
     c.expect(again["replayed"] is True and again["operation"]["operationId"] == first["operation"]["operationId"],
              "a retry with an expired lease must still find the original operation by its key")

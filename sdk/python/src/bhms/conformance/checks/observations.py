@@ -57,11 +57,12 @@ async def retained_after_effect(c: Context) -> None:
     op = await c.run(axis, "move_to", {"position": 77.5})
     c.expect(op["state"] == "completed", "move_to failed")
     after = c.result(await c.read(axis, "position"))["observation"]
-    c.expect(after["value"] == 77.5, f"a plain read after a move must not return the pre-move sample: {after['value']} (before {before['value']})")
-    c.expect(after["sequence"] > before["sequence"], "the post-move reading must be a new acquisition (higher sequence)")
+    c.expect(after["value"] == 77.5, f"a plain read after a move must not return the pre-move sample: {after['value']} (before {before['value']})",
+             ("BHMS-OBS-006",))
+    c.expect(after["sequence"] > before["sequence"], "the post-move reading must be a new acquisition (higher sequence)", ("BHMS-OBS-006",))
     # the transaction property
     refused = await c.read(axis, "fifo", fresh=True)
-    c.refused(refused, "LEASE_REQUIRED", what="fresh read of a transaction property without a lease")
+    c.refused(refused, "LEASE_REQUIRED", what="fresh read of a transaction property without a lease", ids=("BHMS-OBS-011",))
     lease = (await c.ok("leases/acquire", {"resources": [f"{axis}/motion"], "ttlMs": 30_000}))["lease"]
     try:
         popped = c.result(await c.read(axis, "fifo", fresh=True))["observation"]
@@ -69,13 +70,14 @@ async def retained_after_effect(c: Context) -> None:
         c.expect(again["value"] == popped["value"] + 1, "each fresh acquisition of the FIFO pops one value")
     finally:
         await c.ok("leases/release", {"leaseId": lease["leaseId"]})
-    retained = c.result(await c.read(axis, "fifo"))["observation"]
+    retained = c.result(await c.read(axis, "fifo"), "retained read of a transaction property without a lease", ("BHMS-OBS-011",))["observation"]
     c.expect(retained["value"] == again["value"] and retained["sequence"] == again["sequence"],
-             "a plain read of a transaction property needs only read authority and returns the retained sample")
+             "a plain read of a transaction property needs only read authority and returns the retained sample", ("BHMS-OBS-011",))
     await c.run(axis, "pulse", {"count": 1})
-    still = c.result(await c.read(axis, "fifo"))["observation"]
+    still = c.result(await c.read(axis, "fifo"), "retained read after an effect", ("BHMS-OBS-006",))["observation"]
     c.expect(still["sequence"] == retained["sequence"] and still["value"] == retained["value"],
-             "an effect settling on the device must not forget (or re-acquire) the retained sample of a transaction property (BHMS-OBS-006)")
+             "an effect settling on the device must not forget (or re-acquire) the retained sample of a transaction property (BHMS-OBS-006)",
+             ("BHMS-OBS-006",))
 
 
 @check("observations.subscription-delivery", ["BHMS-OBS-021", "BHMS-OBS-022", "BHMS-LIF-043"], needs=("faults",), timeout=40)
