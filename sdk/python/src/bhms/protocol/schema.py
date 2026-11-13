@@ -20,6 +20,7 @@ idempotent.
 from __future__ import annotations
 
 import json
+from collections.abc import Iterator
 from functools import lru_cache
 from importlib import resources
 from typing import Any
@@ -75,39 +76,103 @@ def validator(def_name: str) -> Draft202012Validator:
     return _Validator({"$schema": document["$schema"], "$ref": f"#/$defs/{def_name}", "$defs": document["$defs"]})
 
 
-_SCHEMA_CHILD = ("items", "additionalProperties", "not", "if", "then", "else", "contains", "propertyNames", "unevaluatedItems",
-                 "unevaluatedProperties")
-_SCHEMA_MAP = ("properties", "patternProperties", "$defs", "definitions", "dependentSchemas")
-_SCHEMA_LIST = ("allOf", "anyOf", "oneOf", "prefixItems")
+MAX_SCHEMA_DEPTH = 32
+"""BHMS-SEC-021: the deepest subschema of an embedded schema is at most this many subschema steps below its root (the root is depth 0)."""
+MAX_SUBSCHEMAS = 10_000
+"""BHMS-SEC-021: an embedded schema has at most this many schemas, its root and boolean schemas included."""
+SUBSCHEMA_SINGLE = ("items", "not", "if", "then", "else", "additionalProperties", "contains", "propertyNames", "unevaluatedItems",
+                    "unevaluatedProperties", "contentSchema")
+SUBSCHEMA_LISTS = ("allOf", "anyOf", "oneOf", "prefixItems")
+SUBSCHEMA_MAPS = ("properties", "patternProperties", "$defs", "definitions", "dependentSchemas")
+_REFERENCES = ("$ref", "$dynamicRef")
 
 
-def schema_bounds_problem(schema: Any, *, max_depth: int = 32, max_nodes: int = 10_000) -> str | None:
-    """Why an embedded schema must not be validated or served, or None (BHMS-SEC-021): nesting deeper than ``max_depth``
-    subschemas, more than ``max_nodes`` subschemas, or a ``$ref`` that leaves the document (a validator must never fetch).
-    Iterative and linear in the number of subschemas, so the check itself is bounded."""
-    stack: list[tuple[Any, int]] = [(schema, 1)]
-    nodes = 0
+class SchemaBoundsError(ValueError):
+    """An embedded schema exceeds the BHMS-SEC-021 bounds or refers outside itself (BHMS-DEV-040); the message names the path."""
+
+
+def iter_subschemas(schema: Any, where: str = "schema") -> Iterator[tuple[str, Any]]:
+    """Yield ``(path, subschema)`` for the root of an embedded schema and every subschema, in document order (pre-order), enforcing
+    BHMS-SEC-021 and BHMS-DEV-040 on the way. This is the one schema walker of the SDK: the device server (its own descriptions,
+    program inputs) and the gateway (upstream descriptions) both use it, so their bounds cannot disagree.
+
+    Rules (spec/bhms/13-security.md §13.3):
+
+    * depth: the root is depth 0 and every step through a subschema keyword adds one; a subschema deeper than
+      :data:`MAX_SCHEMA_DEPTH` raises;
+    * count: the root and every subschema position count (``true``/``false`` are schemas); more than :data:`MAX_SUBSCHEMAS` raises;
+    * references: a ``$ref``/``$dynamicRef`` that is not a fragment of the schema itself (``#...``) raises; nothing is ever fetched.
+
+    The subschema keywords are those of JSON Schema 2020-12 (the applicator, unevaluated and content vocabularies plus
+    ``definitions``). A value that is not a schema (a number where a schema belongs) is yielded as it is and has no children:
+    structural validity is the JSON Schema validator's business, not this walk's.
+
+    Args:
+        schema: the embedded schema (an action ``input``/``output``, a property ``schema``, an event ``data`` schema, a program ``input``).
+        where: the path prefix used in messages and yielded paths.
+
+    Raises:
+        SchemaBoundsError: a ``ValueError`` naming the path and the violated requirement.
+
+    Iterative, and children are counted before they are queued, so time and memory are bounded by the limits whatever the input
+    is. Thread-safety: pure function. Example::
+
+        for path, node in iter_subschemas(action["input"], "actions.move.input"):
+            ...
+    """
+    max_depth, max_nodes = MAX_SCHEMA_DEPTH, MAX_SUBSCHEMAS  # read at call time: one place to change them
+    count = 1
+    stack: list[tuple[str, Any, int]] = [(where, schema, 0)]
     while stack:
-        node, depth = stack.pop()
+        path, node, depth = stack.pop()
+        if depth > max_depth:
+            raise SchemaBoundsError(f"{_short(path)}: schema nested deeper than {max_depth} (BHMS-SEC-021)")
+        if isinstance(node, dict):
+            for keyword in _REFERENCES:
+                ref = node.get(keyword)
+                if isinstance(ref, str) and not ref.startswith("#"):
+                    raise SchemaBoundsError(f"{_short(path)}: {keyword} {ref[:80]!r} points outside the schema; schemas are never fetched "
+                                            "(BHMS-DEV-040)")
+        yield path, node
         if not isinstance(node, dict):
             continue
-        nodes += 1
-        if depth > max_depth:
-            return f"it nests subschemas deeper than {max_depth} levels"
-        if nodes > max_nodes:
-            return f"it has more than {max_nodes} subschemas"
-        ref = node.get("$ref")
-        if isinstance(ref, str) and not ref.startswith("#"):
-            return f"it has a $ref ({ref[:80]!r}) that leaves the document; schemas are never fetched"
-        for key in _SCHEMA_CHILD:
-            if key in node:
-                stack.append((node[key], depth + 1))
-        for key in _SCHEMA_MAP:
-            if isinstance(node.get(key), dict):
-                stack.extend((child, depth + 1) for child in node[key].values())
-        for key in _SCHEMA_LIST:
-            if isinstance(node.get(key), list):
-                stack.extend((child, depth + 1) for child in node[key])
+        children: list[tuple[str, Any, int]] = []
+        for path_of, members in _children(node, path):
+            count += 1
+            if count > max_nodes:
+                raise SchemaBoundsError(f"{where}: more than {max_nodes} subschemas (BHMS-SEC-021)")
+            children.append((path_of, members, depth + 1))
+        stack.extend(reversed(children))
+
+
+def _short(path: str) -> str:
+    """A path for a message: property names come from the (possibly hostile) schema, so it is cut."""
+    return path if len(path) <= 160 else f"{path[:120]}...{path[-37:]}"
+
+
+def _children(node: dict[str, Any], path: str) -> Iterator[tuple[str, Any]]:
+    for key in SUBSCHEMA_SINGLE:
+        if key in node:
+            yield f"{path}.{key}", node[key]
+    for key in SUBSCHEMA_LISTS:
+        members = node.get(key)
+        if isinstance(members, list):
+            for index, child in enumerate(members):
+                yield f"{path}.{key}[{index}]", child
+    for key in SUBSCHEMA_MAPS:
+        members = node.get(key)
+        if isinstance(members, dict):
+            for name, child in members.items():
+                yield f"{path}.{key}.{name}", child
+
+
+def schema_bounds_problem(schema: Any, where: str = "schema") -> str | None:
+    """Why an embedded schema must not be validated or served (the :func:`iter_subschemas` refusal), or None."""
+    try:
+        for _ in iter_subschemas(schema, where):
+            pass
+    except SchemaBoundsError as exc:
+        return str(exc)
     return None
 
 

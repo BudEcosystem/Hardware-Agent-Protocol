@@ -70,6 +70,20 @@ as quoted data, never as system or developer instructions.
 resources (depth ≤ 32, ≤ 10 000 subschemas, time budget) and MUST NOT trigger
 network fetches (BHMS-DEV-040).
 
+The bounds are counted the same way by every implementation, so that a device
+server and a gateway never disagree about one schema. *Depth* is counted per
+embedded schema (an action `input` or `output`, a property `schema`, an event
+`data` schema, a program `input`): its root is depth 0 and each step into a
+subschema adds one, so the deepest subschema may be 32 steps below the root. The
+*count* includes the root and every subschema, boolean schemas included. A
+subschema is the value of `items`, `additionalProperties`, `not`, `if`, `then`,
+`else`, `contains`, `propertyNames`, `unevaluatedItems`, `unevaluatedProperties`
+or `contentSchema`, a member of `allOf`, `anyOf`, `oneOf` or `prefixItems`, or a
+value in `properties`, `patternProperties`, `$defs`, `definitions` or
+`dependentSchemas`. A schema outside the bounds, or with a `$ref` or
+`$dynamicRef` that is not a fragment of the schema itself (`#…`), is not
+validated further and not served.
+
 **BHMS-SEC-022** A gateway MUST verify that an upstream's description digest is
 correct (BHMS-DEV-021) before serving it, and MUST NOT let an upstream description
 widen a bound set by the gateway's policy.

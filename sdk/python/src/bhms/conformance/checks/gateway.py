@@ -8,6 +8,7 @@ import contextlib
 import os
 import signal
 import time
+from typing import Any
 
 from bhms.conformance.context import Context
 from bhms.conformance.core import check
@@ -255,14 +256,12 @@ async def gateway_restart(c: Context) -> None:
                  f"reading from a cursor of an earlier epoch must report gap true (BHMS-EVT-011): {response.describe()}")
 
 
-@check("security.schema-validation-bounds", ["BHMS-SEC-021"], needs=("faults",), timeout=60)
+@check("security.schema-validation-bounds", ["BHMS-SEC-021"], needs=("faults",), timeout=120)
 async def schema_validation_bounds(c: Context) -> None:
-    """A consumer of foreign descriptions (a gateway) validates schemas with bounded resources and never fetches: an upstream that
-    serves a 64-level-deep schema ending in a remote $ref (correct digest) is not served as is, the gateway stays responsive, and
-    nothing connects to the referenced URL."""
-    import asyncio
-    import time
-
+    """A consumer of foreign descriptions (a gateway) validates schemas with bounded resources and never fetches. Each rule is
+    tested on its own, with a correct digest every time: an upstream schema nested 64 deep (``deep``), one with 20 000 subschemas
+    (``wide``) and a small one with a remote ``$ref`` (``remote_ref``) must each stop being served while the gateway stays
+    responsive, and nothing may connect to the referenced URL. A gateway that enforces only some of the rules fails."""
     if not c.is_gateway:
         c.not_applicable("a device server validates only the schemas of its own devices; foreign schemas are validated by gateways and clients")
     victim = c.axis_ids[-1]
@@ -272,28 +271,56 @@ async def schema_validation_bounds(c: Context) -> None:
         connections.append("connected")
         writer.close()
 
+    async def served_again() -> bool:
+        deadline = time.monotonic() + 10
+        while time.monotonic() < deadline and not any(d["deviceId"] == victim for d in await c.devices(refresh=True)):
+            await asyncio.sleep(0.3)
+        c._descriptions.clear()
+        return any(d["deviceId"] == victim for d in await c.devices(refresh=True))
+
     server = await asyncio.start_server(trap, "127.0.0.1", 0)
     url = f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}/hostile-schema.json"
+    variants = {"deep": "nested 64 levels deep", "wide": "of 20 000 subschemas", "remote_ref": "with a remote $ref"}
+    problems: list[str] = []
     try:
-        await c.ok("x-conformance/inject", {"fault": "hostile_schema", "url": url}, wire=c._fault_wire(victim))
-        worst = 0.0
-        for _ in range(12):  # about 3.5 s: the hostile description reaches the gateway; it must stay responsive meanwhile
-            started = time.monotonic()
-            await c.ok("devices/list", {"limit": 10})
-            worst = max(worst, time.monotonic() - started)
+        for variant, what in variants.items():
+            await c.ok("x-conformance/inject", {"fault": "hostile_schema", "variant": variant, "url": url}, wire=c._fault_wire(victim))
+            worst = 0.0
+            for _ in range(12):  # about 3.5 s: the hostile description reaches the gateway; it must stay responsive meanwhile
+                started = time.monotonic()
+                await c.ok("devices/list", {"limit": 10})
+                worst = max(worst, time.monotonic() - started)
+                await asyncio.sleep(0.3)
+            response = await c.call("devices/describe", {"deviceId": victim})
+            if response.ok and _is_hostile(response.result, variant, url):
+                problems.append(f"{variant}: the gateway still serves a schema {what}")
+            if worst >= 3.0:
+                problems.append(f"{variant}: the gateway stalled for {worst:.1f}s while handling the hostile schema")
             await asyncio.sleep(0.3)
-        response = await c.call("devices/describe", {"deviceId": victim})
-        served = response.ok and '"$ref"' in json.dumps(response.result)
-        c.expect(not served, "the gateway still serves a schema nested 64 levels deep with a remote $ref (validation must be bounded, BHMS-SEC-021)")
-        c.expect(worst < 3.0, f"the gateway stalled for {worst:.1f}s while validating a hostile schema")
-        await asyncio.sleep(0.3)
-        c.expect(not connections, "the gateway fetched the remote $ref of a schema (BHMS-SEC-021: no network fetch)")
+            if connections:
+                problems.append(f"{variant}: the gateway connected to the URL of a remote $ref (no network fetch)")
+                connections.clear()
+            await c.ok("x-conformance/inject", {"fault": "none"}, wire=c._fault_wire(victim))
+            if not await served_again():
+                problems.append(f"{variant}: {victim} is not served again after its schema became sane")
     finally:
         await c.ok("x-conformance/inject", {"fault": "none"}, wire=c._fault_wire(victim))
         server.close()
         await server.wait_closed()
-    deadline = time.monotonic() + 10
-    while time.monotonic() < deadline and not any(d["deviceId"] == victim for d in await c.devices(refresh=True)):
-        await asyncio.sleep(0.3)
-    c._descriptions.clear()
-    c.expect(any(d["deviceId"] == victim for d in await c.devices(refresh=True)), f"{victim} must be served again when its schema is sane")
+    c.expect(not problems, "schema validation is not bounded (BHMS-SEC-021): " + "; ".join(problems))
+
+
+def _is_hostile(describe_result: Any, variant: str, url: str) -> bool:
+    """Whether a devices/describe result still carries the conformance device's hostile ``pulse`` schema of this variant."""
+    try:
+        count = describe_result["description"]["actions"]["pulse"]["input"]["properties"]["count"]
+    except (KeyError, TypeError):
+        return False
+    if not isinstance(count, dict):
+        return False
+    if variant == "wide":
+        return isinstance(count.get("anyOf"), list) and len(count["anyOf"]) > 10_000
+    nested = count["properties"].get("x") if isinstance(count.get("properties"), dict) else None
+    if variant == "remote_ref":
+        return isinstance(nested, dict) and nested.get("$ref") == url
+    return isinstance(nested, dict) and "properties" in nested

@@ -40,11 +40,6 @@ from bhms.protocol.units import UNITS, convert
 
 _RANGE_KEYWORDS = ("minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "minLength", "maxLength",
                    "minItems", "maxItems", "enum", "const")
-_SUBSCHEMA_LISTS = ("allOf", "anyOf", "oneOf", "prefixItems")
-_SUBSCHEMA_SINGLE = ("items", "not", "if", "then", "else", "additionalProperties", "contains")
-_SUBSCHEMA_MAPS = ("properties", "patternProperties", "$defs", "definitions", "dependentSchemas")
-_MAX_DEPTH = 32
-_MAX_NODES = 10_000
 
 
 def _is_numeric_type(kind: Any) -> bool:
@@ -58,41 +53,15 @@ def _is_numeric_type(kind: Any) -> bool:
 def check_units(schema: Any, where: str) -> None:
     """Raise ``ValueError`` naming the path of the first numeric schema without ``x-bhms-unit`` (BHMS-DEV-041).
 
-    Also enforces BHMS-SEC-021's resource bounds (depth ≤ 32, ≤ 10 000 subschemas) and refuses external ``$ref``
-    (BHMS-DEV-040).
+    The walk is :func:`bhms.protocol.schema.iter_subschemas`, which also enforces BHMS-SEC-021's resource bounds and refuses a
+    ``$ref`` that leaves the schema (BHMS-DEV-040); its ``SchemaBoundsError`` is a ``ValueError`` too.
     """
-    count = 0
-
-    def walk(node: Any, path: str, depth: int) -> None:
-        nonlocal count
-        count += 1
-        if count > _MAX_NODES:
-            raise ValueError(f"{where}: more than {_MAX_NODES} subschemas (BHMS-SEC-021)")
-        if depth > _MAX_DEPTH:
-            raise ValueError(f"{path}: schema nested deeper than {_MAX_DEPTH} (BHMS-SEC-021)")
-        if not isinstance(node, dict):
-            return
-        ref = node.get("$ref")
-        if isinstance(ref, str) and not ref.startswith("#"):
-            raise ValueError(f"{path}: $ref {ref!r} points outside the schema (BHMS-DEV-040)")
-        if _is_numeric_type(node.get("type")):
+    for path, node in schema_module.iter_subschemas(schema, where):
+        if isinstance(node, dict) and _is_numeric_type(node.get("type")):
             unit = node.get("x-bhms-unit")
             if not isinstance(unit, str) or not unit:
                 raise ValueError(f"{path}: a number/integer schema must carry x-bhms-unit (BHMS-DEV-041); use "
                                  '"1" for counts and "%" for percentages')
-        for key in _SUBSCHEMA_SINGLE:
-            if key in node:
-                walk(node[key], f"{path}.{key}", depth + 1)
-        for key in _SUBSCHEMA_LISTS:
-            for index, child in enumerate(node.get(key) or []):
-                walk(child, f"{path}.{key}[{index}]", depth + 1)
-        for key in _SUBSCHEMA_MAPS:
-            members = node.get(key)
-            if isinstance(members, dict):
-                for name, child in members.items():
-                    walk(child, f"{path}.{key}.{name}", depth + 1)
-
-    walk(schema, where, 0)
 
 
 def _fmt(value: Any) -> str:
