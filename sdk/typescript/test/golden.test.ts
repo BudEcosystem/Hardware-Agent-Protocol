@@ -73,6 +73,13 @@ test("the packaged schema is the spec schema, byte for byte", () => {
   assert.equal(readFileSync(schemaPath(), "utf8"), readFileSync(SCHEMA_FILE, "utf8"));
 });
 
+test("requestDigest follows the §6.4 intent formula (the invoke example's requestDigest is real)", async () => {
+  const { intentDigest } = await import("../src/server/executor.js");
+  const inv = JSON.parse(readFileSync(join(EXAMPLES_DIR, "actions.invoke.request.json"), "utf8")) as { message: { params: Record<string, unknown> } };
+  const resp = JSON.parse(readFileSync(join(EXAMPLES_DIR, "actions.invoke.response.json"), "utf8")) as { message: { result: { operation: { requestDigest: string } } } };
+  assert.equal(intentDigest(inv.message.params), resp.message.result.operation.requestDigest);
+});
+
 test("generated types are fresh (scripts/gen-types.mjs --check)", () => {
   execFileSync(process.execPath, [join(PACKAGE_ROOT, "scripts/gen-types.mjs"), "--check"], { stdio: "pipe" });
 });

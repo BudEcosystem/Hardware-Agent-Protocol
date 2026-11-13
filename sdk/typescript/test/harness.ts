@@ -18,8 +18,8 @@ export interface Rig {
 }
 
 /** A conformance device and a strict in-process client. `durable` journals under a temporary directory. */
-export async function rig(options: DeviceServerOptions & { durable?: boolean; stateDir?: string; peer?: Partial<Peer> } = {}): Promise<Rig> {
-  const { durable, peer, ...serverOptions } = options;
+export async function rig(options: DeviceServerOptions & { durable?: boolean; stateDir?: string; peer?: Partial<Peer>; keepState?: boolean } = {}): Promise<Rig> {
+  const { durable, peer, keepState, ...serverOptions } = options;
   const stateDir = durable ? (options.stateDir ?? mkdtempSync(join(tmpdir(), "bhms-ts-state-"))) : undefined;
   const { server, sim } = build({ memory: !durable, stateDir, log: () => undefined, cancelGraceMs: 200, ...serverOptions });
   await server.start();
@@ -39,7 +39,7 @@ export async function rig(options: DeviceServerOptions & { durable?: boolean; st
       clearInterval(keepAlive);
       for (const c of clients) await c.close().catch(() => undefined);
       await server.close(500);
-      if (durable && !options.stateDir && stateDir) rmSync(stateDir, { recursive: true, force: true });
+      if (durable && !options.stateDir && !keepState && stateDir) rmSync(stateDir, { recursive: true, force: true });
     },
   };
 }
