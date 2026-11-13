@@ -394,8 +394,8 @@ def _meta(opts: RunOptions, target: Target | None, ctx: Context | None, seed: in
         "strict": opts.strict,
         "allowUnproven": opts.allow_unproven,
         "reportKind": "conformance" if ctx is not None and ctx.conformance_declared else "generic",
-        "authority": ("single-principal: every authenticated caller has full authority" if ctx is not None
-                      and not ctx.caps.get("authority") else ("multi-principal: a scope policy is enforced" if ctx else None)),
+        "authority": None if ctx is None else ("multi-principal: a scope policy is enforced" if _has_capability(ctx.caps, "authority")
+                                               else "single-principal: every authenticated caller has full authority"),
         "only": list(opts.only),
         "command": command,
         "runnerPython": sys.version.split()[0],
