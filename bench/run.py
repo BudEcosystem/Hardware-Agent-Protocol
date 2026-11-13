@@ -75,7 +75,7 @@ async def main() -> int:
     out_dir = args.out or Path(__file__).resolve().parent / "results" / (f"{stamp}-{socket.gethostname()}" + (f"-{args.label}" if args.label else ""))
     out_dir.mkdir(parents=True, exist_ok=True)
     only = [s for s in (args.only.split(",") if args.only else ORDER) if s not in args.skip.split(",")]
-    env = environment(state_root)
+    env = environment(state_root, args.node)
     env["mode"] = "quick" if quick else "full"
     env["node_binary"] = args.node
     dump(out_dir / "environment.json", env)

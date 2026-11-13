@@ -94,7 +94,7 @@ def _read(path: str) -> str:
         return ""
 
 
-def environment(state_root: Path) -> dict[str, Any]:
+def environment(state_root: Path, node_binary: str | None = None) -> dict[str, Any]:
     """Hardware, OS, interpreter and filesystem facts for the report header."""
     cpu = next((ln.split(":", 1)[1].strip() for ln in _read("/proc/cpuinfo").splitlines() if ln.startswith("model name")), "")
     mem_kb = next((int(ln.split()[1]) for ln in _read("/proc/meminfo").splitlines() if ln.startswith("MemTotal")), 0)
@@ -106,7 +106,7 @@ def environment(state_root: Path) -> dict[str, Any]:
         pkgs = {name: version(name) for name in ("mcp", "websockets", "aiohttp", "orjson", "pydantic", "bhms")}
     except Exception:  # noqa: BLE001 - a missing optional package is reported as absent
         pkgs = {}
-    node = shutil.which("node") or os.environ.get("BENCH_NODE")
+    node = node_binary or shutil.which("node")
     node_version = subprocess.run([node, "--version"], capture_output=True, text=True).stdout.strip() if node else None
     return {"host": platform.node(), "cpu": cpu, "cpus_online": os.cpu_count(), "affinity": sorted(os.sched_getaffinity(0)),
             "mem_gb": round(mem_kb / 1048576, 1), "kernel": platform.release(), "os": _read("/etc/os-release").split("\n")[0],

@@ -54,7 +54,7 @@ async def run(ctx: Context) -> dict:
                 res = await session.call_tool("bhms_invoke", {"device_id": "dev-1", "action": "set_point",
                                                               "arguments": {"value": abs(i)}, "operation_key": f"m{tag}-{i}",
                                                               "wait_ms": 1000})
-                if res.isError:
+                if getattr(res, "isError", getattr(res, "is_error", False)):  # mcp 1.x / 2.x spelling
                     raise RuntimeError(res.content[0].text if res.content else "tool error")
                 sizes.append(sum(len(c.text.encode()) for c in res.content if hasattr(c, "text")))
 

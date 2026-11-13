@@ -4,7 +4,7 @@
 appends one ``bench.tick`` event; ``hang()`` waits until cancelled (used to leave ``unknown`` operations behind a SIGKILL).
 
 ``python device_server.py [--listen unix:/p | ws://127.0.0.1:P] [--durability dispatch|full|process|memory]
-[--state-dir DIR] [--devices N] [--queue-limit N] [--cprofile FILE]``. Without ``--listen`` it serves stdio. With a listener it
+[--state-dir DIR] [--devices N] [--queue-limit N] [--cprofile FILE] [--no-checkpoint] [--gc-freeze] [--gc-log FILE]``. Without ``--listen`` it serves stdio. With a listener it
 prints ``ready`` once it accepts connections. ``memory`` is ``store=None`` (nothing durable at all); the others are the SDK's
 journal modes (see ``bhms.runtime.store``). ``--cprofile`` writes cProfile statistics (cumulative, then own time) on SIGTERM.
 """
@@ -45,12 +45,17 @@ def build(args: argparse.Namespace) -> DeviceServer:
     return srv
 
 
-async def serve(args: argparse.Namespace) -> None:
+async def serve(args: argparse.Namespace) -> None:  # noqa: C901
     srv = build(args)
     if not args.listen:
         await srv.serve(None)
         return
     await srv.listen(args.listen)
+    if args.gc_freeze:
+        import gc
+
+        gc.collect()
+        gc.freeze()
     stop = asyncio.Event()
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGINT, signal.SIGTERM):
@@ -68,7 +73,33 @@ def main() -> None:
     parser.add_argument("--devices", type=int, default=1)
     parser.add_argument("--queue-limit", type=int, default=64)
     parser.add_argument("--cprofile")
+    parser.add_argument("--no-checkpoint", action="store_true",
+                        help="experiment only: effectively disable the background WAL checkpointer (to attribute latency stalls)")
+    parser.add_argument("--gc-freeze", action="store_true",
+                        help="experiment only: gc.collect() then gc.freeze() once the server is up (what Gateway.serve does)")
+    parser.add_argument("--gc-log", help="experiment only: append one line per garbage collection slower than 5 ms to this file")
     args = parser.parse_args()
+    if args.gc_log:
+        import gc
+        import time
+
+        state = {"t": 0.0}
+
+        def on_gc(phase: str, info: dict) -> None:
+            if phase == "start":
+                state["t"] = time.perf_counter()
+            else:
+                took = (time.perf_counter() - state["t"]) * 1000
+                if took > 5:
+                    with open(args.gc_log, "a") as log:
+                        log.write(f"gen{info['generation']} {took:.1f} ms collected={info['collected']}\n")
+
+        gc.callbacks.append(on_gc)
+    if args.no_checkpoint:
+        from bhms.runtime import store
+
+        original = store._Checkpointer.__init__
+        store._Checkpointer.__init__ = lambda self, path, *, every=10**9, interval_s=3600.0: original(self, path, every=every, interval_s=interval_s)
     profiler = None
     if args.cprofile:
         import cProfile
