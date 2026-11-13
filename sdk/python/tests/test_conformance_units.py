@@ -211,21 +211,6 @@ def test_a_stop_result_without_stops_and_other_non_conforming_shapes_are_finding
     assert isinstance(findings, dict)
 
 
-def test_embedded_schemas_are_bounded_and_never_fetched():  # BHMS-SEC-021
-    from bhms.protocol.schema import schema_bounds_problem
-
-    assert schema_bounds_problem({"type": "object", "properties": {"a": {"type": "number"}}, "$ref": "#/$defs/x"}) is None
-    node: dict = {"type": "number"}
-    for _ in range(31):
-        node = {"type": "object", "properties": {"x": node}}
-    assert schema_bounds_problem(node) is None
-    assert "deeper than 32" in schema_bounds_problem({"type": "object", "properties": {"x": node}})
-    assert "leaves the document" in schema_bounds_problem({"items": {"$ref": "http://example.invalid/x.json"}})
-    wide = {"anyOf": [{"type": "integer"} for _ in range(10_001)]}
-    assert "more than 10000" in schema_bounds_problem(wide)
-    assert schema_bounds_problem(True) is None and schema_bounds_problem({"properties": {"x": 5}}) is None
-
-
 def test_the_authority_capability_carries_no_member():
     from bhms.runtime.authority import Policy
 

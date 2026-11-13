@@ -169,3 +169,20 @@ async def test_every_broken_server_fails_exactly_the_expected_checks_in_the_full
         assert failed_checks == set(defect.full), f"{name}: failed {sorted(failed_checks)}"
         assert set(defect.requirements) <= {r.id for r in report.rows if r.status is Status.FAILED}, name
         assert report.exit_code == 1, name
+
+
+async def test_a_multi_principal_target_is_reported_as_multi_principal():
+    """``capabilities.authority`` is an empty object: its presence, not its truth value, says a scope policy is enforced."""
+    import io
+
+    from rich.console import Console
+
+    from bhms.conformance.runner import render
+
+    report = await run(RunOptions(target="conformance-device:principals", only=("none",), seed=5))
+    assert not report.fatal, report.fatal
+    assert report.meta["authority"] == "multi-principal: a scope policy is enforced"
+    assert report.to_json()["conformance"]["authority"].startswith("multi-principal")
+    out = io.StringIO()
+    render(report, console=Console(file=out, width=200, highlight=False))
+    assert "authority: multi-principal" in out.getvalue() and "single-principal" not in out.getvalue()

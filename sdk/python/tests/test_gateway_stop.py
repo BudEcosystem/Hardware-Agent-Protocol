@@ -169,3 +169,30 @@ async def _offline(client):
 
 
 _ = HELPER
+
+
+async def test_an_operation_that_settled_just_before_the_stop_is_annotated_but_not_reported_cancel_requested(tmp_path):
+    """The stop's snapshot holds an operation the upstream completed before the bookkeeping ran: it gets the stop history
+    entry (BHMS-AUTH-021) but no cancellation was requested for it, so it is not in ``cancelRequestedOperations``."""
+    from helpers.gateway_rig import rig as gateway_rig
+
+    async with gateway_rig(tmp_path, ("a",), conformance=True) as r:
+        client = await r.client(token="tok-admin")
+        done = (await client.actions_invoke("a/axis-1", "pulse", {"count": 1})).operation
+        done = (await client.operations_wait(done.operation_id, 5000)).operation
+        assert done.state == "completed"
+        running = (await client.actions_invoke("a/axis-1", "slow_move", {"duration_ms": 3000})).operation
+        router = r.gateway.router
+        original = router._stop_bookkeeping
+
+        def settled_in_between(entries, reason, results, snapshot=()):
+            return original(entries, reason, results, [*snapshot, r.gateway.journal.get(done.operation_id)])
+
+        router._stop_bookkeeping = settled_in_between
+        (stop,) = (await client.stop("settled just before", device_ids=["a/axis-1"])).stops
+        after = (await client.operations_get(done.operation_id)).operation
+        assert after.state == "completed" and after.cancel.state == "none"
+        assert any(entry.kind == "stop" for entry in after.history)
+        touched = [*stop.canceled_operations, *(stop.cancel_requested_operations or [])]
+        assert done.operation_id not in touched, stop
+        assert running.operation_id in touched, stop

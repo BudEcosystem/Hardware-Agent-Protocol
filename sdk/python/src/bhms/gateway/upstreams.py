@@ -428,11 +428,14 @@ def _description_problem(description: dict[str, Any], expected_id: str) -> str |
     body = {k: v for k, v in description.items() if k != "digest"}
     if digest(body) != description.get("digest"):
         return "its digest does not match its content"
-    embedded = [a.get("input") for a in description["actions"].values()] + [a.get("output") for a in description["actions"].values()] + [
-        p.get("schema") for p in description["properties"].values() if isinstance(p, dict)] + [
-        e.get("data") for e in (description.get("events") or {}).values() if isinstance(e, dict)]
-    for node in embedded:
-        problem = schema_bounds_problem(node)  # BHMS-SEC-021: bounded, and no remote $ref (never fetched)
+    embedded = [(f"actions.{name}.{member}", action.get(member)) for name, action in description["actions"].items()
+                for member in ("input", "output") if member in action]
+    embedded += [(f"properties.{name}.schema", p["schema"]) for name, p in description["properties"].items()
+                 if isinstance(p, dict) and "schema" in p]
+    embedded += [(f"events.{name}.data", e["data"]) for name, e in (description.get("events") or {}).items()
+                 if isinstance(e, dict) and "data" in e]
+    for where, node in embedded:  # BHMS-SEC-021 and BHMS-DEV-040: bounded, and no $ref that leaves the schema (never fetched)
+        problem = schema_bounds_problem(node, where)
         if problem:
             return f"an embedded schema is not acceptable: {problem}"
     return None

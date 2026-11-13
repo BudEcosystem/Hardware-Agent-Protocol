@@ -12,11 +12,13 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
+import json
 import shlex
 import sys
 import time
 import traceback
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 from bhms.conformance import coverage, observers, requirements
@@ -261,6 +263,12 @@ async def run(opts: RunOptions) -> Report:
         target = resolve(opts.target, token=opts.token, keep_state=opts.keep_state)
     except TargetError as exc:
         return Report(_meta(opts, None, None, seed, command, [], {}), [], [], fatal=str(exc))
+    given_tools: list[dict[str, Any]] | None = None
+    if opts.function_tools:  # before anything is started: a bad file is the caller's mistake, not a finding
+        try:
+            given_tools = load_function_tools(opts.function_tools)
+        except TargetError as exc:
+            return Report(_meta(opts, target, None, seed, command, [], {}), [], [], fatal=f"--function-tools: {exc}")
     recorder = Recorder()
     ctx: Context | None = None
     agent = None
@@ -311,7 +319,10 @@ async def run(opts: RunOptions) -> Report:
 
             assert target.bridge_command is not None
             ctx.agent = agent = await AgentWire(target.bridge_command).start()
-            ctx.function_tools = await _function_tools(opts, target)
+            try:
+                ctx.function_tools = given_tools if given_tools is not None else await _adapter_function_tools(target)
+            except TargetError as exc:
+                return Report(_meta(opts, target, ctx, seed, command, [], {}), [], [], fatal=f"function-tool adapter of {opts.target}: {exc}")
             profiles, unavailable = ["agent"], {}
         else:
             profiles, unavailable = expand_profiles(opts.profiles, ctx.caps, target.kind)
@@ -351,19 +362,42 @@ async def run(opts: RunOptions) -> Report:
         await target.aclose()
 
 
-async def _function_tools(opts: RunOptions, target: Target) -> list[dict[str, Any]] | None:
-    """The adapter's function-tool definitions: from ``--function-tools FILE`` or the fixture's adapter command; None when absent."""
-    import json
-    from pathlib import Path
+def load_function_tools(path: str) -> list[dict[str, Any]]:
+    """The OpenAI function-tool definitions in the JSON file ``path`` (``--function-tools``), checked for the shape
+    ``agent.function-tools-equal-mcp`` reads: a list of objects, each ``{"type": "function", "function": {"name": ...}}`` or the flat
+    ``{"name": ...}``. Raises :class:`TargetError` with a message for the user otherwise."""
+    try:
+        text = Path(path).read_text()
+    except (OSError, UnicodeDecodeError) as exc:
+        raise TargetError(f"cannot read {path}: {exc}") from None
+    return _function_tool_list(text, path)
 
-    if opts.function_tools:
-        return json.loads(Path(opts.function_tools).read_text())
-    if target.function_tools_command:
-        process = await asyncio.create_subprocess_exec(*target.function_tools_command, stdout=asyncio.subprocess.PIPE,
-                                                       stderr=asyncio.subprocess.DEVNULL)
-        out, _ = await process.communicate()
-        return json.loads(out) if process.returncode == 0 and out.strip() else None
-    return None
+
+def _function_tool_list(text: str | bytes, source: str) -> list[dict[str, Any]]:
+    try:
+        found = json.loads(text)
+    except ValueError as exc:
+        raise TargetError(f"{source} is not JSON: {exc}") from None
+    if not isinstance(found, list):
+        raise TargetError(f"{source} must be a JSON list of function-tool definitions, not {type(found).__name__}")
+    for index, item in enumerate(found):
+        body = item.get("function", item) if isinstance(item, dict) else None
+        if not isinstance(body, dict) or not isinstance(body.get("name"), str) or not body["name"]:
+            raise TargetError(f"{source}: entry {index} is not a function-tool definition (an object with a string name, "
+                              'either {"type": "function", "function": {"name": ...}} or {"name": ...})')
+    return found
+
+
+async def _adapter_function_tools(target: Target) -> list[dict[str, Any]] | None:
+    """The definitions printed by the fixture's own adapter command; None when the target has no adapter."""
+    if not target.function_tools_command:
+        return None
+    process = await asyncio.create_subprocess_exec(*target.function_tools_command, stdout=asyncio.subprocess.PIPE,
+                                                   stderr=asyncio.subprocess.DEVNULL)
+    out, _ = await process.communicate()
+    if process.returncode != 0 or not out.strip():
+        return None
+    return _function_tool_list(out, "the adapter's output")
 
 
 def _observer_results(findings: Any, profiles: list[str], ctx: Context) -> list[CheckResult]:
@@ -394,8 +428,8 @@ def _meta(opts: RunOptions, target: Target | None, ctx: Context | None, seed: in
         "strict": opts.strict,
         "allowUnproven": opts.allow_unproven,
         "reportKind": "conformance" if ctx is not None and ctx.conformance_declared else "generic",
-        "authority": ("single-principal: every authenticated caller has full authority" if ctx is not None
-                      and not ctx.caps.get("authority") else ("multi-principal: a scope policy is enforced" if ctx else None)),
+        "authority": None if ctx is None else ("multi-principal: a scope policy is enforced" if _has_capability(ctx.caps, "authority")
+                                               else "single-principal: every authenticated caller has full authority"),
         "only": list(opts.only),
         "command": command,
         "runnerPython": sys.version.split()[0],
