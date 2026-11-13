@@ -30,6 +30,8 @@ tests/                 C unit tests (ASan/UBSan), table-sync tests, pty end-to-e
   a joint or coupled limit with a 3 deg margin; set goal = present, torque on.
 * **Measured pose is enforced too**: while moving, a jammed or lagging joint (measured pose outside a limit, or
   15 deg behind its waypoint) freezes the arm at the measured pose and latches (INTERFACE.md section 9.1).
+  Retries cannot ratchet a latched arm outward: a fault episode caps client-caused worsening at 3 deg
+  beyond the first latch, and above the cap a recovery only commands joints that cannot make it worse.
 * **move_joints**: all five angles (0.01 deg), speed 5..100 %. Refused before it reaches the bus when a
   joint is out of range or a coupled limit is violated (`OUT_OF_RANGE`, detail names the limit:
   0..4 joint, 0x10 forearm_pitch, 0x11 hairpin, 0x12 tool_pitch). The firmware interpolates in joint

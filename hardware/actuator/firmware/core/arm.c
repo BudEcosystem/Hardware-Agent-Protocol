@@ -67,6 +67,10 @@ static void finish(arm *a, uint8_t status, uint8_t fault, uint8_t measured, floa
                    float v2) {
     arm_completion d;
     d.kind = a->op;
+    if (a->stages_left != 0) { /* a staged recovery ended early: report against the goal asked for */
+        a->q_goal = a->q_final;
+        a->stages_left = 0;
+    }
     if (a->op == ARM_OP_MOVE || a->op == ARM_OP_HOME || a->op == ARM_OP_RELEASE) {
         float err = worst_joint_error(a);
         a->last_move_err = err;
@@ -85,9 +89,10 @@ static void finish(arm *a, uint8_t status, uint8_t fault, uint8_t measured, floa
     if (a->recovering) {
         a->recovering = 0;
         if (status == ARM_DONE_COMPLETED) { /* moved back inside the limits: the latch clears */
+            /* The latch clears; the fault EPISODE (ep_*) ends only when the measured pose is back
+             * inside every limit, see pose_guard. */
             a->limit_latched = 0;
             a->limit_ref = a->guard_last = 0.0f;
-            a->retry_valid = 0;
             a->fault_code = ARM_FAULT_NONE;
         } else if (a->limit_latched) {
             a->state = ARM_ST_FAULT;
@@ -246,20 +251,42 @@ static float cached_excess(const arm *a) {
     return arm_pose_excess(&m, &code);
 }
 
+/* ---- Fault episode: the goal-independent anti-ratchet memory ----------------------------
+ * An episode starts at the first latch and ends only when the measured pose is back inside every
+ * limit with the arm READY (pose_guard) or torque comes back on inside the enable margin. It remembers
+ * the measured excess at that first latch (ep_ex0); no goal and no new motion resets it. Whatever a
+ * client sends during the episode, commanded motion can raise the measured excess to at most
+ *     ep_ex0 + kEpisodeCapDeg + kRestHystDeg + the reaction overshoot of ONE trip:
+ *   - at or below the cap a recovery goal runs as asked, and pose_guard trips it when the excess
+ *     passes min(best in this motion + band, cap);
+ *   - above the cap only joint motions that cannot enlarge any violation, whichever joints fail to
+ *     move, are commanded (recovery_stage / arm_check_box): a jammed joint can then no longer turn an
+ *     "improving" goal into a worsening motion, and nothing needs to be refused. */
+#define kEpisodeCapDeg 3.0f /* client-caused worsening allowed per episode, beyond the first latch */
+#define kRestHystDeg 0.5f   /* an arm above the cap must move this much further out to trip again */
+#define kBoxTolDeg 0.01f    /* float rounding in arm_check_box */
+enum { kMaxStages = 4 };    /* staged recovery: joint-subset stages before the final straight move */
+
+static int motion_op(const arm *a) {
+    return a->op == ARM_OP_MOVE || a->op == ARM_OP_HOME || a->op == ARM_OP_RELEASE;
+}
+
+/* A latch is being set (or renewed) with the arm resting at excess `ex`. */
+static void episode_latch(arm *a, float ex) {
+    if (!a->ep_active) { /* first latch of the episode */
+        a->ep_active = 1;
+        a->ep_ex0 = ex;
+    } else if (!a->limit_latched && ex < a->ep_ex0) {
+        a->ep_ex0 = ex; /* latched again before the pose was back inside: only ever lower */
+    }
+    a->limit_ref = ex; /* best excess of the current motion / rest */
+    a->guard_last = ex;
+}
+
 /* Freeze where the arm is (goal = measured), end the operation, latch a recoverable fault. */
 static void trip(arm *a, uint8_t fault, uint8_t limit_code) {
     int frozen = write_freeze_at_measured(a);
-    float ex = cached_excess(a);
-    a->limit_ref = ex; /* re-baseline to where the arm rests now, so an improving move stays possible */
-    a->guard_last = ex;
-    if (a->recovering && (a->op == ARM_OP_MOVE || a->op == ARM_OP_HOME) &&
-        (fault == ARM_FAULT_LIMIT || fault == ARM_FAULT_DISPLACED)) {
-        /* A recovery goal that made the measured pose WORSE (a jammed joint): do not accept the very
-         * same goal again until something improved, so a client's retry loop cannot ratchet outward. */
-        memcpy(a->retry_goal, a->q_goal.q, sizeof a->retry_goal);
-        a->retry_ex = ex;
-        a->retry_valid = 1;
-    }
+    episode_latch(a, cached_excess(a));
     if (!frozen) fault = ARM_FAULT_BUS; /* the hold could not be confirmed on the bus: say so */
     if (a->op == ARM_OP_GRIP || a->op == ARM_OP_TURN || a->op == ARM_OP_PRESS)
         a->freeze_servo = (uint8_t)(1u + tool_servo_index(a->tool_id)); /* stop the tool as well */
@@ -558,17 +585,19 @@ static void sync_cmd_to_measured(arm *a, uint32_t now) {
 static void traj_start(arm *a, const arm_pose *goal, uint32_t pct, arm_op_kind kind, uint32_t now) {
     unsigned j;
     float t_ms = 0.0f;
-    a->recovering = (a->state == ARM_ST_FAULT && a->limit_latched) ? 1u : 0u;
+    /* MOVING: the next stage of a staged recovery (the latch is still set). */
+    a->recovering = (a->limit_latched && (a->state == ARM_ST_FAULT || a->state == ARM_ST_MOVING)) ? 1u : 0u;
     sync_cmd_to_measured(a, now);
     {
         /* Starting outside a limit (moved by hand, pushed) is a recovery too. The measured-pose guard
-         * stays ON: it trips when the excess grows by more than the band beyond the BEST value reached
-         * in this motion (the baseline is the measured excess now), and the waypoint check and the
-         * following-error bound apply as usual. */
+         * stays ON (pose_guard: best excess of this motion + band, and the episode cap), and the
+         * waypoint check and the following-error bound apply as usual. */
         arm_pose m;
         if (fresh_pose(a, &m, now, 0, 0) && arm_check_pose(&m, -kMeasSlackDeg) != ARM_LIMIT_NONE)
             a->recovering = 1;
     }
+    /* Per-motion baseline only. The episode memory (ep_ex0) is NOT touched here: a new goal never
+     * buys a new allowance. */
     if (a->recovering) a->limit_ref = a->guard_last = cached_excess(a);
     a->q_start = a->q_cmd;
     a->q_goal = *goal;
@@ -628,7 +657,7 @@ static void traj_tick(arm *a, uint32_t now) {
     {
         uint8_t pct = (uint8_t)(tau * 100.0f);
         if (a->sink != 0 && a->sink->progress != 0 && pct >= a->last_progress + 10u &&
-            (uint32_t)(now - a->progress_ms) >= 200u && a->op == ARM_OP_MOVE) {
+            (uint32_t)(now - a->progress_ms) >= 200u && a->op == ARM_OP_MOVE && a->stages_left == 0) {
             a->last_progress = pct;
             a->progress_ms = now;
             a->sink->progress(a->sink->ctx, pct);
@@ -672,10 +701,15 @@ static void motion_guard(arm *a, uint32_t now) {
 }
 
 /* Measured-pose limits on every fresh sample in every powered state with torque on: moves, tool
- * operations and plain holding (a pushed or displaced arm). Unlatched: a violation beyond the slack
- * trips. Latched (recovery): the excess may only shrink; the first sample that is worse than the
- * reference by more than the band trips again and freezes, so a client retrying the same move cannot
- * ratchet the arm further out. */
+ * operations and plain holding (a pushed or displaced arm).
+ * Unlatched: a violation beyond the slack trips and starts (or continues) a fault episode.
+ * Latched: trip when the excess passes
+ *     min(best excess of this motion + band, max(ep_ex0 + cap, baseline + hysteresis))
+ * where the baseline is the excess when the motion started or, at rest, at the last freeze. The first
+ * term stops a motion that turns back outward; the second is the goal-independent episode cap: all
+ * the motions of an episode together cannot carry the arm past ep_ex0 + cap (the max() only keeps an
+ * arm that already rests above the cap, after an overshoot or a push, from re-tripping on noise; a
+ * motion that starts there only commands joints that cannot enlarge a violation, recovery_stage). */
 #define kWorsenBandDeg 1.0f
 static void pose_guard(arm *a, uint32_t now) {
     arm_pose m;
@@ -688,23 +722,44 @@ static void pose_guard(arm *a, uint32_t now) {
     if (a->op == ARM_OP_RELEASE && a->op_step == kReleaseDropStep) return;
     if (!fresh_pose(a, &m, now, 0, 0)) return;
     ex = arm_pose_excess(&m, &code);
-    fault = (a->op == ARM_OP_MOVE || a->op == ARM_OP_HOME || a->op == ARM_OP_RELEASE) ? ARM_FAULT_LIMIT
-                                                                                       : ARM_FAULT_DISPLACED;
+    fault = motion_op(a) ? ARM_FAULT_LIMIT : ARM_FAULT_DISPLACED;
     if (a->limit_latched) {
+        float lim = a->guard_last + kRestHystDeg;
         if (ex < a->limit_ref) a->limit_ref = ex;
-        if (ex > a->limit_ref + kWorsenBandDeg && ex > a->guard_last + 0.5f) trip(a, fault, code);
+        if (lim < a->ep_ex0 + kEpisodeCapDeg) lim = a->ep_ex0 + kEpisodeCapDeg;
+        if (lim > a->limit_ref + kWorsenBandDeg) lim = a->limit_ref + kWorsenBandDeg;
+        if (ex > lim) trip(a, fault, code);
     } else if (ex > kMeasSlackDeg) {
         trip(a, fault, code);
+    } else if (a->ep_active && a->state == ARM_ST_READY && ex <= 0.0f) {
+        a->ep_active = 0; /* measured back inside every limit and READY: the episode is over */
+        a->ep_ex0 = 0.0f;
     }
+}
+
+static int recovery_stage(const arm *a, const arm_pose *final, arm_pose *stage, int *is_final);
+
+/* A stage of a staged recovery has been reached as measured: plan the next one from the new pose. */
+static void recovery_next_stage(arm *a, uint32_t now) {
+    arm_pose stage;
+    int is_final = 0;
+    arm_op_kind kind = a->op;
+    sync_cmd_to_measured(a, now);
+    if (!recovery_stage(a, &a->q_final, &stage, &is_final) || (!is_final && a->stages_left <= 1u)) {
+        /* Nothing more can move without risking a larger excess: stay latched where the arm is. */
+        finish(a, ARM_DONE_FAILED, ARM_FAULT_LIMIT, 1, 0, 0, 0);
+        return;
+    }
+    a->stages_left = is_final ? 0u : (uint8_t)(a->stages_left - 1u);
+    traj_start(a, &stage, a->stage_pct, kind, now);
 }
 
 static void move_step(arm *a, uint32_t now) {
     if (a->op == ARM_OP_RELEASE && a->op_step == kReleaseDropStep) {
         if (write_torque(a, 0) == STSB_OK) {
             a->torque_on = 0;
-            a->limit_latched = 0;
+            a->limit_latched = 0; /* the episode memory stays until an enable finds the pose inside */
             a->limit_ref = a->guard_last = 0.0f;
-            a->retry_valid = 0;
             a->pose_unknown = 1; /* the arm falls: re-home before use */
             a->state = ARM_ST_PARKED;
             finish(a, ARM_DONE_COMPLETED, 0, 1, 0, 0, 0);
@@ -724,6 +779,10 @@ static void move_step(arm *a, uint32_t now) {
     {
         float err = 0.0f;
         if (settled(a, &err)) {
+            if (a->stages_left != 0) {
+                recovery_next_stage(a, now);
+                return;
+            }
             if (a->op == ARM_OP_RELEASE) {
                 if (write_torque(a, 0) != STSB_OK) return; /* retry next tick */
                 a->torque_on = 0;
@@ -748,7 +807,10 @@ static void enable_abort(arm *a, uint8_t fault) {
     arm_state back = a->enable_from == ARM_ST_PARKED ? ARM_ST_PARKED : ARM_ST_FAULT;
     a->fault_code = fault;
     if (a->enable_rail_on) {
-        if (fault == ARM_FAULT_LIMIT) a->limit_latched = 1; /* recoverable by a move back inside */
+        if (fault == ARM_FAULT_LIMIT) { /* recoverable by a move back inside */
+            if (!a->limit_latched) episode_latch(a, cached_excess(a));
+            a->limit_latched = 1;
+        }
         a->state = back;
     } else {
         power_request_disable(&a->pwr);
@@ -841,7 +903,8 @@ static void enable_step(arm *a, uint32_t now) {
         a->pose_unknown = 0;
         a->limit_latched = 0;
         a->limit_ref = a->guard_last = 0.0f;
-        a->retry_valid = 0;
+        a->ep_active = 0; /* torque-on only happens inside the enable margin: excess 0, READY */
+        a->ep_ex0 = 0.0f;
         a->watchdog_reset = 0; /* a successful enable acknowledges the reset */
         a->fault_code = ARM_FAULT_NONE;
         a->state = ARM_ST_READY;
@@ -1273,10 +1336,11 @@ static arm_refusal gate_motion_ex(const arm *a, uint8_t *detail, int allow_recov
 
 static arm_refusal gate_motion(const arm *a, uint8_t *detail) { return gate_motion_ex(a, detail, 0); }
 
-/* Recovery goals are judged from the CURRENT measured pose, by direction: along the straight
- * joint-space path to the goal the limit excess must not increase (limits are convex, so a goal inside
- * them always satisfies this; the check keeps that true if a non-convex limit is ever added), and the
- * exact goal that last made the pose worse is refused until the pose has improved. */
+/* Recovery goals are judged from the CURRENT measured pose: along the straight joint-space path to
+ * the goal the limit excess must not increase (reason 18). Limits are convex, so a goal inside them
+ * always passes; the check is kept in case that ever changes. It says nothing about a jammed joint:
+ * the path is only what is COMMANDED (shoulder stuck at 90, goal (45, 125): the path improves, the
+ * arm gets worse). That is what the episode cap and the staged recovery below are for. */
 static arm_refusal recovery_goal_ok(const arm *a, const arm_pose *goal, uint8_t *detail) {
     arm_pose m, p;
     uint8_t c;
@@ -1298,15 +1362,67 @@ static arm_refusal recovery_goal_ok(const arm *a, const arm_pose *goal, uint8_t 
             return ARM_REFUSE_INHIBITED;
         }
     }
-    if (a->retry_valid && ex0 >= a->retry_ex - 0.5f) {
-        int same = 1;
-        for (j = 0; j < ARM_NUM_JOINTS; ++j)
-            if (fabsf(goal->q[j] - a->retry_goal[j]) > 0.5f) same = 0;
-        if (same) {
-            *detail = ARM_WHY_RETRY_NO_PROGRESS;
-            return ARM_REFUSE_INHIBITED;
+    return ARM_OK;
+}
+
+/* What to command next on the way to `final` during a fault episode. Returns 0 when nothing may move.
+ *
+ * At or below the episode cap, or when the whole move cannot enlarge any violation whichever joints
+ * fail to move (arm_check_box), the answer is `final` itself (*is_final = 1): one straight move.
+ *
+ * Otherwise (above the cap, and some joint of the goal moves in a direction that would enlarge a
+ * violation if another joint did not follow) the move is STAGED: this stage commands only a set of
+ * joints whose motion cannot enlarge any violation even if every other joint, or any of themselves,
+ * stops anywhere on the way; the others keep their present command. When the stage has been reached
+ * AS MEASURED the question is asked again from the new measured pose. A jammed joint then makes the
+ * stage fail (following error or settle timeout) with the excess where it was, however often and with
+ * whatever goals the client retries; once the jam is gone the same goal simply completes. */
+static int recovery_stage(const arm *a, const arm_pose *final, arm_pose *stage, int *is_final) {
+    arm_pose m, reach;
+    uint8_t c;
+    unsigned j, moved = 0;
+    for (j = 0; j < ARM_NUM_JOINTS; ++j) {
+        if (!a->sv[j].valid) return 0;
+        m.q[j] = a->sv[j].pos_deg;
+    }
+    if (!a->ep_active || arm_pose_excess(&m, &c) <= a->ep_ex0 + kEpisodeCapDeg ||
+        arm_check_box(&m, final, kBoxTolDeg) == ARM_LIMIT_NONE) {
+        *stage = *final;
+        *is_final = 1;
+        return 1;
+    }
+    reach = m;         /* where the commanded joints may end up, the others staying where they are */
+    *stage = a->q_cmd; /* joints left out keep the command they already hold */
+    for (j = 0; j < ARM_NUM_JOINTS; ++j) {
+        reach.q[j] = final->q[j];
+        if (arm_check_box(&m, &reach, kBoxTolDeg) != ARM_LIMIT_NONE) {
+            reach.q[j] = m.q[j];
+        } else if (fabsf(final->q[j] - m.q[j]) > 0.05f) {
+            stage->q[j] = final->q[j];
+            ++moved;
         }
     }
+    *is_final = 0;
+    return moved != 0;
+}
+
+/* Start a recovery move/home from a latched fault. */
+static arm_refusal recovery_start(arm *a, const arm_pose *goal, uint32_t pct, arm_op_kind kind,
+                                  uint8_t *detail) {
+    uint32_t now = a->hw->millis(a->hw->ctx);
+    arm_pose stage;
+    int is_final = 0;
+    arm_refusal r = recovery_goal_ok(a, goal, detail);
+    if (r != ARM_OK) return r;
+    sync_cmd_to_measured(a, now); /* joints a stage leaves out hold the measured pose */
+    if (!recovery_stage(a, goal, &stage, &is_final)) {
+        *detail = ARM_WHY_RETRY_NO_PROGRESS;
+        return ARM_REFUSE_INHIBITED;
+    }
+    a->q_final = *goal;
+    a->stage_pct = (uint8_t)pct;
+    a->stages_left = is_final ? 0u : (uint8_t)kMaxStages;
+    traj_start(a, &stage, pct, kind, now);
     return ARM_OK;
 }
 
@@ -1424,10 +1540,8 @@ arm_refusal arm_cmd_move(arm *a, const float q[ARM_NUM_JOINTS], uint8_t speed_pc
     r = gate_motion_ex(a, detail, 1);
     if (r != ARM_OK) return r;
     memcpy(goal.q, q, sizeof goal.q);
-    if (a->state == ARM_ST_FAULT) {
-        r = recovery_goal_ok(a, &goal, detail);
-        if (r != ARM_OK) return r;
-    }
+    if (a->state == ARM_ST_FAULT) return recovery_start(a, &goal, speed_pct, ARM_OP_MOVE, detail);
+    a->stages_left = 0;
     traj_start(a, &goal, speed_pct, ARM_OP_MOVE, a->hw->millis(a->hw->ctx));
     return ARM_OK;
 }
@@ -1441,12 +1555,10 @@ arm_refusal arm_cmd_home(arm *a, uint8_t speed_pct, uint8_t *detail) {
         return ARM_REFUSE_RANGE;
     }
     memcpy(goal.q, kArmRestPose, sizeof goal.q);
-    if (a->state == ARM_ST_FAULT) {
-        r = recovery_goal_ok(a, &goal, detail);
-        if (r != ARM_OK) return r;
-    }
-    traj_start(a, &goal, speed_pct > kHomeSpeedCapPct ? kHomeSpeedCapPct : speed_pct, ARM_OP_HOME,
-               a->hw->millis(a->hw->ctx));
+    if (speed_pct > kHomeSpeedCapPct) speed_pct = kHomeSpeedCapPct;
+    if (a->state == ARM_ST_FAULT) return recovery_start(a, &goal, speed_pct, ARM_OP_HOME, detail);
+    a->stages_left = 0;
+    traj_start(a, &goal, speed_pct, ARM_OP_HOME, a->hw->millis(a->hw->ctx));
     return ARM_OK;
 }
 
@@ -1480,6 +1592,7 @@ arm_refusal arm_cmd_release(arm *a, uint8_t *detail) {
     if (r != ARM_OK) return r;
     /* The arm falls when torque goes away: park it at the rest pose first, slowly. */
     memcpy(goal.q, kArmRestPose, sizeof goal.q);
+    a->stages_left = 0;
     traj_start(a, &goal, 25u, ARM_OP_RELEASE, a->hw->millis(a->hw->ctx));
     return ARM_OK;
 }
@@ -1632,7 +1745,10 @@ int arm_cancel(arm *a, int report) {
         a->op = ARM_OP_NONE;
         break;
     }
-    if (a->state == ARM_ST_MOVING) a->state = ARM_ST_READY;
+    /* A cancelled recovery stays latched and recovery-only: the pose may still be outside the limits. */
+    if (a->state == ARM_ST_MOVING) a->state = a->limit_latched ? ARM_ST_FAULT : ARM_ST_READY;
+    a->recovering = 0;
+    a->stages_left = 0;
     if (report && a->sink != 0 && a->sink->finished != 0) {
         arm_completion d;
         memset(&d, 0, sizeof d);

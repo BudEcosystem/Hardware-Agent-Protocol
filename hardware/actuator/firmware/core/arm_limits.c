@@ -52,6 +52,38 @@ float arm_pose_excess(const arm_pose *p, uint8_t *code) {
     return worst;
 }
 
+static float over(float lo_val, float hi_val, float lo_lim, float hi_lim) {
+    float e = 0.0f;
+    if (lo_lim - lo_val > e) e = lo_lim - lo_val;
+    if (hi_val - hi_lim > e) e = hi_val - hi_lim;
+    return e;
+}
+
+uint8_t arm_check_box(const arm_pose *from, const arm_pose *to, float tol_deg) {
+    unsigned j, k, i;
+    for (j = 0; j < ARM_NUM_JOINTS; ++j) {
+        float f = from->q[j], t = to->q[j];
+        float lo = f < t ? f : t, hi = f < t ? t : f;
+        if (!isfinite(f) || !isfinite(t)) return (uint8_t)j;
+        if (over(lo, hi, kArmServos[j].lo_deg, kArmServos[j].hi_deg) >
+            over(f, f, kArmServos[j].lo_deg, kArmServos[j].hi_deg) + tol_deg)
+            return (uint8_t)j;
+    }
+    for (k = 0; k < ARM_NUM_COUPLED; ++k) {
+        float lo = 0.0f, hi = 0.0f, s = 0.0f;
+        for (i = 0; i < kArmCoupled[k].n_joints; ++i) {
+            float f = from->q[kArmCoupled[k].joints[i]], t = to->q[kArmCoupled[k].joints[i]];
+            s += f;
+            lo += f < t ? f : t;
+            hi += f < t ? t : f;
+        }
+        if (over(lo, hi, kArmCoupled[k].lo_deg, kArmCoupled[k].hi_deg) >
+            over(s, s, kArmCoupled[k].lo_deg, kArmCoupled[k].hi_deg) + tol_deg)
+            return (uint8_t)(ARM_LIMIT_COUPLED_BASE + k);
+    }
+    return ARM_LIMIT_NONE;
+}
+
 uint8_t arm_check_step(const arm_pose *prev, const arm_pose *next) {
     unsigned j, k;
     for (j = 0; j < ARM_NUM_JOINTS; ++j) {

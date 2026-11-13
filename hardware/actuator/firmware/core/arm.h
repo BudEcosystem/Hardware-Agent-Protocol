@@ -79,7 +79,8 @@ enum {
     ARM_WHY_OVERTEMP = 16,       /* a joint servo is at or above 70 C */
     ARM_WHY_NOT_DISABLED = 17,   /* calibrate needs the rail off and the arm resting */
     ARM_WHY_RECOVERY_WORSE = 18, /* the goal's straight-line path would increase the measured limit excess */
-    ARM_WHY_RETRY_NO_PROGRESS = 19 /* the same recovery goal already made the pose worse and nothing improved since */
+    ARM_WHY_RETRY_NO_PROGRESS = 19 /* the fault episode's worsening cap is used up and no joint can move
+                                    * toward this goal without risking a larger limit excess */
 };
 
 typedef struct {
@@ -139,9 +140,15 @@ typedef struct arm {
     uint8_t recovering;
     uint8_t servo_err_id, servo_err_bits;
     float last_move_err;
-    float limit_ref, guard_last; /* best measured excess of the current recovery / excess at the last freeze (deg) */
-    float retry_goal[ARM_NUM_JOINTS], retry_ex; /* the last recovery goal that made the pose worse */
-    uint8_t retry_valid;
+    float limit_ref, guard_last; /* best measured excess of the current motion / excess at its start or at the last freeze (deg) */
+    /* Fault episode (arm.c "Fault episode"): from the first latch until the measured pose is back
+     * inside every limit with the arm READY. Not reset by a new goal or a new motion. */
+    uint8_t ep_active;
+    float ep_ex0;                /* measured excess at the first latch of the episode (deg) */
+    /* A recovery above the episode cap runs in stages (arm.c recovery_stage): the stages still
+     * allowed (0 = the running trajectory goes to q_final), the final goal and the speed. */
+    uint8_t stages_left, stage_pct;
+    arm_pose q_final;
     arm_cal cal_new;
     uint32_t stop_t0;
 

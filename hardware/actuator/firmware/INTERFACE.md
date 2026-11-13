@@ -355,32 +355,75 @@ attempts; if the freeze write cannot be confirmed the fault becomes 11 `bus_coll
 servo that was moving, ends the operation and **latches** ("recovery-only"). A latched arm keeps
 holding and accepts exactly these ways out, none of which needs a power cycle:
 
-* `move_joints` / `home` to a goal inside the limits. It is judged from the CURRENT measured pose: the
-  limit excess must not increase along the straight joint-space path (limits are convex, so any goal
-  inside them passes; the check is kept as a defence), and the exact goal that last made the measured
-  pose worse is refused (INHIBITED, reason 19) until the pose has improved, so a client's retry loop
-  cannot ratchet the arm outward. While it runs, the guard trips again when the measured excess exceeds
-  the BEST value reached in this motion by more than 1 deg (the baseline is the excess at the start,
-  and every trip re-baselines to where the arm rests). A completed recovery move clears the latch.
+* `move_joints` / `home` to a goal inside the limits: never refused because of earlier attempts, and
+  bounded as described under "Fault episode" below. A completed recovery move clears the latch; a
+  recovery that is cancelled (`hold`, STOP) or fails leaves the arm latched and holding.
 * `release_torque` (lease, hazardous): the arm cannot be parked from a jam or a displacement, so torque
-  goes off at once and **the arm drops: support it first**. The arm is then parked (rail on, torque
-  off, `pose_unknown`), and an `enable` after it is the normal path.
-* `enable`: if the measured pose is inside the 3 deg margin it re-energises normally. If it is outside,
-  the enable fails (fault 12, pose limit) and the arm stays in this same latched recovery-only state
-  (rail on, torque on), which accepts the improving move above. It never cuts the rail.
+  goes off at once and **the arm drops: support it first**. The arm is then PARKED (rail on, torque
+  off, `pose_unknown`). An `enable` after it re-energises only if the measured pose is inside the 3 deg
+  enable margin; **if the arm still rests outside the margin that `enable` fails with fault 12 and the
+  arm stays PARKED with torque off** (it is not re-energised outside the limits, and motion commands
+  answer PRECONDITION, reason 6 `parked`). Move the arm inside by hand, torque being off, and `enable`
+  again.
+* `enable` while latched: if the measured pose is inside the 3 deg margin it re-energises normally
+  (READY, the episode ends). If it is outside, the enable fails (fault 12, pose limit) and the arm stays
+  in this same latched recovery-only state (rail on, torque on, the fault episode unchanged), which
+  accepts the recovery move above. It never cuts the rail.
 * `hold` is acknowledged (the arm is already frozen). Everything else is refused (INHIBITED).
 
-**Overshoot bound (honest).** The guard sees a violation on the next telemetry sample of the joint (each
-joint about every 25 ms) and trips when the excess is more than the band (1 deg; 4 deg slack when
-unlatched) beyond its baseline. The arm therefore ends up resting past the baseline by the band plus
-what the joint travels in one sample period: measured 1.1-2.6 deg in the simulator for the
-shoulder/elbow jam at up to 100 % speed; the worst case by arithmetic is the band plus joint speed times
-about 30 ms: shoulder 1 + 2.7, elbow 1 + 4, wrist pitch 1 + 8 deg. The servo-side angle windows (§3.1) add
+**Fault episode: retries cannot ratchet the arm outward, whatever the goals.** The straight path to a
+goal inside the (convex) limits never increases the excess *as commanded*, but with a jammed joint the
+arm does not follow the command: shoulder stuck at 90 deg, goal (45, 125), and the elbow alone drives
+`forearm_pitch` further out. A check of the goal or of its path therefore cannot bound this; the
+firmware keeps a memory that no goal resets:
+
+* An episode starts at the first latch and records the measured excess at that moment, `E0` (degrees
+  beyond the worst joint or coupled limit; 0 when the latch was a following error inside the limits).
+  It ends only when the measured pose is back inside **every** limit (excess 0) with the arm READY, or
+  when an `enable` puts torque on inside the enable margin. A recovery move that completes inside its
+  2 deg settle tolerance but still measures outside a limit clears the latch and not the episode; a
+  new latch before the episode has ended keeps `E0` (it can only be lowered); a push while latched,
+  `enable`, a cancelled or failed move do not change it.
+* **Cap: 3 deg.** While the measured excess is at or below `E0 + 3`, a recovery goal runs as one
+  straight move and the guard trips it as soon as the measured excess passes
+  `min(best excess reached in this motion + 1 deg, max(E0 + 3, excess at the start + 0.5))`.
+* **Above the cap no commanded motion can make it worse.** A recovery goal is then executed in
+  stages: a stage commands only joints whose motion cannot enlarge the violation of any limit
+  *whichever joints fail to move or stop on the way* (the test covers the whole box between the
+  measured pose and the goal, not just the straight path); the other joints keep their present
+  command. When the stage is reached as measured, the rest is planned again from the new measured
+  pose (at most 4 stages, then the straight move to the goal). Shoulder stuck at 90, goal (45, 125):
+  the stage is "shoulder to 45"; it fails on the jam (fault 18 or a settle timeout) with the elbow
+  where it was. Once the jam is removed the very same goal, or `home`, completes: shoulder first,
+  then the elbow. Reason 19 (`retry_no_progress`) is the refusal for "above the cap and no joint may
+  move toward this goal"; with the present limits a goal inside the limits always has such a joint,
+  so the code is defensive and not expected on the wire. Reason 18 (`recovery_worse`, the straight
+  path itself increases the excess) is likewise unreachable while the limits are convex.
+* **Worst case.** Everything a client can cause in one episode is bounded by
+  `E0 + 3 (cap) + 0.5 (hysteresis) + overshoot of ONE trip`, the overshoot being what the joint travels
+  until the guard's next sample of it (about 30 ms): at 100 % speed at most shoulder 2.7, elbow 4.0,
+  wrist pitch 8.1 deg (90 / 135 / 269 deg/s x 0.03 s), so `E0 + 6.2 / 7.5 / 11.6` deg by arithmetic. In
+  the simulator the trips that cross the cap happen early in a move, at low speed: the largest value
+  measured over every retry pattern below is `E0 + 3.65` deg, and the tests assert `E0 + 3 + 1.5`.
+  An external push is not a client action and is not bounded by this (the arm freezes where it is
+  measured after each further 0.5 to 1 deg); the cap still applies to what the client does afterwards.
+  Simulator runs (shoulder jammed at 90 deg unless noted; 40 attempts each; round-3 firmware in
+  brackets): elbow goal alternating 124/125 at 100 %: 3.15 deg [38.8]; at 50 %: 3.24 [38.7];
+  alternating 120/125 at 25 %: 3.02 [34.8]; goal drifting 0.6 deg per attempt: 3.15 [26.5]; shoulder
+  pushed to 97 deg and blocked (`E0` = 12.0), `home` and `move(0, 80, 95)` alternating: 15.34, i.e.
+  `E0 + 3.34` [17.3 after 12 attempts and rising].
+
+**Overshoot of a single trip.** The guard sees a violation on the next telemetry sample of the joint
+(each joint about every 25 ms) and trips when the excess is more than its threshold (4 deg slack when
+unlatched; the episode rule above when latched). The arm therefore ends up resting past the threshold
+by what the joint travels in one sample period: measured 0.1-1.6 deg in the simulator for the
+shoulder/elbow jam at up to 100 % speed; the worst case by arithmetic is joint speed times about
+30 ms: shoulder 2.7, elbow 4, wrist pitch 8 deg. The servo-side angle windows (§3.1) add
 a second layer: a joint pushed past its window is pulled back toward the window edge by the servo
 itself while the goal is frozen at the measured pose (seen in the simulator), so a displaced arm may
 drift back inside the joint range on its own; that is intended and not an error. The 1 deg band, 4 deg
-slack, 15 deg following-error bound and the 200 ms sample age are simulator-chosen values and are
-**to be verified on the hardware** with real servo latency and encoder noise. `move_error_deg` reports
+slack, 3 deg episode cap, 0.5 deg hysteresis, 15 deg following-error bound and the 200 ms sample age
+are simulator-chosen values and are **to be verified on the hardware** with real servo latency and encoder noise. `move_error_deg` reports
 the real worst error also for a failed move; a new motion starts from the measured pose when it
 differs from the last command by more than 2 deg.
 

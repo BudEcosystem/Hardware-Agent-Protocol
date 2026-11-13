@@ -32,6 +32,16 @@ uint8_t arm_check_pose(const arm_pose *p, float margin_deg);
  * one, ARM_LIMIT_NONE when inside. Used to tell "worse" from "better" while recovering. */
 float arm_pose_excess(const arm_pose *p, uint8_t *code);
 
+/* "Cannot get worse, whichever joints fail to move": looks at the whole axis-aligned box spanned by
+ * `from` and `to`, i.e. every pose in which each joint independently sits anywhere between its two
+ * values. The straight path lies inside the box, and so does every real trajectory in which some
+ * joints lag, stop short or do not move at all (a jammed joint). Returns the code of the first limit
+ * whose violation somewhere in the box exceeds its violation at `from` by more than `tol_deg`, or
+ * ARM_LIMIT_NONE when no limit can be violated more than it is at `from`. Exact for these limits
+ * (each bounds one joint or a sum of joints, so the worst case is at a corner). A non-finite angle
+ * returns its joint. */
+uint8_t arm_check_box(const arm_pose *from, const arm_pose *to, float tol_deg);
+
 /* Waypoint check for a motion that may start outside the limits (an arm moved by hand,
  * or encoder noise at a stop): `next` is allowed if it is inside every limit, or if each limit
  * it violates is violated by no more than at `prev`. Returns the first offending limit or

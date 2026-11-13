@@ -141,11 +141,95 @@ static void test_calibration(void) {
     }
 }
 
+/* arm_check_box: "cannot get worse whichever joints fail to move". */
+static float limit_excess(const arm_pose *p, unsigned code) {
+    float v, lo, hi;
+    if (code < ARM_NUM_JOINTS) {
+        v = p->q[code];
+        lo = kArmServos[code].lo_deg;
+        hi = kArmServos[code].hi_deg;
+    } else {
+        v = arm_coupled_sum(p, code - ARM_NUM_JOINTS);
+        lo = kArmCoupled[code - ARM_NUM_JOINTS].lo_deg;
+        hi = kArmCoupled[code - ARM_NUM_JOINTS].hi_deg;
+    }
+    return v < lo ? lo - v : (v > hi ? v - hi : 0.0f);
+}
+
+static void test_box_check(void) {
+    /* The jam of INTERFACE.md 9.1: shoulder stuck at 90, elbow at 88 (forearm 178). */
+    arm_pose m = pose(0, 90, 88, 0, 0);
+    {
+        arm_pose g = pose(0, 45, 125, 0, 0); /* straight path improves, but the elbow alone makes it worse */
+        CHECK(arm_check_box(&m, &g, 0.01f) == ARM_LIMIT_COUPLED_BASE + 0);
+    }
+    {
+        arm_pose g = pose(0, 45, 88, 0, 0), h = pose(0, 90, 60, 0, 0), i = pose(40, 45, 60, -30, 20);
+        CHECK(arm_check_box(&m, &g, 0.01f) == ARM_LIMIT_NONE); /* shoulder only */
+        CHECK(arm_check_box(&m, &h, 0.01f) == ARM_LIMIT_NONE); /* elbow only */
+        CHECK(arm_check_box(&m, &i, 0.01f) == ARM_LIMIT_NONE); /* everything inward */
+    }
+    {
+        arm_pose g = pose(0, 30, 88, 45, 0); /* wrist up: tool_pitch 178 -> 223 if the shoulder stays */
+        CHECK(arm_check_box(&m, &g, 0.01f) == ARM_LIMIT_COUPLED_BASE + 2);
+    }
+    {
+        /* Inside the limits with room to spare: nothing in the box violates anything. A box is stricter
+         * than its two ends: */
+        arm_pose a = pose(0, 30, 90, 45, 0), b = pose(20, 40, 95, 30, 10), c = pose(20, 40, 100, 30, 10);
+        CHECK(arm_check_box(&a, &b, 0.01f) == ARM_LIMIT_NONE);
+        /* Both ends legal, but shoulder 40 + elbow 100 with the wrist still at 45 is 185 > 183. */
+        CHECK(arm_check_pose(&c, 0.0f) == ARM_LIMIT_NONE);
+        CHECK(arm_check_box(&a, &c, 0.01f) == ARM_LIMIT_COUPLED_BASE + 2);
+    }
+    {
+        /* A joint outside its own range: coming back is fine, going further is not. */
+        arm_pose a = pose(0, 100, 20, 0, 0), in = pose(0, 60, 20, 0, 0), out = pose(0, 101, 20, 0, 0);
+        CHECK(arm_check_box(&a, &in, 0.01f) == ARM_LIMIT_NONE);
+        CHECK(arm_check_box(&a, &out, 0.01f) == ARM_J_SHOULDER);
+        CHECK(arm_check_box(&a, &a, 0.01f) == ARM_LIMIT_NONE);
+    }
+    {
+        arm_pose a = pose(0, 30, 90, 45, 0), nan = pose(0, 30, NAN, 45, 0);
+        CHECK(arm_check_box(&a, &nan, 0.01f) == ARM_J_ELBOW);
+        CHECK(arm_check_box(&nan, &a, 0.01f) == ARM_J_ELBOW);
+    }
+    /* Property: against all 32 corners of the box, for random pose pairs (also outside the limits).
+     * arm_check_box says NONE exactly when no corner violates any limit more than `from` does. */
+    {
+        uint32_t x = 0x1234567u;
+        unsigned n, agree = 0, safe = 0;
+        for (n = 0; n < 20000; ++n) {
+            arm_pose a, b;
+            unsigned j, corner, code;
+            int worse = 0;
+            for (j = 0; j < ARM_NUM_JOINTS; ++j) {
+                float span = kArmServos[j].hi_deg - kArmServos[j].lo_deg + 30.0f;
+                x = x * 1664525u + 1013904223u;
+                a.q[j] = kArmServos[j].lo_deg - 15.0f + span * (float)(x >> 8) / 16777216.0f;
+                x = x * 1664525u + 1013904223u;
+                b.q[j] = (x & 3u) == 0 ? a.q[j] : a.q[j] + 40.0f * ((float)(x >> 8) / 16777216.0f - 0.5f);
+            }
+            for (corner = 0; corner < 32u && !worse; ++corner) {
+                arm_pose c;
+                for (j = 0; j < ARM_NUM_JOINTS; ++j) c.q[j] = (corner >> j) & 1u ? b.q[j] : a.q[j];
+                for (code = 0; code < ARM_NUM_JOINTS + ARM_NUM_COUPLED; ++code)
+                    if (limit_excess(&c, code) > limit_excess(&a, code) + 0.01f) worse = 1;
+            }
+            if ((arm_check_box(&a, &b, 0.01f) != ARM_LIMIT_NONE) == worse) ++agree;
+            if (!worse) ++safe;
+        }
+        CHECK(agree == 20000);
+        CHECK(safe > 1000 && safe < 19000); /* both outcomes are exercised */
+    }
+}
+
 int main(void) {
     test_single_joint_ranges();
     test_coupled_limits();
     test_random_agreement();
     test_step_recovery();
+    test_box_check();
     test_speed_limits();
     test_calibration();
     TEST_FINISH("test_limits");

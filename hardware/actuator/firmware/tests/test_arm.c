@@ -629,7 +629,7 @@ static void test_jammed_joint_is_caught_on_the_measured_pose(void) {
     run(&t, 600);
     CHECK(fabs(sim_rig_pos(&t.rig, 3) - elbow_goal_before) < 12.0); /* and it settles and stays there */
     CHECK(t.a.torque_on && t.rig.servo_en_pin); /* holding, not dropped */
-    /* Latched: nothing but a move back inside, enable or hold. */
+    /* Latched: only a recovery move, release_torque, enable or hold (INTERFACE.md 9.1). */
     {
         uint8_t dd = 0;
         CHECK(arm_cmd_tool_mount(&t.a, &dd) == ARM_REFUSE_INHIBITED);
@@ -906,14 +906,26 @@ static void excess_hook(tb *t) {
     if (e > g_max_excess) g_max_excess = e;
 }
 
+/* INTERFACE.md 9.1: whatever a client sends during one fault episode, the measured excess stays within
+ * the excess at the first latch + the episode cap + the overshoot of one trip. kDocOvershootDeg is the
+ * simulator figure the document states (0.5 deg hysteresis + what a joint travels before the guard's
+ * next sample; measured at most 0.65 deg in these scenarios). */
+#define kTestCapDeg 3.0f
+#define kDocOvershootDeg 1.5f
+static float g_worst_over_first_latch; /* largest (true excess - excess at the first latch) seen, any scenario */
+static void note_bound(float max_excess, float e0) {
+    if (max_excess - e0 > g_worst_over_first_latch) g_worst_over_first_latch = max_excess - e0;
+    CHECK(max_excess <= e0 + kTestCapDeg + kDocOvershootDeg);
+}
+
 /* C1-a. After a following/limit fault the same move is re-sent over and over (a client's natural
  * retry): every retry is "inside the limits" as commanded, but the jammed shoulder cannot follow.
- * The measured excess must never grow beyond the pre-retry value (plus one band of noise). */
+ * The measured excess must stay within the episode bound however often it is retried. */
 static void retry_scenario(uint8_t pct) {
     tb t;
     uint8_t d = 0;
     float e0;
-    unsigned k, refused = 0;
+    unsigned k;
     bring_up(&t);
     CHECK(move(&t, 0, 90, 60, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
     sim_rig_jam(&t.rig, 2);
@@ -926,19 +938,18 @@ static void retry_scenario(uint8_t pct) {
     excess_hook(&t);
     e0 = g_max_excess; /* measured excess before any retry */
     t.hook = excess_hook;
+    CHECK(t.a.ep_active && fabsf(t.a.ep_ex0 - e0) < 0.2f); /* the episode remembers the first latch */
     for (k = 0; k < 8; ++k) {
-        arm_refusal r = move(&t, 0, 45, 125, 0, 0, pct, &d);
-        if (r != ARM_OK) {
-            ++refused;
-            CHECK(r == ARM_REFUSE_INHIBITED && (d == ARM_WHY_RETRY_NO_PROGRESS || d == ARM_WHY_RECOVERY_WORSE));
-        }
-        run(&t, 700);
-        CHECK(t.a.state == ARM_ST_FAULT && t.a.torque_on);
+        /* Never refused: above the cap the same goal runs staged (shoulder first) and fails on the jam. */
+        CHECK(move(&t, 0, 45, 125, 0, 0, pct, &d) == ARM_OK);
+        CHECK(run_until_idle(&t, 5000));
+        run(&t, 300);
+        CHECK(t.done.status == ARM_DONE_FAILED && t.a.state == ARM_ST_FAULT && t.a.torque_on);
     }
-    /* Documented bound (INTERFACE.md 9.1): the 1 deg band plus what the joint travels during one telemetry
-     * period. The sim measures 1.1-2.6 deg; the unguarded firmware reached +38 deg after 8 retries. */
-    CHECK(g_max_excess <= e0 + 4.0f);
-    CHECK(refused >= 1); /* the goal that made the pose worse is not accepted again */
+    /* The unguarded firmware reached +38 deg after 8 retries. */
+    note_bound(g_max_excess, e0);
+    CHECK(g_max_excess > e0 + 1.0f); /* the allowance below the cap was really used: the bound is tested */
+    CHECK(fabsf(t.a.ep_ex0 - e0) < 0.2f); /* no retry moved the episode reference */
     t.hook = 0;
     /* No lockout: a move that IMPROVES the measured pose is still accepted, and it never makes the
      * excess worse than where it started (within the band) while it runs. */
@@ -950,9 +961,11 @@ static void retry_scenario(uint8_t pct) {
         t.hook = excess_hook;
         CHECK(run_until_idle(&t, 12000));
         t.hook = 0;
-        CHECK(g_max_excess <= start + 1.0f);
+        CHECK(g_max_excess <= start + 0.1f);
         CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY && !t.a.limit_latched);
         CHECK(true_excess(&t) == 0.0f && fabsf(joint_deg(&t, ARM_J_ELBOW) - 60.0f) < 2.5f);
+        run(&t, 100);
+        CHECK(!t.a.ep_active); /* measured back inside and READY: the episode is over */
     }
 }
 
@@ -1082,9 +1095,8 @@ static void test_no_lockout_after_a_tripped_recovery(void) {
     sim_rig_jam(&t.rig, 2);
     run(&t, 60);
     CHECK(move(&t, 0, 45, 125, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 3000));
-    CHECK(move(&t, 0, 45, 125, 0, 0, 100, &d) == ARM_OK); /* one retry: trips, re-baselines */
+    CHECK(move(&t, 0, 45, 125, 0, 0, 100, &d) == ARM_OK); /* one retry: trips again */
     CHECK(run_until_idle(&t, 3000) && t.a.state == ARM_ST_FAULT);
-    CHECK(move(&t, 0, 45, 125, 0, 0, 100, &d) == ARM_REFUSE_INHIBITED && d == ARM_WHY_RETRY_NO_PROGRESS);
     CHECK(move(&t, 0, 90, 80, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000)); /* improving */
     CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY);
     /* A latch from holding: home (improving) is accepted too. */
@@ -1111,6 +1123,286 @@ static void test_no_lockout_after_a_tripped_recovery(void) {
     CHECK(move(&t, 0, 60, 60, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
     CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY);
     CHECK(true_excess(&t) == 0.0f && fabsf(joint_deg(&t, ARM_J_SHOULDER) - 60.0f) < 2.5f);
+}
+
+
+/* ======================= Fix round 4: the fault episode ===================================== */
+
+/* Shoulder jammed at 90 deg, first move (45, 125) at `pct` latches. Returns the true excess at rest. */
+static float jam_and_latch(tb *t, uint8_t pct) {
+    uint8_t d = 0;
+    bring_up(t);
+    CHECK(move(t, 0, 90, 60, 0, 0, 100, &d) == ARM_OK && run_until_idle(t, 12000));
+    sim_rig_jam(&t->rig, 2);
+    run(t, 60);
+    CHECK(move(t, 0, 45, 125, 0, 0, pct, &d) == ARM_OK && run_until_idle(t, 5000));
+    CHECK(t->a.state == ARM_ST_FAULT && t->a.limit_latched && t->a.ep_active);
+    run(t, 400);
+    CHECK(fabsf(t->a.ep_ex0 - true_excess(t)) < 0.2f);
+    return true_excess(t);
+}
+
+static void unjam(tb *t) {
+    t->rig.sv[2].block_lo = -1e9;
+    t->rig.sv[2].block_hi = 1e9;
+}
+
+/* The round-3 re-review's ratchets: goals that are never twice the same. `drift` = 0: the elbow goal
+ * alternates between 125 and 125 - delta; 1: it moves by delta every attempt. The unguarded round-3
+ * firmware reached 38.8 / 38.7 / 34.8 / 26.5 deg in these four runs. */
+static void varying_goal_scenario(uint8_t pct, float delta, int drift, unsigned n) {
+    tb t;
+    uint8_t d = 0;
+    unsigned i, failed = 0;
+    float e0 = jam_and_latch(&t, pct), ref0 = t.a.ep_ex0;
+    g_max_excess = 0.0f;
+    t.hook = excess_hook;
+    for (i = 0; i < n; ++i) {
+        float el = drift ? 125.0f - delta * (float)(i + 1u) : ((i & 1u) ? 125.0f : 125.0f - delta);
+        CHECK(move(&t, 0, 45, el, 0, 0, pct, &d) == ARM_OK); /* never locked out */
+        CHECK(run_until_idle(&t, 8000));
+        run(&t, 300);
+        if (t.done.status == ARM_DONE_FAILED) ++failed;
+        CHECK(t.a.state == ARM_ST_FAULT && t.a.limit_latched && t.a.torque_on);
+        CHECK(t.a.ep_active && t.a.ep_ex0 == ref0); /* no goal re-baselines the episode */
+        CHECK(true_excess(&t) <= e0 + kTestCapDeg + kDocOvershootDeg);
+    }
+    t.hook = 0;
+    CHECK(failed == n);
+    note_bound(g_max_excess, e0); /* every millisecond of every attempt */
+    CHECK(g_max_excess > e0 + 1.0f);
+    /* With the cap reached an improving move is still accepted, never worsens, and ends the episode. */
+    {
+        float start = true_excess(&t);
+        CHECK(start > t.a.ep_ex0 + kTestCapDeg); /* the cap really is reached */
+        g_max_excess = 0.0f;
+        t.hook = excess_hook;
+        CHECK(move(&t, 0, 90, 80, 0, 0, pct, &d) == ARM_OK && run_until_idle(&t, 12000));
+        t.hook = 0;
+        CHECK(g_max_excess <= start + 0.1f);
+        CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY && !t.a.limit_latched);
+        run(&t, 100);
+        CHECK(true_excess(&t) == 0.0f && !t.a.ep_active);
+    }
+}
+
+static void test_varying_goals_cannot_ratchet(void) {
+    varying_goal_scenario(100, 1.0f, 0, 40);
+    varying_goal_scenario(50, 1.0f, 0, 40);
+    varying_goal_scenario(25, 5.0f, 0, 40);
+    varying_goal_scenario(100, 0.6f, 1, 40);
+}
+
+/* Latched by a displacement (shoulder pushed to 97 deg and blocked there), then `home` and
+ * move(0, 80, 95) alternate. home raises the wrist (tool_pitch), the move raises the elbow
+ * (forearm_pitch): two different goals, two different limits. Round 3: 12.0 -> 17.3 deg and rising. */
+static void test_alternating_home_and_move_cannot_ratchet(void) {
+    tb t;
+    uint8_t d = 0;
+    unsigned i;
+    float e0;
+    bring_up(&t);
+    CHECK(move(&t, 0, 80, 90, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+    sim_rig_jam(&t.rig, 2);
+    sim_rig_place(&t.rig, 2, nominal_raw(ARM_J_SHOULDER, 80.0f) +
+                                 (nominal_raw(ARM_J_SHOULDER, 90.0f) - nominal_raw(ARM_J_SHOULDER, 80.0f)) * 1.7);
+    t.rig.sv[2].block_lo = t.rig.sv[2].block_hi = sim_rig_pos(&t.rig, 2);
+    run(&t, 300);
+    CHECK(t.a.state == ARM_ST_FAULT && t.a.fault_code == ARM_FAULT_DISPLACED && t.a.limit_latched);
+    e0 = true_excess(&t);
+    CHECK(fabsf(e0 - 12.0f) < 0.3f && fabsf(t.a.ep_ex0 - e0) < 0.2f);
+    g_max_excess = 0.0f;
+    t.hook = excess_hook;
+    for (i = 0; i < 24; ++i) {
+        if (i & 1u) CHECK(move(&t, 0, 80, 95, 0, 0, 50, &d) == ARM_OK);
+        else CHECK(arm_cmd_home(&t.a, 100, &d) == ARM_OK);
+        CHECK(run_until_idle(&t, 30000));
+        run(&t, 300);
+        CHECK(t.done.status == ARM_DONE_FAILED && t.a.state == ARM_ST_FAULT && t.a.limit_latched);
+        CHECK(true_excess(&t) <= e0 + kTestCapDeg + kDocOvershootDeg);
+    }
+    t.hook = 0;
+    note_bound(g_max_excess, e0);
+    CHECK(g_max_excess > e0 + 1.0f);
+    CHECK(fabsf(t.a.ep_ex0 - e0) < 0.2f);
+    /* The block is removed: the very `home` that kept failing now completes (staged: the shoulder
+     * comes in first, then the wrist goes up) and never makes the excess worse on the way. */
+    {
+        float start = true_excess(&t);
+        unjam(&t);
+        g_max_excess = 0.0f;
+        t.hook = excess_hook;
+        CHECK(arm_cmd_home(&t.a, 100, &d) == ARM_OK && run_until_idle(&t, 30000));
+        t.hook = 0;
+        CHECK(g_max_excess <= start + 0.1f);
+        CHECK(t.done.kind == ARM_OP_HOME && t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY);
+        for (i = 0; i < ARM_NUM_JOINTS; ++i) CHECK(fabsf(joint_deg(&t, i) - kArmRestPose[i]) < 2.5f);
+        run(&t, 100);
+        CHECK(true_excess(&t) == 0.0f && !t.a.ep_active && !t.a.limit_latched);
+    }
+}
+
+/* Every way out stays open once the cap is reached, with the jam still present or just removed. */
+static void test_exits_after_the_cap_is_reached(void) {
+    tb t;
+    uint8_t d = 0;
+    unsigned i, which;
+    for (which = 0; which < 5; ++which) {
+        float e0 = jam_and_latch(&t, 100), rest;
+        for (i = 0; i < 4; ++i) {
+            CHECK(move(&t, 0, 45, 125, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 5000));
+            run(&t, 300);
+        }
+        rest = true_excess(&t);
+        CHECK(rest > t.a.ep_ex0 + kTestCapDeg && rest <= e0 + kTestCapDeg + kDocOvershootDeg);
+        g_max_excess = 0.0f;
+        t.hook = excess_hook;
+        switch (which) {
+        case 0: /* home while still jammed: accepted, fails on the jam, nothing gets worse ... */
+            CHECK(arm_cmd_home(&t.a, 100, &d) == ARM_OK && run_until_idle(&t, 30000));
+            CHECK(t.done.status == ARM_DONE_FAILED && t.a.state == ARM_ST_FAULT && t.a.limit_latched);
+            CHECK(g_max_excess <= rest + 0.1f);
+            unjam(&t); /* ... and the same home completes once the jam is gone */
+            CHECK(arm_cmd_home(&t.a, 100, &d) == ARM_OK && run_until_idle(&t, 30000));
+            CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY);
+            CHECK(g_max_excess <= rest + 0.1f);
+            for (i = 0; i < ARM_NUM_JOINTS; ++i) CHECK(fabsf(joint_deg(&t, i) - kArmRestPose[i]) < 2.5f);
+            run(&t, 100);
+            CHECK(!t.a.ep_active);
+            break;
+        case 1: /* the goal that caused it all completes once the jam is gone (staged, shoulder first) */
+            unjam(&t);
+            CHECK(move(&t, 0, 45, 125, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 30000));
+            CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY);
+            CHECK(g_max_excess <= rest + 0.1f);
+            CHECK(fabsf(joint_deg(&t, ARM_J_SHOULDER) - 45.0f) < 2.5f && fabsf(joint_deg(&t, ARM_J_ELBOW) - 125.0f) < 2.5f);
+            run(&t, 100);
+            CHECK(!t.a.ep_active);
+            break;
+        case 2: /* release_torque: torque off at once, parked */
+            CHECK(arm_cmd_release(&t.a, &d) == ARM_OK && run_until_idle(&t, 1000));
+            CHECK(t.done.kind == ARM_OP_RELEASE && t.done.status == ARM_DONE_COMPLETED);
+            CHECK(t.a.state == ARM_ST_PARKED && !t.a.torque_on && !t.a.limit_latched && t.a.pose_unknown);
+            CHECK(sim_rig_reg8(&t.rig, 3, STS_REG_TORQUE_ENABLE) == 0 && t.rig.servo_en_pin);
+            /* INTERFACE.md 9.1: enable after that release with the arm still outside the enable margin
+             * fails with fault 12 and the arm stays PARKED with torque off (it is not re-energised). */
+            CHECK(arm_cmd_enable(&t.a, &d) == ARM_OK && run_until_idle(&t, 5000));
+            CHECK(t.done.status == ARM_DONE_FAILED && t.done.fault == ARM_FAULT_LIMIT);
+            CHECK(t.a.state == ARM_ST_PARKED && !t.a.torque_on && t.rig.servo_en_pin);
+            CHECK(sim_rig_reg8(&t.rig, 3, STS_REG_TORQUE_ENABLE) == 0);
+            CHECK(move(&t, 0, 90, 60, 0, 0, 50, &d) == ARM_REFUSE_PRECONDITION && d == ARM_WHY_PARKED);
+            /* The operator moves the elbow in by hand (torque is off): now enable succeeds. */
+            sim_rig_place(&t.rig, 3, nominal_raw(ARM_J_ELBOW, 70.0f));
+            run(&t, 100);
+            CHECK(arm_cmd_enable(&t.a, &d) == ARM_OK && run_until_idle(&t, 5000));
+            CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY && t.a.torque_on);
+            CHECK(!t.a.ep_active && !t.a.limit_latched && t.a.fault_code == ARM_FAULT_NONE);
+            break;
+        case 3: /* enable while latched outside the margin: fails, stays latched and holding; the same
+                 * worsening goal still cannot ratchet, the improving move still works */
+            CHECK(arm_cmd_enable(&t.a, &d) == ARM_OK && run_until_idle(&t, 5000));
+            CHECK(t.done.status == ARM_DONE_FAILED && t.done.fault == ARM_FAULT_LIMIT);
+            CHECK(t.a.state == ARM_ST_FAULT && t.a.limit_latched && t.a.torque_on && t.rig.servo_en_pin);
+            CHECK(t.a.ep_active && fabsf(t.a.ep_ex0 - e0) < 0.2f); /* enable does not reset the episode */
+            for (i = 0; i < 4; ++i) {
+                CHECK(move(&t, 0, 45, 124.0f + (float)(i & 1u), 0, 0, 100, &d) == ARM_OK);
+                CHECK(run_until_idle(&t, 5000));
+                run(&t, 300);
+            }
+            CHECK(g_max_excess <= rest + 0.1f);
+            CHECK(move(&t, 0, 90, 80, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+            CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY);
+            break;
+        default: /* hold in the middle of a recovery: the arm stays latched (not READY outside the limits) */
+            CHECK(move(&t, 0, 90, 60, 0, 0, 25, &d) == ARM_OK);
+            run(&t, 120);
+            CHECK(t.a.state == ARM_ST_MOVING && true_excess(&t) > 0.5f);
+            CHECK(arm_cmd_hold(&t.a, &d) == ARM_OK);
+            run(&t, 300);
+            CHECK(t.a.state == ARM_ST_FAULT && t.a.limit_latched && t.a.ep_active && t.a.torque_on);
+            CHECK(arm_cmd_tool_mount(&t.a, &d) == ARM_REFUSE_INHIBITED);
+            CHECK(true_excess(&t) <= rest + 0.1f);
+            CHECK(move(&t, 0, 90, 60, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+            CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY);
+            break;
+        }
+        t.hook = 0;
+    }
+}
+
+/* The episode is tied to the measured pose, not to the latch: a recovery that ends READY but still
+ * a little outside (inside the settle tolerance) does not grant a fresh allowance. */
+static void test_episode_ends_only_back_inside(void) {
+    tb t;
+    uint8_t d = 0;
+    float e0 = jam_and_latch(&t, 100);
+    CHECK(move(&t, 0, 45, 125, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 5000));
+    run(&t, 300);
+    CHECK(true_excess(&t) > 1.0f);
+    /* (90, 85) is legal (sum 175). The jammed shoulder is already there; the elbow comes down but is
+     * stopped 1 deg short (inside the 2 deg settle tolerance): the move completes, the arm is READY,
+     * and the measured pose is still 1 deg outside forearm_pitch. */
+    t.rig.sv[3].block_lo = (double)nominal_raw(ARM_J_ELBOW, 86.0f);
+    CHECK(move(&t, 0, 90, 85, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+    CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY && !t.a.limit_latched);
+    run(&t, 200);
+    CHECK(true_excess(&t) > 0.5f && true_excess(&t) < 1.5f);
+    CHECK(t.a.ep_active && fabsf(t.a.ep_ex0 - e0) < 0.2f); /* READY, but the episode is not over */
+    /* From READY the old goal is sent again (shoulder still jammed): the unlatched guard trips at its
+     * 4 deg slack. That latch belongs to the SAME episode: the reference is not raised to the new
+     * resting excess, so the arm is above the cap at once and no retry can add to it. */
+    t.rig.sv[3].block_lo = -1e9;
+    CHECK(move(&t, 0, 45, 125, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 5000));
+    run(&t, 300);
+    CHECK(t.a.state == ARM_ST_FAULT && t.a.limit_latched && t.a.ep_active);
+    CHECK(fabsf(t.a.ep_ex0 - e0) < 0.2f);
+    {
+        float rest = true_excess(&t);
+        unsigned i;
+        CHECK(rest > 4.0f && rest < 4.0f + 3.0f); /* the READY slack plus one overshoot */
+        g_max_excess = 0.0f;
+        t.hook = excess_hook;
+        for (i = 0; i < 6; ++i) {
+            CHECK(move(&t, 0, 45, 124.0f + (float)(i & 1u), 0, 0, 100, &d) == ARM_OK);
+            CHECK(run_until_idle(&t, 5000));
+            run(&t, 300);
+        }
+        t.hook = 0;
+        CHECK(g_max_excess <= rest + 0.1f);
+    }
+    unjam(&t);
+    CHECK(move(&t, 0, 60, 60, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+    run(&t, 100);
+    CHECK(t.a.state == ARM_ST_READY && true_excess(&t) == 0.0f && !t.a.ep_active);
+}
+
+/* The runtime half of the cap: a motion that starts just below ep_ex0 + cap is tripped at the cap
+ * (here: at start + 0.5 deg hysteresis), not at "best + 1 deg band". */
+static void test_guard_trips_at_the_cap(void) {
+    tb t;
+    uint8_t d = 0;
+    float e0 = jam_and_latch(&t, 100), rest;
+    CHECK(e0 < 0.2f); /* this jam latches on the following error, still inside the limits */
+    /* The elbow is pushed out while the arm holds latched: displaced again, frozen there. */
+    sim_rig_place(&t.rig, 3, nominal_raw(ARM_J_ELBOW, 87.8f)); /* forearm 177.8: excess 2.8 */
+    t.rig.sv[3].block_lo = t.rig.sv[3].block_hi = sim_rig_pos(&t.rig, 3); /* held there by the pusher */
+    run(&t, 300);
+    t.rig.sv[3].block_lo = -1e9;
+    t.rig.sv[3].block_hi = 1e9;
+    run(&t, 100);
+    rest = true_excess(&t);
+    CHECK(t.a.state == ARM_ST_FAULT && t.a.fault_code == ARM_FAULT_DISPLACED);
+    CHECK(rest > 2.4f && rest <= e0 + kTestCapDeg);
+    CHECK(fabsf(t.a.ep_ex0 - e0) < 0.2f); /* a push does not move the reference either */
+    g_max_excess = 0.0f;
+    t.hook = excess_hook;
+    CHECK(move(&t, 0, 45, 125, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 5000));
+    run(&t, 300);
+    t.hook = 0;
+    CHECK(t.done.status == ARM_DONE_FAILED && t.done.fault == ARM_FAULT_LIMIT);
+    CHECK(g_max_excess > rest + 0.4f);
+    CHECK(g_max_excess <= rest + 0.5f + 0.3f); /* hysteresis + reaction; the band alone would allow + 1 */
+    printf("guard at the cap: rest %.2f -> %.2f deg\n", (double)rest, (double)g_max_excess);
 }
 
 int main(void) {
@@ -1148,5 +1440,12 @@ int main(void) {
     test_overtemperature_fault_clears_and_watchdog_report_clears();
     test_knob_range_includes_the_mount_offset();
     test_no_lockout_after_a_tripped_recovery();
+    test_varying_goals_cannot_ratchet();
+    test_alternating_home_and_move_cannot_ratchet();
+    test_exits_after_the_cap_is_reached();
+    test_episode_ends_only_back_inside();
+    test_guard_trips_at_the_cap();
+    printf("fault episode: worst measured excess beyond the first latch = %.2f deg (cap %.1f + overshoot)\n",
+           (double)g_worst_over_first_latch, (double)kTestCapDeg);
     TEST_FINISH("test_arm");
 }
