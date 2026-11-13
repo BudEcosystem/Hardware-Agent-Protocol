@@ -25,5 +25,10 @@ openai = []
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+# bhms/protocol/bhms.schema.json is a symlink to spec/bhms/schema/bhms.schema.json (one source file).
+bhms = ["protocol/bhms.schema.json"]
+
 [tool.pytest.ini_options]
+asyncio_mode = "auto"
 testpaths = ["tests"]

@@ -17,13 +17,14 @@ import pytest
 from jsonschema import Draft202012Validator
 from pydantic import BaseModel, ValidationError
 
+from bhms.protocol import schema as schema_module
 from bhms.protocol import types
 from bhms.protocol.canonical import canonical, digest
 from bhms.protocol.errors import CODES
 
 ROOT = Path(__file__).resolve().parents[3]
 SPEC = ROOT / "spec" / "bhms"
-SCHEMA = json.loads((SPEC / "schema" / "bhms.schema.json").read_text())
+SCHEMA = schema_module.load_schema()
 EXAMPLES = sorted((SPEC / "examples").glob("*.json"))
 VALID = [p for p in EXAMPLES if not p.name.startswith("invalid-")]
 INVALID = [p for p in EXAMPLES if p.name.startswith("invalid-")]
@@ -34,7 +35,7 @@ def _load(path: Path) -> dict:
 
 
 def _validator(def_ref: str) -> Draft202012Validator:
-    return Draft202012Validator({**SCHEMA, "$ref": def_ref})
+    return schema_module.validator(_def_name(def_ref))
 
 
 def _def_name(def_ref: str) -> str:
