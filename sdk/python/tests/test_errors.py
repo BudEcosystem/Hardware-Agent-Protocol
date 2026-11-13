@@ -1,6 +1,6 @@
 import pytest
 
-from bhms.protocol.errors import CODES, RETRY_VALUES, BhmsError, from_jsonrpc
+from bhms.protocol.errors import CODES, OPERATION_ONLY_CODES, RETRY_VALUES, BhmsError, from_jsonrpc
 
 ORDER = [
     "INVALID_ARGUMENT", "OUT_OF_RANGE", "UNIT_MISMATCH", "UNKNOWN_DEVICE", "UNKNOWN_ACTION",
@@ -45,7 +45,10 @@ def test_default_retry_values_valid_and_sensible():
     assert BhmsError("UNSUPPORTED_VERSION", "x").retry == "never"
 
 
-@pytest.mark.parametrize("code", ORDER)
+WIRE_CODES = [c for c in ORDER if c not in ("DEVICE_FAULT", "UNVERIFIED")]
+
+
+@pytest.mark.parametrize("code", WIRE_CODES)
 def test_round_trip_every_code(code):
     e = BhmsError(code, "msg", field="params.x", bound={"max": 5}, may_have_acted=True,
                   retry="same-key", hint="do it")
@@ -58,6 +61,30 @@ def test_round_trip_every_code(code):
     assert back.to_jsonrpc() == wire
     assert (back.code, back.field, back.bound, back.may_have_acted, back.retry, back.hint) == (
         code, "params.x", {"max": 5}, True, "same-key", "do it")
+
+
+def test_operation_only_codes_never_become_jsonrpc_errors():
+    assert OPERATION_ONLY_CODES == {"DEVICE_FAULT", "UNVERIFIED"}
+    for code in OPERATION_ONLY_CODES:
+        err = BhmsError(code, "stall", may_have_acted=True, hint="inspect")
+        with pytest.raises(ValueError, match="operation"):
+            err.to_jsonrpc()
+        assert err.to_operation_error() == {"bhmsCode": code, "mayHaveActed": True, "retry": "after-reconcile",
+                                            "hint": "inspect", "message": "stall"}
+        with pytest.raises(ValueError, match="operation-only"):
+            from_jsonrpc({"code": CODES[code].number, "message": "m",
+                          "data": {"bhmsCode": code, "mayHaveActed": True, "retry": "never", "hint": ""}})
+
+
+@pytest.mark.parametrize("missing", ["mayHaveActed", "retry", "hint"])
+def test_from_jsonrpc_never_defaults_required_data(missing):
+    data = {"bhmsCode": "BUSY", "mayHaveActed": False, "retry": "backoff", "hint": "later"}
+    del data[missing]
+    with pytest.raises(ValueError, match=missing):
+        from_jsonrpc({"code": -32012, "message": "m", "data": data})
+    with pytest.raises(ValueError, match="boolean"):
+        from_jsonrpc({"code": -32012, "message": "m",
+                      "data": {"bhmsCode": "BUSY", "mayHaveActed": "no", "retry": "backoff", "hint": ""}})
 
 
 def test_operation_id_round_trip():

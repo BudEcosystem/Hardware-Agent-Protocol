@@ -30,6 +30,10 @@ UNVERIFIED            -32016  after-reconcile  required measured evidence absent
 DEVICE_FAULT          -32017  after-reconcile  device reported a fault while acting
 ====================  ======  ===============  =====================================
 
+``DEVICE_FAULT`` and ``UNVERIFIED`` describe what happened while a device acted:
+they are carried only in an operation's ``error`` (:meth:`BhmsError.to_operation_error`),
+never as JSON-RPC error responses (BHMS-ERR-012).
+
 ``retry`` semantics: ``never`` (do not retry), ``same-key`` (retry with the same
 idempotency key), ``after-reconcile`` (read the operation state, then decide),
 ``backoff`` (retry later with the same key, with delay). ``may_have_acted``
@@ -74,6 +78,9 @@ def _build() -> dict[str, CodeSpec]:
 
 CODES: dict[str, CodeSpec] = _build()
 
+# Codes that describe admitted work; never sent as JSON-RPC errors (BHMS-ERR-012).
+OPERATION_ONLY_CODES: frozenset[str] = frozenset({"DEVICE_FAULT", "UNVERIFIED"})
+
 
 class BhmsError(Exception):
     """A protocol error. Names the field, the bound and a fix whenever known."""
@@ -97,7 +104,7 @@ class BhmsError(Exception):
         self.retry = retry
         self.hint = hint
 
-    def to_jsonrpc(self) -> dict[str, Any]:
+    def _data(self) -> dict[str, Any]:
         data: dict[str, Any] = {"bhmsCode": self.code}
         if self.field is not None:
             data["field"] = self.field
@@ -106,7 +113,20 @@ class BhmsError(Exception):
         if self.operation_id is not None:
             data["operationId"] = self.operation_id
         data.update(mayHaveActed=self.may_have_acted, retry=self.retry, hint=self.hint)
-        return {"code": CODES[self.code].number, "message": self.message, "data": data}
+        return data
+
+    def to_jsonrpc(self) -> dict[str, Any]:
+        """JSON-RPC error object; ValueError for operation-only codes (BHMS-ERR-012)."""
+        if self.code in OPERATION_ONLY_CODES:
+            raise ValueError(f"{self.code} describes admitted work and is reported only in an operation's "
+                             "error; use to_operation_error()")
+        return {"code": CODES[self.code].number, "message": self.message, "data": self._data()}
+
+    def to_operation_error(self) -> dict[str, Any]:
+        """The ``OperationError`` wire form: error data plus ``message`` (any code)."""
+        data = self._data()
+        data["message"] = self.message
+        return data
 
 
 def from_jsonrpc(err: dict[str, Any]) -> BhmsError:
@@ -120,7 +140,13 @@ def from_jsonrpc(err: dict[str, Any]) -> BhmsError:
     number = err.get("code")
     if number != CODES[code].number:
         raise ValueError(f"code {code} must use JSON-RPC number {CODES[code].number}, got {number}")
+    if code in OPERATION_ONLY_CODES:
+        raise ValueError(f"{code} is operation-only and cannot be a JSON-RPC error (BHMS-ERR-012)")
+    missing = [k for k in ("mayHaveActed", "retry", "hint") if k not in data]
+    if missing:
+        raise ValueError(f"BHMS error data is missing {', '.join(missing)}; mayHaveActed is never assumed")
+    if not isinstance(data["mayHaveActed"], bool):
+        raise ValueError("data.mayHaveActed must be a boolean")
     return BhmsError(code, str(err.get("message", "")), field=data.get("field"),
                      bound=data.get("bound"), operation_id=data.get("operationId"),
-                     may_have_acted=bool(data.get("mayHaveActed", False)),
-                     retry=data.get("retry"), hint=str(data.get("hint", "")))
+                     may_have_acted=data["mayHaveActed"], retry=data["retry"], hint=str(data["hint"]))
