@@ -106,7 +106,7 @@ class Target:
         os.close(self.master)
 
     def stderr_lines(self) -> list[str]:
-        return self.stderr_path.read_text().splitlines() if self.stderr_path.exists() else []
+        return self.stderr_path.read_text(errors="replace").splitlines() if self.stderr_path.exists() else []
 
 
 def spawn(cmd: list[str], stderr_path: pathlib.Path) -> Target:

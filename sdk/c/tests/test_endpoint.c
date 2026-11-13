@@ -858,6 +858,71 @@ static void test_init_validation(void) {
     CHECK(bhms_init(0, &dev, &r.host.hal) == BHMS_ERR_INVALID);
 }
 
+static unsigned rnd(unsigned *seed) {
+    *seed = *seed * 1664525u + 1013904223u;
+    return *seed >> 8;
+}
+
+/* Property test: random frames and raw noise never crash the endpoint (ASan/UBSan
+ * in CI), every reply it emits is a well-formed frame, handles never run twice,
+ * and the ring invariants hold. */
+static void test_random_input(void) {
+    rig r;
+    bhms_hello h;
+    bhms_host_frame f;
+    uint8_t payload[HMS_FRAME_PAYLOAD];
+    unsigned seed = 7;
+#define RND() rnd(&seed)
+    rig_boot(&r, 1, &kDev);
+    uint64_t e = hello(&r, 0, 1, &h);
+    for (int iter = 0; iter < 20000; ++iter) {
+        size_t n = RND() % 40;
+        for (size_t i = 0; i < n; ++i) payload[i] = (uint8_t)RND();
+        if (n > 0 && RND() % 4 != 0) payload[0] = (uint8_t)(1 + RND() % 6); /* mostly real types */
+        if (n > 4 && RND() % 2) { payload[1] = (uint8_t)(RND() % 12); payload[2] = 0; }
+        uint64_t session = RND() % 5 == 0 ? RND() : e;
+        if (RND() % 11 == 0) {
+            uint8_t noise[64];
+            size_t m = RND() % 64;
+            for (size_t i = 0; i < m; ++i) noise[i] = (uint8_t)RND();
+            bhms_host_feed(&r.host, noise, m);
+        } else {
+            bhms_host_feed_frame(&r.host, (uint8_t)(RND() % 5 == 0 ? 2 : 1), (uint8_t)(RND() % 9 == 0 ? 2 : 1),
+                                 session, (uint32_t)RND(), payload, n);
+        }
+        r.host.now_ms += RND() % 300;
+        bhms_poll(&r.ep);
+        if (RND() % 37 == 0 && r.ep.ring[0].stamp != 0) { /* finish whatever is running */
+            for (uint16_t k = 1; k < 64; ++k) (void)bhms_op_finish(&r.ep, k, BHMS_ST_FAILED, 0, 1, 0);
+        }
+        if (r.host.tx_len > BHMS_HOST_TX_CAP / 2) { /* drain and validate replies */
+            int rc;
+            while ((rc = next(&r, &f)) != 0) {
+                CHECK(rc == 1);
+                CHECK(f.length >= 1 && f.channel == 1 && f.kind >= 2);
+            }
+            r.host.tx_len = r.host.tx_read = 0;
+        }
+        /* Invariants: handles unique among occupied entries, at most MAX_ACTIVE active. */
+        unsigned active = 0;
+        for (unsigned i = 0; i < BHMS_RING_SIZE; ++i) {
+            const bhms_entry *a = &r.ep.ring[i];
+            if (a->stamp == 0) continue;
+            CHECK(a->handle != 0 && a->handle <= r.ep.last_handle);
+            if (a->state == BHMS_ST_ACCEPTED || a->state == BHMS_ST_RUNNING) ++active;
+            for (unsigned j = i + 1; j < BHMS_RING_SIZE; ++j)
+                CHECK(r.ep.ring[j].stamp == 0 || r.ep.ring[j].handle != a->handle);
+        }
+        CHECK(active <= BHMS_MAX_ACTIVE);
+        /* Keep the 16-bit handle space from running out. */
+        if (r.ep.last_handle > 60000) {
+            e = hello(&r, BHMS_HELLO_REQ_NEW_SESSION, 9, &h);
+            r.host.rx_len = 0;
+        }
+    }
+#undef RND
+}
+
 /* Frame sizes against the 64-byte budget (spec 11.3). */
 static void test_wire_budget(void) {
     rig r;
@@ -894,6 +959,7 @@ int main(void) {
     RUN(test_link_faults);
     RUN(test_poll_bounded);
     RUN(test_init_validation);
+    RUN(test_random_input);
     RUN(test_wire_budget);
     TEST_FINISH("test_endpoint");
 }

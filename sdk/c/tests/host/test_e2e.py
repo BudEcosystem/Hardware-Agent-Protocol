@@ -8,7 +8,7 @@ Targets (selected with BHMS_TARGET):
                      `--eeprom FILE` and prints "LED 0|1" on stderr like sim_device.
 BHMS_ANALOG is the value the device must report for the analog property (default 341).
 """
-import json
+import importlib.util
 import os
 import pathlib
 import shlex
@@ -172,6 +172,7 @@ class LedAnalogE2E(unittest.TestCase):
         wire, fr = self.do_hello(3, new_session=True)
         self.expect(wire, h.STATUS, 3, 0, h.hello(FLAGS, DIGEST8, 3, 3, 0, 4, 2, 1))
 
+    @unittest.skipUnless(importlib.util.find_spec("pydantic"), "needs the sdk/python models")
     def test_sidecar_digest_matches_firmware(self):
         out = subprocess.run(
             [sys.executable, "-B", str(SDK_C / "tools" / "bhms_digest.py"),
