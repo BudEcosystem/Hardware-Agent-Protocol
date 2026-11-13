@@ -1,0 +1,134 @@
+{
+ "result": {
+  "devices": 10001,
+  "unix": {
+   "listed_correctly_limit_100": true,
+   "devices_list_limit_100": {
+    "n": 303,
+    "failures": 0,
+    "min_ms": 0.0908,
+    "p50_ms": 0.6599,
+    "p95_ms": 0.7641,
+    "p99_ms": 0.9055,
+    "max_ms": 0.9167,
+    "throughput_per_s": 1495.6102
+   },
+   "listed_correctly_limit_500": true,
+   "devices_list_limit_500": {
+    "n": 63,
+    "failures": 0,
+    "min_ms": 0.2407,
+    "p50_ms": 3.5935,
+    "p95_ms": 5.9135,
+    "p99_ms": 9.021,
+    "max_ms": 9.021,
+    "throughput_per_s": 266.1304
+   },
+   "invoke_waitMs_0": {
+    "n": 500,
+    "failures": 0,
+    "min_ms": 0.42,
+    "p50_ms": 0.4525,
+    "p95_ms": 0.5159,
+    "p99_ms": 0.5568,
+    "max_ms": 0.977,
+    "throughput_per_s": 2173.7265
+   },
+   "invoke_waitMs_1000": {
+    "n": 500,
+    "failures": 0,
+    "min_ms": 0.5028,
+    "p50_ms": 0.5372,
+    "p95_ms": 0.6138,
+    "p99_ms": 0.6743,
+    "max_ms": 1.2473,
+    "throughput_per_s": 1822.2468
+   },
+   "load": {
+    "before": {
+     "load1": 12.80419921875,
+     "load5": 14.5849609375,
+     "load15": 15.119140625,
+     "t": 1794594516.7265348
+    },
+    "after": {
+     "load1": 12.80419921875,
+     "load5": 14.5849609375,
+     "load15": 15.119140625,
+     "t": 1794594517.8747396
+    }
+   }
+  },
+  "http": {
+   "listed_correctly_limit_100": true,
+   "devices_list_limit_100": {
+    "n": 303,
+    "failures": 0,
+    "min_ms": 0.3015,
+    "p50_ms": 0.9566,
+    "p95_ms": 1.2821,
+    "p99_ms": 1.8617,
+    "max_ms": 12.1284,
+    "throughput_per_s": 942.7593
+   },
+   "listed_correctly_limit_500": true,
+   "devices_list_limit_500": {
+    "n": 63,
+    "failures": 0,
+    "min_ms": 0.5362,
+    "p50_ms": 5.4106,
+    "p95_ms": 7.3303,
+    "p99_ms": 22.4398,
+    "max_ms": 22.4398,
+    "throughput_per_s": 165.8534
+   },
+   "invoke_waitMs_0": {
+    "n": 500,
+    "failures": 0,
+    "min_ms": 0.7519,
+    "p50_ms": 0.8047,
+    "p95_ms": 0.9715,
+    "p99_ms": 1.3176,
+    "max_ms": 1.5989,
+    "throughput_per_s": 1202.5282
+   },
+   "invoke_waitMs_1000": {
+    "n": 500,
+    "failures": 0,
+    "min_ms": 0.8445,
+    "p50_ms": 0.8929,
+    "p95_ms": 1.1061,
+    "p99_ms": 1.5486,
+    "max_ms": 22.7001,
+    "throughput_per_s": 1028.4041
+   },
+   "load": {
+    "before": {
+     "load1": 12.80419921875,
+     "load5": 14.5849609375,
+     "load15": 15.119140625,
+     "t": 1794594517.8747447
+    },
+    "after": {
+     "load1": 13.62109375,
+     "load5": 14.72509765625,
+     "load15": 15.16162109375,
+     "t": 1794594519.8359807
+    }
+   }
+  }
+ },
+ "seconds": 9.7,
+ "load_around": {
+  "before": [
+   13.04833984375,
+   14.66259765625,
+   15.14697265625
+  ],
+  "after": [
+   13.62109375,
+   14.72509765625,
+   15.16162109375
+  ]
+ }
+}

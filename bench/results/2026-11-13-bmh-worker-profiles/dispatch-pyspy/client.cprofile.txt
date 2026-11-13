@@ -1,0 +1,61 @@
+         2694001 function calls in 14.213 seconds
+
+   Ordered by: cumulative time
+   List reduced from 199 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    24000    0.075    0.000   14.213    0.001 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py:1922(_run_once)
+    24000    0.042    0.000   12.478    0.001 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/selectors.py:451(select)
+    24000   12.421    0.001   12.421    0.001 {method 'poll' of 'select.epoll' objects}
+    24000    0.014    0.000    1.619    0.000 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/asyncio/events.py:86(_run)
+    24000    0.020    0.000    1.605    0.000 {method 'run' of '_contextvars.Context' objects}
+     6000    0.006    0.000    1.252    0.000 /home/jithin/hms-lab/repo-bench/bench/scripts/profile_invoke.py:56(main)
+    12000    0.019    0.000    1.247    0.000 /home/jithin/hms-lab/repo-bench/bench/scripts/profile_invoke.py:86(call)
+    12000    0.012    0.000    1.226    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/client/client.py:302(actions_invoke)
+    12000    0.032    0.000    1.215    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/client/client.py:257(_call)
+     6000    0.022    0.000    0.691    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/client/client.py:158(_wire_params)
+     6000    0.019    0.000    0.478    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/protocol/types/_base.py:60(to_wire)
+     6000    0.039    0.000    0.442    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/pydantic/type_adapter.py:160(__init__)
+     6000    0.050    0.000    0.345    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/pydantic/type_adapter.py:227(_init_core_attrs)
+    12000    0.008    0.000    0.260    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/pydantic/main.py:748(model_validate)
+    12000    0.189    0.000    0.252    0.000 {method 'validate_python' of 'pydantic_core._pydantic_core.SchemaValidator' objects}
+    12000    0.032    0.000    0.200    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/jsonrpc/session.py:493(request)
+    30000    0.024    0.000    0.184    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/pydantic/alias_generators.py:25(to_camel)
+     6000    0.008    0.000    0.180    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/client/client.py:147(_parse_result)
+     6000    0.010    0.000    0.159    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/jsonrpc/session.py:547(_read_loop)
+     6000    0.017    0.000    0.108    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/client/client.py:234(_params)
+     6000    0.009    0.000    0.096    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/jsonrpc/session.py:453(_write_loop)
+     6000    0.020    0.000    0.096    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:834(generate_schema)
+     6000    0.038    0.000    0.085    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/pydantic/plugin/_schema_validator.py:22(create_schema_validator)
+    36000    0.014    0.000    0.084    0.000 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/re/__init__.py:179(sub)
+     6000    0.004    0.000    0.078    0.000 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/asyncio/selector_events.py:969(_read_ready)
+
+
+         2694001 function calls in 14.213 seconds
+
+   Ordered by: internal time
+   List reduced from 199 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    24000   12.421    0.001   12.421    0.001 {method 'poll' of 'select.epoll' objects}
+    12000    0.189    0.000    0.252    0.000 {method 'validate_python' of 'pydantic_core._pydantic_core.SchemaValidator' objects}
+    24000    0.075    0.000   14.213    0.001 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py:1922(_run_once)
+     6000    0.050    0.000    0.345    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/pydantic/type_adapter.py:227(_init_core_attrs)
+    24000    0.042    0.000   12.478    0.001 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/selectors.py:451(select)
+     6000    0.039    0.000    0.442    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/pydantic/type_adapter.py:160(__init__)
+     6000    0.038    0.000    0.085    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/pydantic/plugin/_schema_validator.py:22(create_schema_validator)
+   312000    0.036    0.000    0.036    0.000 {built-in method builtins.isinstance}
+    42000    0.036    0.000    0.045    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/protocol/types/_base.py:26(_reject_null)
+    36000    0.034    0.000    0.054    0.000 {method 'sub' of 're.Pattern' objects}
+    12000    0.032    0.000    0.200    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/jsonrpc/session.py:493(request)
+    12000    0.032    0.000    1.215    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/client/client.py:257(_call)
+     6000    0.030    0.000    0.030    0.000 {orjson.loads}
+    78000    0.027    0.000    0.036    0.000 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/re/__init__.py:280(_compile)
+    30000    0.024    0.000    0.184    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/pydantic/alias_generators.py:25(to_camel)
+     6000    0.022    0.000    0.691    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/client/client.py:158(_wire_params)
+    24000    0.020    0.000    1.605    0.000 {method 'run' of '_contextvars.Context' objects}
+     6000    0.020    0.000    0.096    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/pydantic/_internal/_generate_schema.py:834(generate_schema)
+    12000    0.019    0.000    1.247    0.000 /home/jithin/hms-lab/repo-bench/bench/scripts/profile_invoke.py:86(call)
+     6000    0.019    0.000    0.478    0.000 /home/jithin/hms-lab/repo-bench/sdk/python/src/bhms/protocol/types/_base.py:60(to_wire)
+
+
