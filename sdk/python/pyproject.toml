@@ -18,17 +18,20 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-mcp = ["mcp>=1.26"]
+mcp = ["mcp>=1.26,<3", "uvicorn", "starlette"]
 http = ["aiohttp>=3.9"]
 sim = []
-openai = []
+openai = ["openai>=1.50"]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[project.scripts]
+bhms = "bhms.cli.main:app"
+
 [tool.setuptools.package-data]
 # bhms/protocol/bhms.schema.json is a symlink to spec/bhms/schema/bhms.schema.json (one source file).
-bhms = ["protocol/bhms.schema.json"]
+bhms = ["protocol/bhms.schema.json", "templates/new/*.tmpl"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"

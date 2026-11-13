@@ -1,0 +1,60 @@
+"""{{title}}: a BHMS device server. Run it with `python server.py` or explore it with `bhms dev server.py`.
+
+This is a simulated linear stage. Replace the `Stage` class with your driver and keep the declarations honest:
+
+* `evidence="simulated"` on properties until a real sensor backs them (then `"measured"`).
+* `effect`, `idempotency` and `cancel` say what the action does to the world; agents read them before acting.
+* Units and bounds on every number; the server refuses anything outside them and never clamps.
+"""
+
+import asyncio
+from pathlib import Path
+
+from bhms import Canceled, DeviceServer, Range
+
+STATE_DIR = Path(__file__).resolve().parent / ".bhms-state"
+
+
+class Stage:
+    """The device side of the link. A real driver talks to hardware here."""
+
+    def __init__(self) -> None:
+        self.position_um = 0.0
+        self.halt = asyncio.Event()
+
+
+def build(state_dir: str | Path | None = STATE_DIR) -> DeviceServer:
+    """The server. `state_dir=None` keeps everything in memory (used by the tests)."""
+    stage = Stage()
+    srv = DeviceServer("{{name}}", title="{{title}}", state_dir=state_dir, **({"store": None} if state_dir is None else {}),
+                       instructions="A simulated linear stage. Move it with move_to; read its position first.")
+    dev = srv.device("{{device_id}}", name="{{title}}", description="Simulated linear stage with a 0-200 um travel.",
+                     capabilities=["bhms.axis.linear"], resources=["{{device_id}}/motion"])
+    dev.report_alive()
+
+    @dev.property(unit="um", evidence="simulated", description="Stage position.")
+    def position() -> float:
+        return stage.position_um
+
+    @dev.action(effect="reversible", idempotency="absolute", cancel="supported", completion_evidence="reported",
+                max_duration_ms=5_000, typical_duration_ms=200)
+    async def move_to(ctx, target: Range(0, 200, unit="um", step=0.1)) -> {"position": "um"}:  # noqa: F821
+        """Move to an absolute position."""
+        stage.halt.clear()
+        if await ctx.wait_cancelled(0.2):  # a real driver streams motion and checks ctx.cancelled as it goes
+            raise Canceled(effect="unverified", detail="stopped before reaching the target")
+        stage.position_um = target
+        return {"position": stage.position_um}
+
+    @dev.on_stop(evidence="reported", max_duration_ms=500)
+    async def halt(ctx) -> None:
+        """The commissioned stop procedure: halt motion now."""
+        stage.halt.set()
+
+    return srv
+
+
+srv = build()
+
+if __name__ == "__main__":
+    srv.run()  # stdio; srv.run("unix:/tmp/{{name}}.sock") or srv.run("ws://127.0.0.1:8765") to serve a socket
