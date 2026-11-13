@@ -13,6 +13,9 @@ import type { Peer, Transport, TransportSink } from "../jsonrpc/session.js";
 
 export const DEFAULT_MAX_MESSAGE_BYTES = 1_048_576;
 
+/** Strict UTF-8: invalid bytes are an error, never U+FFFD (BHMS-LIF-001). */
+export const UTF8 = new TextDecoder("utf-8", { fatal: true });
+
 export class LineTransport implements Transport {
   private chunks: Buffer[] = [];
   private size = 0;
@@ -81,7 +84,13 @@ export class LineTransport implements Transport {
       this.sink?.oversize();
       return;
     }
-    let text = line.toString("utf8");
+    let text: string;
+    try {
+      text = UTF8.decode(line);
+    } catch {
+      this.sink?.invalidUtf8();
+      return;
+    }
     if (text.endsWith("\r")) text = text.slice(0, -1);
     if (text.length > 0) this.sink?.message(text);
   }

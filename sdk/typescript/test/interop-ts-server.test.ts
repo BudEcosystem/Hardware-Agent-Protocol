@@ -9,9 +9,9 @@ import { test } from "node:test";
 import { Client } from "../src/client.js";
 import { BhmsError } from "../src/errors.js";
 import { PACKAGE_ROOT } from "./paths.js";
-import { pythonAvailable, pythonEnv, sleep, tsDevicePath } from "./helpers.js";
+import { pythonEnv, pythonSkip, sleep, tsDevicePath } from "./helpers.js";
 
-const skipPython = pythonAvailable() ? false : "python3 with the bhms reference SDK is not available";
+const skipPython = pythonSkip();
 const deviceCmd = `node ${tsDevicePath()} --memory`;
 
 test("a Python client (strict) drives the TypeScript conformance device over stdio", { skip: skipPython, timeout: 60_000 }, async () => {
@@ -59,19 +59,23 @@ test("TS server: nothing but BHMS messages on stdout, exits on stdin EOF", { tim
   assert.ok(errors.every((m) => m.id === null));
 });
 
-test("TS client and TS server over a Unix-domain socket and TCP loopback", { timeout: 30_000 }, async () => {
+test("TS client and TS server over a Unix-domain socket; a server refuses TCP (no credential, BHMS-SEC-001)", { timeout: 30_000 }, async () => {
   const dir = mkdtempSync(join(tmpdir(), "bhms-ts-sock-"));
   const sock = join(dir, "d.sock");
   const unix = spawn(process.execPath, [tsDevicePath(), `unix:${sock}`, "--memory"], { stdio: ["ignore", "ignore", "pipe"] });
   const tcp = spawn(process.execPath, [tsDevicePath(), "tcp://127.0.0.1:0", "--memory"], { stdio: ["ignore", "ignore", "pipe"] });
+  let refusal = "";
+  tcp.stderr!.on("data", (d: Buffer) => { refusal += d.toString(); });
+  const tcpExit = new Promise<number | null>((r) => tcp.once("exit", r));
   const addr = (c: typeof unix): Promise<string> => new Promise((resolve, reject) => {
     c.stderr!.on("data", (d: Buffer) => { const m = /listening on (\S+)/.exec(d.toString()); if (m) resolve(m[1]); });
     c.once("exit", () => reject(new Error("server exited")));
   });
   try {
     await addr(unix);
-    const tcpAddress = await addr(tcp);
-    for (const target of [`unix:${sock}`, `tcp://${tcpAddress}`]) {
+    assert.notEqual(await tcpExit, 0);
+    assert.match(refusal, /TCP carries no credential/);
+    for (const target of [`unix:${sock}`]) {
       const client = await Client.connect(target, { strict: true });
       try {
         const op = (await client.actionsInvoke("axis-1", "move_to", { position: 3 }, { waitMs: 2000 })).operation;

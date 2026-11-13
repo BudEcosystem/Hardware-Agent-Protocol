@@ -79,6 +79,23 @@ async def main(target: str) -> None:
                     break
             check("notifications/operation" in seen, "operation notification delivered")
 
+        program = {"bhmsProgram": "2026-11-13", "name": "py_scan", "description": "pulse twice and read the counter",
+                   "input": {"type": "object", "additionalProperties": False, "required": ["n"],
+                             "properties": {"n": {"type": "integer", "x-bhms-unit": "1", "minimum": 1, "maximum": 3}}},
+                   "maxDurationMs": 60000,
+                   "steps": [{"kind": "repeat", "times": "${n}", "as": "i", "steps": [
+                       {"kind": "invoke", "deviceId": "axis-1", "action": "pulse", "arguments": {"count": 1}, "saveAs": "p"}]},
+                       {"kind": "read", "deviceId": "axis-1", "property": "counter", "fresh": True, "saveAs": "c"}],
+                   "output": {"pulses": "${p.pulses}", "counter": "${c.value}"}}
+        info = (await client.programs_register(program)).info
+        check(info.digest == digest(program) and info.max_executed_steps == 4, "programs/register digest and limits")
+        ran = await client.programs_run(digest=info.digest, arguments={"n": 2}, operation_key=f"{key}-prog", wait_ms=5000)
+        done = ran.operation
+        check(done.state == "completed" and done.program_digest == info.digest, f"program completed ({done.state})")
+        check(done.result["pulses"] >= 2 and done.progress.steps_completed == 3, "program output and progress")
+        kids = (await client.operations_list(parent_operation_id=done.operation_id)).operations
+        check(len(kids) == 2 and all(k.key_origin == "derived" for k in kids), "derived-key child operations")
+
         slow = await client.actions_invoke("axis-1", "slow_move", {"duration_ms": 5000}, operation_key=f"{key}-slow")
         await asyncio.sleep(0.05)
         await client.operations_cancel(slow.operation.operation_id, reason="py test")

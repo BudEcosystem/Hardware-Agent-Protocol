@@ -15,7 +15,8 @@ import { createServer, type IncomingMessage, type Server } from "node:http";
 import { timingSafeEqual } from "node:crypto";
 import type { Duplex } from "node:stream";
 import type { Peer, Transport, TransportSink } from "../jsonrpc/session.js";
-import { DEFAULT_MAX_MESSAGE_BYTES } from "./stream.js";
+import { DEFAULT_MAX_MESSAGE_BYTES, UTF8 } from "./stream.js";
+import { LOOPBACK } from "./socket.js";
 
 type WsModule = typeof import("ws");
 let wsModule: WsModule | undefined;
@@ -36,8 +37,10 @@ class WsTransport implements Transport {
     this.sink = sink;
     this.socket.on("message", (data, isBinary) => {
       if (isBinary) return; // BHMS-TRN-030: text frames only
-      const text = Array.isArray(data) ? Buffer.concat(data).toString("utf8") : Buffer.from(data as Buffer).toString("utf8");
-      if (Buffer.byteLength(text) > this.maxMessageBytes) { sink.oversize(); return; }
+      const bytes = Array.isArray(data) ? Buffer.concat(data) : Buffer.from(data as Buffer);
+      if (bytes.length > this.maxMessageBytes) { sink.oversize(); return; }
+      let text: string;
+      try { text = UTF8.decode(bytes); } catch { sink.invalidUtf8(); return; }
       sink.message(text);
     });
     this.socket.on("close", () => sink.closed());
@@ -85,8 +88,6 @@ export interface WsListener {
   address: string;
   server: Server;
 }
-
-const LOOPBACK = new Set(["127.0.0.1", "::1", "localhost"]);
 
 function bearerOk(req: IncomingMessage, token: string): boolean {
   const header = req.headers.authorization ?? "";

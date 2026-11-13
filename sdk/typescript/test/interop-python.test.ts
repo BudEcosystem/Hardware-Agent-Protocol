@@ -3,11 +3,12 @@ import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { BhmsError } from "../src/errors.js";
 import { Client } from "../src/client.js";
-import { descriptionDigest } from "../src/canonical.js";
-import { pythonAvailable, pythonDeviceTarget, pythonEnv, sleep } from "./helpers.js";
+import { descriptionDigest, digest } from "../src/canonical.js";
+import { pythonDeviceTarget, pythonEnv, pythonSkip, sleep } from "./helpers.js";
+import { key } from "./harness.js";
 
-const available = pythonAvailable();
-const skip = available ? false : "python3 with the bhms reference SDK is not available";
+const skip = pythonSkip();
+const available = skip === false;
 let client: Client;
 
 before(async () => {
@@ -101,6 +102,25 @@ test("subscriptions: acknowledged first, operation notifications tagged, events 
   assert.equal(typeof ev.cursor, "string");
 });
 
+test("programs cross-language: the TS client registers and runs a program on the Python device", { skip }, async () => {
+  const program = {
+    bhmsProgram: "2026-11-13", name: "ts_scan", description: "pulse n times and read the counter",
+    input: { type: "object", additionalProperties: false, required: ["n"], properties: { n: { type: "integer", "x-bhms-unit": "1", minimum: 1, maximum: 3 } } },
+    maxDurationMs: 60000,
+    steps: [
+      { kind: "repeat", times: "${n}", as: "i", steps: [{ kind: "invoke", deviceId: "axis-1", action: "pulse", arguments: { count: 1 }, saveAs: "p" }] },
+      { kind: "read", deviceId: "axis-1", property: "counter", fresh: true, saveAs: "c" },
+    ],
+    output: { pulses: "${p.pulses}", counter: "${c.value}" },
+  } as unknown as import("../src/generated/types.js").Program;
+  const info = (await client.programsRegister(program)).info;
+  assert.equal(info.digest, digest(program), "Python and TS agree on the program digest");
+  const op = (await client.programsRun({ digest: info.digest, arguments: { n: 2 }, operationKey: key("prog"), waitMs: 5000 })).operation;
+  assert.equal(op.state, "completed", JSON.stringify(op.error));
+  assert.deepEqual(op.progress, { stepsCompleted: 3, stepsTotal: 4 });
+  assert.equal((await client.operationsList({ parentOperationId: op.operationId })).operations.length, 2);
+});
+
 test("byte-for-byte parity: the TS and Python conformance devices describe themselves with identical digests", { skip }, async () => {
   const { rig } = await import("./harness.js");
   const r = await rig();
@@ -110,8 +130,6 @@ test("byte-for-byte parity: the TS and Python conformance devices describe thems
       const ts = (await r.client.devicesDescribe(id)).description;
       assert.equal(ts.digest, py.digest, `${id}: JCS(description) is identical, so every schema, unit, bound and default matches`);
     }
-    const { programs: _programs, ...pyRest } = client.discovered!.capabilities;
-    void _programs;
-    assert.deepEqual(r.client.discovered!.capabilities, pyRest, "capabilities are identical apart from programs (not implemented in this SDK)");
+    assert.deepEqual(r.client.discovered!.capabilities, client.discovered!.capabilities, "capabilities are identical, programs limits included");
   } finally { await r.close(); }
 });

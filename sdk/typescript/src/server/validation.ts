@@ -194,7 +194,7 @@ export function admitArguments(input: JsonSchema, args: Obj, rootPath = "argumen
   if (rest.length > 0) {
     const issue = bestIssue(rest);
     const field = fieldPath(issue.member !== undefined ? [...issue.path, issue.member] : issue.path);
-    const prefixed = field ? `arguments.${field}` : "arguments";
+    const prefixed = field ? `${rootPath}.${field}` : rootPath;
     throw new BhmsError("INVALID_ARGUMENT", `${prefixed}: ${issue.message}`.slice(0, 500), {
       field: prefixed, hint: `fix ${prefixed} (schema keyword ${issue.keyword})`,
     });

@@ -43,6 +43,8 @@ export interface TransportSink {
   message(text: string): void;
   /** A frame exceeded the transport's maximum size and was discarded (BHMS-TRN-004). */
   oversize(): void;
+  /** A frame was not valid UTF-8 (BHMS-LIF-001): answered -32700. */
+  invalidUtf8(): void;
   /** The connection ended (error when abnormal). */
   closed(error?: Error): void;
 }
@@ -220,6 +222,7 @@ export class Session {
     this.started = true;
     this.transport.start({
       message: (text) => this.onText(text),
+      invalidUtf8: () => this.sendError(null, { code: PARSE_ERROR, message: "parse error: the frame is not valid UTF-8 (BHMS-LIF-001)" }),
       oversize: () => this.sendError(null, { code: INVALID_REQUEST, message: `message exceeds the ${this.transport.maxMessageBytes} byte limit (BHMS-TRN-004)` }),
       closed: (err) => this.teardown(err),
     });

@@ -22,7 +22,7 @@ export interface Listener {
   server: net.Server;
 }
 
-const LOOPBACK = new Set(["127.0.0.1", "::1", "localhost"]);
+export const LOOPBACK = new Set(["127.0.0.1", "::1", "localhost"]);
 
 /** Connect to a `unix:<path>` / `<path>` socket (or `tcp:host:port`) and return the client transport. */
 export function connectSocket(target: string, maxMessageBytes?: number): Promise<Transport> {
@@ -78,7 +78,7 @@ export function listenTcp(
   return new Promise((resolve, reject) => {
     const server: net.Server = net.createServer((socket) => {
       track(server, socket);
-      onTransport(new LineTransport(socket, socket, { principal: options.principal ?? "tcp:loopback", kind: "tcp", scopes: options.scopes ?? ["admin"] }, options.maxMessageBytes, () => socket.destroy()));
+      onTransport(new LineTransport(socket, socket, { principal: options.principal ?? "tcp:loopback", kind: "tcp", scopes: options.scopes ?? ["read"] }, options.maxMessageBytes, () => socket.destroy()));
     });
     server.once("error", reject);
     server.listen(port, host, () => {

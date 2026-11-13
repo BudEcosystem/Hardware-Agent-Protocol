@@ -17,7 +17,7 @@ test("the client exposes every method of the schema", () => {
   for (const attr of Object.values(METHOD_ATTRS)) assert.equal(typeof (Client.prototype as unknown as Record<string, unknown>)[attr], "function", attr);
 });
 
-test("discover: capabilities, limits and epoch; programs is not advertised", async () => {
+test("discover: capabilities, limits and epoch; programs advertised with the spec limits", async () => {
   const r = await rig();
   try {
     const d = r.client.discovered!;
@@ -25,9 +25,9 @@ test("discover: capabilities, limits and epoch; programs is not advertised", asy
     assert.equal(d.capabilities.operations.durable, false);
     assert.equal(d.capabilities.leases?.minTtlMs, 50);
     assert.equal(d.capabilities.observations?.minIntervalMs, 20);
-    assert.equal(d.capabilities.programs, undefined);
+    assert.deepEqual(d.capabilities.programs, { registry: true, limits: { maxSteps: 256, maxRepeat: 1000, maxDepth: 4, maxExecutedSteps: 4096, maxVariables: 64, maxProgramBytes: 65536, maxDurationMs: 3_600_000 } });
     assert.ok(d.limits.maxMessageBytes >= 1_048_576);
-    await assert.rejects(r.client.programsList(), code("UNSUPPORTED", (e) => e.hint.includes("programs")));
+    assert.deepEqual((await r.client.programsList()).programs, []);
   } finally { await r.close(); }
 });
 

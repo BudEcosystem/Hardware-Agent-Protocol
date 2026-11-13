@@ -82,11 +82,11 @@ export class ObservationHub {
     return s;
   }
 
-  spec(device: Device, prop: string): PropertySpec {
+  spec(device: Device, prop: string, field = "property"): PropertySpec {
     const spec = device.properties.get(prop);
     if (!spec) {
       throw new BhmsError("INVALID_ARGUMENT", `${device.deviceId} has no property ${JSON.stringify(prop)}`, {
-        field: "property", bound: [...device.properties.keys()].sort(), hint: `the properties are: ${[...device.properties.keys()].sort().join(", ") || "(none)"}`,
+        field, bound: [...device.properties.keys()].sort(), hint: `the properties are: ${[...device.properties.keys()].sort().join(", ") || "(none)"}`,
       });
     }
     return spec;
@@ -246,7 +246,7 @@ export class ObservationHub {
   /** BHMS-OBS-006: after an effectful operation settles, on-demand properties must be acquired anew. */
   afterSettled(device: Device): void {
     for (const spec of device.properties.values()) {
-      if (spec.getter) {
+      if (spec.getter && spec.readEffect !== "transaction") { // a transaction property is never re-read implicitly (OBS-006/011)
         const slot = this.slots.get(`${device.deviceId}\0${spec.name}`);
         if (slot) slot.sample = undefined;
       }

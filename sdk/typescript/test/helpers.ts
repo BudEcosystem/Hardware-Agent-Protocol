@@ -10,6 +10,16 @@ export function pythonAvailable(): boolean {
   return r.status === 0;
 }
 
+/**
+ * What interop tests pass as their `skip` option. Python being unavailable is a FAILURE (the file throws at load), unless
+ * the environment explicitly opts out with BHMS_SKIP_PYTHON_INTEROP=1.
+ */
+export function pythonSkip(): false | string {
+  if (pythonAvailable()) return false;
+  if (process.env.BHMS_SKIP_PYTHON_INTEROP === "1") return "python interop skipped: BHMS_SKIP_PYTHON_INTEROP=1";
+  throw new Error("python3 with the bhms reference SDK (sdk/python/src) is required for the interop tests; set BHMS_SKIP_PYTHON_INTEROP=1 to opt out explicitly");
+}
+
 export function pythonEnv(): NodeJS.ProcessEnv {
   return { ...process.env, PYTHONPATH: PYTHON_SRC + (process.env.PYTHONPATH ? `:${process.env.PYTHONPATH}` : "") };
 }

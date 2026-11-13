@@ -40,7 +40,7 @@ import type { ActionsInvokeParams, DeviceStop, DevicesListFilter, Event } from "
 import { METHODS, PROTOCOL_VERSION } from "../generated/types.js";
 import { Session, type RequestContext, type Transport, type HandlerResult, METHOD_NOT_FOUND } from "../jsonrpc/session.js";
 import { loadSchema, validateDef } from "../schema.js";
-import { listenTcp, listenUnix, type Listener } from "../transport/socket.js";
+import { listenUnix, type Listener } from "../transport/socket.js";
 import { stdioServerTransport } from "../transport/stdio.js";
 import { listenWebSocket, type WsListener } from "../transport/websocket.js";
 import { Principal, defaultPolicy, type Policy } from "./authority.js";
@@ -50,6 +50,7 @@ import { Executor } from "./executor.js";
 import { LeaseManager, leaseWire, type Lease } from "./leases.js";
 import { listen } from "./listen.js";
 import { ObservationHub } from "./observations.js";
+import { DEFAULT_PROGRAM_LIMITS, ProgramRunner, type ProgramLimits } from "./programs.js";
 import { Journal } from "./operations.js";
 import { JournalStore, MemoryStore, StoreError, type Store } from "./store.js";
 import { sleep } from "./time.js";
@@ -82,6 +83,10 @@ export interface DeviceServerOptions {
   /** How long a cancelled handler may take to terminate after a duration bound. */
   cancelGraceMs?: number;
   maxMessageBytes?: number;
+  /** Serve `programs/*` with a durable registry (default true). */
+  programs?: boolean;
+  /** Program limits (§8.1); servers may advertise lower values than the defaults, never higher. */
+  programLimits?: Partial<ProgramLimits>;
   /** Validate every result against the schema before sending (conformance mode). */
   strict?: boolean;
   log?: (message: string) => void;
@@ -153,6 +158,8 @@ export class DeviceServer {
   observations!: ObservationHub;
   leases!: LeaseManager;
   executor!: Executor;
+  programs?: ProgramRunner;
+  readonly programLimits: ProgramLimits;
 
   constructor(readonly name: string, options: DeviceServerOptions = {}) {
     if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(name)) throw new RangeError(`server name ${JSON.stringify(name)} must be 1-128 characters of [A-Za-z0-9._-]`);
@@ -162,6 +169,7 @@ export class DeviceServer {
       leaseMaxTtlMs: 600_000, leaseMaxWaitMs: 30_000, queueLimit: 64, observationMinIntervalMs: 50, cancelGraceMs: 1000,
       maxMessageBytes: 4_194_304, strict: false, ...options,
     };
+    this.programLimits = { ...DEFAULT_PROGRAM_LIMITS, ...options.programLimits };
     const token = options.token ?? process.env.BHMS_TOKEN;
     this.opts.token = token;
     const base = options.policy ?? defaultPolicy;
@@ -230,12 +238,16 @@ export class DeviceServer {
     this.observations = new ObservationHub(this, this.opts.observationMinIntervalMs);
     this.leases = new LeaseManager(this.store, { minTtlMs: this.opts.leaseMinTtlMs, maxTtlMs: this.opts.leaseMaxTtlMs, maxWaitMs: this.opts.leaseMaxWaitMs }, () => this.resources(), loaded.fence, (l, reason) => this.leaseEnded(l, reason));
     this.executor = new Executor(this, this.opts.queueLimit, this.opts.cancelGraceMs);
+    if (this.opts.programs !== false) this.programs = new ProgramRunner(this, loaded.programs);
     this.started = true;
     // BHMS-OPS-080: before any request is answered
     await this.executor.recover();
     const cutoff = Date.now() - this.opts.keyRetentionS * 1000;
-    this.store.prune(cutoff);
+    this.journal.forget(this.store.prune(cutoff));
     this.events.prune(Date.now());
+    for (const dev of this.devices.values()) {
+      this.events.append("device.epoch", { deviceId: dev.deviceId, data: { epoch: this.observations.epoch }, message: "observation sequences restarted with the server" });
+    }
     for (const dev of this.devices.values()) if (dev.livenessHandler) this.probeLiveness(dev);
     this.executor.resume();
   }
@@ -261,7 +273,7 @@ export class DeviceServer {
 
   /**
    * Run the server: `undefined` or `"stdio"` serves this process's stdin/stdout until the parent closes it
-   * (BHMS-TRN-011); `unix:<path>`, `tcp://127.0.0.1:<port>` and `ws://127.0.0.1:<port>` listen. Resolves when stdio ends;
+   * (BHMS-TRN-011); `unix:<path>` and `ws://127.0.0.1:<port>` listen (TCP has no credential and is refused). Resolves when stdio ends;
    * for listeners resolves with the address once listening (call `close()` to stop).
    */
   async run(url?: string): Promise<string | undefined> {
@@ -276,14 +288,13 @@ export class DeviceServer {
     if (url.startsWith("unix:")) {
       listener = await listenUnix(url.slice(5), (t) => { this.serve(t); }, this.opts.maxMessageBytes);
     } else if (url.startsWith("tcp://")) {
-      const [host, port] = url.slice(6).split(/:(?=\d+$)/);
-      listener = await listenTcp(host.replace(/^\[|\]$/g, ""), Number(port), (t) => { this.serve(t); }, { maxMessageBytes: this.opts.maxMessageBytes });
+      throw new RangeError("TCP carries no credential, so a server will not serve it (BHMS-SEC-001); use unix:<path> or ws://127.0.0.1:<port> with a bearer token");
     } else if (url.startsWith("ws://")) {
       const u = new URL(url);
       this.ensureToken();
       listener = await listenWebSocket(u.hostname.replace(/^\[|\]$/g, ""), Number(u.port || 80), (t) => { this.serve(t); }, { token: this.opts.token, maxMessageBytes: this.opts.maxMessageBytes });
     } else {
-      throw new RangeError(`unsupported url ${JSON.stringify(url)}; use stdio, unix:<path>, tcp://127.0.0.1:<port> or ws://127.0.0.1:<port>`);
+      throw new RangeError(`unsupported url ${JSON.stringify(url)}; use stdio, unix:<path> or ws://127.0.0.1:<port>`);
     }
     this.listeners.push(listener);
     return listener.address;
@@ -314,6 +325,7 @@ export class DeviceServer {
     await sleep(0); // let subscription generators deliver their endReason
     await Promise.all([...this.sessions].map((s) => s.close()));
     if (this.started) {
+      await this.programs?.close();
       await this.executor.idle(drainMs);
       this.leases.close();
       this.observations.close();
@@ -350,6 +362,7 @@ export class DeviceServer {
   private leaseEnded(lease: Lease, reason: "expired" | "revoked"): void {
     this.events.append(reason === "expired" ? "lease.expired" : "lease.revoked", { severity: "warning", data: { leaseId: lease.leaseId } });
     this.executor.onLeaseEnded(lease, reason);
+    this.programs?.onLeaseEnd(lease);
   }
 
   /** The journal could not be written: refuse ordinary new operations until it can (BHMS-AUTH-025). */
@@ -392,12 +405,16 @@ export class DeviceServer {
       subscriptions: { maxObservations: 256, maxOperationIds: 256 },
       leases: { minTtlMs: o.leaseMinTtlMs, maxTtlMs: o.leaseMaxTtlMs, maxWaitMs: o.leaseMaxWaitMs },
       events: { retentionS: o.eventRetentionS, maxPageSize: o.maxPageSize },
+      ...(this.programs ? { programs: { registry: true, limits: this.programLimits } } : {}),
       ...(Object.keys(this.extensionInfo).length > 0 ? { extensions: this.extensionInfo } : {}),
     };
   }
 
   private advertises(capability: string): boolean {
-    return capability in this.capabilities();
+    const [head, member] = capability.split(".", 2);
+    const value = (this.capabilities() as Record<string, Record<string, unknown> | undefined>)[head];
+    if (value === undefined) return false;
+    return member === undefined ? true : Boolean(value[member]);
   }
 
   // ------------------------------------------------------------------------------------------------ dispatch
@@ -485,9 +502,8 @@ export class DeviceServer {
       }
       case "actions/invoke": {
         const params = p as unknown as ActionsInvokeParams;
-        if (params.waitMs !== undefined && params.waitMs > this.opts.maxWaitMs) throw waitError("waitMs", params.waitMs, this.opts.maxWaitMs);
-        const { rec, replayed } = await this.executor.invoke(principal, params);
-        if (params.waitMs) await this.journal.wait(rec, params.waitMs, ctx.signal);
+        const { rec, replayed } = await this.executor.invoke(principal, params); // key lookup first (BHMS-OPS-033)
+        if (params.waitMs) await this.journal.wait(rec, Math.min(params.waitMs, this.opts.maxWaitMs), ctx.signal);
         return complete({ operation: rec.wire(), replayed });
       }
       case "operations/get":
@@ -514,7 +530,8 @@ export class DeviceServer {
         if (rec.principal !== principal.id && !principal.admin) {
           throw new BhmsError("UNAUTHORIZED", "only the principal that created an operation (or admin) may cancel it", { field: "operationId", hint: "ask its owner, or use stop if the device must halt (BHMS-OPS-054)" });
         }
-        this.executor.cancel(rec, p.reason as string | undefined);
+        if (rec.op.kind === "program") this.programs!.cancel(rec, p.reason as string | undefined);
+        else this.executor.cancel(rec, p.reason as string | undefined);
         return complete({ operation: rec.wire() });
       }
       case "stop":
@@ -531,6 +548,22 @@ export class DeviceServer {
         }
         const lease = method === "leases/renew" ? this.leases.renew(principal.id, p.leaseId as string, p.ttlMs as number) : this.leases.release(principal.id, p.leaseId as string);
         return complete({ lease: leaseWire(lease) });
+      }
+      case "programs/run": {
+        const { rec, replayed } = await this.programs!.run(principal, p);
+        if (p.waitMs) await this.journal.wait(rec, Math.min(p.waitMs as number, this.opts.maxWaitMs), ctx.signal);
+        return complete({ operation: rec.wire(), replayed });
+      }
+      case "programs/register":
+        return complete({ info: this.programs!.register(principal, p.program as never) });
+      case "programs/get": {
+        const stored = this.programs!.get(principal, p.digest as string);
+        return complete({ program: stored.program, info: stored.info });
+      }
+      case "programs/list": {
+        const after = p.cursor !== undefined ? decodeCursor("p", p.cursor as string) : undefined;
+        const { infos, next } = this.programs!.list(principal, after, limit(p.limit as number | undefined, max));
+        return complete({ programs: infos, ...(next !== undefined ? { nextCursor: encodeCursor("p", next) } : {}) });
       }
       case "events/read": {
         if (!principal.canRead) throw new BhmsError("UNAUTHORIZED", "events/read needs the read scope", { hint: "missing scope read" });
@@ -598,6 +631,7 @@ export class DeviceServer {
       entry.stop.canceledOperations = this.executor.cancelAccepted(id, p.reason);
       const requested = this.executor.requestCancelOn(id, p.reason);
       if (requested.length > 0) entry.stop.cancelRequestedOperations = requested;
+      this.programs?.stopDevice(id, p.reason);
       entry.stop.revokedLeases = this.leases.revokeCovering(dev.resources).map((l) => l.leaseId);
       this.events.append("stop", { deviceId: id, severity: "critical", message: p.reason, data: { outcome: dev.stopSpec ? "initiated" : "unsupported", reason: p.reason } });
       entry.done = done;

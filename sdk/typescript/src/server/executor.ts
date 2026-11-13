@@ -52,6 +52,8 @@ export function intentDigest(params: Record<string, unknown>): string {
   return digest(intent);
 }
 
+const srvMaxWait = (srv: DeviceServer): number => srv.opts.maxWaitMs;
+
 interface Execution {
   rec: OperationRecord;
   device: Device;
@@ -104,9 +106,19 @@ export class Executor {
 
   /** `actions/invoke` from key lookup to admission (§6.5). Returns the operation and whether it was replayed. */
   async invoke(principal: Principal, params: ActionsInvokeParams): Promise<{ rec: OperationRecord; replayed: boolean }> {
-    const raw = params as unknown as Record<string, unknown>;
-    const requestDigest = intentDigest(raw);
-    const key = params.operationKey;
+    const requestDigest = intentDigest(params as unknown as Record<string, unknown>);
+    return this.keyed(principal, params.operationKey, requestDigest, params.waitMs, (key, origin) => this.admit(principal, params, key, origin, requestDigest));
+  }
+
+  /**
+   * The idempotency envelope shared by `actions/invoke` and `programs/run` (BHMS-OPS-030..033): look up
+   * `(principal, operationKey)` first, coalesce concurrent requests with one key, then (only when the key is new) check the
+   * `waitMs` range and create the operation with `create`.
+   */
+  async keyed(
+    principal: Principal, key: string | undefined, requestDigest: string, waitMs: number | undefined,
+    create: (key: string, origin: "client" | "server") => Promise<OperationRecord>,
+  ): Promise<{ rec: OperationRecord; replayed: boolean }> {
     const journal = this.server.journal;
     const lock = key === undefined ? undefined : `${principal.id}\0${key}`;
     if (key !== undefined) {
@@ -118,10 +130,15 @@ export class Executor {
         await pending; // a concurrent first request with this key: then answer from its record (BHMS-OPS-032)
       }
     }
+    if (waitMs !== undefined && waitMs > srvMaxWait(this.server)) {
+      throw new BhmsError("OUT_OF_RANGE", `waitMs ${waitMs} is above the maximum ${srvMaxWait(this.server)}`, {
+        field: "waitMs", bound: { maximum: srvMaxWait(this.server) }, hint: `use waitMs of at most ${srvMaxWait(this.server)}`,
+      });
+    }
     let release: () => void = () => undefined;
     if (lock !== undefined) this.reserving.set(lock, new Promise<void>((r) => { release = r; }));
     try {
-      const rec = await this.admit(principal, params, key ?? `s-${randomBytes(12).toString("hex")}`, key === undefined ? "server" : "client", requestDigest);
+      const rec = await create(key ?? `s-${randomBytes(12).toString("hex")}`, key === undefined ? "server" : "client");
       return { rec, replayed: false };
     } finally {
       if (lock !== undefined) this.reserving.delete(lock);
@@ -137,7 +154,14 @@ export class Executor {
     });
   }
 
-  private async admit(principal: Principal, p: ActionsInvokeParams, key: string, origin: "client" | "server", requestDigest: string): Promise<OperationRecord> {
+  /**
+   * Admission steps 3-10 (§6.5) for one action. `extra` is used by programs: a child operation names its parent and carries
+   * the program's absolute deadline, with `origin: "derived"` and the derived key (BHMS-PRG-010).
+   */
+  async admit(
+    principal: Principal, p: ActionsInvokeParams, key: string, origin: "client" | "server" | "derived", requestDigest: string,
+    extra: { parentId?: string; deadlineAtMs?: number } = {},
+  ): Promise<OperationRecord> {
     const srv = this.server;
     const device = srv.devices.get(p.deviceId);
     if (!device || !principal.canRead) {
@@ -183,9 +207,11 @@ export class Executor {
       cancelSupported: spec.cancel === "supported", onLeaseLoss: spec.onLeaseLoss ?? "finish", completionEvidence: spec.completionEvidence,
       maxDurationMs: spec.maxDurationMs, admitted,
     };
-    if (p.deadlineMs !== undefined) {
-      bounds.deadlineMs = now + p.deadlineMs;
-      op.deadlineAt = iso(bounds.deadlineMs);
+    if (extra.parentId !== undefined) op.parentOperationId = extra.parentId;
+    const deadlineAt = p.deadlineMs !== undefined ? now + p.deadlineMs : extra.deadlineAtMs;
+    if (deadlineAt !== undefined) {
+      bounds.deadlineMs = deadlineAt;
+      op.deadlineAt = iso(deadlineAt);
     }
     let rec: OperationRecord;
     try {
@@ -517,6 +543,7 @@ export class Executor {
     for (const rec of [...this.waiting]) {
       if (rec.op.deviceId !== deviceId || rec.state !== "accepted") continue;
       this.dequeue(rec);
+      this.server.journal.annotate(rec, "stop", `stop: ${reason}`);
       this.server.journal.setCancel(rec, "requested", { reason });
       this.server.journal.transition(rec, "canceled", { detail: `canceled by stop: ${reason}` });
       ids.push(rec.id);
@@ -574,9 +601,17 @@ export class Executor {
   async recover(): Promise<void> {
     const j = this.server.journal;
     for (const rec of j.inFlight()) {
+      if (rec.op.kind !== "action") continue;
       j.transition(rec, "unknown", { error: unknownError("the server restarted while the operation was in flight (BHMS-OPS-080)"), detail: "server restart" });
     }
+    // A child of a program is never dispatched after a restart: programs are not resumed (BHMS-PRG-017).
+    for (const rec of [...j.records.values()]) {
+      if (rec.state === "accepted" && rec.op.kind === "action" && rec.op.parentOperationId !== undefined) {
+        this.reject(rec, new BhmsError("INTERNAL", "the server restarted before this program step was dispatched; nothing was sent to the device", { hint: "programs are never resumed; run the program again" }));
+      }
+    }
     await this.reconcileAll();
+    this.server.programs?.recoverAfterRestart();
   }
 
   /** Resume `accepted` operations that survived a restart (their time-dependent checks run again before dispatch). */
@@ -619,6 +654,7 @@ export class Executor {
       j.transition(rec, "failed", { kind: "reconciliation", detail, error: err.toOperationError(), effect: answer.effect ?? (mayHaveActed ? "unknown" : "none"), proof: mayHaveActed ? undefined : detail });
     }
     j.liftInhibition(rec);
+    if (rec.op.parentOperationId !== undefined) this.server.programs?.settleAfterReconcile(rec.op.parentOperationId);
     return true;
   }
 

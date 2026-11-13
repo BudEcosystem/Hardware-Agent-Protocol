@@ -18,7 +18,7 @@
  * Thread-safety: single event loop; all calls are synchronous.
  */
 import { randomBytes } from "node:crypto";
-import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, renameSync, writeSync } from "node:fs";
+import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, renameSync, unlinkSync, writeSync } from "node:fs";
 import { dirname } from "node:path";
 import type { Event, HistoryEntry, Operation } from "../generated/types.js";
 
@@ -50,7 +50,15 @@ export interface StoredOperation {
   deadlineMs?: number;
 }
 
+/** A registered program (BHMS-PRG-020): immutable, content-addressed. */
+export interface StoredProgram {
+  digest: string;
+  program: Record<string, unknown>;
+  info: Record<string, unknown>;
+}
+
 export interface LoadedState {
+  programs: StoredProgram[];
   ops: StoredOperation[];
   events: Event[];
   fence: number;
@@ -64,6 +72,7 @@ export interface Store {
   load(): LoadedState;
   writeOp(rec: StoredOperation): void;
   writeFence(n: number): void;
+  writeProgram(p: StoredProgram): void;
   writeEvent(ev: Event): void;
   setWritable(writable: boolean): void;
   /** True when a write can be committed now (retries after an I/O failure). */
@@ -86,7 +95,12 @@ export class MemoryStore implements Store {
   private _writable = true;
 
   get writable(): boolean { return this._writable; }
-  load(): LoadedState { return { ops: [], events: [], fence: this.fence }; }
+  private programs = new Map<string, StoredProgram>();
+  load(): LoadedState { return { programs: [...this.programs.values()], ops: [], events: [], fence: this.fence }; }
+  writeProgram(p: StoredProgram): void {
+    if (!this._writable) throw new StoreError("the journal is read-only");
+    this.programs.set(p.digest, structuredClone(p));
+  }
   writeOp(rec: StoredOperation): void {
     if (!this._writable) throw new StoreError("the journal is read-only");
     this.ops.set(rec.id, structuredClone(rec));
@@ -102,7 +116,39 @@ export class MemoryStore implements Store {
   close(): void { this.ops.clear(); this.events = []; }
 }
 
-const TERMINAL = new Set(["completed", "failed", "canceled", "rejected"]);
+/** The terminal operation states (BHMS §6.3): the one definition in the package. */
+export const TERMINAL: ReadonlySet<string> = new Set(["completed", "failed", "canceled", "rejected"]);
+
+/** Held while a {@link JournalStore} is open: `<journal>.lock` created with O_EXCL holding the owner's pid. */
+function acquireLock(path: string): () => void {
+  const lock = `${path}.lock`;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      const fd = openSync(lock, "wx", 0o600);
+      writeSync(fd, `${process.pid}\n`);
+      closeSync(fd);
+      let released = false;
+      const release = (): void => {
+        if (released) return;
+        released = true;
+        process.off("exit", release);
+        try { unlinkSync(lock); } catch { /* already gone */ }
+      };
+      process.on("exit", release);
+      return release;
+    } catch (e) {
+      if ((e as NodeJS.ErrnoException).code !== "EEXIST") throw new StoreError(`cannot lock the journal: ${(e as Error).message}`);
+      const pid = Number.parseInt(readFileSync(lock, "utf8"), 10);
+      let alive = Number.isInteger(pid) && pid > 0;
+      if (alive) {
+        try { process.kill(pid, 0); } catch (k) { alive = (k as NodeJS.ErrnoException).code === "EPERM"; }
+      }
+      if (alive) throw new StoreError(`the journal ${path} is in use by process ${pid}; one server owns a state directory`);
+      try { unlinkSync(lock); } catch { /* raced with another cleanup */ }
+    }
+  }
+  throw new StoreError(`cannot lock the journal ${path}`);
+}
 
 export class JournalStore implements Store {
   readonly durable = true;
@@ -110,7 +156,12 @@ export class JournalStore implements Store {
   private fd = -1;
   private _writable = true;
   private broken = false;
-  private state: LoadedState = { ops: [], events: [], fence: 0 };
+  private release?: () => void;
+  /** The live content of the journal: every committed write is applied here, so compaction never loses state. */
+  private readonly ops = new Map<string, StoredOperation>();
+  private events: Event[] = [];
+  private fence = 0;
+  private readonly programs = new Map<string, StoredProgram>();
 
   /** @param path journal file; its directory is created. */
   constructor(private readonly path: string) {}
@@ -119,35 +170,50 @@ export class JournalStore implements Store {
 
   load(): LoadedState {
     mkdirSync(dirname(this.path), { recursive: true });
-    const ops = new Map<string, StoredOperation>();
-    const events: Event[] = [];
-    let fence = 0;
-    let epoch = "";
-    if (existsSync(this.path)) {
-      const text = readFileSync(this.path, "utf8");
-      for (const line of text.split("\n")) {
-        if (line === "") continue;
-        let rec: { k: string; [key: string]: unknown };
-        try { rec = JSON.parse(line); } catch { break; } // torn tail: ignore from here on
-        if (rec.k === "hdr") epoch = rec.epoch as string;
-        else if (rec.k === "op") ops.set((rec.rec as StoredOperation).id, rec.rec as StoredOperation);
-        else if (rec.k === "fence") fence = Math.max(fence, rec.n as number);
-        else if (rec.k === "ev") events.push(rec.ev as Event);
-      }
+    this.release = acquireLock(this.path);
+    try {
+      return this.read();
+    } catch (e) {
+      this.release();
+      this.release = undefined;
+      throw e;
     }
-    if (!epoch) epoch = newEpoch(); // a lost or missing journal is a new epoch (BHMS-OPS-034)
-    this.epoch = epoch;
-    this.state = { ops: [...ops.values()], events, fence };
-    this.rewrite();
-    return this.state;
   }
 
-  /** Compact: write the current state to a temporary file, fsync, rename over the journal, reopen for append. */
+  private read(): LoadedState {
+    let epoch = "";
+    if (existsSync(this.path)) {
+      const lines = readFileSync(this.path, "utf8").split("\n");
+      let last = lines.length - 1;
+      while (last >= 0 && lines[last] === "") last--;
+      for (let i = 0; i <= last; i++) {
+        let rec: { k: string; [key: string]: unknown };
+        try {
+          rec = JSON.parse(lines[i]);
+        } catch {
+          if (i === last) break; // a torn final line (crash mid-write) is dropped
+          throw new StoreError(`the journal ${this.path} is corrupt at line ${i + 1}; refusing to start (restore it or move it aside)`);
+        }
+        if (rec.k === "hdr") epoch = rec.epoch as string;
+        else if (rec.k === "op") this.ops.set((rec.rec as StoredOperation).id, rec.rec as StoredOperation);
+        else if (rec.k === "fence") this.fence = Math.max(this.fence, rec.n as number);
+        else if (rec.k === "ev") this.events.push(rec.ev as Event);
+        else if (rec.k === "prog") this.programs.set((rec.p as StoredProgram).digest, rec.p as StoredProgram);
+        else throw new StoreError(`the journal ${this.path} has an unknown record at line ${i + 1}`);
+      }
+    }
+    this.epoch = epoch || newEpoch(); // a lost or missing journal is a new epoch (BHMS-OPS-034)
+    this.rewrite();
+    return { programs: [...this.programs.values()], ops: [...this.ops.values()], events: [...this.events], fence: this.fence };
+  }
+
+  /** Compact: write the live state to a temporary file, fsync, rename over the journal, reopen for append. */
   private rewrite(): void {
     const tmp = `${this.path}.tmp`;
-    const lines = [JSON.stringify({ k: "hdr", epoch: this.epoch, v: 1 }), JSON.stringify({ k: "fence", n: this.state.fence })];
-    for (const rec of this.state.ops) lines.push(JSON.stringify({ k: "op", rec }));
-    for (const ev of this.state.events) lines.push(JSON.stringify({ k: "ev", ev }));
+    const lines = [JSON.stringify({ k: "hdr", epoch: this.epoch, v: 1 }), JSON.stringify({ k: "fence", n: this.fence })];
+    for (const rec of this.ops.values()) lines.push(JSON.stringify({ k: "op", rec }));
+    for (const p of this.programs.values()) lines.push(JSON.stringify({ k: "prog", p }));
+    for (const ev of this.events) lines.push(JSON.stringify({ k: "ev", ev }));
     const fd = openSync(tmp, "w", 0o600);
     try {
       writeSync(fd, lines.join("\n") + "\n");
@@ -157,7 +223,9 @@ export class JournalStore implements Store {
     }
     renameSync(tmp, this.path);
     this.syncDirectory();
-    if (this.fd >= 0) closeSync(this.fd);
+    if (this.fd >= 0) {
+      try { closeSync(this.fd); } catch { /* a descriptor the failure already invalidated */ }
+    }
     this.fd = openSync(this.path, "a", 0o600);
   }
 
@@ -179,12 +247,27 @@ export class JournalStore implements Store {
     }
   }
 
-  writeOp(rec: StoredOperation): void { this.append({ k: "op", rec }, true); }
-  writeFence(n: number): void { this.append({ k: "fence", n }, true); }
+  writeOp(rec: StoredOperation): void {
+    this.append({ k: "op", rec }, true);
+    this.ops.set(rec.id, structuredClone(rec)); // only a committed write is part of the live state
+  }
+
+  writeFence(n: number): void {
+    this.append({ k: "fence", n }, true);
+    this.fence = Math.max(this.fence, n);
+  }
+
+  writeProgram(p: StoredProgram): void {
+    this.append({ k: "prog", p }, true);
+    this.programs.set(p.digest, structuredClone(p));
+  }
+
   writeEvent(ev: Event): void {
-    if (!this.writable) return; // events never block work; a degraded journal drops them
+    this.events.push(ev); // kept even while the file is degraded, so that recovery re-writes them
+    if (!this.writable) return;
     try { writeSync(this.fd, JSON.stringify({ k: "ev", ev }) + "\n"); } catch { this.broken = true; }
   }
+
   setWritable(w: boolean): void { this._writable = w; }
 
   probeWritable(): boolean {
@@ -201,12 +284,10 @@ export class JournalStore implements Store {
 
   prune(cutoffMs: number): string[] {
     const dropped: string[] = [];
-    this.state.ops = this.state.ops.filter((r) => {
-      const keep = !TERMINAL.has(r.op.state) || Date.parse(r.op.updatedAt) >= cutoffMs;
-      if (!keep) dropped.push(r.id);
-      return keep;
-    });
-    this.state.events = this.state.events.filter((e) => Date.parse(e.time) >= cutoffMs);
+    for (const [id, r] of this.ops) {
+      if (TERMINAL.has(r.op.state) && Date.parse(r.op.updatedAt) < cutoffMs) { dropped.push(id); this.ops.delete(id); }
+    }
+    this.events = this.events.filter((e) => Date.parse(e.time) >= cutoffMs);
     if (dropped.length > 0) this.rewrite();
     return dropped;
   }
@@ -214,8 +295,10 @@ export class JournalStore implements Store {
   close(): void {
     if (this.fd >= 0) {
       try { fsyncSync(this.fd); } catch { /* ignore */ }
-      closeSync(this.fd);
+      try { closeSync(this.fd); } catch { /* ignore */ }
       this.fd = -1;
     }
+    this.release?.();
+    this.release = undefined;
   }
 }

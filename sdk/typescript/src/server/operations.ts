@@ -24,7 +24,7 @@
 import { BhmsError, type ErrorData } from "../errors.js";
 import { canonicalString } from "../canonical.js";
 import type { HistoryEntry, Operation } from "../generated/types.js";
-import { StoreError, type Store, type StoredOperation } from "./store.js";
+import { StoreError, TERMINAL, type Store, type StoredOperation } from "./store.js";
 import { iso } from "./time.js";
 
 export type OperationState = Operation["state"];
@@ -39,7 +39,6 @@ export const TRANSITIONS: Readonly<Record<OperationState, readonly OperationStat
   completed: [], failed: [], canceled: [], rejected: [],
 };
 
-const TERMINAL: ReadonlySet<OperationState> = new Set(["completed", "failed", "canceled", "rejected"]);
 const SETTLED: ReadonlySet<OperationState> = new Set(["completed", "failed", "canceled", "rejected", "unknown"]);
 
 export class InvalidTransition extends Error {
@@ -120,6 +119,16 @@ export class Journal {
       const rec = new OperationRecord(data);
       this.records.set(rec.id, rec);
       this.keys.set(Journal.keyOf(rec.principal, rec.op.operationKey), rec.id);
+    }
+  }
+
+  /** Drop pruned operations (and their keys) from memory, mirroring what the store removed. */
+  forget(ids: readonly string[]): void {
+    for (const id of ids) {
+      const rec = this.records.get(id);
+      if (!rec) continue;
+      this.records.delete(id);
+      this.keys.delete(Journal.keyOf(rec.principal, rec.op.operationKey));
     }
   }
 
@@ -277,12 +286,28 @@ export class Journal {
   }
 
   /** Append a non-state entry (`stop`, `lease`, `correction`, `evidence`) without changing state, result or effect. */
-  annotate(rec: OperationRecord, kind: "stop" | "lease" | "correction" | "evidence" | "step", detail?: string): void {
+  annotate(rec: OperationRecord, kind: "stop" | "lease" | "correction" | "evidence" | "step", detail?: string, extra: { stepIndex?: number; childOperationId?: string } = {}): void {
     const next = structuredClone(rec.data);
     const entry: Omit<HistoryEntry, "seq" | "at"> = { kind };
     if (detail) entry.detail = detail.slice(0, 1000);
+    if (extra.stepIndex !== undefined) entry.stepIndex = extra.stepIndex;
+    if (extra.childOperationId !== undefined) entry.childOperationId = extra.childOperationId;
     this.entry(rec, next, entry);
     this.commit(rec, next, false);
+  }
+
+  /** Record the progress of a program (BHMS-PRG-015); not a history change, so no notification. */
+  setProgress(rec: OperationRecord, progress: { stepsCompleted: number; stepsTotal: number }): void {
+    const next = structuredClone(rec.data);
+    next.op.progress = progress;
+    next.op.updatedAt = iso(Date.now());
+    this.commit(rec, next, false);
+  }
+
+  /** The child operations of a program, oldest first. */
+  children(parentId: string): OperationRecord[] {
+    return [...this.records.values()].filter((r) => r.op.parentOperationId === parentId)
+      .sort((a, b) => (a.op.createdAt < b.op.createdAt ? -1 : a.op.createdAt > b.op.createdAt ? 1 : a.id < b.id ? -1 : 1));
   }
 
   /** Mark the inhibition of an `unknown` operation lifted (confirmed stop or reconciliation, BHMS-OPS-042). */
