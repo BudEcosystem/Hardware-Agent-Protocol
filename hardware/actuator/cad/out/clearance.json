@@ -1,0 +1,136 @@
+{
+ "tolerance_mm3": 1.0,
+ "poses": [
+  "zero",
+  "base_yaw=lower",
+  "base_yaw=upper",
+  "shoulder_pitch=lower",
+  "shoulder_pitch=upper",
+  "elbow_pitch=lower",
+  "elbow_pitch=upper",
+  "wrist_pitch=lower",
+  "wrist_pitch=upper",
+  "wrist_roll=lower",
+  "wrist_roll=upper",
+  "reach_forward",
+  "table_pick_near",
+  "table_pick_far",
+  "folded_back",
+  "wrist_curl",
+  "wrist_curl_neg"
+ ],
+ "pose_tool_combinations": 102,
+ "excluded_pairs": [
+  [
+   "gripper:gripper_pinion",
+   "gripper_finger_a:gripper_rack"
+  ],
+  [
+   "gripper:gripper_pinion",
+   "gripper_finger_b:gripper_rack"
+  ],
+  [
+   "knob_turner:knob_servo_gear",
+   "knob_output:knob_output_gear"
+  ],
+  [
+   "turret:pinion",
+   "upper_arm:upper_arm"
+  ],
+  [
+   "upper_arm:pinion",
+   "forearm:forearm"
+  ]
+ ],
+ "defects": [],
+ "self_collisions": [
+  {
+   "tool": "gripper",
+   "pose": "wrist_curl",
+   "a": "turret:turret",
+   "b": "gripper_finger_a:gripper_finger",
+   "overlap_mm3": 98.16,
+   "kind": "self_collision",
+   "tool_q": {
+    "gripper": 0.0
+   }
+  },
+  {
+   "tool": "gripper",
+   "pose": "wrist_curl",
+   "a": "turret:turret",
+   "b": "gripper_finger_b:gripper_finger",
+   "overlap_mm3": 98.16,
+   "kind": "self_collision",
+   "tool_q": {
+    "gripper": 0.0
+   }
+  },
+  {
+   "tool": "gripper",
+   "pose": "wrist_curl",
+   "a": "turret:turret",
+   "b": "gripper_finger_a:gripper_finger",
+   "overlap_mm3": 98.11,
+   "kind": "self_collision",
+   "tool_q": {
+    "gripper": 30.0
+   }
+  },
+  {
+   "tool": "gripper",
+   "pose": "wrist_curl",
+   "a": "turret:turret",
+   "b": "gripper_finger_b:gripper_finger",
+   "overlap_mm3": 98.11,
+   "kind": "self_collision",
+   "tool_q": {
+    "gripper": 30.0
+   }
+  },
+  {
+   "tool": "button_presser",
+   "pose": "wrist_curl",
+   "a": "turret:turret",
+   "b": "presser_plunger:presser_plunger",
+   "overlap_mm3": 54.99,
+   "kind": "self_collision",
+   "tool_q": {
+    "presser": 0.0
+   }
+  },
+  {
+   "tool": "button_presser",
+   "pose": "wrist_curl",
+   "a": "turret:turret",
+   "b": "presser_plunger:presser_tip_cap",
+   "overlap_mm3": 212.26,
+   "kind": "self_collision",
+   "tool_q": {
+    "presser": 0.0
+   }
+  }
+ ],
+ "joint_limits_deg": {
+  "base_yaw": [
+   -150.0,
+   150.0
+  ],
+  "shoulder_pitch": [
+   -75.0,
+   95.0
+  ],
+  "elbow_pitch": [
+   -5.0,
+   125.0
+  ],
+  "wrist_pitch": [
+   -100.0,
+   100.0
+  ],
+  "wrist_roll": [
+   -150.0,
+   150.0
+  ]
+ }
+}

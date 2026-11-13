@@ -1,0 +1,141 @@
+{
+ "case": "outstretched horizontal, 250 g rated load (tool included) at 50 mm beyond flange",
+ "reach_to_flange_m": 0.4,
+ "joints": {
+  "shoulder_pitch": {
+   "joint_torque_nm": 2.3216406512174093,
+   "ratio": 2.0,
+   "efficiency": 0.92,
+   "servo_torque_nm": 1.2617612234877225,
+   "required_with_2x_nm": 2.523522446975445,
+   "stall_nm": 2.94,
+   "margin_vs_stall": 2.3300763609404167,
+   "rated_continuous_nm": 0.98,
+   "within_rated_continuous": false,
+   "holding_current_a_est": 1.308760307284643,
+   "pass": true,
+   "contributions": [
+    {
+     "link": "upper_arm",
+     "mass_kg": 0.29872767262245437,
+     "lever_m": 0.08444567539850648,
+     "torque_nm": 0.2474696113340538
+    },
+    {
+     "link": "forearm",
+     "mass_kg": 0.21677293547842486,
+     "lever_m": 0.24033102604925327,
+     "torque_nm": 0.511074140251769
+    },
+    {
+     "link": "wrist",
+     "mass_kg": 0.09775016478212266,
+     "lever_m": 0.36249270935607136,
+     "torque_nm": 0.34760481352508465
+    },
+    {
+     "link": "flange",
+     "mass_kg": 0.02847874466364189,
+     "lever_m": 0.40041697155116046,
+     "torque_nm": 0.11186708610650169
+    },
+    {
+     "link": "payload (incl. tool)",
+     "mass_kg": 0.25,
+     "lever_m": 0.45,
+     "torque_nm": 1.103625
+    }
+   ]
+  },
+  "elbow_pitch": {
+   "joint_torque_nm": 1.0270483821162217,
+   "ratio": 2.0,
+   "efficiency": 0.92,
+   "servo_torque_nm": 0.5581784685414248,
+   "required_with_2x_nm": 1.1163569370828497,
+   "stall_nm": 2.94,
+   "margin_vs_stall": 5.267132585179269,
+   "rated_continuous_nm": 0.98,
+   "within_rated_continuous": true,
+   "holding_current_a_est": 0.6626128792727372,
+   "pass": true,
+   "contributions": [
+    {
+     "link": "forearm",
+     "mass_kg": 0.21677293547842486,
+     "lever_m": 0.06033102604925329,
+     "torque_nm": 0.12829649078396638
+    },
+    {
+     "link": "wrist",
+     "mass_kg": 0.09775016478212266,
+     "lever_m": 0.18249270935607134,
+     "torque_nm": 0.17499757255281245
+    },
+    {
+     "link": "flange",
+     "mass_kg": 0.02847874466364189,
+     "lever_m": 0.2204169715511605,
+     "torque_nm": 0.06157931877944284
+    },
+    {
+     "link": "payload (incl. tool)",
+     "mass_kg": 0.25,
+     "lever_m": 0.27,
+     "torque_nm": 0.6621750000000001
+    }
+   ]
+  },
+  "wrist_pitch": {
+   "joint_torque_nm": 0.3820391070994422,
+   "ratio": 1.0,
+   "efficiency": 1.0,
+   "servo_torque_nm": 0.3820391070994422,
+   "required_with_2x_nm": 0.7640782141988844,
+   "stall_nm": 2.94,
+   "margin_vs_stall": 7.69554724991737,
+   "rated_continuous_nm": 0.98,
+   "within_rated_continuous": true,
+   "holding_current_a_est": 0.5008522412137735,
+   "pass": true,
+   "contributions": [
+    {
+     "link": "wrist",
+     "mass_kg": 0.09775016478212266,
+     "lever_m": 0.04249270935607133,
+     "torque_nm": 0.040747496241045164
+    },
+    {
+     "link": "flange",
+     "mass_kg": 0.02847874466364189,
+     "lever_m": 0.08041697155116045,
+     "torque_nm": 0.022466610858397046
+    },
+    {
+     "link": "payload (incl. tool)",
+     "mass_kg": 0.25,
+     "lever_m": 0.13,
+     "torque_nm": 0.318825
+    }
+   ]
+  },
+  "base_yaw": {
+   "joint_torque_nm": 0.0,
+   "ratio": 1.0,
+   "servo_torque_nm": 0.0,
+   "margin_vs_stall": null,
+   "pass": true,
+   "note": "no static gravity load; dynamic only"
+  },
+  "wrist_roll": {
+   "joint_torque_nm": 0.0,
+   "ratio": 1.0,
+   "servo_torque_nm": 0.0,
+   "margin_vs_stall": null,
+   "pass": true,
+   "note": "no static gravity load; dynamic only"
+  }
+ },
+ "worst_case_holding_current_a_est": 2.7722254277711538,
+ "pass": true
+}
