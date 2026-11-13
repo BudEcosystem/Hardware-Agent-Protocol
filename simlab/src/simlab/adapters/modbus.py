@@ -27,7 +27,7 @@ from pymodbus.exceptions import ModbusException
 from bhms.server.context import DeviceFault, Reconciled
 from bhms.server.decorators import Range
 from bhms.server.server import DeviceServer
-from simlab.adapters.common import Refused, Unreachable, declare_action, declare_property, refusal_fault
+from simlab.adapters.common import Refused, next_token, Unreachable, declare_action, declare_property, refusal_fault
 from simlab.simdevice import CommandLog, make_server, simulated_device
 from simlab.world import World
 
@@ -61,6 +61,7 @@ class ModbusProfile:
     capabilities: tuple[str, ...]
     registers: tuple[Register, ...]
     slave: int = 1
+    tag_register: int | None = None  # holding register that takes the command token (write-only), if the unit has one
     safety_summary: str | None = None
 
 
@@ -72,7 +73,8 @@ class ModbusLink:
         self._client = AsyncModbusTcpClient(host, port=port, timeout=timeout_s, retries=0)
         self.slave = slave
         self._lock = asyncio.Lock()
-        self.sent = 0  # writes sent, numbered in send order (joined with the instrument's journal by the harness)
+        self.tokens: list[int] = []  # one token per command sent, delivered in-band (see instruments/journal.py)
+        self.tag_register: int | None = None
         self.log: CommandLog | None = None
 
     async def close(self) -> None:
@@ -98,8 +100,13 @@ class ModbusLink:
     async def write(self, register: Register, raw: int) -> None:
         async with self._lock:
             await self._ensure()  # failing here proves nothing was sent
-            self.sent += 1
             try:
+                if self.tag_register is not None:
+                    token = next_token() % 65535 + 1  # 16-bit register
+                    self.tokens.append(token)
+                    tagged = await self._client.write_register(self.tag_register, token, slave=self.slave)
+                    if tagged.isError():
+                        raise RuntimeError(f"Modbus tag write refused: {tagged}")
                 response = await self._client.write_register(register.address, raw, slave=self.slave)
             except (ModbusException, OSError, asyncio.TimeoutError) as exc:
                 raise RuntimeError(f"Modbus write may or may not have been executed: {exc}") from exc
@@ -136,6 +143,7 @@ def build_server(world: World, profile: ModbusProfile, host: str, port: int, *, 
                      tags=["simlab", "adapter", "modbus"], safety_summary=profile.safety_summary,
                      identity={"manufacturer": "Modbus slave", "model": profile.name, "firmwareVersion": "unknown"})
     link = ModbusLink(host, port, profile.slave, timeout_s)
+    link.tag_register = profile.tag_register
     log = link.log = CommandLog()
     by_name = {r.name: r for r in profile.registers}
     registers = f"{profile.device_id}/registers"
@@ -151,13 +159,13 @@ def build_server(world: World, profile: ModbusProfile, host: str, port: int, *, 
     def writer(register: Register) -> Any:
         async def write_value(ctx: Any, value: Any) -> Any:
             log.begin(ctx.operation_id)
-            first = link.sent
+            first = len(link.tokens)
             try:
                 await link.write(register, _encode(register, value))
             except (Refused, Unreachable) as exc:
                 raise refusal_fault(exc, "Modbus") from exc
             finally:
-                log.sent_range(ctx.operation_id, first, link.sent)
+                log.sent[ctx.operation_id] = link.tokens[first:]
             back = _decode(register, await link.read(register))
             if (back != value) if register.boolean else abs(back - value) > register.scale:
                 raise DeviceFault(f"{register.name} reads back {back} after writing {value}",

@@ -49,6 +49,9 @@ class Claim:
     state: State
     effect: EffectLabel
     expect: Callable[[dict[str, Any]], bool]
+    # Optional: are the values the record returned true (within the sensor's declared uncertainty) or null? A false value is
+    # a lie whatever the effect certainty says: a hedge covers what the record does not know, not what it makes up.
+    values: Callable[[dict[str, Any]], bool] | None = None
 
 
 # Effects that are bookkeeping about faults, not physical consequences of an operation.
@@ -102,7 +105,10 @@ class Oracle:
             return Verdict.FALSE_CERTAINTY if claim.effect == "verified" else Verdict.HONEST_UNKNOWN
         if claim.state == "rejected_before_dispatch":
             return Verdict.FALSE_NO_EFFECT if effects else Verdict.CONSISTENT
-        holds = bool(claim.expect(self.world.snapshot()))
+        snapshot = self.world.snapshot()
+        if claim.state == "completed" and claim.values is not None and not claim.values(snapshot):
+            return Verdict.FALSE_CERTAINTY
+        holds = bool(claim.expect(snapshot))
         if claim.state == "completed":
             if holds:
                 return Verdict.CONSISTENT
@@ -120,10 +126,12 @@ _STATE = {"completed": "completed", "failed": "failed", "canceled": "canceled", 
 _EFFECT = {"verified": "verified", "unverified": "unverified", "unknown": "unverified", "none": "failed"}
 
 
-def claim_from_operation(operation: Any, expect: Callable[[dict[str, Any]], bool]) -> Claim:
+def claim_from_operation(operation: Any, expect: Callable[[dict[str, Any]], bool],
+                         values: Callable[[dict[str, Any]], bool] | None = None) -> Claim:
     """The oracle ``Claim`` that a BHMS ``Operation`` record makes (``operation.operation_id`` is the cause).
 
     BHMS state maps one to one; the BHMS effect certainty maps ``verified`` to a verified claim, ``none`` to a claim that
     nothing happened, and ``unverified`` or ``unknown`` to a hedged claim.
     """
-    return Claim(operation.operation_id, _STATE[operation.state], _EFFECT[operation.effect], expect)  # type: ignore[arg-type]
+    return Claim(operation.operation_id, _STATE[operation.state], _EFFECT[operation.effect], expect,  # type: ignore[arg-type]
+                 values)

@@ -52,7 +52,7 @@ class CommandLog:
     def __init__(self) -> None:
         self._state: dict[str, str] = {}
         self._results: dict[str, Any] = {}
-        self.sent: dict[str, tuple[int, int]] = {}  # adapters: operation id -> (first, end) command numbers it sent
+        self.sent: dict[str, list[int]] = {}  # adapters: operation id -> the command tokens it sent
 
     def begin(self, operation_id: str) -> None:
         self._state[operation_id] = "started"
@@ -61,11 +61,6 @@ class CommandLog:
         self._state[operation_id] = "done"
         self._results[operation_id] = result
         return result
-
-    def sent_range(self, operation_id: str, first: int, end: int) -> None:
-        """An adapter records which of its link's commands (numbered by send order) an operation sent; the harness joins
-        this with the instrument's journal (``instruments.journal``)."""
-        self.sent[operation_id] = (first, end)
 
     def state(self, operation_id: str) -> str:
         return self._state.get(operation_id, "none")

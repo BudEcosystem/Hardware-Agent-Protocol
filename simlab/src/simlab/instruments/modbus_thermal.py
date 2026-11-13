@@ -9,6 +9,8 @@ Register map (slave 1, zero-based addresses)::
 
     holding 0  setpoint, 0.1 C units          read/write, 40..990
     holding 1  enable, 0 or 1                 read/write
+    holding 2  command tag (write-only): the adapter writes a token here immediately before each command; the instrument
+               journals it on receipt, before any power check (see ``instruments/journal.py``)
     input   0  temperature, 0.01 C units      read-only, signed 16 bit (thermistor with noise)
     input   1  status word: bit0 = enabled, bit1 = within 0.5 C of the setpoint
 
@@ -32,7 +34,7 @@ from simlab.twins.thermal import SENSOR_SIGMA_C, SETPOINT_RANGE_C, ThermalModel
 from simlab.world import World
 
 SENSOR_OPEN = 0x7FFF
-HR_SETPOINT, HR_ENABLE = 0, 1
+HR_SETPOINT, HR_ENABLE, HR_TAG = 0, 1, 2
 IR_TEMPERATURE, IR_STATUS = 0, 1
 
 
@@ -71,7 +73,7 @@ class ModbusThermalInstrument:
         self.journal = CommandJournal(world)
         self._server: ModbusTcpServer | None = None
         self._task: asyncio.Task[None] | None = None
-        holding = _Block(2, self._read_holding, self._write_holding)
+        holding = _Block(3, self._read_holding, self._write_holding)
         inputs = _Block(2, self._read_input)
         self._context = ModbusServerContext(slaves=ModbusSlaveContext(hr=holding, ir=inputs), single=True)
 
@@ -83,9 +85,15 @@ class ModbusThermalInstrument:
 
     def _read_holding(self, address: int) -> int:
         self._check_power()
+        if address == HR_TAG:
+            return 0
         return round(self.model.setpoint_c * 10) if address == HR_SETPOINT else int(self.model.enabled)
 
     def _write_holding(self, address: int, value: int) -> None:
+        if address == HR_TAG:
+            self.journal.tag(value)  # receipt is journalled before any power or fault check
+            self._check_power()
+            return
         with self.journal.command(f"write holding {address} = {value}"):  # numbered even when it fails: the adapter counts it
             self._check_power()
             if address == HR_SETPOINT:

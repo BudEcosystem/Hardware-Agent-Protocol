@@ -28,7 +28,7 @@ from typing import Any
 
 from bhms.server.decorators import Range
 from bhms.server.server import DeviceServer
-from simlab.adapters.common import Refused, Unreachable, declare_action, declare_property, refusal_fault
+from simlab.adapters.common import Refused, next_token, Unreachable, declare_action, declare_property, refusal_fault
 from simlab.simdevice import CommandLog, make_server, simulated_device
 from simlab.world import World
 
@@ -79,7 +79,8 @@ class ScpiLink:
         self._reader: asyncio.StreamReader | None = None
         self._writer: asyncio.StreamWriter | None = None
         self._lock = asyncio.Lock()
-        self.sent = 0  # commands sent, numbered in send order (joined with the instrument's journal by the harness)
+        self.tokens: list[int] = []  # one token per command sent, delivered in-band (see instruments/journal.py)
+        self.tagging = True
         self.log: CommandLog | None = None
 
     async def close(self) -> None:
@@ -139,8 +140,11 @@ class ScpiLink:
         async with self._lock:
             await self._ensure()  # failing here proves nothing was sent
             try:
+                if self.tagging:
+                    token = next_token()
+                    self.tokens.append(token)
+                    await self._send(f"SYST:TAG {token}")  # the instrument journals it on receipt
                 await self._send("*CLS")
-                self.sent += 1  # from here the command is on its way
                 await self._send(command)
                 await self._send("*OPC?")
             except OSError as exc:
@@ -197,13 +201,13 @@ def build_server(world: World, profile: ScpiProfile, host: str, port: int, *, st
     def sender(command: Command) -> Any:
         async def send(ctx: Any) -> Any:
             log.begin(ctx.operation_id)
-            first = link.sent
+            first = len(link.tokens)
             try:
                 await link.command(command.command)
             except (Refused, Unreachable) as exc:
                 raise refusal_fault(exc, "SCPI") from exc
             finally:
-                log.sent_range(ctx.operation_id, first, link.sent)
+                log.sent[ctx.operation_id] = link.tokens[first:]
             return log.end(ctx.operation_id, {"acknowledged": True})
         return send
 

@@ -31,7 +31,7 @@ from asyncua.ua.uaerrors import UaStatusCodeError
 from bhms.server.context import Reconciled
 from bhms.server.decorators import Range
 from bhms.server.server import DeviceServer
-from simlab.adapters.common import Refused, Unreachable, declare_action, declare_property, refusal_fault
+from simlab.adapters.common import Refused, next_token, Unreachable, declare_action, declare_property, refusal_fault
 from simlab.simdevice import CommandLog, make_server, simulated_device
 from simlab.world import World
 
@@ -83,6 +83,7 @@ class OpcUaProfile:
     variables: tuple[Variable, ...]
     methods: tuple[Method, ...] = field(default_factory=tuple)
     safety_summary: str | None = None
+    tag_method: tuple[tuple[str, ...], str] | None = None  # (object path, method name) that takes the command token
 
 
 class OpcUaLink:
@@ -94,7 +95,8 @@ class OpcUaLink:
         self._index: int | None = None
         self._lock = asyncio.Lock()
         self._connected = False
-        self.sent = 0  # method calls sent, numbered in send order (joined with the instrument's journal by the harness)
+        self.tokens: list[int] = []  # one token per command sent, delivered in-band (see instruments/journal.py)
+        self.tag_method: tuple[tuple[str, ...], str] | None = None
         self.log: CommandLog | None = None
 
     async def close(self) -> None:
@@ -134,8 +136,12 @@ class OpcUaLink:
             await self._ensure()
             try:
                 parent = await self._node(method.object_path)
-                self.sent += 1
                 assert self._index is not None
+                if self.tag_method is not None:
+                    token = next_token()
+                    self.tokens.append(token)
+                    tagger = await self._node(self.tag_method[0])
+                    await tagger.call_method(f"{self._index}:{self.tag_method[1]}", float(token))
                 return await parent.call_method(f"{self._index}:{method.method}", *args)
             except UaStatusCodeError as exc:
                 if exc.code in REFUSING_STATUS:
@@ -158,6 +164,7 @@ def build_server(world: World, profile: OpcUaProfile, endpoint: str, *, state_di
                      tags=["simlab", "adapter", "opcua"], safety_summary=profile.safety_summary,
                      identity={"manufacturer": "OPC UA server", "model": profile.name, "firmwareVersion": "unknown"})
     link = OpcUaLink(endpoint, profile.namespace_uri, timeout_s)
+    link.tag_method = profile.tag_method
     log = link.log = CommandLog()
     variables = {v.name: v for v in profile.variables}
     resource = f"{profile.device_id}/program"
@@ -181,13 +188,13 @@ def build_server(world: World, profile: OpcUaProfile, endpoint: str, *, state_di
     def caller(method: Method) -> Any:
         async def call(ctx: Any, **arguments: Any) -> Any:
             log.begin(ctx.operation_id)
-            first = link.sent
+            first = len(link.tokens)
             try:
                 result = await link.call(method, [float(arguments[a.name]) for a in method.arguments])
             except (Refused, Unreachable) as exc:
                 raise refusal_fault(exc, "OPC UA") from exc
             finally:
-                log.sent_range(ctx.operation_id, first, link.sent)
+                log.sent[ctx.operation_id] = link.tokens[first:]
             ok, message = (result if isinstance(result, (list, tuple)) else (True, str(result)))
             if not ok:
                 raise refusal_fault(Refused(str(message)), "OPC UA")

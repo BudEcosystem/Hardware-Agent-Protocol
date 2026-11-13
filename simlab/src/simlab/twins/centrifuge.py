@@ -128,10 +128,10 @@ class CentrifugeModel:
 
     def abort(self, cause: str | None) -> None:
         """Brake: the rotor decelerates from its present speed (the lid stays locked until it is below ``LOCK_HZ``)."""
-        running = self.running()
-        self.world.record(self.device, "spin_abort_requested", {"running": running}, cause)
-        if not running:
+        if not self.running():
+            self.world.record(self.device, "spin_abort_ignored", {"running": False}, cause)  # nothing to brake: no execution
             return
+        self.world.record(self.device, "spin_abort_requested", {"running": True}, cause)
         speed, now = self.speed_hz(), self.world.time_s
         self._program = _Program(now - speed / ACCEL_HZ_S, speed, 0.0)
         self.world.record(self.device, "spin_aborted", {"speed_hz": round(speed, 3)}, cause)

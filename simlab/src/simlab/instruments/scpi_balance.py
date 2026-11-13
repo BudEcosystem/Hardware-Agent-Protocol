@@ -13,6 +13,7 @@ Commands::
     MEASure:STABle?  1 when the reading has settled, else 0
     UNIT?          G
     CAPacity?      +2.200000E+02
+    SYSTem:TAG n   label the next command with token n (journalled on receipt, before any power check)
     TARE           zero the display against the present (possibly still settling) reading; no reply
     SYSTem:ERRor?  0,"No error" | -113,"Undefined header" | -330,"Self-test failed"
 
@@ -38,6 +39,17 @@ IDN = "SIMLAB,BALANCE-220,SN0001,1.0"
 
 
 _SHORT = {"MEASURE": "MEAS", "STABLE": "STAB", "CAPACITY": "CAP", "SYSTEM": "SYST", "ERROR": "ERR"}
+
+
+def _tag_of(line: str) -> int | None:
+    """The token of a ``SYSTem:TAG n`` line, or ``None`` for any other line."""
+    parts = line.strip().upper().split()
+    if len(parts) == 2 and _normalize(parts[0]) == "SYST:TAG":
+        try:
+            return int(parts[1])
+        except ValueError:
+            return None
+    return None
 
 
 def _normalize(command: str) -> str:
@@ -74,6 +86,8 @@ class ScpiBalanceInstrument:
             self._errors.clear()
             self._esr = 0
             return None
+        if _tag_of(line) is not None:
+            return None  # accepted; the journal took it on receipt
         if command == "*ESR?":
             esr, self._esr = self._esr, 0
             return str(esr)
@@ -100,9 +114,9 @@ class ScpiBalanceInstrument:
         return None
 
     def _journal(self, line: str) -> Any:
-        """A numbered journal entry for commands that can change something (not queries, not ``*CLS``)."""
+        """A journal entry for commands that can change something (not queries, ``*CLS`` or tags)."""
         command = _normalize(line)
-        if command.endswith("?") or command == "*CLS":
+        if command.endswith("?") or command == "*CLS" or _tag_of(line) is not None:
             return nullcontext()
         return self.journal.command(command)
 
@@ -110,9 +124,12 @@ class ScpiBalanceInstrument:
         try:
             while line := await reader.readline():
                 text = line.decode("ascii", "replace")
+                token = _tag_of(text)
+                if token is not None:
+                    self.journal.tag(token)  # receipt is journalled before any power check
+                if self.world.faults.active(self.device, "power_loss"):
+                    break  # no power: the connection just dies; a command not yet read is not journalled
                 with self._journal(text):
-                    if self.world.faults.active(self.device, "power_loss"):
-                        break  # no power: the connection just dies (the command was still received: it is numbered)
                     reply = self.execute(text)
                 if reply is not None:
                     writer.write(reply.encode("ascii") + b"\n")

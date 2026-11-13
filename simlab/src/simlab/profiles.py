@@ -15,7 +15,7 @@ THERMAL_MODBUS = ModbusProfile(
     device_id="thermal-m1", name="Modbus thermal block",
     description="Temperature controller with a Modbus TCP interface: setpoint and enable registers and a thermistor input.",
     capabilities=("bhms.thermal",),
-    safety_summary="Surface up to 99 C; the controller rejects setpoints outside 4 to 99 C.",
+    safety_summary="Surface up to 99 C; the controller rejects setpoints outside 4 to 99 C.", tag_register=2,
     registers=(
         Register("setpoint", 0, "holding", "Cel", "setpoint temperature", scale=0.1, minimum=4.0, maximum=99.0,
                  writable=True),
@@ -30,7 +30,7 @@ THERMAL_MODBUS = ModbusProfile(
 CENTRIFUGE_OPCUA = OpcUaProfile(
     device_id="centrifuge-u1", name="OPC UA centrifuge",
     description="Benchtop centrifuge with an OPC UA server: spin programs, lid control and interlock state.",
-    capabilities=("bhms.centrifuge",), namespace_uri="urn:simlab:centrifuge",
+    capabilities=("bhms.centrifuge",), namespace_uri="urn:simlab:centrifuge", tag_method=(("Centrifuge",), "Tag"),
     safety_summary="Hazardous when spinning: the unit locks the lid above 0.5 Hz and refuses an unbalanced rotor.",
     variables=(
         Variable("speed", ("Centrifuge", "Speed"), "rotor speed from the tachometer", unit="Hz", evidence="measured",

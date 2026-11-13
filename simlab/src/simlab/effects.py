@@ -6,8 +6,8 @@ captured, a plate read, a finish record with the achieved truth, a fault firing)
 operation to find a doubled execution and to check "no effect" claims; observations never count, because reading the world
 twice is not acting on it twice.
 
-An unclassified kind counts as an observation, and ``tests/test_judge.py`` fails when a run records a kind that is not
-listed here, so a new twin cannot silently escape the duplicate check.
+An unclassified kind is an error: ``is_start`` raises ``UnknownEffectKind`` rather than treating it as an observation, so a
+new twin cannot silently escape the duplicate and no-effect checks (and ``tests/test_judge.py`` scans the source for kinds).
 """
 
 from __future__ import annotations
@@ -20,15 +20,23 @@ EXECUTION_START: frozenset[str] = frozenset({
 
 OBSERVATION: frozenset[str] = frozenset({
     "move_finished", "move_aborted", "z_reached", "xy_reached", "objective_ready", "thermal_reached", "spin_reached",
-    "spin_finished", "spin_aborted", "image_captured", "plate_read", "weighed", "spilled", "air_aspirated", "joint_turned",
+    "spin_finished", "spin_aborted", "spin_abort_ignored", "image_captured", "plate_read", "weighed", "spilled", "air_aspirated", "joint_turned",
     "fault_injected", "fault_fired", "fault_cleared", "object_dropped", "knob_slipped", "joint_stalled",
     "joint_released", "tip_liquid_discarded",
 })
 
 
+class UnknownEffectKind(ValueError):
+    """An effect kind nobody classified as an execution start or an observation."""
+
+
 def is_start(kind: str) -> bool:
-    """Whether an effect of this kind marks an execution start."""
-    return kind in EXECUTION_START
+    """Whether an effect of this kind marks an execution start; fails closed on an unclassified kind."""
+    if kind in EXECUTION_START:
+        return True
+    if kind in OBSERVATION:
+        return False
+    raise UnknownEffectKind(f"effect kind {kind!r} is not classified in simlab.effects")
 
 
 def is_known(kind: str) -> bool:

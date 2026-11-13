@@ -22,11 +22,21 @@ Thread-safety: one event loop.
 from __future__ import annotations
 
 import inspect
+import itertools
 from collections.abc import Awaitable, Callable, Mapping
 from typing import Any
 
 from bhms.server.context import DeviceFault
 from bhms.server.device import Device
+
+
+_TOKENS = itertools.count(1)
+
+
+def next_token() -> int:
+    """A command token unique across every adapter link in the process (two adapters to one instrument never collide), used
+    to correlate adapter operations with an instrument's journal (``instruments/journal.py``)."""
+    return next(_TOKENS)
 
 
 class Refused(Exception):

@@ -23,6 +23,7 @@ from bhms.server.server import DeviceServer
 from simlab.adapters import modbus as modbus_adapter
 from simlab.adapters import opcua as opcua_adapter
 from simlab.adapters import scpi as scpi_adapter
+from simlab.instruments.journal import attribute
 from simlab.instruments.modbus_thermal import ModbusThermalInstrument
 from simlab.instruments.opcua_centrifuge import OpcUaCentrifugeInstrument
 from simlab.instruments.scpi_balance import ScpiBalanceInstrument
@@ -50,6 +51,7 @@ class Lab:
     oracle: Oracle = field(init=False)
     _cleanup: list[Any] = field(default_factory=list)
     _bridges: list[tuple[Any, Any]] = field(default_factory=list)  # (instrument journal, adapter link)
+    instruments: dict[str, Any] = field(default_factory=dict)  # bridged devices' protocol instruments
     socket_dir: Path = field(default_factory=lambda: Path(tempfile.mkdtemp(prefix="simlab-")))
 
     def __post_init__(self) -> None:
@@ -129,6 +131,7 @@ class Lab:
                                               **kw)
         self._cleanup.append(link.close)
         self._bridges.append((instrument.journal, link))
+        self.instruments["balance"] = instrument
         self.twins["balance"] = model
         await self._serve("balance", srv, BALANCE_SCPI.device_id, strict)
 
@@ -144,6 +147,7 @@ class Lab:
                                                 state_dir=state / "thermal", **kw)
         self._cleanup.append(link.close)
         self._bridges.append((instrument.journal, link))
+        self.instruments["thermal"] = instrument
         self.twins["thermal"] = model
         await self._serve("thermal", srv, THERMAL_MODBUS.device_id, strict)
 
@@ -159,20 +163,23 @@ class Lab:
                                                **kw)
         self._cleanup.append(link.close)
         self._bridges.append((instrument.journal, link))
+        self.instruments["centrifuge"] = instrument
         self.twins["centrifuge"] = model
         await self._serve("centrifuge", srv, CENTRIFUGE_OPCUA.device_id, strict)
 
     # ------------------------------------------------------------------ use
 
-    def attribute_bridged(self) -> None:
-        """Give the effects of protocol-bridged instruments their causes: for each adapter, the commands an operation sent
-        (its send-order numbers) select the instrument's journal entries, whose effects belong to that operation. Call
-        before judging; it is idempotent."""
+    def attribute_bridged(self, extra_links: list[Any] | None = None) -> None:
+        """Give the effects of protocol-bridged instruments their causes by joining the adapters' sent tokens with each
+        instrument's journal (``instruments.journal.attribute``). ``extra_links`` are further adapter links (a second adapter
+        to the same instrument) of a lab's instrument; their tokens are merged. Raises ``AttributionError`` when the join
+        cannot be proven. Call before judging; it is idempotent."""
         for journal, link in self._bridges:
-            for operation_id, (first, end) in link.log.sent.items():
-                for entry in journal.entries[first:end]:
-                    for seq in entry.effect_seqs:
-                        self.oracle.attribute(seq, operation_id)
+            sent = dict(link.log.sent)
+            for other in extra_links or []:
+                sent.update(other.log.sent)
+            for seq, operation_id in attribute(journal, sent).items():
+                self.oracle.attribute(seq, operation_id)
 
     def client(self, key: str) -> Client:
         return self.clients[key]

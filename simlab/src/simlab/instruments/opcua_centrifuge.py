@@ -14,6 +14,7 @@ Address space (namespace ``urn:simlab:centrifuge``), under ``Objects/Centrifuge`
     State        String   "idle" | "spinning"
     StartProgram(SpeedHz: Double, HoldSeconds: Double) -> (Ok: Boolean, Message: String)
     OpenLid() / CloseLid() / Abort() -> (Ok: Boolean, Message: String)
+    Tag(Token: Double)                        label the next method call (journalled on receipt, before any power check)
 
 A method returns ``Ok = false`` with the reason when the interlock refuses (lid open, imbalance, lid locked); nothing moves
 then. While the unit has no power (``power_loss`` fault) variable reads return ``BadNoCommunication`` and method calls fail
@@ -121,7 +122,14 @@ class OpcUaCentrifugeInstrument:
         async def abort_method(_parent: Any) -> tuple[bool, str]:
             return abort()
 
+        @uamethod
+        async def tag_method(_parent: Any, token: float) -> None:
+            self.journal.tag(int(token))  # receipt is journalled before any power check
+            if not self._powered():
+                raise ua.UaStatusCodeError(ua.StatusCodes.BadNoCommunication)
+
         outputs = [ua.VariantType.Boolean, ua.VariantType.String]
+        await obj.add_method(index, "Tag", tag_method, [ua.VariantType.Double], [])
         await obj.add_method(index, "StartProgram", start_program, [ua.VariantType.Double, ua.VariantType.Double], outputs)
         await obj.add_method(index, "OpenLid", open_lid_method, [], outputs)
         await obj.add_method(index, "CloseLid", close_lid_method, [], outputs)
