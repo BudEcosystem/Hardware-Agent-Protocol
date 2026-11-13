@@ -29,7 +29,7 @@ from typing import Any
 from bhms.server.decorators import Range
 from bhms.server.server import DeviceServer
 from simlab.adapters.common import Refused, Unreachable, declare_action, declare_property, refusal_fault
-from simlab.simdevice import CommandLog, make_server
+from simlab.simdevice import CommandLog, make_server, simulated_device
 from simlab.world import World
 
 _ERROR = re.compile(r'^\s*([+-]?\d+)\s*,\s*"?(.*?)"?\s*$')
@@ -79,6 +79,8 @@ class ScpiLink:
         self._reader: asyncio.StreamReader | None = None
         self._writer: asyncio.StreamWriter | None = None
         self._lock = asyncio.Lock()
+        self.sent = 0  # commands sent, numbered in send order (joined with the instrument's journal by the harness)
+        self.log: CommandLog | None = None
 
     async def close(self) -> None:
         async with self._lock:
@@ -131,24 +133,30 @@ class ScpiLink:
             return await self._line()
 
     async def command(self, command: str) -> None:
-        """Send a command, synchronise with ``*OPC?`` and read the error queue."""
+        """Send a command and judge only what *it* caused: clear the error state first (a stale entry from an earlier query
+        must not be blamed on this command), then synchronise with ``*OPC?``, read the event status register and the
+        error queue."""
         async with self._lock:
             await self._ensure()  # failing here proves nothing was sent
             try:
+                await self._send("*CLS")
+                self.sent += 1  # from here the command is on its way
                 await self._send(command)
                 await self._send("*OPC?")
             except OSError as exc:
                 self._drop()
                 raise RuntimeError(f"SCPI send failed after the command left: {exc}") from exc
             await self._line()  # *OPC? -> 1
+            await self._send("*ESR?")
+            esr = int((await self._line()) or 0)
             await self._send("SYST:ERR?")
             match = _ERROR.match(await self._line())
             if match is None:
                 raise RuntimeError("unparseable SYST:ERR? reply")
             code = int(match.group(1))
-            if code != 0:
-                if -299 <= code <= -100:
-                    raise Refused(f"error {code}: {match.group(2)}")
+            if code != 0 or esr & 0x30:
+                if -299 <= code <= -100 or (code == 0 and esr & 0x30):
+                    raise Refused(f"error {code}: {match.group(2)} (ESR {esr})")
                 raise RuntimeError(f"instrument error {code}: {match.group(2)} (the command may have acted)")
 
 
@@ -158,12 +166,12 @@ def build_server(world: World, profile: ScpiProfile, host: str, port: int, *, st
     """The BHMS server for a SCPI instrument. The adapter never reads the world; it knows only what the instrument says."""
     srv = make_server(world, name, state_dir=state_dir, durability=durability, title=f"SCPI adapter: {profile.name}",
                       **kw)
-    dev = srv.device(profile.device_id, name=profile.name, description=profile.description,
+    dev = simulated_device(srv, profile.device_id, name=profile.name, description=profile.description,
                      capabilities=list(profile.capabilities), resources=[f"{profile.device_id}/instrument"],
                      tags=["simlab", "adapter", "scpi"], safety_summary=profile.safety_summary,
                      identity={"manufacturer": "SCPI instrument", "model": profile.name, "firmwareVersion": "unknown"})
     link = ScpiLink(host, port, profile.idn_prefix, timeout_s)
-    log = CommandLog()
+    log = link.log = CommandLog()
 
     def schema_of(query: Query) -> Any:
         return {"boolean": bool, "string": str}.get(query.kind) or Range(query.minimum, query.maximum,
@@ -189,10 +197,13 @@ def build_server(world: World, profile: ScpiProfile, host: str, port: int, *, st
     def sender(command: Command) -> Any:
         async def send(ctx: Any) -> Any:
             log.begin(ctx.operation_id)
+            first = link.sent
             try:
                 await link.command(command.command)
             except (Refused, Unreachable) as exc:
                 raise refusal_fault(exc, "SCPI") from exc
+            finally:
+                log.sent_range(ctx.operation_id, first, link.sent)
             return log.end(ctx.operation_id, {"acknowledged": True})
         return send
 

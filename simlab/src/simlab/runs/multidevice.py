@@ -62,6 +62,7 @@ class RunResult:
 def summarize(lab: Lab, scenario: str, seed: int, mode: str, status: str, detail: str, wall_s: float,
               recorders: list[Recorder], extra: dict[str, Any] | None = None) -> RunResult:
     """Judge every operation the recorders saw and build the run record."""
+    lab.attribute_bridged()
     operations = sorted((op for r in recorders for op in r.operations), key=lambda op: op.created_at)
     judged: list[Judged] = judge_operations(lab.oracle, operations)
     counts: dict[str, int] = {}

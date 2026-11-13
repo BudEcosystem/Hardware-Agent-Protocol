@@ -26,7 +26,7 @@ from typing import Any
 from bhms.server.context import DeviceFault
 from bhms.server.decorators import Array, Range, Text
 from bhms.server.server import DeviceServer
-from simlab.simdevice import SensorFault, TwinHost, make_server
+from simlab.simdevice import SensorFault, TwinHost, make_server, simulated_device
 from simlab.world import World
 
 READER_SITE = "reader"
@@ -73,10 +73,11 @@ class PlateReaderTwin:
         if container is None:
             raise LookupError("no plate on the reader")
         rng = self.world.rng_for(f"{self.device}.detector")
-        values = [round(self.true_absorbance(container, w, wavelength_nm) + float(rng.normal(0.0, sigma)), 4)
-                  for w in wells]
+        truth = [self.true_absorbance(container, w, wavelength_nm) for w in wells]
+        values = [round(t + float(rng.normal(0.0, sigma)), 4) for t in truth]
         self.world.record(self.device, "plate_read", {"container": container, "wells": list(wells),
-                                                      "wavelength_nm": wavelength_nm}, cause)
+                                                      "wavelength_nm": wavelength_nm, "sigma": sigma,
+                                                      "true_absorbance": [round(t, 6) for t in truth]}, cause)
         return values
 
 
@@ -86,7 +87,7 @@ def build_server(world: World, reader: PlateReaderTwin | None = None, *, state_d
     """The plate reader as a BHMS device server."""
     twin = reader or PlateReaderTwin(world, device=device_id)
     srv = make_server(world, name, state_dir=state_dir, durability=durability, title="SimLab plate reader", **kw)
-    dev = srv.device(device_id, name="Absorbance plate reader", capabilities=["bhms.reader.absorbance"],
+    dev = simulated_device(srv, device_id, name="Absorbance plate reader", capabilities=["bhms.reader.absorbance"],
                      resources=[f"{device_id}/optics"], tags=["simlab", "reader"],
                      description="Absorbance reader for 96-well plates placed on its stage.",
                      identity={"manufacturer": "SimLab", "model": "plate reader twin", "firmwareVersion": "1"})

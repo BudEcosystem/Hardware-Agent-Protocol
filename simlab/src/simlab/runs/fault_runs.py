@@ -30,8 +30,9 @@ from bhms.protocol.errors import BhmsError
 from simlab.agents.scripted import BhmsArm, BhmsScope, Recorder, load_and_image
 from simlab.faults import At, Fault, OnEvent
 from simlab.lab import Lab
-from simlab.oracle import Oracle, Verdict
+from simlab.oracle import Verdict
 from simlab.runs.judge import judge_operations
+from simlab.transport_faults import LossyClient
 
 ACCEPTABLE = {Verdict.CONSISTENT.value, Verdict.HONEST_UNKNOWN.value}
 
@@ -49,6 +50,7 @@ class Outcome:
 
 
 def _verdicts(lab: Lab, recorders: list[Recorder]) -> dict[str, int]:
+    lab.attribute_bridged()
     counts: dict[str, int] = {}
     for item in judge_operations(lab.oracle, [op for r in recorders for op in r.operations]):
         counts[item.verdict.value] = counts.get(item.verdict.value, 0) + 1
@@ -171,24 +173,29 @@ async def f2_reply_lost_after_effect(run_dir: Path) -> Outcome:
     lab = await Lab.start(run_dir, seed=27, devices=("arm",))
     async with lab:
         arm = Recorder(lab.client("arm"), "arm-1")
-        client: Client = lab.client("arm")
-        # the request reaches the device and the physical move happens; the client gives up before it sees the reply
+        lossy = LossyClient(lab.client("arm"), lab.world)
+        # the fault plane loses the reply of the next invoke AFTER the operation has settled and its effect is in the world
+        lab.world.faults.inject(Fault("arm-1", "reply_loss", At(0.0)))
+        lab.world.step(0.01)
         try:
-            await asyncio.wait_for(client.actions_invoke("arm-1", "move_to_site", {"site": "reader"},
-                                                         operation_key="lost-reply", wait_ms=30_000), timeout=0.02)
+            await lossy.actions_invoke("arm-1", "move_to_site", {"site": "reader"}, operation_key="lost-reply",
+                                       wait_ms=30_000)
             lost = False
-        except (asyncio.TimeoutError, TimeoutError):
+        except TimeoutError:
             lost = True
+        effects_when_lost = len([e for e in lab.world.effect_log() if e.kind == "move_finished"])
         # the safe recovery: ask again with the same key (operations/get would do too)
-        result = await client.actions_invoke("arm-1", "move_to_site", {"site": "reader"}, operation_key="lost-reply",
-                                             wait_ms=30_000)
+        result = await lab.client("arm").actions_invoke("arm-1", "move_to_site", {"site": "reader"},
+                                                        operation_key="lost-reply", wait_ms=30_000)
         arm.operations.append(result.operation)
         starts = [e for e in lab.world.effect_log() if e.kind == "move_started"]
         verdicts = _verdicts(lab, [arm])
-        return _outcome("f2_reply_lost_after_effect", "F2", "same key returns the same operation; exactly one effect",
-                        {"reply_lost": lost, "state": result.operation.state, "effects": len(starts),
-                         "duplicates": len(Oracle(lab.world).duplicates(result.operation.operation_id))}, verdicts,
-                        lost and result.operation.state == "completed" and len(starts) == 1, started)
+        return _outcome("f2_reply_lost_after_effect", "F2", "the effect happened before the reply was lost; the same key "
+                        "returns the same operation; exactly one effect",
+                        {"reply_lost": lost, "effect_before_retry": effects_when_lost, "state": result.operation.state,
+                         "effects": len(starts), "duplicates": len(lab.oracle.duplicates(result.operation.operation_id))},
+                        verdicts, lost and effects_when_lost == 1 and result.operation.state == "completed"
+                        and len(starts) == 1 and lossy.replies_lost == 1, started)
 
 
 async def f5_adapter_stall_other_devices_continue(run_dir: Path) -> Outcome:
@@ -249,14 +256,15 @@ async def f13_journal_unwritable_stop_still_works(run_dir: Path) -> Outcome:
             refused = exc.code
         moves = len([e for e in lab.world.effect_log() if e.kind == "move_started"])
         stopped = await client.stop("journal is unwritable", device_ids=["arm-1"], wait_ms=2000)
+        stop_outcome = stopped.stops[0].outcome  # the stop path works with a read-only journal (degraded audit)
         server.store.set_writable(True)
         arm = Recorder(client, "arm-1")
         await arm.invoke("move_to_site", {"site": "hotel"})
         return _outcome("f13_journal_unwritable", "F13", "new mutations are denied, the stop path still works, and work "
                         "resumes when the journal is writable again",
                         {"invoke_refused": refused, "moves_while_unwritable": moves,
-                         "stop_outcome": getattr(getattr(stopped, "stop", stopped), "outcome", "returned")},
-                        _verdicts(lab, [arm]), refused is not None and moves == 0, started)
+                         "stop_outcome": stop_outcome}, _verdicts(lab, [arm]),
+                        refused is not None and moves == 0 and stop_outcome in ("confirmed", "initiated"), started)
 
 
 SCENARIOS: dict[str, Callable[[Path], Awaitable[Outcome]]] = {

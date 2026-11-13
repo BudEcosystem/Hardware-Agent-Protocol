@@ -272,7 +272,10 @@ class BhmsArm(Recorder):
         await self.invoke("move_to_site", {"site": site}, step=f"move to {site}")
 
     async def close_gripper(self) -> bool:
-        return bool((await self.invoke("close_gripper")).result["holding"])
+        holding = (await self.invoke("close_gripper")).result["holding"]
+        if holding is None:  # the jaw encoder gave nothing: the agent cannot tell, so it must not guess
+            raise StepFailed("close_gripper", "the jaw reading is unavailable; cannot tell whether it holds anything")
+        return bool(holding)
 
     async def open_gripper(self) -> None:
         await self.invoke("open_gripper")

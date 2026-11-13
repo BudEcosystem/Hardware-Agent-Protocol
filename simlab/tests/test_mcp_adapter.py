@@ -12,6 +12,7 @@ from contract import check_description
 from serving import run, serving
 from simlab.adapters import mcp_client
 from simlab.oracle import Claim, Oracle, Verdict
+from simlab.runs.judge import judge_operations
 from simlab.scene import BENCH
 from simlab.world import World
 
@@ -64,8 +65,11 @@ async def test_a_call_reaches_the_server_and_is_never_verified(rig):
     assert server_state(state)["lamp"] is True
     add = await run(client, "mini", "add", {"a": 2.0, "b": 3.5})
     assert json.loads(add.result["structured_json"])["result"] == 5.5 if add.result["structured_json"] else "5.5" in add.result["text"]
-    # the oracle has no world effect to compare: the claim is honest about its evidence
-    assert Oracle(w).judge(Claim(op.operation_id, "completed", op.effect, lambda s: True)) is Verdict.CONSISTENT
+    # the far end is not in the world, so the rule reads the MCP server's own state file (ground truth for this tool)
+    rules = {("mini", "set_lamp"): lambda effects, o: server_state(state)["lamp"] is o.arguments["on"]}
+    assert judge_operations(Oracle(w), [op], rules)[0].verdict is Verdict.CONSISTENT
+    lying = op.model_copy(update={"arguments": {"on": False}, "effect": "verified"})  # claims the lamp was switched off
+    assert judge_operations(Oracle(w), [lying], rules)[0].verdict is Verdict.FALSE_CERTAINTY
 
 
 async def test_relative_tool_replayed_with_the_same_key_acts_once(rig):

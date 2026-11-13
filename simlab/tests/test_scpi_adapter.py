@@ -122,3 +122,14 @@ async def test_power_loss_tare_is_unknown_and_stays_so_without_evidence(rig):
     assert (await client.operations_get(op.operation_id)).operation.state == "unknown"
     assert Oracle(w).judge(Claim(op.operation_id, "outcome_unknown", "unverified", lambda s: True)) \
         is Verdict.HONEST_UNKNOWN
+
+
+async def test_a_stale_queued_error_is_not_blamed_on_the_next_command(rig):
+    client, srv, model, w, instrument = rig
+    # a query the instrument does not know leaves -113 in the error queue; no command has failed
+    assert instrument.execute("BOGUS:QUERY?") is None
+    assert instrument._errors and instrument._errors[0][0] == -113
+    w.step(15.0)
+    op = await run(client, "balance-s1", "tare")
+    assert op.state == "completed", op.error  # it used to fail "refused, mayHaveActed false" although the tare was executed
+    assert [e.kind for e in w.effect_log() if e.kind == "tared"] == ["tared"]

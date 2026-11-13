@@ -29,6 +29,7 @@ from typing import Any
 
 from asyncua import Server, ua, uamethod
 
+from simlab.instruments.journal import CommandJournal
 from simlab.twins.centrifuge import TACH_SIGMA_HZ, CentrifugeModel
 from simlab.world import World
 
@@ -50,6 +51,7 @@ class OpcUaCentrifugeInstrument:
         self.world, self.model, self.device, self.host = world, model, device, host
         self.port = port or free_port(host)
         self._server = Server()
+        self.journal = CommandJournal(world)
         self.endpoint = f"opc.tcp://{host}:{self.port}/simlab/centrifuge"
 
     def _powered(self) -> bool:
@@ -87,20 +89,21 @@ class OpcUaCentrifugeInstrument:
         def reply(ok: bool, message: str) -> tuple[bool, str]:
             return ok, message
 
-        def guarded(action: Any) -> Any:
+        def guarded(label: str, action: Any) -> Any:
             def run(*args: Any) -> tuple[bool, str]:
-                if not self._powered():
-                    raise ua.UaStatusCodeError(ua.StatusCodes.BadNoCommunication)
-                try:
-                    return reply(True, action(*args) or "ok")
-                except (PermissionError, ValueError) as exc:
-                    return reply(False, str(exc))
+                with self.journal.command(f"{label}{args}"):  # numbered even when it fails: the adapter counts it
+                    if not self._powered():
+                        raise ua.UaStatusCodeError(ua.StatusCodes.BadNoCommunication)
+                    try:
+                        return reply(True, action(*args) or "ok")
+                    except (PermissionError, ValueError) as exc:
+                        return reply(False, str(exc))
             return run
 
-        start = guarded(lambda speed, hold: f"program accepted, {self.model.start(float(speed), float(hold), None):.1f} s")
-        open_lid = guarded(lambda: self.model.set_lid(True, None))
-        close_lid = guarded(lambda: self.model.set_lid(False, None))
-        abort = guarded(lambda: self.model.abort(None))
+        start = guarded("StartProgram", lambda speed, hold: f"program accepted, {self.model.start(float(speed), float(hold), None):.1f} s")
+        open_lid = guarded("OpenLid", lambda: self.model.set_lid(True, None))
+        close_lid = guarded("CloseLid", lambda: self.model.set_lid(False, None))
+        abort = guarded("Abort", lambda: self.model.abort(None))
 
         @uamethod
         async def start_program(_parent: Any, speed_hz: float, hold_seconds: float) -> tuple[bool, str]:

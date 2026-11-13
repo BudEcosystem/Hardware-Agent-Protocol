@@ -28,7 +28,7 @@ from typing import Any
 from bhms.server.context import DeviceFault
 from bhms.server.decorators import Range
 from bhms.server.server import DeviceServer
-from simlab.simdevice import TwinHost, make_server
+from simlab.simdevice import TwinHost, make_server, simulated_device
 from simlab.world import World
 
 POSITIONS = 8
@@ -128,12 +128,19 @@ class CentrifugeModel:
 
     def abort(self, cause: str | None) -> None:
         """Brake: the rotor decelerates from its present speed (the lid stays locked until it is below ``LOCK_HZ``)."""
-        program = self._program
-        if program is None or not self.running():
+        running = self.running()
+        self.world.record(self.device, "spin_abort_requested", {"running": running}, cause)
+        if not running:
             return
         speed, now = self.speed_hz(), self.world.time_s
         self._program = _Program(now - speed / ACCEL_HZ_S, speed, 0.0)
         self.world.record(self.device, "spin_aborted", {"speed_hz": round(speed, 3)}, cause)
+
+    def record_speed(self, cause: str | None) -> float:
+        """Record the true rotor speed now (the achieved truth the oracle judges a claim against)."""
+        speed = self.speed_hz()
+        self.world.record(self.device, "spin_reached", {"speed_hz": round(speed, 4)}, cause)
+        return speed
 
     def finish(self, cause: str | None) -> None:
         self.world.record(self.device, "spin_finished", {}, cause)
@@ -145,7 +152,7 @@ def build_server(world: World, model: CentrifugeModel | None = None, *, state_di
     """The centrifuge as a native BHMS device server (the OPC UA adapter reaches the same model over TCP)."""
     fuge = model or CentrifugeModel(world, device=device_id)
     srv = make_server(world, name, state_dir=state_dir, durability=durability, title="SimLab centrifuge", **kw)
-    dev = srv.device(device_id, name="Benchtop centrifuge", capabilities=["bhms.centrifuge"],
+    dev = simulated_device(srv, device_id, name="Benchtop centrifuge", capabilities=["bhms.centrifuge"],
                      resources=[f"{device_id}/rotor", f"{device_id}/lid"], tags=["simlab", "centrifuge"],
                      description="Eight-position benchtop centrifuge with a lid interlock and imbalance check.",
                      identity={"manufacturer": "SimLab", "model": "centrifuge twin", "firmwareVersion": "1"},
@@ -202,7 +209,7 @@ def build_server(world: World, model: CentrifugeModel | None = None, *, state_di
                 verified_by=["speed"], cancel="supported", max_duration_ms=3_700_000, typical_duration_ms=300_000,
                 resources=[f"{device_id}/rotor"], preconditions="lid closed; rotor balanced within 1 g")
     async def spin(ctx, speed: Range(1.5, MAX_HZ, unit="Hz"), duration: Range(1, 3600, unit="s")  # noqa: F821
-                   ) -> {"peak_speed": "Hz"}:  # noqa: F821
+                   ) -> {"peak_speed": Range(0, MAX_HZ, unit="Hz", nullable=True)}:  # noqa: F821
         """Spin at ``speed`` for ``duration`` seconds at speed (plus ramp up and down)."""
         host.begin(ctx)
         try:
@@ -214,13 +221,14 @@ def build_server(world: World, model: CentrifugeModel | None = None, *, state_di
             fuge.abort(ctx.operation_id)
             await world.advance(speed / DECEL_HZ_S + 0.5)  # braking continues after the cancel
             raise host.canceled(ctx, "spin aborted and braked")
+        fuge.record_speed(ctx.operation_id)
         peak = await ctx.verify("speed", lambda v: abs(v - speed) <= 0.5)
         if await host.elapse(ctx, total - ramp_up - 0.25 + 0.1, chunk_s=0.5):
             fuge.abort(ctx.operation_id)
             await world.advance(speed / DECEL_HZ_S + 0.5)  # braking continues after the cancel
             raise host.canceled(ctx, "spin aborted and braked")
         fuge.finish(ctx.operation_id)
-        return host.log.end(ctx.operation_id, {"peak_speed": round(peak if peak is not None else -1.0, 3)})
+        return host.log.end(ctx.operation_id, {"peak_speed": None if peak is None else round(peak, 3)})
 
     @dev.on_stop(evidence="reported", max_duration_ms=500)
     async def halt(ctx: Any) -> None:

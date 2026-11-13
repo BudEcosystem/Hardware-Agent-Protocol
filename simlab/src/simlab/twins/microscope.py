@@ -28,7 +28,7 @@ from bhms.server.context import DeviceFault
 from bhms.server.decorators import Range
 from bhms.server.server import DeviceServer
 from simlab import imaging
-from simlab.simdevice import PowerLost, TwinHost, make_server
+from simlab.simdevice import PowerLost, TwinHost, make_server, simulated_device
 from simlab.world import World
 
 STAGE_SITE = "microscope_stage"
@@ -203,14 +203,34 @@ class MicroscopeTwin:
         z, x, y = self._z.at(now), self._x.at(now), self._y.at(now)
         self._z, self._x, self._y = Ramp(now, now, z, z), Ramp(now, now, x, x), Ramp(now, now, y, y)
 
+    def finish_z(self, cause: str | None) -> float:
+        """Record where the focus axis really is now (the achieved truth the oracle judges a claim against)."""
+        z = self.true_z_um()
+        self.world.record(self.device, "z_reached", {"z_um": round(z, 6)}, cause)
+        return z
+
+    def finish_xy(self, cause: str | None) -> tuple[float, float]:
+        x, y = self.true_xy_um()
+        self.world.record(self.device, "xy_reached", {"xy_um": [round(x, 6), round(y, 6)]}, cause)
+        return x, y
+
+    def finish_objective(self, cause: str | None) -> int:
+        self.world.record(self.device, "objective_ready", {"index": self._objective,
+                                                           "magnification": self.magnification,
+                                                           "ready": self.world.time_s >= self._objective_ready_s}, cause)
+        return self.magnification
+
     def set_z(self, um: float, cause: str | None = None) -> None:
         self.world.step(self.begin_z(um, cause))
+        self.finish_z(cause)
 
     def set_xy(self, x_um: float, y_um: float, cause: str | None = None) -> None:
         self.world.step(self.begin_xy(x_um, y_um, cause))
+        self.finish_xy(cause)
 
     def set_objective(self, index: int, cause: str | None = None) -> None:
         self.world.step(self.begin_objective(index, cause))
+        self.finish_objective(cause)
 
     def _specimen(self, slide: str) -> np.ndarray:
         seed = int(self.world.ledger.meta(slide).get("specimen_seed", self.world.seed))
@@ -275,7 +295,7 @@ def build_server(world: World, scope: MicroscopeTwin | None = None, *, state_dir
     """
     scope = scope or MicroscopeTwin(world, device=device_id)
     srv = make_server(world, name, state_dir=state_dir, durability=durability, title="SimLab microscope", **kw)
-    dev = srv.device(device_id, name="Motorized microscope",
+    dev = simulated_device(srv, device_id, name="Motorized microscope",
                      capabilities=["bhms.microscope", "bhms.axis.linear", "bhms.camera"],
                      resources=[f"{device_id}/focus", f"{device_id}/stage", f"{device_id}/turret"],
                      tags=["simlab", "microscope"],
@@ -300,45 +320,51 @@ def build_server(world: World, scope: MicroscopeTwin | None = None, *, state_dir
         """Magnification of the objective in the optical path."""
         return float(scope.magnification)
 
-    async def move(ctx, seconds: float, what: str) -> None:
-        """Let a motion run; a cancel or a power cut stops the axes where they are."""
+    async def move(ctx, seconds: float, what: str, finish: Any) -> None:
+        """Let a motion run, then record where the axes really ended up (``finish``); a cancel or a power cut stops the
+        axes where they are and records that too."""
         try:
             cancelled = await host.elapse(ctx, seconds)
         except PowerLost:
             scope.freeze()
+            finish(ctx.operation_id)
             raise
         if cancelled:
             scope.freeze()
+            finish(ctx.operation_id)
             raise host.canceled(ctx, f"stopped while moving {what}")
+        finish(ctx.operation_id)
 
     @dev.action(effect="reversible", idempotency="absolute", completion_evidence="measured",
                 verified_by=["z_position"], cancel="supported", max_duration_ms=10_000, typical_duration_ms=500,
                 resources=[f"{device_id}/focus"])
-    async def set_z(ctx, z: Range(0, 200, unit="um")) -> {"z_um": "um"}:  # noqa: F821
+    async def set_z(ctx, z: Range(0, 200, unit="um")) -> {"z_um": Range(0, 200, unit="um", nullable=True)}:  # noqa: F821
         """Move the focus axis to an absolute position (um)."""
         host.begin(ctx)
-        await move(ctx, scope.begin_z(z, cause=ctx.operation_id), "focus")
+        await move(ctx, scope.begin_z(z, cause=ctx.operation_id), "focus", scope.finish_z)
         reading = await ctx.verify("z_position", lambda v: abs(v - z) <= Z_TOLERANCE_UM)
-        return host.log.end(ctx.operation_id, {"z_um": round(reading if reading is not None else -1.0, 4)})
+        # no encoder reading: the result says so (null) and the effect stays unverified; there is no placeholder number
+        return host.log.end(ctx.operation_id, {"z_um": None if reading is None else round(reading, 4)})
 
     @dev.action(effect="reversible", idempotency="absolute", completion_evidence="measured",
                 verified_by=["xy_position"], cancel="supported", max_duration_ms=10_000, typical_duration_ms=500,
                 resources=[f"{device_id}/stage"])
-    async def move_stage(ctx, x: Range(0, 2047, unit="um"), y: Range(0, 2047, unit="um")) -> {"x_um": "um", "y_um": "um"}:  # noqa: F821
+    async def move_stage(ctx, x: Range(0, 2047, unit="um"), y: Range(0, 2047, unit="um")) -> {"x_um": Range(0, 2047, unit="um", nullable=True),  # noqa: F821
+                                                                           "y_um": Range(0, 2047, unit="um", nullable=True)}:  # noqa: F821
         """Move the stage to an absolute XY position (um)."""
         host.begin(ctx)
-        await move(ctx, scope.begin_xy(x, y, cause=ctx.operation_id), "the stage")
+        await move(ctx, scope.begin_xy(x, y, cause=ctx.operation_id), "the stage", scope.finish_xy)
         reading = await ctx.verify("xy_position", lambda v: abs(v["x"] - x) <= XY_TOLERANCE_UM
                                    and abs(v["y"] - y) <= XY_TOLERANCE_UM)
-        got = reading or {"x": -1.0, "y": -1.0}
-        return host.log.end(ctx.operation_id, {"x_um": round(got["x"], 3), "y_um": round(got["y"], 3)})
+        return host.log.end(ctx.operation_id, {"x_um": None if reading is None else round(reading["x"], 3),
+                                               "y_um": None if reading is None else round(reading["y"], 3)})
 
     @dev.action(effect="reversible", idempotency="absolute", completion_evidence="reported", cancel="unsupported",
                 max_duration_ms=5000, typical_duration_ms=1000, resources=[f"{device_id}/turret"])
     async def set_objective(ctx, index: Range(0, 3, unit="1", integer=True)) -> {"magnification": "1"}:  # noqa: F821
         """Rotate the turret to objective ``index`` (0..3 = 4x, 10x, 20x, 40x)."""
         host.begin(ctx)
-        await move(ctx, scope.begin_objective(index, cause=ctx.operation_id), "the turret")
+        await move(ctx, scope.begin_objective(index, cause=ctx.operation_id), "the turret", scope.finish_objective)
         return host.log.end(ctx.operation_id, {"magnification": float(scope.magnification)})
 
     @dev.action(effect="none", idempotency="relative", completion_evidence="reported", cancel="unsupported",
@@ -348,7 +374,7 @@ def build_server(world: World, scope: MicroscopeTwin | None = None, *, state_dir
         """Capture a frame and store it. ``captured_at_s`` is the camera's capture time; compare it with
         ``device_time_s``: a frozen camera returns an old frame."""
         host.begin(ctx)
-        await move(ctx, exposure_ms / 1000.0, "exposing")
+        await move(ctx, exposure_ms / 1000.0, "exposing", lambda _cause: None)
         try:
             frame = scope.capture(float(exposure_ms), cause=ctx.operation_id)
         except CameraUnavailable as exc:

@@ -24,7 +24,7 @@ from bhms.server.context import DeviceFault
 from bhms.server.decorators import OneOf, Range, Text
 from bhms.server.server import DeviceServer
 from simlab.ledger import TransferResult
-from simlab.simdevice import TwinHost, make_server
+from simlab.simdevice import TwinHost, make_server, simulated_device
 from simlab.world import World
 
 CHANNEL = "lh_channel"
@@ -121,7 +121,7 @@ def build_server(world: World, handler: LiquidHandlerTwin | None = None, *, stat
     """The liquid handler as a BHMS device server (evidence labels in the module docstring)."""
     lh = handler or LiquidHandlerTwin(world, device=device_id)
     srv = make_server(world, name, state_dir=state_dir, durability=durability, title="SimLab liquid handler", **kw)
-    dev = srv.device(device_id, name="Liquid handler", capabilities=["bhms.liquid.handler"],
+    dev = simulated_device(srv, device_id, name="Liquid handler", capabilities=["bhms.liquid.handler"],
                      resources=[f"{device_id}/channel", f"{device_id}/tips"], tags=["simlab", "liquid"],
                      description="Single-channel pipetting robot: picks up tips, aspirates from and dispenses into "
                                  "labware on its deck or reservoir position.",
@@ -172,44 +172,64 @@ def build_server(world: World, handler: LiquidHandlerTwin | None = None, *, stat
         lh.eject_tip(ctx.operation_id)
         host.log.end(ctx.operation_id, {})
 
+    async def tip_volume(ctx: Any) -> float | None:
+        """The tip sensor's reading now, or ``None`` when it gives nothing (invalid)."""
+        observation = await ctx.read("channel_volume", fresh=True)
+        value = observation.get("value")
+        return float(value) if observation.get("quality") == "valid" and value is not None else None
+
+    # The two liquid actions decide ONLY from the tip-volume sensor. The ledger's transfer result (what really moved, what
+    # really spilled) is deliberately ignored here: a real handler cannot see it. A spill into a full well is therefore
+    # invisible to the device (the tip does empty) and only the oracle catches it; a sensor that gives nothing leaves the
+    # result values null and the effect unverified.
+
     @dev.action(effect="reversible", idempotency="relative", completion_evidence="measured",
                 verified_by=["channel_volume"], cancel="supported", max_duration_ms=30_000, typical_duration_ms=2000,
                 resources=[f"{device_id}/channel"])
     async def aspirate(ctx, position: OneOf(*POSITIONS), well: Text(pattern=WELL_PATTERN),  # noqa: F821
-                       volume: Range(0.5, TIP_CAPACITY_UL, unit="uL")) -> {"aspirated": "uL", "air": "uL"}:  # noqa: F821
-        """Aspirate ``volume`` uL from a well. Fails with a device fault when the well was short (air aspirated)."""
+                       volume: Range(0.5, TIP_CAPACITY_UL, unit="uL")  # noqa: F821
+                       ) -> {"aspirated": Range(0, TIP_CAPACITY_UL, unit="uL", nullable=True),  # noqa: F821
+                             "air": Range(0, TIP_CAPACITY_UL, unit="uL", nullable=True)}:  # noqa: F821
+        """Aspirate ``volume`` uL from a well. Fails with a device fault when the tip sensor sees less than was asked
+        (the well was short: air was aspirated)."""
         host.begin(ctx)
         await work(ctx, lh.duration_s(volume))
-        before = lh.channel_volume_ul()
-        taken = guard(lambda: lh.aspirate(position, well, volume, ctx.operation_id))
-        expected = before + volume
-        measured = await ctx.verify("channel_volume", lambda v: abs(v - expected) <= VOLUME_TOLERANCE_UL)
-        if taken.shortfall_ul > 0:
-            raise DeviceFault(f"the well held only {taken.moved_ul:.1f} of the {volume:.1f} uL requested; "
-                              f"{taken.shortfall_ul:.1f} uL of air was aspirated",
-                              partial=f"{taken.moved_ul:.1f} uL aspirated", hint="check the well volume before retrying")
-        if measured is None:
-            return host.log.end(ctx.operation_id, {"aspirated": volume, "air": 0.0})  # unverified: no sensor reading
-        return host.log.end(ctx.operation_id, {"aspirated": round(measured - before, 3), "air": 0.0})
+        before = await tip_volume(ctx)
+        guard(lambda: lh.aspirate(position, well, volume, ctx.operation_id))
+        if before is None:
+            return host.log.end(ctx.operation_id, {"aspirated": None, "air": None})  # no sensor reading: unverified
+        after = await ctx.verify("channel_volume", lambda v: abs(v - (before + volume)) <= VOLUME_TOLERANCE_UL)
+        if after is None:
+            return host.log.end(ctx.operation_id, {"aspirated": None, "air": None})
+        got = max(0.0, after - before)
+        if abs(got - volume) > VOLUME_TOLERANCE_UL:
+            raise DeviceFault(f"the tip sensor sees {got:.1f} of the {volume:.1f} uL requested; about "
+                              f"{max(0.0, volume - got):.1f} uL of air was aspirated",
+                              partial=f"about {got:.1f} uL aspirated", hint="check the well volume before retrying")
+        return host.log.end(ctx.operation_id, {"aspirated": round(got, 3), "air": round(max(0.0, volume - got), 3)})
 
     @dev.action(effect="irreversible", idempotency="relative", completion_evidence="measured",
                 verified_by=["channel_volume"], cancel="supported", max_duration_ms=30_000, typical_duration_ms=2000,
                 resources=[f"{device_id}/channel"])
     async def dispense(ctx, position: OneOf(*POSITIONS), well: Text(pattern=WELL_PATTERN),  # noqa: F821
-                       volume: Range(0.5, TIP_CAPACITY_UL, unit="uL")) -> {"dispensed": "uL", "spilled": "uL"}:  # noqa: F821
-        """Dispense ``volume`` uL from the tip into a well (a full well spills the excess)."""
+                       volume: Range(0.5, TIP_CAPACITY_UL, unit="uL")  # noqa: F821
+                       ) -> {"dispensed": Range(0, TIP_CAPACITY_UL, unit="uL", nullable=True)}:  # noqa: F821
+        """Dispense ``volume`` uL from the tip into a well. The tip sensor confirms the tip emptied by that much; where
+        the liquid went (a full well spills) is not visible to the device."""
         host.begin(ctx)
         await work(ctx, lh.duration_s(volume))
-        before = lh.channel_volume_ul()
-        moved = guard(lambda: lh.dispense(position, well, volume, ctx.operation_id))
-        expected = max(0.0, before - volume)
-        measured = await ctx.verify("channel_volume", lambda v: abs(v - expected) <= VOLUME_TOLERANCE_UL)
-        if moved.spilled_ul > 0 or moved.shortfall_ul > 0:
-            raise DeviceFault(f"dispense of {volume:.1f} uL did not complete as asked: {moved.moved_ul:.1f} uL left "
-                              f"the tip, {moved.spilled_ul:.1f} uL spilled", partial=f"{moved.moved_ul:.1f} uL moved",
-                              hint="check the tip volume and the well capacity")
-        got = round(before - measured, 3) if measured is not None else volume
-        return host.log.end(ctx.operation_id, {"dispensed": got, "spilled": 0.0})
+        before = await tip_volume(ctx)
+        guard(lambda: lh.dispense(position, well, volume, ctx.operation_id))
+        if before is None:
+            return host.log.end(ctx.operation_id, {"dispensed": None})
+        after = await ctx.verify("channel_volume", lambda v: abs(v - max(0.0, before - volume)) <= VOLUME_TOLERANCE_UL)
+        if after is None:
+            return host.log.end(ctx.operation_id, {"dispensed": None})
+        got = max(0.0, before - after)
+        if abs(got - volume) > VOLUME_TOLERANCE_UL:
+            raise DeviceFault(f"the tip sensor sees {got:.1f} of the {volume:.1f} uL requested leave the tip",
+                              partial=f"about {got:.1f} uL dispensed", hint="check the tip volume before retrying")
+        return host.log.end(ctx.operation_id, {"dispensed": round(got, 3)})
 
     @dev.on_stop(evidence="reported", max_duration_ms=100)
     async def halt(ctx: Any) -> None:

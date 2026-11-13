@@ -28,7 +28,7 @@ from bhms.server.context import DeviceFault, Reconciled
 from bhms.server.decorators import Range
 from bhms.server.server import DeviceServer
 from simlab.adapters.common import Refused, Unreachable, declare_action, declare_property, refusal_fault
-from simlab.simdevice import CommandLog, make_server
+from simlab.simdevice import CommandLog, make_server, simulated_device
 from simlab.world import World
 
 ILLEGAL_CODES = {1, 2, 3}  # illegal function, address, value: the request was rejected, not executed
@@ -72,6 +72,8 @@ class ModbusLink:
         self._client = AsyncModbusTcpClient(host, port=port, timeout=timeout_s, retries=0)
         self.slave = slave
         self._lock = asyncio.Lock()
+        self.sent = 0  # writes sent, numbered in send order (joined with the instrument's journal by the harness)
+        self.log: CommandLog | None = None
 
     async def close(self) -> None:
         self._client.close()
@@ -96,6 +98,7 @@ class ModbusLink:
     async def write(self, register: Register, raw: int) -> None:
         async with self._lock:
             await self._ensure()  # failing here proves nothing was sent
+            self.sent += 1
             try:
                 response = await self._client.write_register(register.address, raw, slave=self.slave)
             except (ModbusException, OSError, asyncio.TimeoutError) as exc:
@@ -128,12 +131,12 @@ def build_server(world: World, profile: ModbusProfile, host: str, port: int, *, 
     adapter never reads the world (it can only know what the instrument tells it over Modbus)."""
     srv = make_server(world, name, state_dir=state_dir, durability=durability,
                       title=f"Modbus adapter: {profile.name}", **kw)
-    dev = srv.device(profile.device_id, name=profile.name, description=profile.description,
+    dev = simulated_device(srv, profile.device_id, name=profile.name, description=profile.description,
                      capabilities=list(profile.capabilities), resources=[f"{profile.device_id}/registers"],
                      tags=["simlab", "adapter", "modbus"], safety_summary=profile.safety_summary,
                      identity={"manufacturer": "Modbus slave", "model": profile.name, "firmwareVersion": "unknown"})
     link = ModbusLink(host, port, profile.slave, timeout_s)
-    log = CommandLog()
+    log = link.log = CommandLog()
     by_name = {r.name: r for r in profile.registers}
     registers = f"{profile.device_id}/registers"
 
@@ -148,10 +151,13 @@ def build_server(world: World, profile: ModbusProfile, host: str, port: int, *, 
     def writer(register: Register) -> Any:
         async def write_value(ctx: Any, value: Any) -> Any:
             log.begin(ctx.operation_id)
+            first = link.sent
             try:
                 await link.write(register, _encode(register, value))
             except (Refused, Unreachable) as exc:
                 raise refusal_fault(exc, "Modbus") from exc
+            finally:
+                log.sent_range(ctx.operation_id, first, link.sent)
             back = _decode(register, await link.read(register))
             if (back != value) if register.boolean else abs(back - value) > register.scale:
                 raise DeviceFault(f"{register.name} reads back {back} after writing {value}",

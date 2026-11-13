@@ -16,6 +16,8 @@ kind                class effect
 ``sensor_disconnect`` F7  the sensor/device ``target`` returns invalid readings until cleared
 ``manual_move``     F9    a human turns the knob joint ``target`` by ``params["delta_rad"]`` (``cause=None``)
 ``power_loss``      F3    the device ``target`` loses power: its actions fail and it reports offline until cleared
+``reply_loss``      F2    the next reply of an ``actions/invoke`` to device ``target`` is lost *after* the operation settled
+                          (``simlab.transport_faults.LossyClient`` consumes the fault; the effect has happened)
 =================== ===== =========================================================================================
 
 Persistent kinds stay *active* until ``clear``; the others act once when they fire. Every injection and firing is an
@@ -37,7 +39,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from simlab.world import Effect, World
 
-PERSISTENT = frozenset({"joint_stall", "stale_camera", "sensor_disconnect", "power_loss"})
+PERSISTENT = frozenset({"joint_stall", "stale_camera", "sensor_disconnect", "power_loss", "reply_loss"})
 ONE_SHOT = frozenset({"drop_object", "knob_slip", "manual_move"})
 KINDS = PERSISTENT | ONE_SHOT
 
@@ -106,6 +108,15 @@ class FaultPlane:
     def active(self, target: str, kind: str) -> bool:
         """Whether a persistent fault of ``kind`` is active on ``target`` (twins consult this)."""
         return any(f.target == target and f.kind == kind for f in self._active.values())
+
+    def consume(self, target: str, kind: str) -> bool:
+        """Use up one active fault of ``kind`` on ``target`` (a one-use persistent fault such as ``reply_loss``); returns
+        whether there was one."""
+        for fault_id, fault in list(self._active.items()):
+            if fault.target == target and fault.kind == kind:
+                self.clear(fault_id)
+                return True
+        return False
 
     def stalled_joints(self) -> frozenset[str]:
         return frozenset(f.target for f in self._active.values() if f.kind == "joint_stall")

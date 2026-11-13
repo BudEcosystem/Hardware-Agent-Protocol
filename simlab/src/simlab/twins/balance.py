@@ -23,7 +23,7 @@ from typing import Any
 from bhms.server.context import DeviceFault
 from bhms.server.decorators import Range
 from bhms.server.server import DeviceServer
-from simlab.simdevice import SensorFault, TwinHost, make_server
+from simlab.simdevice import SensorFault, TwinHost, make_server, simulated_device
 from simlab.world import World
 
 BALANCE_SITE = "balance"
@@ -77,6 +77,17 @@ class BalanceModel:
         self.world.record(self.device, "tared", {"tare_g": round(self._tare_g, 6)}, cause)
         return self._tare_g
 
+    def true_net_g(self) -> float:
+        """The noiseless displayed net mass now (what an ideal reading would be)."""
+        return self._settling_gross_g() - self._tare_g
+
+    def record_weighed(self, samples: int, cause: str | None) -> float:
+        """Record the true net mass at the time of a weighing (the achieved truth the oracle compares readings to)."""
+        net = self.true_net_g()
+        self.world.record(self.device, "weighed", {"net_g": round(net, 6), "samples": samples,
+                                                   "settled": self.settled()}, cause)
+        return net
+
     def reading_g(self) -> float | None:
         """The balance display: net of tare, noisy, quantised; ``None`` on overload."""
         gross = self._settling_gross_g()
@@ -92,7 +103,7 @@ def build_server(world: World, balance: BalanceModel | None = None, *, state_dir
     """The balance as a native BHMS device server (the SCPI adapter reaches the same model over TCP)."""
     model = balance or BalanceModel(world, device=device_id)
     srv = make_server(world, name, state_dir=state_dir, durability=durability, title="SimLab balance", **kw)
-    dev = srv.device(device_id, name="Analytical balance", capabilities=["bhms.balance"],
+    dev = simulated_device(srv, device_id, name="Analytical balance", capabilities=["bhms.balance"],
                      resources=[f"{device_id}/pan"], tags=["simlab", "balance"],
                      description="Balance with 1 mg readability and a 220 g capacity; weighs what is on the pan.",
                      identity={"manufacturer": "SimLab", "model": "balance twin", "firmwareVersion": "1"})
@@ -135,6 +146,7 @@ def build_server(world: World, balance: BalanceModel | None = None, *, state_dir
             host.check_sensor("loadcell")
         except SensorFault as exc:
             raise DeviceFault(str(exc), proof="the load cell produced no reading", effect="none") from exc
+        model.record_weighed(int(samples), ctx.operation_id)
         readings = [model.reading_g() for _ in range(int(samples))]
         if any(r is None for r in readings):
             raise DeviceFault("balance overload", proof="nothing was dispensed or moved", effect="none")

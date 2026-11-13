@@ -13,7 +13,8 @@ import pytest
 from contract import check_description, check_observations
 from serving import read, run, serving
 from simlab.adapters import home_assistant as ha_adapter
-from simlab.oracle import Claim, Oracle, Verdict
+from simlab.oracle import Oracle, Verdict
+from simlab.runs.judge import judge_operations
 from simlab.profiles import FACILITY_HA
 from simlab.scene import BENCH
 from simlab.world import World
@@ -59,7 +60,19 @@ async def test_light_on_off_round_trip_is_read_back_and_unverified(rig):
     on = await run(client, "facility-1", "turn_on", {"entity": "light.bed_light"})
     assert on.state == "completed" and on.effect != "verified" and on.result["state"] == "on"
     assert (await read(client, "facility-1", "light_bed_light")).value == "on"
-    assert Oracle(w).judge(Claim(on.operation_id, "completed", on.effect, lambda s: True)) is Verdict.CONSISTENT
+    # ground truth for this far end is Home Assistant's own state, read directly over its REST API
+    import urllib.request
+
+    def ha_state(entity):
+        request = urllib.request.Request(f"{URL}/api/states/{entity}", headers={"Authorization": f"Bearer {token}"})
+        with urllib.request.urlopen(request, timeout=10) as response:
+            return json.loads(response.read())["state"]
+
+    rules = {("facility-1", "turn_on"): lambda effects, o: ha_state(o.arguments["entity"]) == "on",
+             ("facility-1", "turn_off"): lambda effects, o: ha_state(o.arguments["entity"]) == "off"}
+    assert judge_operations(Oracle(w), [on], rules)[0].verdict is Verdict.CONSISTENT
+    lying = on.model_copy(update={"action": "turn_off", "effect": "verified"})  # claims the light went off; it is on
+    assert judge_operations(Oracle(w), [lying], rules)[0].verdict is Verdict.FALSE_CERTAINTY
 
 
 async def test_arbitrary_entities_are_not_reachable(rig):

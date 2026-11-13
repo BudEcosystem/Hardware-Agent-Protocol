@@ -25,7 +25,7 @@ from typing import Any
 from bhms.server.context import DeviceFault
 from bhms.server.decorators import Range
 from bhms.server.server import DeviceServer
-from simlab.simdevice import TwinHost, make_server
+from simlab.simdevice import TwinHost, make_server, simulated_device
 from simlab.world import World
 
 AMBIENT_C = 22.0
@@ -68,6 +68,13 @@ class ThermalModel:
         self.enabled = enabled
         self.world.record(self.device, "thermal_command", {"setpoint_c": self.setpoint_c, "enabled": enabled}, cause)
 
+    def finish(self, cause: str | None) -> float:
+        """Record the true block temperature now (the achieved truth the oracle judges a claim against)."""
+        temperature = self.temperature_c()
+        self.world.record(self.device, "thermal_reached", {"temperature_c": round(temperature, 4),
+                                                           "setpoint_c": self.setpoint_c}, cause)
+        return temperature
+
     def time_to_reach(self, target_c: float, tolerance_c: float = TOLERANCE_C) -> float:
         """World seconds until the block is within ``tolerance_c`` of ``target_c`` if it heads there (conservative bound)."""
         gap = abs(target_c - self.temperature_c())
@@ -84,7 +91,7 @@ def build_server(world: World, model: ThermalModel | None = None, *, state_dir: 
     """The thermal block as a native BHMS device server (the Modbus adapter reaches the same model over TCP)."""
     thermal = model or ThermalModel(world, device=device_id)
     srv = make_server(world, name, state_dir=state_dir, durability=durability, title="SimLab thermal block", **kw)
-    dev = srv.device(device_id, name="Thermal block", capabilities=["bhms.thermal"],
+    dev = simulated_device(srv, device_id, name="Thermal block", capabilities=["bhms.thermal"],
                      resources=[f"{device_id}/heater"], tags=["simlab", "thermal"],
                      description="Heated and cooled block, 4 to 99 C, first-order response (time constant 40 s).",
                      identity={"manufacturer": "SimLab", "model": "thermal block twin", "firmwareVersion": "1"},
@@ -110,18 +117,20 @@ def build_server(world: World, model: ThermalModel | None = None, *, state_dir: 
                 verified_by=["temperature"], cancel="supported", max_duration_ms=900_000, typical_duration_ms=60_000,
                 resources=[f"{device_id}/heater"])
     async def set_temperature(ctx, target: Range(4, 99, unit="Cel"),  # noqa: F821
-                              tolerance: Range(0.1, 5, unit="Cel") = 0.5) -> {"temperature": "Cel"}:  # noqa: F821
+                              tolerance: Range(0.1, 5, unit="Cel") = 0.5) -> {"temperature": Range(-50, 150, unit="Cel", nullable=True)}:  # noqa: F821
         """Drive the block to ``target`` and return when the thermistor reads within ``tolerance`` of it."""
         host.begin(ctx)
         thermal.command(target, True, ctx.operation_id)
         wait = thermal.time_to_reach(target, max(0.05, tolerance - 0.2))
-        if await host.elapse(ctx, wait, chunk_s=0.5):
+        cancelled = await host.elapse(ctx, wait, chunk_s=0.5)
+        thermal.finish(ctx.operation_id)
+        if cancelled:
             raise host.canceled(ctx, "heating stopped")
         reading = await ctx.verify("temperature", lambda v: abs(v - target) <= tolerance)
         if reading is not None and abs(reading - target) > tolerance:
             raise DeviceFault(f"the block reads {reading:.2f} C, not {target} C", partial="heating in progress",
                               hint="wait and read temperature before retrying")
-        return host.log.end(ctx.operation_id, {"temperature": round(reading if reading is not None else -274.0, 3)})
+        return host.log.end(ctx.operation_id, {"temperature": None if reading is None else round(reading, 3)})
 
     @dev.action(effect="reversible", idempotency="absolute", completion_evidence="reported", cancel="unsupported",
                 max_duration_ms=5000, resources=[f"{device_id}/heater"])

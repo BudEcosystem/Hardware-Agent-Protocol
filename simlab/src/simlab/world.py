@@ -246,6 +246,9 @@ class World:
         """Call ``listener(effect)`` after every recorded effect (models that must notice a change when it happens)."""
         self._effect_listeners.append(listener)
 
+    def effect_count(self) -> int:
+        return len(self._effects)
+
     def effect_log(self) -> list[Effect]:
         return list(self._effects)
 

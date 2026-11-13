@@ -26,7 +26,10 @@ Thread-safety: runs on the world's event loop.
 from __future__ import annotations
 
 import asyncio
+from contextlib import nullcontext
+from typing import Any
 
+from simlab.instruments.journal import CommandJournal
 from simlab.twins.balance import CAPACITY_G, BalanceModel
 from simlab.world import World
 
@@ -56,6 +59,8 @@ class ScpiBalanceInstrument:
         self.host, self.port = host, port
         self._server: asyncio.AbstractServer | None = None
         self._errors: list[tuple[int, str]] = []
+        self._esr = 0
+        self.journal = CommandJournal(world)
 
     def execute(self, line: str) -> str | None:
         """Run one command line; returns the reply, or ``None`` for a command with no reply."""
@@ -67,7 +72,11 @@ class ScpiBalanceInstrument:
             return "1"
         if command == "*CLS":
             self._errors.clear()
+            self._esr = 0
             return None
+        if command == "*ESR?":
+            esr, self._esr = self._esr, 0
+            return str(esr)
         if command == "SYST:ERR?":
             code, text = self._errors.pop(0) if self._errors else (0, "No error")
             return f'{code},"{text}"'
@@ -87,14 +96,24 @@ class ScpiBalanceInstrument:
             self.model.tare(None)
             return None
         self._errors.append((-113, "Undefined header"))
+        self._esr |= 32  # command error
         return None
+
+    def _journal(self, line: str) -> Any:
+        """A numbered journal entry for commands that can change something (not queries, not ``*CLS``)."""
+        command = _normalize(line)
+        if command.endswith("?") or command == "*CLS":
+            return nullcontext()
+        return self.journal.command(command)
 
     async def _serve(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         try:
             while line := await reader.readline():
-                if self.world.faults.active(self.device, "power_loss"):
-                    break  # no power: the connection just dies
-                reply = self.execute(line.decode("ascii", "replace"))
+                text = line.decode("ascii", "replace")
+                with self._journal(text):
+                    if self.world.faults.active(self.device, "power_loss"):
+                        break  # no power: the connection just dies (the command was still received: it is numbered)
+                    reply = self.execute(text)
                 if reply is not None:
                     writer.write(reply.encode("ascii") + b"\n")
                     await writer.drain()

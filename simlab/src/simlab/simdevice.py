@@ -26,7 +26,6 @@ Thread-safety: one event loop.
 
 from __future__ import annotations
 
-import asyncio
 from pathlib import Path
 from typing import Any
 
@@ -53,6 +52,7 @@ class CommandLog:
     def __init__(self) -> None:
         self._state: dict[str, str] = {}
         self._results: dict[str, Any] = {}
+        self.sent: dict[str, tuple[int, int]] = {}  # adapters: operation id -> (first, end) command numbers it sent
 
     def begin(self, operation_id: str) -> None:
         self._state[operation_id] = "started"
@@ -61,6 +61,11 @@ class CommandLog:
         self._state[operation_id] = "done"
         self._results[operation_id] = result
         return result
+
+    def sent_range(self, operation_id: str, first: int, end: int) -> None:
+        """An adapter records which of its link's commands (numbered by send order) an operation sent; the harness joins
+        this with the instrument's journal (``instruments.journal``)."""
+        self.sent[operation_id] = (first, end)
 
     def state(self, operation_id: str) -> str:
         return self._state.get(operation_id, "none")
@@ -143,17 +148,23 @@ class TwinHost:
                           message="the command never reached the device", may_have_acted=False)
 
 
+SIMULATED_TAG = "simulated"
+
+
 def make_server(world: World, name: str, *, state_dir: str | Path | None, durability: str = "process",
                 title: str | None = None, **kw: Any) -> DeviceServer:
-    """A ``DeviceServer`` for a twin. ``durability="process"`` (the default here) survives a process kill but not power
-    loss of the host; it is the honest choice for a simulator (the SDK documents it as opt-in for simulators), while
-    ``"dispatch"`` is what a physical device must use. State lives under ``state_dir`` (a fresh directory per run)."""
+    """A ``DeviceServer`` for a twin or an adapter, marked as SimLab (Ruling R16): the server name starts with ``simlab-``
+    and its instructions say the devices are simulated and name the world's seed, so no log can mistake it for physical
+    evidence. ``durability="process"`` (the default here) survives a process kill but not power loss of the host; it is the
+    honest choice for a simulator (the SDK documents it as opt-in for simulators), while ``"dispatch"`` is what a physical
+    device must use. State lives under ``state_dir`` (a fresh directory per run)."""
+    if not name.startswith("simlab-"):
+        raise ValueError(f"SimLab server names start with 'simlab-', got {name!r}")
     return DeviceServer(name, title=title or name, state_dir=state_dir, durability=durability,
-                        instructions="SimLab twin: a simulated device on a shared simulated bench; nothing is physical.",
-                        **kw)
+                        instructions=f"SimLab: SIMULATED devices on a shared simulated bench (world seed {world.seed}); "
+                                     "nothing here is physical and no reading is evidence about a real device.", **kw)
 
 
-async def settle_world(world: World, seconds: float) -> None:
-    """Advance world time without a command (idle time between agent steps)."""
-    await asyncio.sleep(0)
-    await world.advance(seconds)
+def simulated_device(server: DeviceServer, device_id: str, *, tags: Any = (), **kw: Any) -> Device:
+    """Declare a device on a SimLab server with the device-level ``simulated`` tag (Ruling R16)."""
+    return server.device(device_id, tags=[*dict.fromkeys([*tags, SIMULATED_TAG, "simlab"])], **kw)

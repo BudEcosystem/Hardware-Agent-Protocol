@@ -29,7 +29,7 @@ from bhms.server.decorators import Range
 from bhms.server.server import DeviceServer
 from simlab.adapters.common import declare_action, declare_property
 from simlab.imaging import sharpness
-from simlab.simdevice import CommandLog, make_server
+from simlab.simdevice import CommandLog, make_server, simulated_device
 from simlab.world import World
 
 TOLERANCE_UM = 0.5
@@ -43,7 +43,7 @@ def build_server(world: World, core: Any, *, device_id: str = "microscope-mm", s
     """The BHMS server for a Micro-Manager core. ``world`` supplies the SimLab server plumbing only; the adapter never
     reads the world, it knows what the core API tells it."""
     srv = make_server(world, name, state_dir=state_dir, durability=durability, title="Micro-Manager adapter", **kw)
-    dev = srv.device(device_id, name="Micro-Manager microscope", capabilities=["bhms.microscope", "bhms.camera"],
+    dev = simulated_device(srv, device_id, name="Micro-Manager microscope", capabilities=["bhms.microscope", "bhms.camera"],
                      resources=[f"{device_id}/focus", f"{device_id}/stage", f"{device_id}/camera"],
                      tags=["simlab", "adapter", "micro-manager"],
                      description="A microscope reached through the Micro-Manager core API: focus, XY stage, camera.",

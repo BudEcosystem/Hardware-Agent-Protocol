@@ -49,6 +49,7 @@ class Lab:
     device_ids: dict[str, str] = field(default_factory=dict)
     oracle: Oracle = field(init=False)
     _cleanup: list[Any] = field(default_factory=list)
+    _bridges: list[tuple[Any, Any]] = field(default_factory=list)  # (instrument journal, adapter link)
     socket_dir: Path = field(default_factory=lambda: Path(tempfile.mkdtemp(prefix="simlab-")))
 
     def __post_init__(self) -> None:
@@ -127,6 +128,7 @@ class Lab:
         srv, link = scpi_adapter.build_server(self.world, BALANCE_SCPI, "127.0.0.1", port, state_dir=state / "balance",
                                               **kw)
         self._cleanup.append(link.close)
+        self._bridges.append((instrument.journal, link))
         self.twins["balance"] = model
         await self._serve("balance", srv, BALANCE_SCPI.device_id, strict)
 
@@ -141,6 +143,7 @@ class Lab:
         srv, link = modbus_adapter.build_server(self.world, THERMAL_MODBUS, "127.0.0.1", port,
                                                 state_dir=state / "thermal", **kw)
         self._cleanup.append(link.close)
+        self._bridges.append((instrument.journal, link))
         self.twins["thermal"] = model
         await self._serve("thermal", srv, THERMAL_MODBUS.device_id, strict)
 
@@ -155,10 +158,21 @@ class Lab:
         srv, link = opcua_adapter.build_server(self.world, CENTRIFUGE_OPCUA, endpoint, state_dir=state / "centrifuge",
                                                **kw)
         self._cleanup.append(link.close)
+        self._bridges.append((instrument.journal, link))
         self.twins["centrifuge"] = model
         await self._serve("centrifuge", srv, CENTRIFUGE_OPCUA.device_id, strict)
 
     # ------------------------------------------------------------------ use
+
+    def attribute_bridged(self) -> None:
+        """Give the effects of protocol-bridged instruments their causes: for each adapter, the commands an operation sent
+        (its send-order numbers) select the instrument's journal entries, whose effects belong to that operation. Call
+        before judging; it is idempotent."""
+        for journal, link in self._bridges:
+            for operation_id, (first, end) in link.log.sent.items():
+                for entry in journal.entries[first:end]:
+                    for seq in entry.effect_seqs:
+                        self.oracle.attribute(seq, operation_id)
 
     def client(self, key: str) -> Client:
         return self.clients[key]

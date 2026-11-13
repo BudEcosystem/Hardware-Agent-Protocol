@@ -89,6 +89,32 @@ async def test_no_tip_is_refused_with_proof_of_no_effect(handler):
     assert Oracle(w).judge(Claim(op.operation_id, "failed", "failed", lambda s: False)) is Verdict.CONSISTENT
 
 
+async def test_a_spill_into_a_full_well_is_invisible_to_the_handler_and_caught_by_the_oracle(handler):
+    from simlab.runs.judge import judge_operations
+    client, srv, lh, w = handler
+    w.ledger.add_container("plate", "microplate_96", {"A1": (355.0, {}), "A2": (0.0, {})}, "lh_deck")
+    await run(client, "lh-1", "pick_up_tip")
+    await run(client, "lh-1", "aspirate", {"position": "reservoir", "well": "A1", "volume": 30})
+    disp = await run(client, "lh-1", "dispense", {"position": "deck", "well": "A1", "volume": 30})
+    # the tip emptied, so the sensor-only twin reports success and cannot know where the liquid went
+    assert disp.state == "completed" and disp.effect == "verified" and abs(disp.result["dispensed"] - 30) < 1.5
+    assert any(e.kind == "spilled" and e.cause == disp.operation_id for e in w.effect_log())
+    assert judge_operations(Oracle(w), [disp])[0].verdict is Verdict.FALSE_CERTAINTY
+
+
+async def test_without_a_tip_sensor_reading_the_values_are_null_and_the_effect_unverified(handler):
+    from simlab.runs.judge import judge_operations
+    client, srv, lh, w = handler
+    await run(client, "lh-1", "pick_up_tip")
+    w.faults.inject(Fault("lh-1", "sensor_disconnect", At(0.0)))
+    w.step(0.01)
+    op = await run(client, "lh-1", "aspirate", {"position": "deck", "well": "A1", "volume": 40})
+    assert op.state == "completed" and op.effect == "unverified"
+    assert op.result == {"aspirated": None, "air": None}  # nothing fabricated from the command
+    assert w.ledger.well("plate", "A1").volume_ul == 160.0  # the liquid did move; the device just cannot say so
+    assert judge_operations(Oracle(w), [op])[0].verdict is Verdict.CONSISTENT
+
+
 async def test_malformed_well_name_never_reaches_the_device(handler):
     client, srv, lh, w = handler
     from bhms.protocol.errors import BhmsError

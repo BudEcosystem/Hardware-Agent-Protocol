@@ -32,7 +32,9 @@ async def check_description(client: Client, device_id: str, *, measured_ok: set[
     listing = await client.devices_list()
     summary = next(d for d in listing.devices if d.device_id == device_id)
     assert len(canonical(summary.model_dump(by_alias=True))) <= 1600
+    assert client.server.server_info.name.startswith("simlab-"), "R16: a SimLab server says so in serverInfo.name"
     desc = await described(client, device_id)
+    assert "simulated" in desc["tags"], "R16: every SimLab device is tagged simulated"
     again = await described(client, device_id)
     assert desc["digest"] == again["digest"] == summary.digest
     assert desc["actions"] or desc["properties"]

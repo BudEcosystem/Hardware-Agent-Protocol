@@ -55,5 +55,8 @@ pymmcore-plus). The Home Assistant tests need the demo container (`docker start 
 * **Evidence labels.** `measured` only where a modelled sensor with its own noise sits between the world and the reading
   (encoders, thermistor, tachometer, load cell, optical detector, tip-volume sensor, lid and plate switches). Adapters label what
   the instrument's profile says; Home Assistant and Micro-Manager values are `reported`; MCP tools complete with `none`.
+* **Digest determinism holds only for sequential commands.** The same seed gives the same `World.digest()` when commands are issued one after another (direct runs, a single agent through BHMS with `anonymize_causes`). Concurrent agents interleave on the event loop and on wall-clock timers, so two runs with concurrent commands need not produce identical logs.
+* **Judging.** Twins record the achieved truth when a motion or heating ends; `runs/judge.py` compares returned measurements and commanded targets with it, every action has a rule (a missing rule raises), and protocol instruments keep a command journal that the harness joins to the adapters' send records so bridged effects get causes.
+* **Every SimLab device is marked simulated** (Ruling R16): device tag `simulated`, server name `simlab-*`, instructions that say so.
 * **Stepped and realtime clocks.** `World.step` is synchronous; `World.advance` is the awaitable form with one pump shared by
   every device (stepped: instant, realtime: paced). The clock resolution is one 2 ms physics step.

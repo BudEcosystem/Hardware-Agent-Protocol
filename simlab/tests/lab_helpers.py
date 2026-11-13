@@ -38,8 +38,8 @@ def inject_drop_during_next_carry(world: World, delay_s: float = 0.3) -> str:
 
 def carry_plate(arm: ArmTwin, to: str, cause: str, source: str = "hotel") -> None:
     """Pick the plate at ``source``, carry it to ``to`` and open the jaw there (what the plan's tests call a carry)."""
-    arm.move_to_site(source, cause=cause)
-    arm.grip(True, cause=cause)
+    arm.move_to_site(source, cause=f"{cause}:pick")  # one execution per cause: the carry's own cause is its last move
+    arm.grip(True, cause=f"{cause}:grab")
     arm.move_to_site(to, cause=cause)
     arm.grip(False, cause=cause)
 

@@ -32,7 +32,7 @@ from bhms.server.context import DeviceFault, Reconciled
 from bhms.server.decorators import OneOf, Range
 from bhms.server.server import DeviceServer
 from simlab.adapters.common import Refused, Unreachable, declare_action, declare_property, refusal_fault
-from simlab.simdevice import CommandLog, make_server
+from simlab.simdevice import CommandLog, make_server, simulated_device
 from simlab.world import World
 
 SWITCHABLE = ("light", "switch")
@@ -140,7 +140,7 @@ def build_server(world: World, profile: HomeAssistantProfile, url: str, token: s
     """The BHMS server for a Home Assistant instance. The adapter never reads the world."""
     srv = make_server(world, name, state_dir=state_dir, durability=durability, title=f"Home Assistant: {profile.name}",
                       **kw)
-    dev = srv.device(profile.device_id, name=profile.name, description=profile.description,
+    dev = simulated_device(srv, profile.device_id, name=profile.name, description=profile.description,
                      capabilities=list(profile.capabilities), resources=[f"{profile.device_id}/services"],
                      tags=["simlab", "adapter", "home-assistant"], safety_summary=profile.safety_summary,
                      identity={"manufacturer": "Home Assistant", "model": profile.name, "firmwareVersion": "unknown"})

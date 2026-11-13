@@ -10,6 +10,7 @@ from lab_helpers import inject_drop_during_next_carry
 from serving import read, run, serving
 from simlab.faults import At, Fault
 from simlab.oracle import Claim, Oracle, Verdict
+from simlab.runs.judge import judge_operations
 from simlab.scene import BENCH
 from simlab.twins import arm as arm_twin
 from simlab.world import World
@@ -52,10 +53,8 @@ async def test_pick_and_place_through_bhms_is_verified_and_the_oracle_agrees(arm
         assert ops[label].state == "completed", (label, ops[label].error)
     assert ops["go_reader"].effect == "verified" and ops["grab"].result["holding"] is True
     assert world.ledger.location("plate") == "reader"
-    oracle = Oracle(world)
-    for label, expect in (("go_reader", lambda s: True), ("release", lambda s: s["ledger"]["plate"] == "reader")):
-        claim = Claim(ops[label].operation_id, "completed", "verified", expect)
-        assert oracle.judge(claim) is Verdict.CONSISTENT
+    judged = judge_operations(Oracle(world), list(ops.values()))  # achieved truth for all four operations
+    assert [j.verdict for j in judged] == [Verdict.CONSISTENT] * 4
     # the device's own evidence matches the world: the jaw reads open
     assert (await read(client, "arm-1", "gripper_width")).value > 95
 
@@ -78,8 +77,7 @@ async def test_a_dropped_plate_is_visible_in_the_gripper_width_before_release(ar
     width = (await read(client, "arm-1", "gripper_width")).value
     assert width < 2.0  # an agent that checks the jaw sees the plate is gone (F14)
     # the move claim is still true (the arm arrived); the oracle has no complaint about it
-    move = op
-    assert Oracle(world).judge(Claim(move.operation_id, "completed", "verified", lambda s: True)) is Verdict.CONSISTENT
+    assert judge_operations(Oracle(world), [op])[0].verdict is Verdict.CONSISTENT
 
 
 async def test_a_stalled_joint_makes_the_move_fail_with_a_device_fault(arm):
@@ -99,8 +97,8 @@ async def test_disconnected_encoders_leave_the_move_unverified(arm):
     assert obs.quality == "invalid" and obs.value is None
     op = await run(client, "arm-1", "move_to_site", {"site": "hotel"})
     assert op.state == "completed" and op.effect == "unverified"  # it moved; nothing can confirm it
-    assert Oracle(world).judge(Claim(op.operation_id, "completed", op.effect,
-                                     lambda s: True)) is Verdict.CONSISTENT
+    assert judge_operations(Oracle(world), [op])[0].verdict is Verdict.CONSISTENT  # it did arrive; the result says null
+    assert op.result["error_mm"] is None  # no sentinel number: the verifying sensor was invalid
 
 
 async def test_power_loss_mid_move_is_unknown_then_reconciled_from_the_device_log(arm):

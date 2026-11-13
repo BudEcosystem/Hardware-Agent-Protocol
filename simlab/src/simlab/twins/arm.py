@@ -25,10 +25,10 @@ import mujoco
 import numpy as np
 
 from bhms.server.context import DeviceFault
-from bhms.server.decorators import OneOf
+from bhms.server.decorators import OneOf, Range
 from bhms.server.server import DeviceServer
 from simlab.ledger import IN_GRIPPER, LOST
-from simlab.simdevice import PowerLost, TwinHost, make_server
+from simlab.simdevice import PowerLost, TwinHost, make_server, simulated_device
 from simlab.world import ARM_PREFIX, GRIPPER_SITE, World
 
 ARM_JOINTS = ("Rotation", "Pitch", "Elbow", "Wrist_Pitch", "Wrist_Roll")
@@ -327,7 +327,7 @@ def build_server(world: World, arm: ArmTwin | None = None, *, state_dir: str | P
     """
     arm = arm or ArmTwin(world, device=device_id)
     srv = make_server(world, name, state_dir=state_dir, durability=durability, title="SimLab arm (SO-ARM100)", **kw)
-    dev = srv.device(device_id, name="Bench arm", capabilities=["bhms.arm.manipulator", "bhms.gripper"],
+    dev = simulated_device(srv, device_id, name="Bench arm", capabilities=["bhms.arm.manipulator", "bhms.gripper"],
                      resources=[f"{device_id}/motion", f"{device_id}/gripper"], tags=["simlab", "arm"],
                      description="5-axis desktop arm with a jaw gripper; moves to taught bench sites and grips labware.",
                      identity={"manufacturer": "SimLab", "model": "SO-ARM100 twin", "firmwareVersion": "1"},
@@ -354,7 +354,7 @@ def build_server(world: World, arm: ArmTwin | None = None, *, state_dir: str | P
     @dev.action(effect="reversible", idempotency="absolute", completion_evidence="measured",
                 verified_by=["tcp_position"], cancel="supported", max_duration_ms=30_000, typical_duration_ms=4000,
                 resources=[f"{device_id}/motion"])
-    async def move_to_site(ctx, site: OneOf(*SITES)) -> {"error_mm": "mm", "duration_s": "s"}:  # noqa: F821
+    async def move_to_site(ctx, site: OneOf(*SITES)) -> {"error_mm": Range(0, 1e6, unit="mm", nullable=True), "duration_s": "s"}:  # noqa: F821
         """Move the tool tip to a named bench site (via a hover point above it). Fails if the site is not reached."""
         host.begin(ctx)
         motion = arm.begin_move(site, cause=ctx.operation_id)
@@ -373,33 +373,33 @@ def build_server(world: World, arm: ArmTwin | None = None, *, state_dir: str | P
         if error is not None and error > REACHED_MM:
             raise DeviceFault(f"the tool tip is {error:.1f} mm from {site}", partial="moved but did not arrive",
                               hint="check for a stalled joint; read tcp_position before retrying")
-        return host.log.end(ctx.operation_id, {"error_mm": round(error if error is not None else -1.0, 3),
+        return host.log.end(ctx.operation_id, {"error_mm": None if error is None else round(error, 3),
                                                "duration_s": result.duration_s})
 
     @dev.action(effect="reversible", idempotency="absolute", completion_evidence="measured",
                 verified_by=["gripper_width"], cancel="unsupported", max_duration_ms=5000, typical_duration_ms=400,
                 resources=[f"{device_id}/gripper"])
-    async def close_gripper(ctx) -> {"width_mm": "mm", "holding": bool}:  # noqa: F821
+    async def close_gripper(ctx) -> {"width_mm": Range(0, 200, unit="mm", nullable=True), "holding": bool | None}:  # noqa: F821
         """Close the jaw on whatever is at the tool tip. ``holding`` is true when the jaw stopped on an object."""
         host.begin(ctx)
         seconds = arm.begin_grip(True, cause=ctx.operation_id)
         await host.elapse(ctx, seconds)
         arm.finish_grip(True, cause=ctx.operation_id)
         width = await ctx.verify("gripper_width", lambda v: v > 1.0)
-        return host.log.end(ctx.operation_id, {"width_mm": round(width, 3) if width is not None else -1.0,
-                                               "holding": bool(width is not None and width > 1.0)})
+        return host.log.end(ctx.operation_id, {"width_mm": None if width is None else round(width, 3),
+                                               "holding": None if width is None else width > 1.0})
 
     @dev.action(effect="irreversible", idempotency="absolute", completion_evidence="measured",
                 verified_by=["gripper_width"], cancel="unsupported", max_duration_ms=5000, typical_duration_ms=400,
                 resources=[f"{device_id}/gripper"])
-    async def open_gripper(ctx) -> {"width_mm": "mm"}:  # noqa: F821
+    async def open_gripper(ctx) -> {"width_mm": Range(0, 200, unit="mm", nullable=True)}:  # noqa: F821
         """Open the jaw: a held object is released onto the site below the tool tip, or dropped if there is none."""
         host.begin(ctx)
         seconds = arm.begin_grip(False, cause=ctx.operation_id)
         await host.elapse(ctx, seconds)
         arm.finish_grip(False, cause=ctx.operation_id)
         width = await ctx.verify("gripper_width", lambda v: v > 90.0)
-        return host.log.end(ctx.operation_id, {"width_mm": round(width, 3) if width is not None else -1.0})
+        return host.log.end(ctx.operation_id, {"width_mm": None if width is None else round(width, 3)})
 
     @dev.on_stop(evidence="reported", max_duration_ms=200)
     async def halt(ctx: Any) -> None:

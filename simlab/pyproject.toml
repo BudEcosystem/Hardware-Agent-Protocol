@@ -9,13 +9,14 @@ description = "SimLab: one shared simulated laboratory (MuJoCo world, material l
 requires-python = ">=3.11"
 dependencies = [
   "bhms",
-  "mujoco>=3.3",
+  "mujoco==4.0.1",
   "numpy",
   "pymodbus==3.8.6",
-  "pymmcore-plus",
-  "asyncua",
+  "pymmcore-plus==0.18.1",
+  "asyncua==2.1.0",
   "mcp>=2,<3",
   "websockets",
+  "httpx",
 ]
 
 [project.optional-dependencies]

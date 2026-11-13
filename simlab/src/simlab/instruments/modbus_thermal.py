@@ -27,6 +27,7 @@ from typing import Any
 from pymodbus.datastore import ModbusSequentialDataBlock, ModbusServerContext, ModbusSlaveContext
 from pymodbus.server import ModbusTcpServer
 
+from simlab.instruments.journal import CommandJournal
 from simlab.twins.thermal import SENSOR_SIGMA_C, SETPOINT_RANGE_C, ThermalModel
 from simlab.world import World
 
@@ -67,6 +68,7 @@ class ModbusThermalInstrument:
                  device: str = "thermal-1") -> None:
         self.world, self.model, self.device = world, model, device
         self.host, self.port = host, port
+        self.journal = CommandJournal(world)
         self._server: ModbusTcpServer | None = None
         self._task: asyncio.Task[None] | None = None
         holding = _Block(2, self._read_holding, self._write_holding)
@@ -84,14 +86,15 @@ class ModbusThermalInstrument:
         return round(self.model.setpoint_c * 10) if address == HR_SETPOINT else int(self.model.enabled)
 
     def _write_holding(self, address: int, value: int) -> None:
-        self._check_power()
-        if address == HR_SETPOINT:
-            low, high = (round(c * 10) for c in SETPOINT_RANGE_C)
-            if not low <= value <= high:
-                raise _PowerFault("setpoint out of range")  # answered as an exception: the write is refused
-            self.model.command(value / 10.0, self.model.enabled, None)
-        else:
-            self.model.command(None, bool(value), None)
+        with self.journal.command(f"write holding {address} = {value}"):  # numbered even when it fails: the adapter counts it
+            self._check_power()
+            if address == HR_SETPOINT:
+                low, high = (round(c * 10) for c in SETPOINT_RANGE_C)
+                if not low <= value <= high:
+                    raise _PowerFault("setpoint out of range")  # answered as an exception: the write is refused
+                self.model.command(value / 10.0, self.model.enabled, None)
+            else:
+                self.model.command(None, bool(value), None)
 
     def _read_input(self, address: int) -> int:
         self._check_power()

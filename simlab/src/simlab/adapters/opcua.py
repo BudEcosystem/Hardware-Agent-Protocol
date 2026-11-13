@@ -32,7 +32,7 @@ from bhms.server.context import Reconciled
 from bhms.server.decorators import Range
 from bhms.server.server import DeviceServer
 from simlab.adapters.common import Refused, Unreachable, declare_action, declare_property, refusal_fault
-from simlab.simdevice import CommandLog, make_server
+from simlab.simdevice import CommandLog, make_server, simulated_device
 from simlab.world import World
 
 REFUSING_STATUS = {ua.StatusCodes.BadInvalidArgument, ua.StatusCodes.BadMethodInvalid, ua.StatusCodes.BadNotImplemented,
@@ -94,6 +94,8 @@ class OpcUaLink:
         self._index: int | None = None
         self._lock = asyncio.Lock()
         self._connected = False
+        self.sent = 0  # method calls sent, numbered in send order (joined with the instrument's journal by the harness)
+        self.log: CommandLog | None = None
 
     async def close(self) -> None:
         if self._connected:
@@ -132,6 +134,7 @@ class OpcUaLink:
             await self._ensure()
             try:
                 parent = await self._node(method.object_path)
+                self.sent += 1
                 assert self._index is not None
                 return await parent.call_method(f"{self._index}:{method.method}", *args)
             except UaStatusCodeError as exc:
@@ -150,12 +153,12 @@ def build_server(world: World, profile: OpcUaProfile, endpoint: str, *, state_di
     """The BHMS server for an OPC UA server. The adapter never reads the world; it knows only what the server says."""
     srv = make_server(world, name, state_dir=state_dir, durability=durability,
                       title=f"OPC UA adapter: {profile.name}", **kw)
-    dev = srv.device(profile.device_id, name=profile.name, description=profile.description,
+    dev = simulated_device(srv, profile.device_id, name=profile.name, description=profile.description,
                      capabilities=list(profile.capabilities), resources=[f"{profile.device_id}/program"],
                      tags=["simlab", "adapter", "opcua"], safety_summary=profile.safety_summary,
                      identity={"manufacturer": "OPC UA server", "model": profile.name, "firmwareVersion": "unknown"})
     link = OpcUaLink(endpoint, profile.namespace_uri, timeout_s)
-    log = CommandLog()
+    log = link.log = CommandLog()
     variables = {v.name: v for v in profile.variables}
     resource = f"{profile.device_id}/program"
 
@@ -178,10 +181,13 @@ def build_server(world: World, profile: OpcUaProfile, endpoint: str, *, state_di
     def caller(method: Method) -> Any:
         async def call(ctx: Any, **arguments: Any) -> Any:
             log.begin(ctx.operation_id)
+            first = link.sent
             try:
                 result = await link.call(method, [float(arguments[a.name]) for a in method.arguments])
             except (Refused, Unreachable) as exc:
                 raise refusal_fault(exc, "OPC UA") from exc
+            finally:
+                log.sent_range(ctx.operation_id, first, link.sent)
             ok, message = (result if isinstance(result, (list, tuple)) else (True, str(result)))
             if not ok:
                 raise refusal_fault(Refused(str(message)), "OPC UA")

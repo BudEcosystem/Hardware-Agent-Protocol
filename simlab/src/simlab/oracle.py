@@ -22,11 +22,11 @@ Thread-safety: read-only over a world; call from the world's thread.
 from __future__ import annotations
 
 import enum
-import json
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Literal
 
+from simlab.effects import is_start
 from simlab.world import Effect, World
 
 State = Literal["completed", "failed", "canceled", "outcome_unknown", "rejected_before_dispatch"]
@@ -60,20 +60,33 @@ class Oracle:
 
     def __init__(self, world: World) -> None:
         self.world = world
+        self._attributed: dict[int, str] = {}
+
+    def attribute(self, effect_seq: int, cause: str) -> None:
+        """Assign a cause to an effect the instrument recorded without one (a bridged protocol cannot carry the BHMS
+        operation id); the harness does this from the instruments' command journals and the adapters' send records."""
+        self._attributed[effect_seq] = cause
 
     def effects_for(self, cause: str) -> list[Effect]:
-        """Every physical effect the operation ``cause`` produced, in order."""
-        return [e for e in self.world.effect_log() if e.cause == cause and e.kind not in _NOT_PHYSICAL]
+        """Every physical effect the operation ``cause`` produced, in order (recorded or attributed)."""
+        return [e for e in self.world.effect_log()
+                if (e.cause == cause or self._attributed.get(e.seq) == cause) and e.kind not in _NOT_PHYSICAL]
+
+    def start_effects(self, cause: str) -> list[Effect]:
+        """The effects of ``cause`` that mark an execution start (``simlab.effects``)."""
+        return [e for e in self.effects_for(cause) if is_start(e.kind)]
 
     def truth(self) -> dict[str, Any]:
         return self.world.snapshot()
 
     def duplicates(self, cause: str) -> list[Effect]:
-        """Effects that repeat an earlier effect of the same cause exactly (same device, kind and detail)."""
-        seen: set[str] = set()
+        """Execution starts beyond the first of the same device and kind under one cause: a doubled execution, whatever
+        the detail of each (a second ``set_z`` starts from a different position, a second tip pick leaves a different
+        count)."""
+        seen: set[tuple[str, str]] = set()
         repeated = []
-        for effect in self.effects_for(cause):
-            key = json.dumps([effect.device, effect.kind, effect.detail], sort_keys=True)
+        for effect in self.start_effects(cause):
+            key = (effect.device, effect.kind)
             if key in seen:
                 repeated.append(effect)
             seen.add(key)
@@ -82,7 +95,9 @@ class Oracle:
     def judge(self, claim: Claim) -> Verdict:
         if self.duplicates(claim.cause):
             return Verdict.DUPLICATE_EFFECT
-        effects = self.effects_for(claim.cause)
+        effects = self.start_effects(claim.cause)
+        if claim.effect == "failed" and effects and claim.state != "outcome_unknown":
+            return Verdict.FALSE_NO_EFFECT  # the record says nothing happened; the world shows execution
         if claim.state == "outcome_unknown":
             return Verdict.FALSE_CERTAINTY if claim.effect == "verified" else Verdict.HONEST_UNKNOWN
         if claim.state == "rejected_before_dispatch":

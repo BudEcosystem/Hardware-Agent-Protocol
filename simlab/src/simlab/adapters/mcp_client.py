@@ -42,7 +42,7 @@ from bhms.server.context import DeviceFault
 from bhms.server.decorators import Schema
 from bhms.server.server import DeviceServer
 from simlab.adapters.common import Refused, Unreachable, declare_action, refusal_fault
-from simlab.simdevice import CommandLog, make_server
+from simlab.simdevice import CommandLog, make_server, simulated_device
 from simlab.world import World
 
 INVALID_PARAMS = -32602
@@ -147,7 +147,7 @@ async def build_server(world: World, params: StdioServerParameters, *, device_id
     link = McpLink(params, timeout_s)
     tools = await link.open()
     srv = make_server(world, name, state_dir=state_dir, durability=durability, title=f"MCP adapter: {device_id}", **kw)
-    dev = srv.device(device_id, name=f"MCP server {device_id}", capabilities=["bhms.mcp.tools"],
+    dev = simulated_device(srv, device_id, name=f"MCP server {device_id}", capabilities=["bhms.mcp.tools"],
                      resources=[f"{device_id}/tools"], tags=["simlab", "adapter", "mcp"],
                      description="Tools of an MCP server exposed as actions; results are the server's own text and are "
                                  "not evidence of any physical effect.",
