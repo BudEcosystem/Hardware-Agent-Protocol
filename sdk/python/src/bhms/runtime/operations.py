@@ -474,6 +474,13 @@ class Journal:
             op["progress"] = progress
         self._commit(rec, op, entry, notify=False)
 
+    def mark_private(self, rec: OperationRecord, **values: Any) -> None:
+        """Persist server-private facts of an operation (for example ``inhibitionLifted``) without a history entry."""
+        private = {**rec.private, **values}
+        with self.store.transaction():
+            self.store.update_operation(rec.id, state=rec.state, updated_ns=now_ns(), record=rec.op, private=private)
+        rec.private = private
+
     def set_progress(self, rec: OperationRecord, progress: dict[str, int]) -> None:
         """Update ``progress`` in memory; it is persisted with the next history entry (not durable by itself)."""
         if not rec.settled:

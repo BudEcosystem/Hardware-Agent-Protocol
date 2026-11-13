@@ -33,6 +33,7 @@ event loop.
 
 from __future__ import annotations
 
+import builtins
 import re
 import sys
 import time
@@ -285,7 +286,7 @@ class Device:
             if "data" in entry:
                 _units(entry["data"], f"{where} event {event_type} data")
 
-    @property
+    @builtins.property  # the class defines a property() decorator method
     def digest(self) -> str:
         return self.description()["digest"]
 
@@ -338,7 +339,7 @@ class Device:
         if self.status != previous and self.server is not None:
             self.server._status_changed(self, previous)
 
-    @property
+    @builtins.property  # the class defines a property() decorator method
     def status(self) -> str:
         """``offline``/``degraded`` when forced, ``online`` with evidence within ``liveness_s``, else ``unknown``."""
         if self._forced_status is not None:
