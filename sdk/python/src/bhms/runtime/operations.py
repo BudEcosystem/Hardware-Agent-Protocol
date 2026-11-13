@@ -44,7 +44,6 @@ import secrets
 import time
 from collections import OrderedDict
 from collections.abc import AsyncIterator, Callable, Iterable
-from datetime import datetime, timezone
 from typing import Any
 
 from bhms.protocol.canonical import digest
@@ -76,7 +75,9 @@ def now_ns() -> int:
 def iso(ns: int) -> str:
     """RFC 3339 UTC with microseconds (``Time`` of the schema)."""
     seconds, rest = divmod(ns, 1_000_000_000)
-    return datetime.fromtimestamp(seconds, tz=timezone.utc).strftime("%Y-%m-%dT%H:%M:%S") + f".{rest // 1000:06d}Z"
+    t = time.gmtime(seconds)
+    return (f"{t.tm_year:04d}-{t.tm_mon:02d}-{t.tm_mday:02d}T{t.tm_hour:02d}:{t.tm_min:02d}:{t.tm_sec:02d}"
+            f".{rest // 1000:06d}Z")
 
 
 def new_id(prefix: str) -> str:

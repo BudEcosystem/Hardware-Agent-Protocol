@@ -17,6 +17,9 @@ Durability (``durability=``), measured in ``benchmarks/invoke_roundtrip.py``:
   loss). Not honest for physical devices whose controllers survive a host power loss; offered for simulators and
   benchmarks.
 
+Checkpoints (copying the WAL back into the database file, which fsyncs) run in a background thread on its own
+connection (``wal_autocheckpoint`` is off on the serving connection), so the event loop never stalls behind one.
+
 A store file belongs to one process: an exclusive ``flock`` on ``<path>.lock`` is taken at open (:class:`StoreLocked`
 otherwise) and released by the kernel even on SIGKILL. ``epoch`` is minted when the file is created and kept while it
 exists (BHMS-OPS-034); an in-memory store (``path=None``) is not durable and has a new epoch every time.
@@ -39,6 +42,7 @@ import fcntl
 import os
 import secrets
 import sqlite3
+import threading
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -123,6 +127,11 @@ class Store:
         self._set_sync("FULL" if durability == "full" else "NORMAL")
         self._db.executescript(_DDL)
         self._in_txn = False
+        self._promote = False
+        self._checkpointer: _Checkpointer | None = None
+        if self.path is not None:
+            self._db.execute("PRAGMA wal_autocheckpoint=0")
+            self._checkpointer = _Checkpointer(self.path)
         existing = self.meta_get("epoch")
         self.created = existing is None
         if existing is None:
@@ -134,7 +143,10 @@ class Store:
     # ------------------------------------------------------------------ lifecycle
 
     def close(self) -> None:
-        """Close the database and release the file lock (idempotent)."""
+        """Close the database (after a final checkpoint) and release the file lock (idempotent)."""
+        if self._checkpointer is not None:
+            self._checkpointer.stop()
+            self._checkpointer = None
         with contextlib.suppress(sqlite3.Error):
             self._db.close()
         if self._lock_fd is not None:
@@ -176,8 +188,9 @@ class Store:
         Nested use joins the outer transaction (a barrier inside makes the outer commit a barrier).
         """
         if self._in_txn:
-            if barrier and self.durability != "process":
-                self._set_sync("FULL")
+            if barrier and self.durability != "process" and self._sync != "FULL":
+                # SQLite cannot change the safety level inside a transaction: promote after the outer commit.
+                self._promote = True
             yield
             return
         if self.durability == "dispatch":
@@ -190,6 +203,11 @@ class Store:
         try:
             yield
             self._db.execute("COMMIT")
+            if self._checkpointer is not None:
+                self._checkpointer.committed()
+            if self._promote:
+                self._in_txn = False
+                self._fsync_barrier()
         except BaseException as exc:
             with contextlib.suppress(sqlite3.Error):
                 self._db.execute("ROLLBACK")
@@ -198,6 +216,22 @@ class Store:
             raise
         finally:
             self._in_txn = False
+            self._promote = False
+
+    def _fsync_barrier(self) -> None:
+        """Force everything committed so far onto stable storage (a nested barrier inside a NORMAL transaction).
+
+        A FULL commit fsyncs the WAL, which covers every earlier frame; the marker row is the write that commit needs.
+        """
+        self._set_sync("FULL")
+        try:
+            self._db.execute("BEGIN IMMEDIATE")
+            self._db.execute("INSERT OR REPLACE INTO meta(key, value) VALUES('barrier', hex(randomblob(4)))")
+            self._db.execute("COMMIT")
+        except sqlite3.Error as exc:
+            with contextlib.suppress(sqlite3.Error):
+                self._db.execute("ROLLBACK")
+            raise StoreError(f"journal barrier failed: {exc}") from exc
 
     def _write(self, sql: str, args: Sequence[Any]) -> sqlite3.Cursor:
         try:
@@ -369,3 +403,44 @@ class Store:
         rows = self._db.execute("SELECT info FROM programs WHERE digest > ? ORDER BY digest LIMIT ?",
                                 (after or "", limit))
         return [_loads(r[0]) for r in rows]
+
+
+class _Checkpointer:
+    """Runs ``PRAGMA wal_checkpoint(PASSIVE)`` off the event loop: every ``every`` commits or ``interval_s`` seconds.
+
+    A passive checkpoint never blocks the serving connection's writers; it copies what it can and fsyncs the database
+    file in this thread. ``stop`` runs a final ``TRUNCATE`` checkpoint.
+    """
+
+    def __init__(self, path: Path, *, every: int = 256, interval_s: float = 1.0) -> None:
+        self._path, self._every, self._interval = path, every, interval_s
+        self._pending = 0
+        self._wake = threading.Event()
+        self._stopping = False
+        self._thread = threading.Thread(target=self._loop, name="bhms-store-checkpoint", daemon=True)
+        self._thread.start()
+
+    def committed(self) -> None:
+        self._pending += 1
+        if self._pending >= self._every:
+            self._pending = 0
+            self._wake.set()
+
+    def _loop(self) -> None:
+        db = sqlite3.connect(str(self._path), isolation_level=None)
+        db.execute("PRAGMA busy_timeout=5000")
+        try:
+            while not self._stopping:
+                self._wake.wait(self._interval)
+                self._wake.clear()
+                with contextlib.suppress(sqlite3.Error):
+                    db.execute("PRAGMA wal_checkpoint(PASSIVE)").fetchall()
+            with contextlib.suppress(sqlite3.Error):
+                db.execute("PRAGMA wal_checkpoint(TRUNCATE)").fetchall()
+        finally:
+            db.close()
+
+    def stop(self) -> None:
+        self._stopping = True
+        self._wake.set()
+        self._thread.join(timeout=10)
