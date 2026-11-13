@@ -305,9 +305,12 @@ class Journal:
                action: str | None = None, program_digest: str | None = None, parent_id: str | None = None,
                admitted: dict[str, Any] | None = None, require: dict[str, Any] | None = None,
                lease_id: str | None = None, fence: int | None = None, deadline_ns: int | None = None,
-               progress: dict[str, int] | None = None, dispatch: bool = False) -> OperationRecord:
+               progress: dict[str, int] | None = None, dispatch: bool = False,
+               barrier: bool | None = None) -> OperationRecord:
         """Durably record a new ``accepted`` operation (and, with ``dispatch``, ``dispatching`` in the same barrier
-        commit). Raises :class:`~bhms.runtime.store.StoreError` when it cannot be written (no operation exists)."""
+        commit; ``barrier`` defaults to ``dispatch``: a device server must have the intent on stable storage before it
+        acts, a gateway relies on its deterministic upstream key instead and passes ``False``). Raises
+        :class:`~bhms.runtime.store.StoreError` when it cannot be written (no operation exists)."""
         created = now_ns()
         at = iso(created)
         op: dict[str, Any] = {"operationId": new_id("op"), "operationKey": key, "keyOrigin": key_origin,
@@ -345,7 +348,7 @@ class Journal:
             if private.get("effectClass", "none") != "none":
                 op["effect"] = entry["effect"] = "unknown"
             history.append(entry)
-        with self.store.transaction(barrier=dispatch):
+        with self.store.transaction(barrier=dispatch if barrier is None else barrier):
             self.store.insert_operation(op_id=op["operationId"], principal=principal, key=key,
                                         request_digest=request_digest, kind=kind, device_id=device_id,
                                         parent_id=parent_id, state=op["state"], created_ns=created, record=op,

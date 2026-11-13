@@ -61,12 +61,10 @@ class ForwardJournal(Journal):
         """Record a request the gateway has forwarded: ``accepted`` then ``dispatching`` (the command left for the
         upstream), without fsync barriers — the deterministic upstream key, not this record, is what makes a lost
         record harmless (see the module docstring)."""
-        rec = self.create(principal=principal, key=key, key_origin=key_origin, kind="action",
-                          request_digest=request_digest, arguments=arguments, private=private, device_id=device_id,
-                          action=action, admitted=admitted, require=require, lease_id=lease_id, fence=fence,
-                          deadline_ns=deadline_ns)
-        self.transition(rec, "dispatching", barrier=False)
-        return rec
+        return self.create(principal=principal, key=key, key_origin=key_origin, kind="action",
+                           request_digest=request_digest, arguments=arguments, private=private, device_id=device_id,
+                           action=action, admitted=admitted, require=require, lease_id=lease_id, fence=fence,
+                           deadline_ns=deadline_ns, dispatch=True, barrier=False)
 
     def admit_forwarded(self, *, upstream_op: dict[str, Any], **request: Any) -> OperationRecord:
         """Record an operation the upstream admitted, in the state the upstream reports."""
@@ -106,7 +104,7 @@ class ForwardJournal(Journal):
                 self._advance(rec, upstream_op, theirs, source)
                 changed = True
             if not rec.terminal:
-                changed = self._sync_cancel_and_effect(rec, upstream_op) or changed
+                changed = self._sync_cancel(rec, upstream_op) or changed
         except InvalidTransition as exc:
             log.error("cannot mirror upstream state %s onto %s (%s): %s", theirs, rec.id, rec.state, exc)
             self.annotate(rec, "correction", f"upstream reported {theirs} but the gateway could not apply it: {exc}")
@@ -143,21 +141,15 @@ class ForwardJournal(Journal):
             cause = error.get("message") or "the upstream reports the outcome as unknown"
             self.transition(rec, "unknown", error=unknown_error(f"upstream {rec.private.get('upstream')}: {cause}"))
 
-    def _sync_cancel_and_effect(self, rec: OperationRecord, up: dict[str, Any]) -> bool:
-        changed = False
+    def _sync_cancel(self, rec: OperationRecord, up: dict[str, Any]) -> bool:
+        """Mirror a cancellation request the upstream recorded (``requested``/``acknowledged``/``refused``). The effect is
+        mirrored only with a state change: until then the gateway, which has already dispatched, keeps ``unknown``."""
         cancel = up.get("cancel") or {}
         state = cancel.get("state", "none")
-        if state != "none" and rec.op["cancel"]["state"] != state and state != "confirmed":
+        if state not in ("none", "confirmed") and rec.op["cancel"]["state"] != state:
             self.set_cancel(rec, state, reason=cancel.get("reason"))
-            changed = True
-        effect = up.get("effect")
-        if effect and effect != rec.op["effect"] and not rec.terminal and rec.state != "unknown":
-            try:
-                self.set_effect(rec, effect, evidence=up.get("evidence"))
-                changed = True
-            except InvalidTransition:
-                pass
-        return changed
+            return True
+        return False
 
     def link_lost(self, rec: OperationRecord, cause: str) -> bool:
         """Move a ``dispatching``/``running`` operation to ``unknown`` because the upstream link failed (BHMS-OPS-004)."""
