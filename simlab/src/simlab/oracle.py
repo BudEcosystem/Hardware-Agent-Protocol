@@ -98,3 +98,17 @@ class Oracle:
         if claim.effect == "unverified":
             return Verdict.HONEST_UNKNOWN
         return Verdict.CONSISTENT if holds else Verdict.FALSE_CERTAINTY
+
+
+_STATE = {"completed": "completed", "failed": "failed", "canceled": "canceled", "unknown": "outcome_unknown",
+          "rejected": "rejected_before_dispatch"}
+_EFFECT = {"verified": "verified", "unverified": "unverified", "unknown": "unverified", "none": "failed"}
+
+
+def claim_from_operation(operation: Any, expect: Callable[[dict[str, Any]], bool]) -> Claim:
+    """The oracle ``Claim`` that a BHMS ``Operation`` record makes (``operation.operation_id`` is the cause).
+
+    BHMS state maps one to one; the BHMS effect certainty maps ``verified`` to a verified claim, ``none`` to a claim that
+    nothing happened, and ``unverified`` or ``unknown`` to a hedged claim.
+    """
+    return Claim(operation.operation_id, _STATE[operation.state], _EFFECT[operation.effect], expect)  # type: ignore[arg-type]

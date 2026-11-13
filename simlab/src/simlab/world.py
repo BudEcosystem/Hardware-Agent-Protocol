@@ -135,7 +135,8 @@ class World:
         self._pump: asyncio.Task[None] | None = None
         self.ledger = Ledger(self)
         self.faults = FaultPlane(self)
-        self.ledger.add_container("plate", "microplate_96", {}, "hotel")
+        wells = {f"{row}{col}": (0.0, {}) for row in "ABCDEFGH" for col in range(1, 13)}
+        self.ledger.add_container("plate", "microplate_96", wells, "hotel")
         self.ledger.add_container("slide", "slide", {}, "slide_rack", meta={"specimen_z_um": 40.0})
 
     # ------------------------------------------------------------------ construction

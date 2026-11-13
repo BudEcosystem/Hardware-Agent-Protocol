@@ -23,6 +23,13 @@ def scope_lab(seed: int = 1, *, with_slide_on_stage: bool = True, specimen_z_um:
     return world, MicroscopeTwin(world)
 
 
+def bench(seed: int = 1, *, specimen_z_um: float = 40.0, slide_site: str = "slide_rack", **params):
+    """A world with the arm and the microscope twin sharing it: ``(world, arm, scope)``."""
+    world = World(BENCH, seed=seed, params=SceneParams(**params) if params else None)
+    world.ledger.add_container("slide", "slide", {}, slide_site, meta={"specimen_z_um": specimen_z_um})
+    return world, ArmTwin(world), MicroscopeTwin(world)
+
+
 def inject_drop_during_next_carry(world: World, delay_s: float = 0.3) -> str:
     """Arm a drop of the plate that fires ``delay_s`` into the next move made while the plate is in the gripper."""
     return world.faults.inject(Fault("plate", "drop_object", OnEvent("move_started"),
