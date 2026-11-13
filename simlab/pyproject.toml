@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "simlab"
+version = "0.1.0"
+description = "SimLab: one shared simulated laboratory (MuJoCo world, material ledger, fault plane, oracle) whose twins are real BHMS device servers"
+requires-python = ">=3.11"
+dependencies = [
+  "bhms",
+  "mujoco==4.0.1",
+  "numpy",
+  "pymodbus==3.8.6",
+  "pymmcore-plus==0.18.1",
+  "asyncua==2.1.0",
+  "mcp>=2,<3",
+  "websockets",
+  "httpx",
+]
+
+[project.optional-dependencies]
+test = ["pytest", "pytest-asyncio", "pytest-timeout", "pillow"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+simlab = ["scene/*.xml"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+timeout = 300
+testpaths = ["tests"]
+markers = ["ha: needs the Home Assistant demo container (SIMLAB_HA_URL)"]
