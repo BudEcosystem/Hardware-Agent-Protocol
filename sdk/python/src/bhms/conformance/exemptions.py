@@ -24,9 +24,6 @@ EXEMPT: dict[str, tuple[str, str]] = {
                      "observations.retained-after-effect)"),
     "BHMS-DEV-051": (INSPECTION, "review of evidence declarations against driver behaviour"),
     "BHMS-OPS-036": (INSPECTION, "client behaviour (key reuse and retention)"),
-    "BHMS-PRG-006": (UNTESTABLE, "the only multi-principal target (the gateway fixture) does not serve programs"),
-    "BHMS-PRG-021": (UNTESTABLE, "the only multi-principal target (the gateway fixture) does not serve programs"),
-    "BHMS-EVT-013": (UNTESTABLE, "the v0.1 scope grammar has no per-device read scope, so no event can be hidden from a principal"),
     "BHMS-ERR-002": (INSPECTION, "client SDKs dispatch on bhmsCode (code review and SDK unit test)"),
     "BHMS-AGT-050": (UNTESTABLE, "needs the function-tool definitions of an adapter as data; the Python adapter is compared with the MCP bridge in "
                      "tests/test_openai_tools.py"),
