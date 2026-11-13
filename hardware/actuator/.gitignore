@@ -1,0 +1,10 @@
+# STEP exports total ~20 MB; regenerate with cad/build.py (hashes in cad/out/manifest.json)
+cad/out/*.step
+# Machined / custom-purchased parts: the STEP is the fabricator's drawing, so it is committed (small).
+!cad/out/pinion_shoulder.step
+__pycache__/
+*.kicad_prl
+*.filled.*
+pcb/*/fp-info-cache
+stage2.*
+freerouting.log

@@ -1,0 +1,160 @@
+section,item,manufacturer,mpn,qty,unit_usd,ext_usd,price_source,notes
+Arm,"Serial bus servo 12 V, 30 kg.cm, 4096-count magnetic encoder",Feetech,"STS3215 (12 V, C018 1:345)",5,18.0,90.0,"estimate (typical 2026 distributor price, not a quote)",IDs 1-5; variant code to confirm with supplier at order time
+Arm,Deep-groove ball bearing 8x22x7,generic (e.g. SKF),608-2RS,4,0.5,2.0,"estimate (typical 2026 distributor price, not a quote)",shoulder and elbow shafts
+Arm,"Shoulder pinion, machined steel (C45), 17T module 1.5, 14 mm face, 4 x M2 on a 14 mm circle (CNC service, drawing = cad/out/pinion_shoulder.step, committed)",CNC service (custom),cad/out/pinion_shoulder.step (committed; regenerate: python cad/build.py),1,18.0,18.0,"estimate (typical 2026 distributor price, not a quote)","ESTIMATE of a one-off turned and milled part; replaces the printed pinion (stress, design.md section 4)"
+Arm,Deep-groove ball bearing 4x13x5,generic (e.g. SKF),624-2RS,3,0.6,1.8,"estimate (typical 2026 distributor price, not a quote)","2 pinion supports, wrist idler"
+Arm,Deep-groove ball bearing 30x42x7,generic (e.g. SKF),6806-2RS,1,3.0,3.0,"estimate (typical 2026 distributor price, not a quote)",yaw turntable
+Arm,"Hex bolt M8x70, partial thread, 8.8, zinc",generic,ISO 4014 M8x70,2,0.4,0.8,"estimate (typical 2026 distributor price, not a quote)",shoulder/elbow shafts
+Arm,Nyloc nut M8,generic,ISO 10511 M8,2,0.08,0.16,"estimate (typical 2026 distributor price, not a quote)",
+Arm,Washer M8 (16 mm OD),generic,ISO 7089 M8,4,0.03,0.12,"estimate (typical 2026 distributor price, not a quote)",bear on the 608 inner races only
+Arm,Socket head cap screw M4x12,generic,ISO 4762 M4x12,6,0.06,0.36,"estimate (typical 2026 distributor price, not a quote)","2 pinion supports, 4 shell-to-plate"
+Arm,Socket head cap screw M4x16 + nyloc nut,generic,ISO 4762 M4x16 / ISO 10511 M4,1,0.12,0.12,"estimate (typical 2026 distributor price, not a quote)",wrist idler
+Arm,Washer M4 (9 mm OD),generic,ISO 7089 M4,4,0.02,0.08,"estimate (typical 2026 distributor price, not a quote)",inner-race spacers
+Arm,Heat-set insert M4 x 6,generic (e.g. Ruthex),M4x8.1 RX-M4x8.1,6,0.1,0.6,"estimate (typical 2026 distributor price, not a quote)","pinion stubs, shell bosses"
+Arm,Heat-set insert M3 x 5.7,generic (e.g. Ruthex),RX-M3x5.7,32,0.06,1.92,"estimate (typical 2026 distributor price, not a quote)","servo lids (5), pod lid, PCB"
+Arm,Socket head cap screw M3x8,generic,ISO 4762 M3x8,32,0.04,1.28,"estimate (typical 2026 distributor price, not a quote)",
+Arm,Pan head screw M2x8 (servo horn),generic,ISO 7045 M2x8,20,0.03,0.6,"estimate (typical 2026 distributor price, not a quote)","turret, pinions, wrist, flange"
+Arm,"Ball spring plunger M5, 3 mm ball, stainless",generic,select at order (M5 x 12 class),1,1.5,1.5,"estimate (typical 2026 distributor price, not a quote)",bayonet detent; MPN not fixed
+Arm,Heat-set insert M5,generic,RX-M5x9.5,1,0.15,0.15,"estimate (typical 2026 distributor price, not a quote)",detent plunger
+Arm,"Dowel pin 3 x 6 mm, hardened",generic,ISO 8734 3x6,1,0.1,0.1,"estimate (typical 2026 distributor price, not a quote)",bayonet stop pin
+Arm,"Spring-loaded contact (pogo pin), through-hole, 2.0 mm barrel, ~8 mm",Mill-Max (0906 class),select at order (Mill-Max 0906 series),6,1.2,7.2,"estimate (typical 2026 distributor price, not a quote)",flange contacts; exact MPN not fixed
+Arm,"Cable 6-core 26 AWG, PUR, flexible",generic (e.g. Igus chainflex),select at order,1.5,3.0,4.5,"estimate (typical 2026 distributor price, not a quote)",metres; tool harness through the arm
+Arm,"Servo extension lead 3-pin 5264, 400 mm",Feetech,accessory,2,1.5,3.0,"estimate (typical 2026 distributor price, not a quote)",chain A/B up the service loop
+Arm,Cable tie 2.5 x 100 mm,generic,,10,0.02,0.2,"estimate (typical 2026 distributor price, not a quote)",
+Arm,Printed part cable_clip (PETG),self-printed,cad/out/cable_clip.stl,8,0.01,0.08,"filament estimate: CAD mass model x 1.1, 22 USD/kg","0.4 g each, ~0.0 h each (estimate); orientation: flat"
+Arm,Printed part flange_arm (PETG),self-printed,cad/out/flange_arm.stl,1,0.52,0.52,"filament estimate: CAD mass model x 1.1, 22 USD/kg","21.5 g each, ~0.7 h each (estimate); orientation: socket mouth up"
+Arm,Printed part forearm (PETG),self-printed,cad/out/forearm.stl,1,2.666,2.67,"filament estimate: CAD mass model x 1.1, 22 USD/kg","110.2 g each, ~3.6 h each (estimate); orientation: on its side (-y face down)"
+Arm,Printed part pinion_elbow (PETG),self-printed,cad/out/pinion_elbow.stl,1,0.258,0.26,"filament estimate: CAD mass model x 1.1, 22 USD/kg","10.7 g each, ~0.4 h each (estimate); orientation: horn face down, 100% infill"
+Arm,Printed part servo_lid (PLA),self-printed,cad/out/servo_lid.stl,8,0.136,1.09,"filament estimate: CAD mass model x 1.1, 20 USD/kg","6.2 g each, ~0.2 h each (estimate); orientation: flat"
+Arm,Printed part turret (PETG),self-printed,cad/out/turret.stl,1,2.743,2.74,"filament estimate: CAD mass model x 1.1, 22 USD/kg","113.3 g each, ~3.8 h each (estimate); orientation: disc down"
+Arm,Printed part upper_arm (PETG),self-printed,cad/out/upper_arm.stl,1,3.977,3.98,"filament estimate: CAD mass model x 1.1, 22 USD/kg","164.3 g each, ~5.3 h each (estimate); orientation: on its side (+y face down), supports under clevis"
+Arm,Printed part wrist_bracket (PETG),self-printed,cad/out/wrist_bracket.stl,1,0.885,0.89,"filament estimate: CAD mass model x 1.1, 22 USD/kg","36.6 g each, ~1.2 h each (estimate); orientation: bridge down"
+Base & safety,Hex bolt M8x60 + hex nut (clamp screw),generic,ISO 4017 M8x60 / ISO 4032 M8,1,0.45,0.45,"estimate (typical 2026 distributor price, not a quote)",
+Base & safety,Adhesive rubber foot 10 mm,3M,SJ5302,6,0.15,0.9,"estimate (typical 2026 distributor price, not a quote)",
+Base & safety,"Emergency stop push button, 40 mm mushroom, turn release, 1 NC",Schneider Electric,XB4BS8445,1,25.0,25.0,"estimate (typical 2026 distributor price, not a quote)",contact block A -> E-STOP pins 1-2 (power loop)
+Base & safety,Add-on contact block 1 NC,Schneider Electric,ZBE102,1,6.0,6.0,"estimate (typical 2026 distributor price, not a quote)",contact B -> pins 3-4 (sense)
+Base & safety,Single-position control station enclosure,Schneider Electric,XALD01,1,12.0,12.0,"estimate (typical 2026 distributor price, not a quote)",
+Base & safety,JST XH 4-pin housing + crimp contacts,JST,XHP-4 / SXH-001T-P0.6,1,0.2,0.2,"estimate (typical 2026 distributor price, not a quote)",E-stop cable
+Base & safety,"Power supply 12 V 6 A, enclosed, screw terminals",Mean Well,LRS-75-12,1,20.0,20.0,"estimate (typical 2026 distributor price, not a quote)",IEC inlet cord not included
+Base & safety,Cable 2-core 18 AWG + ferrules,generic,,1.0,1.5,1.5,"estimate (typical 2026 distributor price, not a quote)",metres; PSU to J1
+Base & safety,Printed part base_plate (PETG),self-printed,cad/out/base_plate.stl,1,2.934,2.93,"filament estimate: CAD mass model x 1.1, 22 USD/kg","121.2 g each, ~3.9 h each (estimate); orientation: flat, bottom face down"
+Base & safety,Printed part base_shell (PETG),self-printed,cad/out/base_shell.stl,1,4.063,4.06,"filament estimate: CAD mass model x 1.1, 22 USD/kg","167.9 g each, ~5.4 h each (estimate); orientation: deck down (upside down), supports in pod cutouts"
+Base & safety,Printed part clamp_body (PETG),self-printed,cad/out/clamp_body.stl,1,1.564,1.56,"filament estimate: CAD mass model x 1.1, 22 USD/kg","64.6 g each, ~2.1 h each (estimate); orientation: on its side (y face down), 6 walls"
+Base & safety,Printed part clamp_knob (PLA),self-printed,cad/out/clamp_knob.stl,1,0.238,0.24,"filament estimate: CAD mass model x 1.1, 20 USD/kg","10.8 g each, ~0.4 h each (estimate); orientation: flat"
+Base & safety,Printed part clamp_pad (PETG),self-printed,cad/out/clamp_pad.stl,1,0.106,0.11,"filament estimate: CAD mass model x 1.1, 22 USD/kg","4.4 g each, ~0.2 h each (estimate); orientation: pad face down"
+Base & safety,Printed part pod_lid (PLA),self-printed,cad/out/pod_lid.stl,1,0.361,0.36,"filament estimate: CAD mass model x 1.1, 20 USD/kg","16.4 g each, ~0.5 h each (estimate); orientation: flat, label recess up"
+Controller,"Controller PCB 80 x 56 mm, 2-layer 1.6 mm, HASL lead-free",JLCPCB,pcb/controller/fab (Gerbers),1,2.0,2.0,"estimate (typical 2026 distributor price, not a quote) (5-board order / 5)","JLCPCB standard 2-layer rules; autorouted + scripted completion, KiCad DRC clean, not human-reviewed (design.md O7)"
+Controller,"Controller: 12V IN (TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal)",Phoenix Contact,1715721,1,0.8,0.8,"estimate (typical 2026 distributor price, not a quote)",J1
+Controller,Controller: 5A (Fuse_Littelfuse-NANO2-451_453),Littelfuse,0451005.MRL,1,0.8,0.8,"estimate (typical 2026 distributor price, not a quote)",F1
+Controller,Controller: SMBJ15CA (D_SMB),Littelfuse,SMBJ15CA,1,0.2,0.2,"estimate (typical 2026 distributor price, not a quote)",D1
+Controller,Controller: AOD4185 (TO-252-2),Alpha & Omega,AOD4185,3,0.4,1.2,"estimate (typical 2026 distributor price, not a quote)",Q1 Q2 Q3
+Controller,Controller: 100k (R_0603_1608Metric),Yageo,RC0603FR-07100KL,6,0.002,0.01,"estimate (typical LCSC qty-100 price, not a quote)",R1 R2 R4 R6 R19 R26
+Controller,Controller: BZT52C12 (D_SOD-123),Diodes Inc,BZT52C12-7-F,3,0.05,0.15,"estimate (typical 2026 distributor price, not a quote)",D2 D3 D4
+Controller,Controller: 470uF 25V (CP_Radial_D10.0mm_P5.00mm),Panasonic,EEU-FR1E471,1,0.6,0.6,"estimate (typical 2026 distributor price, not a quote)",C1
+Controller,Controller: 10uF 25V (C_0805_2012Metric),Samsung Electro-Mechanics,CL21A106KAYNNNE,3,0.03,0.09,"estimate (typical LCSC qty-100 price, not a quote)",C2 C6 C24
+Controller,Controller: 10k (R_0603_1608Metric),Yageo,RC0603FR-0710KL,8,0.002,0.02,"estimate (typical LCSC qty-100 price, not a quote)",R3 R9 R10 R15 R20 R23 R28 R35
+Controller,Controller: 100nF (C_0603_1608Metric),Samsung Electro-Mechanics,CL10B104KB8NNNC,18,0.005,0.09,"estimate (typical LCSC qty-100 price, not a quote)",C3 C5 C7 C12 C22 C23 C26 C27 C40 C41 C42 C43 C44 C45 C46 C47 C48 C49
+Controller,Controller: 2.2k (R_0603_1608Metric),Yageo,RC0603FR-072K2L,1,0.002,0.0,"estimate (typical LCSC qty-100 price, not a quote)",R16
+Controller,Controller: 220 (R_0603_1608Metric),Yageo,RC0603FR-07220RL,1,0.002,0.0,"estimate (typical LCSC qty-100 price, not a quote)",R17
+Controller,Controller: E-STOP (JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical),JST,B4B-XH-A(LF)(SN),1,0.15,0.15,"estimate (typical 2026 distributor price, not a quote)",J2
+Controller,Controller: 2N7002 (SOT-23),Nexperia,"2N7002,215",2,0.05,0.1,"estimate (typical 2026 distributor price, not a quote)",Q4 Q5
+Controller,Controller: 100 (R_0603_1608Metric),Yageo,RC0603FR-07100RL,3,0.002,0.01,"estimate (typical LCSC qty-100 price, not a quote)",R14 R18 R25
+Controller,Controller: 1k (R_0603_1608Metric),Yageo,RC0603FR-071KL,7,0.002,0.01,"estimate (typical LCSC qty-100 price, not a quote)",R8 R11 R21 R24 R27 R36 R37
+Controller,Controller: 10m (R_Shunt_Vishay_WSK2512_6332Metric_T1.19mm),Vishay Dale,WSK2512R0100FEA,1,1.2,1.2,"estimate (typical 2026 distributor price, not a quote)",R22
+Controller,Controller: INA219AIDCNR (SOT-23-8),Texas Instruments,INA219AIDCNR,1,1.5,1.5,"estimate (typical 2026 distributor price, not a quote)",U9
+Controller,Controller: 4.7k (R_0603_1608Metric),Yageo,RC0603FR-074K7L,2,0.002,0.0,"estimate (typical LCSC qty-100 price, not a quote)",R33 R34
+Controller,Controller: SERVO A (Molex_SPOX_5267-03A_1x03_P2.50mm_Vertical),Molex,22035035,1,0.3,0.3,"estimate (typical 2026 distributor price, not a quote)",J4
+Controller,Controller: SERVO B (Molex_SPOX_5267-03A_1x03_P2.50mm_Vertical),Molex,22035035,1,0.3,0.3,"estimate (typical 2026 distributor price, not a quote)",J5
+Controller,Controller: TOOL (JST_XH_B6B-XH-A_1x06_P2.50mm_Vertical),JST,B6B-XH-A(LF)(SN),1,0.2,0.2,"estimate (typical 2026 distributor price, not a quote)",J6
+Controller,Controller: 330 (R_0603_1608Metric),Yageo,RC0603FR-07330RL,2,0.002,0.0,"estimate (typical LCSC qty-100 price, not a quote)",R29 R30
+Controller,Controller: PRTR5V0U2X (SOT-143),Nexperia,"PRTR5V0U2X,215",2,0.15,0.3,"estimate (typical 2026 distributor price, not a quote)",U7 U8
+Controller,Controller: 74AHCT1G125GW (SOT-353_SC-70-5),Nexperia,"74AHCT1G125GW,125",1,0.15,0.15,"estimate (typical 2026 distributor price, not a quote)",U5
+Controller,Controller: 74LVC1G125GW (SOT-353_SC-70-5),Nexperia,"74LVC1G125GW,125",1,0.1,0.1,"estimate (typical 2026 distributor price, not a quote)",U6
+Controller,Controller: TPS54202DDCR (SOT-23-6),Texas Instruments,TPS54202DDCR,1,0.5,0.5,"estimate (typical 2026 distributor price, not a quote)",U3
+Controller,Controller: 22k (R_0603_1608Metric),Yageo,RC0603FR-0722KL,1,0.002,0.0,"estimate (typical LCSC qty-100 price, not a quote)",R5
+Controller,Controller: 10uH (L_Bourns_SRN6045TA),Bourns,SRN6045TA-100M,1,0.35,0.35,"estimate (typical 2026 distributor price, not a quote)",L1
+Controller,Controller: 13.7k (R_0603_1608Metric),Yageo,RC0603FR-0713K7L,1,0.002,0.0,"estimate (typical LCSC qty-100 price, not a quote)",R7
+Controller,Controller: 22uF 10V (C_0805_2012Metric),Murata,GRM21BR61A226ME51L,2,0.1,0.2,"estimate (typical LCSC qty-100 price, not a quote)",C8 C9
+Controller,Controller: B5819W (D_SOD-123),MCC,B5819W-TP,2,0.05,0.1,"estimate (typical 2026 distributor price, not a quote)",D5 D6
+Controller,Controller: AP2112K-3.3 (SOT-23-5),Diodes Inc,AP2112K-3.3TRG1,1,0.2,0.2,"estimate (typical 2026 distributor price, not a quote)",U4
+Controller,Controller: 1uF (C_0603_1608Metric),Samsung Electro-Mechanics,CL10A105KB8NNNC,3,0.01,0.03,"estimate (typical LCSC qty-100 price, not a quote)",C10 C50 C51
+Controller,Controller: 10uF (C_0805_2012Metric),Samsung Electro-Mechanics,CL21A106KAYNNNE,1,0.03,0.03,"estimate (typical LCSC qty-100 price, not a quote)",C11
+Controller,Controller: RP2040 (QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm),Raspberry Pi,RP2040,1,1.0,1.0,"estimate (typical 2026 distributor price, not a quote)",U1
+Controller,Controller: W25Q128JVSIQ (SOIC-8_5.3x5.3mm_P1.27mm),Winbond,W25Q128JVSIQ,1,1.2,1.2,"estimate (typical 2026 distributor price, not a quote)",U2
+Controller,Controller: BOOTSEL (SW_SPST_PTS810),C&K,PTS810 SJM 250 SMTR LFS,1,0.25,0.25,"estimate (typical 2026 distributor price, not a quote)",SW1
+Controller,Controller: RESET (SW_SPST_PTS810),C&K,PTS810 SJM 250 SMTR LFS,1,0.25,0.25,"estimate (typical 2026 distributor price, not a quote)",SW2
+Controller,Controller: 12MHz (Crystal_SMD_3225-4Pin_3.2x2.5mm),Abracon,ABM8-272-T3,1,0.4,0.4,"estimate (typical 2026 distributor price, not a quote)",Y1
+Controller,Controller: 15pF (C_0603_1608Metric),Samsung Electro-Mechanics,CL10C150JB8NNNC,2,0.005,0.01,"estimate (typical LCSC qty-100 price, not a quote)",C19 C20
+Controller,Controller: SWD (JST_SH_SM03B-SRSS-TB_1x03-1MP_P1.00mm_Horizontal),JST,SM03B-SRSS-TB(LF)(SN),1,0.4,0.4,"estimate (typical 2026 distributor price, not a quote)",J7
+Controller,Controller: USB-C (USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal),GCT,USB4105-GF-A,1,0.8,0.8,"estimate (typical 2026 distributor price, not a quote)",J3
+Controller,Controller: 5.1k (R_0603_1608Metric),Yageo,RC0603FR-075K1L,2,0.002,0.0,"estimate (typical LCSC qty-100 price, not a quote)",R31 R32
+Controller,Controller: USBLC6-2SC6 (SOT-23-6),STMicroelectronics,USBLC6-2SC6,1,0.25,0.25,"estimate (typical 2026 distributor price, not a quote)",U10
+Controller,Controller: 27 (R_0603_1608Metric),Yageo,RC0603FR-0727RL,2,0.002,0.0,"estimate (typical LCSC qty-100 price, not a quote)",R12 R13
+Controller,Controller: 4.7uF (C_0603_1608Metric),Samsung Electro-Mechanics,CL10A475KO8NNNC,1,0.02,0.02,"estimate (typical LCSC qty-100 price, not a quote)",C25
+Controller,Controller: red (LED_0603_1608Metric),Kingbright,APTD1608LSURCK,1,0.08,0.08,"estimate (typical 2026 distributor price, not a quote)",D7
+Controller,Controller: green (LED_0603_1608Metric),Kingbright,APTD1608LZGCK,1,0.08,0.08,"estimate (typical 2026 distributor price, not a quote)",D8
+Controller,Controller: blue (LED_0603_1608Metric),Kingbright,APTD1608LVBC/D,1,0.08,0.08,"estimate (typical 2026 distributor price, not a quote)",D9
+Controller,Controller: 680 (R_0603_1608Metric),Yageo,RC0603FR-07680RL,1,0.002,0.0,"estimate (typical LCSC qty-100 price, not a quote)",R38
+Gripper,Serial bus servo 12 V (STS3215),Feetech,"STS3215 (12 V, C018 1:345)",1,18.0,18.0,"estimate (typical 2026 distributor price, not a quote)",bus ID 6
+Gripper,Heat-set insert M3 + M3x8 screw,generic,RX-M3x5.7 / ISO 4762 M3x8,6,0.1,0.6,"estimate (typical 2026 distributor price, not a quote)",lid + finger screws
+Gripper,Pan head screw M2x8 (horn),generic,ISO 7045 M2x8,4,0.03,0.12,"estimate (typical 2026 distributor price, not a quote)",
+Gripper,"Tool contact PCB, 28 mm round, 2-layer 1.6 mm ENIG",JLCPCB,pcb/tool_contact/fab (Gerbers),1,1.0,1.0,"estimate (typical 2026 distributor price, not a quote) (5-board panel price / 5)","ENIG required for the pogo pads; autorouted, KiCad DRC clean, not human-reviewed"
+Gripper,Tool PCB R1: 1k,Yageo,RC0603FR-071KL,1,0.002,0.0,"estimate (typical 2026 distributor price, not a quote)","tool identity, see params.Tools.tool_ids; population: gripper=1k, knob_turner=3.3k, button_presser=10k, slider_pusher=33k"
+Gripper,Tool PCB U1: TPS70933DBVR,Texas Instruments,TPS70933DBVR,1,0.35,0.35,"estimate (typical 2026 distributor price, not a quote)","30 V LDO; AP2112K symbol used for its identical SOT-23-5 pinout (IN, GND, EN, NC, OUT); population: gripper=TPS70933DBVR, knob_turner=TPS70933DBVR, button_presser=TPS70933DBVR, slider_pusher=DNP"
+Gripper,Tool PCB C1: 1uF,Murata,GRM188R61H105KAAL,1,0.03,0.03,"estimate (typical 2026 distributor price, not a quote)","population: gripper=1uF, knob_turner=1uF, button_presser=1uF, slider_pusher=DNP"
+Gripper,Tool PCB C2: 1uF,Murata,GRM188R61H105KAAL,1,0.03,0.03,"estimate (typical 2026 distributor price, not a quote)","population: gripper=1uF, knob_turner=1uF, button_presser=1uF, slider_pusher=DNP"
+Gripper,Printed part gripper_body (PETG),self-printed,cad/out/gripper_body.stl,1,1.814,1.81,"filament estimate: CAD mass model x 1.1, 22 USD/kg","74.9 g each, ~2.5 h each (estimate); orientation: plug down, supports under cradle overhang"
+Gripper,Printed part gripper_finger (PETG),self-printed,cad/out/gripper_finger.stl,2,0.113,0.23,"filament estimate: CAD mass model x 1.1, 22 USD/kg","4.7 g each, ~0.2 h each (estimate); orientation: on the outer face"
+Gripper,Printed part gripper_pinion (PETG),self-printed,cad/out/gripper_pinion.stl,1,0.088,0.09,"filament estimate: CAD mass model x 1.1, 22 USD/kg","3.6 g each, ~0.1 h each (estimate); orientation: flat, 100% infill"
+Gripper,Printed part gripper_rack (PETG),self-printed,cad/out/gripper_rack.stl,2,0.088,0.18,"filament estimate: CAD mass model x 1.1, 22 USD/kg","3.7 g each, ~0.1 h each (estimate); orientation: teeth vertical, flat side down"
+Knob turner,Serial bus servo 12 V (STS3215),Feetech,"STS3215 (12 V, C018 1:345)",1,18.0,18.0,"estimate (typical 2026 distributor price, not a quote)",bus ID 7
+Knob turner,Deep-groove ball bearing 8x22x7,generic,608-2RS,2,0.5,1.0,"estimate (typical 2026 distributor price, not a quote)",
+Knob turner,"Linear shaft 8 mm h6, cut to length",Misumi,PSFJ8-100,1,4.0,4.0,"estimate (typical 2026 distributor price, not a quote)",cut to the length in cad/out/assembly.json
+Knob turner,Diametric magnet 6 x 2.5 mm N35,generic (AS5600 kit magnet),select at order,1,0.5,0.5,"estimate (typical 2026 distributor price, not a quote)",
+Knob turner,Set screw M3x6 + M3 nut,generic,ISO 4027 M3x6 / ISO 4032 M3,2,0.06,0.12,"estimate (typical 2026 distributor price, not a quote)",
+Knob turner,Heat-set insert M3 + M3x8 screw,generic,RX-M3x5.7 / ISO 4762 M3x8,7,0.1,0.7,"estimate (typical 2026 distributor price, not a quote)",lid + collet
+Knob turner,Pan head screw M2x8 (horn),generic,ISO 7045 M2x8,4,0.03,0.12,"estimate (typical 2026 distributor price, not a quote)",
+Knob turner,"Tool contact PCB, 28 mm round, 2-layer 1.6 mm ENIG",JLCPCB,pcb/tool_contact/fab (Gerbers),1,1.0,1.0,"estimate (typical 2026 distributor price, not a quote) (5-board panel price / 5)","ENIG required for the pogo pads; autorouted, KiCad DRC clean, not human-reviewed"
+Knob turner,Tool PCB R1: 3.3k,Yageo,RC0603FR-073K3L,1,0.002,0.0,"estimate (typical 2026 distributor price, not a quote)","tool identity, see params.Tools.tool_ids; population: gripper=1k, knob_turner=3.3k, button_presser=10k, slider_pusher=33k"
+Knob turner,Tool PCB U1: TPS70933DBVR,Texas Instruments,TPS70933DBVR,1,0.35,0.35,"estimate (typical 2026 distributor price, not a quote)","30 V LDO; AP2112K symbol used for its identical SOT-23-5 pinout (IN, GND, EN, NC, OUT); population: gripper=TPS70933DBVR, knob_turner=TPS70933DBVR, button_presser=TPS70933DBVR, slider_pusher=DNP"
+Knob turner,Tool PCB C1: 1uF,Murata,GRM188R61H105KAAL,1,0.03,0.03,"estimate (typical 2026 distributor price, not a quote)","population: gripper=1uF, knob_turner=1uF, button_presser=1uF, slider_pusher=DNP"
+Knob turner,Tool PCB C2: 1uF,Murata,GRM188R61H105KAAL,1,0.03,0.03,"estimate (typical 2026 distributor price, not a quote)","population: gripper=1uF, knob_turner=1uF, button_presser=1uF, slider_pusher=DNP"
+Knob turner,Tool PCB U2: AS5600-ASOM,ams OSRAM,AS5600-ASOM,1,2.0,2.0,"estimate (typical 2026 distributor price, not a quote)","centred on the tool axis under the knob-shaft magnet; analog OUT -> AUX1; population: gripper=DNP, knob_turner=AS5600-ASOM, button_presser=DNP, slider_pusher=DNP"
+Knob turner,Tool PCB C3: 100nF,Samsung Electro-Mechanics,CL10B104KB8NNNC,1,0.005,0.01,"estimate (typical 2026 distributor price, not a quote)","population: gripper=DNP, knob_turner=100nF, button_presser=DNP, slider_pusher=DNP"
+Knob turner,Printed part knob_body (PETG),self-printed,cad/out/knob_body.stl,1,2.079,2.08,"filament estimate: CAD mass model x 1.1, 22 USD/kg","85.9 g each, ~2.9 h each (estimate); orientation: plug down, supports under top plate"
+Knob turner,Printed part knob_collet (TPU),self-printed,cad/out/knob_collet.stl,1,0.483,0.48,"filament estimate: CAD mass model x 1.1, 32 USD/kg","13.7 g each, ~0.5 h each (estimate); orientation: base down, TPU 95A"
+Knob turner,Printed part knob_collet_hub (PETG),self-printed,cad/out/knob_collet_hub.stl,1,0.094,0.09,"filament estimate: CAD mass model x 1.1, 22 USD/kg","3.9 g each, ~0.1 h each (estimate); orientation: flat"
+Knob turner,Printed part knob_magnet_cap (PETG),self-printed,cad/out/knob_magnet_cap.stl,1,0.025,0.03,"filament estimate: CAD mass model x 1.1, 22 USD/kg","1.0 g each, ~0.1 h each (estimate); orientation: magnet pocket up"
+Knob turner,Printed part knob_output_gear (PETG),self-printed,cad/out/knob_output_gear.stl,1,0.273,0.27,"filament estimate: CAD mass model x 1.1, 22 USD/kg","11.3 g each, ~0.4 h each (estimate); orientation: flat (hub down), 100% infill"
+Knob turner,Printed part knob_servo_gear (PETG),self-printed,cad/out/knob_servo_gear.stl,1,0.106,0.11,"filament estimate: CAD mass model x 1.1, 22 USD/kg","4.4 g each, ~0.1 h each (estimate); orientation: flat, 100% infill"
+Button presser,Serial bus servo 12 V (STS3215),Feetech,"STS3215 (12 V, C018 1:345)",1,18.0,18.0,"estimate (typical 2026 distributor price, not a quote)",bus ID 8
+Button presser,"Force-sensing resistor, 7.6 mm round",Interlink Electronics,FSR 400 (order code to confirm),1,7.0,7.0,"estimate (typical 2026 distributor price, not a quote)","tip sensor, read on AUX1"
+Button presser,"Compression spring OD 12, wire 0.8, free length 18 mm",generic,select at order,1,0.3,0.3,"estimate (typical 2026 distributor price, not a quote)",
+Button presser,Heat-set insert M3 + M3x8 screw,generic,RX-M3x5.7 / ISO 4762 M3x8,4,0.1,0.4,"estimate (typical 2026 distributor price, not a quote)",servo lid
+Button presser,Pan head screw M2x8 (horn),generic,ISO 7045 M2x8,4,0.03,0.12,"estimate (typical 2026 distributor price, not a quote)",
+Button presser,"Tool contact PCB, 28 mm round, 2-layer 1.6 mm ENIG",JLCPCB,pcb/tool_contact/fab (Gerbers),1,1.0,1.0,"estimate (typical 2026 distributor price, not a quote) (5-board panel price / 5)","ENIG required for the pogo pads; autorouted, KiCad DRC clean, not human-reviewed"
+Button presser,Tool PCB R1: 10k,Yageo,RC0603FR-0710KL,1,0.002,0.0,"estimate (typical 2026 distributor price, not a quote)","tool identity, see params.Tools.tool_ids; population: gripper=1k, knob_turner=3.3k, button_presser=10k, slider_pusher=33k"
+Button presser,Tool PCB U1: TPS70933DBVR,Texas Instruments,TPS70933DBVR,1,0.35,0.35,"estimate (typical 2026 distributor price, not a quote)","30 V LDO; AP2112K symbol used for its identical SOT-23-5 pinout (IN, GND, EN, NC, OUT); population: gripper=TPS70933DBVR, knob_turner=TPS70933DBVR, button_presser=TPS70933DBVR, slider_pusher=DNP"
+Button presser,Tool PCB C1: 1uF,Murata,GRM188R61H105KAAL,1,0.03,0.03,"estimate (typical 2026 distributor price, not a quote)","population: gripper=1uF, knob_turner=1uF, button_presser=1uF, slider_pusher=DNP"
+Button presser,Tool PCB C2: 1uF,Murata,GRM188R61H105KAAL,1,0.03,0.03,"estimate (typical 2026 distributor price, not a quote)","population: gripper=1uF, knob_turner=1uF, button_presser=1uF, slider_pusher=DNP"
+Button presser,Tool PCB R2: 10k,Yageo,RC0603FR-0710KL,1,0.002,0.0,"estimate (typical 2026 distributor price, not a quote)","FSR divider (FSR from 3V3_T to AUX1); population: gripper=DNP, knob_turner=DNP, button_presser=10k, slider_pusher=DNP"
+Button presser,Printed part presser_body (PETG),self-printed,cad/out/presser_body.stl,1,1.472,1.47,"filament estimate: CAD mass model x 1.1, 22 USD/kg","60.8 g each, ~2.0 h each (estimate); orientation: plug down"
+Button presser,Printed part presser_cam (PETG),self-printed,cad/out/presser_cam.stl,1,0.105,0.1,"filament estimate: CAD mass model x 1.1, 22 USD/kg","4.3 g each, ~0.1 h each (estimate); orientation: flat, 100% infill"
+Button presser,Printed part presser_plunger (PETG),self-printed,cad/out/presser_plunger.stl,1,0.084,0.08,"filament estimate: CAD mass model x 1.1, 22 USD/kg","3.5 g each, ~0.1 h each (estimate); orientation: follower down"
+Button presser,Printed part presser_tip_cap (TPU),self-printed,cad/out/presser_tip_cap.stl,1,0.022,0.02,"filament estimate: CAD mass model x 1.1, 32 USD/kg","0.6 g each, ~0.0 h each (estimate); orientation: open end down, TPU 95A"
+Slider pusher,"Tool contact PCB, 28 mm round, 2-layer 1.6 mm ENIG",JLCPCB,pcb/tool_contact/fab (Gerbers),1,1.0,1.0,"estimate (typical 2026 distributor price, not a quote) (5-board panel price / 5)","ENIG required for the pogo pads; autorouted, KiCad DRC clean, not human-reviewed"
+Slider pusher,Tool PCB R1: 33k,Yageo,RC0603FR-0733KL,1,0.002,0.0,"estimate (typical 2026 distributor price, not a quote)","tool identity, see params.Tools.tool_ids; population: gripper=1k, knob_turner=3.3k, button_presser=10k, slider_pusher=33k"
+Slider pusher,Printed part pusher_body (PETG),self-printed,cad/out/pusher_body.stl,1,0.886,0.89,"filament estimate: CAD mass model x 1.1, 22 USD/kg","36.6 g each, ~1.2 h each (estimate); orientation: plug down"
+Slider pusher,Printed part pusher_pad (TPU),self-printed,cad/out/pusher_pad.stl,1,0.078,0.08,"filament estimate: CAD mass model x 1.1, 32 USD/kg","2.2 g each, ~0.1 h each (estimate); orientation: flat, TPU 95A"
+Fixtures,Printed part tolerance_coupon (PLA),self-printed,cad/out/tolerance_coupon.stl,1,0.506,0.51,"filament estimate: CAD mass model x 1.1, 20 USD/kg","23.0 g each, ~0.8 h each (estimate); orientation: flat"
+Fixtures,Printed part tool_rack (PETG),self-printed,cad/out/tool_rack.stl,1,7.931,7.93,"filament estimate: CAD mass model x 1.1, 22 USD/kg","327.7 g each, ~10.4 h each (estimate); orientation: on its back rail, supports under plate"
+Arm,TOTAL Arm,,,,,149.72,sum of estimates,
+Base & safety,TOTAL Base & safety,,,,,75.31,sum of estimates,
+Controller,TOTAL Controller,,,,,16.51,sum of estimates,
+Gripper,TOTAL Gripper,,,,,22.44,sum of estimates,
+Knob turner,TOTAL Knob turner,,,,,30.92,sum of estimates,
+Button presser,TOTAL Button presser,,,,,28.9,sum of estimates,
+Slider pusher,TOTAL Slider pusher,,,,,1.97,sum of estimates,
+Fixtures,TOTAL Fixtures,,,,,8.44,sum of estimates,
+TOTAL,"TOTAL arm (arm + base & safety + controller, no tools)",,,,,241.54,sum of estimates,
+TOTAL,TOTAL arm with all four tools and fixtures,,,,,334.21,sum of estimates,

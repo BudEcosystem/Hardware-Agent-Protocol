@@ -1,0 +1,750 @@
+{
+ "base_plate": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 146.46837754382997,
+  "area_cm2": 613.4065847300302,
+  "mass_model_g": 121.24266630319883,
+  "printed": true,
+  "solid_equivalent_g": 186.01483948066405,
+  "bbox_mm": [
+   215.0,
+   130.0,
+   57.5
+  ],
+  "print_time_h_est": 3.908151443669505,
+  "orientation": "flat, bottom face down",
+  "centroid_mm": [
+   -33.71685716504608,
+   -0.6344802299015423,
+   7.625082120422941
+  ]
+ },
+ "base_shell": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 182.9614491232732,
+  "area_cm2": 920.3719326996377,
+  "mass_model_g": 167.89358989636446,
+  "printed": true,
+  "solid_equivalent_g": 232.361040386557,
+  "bbox_mm": [
+   192.0000001,
+   130.0000002,
+   64.50000019999999
+  ],
+  "print_time_h_est": 5.380393932311569,
+  "orientation": "deck down (upside down), supports in pod cutouts",
+  "centroid_mm": [
+   -10.192643853691408,
+   0.03644054736343194,
+   48.82305992163373
+  ]
+ },
+ "pod_lid": {
+  "material": "PLA",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 13.224366309363255,
+  "area_cm2": 131.95918554997243,
+  "mass_model_g": 16.398214223610438,
+  "printed": true,
+  "solid_equivalent_g": 16.398214223610438,
+  "bbox_mm": [
+   72.00000000000003,
+   92.0,
+   2.3999999999999986
+  ],
+  "print_time_h_est": 0.5297764408477482,
+  "orientation": "flat, label recess up",
+  "centroid_mm": [
+   -93.22383006289623,
+   -0.011562565196590876,
+   43.1077663230401
+  ]
+ },
+ "clamp_body": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 109.246836423704,
+  "area_cm2": 215.5105207199688,
+  "mass_model_g": 64.61370702783749,
+  "printed": true,
+  "solid_equivalent_g": 138.74348225810408,
+  "bbox_mm": [
+   81.0,
+   40.000000000000014,
+   84.0
+  ],
+  "print_time_h_est": 2.102259312205896,
+  "orientation": "on its side (y face down), 6 walls",
+  "centroid_mm": [
+   -182.15106371447547,
+   -2.0941172856320508e-16,
+   -16.929810462654288
+  ]
+ },
+ "clamp_pad": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 4.934165786774045,
+  "area_cm2": 23.34988739780614,
+  "mass_model_g": 4.37088315235887,
+  "printed": true,
+  "solid_equivalent_g": 6.266390549203037,
+  "bbox_mm": [
+   28.0,
+   28.0,
+   14.0
+  ],
+  "print_time_h_est": 0.165739693549521,
+  "orientation": "pad face down",
+  "centroid_mm": [
+   -9.17309515404637e-16,
+   -2.9391549958352816e-16,
+   1.2973944965080881
+  ]
+ },
+ "clamp_knob": {
+  "material": "PLA",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 16.258565919175343,
+  "area_cm2": 45.86002743352631,
+  "mass_model_g": 10.824966979409329,
+  "printed": true,
+  "solid_equivalent_g": 20.160621739777426,
+  "bbox_mm": [
+   36.41308905545395,
+   40.0,
+   16.0
+  ],
+  "print_time_h_est": 0.37975444762574656,
+  "orientation": "flat",
+  "centroid_mm": [
+   -1.3087925286437174e-15,
+   -1.641286889152265e-16,
+   7.826355475609379
+  ]
+ },
+ "turret": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 150.16119253736295,
+  "area_cm2": 526.1465655772497,
+  "mass_model_g": 113.34072997251627,
+  "printed": true,
+  "solid_equivalent_g": 190.70471452245096,
+  "bbox_mm": [
+   110.0,
+   110.0,
+   105.5
+  ],
+  "print_time_h_est": 3.761246796416582,
+  "orientation": "disc down",
+  "centroid_mm": [
+   -1.9302691179762668,
+   -1.0055644134428636,
+   20.92848939279213
+  ]
+ },
+ "pinion_shoulder": {
+  "material": "steel",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 6.153609210032424,
+  "area_cm2": 43.57793854076821,
+  "mass_model_g": 0.0,
+  "printed": false,
+  "solid_equivalent_g": 0.0,
+  "bbox_mm": [
+   28.322474753010347,
+   28.443811036388933,
+   19.2
+  ],
+  "print_time_h_est": 0.0,
+  "orientation": "machined steel, not printed (drawing = this STEP)",
+  "centroid_mm": [
+   -2.609749092454682e-16,
+   8.019618298717399e-17,
+   7.318246428448176
+  ]
+ },
+ "pinion_elbow": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 11.496012303035734,
+  "area_cm2": 59.04181997295361,
+  "mass_model_g": 10.678562042171306,
+  "printed": true,
+  "solid_equivalent_g": 14.599935624855382,
+  "bbox_mm": [
+   37.766751219597666,
+   37.92854771754609,
+   19.2
+  ],
+  "print_time_h_est": 0.373663355898366,
+  "orientation": "horn face down, 100% infill",
+  "centroid_mm": [
+   -1.326568301151606e-15,
+   -2.1897257261135507e-15,
+   7.1703516055425
+  ]
+ },
+ "upper_arm": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 253.95515218521243,
+  "area_cm2": 633.5009615069611,
+  "mass_model_g": 164.33879555612856,
+  "printed": true,
+  "solid_equivalent_g": 322.5230432752198,
+  "bbox_mm": [
+   81.44679825770827,
+   69.8,
+   237.7434834863774
+  ],
+  "print_time_h_est": 5.280362159609066,
+  "orientation": "on its side (+y face down), supports under clevis",
+  "centroid_mm": [
+   0.21391491557643855,
+   -1.8840959482220718,
+   64.8099895481626
+  ]
+ },
+ "forearm": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 168.2494373422321,
+  "area_cm2": 431.71818583483605,
+  "mass_model_g": 110.15873169225073,
+  "printed": true,
+  "solid_equivalent_g": 213.67678542463477,
+  "bbox_mm": [
+   71.98757766280757,
+   52.300000000000004,
+   195.00194593074485
+  ],
+  "print_time_h_est": 3.550988444952216,
+  "orientation": "on its side (-y face down)",
+  "centroid_mm": [
+   0.8251048177539684,
+   -0.9220923375250576,
+   40.29844856585555
+  ]
+ },
+ "wrist_bracket": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 36.52827648218055,
+  "area_cm2": 212.31945612685337,
+  "mass_model_g": 36.56751291932351,
+  "printed": true,
+  "solid_equivalent_g": 46.390911132369304,
+  "bbox_mm": [
+   30.150000000000002,
+   79.50000000000001,
+   84.0
+  ],
+  "print_time_h_est": 1.205404454734518,
+  "orientation": "bridge down",
+  "centroid_mm": [
+   2.125842418138522,
+   -0.9124731821368024,
+   29.837210887469258
+  ]
+ },
+ "flange_arm": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 26.785368621155733,
+  "area_cm2": 105.67603317380537,
+  "mass_model_g": 21.47874466364189,
+  "printed": true,
+  "solid_equivalent_g": 34.017418148867776,
+  "bbox_mm": [
+   56.0000002,
+   56.0000002,
+   18.0000002
+  ],
+  "print_time_h_est": 0.7086268802954909,
+  "orientation": "socket mouth up",
+  "centroid_mm": [
+   -0.19117659331179065,
+   -0.10295215205254145,
+   1.414180708098746
+  ]
+ },
+ "servo_lid": {
+  "material": "PLA",
+  "qty": 8,
+  "solids": 1,
+  "volume_cm3": 4.986009566773505,
+  "area_cm2": 43.785833581154684,
+  "mass_model_g": 6.182651862799147,
+  "printed": true,
+  "solid_equivalent_g": 6.182651862799147,
+  "bbox_mm": [
+   60.800000000000004,
+   3.0,
+   39.4
+  ],
+  "print_time_h_est": 0.20410752249101213,
+  "orientation": "flat",
+  "centroid_mm": [
+   -11.3,
+   14.05,
+   -18.35169626796606
+  ]
+ },
+ "cable_clip": {
+  "material": "PETG",
+  "qty": 8,
+  "solids": 1,
+  "volume_cm3": 0.338928,
+  "area_cm2": 5.769999999999999,
+  "mass_model_g": 0.43043855999999997,
+  "printed": true,
+  "solid_equivalent_g": 0.43043855999999997,
+  "bbox_mm": [
+   4.6,
+   38.0,
+   4.6
+  ],
+  "print_time_h_est": 0.02303285714285714,
+  "orientation": "flat",
+  "centroid_mm": [
+   -0.38479913137893607,
+   -6.708612904311006e-16,
+   2.3
+  ]
+ },
+ "gripper_body": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 78.42043430673075,
+  "area_cm2": 422.4476822780418,
+  "mass_model_g": 74.9449042162859,
+  "printed": true,
+  "solid_equivalent_g": 99.59395156954805,
+  "bbox_mm": [
+   66.7,
+   90.0,
+   79.00000000000001
+  ],
+  "print_time_h_est": 2.4806938731497907,
+  "orientation": "plug down, supports under cradle overhang",
+  "centroid_mm": [
+   -0.9101494897707155,
+   -1.1500796353307459,
+   47.12219990258058
+  ]
+ },
+ "gripper_pinion": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 2.8590198918233383,
+  "area_cm2": 25.72220533943907,
+  "mass_model_g": 3.6309552626156396,
+  "printed": true,
+  "solid_equivalent_g": 3.6309552626156396,
+  "bbox_mm": [
+   25.992909695229564,
+   25.992909695229564,
+   8.0
+  ],
+  "print_time_h_est": 0.1301198369771166,
+  "orientation": "flat, 100% infill",
+  "centroid_mm": [
+   -2.8300976242274117e-15,
+   3.237060070740903e-16,
+   71.1730844956598
+  ]
+ },
+ "gripper_rack": {
+  "material": "PETG",
+  "qty": 2,
+  "solids": 1,
+  "volume_cm3": 3.3243731130614758,
+  "area_cm2": 22.35555156313841,
+  "mass_model_g": 3.6514763968320274,
+  "printed": true,
+  "solid_equivalent_g": 4.221953853588074,
+  "bbox_mm": [
+   10.0,
+   48.0,
+   8.0
+  ],
+  "print_time_h_est": 0.130761042270717,
+  "orientation": "teeth vertical, flat side down",
+  "centroid_mm": [
+   16.47544288676751,
+   -15.535332792824283,
+   71.24608405351427
+  ]
+ },
+ "gripper_finger": {
+  "material": "PETG",
+  "qty": 2,
+  "solids": 1,
+  "volume_cm3": 4.157441779020858,
+  "area_cm2": 28.791876826363172,
+  "mass_model_g": 4.65550273764337,
+  "printed": true,
+  "solid_equivalent_g": 5.27995105935649,
+  "bbox_mm": [
+   26.05,
+   8.0,
+   60.400000000000006
+  ],
+  "print_time_h_est": 0.1621329439333636,
+  "orientation": "on the outer face",
+  "centroid_mm": [
+   2.2823128043316743,
+   4.009737184829651,
+   100.7607459668464
+  ]
+ },
+ "knob_body": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 95.07929404527286,
+  "area_cm2": 465.7581806839386,
+  "mass_model_g": 85.91229374661152,
+  "printed": true,
+  "solid_equivalent_g": 120.75070343749654,
+  "bbox_mm": [
+   88.55000000000001,
+   80.2,
+   85.50000000000001
+  ],
+  "print_time_h_est": 2.8515069599616147,
+  "orientation": "plug down, supports under top plate",
+  "centroid_mm": [
+   -7.331734376925686,
+   -1.8050035505590605,
+   43.21169580405046
+  ]
+ },
+ "knob_servo_gear": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 3.780769920160552,
+  "area_cm2": 27.429254656791365,
+  "mass_model_g": 4.366626226367672,
+  "printed": true,
+  "solid_equivalent_g": 4.801577798603901,
+  "bbox_mm": [
+   32.98744500132926,
+   32.987445001329256,
+   6.0
+  ],
+  "print_time_h_est": 0.1489400145721682,
+  "orientation": "flat, 100% infill",
+  "centroid_mm": [
+   -44.99999999999997,
+   -3.5331966013215166e-16,
+   73.8
+  ]
+ },
+ "knob_output_gear": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 8.87433830286112,
+  "area_cm2": 80.54054053116928,
+  "mass_model_g": 11.27040964463362,
+  "printed": true,
+  "solid_equivalent_g": 11.27040964463362,
+  "bbox_mm": [
+   62.99182384077574,
+   62.99182384077574,
+   12.000000199999988
+  ],
+  "print_time_h_est": 0.37715628227623477,
+  "orientation": "flat (hub down), 100% infill",
+  "centroid_mm": [
+   -0.06524012506098462,
+   2.000289287807167e-10,
+   73.15949221713748
+  ]
+ },
+ "knob_collet_hub": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 3.6165433264851785,
+  "area_cm2": 23.41310398571643,
+  "mass_model_g": 3.875612940587082,
+  "printed": true,
+  "solid_equivalent_g": 4.593010024636177,
+  "bbox_mm": [
+   30.0000002,
+   30.0000002,
+   6.000000199999988
+  ],
+  "print_time_h_est": 0.1335977675891164,
+  "orientation": "flat",
+  "centroid_mm": [
+   -0.270419962301785,
+   3.5860124516250764e-10,
+   88.98801291351667
+  ]
+ },
+ "knob_collet": {
+  "material": "TPU",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 15.692055075880567,
+  "area_cm2": 79.02776091456563,
+  "mass_model_g": 13.728597611901096,
+  "printed": true,
+  "solid_equivalent_g": 18.987386641815487,
+  "bbox_mm": [
+   36.0,
+   36.0,
+   24.0
+  ],
+  "print_time_h_est": 0.5002360491899874,
+  "orientation": "base down, TPU 95A",
+  "centroid_mm": [
+   -1.289359762181021e-15,
+   -6.668899220891062e-16,
+   102.0421758367405
+  ]
+ },
+ "knob_magnet_cap": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 0.8028654185514076,
+  "area_cm2": 8.234114345058849,
+  "mass_model_g": 1.0196390815602876,
+  "printed": true,
+  "solid_equivalent_g": 1.0196390815602876,
+  "bbox_mm": [
+   12.0,
+   12.0,
+   10.5
+  ],
+  "print_time_h_est": 0.05373473883140507,
+  "orientation": "magnet pocket up",
+  "centroid_mm": [
+   -7.832325401214481e-16,
+   -1.834140855880725e-16,
+   9.359572116137109
+  ]
+ },
+ "presser_body": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 59.313987157793875,
+  "area_cm2": 358.15530824970904,
+  "mass_model_g": 60.80663739119843,
+  "printed": true,
+  "solid_equivalent_g": 75.32876369039822,
+  "bbox_mm": [
+   71.80000000000001,
+   52.0,
+   118.20000000000002
+  ],
+  "print_time_h_est": 2.0083032555680047,
+  "orientation": "plug down",
+  "centroid_mm": [
+   -9.630553753794864,
+   1.2126670398508526,
+   38.83673610520702
+  ]
+ },
+ "presser_cam": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 4.378751840573451,
+  "area_cm2": 24.95681204011732,
+  "mass_model_g": 4.3306971596982,
+  "printed": true,
+  "solid_equivalent_g": 5.561014837528282,
+  "bbox_mm": [
+   6.000000000000007,
+   32.0,
+   32.0
+  ],
+  "print_time_h_est": 0.1478173715691226,
+  "orientation": "flat, 100% infill",
+  "centroid_mm": [
+   -0.049720189410245565,
+   -2.6287838951398865e-16,
+   66.60809298321138
+  ]
+ },
+ "presser_plunger": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 3.305657691315417,
+  "area_cm2": 20.85109595453881,
+  "mass_model_g": 3.483850496821374,
+  "printed": true,
+  "solid_equivalent_g": 4.19818526797058,
+  "bbox_mm": [
+   14.0,
+   14.0,
+   52.0
+  ],
+  "print_time_h_est": 0.13802338760221763,
+  "orientation": "follower down",
+  "centroid_mm": [
+   -0.19062984839542796,
+   -5.986715115888117e-17,
+   106.58255648615199
+  ]
+ },
+ "presser_tip_cap": {
+  "material": "TPU",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 0.513119656684822,
+  "area_cm2": 7.340123437638547,
+  "mass_model_g": 0.6208747845886347,
+  "printed": true,
+  "solid_equivalent_g": 0.6208747845886347,
+  "bbox_mm": [
+   12.0,
+   12.0,
+   8.0
+  ],
+  "print_time_h_est": 0.03702855780495326,
+  "orientation": "open end down, TPU 95A",
+  "centroid_mm": [
+   -6.006355586280932e-16,
+   -2.1802989302992627e-16,
+   133.0252805123518
+  ]
+ },
+ "pusher_body": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 44.801585067389105,
+  "area_cm2": 183.35192849331807,
+  "mass_model_g": 36.62938764234242,
+  "printed": true,
+  "solid_equivalent_g": 56.898013035584164,
+  "bbox_mm": [
+   48.0,
+   48.0,
+   96.5
+  ],
+  "print_time_h_est": 1.2445252981609305,
+  "orientation": "plug down",
+  "centroid_mm": [
+   -0.30159794576783927,
+   -0.008561709599418535,
+   41.825226785535946
+  ]
+ },
+ "pusher_pad": {
+  "material": "TPU",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 1.825538999999999,
+  "area_cm2": 17.251099999999994,
+  "mass_model_g": 2.2089021899999985,
+  "printed": true,
+  "solid_equivalent_g": 2.2089021899999985,
+  "bbox_mm": [
+   2.8499999999999996,
+   37.7,
+   22.69999999999999
+  ],
+  "print_time_h_est": 0.07837952380952376,
+  "orientation": "flat, TPU 95A",
+  "centroid_mm": [
+   8.575000000000003,
+   -1.2455152995538974e-16,
+   83.62628407281358
+  ]
+ },
+ "tool_rack": {
+  "material": "PETG",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 495.3535653025014,
+  "area_cm2": 1302.7908251431518,
+  "mass_model_g": 327.7114336065245,
+  "printed": true,
+  "solid_equivalent_g": 629.0990279341769,
+  "bbox_mm": [
+   450.0,
+   70.00000000000004,
+   176.8
+  ],
+  "print_time_h_est": 10.385535670745048,
+  "orientation": "on its back rail, supports under plate",
+  "centroid_mm": [
+   9.107550312915152e-14,
+   4.193479014121126,
+   110.72035597290787
+  ]
+ },
+ "tolerance_coupon": {
+  "material": "PLA",
+  "qty": 1,
+  "solids": 1,
+  "volume_cm3": 26.961885159701062,
+  "area_cm2": 124.55076288384149,
+  "mass_model_g": 23.003028741389723,
+  "printed": true,
+  "solid_equivalent_g": 33.43273759802931,
+  "bbox_mm": [
+   120.0,
+   40.0,
+   8.0
+  ],
+  "print_time_h_est": 0.7528106996092461,
+  "orientation": "flat",
+  "centroid_mm": [
+   65.24473545868344,
+   19.999999999999996,
+   3.929455142517975
+  ]
+ },
+ "ref_sts3215": {
+  "material": "servo",
+  "qty": 8,
+  "solids": 1,
+  "volume_cm3": 40.3689507751156,
+  "area_cm2": 80.02384350351552,
+  "mass_model_g": 0.0,
+  "printed": false,
+  "solid_equivalent_g": 0.0,
+  "bbox_mm": [
+   45.2,
+   24.7,
+   42.0
+  ],
+  "print_time_h_est": 0.0,
+  "orientation": "not printed",
+  "centroid_mm": [
+   -10.937911724774962,
+   -4.9699384067453454e-17,
+   -16.785068703639514
+  ]
+ }
+}

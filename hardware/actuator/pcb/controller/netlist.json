@@ -1,0 +1,2857 @@
+{
+ "board": "bhms_controller",
+ "nets": {
+  "+1V1": [
+   "U1.45",
+   "U1.23",
+   "U1.50",
+   "C48.1",
+   "C49.1",
+   "C51.1"
+  ],
+  "+3V3": [
+   "R20.1",
+   "U9.4",
+   "C23.1",
+   "R33.1",
+   "R34.1",
+   "R28.1",
+   "U8.4",
+   "R35.1",
+   "U6.5",
+   "C27.1",
+   "U4.5",
+   "C11.1",
+   "U1.1",
+   "U1.10",
+   "U1.22",
+   "U1.33",
+   "U1.42",
+   "U1.49",
+   "U1.48",
+   "U1.43",
+   "U1.44",
+   "C40.1",
+   "C41.1",
+   "C42.1",
+   "C43.1",
+   "C44.1",
+   "C45.1",
+   "C46.1",
+   "C47.1",
+   "C50.1",
+   "U2.8",
+   "C12.1",
+   "R10.1",
+   "R9.1"
+  ],
+  "+5V": [
+   "L1.2",
+   "R6.1",
+   "C8.1",
+   "C9.1",
+   "D5.2"
+  ],
+  "5V_SYS": [
+   "U7.4",
+   "U5.5",
+   "R15.1",
+   "C26.1",
+   "D5.1",
+   "D6.1",
+   "U4.1",
+   "U4.3",
+   "C10.1",
+   "D7.2",
+   "D8.2",
+   "D9.2"
+  ],
+  "AUX1_C": [
+   "J6.4",
+   "R29.1",
+   "U8.2"
+  ],
+  "AUX2_C": [
+   "J6.5",
+   "R30.1",
+   "U8.3"
+  ],
+  "BOOTSEL": [
+   "R11.2",
+   "SW1.1"
+  ],
+  "BUCK_BOOT": [
+   "U3.6",
+   "C5.1"
+  ],
+  "BUCK_EN": [
+   "U3.5",
+   "R4.2",
+   "R5.1"
+  ],
+  "BUCK_FB": [
+   "U3.4",
+   "R6.2",
+   "R7.1"
+  ],
+  "BUCK_SW": [
+   "U3.2",
+   "C5.2",
+   "L1.1"
+  ],
+  "BUS_DRV": [
+   "U5.4",
+   "R14.1"
+  ],
+  "BUS_RX": [
+   "U6.4",
+   "U1.3"
+  ],
+  "BUS_TX": [
+   "U5.2",
+   "U1.2"
+  ],
+  "BUS_TXEN_N": [
+   "U5.1",
+   "R35.2",
+   "U1.4"
+  ],
+  "ESTOP_A": [
+   "R17.2",
+   "J2.1"
+  ],
+  "ESTOP_B": [
+   "J2.2",
+   "Q4.3"
+  ],
+  "ESTOP_SENSE": [
+   "J2.3",
+   "R20.2",
+   "R21.1"
+  ],
+  "ESTOP_SENSE_F": [
+   "R21.2",
+   "C22.1",
+   "U1.11"
+  ],
+  "GND": [
+   "J1.2",
+   "D1.2",
+   "R1.2",
+   "C1.2",
+   "C2.2",
+   "R3.2",
+   "C3.2",
+   "J2.4",
+   "Q4.2",
+   "R19.2",
+   "C22.2",
+   "U9.3",
+   "U9.7",
+   "U9.8",
+   "C23.2",
+   "C24.2",
+   "J4.1",
+   "J5.1",
+   "Q5.2",
+   "R26.2",
+   "J6.2",
+   "U8.1",
+   "U7.1",
+   "U5.3",
+   "C26.2",
+   "U6.1",
+   "U6.3",
+   "C27.2",
+   "U3.1",
+   "C6.2",
+   "C7.2",
+   "R5.2",
+   "R7.2",
+   "C8.2",
+   "C9.2",
+   "U4.2",
+   "C10.2",
+   "C11.2",
+   "U1.57",
+   "U1.19",
+   "C40.2",
+   "C41.2",
+   "C42.2",
+   "C43.2",
+   "C44.2",
+   "C45.2",
+   "C46.2",
+   "C47.2",
+   "C48.2",
+   "C49.2",
+   "C50.2",
+   "C51.2",
+   "U2.4",
+   "C12.2",
+   "SW1.2",
+   "SW2.2",
+   "Y1.2",
+   "Y1.4",
+   "C19.2",
+   "C20.2",
+   "J7.2",
+   "J7.MP",
+   "J3.A1",
+   "J3.A12",
+   "J3.B1",
+   "J3.B12",
+   "J3.SH",
+   "R31.2",
+   "R32.2",
+   "U10.2",
+   "C25.2"
+  ],
+  "I2C_SCL": [
+   "U9.5",
+   "R34.2",
+   "U1.7"
+  ],
+  "I2C_SDA": [
+   "U9.6",
+   "R33.2",
+   "U1.6"
+  ],
+  "LED_B": [
+   "U1.16",
+   "R38.2"
+  ],
+  "LED_B_K": [
+   "D9.1",
+   "R38.1"
+  ],
+  "LED_G": [
+   "U1.15",
+   "R37.2"
+  ],
+  "LED_G_K": [
+   "D8.1",
+   "R37.1"
+  ],
+  "LED_R": [
+   "U1.14",
+   "R36.2"
+  ],
+  "LED_R_K": [
+   "D7.1",
+   "R36.1"
+  ],
+  "Q1_G": [
+   "Q1.1",
+   "R1.1",
+   "D2.2"
+  ],
+  "Q2_G": [
+   "Q2.1",
+   "R16.2",
+   "D3.2",
+   "R17.1"
+  ],
+  "Q3_G": [
+   "Q3.1",
+   "R23.2",
+   "D4.2",
+   "R24.1"
+  ],
+  "QSPI_SCLK": [
+   "U1.52",
+   "U2.6"
+  ],
+  "QSPI_SD0": [
+   "U1.53",
+   "U2.5"
+  ],
+  "QSPI_SD1": [
+   "U1.55",
+   "U2.2"
+  ],
+  "QSPI_SD2": [
+   "U1.54",
+   "U2.3"
+  ],
+  "QSPI_SD3": [
+   "U1.51",
+   "U2.7"
+  ],
+  "QSPI_SS": [
+   "U1.56",
+   "U2.1",
+   "R10.2",
+   "R11.1"
+  ],
+  "RUN": [
+   "U1.26",
+   "SW2.1",
+   "R9.2"
+  ],
+  "SENSE_N": [
+   "R22.3",
+   "U9.2"
+  ],
+  "SENSE_P": [
+   "R22.2",
+   "U9.1"
+  ],
+  "SERVO_BUS": [
+   "J4.3",
+   "J5.3",
+   "J6.3",
+   "U7.2",
+   "R14.2",
+   "R15.2",
+   "U6.2"
+  ],
+  "SERVO_EN": [
+   "R18.1",
+   "U1.8"
+  ],
+  "SERVO_EN_G": [
+   "Q4.1",
+   "R18.2",
+   "R19.1"
+  ],
+  "SWCLK": [
+   "U1.24",
+   "J7.1"
+  ],
+  "SWDIO": [
+   "U1.25",
+   "J7.3"
+  ],
+  "TOOL_AUX1": [
+   "R29.2",
+   "U1.39"
+  ],
+  "TOOL_AUX2": [
+   "R30.2",
+   "U1.40"
+  ],
+  "TOOL_EN": [
+   "R25.1",
+   "U1.9"
+  ],
+  "TOOL_EN_G": [
+   "Q5.1",
+   "R25.2",
+   "R26.1"
+  ],
+  "TOOL_ID": [
+   "R27.2",
+   "U1.38"
+  ],
+  "TOOL_ID_C": [
+   "J6.6",
+   "R27.1",
+   "R28.2",
+   "U7.3"
+  ],
+  "TOOL_Q_D": [
+   "R24.2",
+   "Q5.3"
+  ],
+  "USB_CC1": [
+   "J3.A5",
+   "R31.1"
+  ],
+  "USB_CC2": [
+   "J3.B5",
+   "R32.1"
+  ],
+  "USB_DM": [
+   "U1.46",
+   "R13.2"
+  ],
+  "USB_DM_C": [
+   "J3.A7",
+   "J3.B7",
+   "U10.3",
+   "U10.4",
+   "R13.1"
+  ],
+  "USB_DP": [
+   "U1.47",
+   "R12.2"
+  ],
+  "USB_DP_C": [
+   "J3.A6",
+   "J3.B6",
+   "U10.1",
+   "U10.6",
+   "R12.1"
+  ],
+  "VBUS": [
+   "D6.2",
+   "J3.A4",
+   "J3.A9",
+   "J3.B4",
+   "J3.B9",
+   "U10.5",
+   "C25.1"
+  ],
+  "VIN": [
+   "Q1.3",
+   "D2.1",
+   "C1.1",
+   "C2.1",
+   "R2.1",
+   "Q2.3",
+   "R16.1",
+   "D3.1",
+   "U3.3",
+   "C6.1",
+   "C7.1",
+   "R4.1"
+  ],
+  "VIN_F": [
+   "F1.2",
+   "D1.1",
+   "Q1.2"
+  ],
+  "VIN_RAW": [
+   "J1.1",
+   "F1.1"
+  ],
+  "VIN_SENSE": [
+   "R2.2",
+   "R3.1",
+   "C3.1",
+   "U1.41"
+  ],
+  "V_SERVO": [
+   "R22.4",
+   "C24.1",
+   "J4.2",
+   "J5.2",
+   "Q3.3",
+   "R23.1",
+   "D4.1"
+  ],
+  "V_SW": [
+   "Q2.2",
+   "R22.1"
+  ],
+  "V_TOOL": [
+   "Q3.2",
+   "J6.1"
+  ],
+  "XIN": [
+   "U1.20",
+   "Y1.1",
+   "C19.1"
+  ],
+  "XOUT": [
+   "U1.21",
+   "R8.1"
+  ],
+  "XTAL_O": [
+   "Y1.3",
+   "R8.2",
+   "C20.1"
+  ]
+ },
+ "parts": [
+  {
+   "ref": "J1",
+   "value": "12V IN",
+   "footprint": "TerminalBlock_Phoenix:TerminalBlock_Phoenix_MKDS-1,5-2-5.08_1x02_P5.08mm_Horizontal",
+   "symbol": "Connector_Generic:Conn_01x02",
+   "mpn": "1715721",
+   "manufacturer": "Phoenix Contact",
+   "dnp": false,
+   "unit_price_usd": 0.8,
+   "price_source": "estimate",
+   "note": "12 V 5 A supply input; pin 1 +12 V",
+   "pos_mm": [
+    11.46,
+    6.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "VIN_RAW",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "F1",
+   "value": "5A",
+   "footprint": "Fuse:Fuse_Littelfuse-NANO2-451_453",
+   "symbol": "Device:Fuse",
+   "mpn": "0451005.MRL",
+   "manufacturer": "Littelfuse",
+   "dnp": false,
+   "unit_price_usd": 0.8,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    5.0,
+    16.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "VIN_RAW",
+    "2": "VIN_F"
+   }
+  },
+  {
+   "ref": "D1",
+   "value": "SMBJ15CA",
+   "footprint": "Diode_SMD:D_SMB",
+   "symbol": "Device:D_TVS",
+   "mpn": "SMBJ15CA",
+   "manufacturer": "Littelfuse",
+   "dnp": false,
+   "unit_price_usd": 0.2,
+   "price_source": "estimate",
+   "note": "bidirectional TVS, 15 V standoff",
+   "pos_mm": [
+    11.0,
+    16.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "VIN_F",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "Q1",
+   "value": "AOD4185",
+   "footprint": "Package_TO_SOT_SMD:TO-252-2",
+   "symbol": "Transistor_FET:Q_PMOS_GDS",
+   "mpn": "AOD4185",
+   "manufacturer": "Alpha & Omega",
+   "dnp": false,
+   "unit_price_usd": 0.4,
+   "price_source": "estimate",
+   "note": "reverse-polarity protection (body diode conducts first, then channel)",
+   "pos_mm": [
+    9.0,
+    26.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "Q1_G",
+    "2": "VIN_F",
+    "3": "VIN"
+   }
+  },
+  {
+   "ref": "R1",
+   "value": "100k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07100KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    16.5,
+    21.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "Q1_G",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "D2",
+   "value": "BZT52C12",
+   "footprint": "Diode_SMD:D_SOD-123",
+   "symbol": "Device:D_Zener",
+   "mpn": "BZT52C12-7-F",
+   "manufacturer": "Diodes Inc",
+   "dnp": false,
+   "unit_price_usd": 0.05,
+   "price_source": "estimate",
+   "note": "Vgs clamp",
+   "pos_mm": [
+    16.5,
+    25.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "VIN",
+    "2": "Q1_G"
+   }
+  },
+  {
+   "ref": "C1",
+   "value": "470uF 25V",
+   "footprint": "Capacitor_THT:CP_Radial_D10.0mm_P5.00mm",
+   "symbol": "Device:C_Polarized",
+   "mpn": "EEU-FR1E471",
+   "manufacturer": "Panasonic",
+   "dnp": false,
+   "unit_price_usd": 0.6,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    3.5,
+    37.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "VIN",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C2",
+   "value": "10uF 25V",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "symbol": "Device:C",
+   "mpn": "CL21A106KAYNNNE",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.03,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    14.8,
+    33.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "VIN",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "R2",
+   "value": "100k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07100KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "VIN sense divider top",
+   "pos_mm": [
+    14.8,
+    36.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "VIN",
+    "2": "VIN_SENSE"
+   }
+  },
+  {
+   "ref": "R3",
+   "value": "10k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-0710KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "VIN sense divider bottom",
+   "pos_mm": [
+    14.8,
+    38.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "VIN_SENSE",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C3",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    14.8,
+    41.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "VIN_SENSE",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "Q2",
+   "value": "AOD4185",
+   "footprint": "Package_TO_SOT_SMD:TO-252-2",
+   "symbol": "Transistor_FET:Q_PMOS_GDS",
+   "mpn": "AOD4185",
+   "manufacturer": "Alpha & Omega",
+   "dnp": false,
+   "unit_price_usd": 0.4,
+   "price_source": "estimate",
+   "note": "servo rail high-side switch; on only while the E-stop loop is closed AND SERVO_EN is high",
+   "pos_mm": [
+    25.5,
+    26.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "Q2_G",
+    "3": "VIN",
+    "2": "V_SW"
+   }
+  },
+  {
+   "ref": "R16",
+   "value": "2.2k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-072K2L",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "turns Q2 off when the loop opens",
+   "pos_mm": [
+    21.0,
+    21.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "VIN",
+    "2": "Q2_G"
+   }
+  },
+  {
+   "ref": "D3",
+   "value": "BZT52C12",
+   "footprint": "Diode_SMD:D_SOD-123",
+   "symbol": "Device:D_Zener",
+   "mpn": "BZT52C12-7-F",
+   "manufacturer": "Diodes Inc",
+   "dnp": false,
+   "unit_price_usd": 0.05,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    32.0,
+    21.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "VIN",
+    "2": "Q2_G"
+   }
+  },
+  {
+   "ref": "R17",
+   "value": "220",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07220RL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "loop current ~5 mA",
+   "pos_mm": [
+    34.6,
+    9.6
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "Q2_G",
+    "2": "ESTOP_A"
+   }
+  },
+  {
+   "ref": "J2",
+   "value": "E-STOP",
+   "footprint": "Connector_JST:JST_XH_B4B-XH-A_1x04_P2.50mm_Vertical",
+   "symbol": "Connector_Generic:Conn_01x04",
+   "mpn": "B4B-XH-A(LF)(SN)",
+   "manufacturer": "JST",
+   "dnp": false,
+   "unit_price_usd": 0.15,
+   "price_source": "estimate",
+   "note": "1-2: NC contact A (power loop); 3-4: NC contact B (sense)",
+   "pos_mm": [
+    34.25,
+    3.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "ESTOP_A",
+    "2": "ESTOP_B",
+    "3": "ESTOP_SENSE",
+    "4": "GND"
+   }
+  },
+  {
+   "ref": "Q4",
+   "value": "2N7002",
+   "footprint": "Package_TO_SOT_SMD:SOT-23",
+   "symbol": "Transistor_FET:2N7002",
+   "mpn": "2N7002,215",
+   "manufacturer": "Nexperia",
+   "dnp": false,
+   "unit_price_usd": 0.05,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    42.0,
+    12.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "SERVO_EN_G",
+    "2": "GND",
+    "3": "ESTOP_B"
+   }
+  },
+  {
+   "ref": "R18",
+   "value": "100",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07100RL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    46.0,
+    12.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "SERVO_EN",
+    "2": "SERVO_EN_G"
+   }
+  },
+  {
+   "ref": "R19",
+   "value": "100k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07100KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "rail off while the MCU is in reset",
+   "pos_mm": [
+    42.0,
+    15.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "SERVO_EN_G",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "R20",
+   "value": "10k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-0710KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    46.0,
+    6.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "ESTOP_SENSE"
+   }
+  },
+  {
+   "ref": "R21",
+   "value": "1k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-071KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    48.5,
+    6.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "ESTOP_SENSE",
+    "2": "ESTOP_SENSE_F"
+   }
+  },
+  {
+   "ref": "C22",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    51.0,
+    6.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "ESTOP_SENSE_F",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "R22",
+   "value": "10m",
+   "footprint": "Resistor_SMD:R_Shunt_Vishay_WSK2512_6332Metric_T1.19mm",
+   "symbol": "Device:R_Shunt",
+   "mpn": "WSK2512R0100FEA",
+   "manufacturer": "Vishay Dale",
+   "dnp": false,
+   "unit_price_usd": 1.2,
+   "price_source": "estimate",
+   "note": "4-terminal Kelvin shunt, 1 W",
+   "pos_mm": [
+    25.5,
+    35.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "V_SW",
+    "2": "SENSE_P",
+    "3": "SENSE_N",
+    "4": "V_SERVO"
+   }
+  },
+  {
+   "ref": "U9",
+   "value": "INA219AIDCNR",
+   "footprint": "Package_TO_SOT_SMD:SOT-23-8",
+   "symbol": "Sensor_Energy:INA219AxDCN",
+   "mpn": "INA219AIDCNR",
+   "manufacturer": "Texas Instruments",
+   "dnp": false,
+   "unit_price_usd": 1.5,
+   "price_source": "estimate",
+   "note": "I2C address 0x40",
+   "pos_mm": [
+    25.5,
+    40.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "SENSE_P",
+    "2": "SENSE_N",
+    "3": "GND",
+    "4": "+3V3",
+    "5": "I2C_SCL",
+    "6": "I2C_SDA",
+    "7": "GND",
+    "8": "GND"
+   }
+  },
+  {
+   "ref": "C23",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    29.5,
+    40.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "R33",
+   "value": "4.7k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-074K7L",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    21.0,
+    40.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "I2C_SDA"
+   }
+  },
+  {
+   "ref": "R34",
+   "value": "4.7k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-074K7L",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    18.5,
+    40.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "I2C_SCL"
+   }
+  },
+  {
+   "ref": "C24",
+   "value": "10uF 25V",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "symbol": "Device:C",
+   "mpn": "CL21A106KAYNNNE",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.03,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    31.0,
+    33.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "V_SERVO",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "J4",
+   "value": "SERVO A",
+   "footprint": "Connector_Molex:Molex_SPOX_5267-03A_1x03_P2.50mm_Vertical",
+   "symbol": "Connector_Generic:Conn_01x03",
+   "mpn": "22035035",
+   "manufacturer": "Molex",
+   "dnp": false,
+   "unit_price_usd": 0.3,
+   "price_source": "estimate",
+   "note": "chain A: yaw, shoulder, elbow (verify lead pinout)",
+   "pos_mm": [
+    17.5,
+    53.2
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "GND",
+    "2": "V_SERVO",
+    "3": "SERVO_BUS"
+   }
+  },
+  {
+   "ref": "J5",
+   "value": "SERVO B",
+   "footprint": "Connector_Molex:Molex_SPOX_5267-03A_1x03_P2.50mm_Vertical",
+   "symbol": "Connector_Generic:Conn_01x03",
+   "mpn": "22035035",
+   "manufacturer": "Molex",
+   "dnp": false,
+   "unit_price_usd": 0.3,
+   "price_source": "estimate",
+   "note": "chain B: wrist pitch, wrist roll",
+   "pos_mm": [
+    29.5,
+    53.2
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "GND",
+    "2": "V_SERVO",
+    "3": "SERVO_BUS"
+   }
+  },
+  {
+   "ref": "Q3",
+   "value": "AOD4185",
+   "footprint": "Package_TO_SOT_SMD:TO-252-2",
+   "symbol": "Transistor_FET:Q_PMOS_GDS",
+   "mpn": "AOD4185",
+   "manufacturer": "Alpha & Omega",
+   "dnp": false,
+   "unit_price_usd": 0.4,
+   "price_source": "estimate",
+   "note": "tool power switch, downstream of the E-stop switch",
+   "pos_mm": [
+    43.5,
+    45.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "Q3_G",
+    "3": "V_SERVO",
+    "2": "V_TOOL"
+   }
+  },
+  {
+   "ref": "R23",
+   "value": "10k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-0710KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    35.5,
+    39.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "V_SERVO",
+    "2": "Q3_G"
+   }
+  },
+  {
+   "ref": "D4",
+   "value": "BZT52C12",
+   "footprint": "Diode_SMD:D_SOD-123",
+   "symbol": "Device:D_Zener",
+   "mpn": "BZT52C12-7-F",
+   "manufacturer": "Diodes Inc",
+   "dnp": false,
+   "unit_price_usd": 0.05,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    37.5,
+    34.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "V_SERVO",
+    "2": "Q3_G"
+   }
+  },
+  {
+   "ref": "R24",
+   "value": "1k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-071KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    35.5,
+    42.8
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "Q3_G",
+    "2": "TOOL_Q_D"
+   }
+  },
+  {
+   "ref": "Q5",
+   "value": "2N7002",
+   "footprint": "Package_TO_SOT_SMD:SOT-23",
+   "symbol": "Transistor_FET:2N7002",
+   "mpn": "2N7002,215",
+   "manufacturer": "Nexperia",
+   "dnp": false,
+   "unit_price_usd": 0.05,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    33.0,
+    46.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "TOOL_EN_G",
+    "2": "GND",
+    "3": "TOOL_Q_D"
+   }
+  },
+  {
+   "ref": "R25",
+   "value": "100",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07100RL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    41.5,
+    50.3
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "TOOL_EN",
+    "2": "TOOL_EN_G"
+   }
+  },
+  {
+   "ref": "R26",
+   "value": "100k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07100KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    41.5,
+    52.6
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "TOOL_EN_G",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "J6",
+   "value": "TOOL",
+   "footprint": "Connector_JST:JST_XH_B6B-XH-A_1x06_P2.50mm_Vertical",
+   "symbol": "Connector_Generic:Conn_01x06",
+   "mpn": "B6B-XH-A(LF)(SN)",
+   "manufacturer": "JST",
+   "dnp": false,
+   "unit_price_usd": 0.2,
+   "price_source": "estimate",
+   "note": "to the flange pogo pins (same order as Flange.pin_names)",
+   "pos_mm": [
+    49.75,
+    51.6
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "V_TOOL",
+    "2": "GND",
+    "3": "SERVO_BUS",
+    "4": "AUX1_C",
+    "5": "AUX2_C",
+    "6": "TOOL_ID_C"
+   }
+  },
+  {
+   "ref": "R27",
+   "value": "1k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-071KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    60.0,
+    45.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "TOOL_ID_C",
+    "2": "TOOL_ID"
+   }
+  },
+  {
+   "ref": "R28",
+   "value": "10k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-0710KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "tool-ID divider top (tool: R_ID to GND)",
+   "pos_mm": [
+    60.0,
+    43.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "TOOL_ID_C"
+   }
+  },
+  {
+   "ref": "R29",
+   "value": "330",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07330RL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    55.0,
+    45.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "AUX1_C",
+    "2": "TOOL_AUX1"
+   }
+  },
+  {
+   "ref": "R30",
+   "value": "330",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07330RL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    55.0,
+    43.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "AUX2_C",
+    "2": "TOOL_AUX2"
+   }
+  },
+  {
+   "ref": "U8",
+   "value": "PRTR5V0U2X",
+   "footprint": "Package_TO_SOT_SMD:SOT-143",
+   "symbol": "Power_Protection:PRTR5V0U2X",
+   "mpn": "PRTR5V0U2X,215",
+   "manufacturer": "Nexperia",
+   "dnp": false,
+   "unit_price_usd": 0.15,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    50.5,
+    44.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "GND",
+    "2": "AUX1_C",
+    "3": "AUX2_C",
+    "4": "+3V3"
+   }
+  },
+  {
+   "ref": "U7",
+   "value": "PRTR5V0U2X",
+   "footprint": "Package_TO_SOT_SMD:SOT-143",
+   "symbol": "Power_Protection:PRTR5V0U2X",
+   "mpn": "PRTR5V0U2X,215",
+   "manufacturer": "Nexperia",
+   "dnp": false,
+   "unit_price_usd": 0.15,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    65.0,
+    44.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "GND",
+    "2": "SERVO_BUS",
+    "3": "TOOL_ID_C",
+    "4": "5V_SYS"
+   }
+  },
+  {
+   "ref": "U5",
+   "value": "74AHCT1G125GW",
+   "footprint": "Package_TO_SOT_SMD:SOT-353_SC-70-5",
+   "symbol": "74xGxx:74AHCT1G125",
+   "mpn": "74AHCT1G125GW,125",
+   "manufacturer": "Nexperia",
+   "dnp": false,
+   "unit_price_usd": 0.15,
+   "price_source": "estimate",
+   "note": "TX driver, TTL inputs, enabled by BUS_TXEN_N low",
+   "pos_mm": [
+    47.5,
+    37.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "BUS_TXEN_N",
+    "2": "BUS_TX",
+    "3": "GND",
+    "4": "BUS_DRV",
+    "5": "5V_SYS"
+   }
+  },
+  {
+   "ref": "R14",
+   "value": "100",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07100RL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "series termination",
+   "pos_mm": [
+    47.5,
+    40.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "BUS_DRV",
+    "2": "SERVO_BUS"
+   }
+  },
+  {
+   "ref": "R15",
+   "value": "10k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-0710KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "bus idle-high pull-up",
+   "pos_mm": [
+    51.0,
+    40.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "5V_SYS",
+    "2": "SERVO_BUS"
+   }
+  },
+  {
+   "ref": "R35",
+   "value": "10k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-0710KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "driver disabled during reset",
+   "pos_mm": [
+    44.0,
+    37.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "BUS_TXEN_N"
+   }
+  },
+  {
+   "ref": "C26",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    47.5,
+    34.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "5V_SYS",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "U6",
+   "value": "74LVC1G125GW",
+   "footprint": "Package_TO_SOT_SMD:SOT-353_SC-70-5",
+   "symbol": "74xGxx:74LVC1G125",
+   "mpn": "74LVC1G125GW,125",
+   "manufacturer": "Nexperia",
+   "dnp": false,
+   "unit_price_usd": 0.1,
+   "price_source": "estimate",
+   "note": "RX buffer, 5 V tolerant input",
+   "pos_mm": [
+    53.0,
+    36.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "GND",
+    "2": "SERVO_BUS",
+    "3": "GND",
+    "4": "BUS_RX",
+    "5": "+3V3"
+   }
+  },
+  {
+   "ref": "C27",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    53.0,
+    33.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "U3",
+   "value": "TPS54202DDCR",
+   "footprint": "Package_TO_SOT_SMD:SOT-23-6",
+   "symbol": "Regulator_Switching:TPS54202DDC",
+   "mpn": "TPS54202DDCR",
+   "manufacturer": "Texas Instruments",
+   "dnp": false,
+   "unit_price_usd": 0.5,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    24.0,
+    9.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "GND",
+    "2": "BUCK_SW",
+    "3": "VIN",
+    "4": "BUCK_FB",
+    "5": "BUCK_EN",
+    "6": "BUCK_BOOT"
+   }
+  },
+  {
+   "ref": "C5",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    24.0,
+    5.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "BUCK_BOOT",
+    "2": "BUCK_SW"
+   }
+  },
+  {
+   "ref": "C6",
+   "value": "10uF 25V",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "symbol": "Device:C",
+   "mpn": "CL21A106KAYNNNE",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.03,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    20.8,
+    9.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "VIN",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C7",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    20.8,
+    5.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "VIN",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "R4",
+   "value": "100k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07100KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "UVLO divider: on above ~6.6 V",
+   "pos_mm": [
+    27.5,
+    5.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "VIN",
+    "2": "BUCK_EN"
+   }
+  },
+  {
+   "ref": "R5",
+   "value": "22k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-0722KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    29.5,
+    5.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "BUCK_EN",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "L1",
+   "value": "10uH",
+   "footprint": "Inductor_SMD:L_Bourns_SRN6045TA",
+   "symbol": "Device:L",
+   "mpn": "SRN6045TA-100M",
+   "manufacturer": "Bourns",
+   "dnp": false,
+   "unit_price_usd": 0.35,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    29.7,
+    13.2
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "BUCK_SW",
+    "2": "+5V"
+   }
+  },
+  {
+   "ref": "R6",
+   "value": "100k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07100KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "Vout = 0.596 (1 + 100k/13.7k) = 4.95 V",
+   "pos_mm": [
+    24.0,
+    13.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "+5V",
+    "2": "BUCK_FB"
+   }
+  },
+  {
+   "ref": "R7",
+   "value": "13.7k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-0713K7L",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    24.0,
+    15.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "BUCK_FB",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C8",
+   "value": "22uF 10V",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "symbol": "Device:C",
+   "mpn": "GRM21BR61A226ME51L",
+   "manufacturer": "Murata",
+   "dnp": false,
+   "unit_price_usd": 0.1,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    35.5,
+    14.8
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+5V",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C9",
+   "value": "22uF 10V",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "symbol": "Device:C",
+   "mpn": "GRM21BR61A226ME51L",
+   "manufacturer": "Murata",
+   "dnp": false,
+   "unit_price_usd": 0.1,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    38.0,
+    14.8
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+5V",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "D5",
+   "value": "B5819W",
+   "footprint": "Diode_SMD:D_SOD-123",
+   "symbol": "Device:D_Schottky",
+   "mpn": "B5819W-TP",
+   "manufacturer": "MCC",
+   "dnp": false,
+   "unit_price_usd": 0.05,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    36.0,
+    19.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "2": "+5V",
+    "1": "5V_SYS"
+   }
+  },
+  {
+   "ref": "D6",
+   "value": "B5819W",
+   "footprint": "Diode_SMD:D_SOD-123",
+   "symbol": "Device:D_Schottky",
+   "mpn": "B5819W-TP",
+   "manufacturer": "MCC",
+   "dnp": false,
+   "unit_price_usd": 0.05,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    52.5,
+    13.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "2": "VBUS",
+    "1": "5V_SYS"
+   }
+  },
+  {
+   "ref": "U4",
+   "value": "AP2112K-3.3",
+   "footprint": "Package_TO_SOT_SMD:SOT-23-5",
+   "symbol": "Regulator_Linear:AP2112K-3.3",
+   "mpn": "AP2112K-3.3TRG1",
+   "manufacturer": "Diodes Inc",
+   "dnp": false,
+   "unit_price_usd": 0.2,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    47.5,
+    27.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "5V_SYS",
+    "2": "GND",
+    "3": "5V_SYS",
+    "5": "+3V3"
+   }
+  },
+  {
+   "ref": "C10",
+   "value": "1uF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10A105KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.01,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    44.0,
+    27.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "5V_SYS",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C11",
+   "value": "10uF",
+   "footprint": "Capacitor_SMD:C_0805_2012Metric",
+   "symbol": "Device:C",
+   "mpn": "CL21A106KAYNNNE",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.03,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    51.0,
+    27.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "U1",
+   "value": "RP2040",
+   "footprint": "Package_DFN_QFN:QFN-56-1EP_7x7mm_P0.4mm_EP3.2x3.2mm",
+   "symbol": "MCU_RaspberryPi:RP2040",
+   "mpn": "RP2040",
+   "manufacturer": "Raspberry Pi",
+   "dnp": false,
+   "unit_price_usd": 1.0,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    62.0,
+    30.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "2": "BUS_TX",
+    "3": "BUS_RX",
+    "4": "BUS_TXEN_N",
+    "5": "",
+    "6": "I2C_SDA",
+    "7": "I2C_SCL",
+    "8": "SERVO_EN",
+    "9": "TOOL_EN",
+    "11": "ESTOP_SENSE_F",
+    "12": "",
+    "13": "",
+    "14": "LED_R",
+    "15": "LED_G",
+    "16": "LED_B",
+    "17": "",
+    "18": "",
+    "27": "",
+    "28": "",
+    "29": "",
+    "30": "",
+    "31": "",
+    "32": "",
+    "34": "",
+    "35": "",
+    "36": "",
+    "37": "",
+    "38": "TOOL_ID",
+    "39": "TOOL_AUX1",
+    "40": "TOOL_AUX2",
+    "41": "VIN_SENSE",
+    "1": "+3V3",
+    "10": "+3V3",
+    "22": "+3V3",
+    "33": "+3V3",
+    "42": "+3V3",
+    "49": "+3V3",
+    "48": "+3V3",
+    "43": "+3V3",
+    "44": "+3V3",
+    "45": "+1V1",
+    "23": "+1V1",
+    "50": "+1V1",
+    "57": "GND",
+    "19": "GND",
+    "20": "XIN",
+    "21": "XOUT",
+    "26": "RUN",
+    "24": "SWCLK",
+    "25": "SWDIO",
+    "47": "USB_DP",
+    "46": "USB_DM",
+    "52": "QSPI_SCLK",
+    "53": "QSPI_SD0",
+    "55": "QSPI_SD1",
+    "54": "QSPI_SD2",
+    "51": "QSPI_SD3",
+    "56": "QSPI_SS"
+   }
+  },
+  {
+   "ref": "C40",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    54.0,
+    27.4
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C41",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    54.0,
+    31.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C42",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    61.6,
+    38.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C43",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    70.0,
+    31.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C44",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    70.0,
+    27.4
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C45",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    60.8,
+    22.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C46",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    62.4,
+    22.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C47",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    67.2,
+    22.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C48",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    63.2,
+    38.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+1V1",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C49",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    59.2,
+    22.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+1V1",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C50",
+   "value": "1uF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10A105KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.01,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    65.6,
+    22.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C51",
+   "value": "1uF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10A105KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.01,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    64.0,
+    22.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+1V1",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "U2",
+   "value": "W25Q128JVSIQ",
+   "footprint": "Package_SO:SOIC-8_5.3x5.3mm_P1.27mm",
+   "symbol": "Memory_Flash:W25Q128JVS",
+   "mpn": "W25Q128JVSIQ",
+   "manufacturer": "Winbond",
+   "dnp": false,
+   "unit_price_usd": 1.2,
+   "price_source": "estimate",
+   "note": "16 MB QSPI flash",
+   "pos_mm": [
+    73.0,
+    22.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "QSPI_SS",
+    "2": "QSPI_SD1",
+    "3": "QSPI_SD2",
+    "4": "GND",
+    "5": "QSPI_SD0",
+    "6": "QSPI_SCLK",
+    "7": "QSPI_SD3",
+    "8": "+3V3"
+   }
+  },
+  {
+   "ref": "C12",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    77.5,
+    16.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "R10",
+   "value": "10k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-0710KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    69.0,
+    16.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "QSPI_SS"
+   }
+  },
+  {
+   "ref": "R11",
+   "value": "1k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-071KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    69.0,
+    37.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "QSPI_SS",
+    "2": "BOOTSEL"
+   }
+  },
+  {
+   "ref": "SW1",
+   "value": "BOOTSEL",
+   "footprint": "Button_Switch_SMD:SW_SPST_PTS810",
+   "symbol": "Switch:SW_Push",
+   "mpn": "PTS810 SJM 250 SMTR LFS",
+   "manufacturer": "C&K",
+   "dnp": false,
+   "unit_price_usd": 0.25,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    72.5,
+    41.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "BOOTSEL",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "SW2",
+   "value": "RESET",
+   "footprint": "Button_Switch_SMD:SW_SPST_PTS810",
+   "symbol": "Switch:SW_Push",
+   "mpn": "PTS810 SJM 250 SMTR LFS",
+   "manufacturer": "C&K",
+   "dnp": false,
+   "unit_price_usd": 0.25,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    72.5,
+    46.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "RUN",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "R9",
+   "value": "10k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-0710KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    67.5,
+    46.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "+3V3",
+    "2": "RUN"
+   }
+  },
+  {
+   "ref": "Y1",
+   "value": "12MHz",
+   "footprint": "Crystal:Crystal_SMD_3225-4Pin_3.2x2.5mm",
+   "symbol": "Device:Crystal_GND24",
+   "mpn": "ABM8-272-T3",
+   "manufacturer": "Abracon",
+   "dnp": false,
+   "unit_price_usd": 0.4,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    53.0,
+    21.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "XIN",
+    "3": "XTAL_O",
+    "2": "GND",
+    "4": "GND"
+   }
+  },
+  {
+   "ref": "R8",
+   "value": "1k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-071KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "RP2040 HW design guide",
+   "pos_mm": [
+    56.5,
+    23.4
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "XOUT",
+    "2": "XTAL_O"
+   }
+  },
+  {
+   "ref": "C19",
+   "value": "15pF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10C150JB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    49.2,
+    21.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "XIN",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C20",
+   "value": "15pF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10C150JB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    53.0,
+    25.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "XTAL_O",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "J7",
+   "value": "SWD",
+   "footprint": "Connector_JST:JST_SH_SM03B-SRSS-TB_1x03-1MP_P1.00mm_Horizontal",
+   "symbol": "Connector_Generic_MountingPin:Conn_01x03_MountingPin",
+   "mpn": "SM03B-SRSS-TB(LF)(SN)",
+   "manufacturer": "JST",
+   "dnp": false,
+   "unit_price_usd": 0.4,
+   "price_source": "estimate",
+   "note": "Raspberry Pi debug connector pinout",
+   "pos_mm": [
+    76.2,
+    31.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "SWCLK",
+    "2": "GND",
+    "3": "SWDIO",
+    "MP": "GND"
+   }
+  },
+  {
+   "ref": "J3",
+   "value": "USB-C",
+   "footprint": "Connector_USB:USB_C_Receptacle_GCT_USB4105-xx-A_16P_TopMnt_Horizontal",
+   "symbol": "Connector:USB_C_Receptacle_USB2.0_16P",
+   "mpn": "USB4105-GF-A",
+   "manufacturer": "GCT",
+   "dnp": false,
+   "unit_price_usd": 0.8,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    62.0,
+    3.1
+   ],
+   "rot": 180.0,
+   "pins": {
+    "A1": "GND",
+    "A12": "GND",
+    "B1": "GND",
+    "B12": "GND",
+    "A4": "VBUS",
+    "A9": "VBUS",
+    "B4": "VBUS",
+    "B9": "VBUS",
+    "A5": "USB_CC1",
+    "B5": "USB_CC2",
+    "A6": "USB_DP_C",
+    "B6": "USB_DP_C",
+    "A7": "USB_DM_C",
+    "B7": "USB_DM_C",
+    "A8": "",
+    "B8": "",
+    "SH": "GND"
+   }
+  },
+  {
+   "ref": "R31",
+   "value": "5.1k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-075K1L",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    56.0,
+    9.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "USB_CC1",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "R32",
+   "value": "5.1k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-075K1L",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    68.0,
+    9.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "USB_CC2",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "U10",
+   "value": "USBLC6-2SC6",
+   "footprint": "Package_TO_SOT_SMD:SOT-23-6",
+   "symbol": "Power_Protection:USBLC6-2SC6",
+   "mpn": "USBLC6-2SC6",
+   "manufacturer": "STMicroelectronics",
+   "dnp": false,
+   "unit_price_usd": 0.25,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    62.0,
+    12.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "USB_DP_C",
+    "6": "USB_DP_C",
+    "2": "GND",
+    "3": "USB_DM_C",
+    "4": "USB_DM_C",
+    "5": "VBUS"
+   }
+  },
+  {
+   "ref": "R12",
+   "value": "27",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-0727RL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    60.0,
+    16.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "USB_DP_C",
+    "2": "USB_DP"
+   }
+  },
+  {
+   "ref": "R13",
+   "value": "27",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-0727RL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    64.0,
+    16.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "USB_DM_C",
+    "2": "USB_DM"
+   }
+  },
+  {
+   "ref": "C25",
+   "value": "4.7uF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10A475KO8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.02,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    56.0,
+    13.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "VBUS",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "D7",
+   "value": "red",
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "symbol": "Device:LED",
+   "mpn": "APTD1608LSURCK",
+   "manufacturer": "Kingbright",
+   "dnp": false,
+   "unit_price_usd": 0.08,
+   "price_source": "estimate",
+   "note": "anode on 5V_SYS, sunk by the GPIO through R (off when the pin is high)",
+   "pos_mm": [
+    44.0,
+    18.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "2": "5V_SYS",
+    "1": "LED_R_K"
+   }
+  },
+  {
+   "ref": "R36",
+   "value": "1k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-071KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    40.5,
+    18.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "LED_R_K",
+    "2": "LED_R"
+   }
+  },
+  {
+   "ref": "D8",
+   "value": "green",
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "symbol": "Device:LED",
+   "mpn": "APTD1608LZGCK",
+   "manufacturer": "Kingbright",
+   "dnp": false,
+   "unit_price_usd": 0.08,
+   "price_source": "estimate",
+   "note": "anode on 5V_SYS, sunk by the GPIO through R (off when the pin is high)",
+   "pos_mm": [
+    44.0,
+    20.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "2": "5V_SYS",
+    "1": "LED_G_K"
+   }
+  },
+  {
+   "ref": "R37",
+   "value": "1k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-071KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    40.5,
+    20.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "LED_G_K",
+    "2": "LED_G"
+   }
+  },
+  {
+   "ref": "D9",
+   "value": "blue",
+   "footprint": "LED_SMD:LED_0603_1608Metric",
+   "symbol": "Device:LED",
+   "mpn": "APTD1608LVBC/D",
+   "manufacturer": "Kingbright",
+   "dnp": false,
+   "unit_price_usd": 0.08,
+   "price_source": "estimate",
+   "note": "anode on 5V_SYS, sunk by the GPIO through R (off when the pin is high)",
+   "pos_mm": [
+    44.0,
+    21.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "2": "5V_SYS",
+    "1": "LED_B_K"
+   }
+  },
+  {
+   "ref": "R38",
+   "value": "680",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07680RL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate (typical LCSC qty-100 price, not a quote)",
+   "note": "",
+   "pos_mm": [
+    40.5,
+    21.5
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "LED_B_K",
+    "2": "LED_B"
+   }
+  },
+  {
+   "ref": "H1",
+   "value": "M3",
+   "footprint": "MountingHole:MountingHole_3.2mm_M3",
+   "symbol": "Mechanical:MountingHole",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    3.5,
+    3.5
+   ],
+   "rot": 0.0,
+   "pins": {}
+  },
+  {
+   "ref": "H2",
+   "value": "M3",
+   "footprint": "MountingHole:MountingHole_3.2mm_M3",
+   "symbol": "Mechanical:MountingHole",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    76.5,
+    3.5
+   ],
+   "rot": 0.0,
+   "pins": {}
+  },
+  {
+   "ref": "H3",
+   "value": "M3",
+   "footprint": "MountingHole:MountingHole_3.2mm_M3",
+   "symbol": "Mechanical:MountingHole",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    3.5,
+    52.5
+   ],
+   "rot": 0.0,
+   "pins": {}
+  },
+  {
+   "ref": "H4",
+   "value": "M3",
+   "footprint": "MountingHole:MountingHole_3.2mm_M3",
+   "symbol": "Mechanical:MountingHole",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "",
+   "pos_mm": [
+    76.5,
+    52.5
+   ],
+   "rot": 0.0,
+   "pins": {}
+  }
+ ]
+}

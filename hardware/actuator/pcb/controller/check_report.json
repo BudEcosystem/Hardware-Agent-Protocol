@@ -1,0 +1,39 @@
+{
+ "fab_rules": {
+  "min_track": 0.127,
+  "min_clearance": 0.127,
+  "min_via_drill": 0.3,
+  "min_via_diameter": 0.45,
+  "min_annular": 0.075,
+  "min_hole_to_hole": 0.5,
+  "min_hole_to_hole_same_net": 0.254,
+  "edge_clearance": 0.3
+ },
+ "items_checked": 1479,
+ "pairs_checked": 16067,
+ "min_clearance_seen_mm": 0.1317,
+ "drc_violations": [],
+ "erc_problems": [],
+ "kicad": {
+  "kicad_cli": "10.0.6",
+  "skipped": false,
+  "erc": {
+   "errors": 0,
+   "warnings": 0,
+   "unconnected": 0,
+   "by_type": {}
+  },
+  "drc": {
+   "errors": 0,
+   "warnings": 58,
+   "unconnected": 0,
+   "by_type": {
+    "violations:warning:silk_over_copper": 56,
+    "violations:warning:via_dangling": 2
+   }
+  }
+ },
+ "accepted_known_open": [],
+ "problems": [],
+ "pcb_sha256": "48d2c78e56227cc086d4282b3d7facb9c038e86e06b433b1d0054c85d0c55009"
+}
