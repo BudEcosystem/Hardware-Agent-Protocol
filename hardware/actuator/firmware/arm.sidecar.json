@@ -1,0 +1,1341 @@
+{
+  "deviceId": "bhms-arm",
+  "name": "BHMS Arm",
+  "description": "A 5-axis desktop arm (STS3215 servos) with a quick-change tool flange (gripper, knob turner, button presser, slider pusher), driven by an RP2040 controller over BHMS-Compact. Joint ranges, three coupled pitch limits, the shoulder torque cap and the E-stop restart inhibit are enforced on the device. After an E-stop the arm may have moved: re-home before use. Faults: 1 estop, 2 estop_fault_contact_A_or_Q2, 3 servo_rail_fault, 4 overcurrent, 5 servo_comm, 6 servo_error, 7 tool_lost, 8 timeout, 9 overtemp, 10 stopped, 11 bus_collision, 12 limit, 13 selftest, 14 no_actuator_power, 15 power_sense, 16 servo_config, 17 tool.",
+  "capabilities": [
+    "bhms.arm.joints",
+    "bhms.arm.tool"
+  ],
+  "tags": [
+    "bhms-arm"
+  ],
+  "resources": [
+    "bhms-arm/joints",
+    "bhms-arm/power",
+    "bhms-arm/tool"
+  ],
+  "identity": {
+    "manufacturer": "Bud Labs",
+    "model": "BHMS Arm",
+    "firmwareVersion": "1.0.0"
+  },
+  "properties": {
+    "base_yaw_position_deg": {
+      "description": "Measured angle of base_yaw from its servo's absolute encoder (cached, refreshed about every 25 ms).",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "deg",
+        "minimum": -155.0,
+        "maximum": 155.0
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 0
+      }
+    },
+    "shoulder_pitch_position_deg": {
+      "description": "Measured angle of shoulder_pitch from its servo's absolute encoder (cached, refreshed about every 25 ms).",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "deg",
+        "minimum": -25.0,
+        "maximum": 100.0
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 1
+      }
+    },
+    "elbow_pitch_position_deg": {
+      "description": "Measured angle of elbow_pitch from its servo's absolute encoder (cached, refreshed about every 25 ms).",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "deg",
+        "minimum": -10.0,
+        "maximum": 130.0
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 2
+      }
+    },
+    "wrist_pitch_position_deg": {
+      "description": "Measured angle of wrist_pitch from its servo's absolute encoder (cached, refreshed about every 25 ms).",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "deg",
+        "minimum": -105.0,
+        "maximum": 105.0
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 3
+      }
+    },
+    "wrist_roll_position_deg": {
+      "description": "Measured angle of wrist_roll from its servo's absolute encoder (cached, refreshed about every 25 ms).",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "deg",
+        "minimum": -155.0,
+        "maximum": 155.0
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 4
+      }
+    },
+    "base_yaw_load_pct": {
+      "description": "Servo load of base_yaw, signed, 0.1 % of the servo's rated torque per count.",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "%",
+        "minimum": -100,
+        "maximum": 100,
+        "multipleOf": 0.1
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "i16",
+        "scale": 0.1,
+        "index": 5
+      }
+    },
+    "shoulder_pitch_load_pct": {
+      "description": "Servo load of shoulder_pitch, signed, 0.1 % of the servo's rated torque per count.",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "%",
+        "minimum": -100,
+        "maximum": 100,
+        "multipleOf": 0.1
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "i16",
+        "scale": 0.1,
+        "index": 6
+      }
+    },
+    "elbow_pitch_load_pct": {
+      "description": "Servo load of elbow_pitch, signed, 0.1 % of the servo's rated torque per count.",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "%",
+        "minimum": -100,
+        "maximum": 100,
+        "multipleOf": 0.1
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "i16",
+        "scale": 0.1,
+        "index": 7
+      }
+    },
+    "wrist_pitch_load_pct": {
+      "description": "Servo load of wrist_pitch, signed, 0.1 % of the servo's rated torque per count.",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "%",
+        "minimum": -100,
+        "maximum": 100,
+        "multipleOf": 0.1
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "i16",
+        "scale": 0.1,
+        "index": 8
+      }
+    },
+    "wrist_roll_load_pct": {
+      "description": "Servo load of wrist_roll, signed, 0.1 % of the servo's rated torque per count.",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "%",
+        "minimum": -100,
+        "maximum": 100,
+        "multipleOf": 0.1
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "i16",
+        "scale": 0.1,
+        "index": 9
+      }
+    },
+    "base_yaw_current_ma": {
+      "description": "Servo current of base_yaw.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "mA",
+        "minimum": 0,
+        "maximum": 65535
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u16",
+        "index": 10
+      }
+    },
+    "shoulder_pitch_current_ma": {
+      "description": "Servo current of shoulder_pitch.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "mA",
+        "minimum": 0,
+        "maximum": 65535
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u16",
+        "index": 11
+      }
+    },
+    "elbow_pitch_current_ma": {
+      "description": "Servo current of elbow_pitch.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "mA",
+        "minimum": 0,
+        "maximum": 65535
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u16",
+        "index": 12
+      }
+    },
+    "wrist_pitch_current_ma": {
+      "description": "Servo current of wrist_pitch.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "mA",
+        "minimum": 0,
+        "maximum": 65535
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u16",
+        "index": 13
+      }
+    },
+    "wrist_roll_current_ma": {
+      "description": "Servo current of wrist_roll.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "mA",
+        "minimum": 0,
+        "maximum": 65535
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u16",
+        "index": 14
+      }
+    },
+    "base_yaw_temperature_c": {
+      "description": "Servo temperature of base_yaw. The servo protects itself at 70 C.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "Cel",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u8",
+        "index": 15
+      }
+    },
+    "shoulder_pitch_temperature_c": {
+      "description": "Servo temperature of shoulder_pitch. The servo protects itself at 70 C.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "Cel",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u8",
+        "index": 16
+      }
+    },
+    "elbow_pitch_temperature_c": {
+      "description": "Servo temperature of elbow_pitch. The servo protects itself at 70 C.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "Cel",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u8",
+        "index": 17
+      }
+    },
+    "wrist_pitch_temperature_c": {
+      "description": "Servo temperature of wrist_pitch. The servo protects itself at 70 C.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "Cel",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u8",
+        "index": 18
+      }
+    },
+    "wrist_roll_temperature_c": {
+      "description": "Servo temperature of wrist_roll. The servo protects itself at 70 C.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "Cel",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u8",
+        "index": 19
+      }
+    },
+    "base_yaw_speed_dps": {
+      "description": "Measured angular speed of base_yaw.",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "deg/s",
+        "minimum": -2000,
+        "maximum": 2000
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 20
+      }
+    },
+    "shoulder_pitch_speed_dps": {
+      "description": "Measured angular speed of shoulder_pitch.",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "deg/s",
+        "minimum": -2000,
+        "maximum": 2000
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 21
+      }
+    },
+    "elbow_pitch_speed_dps": {
+      "description": "Measured angular speed of elbow_pitch.",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "deg/s",
+        "minimum": -2000,
+        "maximum": 2000
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 22
+      }
+    },
+    "wrist_pitch_speed_dps": {
+      "description": "Measured angular speed of wrist_pitch.",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "deg/s",
+        "minimum": -2000,
+        "maximum": 2000
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 23
+      }
+    },
+    "wrist_roll_speed_dps": {
+      "description": "Measured angular speed of wrist_roll.",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "deg/s",
+        "minimum": -2000,
+        "maximum": 2000
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 24
+      }
+    },
+    "vin_mv": {
+      "description": "Input supply voltage VIN (ADC x 11). Below 9000 mV the arm reports no actuator power.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "mV",
+        "minimum": 0,
+        "maximum": 65535
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u16",
+        "index": 25
+      }
+    },
+    "servo_rail_mv": {
+      "description": "Servo-rail voltage measured by the INA219 (4 mV LSB).",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "mV",
+        "minimum": 0,
+        "maximum": 65535
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u16",
+        "index": 26
+      }
+    },
+    "servo_rail_ma": {
+      "description": "Servo-rail current measured by the INA219.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "mA",
+        "minimum": -32768,
+        "maximum": 32767
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "i16",
+        "index": 27
+      }
+    },
+    "estop_contact_open": {
+      "description": "E-stop contact B (GPIO8): true when the mushroom is pressed, the loop is open, or the connector is out.",
+      "schema": {
+        "type": "boolean"
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "bool",
+        "index": 28
+      }
+    },
+    "estop_state": {
+      "description": "Measured E-stop state from contact B and the rail: 0 released, 1 pressed, 2 fault (contact A welded or Q2 shorted: GPIO8 high with the rail above 2 V; latched until power-cycle).",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "1",
+        "minimum": 0,
+        "maximum": 2
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u8",
+        "index": 29
+      }
+    },
+    "estop_latched": {
+      "description": "Firmware restart inhibit: true after an E-stop until an explicit enable action with the contact released.",
+      "schema": {
+        "type": "boolean"
+      },
+      "evidence": "reported",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "bool",
+        "index": 30
+      }
+    },
+    "arm_state": {
+      "description": "0 boot, 1 no actuator power (USB only), 2 disabled, 3 enabling, 4 ready, 5 moving, 6 parked (torque released), 7 estop, 8 fault.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "1",
+        "minimum": 0,
+        "maximum": 8
+      },
+      "evidence": "reported",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u8",
+        "index": 31
+      }
+    },
+    "fault_code": {
+      "description": "Last latched fault, 0 = none: 1 estop, 2 estop_fault_contact_A_or_Q2, 3 servo_rail_fault, 4 overcurrent, 5 servo_comm, 6 servo_error, 7 tool_lost, 8 timeout, 9 overtemp, 10 stopped, 11 bus_collision, 12 limit, 13 selftest, 14 no_actuator_power, 15 power_sense, 16 servo_config, 17 tool.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "1",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "evidence": "reported",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u8",
+        "index": 32
+      }
+    },
+    "torque_enabled": {
+      "description": "Whether the arm servos are holding torque.",
+      "schema": {
+        "type": "boolean"
+      },
+      "evidence": "commanded",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "bool",
+        "index": 33
+      }
+    },
+    "tool_id": {
+      "description": "Tool identity decoded from the TOOL_ID divider after 5 stable samples: 0 none, 1 gripper, 2 knob_turner, 3 button_presser, 4 slider_pusher, 5..8 reserved, 254 short circuit.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "1",
+        "minimum": 0,
+        "maximum": 255
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u8",
+        "index": 34
+      }
+    },
+    "tool_state": {
+      "description": "0 none, 1 detected (unpowered), 2 powering, 3 ready, 4 lost (hot unplug), 5 unmounting.",
+      "schema": {
+        "type": "integer",
+        "x-bhms-unit": "1",
+        "minimum": 0,
+        "maximum": 5
+      },
+      "evidence": "reported",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "u8",
+        "index": 35
+      }
+    },
+    "gripper_opening_mm": {
+      "description": "Measured gripper opening between the finger pads (gripper ready only).",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "mm",
+        "minimum": 0,
+        "maximum": 61
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 36
+      }
+    },
+    "knob_angle_deg": {
+      "description": "Knob-turner output angle relative to the mount position, multi-turn, from the servo (knob turner ready only).",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "deg",
+        "minimum": -1300,
+        "maximum": 1300
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 37
+      }
+    },
+    "knob_sensor_deg": {
+      "description": "Knob-turner output encoder (AS5600 analog out), single turn (knob turner ready only).",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "deg",
+        "minimum": 0,
+        "maximum": 360
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 38
+      }
+    },
+    "presser_force_pct": {
+      "description": "Button-presser FSR reading as a percentage of full scale above the reading at mount (uncalibrated; presser ready only).",
+      "schema": {
+        "type": "number",
+        "x-bhms-unit": "%",
+        "minimum": 0,
+        "maximum": 100
+      },
+      "evidence": "measured",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "f32",
+        "index": 39
+      }
+    },
+    "pose_unknown": {
+      "description": "True when the arm may have moved while unpowered (after an E-stop or power loss): re-home before use.",
+      "schema": {
+        "type": "boolean"
+      },
+      "evidence": "reported",
+      "observable": false,
+      "readEffect": "none",
+      "compact": {
+        "type": "bool",
+        "index": 40
+      }
+    }
+  },
+  "actions": {
+    "move_joints": {
+      "description": "Move all five joints to absolute angles along a straight line in joint space, at speed_pct of the per-joint speed limit (servo no-load speed / ratio). The device refuses a goal outside any joint range or coupled limit (shoulder+elbow <= 175, elbow+wrist_pitch <= 165, shoulder+elbow+wrist_pitch <= 183 deg) with OUT_OF_RANGE: detail 0..4 = joint range of base_yaw, shoulder_pitch, elbow_pitch, wrist_pitch, wrist_roll; 16 = coupled forearm_pitch (shoulder+elbow <= 175 deg), 17 = hairpin (elbow+wrist_pitch <= 165 deg), 18 = tool_pitch (shoulder+elbow+wrist_pitch <= 183 deg); 240 = speed. Every interpolated waypoint is checked again on the device. Result: worst joint error at the end, measured.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "base_yaw",
+          "shoulder_pitch",
+          "elbow_pitch",
+          "wrist_pitch",
+          "wrist_roll",
+          "speed_pct"
+        ],
+        "properties": {
+          "base_yaw": {
+            "type": "number",
+            "x-bhms-unit": "deg",
+            "minimum": -150.0,
+            "maximum": 150.0,
+            "multipleOf": 0.01
+          },
+          "shoulder_pitch": {
+            "type": "number",
+            "x-bhms-unit": "deg",
+            "minimum": -20.0,
+            "maximum": 95.0,
+            "multipleOf": 0.01
+          },
+          "elbow_pitch": {
+            "type": "number",
+            "x-bhms-unit": "deg",
+            "minimum": -5.0,
+            "maximum": 125.0,
+            "multipleOf": 0.01
+          },
+          "wrist_pitch": {
+            "type": "number",
+            "x-bhms-unit": "deg",
+            "minimum": -100.0,
+            "maximum": 100.0,
+            "multipleOf": 0.01
+          },
+          "wrist_roll": {
+            "type": "number",
+            "x-bhms-unit": "deg",
+            "minimum": -150.0,
+            "maximum": 150.0,
+            "multipleOf": 0.01
+          },
+          "speed_pct": {
+            "type": "integer",
+            "x-bhms-unit": "%",
+            "minimum": 5,
+            "maximum": 100
+          }
+        }
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "max_error_deg"
+        ],
+        "properties": {
+          "max_error_deg": {
+            "type": "number",
+            "x-bhms-unit": "deg",
+            "minimum": 0,
+            "maximum": 655.35,
+            "multipleOf": 0.01
+          }
+        }
+      },
+      "effect": "reversible",
+      "idempotency": "absolute",
+      "cancel": "supported",
+      "completionEvidence": "measured",
+      "maxDurationMs": 60000,
+      "requiresLease": true,
+      "resources": [
+        "bhms-arm/joints"
+      ],
+      "onLeaseLoss": "hold",
+      "compact": {
+        "index": 0,
+        "args": [
+          {
+            "name": "base_yaw",
+            "type": "i16",
+            "scale": 0.01
+          },
+          {
+            "name": "shoulder_pitch",
+            "type": "i16",
+            "scale": 0.01
+          },
+          {
+            "name": "elbow_pitch",
+            "type": "i16",
+            "scale": 0.01
+          },
+          {
+            "name": "wrist_pitch",
+            "type": "i16",
+            "scale": 0.01
+          },
+          {
+            "name": "wrist_roll",
+            "type": "i16",
+            "scale": 0.01
+          },
+          {
+            "name": "speed_pct",
+            "type": "u8"
+          }
+        ],
+        "result": [
+          {
+            "name": "max_error_deg",
+            "type": "u16",
+            "scale": 0.01
+          }
+        ]
+      },
+      "verifiedBy": [
+        "base_yaw_position_deg",
+        "shoulder_pitch_position_deg",
+        "elbow_pitch_position_deg",
+        "wrist_pitch_position_deg",
+        "wrist_roll_position_deg"
+      ],
+      "typicalDurationMs": 1500,
+      "preconditions": "Arm state ready (enable first); E-stop released and not latched."
+    },
+    "home": {
+      "description": "Move to the rest pose (yaw 0, shoulder 30, elbow 90, wrist pitch 45, roll 0 deg; forearm on the support) at no more than 30 % speed. Result: worst joint error, measured.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "speed_pct"
+        ],
+        "properties": {
+          "speed_pct": {
+            "type": "integer",
+            "x-bhms-unit": "%",
+            "minimum": 5,
+            "maximum": 100
+          }
+        }
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "max_error_deg"
+        ],
+        "properties": {
+          "max_error_deg": {
+            "type": "number",
+            "x-bhms-unit": "deg",
+            "minimum": 0,
+            "maximum": 655.35,
+            "multipleOf": 0.01
+          }
+        }
+      },
+      "effect": "reversible",
+      "idempotency": "idempotent",
+      "cancel": "supported",
+      "completionEvidence": "measured",
+      "maxDurationMs": 60000,
+      "requiresLease": true,
+      "resources": [
+        "bhms-arm/joints"
+      ],
+      "onLeaseLoss": "hold",
+      "compact": {
+        "index": 1,
+        "args": [
+          {
+            "name": "speed_pct",
+            "type": "u8"
+          }
+        ],
+        "result": [
+          {
+            "name": "max_error_deg",
+            "type": "u16",
+            "scale": 0.01
+          }
+        ]
+      },
+      "verifiedBy": [
+        "base_yaw_position_deg",
+        "shoulder_pitch_position_deg",
+        "elbow_pitch_position_deg",
+        "wrist_pitch_position_deg",
+        "wrist_roll_position_deg"
+      ],
+      "typicalDurationMs": 3000,
+      "preconditions": "Arm state ready."
+    },
+    "hold": {
+      "description": "Freeze the arm where it is: abort a running motion (it ends canceled) and keep holding torque.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "effect": "none",
+      "idempotency": "idempotent",
+      "cancel": "unsupported",
+      "completionEvidence": "reported",
+      "maxDurationMs": 1000,
+      "requiresLease": false,
+      "resources": [],
+      "onLeaseLoss": "finish",
+      "compact": {
+        "index": 2,
+        "args": [],
+        "result": []
+      },
+      "typicalDurationMs": 10
+    },
+    "release_torque": {
+      "description": "Release torque on the five arm joints. The arm first moves to the rest pose at 25 % speed so it settles on the support (the gear trains are not self-locking), then torque is disabled and the arm is parked. Needs an explicit enable afterwards.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "effect": "hazardous",
+      "idempotency": "idempotent",
+      "cancel": "supported",
+      "completionEvidence": "measured",
+      "maxDurationMs": 90000,
+      "requiresLease": true,
+      "resources": [
+        "bhms-arm/joints"
+      ],
+      "onLeaseLoss": "hold",
+      "compact": {
+        "index": 3,
+        "args": [],
+        "result": []
+      },
+      "verifiedBy": [
+        "base_yaw_position_deg",
+        "shoulder_pitch_position_deg",
+        "elbow_pitch_position_deg",
+        "wrist_pitch_position_deg",
+        "wrist_roll_position_deg"
+      ],
+      "typicalDurationMs": 5000,
+      "preconditions": "Arm state ready."
+    },
+    "enable": {
+      "description": "Energise the arm: boot self-test of the servo rail (first time), rail on, ping, verify and program every servo's angle window, torque cap (shoulder 78 %) and return delay, read back the measured pose and refuse if it violates a joint or coupled limit with a 3 deg margin, then set goal = present and enable torque. The only way out of an E-stop latch; refused (INHIBITED) while the E-stop contact is open.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "effect": "hazardous",
+      "idempotency": "idempotent",
+      "cancel": "supported",
+      "completionEvidence": "measured",
+      "maxDurationMs": 15000,
+      "requiresLease": true,
+      "resources": [
+        "bhms-arm/power"
+      ],
+      "onLeaseLoss": "hold",
+      "compact": {
+        "index": 4,
+        "args": [],
+        "result": []
+      },
+      "verifiedBy": [
+        "servo_rail_mv",
+        "torque_enabled"
+      ],
+      "typicalDurationMs": 1500,
+      "preconditions": "E-stop released; VIN >= 9 V; not a contact A/Q2 fault."
+    },
+    "tool_mount": {
+      "description": "Power the tool on the flange and bring it up (INTERFACE section 5): tool ID stable, TOOL_EN on, wait 50 ms, ping the tool servo, program its limits and enable torque. Result: tool_id.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "tool_id"
+        ],
+        "properties": {
+          "tool_id": {
+            "type": "integer",
+            "x-bhms-unit": "1",
+            "minimum": 1,
+            "maximum": 4
+          }
+        }
+      },
+      "effect": "reversible",
+      "idempotency": "idempotent",
+      "cancel": "supported",
+      "completionEvidence": "measured",
+      "maxDurationMs": 8000,
+      "requiresLease": true,
+      "resources": [
+        "bhms-arm/tool"
+      ],
+      "onLeaseLoss": "hold",
+      "compact": {
+        "index": 5,
+        "args": [],
+        "result": [
+          {
+            "name": "tool_id",
+            "type": "u8"
+          }
+        ]
+      },
+      "verifiedBy": [
+        "tool_state"
+      ],
+      "typicalDurationMs": 1000,
+      "preconditions": "Arm ready; a valid tool (1..4) detected and unpowered."
+    },
+    "tool_unmount": {
+      "description": "Tool-change step before the unlocking roll: disable the tool servo's torque, clear TOOL_EN and wait out the V_TOOL discharge (60 ms). The client then rolls the wrist -30 deg and retracts (move_joints). Refused while the E-stop is not released.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [],
+        "properties": {}
+      },
+      "effect": "reversible",
+      "idempotency": "idempotent",
+      "cancel": "supported",
+      "completionEvidence": "measured",
+      "maxDurationMs": 3000,
+      "requiresLease": true,
+      "resources": [
+        "bhms-arm/tool"
+      ],
+      "onLeaseLoss": "hold",
+      "compact": {
+        "index": 6,
+        "args": [],
+        "result": []
+      },
+      "verifiedBy": [
+        "tool_state"
+      ],
+      "typicalDurationMs": 100,
+      "preconditions": "Tool ready."
+    },
+    "grip": {
+      "description": "Move the gripper to a total opening and limit the finger force (servo torque cap, at most 15 %). If the fingers stop short of the target for 250 ms the object is grasped (grasped = true). Result: measured opening.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "width_mm",
+          "force_pct"
+        ],
+        "properties": {
+          "width_mm": {
+            "type": "number",
+            "x-bhms-unit": "mm",
+            "minimum": 0,
+            "maximum": 60,
+            "multipleOf": 0.1
+          },
+          "force_pct": {
+            "type": "integer",
+            "x-bhms-unit": "%",
+            "minimum": 1,
+            "maximum": 15
+          }
+        }
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "width_mm",
+          "grasped"
+        ],
+        "properties": {
+          "width_mm": {
+            "type": "number",
+            "x-bhms-unit": "mm",
+            "minimum": 0,
+            "maximum": 60,
+            "multipleOf": 0.1
+          },
+          "grasped": {
+            "type": "boolean"
+          }
+        }
+      },
+      "effect": "hazardous",
+      "idempotency": "absolute",
+      "cancel": "supported",
+      "completionEvidence": "measured",
+      "maxDurationMs": 8000,
+      "requiresLease": true,
+      "resources": [
+        "bhms-arm/tool"
+      ],
+      "onLeaseLoss": "hold",
+      "compact": {
+        "index": 7,
+        "args": [
+          {
+            "name": "width_mm",
+            "type": "u16",
+            "scale": 0.1
+          },
+          {
+            "name": "force_pct",
+            "type": "u8"
+          }
+        ],
+        "result": [
+          {
+            "name": "width_mm",
+            "type": "u16",
+            "scale": 0.1
+          },
+          {
+            "name": "grasped",
+            "type": "bool"
+          }
+        ]
+      },
+      "verifiedBy": [
+        "gripper_opening_mm"
+      ],
+      "typicalDurationMs": 800,
+      "preconditions": "Gripper ready."
+    },
+    "turn": {
+      "description": "Turn the knob to an absolute multi-turn angle relative to the mount position, with a servo torque cap of torque_pct (at most 2.5 %, which keeps the spiral flexure within +-25 deg). reached is false when the torque cap stopped it short.",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "angle_deg",
+          "torque_pct"
+        ],
+        "properties": {
+          "angle_deg": {
+            "type": "number",
+            "x-bhms-unit": "deg",
+            "minimum": -1200,
+            "maximum": 1200,
+            "multipleOf": 0.1
+          },
+          "torque_pct": {
+            "type": "number",
+            "x-bhms-unit": "%",
+            "minimum": 0.1,
+            "maximum": 2.5,
+            "multipleOf": 0.1
+          }
+        }
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "angle_deg",
+          "reached"
+        ],
+        "properties": {
+          "angle_deg": {
+            "type": "number",
+            "x-bhms-unit": "deg",
+            "minimum": -1200,
+            "maximum": 1200,
+            "multipleOf": 0.1
+          },
+          "reached": {
+            "type": "boolean"
+          }
+        }
+      },
+      "effect": "hazardous",
+      "idempotency": "absolute",
+      "cancel": "supported",
+      "completionEvidence": "measured",
+      "maxDurationMs": 40000,
+      "requiresLease": true,
+      "resources": [
+        "bhms-arm/tool"
+      ],
+      "onLeaseLoss": "hold",
+      "compact": {
+        "index": 8,
+        "args": [
+          {
+            "name": "angle_deg",
+            "type": "i16",
+            "scale": 0.1
+          },
+          {
+            "name": "torque_pct",
+            "type": "u8",
+            "scale": 0.1
+          }
+        ],
+        "result": [
+          {
+            "name": "angle_deg",
+            "type": "i16",
+            "scale": 0.1
+          },
+          {
+            "name": "reached",
+            "type": "bool"
+          }
+        ]
+      },
+      "verifiedBy": [
+        "knob_angle_deg"
+      ],
+      "typicalDurationMs": 3000,
+      "preconditions": "Knob turner ready."
+    },
+    "press": {
+      "description": "Extend the presser cam toward depth_mm, stop at force_limit_pct of the FSR scale, then retract. Result: peak force and the depth reached. The force scale is uncalibrated (percent of FSR full scale above the mount reading).",
+      "input": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "depth_mm",
+          "force_limit_pct"
+        ],
+        "properties": {
+          "depth_mm": {
+            "type": "number",
+            "x-bhms-unit": "mm",
+            "minimum": 0,
+            "maximum": 7.8,
+            "multipleOf": 0.1
+          },
+          "force_limit_pct": {
+            "type": "integer",
+            "x-bhms-unit": "%",
+            "minimum": 1,
+            "maximum": 100
+          }
+        }
+      },
+      "output": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "peak_force_pct",
+          "depth_mm"
+        ],
+        "properties": {
+          "peak_force_pct": {
+            "type": "integer",
+            "x-bhms-unit": "%",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "depth_mm": {
+            "type": "number",
+            "x-bhms-unit": "mm",
+            "minimum": 0,
+            "maximum": 25.5,
+            "multipleOf": 0.1
+          }
+        }
+      },
+      "effect": "hazardous",
+      "idempotency": "absolute",
+      "cancel": "supported",
+      "completionEvidence": "measured",
+      "maxDurationMs": 8000,
+      "requiresLease": true,
+      "resources": [
+        "bhms-arm/tool"
+      ],
+      "onLeaseLoss": "hold",
+      "compact": {
+        "index": 9,
+        "args": [
+          {
+            "name": "depth_mm",
+            "type": "u8",
+            "scale": 0.1
+          },
+          {
+            "name": "force_limit_pct",
+            "type": "u8"
+          }
+        ],
+        "result": [
+          {
+            "name": "peak_force_pct",
+            "type": "u8"
+          },
+          {
+            "name": "depth_mm",
+            "type": "u8",
+            "scale": 0.1
+          }
+        ]
+      },
+      "verifiedBy": [
+        "presser_force_pct"
+      ],
+      "typicalDurationMs": 1200,
+      "preconditions": "Button presser ready."
+    }
+  },
+  "safety": {
+    "stop": "supported",
+    "stopEvidence": "measured",
+    "stopMaxDurationMs": 3000,
+    "onDisconnect": "unknown",
+    "summary": "STOP freezes motion and keeps holding torque (confirmed from servo moving flags). The E-stop button cuts the servo rail in hardware; the arm has no brakes and falls, then the device latches and refuses motion until an explicit enable with the contact released. Link loss does not stop the arm."
+  }
+}

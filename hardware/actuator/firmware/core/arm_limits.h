@@ -1,0 +1,45 @@
+/* Joint, coupled and speed limit checks. The firmware enforces these itself; it never
+ * trusts the host. A violation is reported as a limit code that doubles as the ERROR
+ * `detail` byte of an OUT_OF_RANGE refusal:
+ *   0..4      single-joint range of joint 0..4 (base_yaw .. wrist_roll)
+ *   0x10..    coupled limit 0..2 (forearm_pitch, hairpin, tool_pitch)
+ * Thread-safety: pure functions. */
+#ifndef ARM_LIMITS_H
+#define ARM_LIMITS_H
+
+#include <stdint.h>
+
+#include "arm_params.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define ARM_LIMIT_NONE 0xFFu
+#define ARM_LIMIT_COUPLED_BASE 0x10u
+
+typedef struct {
+    float q[ARM_NUM_JOINTS];
+} arm_pose;
+
+/* First violated limit of `p`, or ARM_LIMIT_NONE. A non-finite angle counts as a violation of
+ * its own joint range. `margin_deg` tightens every limit (use 0 for commanded goals, a few
+ * degrees for a measured pose). */
+uint8_t arm_check_pose(const arm_pose *p, float margin_deg);
+
+/* Waypoint check for a motion that may start outside the limits (an arm moved by hand,
+ * or encoder noise at a stop): `next` is allowed if it is inside every limit, or if each limit
+ * it violates is violated by no more than at `prev`. Returns the first offending limit or
+ * ARM_LIMIT_NONE. */
+uint8_t arm_check_step(const arm_pose *prev, const arm_pose *next);
+
+/* Human-readable name of a limit code ("base_yaw", "forearm_pitch", ...), or "unknown". */
+const char *arm_limit_name(uint8_t code);
+
+/* Sum of the joints of coupled limit k in pose p. */
+float arm_coupled_sum(const arm_pose *p, unsigned k);
+
+#ifdef __cplusplus
+}
+#endif
+#endif
