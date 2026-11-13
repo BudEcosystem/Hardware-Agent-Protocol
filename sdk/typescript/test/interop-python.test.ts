@@ -133,3 +133,45 @@ test("byte-for-byte parity: the TS and Python conformance devices describe thems
     assert.deepEqual(r.client.discovered!.capabilities, client.discovered!.capabilities, "capabilities are identical, programs limits included");
   } finally { await r.close(); }
 });
+
+test("contract v2 parity: extension declaration, counters shape and the description digest under every description-changing fault", { skip }, async () => {
+  const { rig, inject, counters } = await import("./harness.js");
+  const r = await rig();
+  try {
+    const ext = (c: Client): unknown => c.discovered!.capabilities.extensions!["org.bhms/conformance"];
+    assert.deepEqual(ext(r.client), ext(client), "version, faults and devices are declared identically");
+    assert.deepEqual(Object.keys(await counters(r.client)).sort(), Object.keys(await client.request("x-conformance/counters")).sort());
+    const steps: Array<[string, Record<string, unknown>?]> = [
+      ["bad_digest"], ["good_digest"], ["hostile_text"], ["none"], ["hostile_schema", { url: "http://127.0.0.1:9/hostile-schema.json" }], ["none"],
+      ["hostile_text"], ["hostile_schema", { url: "http://127.0.0.1:9/x" }], ["bad_digest"], ["good_digest"], ["none"], ["change_description"], ["change_description"], ["none"],
+    ];
+    for (const [fault, extra] of steps) {
+      await Promise.all([r.client.request("x-conformance/inject", { fault, ...extra }), client.request("x-conformance/inject", { fault, ...extra })]);
+      const [ts, py] = await Promise.all([r.client.devicesDescribe("axis-1"), client.devicesDescribe("axis-1")]);
+      assert.equal(ts.description.digest, py.description.digest, `after ${fault}: JCS of the served description is identical`);
+      const [tsList, pyList] = await Promise.all([r.client.devicesList(), client.devicesList()]);
+      assert.deepEqual(tsList.devices, pyList.devices, `after ${fault}: summaries are identical`);
+    }
+    await inject(r.client, "none");
+  } finally { await r.close(); }
+});
+
+test("schemaBoundsProblem answers exactly like bhms.protocol.schema.schema_bounds_problem on a corpus of boundary cases", { skip }, async () => {
+  const { spawnSync } = await import("node:child_process");
+  const { schemaBoundsProblem } = await import("../src/schema.js");
+  const nest = (levels: number, leaf: unknown = { type: "string" }): unknown => { let n = leaf; for (let i = 1; i < levels; i++) n = { type: "object", properties: { x: n } }; return n; };
+  const wide = (n: number): unknown => ({ type: "object", properties: Object.fromEntries(Array.from({ length: n - 1 }, (_, i) => [`p${i}`, { type: "string" }])) });
+  const long = "http://example.com/" + "a".repeat(120);
+  const cases: unknown[] = [
+    nest(1), nest(31), nest(32), nest(33), nest(40), nest(32, { $ref: "#/$defs/a" }), nest(31, { $ref: "http://x/y" }), nest(64, { $ref: "http://127.0.0.1:9/h.json" }),
+    wide(9_999), wide(10_000), wide(10_001), { $ref: "#" }, { $ref: "other.json#/a" }, { $ref: long }, { $ref: "it's.json" }, { $ref: "a\\b\"c" },
+    { allOf: [true, 1, "x", null, {}, { $ref: "https://e/x" }] }, { items: [{ $ref: "https://e/x" }] }, { items: { items: { items: { not: { $ref: "ftp://q" } } } } },
+    { properties: { a: { patternProperties: { b: { $defs: { c: { dependentSchemas: { d: { oneOf: [{ prefixItems: [{ $ref: "x:y" }] }] } } } } } } } } },
+    { description: { $ref: "http://not-a-schema" } }, "just a string", null, [], { properties: [] }, { $ref: 5 },
+  ];
+  const script = "import json,sys\nfrom bhms.protocol.schema import schema_bounds_problem\nprint(json.dumps([schema_bounds_problem(c) for c in json.load(sys.stdin)]))\n";
+  const py = spawnSync("python3", ["-c", script], { env: pythonEnv(), input: JSON.stringify(cases), encoding: "utf8" });
+  assert.equal(py.status, 0, py.stderr);
+  const expected = JSON.parse(py.stdout) as Array<string | null>;
+  assert.deepEqual(cases.map((c) => schemaBoundsProblem(c) ?? null), expected);
+});

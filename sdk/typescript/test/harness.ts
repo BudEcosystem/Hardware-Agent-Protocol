@@ -45,6 +45,6 @@ export async function rig(options: DeviceServerOptions & { durable?: boolean; st
 }
 
 export const inject = (c: Client, fault: string): Promise<unknown> => c.request("x-conformance/inject", { fault });
-export const counters = (c: Client): Promise<{ counter: number; pulses: number; fifo_reads: number; stops: number; log: string[][] }> => c.request("x-conformance/counters");
+export const counters = (c: Client): Promise<{ counter: number; pulses: number; fifo_reads: number; stops: number; holds: number; trace: Record<string, string>; log: string[][] }> => c.request("x-conformance/counters");
 let n = 0;
 export const key = (prefix = "k"): string => `${prefix}-${Date.now().toString(36)}-${++n}`;
