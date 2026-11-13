@@ -164,7 +164,7 @@ async def test_a_disconnected_detector_cannot_produce_a_reading(reader):
 def test_balance_reads_the_ledger_mass_settles_and_tares():
     w = plate_world(site="balance")
     bal = balance_twin.BalanceModel(w)
-    assert bal.reading_g() == pytest.approx(0.0, abs=0.02) or not bal.settled()
+    assert bal.settled()  # a pan loaded from the start has settled
     w.step(12.0)
     assert bal.settled()
     expected = 40.0 + 0.2  # plate + 200 uL

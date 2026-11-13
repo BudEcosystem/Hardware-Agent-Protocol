@@ -41,9 +41,9 @@ class BalanceModel:
     def __init__(self, world: World, *, device: str = "balance-1") -> None:
         self.world, self.device = world, device
         self._tare_g = 0.0
-        self._from_g = 0.0  # the displayed gross value when the true mass last changed
-        self._to_g = 0.0
-        self._changed_s = -1e9
+        self._to_g = self.true_gross_g()  # the display starts settled on whatever is on the pan
+        self._from_g = self._to_g  # the displayed gross value when the true mass last changed
+        self._changed_s = world.time_s
         world.on_effect(lambda _effect: self._settling_gross_g())  # notice a load change at the moment it happens
 
     def true_gross_g(self) -> float:
