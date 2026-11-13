@@ -32,9 +32,12 @@ class Rig:
     def socket(self) -> str:
         return f"unix:{self.tmp}/gw.sock"
 
-    async def client(self, *, token: str | None = None, **kw: Any) -> Client:
-        """Connect to the gateway: over its Unix socket (principal by uid) or, with ``token``, WebSocket."""
-        if token is not None:
+    async def client(self, *, token: str | None = None, http: bool = False, **kw: Any) -> Client:
+        """Connect to the gateway: over its Unix socket (principal by uid) or, with ``token``, WebSocket (or
+        Streamable HTTP with ``http=True``)."""
+        if http:
+            client = await Client.connect(f"http://127.0.0.1:{self.http_port}/bhms", token=token, **kw)
+        elif token is not None:
             url = f"ws://127.0.0.1:{self.ws_port}"
             client = await Client.connect(url, token=token, **kw)
         else:
@@ -43,6 +46,7 @@ class Rig:
         return client
 
     ws_port: int = 0
+    http_port: int = 0
 
 
 def principals(*, agent_scopes: list[str] | None = None, bounds: dict[str, Any] | None = None) -> dict[str, Any]:
@@ -86,6 +90,9 @@ async def rig(tmp_path: Path, names: tuple[str, ...] = ("a", "b"), *, principals
     ws = await gateway.listen("ws://127.0.0.1:0")
     out.listeners["gw-ws"] = ws
     out.ws_port = ws.address[1]
+    http = await gateway.listen("http://127.0.0.1:0/bhms")
+    out.listeners["gw-http"] = http
+    out.http_port = http.address[1]
     try:
         yield out
     finally:

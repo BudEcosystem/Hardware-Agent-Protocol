@@ -19,6 +19,7 @@ dependencies = [
 
 [project.optional-dependencies]
 mcp = ["mcp>=1.26"]
+http = ["aiohttp>=3.9"]
 sim = []
 openai = []
 

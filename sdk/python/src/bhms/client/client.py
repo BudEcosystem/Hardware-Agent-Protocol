@@ -7,7 +7,7 @@ method of ``spec/bhms/schema/bhms.schema.json`` ``x-bhms-methods`` has a typed c
 result model from :mod:`bhms.protocol.types`; ``subscribe`` returns an async-iterator :class:`Subscription`.
 
 URL forms for :meth:`Client.connect`: ``stdio:<command>``, ``unix:<path>``, ``tcp://host:port``, ``ws://host:port/...``
-(``wss://`` too).
+(``wss://`` too), ``http://host:port/bhms`` (Streamable HTTP; needs ``pip install 'bhms[http]'``).
 
 Errors: error responses raise :class:`~bhms.protocol.errors.BhmsError` (or ``JsonRpcError`` for plain JSON-RPC errors);
 a request that times out raises ``BhmsError(DEADLINE_EXCEEDED)`` with ``may_have_acted=True``: the outcome is unknown, so
@@ -72,7 +72,12 @@ async def open_transport(target: str, *, token: str | None = None,
         return await connect_tcp(host.strip("[]"), int(port), max_message_bytes=max_message_bytes)
     if target.startswith(("ws://", "wss://")):
         return await connect_websocket(target, token=token, max_message_bytes=max_message_bytes)
-    raise ValueError(f"unsupported target {target!r}; use stdio:<command>, unix:<path>, tcp://host:port or ws://host:port")
+    if target.startswith(("http://", "https://")):
+        from bhms.transport.http import connect_http  # needs the optional aiohttp dependency
+
+        return await connect_http(target, token=token, max_message_bytes=max_message_bytes)
+    raise ValueError(f"unsupported target {target!r}; use stdio:<command>, unix:<path>, tcp://host:port, ws://host:port "
+                     "or http://host:port/bhms")
 
 
 @dataclass(frozen=True, slots=True)
