@@ -35,7 +35,7 @@ import { METHODS, PROTOCOL_VERSION } from "./generated/types.js";
 import { Session, type ClientStream, type Notification, type Transport } from "./jsonrpc/session.js";
 import { loadSchema, validateDef } from "./schema.js";
 import { spawnServer } from "./transport/stdio.js";
-import { connectSocket } from "./transport/socket.js";
+import { BEARER_KEY, connectSocket } from "./transport/socket.js";
 import { connectWebSocket } from "./transport/websocket.js";
 
 export const SUPPORTED_VERSIONS: readonly string[] = [PROTOCOL_VERSION];
@@ -67,6 +67,8 @@ export interface ClientOptions {
   timeoutMs?: number;
   /** Bearer token for WebSocket targets. */
   token?: string;
+  /** Bearer token presented in every request `_meta` over raw TCP targets (set by `connect` for `tcp://`). */
+  bearer?: string;
   /** Pin the protocol version instead of negotiating. */
   protocolVersion?: string;
 }
@@ -139,19 +141,21 @@ export class Client {
   private readonly strict: boolean;
   private readonly timeoutMs: number;
   private dispose?: () => void;
+  private bearer?: string;
 
   private constructor(readonly session: Session, options: ClientOptions) {
     this.clientInfo = options.clientInfo ?? { ...DEFAULT_CLIENT_INFO };
     this.strict = options.strict ?? false;
     this.timeoutMs = options.timeoutMs ?? 30_000;
     this.version = options.protocolVersion ?? PROTOCOL_VERSION;
+    this.bearer = options.bearer;
   }
 
   /** Open `target` (see module docs), discover the server and return a ready client. */
   static async connect(target: string, options: ClientOptions = {}): Promise<Client> {
     const opened = await openTransport(target, { token: options.token });
     try {
-      const client = await Client.fromTransport(opened.transport, options);
+      const client = await Client.fromTransport(opened.transport, target.startsWith("tcp://") ? { ...options, bearer: options.token } : options);
       client.dispose = opened.dispose;
       return client;
     } catch (e) {
@@ -182,7 +186,7 @@ export class Client {
   }
 
   private meta(): Record<string, unknown> {
-    return { "bhms/protocolVersion": this.version, "bhms/clientInfo": this.clientInfo };
+    return { "bhms/protocolVersion": this.version, "bhms/clientInfo": this.clientInfo, ...(this.bearer ? { [BEARER_KEY]: this.bearer } : {}) };
   }
 
   private params(wire: Record<string, unknown>): Record<string, unknown> {

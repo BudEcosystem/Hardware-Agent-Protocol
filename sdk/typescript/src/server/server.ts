@@ -230,6 +230,7 @@ export class DeviceServer {
     if (this.started) return;
     for (const dev of this.devices.values()) dev.description(); // fail fast on invalid declarations
     this.store = this.openStore();
+    await this.store.acquire?.();
     const loaded = this.store.load();
     this.journal = new Journal(this.store);
     this.journal.onWriteFailure = (e) => this.journalFailed(e);
@@ -277,6 +278,9 @@ export class DeviceServer {
    * for listeners resolves with the address once listening (call `close()` to stop).
    */
   async run(url?: string): Promise<string | undefined> {
+    if (url?.startsWith("tcp://")) {
+      throw new RangeError("TCP carries no credential, so a server will not serve it (BHMS-SEC-001); use unix:<path> or ws://127.0.0.1:<port> with a bearer token");
+    }
     await this.start();
     if (url === undefined || url === "stdio") {
       const session = this.serve(stdioServerTransport(this.opts.maxMessageBytes));
@@ -329,7 +333,7 @@ export class DeviceServer {
       await this.executor.idle(drainMs);
       this.leases.close();
       this.observations.close();
-      this.store.close();
+      await this.store.close();
     }
     for (const t of this.lifecycleTimers) clearInterval(t);
   }

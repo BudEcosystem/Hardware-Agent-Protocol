@@ -141,12 +141,12 @@ test("Unix-domain sockets: mode 0600, concurrent requests, newline framing", asy
 });
 
 test("TCP listeners bind only loopback (BHMS-TRN-021)", async () => {
-  await assert.rejects(listenTcp("0.0.0.0", 0, () => undefined), /loopback/);
+  await assert.rejects(listenTcp("0.0.0.0", 0, () => undefined, { token: "t" }), /loopback/);
   const sessions: Session[] = [];
-  const listener = await listenTcp("127.0.0.1", 0, (t) => sessions.push(new Session(t, { role: "server", handler: async () => ({ resultType: "complete" }), log: () => undefined }).start()));
+  const listener = await listenTcp("127.0.0.1", 0, (t) => sessions.push(new Session(t, { role: "server", handler: async () => ({ resultType: "complete" }), log: () => undefined }).start()), { token: "tcp-secret" });
   try {
     const client = new Session(await connectSocket(`tcp:${listener.address}`), { role: "client" }).start();
-    assert.equal((await client.request("x", {})).resultType, "complete");
+    assert.equal((await client.request("x", { _meta: { "org.bhms.sdk/bearer": "tcp-secret" } })).resultType, "complete");
     await client.close();
   } finally {
     await Promise.all(sessions.map((s) => s.close()));

@@ -17,9 +17,11 @@
  *
  * Thread-safety: single event loop; all calls are synchronous.
  */
-import { randomBytes } from "node:crypto";
-import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, renameSync, unlinkSync, writeSync } from "node:fs";
-import { dirname } from "node:path";
+import { createHash, randomBytes } from "node:crypto";
+import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, realpathSync, renameSync, unlinkSync, writeSync } from "node:fs";
+import net from "node:net";
+import { tmpdir } from "node:os";
+import { basename, dirname, join } from "node:path";
 import type { Event, HistoryEntry, Operation } from "../generated/types.js";
 
 export class StoreError extends Error {
@@ -69,6 +71,8 @@ export interface Store {
   readonly epoch: string;
   /** Whether writes can currently be committed (false after `setWritable(false)` or an I/O failure). */
   readonly writable: boolean;
+  /** Take any exclusive ownership of the underlying storage; awaited before `load()`. */
+  acquire?(): Promise<void>;
   load(): LoadedState;
   writeOp(rec: StoredOperation): void;
   writeFence(n: number): void;
@@ -79,7 +83,9 @@ export interface Store {
   probeWritable(): boolean;
   /** Drop settled operations last updated before `cutoffMs` and events recorded before it; returns ids dropped. */
   prune(cutoffMs: number): string[];
-  close(): void;
+  /** Drop events recorded before `cutoffMs` (the event log's retention, BHMS-EVT-012). */
+  pruneEvents(cutoffMs: number): void;
+  close(): void | Promise<void>;
 }
 
 function newEpoch(): string {
@@ -113,41 +119,62 @@ export class MemoryStore implements Store {
   setWritable(w: boolean): void { this._writable = w; }
   probeWritable(): boolean { return this._writable; }
   prune(): string[] { return []; }
+  pruneEvents(cutoffMs: number): void { this.events = this.events.filter((e) => Date.parse(e.time) >= cutoffMs); }
   close(): void { this.ops.clear(); this.events = []; }
 }
 
 /** The terminal operation states (BHMS §6.3): the one definition in the package. */
 export const TERMINAL: ReadonlySet<string> = new Set(["completed", "failed", "canceled", "rejected"]);
 
-/** Held while a {@link JournalStore} is open: `<journal>.lock` created with O_EXCL holding the owner's pid. */
-function acquireLock(path: string): () => void {
-  const lock = `${path}.lock`;
-  for (let attempt = 0; attempt < 2; attempt++) {
+export type LockMode = "auto" | "path";
+
+/**
+ * The exclusive lock on a journal: a listening socket whose name is derived from the journal's real path, held open for as
+ * long as the store is. The kernel frees it when the holder dies (SIGKILL, power loss, pid reuse in a container are all
+ * harmless), and `bind` is atomic, so two simultaneous starters cannot both win.
+ *
+ * - Linux (`auto`): an abstract-namespace Unix socket (`\0bhms-lock-<hash>`): no file at all, so no stale state exists.
+ * - Windows (`auto`): a named pipe `\\.\pipe\bhms-lock-<hash>`, freed by the kernel on process death.
+ * - macOS and other Unix (`auto`), or `path` mode: a socket file `<tmpdir>/bhms-lock-<hash>.sock`. A leftover file from a dead
+ *   holder is detected by connecting (ECONNREFUSED means stale) and replaced after re-probing; two starters racing on that
+ *   very takeover window on such systems could in theory both win (documented limit; Linux and Windows have no such window).
+ */
+async function acquireLock(journalPath: string, mode: LockMode): Promise<() => Promise<void>> {
+  const hash = createHash("sha256").update(realpathSync(dirname(journalPath)) + "/" + basename(journalPath)).digest("hex").slice(0, 24);
+  let name: string;
+  let file: string | undefined;
+  if (process.platform === "win32") name = `\\\\.\\pipe\\bhms-lock-${hash}`;
+  else if (process.platform === "linux" && mode === "auto") name = `\0bhms-lock-${hash}`;
+  else name = file = join(tmpdir(), `bhms-lock-${hash}.sock`);
+  const listen = (): Promise<net.Server> => new Promise((resolve, reject) => {
+    const server = net.createServer((sock) => sock.destroy()); // a probe connects, then is dropped
+    server.once("error", reject);
+    server.listen(name, () => { server.off("error", reject); resolve(server); });
+  });
+  const probe = (): Promise<boolean> => new Promise((resolve) => {
+    const sock = net.connect(name);
+    sock.once("connect", () => { sock.destroy(); resolve(true); });
+    sock.once("error", () => resolve(false)); // ECONNREFUSED / ENOENT: nobody listens
+  });
+  for (let attempt = 0; attempt < 3; attempt++) {
     try {
-      const fd = openSync(lock, "wx", 0o600);
-      writeSync(fd, `${process.pid}\n`);
-      closeSync(fd);
-      let released = false;
-      const release = (): void => {
-        if (released) return;
-        released = true;
-        process.off("exit", release);
-        try { unlinkSync(lock); } catch { /* already gone */ }
-      };
-      process.on("exit", release);
-      return release;
+      const server = await listen();
+      server.unref();
+      let released: Promise<void> | undefined;
+      // Resolves once the kernel has really dropped the name, so the next acquire() cannot race a half-closed listener.
+      return () => released ??= new Promise<void>((resolve) => {
+        server.close(() => resolve());
+        if (file) { try { unlinkSync(file); } catch { /* already gone */ } }
+      });
     } catch (e) {
-      if ((e as NodeJS.ErrnoException).code !== "EEXIST") throw new StoreError(`cannot lock the journal: ${(e as Error).message}`);
-      const pid = Number.parseInt(readFileSync(lock, "utf8"), 10);
-      let alive = Number.isInteger(pid) && pid > 0;
-      if (alive) {
-        try { process.kill(pid, 0); } catch (k) { alive = (k as NodeJS.ErrnoException).code === "EPERM"; }
-      }
-      if (alive) throw new StoreError(`the journal ${path} is in use by process ${pid}; one server owns a state directory`);
-      try { unlinkSync(lock); } catch { /* raced with another cleanup */ }
+      if ((e as NodeJS.ErrnoException).code !== "EADDRINUSE") throw new StoreError(`cannot lock the journal ${journalPath}: ${(e as Error).message}`);
+      if (await probe()) throw new StoreError(`the journal ${journalPath} is in use by another server; one server owns a state directory`);
+      if (file === undefined) continue; // abstract names and pipes are freed by the kernel: just retry
+      if (await probe()) throw new StoreError(`the journal ${journalPath} is in use by another server; one server owns a state directory`);
+      try { unlinkSync(file); } catch { /* raced with another takeover */ }
     }
   }
-  throw new StoreError(`cannot lock the journal ${path}`);
+  throw new StoreError(`cannot lock the journal ${journalPath}`);
 }
 
 export class JournalStore implements Store {
@@ -156,7 +183,7 @@ export class JournalStore implements Store {
   private fd = -1;
   private _writable = true;
   private broken = false;
-  private release?: () => void;
+  private release?: () => Promise<void>;
   /** The live content of the journal: every committed write is applied here, so compaction never loses state. */
   private readonly ops = new Map<string, StoredOperation>();
   private events: Event[] = [];
@@ -164,17 +191,23 @@ export class JournalStore implements Store {
   private readonly programs = new Map<string, StoredProgram>();
 
   /** @param path journal file; its directory is created. */
-  constructor(private readonly path: string) {}
+  constructor(private readonly path: string, private readonly lockMode: LockMode = "auto") {}
+
+  /** Take the exclusive lock (see {@link acquireLock}); must complete before `load()`. Idempotent. */
+  async acquire(): Promise<void> {
+    if (this.release) return;
+    mkdirSync(dirname(this.path), { recursive: true });
+    this.release = await acquireLock(this.path, this.lockMode);
+  }
 
   get writable(): boolean { return this._writable && !this.broken; }
 
   load(): LoadedState {
-    mkdirSync(dirname(this.path), { recursive: true });
-    this.release = acquireLock(this.path);
+    if (!this.release) throw new StoreError("the journal is not locked: await store.acquire() before load()");
     try {
       return this.read();
     } catch (e) {
-      this.release();
+      void this.release();
       this.release = undefined;
       throw e;
     }
@@ -226,7 +259,13 @@ export class JournalStore implements Store {
     if (this.fd >= 0) {
       try { closeSync(this.fd); } catch { /* a descriptor the failure already invalidated */ }
     }
-    this.fd = openSync(this.path, "a", 0o600);
+    this.fd = -1; // never keep a closed descriptor number: it may be reused by another file
+    try {
+      this.fd = openSync(this.path, "a", 0o600);
+    } catch (e) {
+      this.broken = true;
+      throw e;
+    }
   }
 
   private syncDirectory(): void {
@@ -282,6 +321,14 @@ export class JournalStore implements Store {
     }
   }
 
+  pruneEvents(cutoffMs: number): void {
+    const before = this.events.length;
+    this.events = this.events.filter((e) => Date.parse(e.time) >= cutoffMs);
+    if (this.events.length < before && this.writable) {
+      try { this.rewrite(); } catch { /* compaction is retried by the next prune or recovery */ }
+    }
+  }
+
   prune(cutoffMs: number): string[] {
     const dropped: string[] = [];
     for (const [id, r] of this.ops) {
@@ -292,13 +339,14 @@ export class JournalStore implements Store {
     return dropped;
   }
 
-  close(): void {
+  close(): Promise<void> {
     if (this.fd >= 0) {
       try { fsyncSync(this.fd); } catch { /* ignore */ }
       try { closeSync(this.fd); } catch { /* ignore */ }
       this.fd = -1;
     }
-    this.release?.();
+    const released = this.release?.() ?? Promise.resolve();
     this.release = undefined;
+    return released;
   }
 }

@@ -1,7 +1,8 @@
 // Fix round 1: journal compaction never loses committed state, exclusive lock, strict UTF-8, EVT-002, stop history,
 // OBS-006 transaction exception, SEC-001 (no credential-less TCP), OPS-033 ordering.
 import assert from "node:assert/strict";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { spawn } from "node:child_process";
+import { readdirSync, realpathSync, statSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough } from "node:stream";
@@ -13,7 +14,8 @@ import { LineTransport } from "../src/transport/stream.js";
 import { connectSocket, listenTcp } from "../src/transport/socket.js";
 import { build } from "../src/testing/conformanceDevice.js";
 import { counters, inject, key, rig } from "./harness.js";
-import { sleep } from "./helpers.js";
+import { sleep, tsDevicePath } from "./helpers.js";
+import { EventLog } from "../src/server/events.js";
 
 const code = (c: string) => (e: unknown): boolean => e instanceof BhmsError && e.bhmsCode === c;
 const FILE = "conformance-device.journal.jsonl";
@@ -104,10 +106,8 @@ test("IMPORTANT 3: a second server on the same state directory is refused; a sta
   const stateDir = first.stateDir!;
   try {
     const { server } = build({ stateDir, log: () => undefined });
-    await assert.rejects(server.start(), (e: unknown) => e instanceof StoreError && /in use by process/.test(e.message));
+    await assert.rejects(server.start(), (e: unknown) => e instanceof StoreError && /in use by another server/.test(e.message));
     await first.close();
-    assert.ok(!existsSync(join(stateDir, FILE + ".lock")), "the lock is released on close");
-    writeFileSync(join(stateDir, FILE + ".lock"), "999999999\n"); // a dead owner
     const again = build({ stateDir, log: () => undefined });
     await again.server.start();
     await again.server.close(100);
@@ -116,14 +116,17 @@ test("IMPORTANT 3: a second server on the same state directory is refused; a sta
     writeFileSync(join(stateDir, FILE), [lines[0], "{not json", ...lines.slice(1)].join("\n") + "\n");
     const broken = build({ stateDir, log: () => undefined });
     await assert.rejects(broken.server.start(), (e: unknown) => e instanceof StoreError && /corrupt at line 2/.test(e.message));
-    assert.ok(!existsSync(join(stateDir, FILE + ".lock")), "a refused start does not leave the lock behind");
+    const free = new JournalStore(join(stateDir, "other.jsonl"));
+    await free.acquire(); // a refused start released its lock: a different journal is unaffected, and this one can be re-locked after repair
+    await free.close();
   } finally { rmSync(stateDir, { recursive: true, force: true }); }
 });
 
-test("a JournalStore keeps its live state: recovery after a failed write does not lose earlier commits", () => {
+test("a JournalStore keeps its live state: recovery after a failed write does not lose earlier commits", async () => {
   const dir = mkdtempSync(join(tmpdir(), "bhms-ts-store-"));
   try {
     const store = new JournalStore(join(dir, "j.jsonl"));
+    await store.acquire();
     store.load();
     store.writeFence(3);
     store.writeOp(oldRecord("op-a", "ka", "completed", new Date().toISOString()));
@@ -131,12 +134,13 @@ test("a JournalStore keeps its live state: recovery after a failed write does no
     assert.throws(() => store.writeOp(oldRecord("op-b", "kb", "completed", new Date().toISOString())), StoreError);
     assert.equal(store.writable, false);
     assert.equal(store.probeWritable(), true);
-    store.close();
+    await store.close();
     const reopened = new JournalStore(join(dir, "j.jsonl"));
+    await reopened.acquire();
     const loaded = reopened.load();
     assert.deepEqual(loaded.ops.map((o) => o.id), ["op-a"]);
     assert.equal(loaded.fence, 3);
-    reopened.close();
+    await reopened.close();
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
@@ -194,19 +198,27 @@ test("IMPORTANT 7 (OBS-006): a transaction property keeps its retained sample af
   } finally { await r.close(); }
 });
 
-test("IMPORTANT 8 (SEC-001): no credential-less TCP: servers refuse tcp://, the raw listener grants read only", async () => {
-  const { server } = build({ memory: true, log: () => undefined });
-  await assert.rejects(server.run("tcp://127.0.0.1:0"), /TCP carries no credential/);
-  await server.close(100);
-  const seen: string[][] = [];
-  const sessions: Session[] = [];
-  const listener = await listenTcp("127.0.0.1", 0, (t) => sessions.push(new Session(t, { role: "server", handler: async (ctx) => { seen.push(ctx.peer.scopes ?? []); return { resultType: "complete" }; }, log: () => undefined }).start()));
+test("IMPORTANT 8 / N2 / N3 (SEC-001): no credential-less TCP; refusal happens before the store is opened", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "bhms-ts-tcp-"));
   try {
-    const client = new Session(await connectSocket(`tcp:${listener.address}`), { role: "client" }).start();
-    await client.request("x", {});
-    assert.deepEqual(seen, [["read"]]);
-    await client.close();
-  } finally { await Promise.all(sessions.map((s) => s.close())); await listener.close(); }
+    const { server } = build({ stateDir: dir, log: () => undefined });
+    await assert.rejects(server.run("tcp://127.0.0.1:0"), /TCP carries no credential/);
+    assert.ok(!existsSync(join(dir, FILE)), "N2: run() refused the URL before start() opened the journal");
+    await assert.rejects(listenTcp("127.0.0.1", 0, () => undefined, {} as never), /without a bearer token/);
+    const seen: string[][] = [];
+    const sessions: Session[] = [];
+    const listener = await listenTcp("127.0.0.1", 0, (t) => sessions.push(new Session(t, { role: "server", handler: async (ctx) => { seen.push(ctx.peer.scopes ?? []); return { resultType: "complete" }; }, log: () => undefined }).start()), { token: "tcp-secret" });
+    try {
+      const client = new Session(await connectSocket(`tcp:${listener.address}`), { role: "client" }).start();
+      const meta = { "bhms/protocolVersion": "2026-11-13" };
+      await client.request("server/discover", { _meta: meta }); // discover needs no credential
+      await assert.rejects(client.request("devices/list", { _meta: meta }), code("UNAUTHORIZED"));
+      await assert.rejects(client.request("devices/list", { _meta: { ...meta, "org.bhms.sdk/bearer": "wrong" } }), code("UNAUTHORIZED"));
+      assert.equal((await client.request("devices/list", { _meta: { ...meta, "org.bhms.sdk/bearer": "tcp-secret" } })).resultType, "complete");
+      assert.deepEqual(seen, [["admin"], ["admin"]], "only discover and the credentialed request reached the session");
+      await client.close();
+    } finally { await Promise.all(sessions.map((s) => s.close())); await listener.close(); }
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
 test("OPS-033: the key lookup precedes the waitMs range check, and a refused range creates no operation", async () => {
@@ -221,4 +233,81 @@ test("OPS-033: the key lookup precedes the waitMs range check, and a refused ran
     assert.equal((await r.client.operationsList()).operations.length, 1);
     await inject(r.client, "none");
   } finally { await r.close(); }
+});
+
+const holder = (path: string): string => `const net=require("net");const s=net.createServer().listen(${JSON.stringify(path)},()=>console.log("up"));setInterval(()=>{},1000);`;
+
+test("N1: the journal lock is a kernel-held socket: live holder refused, concurrent starters yield one winner, SIGKILL frees it", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "bhms-ts-lock-"));
+  try {
+    const file = join(dir, "j.jsonl");
+    // two simultaneous starters: exactly one wins
+    const a = new JournalStore(file);
+    const b = new JournalStore(file);
+    const results = await Promise.allSettled([a.acquire(), b.acquire()]);
+    assert.deepEqual(results.map((r) => r.status).sort(), ["fulfilled", "rejected"]);
+    const loser = results.find((r) => r.status === "rejected") as PromiseRejectedResult;
+    assert.match((loser.reason as Error).message, /in use by another server/);
+    await (results[0].status === "fulfilled" ? a : b).close();
+    // after the winner closes, the lock is free again
+    const c = new JournalStore(file);
+    await c.acquire();
+    await c.close();
+    // a real server process holding the state dir is refused; after SIGKILL the next start succeeds (the same pid is irrelevant)
+    const child = spawn(process.execPath, [tsDevicePath(), "--state-dir", dir], { stdio: ["pipe", "ignore", "ignore"] });
+    child.stdin.write(JSON.stringify({ jsonrpc: "2.0", id: 1, method: "server/discover", params: { _meta: { "bhms/protocolVersion": "2026-11-13" } } }) + "\n");
+    await sleep(500);
+    const dev = build({ stateDir: dir, log: () => undefined });
+    await assert.rejects(dev.server.start(), /in use by another server/);
+    child.kill("SIGKILL");
+    await new Promise((r) => child.once("exit", r));
+    const next = build({ stateDir: dir, log: () => undefined });
+    await next.server.start();
+    await next.server.close(100);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("N1: path mode (macOS fallback): a dead holder's socket file is taken over, our own stale file included; a live holder is refused", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "bhms-ts-lockp-"));
+  try {
+    const file = join(dir, "j.jsonl");
+    // find the lock file name by creating a stale one: a child binds it, is SIGKILLed and leaves the file behind
+    const hash = (await import("node:crypto")).createHash("sha256").update(realpathSync(dir) + "/j.jsonl").digest("hex").slice(0, 24);
+    const lockFile = join(tmpdir(), `bhms-lock-${hash}.sock`);
+    const child = spawn(process.execPath, ["-e", holder(lockFile)], { stdio: ["ignore", "pipe", "ignore"] });
+    await new Promise((r) => child.stdout.once("data", r));
+    const live = new JournalStore(file, "path");
+    await assert.rejects(live.acquire(), /in use by another server/);
+    child.kill("SIGKILL");
+    await new Promise((r) => child.once("exit", r));
+    assert.ok(existsSync(lockFile), "the dead holder left its socket file behind");
+    const taker = new JournalStore(file, "path");
+    await taker.acquire();
+    await taker.close();
+    assert.ok(!existsSync(lockFile), "released on close");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("N4: event retention prunes the store's events too, and compaction drops them from the journal", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "bhms-ts-ev-"));
+  try {
+    const file = join(dir, "j.jsonl");
+    const store = new JournalStore(file);
+    await store.acquire();
+    store.load();
+    const log = new EventLog(store, 0.05, []);
+    for (let i = 0; i < 5; i++) log.append("x.test", { message: `old ${i}` });
+    await sleep(120);
+    log.append("x.test", { message: "fresh" });
+    log.prune(Date.now());
+    const live = (store as unknown as { events: Array<{ message: string }> }).events;
+    assert.deepEqual(live.map((e) => e.message), ["fresh"]);
+    const onDisk = readFileSync(file, "utf8").split("\n").filter((l) => l.includes('"k":"ev"'));
+    assert.equal(onDisk.length, 1, "the journal file no longer carries the expired events");
+    // the log prunes itself every 256 appends, so a long-running server stays bounded
+    const bounded = new EventLog(store, 0.01, []);
+    for (let i = 0; i < 300; i++) { bounded.append("y.test"); if (i === 100) await sleep(30); }
+    assert.ok((store as unknown as { events: unknown[] }).events.length < 300);
+    await store.close();
+  } finally { rmSync(dir, { recursive: true, force: true }); }
 });

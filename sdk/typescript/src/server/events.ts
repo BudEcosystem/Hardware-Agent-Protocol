@@ -26,6 +26,7 @@ export interface NewEvent {
 export class EventLog {
   private events: Event[] = [];
   private counter = 0;
+  private sincePrune = 0;
   /** Listeners called synchronously after every append (live subscriptions). */
   readonly listeners = new Set<(ev: Event) => void>();
 
@@ -48,6 +49,7 @@ export class EventLog {
     if (o.data !== undefined) ev.data = o.data;
     this.events.push(ev);
     this.store.writeEvent(ev);
+    if (++this.sincePrune >= 256) this.prune(Date.now()); // bounded memory and journal even on a long-running server
     for (const l of [...this.listeners]) {
       try { l(ev); } catch { /* a listener must not break event recording */ }
     }
@@ -95,6 +97,8 @@ export class EventLog {
 
   prune(nowMs: number): void {
     const cutoff = nowMs - this.retentionS * 1000;
+    this.sincePrune = 0;
     this.events = this.events.filter((e) => Date.parse(e.time) >= cutoff);
+    this.store.pruneEvents(cutoff);
   }
 }
