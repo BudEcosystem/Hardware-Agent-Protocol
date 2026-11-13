@@ -65,6 +65,8 @@ hardware/actuator/firmware/scripts/run_rp2040_on_worker.sh      # ships sources,
 
 Flash `bhms_arm.uf2` over BOOTSEL. The rail is never switched on at boot.
 
+Built for RP2040 (arm-none-eabi-gcc 13.2, pico-sdk 2.1.1, -Os): 46 276 bytes flash, 8.8 KB static RAM.
+
 ## Not done / needs hardware
 
 See the Task 13b report: servo register addresses and the step (multi-turn) mode of the knob servo
