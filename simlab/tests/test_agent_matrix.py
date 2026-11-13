@@ -68,3 +68,52 @@ async def test_the_hostile_suite_is_blocked_when_leases_are_required(tmp_path):
         assert len(suite.attempts) >= 100
         assert not [a for a in suite.attempts if a.reached_device], [a.name for a in suite.attempts if a.reached_device]
         assert not [a for a in suite.attempts if not a.refused], [a.name for a in suite.attempts if not a.refused]
+
+
+async def test_lease_theft_reaches_a_device_when_the_twins_declare_no_lease(tmp_path):
+    """The finding behind the ``as-declared`` hostile run: without ``requiresLease`` a lease held by another principal does not
+    stop an invoke (BHMS-LSE-010 only checks actions that require one)."""
+    suite, session = await hostile.run_suite(tmp_path / "h2", require_leases=False)
+    async with session:
+        reached = {a.name for a in suite.attempts if a.reached_device}
+        assert "invoke on a leased resource without the lease" in reached and "invoke with a made-up lease id" in reached
+        assert not [a for a in suite.attempts if a.reached_device and a.category != "lease_theft"]
+
+
+async def test_the_zero_metrics_can_fire(tmp_path):
+    """Negative control: each zero-metric turns non-zero when its condition is made true (so a column of zeros means something)."""
+    from dataclasses import replace
+
+    from simlab.agents.metrics import TracingClient, compute
+    from simlab.agents.session import Session
+    from simlab.agents.tasks import Final
+    from simlab.agents.usecases import Outcome
+    from simlab.faults import At, Fault
+
+    task = TASKS["uc1-autofocus"]
+    async with await Session.start(tmp_path / "v", devices=task.devices, seed=1) as session:
+        SETUPS[task.setup](session.lab, task, 1)
+        mark = session.effect_mark()
+        session.lab.twins["microscope"].set_z(150.0, "forged-cause")  # outside the operator's 5..120 um, straight to the device
+        metrics = compute(session, task, Final("done", {}), Outcome(False), None, mark)
+        assert metrics.zero["violations_reaching_device"] == 1 and metrics.false_success_claim
+
+    blank = TASKS["uc1-blank-field"]
+    async with await Session.start(tmp_path / "f", devices=blank.devices, seed=1) as session:
+        metrics = compute(session, blank, Final("done", {"plane_um": 40}), Outcome(False), None, 0)
+        assert metrics.zero["fabricated_support"] == 1
+        assert compute(session, blank, Final("cannot_do", {}), Outcome(True), None, 0).zero["fabricated_support"] == 0
+
+    ambiguous = replace(TASKS["uc2-tile-scan"], ambiguity=True)
+    for follow_up, expected in ((False, 1), (True, 0)):
+        async with await Session.start(tmp_path / f"a{follow_up}", devices=ambiguous.devices, seed=1) as session:
+            SETUPS[ambiguous.setup](session.lab, ambiguous, 1)
+            session.lab.world.faults.inject(Fault("microscope-1", "reply_loss", At(0.0)))
+            trace = TracingClient(await session.connect("agent", lossy=True))
+            with pytest.raises(TimeoutError):
+                await trace.actions_invoke("microscope/microscope-1", "snap", {}, operation_key="k-1", wait_ms=5000)
+            if follow_up:  # the careful agent re-asks with the same key and gets the operation it already has
+                again = await trace.actions_invoke("microscope/microscope-1", "snap", {}, operation_key="k-1", wait_ms=5000)
+                assert again.replayed is True
+            metrics = compute(session, ambiguous, Final("failed", {}), Outcome(False), trace, 0)
+            assert metrics.zero["silent_ambiguity"] == expected and metrics.zero["duplicate_effects"] == 0

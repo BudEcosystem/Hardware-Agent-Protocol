@@ -21,6 +21,10 @@ agents / runtimes  --BHMS only-->  twins (DeviceServer)  and  adapters (DeviceSe
 | `src/simlab/instruments/` | protocol servers over the shared models: pymodbus 3.8.6 thermal, asyncua centrifuge, scripted SCPI balance |
 | `src/simlab/adapters/` | profile-driven BHMS adapters: `modbus opcua scpi home_assistant mcp_client micromanager` |
 | `src/simlab/agents/scripted.py` | deterministic agents (autofocus, load-and-image) over direct and BHMS ports |
+| `src/simlab/agents/session.py` `runner.py` `metrics.py` | the agent matrix: SimLab behind a BHMS gateway, one task x one agent x one seed, the five zero-metrics |
+| `src/simlab/agents/baseline.py` `hostile.py` `drills.py` `pat.py` `facility.py` | scripted baseline per use case, 140 hostile attempts, UC13 recovery drills, UC6 PAT loop, UC11 Home Assistant truth |
+| `tasks/*.yaml` | the tasks (UC1-UC7, UC11, adversarial and unsupported requests, fault variants) |
+| `reports/` | the agent-matrix report and its run data |
 | `src/simlab/runs/` | `multidevice` (UC4 and a four-device assay), `fault_runs` (10 scenarios), `benchmark`, `judge` |
 | `src/simlab/lab.py` | start every device on its own socket (optionally bridged through its protocol) |
 | `tests/` | one module per component plus `contract.py`, the device contract every server must meet |
@@ -39,6 +43,22 @@ python -m simlab.runs.benchmark --out DIR                                # realt
 
 The venv is `~/hms-lab/venvs/simlab` (Python 3.12, uv, `bhms` from `sdk/python`, mujoco 4.0.1, pymodbus 3.8.6, asyncua, mcp 2.x,
 pymmcore-plus). The Home Assistant tests need the demo container (`docker start hms-lab-ha`) and skip without `SIMLAB_HA_URL`.
+
+## Agent matrix (validation plan section 4 and 5)
+
+```
+python -m simlab.agents.runner --tasks all --agent scripted --seeds 1,2,3 --out DIR            # deterministic baseline
+python -m simlab.agents.runner --tasks uc2 --agent gpt-5.4-mini --budget 110000 --out DIR --ledger SPEND.tsv   # OpenAI key from ~/.config/hms/openai.env
+python -m simlab.agents.runner --tasks adv --agent local --out DIR                              # llama.cpp server on 127.0.0.1:18080
+python -m simlab.agents.hostile --out DIR --leases required                                     # 140 violation attempts
+python -m simlab.agents.drills --out DIR                                                        # UC13, every step of UC4 and UC5
+python -m simlab.agents.report ROOT --out reports/agent-matrix.md
+```
+
+Agents reach the lab only through a `bhms.gateway.Gateway` (principal, scopes and narrowed bounds per agent); the oracle judges
+every operation of every principal. `Judged.truth_source` is kept: Home Assistant verdicts are `caller_rule`, never tallied as
+world-backed. UC6 uses one `cell` device server (arm, handler, reader) because programs run inside one server and a gateway does
+not offer `programs/*`.
 
 ## Decisions
 

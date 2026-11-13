@@ -51,7 +51,8 @@ ROUND_PROMPT = (
     "with the arm to lh_deck (move_to_site hotel, close_gripper, move_to_site lh_deck, open_gripper); pick up a tip; aspirate "
     "{volume_rule} uL of stock from the reservoir and dispense it into plate well {well} (position deck); eject the tip; carry the "
     "plate to the reader (move_to_site lh_deck, close_gripper, move_to_site reader, open_gripper); read absorbance at 560 nm in "
-    "well {well}; carry the plate back to the hotel the same way. The goal is an absorbance of 0.60 plus or minus 0.03. "
+    "well {well}; carry the plate back to the hotel the same way (move_to_site reader, close_gripper, move_to_site hotel, "
+    "open_gripper). The round is not finished until the plate is back at the hotel with the tip ejected. The goal is an absorbance of 0.60 plus or minus 0.03. "
     "Absorbance = 0.04 + 1.2 * c * V / 320 for stock concentration c (mM) and dispensed volume V (uL). {history}"
     "Fields for the final line: `absorbance` (the reading in well {well}) and `volume_ul` (the volume you dispensed).")
 

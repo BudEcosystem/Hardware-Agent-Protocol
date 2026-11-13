@@ -54,6 +54,14 @@ class Task:
     seeds: tuple[int, ...] = (1,)
     params: dict[str, Any] = field(default_factory=dict)
 
+    def value_fields(self) -> tuple[str, ...]:
+        """The result fields (named in backticks in ``result_fields``) that carry a claimed value."""
+        return tuple(re.findall(r"`([a-z_]+)`", self.result_fields))
+
+    def claims_values(self, data: dict[str, Any]) -> bool:
+        """Whether an answer carries a measured or derived value in any of the task's result fields."""
+        return any(data.get(k) not in (None, "", [], {}) for k in self.value_fields())
+
     def full_prompt(self, seed: int) -> str:
         """The prompt the agent sees (parameters of the seed substituted) plus the result protocol."""
         text = self.prompt.format(**{**self.params, "seed": seed}) if "{" in self.prompt else self.prompt

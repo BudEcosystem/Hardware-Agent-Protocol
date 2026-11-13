@@ -146,6 +146,8 @@ async def run_task(task: Task, agent: str, seed: int, out: Path, *, ledger: Spen
                 final = Final("unknown", {"detail": f"the agent did not finish in {limit:.0f} s"})
             except (BhmsError, TransportClosed, ConnectionError, OSError) as exc:  # the hub or the link was lost under the agent
                 final = Final("failed", {"detail": f"{type(exc).__name__}: {str(exc)[:160]}"})
+            except Exception as exc:  # a model API error (context overflow on the local server, a refused request): no answer
+                final = Final("none", {"detail": f"agent error {type(exc).__name__}: {str(exc)[:160]}"})
         finally:
             if hub is not None:
                 hub.cancel()
