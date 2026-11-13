@@ -7,7 +7,7 @@
    "bytes": 27783
   },
   "base_plate.step": {
-   "sha256": "c96bc3e4535b51388fcfb31ec29cb3956cfcc33649dcda48e1cb8d275ec87b4a",
+   "sha256": "acf3e9ceb0847bb76804044b833f0eb80ab73f4b4515b5cc8ed3cc9c18724378",
    "bytes": 328351
   },
   "base_plate.stl": {
@@ -15,7 +15,7 @@
    "bytes": 337184
   },
   "base_shell.step": {
-   "sha256": "7285fc6022504d362fd21c9b736c85afaef84a4e0d78845a3ef33c4915dfec45",
+   "sha256": "fbe9d0919ced92def16dba4c6537a4ed2b71e820782d8fc76858a304413a812b",
    "bytes": 477930
   },
   "base_shell.stl": {
@@ -23,7 +23,7 @@
    "bytes": 243284
   },
   "cable_clip.step": {
-   "sha256": "c132c5434b9b3d4b99cfe6523e7ae697d19b3bb7dbee59ae21a8446455753f8e",
+   "sha256": "7c99e99d5825f06b4b713d143388cc1e095f3e89e8186e83d8bcc9ef33c25c79",
    "bytes": 42901
   },
   "cable_clip.stl": {
@@ -31,7 +31,7 @@
    "bytes": 2284
   },
   "clamp_body.step": {
-   "sha256": "e5f586e6a0bb0dfbd17415a783813d268160ded3410a1d380b2f54ab241a8c86",
+   "sha256": "a79b26c9909baa5340419d584c5b4ccc3da9c716df612401e021c4aeabf5de6e",
    "bytes": 67702
   },
   "clamp_body.stl": {
@@ -39,7 +39,7 @@
    "bytes": 28484
   },
   "clamp_knob.step": {
-   "sha256": "c21ae0734411fd772f0a9a2c5ea3fb72a9372681dd1eec4f304a1d49fb58cdbc",
+   "sha256": "7a68ccef2f7daef804a7a1339f9998a1d712122d05b92002de6a42bcf150d00e",
    "bytes": 304070
   },
   "clamp_knob.stl": {
@@ -47,7 +47,7 @@
    "bytes": 28284
   },
   "clamp_pad.step": {
-   "sha256": "fefacd0f296ff0e47f95d956442b1f4084cd1167df534bd38f213f4ccab301e8",
+   "sha256": "915daee76b5986cbb0fbd1d32a63338551bf63c45bfcbd68c297fe8252a65283",
    "bytes": 13362
   },
   "clamp_pad.stl": {
@@ -59,7 +59,7 @@
    "bytes": 2378
   },
   "flange_arm.step": {
-   "sha256": "c07b7edfeae25457548023a14c775cc05b380df2c1dd66f723545163e04b1616",
+   "sha256": "b4b1017fdaeb4acf0bb64723e6ef06fdc1031411dc8e339fe41402fef37224b9",
    "bytes": 279330
   },
   "flange_arm.stl": {
@@ -67,7 +67,7 @@
    "bytes": 253484
   },
   "forearm.step": {
-   "sha256": "220e15599ca8678ec0328cccbaf9b4f193e099e4a67ff876ffed2bda34b8b023",
+   "sha256": "063f3989215c3aa09a8dcf4e6423b5fcd00e537713a91bfad7433d199b26185c",
    "bytes": 2300099
   },
   "forearm.stl": {
@@ -75,7 +75,7 @@
    "bytes": 316884
   },
   "gripper_body.step": {
-   "sha256": "6fdcdcca6cb92a7b207294f304d2a24a339c3ae8ef6f1471ed5b86adcbc32251",
+   "sha256": "dd59f87f3e878ac04d04d77189baba23d0143f5278b84e6eec8df6b290c9f2b3",
    "bytes": 724080
   },
   "gripper_body.stl": {
@@ -83,7 +83,7 @@
    "bytes": 221384
   },
   "gripper_finger.step": {
-   "sha256": "98bbafe603ca1eb933ca7a9858384dca5edfa5486f8fb39f90c059440a7f0a89",
+   "sha256": "9e98dd2abaf428ad6d007b4013224c2bc772b501b7c3449dbd5b0c208e457c4e",
    "bytes": 234287
   },
   "gripper_finger.stl": {
@@ -91,7 +91,7 @@
    "bytes": 34084
   },
   "gripper_pinion.step": {
-   "sha256": "4a1f18fd8ea9c4e5a39a183d0f8c4c16a9483f3cc7d9c51e8165d93eef513d2c",
+   "sha256": "d30480527a14da70fcd9e26d86ce57bac983bcf1a97197c4073c5febea096b2b",
    "bytes": 1560656
   },
   "gripper_pinion.stl": {
@@ -99,7 +99,7 @@
    "bytes": 191084
   },
   "gripper_rack.step": {
-   "sha256": "3bfa09bf80e853c21bb4a22c69d3c258cab133a0957eb02371c9591030e1d6fc",
+   "sha256": "464b32a559242a44952e075d129b429b58ad844ebb9a6110652a18368be30c9b",
    "bytes": 265810
   },
   "gripper_rack.stl": {
@@ -107,7 +107,7 @@
    "bytes": 26484
   },
   "knob_body.step": {
-   "sha256": "538809d86187f1d45632606aa376f1817716c5715402b59cfcccf834dc872419",
+   "sha256": "4b69ff99a7c95b0273f9f5ce5de40c0cf0479a7a3cc31a05327c532de6af32c1",
    "bytes": 657553
   },
   "knob_body.stl": {
@@ -115,7 +115,7 @@
    "bytes": 312084
   },
   "knob_collet.step": {
-   "sha256": "b290fab0feb4612fe74732fca8a863133076886e91ba84622f06507860d1b5e7",
+   "sha256": "6451174fdc36396b1eaa36a37b82710ab4181189cf1f85deb4ca54e8cf608992",
    "bytes": 1020844
   },
   "knob_collet.stl": {
@@ -123,7 +123,7 @@
    "bytes": 280884
   },
   "knob_collet_hub.step": {
-   "sha256": "a1e3b1022a10fa5443e811af22c96e00579d80ba78ea7a56fd4d0e539ea1a9e5",
+   "sha256": "2d90172f7ec5d1a9a04540fb1b698eec756e22428cf6a2b98b057529c9d1e9d2",
    "bytes": 86549
   },
   "knob_collet_hub.stl": {
@@ -131,7 +131,7 @@
    "bytes": 94084
   },
   "knob_magnet_cap.step": {
-   "sha256": "13b6dcc8790841df5d166fbceeebb435d1b464b70413dac51afa2577fbb5cb9d",
+   "sha256": "f6722de4afd718c60ef8f91f83205d278694ba2989b217217c47113a8784d0b4",
    "bytes": 13373
   },
   "knob_magnet_cap.stl": {
@@ -139,7 +139,7 @@
    "bytes": 37684
   },
   "knob_output_gear.step": {
-   "sha256": "89620d97153e9f9e066f4b6cc95d182f98bbfbeb41939f9b46399d306e2760ab",
+   "sha256": "525365aa03a30ecf4eed69a74559758f0f5b7d9ffcb2f45adfc40cd2a6672fc1",
    "bytes": 3579013
   },
   "knob_output_gear.stl": {
@@ -147,7 +147,7 @@
    "bytes": 243684
   },
   "knob_servo_gear.step": {
-   "sha256": "d81ba4264458870d0fbfd4889d36534bf8e35170706dde4d2a8f39e9726b139a",
+   "sha256": "3fe5e4c09df08e4694cd335cfb4e5038c48bf404d11fcb98f45ee3100f9f84de",
    "bytes": 1286518
   },
   "knob_servo_gear.stl": {
@@ -155,15 +155,15 @@
    "bytes": 127884
   },
   "mesh_check.json": {
-   "sha256": "b1e551c5eae1543c964d375d714ddfbf914a4a52092f077e4c4ca96f9ddb642b",
-   "bytes": 13510
+   "sha256": "0b1099ff9feec7fb947c2018d31c76abb93b44de0b64a77e9acc0c4bdeb9298c",
+   "bytes": 13512
   },
   "parts.json": {
    "sha256": "374321a5f250ad38110323cba5d6b8602e9078b55490707d441bfd552bb3da28",
    "bytes": 15639
   },
   "pinion.step": {
-   "sha256": "2c01c502a95a3b019d642f29577eaf8385307f074840e0de54a8fd55d8444f93",
+   "sha256": "9196ef7bead2dc7b71e116cfd311374eade024c099b610219dcb1b20a561c76b",
    "bytes": 1149531
   },
   "pinion.stl": {
@@ -171,7 +171,7 @@
    "bytes": 194184
   },
   "pod_lid.step": {
-   "sha256": "33c7252e028a6631bcd8912aed6b487dcf44d5bcc2441b8267e4db7c394af113",
+   "sha256": "801fdb5a1db88d4dc66d035478a95a26d5f3038a034298219a5c32c37521baaf",
    "bytes": 55810
   },
   "pod_lid.stl": {
@@ -179,7 +179,7 @@
    "bytes": 68084
   },
   "presser_body.step": {
-   "sha256": "1cff897347278fcb6b8517bbb172628c6d0348dcfd10311468d91869f423d79d",
+   "sha256": "bc79075baa934e1d823e0acbb52ae8528a4e89b874de9c906676aadfd20b192a",
    "bytes": 692273
   },
   "presser_body.stl": {
@@ -187,7 +187,7 @@
    "bytes": 194284
   },
   "presser_cam.step": {
-   "sha256": "d71103de34a3b8abbf9bb27af2e136152121161afe72299f5c0a20cb2905a4a9",
+   "sha256": "7819a5b56bf81e1f13cd5a7fcf53086744a6067964e0534ae05033f2bf32e444",
    "bytes": 42038
   },
   "presser_cam.stl": {
@@ -195,7 +195,7 @@
    "bytes": 126884
   },
   "presser_plunger.step": {
-   "sha256": "58aca782a7e5ee5619e884a35da6dd318626f9cc2bdca15ac92e51709495de10",
+   "sha256": "2e607e866424aa626e1b7ad7590dd9d5b95a32976ca70b66141231f903c6e58b",
    "bytes": 41525
   },
   "presser_plunger.stl": {
@@ -203,7 +203,7 @@
    "bytes": 24684
   },
   "presser_tip_cap.step": {
-   "sha256": "75559409d9889947547a953f07ebeecd1447ad58d2fd82e49d8ae1125c77e7d6",
+   "sha256": "1ff2c244601936e5e8a414b1ebc5459d101c21ff08ddaaab3cd31c26a71c30f8",
    "bytes": 24029
   },
   "presser_tip_cap.stl": {
@@ -211,7 +211,7 @@
    "bytes": 25884
   },
   "pusher_body.step": {
-   "sha256": "42193b6f5407d987c4e32b8e58bcc4979e1979af120a88ee5ad5d434b1ac6c05",
+   "sha256": "7b2bb66ce0683f77daff423a6b0ce43dbc19b50addf7c9ae56d0ab0a9f0b0180",
    "bytes": 506345
   },
   "pusher_body.stl": {
@@ -219,7 +219,7 @@
    "bytes": 130484
   },
   "pusher_pad.step": {
-   "sha256": "7132f55fa2a68f0ad8c907055ac0e04a920491bf46b4042548528c17b1e2f7dc",
+   "sha256": "cef1f3fc071babdc392071ea6cf70a8bc33b347a9e454eb437a38f749ed02783",
    "bytes": 30252
   },
   "pusher_pad.stl": {
@@ -227,7 +227,7 @@
    "bytes": 1484
   },
   "ref_sts3215.step": {
-   "sha256": "a7804a3cd98b9dcbf1cc3473ef5a8cdb4190c2d4d3b925d91743e8d86801c324",
+   "sha256": "6558a9ba28189a20d0ec1e862b471dc294876c3e933cbfd7ac7b62423b82b5ed",
    "bytes": 23298
   },
   "ref_sts3215.stl": {
@@ -235,7 +235,7 @@
    "bytes": 25884
   },
   "servo_lid.step": {
-   "sha256": "015b447aacf772dfc91e1150952d04270ea9898654d1a367b1688650c79c8ae1",
+   "sha256": "c2abc809a483c88a9c512e49dbed31dcd7744b30d8bc5088bfc504c4e35ba3e7",
    "bytes": 45154
   },
   "servo_lid.stl": {
@@ -243,7 +243,7 @@
    "bytes": 52884
   },
   "tolerance_coupon.step": {
-   "sha256": "6a86f9f24b3e1fbe321998db3a9af379b43d1f25307fec52da55d9226a8cf067",
+   "sha256": "46b7ccd6d3439072636e782ad23487b68d86c671e27331bff898e763e3d92947",
    "bytes": 77132
   },
   "tolerance_coupon.stl": {
@@ -251,7 +251,7 @@
    "bytes": 143284
   },
   "tool_rack.step": {
-   "sha256": "72e3bc7043416ef0a18a2d3f06f00cc3f0c7dd90c245c6d2e47e49364811d3f3",
+   "sha256": "bda8fd42d65d02f8c106e171f4f557a9831be35ee24251ffe44b0b94773874c4",
    "bytes": 311410
   },
   "tool_rack.stl": {
@@ -263,7 +263,7 @@
    "bytes": 3537
   },
   "turret.step": {
-   "sha256": "ad05a9e316146b8ed5fc557770fbf51dda54177d922b669d5421cf7df7810f29",
+   "sha256": "16d127756f2aca1b5a72b1be4c049c23fcbef8bba954e0377ce4cea195321a56",
    "bytes": 462773
   },
   "turret.stl": {
@@ -271,7 +271,7 @@
    "bytes": 282084
   },
   "upper_arm.step": {
-   "sha256": "500559c03338be9876bffca0be11c22b363c049506867da822a150c4541b3dfd",
+   "sha256": "32a9c54a02143e616d4f393babdfe99536175316c346f11c1a377d0284d571b8",
    "bytes": 2582928
   },
   "upper_arm.stl": {
@@ -279,7 +279,7 @@
    "bytes": 349184
   },
   "wrist_bracket.step": {
-   "sha256": "751bf14069d648e2961d42576620396f68db42c9ae24104384051b26a7a63420",
+   "sha256": "fd1c35cb24ec4dd05920adc4e81d8fcc1a102c542dc64cd076e54cef70f16093",
    "bytes": 419936
   },
   "wrist_bracket.stl": {

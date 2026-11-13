@@ -1,0 +1,447 @@
+{
+ "board": "bhms_tool_contact",
+ "nets": {
+  "3V3_T": [
+   "U1.5",
+   "C2.1",
+   "U2.1",
+   "U2.2",
+   "C3.1",
+   "W4.1"
+  ],
+  "AUX1": [
+   "TP4.1",
+   "U2.3",
+   "R2.1",
+   "W5.1"
+  ],
+  "AUX2": [
+   "TP5.1",
+   "W6.1"
+  ],
+  "GND": [
+   "TP2.1",
+   "R1.2",
+   "U1.2",
+   "C1.2",
+   "C2.2",
+   "U2.4",
+   "U2.8",
+   "C3.2",
+   "R2.2",
+   "W2.1"
+  ],
+  "SERVO_BUS": [
+   "TP3.1",
+   "W3.1"
+  ],
+  "TOOL_ID": [
+   "TP6.1",
+   "R1.1"
+  ],
+  "V12_TOOL": [
+   "TP1.1",
+   "U1.1",
+   "U1.3",
+   "C1.1",
+   "W1.1"
+  ]
+ },
+ "parts": [
+  {
+   "ref": "TP1",
+   "value": "V12_TOOL",
+   "footprint": "bhms:PogoPad_D2.4",
+   "symbol": "Connector:TestPoint",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "pogo pin 0 contact, ENIG",
+   "pos_mm": [
+    27.0,
+    15.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "V12_TOOL"
+   }
+  },
+  {
+   "ref": "TP2",
+   "value": "GND",
+   "footprint": "bhms:PogoPad_D2.4",
+   "symbol": "Connector:TestPoint",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "pogo pin 1 contact, ENIG",
+   "pos_mm": [
+    21.0,
+    4.607695154586736
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "GND"
+   }
+  },
+  {
+   "ref": "TP3",
+   "value": "BUS",
+   "footprint": "bhms:PogoPad_D2.4",
+   "symbol": "Connector:TestPoint",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "pogo pin 2 contact, ENIG",
+   "pos_mm": [
+    9.000000000000004,
+    4.607695154586736
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "SERVO_BUS"
+   }
+  },
+  {
+   "ref": "TP4",
+   "value": "AUX1",
+   "footprint": "bhms:PogoPad_D2.4",
+   "symbol": "Connector:TestPoint",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "pogo pin 3 contact, ENIG",
+   "pos_mm": [
+    3.0,
+    14.999999999999998
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "AUX1"
+   }
+  },
+  {
+   "ref": "TP5",
+   "value": "AUX2",
+   "footprint": "bhms:PogoPad_D2.4",
+   "symbol": "Connector:TestPoint",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "pogo pin 4 contact, ENIG",
+   "pos_mm": [
+    8.999999999999995,
+    25.39230484541326
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "AUX2"
+   }
+  },
+  {
+   "ref": "TP6",
+   "value": "TOOL_ID",
+   "footprint": "bhms:PogoPad_D2.4",
+   "symbol": "Connector:TestPoint",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "pogo pin 5 contact, ENIG",
+   "pos_mm": [
+    21.0,
+    25.392304845413264
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "TOOL_ID"
+   }
+  },
+  {
+   "ref": "R1",
+   "value": "R_ID",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-07xxxL (per tool)",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate",
+   "note": "tool identity, see params.Tools.tool_ids; population: gripper=1k, knob_turner=3.3k, button_presser=10k, slider_pusher=33k",
+   "pos_mm": [
+    8.5,
+    20.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "TOOL_ID",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "U1",
+   "value": "TPS70933DBVR",
+   "footprint": "Package_TO_SOT_SMD:SOT-23-5",
+   "symbol": "Regulator_Linear:AP2112K-3.3",
+   "mpn": "TPS70933DBVR",
+   "manufacturer": "Texas Instruments",
+   "dnp": false,
+   "unit_price_usd": 0.35,
+   "price_source": "estimate",
+   "note": "30 V LDO; AP2112K symbol used for its identical SOT-23-5 pinout (IN, GND, EN, NC, OUT); population: gripper=TPS70933DBVR, knob_turner=TPS70933DBVR, button_presser=TPS70933DBVR, slider_pusher=DNP",
+   "pos_mm": [
+    15.0,
+    8.4
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "V12_TOOL",
+    "2": "GND",
+    "3": "V12_TOOL",
+    "5": "3V3_T"
+   }
+  },
+  {
+   "ref": "C1",
+   "value": "1uF 50V",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "GRM188R61H105KAAL",
+   "manufacturer": "Murata",
+   "dnp": false,
+   "unit_price_usd": 0.03,
+   "price_source": "estimate",
+   "note": "population: gripper=1uF, knob_turner=1uF, button_presser=1uF, slider_pusher=DNP",
+   "pos_mm": [
+    10.4,
+    8.4
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "V12_TOOL",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "C2",
+   "value": "1uF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "GRM188R61H105KAAL",
+   "manufacturer": "Murata",
+   "dnp": false,
+   "unit_price_usd": 0.03,
+   "price_source": "estimate",
+   "note": "population: gripper=1uF, knob_turner=1uF, button_presser=1uF, slider_pusher=DNP",
+   "pos_mm": [
+    19.6,
+    8.4
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "3V3_T",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "U2",
+   "value": "AS5600-ASOM",
+   "footprint": "Package_SO:SOIC-8_3.9x4.9mm_P1.27mm",
+   "symbol": "bhms:AS5600",
+   "mpn": "AS5600-ASOM",
+   "manufacturer": "ams OSRAM",
+   "dnp": false,
+   "unit_price_usd": 2.0,
+   "price_source": "estimate",
+   "note": "centred on the tool axis under the knob-shaft magnet; analog OUT -> AUX1; population: gripper=DNP, knob_turner=AS5600-ASOM, button_presser=DNP, slider_pusher=DNP",
+   "pos_mm": [
+    15.0,
+    15.0
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "3V3_T",
+    "2": "3V3_T",
+    "3": "AUX1",
+    "4": "GND",
+    "5": "",
+    "6": "",
+    "7": "",
+    "8": "GND"
+   }
+  },
+  {
+   "ref": "C3",
+   "value": "100nF",
+   "footprint": "Capacitor_SMD:C_0603_1608Metric",
+   "symbol": "Device:C",
+   "mpn": "CL10B104KB8NNNC",
+   "manufacturer": "Samsung Electro-Mechanics",
+   "dnp": false,
+   "unit_price_usd": 0.005,
+   "price_source": "estimate",
+   "note": "population: gripper=DNP, knob_turner=100nF, button_presser=DNP, slider_pusher=DNP",
+   "pos_mm": [
+    19.8,
+    16.5
+   ],
+   "rot": 90.0,
+   "pins": {
+    "1": "3V3_T",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "R2",
+   "value": "10k",
+   "footprint": "Resistor_SMD:R_0603_1608Metric",
+   "symbol": "Device:R",
+   "mpn": "RC0603FR-0710KL",
+   "manufacturer": "Yageo",
+   "dnp": false,
+   "unit_price_usd": 0.002,
+   "price_source": "estimate",
+   "note": "FSR divider (FSR from 3V3_T to AUX1); population: gripper=DNP, knob_turner=DNP, button_presser=10k, slider_pusher=DNP",
+   "pos_mm": [
+    21.5,
+    20.0
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "AUX1",
+    "2": "GND"
+   }
+  },
+  {
+   "ref": "W1",
+   "value": "V12_TOOL",
+   "footprint": "bhms:WirePad_1.6",
+   "symbol": "Connector_Generic:Conn_01x01",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "solder pad for the tool harness",
+   "pos_mm": [
+    7.4,
+    13.4
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "V12_TOOL"
+   }
+  },
+  {
+   "ref": "W2",
+   "value": "GND",
+   "footprint": "bhms:WirePad_1.6",
+   "symbol": "Connector_Generic:Conn_01x01",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "solder pad for the tool harness",
+   "pos_mm": [
+    7.4,
+    16.6
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "GND"
+   }
+  },
+  {
+   "ref": "W3",
+   "value": "SERVO_BUS",
+   "footprint": "bhms:WirePad_1.6",
+   "symbol": "Connector_Generic:Conn_01x01",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "solder pad for the tool harness",
+   "pos_mm": [
+    12.4,
+    23.6
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "SERVO_BUS"
+   }
+  },
+  {
+   "ref": "W4",
+   "value": "3V3_T",
+   "footprint": "bhms:WirePad_1.6",
+   "symbol": "Connector_Generic:Conn_01x01",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "solder pad for the tool harness",
+   "pos_mm": [
+    22.6,
+    13.4
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "3V3_T"
+   }
+  },
+  {
+   "ref": "W5",
+   "value": "AUX1",
+   "footprint": "bhms:WirePad_1.6",
+   "symbol": "Connector_Generic:Conn_01x01",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "solder pad for the tool harness",
+   "pos_mm": [
+    17.6,
+    23.6
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "AUX1"
+   }
+  },
+  {
+   "ref": "W6",
+   "value": "AUX2",
+   "footprint": "bhms:WirePad_1.6",
+   "symbol": "Connector_Generic:Conn_01x01",
+   "mpn": "",
+   "manufacturer": "",
+   "dnp": false,
+   "unit_price_usd": 0.0,
+   "price_source": "estimate",
+   "note": "solder pad for the tool harness",
+   "pos_mm": [
+    15.0,
+    22.6
+   ],
+   "rot": 0.0,
+   "pins": {
+    "1": "AUX2"
+   }
+  }
+ ]
+}

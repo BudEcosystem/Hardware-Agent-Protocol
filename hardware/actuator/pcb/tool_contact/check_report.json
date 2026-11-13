@@ -1,0 +1,30 @@
+{
+ "fab_rules": {
+  "min_track": 0.127,
+  "min_clearance": 0.127,
+  "min_via_drill": 0.3,
+  "min_via_diameter": 0.45,
+  "min_annular": 0.075,
+  "min_hole_to_hole": 0.5,
+  "edge_clearance": 0.3
+ },
+ "items_checked": 126,
+ "pairs_checked": 719,
+ "min_clearance_seen_mm": 0.153,
+ "drc_violations": [],
+ "erc_problems": [],
+ "kicad": {
+  "kicad_cli": "10.0.6",
+  "erc": {
+   "errors": 0,
+   "warnings": 0,
+   "by_type": {}
+  },
+  "drc": {
+   "errors": 0,
+   "warnings": 0,
+   "by_type": {}
+  }
+ },
+ "accepted_known_open": []
+}

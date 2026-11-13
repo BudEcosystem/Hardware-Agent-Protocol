@@ -4,7 +4,7 @@
 #   CAD_PY   python with build123d + trimesh   (default: python3)
 #   SIM_PY   python with mujoco + pillow       (default: python3)
 #   KICAD_PY python that can import pcbnew      (default: python3; KiCad env vars set)
-#   FREEROUTING  router command line, e.g. "xvfb-run -a java -jar freerouting-1.9.0.jar"
+#   FREEROUTING  router command line (e.g. "xvfb-run -a java -jar freerouting-1.9.0.jar"); when unset the committed .ses files are imported
 #
 # Steps that need a tool which is not available fail loudly; nothing is skipped silently.
 set -euo pipefail
@@ -23,8 +23,10 @@ step "MJCF generation";                          python3 sim/gen_mjcf.py
 step "MuJoCo: load, gravity hold, pick & place"; $SIM_PY sim/test_arm.py
 step "Renders";                                  MUJOCO_GL=${MUJOCO_GL:-egl} $SIM_PY sim/render.py
 step "PCB: generate";                            $KICAD_PY pcb/build.py generate
-if [[ "${SKIP_ROUTE:-0}" != "1" ]]; then
+if [[ -n "${FREEROUTING:-}" && "${SKIP_ROUTE:-0}" != "1" ]]; then
   step "PCB: route (Freerouting)";               $KICAD_PY pcb/build.py route
+else
+  step "PCB: import committed Freerouting sessions (.ses)"; $KICAD_PY pcb/build.py import
 fi
 step "PCB: checks (scripted + kicad-cli)";       $KICAD_PY pcb/build.py check
 step "PCB: fabrication outputs";                 $KICAD_PY pcb/build.py fab

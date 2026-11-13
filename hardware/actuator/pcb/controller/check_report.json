@@ -1,0 +1,47 @@
+{
+ "fab_rules": {
+  "min_track": 0.127,
+  "min_clearance": 0.127,
+  "min_via_drill": 0.3,
+  "min_via_diameter": 0.45,
+  "min_annular": 0.075,
+  "min_hole_to_hole": 0.5,
+  "edge_clearance": 0.3
+ },
+ "items_checked": 1453,
+ "pairs_checked": 17070,
+ "min_clearance_seen_mm": 0.1516,
+ "drc_violations": [
+  "hole-to-hole 0.492 mm between via@127.78,139.83 and via@127.76,140.62",
+  "unconnected net VIN_RAW: 2 unconnected groups: J1.1; F1.1",
+  "unconnected net GND: 17 islands",
+  "unconnected net +1V1: 3 unconnected groups: U1.23,C48.1,C49.1; U1.45,C51.1; U1.50",
+  "unconnected net QSPI_SD1: 2 unconnected groups: U1.55; U2.2"
+ ],
+ "erc_problems": [],
+ "kicad": {
+  "kicad_cli": "10.0.6",
+  "erc": {
+   "errors": 0,
+   "warnings": 0,
+   "by_type": {}
+  },
+  "drc": {
+   "errors": 11,
+   "warnings": 132,
+   "by_type": {
+    "unconnected_items:error:unconnected_items": 11,
+    "violations:warning:hole_to_hole": 1,
+    "violations:warning:isolated_copper": 74,
+    "violations:warning:silk_over_copper": 57
+   }
+  }
+ },
+ "accepted_known_open": [
+  "hole-to-hole 0.492 mm between via@127.78,139.83 and via@127.76,140.62",
+  "unconnected net VIN_RAW: 2 unconnected groups: J1.1; F1.1",
+  "unconnected net GND: 17 islands",
+  "unconnected net +1V1: 3 unconnected groups: U1.23,C48.1,C49.1; U1.45,C51.1; U1.50",
+  "unconnected net QSPI_SD1: 2 unconnected groups: U1.55; U2.2"
+ ]
+}

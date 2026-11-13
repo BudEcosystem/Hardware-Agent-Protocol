@@ -290,11 +290,11 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
 | MJCF loads (5 models) | MuJoCo 4.0.1 | pass |
 | Gravity hold, 4 poses, rated load | MuJoCo (`sim/test_arm.py`) | max error 1.24° (outstretched), max actuator utilisation 0.44 of the force limit; pass |
 | Pick and place of a 50 g cube | MuJoCo, contact (friction) grasp, **no weld** | xy error 2.1 mm, lifted 82 mm, slip 0.03 mm; pass |
-| Schematic ERC | KiCad 10.0.6 `kicad-cli sch erc` (all severities) | see `pcb/*/check_report.json` |
-| PCB DRC + schematic parity | KiCad 10.0.6 `kicad-cli pcb drc --schematic-parity` | see `pcb/*/check_report.json` |
-| PCB DRC (independent) | `pcb/drc.py`: widths, vias, hole spacing, clearance, edge, connectivity incl. pours | see `pcb/*/check_report.json` |
+| Schematic ERC | KiCad 10.0.6 `kicad-cli sch erc` (all severities) | 0 errors, 0 warnings on both boards |
+| PCB DRC + schematic parity | KiCad 10.0.6 `kicad-cli pcb drc --schematic-parity` | **tool_contact: 0 errors, 0 warnings, fully routed.** **controller: 11 errors, all unconnected items (not clearance/width/drill), 132 warnings (silk_over_copper 57, isolated_copper 74, hole_to_hole 1); not fully routed (see below)** |
+| PCB DRC (independent) | `pcb/drc.py`: widths, vias, hole spacing, clearance, edge, connectivity incl. pours | tool_contact 0 violations (min clearance 0.153 mm); controller 5 findings, all listed in `pcb/controller/known_open.json`: open nets VIN_RAW (F1.1 to J1.1), +1V1 (3 groups at U1.23/45/50), QSPI_SD1 (U1.55 to U2.2), GND (17 pour islands) and one via pair 0.492 mm apart (rule 0.5 mm) |
 | Netlist ERC (independent) | `pcb/circuit.py:erc` | 0 problems on both boards |
-| Gerbers, drill, position files | KiCad 10.0.6 `kicad-cli` | `pcb/*/fab/` |
+| Gerbers, drill, position files | KiCad 10.0.6 `kicad-cli` | `pcb/*/fab/`; **controller Gerbers are from the incompletely routed board and must not be ordered** |
 
 ## 11. Decisions
 
@@ -368,6 +368,11 @@ Zero pose is the "candle": every link vertical. Pitch joints rotate about
 * **O6. Signal integrity of the 1 Mbps bus over the full harness** (about
   1.2 m with the service loop) is not simulated. Scope it on first
   power-up.
+* **O8. Controller routing is unfinished.** Freerouting 1.9.0 (150 passes,
+  then a 60-pass continuation that stalled) left VIN_RAW, +1V1, QSPI_SD1
+  and 17 GND pour islands open around the RP2040. Finish by hand in KiCad
+  (or loosen the placement around U1 and re-route), then clear
+  `pcb/controller/known_open.json` so verify.sh fails on any open net.
 * **O7. Routing quality.** The board is autorouted. A human review of the
   switch-node loop (U3/L1/C6), the crystal and the USB pair is
   recommended before ordering.
