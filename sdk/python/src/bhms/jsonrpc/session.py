@@ -6,16 +6,19 @@ One class serves both roles of spec/bhms/02-transports.md:
   :meth:`Session.stream` (a request whose handler yields notifications until cancelled, e.g.
   ``subscriptions/listen``) and :meth:`Session.notify` (``notifications/cancelled``). Servers MUST NOT
   send requests and clients MUST NOT send responses (BHMS-TRN-001); the roles enforce it.
-* ``role="server"``: every incoming request runs in its own task through the ``handler``. A handler
+* ``role="server"``: every incoming request runs in its own task through the ``handler``. Cancellation contract
+  (BHMS-LIF-050, BHMS-TRN-005): ``notifications/cancelled``, a disconnect and ``close()`` never cancel physical work. By
+  default the handler is *detached*: its response is dropped, ``ctx.cancelled`` is set, and the task keeps running,
+  tracked by the session; ``close()`` waits for detached tasks up to ``drain_timeout`` and logs survivors. Only streaming
+  handlers and methods for which the ``cancellable`` predicate is true (e.g. ``operations/wait``) are really cancelled. A handler
   returns a result ``dict``, or an *async iterator* yielding :class:`Notification` items and finally a
-  :class:`Complete`; the iterator form is how ``subscriptions/listen`` is served. ``notifications/cancelled``
-  cancels the handler's task and no response is sent (BHMS-LIF-051); a handler that must not abandon
-  physical work on cancellation shields that work (BHMS-LIF-050).
+  :class:`Complete`; the iterator form is how ``subscriptions/listen`` is served. no response is sent after a cancellation
+  (BHMS-LIF-051).
 
 Mechanics: messages are parsed with orjson only (schema/pydantic validation belongs to the dispatcher and
 client above); a malformed frame is answered ``-32700`` and an oversize or batch frame ``-32600`` with
-``id: null`` and the session keeps going (BHMS-TRN-002/004); the outbound queue is bounded, so a slow peer
-blocks the producer instead of growing memory; ``close()`` cancels in-flight handlers (BHMS-TRN-005), flushes
+``id: null`` and the session keeps going (BHMS-TRN-002/004); the outbound queue is bounded (a slow peer blocks the
+producer instead of growing memory) and a client stream never blocks the read loop; ``close()`` cancels in-flight handlers (BHMS-TRN-005), flushes
 the queue and fails pending requests with :class:`~bhms.transport.base.TransportClosed`.
 
 The only BHMS-specific behaviour here is stream tagging: notifications and the final result of a stream
@@ -34,8 +37,9 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
+from collections import deque
 from collections.abc import AsyncIterator, Awaitable, Callable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from types import TracebackType
 from typing import Any
 
@@ -52,6 +56,7 @@ METHOD_NOT_FOUND = -32601
 INVALID_PARAMS = -32602
 SUBSCRIPTION_KEY = "bhms/subscriptionId"
 CANCELLED = "notifications/cancelled"
+OBSERVATION = "notifications/observation"
 
 
 class JsonRpcError(Exception):
@@ -91,13 +96,20 @@ class Complete:
 
 @dataclass(slots=True)
 class RequestContext:
-    """What a request handler receives: the raw request, who sent it, and the session."""
+    """What a request handler receives: the raw request, who sent it, and the session.
+
+    ``cancelled`` is set when the client sent ``notifications/cancelled`` for this request or the connection closed;
+    a detached handler (the default, see :class:`Session`) keeps running and may poll it to stop *waiting*;
+    ``cancellable`` tells whether the session will cancel the task itself.
+    """
 
     id: str | int
     method: str
     params: Any
     peer: Peer
     session: Session
+    cancelled: asyncio.Event = field(default_factory=asyncio.Event)
+    cancellable: bool = False
 
 
 Handler = Callable[[RequestContext], Awaitable[Any]]
@@ -130,46 +142,83 @@ def _error_object(exc: BaseException) -> dict[str, Any]:
     return error
 
 
+class StreamOverflow(Exception):
+    """Local: the consumer of a :class:`ClientStream` fell more than its buffer behind.
+
+    The stream is cancelled on the wire. Per BHMS-LIF-044 the client reads current state (``operations/get``,
+    ``events/read``) and calls ``subscriptions/listen`` again.
+    """
+
+
 class ClientStream:
     """Client end of a streaming request: an async iterator of notifications, then a final result.
 
     Iteration ends when the server completes the stream (``result`` is then set) and raises the error if the
-    request fails or the connection drops (:class:`TransportClosed`). Leaving ``async with`` or calling
-    :meth:`cancel` sends ``notifications/cancelled`` (BHMS-LIF-044).
+    request fails, the connection drops (:class:`TransportClosed`) or the consumer falls ``stream_queue_size``
+    messages behind (:class:`StreamOverflow`; buffered messages are still delivered first). The session read loop
+    never blocks on a stream, so a slow consumer cannot delay other responses (slow-consumer policy is the
+    server's, BHMS-LIF-043). The terminal outcome lives in its own slot, never in the buffer, so it cannot be lost.
+    Leaving ``async with`` or calling :meth:`cancel` sends ``notifications/cancelled`` (BHMS-LIF-044).
     """
 
     def __init__(self, session: Session, request_id: int, queue_size: int) -> None:
         self.id = request_id
         self._session = session
-        self._queue: asyncio.Queue[tuple[str, Any]] = asyncio.Queue(queue_size)
+        self._size = queue_size
+        self._buffer: deque[dict[str, Any]] = deque()
+        self._wake = asyncio.Event()
+        self._terminal: tuple[str, Any] | None = None
         self._done = False
         self.result: dict[str, Any] | None = None
+
+    def _push(self, item: dict[str, Any]) -> None:
+        if self._terminal is not None or self._done:
+            return
+        if len(self._buffer) >= self._size:
+            self._session._streams.pop(self.id, None)
+            self._finish("error", StreamOverflow(
+                f"subscription {self.id} fell more than {self._size} messages behind; read current state and "
+                "call subscriptions/listen again (BHMS-LIF-044)"))
+            self._session._send_cancel(self.id, "client buffer overflow")
+            return
+        self._buffer.append(item)
+        self._wake.set()
+
+    def _finish(self, kind: str, payload: Any) -> None:
+        if self._terminal is None and not self._done:
+            self._terminal = (kind, payload)
+            self._wake.set()
 
     def __aiter__(self) -> ClientStream:
         return self
 
     async def __anext__(self) -> dict[str, Any]:
-        if self._done:
-            raise StopAsyncIteration
-        kind, payload = await self._queue.get()
-        if kind == "n":
-            return payload
-        self._done = True
-        self._session._streams.pop(self.id, None)
-        if kind == "result":
-            self.result = payload
-            raise StopAsyncIteration
-        raise payload
+        while True:
+            if self._buffer:
+                return self._buffer.popleft()
+            if self._done:
+                raise StopAsyncIteration
+            if self._terminal is not None:
+                kind, payload = self._terminal
+                self._done = True
+                self._session._streams.pop(self.id, None)
+                if kind == "result":
+                    self.result = payload
+                    raise StopAsyncIteration
+                raise payload
+            self._wake.clear()
+            await self._wake.wait()
 
     async def cancel(self, reason: str | None = None) -> None:
         """Abandon the stream: tell the server and drop anything buffered (idempotent)."""
         if self._done:
             return
         self._done = True
-        self._session._streams.pop(self.id, None)
-        while not self._queue.empty():  # releases a receive loop blocked on a full queue
-            self._queue.get_nowait()
-        self._session._send_cancel(self.id, reason)
+        self._terminal = None
+        self._buffer.clear()
+        self._wake.set()
+        if self._session._streams.pop(self.id, None) is not None:
+            self._session._send_cancel(self.id, reason)
 
     async def __aenter__(self) -> ClientStream:
         return self
@@ -193,13 +242,21 @@ class Session:
         max_inflight_requests: server limit of concurrently handled requests; beyond it ``BUSY``.
         stream_queue_size: client-side buffer per stream; a consumer that stops reading eventually stalls the
             connection's read loop, which stalls the server's sends (end-to-end backpressure).
-        flush_timeout: seconds :meth:`close` waits for the outbound queue to drain.
+        flush_timeout: seconds :meth:`close` waits for the outbound queue to drain (and for the transport to close
+            before it is aborted).
+        cancellable: ``method -> bool``; handlers of methods for which it is true (and every streaming handler) are
+            really cancelled on ``notifications/cancelled`` / disconnect; all others are detached (see above).
+        drain_timeout: seconds :meth:`close` waits for detached handlers to finish; survivors are logged, never
+            cancelled.
+        subscription_queue_size: server-side bound of the per-subscription queue (BHMS-LIF-043).
     """
 
     def __init__(self, transport: Transport, *, role: str, handler: Handler | None = None,
                  max_message_bytes: int | None = None, outbound_queue_size: int = 256,
                  default_timeout: float | None = 30.0, max_inflight_requests: int = 16384,
-                 stream_queue_size: int = 1024, flush_timeout: float = 5.0) -> None:
+                 stream_queue_size: int = 1024, flush_timeout: float = 5.0,
+                 cancellable: Callable[[str], bool] | None = None, drain_timeout: float = 10.0,
+                 subscription_queue_size: int = 1024) -> None:
         if role not in ("client", "server"):
             raise ValueError("role must be 'client' or 'server'")
         self._transport = transport
@@ -210,6 +267,11 @@ class Session:
         self._max_inflight = max_inflight_requests
         self._stream_queue_size = stream_queue_size
         self._flush_timeout = flush_timeout
+        self._cancellable = cancellable
+        self.drain_timeout = drain_timeout
+        self._subscription_queue_size = subscription_queue_size
+        self._ctx: dict[str | int, RequestContext] = {}
+        self._detached: set[asyncio.Task[None]] = set()
         self._outbox: asyncio.Queue[bytes] = asyncio.Queue(outbound_queue_size)
         self._pending: dict[int, asyncio.Future[dict[str, Any]]] = {}
         self._streams: dict[int, ClientStream] = {}
@@ -230,6 +292,11 @@ class Session:
     @property
     def closed(self) -> bool:
         return self._closed.is_set()
+
+    @property
+    def detached(self) -> int:
+        """Handlers abandoned by the client or a disconnect that are still running (server role)."""
+        return len(self._detached)
 
     @property
     def inflight(self) -> int:
@@ -256,10 +323,23 @@ class Session:
             await self._closed.wait()
             return
         self._closing = True
-        await self._cancel_handlers()
+        await self._abandon_handlers()
         with contextlib.suppress(asyncio.TimeoutError):
             await asyncio.wait_for(self._outbox.join(), self._flush_timeout)
         await self._teardown(TransportClosed("session closed"))
+        await self.drain(self.drain_timeout)
+
+    async def drain(self, timeout: float) -> None:
+        """Wait up to ``timeout`` s for detached handlers; log (never cancel) those still running (BHMS-TRN-005)."""
+        tasks = {t for t in self._detached if t is not asyncio.current_task()}
+        if not tasks:
+            return
+        _, running = await asyncio.wait(tasks, timeout=timeout)
+        for task in running:
+            ctx = _DETACHED.get(task)
+            log.warning("handler for %s (request %r) still running %.1f s after its request was abandoned; left "
+                        "detached because it may be physical work", ctx.method if ctx else "?",
+                        ctx.id if ctx else "?", timeout)
 
     async def __aenter__(self) -> Session:
         return self if self._reader is not None else self.start()
@@ -268,12 +348,35 @@ class Session:
                         tb: TracebackType | None) -> None:
         await self.close()
 
-    async def _cancel_handlers(self) -> None:
-        tasks = [t for t in self._handlers.values() if t is not asyncio.current_task()]
-        for task in tasks:
+    def _abandon(self, request_id: str | int) -> asyncio.Task[None] | None:
+        """Abandon one request: drop its response; cancel the task only if it is cancellable, else detach it.
+
+        BHMS-LIF-050 / BHMS-TRN-005: cancelling a request or closing the connection must not cancel physical work.
+        Returns the task when it was cancelled (so callers may await it).
+        """
+        task = self._handlers.get(request_id)
+        ctx = self._ctx.get(request_id)
+        if task is None or ctx is None:
+            return None
+        ctx.cancelled.set()
+        if ctx.cancellable:
             task.cancel()
-        if tasks:
-            await asyncio.gather(*tasks, return_exceptions=True)
+            return task
+        del self._handlers[request_id], self._ctx[request_id]
+        self._detached.add(task)
+        _DETACHED[task] = ctx
+        task.add_done_callback(self._forget)
+        return None
+
+    def _forget(self, task: asyncio.Task[None]) -> None:
+        self._detached.discard(task)
+        _DETACHED.pop(task, None)
+
+    async def _abandon_handlers(self) -> None:
+        cancelled = [t for t in (self._abandon(i) for i in list(self._handlers)) if t is not None]
+        cancelled = [t for t in cancelled if t is not asyncio.current_task()]
+        if cancelled:
+            await asyncio.gather(*cancelled, return_exceptions=True)
 
     async def _teardown(self, reason: TransportClosed) -> None:
         if self._closed.is_set():
@@ -284,18 +387,22 @@ class Session:
         for task in (self._reader, self._writer):
             if task is not None and task is not current:
                 task.cancel()
-        await self._cancel_handlers()
+        await self._abandon_handlers()
         for fut in self._pending.values():
             if not fut.done():
                 fut.set_exception(reason)
         self._pending.clear()
         for stream in list(self._streams.values()):
-            self._finish_stream(stream, "error", reason)
+            stream._finish("error", reason)
         self._streams.clear()
         while not self._outbox.empty():  # wakes blocked producers and lets join() return
             self._outbox.get_nowait()
             self._outbox.task_done()
-        await self._transport.close()
+        try:
+            await asyncio.wait_for(self._transport.close(), self._flush_timeout)
+        except asyncio.TimeoutError:
+            log.warning("transport did not close within %.1f s (peer not reading?); aborting", self._flush_timeout)
+            self._transport.abort()
         for task in list(self._background):
             task.cancel()
 
@@ -474,9 +581,8 @@ class Session:
         if self.role == "server":
             if method == CANCELLED and isinstance(params, dict):
                 target = params.get("requestId")
-                task = self._handlers.get(target) if _valid_id(target) else None
-                if task is not None:
-                    task.cancel()
+                if _valid_id(target):
+                    self._abandon(target)
             return
         meta = params.get("_meta") if isinstance(params, dict) else None
         sub = meta.get(SUBSCRIPTION_KEY) if isinstance(meta, dict) else None
@@ -484,7 +590,7 @@ class Session:
         if stream is None:
             log.debug("dropping notification %s outside any stream", method)
             return
-        await stream._queue.put(("n", {"method": method, "params": params}))  # waits when full: backpressure
+        stream._push({"method": method, "params": params})  # never blocks the read loop
 
     async def _on_request(self, msg: dict[str, Any], request_id: Any, method: Any) -> None:
         if self.role != "server":
@@ -501,14 +607,16 @@ class Session:
             await self._protocol_error(None, INVALID_REQUEST,
                                        f"Invalid Request: id {request_id!r} is already in flight (BHMS-LIF-010)")
             return
-        if len(self._handlers) >= self._max_inflight:
+        if len(self._handlers) + len(self._detached) >= self._max_inflight:
             busy = BhmsError("BUSY", "too many requests in flight on this connection",
                              bound=self._max_inflight, hint="retry with backoff, or wait for responses first")
             await self._enqueue(orjson.dumps({"jsonrpc": "2.0", "id": request_id, "error": busy.to_jsonrpc()}))
             return
-        ctx = RequestContext(request_id, method, msg.get("params"), self.peer, self)
+        ctx = RequestContext(request_id, method, msg.get("params"), self.peer, self,
+                             cancellable=bool(self._cancellable and self._cancellable(method)))
         task = asyncio.create_task(self._run_request(ctx))
         self._handlers[request_id] = task
+        self._ctx[request_id] = ctx
 
     def _on_response(self, msg: dict[str, Any]) -> None:
         request_id = msg.get("id")
@@ -538,32 +646,41 @@ class Session:
         log.debug("ignoring a response to unknown or cancelled request %r (BHMS-LIF-051)", request_id)
 
     def _finish_stream(self, stream: ClientStream, kind: str, payload: Any) -> None:
-        try:
-            stream._queue.put_nowait((kind, payload))
-        except asyncio.QueueFull:
-            self._spawn(stream._queue.put((kind, payload)))
+        self._streams.pop(stream.id, None)
+        stream._finish(kind, payload)
 
     # ------------------------------------------------------------------ server request execution
 
     async def _run_request(self, ctx: RequestContext) -> None:
+        me = asyncio.current_task()
         try:
             if self._handler is None:
                 raise JsonRpcError(METHOD_NOT_FOUND, f"Method not found: {ctx.method}")
             outcome = await self._handler(ctx)
-            if hasattr(outcome, "__aiter__"):
+            is_stream = hasattr(outcome, "__aiter__")
+            if ctx.cancelled.is_set():  # abandoned while it ran: the response is dropped (BHMS-LIF-051)
+                if is_stream:
+                    await outcome.aclose()
+                return
+            if is_stream:
+                ctx.cancellable = True  # streams are cancelled for real; no physical work hangs off a listen
                 await self._pump_stream(ctx, outcome)
             else:
                 await self._respond(ctx.id, outcome)
         except asyncio.CancelledError:
-            # Abandoned by notifications/cancelled or by close(): nothing is sent (BHMS-LIF-051).
-            pass
+            pass  # only cancellable handlers and streams get here; nothing is sent (BHMS-LIF-051)
         except TransportClosed:
             pass
         except Exception as exc:  # noqa: BLE001 - every handler failure becomes a JSON-RPC error
-            with contextlib.suppress(TransportClosed):
-                await self._send_error(ctx.id, exc)
+            if ctx.cancelled.is_set():
+                log.error("handler for %s failed after its request was abandoned", ctx.method, exc_info=exc)
+            else:
+                with contextlib.suppress(TransportClosed):
+                    await self._send_error(ctx.id, exc)
         finally:
-            self._handlers.pop(ctx.id, None)
+            if self._handlers.get(ctx.id) is me:
+                del self._handlers[ctx.id]
+                self._ctx.pop(ctx.id, None)
 
     async def _respond(self, request_id: str | int, result: Any) -> None:
         if not isinstance(result, dict):
@@ -578,30 +695,92 @@ class Session:
     async def _send_error(self, request_id: str | int, exc: BaseException) -> None:
         await self._enqueue(orjson.dumps({"jsonrpc": "2.0", "id": request_id, "error": _error_object(exc)}))
 
-    async def _pump_stream(self, ctx: RequestContext, stream: AsyncIterator[Any]) -> None:
-        """Send a streaming handler's notifications, then its result; tag both with the subscription id."""
-        final: dict[str, Any] = {"resultType": "complete"}
+    def _encode_notification(self, ctx: RequestContext, item: Any) -> tuple[bool, bytes]:
+        if not isinstance(item, Notification):
+            raise TypeError(f"stream handler yielded {type(item).__name__}; expected Notification or Complete")
+        params = dict(item.params)
+        meta = params.get("_meta")
+        params["_meta"] = {**(meta if isinstance(meta, dict) else {}), SUBSCRIPTION_KEY: ctx.id}
         try:
-            async for item in stream:
-                if isinstance(item, Complete):
-                    final = item.result
+            data = self._encode({"jsonrpc": "2.0", "method": item.method, "params": params})
+        except _TooLarge as exc:
+            log.error("notification of %d bytes exceeds the %d byte limit", exc.size, exc.limit)
+            raise _internal_error() from None
+        return item.method == OBSERVATION, data
+
+    async def _pump_stream(self, ctx: RequestContext, stream: AsyncIterator[Any]) -> None:
+        """Send a streaming handler's notifications, then its result; tag both with the subscription id.
+
+        BHMS-LIF-043: the handler is drained by a producer task into a bounded per-subscription queue, so a slow peer
+        never blocks it (nor, through the shared outbox, other requests' responses for long). When the queue is full the
+        oldest ``notifications/observation`` is dropped; if it holds nothing droppable the subscription ends with
+        ``endReason: "overflow"`` after the queued messages (terminal operation notifications are never dropped).
+        """
+        queue: deque[tuple[bool, bytes]] = deque()
+        wake = asyncio.Event()
+        state: dict[str, Any] = {"done": False, "final": {"resultType": "complete"}, "error": None}
+
+        async def produce() -> None:
+            try:
+                async for item in stream:
+                    if isinstance(item, Complete):
+                        state["final"] = item.result
+                        return
+                    queue.append(self._encode_notification(ctx, item))
+                    if len(queue) > self._subscription_queue_size:
+                        for index, (is_observation, _) in enumerate(queue):
+                            if is_observation:
+                                del queue[index]
+                                break
+                        else:
+                            state["final"] = {"resultType": "complete", "endReason": "overflow"}
+                            return
+                    wake.set()
+                    await asyncio.sleep(0)  # a generator that never awaits must not starve the loop
+            except Exception as exc:  # noqa: BLE001 - reported to the client after the queue drains
+                state["error"] = exc
+            finally:
+                state["done"] = True
+                wake.set()
+                aclose = getattr(stream, "aclose", None)
+                if aclose is not None:
+                    await aclose()
+
+        producer = asyncio.create_task(produce())
+        try:
+            while True:
+                while queue:
+                    await self._enqueue(queue.popleft()[1])
+                if state["done"]:
                     break
-                if not isinstance(item, Notification):
-                    raise TypeError(f"stream handler yielded {type(item).__name__}; expected Notification or Complete")
-                params = dict(item.params)
-                params["_meta"] = {**params.get("_meta", {}), SUBSCRIPTION_KEY: ctx.id}
-                try:
-                    data = self._encode({"jsonrpc": "2.0", "method": item.method, "params": params})
-                except _TooLarge as exc:
-                    log.error("notification of %d bytes exceeds the %d byte limit", exc.size, exc.limit)
-                    raise _internal_error() from None
-                await self._enqueue(data)
+                wake.clear()
+                await wake.wait()
         finally:
-            aclose = getattr(stream, "aclose", None)
-            if aclose is not None:
-                await aclose()
-        final = {"resultType": "complete", **final, "_meta": {**final.get("_meta", {}), SUBSCRIPTION_KEY: ctx.id}}
+            producer.cancel()
+            await asyncio.gather(producer, return_exceptions=True)
+        if state["error"] is not None:
+            raise state["error"]
+        final = state["final"]
+        meta = final.get("_meta")
+        final = {"resultType": "complete", **final,
+                 "_meta": {**(meta if isinstance(meta, dict) else {}), SUBSCRIPTION_KEY: ctx.id}}
         await self._respond(ctx.id, final)
+
+
+_DETACHED: dict[asyncio.Task[None], RequestContext] = {}
+"""Every handler task abandoned by a client or a disconnect and still running (strong references; see Session)."""
+
+
+async def drain_detached(timeout: float) -> None:
+    """Wait up to ``timeout`` s for every detached handler of every session; log the survivors, never cancel them."""
+    tasks = set(_DETACHED)
+    if not tasks:
+        return
+    _, running = await asyncio.wait(tasks, timeout=timeout)
+    for task in running:
+        ctx = _DETACHED.get(task)
+        log.warning("handler for %s (request %r) is still running after the %.1f s drain; left detached",
+                    ctx.method if ctx else "?", ctx.id if ctx else "?", timeout)
 
 
 _NO_ID = object()

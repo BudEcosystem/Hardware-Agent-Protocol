@@ -7,6 +7,8 @@ survive it, because the protocol offers no way to resynchronise inside a frame.
 
 from __future__ import annotations
 
+import contextlib
+
 import ssl as ssl_module
 from collections.abc import Callable
 from http import HTTPStatus
@@ -54,6 +56,13 @@ class WebSocketTransport(Transport):
             return data
         await self._ws.close(1003, "BHMS uses text frames only (BHMS-TRN-030)")
         raise TransportClosed("binary frame received")
+
+    def abort(self) -> None:
+        self._closed = True
+        transport = getattr(self._ws, "transport", None)
+        if transport is not None:
+            with contextlib.suppress(Exception):  # an already-finished pipe/socket transport may have no loop left
+                transport.abort()
 
     async def close(self) -> None:
         if self._closed:

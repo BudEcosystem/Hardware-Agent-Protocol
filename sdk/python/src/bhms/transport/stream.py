@@ -9,6 +9,7 @@ reader resynchronises at the next newline (BHMS-TRN-004).
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import os
 import socket
 import ssl as ssl_module
@@ -88,9 +89,10 @@ class StreamTransport(Transport):
     """A :class:`Transport` over an asyncio stream pair (sockets and subprocess pipes)."""
 
     def __init__(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter, peer: Peer,
-                 max_message_bytes: int = DEFAULT_MAX_MESSAGE_BYTES) -> None:
+                 max_message_bytes: int = DEFAULT_MAX_MESSAGE_BYTES, close_timeout: float = 2.0) -> None:
         self.peer = peer
         self.max_message_bytes = check_message_limit(max_message_bytes)
+        self.close_timeout = close_timeout
         self._lines = LineReader(reader, self.max_message_bytes)
         self._writer = writer
         self._closed = False
@@ -117,9 +119,18 @@ class StreamTransport(Transport):
         self._closed = True
         try:
             self._writer.close()
-            await self._writer.wait_closed()
+            await asyncio.wait_for(self._writer.wait_closed(), self.close_timeout)
+        except asyncio.TimeoutError:
+            self.abort()  # the peer is not reading: do not wait for its buffer to drain
         except (ConnectionError, OSError, RuntimeError):
             pass
+
+    def abort(self) -> None:
+        self._closed = True
+        transport = self._writer.transport
+        if transport is not None:
+            with contextlib.suppress(Exception):  # an already-finished pipe/socket transport may have no loop left
+                transport.abort()
 
 
 # --------------------------------------------------------------------------- peers
@@ -131,8 +142,8 @@ def unix_peer(writer: asyncio.StreamWriter, path: str | None = None) -> Peer:
     pid = uid = gid = None
     if sock is not None and hasattr(socket, "SO_PEERCRED"):
         try:
-            raw = sock.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize("3i"))
-            pid, uid, gid = struct.unpack("3i", raw)
+            raw = sock.getsockopt(socket.SOL_SOCKET, socket.SO_PEERCRED, struct.calcsize("iII"))
+            pid, uid, gid = struct.unpack("iII", raw)
         except OSError:
             pass
     return Peer("unix", address=path, uid=uid, gid=gid, pid=pid)

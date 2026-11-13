@@ -7,7 +7,7 @@ import orjson
 import pytest
 
 from bhms import transport as tr
-from bhms.jsonrpc.session import Complete, JsonRpcError, Notification, Session
+from bhms.jsonrpc.session import Complete, JsonRpcError, Notification, Session, StreamOverflow
 from bhms.protocol.errors import BhmsError
 from bhms.transport import Peer, Transport, TransportClosed
 
@@ -54,6 +54,8 @@ async def rig(tmp_path):
     made = []
 
     async def make(handler, **kw):
+        kw.setdefault("server_kw", {})
+        kw["server_kw"].setdefault("drain_timeout", 0.2)
         r = await Rig().start(tmp_path, handler, **kw)
         made.append(r)
         return r
@@ -184,7 +186,7 @@ async def test_client_cancel_reaches_the_server_and_no_response_is_sent(rig):
             cancelled.set()
             raise
 
-    r = await rig(handler)
+    r = await rig(handler, server_kw={"cancellable": lambda m: True})
     task = asyncio.create_task(r.client.request("slow", {}))
     await asyncio.wait_for(started.wait(), 5)
     task.cancel()
@@ -206,7 +208,7 @@ async def test_request_timeout_cancels_and_reports_outcome_unknown(rig):
             cancelled.set()
             raise
 
-    r = await rig(handler)
+    r = await rig(handler, server_kw={"cancellable": lambda m: True})
     with pytest.raises(BhmsError) as exc:
         await r.client.request("actions/invoke", {}, timeout=0.1)
     assert exc.value.code == "DEADLINE_EXCEEDED" and exc.value.may_have_acted
@@ -343,33 +345,257 @@ async def test_stream_cancel_stops_the_generator_and_nothing_more_is_sent(rig):
     assert len(produced) == count and r.server.inflight == 0 and r.client.inflight == 0
 
 
-async def test_stream_backpressure_blocks_the_producer_instead_of_buffering(rig):
-    produced = []
-    closed = asyncio.Event()
-
+async def test_in_loop_request_during_a_fast_subscription_succeeds(rig):
     async def handler(ctx):
-        async def gen():
-            try:
+        if ctx.method == "subscriptions/listen":
+            async def gen():
                 i = 0
                 while True:
-                    produced.append(i)
-                    yield Notification("notifications/event", {"n": i, "pad": "x" * 4096})
+                    yield Notification("notifications/event", {"n": i})
                     i += 1
-            finally:
-                closed.set()
+                    await asyncio.sleep(0.002)  # fast, but a consumer doing one request per event keeps up
+
+            return gen()
+        return {"resultType": "complete"}
+
+    r = await rig(handler, client_kw={"stream_queue_size": 8})
+    stream = await r.client.stream("subscriptions/listen", {})
+    seen = 0
+    async for _ in stream:
+        seen += 1
+        await r.client.request("ping", {}, timeout=2.0)  # reply must not queue behind the notifications
+        if seen >= 40:
+            break
+    await stream.cancel()
+
+
+async def test_client_side_overflow_ends_only_that_stream_with_a_local_error(rig):
+    async def handler(ctx):
+        if ctx.method == "subscriptions/listen":
+            async def gen():
+                for i in range(200):
+                    yield Notification("notifications/event", {"n": i})
+                await asyncio.sleep(30)
+
+            return gen()
+        return {"resultType": "complete"}
+
+    r = await rig(handler, client_kw={"stream_queue_size": 4})
+    stream = await r.client.stream("subscriptions/listen", {})
+    await asyncio.sleep(0.3)  # nobody reads
+    assert (await r.client.request("ping", {}, timeout=2.0))["resultType"] == "complete"
+    got = []
+    with pytest.raises(StreamOverflow, match="listen again"):
+        async for n in stream:
+            got.append(n["params"]["n"])
+    assert got == [0, 1, 2, 3]  # buffered messages are delivered before the local error
+    await asyncio.sleep(0.1)
+    assert r.server.inflight == 0  # the client cancelled the subscription on the wire
+
+
+class SlowTransport(Transport):
+    """Server-side fake: scripted inbox, slow send; records every message sent."""
+
+    def __init__(self, delay=0.003):
+        self.peer = Peer("test")
+        self.max_message_bytes = 4 * MIB
+        self.delay = delay
+        self.sent: list[dict] = []
+        self.inbox: asyncio.Queue = asyncio.Queue()
+
+    async def send(self, data):
+        await asyncio.sleep(self.delay)
+        self.sent.append(orjson.loads(data))
+
+    async def receive(self):
+        item = await self.inbox.get()
+        if item is None:
+            raise TransportClosed("eof")
+        return item
+
+    async def close(self):
+        self.inbox.put_nowait(None)
+
+
+async def test_server_side_overflow_ends_with_overflow_and_other_requests_keep_flowing():
+    async def handler(ctx):
+        if ctx.method == "subscriptions/listen":
+            async def gen():
+                for i in range(2000):
+                    yield Notification("notifications/operation", {"n": i})
+                await asyncio.sleep(30)
+
+            return gen()
+        return {"resultType": "complete", "pong": True}
+
+    t = SlowTransport()
+    s = Session(t, role="server", handler=handler, subscription_queue_size=8).start()
+    t.inbox.put_nowait(b'{"jsonrpc":"2.0","id":1,"method":"subscriptions/listen","params":{}}')
+    await asyncio.sleep(0.05)
+    t.inbox.put_nowait(b'{"jsonrpc":"2.0","id":2,"method":"ping","params":{}}')
+    for _ in range(300):
+        await asyncio.sleep(0.01)
+        if any(m.get("id") == 1 for m in t.sent):
+            break
+    ids = [m.get("id") for m in t.sent if "id" in m]
+    assert 2 in ids and 1 in ids
+    final = next(m for m in t.sent if m.get("id") == 1)
+    assert final["result"]["endReason"] == "overflow" and final["result"]["_meta"]["bhms/subscriptionId"] == 1
+    pong_at = ids.index(2)
+    assert pong_at < len(ids) - 1 or ids[-1] == 2  # the ping was answered while the subscription was still flowing
+    ops = [m for m in t.sent if m.get("method") == "notifications/operation"]
+    assert 0 < len(ops) < 2000  # operation notifications are never dropped silently: overflow ended it instead
+    await s.close()
+
+
+async def test_server_side_drops_oldest_observations_not_the_subscription():
+    async def handler(ctx):
+        async def gen():
+            for i in range(300):
+                yield Notification("notifications/observation", {"n": i})
+            yield Complete({"resultType": "complete", "endReason": "shutdown"})
 
         return gen()
 
-    r = await rig(handler, client_kw={"stream_queue_size": 4}, server_kw={"outbound_queue_size": 4})
-    stream = await r.client.stream("subscriptions/listen", {})  # nobody consumes it
+    t = SlowTransport()
+    s = Session(t, role="server", handler=handler, subscription_queue_size=8).start()
+    t.inbox.put_nowait(b'{"jsonrpc":"2.0","id":1,"method":"subscriptions/listen","params":{}}')
+    for _ in range(300):
+        await asyncio.sleep(0.01)
+        if any(m.get("id") == 1 for m in t.sent):
+            break
+    obs = [m["params"]["n"] for m in t.sent if m.get("method") == "notifications/observation"]
+    assert obs[-1] == 299 and len(obs) < 300 and obs == sorted(obs)
+    assert next(m for m in t.sent if m.get("id") == 1)["result"]["endReason"] == "shutdown"
+    await s.close()
+
+
+async def test_stream_tolerates_null_meta_in_notification_params(rig):
+    async def handler(ctx):
+        async def gen():
+            yield Notification("notifications/event", {"n": 1, "_meta": None})
+
+        return gen()
+
+    r = await rig(handler)
+    stream = await r.client.stream("subscriptions/listen", {})
+    got = [n async for n in stream]
+    assert got[0]["params"]["_meta"]["bhms/subscriptionId"] == stream.id
+
+
+async def test_terminal_marker_survives_full_queue_and_concurrent_close(rig):
+    async def handler(ctx):
+        async def gen():
+            for i in range(3):
+                yield Notification("notifications/event", {"n": i})
+            await asyncio.sleep(30)
+
+        return gen()
+
+    r = await rig(handler, client_kw={"stream_queue_size": 3})
+    stream = await r.client.stream("subscriptions/listen", {})
+    await asyncio.sleep(0.2)  # the buffer is exactly full; the consumer has not read
+    await r.client.close()
+    got = []
+    with pytest.raises(TransportClosed):
+        async def consume():
+            async for n in stream:
+                got.append(n["params"]["n"])
+
+        await asyncio.wait_for(consume(), 3)
+    assert got == [0, 1, 2]
+
+
+async def test_non_cancellable_handler_is_detached_and_close_waits_for_it(rig, caplog):
+    finished = asyncio.Event()
+    observed = []
+
+    async def handler(ctx):
+        try:
+            await asyncio.sleep(0.4)  # "physical work"
+        except asyncio.CancelledError:
+            observed.append("cancelled")
+            raise
+        observed.append("done")
+        finished.set()
+        return {"resultType": "complete"}
+
+    r = await rig(handler, server_kw={"drain_timeout": 5.0})
+    task = asyncio.create_task(r.client.request("actions/invoke", {}, timeout=0.1 + 0.0))
+    with pytest.raises(BhmsError):
+        await task  # times out -> client sends notifications/cancelled
+    await asyncio.sleep(0.1)
+    assert r.server.detached == 1 and r.server.inflight == 0 and not finished.is_set()  # still running
+    await r.client.close()  # disconnect as well
+    start = asyncio.get_running_loop().time()
+    await r.server.close()  # waits for the detached handler
+    assert finished.is_set() and observed == ["done"]
+    assert asyncio.get_running_loop().time() - start < 4
+    assert r.server.detached == 0
+
+
+async def test_detached_handler_survivors_are_logged_not_cancelled(rig, caplog):
+    release = asyncio.Event()
+    state = []
+
+    async def handler(ctx):
+        await release.wait()
+        state.append("finished")
+        return {"resultType": "complete"}
+
+    r = await rig(handler, server_kw={"drain_timeout": 0.2})
+    with pytest.raises(BhmsError):
+        await r.client.request("x", {}, timeout=0.05)
+    await asyncio.sleep(0.05)
+    with caplog.at_level(logging.WARNING, logger="bhms.jsonrpc"):
+        await r.server.close()
+    assert "still running" in caplog.text and r.server.detached == 1
+    release.set()
+    await asyncio.sleep(0.05)
+    assert state == ["finished"] and r.server.detached == 0
+
+
+async def test_cancelled_event_is_set_and_response_is_dropped_for_detached_handler(rig):
+    seen = {}
+
+    async def handler(ctx):
+        await asyncio.sleep(0.2)
+        seen["cancelled"] = ctx.cancelled.is_set()
+        return {"resultType": "complete"}
+
+    r = await rig(handler)
+    with pytest.raises(BhmsError):
+        await r.client.request("x", {}, timeout=0.05)
     await asyncio.sleep(0.3)
-    a = len(produced)
-    await asyncio.sleep(0.3)
-    b = len(produced)
-    assert a == b, "the producer must stall once the slow consumer's buffers are full"
-    assert a < 20_000  # bounded by queue + socket buffers, not by time
-    await stream.cancel()
-    await asyncio.wait_for(closed.wait(), 5)
+    assert seen == {"cancelled": True}
+    assert (await r.client.request("y", {}, timeout=1.0)) == {"resultType": "complete"}
+
+
+async def test_close_returns_within_the_bound_when_the_peer_never_reads(tmp_path):
+    ready = asyncio.Event()
+    server_session = []
+
+    async def handler(ctx):
+        return {"resultType": "complete", "blob": "x" * 200_000}
+
+    async def on_t(t):
+        s = Session(t, role="server", handler=handler, flush_timeout=0.5, drain_timeout=0.1).start()
+        server_session.append(s)
+        ready.set()
+        await s.wait_closed()
+
+    listener = await tr.serve_unix(str(tmp_path / "n.sock"), on_t)
+    reader, writer = await asyncio.open_unix_connection(str(tmp_path / "n.sock"), limit=1024)
+    await ready.wait()
+    for i in range(1, 400):  # a client that sends requests but never reads the answers
+        writer.write(b'{"jsonrpc":"2.0","id":%d,"method":"x","params":{}}\n' % i)
+    await writer.drain()
+    await asyncio.sleep(0.5)  # socket buffers fill; the server's writer is stuck
+    start = asyncio.get_running_loop().time()
+    await asyncio.wait_for(server_session[0].close(), 5)
+    assert asyncio.get_running_loop().time() - start < 4
+    writer.close()
+    await listener.close()
 
 
 class StalledTransport(Transport):
@@ -436,7 +662,7 @@ async def test_peer_close_fails_pending_requests_and_cancels_handlers(rig):
             cancelled.set()  # TRN-005: the connection closing abandons in-flight requests
             raise
 
-    r = await rig(handler)
+    r = await rig(handler, server_kw={"cancellable": lambda m: True})
     pending = asyncio.create_task(r.client.request("x", {}))
     stream = await r.client.stream("y", {})
     await asyncio.wait_for(started.wait(), 5)

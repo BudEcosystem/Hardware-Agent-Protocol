@@ -19,11 +19,14 @@ model and the result may be the result model or a dict; for an extension method 
 async iterator yielding :class:`~bhms.jsonrpc.session.Notification` and finally :class:`~bhms.jsonrpc.session.Complete`
 (params/results may be models). Task 4's ``DeviceServer`` builds on this class.
 
+Cancellation: see :meth:`Server.register`; ``close`` awaits detached handlers up to ``drain_timeout`` and logs survivors.
+
 Thread-safety: single event loop; register handlers before serving.
 """
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import re
 from collections.abc import AsyncIterator, Awaitable, Callable
@@ -31,7 +34,8 @@ from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
-from bhms.jsonrpc.session import (METHOD_NOT_FOUND, Complete, JsonRpcError, Notification, RequestContext, Session)
+from bhms.jsonrpc.session import (METHOD_NOT_FOUND, Complete, JsonRpcError, Notification, RequestContext, Session,
+                                    drain_detached)
 from bhms.protocol import schema
 from bhms.protocol.errors import BhmsError
 from bhms.protocol.types import METHODS, to_wire
@@ -77,7 +81,10 @@ class Server:
     def __init__(self, *, server_info: dict[str, Any], capabilities: dict[str, Any] | None = None,
                  epoch: str = "ephemeral", supported_versions: tuple[str, ...] = (PROTOCOL_VERSION,),
                  instructions: str | None = None, principal: PrincipalResolver | None = None,
-                 max_page_size: int = 100, max_wait_ms: int = 30_000, strict: bool = False) -> None:
+                 max_page_size: int = 100, max_wait_ms: int = 30_000, strict: bool = False,
+                 drain_timeout: float = 10.0) -> None:
+        self.drain_timeout = drain_timeout
+        self._cancellable: set[str] = {"subscriptions/listen", "operations/wait"}
         self.server_info = server_info
         self.capabilities: dict[str, Any] = {
             "operations": {"durable": False, "cancel": True, "keyRetentionS": 0}, "stop": {},
@@ -94,17 +101,29 @@ class Server:
 
     # ------------------------------------------------------------------ registration
 
-    def register(self, method: str, handler: MethodHandler) -> None:
-        """Register ``handler`` for a BHMS method or an extension method."""
+    def register(self, method: str, handler: MethodHandler, *, cancellable: bool | None = None) -> None:
+        """Register ``handler`` for a BHMS method or an extension method.
+
+        Cancellation contract (BHMS-LIF-050, BHMS-TRN-005): when the client cancels the request or disconnects, the
+        handler is *detached* (response dropped, ``ctx.cancelled`` set, task keeps running; ``close`` drains and logs
+        it) unless ``cancellable`` is true, in which case its task is cancelled. Pure waits (``operations/wait``) and
+        ``subscriptions/listen`` are cancellable by default; anything that may start physical work must not be.
+        """
         if method not in METHODS and not _EXTENSION_NAME.match(method):
             raise ValueError(f"{method!r} is neither a BHMS method nor a valid extension method name "
                              "(<prefix>/<name>/<method> or x-<name>/<method>, BHMS-LIF-070)")
         self._handlers[method] = handler
+        if cancellable is not None:
+            (self._cancellable.add if cancellable else self._cancellable.discard)(method)
 
-    def method(self, name: str) -> Callable[[MethodHandler], MethodHandler]:
+    def is_cancellable(self, method: str) -> bool:
+        """Whether a cancelled request for ``method`` has its task cancelled (else it is detached)."""
+        return method in self._cancellable
+
+    def method(self, name: str, *, cancellable: bool | None = None) -> Callable[[MethodHandler], MethodHandler]:
         """Decorator form of :meth:`register`."""
         def decorate(handler: MethodHandler) -> MethodHandler:
-            self.register(name, handler)
+            self.register(name, handler, cancellable=cancellable)
             return handler
 
         return decorate
@@ -115,7 +134,9 @@ class Server:
         value = self.capabilities.get(head)
         if value is None:
             return False
-        return bool(value.get(member)) if member else True
+        if not member:
+            return True
+        return bool(value.get(member)) if isinstance(value, dict) else False
 
     # ------------------------------------------------------------------ dispatch
 
@@ -178,6 +199,8 @@ class Server:
 
     def session_for(self, transport: Transport, **session_kw: Any) -> Session:
         """A started server session for ``transport`` (not tracked in :attr:`sessions`)."""
+        session_kw.setdefault("cancellable", self.is_cancellable)
+        session_kw.setdefault("drain_timeout", self.drain_timeout)
         return Session(transport, role="server", handler=self.dispatch, **session_kw).start()
 
     async def handle_connection(self, transport: Transport, **session_kw: Any) -> None:
@@ -198,8 +221,8 @@ class Server:
 
     async def close(self) -> None:
         """Close every live connection (in-flight requests are abandoned, BHMS-TRN-005)."""
-        for session in list(self.sessions):
-            await session.close()
+        await asyncio.gather(*(s.close() for s in list(self.sessions)))
+        await drain_detached(self.drain_timeout)  # handlers detached by connections that already dropped
 
 
 async def _wire_stream(stream: AsyncIterator[Any]) -> AsyncIterator[Notification | Complete]:

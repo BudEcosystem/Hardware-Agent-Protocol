@@ -280,3 +280,41 @@ async def test_stdio_close_kills_a_child_that_ignores_eof():
     t = await tr.spawn_stdio([sys.executable, "-c", code], grace_s=0.3)
     await t.close()
     assert t.process.returncode is not None
+
+
+async def test_stdio_child_that_stops_reading_is_terminated_within_the_grace():
+    code = "import time\ntime.sleep(60)"  # never reads stdin
+    t = await tr.spawn_stdio([sys.executable, "-c", code], grace_s=0.3)
+    sender = asyncio.create_task(_send_all(t, b"z" * (3 * MIB)))  # fills the pipe, then blocks
+    await asyncio.sleep(0.3)
+    start = asyncio.get_running_loop().time()
+    await asyncio.wait_for(t.close(), 5)
+    assert asyncio.get_running_loop().time() - start < 3
+    assert t.process.returncode is not None
+    await asyncio.gather(sender, return_exceptions=True)
+
+
+async def test_stream_close_is_bounded_when_the_peer_never_reads(tmp_path):
+    accepted: asyncio.Queue = asyncio.Queue()
+    done = asyncio.Event()
+
+    async def on_transport(t):
+        accepted.put_nowait(t)
+        await done.wait()
+
+    listener = await tr.serve_unix(str(tmp_path / "s.sock"), on_transport)
+    reader, writer = await asyncio.open_unix_connection(str(tmp_path / "s.sock"))  # never reads
+    server = await asyncio.wait_for(accepted.get(), 5)
+    server.close_timeout = 0.3
+    big = asyncio.create_task(_send_all(server, b"y" * (3 * MIB)))
+    await asyncio.sleep(0.3)
+    await asyncio.wait_for(server.close(), 3)
+    await asyncio.gather(big, return_exceptions=True)
+    writer.close()
+    done.set()
+    await listener.close()
+
+
+async def test_spawn_stdio_rejects_stderr_pipe():
+    with pytest.raises(ValueError, match="stderr"):
+        await tr.spawn_stdio([sys.executable, "-c", "pass"], stderr=asyncio.subprocess.PIPE)

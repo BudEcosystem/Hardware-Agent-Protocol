@@ -92,6 +92,9 @@ class Transport(abc.ABC):
     async def close(self) -> None:
         """Close the connection (idempotent, never raises)."""
 
+    def abort(self) -> None:
+        """Drop the connection immediately without flushing (used when a graceful close does not finish)."""
+
     async def __aenter__(self) -> Transport:
         return self
 

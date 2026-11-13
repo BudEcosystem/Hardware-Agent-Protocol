@@ -447,3 +447,17 @@ async def test_stdio_child_dies_mid_session(tmp_path):
     with pytest.raises(TransportClosed):
         await asyncio.wait_for(client.request("x-test/ping", {"n": 1}), 10)
     await client.close()
+
+
+def test_advertises_tolerates_non_dict_capability_values():
+    server = Server(server_info={"name": "s", "version": "1"}, capabilities={"programs": True, "leases": {}})
+    assert server.advertises("programs") and not server.advertises("programs.registry")
+    assert server.advertises("leases") and not server.advertises("events")
+
+
+async def test_dispatcher_cancellable_flags(make_env):
+    env = await make_env()
+    assert env.server.is_cancellable("subscriptions/listen") and env.server.is_cancellable("operations/wait")
+    assert not env.server.is_cancellable("actions/invoke")
+    env.server.register("actions/invoke", lambda p, c: None, cancellable=True)  # type: ignore[arg-type]
+    assert env.server.is_cancellable("actions/invoke")

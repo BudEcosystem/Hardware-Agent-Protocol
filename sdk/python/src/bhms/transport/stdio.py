@@ -30,20 +30,32 @@ class SubprocessTransport(StreamTransport):
         self._grace_s = grace_s
 
     async def close(self) -> None:
-        """Close stdin (the server exits on EOF, BHMS-TRN-011), then terminate, then kill."""
-        already = self._closed
-        await super().close()
-        if already or self.process.returncode is not None:
-            return
+        """Close stdin (the server exits on EOF, BHMS-TRN-011), then terminate, then kill.
+
+        Never waits on the stdin pipe itself: a child that stopped reading would block it forever.
+        """
+        self._closed = True
+        with contextlib.suppress(Exception):
+            self._writer.close()
         for action in (None, self.process.terminate, self.process.kill):
+            if self.process.returncode is not None:
+                break
             if action is not None:
                 with contextlib.suppress(ProcessLookupError):
                     action()
-            try:
+            with contextlib.suppress(asyncio.TimeoutError):
                 await asyncio.wait_for(self.process.wait(), self._grace_s)
-                return
-            except asyncio.TimeoutError:
-                continue
+        self.abort()
+
+    def abort(self) -> None:
+        self._closed = True
+        with contextlib.suppress(ProcessLookupError):
+            if self.process.returncode is None:
+                self.process.kill()
+        transport = self._writer.transport
+        if transport is not None:
+            with contextlib.suppress(Exception):  # an already-finished pipe/socket transport may have no loop left
+                transport.abort()
 
 
 async def spawn_stdio(command: str | Sequence[str], *, env: Mapping[str, str] | None = None,
@@ -56,6 +68,8 @@ async def spawn_stdio(command: str | Sequence[str], *, env: Mapping[str, str] | 
     to exit after EOF before it is terminated and then killed.
     """
     check_message_limit(max_message_bytes)
+    if stderr == asyncio.subprocess.PIPE:
+        raise ValueError("stderr=PIPE would fill and block the server; pass a file, DEVNULL or None (inherit)")
     argv = shlex.split(command) if isinstance(command, str) else list(command)
     if not argv:
         raise ValueError("empty stdio command")
