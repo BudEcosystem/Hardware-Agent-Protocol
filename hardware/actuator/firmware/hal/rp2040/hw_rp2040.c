@@ -152,7 +152,10 @@ static void led(void *c, uint8_t r, uint8_t g, uint8_t b) {
     gpio_put(PIN_LED_B, b == 0);
 }
 
-static int wdt_reset(void *c) { (void)c; return watchdog_caused_reboot(); }
+/* Only a watchdog reset that the firmware itself armed counts: a BOOTSEL/UF2 reboot does not. */
+static int wdt_reset(void *c) { (void)c; return watchdog_enable_caused_reboot(); }
+
+static int g_wdt_running;
 
 /* ---- Flash: boot counter and calibration (only with the servo rail off) ---------------------- */
 extern const epoch_flash_ops *flash_epoch_ops(void);
@@ -266,7 +269,18 @@ void hw_epoch_init(void) {
     cal_store_init(&g_cal, flash_cal_ops());
 }
 
-void hw_watchdog_start(void) { watchdog_enable(WATCHDOG_MS, 1); }
+void hw_watchdog_start(void) {
+    watchdog_enable(WATCHDOG_MS, 1);
+    g_wdt_running = 1;
+}
+void hw_wdt_slow_begin(void *c) {
+    (void)c;
+    if (g_wdt_running) watchdog_enable(WATCHDOG_ERASE_MS, 1);
+}
+void hw_wdt_slow_end(void *c) {
+    (void)c;
+    if (g_wdt_running) watchdog_enable(WATCHDOG_MS, 1);
+}
 void hw_feed(void) { watchdog_update(); }
 
 static int ep_load(void *c, uint32_t *e) { (void)c; return epoch_flash_load(&g_epoch, e); }

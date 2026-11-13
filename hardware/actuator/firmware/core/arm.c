@@ -37,6 +37,7 @@ static uint8_t servo_id(unsigned s) { return kArmServos[s].servo_id; }
 static int before(uint32_t a, uint32_t b) { return (int32_t)(a - b) < 0; }
 
 static int write_arm_goals(arm *a, const arm_pose *q);
+static unsigned hottest_joint_c(const arm *a);
 
 static unsigned tool_servo_index(uint8_t tool_code) {
     switch (tool_code) {
@@ -84,6 +85,7 @@ static void finish(arm *a, uint8_t status, uint8_t fault, uint8_t measured, floa
         a->recovering = 0;
         if (status == ARM_DONE_COMPLETED) { /* moved back inside the limits: the latch clears */
             a->limit_latched = 0;
+            a->limit_ref = a->guard_last = 0.0f;
             a->fault_code = ARM_FAULT_NONE;
         } else if (a->limit_latched) {
             a->state = ARM_ST_FAULT;
@@ -214,19 +216,43 @@ static void servo_lost(arm *a, unsigned s) {
 #define kFatalServoErr \
     (STS_ERR_VOLTAGE | STS_ERR_SENSOR | STS_ERR_TEMPERATURE | STS_ERR_CURRENT | STS_ERR_OVERLOAD)
 
-static void write_freeze_at_measured(arm *a) {
+static int write_freeze_at_measured(arm *a) {
     arm_pose m;
     unsigned j;
     uint32_t now = a->hw->millis(a->hw->ctx);
     /* The cached samples are up to one scan period old and a joint moves meanwhile: read fresh. */
     for (j = 0; j < ARM_NUM_JOINTS; ++j) (void)telemetry_read(a, j, now);
     for (j = 0; j < ARM_NUM_JOINTS; ++j) m.q[j] = a->sv[j].valid ? a->sv[j].pos_deg : a->q_cmd.q[j];
-    if (write_arm_goals(a, &m) == STSB_OK) a->q_cmd = m;
+    for (j = 0; j < 3u; ++j) { /* a collision on the freeze write must not leave the goal stale */
+        if (write_arm_goals(a, &m) == STSB_OK) {
+            a->q_cmd = m;
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* Excess of the cached measured pose (0 when not all five joints have a sample). */
+static float cached_excess(const arm *a) {
+    arm_pose m;
+    uint8_t code;
+    unsigned j;
+    for (j = 0; j < ARM_NUM_JOINTS; ++j) {
+        if (!a->sv[j].valid) return 0.0f;
+        m.q[j] = a->sv[j].pos_deg;
+    }
+    return arm_pose_excess(&m, &code);
 }
 
 /* Freeze where the arm is (goal = measured), end the operation, latch a recoverable fault. */
 static void trip(arm *a, uint8_t fault, uint8_t limit_code) {
-    write_freeze_at_measured(a);
+    int frozen = write_freeze_at_measured(a);
+    float ex = cached_excess(a);
+    if (!a->limit_latched) a->limit_ref = ex; /* the reference is the first latch; retries never raise it */
+    a->guard_last = ex;
+    if (!frozen) fault = ARM_FAULT_BUS; /* the hold could not be confirmed on the bus: say so */
+    if (a->op == ARM_OP_GRIP || a->op == ARM_OP_TURN || a->op == ARM_OP_PRESS)
+        a->freeze_servo = (uint8_t)(1u + tool_servo_index(a->tool_id)); /* stop the tool as well */
     a->traj_active = 0;
     a->move_limit = limit_code;
     a->limit_latched = 1;
@@ -264,6 +290,8 @@ static void scan_step(arm *a, uint32_t now) {
         } else {
             if (a->sv[s].temp_c >= kTempFaultC && a->fault_code == ARM_FAULT_NONE)
                 a->fault_code = ARM_FAULT_OVERTEMP; /* warning; motion is refused while hot */
+            else if (a->fault_code == ARM_FAULT_OVERTEMP && hottest_joint_c(a) < kTempWarnC)
+                a->fault_code = ARM_FAULT_NONE; /* cooled down */
             servo_error_check(a, s);
         }
         return;
@@ -623,16 +651,37 @@ static int settled(arm *a, float *max_err) {
 static void motion_guard(arm *a, uint32_t now) {
     arm_pose m;
     unsigned j;
-    uint8_t lim;
     if (!a->torque_on || a->op == ARM_OP_NONE || !fresh_pose(a, &m, now, a->traj_t0, 1)) return;
     for (j = 0; j < ARM_NUM_JOINTS; ++j)
         if (fabsf(m.q[j] - a->q_cmd.q[j]) > kFollowErrDeg) {
             trip(a, ARM_FAULT_FOLLOWING, (uint8_t)j);
             return;
         }
-    if (!a->recovering) {
-        lim = arm_check_pose(&m, -kMeasSlackDeg);
-        if (lim != ARM_LIMIT_NONE) trip(a, ARM_FAULT_LIMIT, lim);
+}
+
+/* Measured-pose limits on every fresh sample in every powered state with torque on: moves, tool
+ * operations and plain holding (a pushed or displaced arm). Unlatched: a violation beyond the slack
+ * trips. Latched (recovery): the excess may only shrink; the first sample that is worse than the
+ * reference by more than the band trips again and freezes, so a client retrying the same move cannot
+ * ratchet the arm further out. */
+#define kWorsenBandDeg 1.0f
+static void pose_guard(arm *a, uint32_t now) {
+    arm_pose m;
+    uint8_t code;
+    float ex;
+    uint8_t fault;
+    if (!a->torque_on || !arm_servos_powered(a)) return;
+    if (a->state != ARM_ST_READY && a->state != ARM_ST_MOVING && a->state != ARM_ST_FAULT) return;
+    if (a->op == ARM_OP_ENABLE || a->op == ARM_OP_CALIBRATE) return;
+    if (!fresh_pose(a, &m, now, 0, 0)) return;
+    ex = arm_pose_excess(&m, &code);
+    fault = (a->op == ARM_OP_MOVE || a->op == ARM_OP_HOME || a->op == ARM_OP_RELEASE) ? ARM_FAULT_LIMIT
+                                                                                       : ARM_FAULT_DISPLACED;
+    if (a->limit_latched) {
+        if (ex < a->limit_ref) a->limit_ref = ex;
+        if (ex > a->limit_ref + kWorsenBandDeg && ex > a->guard_last + 0.5f) trip(a, fault, code);
+    } else if (ex > kMeasSlackDeg) {
+        trip(a, fault, code);
     }
 }
 
@@ -763,6 +812,8 @@ static void enable_step(arm *a, uint32_t now) {
         a->torque_on = 1;
         a->pose_unknown = 0;
         a->limit_latched = 0;
+        a->limit_ref = a->guard_last = 0.0f;
+        a->watchdog_reset = 0; /* a successful enable acknowledges the reset */
         a->fault_code = ARM_FAULT_NONE;
         a->state = ARM_ST_READY;
         for (j = 0; j < ARM_NUM_JOINTS; ++j) a->sv[j].valid = 0;
@@ -1133,6 +1184,7 @@ void arm_tick(arm *a) {
     react_power(a, now);
     tool_step(a, now);
     idle_state(a);
+    pose_guard(a, now);
     switch (a->op) {
     case ARM_OP_ENABLE:
     case ARM_OP_CALIBRATE: enable_step(a, now); break;
@@ -1169,8 +1221,13 @@ static arm_refusal gate_motion_ex(const arm *a, uint8_t *detail, int allow_recov
     case ARM_ST_ESTOP: *detail = a->pwr.latched && a->sense ? ARM_WHY_ESTOP_PRESSED : ARM_WHY_ESTOP_LATCHED; return ARM_REFUSE_INHIBITED;
     case ARM_ST_FAULT:
         if (allow_recover && a->limit_latched && !a->pwr.hard_fault && a->torque_on &&
-            arm_servos_powered(a))
+            arm_servos_powered(a)) {
+            if (cached_excess(a) > a->limit_ref + kWorsenBandDeg) {
+                *detail = ARM_WHY_RECOVERY_WORSE; /* it has been pushed further out since: not by us */
+                return ARM_REFUSE_INHIBITED;
+            }
             break;
+        }
         *detail = a->pwr.hard_fault ? ARM_WHY_HARD_FAULT : ARM_WHY_FAULT;
         return ARM_REFUSE_INHIBITED;
     case ARM_ST_PARKED: *detail = ARM_WHY_PARKED; return ARM_REFUSE_PRECONDITION;
@@ -1330,6 +1387,7 @@ arm_refusal arm_cmd_hold(arm *a, uint8_t *detail) {
         return ARM_OK;
     }
     if (a->state == ARM_ST_READY) return ARM_OK;
+    if (a->state == ARM_ST_FAULT && a->limit_latched && a->torque_on) return ARM_OK; /* already frozen */
     return gate_motion(a, detail) == ARM_OK ? ARM_OK : ARM_REFUSE_PRECONDITION;
 }
 
@@ -1420,6 +1478,15 @@ arm_refusal arm_cmd_turn(arm *a, float angle_deg, uint8_t torque_permille, uint8
     }
     r = gate_tool(a, ARM_TOOL_KNOB_TURNER, detail);
     if (r != ARM_OK) return r;
+    {
+        /* The goal is the mount position plus the turn, in sign-magnitude counts of at most 15 bits;
+         * stay inside about +-7 servo turns however far from zero the knob was when mounted. */
+        long goal = (long)a->knob_zero_steps + lroundf(angle_deg * ARM_KNOB_RATIO * ARM_SERVO_COUNTS / 360.0f);
+        if (goal > ARM_KNOB_MAX_COUNTS || goal < -ARM_KNOB_MAX_COUNTS) {
+            *detail = 0;
+            return ARM_REFUSE_RANGE;
+        }
+    }
     a->tool_target = angle_deg;
     a->tool_limit = torque_permille;
     a->op = ARM_OP_TURN;

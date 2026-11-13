@@ -27,6 +27,11 @@ typedef struct {
  * degrees for a measured pose). */
 uint8_t arm_check_pose(const arm_pose *p, float margin_deg);
 
+/* Worst violation of any joint range or coupled limit, in degrees beyond the nearest limit (0 when
+ * inside every limit; a non-finite angle counts as 1000). *code receives the limit code of the worst
+ * one, ARM_LIMIT_NONE when inside. Used to tell "worse" from "better" while recovering. */
+float arm_pose_excess(const arm_pose *p, uint8_t *code);
+
 /* Waypoint check for a motion that may start outside the limits (an arm moved by hand,
  * or encoder noise at a stop): `next` is allowed if it is inside every limit, or if each limit
  * it violates is violated by no more than at `prev`. Returns the first offending limit or

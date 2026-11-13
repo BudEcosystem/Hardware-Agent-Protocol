@@ -58,6 +58,7 @@ typedef struct sim_rig {
     uint8_t led[3];
     /* Fault injection */
     int corrupt_echo_once, corrupt_echo_always;
+    unsigned corrupt_sync_n;  /* damage the echo of the next N SYNC_WRITE frames */
     uint32_t drop_reply_mask; /* bit id: that servo does not answer */
     /* Statistics */
     uint32_t frames, bad_frames, led_changes, estop_cuts;

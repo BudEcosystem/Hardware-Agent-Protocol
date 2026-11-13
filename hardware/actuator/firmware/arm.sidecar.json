@@ -1,7 +1,7 @@
 {
   "deviceId": "bhms-arm",
   "name": "BHMS Arm",
-  "description": "A 5-axis desktop arm (STS3215 servos) with a quick-change tool flange (gripper, knob turner, button presser, slider pusher), driven by an RP2040 controller over BHMS-Compact. Joint ranges, three coupled pitch limits, the shoulder torque cap and the E-stop restart inhibit are enforced on the device. After an E-stop the arm may have moved: re-home before use. Faults: 1 estop, 2 estop_fault_contact_A_or_Q2, 3 servo_rail_fault, 4 overcurrent, 5 servo_comm, 6 servo_error, 7 tool_lost, 8 timeout, 9 overtemp, 10 stopped, 11 bus_collision, 12 limit, 13 selftest, 14 no_actuator_power, 15 power_sense, 16 servo_config, 17 tool, 18 following_error, 19 watchdog_reset, 20 calibration, 21 stall.",
+  "description": "A 5-axis desktop arm (STS3215 servos) with a quick-change tool flange (gripper, knob turner, button presser, slider pusher), driven by an RP2040 controller over BHMS-Compact. Joint ranges, three coupled pitch limits, the shoulder torque cap and the E-stop restart inhibit are enforced on the device. After an E-stop the arm may have moved: re-home before use. Faults: 1 estop, 2 estop_fault_contact_A_or_Q2, 3 servo_rail_fault, 4 overcurrent, 5 servo_comm, 6 servo_error, 7 tool_lost, 8 timeout, 9 overtemp, 10 stopped, 11 bus_collision, 12 limit, 13 selftest, 14 no_actuator_power, 15 power_sense, 16 servo_config, 17 tool, 18 following_error, 19 watchdog_reset, 20 calibration, 21 stall, 22 displaced.",
   "capabilities": [
     "bhms.arm.joints",
     "bhms.arm.tool"
@@ -537,7 +537,7 @@
       }
     },
     "fault_code": {
-      "description": "Last latched fault, 0 = none: 1 estop, 2 estop_fault_contact_A_or_Q2, 3 servo_rail_fault, 4 overcurrent, 5 servo_comm, 6 servo_error, 7 tool_lost, 8 timeout, 9 overtemp, 10 stopped, 11 bus_collision, 12 limit, 13 selftest, 14 no_actuator_power, 15 power_sense, 16 servo_config, 17 tool, 18 following_error, 19 watchdog_reset, 20 calibration, 21 stall.",
+      "description": "Last latched fault, 0 = none: 1 estop, 2 estop_fault_contact_A_or_Q2, 3 servo_rail_fault, 4 overcurrent, 5 servo_comm, 6 servo_error, 7 tool_lost, 8 timeout, 9 overtemp, 10 stopped, 11 bus_collision, 12 limit, 13 selftest, 14 no_actuator_power, 15 power_sense, 16 servo_config, 17 tool, 18 following_error, 19 watchdog_reset, 20 calibration, 21 stall, 22 displaced.",
       "schema": {
         "type": "integer",
         "x-bhms-unit": "1",
@@ -618,8 +618,8 @@
       "schema": {
         "type": "number",
         "x-bhms-unit": "deg",
-        "minimum": -1300,
-        "maximum": 1300
+        "minimum": -1100,
+        "maximum": 1100
       },
       "evidence": "measured",
       "observable": false,
@@ -1237,8 +1237,8 @@
           "angle_deg": {
             "type": "number",
             "x-bhms-unit": "deg",
-            "minimum": -1200,
-            "maximum": 1200,
+            "minimum": -1000,
+            "maximum": 1000,
             "multipleOf": 0.1
           },
           "torque_pct": {
@@ -1261,8 +1261,8 @@
           "angle_deg": {
             "type": "number",
             "x-bhms-unit": "deg",
-            "minimum": -1200,
-            "maximum": 1200,
+            "minimum": -1000,
+            "maximum": 1000,
             "multipleOf": 0.1
           },
           "reached": {

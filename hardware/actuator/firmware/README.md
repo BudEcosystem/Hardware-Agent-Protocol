@@ -68,8 +68,8 @@ hardware/actuator/firmware/scripts/run_rp2040_on_worker.sh      # ships sources,
 
 Flash `bhms_arm.uf2` over BOOTSEL. The rail is never switched on at boot.
 
-Built for RP2040 (arm-none-eabi-gcc 13.2, pico-sdk 2.1.1, -Os): 49 508 bytes flash, about 9 KB static RAM
-(5 880 bss + ~3.1 KB data). The `.uf2` is produced by `tools/bin2uf2.py` (picotool needs git and network at
+Built for RP2040 (arm-none-eabi-gcc 13.2, pico-sdk 2.1.1, -Os): 49 868 bytes flash, about 9 KB static RAM
+(5 892 bss + ~3.1 KB data). The `.uf2` is produced by `tools/bin2uf2.py` (picotool needs git and network at
 configure time; the container build uses `-DPICO_NO_PICOTOOL=1`).
 
 ## Not done / needs hardware

@@ -25,7 +25,8 @@ enum {
     ARM_FAULT_FOLLOWING = 18,      /* a joint trails its commanded waypoint by more than 15 deg (jam, lag) */
     ARM_FAULT_WATCHDOG = 19,       /* the controller reset itself: the arm may have fallen, enable again */
     ARM_FAULT_CALIBRATION = 20,    /* calibration failed or could not be stored */
-    ARM_FAULT_STALL = 21           /* a tool motion stopped short of its goal (torque cap, mechanical stop) */
+    ARM_FAULT_STALL = 21,          /* a tool motion stopped short of its goal (torque cap, mechanical stop) */
+    ARM_FAULT_DISPLACED = 22       /* measured pose outside a limit while holding or in a tool operation */
 };
 
 #endif

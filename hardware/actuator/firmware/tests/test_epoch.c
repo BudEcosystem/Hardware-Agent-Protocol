@@ -24,8 +24,13 @@ static int cut(flash_model *f) {
     --f->fail_after;
     return 0;
 }
+static char g_order[16];
+static unsigned g_order_n;
+static void note(char c) { if (g_order_n < sizeof g_order - 1u) g_order[g_order_n++] = c; }
+
 static int f_erase(void *c, unsigned sector) {
     flash_model *f = (flash_model *)c;
+    note('E');
     if (cut(f)) { /* an interrupted erase leaves the first half cleared, the rest old */
         memset(f->mem + sector * EPOCH_SECTOR_BYTES, 0xFF, EPOCH_SECTOR_BYTES / 2u);
         return -1;
@@ -45,11 +50,17 @@ static int f_program(void *c, unsigned sector, unsigned page, const uint8_t *d) 
     return torn ? -1 : 0;
 }
 
+static void slow_begin(void *c) { (void)c; note('b'); }
+static void slow_end(void *c) { (void)c; note('e'); }
+
 static const epoch_flash_ops *ops_for(flash_model *f, epoch_flash_ops *o) {
+    memset(o, 0, sizeof *o);
     o->ctx = f;
     o->read = f_read;
     o->erase_sector = f_erase;
     o->program_page = f_program;
+    o->slow_begin = slow_begin;
+    o->slow_end = slow_end;
     return o;
 }
 
@@ -144,6 +155,28 @@ static void test_garbage_is_ignored(void) {
     CHECK(epoch_flash_load(&ef, &v) == 0 && v == 2);
 }
 
+/* The port stretches the watchdog over a sector erase: the hooks bracket every erase, also a failed one. */
+static void test_erase_is_bracketed_by_the_slow_hooks(void) {
+    flash_model f;
+    epoch_flash_ops o;
+    epoch_flash ef;
+    uint32_t e;
+    fresh(&f);
+    epoch_flash_init(&ef, ops_for(&f, &o));
+    g_order_n = 0;
+    memset(g_order, 0, sizeof g_order);
+    for (e = 1; e <= EPOCH_PAGES_PER_SECTOR; ++e) CHECK(epoch_flash_store(&ef, e) == 0);
+    CHECK(g_order_n == 0); /* page programs need no stretch */
+    CHECK(epoch_flash_store(&ef, EPOCH_PAGES_PER_SECTOR + 1u) == 0); /* sector full: rolls over */
+    CHECK(strcmp(g_order, "bEe") == 0);
+    g_order_n = 0;
+    memset(g_order, 0, sizeof g_order);
+    for (e = EPOCH_PAGES_PER_SECTOR + 2u; e <= 2u * EPOCH_PAGES_PER_SECTOR; ++e) CHECK(epoch_flash_store(&ef, e) == 0);
+    f.fail_after = 0; /* the next erase is interrupted */
+    CHECK(epoch_flash_store(&ef, 2u * EPOCH_PAGES_PER_SECTOR + 1u) != 0);
+    CHECK(strcmp(g_order, "bEe") == 0); /* still restored */
+}
+
 static void test_crc(void) {
     CHECK(epoch_crc32((const uint8_t *)"123456789", 9) == 0xCBF43926u); /* standard CRC-32 check value */
 }
@@ -196,6 +229,7 @@ static void test_calibration_store(void) {
 
 int main(void) {
     test_crc();
+    test_erase_is_bracketed_by_the_slow_hooks();
     test_monotonic_and_wear();
     test_power_fail_everywhere();
     test_garbage_is_ignored();

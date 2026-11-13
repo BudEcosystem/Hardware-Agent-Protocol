@@ -341,18 +341,28 @@ Tool contact PCB population (from `pcb/tool_contact.py`):
 ### 9.1 Limits are enforced on the measured pose too
 
 The command checks (§3.2) only see what was asked for. A jammed or lagging joint can drive another
-into a coupled limit although every commanded waypoint is legal. While a motion runs, every fresh
-telemetry sample (all five joints within 200 ms, taken after the motion started) is checked:
+into a coupled limit although every commanded waypoint is legal, and an arm can be pushed. **On every
+fresh telemetry sample, in every powered state with torque on** (holding, moving, tool operations),
+all five joints (each sample at most 200 ms old) are checked:
 
-* the measured pose against the joint and coupled limits with 4 deg of slack (fault 12);
-* every joint against its commanded waypoint, bound 15 deg (fault 18, `move_limit` names the joint).
+* the measured pose against the joint and coupled limits with 4 deg of slack: fault 12 during a
+  motion, fault 22 (`displaced`) while holding or in a tool operation;
+* while moving, every joint against its commanded waypoint, bound 15 deg: fault 18 (`move_limit`
+  names the joint).
 
-On a violation the firmware writes goal = the freshly read position for every joint, ends the motion
-with that fault, and latches. A latched arm keeps holding; it accepts only `hold`, `enable`, and a
-`move_joints`/`home` back inside the limits (a motion that starts outside a limit, or from a latched
-fault, skips the limit check but keeps the waypoint check and the following-error bound). A completed
-recovery move clears the latch. A new motion starts from the measured pose when it differs from the
-last command by more than 2 deg. `move_error_deg` reports the real worst error also for a failed move.
+On a violation the firmware writes goal = the freshly read position for every joint (up to three
+attempts; if the freeze write cannot be confirmed the fault becomes 11 `bus_collision`), stops a tool
+servo that was moving, ends the operation and **latches**. A latched arm keeps holding and accepts
+only `hold` (already frozen: acknowledged), `enable`, and a `move_joints`/`home` back inside the
+limits. Recovery is monotonic: the latch remembers the measured excess (degrees beyond the worst
+limit) at the first fault and the excess may only shrink; the first sample more than 1 deg worse than
+that reference freezes again with the same fault, and while the arm sits more than 1 deg worse a new
+recovery move is refused (INHIBITED, reason 18). A client that re-sends the same move to a jammed
+joint therefore cannot ratchet the arm outward (it gains at most about 1 deg once); it must free the
+joint, `release_torque` is unavailable while latched, so `enable` or a power cycle is the way out. A
+completed recovery move clears the latch. A new motion starts from the measured pose when it differs
+from the last command by more than 2 deg. `move_error_deg` reports the real worst error also for a
+failed move.
 
 ### 9.2 Servo status error bits, temperature
 
@@ -364,7 +374,11 @@ Property `temperature_warning` is true at 60 C; motion is refused (INHIBITED, re
 
 The knob servo runs as **multi-turn absolute position**: Operating_Mode 0 (position) with Min and Max
 angle limit both 0; goal and present position are sign-magnitude counts (bit 15), 4096 per servo turn,
-so the output range is about +-1200 deg through the 2:1 spur (+-27 306 counts of +-32 767). All writes
+so the output range is +-1000 deg through the 2:1 spur (+-22 756 counts). The goal is the mount position (the
+zero, whatever it was) plus the turn and must stay inside +-28 000 counts: +-7 servo turns are +-28 672 counts, and
+the 15-bit magnitude would otherwise wrap; `turn` is refused (OUT_OF_RANGE) when zero + target exceeds it,
+so with the knob mounted 8000 counts from zero only about +-900 deg remain on one side. The +-7 turn limit itself is
+also to be verified on the servo. All writes
 to it are absolute and therefore safe to repeat when an ACK is lost (the simulator can apply a write
 and drop its reply; no duplicate motion). Mode 3 is **not** used: it is, as far as the reviewer and
 the LeRobot Feetech driver convention indicate, a relative step mode in which a repeated or
@@ -392,10 +406,12 @@ The hardware watchdog (250 ms) is fed only after a full endpoint poll plus contr
 **drops the servo rail** (SERVO_EN pulls down in reset) and the unbraked arm falls; the rest pose is
 the support the arm lands on only if it was resting there, otherwise expect the arm to drop wherever
 it is. After a watchdog reset the boot defaults apply (rail off, torque off, explicit `enable`), the
-property `watchdog_reset` is true and `fault_code` reads 19 until the next successful enable;
-`pose_unknown` is true. Bus writes are time-bounded (3 ms) so nothing spins with interrupts off; a
-flash erase is fed before and takes tens of ms (worst case about 400 ms: only at boot or in the
-rail-off calibration save).
+property `watchdog_reset` is true and `fault_code` reads 19 until the next successful `enable`, which clears
+both (and nothing else does); `pose_unknown` is true. Only a reset armed by the firmware's own watchdog
+counts: a BOOTSEL/UF2 reboot is not reported as fault 19. Bus writes are time-bounded (3 ms) so nothing spins with interrupts off; a
+flash sector erase takes tens of ms (worst case about 400 ms): the epoch/calibration store brackets every
+erase with hooks that stretch the watchdog to 1000 ms and restore 250 ms afterwards (also if the erase
+fails); erases happen only with the rail off.
 
 ### 9.6 Fault and refusal codes added
 
@@ -406,6 +422,7 @@ rail-off calibration save).
 | 19 | watchdog reset |
 | 20 | calibration failed or could not be stored |
 | 21 | a tool motion stopped short of its goal (knob torque cap or stop) |
+| 22 | measured pose outside a limit while holding or in a tool operation (displaced) |
 
 Refusal reasons (ERROR.detail on INHIBITED/PRECONDITION): 15 not calibrated, 16 over-temperature,
-17 not disabled (calibrate needs rail off).
+17 not disabled (calibrate needs rail off), 18 recovery would worsen (the arm is further out than at the fault).

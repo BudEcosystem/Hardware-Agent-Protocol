@@ -102,7 +102,13 @@ int reclog_append(const reclog *l, uint32_t seq, const uint8_t *payload) {
         }
     if (first_free == EPOCH_PAGES_PER_SECTOR) { /* full: roll over to the other sector */
         sector ^= 1u;
-        if (l->ops->erase_sector(l->ops->ctx, sector) != 0) return -1;
+        {
+            int erase_rc;
+            if (l->ops->slow_begin != 0) l->ops->slow_begin(l->ops->ctx);
+            erase_rc = l->ops->erase_sector(l->ops->ctx, sector);
+            if (l->ops->slow_end != 0) l->ops->slow_end(l->ops->ctx);
+            if (erase_rc != 0) return -1;
+        }
         first_free = 0;
     }
     memset(page, 0xFF, sizeof page);

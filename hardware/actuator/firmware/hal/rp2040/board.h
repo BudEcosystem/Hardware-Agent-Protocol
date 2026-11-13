@@ -32,5 +32,7 @@
 /* Hardware watchdog: reset the controller if the main loop stops completing. A reset drops the
  * servo rail (SERVO_EN pulls down), so an unbraked arm falls; see INTERFACE.md section 4. */
 #define WATCHDOG_MS 250u
+/* Around a sector erase (up to ~400 ms) the timeout is stretched; erases only happen with the rail off. */
+#define WATCHDOG_ERASE_MS 1000u
 
 #endif

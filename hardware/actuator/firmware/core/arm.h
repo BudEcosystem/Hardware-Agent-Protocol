@@ -77,7 +77,8 @@ enum {
     ARM_WHY_STOPPING = 14,       /* a stop is still being confirmed */
     ARM_WHY_NOT_CALIBRATED = 15, /* joint zero offsets unknown: run `calibrate` */
     ARM_WHY_OVERTEMP = 16,       /* a joint servo is at or above 70 C */
-    ARM_WHY_NOT_DISABLED = 17    /* calibrate needs the rail off and the arm resting */
+    ARM_WHY_NOT_DISABLED = 17,   /* calibrate needs the rail off and the arm resting */
+    ARM_WHY_RECOVERY_WORSE = 18  /* displaced further than at the fault: free the arm, or release torque */
 };
 
 typedef struct {
@@ -137,6 +138,7 @@ typedef struct arm {
     uint8_t recovering;
     uint8_t servo_err_id, servo_err_bits;
     float last_move_err;
+    float limit_ref, guard_last; /* measured excess at the latch / at the last freeze (degrees) */
     arm_cal cal_new;
     uint32_t stop_t0;
 

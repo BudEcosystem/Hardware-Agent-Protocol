@@ -32,7 +32,6 @@ static void f_read(void *c, uint32_t off, uint8_t *out, size_t n) {
 
 static int f_erase(void *c, unsigned sector) {
     flash_job j = {*(const uint32_t *)c + sector * FLASH_SECTOR_SIZE, 0, 0};
-    watchdog_update(); /* an erase takes tens of ms (up to ~400 ms worst case) */
     return flash_safe_execute(do_job, &j, 1000) == PICO_OK ? 0 : -1;
 }
 
@@ -42,8 +41,9 @@ static int f_program(void *c, unsigned sector, unsigned page, const uint8_t *dat
     return flash_safe_execute(do_job, &j, 1000) == PICO_OK ? 0 : -1;
 }
 
-static const epoch_flash_ops g_epoch_ops = {&g_epoch_offset, f_read, f_erase, f_program};
-static const epoch_flash_ops g_cal_ops = {&g_cal_offset, f_read, f_erase, f_program};
+#include "hw_rp2040.h"
+static const epoch_flash_ops g_epoch_ops = {&g_epoch_offset, f_read, f_erase, f_program, hw_wdt_slow_begin, hw_wdt_slow_end};
+static const epoch_flash_ops g_cal_ops = {&g_cal_offset, f_read, f_erase, f_program, hw_wdt_slow_begin, hw_wdt_slow_end};
 const epoch_flash_ops *flash_epoch_ops(void) { return &g_epoch_ops; }
 const epoch_flash_ops *flash_cal_ops(void) { return &g_cal_ops; }
 

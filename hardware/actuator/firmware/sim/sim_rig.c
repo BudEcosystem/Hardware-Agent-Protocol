@@ -192,6 +192,10 @@ static void h_bus_write(void *c, const uint8_t *buf, size_t n) {
     sim_rig *r = (sim_rig *)c;
     uint8_t echo[STS_FRAME_MAX];
     memcpy(echo, buf, n < sizeof echo ? n : sizeof echo);
+    if (r->corrupt_sync_n > 0 && n > 4 && buf[4] == STS_INSTR_SYNC_WRITE) {
+        --r->corrupt_sync_n;
+        r->corrupt_echo_once = 1;
+    }
     if ((r->corrupt_echo_once || r->corrupt_echo_always) && n > 0) {
         echo[n - 1u] ^= 0x55;
         r->corrupt_echo_once = 0;

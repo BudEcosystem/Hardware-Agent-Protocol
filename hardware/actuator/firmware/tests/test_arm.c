@@ -591,6 +591,8 @@ static void test_cancel_tool_freezes(void) {
 
 /* ======================= Fix round 1 ======================================================== */
 
+static float true_excess(tb *t);
+
 /* Raw count of a joint angle under the nominal calibration. */
 static int32_t nominal_raw(unsigned j, float deg) {
     arm_cal nom;
@@ -684,6 +686,12 @@ static void test_recovery_from_a_latched_motion_fault(void) {
     CHECK(run_until_idle(&t, 12000));
     CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY && !t.a.limit_latched);
     CHECK(t.a.fault_code == ARM_FAULT_NONE);
+    {
+        const float want[5] = {0, 60, 60, 0, 0}; /* the MEASURED pose, not just the command */
+        unsigned j;
+        for (j = 0; j < 5; ++j) CHECK(fabsf(joint_deg(&t, j) - want[j]) < 2.5f);
+        CHECK(true_excess(&t) == 0.0f);
+    }
     CHECK(move(&t, 10, 50, 70, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000)); /* normal again */
 }
 
@@ -883,6 +891,160 @@ static void test_millisecond_counter_wrap(void) {
     CHECK(t.a.state == ARM_ST_READY);
 }
 
+/* ======================= Fix round 2 ======================================================== */
+
+static float g_max_excess;
+static float true_excess(tb *t) {
+    arm_pose p;
+    uint8_t c;
+    unsigned j;
+    for (j = 0; j < ARM_NUM_JOINTS; ++j) p.q[j] = joint_deg(t, j);
+    return arm_pose_excess(&p, &c);
+}
+static void excess_hook(tb *t) {
+    float e = true_excess(t);
+    if (e > g_max_excess) g_max_excess = e;
+}
+
+/* C1-a. After a following/limit fault the same move is re-sent over and over (a client's natural
+ * retry): every retry is "inside the limits" as commanded, but the jammed shoulder cannot follow.
+ * The measured excess must never grow beyond the pre-retry value (plus one band of noise). */
+static void retry_scenario(uint8_t pct) {
+    tb t;
+    uint8_t d = 0;
+    float e0;
+    unsigned k, refused = 0;
+    bring_up(&t);
+    CHECK(move(&t, 0, 90, 60, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+    sim_rig_jam(&t.rig, 2);
+    run(&t, 60);
+    CHECK(move(&t, 0, 45, 125, 0, 0, pct, &d) == ARM_OK);
+    CHECK(run_until_idle(&t, 3000));
+    CHECK(t.a.state == ARM_ST_FAULT && t.a.limit_latched);
+    run(&t, 300);
+    g_max_excess = 0.0f;
+    excess_hook(&t);
+    e0 = g_max_excess; /* measured excess before any retry */
+    t.hook = excess_hook;
+    for (k = 0; k < 8; ++k) {
+        arm_refusal r = move(&t, 0, 45, 125, 0, 0, pct, &d);
+        if (r != ARM_OK) {
+            ++refused;
+            CHECK(r == ARM_REFUSE_INHIBITED && d == ARM_WHY_RECOVERY_WORSE);
+        }
+        run(&t, 700);
+        CHECK(t.a.state == ARM_ST_FAULT && t.a.torque_on);
+    }
+    CHECK(g_max_excess <= e0 + 3.0f); /* the original probe reached +38 deg */
+    CHECK(refused >= 6);              /* after the first worsening nothing else is accepted */
+    t.hook = 0;
+}
+
+static void test_retrying_a_jammed_move_does_not_ratchet(void) {
+    retry_scenario(100);
+    retry_scenario(50);
+}
+
+/* C1-b. The measured pose is checked while holding and during tool operations. */
+static void test_displacement_while_holding_and_in_tool_ops(void) {
+    tb t;
+    uint8_t d = 0;
+    bring_up(&t);
+    CHECK(move(&t, 0, 80, 90, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000)); /* forearm 170 */
+    /* Someone pushes the shoulder to 97 deg while the arm holds: forearm 187 > 175. */
+    sim_rig_place(&t.rig, 2, nominal_raw(ARM_J_SHOULDER, 97.0f));
+    run(&t, 100);
+    CHECK(t.a.state == ARM_ST_FAULT && t.a.fault_code == ARM_FAULT_DISPLACED && t.a.limit_latched);
+    CHECK(t.a.torque_on); /* still holding, frozen where it is */
+    {
+        double g = sim_rig_reg16(&t.rig, 2, STS_REG_GOAL_POSITION);
+        run(&t, 300);
+        /* it never travels further out (the servo-side 95 deg window may pull it back in) */
+        CHECK(sim_rig_pos(&t.rig, 2) < g + 15.0);
+    }
+    CHECK(arm_cmd_hold(&t.a, &d) == ARM_OK); /* hold is accepted in a latched fault (INTERFACE.md 9.1) */
+    CHECK(arm_cmd_tool_mount(&t.a, &d) == ARM_REFUSE_INHIBITED);
+    /* Only a move back inside is allowed, and it must end measured inside. */
+    CHECK(move(&t, 0, 60, 60, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+    CHECK(t.done.status == ARM_DONE_COMPLETED && t.a.state == ARM_ST_READY && !t.a.limit_latched);
+    CHECK(true_excess(&t) == 0.0f && fabsf(joint_deg(&t, ARM_J_SHOULDER) - 60.0f) < 2.5f);
+
+    /* The same during a tool operation: it fails and the tool servo is frozen. */
+    bring_up(&t);
+    CHECK(move(&t, 0, 80, 90, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+    sim_rig_set_tool(&t.rig, 1000.0);
+    run(&t, 150);
+    CHECK(arm_cmd_tool_mount(&t.a, &d) == ARM_OK && run_until_idle(&t, 3000));
+    CHECK(arm_cmd_grip(&t.a, 60, 5, &d) == ARM_OK);
+    run(&t, 60);
+    sim_rig_place(&t.rig, 2, nominal_raw(ARM_J_SHOULDER, 97.0f));
+    CHECK(run_until_idle(&t, 1000));
+    CHECK(t.done.kind == ARM_OP_GRIP && t.done.status == ARM_DONE_FAILED && t.done.fault == ARM_FAULT_DISPLACED);
+    CHECK(t.a.state == ARM_ST_FAULT);
+    run(&t, 200);
+    {
+        double g = sim_rig_reg16(&t.rig, 6, STS_REG_GOAL_POSITION);
+        CHECK(fabs(sim_rig_pos(&t.rig, 6) - g) < 15.0); /* the gripper stopped too */
+    }
+}
+
+/* The freeze write is retried on a collision; when it cannot be confirmed the fault says so. */
+static void test_freeze_write_is_retried_and_reported(void) {
+    tb t;
+    uint8_t d = 0;
+    bring_up(&t);
+    CHECK(move(&t, 0, 80, 90, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+    t.rig.corrupt_sync_n = 1; /* the first freeze write collides, the retry succeeds */
+    sim_rig_place(&t.rig, 2, nominal_raw(ARM_J_SHOULDER, 97.0f));
+    run(&t, 100);
+    CHECK(t.a.fault_code == ARM_FAULT_DISPLACED && t.rig.corrupt_sync_n == 0);
+    CHECK(fabs((double)sim_rig_reg16(&t.rig, 2, STS_REG_GOAL_POSITION) - sim_rig_pos(&t.rig, 2)) < 40.0);
+
+    bring_up(&t);
+    CHECK(move(&t, 0, 80, 90, 0, 0, 100, &d) == ARM_OK && run_until_idle(&t, 12000));
+    t.rig.corrupt_sync_n = 100; /* every freeze attempt collides */
+    sim_rig_place(&t.rig, 2, nominal_raw(ARM_J_SHOULDER, 97.0f));
+    run(&t, 100);
+    CHECK(t.a.state == ARM_ST_FAULT && t.a.fault_code == ARM_FAULT_BUS && t.a.limit_latched);
+}
+
+static void test_overtemperature_fault_clears_and_watchdog_report_clears(void) {
+    tb t;
+    uint8_t d = 0;
+    bring_up(&t);
+    t.rig.sv[2].temp_c = 72;
+    run(&t, 200);
+    CHECK(t.a.fault_code == ARM_FAULT_OVERTEMP);
+    t.rig.sv[2].temp_c = 40;
+    run(&t, 200);
+    CHECK(t.a.fault_code == ARM_FAULT_NONE); /* no sticky fault after cooling */
+    CHECK(move(&t, 0, 40, 60, 0, 0, 50, &d) == ARM_OK);
+    /* The watchdog report is cleared by the next successful enable (and by nothing else). */
+    g_wdt = 1;
+    tb_init(&t);
+    g_wdt = 0;
+    run(&t, 100);
+    CHECK(t.a.watchdog_reset && t.a.fault_code == ARM_FAULT_WATCHDOG);
+    CHECK(arm_cmd_enable(&t.a, &d) == ARM_OK && run_until_idle(&t, 4000));
+    CHECK(!t.a.watchdog_reset && t.a.fault_code == ARM_FAULT_NONE);
+}
+
+/* The knob goal is the mount position plus the turn: it must stay inside the +-7 servo turns. */
+static void test_knob_range_includes_the_mount_offset(void) {
+    tb t;
+    uint8_t d = 0;
+    bring_up(&t);
+    sim_rig_set_tool(&t.rig, 3300.0);
+    sim_rig_place(&t.rig, 7, 8000.0); /* the knob was left 8000 counts from zero */
+    run(&t, 150);
+    CHECK(arm_cmd_tool_mount(&t.a, &d) == ARM_OK && run_until_idle(&t, 3000));
+    CHECK(t.a.knob_zero_steps == 8000);
+    CHECK(arm_cmd_turn(&t.a, 1000, 10, &d) == ARM_REFUSE_RANGE && d == 0); /* 8000 + 22 756 > 28 000 */
+    CHECK(arm_cmd_turn(&t.a, -500, 10, &d) == ARM_OK);                     /* inside */
+    run_until_idle(&t, 60000);
+    CHECK(arm_cmd_turn(&t.a, 500, 10, &d) == ARM_OK);
+}
+
 int main(void) {
     test_boot_states();
     test_enable_sequence();
@@ -912,5 +1074,10 @@ int main(void) {
     test_press_timeout_retracts_and_fails();
     test_tool_swap_without_unmount();
     test_millisecond_counter_wrap();
+    test_retrying_a_jammed_move_does_not_ratchet();
+    test_displacement_while_holding_and_in_tool_ops();
+    test_freeze_write_is_retried_and_reported();
+    test_overtemperature_fault_clears_and_watchdog_report_clears();
+    test_knob_range_includes_the_mount_offset();
     TEST_FINISH("test_arm");
 }

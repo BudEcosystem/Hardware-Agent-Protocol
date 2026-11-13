@@ -31,11 +31,12 @@ LIM = {j.name: (j.lower_deg, j.upper_deg) for j in ARM.joints}
 FAULTS = ("1 estop, 2 estop_fault_contact_A_or_Q2, 3 servo_rail_fault, 4 overcurrent, "
           "5 servo_comm, 6 servo_error, 7 tool_lost, 8 timeout, 9 overtemp, 10 stopped, "
           "11 bus_collision, 12 limit, 13 selftest, 14 no_actuator_power, 15 power_sense, "
-          "16 servo_config, 17 tool, 18 following_error, 19 watchdog_reset, 20 calibration, 21 stall")
+          "16 servo_config, 17 tool, 18 following_error, 19 watchdog_reset, 20 calibration, 21 stall, "
+          "22 displaced")
 WHY = ("1 estop_latched, 2 estop_pressed, 3 hard_fault, 4 fault, 5 not_enabled, 6 parked, "
        "7 no_actuator_power, 8 no_tool, 9 wrong_tool, 10 tool_not_ready, 11 tool_mounted, "
        "12 tool_reserved, 13 power_sense, 14 stopping, 15 not_calibrated, 16 overtemp, "
-       "17 not_disabled")
+       "17 not_disabled, 18 recovery_worse")
 LIMITS = ("detail 0..4 = joint range of base_yaw, shoulder_pitch, elbow_pitch, wrist_pitch, "
           "wrist_roll; 16 = coupled forearm_pitch (shoulder+elbow <= 175 deg), "
           "17 = hairpin (elbow+wrist_pitch <= 165 deg), 18 = tool_pitch "
@@ -119,7 +120,7 @@ def build_properties():
         ("gripper_opening_mm", prop("Measured gripper opening between the finger pads (gripper ready only).",
                                     num("mm", 0, 61), "measured", "f32")),
         ("knob_angle_deg", prop("Knob-turner output angle relative to the mount position, multi-turn, "
-                                "from the servo (knob turner ready only).", num("deg", -1300, 1300),
+                                "from the servo (knob turner ready only).", num("deg", -1100, 1100),
                                 "measured", "f32")),
         ("knob_sensor_deg", prop("Knob-turner output encoder (AS5600 analog out), single turn "
                                  "(knob turner ready only).", num("deg", 0, 360), "measured", "f32")),
@@ -239,8 +240,8 @@ def build_actions():
         "torque cap of torque_pct (at most 2.5 %, which keeps the spiral flexure within +-25 deg). "
         "A move that stops short (torque cap, mechanical stop) fails with fault 21; the angle "
         "reached stays readable as knob_angle_deg.",
-        {"angle_deg": num("deg", -1200, 1200, 0.1), "torque_pct": num("%", 0.1, 2.5, 0.1)},
-        {"angle_deg": num("deg", -1200, 1200, 0.1), "reached": {"type": "boolean"}},
+        {"angle_deg": num("deg", -1000, 1000, 0.1), "torque_pct": num("%", 0.1, 2.5, 0.1)},
+        {"angle_deg": num("deg", -1000, 1000, 0.1), "reached": {"type": "boolean"}},
         "hazardous", "absolute", "supported", "measured", 40000, True, ["bhms-arm/tool"],
         [field("angle_deg", "i16", 0.1), field("torque_pct", "u8", 0.1)],
         [field("angle_deg", "i16", 0.1), field("reached", "bool")], verified=["knob_angle_deg"],

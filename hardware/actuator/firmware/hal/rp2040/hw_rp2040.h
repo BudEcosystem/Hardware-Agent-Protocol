@@ -21,6 +21,9 @@ void hw_epoch_init(void);
  * main-loop pass, after a complete arm_device_poll, and nowhere else. */
 void hw_watchdog_start(void);
 void hw_feed(void);
+/* Stretch / restore the watchdog timeout around a flash erase (no-op until the watchdog runs). */
+void hw_wdt_slow_begin(void *ctx);
+void hw_wdt_slow_end(void *ctx);
 /* Blink the status LED red forever (initialisation failed); the rail stays off. */
 void hw_halt(void) __attribute__((noreturn));
 

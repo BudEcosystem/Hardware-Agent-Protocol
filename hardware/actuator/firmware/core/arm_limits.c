@@ -25,6 +25,33 @@ uint8_t arm_check_pose(const arm_pose *p, float margin_deg) {
     return ARM_LIMIT_NONE;
 }
 
+float arm_pose_excess(const arm_pose *p, uint8_t *code) {
+    float worst = 0.0f;
+    unsigned j, k;
+    *code = ARM_LIMIT_NONE;
+    for (j = 0; j < ARM_NUM_JOINTS; ++j) {
+        float q = p->q[j], e;
+        if (!isfinite(q)) {
+            *code = (uint8_t)j;
+            return 1000.0f;
+        }
+        e = q < kArmServos[j].lo_deg ? kArmServos[j].lo_deg - q : (q > kArmServos[j].hi_deg ? q - kArmServos[j].hi_deg : 0.0f);
+        if (e > worst) {
+            worst = e;
+            *code = (uint8_t)j;
+        }
+    }
+    for (k = 0; k < ARM_NUM_COUPLED; ++k) {
+        float s = arm_coupled_sum(p, k), e;
+        e = s < kArmCoupled[k].lo_deg ? kArmCoupled[k].lo_deg - s : (s > kArmCoupled[k].hi_deg ? s - kArmCoupled[k].hi_deg : 0.0f);
+        if (e > worst) {
+            worst = e;
+            *code = (uint8_t)(ARM_LIMIT_COUPLED_BASE + k);
+        }
+    }
+    return worst;
+}
+
 uint8_t arm_check_step(const arm_pose *prev, const arm_pose *next) {
     unsigned j, k;
     for (j = 0; j < ARM_NUM_JOINTS; ++j) {

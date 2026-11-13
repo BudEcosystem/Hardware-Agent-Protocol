@@ -38,6 +38,10 @@ typedef struct {
     /* Program exactly one page (EPOCH_PAGE_BYTES) at page index 0..15 of a sector.
      * Returns 0 on success. */
     int (*program_page)(void *ctx, unsigned sector, unsigned page, const uint8_t *data);
+    /* Optional (NULL): called around every sector erase, whether or not it succeeds. The RP2040 port
+     * stretches the watchdog timeout over the erase (worst case about 400 ms). */
+    void (*slow_begin)(void *ctx);
+    void (*slow_end)(void *ctx);
 } epoch_flash_ops;
 
 /* Generic record log over a two-sector region. Record page layout (little endian):

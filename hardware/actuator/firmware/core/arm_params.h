@@ -73,7 +73,10 @@ enum {
 #define ARM_GRIPPER_STROKE_MM 30.0f   /* per finger */
 #define ARM_GRIPPER_PINION_R_MM 12.0f /* rack radius: finger travel = r * servo angle (rad) */
 #define ARM_KNOB_RATIO 2.0f           /* 20:40 spur: servo turns per knob turn */
-#define ARM_KNOB_MAX_DEG 1200.0f      /* knob output; servo +-2400 deg stays inside +-7 turns */
+/* Knob output range +-1000 deg = +-22 756 counts; the mount position (any value) is the zero, and
+ * zero + target must stay inside +-28 000 counts (about +-7 servo turns, +-28 672): arm_cmd_turn checks. */
+#define ARM_KNOB_MAX_DEG 1000.0f
+#define ARM_KNOB_MAX_COUNTS 28000
 #define ARM_PRESSER_STROKE_MM 8.0f    /* cam: depth = 4 mm * (1 - cos(servo angle)) */
 #define ARM_PRESSER_THROW_MM 4.0f
 
