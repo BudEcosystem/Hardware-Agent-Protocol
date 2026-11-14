@@ -1,9 +1,10 @@
 """The packaged BHMS JSON Schema and an opt-in strict validator.
 
 ``bhms.schema.json`` next to this module is a symlink to
-``spec/bhms/schema/bhms.schema.json``: the repository keeps one source file and
-``[tool.setuptools.package-data]`` ships its bytes (``tests/test_schema_module.py``
-asserts equality).
+``spec/bhms/schema/bhms.schema.json``: the repository keeps one source file, and
+the build hook (``setup.py``) copies its bytes into every wheel and sdist and
+refuses to build without them (``tests/test_schema_module.py`` asserts equality,
+``tests/test_hardening_packaging.py`` builds a wheel and imports from it).
 
 Hot paths validate with the pydantic models in :mod:`bhms.protocol.types`; full JSON
 Schema validation (this module) is the opt-in ``strict=True`` mode and the
@@ -33,8 +34,20 @@ _TOLERANCE = 1e-9
 
 
 def schema_bytes() -> bytes:
-    """The packaged schema file, byte for byte."""
-    return resources.files("bhms.protocol").joinpath("bhms.schema.json").read_bytes()
+    """The packaged schema file, byte for byte.
+
+    Raises ``FileNotFoundError`` that says what to do when the file is a dangling symbolic link: in a checkout it is a
+    link into ``spec/``, and a copy of the package made without following links has the link but not its target.
+    """
+    packaged = resources.files("bhms.protocol").joinpath("bhms.schema.json")
+    try:
+        return packaged.read_bytes()
+    except FileNotFoundError:
+        raise FileNotFoundError(
+            f"{packaged} cannot be read: in a checkout it is a symbolic link to spec/bhms/schema/bhms.schema.json, and "
+            "this copy of the package has no such file behind it. Install the package with pip install (a built wheel "
+            "contains the file), or copy it with symbolic links followed (cp -L, rsync -L) or together with spec/"
+        ) from None
 
 
 @lru_cache(maxsize=1)

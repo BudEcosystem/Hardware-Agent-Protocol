@@ -31,7 +31,8 @@ bhms = "bhms.cli.main:app"
 
 [tool.setuptools.package-data]
 # bhms/protocol/bhms.schema.json is a symlink to spec/bhms/schema/bhms.schema.json (one source file); likewise
-# bhms/conformance/vectors -> spec/bhms/conformance/vectors.
+# bhms/conformance/vectors -> spec/bhms/conformance/vectors. setup.py copies the bytes into every wheel and sdist and fails
+# the build when the links dangle (a copy of sdk/python without spec/).
 bhms = ["protocol/bhms.schema.json", "templates/new/*.tmpl", "conformance/requirements.json", "conformance/vectors/*.json"]
 
 [tool.pytest.ini_options]

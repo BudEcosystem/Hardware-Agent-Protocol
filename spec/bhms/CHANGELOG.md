@@ -88,6 +88,10 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   resolution on its own operation. Not on the agent surface. Chapter 6: "Operation notifications" is now §6.11. Evidence:
   Task 10 report, SDK gap 5 and its spec learning (an `unknown` the device cannot prove kept its resources inhibited with no
   operator path: "a dead bridge keeps its resources inhibited"). Requirement index: 262 rows.
+- No requirement change, Python SDK packaging: the build hook `sdk/python/setup.py` copies the schema and the conformance
+  vectors (one source: `spec/bhms`) into every wheel and sdist and fails the build when they are missing; a dangling schema
+  link in a copied source tree is reported with what to do. Evidence: Task 10 report, SDK gap 3 (a copied package failed at
+  `DeviceServer.start()` with `FileNotFoundError`; a wheel built from such a copy was produced without the schema, silently).
 
 ### TS SDK to follow
 
