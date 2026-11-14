@@ -12,6 +12,7 @@ from bhms import DeviceServer, Range
 srv = DeviceServer("example-pump")
 pump = srv.device("pump-1", name="Syringe pump", description="Simulated syringe pump with one plunger.",
                   capabilities=["bhms.liquid.dispense"], resources=["pump-1/plunger"])
+pump.report_alive()  # simulated, so reachable once the server runs; a real driver reports life when its link is up
 dispensed = {"uL": 0.0}
 
 

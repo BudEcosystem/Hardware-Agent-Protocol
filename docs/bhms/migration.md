@@ -12,7 +12,7 @@ lease. This holds for actions that do not declare `requiresLease`, and for the p
   request presents no lease".
 - Change: pass the lease on every invoke that touches a resource you leased.
 
-```python
+```python no-run
 lease = (await client.leases_acquire(["axis-1/motion"], 30_000)).lease
 await client.actions_invoke("axis-1", "pulse", {"count": 1}, lease_id=lease.lease_id)   # was: no lease_id
 ```
@@ -31,7 +31,7 @@ await client.actions_invoke("axis-1", "pulse", {"count": 1}, lease_id=lease.leas
   from another implementation that violates it fails schema validation (a gateway does not serve that device).
 - Change the declaration, and let callers hold a lease:
 
-```python
+```python no-run
 @dev.action(effect="hazardous", idempotency="relative", max_duration_ms=10_000,
             requires_lease=True, on_lease_loss="cancel", cancel="supported", resources=["centrifuge-1/rotor"])
 async def spin(ctx, ...): ...
