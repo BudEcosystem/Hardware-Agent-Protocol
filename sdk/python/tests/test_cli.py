@@ -259,6 +259,8 @@ async def test_resolve_asks_the_device_again_and_records_an_operator_resolution(
     assert lost.exit_code == 3 and json.loads(lost.output)["data"]["operation"]["state"] == "unknown"
     asked = await invoke("resolve", "-u", device_url, op_id)
     assert asked.exit_code == 3 and "unknown" in asked.output
+    target_first = await invoke("resolve", device_url, op_id)  # like every one-shot command: the target may come first
+    assert target_first.exit_code == 3 and "unknown" in target_first.output, target_first.output
     usage = await invoke("resolve", "-u", device_url, op_id, "--state", "failed")
     assert usage.exit_code == 2
     done = await invoke("resolve", "-u", device_url, op_id, "--state", "failed", "--basis", "axis inspected: at rest")

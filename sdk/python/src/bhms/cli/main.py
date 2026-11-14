@@ -7,7 +7,7 @@ import click
 import typer
 from typer.core import TyperGroup
 
-ONE_SHOT = frozenset({"ls", "describe", "read", "call", "ops", "wait", "cancel", "stop"})
+ONE_SHOT = frozenset({"ls", "describe", "read", "call", "ops", "wait", "cancel", "resolve", "stop"})
 
 
 def looks_like_target(word: str) -> bool:
@@ -34,7 +34,7 @@ class TargetGroup(TyperGroup):
 
 app = typer.Typer(name="bhms", cls=TargetGroup, no_args_is_help=True, add_completion=False, pretty_exceptions_enable=False,
                   help="BHMS: operate devices with honest semantics. Start with `bhms new demo` then `bhms dev demo/server.py`.",
-                  epilog="Targets (first argument of ls/describe/read/call/ops/wait/cancel/stop, or --url / BHMS_URL): unix:/path, ws://host:port, http://host:port/bhms, a server .py or a "
+                  epilog="Targets (first argument of ls/describe/read/call/ops/wait/cancel/resolve/stop, or --url / BHMS_URL): unix:/path, ws://host:port, http://host:port/bhms, a server .py or a "
                          "gateway .toml. Exit status: 0 ok, 1 refused or failed, 2 usage, 3 not settled (running or unknown).")
 
 from bhms.cli import bench, commands, conformance, doctor, inspector, scaffold, serve  # noqa: E402  (they register on `app`)
