@@ -423,6 +423,12 @@ export class Device {
     };
   }
 
+  /** The validator of `action`'s declared `output` schema, or `undefined` when the action declares none or is unknown. */
+  outputValidator(action: string): SchemaValidator | undefined {
+    const spec = this.actions.get(action);
+    return spec?.output === undefined ? undefined : this.validator(`output:${action}`, spec.output);
+  }
+
   /** Cached validator for an action output or event data schema. */
   validator(key: string, schema: Schema | undefined): SchemaValidator {
     let v = this.validators.get(key);

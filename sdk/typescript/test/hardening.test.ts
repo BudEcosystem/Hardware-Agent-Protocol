@@ -510,3 +510,121 @@ test("reconciliation of an operation that required a verified effect: a completi
     assert.deepEqual(historyKinds(final).at(-1), ["reconciliation", "failed"]);
   } finally { await t.close(); }
 });
+
+// ------------------------------------------------------------------------------------------------ review fix round 1
+
+/** A device whose dispatch-time freshness read waits on a gate, so the test can act while it is in flight. */
+interface Gate { open?: () => void; reads: number; parkAt: number; ran: number }
+
+/**
+ * A device whose freshness read number `gate.parkAt` waits on a gate, so the test can act while it is in flight. `poke` and
+ * `grip` need pressure at most 20 ms old: the sample taken at admission is too old once `slow` (80 ms) has finished, so
+ * dispatch reads again.
+ */
+function gatedDevice(srv: DeviceServer, gate: Gate): void {
+  const d = srv.device("rig-1", { resources: ["rig-1/a"] });
+  d.reportAlive();
+  d.property("pressure", { unit: "kPa", evidence: "measured" }, async () => {
+    gate.reads += 1;
+    if (gate.reads === gate.parkAt) await new Promise<void>((resolve) => { gate.open = resolve; });
+    return 1;
+  });
+  d.action("slow", { effect: "reversible", idempotency: "absolute", maxDurationMs: 2000 }, () => sleep(80).then(() => ({})));
+  d.action("poke", { effect: "reversible", idempotency: "absolute", maxDurationMs: 1000, requiresFresh: { pressure: 20 } }, () => { gate.ran += 1; return {}; });
+  d.action("grip", { effect: "reversible", idempotency: "absolute", maxDurationMs: 1000, requiresLease: true, requiresFresh: { pressure: 20 } }, () => { gate.ran += 1; return {}; });
+}
+
+test("LSE-014 / OPS-041: a lease taken by another principal while the dispatch-time freshness read runs refuses the queued operation", async () => {
+  const gate: Gate = { reads: 0, parkAt: 0, ran: 0 };
+  const t = await custom((srv) => gatedDevice(srv, gate));
+  try {
+    const alice = await t.connect({ principal: "alice", scopes: ["read", "invoke:*/*", "lease"] });
+    const bob = await t.connect({ principal: "bob", scopes: ["read", "invoke:*/*", "lease"] });
+    await alice.actionsInvoke("rig-1", "slow", {}, { operationKey: key("slow") });
+    gate.parkAt = gate.reads + 2; // the read after the admission read of poke is its dispatch-time read: it parks
+    const op = (await alice.actionsInvoke("rig-1", "poke", {}, { operationKey: key("poke") })).operation;
+    await until("the dispatch-time read", () => gate.open !== undefined);
+    const lease = (await bob.leasesAcquire(["rig-1/a"], 30_000)).lease;
+    gate.open!();
+    const final = (await alice.operationsWait(op.operationId, 3000)).operation;
+    assert.equal(final.state, "rejected", JSON.stringify(final.error));
+    assert.equal(final.error?.bhmsCode, "LEASE_CONFLICT");
+    assert.equal(final.error?.mayHaveActed, false);
+    assert.equal(gate.ran, 0, "the handler ran while bob held the lease");
+    await bob.leasesRelease(lease.leaseId);
+  } finally { await t.close(); }
+});
+
+test("LSE-010 / OPS-041: a lease revoked while the dispatch-time freshness read runs refuses the queued operation (Python test_lease_revoked_during_predispatch_checks_rejects)", async () => {
+  const gate: Gate = { reads: 0, parkAt: 0, ran: 0 };
+  const t = await custom((srv) => gatedDevice(srv, gate));
+  try {
+    const lease = (await t.client.leasesAcquire(["rig-1/a"], 30_000)).lease;
+    await t.client.actionsInvoke("rig-1", "slow", {}, { leaseId: lease.leaseId, operationKey: key("slow") });
+    gate.parkAt = gate.reads + 2;
+    const op = (await t.client.actionsInvoke("rig-1", "grip", {}, { leaseId: lease.leaseId, operationKey: key("grip") })).operation;
+    await until("the dispatch-time read", () => gate.open !== undefined);
+    t.srv.leases.revokeCovering(["rig-1/a"]);
+    gate.open!();
+    const final = (await t.client.operationsWait(op.operationId, 3000)).operation;
+    assert.equal(final.state, "rejected", JSON.stringify(final.error));
+    assert.equal(final.error?.bhmsCode, "FENCED");
+    assert.equal(final.error?.mayHaveActed, false);
+    assert.equal(gate.ran, 0, "the handler ran under a revoked lease");
+  } finally { await t.close(); }
+});
+
+function verifier(srv: DeviceServer, evidence: "measured" | "commanded", completionEvidence: "measured" | "reported" | "none", agrees: boolean): void {
+  const d = srv.device("stage-2", { resources: ["stage-2/z"] });
+  d.property("z", { unit: "mm", evidence }, () => 5);
+  d.property("free", { unit: "mm", evidence: "measured" }, () => 5);
+  d.action("move", { effect: "reversible", idempotency: "absolute", maxDurationMs: 1000, completionEvidence }, async (ctx) => { await ctx.verify("z", () => agrees); return {}; });
+  d.action("nudge", { effect: "reversible", idempotency: "absolute", maxDurationMs: 1000, completionEvidence }, () => ({}));
+}
+
+test("DEV-031 / OPS-006: an observation that does not confirm, or is not measured, is reported evidence, never measured", async () => {
+  for (const [evidence, agrees] of [["commanded", true], ["measured", false]] as const) {
+    const t = await custom((srv) => verifier(srv, evidence, "measured", agrees));
+    try {
+      const op = (await t.client.actionsInvoke("stage-2", "move", {}, { waitMs: 2000 })).operation;
+      assert.equal(op.state, "completed");
+      assert.equal(op.effect, "unverified");
+      assert.equal(op.evidence?.kind, "reported", `${evidence} property, check ${agrees}`);
+      assert.deepEqual(Object.keys(op.evidence?.observations ?? {}), ["z"], "the observation is kept as what was seen");
+    } finally { await t.close(); }
+  }
+});
+
+test("OPS-006: completionEvidence none records evidence {kind: none}, as in Python", async () => {
+  const t = await custom((srv) => verifier(srv, "measured", "none", true));
+  try {
+    const op = (await t.client.actionsInvoke("stage-2", "nudge", {}, { waitMs: 2000 })).operation;
+    assert.equal(op.state, "completed");
+    assert.equal(op.effect, "unverified");
+    assert.deepEqual(op.evidence, { kind: "none" });
+  } finally { await t.close(); }
+});
+
+test("OPS-006: the journal refuses effect verified unless every observation is measured and valid", async () => {
+  const t = await custom((srv) => verifier(srv, "commanded", "measured", true));
+  try {
+    const op = (await t.client.actionsInvoke("stage-2", "nudge", {}, { operationKey: key("n"), waitMs: 2000 })).operation;
+    assert.equal(op.state, "completed");
+    const { Journal, OperationRecord, InvalidTransition } = await import("../src/server/operations.js");
+    const { MemoryStore } = await import("../src/server/store.js");
+    const journal = new Journal(new MemoryStore());
+    const obs = (await t.client.propertiesRead("stage-2", "z")).observation;
+    const base = { principal: "p", history: [], resources: [], effectClass: "reversible", cancelSupported: false, onLeaseLoss: "finish", completionEvidence: "measured", maxDurationMs: 1000, admitted: {} };
+    const make = (id: string): InstanceType<typeof OperationRecord> => journal.create({ ...base, id, op: { ...op, operationId: id, operationKey: id, state: "accepted", effect: "none", history: undefined } } as never);
+    for (const [name, observation] of [["commanded", obs], ["invalid", { ...obs, evidence: "measured", quality: "invalid" }]] as const) {
+      const rec = make(`op-${name}`);
+      journal.transition(rec, "dispatching");
+      assert.throws(() => journal.transition(rec, "completed", { result: {}, hasResult: true, effect: "verified", evidence: { kind: "measured", observations: { z: observation as never } } }),
+        (e: unknown) => e instanceof InvalidTransition, name);
+    }
+    const ok = make("op-ok");
+    journal.transition(ok, "dispatching");
+    journal.transition(ok, "completed", { result: {}, hasResult: true, effect: "verified", evidence: { kind: "measured", observations: { z: { ...obs, evidence: "measured", quality: "valid" } } } });
+    assert.equal(ok.op.effect, "verified");
+  } finally { await t.close(); }
+});

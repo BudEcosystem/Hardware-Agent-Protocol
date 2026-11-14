@@ -289,18 +289,14 @@ export class Executor {
     const spec = device?.actions.get(rec.op.action!);
     try {
       if (!device || !spec) throw new BhmsError("UNKNOWN_ACTION", `${rec.op.deviceId}/${rec.op.action} is no longer available`, { hint: "describe the device again" });
-      // BHMS-OPS-041: everything that depends on time is checked again immediately before dispatch.
-      if (rec.data.deadlineMs !== undefined && Date.now() >= rec.data.deadlineMs) {
-        throw new BhmsError("DEADLINE_EXCEEDED", "the deadline passed before the operation could be dispatched", { hint: "retry with a later deadline" });
+      this.recheck(rec, device, spec);
+      if (spec.requiresFresh.length > 0) {
+        await srv.observations.requireFresh(device, spec.requiresFresh, undefined);
+        // the read awaited the device, during which a lease could be taken, revoked or released, the device could go
+        // offline or another operation become unknown: check again, with no await between this and the dispatch commit
+        if (rec.state === "accepted") this.recheck(rec, device, spec);
       }
-      srv.leases.admit(rec.principal, rec.op.leaseId, spec.resources, spec.requiresLease); // a lease taken while it queued refuses it
-      if (device.status === "offline") throw new BhmsError("DEVICE_UNAVAILABLE", `${device.deviceId} is offline`, { hint: "retry later" });
-      this.assertNotInhibited(spec.resources, rec.id);
-      if (spec.requiresFresh.length > 0) await srv.observations.requireFresh(device, spec.requiresFresh, undefined);
-      if (rec.state !== "accepted") { this.release(rec); this.pump(); return; } // cancelled while checking
-      if (rec.data.deadlineMs !== undefined && Date.now() >= rec.data.deadlineMs) {
-        throw new BhmsError("DEADLINE_EXCEEDED", "the deadline passed before the operation could be dispatched", { hint: "retry with a later deadline" });
-      }
+      if (rec.state !== "accepted") { this.release(rec); this.pump(); return; } // cancelled or stopped while checking
     } catch (e) {
       if (e instanceof BhmsError) {
         if (rec.state === "accepted") this.reject(rec, e);
@@ -323,6 +319,20 @@ export class Executor {
       throw e;
     }
     this.start(rec, device!, spec!);
+  }
+
+  /**
+   * BHMS-OPS-041: the time-dependent checks immediately before dispatch (synchronous): deadline, the lease admission
+   * (BHMS-LSE-010, BHMS-LSE-014: a lease taken while the operation queued refuses it), reachability and the unknown-operation
+   * inhibition (BHMS-OPS-042). Throws the refusal.
+   */
+  private recheck(rec: OperationRecord, device: Device, spec: ActionSpec): void {
+    if (rec.data.deadlineMs !== undefined && Date.now() >= rec.data.deadlineMs) {
+      throw new BhmsError("DEADLINE_EXCEEDED", "the deadline passed before the operation could be dispatched", { hint: "retry with a later deadline" });
+    }
+    this.server.leases.admit(rec.principal, rec.op.leaseId, spec.resources, spec.requiresLease);
+    if (device.status === "offline") throw new BhmsError("DEVICE_UNAVAILABLE", `${device.deviceId} is offline`, { hint: "retry later" });
+    this.assertNotInhibited(spec.resources, rec.id);
   }
 
   // ------------------------------------------------------------------------------------------------ execution
@@ -471,7 +481,7 @@ export class Executor {
     }
     let result = outcome.value;
     if (result === undefined || result === null) result = {};
-    const defect = checkResult(result, spec.output !== undefined ? device.validator(`output:${spec.name}`, spec.output) : undefined);
+    const defect = checkResult(result, device.outputValidator(spec.name));
     if (defect?.kind === "out-of-range") {
       // the device acted and reported a value: a measurement outside its declared range, not a result that "cannot be
       // recorded" (BHMS-OPS-008); the value is kept in the message and in an evidence entry
@@ -501,15 +511,17 @@ export class Executor {
     device.reportAlive(); // a completed action is evidence that the device answers (BHMS-DEV-012)
   }
 
-  /** The `effect` and `evidence` of a handler that returned (BHMS-OPS-006): `verified` only when every `ctx.verify` agreed. */
+  /**
+   * The `effect` and `evidence` of a handler that returned (BHMS-OPS-006, BHMS-DEV-031): `verified` with `measured` evidence only
+   * when every `ctx.verify` took a measured, valid observation that confirmed the effect; otherwise `unverified` with
+   * `reported` evidence (`none` when the action declares `completionEvidence: "none"`), the observations kept as what was seen.
+   */
   private completionEffect(exec: Execution): { effect: Effect; evidence?: Operation["evidence"] } {
     if (exec.spec.effect === "none") return { effect: "none" };
-    const observed = Object.keys(exec.evidence).length > 0;
-    if (observed && exec.confirmed.length > 0 && exec.confirmed.every(Boolean)) {
-      return { effect: "verified", evidence: { kind: "measured", observations: { ...exec.evidence } } };
-    }
-    if (observed) return { effect: "unverified", evidence: { kind: "measured", observations: { ...exec.evidence } } };
-    return { effect: "unverified", evidence: exec.spec.completionEvidence === "none" ? undefined : { kind: "reported" } };
+    const verified = exec.confirmed.length > 0 && exec.confirmed.every(Boolean);
+    const evidence: NonNullable<Operation["evidence"]> = { kind: verified ? "measured" : exec.spec.completionEvidence === "none" ? "none" : "reported" };
+    if (Object.keys(exec.evidence).length > 0) evidence.observations = { ...exec.evidence };
+    return { effect: verified ? "verified" : "unverified", evidence };
   }
 
   // ------------------------------------------------------------------------------------------------ cancel, stop, leases
@@ -682,8 +694,7 @@ export class Executor {
     const detail = answer.evidence;
     if (answer.state === "completed") {
       const result = answer.result ?? {};
-      const spec = device.actions.get(rec.op.action ?? "");
-      const defect = checkResult(result, spec?.output !== undefined ? device.validator(`output:${spec.name}`, spec.output) : undefined);
+      const defect = checkResult(result, device.outputValidator(rec.op.action ?? ""));
       if (defect) throw new InvalidTransition(`the reconciled result of ${rec.id} cannot be recorded: ${defect.message}`);
       const effect: Effect = answer.effect ?? (rec.data.effectClass === "none" ? "none" : "unverified");
       if (rec.op.require?.effect === "verified" && effect !== "verified") {
@@ -711,10 +722,8 @@ export class Executor {
    */
   resolveByOperator(rec: OperationRecord, principal: string, resolution: OperatorResolution): void {
     const device = this.server.devices.get(rec.op.deviceId ?? "");
-    const spec = device?.actions.get(rec.op.action ?? "");
-    const validator = device && spec?.output !== undefined ? device.validator(`output:${spec.name}`, spec.output) : undefined;
     try {
-      recordOperatorResolution(this.server.journal, rec, resolution, principal, validator);
+      recordOperatorResolution(this.server.journal, rec, resolution, principal, device?.outputValidator(rec.op.action ?? ""));
     } catch (e) {
       if (!(e instanceof InvalidTransition)) throw e;
       throw new BhmsError("INVALID_ARGUMENT", `the resolution cannot be recorded: ${e.message}`.slice(0, 2000), { field: "resolution", hint: INVALID_RESOLUTION_HINT });

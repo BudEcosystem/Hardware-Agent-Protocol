@@ -58,6 +58,12 @@ export function unknownError(message: string): OperationErrorWire {
   }).toOperationError();
 }
 
+/** Operation evidence that proves an effect: kind `measured` with at least one observation, every one measured and valid (BHMS-OPS-006). */
+function provesEffect(evidence: Operation["evidence"] | undefined): boolean {
+  const observations = Object.values(evidence?.observations ?? {});
+  return evidence?.kind === "measured" && observations.length > 0 && observations.every((o) => o.evidence === "measured" && o.quality === "valid");
+}
+
 export class OperationRecord {
   /** Runtime only: wake `wait()` callers. */
   readonly waiters = new Set<() => void>();
@@ -236,9 +242,8 @@ export class Journal {
       }
       op.result = o.result;
     }
-    const evidence = o.evidence ?? op.evidence;
-    if (effect === "verified" && !(evidence && evidence.kind === "measured" && Object.keys(evidence.observations ?? {}).length > 0)) {
-      throw new InvalidTransition(`${rec.id}: effect verified needs evidence of kind measured with at least one observation (BHMS-OPS-006)`);
+    if (effect === "verified" && !provesEffect(o.evidence ?? op.evidence)) {
+      throw new InvalidTransition(`${rec.id}: effect verified needs evidence of kind measured whose observations are all measured and valid (BHMS-OPS-006)`);
     }
     if (state === "failed" || state === "rejected" || state === "unknown") op.error = o.error;
     else delete op.error;
