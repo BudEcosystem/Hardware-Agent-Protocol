@@ -235,7 +235,7 @@ async def test_the_gateway_records_an_operator_resolution_itself_when_the_upstre
         assert still.state == "unknown"
         with pytest.raises(BhmsError) as exc:  # the shared rules apply here too: "nothing happened" is one claim
             await admin.operations_resolve(op.operation_id, state="failed", basis="x", effect="unverified", may_have_acted=False)
-        assert exc.value.bhms_code == "INVALID_ARGUMENT" and exc.value.field == "resolution"
+        assert exc.value.bhms_code == "INVALID_ARGUMENT" and exc.value.field == "resolution.effect"  # R45: the member at fault
         with pytest.raises(BhmsError) as exc:  # R38: no verified from an operator, on the gateway-local path either
             await admin.request("operations/resolve", {"operationId": op.operation_id, "resolution": {
                 "state": "completed", "basis": "typed in", "effect": "verified"}})
