@@ -2,15 +2,16 @@
 // schema bounds walker, stdio opens no listeners). Everything here runs without Python; the cross-language checks are in
 // interop-python.test.ts and the full runner is scripts/conformance.py.
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, readdirSync, readlinkSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 import { Client } from "../src/client.js";
 import { BhmsError } from "../src/errors.js";
-import { schemaBoundsProblem } from "../src/schema.js";
-import { PolicyTable, tokenDigest, type PolicyDocument } from "../src/server/authority.js";
+import { MAX_SCHEMA_DEPTH, MAX_SUBSCHEMAS, SchemaBoundsError, iterSubschemas, schemaBoundsProblem } from "../src/schema.js";
+import { checkUnits } from "../src/server/validation.js";
+import { PolicyTable, gatewayPolicy, tokenDigest, type PolicyDocument } from "../src/server/authority.js";
 import { HOSTILE_TEXT, build, traceRequests } from "../src/testing/conformanceDevice.js";
 import { counters, inject, key, rig } from "./harness.js";
 import { sleep, tsDevicePath } from "./helpers.js";
@@ -141,24 +142,31 @@ test("fault hostile_text: name, description, pulse description and the fault err
   } finally { await r.close(); }
 });
 
-test("fault hostile_schema: a correct digest over a pulse schema 64 levels deep that ends in a remote $ref; never fetched by us", async () => {
+test("fault hostile_schema: each variant breaks exactly one rule, with a correct digest; an unknown or missing variant is refused", async () => {
   const r = await rig();
   try {
     const { descriptionDigest } = await import("../src/canonical.js");
     await inject(r.client, "none");
     const url = "http://127.0.0.1:9/hostile-schema.json";
-    await r.client.request("x-conformance/inject", { fault: "hostile_schema", url });
-    const d = (await r.client.devicesDescribe("axis-1")).description;
-    assert.equal(d.digest, descriptionDigest(d as unknown as Record<string, unknown>), "the digest is correct");
-    const problem = schemaBoundsProblem(d.actions.pulse.input);
-    assert.match(problem ?? "", /deeper than 32 levels/);
-    let node = (d.actions.pulse.input as unknown as { properties: { count: { properties: { x: unknown } } } }).properties.count.properties.x;
-    let depth = 0;
-    while (typeof node === "object" && node !== null && "properties" in node && depth < 100) { node = (node as { properties: { x: unknown } }).properties.x; depth++; }
-    assert.equal(depth, 64);
-    assert.deepEqual(node, { $ref: url });
+    const plain = (await r.client.devicesDescribe("axis-1")).description;
+    const found: Record<string, string> = {};
+    for (const variant of ["deep", "wide", "remote_ref"]) {
+      await r.client.request("x-conformance/inject", { fault: "hostile_schema", variant, url });
+      const d = (await r.client.devicesDescribe("axis-1")).description;
+      assert.equal(d.digest, descriptionDigest(d as unknown as Record<string, unknown>), `${variant}: the digest is correct`);
+      found[variant] = schemaBoundsProblem(d.actions.pulse.input) ?? "";
+      if (variant === "remote_ref") assert.ok(JSON.stringify(d.actions.pulse.input).includes(url));
+      else assert.ok(!JSON.stringify(d.actions.pulse.input).includes("$ref"), `${variant}: no $ref anywhere`);
+    }
+    assert.match(found.deep, /deeper than 32 \(BHMS-SEC-021\)$/);
+    assert.match(found.wide, /^schema: more than 10000 subschemas \(BHMS-SEC-021\)$/);
+    assert.match(found.remote_ref, /\$ref 'http:\/\/127\.0\.0\.1:9\/hostile-schema\.json' points outside the schema; schemas are never fetched \(BHMS-DEV-040\)$/);
+    for (const bad of [{}, { variant: "both" }, { variant: 3 }, { variant: "__proto__" }]) {
+      await assert.rejects(r.client.request("x-conformance/inject", { fault: "hostile_schema", ...bad }), code("INVALID_ARGUMENT", (e) => e.field === "variant"));
+    }
     await inject(r.client, "none");
     assert.equal(schemaBoundsProblem((await r.client.devicesDescribe("axis-1")).description.actions.pulse.input), undefined);
+    assert.equal((await r.client.devicesDescribe("axis-1")).description.digest, plain.digest);
   } finally { await r.close(); }
 });
 
@@ -211,39 +219,84 @@ test("the command log and recorded results survive in <state-dir>/command-log.js
 
 // ------------------------------------------------------------------------------------------------ schema bounds walker (BHMS-SEC-021)
 
-const nested = (levels: number, leaf: unknown = { type: "string" }): unknown => {
+/** A schema whose deepest subschema is `steps` subschema steps below the root (the root is depth 0). */
+const chain = (steps: number, keyword = "properties", leaf: unknown = { type: "string" }): unknown => {
   let node = leaf;
-  for (let i = 1; i < levels; i++) node = { type: "object", properties: { x: node } };
+  for (let i = 0; i < steps; i++) node = keyword === "properties" ? { type: "object", properties: { x: node } } : { [keyword]: node };
   return node;
 };
+/** A schema of `total` schemas: the root and `total - 1` members of one anyOf. */
+const wide = (total: number): unknown => ({ anyOf: Array.from({ length: total - 1 }, () => ({ type: "string" })) });
+const refusal = (schema: unknown): string | undefined => {
+  try { checkUnits(schema, "x"); return undefined; } catch (e) { return (e as Error).message; }
+};
 
-test("schemaBoundsProblem: depth boundary is exact (32 levels pass, 33 fail; the root is level 1)", () => {
-  assert.equal(schemaBoundsProblem(nested(32)), undefined);
-  assert.equal(schemaBoundsProblem(nested(33)), "it nests subschemas deeper than 32 levels");
-  assert.equal(schemaBoundsProblem(nested(5), { maxDepth: 4 }), "it nests subschemas deeper than 4 levels");
-  assert.equal(schemaBoundsProblem(nested(4), { maxDepth: 4 }), undefined);
-});
-
-test("schemaBoundsProblem: node count boundary is exact (10 000 subschemas pass, 10 001 fail; only objects count)", () => {
-  const wide = (n: number): unknown => ({ type: "object", properties: Object.fromEntries(Array.from({ length: n - 1 }, (_, i) => [`p${i}`, { type: "string" }])) });
+test("the walker's limits are the spec's: depth 32 (root = 0), 10 000 schemas including the root", () => {
+  assert.deepEqual([MAX_SCHEMA_DEPTH, MAX_SUBSCHEMAS], [32, 10_000]);
+  assert.equal(schemaBoundsProblem(chain(32)), undefined);
+  assert.match(schemaBoundsProblem(chain(33)) ?? "", /^schema\.properties\.x[^:]*: schema nested deeper than 32 \(BHMS-SEC-021\)$/);
+  assert.equal(schemaBoundsProblem(chain(4), "s", { maxDepth: 4 }), undefined);
+  assert.equal(schemaBoundsProblem(chain(5), "s", { maxDepth: 4 }), "s.properties.x.properties.x.properties.x.properties.x.properties.x: schema nested deeper than 4 (BHMS-SEC-021)");
   assert.equal(schemaBoundsProblem(wide(10_000)), undefined);
-  assert.equal(schemaBoundsProblem(wide(10_001)), "it has more than 10000 subschemas");
-  const withScalars = { allOf: [true, false, 1, "x", null, ...Array.from({ length: 9_999 }, () => ({}))] };
-  assert.equal(schemaBoundsProblem(withScalars), undefined, "booleans and scalars are not subschemas to count");
+  assert.equal(schemaBoundsProblem(wide(10_001)), "schema: more than 10000 subschemas (BHMS-SEC-021)");
+  assert.equal(schemaBoundsProblem({ allOf: [true, false, 1, "x", null, ...Array.from({ length: 9_994 }, () => ({}))] }), undefined, "root + 9 999 members = 10 000: booleans and scalars count");
+  assert.match(schemaBoundsProblem({ allOf: [true, false, 1, "x", null, ...Array.from({ length: 9_995 }, () => ({}))] }) ?? "", /more than 10000 subschemas/);
 });
 
-test("schemaBoundsProblem: a $ref that leaves the document is refused (local fragments are fine), every applicator keyword is walked", () => {
-  assert.match(schemaBoundsProblem({ $ref: "http://127.0.0.1:9/x.json" }) ?? "", /^it has a \$ref \('http:\/\/127\.0\.0\.1:9\/x\.json'\) that leaves the document; schemas are never fetched$/);
-  assert.equal(schemaBoundsProblem({ $ref: "#/$defs/a", $defs: { a: { type: "string" } } }), undefined);
-  for (const path of [["items"], ["additionalProperties"], ["not"], ["if"], ["then"], ["else"], ["contains"], ["propertyNames"], ["unevaluatedItems"], ["unevaluatedProperties"],
-    ["properties", "a"], ["patternProperties", "a"], ["$defs", "a"], ["definitions", "a"], ["dependentSchemas", "a"], ["allOf", "0"], ["anyOf", "0"], ["oneOf", "0"], ["prefixItems", "0"]]) {
-    // a map keyword holds a member map, a list keyword an array, a single keyword the schema itself
-    const [keyword, member] = path;
-    const leaf = { $ref: "https://example.com/s.json" };
-    const wrapped = member === undefined ? { [keyword]: leaf } : /^\d+$/.test(member) ? { [keyword]: [leaf] } : { [keyword]: { [member]: leaf } };
-    assert.match(schemaBoundsProblem(wrapped) ?? "", /leaves the document/, `walks ${keyword}`);
+test("checkUnits (the server's description validation) uses the same walker: same bounds for every keyword, same wording", () => {
+  assert.equal(refusal(chain(32)), undefined);
+  assert.match(refusal(chain(33)) ?? "", /BHMS-SEC-021/);
+  assert.equal(refusal(wide(10_000)), undefined);
+  assert.match(refusal(wide(10_001)) ?? "", /^x: more than 10000 subschemas \(BHMS-SEC-021\)$/);
+  for (const keyword of ["items", "additionalProperties", "not", "if", "then", "else", "contains", "propertyNames", "unevaluatedItems", "unevaluatedProperties", "contentSchema"]) {
+    assert.match(refusal({ [keyword]: { $ref: "http://example.invalid/s.json" } }) ?? "", /BHMS-DEV-040/, keyword);
+    assert.equal(refusal(chain(32, keyword)), undefined, keyword);
+    assert.match(refusal(chain(33, keyword)) ?? "", /BHMS-SEC-021/, keyword);
   }
-  assert.equal(schemaBoundsProblem({ type: "object", description: { $ref: "http://x" } }), undefined, "non-schema members are not schemas");
+  for (const keyword of ["allOf", "anyOf", "oneOf", "prefixItems", "properties", "patternProperties", "$defs", "definitions", "dependentSchemas"]) {
+    const child = { $ref: "http://example.invalid/s.json" };
+    assert.match(refusal({ [keyword]: ["allOf", "anyOf", "oneOf", "prefixItems"].includes(keyword) ? [child] : { x: child } }) ?? "", /BHMS-DEV-040/, keyword);
+  }
+  assert.match(refusal({ $dynamicRef: "http://example.invalid/s" }) ?? "", /^x: \$dynamicRef 'http:\/\/example\.invalid\/s' points outside the schema/);
+  for (const ref of ["s.json", "//example.invalid/s", "urn:x:y", "http://example.invalid/s.json#/$defs/name"]) assert.match(refusal({ $ref: ref }) ?? "", /BHMS-DEV-040/, ref);
+  assert.equal(refusal({ type: "object", properties: { a: { $ref: "#/$defs/name" } }, $defs: { name: { type: "string" } } }), undefined);
+  assert.match(refusal({ type: "number" }) ?? "", /^x: a number\/integer schema must carry x-bhms-unit \(BHMS-DEV-041\)/);
+});
+
+test("the walk is pre-order, names paths, tolerates non-schemas, is iterative and bounded by its limits", () => {
+  const schema = { type: "object", properties: { a: { items: true }, b: 5 }, anyOf: [{ not: {} }], allOf: "nonsense", $defs: [] };
+  assert.deepEqual([...iterSubschemas(schema, "s")].map(([path]) => path), ["s", "s.anyOf[0]", "s.anyOf[0].not", "s.properties.a", "s.properties.a.items", "s.properties.b"]);
+  assert.deepEqual([...iterSubschemas(true, "s")].map(([path]) => path), ["s"]);
+  assert.match(schemaBoundsProblem(chain(50_000)) ?? "", /deeper than 32/, "no recursion: 50 000 levels do not overflow the stack");
+  let seen = 0;
+  assert.throws(() => { for (const _ of iterSubschemas(wide(2_000_000))) { void _; seen++; } }, SchemaBoundsError);
+  assert.ok(seen <= MAX_SUBSCHEMAS, "the walk stops at the count without visiting the rest");
+  const hostile = schemaBoundsProblem({ properties: { ["n".repeat(1_000_000)]: { $ref: "http://example.invalid/" + "r".repeat(1_000_000) } } }) ?? "";
+  assert.ok(hostile.length < 400, "a hostile name or reference is cut in the message");
+});
+
+test("the reference text of a refusal is Python's repr: quotes, escapes and non-printable characters", () => {
+  const problem = (ref: string): string => schemaBoundsProblem({ $ref: ref }) ?? "";
+  assert.match(problem("it's"), /\$ref "it's" points/);
+  assert.match(problem(`a'b"c`), /\$ref 'a\\'b"c' points/);
+  assert.match(problem("tab\there\u0001\u00a0\u200b"), /\$ref 'tab\\there\\x01\\xa0\\u200b' points/);
+  assert.match(problem("back\\slash\n"), /\$ref 'back\\\\slash\\n' points/);
+  assert.ok(problem("\u{1F600}\u{E0001}é").includes("$ref '\u{1F600}\\U000e0001é' points"));
+});
+
+test("the g- operationKey prefix is reserved for gateways (BHMS-OPS-037): refused for an ordinary principal, allowed under --gateway", async () => {
+  const ordinary = await rig();
+  try {
+    await assert.rejects(ordinary.client.actionsInvoke("axis-1", "pulse", { count: 1 }, { operationKey: "g-abc" }), code("INVALID_ARGUMENT", (e) => e.field === "operationKey"));
+    assert.equal((await ordinary.client.actionsInvoke("axis-1", "pulse", { count: 1 }, { operationKey: "abc-g-1", waitMs: 1000 })).operation.state, "completed");
+  } finally { await ordinary.close(); }
+  const gateway = await rig({ policy: gatewayPolicy });
+  try {
+    assert.equal((await gateway.client.actionsInvoke("axis-1", "pulse", { count: 1 }, { operationKey: "g-abc", waitMs: 1000 })).operation.state, "completed");
+  } finally { await gateway.close(); }
+  const refused = spawnSync(process.execPath, [tsDevicePath(), "--gateway", "--principals", "/nonexistent.json"], { encoding: "utf8" });
+  assert.notEqual(refused.status, 0);
+  assert.match(refused.stderr, /--gateway and --principals cannot be combined/);
 });
 
 // ------------------------------------------------------------------------------------------------ policy table and multi-principal server

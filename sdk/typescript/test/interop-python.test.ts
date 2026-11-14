@@ -142,8 +142,8 @@ test("contract v2 parity: extension declaration, counters shape and the descript
     assert.deepEqual(ext(r.client), ext(client), "version, faults and devices are declared identically");
     assert.deepEqual(Object.keys(await counters(r.client)).sort(), Object.keys(await client.request("x-conformance/counters")).sort());
     const steps: Array<[string, Record<string, unknown>?]> = [
-      ["bad_digest"], ["good_digest"], ["hostile_text"], ["none"], ["hostile_schema", { url: "http://127.0.0.1:9/hostile-schema.json" }], ["none"],
-      ["hostile_text"], ["hostile_schema", { url: "http://127.0.0.1:9/x" }], ["bad_digest"], ["good_digest"], ["none"], ["change_description"], ["change_description"], ["none"],
+      ["bad_digest"], ["good_digest"], ["hostile_text"], ["none"], ["hostile_schema", { variant: "remote_ref", url: "http://127.0.0.1:9/hostile-schema.json" }], ["none"],
+      ["hostile_text"], ["hostile_schema", { variant: "deep" }], ["none"], ["hostile_schema", { variant: "wide" }], ["bad_digest"], ["good_digest"], ["none"], ["change_description"], ["change_description"], ["none"],
     ];
     for (const [fault, extra] of steps) {
       await Promise.all([r.client.request("x-conformance/inject", { fault, ...extra }), client.request("x-conformance/inject", { fault, ...extra })]);
@@ -168,6 +168,10 @@ test("schemaBoundsProblem answers exactly like bhms.protocol.schema.schema_bound
     { allOf: [true, 1, "x", null, {}, { $ref: "https://e/x" }] }, { items: [{ $ref: "https://e/x" }] }, { items: { items: { items: { not: { $ref: "ftp://q" } } } } },
     { properties: { a: { patternProperties: { b: { $defs: { c: { dependentSchemas: { d: { oneOf: [{ prefixItems: [{ $ref: "x:y" }] }] } } } } } } } } },
     { description: { $ref: "http://not-a-schema" } }, "just a string", null, [], { properties: [] }, { $ref: 5 },
+    { $dynamicRef: "http://x/y" }, { $dynamicRef: "#anchor" }, { contentSchema: { $ref: "http://x" } }, { dependentSchemas: { a: { $ref: "http://x" } } },
+    { $ref: "tab\there\u0001\u00a0\u200b\u{1F600}\u{E0001}" }, { $ref: "né\u2028" }, { allOf: [true, false, 1, ...Array.from({ length: 9_997 }, () => ({}))] },
+    { allOf: [true, ...Array.from({ length: 9_999 }, () => false)] }, { allOf: [true, ...Array.from({ length: 10_000 }, () => false)] },
+    { properties: { ["n".repeat(300)]: { $ref: "http://x" } } }, { properties: { ["n".repeat(100)]: nest(33) } },
   ];
   const script = "import json,sys\nfrom bhms.protocol.schema import schema_bounds_problem\nprint(json.dumps([schema_bounds_problem(c) for c in json.load(sys.stdin)]))\n";
   const py = spawnSync("python3", ["-c", script], { env: pythonEnv(), input: JSON.stringify(cases), encoding: "utf8" });

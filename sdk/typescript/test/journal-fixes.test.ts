@@ -2,7 +2,7 @@
 // OBS-006 transaction exception, SEC-001 (no credential-less TCP), OPS-033 ordering.
 import assert from "node:assert/strict";
 import { spawn } from "node:child_process";
-import { readdirSync, realpathSync, statSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, mkdirSync, readdirSync, realpathSync, statSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { PassThrough } from "node:stream";
@@ -265,6 +265,72 @@ test("N1: the journal lock is a kernel-held socket: live holder refused, concurr
     await next.server.start();
     await next.server.close(100);
   } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+/** Run `body` with `flock` resolved from a directory of our own (a fake script, or nothing at all), capturing what goes to stderr. */
+async function withFakeFlock<T>(script: string | undefined, body: (dir: string) => Promise<T>): Promise<{ result: T; warnings: string }> {
+  const dir = mkdtempSync(join(tmpdir(), "bhms-ts-fakeflock-"));
+  const bin = join(dir, "bin");
+  mkdirSync(bin);
+  const sh = realpathSync("/bin/sh");
+  if (script !== undefined) { writeFileSync(join(bin, "flock"), `#!${sh}\n${script}\n`); chmodSync(join(bin, "flock"), 0o755); }
+  const savedPath = process.env.PATH;
+  const realWrite = process.stderr.write.bind(process.stderr);
+  let warnings = "";
+  process.env.PATH = bin;
+  (process.stderr as { write: unknown }).write = (chunk: string | Uint8Array): boolean => { warnings += String(chunk); return true; };
+  try { return { result: await body(dir), warnings }; } finally {
+    process.env.PATH = savedPath;
+    (process.stderr as { write: unknown }).write = realWrite;
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+test("N1 flock capability: no flock(1) at all (ENOENT) warns that SEC-003 does not hold, then locks with the socket (second starter refused)", async () => {
+  const { result, warnings } = await withFakeFlock(undefined, async (dir) => {
+    const file = join(dir, "j.jsonl");
+    const a = new JournalStore(file);
+    await a.acquire();
+    const b = new JournalStore(file);
+    const refused = await b.acquire().then(() => "acquired", (e: Error) => e.message);
+    await a.close();
+    return refused;
+  });
+  assert.match(result, /in use by another server/);
+  assert.match(warnings, /warning: flock\(1\) is not installed; locking the journal with a listening socket instead/);
+  assert.match(warnings, /BHMS-SEC-003/);
+});
+
+test("N1 flock capability: a flock that rejects its arguments (no -n, an unknown option) is detected without -E and falls back with a warning", async () => {
+  const { result, warnings } = await withFakeFlock('echo "flock: unrecognized option \'-n\'" >&2\necho "Usage: flock [options] file command" >&2\nexit 1', async (dir) => {
+    const store = new JournalStore(join(dir, "j.jsonl"));
+    await store.acquire();
+    await store.close();
+    return "ok";
+  });
+  assert.equal(result, "ok");
+  assert.match(warnings, /warning: flock\(1\) refused its arguments: flock: unrecognized option/);
+});
+
+test("N1 flock capability: a held lock (silent exit 1, as util-linux and busybox both do) is retried for about two seconds, then reported as in use", async () => {
+  const started = Date.now();
+  const { result, warnings } = await withFakeFlock("exit 1", async (dir) => new JournalStore(join(dir, "j.jsonl")).acquire().then(() => "acquired", (e: Error) => e.message));
+  const took = Date.now() - started;
+  assert.match(result, /in use by another server/);
+  assert.ok(took >= 1900 && took < 5000, `retried for the bounded window (${took} ms)`);
+  assert.equal(warnings, "", "a busy lock is not a capability problem: no fallback, no warning");
+});
+
+test("N1 flock capability: a lock whose previous holder is still tearing down is acquired inside the retry window", async () => {
+  const real = "/usr/bin/flock";
+  if (!existsSync(real)) return;
+  const { result } = await withFakeFlock(`m="$(dirname "$0")/seen"\nif [ ! -e "$m" ]; then : > "$m"; exit 1; fi\nexec ${real} "$@"`, async (dir) => {
+    const store = new JournalStore(join(dir, "j.jsonl"));
+    await store.acquire();
+    await store.close();
+    return "acquired";
+  });
+  assert.equal(result, "acquired");
 });
 
 test("N1: path mode (macOS fallback): a dead holder's socket file is taken over, our own stale file included; a live holder is refused", async () => {

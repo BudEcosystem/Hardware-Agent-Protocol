@@ -120,6 +120,11 @@ export class Executor {
     create: (key: string, origin: "client" | "server") => Promise<OperationRecord>,
   ): Promise<{ rec: OperationRecord; replayed: boolean }> {
     const journal = this.server.journal;
+    if (key !== undefined && key.startsWith("g-") && !principal.gateway) {
+      throw new BhmsError("INVALID_ARGUMENT", "operationKey prefix g- is reserved for gateways", {
+        field: "operationKey", hint: "use a key that does not start with d- or g- (BHMS-OPS-037)",
+      });
+    }
     const lock = key === undefined ? undefined : `${principal.id}\0${key}`;
     if (key !== undefined) {
       for (;;) {

@@ -20,47 +20,27 @@
  * Thread-safety: pure functions.
  */
 import { BhmsError } from "../errors.js";
-import { SchemaValidator, bestIssue, fieldPath, type JsonSchema } from "../schema.js";
+import { SchemaValidator, bestIssue, fieldPath, iterSubschemas, type JsonSchema } from "../schema.js";
 
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === "object" && v !== null && !Array.isArray(v);
 
-const MAX_DEPTH = 32;
-const MAX_NODES = 10_000;
-
-const SUBSCHEMA_LISTS = ["allOf", "anyOf", "oneOf", "prefixItems"];
-const SUBSCHEMA_SINGLE = ["items", "not", "if", "then", "else", "additionalProperties", "contains"];
-const SUBSCHEMA_MAPS = ["properties", "patternProperties", "$defs", "definitions", "dependentSchemas"];
 
 function isNumericType(t: unknown): boolean {
   if (typeof t === "string") return t === "number" || t === "integer";
   return Array.isArray(t) && t.some((x) => x === "number" || x === "integer");
 }
 
-/** Throws RangeError naming the path of the first violation of BHMS-DEV-040/041 or BHMS-SEC-021. */
+/**
+ * Throws RangeError naming the path of the first violation of BHMS-DEV-040/041 or BHMS-SEC-021. The walk is the SDK's one schema
+ * walker, {@link iterSubschemas}; its `SchemaBoundsError` is a `RangeError` too.
+ */
 export function checkUnits(schema: unknown, where: string): void {
-  let count = 0;
-  const walk = (node: unknown, path: string, depth: number): void => {
-    if (++count > MAX_NODES) throw new RangeError(`${where}: more than ${MAX_NODES} subschemas (BHMS-SEC-021)`);
-    if (depth > MAX_DEPTH) throw new RangeError(`${path}: schema nested deeper than ${MAX_DEPTH} (BHMS-SEC-021)`);
-    if (!isObj(node)) return;
-    const ref = node.$ref;
-    if (typeof ref === "string" && !ref.startsWith("#")) throw new RangeError(`${path}: $ref ${JSON.stringify(ref)} points outside the schema (BHMS-DEV-040)`);
-    if (isNumericType(node.type)) {
-      const unit = node["x-bhms-unit"];
-      if (typeof unit !== "string" || unit === "") throw new RangeError(`${path}: a number/integer schema must carry x-bhms-unit (BHMS-DEV-041); use "1" for counts and "%" for percentages`);
-    }
-    for (const k of SUBSCHEMA_SINGLE) if (k in node) walk(node[k], `${path}.${k}`, depth + 1);
-    for (const k of SUBSCHEMA_LISTS) {
-      const list = node[k];
-      if (Array.isArray(list)) list.forEach((c, i) => walk(c, `${path}.${k}[${i}]`, depth + 1));
-    }
-    for (const k of SUBSCHEMA_MAPS) {
-      const members = node[k];
-      if (isObj(members)) for (const [name, c] of Object.entries(members)) walk(c, `${path}.${k}.${name}`, depth + 1);
-    }
-  };
-  walk(schema, where, 0);
+  for (const [path, node] of iterSubschemas(schema, where)) {
+    if (!isObj(node) || !isNumericType(node.type)) continue;
+    const unit = node["x-bhms-unit"];
+    if (typeof unit !== "string" || unit === "") throw new RangeError(`${path}: a number/integer schema must carry x-bhms-unit (BHMS-DEV-041); use "1" for counts and "%" for percentages`);
+  }
 }
 
 function fmt(v: unknown): string {

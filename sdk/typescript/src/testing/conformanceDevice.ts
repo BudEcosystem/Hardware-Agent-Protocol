@@ -76,16 +76,19 @@
  *   - `hostile_text`: `axis-1` serves the injected instruction {@link HOSTILE_TEXT} as the name and description of the device,
  *     as the description of its `pulse` action and as the message of the `fault` action's error (BHMS-SEC-020: a bridge must
  *     quote and cut it, never follow it). `none` removes it.
- *   - `hostile_schema` (`x-conformance/inject {"fault": "hostile_schema", "url": ...}`): `axis-1` serves, with a correct
- *     digest, a `pulse` schema nested 64 subschemas deep (`properties` chains) that ends in a `$ref` to `url` (BHMS-SEC-021:
- *     a consumer must bound its validation and never fetch). `none` removes it.
+ *   - `hostile_schema` (`x-conformance/inject {"fault": "hostile_schema", "variant": V, "url": U}`): `axis-1` serves, with a
+ *     correct digest, a `pulse` input schema that breaks exactly ONE rule of BHMS-SEC-021/BHMS-DEV-040 inside
+ *     `properties.count` (each rule is tested on its own). `variant` is required: `"deep"` nests `properties` 64 subschemas
+ *     deep (limit 32, no `$ref`); `"wide"` gives it an `anyOf` of 20 000 empty schemas (limit 10 000, depth 1, no `$ref`);
+ *     `"remote_ref"` gives it one property whose schema is `{"$ref": U}` (shallow and small; `U` defaults to
+ *     `http://127.0.0.1:9/hostile-schema.json`). Another variant is `INVALID_ARGUMENT` with `field: "variant"`. `none` removes it.
  *   - `x-conformance/counters` also returns `trace`: the `traceparent`/`tracestate` of the last request that carried one
  *     (BHMS-LIF-018; set only when serving through {@link main}).
  *
  * `--principals POLICY.json` serves several principals (a policy document `{"principals": {name: {tokens, scopes, bounds?}}}`
  * over WebSocket with bearer tokens); the device then advertises `capabilities.authority` and SIGHUP applies the file's current
- * content to new admissions. `--gateway` is accepted for command-line parity with the Python device: this server never
- * restricts idempotency-key prefixes and Unix peers are administrators already, so a gateway needs nothing more.
+ * content to new admissions. `--gateway` makes every peer (Unix peers, in practice) a gateway principal that may use `g-`
+ * idempotency keys (BHMS-OPS-037: any other principal is refused them); it cannot be combined with `--principals`.
  *
  * Extension shape (`capabilities.extensions["org.bhms/conformance"]`, version 2): `{"version": "2", "faults": [...],
  * "devices": ["axis-1", "pump-1"]}`. The runner identifies the conformance device only by this declaration.
@@ -98,7 +101,7 @@ import { descriptionDigest } from "../canonical.js";
 import { BhmsError } from "../errors.js";
 import type { DeviceDescription } from "../generated/types.js";
 import { Canceled, DeviceFault, Reading, type ActionContext, type Reconciled } from "../server/context.js";
-import type { PolicyDocument } from "../server/authority.js";
+import { gatewayPolicy, type PolicyDocument } from "../server/authority.js";
 import { DeviceServer, type DeviceServerOptions } from "../server/server.js";
 import { int, range } from "../server/schemas.js";
 import type { Device } from "../server/device.js";
@@ -138,7 +141,8 @@ export class Simulator {
   encoderOffset = 0;
   badDigest = false;
   hostileText = false;
-  hostileSchema: string | undefined;
+  /** What the fault `hostile_schema` merges into `pulse.input.properties.count` (one broken rule), or undefined. */
+  hostileSchema: Record<string, unknown> | undefined;
   trace: Record<string, string> = {};
   readonly armed = new Set<string>();
   log: Array<[string, string]> = [];
@@ -248,7 +252,13 @@ export function build(options: ConformanceOptions = {}): { server: DeviceServer;
           sim.hostileText = true;
           axisDevice.name = HOSTILE_TEXT.slice(0, 80);
         } else {
-          sim.hostileSchema = String(params.url || "http://127.0.0.1:9/hostile-schema.json");
+          const variant = params.variant;
+          if (typeof variant !== "string" || !Object.hasOwn(HOSTILE_SCHEMAS, variant)) {
+            throw new BhmsError("INVALID_ARGUMENT", `unknown hostile_schema variant ${JSON.stringify(variant ?? null)}`, {
+              field: "variant", bound: Object.keys(HOSTILE_SCHEMAS), hint: `use one of ${Object.keys(HOSTILE_SCHEMAS).join(", ")}`,
+            });
+          }
+          sim.hostileSchema = HOSTILE_SCHEMAS[variant](String(params.url || "http://127.0.0.1:9/hostile-schema.json"));
         }
         axisDevice.invalidate();
       } else if (fault === "bad_digest" || fault === "good_digest") {
@@ -277,6 +287,17 @@ export function build(options: ConformanceOptions = {}): { server: DeviceServer;
 
 const COUNT_MAX = 2_000_000_000;
 
+/** The `hostile_schema` variants: what each merges into `pulse.input.properties.count`; each breaks exactly one rule (as the Python device's). */
+const HOSTILE_SCHEMAS: Record<string, (url: string) => Record<string, unknown>> = {
+  deep: () => { // 64 subschema steps (the limit is 32), no $ref anywhere
+    let node: Record<string, unknown> = { type: "string" };
+    for (let i = 0; i < 63; i++) node = { type: "object", properties: { x: node } };
+    return { properties: { x: node } };
+  },
+  wide: () => ({ anyOf: Array.from({ length: 20_000 }, () => ({})) }), // 20 000 schemas (the limit is 10 000), depth 1, no $ref
+  remote_ref: (url) => ({ properties: { x: { $ref: url } } }), // shallow and small; the validator must never fetch it
+};
+
 /** What fault `hostile_text` / `hostile_schema` / `bad_digest` make the axis serve (BHMS-SEC-020/021/022). */
 function hostileDescription(sim: Simulator, plain: DeviceDescription): DeviceDescription {
   if (!sim.hostileText && !sim.hostileSchema && !sim.badDigest) return plain;
@@ -286,11 +307,7 @@ function hostileDescription(sim: Simulator, plain: DeviceDescription): DeviceDes
       found.description = HOSTILE_TEXT;
       found.actions.pulse.description = HOSTILE_TEXT;
     }
-    if (sim.hostileSchema) { // 64 levels deep (the limit is 32) ending in a remote $ref the validator must never fetch
-      let node: Record<string, unknown> = { $ref: sim.hostileSchema };
-      for (let i = 0; i < 64; i++) node = { type: "object", properties: { x: node } };
-      found.actions.pulse.input.properties.count.properties = { x: node };
-    }
+    if (sim.hostileSchema) Object.assign(found.actions.pulse.input.properties.count, sim.hostileSchema);
     found = { ...found, digest: descriptionDigest(found) };
   }
   return (sim.badDigest ? { ...found, digest: "sha256:" + "0".repeat(64) } : found) as unknown as DeviceDescription;
@@ -458,10 +475,11 @@ export async function main(argv: string[]): Promise<void> {
   let stateDir: string | undefined;
   let memory = false;
   let principals: string | undefined;
+  let gateway = false;
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "--memory") memory = true;
-    else if (a === "--gateway") continue;
+    else if (a === "--gateway") gateway = true;
     else if (a === "--state-dir") stateDir = argv[++i];
     else if (a.startsWith("--state-dir=")) stateDir = a.slice("--state-dir=".length);
     else if (a === "--principals") principals = argv[++i];
@@ -472,8 +490,9 @@ export async function main(argv: string[]): Promise<void> {
     } else if (!a.startsWith("-") && url === undefined) url = a;
     else throw new RangeError(`unexpected argument ${a}`);
   }
+  if (gateway && principals) throw new RangeError("--gateway and --principals cannot be combined: a policy document names its principals itself");
   const readPolicy = (): PolicyDocument => JSON.parse(readFileSync(principals as string, "utf8")) as PolicyDocument;
-  const { server, sim } = build({ stateDir, memory, ...(principals ? { policyDocument: readPolicy() } : {}) });
+  const { server, sim } = build({ stateDir, memory, ...(principals ? { policyDocument: readPolicy() } : {}), ...(gateway ? { policy: gatewayPolicy } : {}) });
   traceRequests(server, sim);
   if (principals) {
     // SIGHUP applies the file's current content to new admissions; a policy that cannot be applied keeps the current one (BHMS-SEC-011)

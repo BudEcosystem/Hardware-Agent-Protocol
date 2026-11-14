@@ -78,7 +78,11 @@ test("requestDigest follows the §6.4 intent formula and equals the Python refer
   const inv = JSON.parse(readFileSync(join(EXAMPLES_DIR, "actions.invoke.request.json"), "utf8")) as { message: { params: Record<string, unknown> } };
   // `bhms.runtime.operations.intent_digest("actions/invoke", params)` over the same params. The `requestDigest` printed in
   // actions.invoke.response.json (sha256:f19b...) predates the last edit of the request example and is stale (see the report).
-  assert.equal(intentDigest(inv.message.params), "sha256:648f50c4685066d212a8f56f37dc0c30c75be69491c4a77e1cc039b9805d4093");
+  const pinned = "sha256:648f50c4685066d212a8f56f37dc0c30c75be69491c4a77e1cc039b9805d4093";
+  const actual = intentDigest(inv.message.params);
+  assert.equal(actual, pinned, `the intent digest of spec/bhms/examples/actions.invoke.request.json changed: the example was regenerated or edited. Recompute the reference value with
+    python3 -c "import json; from bhms.runtime.operations import intent_digest; print(intent_digest('actions/invoke', json.load(open('<examples>/actions.invoke.request.json'))['message']['params']))"
+  (PYTHONPATH=sdk/python/src), confirm it equals ${actual}, and only then update \`pinned\` in this test.`);
 });
 
 test("generated types are fresh (scripts/gen-types.mjs --check)", () => {

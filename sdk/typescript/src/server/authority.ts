@@ -31,7 +31,10 @@ export class Principal {
   readonly scopes: readonly string[];
   readonly id: string;
   readonly bounds: PolicyBounds;
-  constructor(id: string, scopes: readonly string[], bounds: PolicyBounds = {}) {
+  /** A gateway may use the `g-` idempotency-key prefix, which is reserved for gateways (BHMS-OPS-037). */
+  readonly gateway: boolean;
+  constructor(id: string, scopes: readonly string[], bounds: PolicyBounds = {}, gateway = false) {
+    this.gateway = gateway;
     this.id = id;
     this.scopes = [...new Set(scopes)];
     this.bounds = bounds;
@@ -86,6 +89,9 @@ export type Policy = (peer: Peer) => Principal;
 
 /** The default policy: the transport's scopes, or `read` only. */
 export const defaultPolicy: Policy = (peer) => new Principal(peer.principal, peer.scopes ?? ["read"]);
+
+/** The policy of a server that is an upstream of a gateway (`--gateway`): every peer is a gateway principal (may use `g-` keys). */
+export const gatewayPolicy: Policy = (peer) => new Principal(peer.principal, peer.scopes ?? ["read"], {}, true);
 
 /** The stored form of a bearer token (BHMS-SEC-002): `"sha256:" + hex(sha256(token))`. */
 export function tokenDigest(token: string): string {

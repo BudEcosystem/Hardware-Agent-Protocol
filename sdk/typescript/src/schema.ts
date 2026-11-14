@@ -308,51 +308,115 @@ export function validateDef(name: string, value: unknown): void {
   });
 }
 
-const SCHEMA_CHILD = ["items", "additionalProperties", "not", "if", "then", "else", "contains", "propertyNames", "unevaluatedItems", "unevaluatedProperties"];
-const SCHEMA_MAP = ["properties", "patternProperties", "$defs", "definitions", "dependentSchemas"];
-const SCHEMA_LIST = ["allOf", "anyOf", "oneOf", "prefixItems"];
+/** BHMS-SEC-021: the deepest subschema is at most this many subschema steps below the root (the root is depth 0). */
+export const MAX_SCHEMA_DEPTH = 32;
+/** BHMS-SEC-021: at most this many schemas, the root and boolean schemas included. */
+export const MAX_SUBSCHEMAS = 10_000;
+const SUBSCHEMA_SINGLE = ["items", "not", "if", "then", "else", "additionalProperties", "contains", "propertyNames", "unevaluatedItems", "unevaluatedProperties", "contentSchema"];
+const SUBSCHEMA_LISTS = ["allOf", "anyOf", "oneOf", "prefixItems"];
+const SUBSCHEMA_MAPS = ["properties", "patternProperties", "$defs", "definitions", "dependentSchemas"];
+const REFERENCES = ["$ref", "$dynamicRef"];
 
 const isPlainObject = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
 
-/** Python `repr` of a short string, so the wording matches the reference implementation byte for byte. */
+/** Python's `str.isprintable` for one code point (Unicode "Other" and "Separator" categories except the space are not printable). */
+const NOT_PRINTABLE = /^[\p{C}\p{Z}]$/u;
+
+/** Python `repr` of a short string, so the wording matches the reference implementation byte for byte (including `\xNN` / `\uNNNN` escapes). */
 function pyRepr(text: string): string {
   const quote = text.includes("'") && !text.includes('"') ? '"' : "'";
-  const body = text.replace(/\\/g, "\\\\").replace(/\n/g, "\\n").replace(/\r/g, "\\r").replace(/\t/g, "\\t");
-  return quote + (quote === "'" ? body.replace(/'/g, "\\'") : body) + quote;
+  let out = quote;
+  for (const ch of text) {
+    const cp = ch.codePointAt(0) as number;
+    if (ch === quote || ch === "\\") out += "\\" + ch;
+    else if (ch === "\n") out += "\\n";
+    else if (ch === "\r") out += "\\r";
+    else if (ch === "\t") out += "\\t";
+    else if (ch !== " " && NOT_PRINTABLE.test(ch)) {
+      out += cp < 0x100 ? "\\x" + cp.toString(16).padStart(2, "0") : cp < 0x10000 ? "\\u" + cp.toString(16).padStart(4, "0") : "\\U" + cp.toString(16).padStart(8, "0");
+    } else out += ch;
+  }
+  return out + quote;
+}
+
+/** An embedded schema exceeds the BHMS-SEC-021 bounds or refers outside itself (BHMS-DEV-040); the message names the path. */
+export class SchemaBoundsError extends RangeError {
+  constructor(message: string) {
+    super(message);
+    this.name = "SchemaBoundsError";
+  }
+}
+
+/** A path for a message: property names come from the (possibly hostile) schema, so it is cut like the reference does. */
+function shortPath(path: string): string {
+  if (path.length <= 160) return path;
+  const points = [...path];
+  return points.length <= 160 ? path : `${points.slice(0, 120).join("")}...${points.slice(-37).join("")}`;
+}
+
+function* childrenOf(node: Record<string, unknown>, path: string): Generator<[string, unknown]> {
+  for (const key of SUBSCHEMA_SINGLE) if (key in node) yield [`${path}.${key}`, node[key]];
+  for (const key of SUBSCHEMA_LISTS) {
+    const members = node[key];
+    if (Array.isArray(members)) for (const [index, child] of members.entries()) yield [`${path}.${key}[${index}]`, child];
+  }
+  for (const key of SUBSCHEMA_MAPS) {
+    const members = node[key];
+    if (isPlainObject(members)) for (const [name, child] of Object.entries(members)) yield [`${path}.${key}.${name}`, child];
+  }
 }
 
 /**
- * Why an embedded schema must not be validated or served, or `undefined` (BHMS-SEC-021): nesting deeper than `maxDepth`
- * subschemas (the root is depth 1), more than `maxNodes` subschemas (objects only), or a `$ref` that leaves the document
- * (a validator must never fetch). Iterative and linear in the number of subschemas, so the check itself is bounded.
+ * THE schema walker of this SDK (the same algorithm as `bhms.protocol.schema.iter_subschemas`): yields `[path, subschema]` for
+ * the root of an embedded schema and every subschema in document order (pre-order), enforcing BHMS-SEC-021 and BHMS-DEV-040 on
+ * the way (spec 13.3). The device server's description checks and {@link schemaBoundsProblem} both use it, so no second copy
+ * of the rules can disagree.
  *
- * Identical to the reference `bhms.protocol.schema.schema_bounds_problem`: same keyword sets, same depth and count
- * semantics at the exact boundaries (32 levels pass, 33 fail; 10 000 subschemas pass, 10 001 fail), same wording.
+ * - depth: the root is depth 0, every step through a subschema keyword adds one; deeper than `maxDepth` (32) throws;
+ * - count: the root and every subschema position count (`true`/`false` are schemas); more than `maxNodes` (10 000) throws;
+ * - references: a `$ref`/`$dynamicRef` that is not a fragment of the schema itself (`#...`) throws; nothing is ever fetched.
  *
- * Thread-safety: pure.
+ * Keywords: the 2020-12 applicator, unevaluated and content vocabularies plus `definitions`. A value that is not a schema
+ * (a number where a schema belongs) is yielded as it is and has no children. Iterative, and children are counted before they
+ * are queued, so time and memory are bounded by the limits whatever the input. Members are visited in `Object.entries` order
+ * (integer-like member names first, as `JSON.parse` itself orders them).
+ *
+ * Thread-safety: pure. Example: `for (const [path, node] of iterSubschemas(action.input, "actions.move.input")) { ... }`
  */
-export function schemaBoundsProblem(schema: unknown, options: { maxDepth?: number; maxNodes?: number } = {}): string | undefined {
-  const maxDepth = options.maxDepth ?? 32;
-  const maxNodes = options.maxNodes ?? 10_000;
-  const stack: Array<[unknown, number]> = [[schema, 1]];
-  let nodes = 0;
+export function* iterSubschemas(schema: unknown, where = "schema", limits: { maxDepth?: number; maxNodes?: number } = {}): Generator<[string, unknown]> {
+  const maxDepth = limits.maxDepth ?? MAX_SCHEMA_DEPTH;
+  const maxNodes = limits.maxNodes ?? MAX_SUBSCHEMAS;
+  let count = 1;
+  const stack: Array<[string, unknown, number]> = [[where, schema, 0]];
   for (let top = stack.pop(); top !== undefined; top = stack.pop()) {
-    const [node, depth] = top;
+    const [path, node, depth] = top;
+    if (depth > maxDepth) throw new SchemaBoundsError(`${shortPath(path)}: schema nested deeper than ${maxDepth} (BHMS-SEC-021)`);
+    if (isPlainObject(node)) {
+      for (const keyword of REFERENCES) {
+        const ref = node[keyword];
+        if (typeof ref === "string" && !ref.startsWith("#")) {
+          throw new SchemaBoundsError(`${shortPath(path)}: ${keyword} ${pyRepr([...ref].slice(0, 80).join(""))} points outside the schema; schemas are never fetched (BHMS-DEV-040)`);
+        }
+      }
+    }
+    yield [path, node];
     if (!isPlainObject(node)) continue;
-    nodes += 1;
-    if (depth > maxDepth) return `it nests subschemas deeper than ${maxDepth} levels`;
-    if (nodes > maxNodes) return `it has more than ${maxNodes} subschemas`;
-    const ref = node.$ref;
-    if (typeof ref === "string" && !ref.startsWith("#")) return `it has a $ref (${pyRepr([...ref].slice(0, 80).join(""))}) that leaves the document; schemas are never fetched`;
-    for (const key of SCHEMA_CHILD) if (key in node) stack.push([node[key], depth + 1]);
-    for (const key of SCHEMA_MAP) {
-      const members = node[key];
-      if (isPlainObject(members)) for (const child of Object.values(members)) stack.push([child, depth + 1]);
+    const children: Array<[string, unknown, number]> = [];
+    for (const [childPath, child] of childrenOf(node, path)) {
+      if (++count > maxNodes) throw new SchemaBoundsError(`${where}: more than ${maxNodes} subschemas (BHMS-SEC-021)`);
+      children.push([childPath, child, depth + 1]);
     }
-    for (const key of SCHEMA_LIST) {
-      const members = node[key];
-      if (Array.isArray(members)) for (const child of members) stack.push([child, depth + 1]);
-    }
+    for (let k = children.length - 1; k >= 0; k--) stack.push(children[k]);
+  }
+}
+
+/** Why an embedded schema must not be validated or served (the {@link iterSubschemas} refusal), or `undefined`. Same wording as `schema_bounds_problem`. */
+export function schemaBoundsProblem(schema: unknown, where = "schema", limits: { maxDepth?: number; maxNodes?: number } = {}): string | undefined {
+  try {
+    for (const _ of iterSubschemas(schema, where, limits)) void _;
+  } catch (e) {
+    if (e instanceof SchemaBoundsError) return e.message;
+    throw e;
   }
   return undefined;
 }
