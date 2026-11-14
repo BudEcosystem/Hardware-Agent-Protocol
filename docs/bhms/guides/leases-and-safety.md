@@ -328,7 +328,7 @@ work is still cancelled and its leases revoked. From the command line: `bhms sto
 ## Verified effects
 
 `effect: verified` needs an independent measurement. This oven has none (its setpoint is `commanded`, and `heat_to`
-declares `completion_evidence="reported"`), so a request that requires a verified effect is refused before anything
+has `completion_evidence` at its default, `reported`), so a request that requires a verified effect is refused before anything
 heats:
 
 ```python run
@@ -375,3 +375,7 @@ verified_by=["temperature"]`, and confirm in the handler with `await ctx.verify(
 - `requires_lease=True` and `on_lease_loss` for hazardous actions, and a policy whose principals can stop what they can
   start ([deploying a gateway](gateway.md)).
 - A liveness probe (`@device.liveness(interval_s=5)`) so a dead link shows as `offline`.
+- Totals enforced in the device: a bound limits one call, and an agent will split a refused amount into allowed calls.
+  Keep running totals (dose, reagent, travel per run) in the device or its driver and refuse before acting; gateway
+  policy has no cumulative budgets in this version (an open gap, planned for spec v0.2). See
+  [connecting agents](connecting-agents.md#a-bound-limits-one-call-not-a-total).

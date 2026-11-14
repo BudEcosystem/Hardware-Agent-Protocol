@@ -321,8 +321,8 @@ instrument's journal; its tests are [`simlab/tests/test_scpi_adapter.py`](../../
 
 SimLab's [`adapters/modbus.py`](../../../simlab/src/simlab/adapters/modbus.py) turns a register profile into a device
 with pymodbus 3.8.6 (fault-tested in [`simlab/tests/test_modbus_adapter.py`](../../../simlab/tests/test_modbus_adapter.py),
-against a pymodbus thermal block). The mapping, shown here as fragments of that adapter (not run by the docs test: it
-needs pymodbus and the SimLab world):
+against a pymodbus thermal block; it needs pymodbus and the SimLab world, so it is not run by the docs test). The
+mapping:
 
 | Modbus | BHMS |
 |---|---|
@@ -333,39 +333,13 @@ needs pymodbus and the SimLab world):
 | Exception 4 and above, a timeout or a dropped connection after the write | unknown (the unit may have acted) |
 | Reconcile | read the register back: equal to the target is `completed` (`unverified`), anything else stays unknown |
 
-```python no-run
-@dataclass(frozen=True)
-class Register:
-    """One Modbus register (or a scaled value in one): ``value = (raw - offset) * scale`` in ``unit``."""
-    name: str
-    address: int
-    table: Literal["holding", "input"]
-    unit: str | None
-    description: str
-    scale: float = 1.0
-    evidence: str = "reported"
-    minimum: float | None = None
-    maximum: float | None = None
-    writable: bool = False
-    invalid_raw: int | None = None  # a sentinel raw value meaning "sensor open / no reading"
-
-ILLEGAL_CODES = {1, 2, 3}  # illegal function, address, value: the request was rejected, not executed
-
-# in the write path, after write_register(...):
-if response.isError():
-    code = getattr(response, "exception_code", None)
-    if code in ILLEGAL_CODES:
-        raise Refused(f"exception code {code} on write of {register.name}")          # -> DeviceFault, effect none
-    raise RuntimeError(f"Modbus exception code {code} on write of {register.name}: the unit may have acted")  # unknown
-
-@dev.reconcile
-async def reconcile(op):
-    back = _decode(register, await link.read(register))
-    if abs(back - op["arguments"]["value"]) <= register.scale:
-        return Reconciled("completed", evidence=f"read back {register.name} = {back}", result={"value": back},
-                          effect="unverified")
-    return None  # anything else: stay unknown
-```
+The code is in [`simlab/src/simlab/adapters/modbus.py`](../../../simlab/src/simlab/adapters/modbus.py) (not copied
+here, so it cannot drift): the `Register` dataclass (address, table, scale, unit, evidence, bounds, `invalid_raw`
+sentinel), `ILLEGAL_CODES = {1, 2, 3}` and `ModbusLink.write` (an exception response with one of those codes raises
+`Refused`, which `refusal_fault` turns into `DeviceFault(..., effect="none")`; any other code, a timeout or a lost
+connection after the write is left to become `unknown`), `_decode` (scale, sign, sentinel), and the `reconcile` hook
+inside `build_server` (read the register back; equal within one scale step is `Reconciled("completed", ...,
+effect="unverified")`, anything else returns `None`).
 
 ## OPC UA
 

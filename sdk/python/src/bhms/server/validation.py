@@ -50,6 +50,14 @@ def _is_numeric_type(kind: Any) -> bool:
     return False
 
 
+class UnitSpellingError(ValueError):
+    """A unit written in a common non-UCUM spelling (``rpm``); ``code`` is the registry code to write instead."""
+
+    def __init__(self, message: str, code: str) -> None:
+        super().__init__(message)
+        self.code = code
+
+
 def check_units(schema: Any, where: str) -> None:
     """Raise ``ValueError`` naming the path of the first numeric schema without ``x-bhms-unit`` (BHMS-DEV-041).
 
@@ -63,8 +71,8 @@ def check_units(schema: Any, where: str) -> None:
                 raise ValueError(f"{path}: a number/integer schema must carry x-bhms-unit (BHMS-DEV-041); use "
                                  '"1" for counts and "%" for percentages')
             if unit in ALIASES:  # a common spelling that is not a UCUM code: refused, never guessed
-                raise ValueError(f"{path}: x-bhms-unit {unit!r} is not a UCUM code (BHMS-DEV-041); write "
-                                 f"{ALIASES[unit]!r}")
+                raise UnitSpellingError(f"{path}: x-bhms-unit {unit!r} is not a UCUM code (BHMS-DEV-041); write "
+                                        f"{ALIASES[unit]!r}", ALIASES[unit])
 
 
 def _fmt(value: Any) -> str:

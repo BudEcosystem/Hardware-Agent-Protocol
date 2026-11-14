@@ -262,10 +262,83 @@ async def main():
 asyncio.run(main())
 ```
 
-A bound limits one call, not a total. In a live run of this guide, asked to "dispense 600 uL; if that is not possible,
-dispense nothing", gpt-5.4-mini read the 500 uL maximum and dispensed 500 uL and then 100 uL. Each call was within
-its bounds and honestly reported; the total was not what the task allowed. If a total matters (a reagent budget, a
-dose), enforce it in the device or the gateway policy, or give the agent a reviewed program instead of the raw action.
+### A bound limits one call, not a total
+
+In a live run of an earlier version of this guide, asked to "dispense 600 uL; if that is not possible, dispense
+nothing", gpt-5.4-mini read the pump's 500 uL maximum and dispensed 500 uL and then 100 uL. Each call was within its
+bounds and honestly reported; the total was not what the task allowed.
+
+What controls a total today:
+
+- **The device or its driver.** It is the only place that sees every call, whoever makes it and through whichever
+  gateway. Keep the running total in the device and refuse, before acting, a call that would exceed it. This is the
+  control to rely on.
+- **Not the gateway policy.** `bounds` narrow each call; there is no cumulative limit or per-principal budget in this
+  version. Budgets are an open gap of the specification, planned for spec v0.2.
+- **A program, only on a device server.** A registered program (a reviewed sequence with fixed bounds) limits what one
+  run does, but only when the agent holds `programs:run` and no `invoke:` scope on the raw action, and only on a device
+  server: a gateway does not offer `programs/*` in this version ([writing programs](programs.md)).
+
+A dispenser that enforces a batch total in its handler. The refusal is a `DeviceFault` with the code that names the
+cause (`OUT_OF_RANGE`), proof that nothing was dispensed, and `effect="none"`, so the operation ends `failed` with
+`mayHaveActed: false`:
+
+```python run
+import asyncio
+
+from bhms import BhmsError, DeviceFault, DeviceServer, Range
+from bhms.testing import connect
+
+BATCH_LIMIT_UL = 500.0
+
+
+def build() -> DeviceServer:
+    srv = DeviceServer("dosing-bench", store=None)
+    pump = srv.device("pump-1", name="Syringe pump", resources=["pump-1/plunger"])
+    pump.report_alive()
+    batch = {"uL": 0.0}
+
+    @pump.property(unit="uL", evidence="reported")
+    def batch_total() -> float:
+        """Volume dispensed since the batch was opened."""
+        return batch["uL"]
+
+    @pump.action(effect="irreversible", idempotency="relative", requires_lease=True, max_duration_ms=10_000)
+    async def dispense(ctx, volume: Range(1, 500, unit="uL", step=0.1)) -> {"dispensed": "uL", "batch_total": "uL"}:  # noqa: F821
+        """Dispense a volume. The batch may total at most 500 uL; a call that would exceed it is refused, nothing moves."""
+        if batch["uL"] + volume > BATCH_LIMIT_UL:
+            raise DeviceFault(f"{volume} uL would bring the batch to {batch['uL'] + volume} uL, above {BATCH_LIMIT_UL} uL",
+                              code="OUT_OF_RANGE", effect="none",
+                              proof=f"refused before the plunger moved; batch total {batch['uL']} uL",
+                              hint="open a new batch (an operator action) or dispense less")
+        batch["uL"] += volume  # the real driver moves the plunger here
+        return {"dispensed": volume, "batch_total": batch["uL"]}
+
+    return srv
+
+
+async def main():
+    async with connect(build()) as client:
+        lease = (await client.leases_acquire(["pump-1/plunger"], ttl_ms=30_000)).lease
+        for key, volume in (("dose-1", 500), ("dose-2", 100)):
+            op = (await client.actions_invoke("pump-1", "dispense", {"volume": volume}, lease_id=lease.lease_id,
+                                              operation_key=key, wait_ms=5000)).operation
+            error = (op.error.bhms_code, op.error.may_have_acted) if op.error else None
+            print(volume, op.state, op.effect, error)
+        print("total", (await client.properties_read("pump-1", "batch_total")).observation.value)
+
+
+asyncio.run(main())
+```
+
+```text output
+500 completed unverified None
+100 failed none ('OUT_OF_RANGE', False)
+total 500.0
+```
+
+In a real driver the total must survive a restart (keep it with the device, or in a file next to the server's state),
+and opening a new batch is an operator action, not one the agent can call.
 
 `AgentRun` records every step (`tool`, `arguments`, `summary`, `is_error`), the tokens spent and why the loop stopped
 (`final`, `budget`, `max_steps`). Use it to audit what an agent did; the server's journal has the authoritative record.

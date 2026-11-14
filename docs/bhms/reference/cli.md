@@ -283,7 +283,9 @@ Run a gateway: aggregates device servers behind one endpoint with policy, leases
 `bhms gateway check-policy <config>` does not serve: it starts the configured upstreams, reads their devices and
 lists, per principal and scope, which devices and actions each scope matches, with a warning for every scope that
 matches nothing (for example `invoke:bench/*`, which must be `invoke:bench/*/*` behind a gateway) and for a
-principal that may act on a device it may not stop.
+principal that may act on a device it may not stop. It waits up to the file's connect_wait_ms (10 s by default)
+for each upstream to serve a device, so an upstream that is down or serves no devices makes the check take that
+long, and its devices are then missing from the report.
 
 | Argument | Required | Help |
 |---|---|---|
@@ -346,7 +348,7 @@ Run the BHMS conformance suite against a server, gateway or agent bridge.
 | `--upstream` | `TEXT` (repeatable) |  |  | NAMESPACE=TARGET: a direct connection to the conformance device behind a gateway namespace (fault injection); repeatable. |
 | `--function-tools` | `PATH` |  |  | Agent profile: JSON list of the OpenAI function-tool definitions of the bridge's adapter (BHMS-AGT-050). |
 | `--physical-ok` | flag |  |  | With --physical: allow checks that move or change the devices. |
-| `--device-command` | `TEXT` |  |  | With a conformance-device fixture: launch this command (split like a shell line) instead of this SDK's own device, e.g. "node dist/src/testing/conformanceDevice.js". It must accept [URL] [--state-dir DIR] [--memory] [--principals FILE]. |
+| `--device-command` | `TEXT` |  |  | With a conformance-device fixture: launch this command (split like a shell line) instead of this SDK's own device, e.g. "node dist/src/testing/conformanceDevice.js". It must accept [URL] [--state-dir DIR] [--memory] [--principals FILE]. Relative paths in it are resolved against the directory you run bhms conformance from. |
 | `--verbose`, `-v` | flag |  |  | Also list passed checks' requirements and skipped rows. |
 | `--coverage` | flag |  |  | Print the requirement coverage table and exit. |
 

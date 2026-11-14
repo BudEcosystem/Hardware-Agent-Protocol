@@ -4,8 +4,8 @@ This page takes you from nothing to a device that an AI agent can operate safely
 inspect and test it, connect Claude (or any MCP client) and an OpenAI model, and put a gateway with a policy in front.
 
 Every command and program on this page is executed by `sdk/python/tests/test_docs_examples.py`, in this order, so what
-you see is what it prints. Run the steps in one empty directory. The device is simulated; the last section says what to
-change for real hardware.
+you see is what it prints. Run the steps in one empty directory. The device is simulated; the section "For real hardware" at the end
+says what to change.
 
 ## 1. Install
 
@@ -473,6 +473,26 @@ hint: the server refused the credential: pass --token or set BHMS_TOKEN to a tok
 
 An agent connects through the gateway with its own token: `bhms mcp ws://127.0.0.1:8765` with `BHMS_TOKEN` set in the
 MCP server's environment (in Claude Desktop: an `"env"` member next to `"args"`).
+
+## For real hardware
+
+The server above is the shape of a real one; what changes when `z` becomes a motor:
+
+- **The driver.** Replace the dictionary with your driver's calls in `move_to`, `position` and `halt`. Raise
+  `DeviceLost` (from `bhms.server`) when the link drops mid-command, so the outcome becomes `unknown` instead of a guess,
+  and add a `@stage.reconcile` hook that asks the controller what happened.
+- **Evidence.** `evidence="simulated"` becomes `measured` only with an independent sensor (an encoder); a driver's echo
+  is `reported`. With an encoder, declare `completion_evidence="measured", verified_by=["position"]` and confirm in the
+  handler with `await ctx.verify("position", ...)`.
+- **Limits in the device.** Keep `Range(0, 200, ...)` equal to the real travel, and enforce limits again in the
+  controller; a policy can only narrow them. Totals (a dose, a reagent budget) must be enforced in the device too.
+- **Liveness and stop.** Declare `@stage.liveness(interval_s=5)` so a dead link reads `offline`, make `halt` stop the
+  motor and confirm it, and keep a hardware emergency stop that does not depend on software.
+- **Exclusive access.** Declare `requires_lease=True` for anything hazardous, and put the server behind a gateway with
+  per-principal scopes and bounds, on a loopback listener behind TLS.
+
+The [leases and safety](guides/leases-and-safety.md) guide ends with the full checklist; [wrapping a real instrument](guides/wrap-an-instrument.md)
+does all of this for a SCPI balance.
 
 ## Next
 

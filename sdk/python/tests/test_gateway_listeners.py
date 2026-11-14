@@ -177,7 +177,7 @@ def test_a_listener_that_cannot_open_is_a_message_and_exit_2_not_a_traceback(tmp
     done = subprocess.run([sys.executable, "-m", "bhms.gateway", str(deep / "gw.toml")], capture_output=True, text=True,
                           timeout=60)
     assert done.returncode == 2, done.stderr
-    assert "Traceback" not in done.stderr and "cannot serve the configured listeners" in done.stderr
+    assert "Traceback" not in done.stderr and "AF_UNIX path too long" in done.stderr
     assert "shorter path" in done.stderr
 
 

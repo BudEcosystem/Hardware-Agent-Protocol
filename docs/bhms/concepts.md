@@ -177,8 +177,10 @@ matches ([deploying a gateway](guides/gateway.md)).
 ## The compact binding (microcontrollers)
 
 A microcontroller cannot parse JSON. **BHMS-Compact** is a fixed-layout binary protocol between a gateway and the board,
-carried in HDLC-style `HM` frames over UART or USB CDC ([spec 11](../../spec/bhms/11-compact-binding.md)). A typical
-invoke is 35 to 37 bytes on the wire.
+carried in HDLC-style `HM` frames over UART or USB CDC ([spec 11](../../spec/bhms/11-compact-binding.md)). The
+specification's typical INVOKE (at most 8 argument bytes) is 42 bytes on the wire before byte-stuffing and stays within
+64 bytes ([spec 11.3](../../spec/bhms/11-compact-binding.md#113-size-budget)); the measured requests of the reference
+endpoint were 35 to 37 bytes ([performance](performance.md), budget B5).
 
 - The board reports, in its `HELLO`, the first 8 bytes of its description's digest. The gateway holds the full
   description as a **sidecar** JSON file and serves the board only when the digests match.

@@ -70,3 +70,16 @@ def native(tmp_path_factory):
         return build_native(tmp_path_factory.mktemp("sdk-c-build"))
     except NativeUnavailable as exc:
         pytest.skip(str(exc))
+
+
+def pytest_terminal_summary(terminalreporter):
+    """List the documentation blocks a docs run did not execute (``slow``, or ``requires=openai`` without a key)."""
+    lines = []
+    for report in terminalreporter.stats.get("passed", []):
+        for name, value in getattr(report, "user_properties", []):
+            if name == "docs_blocks_not_run" and value:
+                lines += [f"{report.nodeid}: {item}" for item in value]
+    if lines:
+        terminalreporter.write_sep("-", f"documentation blocks not run: {len(lines)}")
+        for line in lines:
+            terminalreporter.write_line(line)

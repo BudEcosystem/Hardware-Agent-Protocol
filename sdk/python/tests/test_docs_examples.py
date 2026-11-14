@@ -53,7 +53,8 @@ LINKED = ("sdk", "spec", "hardware", "simlab", "protocol")  # protocol/serial: t
 SHELLS = {"sh", "bash", "console", "shell"}
 DEFAULT_TIMEOUT_S = 120.0
 MARKERS = {"run", "no-run", "output", "background", "slow"}
-_FENCE = re.compile(r"^(?P<fence>`{3,}|~{3,})(?P<lang>[\w+-]*)[ \t]*(?P<info>.*)$")
+_FENCE = re.compile(r"^(?P<indent>[ \t]*)(?P<fence>`{3,}|~{3,})(?P<lang>[\w+-]*)[ \t]*(?P<info>.*)$")
+"""A fenced block, also indented (inside a list item), so that no block escapes the marker check."""
 _PORT = re.compile(r"127\.0\.0\.1:(\d{4,5})\b")
 
 
@@ -96,8 +97,13 @@ def parse(page: Path) -> list[Block]:
                 flags.add(token)
         body: list[str] = []
         i += 1
-        while i < len(lines) and not (lines[i].startswith(fence[0] * len(fence)) and not lines[i].strip(fence[0]).strip()):
-            body.append(lines[i])
+        indent = len(match.group("indent"))
+        while i < len(lines):
+            closing = lines[i].strip()
+            if closing.startswith(fence[0] * len(fence)) and not closing.strip(fence[0]):
+                break
+            line = lines[i]
+            body.append(line[indent:] if line[:indent].strip() == "" else line.lstrip())  # drop the fence's indent
             i += 1
         i += 1
         blocks.append(Block(page, start + 1, match.group("lang"), flags, options, "\n".join(body) + "\n"))
@@ -402,15 +408,17 @@ SLOW = [p for p in RUNNABLE if any("slow" in b.flags for b in parse(p))]
 
 @pytest.mark.timeout(900)  # a page is many commands, each bounded by its own block timeout
 @pytest.mark.parametrize("page", RUNNABLE, ids=_page_id)
-def test_page_runs(page):
-    run_page(page, slow=False)
+def test_page_runs(page, record_property):
+    # Blocks not run (slow, or needing OPENAI_API_KEY) are recorded on the test and listed in the terminal summary
+    # (conftest.py), so a green run never hides what it did not execute.
+    record_property("docs_blocks_not_run", run_page(page, slow=False))
 
 
 @pytest.mark.slow
 @pytest.mark.timeout(3600)  # full conformance claims: about five minutes for the conformance page
 @pytest.mark.parametrize("page", SLOW, ids=_page_id)
-def test_page_runs_with_slow_blocks(page):
-    run_page(page, slow=True)
+def test_page_runs_with_slow_blocks(page, record_property):
+    record_property("docs_blocks_not_run", run_page(page, slow=True))
 
 
 def test_the_harness_reads_markers_and_compares_output(tmp_path):
@@ -421,5 +429,9 @@ def test_the_harness_reads_markers_and_compares_output(tmp_path):
     assert [(b.lang, sorted(b.flags), b.options) for b in blocks] == [
         ("python", ["run"], {"exit": "3", "timeout": "5"}), ("text", ["output"], {}), ("sh", ["no-run"], {})]
     assert blocks[2].text == "```\n"
+    indented = tmp_path / "q.md"
+    indented.write_text("- a step:\n\n  ```sh\n  echo hidden\n  ```\n")
+    (block,) = parse(indented)
+    assert (block.lang, block.flags, block.text) == ("sh", set(), "echo hidden\n")  # found, and unmarked
     assert _matches("a ... c\n\nlast", "x\na  b   c\ny\nlast\n") is None
     assert _matches("last\na ... c", "a b c\nlast\n") == "a ... c"
