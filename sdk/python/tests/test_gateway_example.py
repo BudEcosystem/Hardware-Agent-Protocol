@@ -75,8 +75,10 @@ async def test_example_agent_policy_narrows_and_refuses_with_rules(tmp_path):
             with pytest.raises(BhmsError) as exc:
                 await agent.actions_invoke("bench/stage-z", "move_to", {"target": 150}, operation_key="big")
             assert exc.value.bhms_code == "OUT_OF_RANGE" and "[rule: bounds:target]" in exc.value.hint
-            with pytest.raises(BhmsError) as exc:
-                await agent.stop("x", scope="all")
-            assert "[rule: scope:stop]" in exc.value.hint
+            # the default agent policy: it can stop the devices it can act on (Task 11 S5), and no others
+            mine = (await agent.stop("x", scope="all")).stops
+            assert sorted(s.device_id for s in mine) == ["bench/stage-z", "pump/pump-1"]
+            other = (await agent.stop("x", device_ids=["thermo/thermo-1"])).stops[0]
+            assert other.outcome == "failed" and "[rule: scope:stop]" in other.error.hint
     finally:
         await gateway.close()

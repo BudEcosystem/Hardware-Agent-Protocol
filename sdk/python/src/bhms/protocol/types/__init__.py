@@ -124,7 +124,7 @@ _DEF_NAMES = (
     "ActionDescription",
     "EventTypeDescription", "SafetyDescription", "DeviceIdentity", "DeviceDescription", "Quality", "Observation",
     "OperationState", "CancelState", "EffectCertainty", "CancelInfo", "OperationEvidence", "Requirement", "Progress",
-    "HistoryEntry", "Operation", "DeviceStop", "SubscriptionFilter", "RefusedFilter", "Lease", "Event", "Predicate",
+    "HistoryEntry", "OperationUpstream", "Operation", "DeviceStop", "SubscriptionFilter", "RefusedFilter", "Lease", "Event", "Predicate",
     "InvokeStep", "ReadStep", "WaitUntilStep", "AssertStep", "SleepStep", "RepeatStep", "Step", "Program",
     "ProgramInfo", "ArgumentBound", "PolicyPrincipal", "GatewayPolicy", "AgentFindInput", "AgentDescribeInput",
     "AgentReadInput", "AgentInvokeInput", "AgentOperationInput", "AgentCancelInput", "AgentStopInput",

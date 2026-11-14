@@ -57,6 +57,24 @@ def glob_match(pattern: str, text: str) -> bool:
     return bool(_glob(pattern).match(text))
 
 
+def agent_scopes(*device_globs: str) -> tuple[str, ...]:
+    """The default scopes of an AI-agent principal over the devices that match ``device_globs`` (``"bench/*"``,
+    ``"pump/pump-1"``): ``read``, ``lease``, and for each glob ``invoke:<glob>/*`` and ``stop:<glob>``.
+
+    ``stop`` on its own devices is part of the default on purpose: when something goes wrong, stopping is the one safe
+    thing an agent can do, and an agent that may start motion but not stop it is left with nothing (Task 11, S5). It can
+    stop no other device, it is not ``admin``, and hazardous actions still need a scope that names the action literally
+    (BHMS-AUTH-003): add ``invoke:<device>/<action>`` for each one the agent is meant to use. Use the result as the
+    ``scopes`` of a ``Policy``/gateway principal.
+    """
+    if not device_globs:
+        raise ValueError("agent_scopes needs at least one device glob, for example agent_scopes('bench/*')")
+    scopes = ["read", "lease"]
+    for glob in device_globs:
+        scopes += [f"invoke:{glob}/*", f"stop:{glob}"]
+    return tuple(scopes)
+
+
 def token_digest(token: str) -> str:
     """The stored form of a bearer token (BHMS-SEC-002): ``"sha256:" + hex``."""
     return "sha256:" + hashlib.sha256(token.encode()).hexdigest()

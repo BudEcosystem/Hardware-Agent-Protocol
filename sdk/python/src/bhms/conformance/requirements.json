@@ -1125,6 +1125,15 @@
   "test": "Read a settled operation after a server restart within retention."
  },
  {
+  "id": "BHMS-OPS-064",
+  "area": "OPS",
+  "level": "MUST",
+  "profile": "gateway",
+  "method": "wire",
+  "summary": "A gateway mints its own operation ids. (06)",
+  "test": "An agent's operation through a gateway: the agent's get/wait/list carry no `upstream`; an admin's carry `upstream` whose operationId is the operation on the named upstream server."
+ },
+ {
   "id": "BHMS-OPS-070",
   "area": "OPS",
   "level": "MUST",
@@ -1348,6 +1357,15 @@
   "method": "wire",
   "summary": "A gateway forwarding a request MUST enforce its own policy for the client principal before forwarding, but only after its own key lookup, and MUST namespace idempotency keys per client principal with the pinned deterministic formula (g- + base32(sha256(gatewayId, principal, clientKey))[:26]). (07)",
   "test": "Two clients use the same operationKey through a gateway; upstream sees the two pinned keys and two operations; revoke the scope and replay: the original operation is returned."
+ },
+ {
+  "id": "BHMS-AUTH-015",
+  "area": "AUTH",
+  "level": "SHOULD",
+  "profile": "authority",
+  "method": "inspection",
+  "summary": "A policy that lets a principal invoke an action with an effect on a device SHOULD also grant that principal `stop` on the same device (`stop:<deviceGlob>`). (07)",
+  "test": "Run the policy checker over the deployed policy: no principal may act on a device it cannot stop; no scope matches nothing."
  },
  {
   "id": "BHMS-AUTH-020",

@@ -50,6 +50,11 @@ class HistoryEntry(_Wire):
     child_operation_id: Optional[ServerId] = None
 
 
+class OperationUpstream(_Wire):
+    server: _text(64, 1)
+    operation_id: ServerId
+
+
 class Operation(_Wire):
     operation_id: ServerId
     operation_key: OperationKey
@@ -75,6 +80,7 @@ class Operation(_Wire):
     progress: Optional[Progress] = None
     created_at: Time
     updated_at: Time
+    upstream: Optional[OperationUpstream] = None
     history: Optional[list[HistoryEntry]] = None
 
     @model_validator(mode="after")

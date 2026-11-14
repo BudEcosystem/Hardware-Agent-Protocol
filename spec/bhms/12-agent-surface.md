@@ -177,5 +177,17 @@ A bridge MAY publish a large free-form member (`program`) as `{"type": "object"}
 grammar, provided the grammar is available on demand (`bhms_describe {"topic": "program-grammar"}`, BHMS-AGT-016; an MCP
 bridge MAY also serve it as the resource `bhms://grammar/program`; and in every refusal of a malformed program) and the
 bridge validates the member itself against the normative schema, refusing before any request with the failing path
-(`program.steps[1].arguments`). The reference bridge's eight definitions total 1,448 tokens (o200k_base) with the program
+(`program.steps[1].arguments`). The reference bridge's eight definitions total 1,456 tokens (o200k_base) with the program
 grammar on demand, against 2,760 inlined; the ceiling is 1,500.
+
+## 12.7 Faults: stop is the safe action
+
+When a device does something unexpected (a dropped part, a reading that makes no
+sense, an operation that ends `unknown`), the safe action for an agent is
+`bhms_stop` on the devices involved, then reading state and reporting. `bhms_stop`
+needs no lease, waits behind nothing and never moves a device anywhere (§7.5); it
+is not an emergency stop. The tool description and the bridge's instructions say
+so. For it to work the agent's principal needs `stop` on its devices: the default
+agent policy grants `stop:<its devices>` (§7.4, BHMS-AUTH-015). A refusal of
+`bhms_stop` for a missing scope leaves the agent with no safe action, which is a
+policy defect, not an agent error.

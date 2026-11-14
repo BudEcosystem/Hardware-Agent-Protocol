@@ -122,6 +122,32 @@ async def trace_context(c: Context) -> None:
     c.expect(seen == trace, f"the upstream saw {seen}, the client sent {trace}")
 
 
+@check("gateway.upstream-operation-id", ["BHMS-OPS-064"], profile="gateway", needs=("gateway", "principals", "faults"))
+async def upstream_operation_id(c: Context) -> None:
+    """Only an admin sees where the gateway forwarded an operation, and what it sees is the operation on that upstream."""
+    axis = c.axis()
+    async with c.fresh_wire("agent") as agent:
+        op = c.result(await agent.request("actions/invoke", {"deviceId": axis, "action": "pulse", "arguments": {"count": 1},
+                                                             "waitMs": 5000}))["operation"]
+        op_id = op["operationId"]
+        c.expect("upstream" not in op, "the invoke result must not disclose the upstream to a principal without admin")
+        for method, params in (("operations/get", {"operationId": op_id}), ("operations/wait", {"operationId": op_id, "timeoutMs": 100})):
+            seen = c.result(await agent.request(method, params))["operation"]
+            c.expect("upstream" not in seen, f"{method} must not disclose the upstream to the operation's owner")
+        listed = c.result(await agent.request("operations/list", {"deviceId": axis, "limit": 100}))["operations"]
+        c.expect(all("upstream" not in o for o in listed), "operations/list must not disclose the upstream to a principal without admin")
+    mine = await c.get_op(op_id)
+    upstream = mine.get("upstream")
+    if upstream is None:
+        c.warn("the gateway does not give an admin the upstream operation id (SHOULD)")
+        return
+    c.expect(upstream.get("server") == axis.split("/", 1)[0], f"upstream.server {upstream.get('server')!r} is not the namespace of {axis}")
+    theirs = (await c.ok("operations/get", {"operationId": upstream["operationId"]}, wire=c._fault_wire(axis)))["operation"]
+    c.expect(theirs["deviceId"] == _local(axis) and theirs["action"] == "pulse", f"upstream.operationId names another operation: {theirs.get('deviceId')}.{theirs.get('action')}")
+    listed = [o for o in (await c.ok("operations/list", {"deviceId": axis, "limit": 100}))["operations"] if o["operationId"] == op_id]
+    c.expect(listed and listed[0].get("upstream") == upstream, "operations/list must give an admin the same upstream")
+
+
 @check("gateway.fence-forwarded", ["BHMS-LSE-011"], profile="gateway", needs=("gateway", "faults", "leases"))
 async def fence_forwarded(c: Context) -> None:
     """The gateway forwards its lease so that the enforcement point can reject a superseded holder: the upstream's record of this

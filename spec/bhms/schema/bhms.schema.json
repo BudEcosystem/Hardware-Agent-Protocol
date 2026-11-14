@@ -293,7 +293,7 @@
       "result": "#/$defs/OperationsCancelResult"
     },
     "bhms_stop": {
-      "description": "Stop devices now: runs their stop procedure, ends their operations and revokes their leases. Not an emergency stop.",
+      "description": "Stop devices now: runs their stop procedure, ends their operations and revokes their leases. The safe action when something goes wrong. Not an emergency stop.",
       "input": "#/$defs/AgentStopInput",
       "result": "#/$defs/StopResult"
     },
@@ -2945,6 +2945,27 @@
       ],
       "additionalProperties": false
     },
+    "OperationUpstream": {
+      "type": "object",
+      "description": "Where a gateway forwarded the operation: shown to admin principals only (7.6).",
+      "properties": {
+        "server": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "description": "The gateway's name for the upstream server (the namespace prefix of its device ids)."
+        },
+        "operationId": {
+          "$ref": "#/$defs/ServerId",
+          "description": "The operation id on that server."
+        }
+      },
+      "required": [
+        "server",
+        "operationId"
+      ],
+      "additionalProperties": false
+    },
     "Operation": {
       "type": "object",
       "description": "Durable record of one physical intent (06-operations.md).",
@@ -3032,6 +3053,9 @@
         },
         "updatedAt": {
           "$ref": "#/$defs/Time"
+        },
+        "upstream": {
+          "$ref": "#/$defs/OperationUpstream"
         },
         "history": {
           "type": "array",

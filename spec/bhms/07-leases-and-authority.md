@@ -112,6 +112,18 @@ gateway policy grants each principal **scopes**:
 `<pattern>` is `<deviceGlob>/<actionGlob>` (split at the last `/`) or
 `cap:<capabilityGlob>`; `*` matches any sequence of characters.
 
+**Default agent policy.** The scopes to give an AI agent for the devices it works
+with are `read`, `lease`, and per device glob `invoke:<glob>/*` and `stop:<glob>`
+(the Python SDK ships them as `bhms.runtime.authority.agent_scopes`). `stop` is
+part of the default: when something goes wrong, stopping its own devices is the
+one safe action an agent has (§12.7).
+
+**BHMS-AUTH-015** A policy that lets a principal invoke an action with an effect on
+a device SHOULD also grant that principal `stop` on the same device
+(`stop:<deviceGlob>`). A principal that can start motion but cannot stop it has no
+safe action on a fault. Policy tooling SHOULD report such a principal, and a scope
+that matches no served device or action (`bhms gateway check-policy`).
+
 **BHMS-AUTH-001** A server MUST derive the principal only from the transport
 (BHMS-SEC-001) and MUST NOT accept any request member, argument, `_meta` key or
 device-provided text as identity or authorization.
@@ -211,7 +223,8 @@ BHMS-DEV-002, BHMS-LSE-011, BHMS-LSE-013, BHMS-AUTH-014 and BHMS-SEC-022/061:
 - *Ids.* A device is `<namespace>/<upstreamDeviceId>`; its resources are `<namespace>/<upstreamResourceId>`. Scope patterns
   split at the **last** `/` (§7.4), so `invoke:bench/*/*` means any action of any device of namespace `bench`, while
   `invoke:bench/*` names a device `bench`, which does not exist, and matches nothing. `stop:<glob>` matches the whole
-  device id (`stop:bench/*`).
+  device id (`stop:bench/*`). A pattern that matches nothing fails closed without a sign; `bhms gateway check-policy
+  <config>` lists what every scope of every principal matches among the served devices (BHMS-AUTH-015).
 - *Descriptions.* The gateway serves its own description of a device: ids prefixed, the principal's narrowed bounds written
   into the input schemas (an empty envelope removes the action, BHMS-AUTH-011), and the digest recomputed over those bytes
   (BHMS-DEV-021), so the description (and `descriptionDigest` pin) differ per principal that has bounds.

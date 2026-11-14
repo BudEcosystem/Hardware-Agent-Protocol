@@ -47,11 +47,21 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
 - **BHMS-AGT-016 (new, MUST, agent)**: `bhms_describe` takes `{device_id | topic}`; `topic: "program-grammar"` returns the
   program grammar (`AgentDescribeInput` gains `topic` and the exactly-one rule; new `AgentTopicData`, `AgentDescribeData`;
   examples `agent.bhms_describe.topic.input.json`, `agent.bhms_describe.topic.result.json`, `invalid-agent-describe-both.json`).
-  The tool texts name the call instead of the MCP resource URI. The eight definitions total 1,448 tokens (ceiling 1,500).
+  The tool texts name the call instead of the MCP resource URI. The eight definitions total 1,456 tokens at the end of this round (ceiling 1,500).
   Evidence: Task 6 review (minor, deferred to 7b): the OpenAI function-tool text named `bhms://grammar/program`, which a
   function-tool host cannot read.
 - No requirement change, agent bridge: a failed or rejected operation's summary keeps its `bhmsCode` in the protected head,
   and the cancel-pending summary keeps its next step whole (Task 6 review, minors).
+- **BHMS-AUTH-015 (new, SHOULD, authority)** and the *default agent policy* (§7.4): a principal that may invoke effectful
+  actions on a device should also hold `stop:<that device>`; §12.7 says that `bhms_stop` is the safe action on a fault, and
+  the `bhms_stop` tool description says so. The Python SDK ships `bhms.runtime.authority.agent_scopes` and
+  `bhms gateway check-policy <config>` (what every scope matches; warnings for scopes that match nothing and for principals
+  that can act but not stop). Evidence: Task 11 report, S5 (four `scope:stop` refusals: the agents reacted to a fault with
+  `bhms_stop` and were left with no safe action) and S7 (`invoke:knob/*` matched nothing behind a gateway, silently).
+- **BHMS-OPS-064 (new, MUST, gateway)**: `Operation.upstream = {server, operationId}` (schema `OperationUpstream`), given by a
+  gateway to `admin` principals in `operations/get`, `wait` and `list`, never to anyone else and never in notifications.
+  Evidence: Task 11 report, S6 (the upstream operation id was only in gateway internals, so a gateway record could not be
+  joined to the device's own log). Requirement index: 257 rows.
 
 ### TS SDK to follow
 
@@ -68,6 +78,8 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   every schema change of this round listed above and below.
 - Nothing in the TypeScript SDK (it has no agent bridge); the regenerated types carry `AgentDescribeInput.topic`,
   `AgentTopicData` and `AgentDescribeData`.
+- Nothing to implement for BHMS-OPS-064 and BHMS-AUTH-015 (no TypeScript gateway); the regenerated types carry
+  `Operation.upstream`.
 
 ## 2026-11-13 (v0.1)
 

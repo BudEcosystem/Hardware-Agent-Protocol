@@ -17,7 +17,9 @@ key it concerns, never at the first request::
 
     [principals.lab-agent]             # GatewayPolicy: tokens are sha256 digests, never plaintext (BHMS-SEC-002)
     tokens = ["sha256:<hex of the token>"]
-    scopes = ["read", "lease", "invoke:bench/*/*"]   # <deviceGlob>/<actionGlob>, split at the last "/"
+    scopes = ["read", "lease", "invoke:bench/*/*", "stop:bench/*"]   # <deviceGlob>/<actionGlob>, split at the last "/";
+                                       # an agent can stop what it can move (authority.agent_scopes); check with
+                                       # ``bhms gateway check-policy <this file>``
     bounds = {"bench/stage-z/move_to" = {target = {maximum = 100}}}
 
 Every ``[gateway]`` key has a default; see :class:`GatewayConfig`. :func:`load_config` reads a file,

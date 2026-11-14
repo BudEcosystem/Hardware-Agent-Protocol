@@ -41,10 +41,13 @@ name = "thermo"
 stdio = "{python} {config_dir}/thermo_server.py"
 env = { BHMS_STATE_DIR = "{config_dir}/state/thermo" }
 
-[principals.agent]              # token: demo-agent-token  (an AI agent: may act, cannot stop or see others' operations)
+[principals.agent]              # token: demo-agent-token  (an AI agent: may act on and stop its devices, sees only its own operations)
 tokens = ["sha256:b83e3e191f2acfe2c3c27f2079c5c13ea8409e9abbf31b671d421d80bbc847c9"]
 # invoke:<deviceGlob>/<actionGlob> splits at the LAST "/", so for namespaced ids "bench/*/*" means any action of any bench device.
-scopes = ["read", "lease", "invoke:bench/*/*", "invoke:pump/*/*"]
+# The default agent policy (bhms.runtime.authority.agent_scopes("bench/*", "pump/*")): stop on its own devices is included,
+# because stopping is the one safe thing an agent can do on a fault. `bhms gateway check-policy gateway.toml` shows what
+# each scope matches.
+scopes = ["read", "lease", "invoke:bench/*/*", "stop:bench/*", "invoke:pump/*/*", "stop:pump/*"]
 # Narrowing only: the agent sees (in devices/describe) and is held to a maximum of 100 um; the device allows 200.
 bounds = { "bench/stage-z/move_to" = { target = { maximum = 100 } }, "pump/pump-1/dispense" = { volume = { maximum = 100 } } }
 

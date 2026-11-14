@@ -424,11 +424,21 @@ class Router:
                                "principals' operations needs scope operations:read")
         return rec
 
+    @staticmethod
+    def _wire_for(principal: Principal, rec: OperationRecord, operation: dict[str, Any]) -> dict[str, Any]:
+        """``operation`` as ``principal`` may see it: an ``admin`` also gets ``upstream`` (the upstream server and the
+        operation id there), which joins the gateway's record to the device server's own log; nobody else learns what is
+        behind the gateway (§7.6)."""
+        upstream_id = rec.private.get("upstreamOperationId")
+        if not principal.admin or upstream_id is None:
+            return operation
+        return {**operation, "upstream": {"server": rec.private["upstream"], "operationId": upstream_id}}
+
     async def operations_get(self, params: Any, ctx: RequestContext) -> dict[str, Any]:
         principal = self.gateway.auth.authenticate(ctx)
         rec = self._operation_for(principal, params.operation_id)
         await self._refresh(rec)
-        return {"operation": rec.wire(history=True)}
+        return {"operation": self._wire_for(principal, rec, rec.wire(history=True))}
 
     async def operations_wait(self, params: Any, ctx: RequestContext) -> dict[str, Any]:
         gw = self.gateway
@@ -437,7 +447,7 @@ class Router:
             raise _wait_error("timeoutMs", params.timeout_ms, gw.config.max_wait_ms)
         rec = self._operation_for(principal, params.operation_id)
         rec = await self._wait(rec, params.timeout_ms)
-        return {"operation": rec.wire(history=True)}
+        return {"operation": self._wire_for(principal, rec, rec.wire(history=True))}
 
     async def operations_list(self, params: Any, ctx: RequestContext) -> dict[str, Any]:
         gw = self.gateway
@@ -446,6 +456,9 @@ class Router:
                                        limit=_limit(params.limit, gw.config.max_page_size), after=params.cursor,
                                        device_id=params.device_id, state=params.state,
                                        parent_id=params.parent_operation_id)
+        if principal.admin:
+            page = [self._wire_for(principal, rec, op) if (rec := gw.journal.get(op["operationId"])) is not None else op
+                    for op in page]
         result: dict[str, Any] = {"operations": page}
         if cursor is not None:
             result["nextCursor"] = cursor

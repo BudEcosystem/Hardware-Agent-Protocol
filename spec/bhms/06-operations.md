@@ -48,6 +48,7 @@ was returned for the same key.
 | `error` | `OperationError` | no | Present when `failed`, `rejected` or `unknown` |
 | `progress` | `{stepsCompleted, stepsTotal}` | no | Programs |
 | `createdAt`, `updatedAt` | time | yes | |
+| `upstream` | `{server, operationId}` | no | Gateways only, and only for `admin` principals: the upstream server (its namespace) and the operation id there (BHMS-OPS-064) |
 | `history` | `HistoryEntry[]` | no | Returned by `operations/get` and `operations/wait`; omitted in lists and notifications |
 
 `OperationError` is the error data of §10 plus `message`.
@@ -286,6 +287,15 @@ because the response wait elapsed.
 **BHMS-OPS-062** An unknown or invisible `operationId` MUST be answered with
 `INVALID_ARGUMENT`, `field: "operationId"`. Operations are visible to the
 principal that created them and to principals with `admin`.
+
+**BHMS-OPS-064** A gateway mints its own operation ids. In `operations/get`,
+`operations/wait` and `operations/list` it SHOULD give a principal with `admin`
+the member `upstream: {server, operationId}`: the namespace of the upstream
+server the operation was forwarded to and the operation's id on that server, so
+that a gateway record can be joined to the device server's own journal after an
+incident. It MUST NOT include `upstream` for any other principal (the owner and
+`operations:read` included) or in notifications: what lies behind a gateway is
+not a client's business. A device server never sends `upstream`.
 
 **BHMS-OPS-063** An operation that a client has seen MUST remain retrievable with
 `operations/get` for at least `keyRetentionS` seconds after it settled.
