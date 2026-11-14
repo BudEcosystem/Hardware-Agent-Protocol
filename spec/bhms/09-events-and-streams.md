@@ -37,19 +37,29 @@ Device-specific types are declared in the description's `events` map and MUST
 NOT equal a core type.
 
 `device.epoch` `data`: `epoch` (the new epoch value), `persistent` (boolean, the
-endpoint's `PERSISTENT_EPOCH` flag), and `purged` (boolean, default `false`).
+endpoint's `PERSISTENT_EPOCH` flag), `purged` (boolean, default `false`) and, with
+`purged: true`, `operationIds` (array of operation ids, at most 200) and
+`truncated` (boolean, default `false`).
 `purged: true` is the *endpoint-proven purge* of BHMS-OPS-042: the party that
 owns the link to the endpoint (a BHMS-Compact bridge, BHMS-CMP-022) asserts that
-the endpoint provably discarded everything dispatched before this event. Only
-that owner may emit it, and only on the evidence BHMS-CMP-022 lists; a device
-server that cannot prove a purge MUST omit the member or send `false`. A
-gateway that ingests `device.epoch` with `purged: true` MUST, for each operation
-of that device that is `unknown` or becomes `unknown` and was dispatched before
-the event, keep its state and `unknown` outcome but stop treating it as blocking
-its resources (BHMS-OPS-042); operations dispatched later are not covered. A
-gateway that restarts between the event and this lift MAY leave the inhibition in
-place until the next proof or a confirmed `stop` (under-lifting is allowed,
-lifting without proof is not).
+the endpoint provably discarded the work of the operations named in `operationIds`
+(its not-yet-terminal operations dispatched before the proof). Only that owner may
+emit it, and only on the evidence BHMS-CMP-022 lists; a device server that cannot
+prove a purge MUST omit the member or send `false`. If more than 200 operations
+qualify, the emitter names 200 and sets `truncated: true`.
+
+A gateway that ingests `device.epoch` with `purged: true` MUST, for exactly the
+operations named in `operationIds` (mapped to its own ids), keep their state and
+`unknown` outcome but stop treating them as blocking their resources
+(BHMS-OPS-042), and MUST journal this with the operation. An event with
+`purged: true` and no `operationIds` lifts nothing. Operations not named
+(dispatched after the proof, beyond the cap, or unknown to the gateway) stay
+inhibited until a confirmed `stop` or an operator resolves them; a gateway SHOULD
+log when `truncated` is set. The gateway never lifts by time: lifting on "everything dispatched before the event" would
+be unsafe when an event is replayed after a restart. If a gateway restarts between
+the emitter's event and its own lift, it replays the event from its stored cursor
+and lifts then; until then (and for anything the event does not name) it
+under-lifts, which is always allowed; lifting without proof is not.
 
 **BHMS-EVT-001** Cursors MUST be opaque, server-minted and totally ordered per
 server; an event read twice MUST have the same cursor and content.

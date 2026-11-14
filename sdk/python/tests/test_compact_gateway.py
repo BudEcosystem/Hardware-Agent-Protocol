@@ -284,3 +284,57 @@ async def test_a_purge_proof_lifts_only_the_operations_it_names_and_survives_a_g
             assert restarted is not None and restarted.state == "unknown" and restarted.private.get("inhibitionLifted") is True
         finally:
             await gateway.close()
+
+
+@pytest.mark.usefixtures("native")
+async def test_a_gateway_that_restarts_between_the_proof_and_the_lift_lifts_only_what_the_proof_names(tmp_path, native):  # OPS-042
+    """The bridge journals the purge proof, the gateway never hears it (it goes down first). After the restart the gateway replays
+    the event from its cursor: the operation the proof names is lifted, work dispatched after the proof is not."""
+    from bhms.client.client import Client
+    from bhms.gateway import Gateway, load_config
+
+    async def settle_listed(client):
+        for _ in range(200):
+            if [d async for d in client.iter_devices()]:
+                return
+            await asyncio.sleep(0.05)
+        pytest.fail("the restarted gateway never served the device")
+
+    async with compact_gateway(tmp_path, native) as rig:
+        rig.wire.drop(TO_GATEWAY, count=10_000, match=lambda m: isinstance(m, cp.Result))  # nothing is ever answered with a RESULT
+        before = await rig.invoke("rig/bench-rig", "lock", {"duration_ms": 20}, wait_ms=4000)
+        assert before["state"] == "unknown"
+        real = rig.gateway.upstream_notification
+        rig.gateway.upstream_notification = lambda up, method, params: None if method == "notifications/event" else real(up, method, params)
+        epoch = rig.bridge.epoch
+        await rig.wire.reboot()  # the bridge proves the purge and journals device.epoch; this gateway hears nothing of it
+        for _ in range(200):
+            if rig.bridge.epoch != epoch and rig.bridge.ready:
+                break
+            await asyncio.sleep(0.05)
+        with pytest.raises(BhmsError) as unlifted:
+            await rig.invoke("rig/bench-rig", "lock", {"duration_ms": 20})
+        assert unlifted.value.code == "STALE"  # the proof never reached the gateway: nothing is lifted (under-lift)
+        after = await rig.invoke("rig/bench-rig", "set_level", {"value": 1.0}, wait_ms=4000)  # dispatched after the proof
+        assert after["state"] == "unknown"
+        await rig.gateway.close()
+        gateway = Gateway(load_config(rig.config_path))
+        await gateway.start()
+        try:
+            await gateway.listen(f"unix:{rig.tmp}/gw4.sock")
+            async with await Client.connect(f"unix:{rig.tmp}/gw4.sock") as client:
+                await settle_listed(client)
+                lifted = None
+                for _ in range(100):  # the replay of the journaled proof lifts `before`
+                    try:
+                        lifted = to_wire(await client.actions_invoke("rig/bench-rig", "lock", {"duration_ms": 20}, wait_ms=3000))["operation"]
+                        break
+                    except BhmsError as exc:
+                        assert exc.code == "STALE"
+                        await asyncio.sleep(0.05)
+                assert lifted is not None  # dispatched (its own RESULT is dropped too, so it ends unknown: not the point)
+                with pytest.raises(BhmsError) as still:  # but never `after`: it was dispatched after the proof
+                    await client.actions_invoke("rig/bench-rig", "set_level", {"value": 2.0}, wait_ms=3000)
+                assert still.value.code == "STALE" and after["operationId"] in still.value.message
+        finally:
+            await gateway.close()

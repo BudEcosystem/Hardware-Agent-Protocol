@@ -72,6 +72,7 @@ from bhms.transport.base import Transport
 
 log = logging.getLogger("bhms.gateway.compact")
 
+MAX_PURGE_IDS = 200  # operation ids one purge proof may name (spec 9.2); the rest stay inhibited
 HANDLE_ROTATE_AT = 65_000  # start a new session well before handle 65535 (BHMS-CMP-030)
 STOP_REASON_GATEWAY = 3
 PROBE_HANDLE = 0xFFFF  # QUERY of a handle no INVOKE has used: answered HANDLE_UNKNOWN, proves liveness and the epoch
@@ -463,7 +464,9 @@ class CompactBridge:
         # (a failed epoch store makes the next boot repeat the value, BHMS-CMP-020): any other repeated HELLO may follow a reset.
         possible_reset = known is not None and known == hello.epoch and not (hello.persistent and was_persistent)
         proven = changed and (new_session or (hello.persistent and advanced(known, hello.epoch)))
-        self.incarnation = int(state.get("inc", 0)) + (1 if known is None or changed or possible_reset else 0)
+        # Never backwards (a failed link-state save must not repeat a number) and never 0: 0 marks the records of a bridge that did
+        # not count incarnations, which are never asked about (a journal written before this field existed is migrated by this).
+        self.incarnation = max(1, self.incarnation, int(state.get("inc", 0))) + (1 if known is None or changed or possible_reset else 0)
         self.hello, self.epoch, self.persistent = hello, hello.epoch, hello.persistent
         link.session = hello.epoch
         if changed or known is None:
@@ -491,13 +494,19 @@ class CompactBridge:
     def _emit_epoch(self, hello: cp.Hello, changed: bool, proven: bool) -> None:
         reason = ("the endpoint reports a new boot epoch" if changed else
                   "the endpoint has no persistent epoch, so every HELLO may follow a reset (BHMS-CMP-020)")
+        purge: dict[str, Any] = {}
+        if proven:
+            ids, more = self._purged_operation_ids()
+            purge = {"operationIds": ids, **({"truncated": True} if more else {})}
+            if more:
+                log.warning("compact %s: the purge proof covers more than %d operations; the rest stay inhibited until a "
+                            "confirmed stop or an operator resolves them", self.name, MAX_PURGE_IDS)
         with contextlib.suppress(StoreError):
             self.server.events.append("device.epoch", severity="warning", device_id=self.device_id,
                                       message=f"{reason}; operations dispatched before are unknown",
-                                      data={"epoch": hello.epoch, "persistent": hello.persistent, "purged": proven,
-                                            **({"operationIds": self._purged_operation_ids()} if proven else {})})
+                                      data={"epoch": hello.epoch, "persistent": hello.persistent, "purged": proven, **purge})
 
-    def _purged_operation_ids(self, limit: int = 200) -> list[str]:
+    def _purged_operation_ids(self, limit: int = MAX_PURGE_IDS) -> tuple[list[str], bool]:
         """The not-yet-terminal operations dispatched in an earlier incarnation: exactly the work a proven purge covers. The
         gateway lifts the inhibition of these and of nothing else (spec 9.2); more than ``limit`` are left inhibited."""
         ids = []
@@ -507,7 +516,7 @@ class CompactBridge:
             info = self._info(row.id)
             if info is not None and info.incarnation != self.incarnation:
                 ids.append(row.id)
-        return sorted(ids)[:limit]
+        return sorted(ids)[:limit], len(ids) > limit
 
     def _serve(self) -> None:
         if self.device is None:
@@ -818,7 +827,7 @@ class CompactBridge:
             return Reconciled("failed", evidence="the bridge journaled no handle for this operation, so no INVOKE was ever "
                               "sent to the endpoint", may_have_acted=False, effect="none", code="INTERNAL",
                               message="the operation was dispatched but its command never reached the wire")
-        if not self.ready or info.incarnation != self.incarnation:
+        if not self.ready or info.incarnation == 0 or info.incarnation != self.incarnation:
             return None  # earlier incarnation: unknown stays (BHMS-CMP-022); link down: ask again when it is up
         reply = await self._ask(info.incarnation, info.handle)
         if reply is None:
@@ -844,7 +853,7 @@ class CompactBridge:
         """QUERY ``handle`` of the current incarnation and return the endpoint's STATUS or RESULT, or None (silence, an ERROR)."""
         link = self._link
         key = self._hkey(incarnation, handle)
-        if link is None or key in self._waiters or incarnation != self.incarnation:
+        if link is None or key in self._waiters or incarnation == 0 or incarnation != self.incarnation:
             return None
         queue = self._register(key)
         loop = asyncio.get_running_loop()
@@ -875,10 +884,10 @@ class CompactBridge:
         queue: asyncio.Queue[cp.Incoming] = asyncio.Queue()
         self._stop_waiters.append(queue)
         loop = asyncio.get_running_loop()
-        horizon = loop.time() - (bound + self.timing.reply * (self.timing.retries + 1))
+        horizon = loop.time() - self.timing.reply
         while self._stop_sent and self._stop_sent[0] < horizon:
-            self._stop_sent.popleft()  # an ack that never came: forget it rather than skip a real one for ever
-        stale = len(self._stop_sent)  # acks still due to STOPs of earlier attempts are not evidence about this one
+            self._stop_sent.popleft()  # unanswered for a whole reply time: lost, not late (this call must not wait for its ack)
+        stale = len(self._stop_sent)  # acks still in flight from STOPs sent moments ago are not evidence about this one
         try:
             ack: cp.StopAck | None = None
             for _ in range(self.timing.retries + 1):

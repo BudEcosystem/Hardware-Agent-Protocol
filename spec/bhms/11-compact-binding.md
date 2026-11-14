@@ -239,10 +239,19 @@ session and a handle above the reset `lastHandle` and would execute again; the
 gateway uses QUERY instead. On `HANDLE_UNKNOWN` it MUST leave the operation
 `unknown`; it MUST NOT allocate a new handle for the same operation.
 
-**BHMS-CMP-034** After a gateway restart the gateway MUST send `HELLO_REQ`; if the
-epoch is unchanged it MUST `QUERY` each operation recorded as `dispatching`,
-`running` or `unknown` and reconcile from STATUS/RESULT, keeping `unknown` on
-`HANDLE_UNKNOWN`. An endpoint MUST answer QUERY for a handle that is not in its
+**BHMS-CMP-034** After a gateway restart the gateway MUST send `HELLO_REQ`; for
+each operation recorded as `dispatching`, `running` or `unknown` that was dispatched
+in the *current incarnation* (the epoch is unchanged AND no HELLO that may
+follow a reset has been seen since dispatch, see BHMS-CMP-022: for an endpoint
+with `PERSISTENT_EPOCH` a HELLO repeating the epoch value is no reset; for one
+without it every HELLO may be) it MUST `QUERY` and reconcile from STATUS/RESULT,
+keeping `unknown` on `HANDLE_UNKNOWN`. For an endpoint without `PERSISTENT_EPOCH`,
+reconciliation after a gateway restart or after a link loss that required a new
+HELLO is therefore not possible (the HELLO may follow a reset and handles are
+reused): such operations stay `unknown` until a confirmed `stop` (BHMS-OPS-042) or
+an operator resolves them; a lost reply on a live link (no HELLO) is still
+reconciled by QUERY (BHMS-CMP-033). A gateway that cannot tell which incarnation an operation was dispatched in
+(a journal that did not record it) MUST NOT QUERY it. An endpoint MUST answer QUERY for a handle that is not in its
 ring (including one above `lastHandle`) with `HANDLE_UNKNOWN`, never by acting.
 QUERY reconciles only operations dispatched in the current incarnation: every
 STATUS, RESULT and ERROR frame carries the endpoint's current boot epoch in its

@@ -25,6 +25,7 @@ from __future__ import annotations
 import asyncio
 import collections
 import contextlib
+import logging
 import math
 import os
 import struct
@@ -609,13 +610,16 @@ class ByteStream(Protocol):
     async def read(self) -> bytes:
         """Next bytes, or ``b""`` at end of stream."""
 
-    def write(self, data: bytes) -> None:
-        """Queue ``data`` for sending; never blocks."""
+    def write(self, data: bytes, *, urgent: bool = False) -> None:
+        """Queue ``data`` for sending; never blocks. ``urgent`` (STOP) may use reserved queue headroom a full queue refuses
+        ordinary writes."""
 
     async def close(self) -> None: ...
 
 
+log = logging.getLogger("bhms.transport.compact")
 MAX_PENDING_OUTPUT = 16 * 1024  # bytes queued for a non-draining serial line before further writes are refused
+URGENT_HEADROOM = 1024  # more queue that only urgent writes (STOP) may use: the safety path is never the first thing refused
 
 
 class FdStream:
@@ -651,11 +655,14 @@ class FdStream:
             self._inbox.put_nowait(b"")  # end of stream stays visible to every later read
         return data
 
-    def write(self, data: bytes) -> None:
+    def write(self, data: bytes, *, urgent: bool = False) -> None:
         if self._closed:
             return
-        if len(self._out) + len(data) > MAX_PENDING_OUTPUT:
+        if len(self._out) + len(data) > MAX_PENDING_OUTPUT + (URGENT_HEADROOM if urgent else 0):
             self.dropped += 1  # whole writes only: a half frame would only cost the receiver a resynchronisation
+            if self.dropped == 1 or self.dropped % 100 == 0:
+                log.warning("compact link: the serial line is not draining (%d bytes queued); %d write(s) dropped%s",
+                            len(self._out), self.dropped, " (INCLUDING A STOP)" if urgent else "")
             return
         self._out += data
         self._flush()
@@ -703,7 +710,7 @@ class SocketStream:
         except (ConnectionError, OSError):
             return b""
 
-    def write(self, data: bytes) -> None:
+    def write(self, data: bytes, *, urgent: bool = False) -> None:
         if not self._writer.is_closing():
             self._writer.write(data)
 
@@ -831,7 +838,7 @@ class CompactLink:
         if sequence is None:
             self.tx_seq = (self.tx_seq + 1) % 2**32
         if not self.closed:
-            self.stream.write(wire)
+            self.stream.write(wire, urgent=isinstance(message, Stop))
         self.stats["tx"] += 1
         return wire
 

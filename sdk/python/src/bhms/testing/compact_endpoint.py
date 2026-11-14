@@ -124,7 +124,7 @@ class ProcessStream:
         assert self.process.stdout is not None
         return await self.process.stdout.read(4096)
 
-    def write(self, data: bytes) -> None:
+    def write(self, data: bytes, *, urgent: bool = False) -> None:
         assert self.process.stdin is not None
         if not self.process.stdin.is_closing():
             self.process.stdin.write(data)

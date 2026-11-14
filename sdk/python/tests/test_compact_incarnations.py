@@ -69,25 +69,55 @@ async def test_a_recurring_epoch_value_never_lets_a_new_operations_result_settle
         assert still["state"] == "unknown"  # Y's RESULT is not evidence about X
 
 
-async def test_late_acknowledgements_of_an_earlier_stop_are_not_taken_for_the_next_one(tmp_path):  # CMP-050/051
-    """STOP_ACK names no STOP: the acks still due to the first attempt's STOPs are skipped, in order."""
+async def test_one_unanswered_stop_does_not_make_the_stops_after_it_fail(tmp_path):  # CMP-050/051, OPS-042 recovery path
+    """The endpoint confirms every STOP it receives from the fifth on: each later stop is confirmed with at most two STOPs."""
     from helpers.compact_rig import BENCH
 
     script = Scripted(cp.digest8_of(BENCH), epoch=7, flags=PERSISTENT)
     async with scripted_rig(tmp_path, sidecar=BENCH, scripted=script) as (client, bridge, ep):
         stops = {"n": 0}
 
-        async def on_stop(e, m):
+        def on_stop(e, m):
             stops["n"] += 1
-            if stops["n"] == bridge.timing.retries + 2:  # the first STOP of the second attempt
-                for _ in range(bridge.timing.retries + 1):  # the delayed answers to the first attempt's STOPs
-                    e.say(cp.StopAck(cp.STOPACK_CONFIRMED, cp.EVIDENCE_MEASURED))
+            if stops["n"] > bridge.timing.retries + 1:  # the first stop's STOPs get no acknowledgement at all
+                e.say(cp.StopAck(cp.STOPACK_CONFIRMED, cp.EVIDENCE_MEASURED))
 
         ep.on[cp.Stop] = on_stop
         first = to_wire(await client.stop("t", device_ids=["bench-rig"], wait_ms=4000))["stops"][0]
-        assert first["outcome"] != "confirmed"  # nothing answered
-        second = to_wire(await client.stop("t", device_ids=["bench-rig"], wait_ms=4000))["stops"][0]
-        assert second["outcome"] != "confirmed"  # the stale acks are not evidence that THIS stop worked
+        assert first["outcome"] != "confirmed"
+        for _ in range(4):
+            before = stops["n"]
+            got = to_wire(await client.stop("t", device_ids=["bench-rig"], wait_ms=4000))["stops"][0]
+            assert got["outcome"] == "confirmed", got
+            assert stops["n"] - before <= 2  # a single lost ack costs one extra reply time, never a failed stop
+
+
+async def test_the_late_ack_of_an_overlapping_stop_is_not_taken_for_the_next_ones_confirmation(tmp_path):  # CMP-050/051
+    """STOP_ACK names no STOP: an ack still due to a STOP sent moments ago is skipped."""
+    import time
+
+    from helpers.compact_rig import BENCH
+
+    script = Scripted(cp.digest8_of(BENCH), epoch=7, flags=PERSISTENT)
+    async with scripted_rig(tmp_path, sidecar=BENCH, scripted=script) as (client, bridge, ep):
+        sent_at: list[float] = []
+
+        async def on_stop(e, m):
+            sent_at.append(time.monotonic())
+            await asyncio.sleep(0.15)  # shorter than the reply time: the first call does not retransmit
+            e.say(cp.StopAck(cp.STOPACK_CONFIRMED, cp.EVIDENCE_MEASURED))
+            sent_at.append(-time.monotonic())  # the ack's time, negative
+
+        ep.on[cp.Stop] = on_stop
+        a = asyncio.ensure_future(bridge._stop(None))
+        await asyncio.sleep(0.05)
+        started = time.monotonic()
+        await bridge._stop(None)
+        finished = time.monotonic()
+        await a
+        acks = sorted(-t for t in sent_at if t < 0)
+        assert len(acks) == 2 and finished >= acks[1] - 0.01  # the second stop waited for the ack of ITS STOP, not the first
+        assert started < acks[0] < acks[1]
 
 
 async def test_a_read_refused_with_session_mismatch_is_stale_not_an_invalid_argument(tmp_path):
@@ -114,3 +144,69 @@ async def test_an_ordinary_hello_with_another_epoch_is_never_credited_as_an_acce
         await reboot(ep, bridge, epoch=9, flags=NON_PERSISTENT)  # a different value, but nobody asked for NEW_SESSION
         events = to_wire(await client.events_read(types=["device.epoch"]))["events"]
         assert events and all(e["data"]["purged"] is False for e in events)
+
+
+async def test_a_journal_written_before_incarnations_existed_is_never_asked_about_the_endpoint(tmp_path):  # CMP-034 migration
+    """Pre-fix state: link `{epoch: 7}` and an operation of epoch 6 handle 1, neither with an incarnation. Epoch 7 repeats handle 1."""
+    import json
+
+    from helpers.compact_rig import LED
+
+    from bhms.runtime.store import Store
+
+    first = Scripted(cp.digest8_of(LED), epoch=6, flags=PERSISTENT)
+    async with scripted_rig(tmp_path, scripted=first) as (client, bridge, ep):
+        ep.on[cp.Invoke] = lambda e, m: None
+        x = await op(client)
+        done = to_wire(await client.operations_wait(x["operationId"], 6000))["operation"]
+        assert done["state"] == "unknown"
+    store = Store(str(tmp_path / "bridge" / "compact-script.sqlite3"))
+    try:
+        prefix = "compact/bench-led/"
+        store.meta_set(prefix + "link", json.dumps({"epoch": 7, "persistent": True, "next_handle": 2}), barrier=True)
+        info = json.loads(store.meta_get(f"{prefix}ops/{x['operationId']}"))
+        assert info["epoch"] == 6 and info["handle"] == 1
+        info.pop("inc", None)
+        store.meta_set(f"{prefix}ops/{x['operationId']}", json.dumps(info), barrier=True)
+    finally:
+        store.close()
+    second = Scripted(cp.digest8_of(LED), epoch=7, flags=PERSISTENT)
+    second.on[cp.Query] = lambda e, m: e.say(cp.Result(m.handle, cp.ST_COMPLETED, cp.EVIDENCE_REPORTED, 0, b"\x05"))
+    async with scripted_rig(tmp_path, scripted=second) as (client, bridge, ep):
+        await asyncio.sleep(1.5)
+        still = to_wire(await client.operations_get(x["operationId"]))["operation"]
+        assert still["state"] == "unknown"  # epoch 7's handle 1 is another operation's: not evidence
+        assert not [q for q in ep.of(cp.Query) if q.handle == 1]
+        assert bridge.incarnation >= 1
+
+
+async def test_the_incarnation_never_goes_backwards_when_the_saved_state_is_behind(tmp_path):
+    """A link-state save that failed leaves the durable counter behind the one in memory: the next HELLO continues the larger."""
+    from helpers.compact_rig import LED
+
+    script = Scripted(cp.digest8_of(LED), epoch=7, flags=PERSISTENT)
+    async with scripted_rig(tmp_path, scripted=script) as (client, bridge, ep):
+        bridge.incarnation = 50  # as if 48 more incarnations were counted but their saves failed
+        await reboot(ep, bridge, epoch=8, flags=PERSISTENT)
+        assert bridge.incarnation == 51
+
+
+async def test_a_purge_proof_names_at_most_a_bounded_number_of_operations_and_says_so(tmp_path):  # spec 9.2
+    from helpers.compact_rig import BENCH
+
+    script = Scripted(cp.digest8_of(BENCH), epoch=7, flags=PERSISTENT)
+    async with scripted_rig(tmp_path, sidecar=BENCH, scripted=script) as (client, bridge, ep):
+        ep.on[cp.Invoke] = lambda e, m: None
+        ids = []
+        for action, arguments in (("lock", {"duration_ms": 20}), ("set_level", {"value": 1.0})):  # different resources: both dispatch
+            got = to_wire(await client.actions_invoke("bench-rig", action, arguments, wait_ms=0))["operation"]
+            ids.append(got["operationId"])
+        for _ in range(100):
+            if len(ep.of(cp.Invoke)) >= 2:
+                break
+            await asyncio.sleep(0.02)
+        await reboot(ep, bridge, epoch=8, flags=PERSISTENT)
+        listed, more = bridge._purged_operation_ids(limit=1)
+        assert len(listed) == 1 and more is True
+        listed, more = bridge._purged_operation_ids()
+        assert sorted(listed) == sorted(ids) and more is False

@@ -453,6 +453,9 @@ class Gateway:
         if kind == "device.epoch" and isinstance(data, dict) and data.get("purged") is True:
             ids = data.get("operationIds")
             purged_ids = [i for i in ids if isinstance(i, str)] if isinstance(ids, list) else []
+            if data.get("truncated") is True:
+                log.warning("upstream %s: the purge proof for %s named only part of the operations dispatched before it; the "
+                            "others stay inhibited until a confirmed stop or an operator resolves them", up.name, device)
             mapped_ids = [g for g in (self.router.gateway_operation_id(up.name, i) for i in purged_ids) if g]
             data = {**{k: v for k, v in data.items() if k != "operationIds"}, "operationIds": mapped_ids}  # this gateway's ids
         self.events.append(kind, severity=event.get("severity", "info"),

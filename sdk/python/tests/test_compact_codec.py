@@ -29,7 +29,7 @@ class _NullStream:
         await asyncio.sleep(3600)
         return b""
 
-    def write(self, data):
+    def write(self, data, *, urgent=False):
         self.written += data
 
     async def close(self):
@@ -306,5 +306,26 @@ def test_the_packaged_frame_module_is_byte_identical_to_the_firmware_protocol_so
     root = Path(__file__).resolve().parents[3]
     source = root / "protocol" / "serial" / "frame.py"
     copy = root / "sdk" / "python" / "src" / "bhms" / "transport" / "hm_frame.py"
+    if not source.is_file():
+        pytest.skip("outside the repository tree: protocol/serial/frame.py is not there to compare with")
     assert not copy.is_symlink()
     assert copy.read_bytes() == source.read_bytes()
+
+
+async def test_a_stop_still_gets_queued_when_a_stalled_line_refuses_ordinary_writes(caplog):  # CMP-050
+    read_end, write_end = os.pipe()
+    stream = c.FdStream(write_end)
+    link = c.CompactLink(stream)
+    try:
+        for _ in range(64):
+            stream.write(b"\x00" * 4096)  # fills the pipe and then the queue: ordinary writes are refused
+        assert stream.dropped > 0
+        before = len(stream._out)
+        link.send(c.Invoke(1, 0, b"", 0, 0))
+        assert len(stream._out) == before  # an INVOKE is refused, and the refusal is logged
+        assert stream.dropped > 0 and "not draining" in caplog.text
+        link.send(c.Stop(3), session=1)
+        assert len(stream._out) > before  # the STOP got through on the reserved headroom
+    finally:
+        await stream.close()
+        os.close(read_end)
