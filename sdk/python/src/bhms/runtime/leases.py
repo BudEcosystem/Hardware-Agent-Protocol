@@ -8,7 +8,10 @@
 * TTL and waits are range-checked (BHMS-LSE-004); a lease belongs to its principal (BHMS-LSE-005); expiry runs on the
   monotonic clock, with a timer per lease and a lazy check on every use (BHMS-LSE-006); unknown ids read as expired
   (BHMS-LSE-007).
-* :meth:`LeaseManager.check` is the admission and pre-dispatch check of BHMS-LSE-010 with its exact codes.
+* :meth:`LeaseManager.check` is the admission and pre-dispatch check of BHMS-LSE-010 with its exact codes;
+  :meth:`LeaseManager.admit` is what every enforcement point calls: it validates any lease that was supplied
+  (BHMS-LSE-005/007 are unconditional) and refuses a request that presents no lease while one of its resources is leased
+  (BHMS-LSE-014), whoever asks.
 * :meth:`LeaseManager.revoke_covering` (``stop``) revokes active leases and raises the fence of their resources so a
   superseded holder is ``FENCED``.
 
@@ -230,6 +233,27 @@ class LeaseManager:
             raise BhmsError("FENCED", f"lease {lease_id} was superseded on {', '.join(superseded)}", field="leaseId",
                             hint="a newer lease exists for these resources; acquire a new lease")
         return lease
+
+    def admit(self, principal: Principal, lease_id: str | None, resources: Iterable[str], *,
+              required: bool) -> Lease | None:
+        """The lease check of one request that uses ``resources`` (an action, at admission and before dispatch).
+
+        A supplied ``lease_id`` is always validated with :meth:`check`, whether or not the action declares
+        ``requiresLease`` (BHMS-LSE-005, BHMS-LSE-007, BHMS-LSE-010). Without one, an action that requires a lease is
+        ``LEASE_REQUIRED``; any other is refused with ``LEASE_CONFLICT`` while a lease is ``active`` on one of its
+        resources (BHMS-LSE-014) — the refusal names the resources, never the holder, and is the same for every caller,
+        the holder included. Returns the lease the request runs under, or None when it needs and has none.
+        """
+        needed = list(resources)
+        if lease_id is not None or required:
+            return self.check(principal, lease_id, needed)
+        leased = [r for r in needed if self.holder_of(r) is not None]
+        if leased:
+            raise BhmsError("LEASE_CONFLICT", f"{', '.join(leased)} {'is' if len(leased) == 1 else 'are'} leased and "
+                            "this request presents no lease", field="leaseId", bound=leased,
+                            hint=f"pass the leaseId of the lease on {', '.join(leased)} if you hold it; otherwise wait "
+                                 "until that lease ends and retry (BHMS-LSE-014)")
+        return None
 
     def revoke_covering(self, resources: Iterable[str], *, reason: str = "stop") -> list[Lease]:
         """Revoke every active lease covering any of ``resources`` and raise their fences (BHMS-AUTH-021)."""

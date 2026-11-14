@@ -1,5 +1,22 @@
 # BHMS changelog
 
+## Unreleased
+
+Hardening round (Task 7b). Each entry names the evidence that caused it.
+
+- **BHMS-LSE-014 (new, MUST, profile `leases`)**: while a lease is `active` on a resource, every action that declares the
+  resource is refused with `LEASE_CONFLICT` (`field: "leaseId"`, `bound`: the leased resources, no holder) unless the request
+  presents that lease, whether or not the action declares `requiresLease` and whoever asks; a `leaseId` supplied with any action
+  is validated as in BHMS-LSE-010; both at admission and before dispatch; program steps present the program's lease when it
+  covers their resources. Requirement index: 251 rows. Evidence: Task 11 report, hostile suite "lease theft", issues T1a (the
+  Python gateway dropped a `leaseId` supplied with an action that does not require one: three of four attempts reached the
+  device) and T1b (LSE-010 checked leases only for `requiresLease` actions: the fourth reached it).
+
+### TS SDK to follow
+
+- BHMS-LSE-014 in the TypeScript device server (admission and pre-dispatch) and the conformance check
+  `leases.held-lease-blocks-everyone`; `stop.not-blocked-by-load` now presents the lease it holds.
+
 ## 2026-11-13 (v0.1)
 
 Conformance round 4 (Task 7): §13.3 states how the BHMS-SEC-021 bounds are counted (root at depth 0, the count includes the root and boolean schemas, the list of

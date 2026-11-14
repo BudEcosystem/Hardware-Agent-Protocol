@@ -1251,6 +1251,15 @@
   "test": "Cross-device lease on two upstreams; upstream leases acquired in resource order, released together."
  },
  {
+  "id": "BHMS-LSE-014",
+  "area": "LSE",
+  "level": "MUST",
+  "profile": "leases",
+  "method": "wire",
+  "summary": "While a lease is `active` on a resource, the server MUST refuse every action that declares that resource in `resources` unless the request presents that lease, whether o… (07)",
+  "test": "Hold a lease on a resource; invoke an action on it that does not declare requiresLease with no lease, a fabricated lease and a lease on another resource (LEASE_CONFLICT, LEASE_EXPIRED, LEASE_CONFLICT); the device counter is unchanged; with the lease it runs."
+ },
+ {
   "id": "BHMS-AUTH-001",
   "area": "AUTH",
   "level": "MUST",

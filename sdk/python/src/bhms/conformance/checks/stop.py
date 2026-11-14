@@ -67,9 +67,10 @@ async def stop_under_load(c: Context) -> None:
     if "leases" in c.caps:
         for resource in (f"{axis}/clamp", f"{axis}/motion"):
             leases.append((await c.ok("leases/acquire", {"resources": [resource], "ttlMs": 60_000}))["lease"])
-    await c.invoke_op(axis, "slow_move", {"duration_ms": 8000})
+    held = {"leaseId": leases[1]["leaseId"]} if leases else {}  # work on a leased resource presents the lease (BHMS-LSE-014)
+    await c.invoke_op(axis, "slow_move", {"duration_ms": 8000}, **held)
     for i in range(20):
-        await c.invoke_op(axis, "move_to", {"position": 20 + i})
+        await c.invoke_op(axis, "move_to", {"position": 20 + i}, **held)
     started = time.monotonic()
     result = await c.ok("stop", {"reason": "conformance load", "deviceIds": [axis, pump]})
     c.expect(time.monotonic() - started < 2.0, "stop was delayed by queued work or held leases")

@@ -669,6 +669,16 @@ class ProgramRunner:
         if truncated:
             self._check_boundary(run)
 
+    def _step_lease(self, run: _Run, spec: Any) -> str | None:
+        """The lease an invoke step presents: the program's lease when the step requires one or when that lease covers
+        every resource the step uses (a held lease refuses a request that does not present it, BHMS-LSE-014)."""
+        if run.lease_id is None or spec.requires_lease:
+            return run.lease_id if spec.requires_lease else None
+        lease = self.server.leases.get(run.lease_id)
+        if lease is not None and spec.resources and set(spec.resources).issubset(lease.resources):
+            return run.lease_id
+        return None
+
     async def _invoke(self, run: _Run, step: Step, path: str) -> None:
         srv, journal = self.server, self.server.journal
         try:
@@ -678,7 +688,7 @@ class ProgramRunner:
                                         field=f"program.steps[{path}].arguments",
                                         hint="check the saved value the step refers to").to_operation_error()) from None
         params = SimpleNamespace(device_id=step.device.device_id, action=step.spec.name, arguments=arguments,
-                                 lease_id=run.lease_id if step.spec.requires_lease else None, deadline_ms=None,
+                                 lease_id=self._step_lease(run, step.spec), deadline_ms=None,
                                  require=None, description_digest=None)
         key = derived_key(run.rec.id, path)
         request_digest = intent_digest("actions/invoke", {"deviceId": params.device_id, "action": params.action,

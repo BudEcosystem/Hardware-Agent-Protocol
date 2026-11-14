@@ -107,6 +107,41 @@ async def enforcement(c: Context) -> None:
     c.expect(await c.counter(axis) == base + 1, "only the one valid clamp may have reached the device")
 
 
+@check("leases.held-lease-blocks-everyone", ["BHMS-LSE-014", "BHMS-LSE-007", "BHMS-LSE-010"], profile="leases")
+async def held_lease_blocks(c: Context) -> None:
+    """While a resource is leased, an action on it that does not declare requiresLease is refused without that lease
+    (LEASE_CONFLICT naming the resource, not the holder); a lease supplied with such an action is validated (fabricated:
+    LEASE_EXPIRED, not covering: LEASE_CONFLICT); the device is never reached; with the lease the action runs."""
+    axis = c.axis()
+    clamp, motion = f"{axis}/clamp", f"{axis}/motion"
+    spec = (await c.describe(axis))["actions"]["pulse"]
+    c.expect(not spec.get("requiresLease") and motion in spec.get("resources", []), "pulse must use axis motion without requiring a lease")
+    c.refused(await c.invoke(axis, "pulse", {"count": 1}, leaseId="lease-fabricated"), "LEASE_EXPIRED",
+              what="pulse with a fabricated lease while nothing is leased")
+    lease = await _acquire(c, [motion], 30_000)
+    other = await _acquire(c, [clamp], 30_000)
+    try:
+        base = await c.counter(axis)
+        bare = await c.invoke(axis, "pulse", {"count": 1})
+        data = c.refused(bare, "LEASE_CONFLICT", field="leaseId", what="pulse without the lease held on its resource")
+        c.expect(data.get("bound") == [motion], f"the refusal must list the leased resources in bound: {data.get('bound')}")
+        c.expect(lease["leaseId"] not in str(bare.error), "the refusal must not disclose the lease that holds the resource")
+        c.expect(data.get("mayHaveActed") is False, "a lease refusal must say that nothing acted")
+        c.refused(await c.invoke(axis, "pulse", {"count": 1}, leaseId="lease-fabricated"), "LEASE_EXPIRED", what="pulse with a fabricated lease")
+        c.refused(await c.invoke(axis, "pulse", {"count": 1}, leaseId=other["leaseId"]), "LEASE_CONFLICT",
+                  what="pulse with a lease on another resource")
+        c.expect(await c.counter(axis) == base, "a refused action reached the device")
+        done = await c.run(axis, "pulse", {"count": 1}, leaseId=lease["leaseId"])
+        c.expect(done["state"] == "completed" and done.get("leaseId") == lease["leaseId"] and done.get("fence") == lease["fence"],
+                 f"with the lease the action runs and records it: {done['state']} {done.get('leaseId')}")
+        c.expect(await c.counter(axis) == base + 1, "exactly the one admitted pulse may have reached the device")
+    finally:
+        await c.ok("leases/release", {"leaseId": lease["leaseId"]})
+        await c.ok("leases/release", {"leaseId": other["leaseId"]})
+    free = await c.run(axis, "pulse", {"count": 1})
+    c.expect(free["state"] == "completed", f"after the lease ended the action runs without one: {free['state']}")
+
+
 @check("leases.key-lookup-before-lease", ["BHMS-OPS-033"], profile="leases")
 async def key_lookup_first(c: Context) -> None:
     """A same-key retry returns the original operation even after its lease has expired (the key lookup precedes the

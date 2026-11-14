@@ -512,14 +512,18 @@ class AgentBridge:
             acquired = await self.client.leases_acquire(resources, self._ttl(), wait_ms=0)
         except BhmsError as exc:
             if exc.code == "LEASE_CONFLICT" and any(set(resources) & set(h.resources) for h in self._held.values()):
-                raise BhmsError("LEASE_CONFLICT", exc.message, field=exc.field, bound=exc.bound,
-                                hint="your own earlier operation still holds it: wait for it with bhms_operation (or "
-                                     f"cancel it), then retry; {exc.hint}"[:2000]) from None
+                raise self._own_conflict(exc) from None
             raise
         self.stats.leases_acquired += 1
         lease = acquired.lease
         self._held[lease.lease_id] = _Held(lease.lease_id, list(resources))
         return lease
+
+    @staticmethod
+    def _own_conflict(exc: BhmsError) -> BhmsError:
+        return BhmsError("LEASE_CONFLICT", exc.message, field=exc.field, bound=exc.bound,
+                         hint="your own earlier operation still holds it: wait for it with bhms_operation (or "
+                              f"cancel it), then retry; {exc.hint}"[:2000])
 
     async def _release(self, lease_id: str) -> None:
         self._held.pop(lease_id, None)
@@ -537,7 +541,12 @@ class AgentBridge:
         resources are unknown learn them from the refusal.
         """
         if not needs_lease and not discover:
-            return await send(None)
+            try:
+                return await send(None)
+            except BhmsError as exc:  # BHMS-LSE-014: a resource leased for this bridge's own unsettled operation
+                if exc.code == "LEASE_CONFLICT" and any(set(resources) & set(h.resources) for h in self._held.values()):
+                    raise self._own_conflict(exc) from None
+                raise
         if needs_lease and not has_key:
             return await self._leased(send, resources)
         try:

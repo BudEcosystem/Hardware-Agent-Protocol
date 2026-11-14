@@ -324,8 +324,9 @@ class Router:
                 raise _tag(exc, f"bounds:{member}") from None
         resources = tuple(spec.get("resources") or ())
         lease_id = fence = upstream_lease = None
-        if spec.get("requiresLease"):
-            lease = gw.leases.manager.check(principal, params.lease_id, resources)
+        # any supplied lease is validated, and a held lease refuses a request without it (BHMS-LSE-005/007/010/014)
+        lease = gw.leases.manager.admit(principal, params.lease_id, resources, required=bool(spec.get("requiresLease")))
+        if lease is not None:
             lease_id, fence = lease.lease_id, lease.fence
             upstream_lease = gw.leases.upstream_lease_id(lease.lease_id, entry.namespace)
         up = gw.upstreams[entry.namespace]

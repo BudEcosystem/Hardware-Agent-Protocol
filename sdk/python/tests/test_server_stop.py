@@ -52,8 +52,9 @@ async def test_stop_runs_the_procedure_and_requests_cancellation_of_running_work
 async def test_stop_cancels_queued_operations_and_revokes_leases(env):  # BHMS-AUTH-021
     srv, axis, client, url, _ = await env()
     lease = (await client.leases_acquire(["axis-1"], 5000)).lease
-    first = (await client.actions_invoke("axis-1", "slow", {}, operation_key="a")).operation
-    queued = (await client.actions_invoke("axis-1", "move_to", {"target": 1}, operation_key="b")).operation
+    held = {"lease_id": lease.lease_id}  # work on a leased resource presents the lease (BHMS-LSE-014)
+    first = (await client.actions_invoke("axis-1", "slow", {}, operation_key="a", **held)).operation
+    queued = (await client.actions_invoke("axis-1", "move_to", {"target": 1}, operation_key="b", **held)).operation
     assert queued.state == "accepted"
     stop = (await client.stop("clear the cell", device_ids=["axis-1"], wait_ms=1000)).stops[0]
     assert queued.operation_id in stop.canceled_operations and stop.revoked_leases == [lease.lease_id]
@@ -135,12 +136,12 @@ async def test_stop_returns_initiated_promptly_and_reports_later(tmp_path):  # B
 
 async def test_stop_is_not_blocked_by_leases_or_a_saturated_queue(env):  # BHMS-AUTH-020
     srv, axis, client, url, _ = await env(queue_limit=8)
-    await client.leases_acquire(["axis-1"], 60_000)
-    await client.actions_invoke("axis-1", "slow", {})
+    held = {"lease_id": (await client.leases_acquire(["axis-1"], 60_000)).lease.lease_id}  # BHMS-LSE-014
+    await client.actions_invoke("axis-1", "slow", {}, **held)
     for _ in range(8):
-        await client.actions_invoke("axis-1", "move_to", {"target": 1})
+        await client.actions_invoke("axis-1", "move_to", {"target": 1}, **held)
     with pytest.raises(BhmsError) as busy:
-        await client.actions_invoke("axis-1", "move_to", {"target": 1})
+        await client.actions_invoke("axis-1", "move_to", {"target": 1}, **held)
     assert busy.value.code == "BUSY"
     start = time.monotonic()
     stop = (await client.stop("now", device_ids=["axis-1"], wait_ms=1000)).stops[0]

@@ -248,6 +248,7 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-LSE-011 | MUST | gateway | A server that forwards work to another enforcement point (an upstream server, a BHMS-Compact endpoint) MUST forward the fence so that the enforcement point can reject… (07) | fault | Partition a gateway, acquire a newer lease via another path, replay the old holder's command; endpoint rejects it (HMS LEASE-02). |
 | BHMS-LSE-012 | MUST | leases | When a lease expires or is revoked while an operation admitted under it is running, the server MUST apply the action's `onLeaseLoss`: `finish` — let it complete and re… (07) | fault | Expire the lease mid-operation for each onLeaseLoss value (finish, cancel, hold); behaviour as declared, no new program step starts. |
 | BHMS-LSE-013 | MUST | gateway | A gateway granting a lease that spans upstream servers MUST acquire the upstream leases in ascending resource-id order, MUST grant its own lease only after all of them… (07) | wire | Cross-device lease on two upstreams; upstream leases acquired in resource order, released together. |
+| BHMS-LSE-014 | MUST | leases | While a lease is `active` on a resource, the server MUST refuse every action that declares that resource in `resources` unless the request presents that lease, whether o… (07) | wire | Hold a lease on a resource; invoke an action on it that does not declare requiresLease with no lease, a fabricated lease and a lease on another resource (LEASE_CONFLICT, LEASE_EXPIRED, LEASE_CONFLICT); the device counter is unchanged; with the lease it runs. |
 
 ### AUTH
 
@@ -400,7 +401,7 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-CNF-005 | MUST | core | A report MUST state whether devices were physical or simulated. (14) | inspection | Reports with simulated devices say so. |
 | BHMS-CNF-006 | MUST | core | An implementation's message validator MUST accept every valid example in `spec/bhms/examples/` and reject every `invalid-*` example. (14) | inspection | Run the example corpus through the implementation's validator: valid accepted, invalid rejected. The validator is a library of the implementation and cannot be driven over the wire, so this row needs review evidence (the SDK's own test suite) and is never an automated pass. |
 
-Total: 250 requirements — agent 19, compact 17, fault 48, inspection 20, schema 10, transport 14, wire 122.
+Total: 251 requirements — agent 19, compact 17, fault 48, inspection 20, schema 10, transport 14, wire 123.
 
 ## 14.5 The reference runner
 

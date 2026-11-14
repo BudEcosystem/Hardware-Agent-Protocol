@@ -77,6 +77,22 @@ acquire the upstream leases in ascending resource-id order, MUST grant its own
 lease only after all of them are held, and MUST renew and release them with its
 own lease.
 
+**BHMS-LSE-014** While a lease is `active` on a resource, the server MUST refuse every
+action that declares that resource in `resources` unless the request presents that
+lease, whether or not the action declares `requiresLease` and whoever the caller is
+(the holder too: holding a lease is shown by presenting it, not by identity). The
+refusal is `LEASE_CONFLICT` with `field: "leaseId"` and `bound` listing the leased
+resources, without disclosing the holder. A `leaseId` supplied with any action,
+including one that does not declare `requiresLease`, MUST be validated as in
+BHMS-LSE-010 (BHMS-LSE-005 and BHMS-LSE-007 hold for every use of a lease). Both
+checks are made at admission and again immediately before dispatch; a program step
+is checked like any other action and presents the program's lease when that lease
+covers the step's resources. `stop` is never subject to this rule (BHMS-AUTH-020).
+
+A lease is therefore exclusive against everyone, not only against actions that ask
+for one: `requiresLease` says that an action cannot run *without* a lease; a held
+lease says that nothing else may use the resource *meanwhile*.
+
 ## 7.4 Authority
 
 A **principal** is established by the transport (BHMS-SEC-001). A server or

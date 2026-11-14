@@ -5,7 +5,7 @@
 
 * **Admission** (§6.5 steps 3–10, after the key lookup done by the caller): resolve device/action (``UNKNOWN_DEVICE``,
   ``UNKNOWN_ACTION``), authorize (``UNAUTHORIZED``), description pin (``STALE``), arguments and envelope
-  (:class:`~bhms.server.validation.ArgumentValidator`), ``require`` (``UNSUPPORTED``), lease (BHMS-LSE-010), device
+  (:class:`~bhms.server.validation.ArgumentValidator`), ``require`` (``UNSUPPORTED``), lease (BHMS-LSE-010, BHMS-LSE-014), device
   reachability (``DEVICE_UNAVAILABLE``), unresolved ``unknown`` operations on the same resources (``STALE`` naming the
   operation, BHMS-OPS-042), ``requiresFresh`` (BHMS-OBS-030), capacity (``BUSY``). Only then is the operation written.
 * **Queueing**: operations whose resources are in use wait in ``accepted`` in FIFO order per resource (they can be
@@ -247,10 +247,9 @@ class Executor:
         return validator.admit(arguments, bounds=bounds)
 
     def check_lease(self, principal: Principal, spec: ActionSpec, lease_id: str | None) -> Lease | None:
-        """Step 8 (BHMS-LSE-010); a lease passed for an action that does not require one must still be valid."""
-        if spec.requires_lease or lease_id is not None:
-            return self.server.leases.check(principal, lease_id, spec.resources)
-        return None
+        """Step 8 (BHMS-LSE-010, BHMS-LSE-014): a lease passed for an action that does not require one must still be
+        valid, and a lease held on one of the action's resources refuses a request that does not present it."""
+        return self.server.leases.admit(principal, lease_id, spec.resources, required=spec.requires_lease)
 
     def check_state(self, device: Device, spec: ActionSpec) -> None:
         """Step 9 except ``requiresFresh``: reachability, journal, unknown inhibition, capacity."""
@@ -416,8 +415,7 @@ class Executor:
             return BhmsError("DEADLINE_EXCEEDED", "the deadline passed before dispatch; nothing was sent",
                              hint="no effect occurred; resend with a later deadline")
         try:
-            if rec.op.get("leaseId") is not None or queued.spec.requires_lease:
-                self.server.leases.check(queued.principal, rec.op.get("leaseId"), queued.spec.resources)
+            self.check_lease(queued.principal, queued.spec, rec.op.get("leaseId"))
             if queued.device.status == "offline":
                 raise BhmsError("DEVICE_UNAVAILABLE", f"{queued.device.device_id} went offline before dispatch",
                                 hint="nothing was sent; retry when the device is back")

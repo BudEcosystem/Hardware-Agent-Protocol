@@ -67,7 +67,7 @@ def _gated_device(srv):
 
 async def _park_b_in_freshness_read(client, st):
     lease = (await client.leases_acquire(["ax"], 5000)).lease
-    await client.actions_invoke("ax", "a", {}, operation_key="a")
+    await client.actions_invoke("ax", "a", {}, lease_id=lease.lease_id, operation_key="a")  # ax is leased (BHMS-LSE-014)
     rb = await client.actions_invoke("ax", "b", {}, lease_id=lease.lease_id, operation_key="b")
     assert rb.operation.state == "accepted"
     await asyncio.sleep(0.15)
@@ -605,7 +605,7 @@ async def test_unexpected_freshness_error_rejects_the_queued_operation(tmp_path)
     srv, listener, client, st = await _open(tmp_path, "r9", _gated_device)
     try:
         lease = (await client.leases_acquire(["ax"], 5000)).lease
-        await client.actions_invoke("ax", "a", {}, operation_key="a")
+        await client.actions_invoke("ax", "a", {}, lease_id=lease.lease_id, operation_key="a")
         rb = await client.actions_invoke("ax", "b", {}, lease_id=lease.lease_id, operation_key="b")
         real = srv.observations.require_fresh
 
