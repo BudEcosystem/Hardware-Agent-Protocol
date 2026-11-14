@@ -315,7 +315,8 @@ async def test_nothing_is_forwarded_before_the_pending_row_is_durable(tmp_path, 
     async with rig(tmp_path, names=("a",)) as r:
         client = await r.client()
         monkeypatch.setattr(store_module.os, "fdatasync", held_sync)
-        r.gateway.rpc.active += 100  # a busy gateway: its pending rows are synced in the sync thread
+        shared = r.gateway.store.wait_synced  # as on a busy gateway: pending rows are synced in the sync thread
+        monkeypatch.setattr(r.gateway.store, "wait_synced", lambda ticket, inline=False: shared(ticket))
         try:
             invoke = asyncio.ensure_future(client.actions_invoke("a/axis-1", "move_to", {"target": 3}, operation_key="held",
                                                                  wait_ms=2000))
@@ -329,7 +330,6 @@ async def test_nothing_is_forwarded_before_the_pending_row_is_durable(tmp_path, 
             assert r.axes["a"].commands["move_to"] == 0  # nothing left for the upstream
         finally:
             gate.set()
-            r.gateway.rpc.active -= 100
         op = (await invoke).operation
         assert op.state == "completed" and r.axes["a"].commands["move_to"] == 1
 

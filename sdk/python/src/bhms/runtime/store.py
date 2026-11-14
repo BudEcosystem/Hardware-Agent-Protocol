@@ -25,9 +25,9 @@ Group commit (Ruling R12). A barrier is either synchronous (``transaction(barrie
 commit returns at once with a ticket (:attr:`Store.commit_seq`) and the caller awaits :meth:`Store.wait_synced`
 with it before it acts. Deferred barriers share ``fdatasync`` calls: one runs in a worker thread while the event loop goes
 on serving; every commit made while it runs is covered by the next one, which starts as soon as the running one ends.
-A lone caller waits for exactly one ``fdatasync`` (no batching window), and when the caller knows that nothing else is
-being served (``wait_synced(..., inline=True)``) that sync runs on the event loop thread, so a single client pays no
-thread hand-off; a hundred callers on distinct devices share a handful. The rule that matters is unchanged: nobody is told a barrier commit is durable before an ``fdatasync`` that
+A lone caller waits for exactly one ``fdatasync`` (no batching window), and with ``wait_synced(..., inline=True)`` a caller
+that finds nobody to share with syncs on the event loop thread, so a single client pays no thread hand-off; a hundred
+callers on distinct devices share a handful. The rule that matters is unchanged: nobody is told a barrier commit is durable before an ``fdatasync`` that
 began after that commit has returned. An ``fdatasync`` that fails makes the store refuse every later barrier
 (:class:`StoreError`): after an I/O error the kernel may have dropped the dirty pages, and a later successful sync would
 prove nothing about them.
@@ -162,6 +162,7 @@ class Store:
         self._syncer: concurrent.futures.ThreadPoolExecutor | None = None
         self._flight: asyncio.Future[None] | None = None  # the fdatasync of deferred barriers now running
         self._flight_target = 0  # the commits it covers
+        self._lone: dict[int, int] = {}  # tickets of the inline callers now checking whether they are alone
         self._checkpointer: _Checkpointer | None = None
         if self.path is not None:
             self._db.execute("PRAGMA wal_autocheckpoint=0")
@@ -250,18 +251,23 @@ class Store:
 
         Concurrent callers share ``fdatasync`` calls (group commit): a call that finds one running waits for it and,
         if its own commit came later, for the next one, which covers every commit made meanwhile; a caller that finds
-        none starts one at once in the store's sync thread. ``inline=True`` is for a caller that knows nothing else is
-        waiting to be served: when no sync is running it syncs on the event loop thread, as a synchronous barrier does,
-        which saves the hand-off to the sync thread and back (0.1 to 0.2 ms) when there is nobody to share the sync
-        with. Raises :class:`StoreError` when the sync fails (and from then on). Cancelling a caller never cancels the
-        shared sync.
+        none starts one at once in the store's sync thread. With ``inline=True`` a caller that finds no sync running
+        first yields once to the event loop, so that requests already read reach their own commit, and if no other
+        commit is then waiting it syncs on the event loop thread, as a synchronous barrier does: a lone intent (one
+        client, or operations queued on one device) pays no hand-off to the sync thread and back (0.1 to 0.2 ms, more
+        on a loaded host), and nothing else was waiting to be served meanwhile. Raises :class:`StoreError` when the
+        sync fails (and from then on). Cancelling a caller never cancels the shared sync.
         """
         while self._barriers and self._synced < ticket:
             if self._sync_failure is not None:
                 raise self._failed_sync(self._sync_failure)
             flight = self._flight
             if flight is None and inline:
-                self._sync_now()
+                if await self._alone(ticket):
+                    if self._flight is None:
+                        self._sync_now()
+                else:
+                    inline = False  # others are waiting: share one sync in the thread
                 continue
             if flight is None:
                 flight = self._start_flush()
@@ -272,6 +278,20 @@ class Store:
                 continue
             with contextlib.suppress(OSError):  # recorded by _land, raised above on the next turn
                 await asyncio.shield(flight)
+
+    async def _alone(self, ticket: int) -> bool:
+        """Yield once; True when no caller with another ticket is waiting meanwhile (the admission and the execution of
+        one operation wait on the same ticket)."""
+        self._lone[ticket] = self._lone.get(ticket, 0) + 1
+        try:
+            await asyncio.sleep(0)
+            return all(other == ticket for other in self._lone)
+        finally:
+            left = self._lone[ticket] - 1
+            if left:
+                self._lone[ticket] = left
+            else:
+                del self._lone[ticket]
 
     def _start_flush(self) -> asyncio.Future[None]:
         loop = asyncio.get_running_loop()

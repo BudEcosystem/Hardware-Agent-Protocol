@@ -99,7 +99,6 @@ class Server:
         self.strict = strict
         self._handlers: dict[str, MethodHandler] = {"server/discover": self._discover}
         self.sessions: set[Session] = set()
-        self.active = 0  # requests whose handler is running now, over every connection (a stream counts until it starts)
 
     # ------------------------------------------------------------------ registration
 
@@ -140,12 +139,6 @@ class Server:
             return True
         return bool(value.get(member)) if isinstance(value, dict) else False
 
-    @property
-    def quiet(self) -> bool:
-        """At most one request is being handled (the caller's own): a durable write may sync on the event loop thread
-        instead of sharing a sync (see :meth:`bhms.runtime.store.Store.wait_synced`)."""
-        return self.active <= 1
-
     # ------------------------------------------------------------------ dispatch
 
     async def dispatch(self, ctx: RequestContext) -> Any:
@@ -175,11 +168,7 @@ class Server:
                 argument = spec.params.model_validate(params)
             except ValidationError as exc:
                 raise schema.from_pydantic_error(exc) from None
-        self.active += 1
-        try:
-            outcome = await handler(argument, ctx)
-        finally:
-            self.active -= 1
+        outcome = await handler(argument, ctx)
         if hasattr(outcome, "__aiter__"):
             return _wire_stream(outcome)
         return self._finish_result(spec, outcome)

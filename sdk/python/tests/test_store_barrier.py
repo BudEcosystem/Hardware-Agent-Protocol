@@ -239,3 +239,27 @@ async def test_an_inline_wait_syncs_on_the_calling_thread_unless_a_shared_sync_i
     await asyncio.wait_for(asyncio.gather(shared, inline), 5)
     assert threads[0] == "MainThread" and threads[1].startswith("bhms-store-sync")
     assert dispatch_store.synced_seq == dispatch_store.commit_seq
+
+
+async def test_inline_callers_with_other_commits_waiting_share_one_sync_in_the_thread(dispatch_store, monkeypatch):
+    threads: list[str] = []
+
+    def spy(fd: int) -> None:
+        threads.append(threading.current_thread().name)
+        os.fsync(fd)
+
+    monkeypatch.setattr(store_module.os, "fdatasync", spy)
+
+    async def intent(key: str) -> None:
+        with dispatch_store.transaction(barrier=True, defer_sync=True):
+            dispatch_store.meta_set(key, "1")
+        ticket = dispatch_store.commit_seq
+        # an operation's admission and its execution wait on the same ticket: that is still one caller
+        await asyncio.gather(dispatch_store.wait_synced(ticket, inline=True), dispatch_store.wait_synced(ticket, inline=True))
+
+    await intent("lone")
+    assert threads == ["MainThread"]
+    threads.clear()
+    await asyncio.gather(*(intent(f"k{i}") for i in range(8)))  # eight intents at once: nobody syncs alone
+    assert threads and all(name.startswith("bhms-store-sync") for name in threads) and len(threads) < 8
+    assert dispatch_store.synced_seq == dispatch_store.commit_seq

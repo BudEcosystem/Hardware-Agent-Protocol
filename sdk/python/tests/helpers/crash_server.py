@@ -87,8 +87,10 @@ elif pause == "in-batch":
         return None
 
     store_module.Store._start_flush = recording_start_flush  # type: ignore[method-assign]
-    # a busy server: every intent is synced in the store's sync thread (a quiet one syncs a lone intent inline)
-    executor_module.Executor._quiet = lambda self: False  # type: ignore[method-assign]
+    # as on a busy server: every intent is synced in the store's sync thread (a lone intent would be synced inline)
+    original_wait_synced = store_module.Store.wait_synced
+    store_module.Store.wait_synced = (  # type: ignore[method-assign]
+        lambda self, ticket, inline=False: original_wait_synced(self, ticket))
     store_module.os.fdatasync = batching_fdatasync  # type: ignore[attr-defined]
     original_checkpointer = store_module._Checkpointer.__init__
     store_module._Checkpointer.__init__ = (  # type: ignore[method-assign]

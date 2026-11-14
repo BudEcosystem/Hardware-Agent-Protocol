@@ -29,7 +29,7 @@ def _append(path: Path, entry: dict[str, Any], lock: threading.Lock) -> None:
         handle.write(json.dumps(entry) + "\n")
 
 
-async def watch_loop(path: Path, *, threshold_ms: float = 10.0, who: str = "server") -> None:
+async def watch_loop(path: Path, *, threshold_ms: float = 5.0, who: str = "server") -> None:
     """Record event-loop wake-ups more than ``threshold_ms`` late until cancelled."""
     lock = threading.Lock()
     loop = asyncio.get_running_loop()
@@ -41,7 +41,7 @@ async def watch_loop(path: Path, *, threshold_ms: float = 10.0, who: str = "serv
             _append(path, {"kind": "loop", "who": who, "start": before_wall, "ms": round(late_ms, 2)}, lock)
 
 
-def time_fdatasync(path: Path, *, threshold_ms: float = 10.0) -> None:
+def time_fdatasync(path: Path, *, threshold_ms: float = 5.0) -> None:
     """Replace ``os.fdatasync`` in this process by a wrapper that records slow calls."""
     lock = threading.Lock()
     real = os.fdatasync

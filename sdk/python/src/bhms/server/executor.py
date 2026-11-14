@@ -313,7 +313,7 @@ class Executor:
             self._start(rec, device, spec, admitted)
             # The answer never precedes the durable intent; a failed sync is settled (and reported) by the execution.
             with contextlib.suppress(StoreError):
-                await self.server.journal.durable(rec, inline=self._quiet())
+                await self.server.journal.durable(rec, inline=True)
         else:
             self._enqueue(rec, device, spec, admitted, principal)
         return rec
@@ -463,16 +463,11 @@ class Executor:
         execution.timer = loop.call_at(execution.deadline, self._on_deadline, execution)
         execution.task = self._spawn(self._run(execution))
 
-    def _quiet(self) -> bool:
-        """Nothing but the caller is being served: sync on the loop thread rather than hand the sync to a thread."""
-        rpc = self.server.rpc
-        return rpc is not None and rpc.quiet
-
     async def _intent_durable(self, execution: Execution) -> tuple[str, Any] | None:
         """Wait until the ``dispatching`` record is on stable storage (BHMS-OPS-003); None when the handler may be called,
         else the outcome of an operation whose handler is never called (nothing was sent to the device)."""
         try:
-            await self.server.journal.durable(execution.rec, inline=self._quiet())
+            await self.server.journal.durable(execution.rec, inline=True)
         except StoreError as exc:
             self.server.journal_failed(exc)
             return "unsent", ("failed", "INTERNAL", f"the dispatch record could not be made durable ({exc}), so the "

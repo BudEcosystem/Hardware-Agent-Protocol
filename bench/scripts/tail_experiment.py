@@ -3,7 +3,7 @@
 freezes its start-up heap since Task 12b), with the background WAL checkpointer effectively off (``--no-checkpoint``) and without the
 start-up ``gc.freeze()`` (``--no-gc-freeze``, the SDK before Task 12b), same machine, same state directory
 filesystem, several rounds each. Prints per round: samples, p50, p99, p99.9, max, how many invokes took more than 10 ms and the
-sample indices of the first five, and what overlapped each slow invoke (bench/stalls.py): an fdatasync over 10 ms in the server,
+sample indices of the first five, and what overlapped each slow invoke (bench/stalls.py): an fdatasync over 5 ms in the server,
 a server event-loop stall, a client event-loop stall, or nothing seen.
 
 ``python bench/scripts/tail_experiment.py [--n 8000] [--rounds 3] [--state-root DIR]``

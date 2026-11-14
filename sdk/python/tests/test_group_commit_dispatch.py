@@ -108,7 +108,8 @@ async def test_a_failed_intent_sync_sends_nothing_and_says_so(rig):
 
 async def test_a_stop_during_the_intent_sync_ends_the_operation_without_calling_the_handler(rig, monkeypatch):
     srv, client, spy, calls = rig
-    monkeypatch.setattr(srv.executor, "_quiet", lambda: False)  # a busy server: the intent's sync runs in the sync thread
+    shared = srv.store.wait_synced  # as on a busy server: the intent's sync runs in the sync thread, never inline
+    monkeypatch.setattr(srv.store, "wait_synced", lambda ticket, inline=False: shared(ticket))
     spy.gate = threading.Event()  # the intent's fsync is held
     invoke = asyncio.ensure_future(client.actions_invoke("dev-2", "set_point", {"value": 9}, wait_ms=0))
     for _ in range(200):
@@ -143,3 +144,21 @@ async def test_a_lone_client_pays_no_thread_hand_off_and_concurrent_clients_shar
     await asyncio.gather(*(client.actions_invoke(f"dev-{i % DEVICES}", "set_point", {"value": 1}, wait_ms=5000)
                            for i in range(48)))
     assert any(name.startswith("bhms-store-sync") for name in threads) and len(threads) < 48
+
+
+async def test_operations_queued_on_one_device_are_synced_inline(rig, monkeypatch):
+    """Intents that cannot share a sync (one device runs one operation at a time) gain nothing from the sync thread:
+    each is synced on the event loop, without the hand-off that a loaded host makes expensive."""
+    srv, client, spy, calls = rig
+    threads: list[str] = []
+    inner = spy.__call__
+
+    def recording(fd: int) -> None:
+        threads.append(threading.current_thread().name)
+        inner(fd)
+
+    monkeypatch.setattr(store_module.os, "fdatasync", recording)
+    results = await asyncio.gather(*(client.actions_invoke("dev-4", "set_point", {"value": i}, wait_ms=5000)
+                                     for i in range(20)))
+    assert {r.operation.state for r in results} == {"completed"}
+    assert threads.count("MainThread") >= 18, threads  # (the first admissions may still find each other)

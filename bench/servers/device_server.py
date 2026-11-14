@@ -90,7 +90,7 @@ def main() -> None:
     parser.add_argument("--no-gc-freeze", action="store_true",
                         help="experiment only: skip freezing the start-up heap (the SDK before Task 12b)")
     parser.add_argument("--gc-log", help="experiment only: append one line per garbage collection slower than 5 ms to this file")
-    parser.add_argument("--stall-log", help="experiment only: append JSON lines for fdatasync calls and event-loop stalls over 10 ms "
+    parser.add_argument("--stall-log", help="experiment only: append JSON lines for fdatasync calls and event-loop stalls over 5 ms "
                                             "(bench/stalls.py)")
     args = parser.parse_args()
     if args.stall_log:

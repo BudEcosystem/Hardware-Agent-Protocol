@@ -319,7 +319,8 @@ async def test_a_cancel_during_the_first_childs_intent_sync_cancels_that_child(e
         real(fd)
 
     monkeypatch.setattr(store_module.os, "fdatasync", held_sync)
-    monkeypatch.setattr(srv.executor, "_quiet", lambda: False)  # a busy server: intents are synced in the sync thread
+    shared = srv.store.wait_synced  # as on a busy server: intents are synced in the sync thread, never inline
+    monkeypatch.setattr(srv.store, "wait_synced", lambda ticket, inline=False: shared(ticket))
     prog = program(steps=[{"kind": "invoke", "deviceId": "focus-1", "action": "creep", "arguments": {}},
                           {"kind": "invoke", "deviceId": "focus-1", "action": "mark", "arguments": {}}],
                    input={"type": "object", "additionalProperties": False, "properties": {}})
