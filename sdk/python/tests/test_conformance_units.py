@@ -123,7 +123,7 @@ GOOD_DESCRIPTION = {
     "actions": {"set": {"input": {"type": "object", "required": ["v"], "properties": {"v": {"type": "number", "multipleOf": 0.1, "minimum": 0, "maximum": 100}}},
                         "output": {"type": "object", "properties": {"r": {"type": "number"}}},
                         "compact": {"index": 0, "args": [{"name": "v", "type": "u16", "scale": 0.1}], "result": [{"name": "r", "type": "f32"}]}}},
-    "properties": {"t": {"schema": {"type": "number"}, "compact": {"index": 0, "type": "i16"}}},
+    "properties": {"t": {"schema": {"type": "integer", "minimum": -32768, "maximum": 32767}, "compact": {"index": 0, "type": "i16"}}},
 }
 
 

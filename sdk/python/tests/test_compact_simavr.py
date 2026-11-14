@@ -73,6 +73,8 @@ async def test_the_arduino_in_simavr_is_served_by_a_gateway_and_driven_with_bhms
             read = await bhms("read", url, "led/bench-led", "analog0")
             assert json.dumps(read).count("341") >= 1  # 1667 mV on a 5000 mV reference is 341 counts
             again = await bhms("call", url, "led/bench-led", "led_set", "on=true", "--key", "simavr-1")
+            replay = again["data"]["operation"] if "operation" in again.get("data", {}) else again["data"]
+            assert replay["operationId"] == op["operationId"]  # the retained operation answers the same key
             observed = to_wire(await client.operations_list(device_id="led/bench-led"))["operations"]
             assert len(observed) == 1  # the same key never made a second operation
     assert [line for line in streams[-1].stderr if line.startswith("LED")] == ["LED 1"]  # the pin changed exactly once
