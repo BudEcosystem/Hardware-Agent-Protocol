@@ -114,6 +114,18 @@ class LedAnalogE2E(unittest.TestCase):
         link.expect_silence()
         self.assertEqual(self.leds(), ["LED 1", "LED 0"])
 
+    def test_the_effect_report_holds_only_effects_whatever_the_frames_carry(self):
+        """stderr is the effect report ("LED 0|1" lines) that tests count pin changes in. A frame byte 0x0A must not leak
+        anything into it: simavr's UART echo did (a line of frame bytes, then a colour reset glued to the next "LED" line),
+        so a board whose HELLO held 0x0A looked as if its LED had never changed."""
+        link = self.link
+        wire, _ = self.do_hello(0x0A0A0A0A)
+        self.assertIn(b"\x0a\x0a\x0a\x0a", wire)
+        link.send(h.invoke(1, 0, bytes([1])), 1)
+        wire, fr = link.recv(TIMEOUT)
+        self.assertEqual(fr.payload, h.result(1, 3, 1, 0, bytes([1])))
+        self.assertEqual(self.target.stderr_lines(), ["LED 1"])
+
     def test_corruption_and_recovery(self):
         link = self.link
         self.do_hello(1)

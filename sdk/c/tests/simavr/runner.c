@@ -6,7 +6,9 @@
  *
  * - UART0 TX bytes go to stdout; stdin bytes feed UART0 RX (with simavr's own
  *   XOFF/XON flow control honoured, baud timing emulated by simavr).
- * - PORTB `--led-pin` transitions are reported on stderr as "LED 0|1".
+ * - PORTB `--led-pin` transitions are reported on stderr as "LED 0|1". Nothing
+ *   else is written there while the firmware runs: simavr's own echo of the
+ *   UART output is switched off (see main).
  * - The run is paced to wall-clock time so firmware millis() matches the
  *   harness's timeouts.
  * - EEPROM is loaded from / saved to FILE (every 200 ms of wall time when it
@@ -151,6 +153,16 @@ int main(int argc, char **argv) {
     avr->vcc = avr->avcc = avr->aref = 5000;
     load_eeprom(avr, eeprom);
 
+    /* simavr echoes what the firmware transmits as a text line on stderr (AVR_UART_FLAG_STDIO, on by default): at every
+     * 0x0A in the stream, or after 256 bytes, it prints "ESC[32m<bytes>\n" and leaves the colour reset "ESC[0m" to start
+     * the next line. Here the UART carries binary frames and stderr is the effect report, so that echo put frame bytes
+     * into it and turned the next "LED 1" into "ESC[0mLED 1" whenever a frame held 0x0A (about 1 HELLO in 40). */
+    {
+        uint32_t uart_flags = 0;
+        (void)avr_ioctl(avr, AVR_IOCTL_UART_GET_FLAGS('0'), &uart_flags);
+        uart_flags &= ~(uint32_t)AVR_UART_FLAG_STDIO;
+        (void)avr_ioctl(avr, AVR_IOCTL_UART_SET_FLAGS('0'), &uart_flags);
+    }
     avr_irq_register_notify(avr_io_getirq(avr, AVR_IOCTL_UART_GETIRQ('0'), UART_IRQ_OUTPUT), uart_out, NULL);
     avr_irq_register_notify(avr_io_getirq(avr, AVR_IOCTL_UART_GETIRQ('0'), UART_IRQ_OUT_XOFF), xoff, NULL);
     avr_irq_register_notify(avr_io_getirq(avr, AVR_IOCTL_UART_GETIRQ('0'), UART_IRQ_OUT_XON), xon, NULL);

@@ -28,8 +28,8 @@ from bhms.testing.compact_endpoint import spawn_process_stream
 HOST = os.environ.get("BHMS_SIMAVR_SSH")
 SRC = Path(__file__).resolve().parents[1] / "src"
 LAB = "~/hms-lab/bhms9a/src"
-REMOTE = (f"cd {LAB} && exec nice -n 10 docker run -i --rm --cpus=2 --user $(id -u):$(id -g) -e HOME=/tmp -v $PWD:/work "
-          "bhms9a-avr /work/sdk/c/build-avr/runner --mcu atmega328p --freq 16000000 --adc0-mv 1667 --led-pin 5 "
+REMOTE = (f"cd {LAB} && exec nice -n 10 docker run -i --rm --name hms-lab-bhms-simavr-$$ --cpus=2 --user $(id -u):$(id -g) "
+          "-e HOME=/tmp -v $PWD:/work bhms9a-avr /work/sdk/c/build-avr/runner --mcu atmega328p --freq 16000000 --adc0-mv 1667 --led-pin 5 "
           "--eeprom /tmp/ee.bin /work/sdk/c/build-avr/atmega328p/atmega328p.elf")
 
 pytestmark = pytest.mark.skipif(not HOST, reason="opt-in: set BHMS_SIMAVR_SSH to the worker host that has the 9a AVR lab")
@@ -67,21 +67,32 @@ async def test_the_arduino_in_simavr_is_served_by_a_gateway_and_driven_with_bhms
             url = f"unix:{tmp_path}/gw.sock"
             listed = await bhms("ls", url)
             assert "led/bench-led" in json.dumps(listed)
+            board = streams[-1]  # the board that serves the operation; the link must not be reopened under it
             called = await bhms("call", url, "led/bench-led", "led_set", "on=true", "--key", "simavr-1", any_exit=True)
             op = called["data"]["operation"] if "operation" in called.get("data", {}) else called["data"]
-            # led_set declares maxDurationMs 100 and the board is behind ssh and docker (about 100 to 130 ms round trip), so the
-            # executor sometimes ends the operation at its bound before the RESULT arrives. Both outcomes are honest and the
-            # command ran exactly once either way: completed, or failed DEADLINE_EXCEEDED with mayHaveActed (checked on the pin).
+            # led_set declares maxDurationMs 100 and the board is behind ssh and docker on a shared machine, so the executor
+            # sometimes reaches its bound before the RESULT arrives: the operation becomes unknown and the RESULT that follows
+            # settles it failed DEADLINE_EXCEEDED (BHMS-OPS-071), with what the device answered recorded in the history.
             if op["state"] == "unknown":
                 for _ in range(100):
                     op = to_wire(await client.operations_get(op["operationId"]))["operation"]
                     if op["state"] != "unknown":
                         break
                     await asyncio.sleep(0.2)
+            assert streams == [board], "the link to the board was reopened while the operation ran"
+            records = bridge.server.journal.list(principal=None, limit=10)[0]
+            assert len(records) == 1  # one operation reached the bridge
+            record = bridge.server.journal.get(records[0]["operationId"])
+            history = bridge.server.journal.history(record)
+            assert op["state"] == record.state
             if op["state"] == "completed":
                 assert op["result"] == {"writes": 1}
+                assert [h["state"] for h in history if h["kind"] == "state"] == ["accepted", "dispatching", "completed"]
             else:
                 assert op["state"] == "failed" and op["error"]["bhmsCode"] == "DEADLINE_EXCEEDED" and op["error"]["mayHaveActed"], op
+                # the device's own answer is on record: it completed the command, once, after the bound
+                assert [h.get("state") for h in history] == ["accepted", "dispatching", "unknown", "failed"], history
+                assert history[-1]["kind"] == "reconciliation" and "returned {'writes': 1}" in history[-1]["detail"], history
             read = await bhms("read", url, "led/bench-led", "analog0")
             assert json.dumps(read).count("341") >= 1  # 1667 mV on a 5000 mV reference is 341 counts
             again = await bhms("call", url, "led/bench-led", "led_set", "on=true", "--key", "simavr-1", any_exit=True)
@@ -89,7 +100,11 @@ async def test_the_arduino_in_simavr_is_served_by_a_gateway_and_driven_with_bhms
             assert replay["operationId"] == op["operationId"]  # the retained operation answers the same key
             observed = to_wire(await client.operations_list(device_id="led/bench-led"))["operations"]
             assert len(observed) == 1  # the same key never made a second operation
-    assert [line for line in streams[-1].stderr if line.startswith("LED")] == ["LED 1"]  # the pin changed exactly once
+            assert len(bridge.server.journal.list(principal=None, limit=10)[0]) == 1  # and nothing more reached the bridge
+            assert streams == [board]
+            # The runner reports each change of the LED pin on stderr, and nothing else: the pin changed exactly once, on the
+            # board that served the operation (read while the board still runs; each line is written when the pin changes).
+            assert [line for line in board.stderr if "LED" in line] == ["LED 1"], board.stderr
 
 
 def _quote(command: str) -> str:
