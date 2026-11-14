@@ -188,3 +188,98 @@ async def test_stop_with_an_unwritable_journal_is_degraded_audit(env):  # BHMS-A
     ok = (await client.actions_invoke("axis-1", "move_to", {"target": 1}, wait_ms=2000)).operation
     assert ok.state == "completed"
     assert running.operation_id
+
+
+async def test_close_ends_a_stop_procedure_that_never_reports_and_records_it(tmp_path):  # BHMS-AUTH-024
+    """A stop procedure still running when the server closes is waited for (bounded), then abandoned: its task ends with the
+    server (none is left pending on a closed event loop) and the abandonment is recorded, since the device may or may not
+    have stopped."""
+    srv = DeviceServer("hung-stop", state_dir=tmp_path)
+    dev = srv.device("press", resources=["press"])
+    entered = asyncio.Event()
+
+    @dev.on_stop(evidence="measured")
+    async def halt(ctx):
+        entered.set()
+        await asyncio.Event().wait()
+
+    listener = await srv.listen(f"unix:{tmp_path}/h.sock")
+    srv.stopper.close_timeout = 0.2
+    seen: list[dict] = []
+    srv.events.listen(lambda event, seq: seen.append(event))
+    client = await Client.connect(f"unix:{tmp_path}/h.sock")
+    try:
+        stop = (await client.stop("stop now", device_ids=["press"], wait_ms=50)).stops[0]
+        assert stop.outcome == "initiated" and entered.is_set()
+        tasks = list(srv.stopper.tasks)
+        assert tasks
+    finally:
+        await client.close()
+        await listener.close()
+    start = time.monotonic()
+    await srv.close()
+    assert time.monotonic() - start < 2.0
+    assert all(t.done() for t in tasks) and not srv.stopper.tasks
+    abandoned = [e for e in seen if e["type"] == "stop" and e["data"]["outcome"] == "failed"]
+    assert len(abandoned) == 1 and abandoned[0]["deviceId"] == "press", seen
+    assert "closed" in abandoned[0]["message"] and "may" in abandoned[0]["message"]
+
+
+async def _stop_then_close(tmp_path, halt_body, *, max_duration_ms):
+    """Serve one device whose stop procedure is ``halt_body``, stop it, close the server at once; return (seconds the
+    close took, the stop events recorded, the procedure's log)."""
+    srv = DeviceServer("closing", state_dir=tmp_path)
+    dev = srv.device("press", resources=["press"])
+    log: list[str] = []
+
+    @dev.on_stop(evidence="measured", max_duration_ms=max_duration_ms)
+    async def halt(ctx):
+        await halt_body(log)
+
+    listener = await srv.listen(f"unix:{tmp_path}/c.sock")
+    srv.stopper.close_timeout = 0.2
+    seen: list[dict] = []
+    srv.events.listen(lambda event, seq: seen.append(event))
+    client = await Client.connect(f"unix:{tmp_path}/c.sock")
+    try:
+        assert (await client.stop("stop now", device_ids=["press"], wait_ms=50)).stops[0].outcome == "initiated"
+    finally:
+        await client.close()
+        await listener.close()
+    start = time.monotonic()
+    await srv.close()
+    return time.monotonic() - start, [e for e in seen if e["type"] == "stop"], log
+
+
+async def test_close_lets_a_stop_finish_within_its_declared_bound(tmp_path):  # BHMS-AUTH-024
+    """A ramp-down that takes longer than the server's own close wait but stays inside the device's declared stop bound
+    is never cut by a server shutdown: it finishes and its confirmation is recorded."""
+    async def ramp(log):
+        log.append("ramp start")
+        try:
+            await asyncio.sleep(1.2)
+            log.append("ramp done")
+        except asyncio.CancelledError:
+            log.append("ramp cancelled")
+            raise
+
+    took, events, log = await _stop_then_close(tmp_path, ramp, max_duration_ms=3000)
+    assert log == ["ramp start", "ramp done"]
+    assert 1.0 < took < 2.5
+    assert [e["data"]["outcome"] for e in events] == ["initiated", "confirmed"]
+
+
+async def test_close_ends_a_hung_stop_after_its_declared_bound(tmp_path):  # BHMS-AUTH-024
+    async def hung(log):
+        log.append("start")
+        try:
+            await asyncio.Event().wait()
+        except asyncio.CancelledError:
+            log.append("cancelled")
+            raise
+
+    took, events, log = await _stop_then_close(tmp_path, hung, max_duration_ms=1000)
+    assert log == ["start", "cancelled"]
+    assert 0.8 < took < 2.0  # the bound runs from when the stop began, not from the close
+    assert [e["data"]["outcome"] for e in events] == ["initiated", "failed"]
+    assert "closed before the stop procedure reported" in events[-1]["message"]

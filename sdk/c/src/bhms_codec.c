@@ -121,9 +121,10 @@ size_t bhms_enc_read(uint8_t *b, uint16_t request, uint8_t property, uint8_t fla
     return BHMS_LEN_READ;
 }
 
-size_t bhms_enc_stop(uint8_t *b, uint8_t reason) {
+size_t bhms_enc_stop(uint8_t *b, uint8_t reason, uint8_t token) {
     b[0] = BHMS_MSG_STOP;
     b[1] = reason;
+    b[2] = token;
     return BHMS_LEN_STOP;
 }
 
@@ -162,11 +163,12 @@ size_t bhms_enc_value(uint8_t *b, uint16_t request, uint8_t property, uint8_t qu
     return BHMS_LEN_VALUE_FIXED + n_value;
 }
 
-size_t bhms_enc_stop_ack(uint8_t *b, uint8_t outcome, uint8_t evidence, uint8_t canceled) {
+size_t bhms_enc_stop_ack(uint8_t *b, uint8_t outcome, uint8_t evidence, uint8_t canceled, uint8_t token) {
     b[0] = BHMS_MSG_STOP_ACK;
     b[1] = outcome;
     b[2] = evidence;
     b[3] = canceled;
+    b[4] = token;
     return BHMS_LEN_STOP_ACK;
 }
 
@@ -251,6 +253,7 @@ int bhms_dec_stop_ack(const uint8_t *p, size_t n, bhms_stop_ack *o) {
     o->outcome = p[1];
     o->evidence = p[2];
     o->canceled = p[3];
+    o->token = p[4];
     return 0;
 }
 

@@ -256,6 +256,7 @@ static void test_estop_over_the_wire(void) {
         ack = must(ack, "STOP_ACK on the pin edge");
         CHECK(ack->kind == BHMS_KIND_TELEMETRY);
         CHECK(bhms_dec_stop_ack(ack->payload, ack->length, &sa) == 0 && sa.canceled == 1);
+        CHECK(sa.token == 0); /* the pin edge: never mistaken for a gateway's stop */
         CHECK(find(f, n, BHMS_MSG_RESULT) != 0 || find(f, n, BHMS_MSG_STATUS) != 0);
     }
     CHECK(b.a.state == ARM_ST_ESTOP && !b.rig.servo_en_pin);
@@ -266,7 +267,7 @@ static void test_estop_over_the_wire(void) {
         bhms_stop_ack sa;
         ack = must(ack, "second STOP_ACK (confirmed) after the E-stop");
         CHECK(bhms_dec_stop_ack(ack->payload, ack->length, &sa) == 0);
-        CHECK(sa.outcome == BHMS_STOPACK_CONFIRMED && sa.evidence == BHMS_EV_MEASURED);
+        CHECK(sa.outcome == BHMS_STOPACK_CONFIRMED && sa.evidence == BHMS_EV_MEASURED && sa.token == 0);
     }
     /* The E-stop is observable as a measured property, with the latch. */
     CHECK(read_prop(&b, ARM_PROP_ESTOP_STATE, &v) && v.quality == BHMS_Q_VALID && v.value[0] == ESTOP_PRESSED);
@@ -305,14 +306,14 @@ static void test_stop_message_and_hold(void) {
     invoke(&b, ARM_ACT_MOVE_JOINTS, 8, a, move_args(a, -100, 60, 80, 30, 50, 30));
     drain(&b, f, 10);
     pump(&b, 300);
-    send(&b, p, bhms_enc_stop(p, BHMS_STOP_CLIENT));
+    send(&b, p, bhms_enc_stop(p, BHMS_STOP_CLIENT, 0x2B));
     n = drain(&b, f, 10);
     {
         const bhms_host_frame *ack = find(f, n, BHMS_MSG_STOP_ACK);
         bhms_stop_ack sa;
         ack = must(ack, "STOP_ACK (initiated)");
         CHECK(bhms_dec_stop_ack(ack->payload, ack->length, &sa) == 0);
-        CHECK(sa.outcome == BHMS_STOPACK_INITIATED && sa.canceled == 1);
+        CHECK(sa.outcome == BHMS_STOPACK_INITIATED && sa.canceled == 1 && sa.token == 0x2B);
     }
     pump(&b, 800);
     n = drain(&b, f, 10);
@@ -321,7 +322,7 @@ static void test_stop_message_and_hold(void) {
         bhms_stop_ack sa;
         ack = must(ack, "STOP_ACK (confirmed)");
         CHECK(bhms_dec_stop_ack(ack->payload, ack->length, &sa) == 0);
-        CHECK(sa.outcome == BHMS_STOPACK_CONFIRMED && sa.evidence == BHMS_EV_MEASURED);
+        CHECK(sa.outcome == BHMS_STOPACK_CONFIRMED && sa.evidence == BHMS_EV_MEASURED && sa.token == 0x2B);
     }
     /* The device fenced everything seen so far: the old lease is stale, a new one works. */
     invoke(&b, ARM_ACT_MOVE_JOINTS, 8, a, move_args(a, 0, 30, 90, 45, 0, 50));

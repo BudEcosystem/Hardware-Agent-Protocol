@@ -1,0 +1,61 @@
+# A BHMS gateway in front of microcontroller devices that speak BHMS-Compact over serial.
+#
+#     python -m bhms.gateway examples/bhms/compact-gateway.toml          (add -v for INFO logs)
+#
+# An upstream with `type = "compact"` is a bridge (bhms.gateway.compact_bridge) running inside the gateway: it opens the
+# serial port, says HELLO to the board, and serves the board as an ordinary device (here led/bench-led and arm/bhms-arm).
+# Clients, policy, leases, the operation journal and `bhms conformance` see no difference from any other device.
+#
+# The board cannot describe itself in JSON, so the full DeviceDescription (with the `compact` layouts of spec 4.8) is a
+# *sidecar* file next to the firmware. The bridge computes its digest and serves the device only when the board's HELLO
+# reports the first 8 bytes of that digest; a mismatch is logged and the device is not served (never guessed).
+#
+#   port      /dev/ttyACM0 (USB CDC / UART), pty:/dev/pts/N or unix:<path>. A networked link (tcp://, ...) is refused at start-up:
+#             the FCS-16 detects corruption, not forgery, so the link must be an exclusively owned line (BHMS-SEC-050)
+#   baud      serial speed (default 115200, 8N1, raw)
+#   sidecar   the description JSON, relative to this file; `python sdk/c/tools/bhms_digest.py <sidecar> --check` validates
+#             it and prints the digest8 the firmware must report
+#
+# Optional link timing, milliseconds (defaults suit a 115200 baud line to a small board):
+#   reply_timeout_ms = 1000      wait for one reply before retransmitting (persistent-epoch boards) or asking with QUERY
+#   retries = 3                  further tries before an operation is recorded `unknown`
+#   poll_interval_ms = 2000      QUERY period of a running operation (a RESULT is sent once, so a lost one must be asked for)
+#   probe_interval_ms = 2000     liveness probe period of an idle link
+#   hello_timeout_ms = 1000      wait for one HELLO (a board that just reset needs a moment)
+#
+# What the bridge promises: an INVOKE is never retransmitted to a board without a persistent boot epoch (it QUERYs
+# instead), an operation that may have executed stays `unknown` until the board's own evidence or a confirmed stop settles it,
+# and the resource inhibition of BHMS-OPS-042 is lifted only by a persistent epoch advancing (or an accepted NEW_SESSION).
+# The bridge keeps its journal in state_dir/compact/<upstream>.sqlite3 (plain files, next to the gateway's own).
+
+[gateway]
+id = "compact-gateway"
+state_dir = "state-compact"
+listen = ["unix:compact-gateway.sock"]
+trust_same_uid = false
+instructions = "Two serial boards: an Arduino with an LED and an analog input, and the BHMS Arm. Lease arm/bhms-arm/joints before moving it."
+
+[[upstream]]
+name = "led"
+type = "compact"
+port = "/dev/ttyACM0"
+baud = 115200
+sidecar = "../../sdk/c/arduino/BHMS/examples/LedAnalog/led_analog.sidecar.json"
+
+[[upstream]]
+name = "arm"
+type = "compact"
+port = "/dev/ttyACM1"
+baud = 115200
+sidecar = "../../hardware/actuator/firmware/arm.sidecar.json"
+retries = 3
+reply_timeout_ms = 1000
+
+[principals.operator]           # replace the digest: python -c "from bhms.runtime.authority import token_digest as t; print(t('my-token'))"
+uids = []                       # a Unix-socket peer is admin only if its uid is listed here
+tokens = ["sha256:61112491d046c3f6f8ab801f170d9b2d0c734a17ceff60dee92123fb507cfc3f"]   # demo-operator-token
+scopes = ["admin"]
+
+[principals.safety]             # can only stop devices (BHMS-SEC-040); token: demo-safety-token
+tokens = ["sha256:988c164237e81eaf362e40d1f1460972ea47c71196060a32691bf0c489c472a4"]
+scopes = ["stop"]

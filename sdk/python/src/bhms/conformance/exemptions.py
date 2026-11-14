@@ -10,8 +10,6 @@ INSPECTION = "inspection"
 UNTESTABLE = "not-yet-testable"
 NOT_APPLICABLE = "not-applicable"
 
-_COMPACT = (UNTESTABLE, "BHMS-Compact frame and endpoint behaviour: needs a compact simulated endpoint, which the Python SDK does not "
-            "provide (Task 9b); the static layout rules BHMS-DEV-070/071 are checked by compact.layout-rules")
 
 EXEMPT: dict[str, tuple[str, str]] = {
     "BHMS-LIF-022": (INSPECTION, "client behaviour (SHOULD)"),
@@ -42,7 +40,5 @@ EXEMPT: dict[str, tuple[str, str]] = {
                      "in tests/test_schema_examples.py (index method: inspection)"),
     "BHMS-EVT-013": (NOT_APPLICABLE, "in v0.1 `read` is one global scope: no principal can read some devices but not others, so there is no event "
                      "to hide; the row applies once a per-device read scope exists (a request without read scope is refused outright)"),
-    "BHMS-SEC-050": (INSPECTION, "documentation statement about FCS-16"),
-    **{f"BHMS-CMP-{n}": _COMPACT for n in ("001", "002", "003", "010", "011", "020", "021", "022", "023", "030", "031", "032", "033", "034",
-                                           "035", "040", "041", "050", "051", "060")},
+    "BHMS-SEC-050": (INSPECTION, "that a link is an exclusively owned physical line is deployment review; the gateway itself refuses any networked compact port at configuration load (tests/test_compact_gateway.py::test_a_networked_compact_link_is_refused_at_configuration_load)"),
 }

@@ -190,6 +190,9 @@ def _gate(spec: CheckSpec, ctx: Context, opts: RunOptions) -> str | tuple[Status
             return Status.NOT_APPLICABLE, "Streamable HTTP binding only"
         if need == "socket" and ctx.target.kind not in ("unix", "tcp"):
             return Status.NOT_APPLICABLE, "Unix-socket and TCP bindings only"
+        if need == "compact" and ctx.target.compact is None:
+            return Status.SKIPPED, ("unproven: needs native BHMS-Compact endpoints behind the gateway and direct links to them; run "
+                                    "`bhms conformance compact-gateway --profile compact` (cmake and a C compiler are required)")
         if need == "gateway" and not ctx.is_gateway:
             return Status.NOT_APPLICABLE, "the target is not a gateway"
         if need == "direct" and ctx.is_gateway:

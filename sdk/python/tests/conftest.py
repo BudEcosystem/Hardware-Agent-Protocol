@@ -59,3 +59,14 @@ async def _nothing_outlives_the_test(_leak_watch):
         message = _leak_watch.describe(tasks, procs)
         await _leak_watch.reap(tasks, procs)
         pytest.fail(message)
+
+
+@pytest.fixture(scope="session")
+def native(tmp_path_factory):
+    """The sdk/c host simulators (``sim_device``, ``sim_bench``), built once with cmake; the test is skipped without a toolchain."""
+    from bhms.testing.compact_endpoint import NativeUnavailable, build_native
+
+    try:
+        return build_native(tmp_path_factory.mktemp("sdk-c-build"))
+    except NativeUnavailable as exc:
+        pytest.skip(str(exc))

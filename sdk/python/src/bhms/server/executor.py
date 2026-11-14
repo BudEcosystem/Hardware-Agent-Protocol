@@ -656,7 +656,7 @@ class Executor:
         journal = self.server.journal
         if fault.partial:
             journal.annotate(execution.rec, "evidence", f"partial effect: {fault.partial}")
-        error = BhmsError("DEVICE_FAULT", fault.message[:2000], may_have_acted=fault.proof is None,
+        error = BhmsError(fault.code, fault.message[:2000], may_have_acted=fault.proof is None,
                           hint=fault.hint or f"read {execution.device.device_id}'s state before retrying; partial "
                                              "effects are possible").to_operation_error()
         effect = fault.effect if fault.proof is None else "none"

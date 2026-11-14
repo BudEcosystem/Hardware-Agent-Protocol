@@ -19,7 +19,7 @@ FCS-16. Header fields are big-endian, as the frame defines.
 | magic, version | `HM`, `01` |
 | kind | `01` control (gateway → endpoint), `02` status (endpoint → gateway, replies), `03` telemetry (endpoint → gateway, unsolicited) |
 | flags | `00` |
-| channel | `01` = BHMS-Compact v1 |
+| channel | `01` = BHMS-Compact |
 | session (u64) | Endpoint boot epoch, zero-extended u32. `0` only on `HELLO_REQ` before the epoch is known |
 | sequence (u32) | Per-direction frame counter from 0 in each epoch; diagnostic only, never a deduplication key |
 | length | payload length |
@@ -45,7 +45,7 @@ its type and layout define.
 | Offset | Size | Field |
 |---:|---:|---|
 | 0 | 1 | `0x01` |
-| 1 | 1 | compact version = `1` |
+| 1 | 1 | compact version = `2` (version 1 had no STOP token; a gateway and an endpoint of different versions MUST NOT talk: see BHMS-CMP-050) |
 | 2 | 1 | flags: bit 0 `NEW_SESSION` (begin a new epoch; honoured only when no operation is active) |
 | 3 | 4 | nonce u32 (echoed) |
 
@@ -79,7 +79,7 @@ its type and layout define.
 
 ### READ `0x04` (G→E), 5 bytes — `[0x04][request u16][property index u8][flags u8: bit 0 FRESH]`
 
-### STOP `0x05` (G→E), 2 bytes — `[0x05][reason u8: 0 unspecified, 1 operator, 2 client, 3 gateway]`
+### STOP `0x05` (G→E), 3 bytes — `[0x05][reason u8: 0 unspecified, 1 operator, 2 client, 3 gateway][token u8, non-zero]`
 
 ### QUERY `0x06` (G→E), 3 bytes — `[0x06][handle u16]`
 
@@ -117,7 +117,7 @@ its type and layout define.
 | 10 | 4 | age ms u32 (`0xFFFFFFFF` = unbounded/unknown) |
 | 14 | k | value (property type width; k = 0 when quality is invalid or unknown) |
 
-### STOP_ACK `0x85` (E→G), 4 bytes — `[0x85][outcome: 0 initiated, 1 confirmed, 2 unsupported][evidence: 0 none, 1 reported, 2 measured][canceled count u8]`
+### STOP_ACK `0x85` (E→G), 5 bytes — `[0x85][outcome: 0 initiated, 1 confirmed, 2 unsupported][evidence: 0 none, 1 reported, 2 measured][canceled count u8][token u8]`
 
 ### ERROR `0xFF` (E→G), 6 bytes — `[0xFF][request type u8][handle or request u16][code u8][detail u8]`
 
@@ -196,6 +196,17 @@ NOT re-send any of them. Only a `PERSISTENT_EPOCH` endpoint whose epoch value
 advanced, or an accepted `NEW_SESSION` (BHMS-CMP-023), proves that old work was
 purged and lifts the inhibition of BHMS-OPS-042.
 
+A gateway MUST identify an endpoint *incarnation* by more than the epoch value: it
+counts incarnations durably, starting a new one at its first HELLO, at every epoch
+change and at every HELLO that may follow a reset (that of an endpoint without
+`PERSISTENT_EPOCH`, or whose previous HELLO had no persistent epoch, since a
+failed epoch store repeats the value at the next boot). Handles are unique only
+within one incarnation (an epoch value can recur): `QUERY` (BHMS-CMP-034) and
+INVOKE retransmission (BHMS-CMP-033) are only for operations dispatched in the
+current incarnation, and retransmission only if the endpoint had
+`PERSISTENT_EPOCH` when the INVOKE was first sent. When the bridge proves the
+purge it emits `device.epoch` with `purged: true` (see 9.2).
+
 **BHMS-CMP-023** `NEW_SESSION` MUST increment the epoch (persistently when
 `PERSISTENT_EPOCH`), clear the ring and reset `lastHandle` to 0; an endpoint with
 an active operation MUST ignore the flag and report its current epoch. A HELLO
@@ -228,10 +239,19 @@ session and a handle above the reset `lastHandle` and would execute again; the
 gateway uses QUERY instead. On `HANDLE_UNKNOWN` it MUST leave the operation
 `unknown`; it MUST NOT allocate a new handle for the same operation.
 
-**BHMS-CMP-034** After a gateway restart the gateway MUST send `HELLO_REQ`; if the
-epoch is unchanged it MUST `QUERY` each operation recorded as `dispatching`,
-`running` or `unknown` and reconcile from STATUS/RESULT, keeping `unknown` on
-`HANDLE_UNKNOWN`. An endpoint MUST answer QUERY for a handle that is not in its
+**BHMS-CMP-034** After a gateway restart the gateway MUST send `HELLO_REQ`; for
+each operation recorded as `dispatching`, `running` or `unknown` that was dispatched
+in the *current incarnation* (the epoch is unchanged AND no HELLO that may
+follow a reset has been seen since dispatch, see BHMS-CMP-022: for an endpoint
+with `PERSISTENT_EPOCH` a HELLO repeating the epoch value is no reset; for one
+without it every HELLO may be) it MUST `QUERY` and reconcile from STATUS/RESULT,
+keeping `unknown` on `HANDLE_UNKNOWN`. For an endpoint without `PERSISTENT_EPOCH`,
+reconciliation after a gateway restart or after a link loss that required a new
+HELLO is therefore not possible (the HELLO may follow a reset and handles are
+reused): such operations stay `unknown` until a confirmed `stop` (BHMS-OPS-042) or
+an operator resolves them; a lost reply on a live link (no HELLO) is still
+reconciled by QUERY (BHMS-CMP-033). A gateway that cannot tell which incarnation an operation was dispatched in
+(a journal that did not record it) MUST NOT QUERY it. An endpoint MUST answer QUERY for a handle that is not in its
 ring (including one above `lastHandle`) with `HANDLE_UNKNOWN`, never by acting.
 QUERY reconciles only operations dispatched in the current incarnation: every
 STATUS, RESULT and ERROR frame carries the endpoint's current boot epoch in its
@@ -263,7 +283,55 @@ monotonically per endpoint epoch.
 **BHMS-CMP-050** An endpoint MUST accept STOP with any session value, MUST process
 it before any queued work, MUST reply STOP_ACK immediately (`initiated` or
 `confirmed`), and MUST send a second STOP_ACK (kind 03) with `confirmed` when an
-initiated stop finishes with evidence.
+initiated stop finishes with evidence. Both STOP_ACKs of a STOP MUST echo its
+`token`; a STOP_ACK the endpoint causes itself (an endpoint-originated stop, see
+below) carries the reserved token `0`. A STOP with token `0` is still carried out (a stop is never
+refused for a bad token) and answered with token `0`. The gateway chooses a
+non-zero token per stop (all retransmissions of one stop reuse it; no two stops in
+progress share one) and MUST count only a STOP_ACK whose token belongs to a stop in
+progress as evidence about it: an ack with another token or token `0` never
+confirms a gateway stop (a token `0` ack is reported as a `stop` event of the
+device instead). A STOP_ACK has no other correlation, so the token is what makes a
+late or duplicated ack of an earlier stop harmless.
+
+*Tokens end at a HELLO.* A gateway that restarts says a plain `HELLO_REQ` (the
+epoch does not change, nothing is purged), and it may issue a token its predecessor
+used for a stop the endpoint is still carrying out. Therefore:
+
+- the endpoint MUST forget the token of the stop in progress whenever it sends a
+  HELLO. The stop itself continues, and its confirming STOP_ACK is still sent, with
+  token `0`: after a HELLO, a stop received before it is an endpoint-originated
+  stop. No STOP_ACK sent after a HELLO carries the token of a STOP received before
+  that HELLO. (An `ERROR` answering a refused `HELLO_REQ` is not a HELLO.)
+- the gateway MUST start its token sequence at an unpredictable non-zero value
+  each time it starts, and MUST ignore a STOP_ACK whose token no STOP it sent
+  since the last HELLO it adopted carried. A stop that is in progress when the
+  gateway receives a HELLO it adopts can therefore only be confirmed by a STOP
+  sent after that HELLO, so the gateway MUST send such a stop again, with a new
+  token, once it has adopted the HELLO (a re-HELLO without a reboot, a new
+  session or a reconnection alike); the endpoint carries the stop out again and
+  confirms it with that token. (A gateway MAY bound how many HELLOs one stop
+  outlives; past that bound the stop ends `failed`.)
+
+*Endpoint-originated stops.* Token `0` marks every stop the gateway in session did
+not ask for: the hardware stop input, and a stop begun before the last HELLO. When
+the hardware stop input asserts while a gateway stop is in progress, the stop
+procedure runs again as the endpoint's own and the token becomes `0`: both
+remaining STOP_ACKs carry `0` and the gateway stop is **not** confirmed, although
+the device stops. This under-claim is deliberate (the safe direction: a gateway
+never reports a stop it cannot attribute to its own STOP as confirmed). The
+gateway MUST end such a stop `failed`, and its error SHOULD say that the endpoint
+reported an endpoint-originated stop and that the device may be stopped, so that
+the caller reads the device state; an operator who needs the confirmation sends
+stop again. For the same reason a gateway that closes (or restarts) ends its stops
+in progress `failed` at once: no acknowledgement can reach them any more, since its
+successor's first frame is a `HELLO_REQ`.
+
+**Version.** A `HELLO_REQ` whose compact version differs from the endpoint's is
+answered `ERROR UNSUPPORTED` with `detail` = the endpoint's version (never guessed
+at); a gateway that receives a HELLO or that ERROR for another version MUST NOT
+serve the endpoint and MUST log the versions. Version 2 changed STOP and STOP_ACK
+only.
 
 **BHMS-CMP-051** STOP MUST end every active operation on the endpoint (each then
 reports RESULT `canceled` or `failed`) and MUST raise the fence floor above every
@@ -306,6 +374,18 @@ bytes):
 These bytes were produced with `protocol/serial/frame.py` and are the first
 compact test vectors for Task 9.
 
+A gateway STOP (reason 3, token `0x2a`, session 41, frame sequence 9) and the
+endpoint's confirming ack (confirmed, measured, 2 operations canceled, the same
+token, sequence 10):
+
+```
+7e 48 4d 01 01 00 01 00 00 00 00 00 00 00 29 00 00 00 09 00 03 05 03 2a fb 84 7e
+```
+
+```
+7e 48 4d 01 02 00 01 00 00 00 00 00 00 00 29 00 00 00 0a 00 05 85 01 02 02 2a 25 ff 7e
+```
+
 ## 11.11 Endpoint behaviours fixed by the reference library (informative)
 
 `sdk/c` (BHMS-Compact C library, Task 9a) settled the points the layouts leave
@@ -331,8 +411,8 @@ open; other endpoints should match them so one gateway handles all of them.
   gateway MUST start a new session (BHMS-CMP-041) before its fences approach 2^32.
 - **Replies and unsolicited frames.** Replies to a control frame use kind 02. An
   operation that finishes later (after `STATUS running`) sends its RESULT, and
-  progress STATUS frames, as kind 03. A `HELLO_REQ` whose compact version is not 1
-  is answered `ERROR UNSUPPORTED` with `detail = 1`.
+  progress STATUS frames, as kind 03. A `HELLO_REQ` whose compact version is not 2
+  is answered `ERROR UNSUPPORTED` with `detail = 2`.
 - **Stop.** The first `STOP_ACK` is sent before the RESULT (kind 03, `canceled`)
   of each operation the stop ended; its `canceled` count says how many follow.
   A hardware stop input asserting sends the same sequence with the ack as

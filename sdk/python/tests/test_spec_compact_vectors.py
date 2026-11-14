@@ -33,7 +33,7 @@ def _decode(frame, wire: bytes):
 
 def test_worked_invoke_and_result_frames():
     frame = _frame_module()
-    invoke_wire, result_wire = _worked_frames()
+    invoke_wire, result_wire, stop_wire, ack_wire = _worked_frames()
     invoke = _decode(frame, invoke_wire)
     assert (invoke.kind, invoke.channel, invoke.session, invoke.sequence) == (1, 1, 41, 7)
     assert struct.unpack("<BHBIHHH", invoke.payload) == (0x02, 17, 0, 412, 0, 500, 100)
@@ -43,3 +43,8 @@ def test_worked_invoke_and_result_frames():
     assert (result.kind, result.channel, result.session, result.sequence) == (2, 1, 41, 9)
     assert struct.unpack("<BHBBBH", result.payload) == (0x83, 17, 3, 2, 0, 501)
     assert frame.encode(result) == result_wire
+    stop = _decode(frame, stop_wire)
+    assert (stop.kind, stop.session, stop.sequence) == (1, 41, 9) and stop.payload == bytes([0x05, 3, 0x2A])  # reason 3, token 0x2a
+    ack = _decode(frame, ack_wire)
+    assert (ack.kind, ack.session, ack.sequence) == (2, 41, 10) and ack.payload == bytes([0x85, 1, 2, 2, 0x2A])  # same token
+    assert frame.encode(stop) == stop_wire and frame.encode(ack) == ack_wire

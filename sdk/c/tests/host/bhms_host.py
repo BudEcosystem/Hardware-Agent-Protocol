@@ -1,10 +1,10 @@
 """Host-side BHMS-Compact test harness.
 
 Speaks the compact binding (spec/bhms/11-compact-binding.md) to firmware over a
-pty, reusing protocol/serial/frame.py for framing. It is an independent
-implementation of the payload layouts (struct-based, no shared code with the C
-library), so tests built on it are real differential checks. The gateway side
-(Task 9b: sdk/python transport/compact.py) is a separate deliverable.
+pty, reusing protocol/serial/frame.py for framing and the SDK's compact codec
+(sdk/python/src/bhms/transport/compact.py, Task 9b) for the payloads, so there is
+one Python codec. The codec shares no code with the C library, so tests built on
+it remain a real differential check of the C encoders and decoders.
 """
 from __future__ import annotations
 
@@ -12,8 +12,8 @@ import importlib.util
 import os
 import pathlib
 import select
-import struct
 import subprocess
+import sys
 import termios
 import time
 import tty
@@ -25,67 +25,27 @@ _spec = importlib.util.spec_from_file_location("hms_serial_frame", ROOT / "proto
 frame = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(frame)
 
-CONTROL, STATUS, TELEMETRY = 1, 2, 3
+CONTROL, STATUS, TELEMETRY = 1, 2, 3  # frame kinds
 CHANNEL = 1
 
-# Message types
-HELLO_REQ, INVOKE, CANCEL, READ, STOP, QUERY = 0x01, 0x02, 0x03, 0x04, 0x05, 0x06
-HELLO, STATUS_MSG, RESULT, VALUE, STOP_ACK, ERROR = 0x81, 0x82, 0x83, 0x84, 0x85, 0xFF
+# The payload codec is the SDK's one compact codec (sdk/python/src/bhms/transport/compact.py): the gateway bridge, the
+# conformance checks and this harness all build and parse messages with it. It is stdlib-only at its top level, so it is
+# loaded by path (no pydantic, no `bhms` package import: the simavr container has neither).
+_codec_spec = importlib.util.spec_from_file_location(
+    "bhms_compact_codec", ROOT / "sdk" / "python" / "src" / "bhms" / "transport" / "compact.py")
+codec = importlib.util.module_from_spec(_codec_spec)
+sys.modules["bhms_compact_codec"] = codec  # dataclasses resolve their module by name
+_codec_spec.loader.exec_module(codec)
 
-ERR = dict(MALFORMED=1, UNKNOWN_ACTION=2, UNKNOWN_PROPERTY=3, OUT_OF_RANGE=4, FENCED=5,
-           LEASE_REQUIRED=6, BUSY=7, HANDLE_UNKNOWN=8, SESSION_MISMATCH=9, EXPIRED=10,
-           UNSUPPORTED=11, PRECONDITION=12, INHIBITED=13, HANDLE_CONFLICT=14, INTERNAL=15)
-
-
-def hello_req(nonce: int, new_session: bool = False) -> bytes:
-    return struct.pack("<BBBI", HELLO_REQ, 1, 1 if new_session else 0, nonce)
-
-
-def invoke(handle: int, action: int, args: bytes = b"", fence: int = 0, ttl_ms: int = 0) -> bytes:
-    return struct.pack("<BHBIH", INVOKE, handle, action, fence, ttl_ms) + args
-
-
-def cancel(handle: int) -> bytes:
-    return struct.pack("<BH", CANCEL, handle)
-
-
-def query(handle: int) -> bytes:
-    return struct.pack("<BH", QUERY, handle)
-
-
-def read(request: int, prop: int, fresh: bool = False) -> bytes:
-    return struct.pack("<BHBB", READ, request, prop, 1 if fresh else 0)
-
-
-def stop(reason: int = 0) -> bytes:
-    return struct.pack("<BB", STOP, reason)
-
-
-def hello(flags: int, digest8: bytes, epoch: int, nonce: int, last_handle: int, ring: int,
-          max_active: int, max_args: int) -> bytes:
-    return struct.pack("<BBB8sIIHBBB", HELLO, 1, flags, digest8, epoch, nonce, last_handle, ring,
-                       max_active, max_args)
-
-
-def result(handle: int, state: int, evidence: int, fault: int, fields: bytes = b"") -> bytes:
-    return struct.pack("<BHBBB", RESULT, handle, state, evidence, fault) + fields
-
-
-def status(handle: int, state: int, cancel_state: int, progress: int) -> bytes:
-    return struct.pack("<BHBBB", STATUS_MSG, handle, state, cancel_state, progress)
-
-
-def value(request: int, prop: int, quality: int, evidence: int, seq: int, age_ms: int,
-          raw: bytes = b"") -> bytes:
-    return struct.pack("<BHBBBII", VALUE, request, prop, quality, evidence, seq, age_ms) + raw
-
-
-def stop_ack(outcome: int, evidence: int, canceled: int) -> bytes:
-    return struct.pack("<BBBB", STOP_ACK, outcome, evidence, canceled)
-
-
-def error(req_type: int, ident: int, code: int, detail: int = 0) -> bytes:
-    return struct.pack("<BBHBB", ERROR, req_type, ident, code, detail)
+HELLO_REQ, INVOKE, CANCEL, READ, STOP, QUERY = (codec.HELLO_REQ, codec.INVOKE, codec.CANCEL, codec.READ, codec.STOP,
+                                                codec.QUERY)
+HELLO, STATUS_MSG, RESULT, VALUE, STOP_ACK, ERROR = (codec.HELLO, codec.STATUS, codec.RESULT, codec.VALUE, codec.STOP_ACK,
+                                                     codec.ERROR)
+ERR = codec.ERR
+hello_req, invoke, cancel, query, read, stop = (codec.hello_req, codec.invoke, codec.cancel, codec.query, codec.read,
+                                                codec.stop)
+hello, result, status, value, stop_ack, error = (codec.hello, codec.result, codec.status, codec.value, codec.stop_ack,
+                                                 codec.error)
 
 
 @dataclass

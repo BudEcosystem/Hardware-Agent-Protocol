@@ -124,6 +124,9 @@ class Upstream:
         client, self.client = self.client, None
         if client is not None:
             await client.close()
+        closer = getattr(self.cfg.connector, "aclose", None)  # a connector that owns something (a compact bridge's link)
+        if closer is not None:
+            await closer()
         while not self._queue.empty():
             self._queue.get_nowait().future.cancel()
 
@@ -333,6 +336,9 @@ class Upstream:
                 if method == "notifications/subscriptions/acknowledged":
                     if params.get("eventsGap"):
                         self.hooks.events_gap(self)
+                    # A device that appeared (or changed) between the initial sync and this subscription (a board saying
+                    # HELLO late) was never announced to us: load the list again now that changes will be.
+                    self._resync.set()
                     continue
                 if method == "notifications/devices/listChanged":
                     self._resync.set()

@@ -42,7 +42,7 @@ extern "C" {
 
 /* ---- Wire constants --------------------------------------------------------- */
 #define BHMS_CHANNEL 1u
-#define BHMS_VERSION 1u
+#define BHMS_VERSION 2u /* 2: STOP and STOP_ACK carry a correlation token (BHMS-CMP-050) */
 #define BHMS_KIND_CONTROL 1u
 #define BHMS_KIND_STATUS 2u
 #define BHMS_KIND_TELEMETRY 3u
@@ -96,12 +96,12 @@ enum {
 #define BHMS_LEN_INVOKE_FIXED 10u
 #define BHMS_LEN_CANCEL 3u
 #define BHMS_LEN_READ 5u
-#define BHMS_LEN_STOP 2u
+#define BHMS_LEN_STOP 3u
 #define BHMS_LEN_QUERY 3u
 #define BHMS_LEN_STATUS 6u
 #define BHMS_LEN_RESULT_FIXED 6u
 #define BHMS_LEN_VALUE_FIXED 14u
-#define BHMS_LEN_STOP_ACK 4u
+#define BHMS_LEN_STOP_ACK 5u
 #define BHMS_LEN_ERROR 6u
 
 /* ---- Value types and the capability table ----------------------------------- */
@@ -244,7 +244,7 @@ typedef struct bhms_endpoint {
     uint32_t frame_start_ms, last_rx_ms;
     uint16_t last_handle;
     uint16_t bad_frames; /* diagnostic: frames dropped by the framing layer */
-    uint8_t persistent, inhibit, pin_asserted, stop_pending, stop_count, rx_started;
+    uint8_t persistent, inhibit, pin_asserted, stop_pending, stop_count, stop_token, rx_started;
     uint8_t max_args;
     bhms_entry ring[BHMS_RING_SIZE];
 } bhms_endpoint;
@@ -298,7 +298,9 @@ size_t bhms_enc_invoke(uint8_t *buf, uint16_t handle, uint8_t action, uint32_t f
 size_t bhms_enc_cancel(uint8_t *buf, uint16_t handle);
 size_t bhms_enc_query(uint8_t *buf, uint16_t handle);
 size_t bhms_enc_read(uint8_t *buf, uint16_t request, uint8_t property, uint8_t flags);
-size_t bhms_enc_stop(uint8_t *buf, uint8_t reason);
+/* `token` != 0 is chosen by the gateway and echoed by both STOP_ACKs; 0 is reserved for endpoint-originated stops: the stop
+ * input, and a stop still in progress when the endpoint said HELLO (it forgets the token then, BHMS-CMP-050). */
+size_t bhms_enc_stop(uint8_t *buf, uint8_t reason, uint8_t token);
 size_t bhms_enc_status(uint8_t *buf, uint16_t handle, uint8_t state, uint8_t cancel,
                        uint8_t progress);
 size_t bhms_enc_result(uint8_t *buf, uint16_t handle, uint8_t state, uint8_t evidence,
@@ -306,7 +308,7 @@ size_t bhms_enc_result(uint8_t *buf, uint16_t handle, uint8_t state, uint8_t evi
 size_t bhms_enc_value(uint8_t *buf, uint16_t request, uint8_t property, uint8_t quality,
                       uint8_t evidence, uint32_t sequence, uint32_t age_ms,
                       const uint8_t *value, size_t n_value);
-size_t bhms_enc_stop_ack(uint8_t *buf, uint8_t outcome, uint8_t evidence, uint8_t canceled);
+size_t bhms_enc_stop_ack(uint8_t *buf, uint8_t outcome, uint8_t evidence, uint8_t canceled, uint8_t token);
 size_t bhms_enc_error(uint8_t *buf, uint8_t request_type, uint16_t id, uint8_t code,
                       uint8_t detail);
 
@@ -340,7 +342,7 @@ typedef struct {
     const uint8_t *value;
     size_t n_value;
 } bhms_valuemsg;
-typedef struct { uint8_t outcome, evidence, canceled; } bhms_stop_ack;
+typedef struct { uint8_t outcome, evidence, canceled, token; } bhms_stop_ack;
 typedef struct { uint8_t request_type, code, detail; uint16_t id; } bhms_error;
 
 int bhms_dec_hello_req(const uint8_t *p, size_t n, bhms_hello_req *out);

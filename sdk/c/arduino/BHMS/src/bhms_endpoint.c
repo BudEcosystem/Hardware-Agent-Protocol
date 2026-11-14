@@ -99,6 +99,7 @@ static void reset_session_state(bhms_endpoint *ep) {
     ep->max_fence = 0;
     ep->tx_seq = 0;
     ep->stop_pending = 0;
+    ep->stop_token = 0;
     ep->stamp_clock = 0;
 }
 
@@ -415,7 +416,7 @@ static void handle_read(bhms_endpoint *ep, const uint8_t *p) {
 }
 
 /* BHMS-CMP-050/051. `solicited` selects kind 02 (reply) or 03 (pin / local). */
-static void do_stop(bhms_endpoint *ep, uint8_t reason, uint8_t solicited) {
+static void do_stop(bhms_endpoint *ep, uint8_t reason, uint8_t solicited, uint8_t token) {
     uint8_t outcome = BHMS_STOPACK_UNSUPPORTED, evidence = BHMS_EV_NONE, count = 0, i;
     uint8_t b[BHMS_LEN_STOP_ACK];
     uint8_t ended[BHMS_RING_SIZE];
@@ -445,8 +446,9 @@ static void do_stop(bhms_endpoint *ep, uint8_t reason, uint8_t solicited) {
         ep->fence_floor = 0xFFFFFFFFu;
     ep->stop_pending = outcome == BHMS_STOPACK_INITIATED;
     ep->stop_count = count;
+    ep->stop_token = token;
     send(ep, solicited ? BHMS_KIND_STATUS : BHMS_KIND_TELEMETRY, b,
-         bhms_enc_stop_ack(b, outcome, evidence, count));
+         bhms_enc_stop_ack(b, outcome, evidence, count, token));
     for (i = 0; i < BHMS_RING_SIZE; ++i)
         if (ended[i]) send_entry(ep, &ep->ring[i], BHMS_KIND_TELEMETRY);
 }
@@ -464,6 +466,10 @@ static void handle_hello_req(bhms_endpoint *ep, const uint8_t *p) {
         advance_epoch(ep, ep->epoch, ep->persistent);
         reset_session_state(ep);
     }
+    /* BHMS-CMP-050: a HELLO starts a gateway's session. A stop still being carried out stays pending and its confirming
+     * ack is still sent, but as an endpoint-originated stop (token 0): the gateway that sent it may be gone, and its
+     * successor may reuse the token (a gateway restart says a plain HELLO_REQ, so nothing else is cleared here). */
+    ep->stop_token = 0;
     if ((ep->dev->flags & BHMS_DEV_FENCING) != 0) flags |= BHMS_HELLO_FENCING;
     if (ep->persistent) flags |= BHMS_HELLO_PERSISTENT_EPOCH;
     if (ep->dev->stop != 0) flags |= BHMS_HELLO_STOP_SUPPORTED;
@@ -515,7 +521,7 @@ static void dispatch(bhms_endpoint *ep, const uint8_t *raw, uint32_t rx_ms) {
     case BHMS_MSG_INVOKE: handle_invoke(ep, p, n, rx_ms); break;
     case BHMS_MSG_CANCEL: handle_cancel(ep, id); break;
     case BHMS_MSG_READ: handle_read(ep, p); break;
-    case BHMS_MSG_STOP: do_stop(ep, p[1], 1); break;
+    case BHMS_MSG_STOP: do_stop(ep, p[1], 1, p[2]); break;
     default: { /* QUERY (BHMS-CMP-034/035) */
         bhms_entry *e = find(ep, id);
         if (e != 0) send_entry(ep, e, BHMS_KIND_STATUS);
@@ -535,7 +541,9 @@ void bhms_poll(bhms_endpoint *ep) {
 
     if (pin && !ep->pin_asserted) {
         ep->pin_asserted = 1;
-        do_stop(ep, BHMS_STOP_OPERATOR, 0);
+        /* Token 0: not a gateway's stop. It also replaces the token of a gateway stop still in progress, whose
+         * confirming ack then carries 0 too: that gateway stop is not confirmed (BHMS-CMP-050, the safe direction). */
+        do_stop(ep, BHMS_STOP_OPERATOR, 0, 0);
     } else if (!pin) {
         ep->pin_asserted = 0;
     }
@@ -619,7 +627,7 @@ void bhms_stop_confirmed(bhms_endpoint *ep, uint8_t evidence) {
     if (ep == 0 || ep->dev == 0 || !ep->stop_pending) return;
     ep->stop_pending = 0;
     send(ep, BHMS_KIND_TELEMETRY, b,
-         bhms_enc_stop_ack(b, BHMS_STOPACK_CONFIRMED, evidence, ep->stop_count));
+         bhms_enc_stop_ack(b, BHMS_STOPACK_CONFIRMED, evidence, ep->stop_count, ep->stop_token));
 }
 
 void bhms_set_inhibit(bhms_endpoint *ep, uint8_t inhibited) {

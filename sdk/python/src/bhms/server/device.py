@@ -104,6 +104,7 @@ class Device:
         self.reconcile_handler: Callable[..., Any] | None = None
         self.liveness_handler: Callable[..., Any] | None = None
         self._description: dict[str, Any] | None = None
+        self._fixed: dict[str, Any] | None = None
         self._validators: dict[str, ArgumentValidator] = {}
         self._output_validators: dict[str, Any] = {}
         self._event_validators: dict[str, Any] = {}
@@ -269,8 +270,64 @@ class Device:
             "no commissioned stop procedure; stop only cancels operations and revokes leases")
         return out
 
+    @classmethod
+    def from_description(cls, server: DeviceServer | None, description: dict[str, Any], *,
+                         run: Callable[[str], Callable[..., Any]], read: Callable[[str], Callable[..., Any]],
+                         hold: Callable[..., Any] | None = None, stop: Callable[..., Any] | None = None,
+                         read_timeout_ms: int = 2000) -> Device:
+        """A device whose ``DeviceDescription`` is given, not derived from decorated handlers (a bridge that serves a
+        device it did not write, such as a BHMS-Compact endpoint described by a sidecar file).
+
+        The description is served as given with its digest recomputed (BHMS-DEV-021) after the schema and unit checks;
+        ``run(action)`` returns that action's handler ``async def (ctx, **arguments)``, ``read(property)`` the getter of a
+        property, ``stop`` the commissioned stop procedure (required exactly when ``safety.stop`` is ``supported``) and
+        ``hold`` the ``onLeaseLoss: hold`` command. ``read_timeout_ms`` bounds one acquisition.
+        """
+        from bhms.server.decorators import ActionSpec, PropertySpec
+
+        body = {k: v for k, v in description.items() if k != "digest"}
+        for member in ("deviceId", "actions", "properties", "safety", "resources", "capabilities"):
+            if member not in body:
+                raise DescriptionError(f"the description has no {member!r} member")
+        safety = body["safety"]
+        dev = cls(server, body["deviceId"], name=body.get("name"), description=body.get("description", ""),
+                  capabilities=body["capabilities"], tags=body.get("tags", ()), resources=body["resources"],
+                  identity=body.get("identity"), on_disconnect=safety.get("onDisconnect", "unknown"),
+                  safety_summary=safety.get("summary"), extensions=body.get("extensions"))
+        for name, a in body["actions"].items():
+            dev.actions[name] = ActionSpec(
+                name, run(name), a["input"], a.get("output"), a["effect"], a["idempotency"], a["cancel"],
+                a["completionEvidence"], a["maxDurationMs"], a["requiresLease"], tuple(a["resources"]),
+                a.get("description", ""), tuple(a["input"].get("properties") or {}), "ctx",
+                tuple(a.get("verifiedBy", ())), a.get("typicalDurationMs"), a.get("onLeaseLoss"),
+                tuple((f["property"], f["maxAgeMs"]) for f in a.get("requiresFresh", ())), a.get("preconditions"))
+        for name, p in body["properties"].items():
+            dev.properties[name] = PropertySpec(
+                name, read(name), p["schema"], p["evidence"], p["observable"], p["readEffect"], p.get("description", ""),
+                p.get("maxRateHz"), p.get("requiresLease", False), tuple(p.get("resources", ())), None, read_timeout_ms)
+        dev.hold_handler = hold
+        if (safety.get("stop") == "supported") != (stop is not None):
+            raise DescriptionError(f"device {dev.device_id!r}: safety.stop is {safety.get('stop')!r} but "
+                                   f"{'no' if stop is None else 'a'} stop procedure was given")
+        if stop is not None:
+            dev.stop_spec = StopSpec(stop, safety.get("stopEvidence", "reported"), safety.get("stopMaxDurationMs"))
+        dev._check(body)
+        body["digest"] = digest(body)
+        try:
+            schema_module.validate("DeviceDescription", body)
+        except BhmsError as exc:
+            raise DescriptionError(f"device {dev.device_id!r}: the description is invalid at "
+                                   f"{exc.field or '/'}: {exc.message}") from None
+        if len(canonical(dev.summary("unknown", body))) > SUMMARY_HARD_LIMIT:
+            raise DescriptionError(f"device {dev.device_id!r}: its summary exceeds {SUMMARY_HARD_LIMIT} bytes "
+                                   "(BHMS-DEV-011)")
+        dev._fixed = body
+        return dev
+
     def description(self) -> dict[str, Any]:
         """The current ``DeviceDescription`` (cached; raises :class:`DescriptionError` if declarations are invalid)."""
+        if self._fixed is not None:
+            return self._fixed
         if self._description is not None:
             return self._description
         body: dict[str, Any] = {

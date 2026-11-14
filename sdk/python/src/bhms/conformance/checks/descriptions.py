@@ -10,6 +10,7 @@ from bhms.conformance.context import Context
 from bhms.conformance.core import NotApplicable, check
 from bhms.protocol import units
 from bhms.protocol.canonical import canonical
+from bhms.transport.compact import layout_problems
 
 
 @check("descriptions.digest-and-immutability", ["BHMS-DEV-020", "BHMS-DEV-021", "BHMS-LIF-002"], generic=True)
@@ -238,54 +239,7 @@ async def status_follows_reachability(c: Context) -> None:
     c.expect(back, "the device must be online again after it reconnects")
 
 
-def compact_problems(description: dict[str, Any]) -> list[tuple[str, str]]:
-    """``(requirement id, problem)`` for every violation of the compact-layout rules in one description."""
-    ranges = {"u8": (0, 255), "i8": (-128, 127), "u16": (0, 65535), "i16": (-32768, 32767), "u32": (0, 2**32 - 1),
-              "i32": (-(2**31), 2**31 - 1), "f32": (float("-inf"), float("inf")), "bool": (0, 1)}
-    out: list[tuple[str, str]] = []
-    device = description.get("deviceId")
-
-    def mirror(label: str, schema: dict[str, Any], field_type: str, scale: float | None) -> None:
-        if scale is None:
-            return
-        if abs(schema.get("multipleOf", 0) - scale) > 1e-12 * max(1.0, scale):
-            out.append(("BHMS-DEV-071", f"{label}: scale {scale} must be mirrored by multipleOf (is {schema.get('multipleOf')!r})"))
-        low, high = ranges[field_type]
-        if "minimum" not in schema or "maximum" not in schema or schema["minimum"] < low * scale - 1e-9 or schema["maximum"] > high * scale + 1e-9:
-            out.append(("BHMS-DEV-071", f"{label}: minimum/maximum must lie inside the {field_type} range times {scale}"))
-
-    action_indices: list[int] = []
-    for name, action in (description.get("actions") or {}).items():
-        layout = action.get("compact")
-        if not layout:
-            continue
-        action_indices.append(layout["index"])
-        schema = action.get("input") or {}
-        members = set((schema.get("properties") or {}))
-        names = [f["name"] for f in layout["args"]]
-        if sorted(names) != sorted(members):
-            out.append(("BHMS-DEV-070", f"{device}.{name}: args {names} must map every input member {sorted(members)} exactly once"))
-        for field in layout["args"]:
-            member = (schema.get("properties") or {}).get(field["name"], {})
-            if field["name"] in members and field["name"] not in (schema.get("required") or []) and "default" not in member:
-                out.append(("BHMS-DEV-070", f"{device}.{name}.{field['name']}: a mapped member must be required or declare a default"))
-            mirror(f"{device}.{name}.{field['name']}", member, field["type"], field.get("scale"))
-        output = (action.get("output") or {}).get("properties") or {}
-        for field in layout["result"]:
-            if field["name"] not in output:
-                out.append(("BHMS-DEV-070", f"{device}.{name}: result field {field['name']!r} names no output member"))
-            else:
-                mirror(f"{device}.{name} result {field['name']}", output[field["name"]], field["type"], field.get("scale"))
-    property_indices = []
-    for name, prop in (description.get("properties") or {}).items():
-        layout = prop.get("compact")
-        if layout:
-            property_indices.append(layout["index"])
-            mirror(f"{device}.{name}", prop.get("schema") or {}, layout["type"], layout.get("scale"))
-    for label, indices in (("action", action_indices), ("property", property_indices)):
-        if len(indices) != len(set(indices)):
-            out.append(("BHMS-DEV-070", f"{device}: {label} indices must be unique: {sorted(indices)}"))
-    return out
+compact_problems = layout_problems  # the rules live with the one compact codec (bhms.transport.compact)
 
 
 @check("compact.layout-rules", ["BHMS-DEV-070", "BHMS-DEV-071"], profile="compact", generic=True)

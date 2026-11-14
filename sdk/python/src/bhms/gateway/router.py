@@ -41,6 +41,7 @@ import contextlib
 import logging
 import time
 from collections import OrderedDict
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
 from bhms.gateway.catalog import CatalogEntry
@@ -958,6 +959,23 @@ class Router:
                     self.gateway.events.append("stop", severity="warning", device_id=entry.device_id,
                                                message=reason[:1000], data={"outcome": stop["outcome"],
                                                                             "reason": reason})
+
+    def endpoint_purged(self, namespace: str, upstream_operation_ids: Iterable[str]) -> None:
+        """The upstream proved (``device.epoch`` with ``purged``: an advanced persistent compact boot epoch or an accepted
+        NEW_SESSION) that its endpoint discarded the work of exactly these operations. They stay as they are (``unknown`` keeps
+        its outcome) but stop blocking their resources (BHMS-OPS-042). Only the listed operations are covered: work dispatched
+        after the proof, or one this gateway cannot map (e.g. after a restart that lost the event), keeps its inhibition."""
+        for upstream_id in upstream_operation_ids:
+            gid = self.gateway_operation_id(namespace, upstream_id)
+            rec = self.gateway.journal.get(gid) if gid else None
+            if rec is not None and not rec.terminal:
+                self._lift_purged(rec)
+
+    def _lift_purged(self, rec: OperationRecord) -> None:
+        with contextlib.suppress(StoreError):
+            self.gateway.journal.mark_private(rec, inhibitionLifted=True)
+            self.gateway.journal.annotate(rec, "evidence", "the endpoint's boot epoch advanced, which proves it purged the "
+                                                           "old work: the resource inhibition is lifted; the outcome is still unknown")
 
     def _lift_inhibition(self, entry: CatalogEntry) -> None:
         """A confirmed stop lifts the unknown-operation inhibition of the device's operations (BHMS-OPS-042)."""

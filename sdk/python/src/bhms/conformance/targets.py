@@ -41,7 +41,7 @@ from bhms.transport.stdio import release_process
 
 URL_PREFIXES = ("unix:", "tcp://", "ws://", "wss://", "http://", "https://")
 BUILTINS = ("conformance-device", "conformance-device:stdio", "conformance-device:ws", "conformance-device:unix", "conformance-device:principals",
-            "gateway", "gateway:stdio", "gateway:http", "agent-bridge", "mcp:<bridge command>")
+            "gateway", "gateway:stdio", "gateway:http", "compact-gateway", "agent-bridge", "mcp:<bridge command>")
 
 
 _release = release_process  # a killed child's event-loop transport is closed here, never left to the garbage collector
@@ -121,6 +121,8 @@ class Target:
     """kind ``mcp``: a command that prints the function-tool definitions of the bridge's adapter as JSON (BHMS-AGT-050)."""
     device: Target | None = None
     """kind ``mcp``: the BHMS target the bridge fronts (the runner also talks to it for counters and faults)."""
+    compact: Any = None
+    """``compact-gateway`` fixture: a :class:`~bhms.conformance.compact_fixture.CompactFixture` (endpoints, wires, raw links)."""
     notes: list[str] = field(default_factory=list)
     _process: asyncio.subprocess.Process | None = field(default=None, repr=False)
     _base: Transport | None = field(default=None, repr=False)
@@ -181,6 +183,8 @@ class Target:
             if upstream._process is None:
                 await upstream._start_server()
                 await upstream._ready()
+        if self.compact is not None:
+            await self.compact.start()  # the endpoints and their wires must exist before the gateway connects to them
         if self.kind == "mcp":
             if self.device is None:
                 raise TargetError("an agent target needs the BHMS target it fronts: pass --device")
@@ -323,6 +327,8 @@ class Target:
                     await transport.close()
         self._extras.clear()
         await self._stop_process(False)
+        if self.compact is not None:
+            await self.compact.aclose()
         if self.work_dir is not None and self.notes_owned:
             shutil.rmtree(self.work_dir, ignore_errors=True)
 
@@ -352,6 +358,8 @@ def resolve(spec: str, *, token: str | None = None, keep_state: str | None = Non
         return Target(spec, "mcp", bridge_command=shlex.split(spec[4:]))
     if spec == "gateway" or spec.startswith("gateway:"):
         return _gateway_fleet(spec.partition(":")[2] or "ws", keep_state)
+    if spec == "compact-gateway":
+        return _compact_gateway(keep_state)
     if spec.startswith("stdio:"):
         import shlex
 
@@ -446,6 +454,26 @@ def _gateway_fleet(flavour: str, keep: str | None) -> Target:
                       **common)
     return Target(f"gateway:{flavour}", "ws" if flavour == "ws" else "http", token=tokens["admin"], url=url, command=command,
                   tokens=tokens, **common)
+
+
+def _compact_gateway(keep: str | None) -> Target:
+    """A gateway process in front of two native BHMS-Compact endpoints (``rig``: persistent epoch, ``vol``: none), with fault
+    injection and direct endpoints for the compact checks (see :mod:`bhms.conformance.compact_fixture`)."""
+    from bhms.conformance.compact_fixture import CompactFixture
+    from bhms.testing.compact_endpoint import NativeUnavailable
+
+    work = _workspace("compact", keep)
+    try:
+        fixture = CompactFixture.create(work)
+    except NativeUnavailable as exc:
+        if keep is None:
+            shutil.rmtree(work, ignore_errors=True)
+        raise TargetError(str(exc)) from None
+    fixture.config_path = work / "gateway.toml"
+    url = f"unix:{work / 'gateway.sock'}"
+    return Target("compact-gateway", "unix", url=url, command=[sys.executable, "-m", "bhms.gateway", str(fixture.config_path)],
+                  state_dir=work / "gateway-state", work_dir=work, log_path=work / "gateway.log", notes_owned=keep is None,
+                  config_path=None, is_gateway=True, simulated=True, compact=fixture)
 
 
 def _agent_bridge(keep: str | None) -> Target:
