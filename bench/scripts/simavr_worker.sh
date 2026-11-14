@@ -5,7 +5,7 @@
 set -eu
 N=${1:-1000}
 ROOT=$(cd "$(dirname "$0")/../.." && pwd)
-nice -n 10 docker run --rm --cpus=2 --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$ROOT":/work bhms9a-avr bash -c "
+nice -n 10 docker run --rm --name "hms-lab-simavr-$$" --cpus=2 --user "$(id -u):$(id -g)" -e HOME=/tmp -v "$ROOT":/work bhms9a-avr bash -c "
   cd /work/sdk/c && scripts/avr_build.sh /tmp/avr >/tmp/avr.log 2>&1 &&
   gcc -O2 -I/usr/include/simavr tests/simavr/runner.c -o /tmp/runner -lsimavr -lelf -lm &&
   python3 -B /work/bench/scenarios/compact.py --label simavr --baud 115200 --n $N --timeout 10 \

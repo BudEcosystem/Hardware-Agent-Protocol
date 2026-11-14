@@ -24,6 +24,7 @@ written, which decides the fsync cost: put it on the filesystem you want to char
 | `invoke` | `actions/invoke` per transport (unix, ws, stdio) x durability (full, dispatch, process, memory) x `waitMs` 0/1000 | `bhms.cli.bench.measure` |
 | `concurrency` | 1/10/100 clients, same device vs spread over 100 devices, dispatch vs process | |
 | `gateway` | 1,000 upstreams / 10,000 devices: start-up, `devices/list` paging, event fan-in, per-invoke gateway overhead | `sdk/python/benchmarks/gateway_scale.py` (imported) |
+| `gateway_forward` | 1/10/100 concurrent clients invoking through the gateway (journal `dispatch` with its pending-forward barrier vs `process`), in-process upstream without a store | |
 | `gateway_http` | the same catalog and an invoke over Streamable HTTP versus the gateway's unix socket | |
 | `subscription` | one event stream to 1/10/50/100 listeners, per-delivery latency | |
 | `recovery` | SIGKILL with N running operations, time from restart to serving, unknown operations after | |

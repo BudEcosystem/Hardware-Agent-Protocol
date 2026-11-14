@@ -88,6 +88,11 @@ def main() -> None:
         for k, v in o.items():
             if isinstance(v, dict) and "p50" in v:
                 print(f"| {k} | {v['n']} | {v['p50']} | {v['p95']} | {v['p99']} | {v['max']} | {v.get('overhead_p50_ms', '-')} |")
+    gf = load(d, "gateway_forward")
+    if gf and "result" in gf:
+        print("\n#### Forwarding through the gateway, concurrent clients (`waitMs=1000`, 100 upstream devices, one event loop)\n\n" + HEAD)
+        for k, v in gf["result"].items():
+            print(lat(f"gateway journal {k}", v))
     h = load(d, "gateway_http")
     if h and "result" in h:
         r = h["result"]

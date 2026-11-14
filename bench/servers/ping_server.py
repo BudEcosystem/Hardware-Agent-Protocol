@@ -9,6 +9,10 @@ from __future__ import annotations
 
 import asyncio
 import sys
+from pathlib import Path
+
+# the checked-out SDK, also when started as a stdio command (which does not get the harness's PYTHONPATH)
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "sdk" / "python" / "src"))
 
 from bhms.jsonrpc.dispatcher import Server
 from bhms.transport import serve_tcp, serve_unix, serve_websocket

@@ -37,8 +37,8 @@ import budgets  # noqa: E402
 import common  # noqa: E402
 from common import Context, dump, environment  # noqa: E402
 
-ORDER = ["fsync", "transports", "invoke", "concurrency", "openloop", "gateway", "gateway_http", "subscription", "recovery", "compact",
-         "mcp_compare", "ts_vs_py"]
+ORDER = ["fsync", "transports", "invoke", "concurrency", "openloop", "gateway", "gateway_forward", "gateway_http", "subscription", "recovery",
+         "compact", "mcp_compare", "ts_vs_py"]
 
 
 def parse_cpus(spec: str) -> set[int]:

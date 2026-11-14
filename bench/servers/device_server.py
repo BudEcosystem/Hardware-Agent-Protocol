@@ -4,8 +4,10 @@
 appends one ``bench.tick`` event; ``hang()`` waits until cancelled (used to leave ``unknown`` operations behind a SIGKILL).
 
 ``python device_server.py [--listen unix:/p | ws://127.0.0.1:P] [--durability dispatch|full|process|memory]
-[--state-dir DIR] [--devices N] [--queue-limit N] [--cprofile FILE] [--no-checkpoint] [--gc-freeze] [--gc-log FILE]``. Without ``--listen`` it serves stdio. With a listener it
-prints ``ready`` once it accepts connections. ``memory`` is ``store=None`` (nothing durable at all); the others are the SDK's
+[--state-dir DIR] [--devices N] [--queue-limit N] [--cprofile FILE] [--no-checkpoint] [--no-gc-freeze] [--gc-log FILE]
+[--stall-log FILE]``. Without ``--listen`` it serves stdio. With a listener it
+prints ``ready`` once it accepts connections; like ``DeviceServer.serve`` it freezes the start-up heap first
+(``bhms.runtime.heap.freeze_startup_heap``). ``memory`` is ``store=None`` (nothing durable at all); the others are the SDK's
 journal modes (see ``bhms.runtime.store``). ``--cprofile`` writes cProfile statistics (cumulative, then own time) on SIGTERM.
 """
 
@@ -16,8 +18,14 @@ import asyncio
 import contextlib
 import signal
 import sys
+from pathlib import Path
+
+# the checked-out SDK, also when started as a stdio command (which does not get the harness's PYTHONPATH)
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "sdk" / "python" / "src"))
+sys.path.insert(1, str(Path(__file__).resolve().parents[1]))  # bench/ (stalls.py)
 
 from bhms import DeviceServer, Range
+from bhms.runtime.heap import freeze_startup_heap
 
 TOKEN = "bench-token"
 
@@ -51,17 +59,21 @@ async def serve(args: argparse.Namespace) -> None:  # noqa: C901
         await srv.serve(None)
         return
     await srv.listen(args.listen)
-    if args.gc_freeze:
-        import gc
+    if not args.no_gc_freeze:
+        freeze_startup_heap()  # what DeviceServer.serve does
+    watcher = None
+    if args.stall_log:
+        import stalls
 
-        gc.collect()
-        gc.freeze()
+        watcher = asyncio.get_running_loop().create_task(stalls.watch_loop(Path(args.stall_log)))
     stop = asyncio.Event()
     loop = asyncio.get_running_loop()
     for sig in (signal.SIGINT, signal.SIGTERM):
         loop.add_signal_handler(sig, stop.set)
     print("ready", flush=True)
     await stop.wait()
+    if watcher is not None:
+        watcher.cancel()
     await srv.close()
 
 
@@ -75,10 +87,16 @@ def main() -> None:
     parser.add_argument("--cprofile")
     parser.add_argument("--no-checkpoint", action="store_true",
                         help="experiment only: effectively disable the background WAL checkpointer (to attribute latency stalls)")
-    parser.add_argument("--gc-freeze", action="store_true",
-                        help="experiment only: gc.collect() then gc.freeze() once the server is up (what Gateway.serve does)")
+    parser.add_argument("--no-gc-freeze", action="store_true",
+                        help="experiment only: skip freezing the start-up heap (the SDK before Task 12b)")
     parser.add_argument("--gc-log", help="experiment only: append one line per garbage collection slower than 5 ms to this file")
+    parser.add_argument("--stall-log", help="experiment only: append JSON lines for fdatasync calls and event-loop stalls over 10 ms "
+                                            "(bench/stalls.py)")
     args = parser.parse_args()
+    if args.stall_log:
+        import stalls
+
+        stalls.time_fdatasync(Path(args.stall_log))
     if args.gc_log:
         import gc
         import time
