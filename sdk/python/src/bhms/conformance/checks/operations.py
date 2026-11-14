@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import asyncio
 import time
+from typing import Any
 
 from bhms.conformance.context import SETTLED, TERMINAL, Context
 from bhms.conformance.core import CheckFailed, check
@@ -378,3 +379,38 @@ async def cancel_is_not_confirmation(c: Context) -> None:
     final = await c.settle(op["operationId"], 8)
     c.expect(final["state"] == "completed" and final["cancel"]["state"] != "confirmed",
              f"completion that raced the cancel wins cleanly: {final['state']}/{final['cancel']}")
+
+
+@check("operations.reconcile-on-return", ["BHMS-OPS-082"], needs=("faults",))
+async def reconcile_on_return(c: Context) -> None:
+    """When the device returns from offline, its unknown operations are reconciled from device evidence (once, without a
+    restart); when the device cannot say what happened, the operation stays unknown."""
+    axis = c.axis()
+
+    async def lost_operation() -> dict[str, Any]:
+        await c.inject("crash_next")
+        op = await c.run(axis, "pulse", {"count": 1})
+        c.expect(op["state"] == "unknown", f"an operation whose handler crashed after acting must be unknown, is {op['state']}")
+        await c.inject("offline")
+        return op
+
+    op = await lost_operation()
+    await c.inject("online")  # the device is back and its command log knows that the command started and did not finish
+    final = await c.settle(op["operationId"], 5)
+    for _ in range(50):
+        if final["state"] != "unknown":
+            break
+        await asyncio.sleep(0.1)
+        final = await c.get_op(op["operationId"])
+    c.expect(final["state"] != "unknown", "the device returned and can say what happened, but the operation is still unknown")
+    kinds = [(h["kind"], h.get("state")) for h in final["history"] if h["kind"] in ("state", "reconciliation")]
+    c.expect(("state", "unknown") in kinds and kinds[-1][0] == "reconciliation",
+             f"the operation must leave unknown through a reconciliation entry after the unknown entry: {kinds}")
+    again = await c.run(axis, "pulse", {"count": 1})
+    c.expect(again["state"] == "completed", f"after reconciliation the resource admits new work, got {again['state']}")
+    await c.inject("amnesia")  # now the device cannot say: nothing may be assumed
+    op = await lost_operation()
+    await c.inject("online")
+    await asyncio.sleep(0.5)
+    still = await c.get_op(op["operationId"])
+    c.expect(still["state"] == "unknown", f"a device that cannot say what happened must leave the operation unknown, is {still['state']}")

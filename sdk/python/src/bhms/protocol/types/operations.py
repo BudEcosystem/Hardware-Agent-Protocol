@@ -38,6 +38,11 @@ class Progress(_Wire):
     steps_total: NonNegInt
 
 
+class OperatorMark(_Wire):
+    principal: _text(128, 1)
+    basis: _text(2000, 1)
+
+
 class HistoryEntry(_Wire):
     seq: PosInt
     at: Time
@@ -48,6 +53,7 @@ class HistoryEntry(_Wire):
     detail: Optional[_text(1000)] = None
     step_index: Optional[NonNegInt] = None
     child_operation_id: Optional[ServerId] = None
+    operator: Optional[OperatorMark] = None
 
 
 class OperationUpstream(_Wire):
@@ -150,6 +156,33 @@ class OperationsCancelParams(_Params):
     reason: Optional[_text(500)] = None
 
 
+class OperatorResolution(_Wire):
+    state: Literal["completed", "failed"]
+    basis: _text(2000, 1)
+    effect: Optional[Literal["none", "unverified", "verified"]] = None
+    may_have_acted: Optional[bool] = None
+    result: Optional[Any] = None
+    observations: Optional[dict[Name, Observation]] = None
+
+    @model_validator(mode="after")
+    def _consistent(self) -> OperatorResolution:
+        given = self.model_fields_set
+        if self.state == "failed" and "result" in given:
+            raise ValueError("result belongs to state completed")
+        if self.state == "completed" and "may_have_acted" in given:
+            raise ValueError("mayHaveActed belongs to state failed")
+        if self.effect == "verified" and "observations" not in given:
+            raise ValueError("effect verified needs observations (measured and valid)")
+        if self.may_have_acted is False and self.effect != "none":
+            raise ValueError("mayHaveActed false claims that nothing happened and requires effect none")
+        return self
+
+
+class OperationsResolveParams(_Params):
+    operation_id: ServerId
+    resolution: Optional[OperatorResolution] = None
+
+
 class _OperationResult(_Result):
     operation: Operation
 
@@ -163,6 +196,10 @@ class OperationsWaitResult(_OperationResult):
 
 
 class OperationsCancelResult(_OperationResult):
+    pass
+
+
+class OperationsResolveResult(_OperationResult):
     pass
 
 

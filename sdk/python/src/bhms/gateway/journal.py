@@ -44,8 +44,11 @@ from typing import Any
 
 import orjson
 
+from bhms.protocol import schema
 from bhms.protocol.errors import BhmsError
+from bhms.protocol.types import to_wire
 from bhms.runtime.operations import InvalidTransition, Journal, OperationRecord, unknown_error
+from bhms.server.context import check_observations
 
 log = logging.getLogger("bhms.gateway.journal")
 
@@ -179,11 +182,13 @@ class ForwardJournal(Journal):
 
     # ------------------------------------------------------------------ mirroring
 
-    def mirror(self, rec: OperationRecord, upstream_op: dict[str, Any], *, source: str) -> bool:
+    def mirror(self, rec: OperationRecord, upstream_op: dict[str, Any], *, source: str,
+               operator: dict[str, str] | None = None) -> bool:
         """Apply an upstream operation snapshot to ``rec``; returns True when anything changed.
 
         ``source`` says where the evidence came from (``"forward reply"``, ``"notification"``, ``"operations/get"``)
-        and is written into the history entry.
+        and is written into the history entry. ``operator`` marks the reconciliation entry when the upstream's answer
+        is itself an operator's resolution (``operations/resolve``, BHMS-OPS-102).
         """
         if rec.terminal:
             return False
@@ -202,7 +207,7 @@ class ForwardJournal(Journal):
             elif current == "running" and theirs == "running":
                 pass  # a stale or repeated snapshot never regresses or repeats a state
             else:
-                self._advance(rec, upstream_op, theirs, source)
+                self._advance(rec, upstream_op, theirs, source, operator)
                 changed = True
             if not rec.terminal:
                 changed = self._sync_cancel(rec, upstream_op) or changed
@@ -211,7 +216,8 @@ class ForwardJournal(Journal):
             self.annotate(rec, "correction", f"upstream reported {theirs} but the gateway could not apply it: {exc}")
         return changed
 
-    def _advance(self, rec: OperationRecord, up: dict[str, Any], theirs: str, source: str) -> None:
+    def _advance(self, rec: OperationRecord, up: dict[str, Any], theirs: str, source: str,
+                 operator: dict[str, str] | None = None) -> None:
         if rec.state == "accepted":
             before_dispatch = theirs == "rejected" or (theirs == "canceled" and up.get("effect") == "none")
             if theirs == "rejected":
@@ -226,13 +232,16 @@ class ForwardJournal(Journal):
         reconciling = rec.state == "unknown"
         kind = "reconciliation" if reconciling else "state"
         detail = f"{source}: upstream {rec.private.get('upstream')} reports {theirs}"
+        mark = operator if reconciling and theirs in ("completed", "failed", "rejected", "canceled") else None
+        if mark is not None:
+            detail = f"operator resolution by {mark['principal']}, recorded by upstream {rec.private.get('upstream')}: {mark['basis']}"
         evidence = up.get("evidence")
         effect = up.get("effect")
         if theirs == "running":
             self.transition(rec, "running", kind=kind, detail=detail if reconciling else None, effect=effect)
         elif theirs == "completed":
             self.transition(rec, "completed", result=up.get("result", {}), effect=effect, evidence=evidence, kind=kind,
-                            detail=detail if reconciling else None)
+                            detail=detail if reconciling else None, operator=mark)
         elif theirs in ("failed", "rejected"):
             error = dict(up.get("error") or BhmsError("INTERNAL", "the upstream reported a failure without an error",
                                                       may_have_acted=True).to_operation_error())
@@ -244,14 +253,48 @@ class ForwardJournal(Journal):
                         "(no effect); the gateway had already dispatched it, so it is recorded as failed"
                 error["mayHaveActed"] = False
             self.transition(rec, "failed", error=error, effect="none" if theirs == "rejected" else effect,
-                            evidence=evidence, kind=kind, detail=detail if reconciling else None, proof=proof)
+                            evidence=evidence, kind=kind, detail=detail if reconciling else None, proof=proof,
+                            operator=mark)
         elif theirs == "canceled":
             self.transition(rec, "canceled", effect=effect, evidence=evidence, kind=kind,
-                            detail=detail if reconciling else None)
+                            detail=detail if reconciling else None, operator=mark)
         elif theirs == "unknown":
             error = up.get("error") or {}
             cause = error.get("message") or "the upstream reports the outcome as unknown"
             self.transition(rec, "unknown", error=unknown_error(f"upstream {rec.private.get('upstream')}: {cause}"))
+
+    def resolve_locally(self, rec: OperationRecord, resolution: Any, principal: str, why: str, output: Any) -> None:
+        """Record an operator's resolution of an ``unknown`` forward on the gateway's own record, when the upstream cannot
+        be asked (``why``: it is not reachable, has no record of the request, or does not offer ``operations/resolve``).
+
+        The gateway is an enforcement point of its own: its record is what inhibits the device's resources here. The
+        upstream, if it ever returns with the operation still unknown, keeps its own inhibition until it is resolved
+        there. ``output`` is the action's output schema as served (a ``completed`` result must match it). Raises
+        ``ValueError`` naming what is wrong with the resolution; nothing is recorded then.
+        """
+        given = resolution.model_fields_set
+        operator = {"principal": principal, "basis": resolution.basis}
+        detail = f"operator resolution by {principal} at the gateway ({why}): {resolution.basis}"
+        observations = {name: to_wire(obs) for name, obs in (resolution.observations or {}).items()}
+        if observations:
+            check_observations(observations, "resolution")
+        if resolution.effect == "verified" and not observations:
+            raise ValueError("effect verified needs observations that are measured and valid (BHMS-OPS-006)")
+        evidence = {"kind": "measured", "observations": observations} if observations else None
+        if resolution.state == "completed":
+            result = resolution.result if "result" in given else {}
+            if output:
+                for error in schema.compile_schema(output).iter_errors(result):
+                    raise ValueError(f"result does not match the action's declared output: {error.message}")
+            effect = resolution.effect or ("none" if rec.private.get("effectClass", "none") == "none" else "unverified")
+            self.transition(rec, "completed", result=result, effect=effect, evidence=evidence, kind="reconciliation",
+                            detail=detail, operator=operator)
+            return
+        acted = True if resolution.may_have_acted is None else resolution.may_have_acted
+        error = BhmsError("DEVICE_FAULT", resolution.basis, may_have_acted=acted,
+                          hint="read the device state before retrying").to_operation_error()
+        self.transition(rec, "failed", error=error, effect=resolution.effect, evidence=evidence, kind="reconciliation",
+                        detail=detail, proof=None if acted else resolution.basis, operator=operator)
 
     def _sync_cancel(self, rec: OperationRecord, up: dict[str, Any]) -> bool:
         """Mirror a cancellation request the upstream recorded (``requested``/``acknowledged``/``refused``). The effect is

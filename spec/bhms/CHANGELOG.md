@@ -69,6 +69,25 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   **Learning for SimLab (Task 10/11 twins)**: `snap`, plate-reader and balance results should declare `quality`/`valid` (and
   the capture time Task 10 already asked for), and the blank-field case should return `quality: "invalid"` with null scores;
   agent tasks should then be judged on whether the model reads the indicator. Requirement index: 258 rows.
+- **BHMS-OPS-082 (new, MUST, core)**: a server with a reconciliation path attempts reconciliation of a device's `unknown`
+  operations whenever the device returns to `online` (once per return, bounded, never assuming success). BHMS-DEV-012 gains a
+  SHOULD: probe reachability periodically, and let evidence that the device does not answer end `online` at once. Python SDK:
+  the reconcile hook runs on every return; `@device.liveness(interval_s=...)` / `DeviceServer(liveness_interval_s=...)`
+  (default off) probes periodically, a failed probe makes the device `offline`, and any evidence of life brings it back;
+  conformance fault `amnesia` and check `operations.reconcile-on-return`. Evidence: Task 11 report, S11 (54 of 67 power-cut
+  drills stayed `unknown` with power restored; 0 of 67 once the twin triggered reconcile itself) and Task 10 report, SDK gap 6
+  (liveness ran only at server start, so a bridge whose instrument died kept its last status).
+- **`operations/resolve` (new method, capability `operations.resolve`; §6.10, BHMS-OPS-100, 101, 102; profile `authority`)**:
+  `{operationId, resolution?}` → `{operation}`. Scope `operations:resolve` (or `admin`); the device is asked first and its
+  evidence wins; without `resolution` the call only asks again; an operator's `resolution` (`state`, free-text `basis`,
+  optional `effect`, `mayHaveActed`, `result`, `observations`) is recorded as a `reconciliation` entry carrying
+  `operator: {principal, basis}` after the unchanged history; every resolution is an `operation.resolved` event. Schema:
+  `OperationsResolve*`, `OperatorResolution`, `OperatorMark`, `HistoryEntry.operator`, `Scope`, `ServerCapabilities.operations.
+  resolve`; examples `operations.resolve.request.json`, `operations.resolve.response.json`,
+  `invalid-resolve-no-effect-claims-proof.json`. A gateway forwards it and, when the upstream cannot be asked, records the
+  resolution on its own operation. Not on the agent surface. Chapter 6: "Operation notifications" is now §6.11. Evidence:
+  Task 10 report, SDK gap 5 and its spec learning (an `unknown` the device cannot prove kept its resources inhibited with no
+  operator path: "a dead bridge keeps its resources inhibited"). Requirement index: 262 rows.
 
 ### TS SDK to follow
 
@@ -87,6 +106,9 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   `AgentTopicData` and `AgentDescribeData`.
 - Nothing to implement for BHMS-OPS-064 and BHMS-AUTH-015 (no TypeScript gateway); the regenerated types carry
   `Operation.upstream`.
+- BHMS-OPS-082 (reconcile when a device returns), the conformance fault `amnesia` and, if the TypeScript server is to claim
+  `authority` with `capabilities.operations.resolve`, `operations/resolve` (BHMS-OPS-100..102) with the `resolver` role of the
+  conformance fixture. A server that does not advertise `operations.resolve` is not applicable for those three rows.
 
 ## 2026-11-13 (v0.1)
 

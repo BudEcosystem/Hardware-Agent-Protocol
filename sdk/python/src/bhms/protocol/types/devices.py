@@ -40,6 +40,7 @@ class OperationsCapability(_Wire):
     durable: bool
     cancel: bool
     key_retention_s: NonNegInt
+    resolve: Optional[bool] = None
 
 
 class StopCapability(_Wire):

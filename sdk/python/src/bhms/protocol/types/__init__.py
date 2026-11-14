@@ -78,6 +78,7 @@ _METHOD_TABLE: tuple[tuple[str, str, str, str | None], ...] = (
     ("programs/register", "ProgramsRegister", "optional", "programs.registry"),
     ("programs/get", "ProgramsGet", "optional", "programs.registry"),
     ("programs/list", "ProgramsList", "optional", "programs.registry"),
+    ("operations/resolve", "OperationsResolve", "optional", "operations.resolve"),
 )
 
 _NOTIFICATION_TABLE: tuple[tuple[str, str, str], ...] = (
@@ -124,7 +125,7 @@ _DEF_NAMES = (
     "ActionDescription",
     "EventTypeDescription", "SafetyDescription", "DeviceIdentity", "DeviceDescription", "Quality", "Observation",
     "OperationState", "CancelState", "EffectCertainty", "CancelInfo", "OperationEvidence", "Requirement", "Progress",
-    "HistoryEntry", "OperationUpstream", "Operation", "DeviceStop", "SubscriptionFilter", "RefusedFilter", "Lease", "Event", "Predicate",
+    "OperatorMark", "HistoryEntry", "OperationUpstream", "Operation", "OperatorResolution", "DeviceStop", "SubscriptionFilter", "RefusedFilter", "Lease", "Event", "Predicate",
     "InvokeStep", "ReadStep", "WaitUntilStep", "AssertStep", "SleepStep", "RepeatStep", "Step", "Program",
     "ProgramInfo", "ArgumentBound", "PolicyPrincipal", "GatewayPolicy", "AgentFindInput", "AgentDescribeInput",
     "AgentReadInput", "AgentInvokeInput", "AgentOperationInput", "AgentCancelInput", "AgentStopInput",

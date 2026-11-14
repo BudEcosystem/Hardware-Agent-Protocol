@@ -383,8 +383,12 @@ class Journal:
     def transition(self, rec: OperationRecord, state: str, *, error: dict[str, Any] | None = None,
                    result: Any = _UNSET, effect: str | None = None, evidence: dict[str, Any] | None = None,
                    detail: str | None = None, kind: str = "state", barrier: bool | None = None,
-                   proof: str | None = None, cancel: str | None = None) -> None:
+                   proof: str | None = None, cancel: str | None = None,
+                   operator: dict[str, str] | None = None) -> None:
         """Move ``rec`` to ``state``; see the module docstring for the rules. Writes one history entry.
+
+        ``operator`` (``{"principal", "basis"}``) marks a ``reconciliation`` entry that rests on an operator's statement
+        (``operations/resolve``, BHMS-OPS-102) rather than on device evidence.
 
         ``barrier`` defaults to True for ``dispatching``. ``proof`` names device evidence that no effect occurred
         (required for a dispatched failure with ``mayHaveActed: false``). ``cancel`` sets ``cancel.state`` in the
@@ -455,6 +459,10 @@ class Journal:
             op["evidence"] = evidence
         if detail or proof:
             entry["detail"] = (detail or proof or "")[:1000]
+        if operator is not None:
+            if kind != "reconciliation":
+                raise InvalidTransition(f"{rec.id}: only a reconciliation entry can carry an operator mark")
+            entry["operator"] = {"principal": operator["principal"][:128], "basis": operator["basis"][:2000]}
         op["state"] = state
         private = None
         if state == "dispatching" and not rec.private.get("dispatched"):

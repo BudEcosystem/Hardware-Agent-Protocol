@@ -52,7 +52,8 @@ was returned for the same key.
 | `history` | `HistoryEntry[]` | no | Returned by `operations/get` and `operations/wait`; omitted in lists and notifications |
 
 `OperationError` is the error data of §10 plus `message`.
-`HistoryEntry = {seq, at, kind, state?, cancel?, effect?, detail?, stepIndex?, childOperationId?}`,
+`HistoryEntry = {seq, at, kind, state?, cancel?, effect?, detail?, stepIndex?, childOperationId?, operator?}`
+(`operator: {principal, basis}` only on a `reconciliation` entry written from an operator's resolution, §6.10),
 `kind` ∈ `state`, `cancel`, `effect`, `evidence`, `reconciliation`, `correction`,
 `step`, `stop`, `lease`.
 
@@ -331,7 +332,69 @@ attempt reconciliation.
 was `dispatching` or later, unless the device's own replay protection guarantees
 it will not act twice (for example the BHMS-Compact replay ring, §11.6).
 
-## 6.10 Operation notifications
+**BHMS-OPS-082** A server that can ask a device what happened (a reconciliation
+path: a device query, a replay ring, a device-side log) MUST attempt reconciliation
+of that device's `unknown` operations whenever the device **returns**: its status
+becomes `online` after `offline`, `degraded` or `unknown`. It asks once per return,
+bounds each attempt in time, and MUST NOT take a missing or failed answer for
+success: the operation then stays `unknown`. (BHMS-OPS-080 covers the server's own
+restart; this covers the device's.)
+
+## 6.10 Resolving an unknown operation
+
+`operations/resolve {operationId, resolution?}` → `{operation}` (with `history`),
+offered when `capabilities.operations.resolve` is `true`.
+
+`resolution = {state, basis, effect?, mayHaveActed?, result?, observations?}`:
+`state` is `completed` or `failed`; `basis` (1–2000 characters) is free text saying
+what was inspected, by whom and what was found; `result` belongs to `completed`;
+`mayHaveActed` belongs to `failed`; `observations` is a map of `Observation`s
+offered as evidence.
+
+An `unknown` operation inhibits its resources (BHMS-OPS-042) until evidence
+resolves it. When the device can never give that evidence (a dead bridge, a
+controller that kept no record), an **operator** — a person with authority over
+the device, not the client that started the operation and never a model — states
+what happened, and the server records it as what it is: an operator's statement.
+
+**BHMS-OPS-100** A server MUST answer `operations/resolve` only for a principal
+with `admin` or `operations:resolve`, on an operation that principal can see
+(BHMS-OPS-062); any other caller gets `UNAUTHORIZED` naming `operations:resolve`,
+also for an operation it owns. A program operation is refused with
+`INVALID_ARGUMENT` (it settles through its step operations, BHMS-PRG-017). An
+agent bridge MUST NOT expose this method (§12).
+
+**BHMS-OPS-101** The server MUST first attempt reconciliation of the operation
+(BHMS-OPS-005); device evidence, when there is any, is what is recorded, and the
+`resolution` is then not used. Without `resolution` the call does nothing else: it
+is the way to ask the device again. An operation that is not `unknown` MUST be
+returned unchanged, with nothing recorded.
+
+**BHMS-OPS-102** If the operation is still `unknown` and `resolution` is given, the
+server MUST record it as a `reconciliation` history entry carrying
+`operator: {principal, basis}` (the caller's principal id and the stated basis),
+after the earlier entries, which are never changed or removed. The rules of any
+other outcome apply: a `completed` resolution needs a `result` valid against the
+action's `output`; `effect` is `verified` only with `observations` that are
+`measured` and `valid` (BHMS-OPS-006), otherwise `unverified` (default for
+`completed`; `none` for an action without effect) or, for `failed`, `unknown`
+(default); `mayHaveActed: false` is a claim of proof that nothing happened and
+requires `effect: "none"`. A resolution that breaks a rule is refused
+(`INVALID_ARGUMENT`, or `OUT_OF_RANGE` for a result outside the declared output
+range) and nothing is recorded. Every resolution of an `unknown` operation,
+whatever its source, MUST be recorded as an `operation.resolved` event (§9.1) with
+`data.source` `"device"` or `"operator"`, and `data.principal` for an operator.
+
+A gateway forwards `operations/resolve` to the upstream server that holds the
+device's record, adding to `basis` who asked through which gateway, and mirrors
+the answer (its own entry carries `operator` with the caller's principal). When
+that upstream is not reachable, has no record of the request or does not offer
+the method, and a `resolution` is given, the gateway records the resolution on its
+own operation: it is an enforcement point of its own, and its record is what
+inhibits the resources at the gateway. The upstream keeps its own inhibition
+until the operation is resolved there.
+
+## 6.11 Operation notifications
 
 **BHMS-OPS-090** A server MUST deliver `notifications/operation` to matching
 subscriptions for every change of `state`, `cancel.state` or `effect`, with the

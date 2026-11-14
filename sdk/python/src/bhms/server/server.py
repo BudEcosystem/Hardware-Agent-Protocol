@@ -40,6 +40,7 @@ from __future__ import annotations
 import asyncio
 import base64
 import contextlib
+import inspect
 import logging
 import os
 import re
@@ -106,9 +107,15 @@ class DeviceServer:
                  max_wait_ms: int = 60_000, max_page_size: int = 500, lease_min_ttl_ms: int = 1000,
                  lease_max_ttl_ms: int = 600_000, lease_max_wait_ms: int = 30_000, queue_limit: int = 64,
                  observation_min_interval_ms: int = 50, cancel_grace_ms: int = 1000, programs: bool = True,
-                 program_limits: dict[str, int] | None = None, strict: bool = False) -> None:
+                 program_limits: dict[str, int] | None = None, strict: bool = False,
+                 liveness_interval_s: float | None = None, reconcile_timeout_s: float = 10.0) -> None:
         if not re.match(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", name):
             raise ValueError(f"server name {name!r} must be 1-128 characters of [A-Za-z0-9._-]")
+        if liveness_interval_s is not None and liveness_interval_s <= 0:
+            raise ValueError("liveness_interval_s must be positive (None leaves periodic liveness probes off)")
+        if reconcile_timeout_s <= 0:
+            raise ValueError("reconcile_timeout_s must be positive")
+        self.liveness_interval_s, self.reconcile_timeout_s = liveness_interval_s, reconcile_timeout_s
         if key_retention_s < 86_400:
             raise ValueError("key_retention_s must be at least 86400 (BHMS-OPS-034)")
         self.name, self.version, self.title, self.instructions = name, version, title, instructions
@@ -136,6 +143,10 @@ class DeviceServer:
         self._extensions: dict[str, dict[str, Any]] = {}
         self._extension_methods: dict[str, Any] = {}
         self.rpc: RpcServer | None = None
+        self._ready = False  # start() finished: a device that returns from now on triggers its reconcile hook
+        self._liveness_tasks: dict[str, asyncio.Task[None]] = {}
+        self._returning: dict[str, asyncio.Task[None]] = {}
+        self._return_again: set[str] = set()
 
     # ------------------------------------------------------------------ declaration
 
@@ -207,6 +218,9 @@ class DeviceServer:
             for dev in self.devices.values():
                 await self._check_liveness(dev)
                 await self.executor.reconcile(dev)
+            self._ready = True
+            for dev in self.devices.values():
+                self.start_liveness(dev)
         except BaseException:
             self.store.close()
             raise
@@ -215,7 +229,7 @@ class DeviceServer:
         caps: dict[str, Any] = {
             "devices": {"listChanged": True},
             "observations": {"subscribe": True, "minIntervalMs": self.observation_min_interval_ms},
-            "operations": {"durable": self.store.durable, "cancel": True,
+            "operations": {"durable": self.store.durable, "cancel": True, "resolve": True,
                            "keyRetentionS": self.key_retention_s if self.store.durable else 0},
             "stop": {}, "subscriptions": {"maxObservations": 256, "maxOperationIds": 256},
             "leases": self.leases.capability,
@@ -246,16 +260,65 @@ class DeviceServer:
         return rpc
 
     async def _check_liveness(self, dev: Device) -> None:
+        """Run the device's liveness probe once (bounded by its ``timeout_s``) and record the evidence either way."""
         if dev.liveness_handler is None:
             return
         try:
             outcome = dev.liveness_handler()
-            if asyncio.iscoroutine(outcome):
-                outcome = await asyncio.wait_for(outcome, 5.0)
-            if outcome:
-                dev.report_alive()
-        except Exception:  # noqa: BLE001 - no evidence of reachability; status stays unknown
-            log.warning("liveness check of %s failed", dev.device_id, exc_info=True)
+            if inspect.isawaitable(outcome):
+                outcome = await asyncio.wait_for(outcome, dev.liveness_timeout_s)
+        except Exception as exc:  # noqa: BLE001 - the probe did not answer: evidence that the device is unreachable
+            if dev.status != "offline":
+                log.warning("liveness probe of %s failed: %s: %s", dev.device_id, type(exc).__name__, exc)
+            outcome = False
+        if outcome:
+            dev.report_alive()
+        else:
+            dev.report_unreachable()
+
+    def start_liveness(self, dev: Device) -> None:
+        """Begin the periodic liveness probe of ``dev`` when it declares one with an interval (its own ``interval_s`` or
+        the server's ``liveness_interval_s``; off when neither is set). Called for every device by :meth:`start`; call it
+        for a device, or a probe, declared after the server started. Idempotent."""
+        interval = dev.liveness_interval_s if dev.liveness_interval_s is not None else self.liveness_interval_s
+        if not self._ready or dev.liveness_handler is None or interval is None or dev.device_id in self._liveness_tasks:
+            return
+        self._liveness_tasks[dev.device_id] = asyncio.get_running_loop().create_task(
+            self._liveness_loop(dev, interval), name=f"bhms-liveness-{dev.device_id}")
+
+    async def _liveness_loop(self, dev: Device, interval: float) -> None:
+        while True:
+            await asyncio.sleep(interval)
+            await self._check_liveness(dev)
+
+    def _device_returned(self, dev: Device) -> None:
+        """The device's status became ``online`` again: ask its reconcile hook about its ``unknown`` operations, once per
+        return (a return during a running pass queues exactly one more pass)."""
+        if not self._ready or not self._started or dev.reconcile_handler is None:
+            return
+        if dev.device_id in self._returning:
+            self._return_again.add(dev.device_id)
+            return
+        self._returning[dev.device_id] = asyncio.get_running_loop().create_task(
+            self._reconcile_returned(dev), name=f"bhms-reconcile-{dev.device_id}")
+
+    async def _reconcile_returned(self, dev: Device) -> None:
+        try:
+            while True:
+                self._return_again.discard(dev.device_id)
+                try:
+                    changed = await self.executor.reconcile(dev)
+                except StoreError as exc:
+                    self.journal_failed(exc)
+                    return
+                if changed:
+                    log.info("%s returned: %d unknown operation(s) reconciled from device evidence", dev.device_id,
+                             len(changed))
+                    self.executor.pump()
+                if dev.device_id not in self._return_again:
+                    return
+        finally:
+            self._returning.pop(dev.device_id, None)
 
     async def listen(self, url: str, *, ssl: ssl_module.SSLContext | None = None) -> Any:
         """Start (if needed) and accept connections on ``unix:<path>`` or ``ws[s]://host:port``; returns the
@@ -335,6 +398,12 @@ class DeviceServer:
         self._listeners.clear()
         if self.rpc is not None:
             await self.rpc.close()
+        self._ready = False
+        background = [*self._liveness_tasks.values(), *self._returning.values()]
+        for task in background:
+            task.cancel()
+        await asyncio.gather(*background, return_exceptions=True)
+        self._liveness_tasks.clear()
         await self.programs.close()
         pending = [t for t in self.executor.tasks if not t.done()]
         if pending:
@@ -437,6 +506,41 @@ class DeviceServer:
                             hint="use an operationId returned to you (operations/list shows yours)")
         return rec
 
+    async def resolve(self, principal: Principal, operation_id: str, resolution: Any = None) -> OperationRecord:
+        """``operations/resolve`` (§6.10): ask the device again about an ``unknown`` operation and, when it still cannot
+        say and ``resolution`` (an ``OperatorResolution``) is given, record the operator's resolution.
+
+        Needs ``admin`` or ``operations:resolve``, on an operation the principal can see. Device evidence wins: the
+        reconcile hook is asked first and its answer, if any, is what is recorded. An operation that is not ``unknown``
+        is returned unchanged. Nothing is ever removed from history.
+        """
+        if not principal.has("operations:resolve"):
+            raise BhmsError("UNAUTHORIZED", "operations/resolve needs the operations:resolve scope (or admin)",
+                            hint="missing scope operations:resolve; an operator resolves unknown operations, not the "
+                                 "client that started them")
+        rec = self.operation_for(principal, operation_id)
+        if rec.op.get("kind") != "action":
+            raise BhmsError("INVALID_ARGUMENT", f"{operation_id} is a program operation; it settles when its unknown "
+                            "step operations are resolved", field="operationId",
+                            hint="list its steps with operations/list parentOperationId and resolve the unknown ones "
+                                 "(BHMS-PRG-017)")
+        if rec.state != "unknown":
+            return rec
+        self.require_journal()
+        device = self.devices.get(rec.op.get("deviceId", ""))
+        try:
+            if device is not None:
+                await self.executor.reconcile_one(device, rec)
+            if rec.state == "unknown" and resolution is not None:
+                self.executor.resolve_by_operator(rec, principal.id, resolution)
+        except StoreError as exc:
+            self.journal_failed(exc)
+            raise BhmsError("BUSY", "the journal cannot be written; the operation is still unknown", retry="backoff",
+                            hint="retry when the server's journal is writable again") from None
+        if rec.state != "unknown":
+            self.executor.pump()
+        return rec
+
     async def reconcile(self, device_id: str | None = None) -> list[OperationRecord]:
         """Run the ``reconcile`` hooks for ``unknown`` operations (one device or all); returns changed records."""
         changed: list[OperationRecord] = []
@@ -473,6 +577,8 @@ class DeviceServer:
             with contextlib.suppress(StoreError):
                 self.events.append(f"device.{status}", severity="warning" if status != "online" else "info",
                                    device_id=dev.device_id, message=f"{dev.device_id} is {status} (was {previous})")
+        if status == "online":
+            self._device_returned(dev)
 
 
 def _with_admin_token(policy: Policy, token: str) -> Policy:

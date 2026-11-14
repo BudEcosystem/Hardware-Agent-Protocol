@@ -107,6 +107,7 @@ gateway policy grants each principal **scopes**:
 | `programs:run` | `programs/run` (each step also needs its `invoke` scope) |
 | `programs:register` | `programs/register` |
 | `operations:read` | `operations/get`, `operations/wait`, `operations/list` and operation notifications for other principals' operations (never `operations/cancel`, BHMS-OPS-054) |
+| `operations:resolve` | `operations/resolve` on operations the principal can see: asking the device again and recording an operator's resolution of an `unknown` operation (§6.10) |
 | `admin` | everything, plus other principals' operations |
 
 `<pattern>` is `<deviceGlob>/<actionGlob>` (split at the last `/`) or

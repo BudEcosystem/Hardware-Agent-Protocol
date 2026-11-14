@@ -173,6 +173,11 @@ def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one clo
             srv.executor.cancel(rec, params.reason)
         return {"operation": rec.wire()}
 
+    async def operations_resolve(params: Any, ctx: RequestContext) -> dict[str, Any]:
+        principal = srv.authenticate(ctx)
+        rec = await srv.resolve(principal, params.operation_id, params.resolution)
+        return {"operation": rec.wire(history=True)}
+
     async def stop(params: Any, ctx: RequestContext) -> dict[str, Any]:
         principal = srv.authenticate(ctx)
         return {"stops": await srv.stopper.stop(principal, params)}
@@ -244,7 +249,8 @@ def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one clo
     table = {
         "devices/list": devices_list, "devices/describe": devices_describe, "properties/read": properties_read,
         "actions/invoke": actions_invoke, "operations/get": operations_get, "operations/wait": operations_wait,
-        "operations/list": operations_list, "operations/cancel": operations_cancel, "stop": stop,
+        "operations/list": operations_list, "operations/cancel": operations_cancel,
+        "operations/resolve": operations_resolve, "stop": stop,
         "subscriptions/listen": listen, "leases/acquire": leases_acquire, "leases/renew": leases_renew,
         "leases/release": leases_release, "events/read": events_read, "programs/run": programs_run,
         "programs/register": programs_register, "programs/get": programs_get, "programs/list": programs_list,

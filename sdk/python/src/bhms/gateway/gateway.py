@@ -159,7 +159,7 @@ class Gateway:
         caps: dict[str, Any] = {
             "devices": {"listChanged": True},
             "observations": {"subscribe": True, "minIntervalMs": cfg.observation_min_interval_ms},
-            "operations": {"durable": self.store.durable, "cancel": True,
+            "operations": {"durable": self.store.durable, "cancel": True, "resolve": True,
                            "keyRetentionS": cfg.key_retention_s if self.store.durable else 0},
             "stop": {}, "subscriptions": {"maxObservations": 256, "maxOperationIds": 256},
             "leases": self.leases.capability,

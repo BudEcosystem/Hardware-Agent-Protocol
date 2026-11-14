@@ -3,7 +3,7 @@ named principals.
 
 ``gateway_toml`` renders the configuration; ``ROLES`` are the principals (``admin``; ``agent`` with ``invoke:u0/*/*`` and a
 100 mm position bound; ``reader``; ``stopper``; ``nobody``; ``globber`` with the glob ``invoke:u0/axis-1/*``; ``exact`` with the
-literal ``invoke:u0/axis-1/overdrive``). Upstreams are device servers the runner starts on Unix sockets
+literal ``invoke:u0/axis-1/overdrive``; ``resolver`` with ``operations:read`` and ``operations:resolve``). Upstreams are device servers the runner starts on Unix sockets
 (``python -m bhms.testing.conformance_device unix:<path> --gateway``), so the runner can also reach them directly to inject
 faults while observing through the gateway (``--upstream``).
 
@@ -33,6 +33,7 @@ ROLES: dict[str, Role] = {
     "nobody": Role(()),
     "globber": Role(("read", "lease", "invoke:u0/axis-1/*")),
     "exact": Role(("read", "lease", "invoke:u0/axis-1/overdrive")),
+    "resolver": Role(("read", "operations:read", "operations:resolve")),
 }
 TOKEN_PREFIX = "conformance-token-"
 NAMESPACES = ("u0", "u1")

@@ -53,7 +53,7 @@ if TYPE_CHECKING:
 DEVICE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$")
 NAME = re.compile(r"^[a-z][a-z0-9_]{0,63}$")
 CORE_EVENT_TYPES = frozenset({"device.online", "device.offline", "device.degraded", "device.replaced",
-                              "device.epoch", "device.fault", "operation.state", "stop", "lease.revoked",
+                              "device.epoch", "device.fault", "operation.state", "operation.resolved", "stop", "lease.revoked",
                               "lease.expired", "policy.changed"})
 SUMMARY_SOFT_LIMIT = 1600  # BHMS-DEV-011 SHOULD (about 400 tokens)
 SUMMARY_HARD_LIMIT = 4096  # BHMS-DEV-011 MUST
@@ -109,6 +109,9 @@ class Device:
         self._event_validators: dict[str, Any] = {}
         self._alive_at: float | None = None
         self._forced_status: str | None = None
+        self._probe_failed = False
+        self.liveness_interval_s: float | None = None
+        self.liveness_timeout_s: float = 5.0
 
     # ------------------------------------------------------------------ declarations
 
@@ -204,14 +207,41 @@ class Device:
 
     def reconcile(self, fn: Callable[..., Any]) -> Callable[..., Any]:
         """Register ``async def reconcile(op) -> Reconciled | None`` to resolve ``unknown`` operations from device
-        evidence (BHMS-OPS-005). Called after a restart and on :meth:`DeviceServer.reconcile`."""
+        evidence (BHMS-OPS-005).
+
+        The server calls it for each of the device's ``unknown`` operations: after a restart, whenever the device
+        **returns** (its status becomes ``online`` after ``offline``, ``degraded`` or ``unknown``: once per return),
+        on ``operations/resolve`` and on :meth:`DeviceServer.reconcile`. Each call is bounded by the server's
+        ``reconcile_timeout_s``. Return None (or raise) when the device cannot say what happened: the operation then
+        stays ``unknown``; success is never assumed."""
         self.reconcile_handler = fn
         return fn
 
-    def liveness(self, fn: Callable[..., Any]) -> Callable[..., Any]:
-        """Register ``async def alive() -> bool``; a true result is reachability evidence (BHMS-DEV-012)."""
-        self.liveness_handler = fn
-        return fn
+    def liveness(self, fn: Callable[..., Any] | None = None, *, interval_s: float | None = None,
+                 timeout_s: float = 5.0) -> Any:
+        """Register the liveness probe ``def alive() -> bool`` (sync or async): ``@device.liveness`` or
+        ``@device.liveness(interval_s=5)``.
+
+        A true result is reachability evidence (BHMS-DEV-012). A false result, an exception or no answer within
+        ``timeout_s`` is evidence that the device is unreachable: its status becomes ``offline`` until a later probe (or
+        any other evidence of life: a successful acquisition, a completed action) succeeds.
+
+        The probe runs once when the server starts. With ``interval_s`` (or the server's ``liveness_interval_s`` default;
+        both off unless set) it also runs every ``interval_s`` seconds, so a bridge whose instrument died stops
+        reporting its last status. A device declared after the server started begins probing with
+        :meth:`DeviceServer.start_liveness`.
+        """
+        if interval_s is not None and interval_s <= 0:
+            raise ValueError("liveness interval_s must be positive (omit it to leave periodic probing off)")
+        if timeout_s <= 0:
+            raise ValueError("liveness timeout_s must be positive")
+
+        def register(probe: Callable[..., Any]) -> Callable[..., Any]:
+            self.liveness_handler = probe
+            self.liveness_interval_s, self.liveness_timeout_s = interval_s, timeout_s
+            return probe
+
+        return register if fn is None else register(fn)
 
     # ------------------------------------------------------------------ description
 
@@ -331,23 +361,40 @@ class Device:
 
     def report_alive(self) -> None:
         """Record reachability evidence now (BHMS-DEV-012); the server also does this on every successful acquisition
-        and every completed action."""
+        and every completed action. Evidence of life ends an ``offline`` that a failed liveness probe caused (a status
+        forced with :meth:`set_status` stays until it is cleared)."""
+        previous = self.status
         self._alive_at = time.monotonic()
+        self._probe_failed = False
+        self._changed_from(previous)
+
+    def report_unreachable(self) -> None:
+        """Record evidence that the device does not answer (a failed liveness probe): its status is ``offline`` until
+        :meth:`report_alive` is called again."""
+        previous = self.status
+        self._probe_failed = True
+        self._changed_from(previous)
 
     def set_status(self, status: str | None) -> None:
-        """Force ``offline`` or ``degraded`` (``None`` returns to evidence-based ``online``/``unknown``)."""
+        """Force ``offline`` or ``degraded`` (``None`` returns to evidence-based ``online``/``offline``/``unknown``)."""
         if status not in (None, "offline", "degraded"):
             raise ValueError("set_status takes 'offline', 'degraded' or None")
         previous = self.status
         self._forced_status = status
+        self._changed_from(previous)
+
+    def _changed_from(self, previous: str) -> None:
         if self.status != previous and self.server is not None:
             self.server._status_changed(self, previous)
 
     @builtins.property  # the class defines a property() decorator method
     def status(self) -> str:
-        """``offline``/``degraded`` when forced, ``online`` with evidence within ``liveness_s``, else ``unknown``."""
+        """``offline``/``degraded`` when forced; ``offline`` after a failed liveness probe; ``online`` with evidence
+        within ``liveness_s``; else ``unknown``."""
         if self._forced_status is not None:
             return self._forced_status
+        if self._probe_failed:
+            return "offline"
         if self._alive_at is not None and time.monotonic() - self._alive_at <= self.liveness_s:
             return "online"
         return "unknown"

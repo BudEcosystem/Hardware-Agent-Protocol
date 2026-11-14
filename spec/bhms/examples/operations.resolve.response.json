@@ -1,0 +1,73 @@
+{
+  "$comment": "The operation left unknown through a reconciliation entry marked with the operator and the stated basis; the unknown entry stays (BHMS-OPS-005, BHMS-OPS-102).",
+  "against": "#/$defs/OperationsResolveResponse",
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 31,
+    "result": {
+      "resultType": "complete",
+      "operation": {
+        "operationId": "op-9c1d",
+        "operationKey": "dispense-a1",
+        "keyOrigin": "client",
+        "kind": "action",
+        "deviceId": "pump-1",
+        "action": "dispense",
+        "arguments": {
+          "volume": 50,
+          "rate": 100
+        },
+        "requestDigest": "sha256:f19b6b7d345528fba8cb3ec6d3906711281b31c0f67ed9ed0657aeb3e4c6c95a",
+        "state": "failed",
+        "cancel": {
+          "state": "none"
+        },
+        "effect": "none",
+        "leaseId": "lease-12",
+        "fence": 412,
+        "createdAt": "2026-11-13T09:30:00.012Z",
+        "updatedAt": "2026-11-13T09:41:30.120Z",
+        "error": {
+          "bhmsCode": "DEVICE_FAULT",
+          "message": "Pump inspected by J. Doe at 09:41: syringe full, no liquid in the line. Treating the dispense as not performed.",
+          "mayHaveActed": false,
+          "retry": "after-reconcile",
+          "hint": "read the device state before retrying"
+        },
+        "history": [
+          {
+            "seq": 1,
+            "at": "2026-11-13T09:30:00.012Z",
+            "kind": "state",
+            "state": "accepted"
+          },
+          {
+            "seq": 2,
+            "at": "2026-11-13T09:30:00.020Z",
+            "kind": "state",
+            "state": "dispatching",
+            "effect": "unknown"
+          },
+          {
+            "seq": 3,
+            "at": "2026-11-13T09:30:10.031Z",
+            "kind": "state",
+            "state": "unknown"
+          },
+          {
+            "seq": 4,
+            "at": "2026-11-13T09:41:30.120Z",
+            "kind": "reconciliation",
+            "state": "failed",
+            "effect": "none",
+            "detail": "operator resolution by operator: Pump inspected by J. Doe at 09:41: syringe full, no liquid in the line. Treating the dispense as not performed.",
+            "operator": {
+              "principal": "operator",
+              "basis": "Pump inspected by J. Doe at 09:41: syringe full, no liquid in the line. Treating the dispense as not performed."
+            }
+          }
+        ]
+      }
+    }
+  }
+}

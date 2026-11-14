@@ -78,6 +78,11 @@ JSON (about 400 tokens), and MUST be at most 4 096 bytes.
 **BHMS-DEV-012** `status: "online"` MUST mean the server has had evidence of the
 device's reachability within its declared liveness interval. A device whose
 reachability cannot be established MUST be `unknown`, not `online`.
+A server SHOULD probe the reachability of a device behind a link that can fail
+silently (a bridge to an instrument) periodically, not only when it starts;
+evidence that the device does not answer SHOULD end `online` at once (`offline`)
+rather than when the liveness interval runs out, and the return to `online`
+triggers reconciliation (BHMS-OPS-082).
 
 ## 4.3 `devices/describe`
 

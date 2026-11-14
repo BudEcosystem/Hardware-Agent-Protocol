@@ -11,9 +11,10 @@ import asyncio
 import contextlib
 import json
 import time
+from typing import Any
 
 from bhms.conformance.context import Context
-from bhms.conformance.core import check
+from bhms.conformance.core import NotApplicable, check
 from bhms.conformance.targets import ROLES, Role
 
 NEEDS = ("principals",)
@@ -256,3 +257,64 @@ async def programs_authority(c: Context) -> None:
         c.refused(await agent.request("programs/run", {"digest": registered["digest"], "arguments": {}}), "UNAUTHORIZED",
                   what="registration must not grant the step authority", ids=("BHMS-PRG-021",))
     c.expect(await c.counter(device) == base, "a refused program reached the device")
+
+
+@check("authority.operator-resolution", ["BHMS-OPS-100", "BHMS-OPS-101", "BHMS-OPS-102"], profile="authority",
+       needs=("principals", "faults"))
+async def operator_resolution(c: Context) -> None:
+    """operations/resolve: only an operator may call it; the device is asked first and its evidence wins; what the device
+    cannot explain is recorded as the operator's statement, after the unchanged history, and audited."""
+    if not (c.caps.get("operations") or {}).get("resolve"):
+        raise NotApplicable("the server does not offer operations/resolve (capabilities.operations.resolve)")
+    device = _axis(c)
+    basis = "conformance: axis inspected, at rest; treating the pulse as not completed"
+    async with c.fresh_wire("agent") as agent, c.fresh_wire("reader") as reader, c.fresh_wire("resolver") as resolver:
+        async def lose() -> dict[str, Any]:
+            await c.inject("crash_next")
+            op = c.result(await agent.request("actions/invoke", {"deviceId": device, "action": "pulse", "arguments": {"count": 1},
+                                                                 "waitMs": 5000}))["operation"]
+            c.expect(op["state"] == "unknown", f"a crashed handler must leave the operation unknown, is {op['state']}")
+            return op
+
+        await c.inject("amnesia")  # the device cannot say what happened
+        op = await lose()
+        resolution = {"state": "failed", "basis": basis}
+        params = {"operationId": op["operationId"], "resolution": resolution}
+        for name, wire in (("the owner", agent), ("a read-only principal", reader)):
+            refused = c.refused(await wire.request("operations/resolve", params), "UNAUTHORIZED",
+                                what=f"operations/resolve by {name}", ids=("BHMS-OPS-100",))
+            c.expect("operations:resolve" in str(refused.get("hint", "")), "the refusal must name the scope operations:resolve", ("BHMS-OPS-100",))
+        asked = c.result(await resolver.request("operations/resolve", {"operationId": op["operationId"]}),
+                         "operations/resolve by a principal with operations:resolve", ("BHMS-OPS-100",))["operation"]
+        c.expect(asked["state"] == "unknown" and not [h for h in asked["history"] if h["kind"] == "reconciliation"],
+                 f"without a resolution nothing may be recorded when the device cannot say: {asked['state']}", ("BHMS-OPS-101",))
+        claim = await resolver.request("operations/resolve", {"operationId": op["operationId"], "resolution": {
+            "state": "failed", "basis": basis, "mayHaveActed": False, "effect": "unverified"}})
+        c.refused(claim, "INVALID_ARGUMENT", what="a resolution that claims nothing happened without effect none", ids=("BHMS-OPS-102",))
+        before = asked["history"]
+        done = c.result(await resolver.request("operations/resolve", params))["operation"]
+        c.expect(done["state"] == "failed" and (done.get("error") or {}).get("mayHaveActed") is True,
+                 f"the operator's resolution must be recorded: {done['state']}", ("BHMS-OPS-102",))
+        c.expect(done["history"][:len(before)] == before, "earlier history entries were changed or removed", ("BHMS-OPS-102",))
+        last = done["history"][-1]
+        me = (c.result(await resolver.request("server/discover", {})).get("principal") or {}).get("id")
+        c.expect(last["kind"] == "reconciliation" and (last.get("operator") or {}).get("basis") == basis
+                 and last["operator"].get("principal") == me,
+                 f"the entry must be a reconciliation carrying operator {{principal: {me}, basis}}: {last}", ("BHMS-OPS-102",))
+        if "events" in c.caps:
+            events = [e for e in (await c.ok("events/read", {"types": ["operation.resolved"], "limit": 100}))["events"]
+                      if e.get("operationId") == op["operationId"]]
+            c.expect(any((e.get("data") or {}).get("source") == "operator" for e in events),
+                     "an operator's resolution must be recorded as an operation.resolved event with source operator", ("BHMS-OPS-102",))
+        same = c.result(await resolver.request("operations/resolve", {"operationId": op["operationId"], "resolution": {
+            "state": "failed", "basis": "a second opinion"}}))["operation"]
+        c.expect(same["history"] == done["history"], "resolving an operation that is no longer unknown must change nothing", ("BHMS-OPS-101",))
+        free = c.result(await agent.request("actions/invoke", {"deviceId": device, "action": "pulse", "arguments": {"count": 1}, "waitMs": 5000}))
+        c.expect(free["operation"]["state"] == "completed", "after the resolution the resource must admit new work", ("BHMS-OPS-102",))
+        await c.inject("none")  # the device can explain itself again: its evidence wins over the operator
+        op = await lose()
+        won = c.result(await resolver.request("operations/resolve", {"operationId": op["operationId"], "resolution": {
+            "state": "completed", "basis": "the operator believes it finished", "result": {"pulses": 1}}}))["operation"]
+        entry = [h for h in won["history"] if h["kind"] == "reconciliation"][-1]
+        c.expect(won["state"] == "failed" and "operator" not in entry,
+                 f"device evidence (started, not finished) must be recorded, not the operator's claim: {won['state']} {entry}", ("BHMS-OPS-101",))

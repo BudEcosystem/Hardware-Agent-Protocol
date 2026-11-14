@@ -75,6 +75,7 @@ advertised by `server/discover` (BHMS-LIF-020).
 | `programs/register` | `programs.registry` | `{program}` → `{info: ProgramInfo}` | 08 |
 | `programs/get` | `programs.registry` | `{digest}` → `{program, info}` | 08 |
 | `programs/list` | `programs.registry` | `{cursor?, limit?}` → `{programs: ProgramInfo[], nextCursor?}` | 08 |
+| `operations/resolve` | `operations.resolve` | `{operationId, resolution?}` → `{operation}` | 06 |
 
 Every result additionally carries `resultType: "complete"` and MAY carry `_meta`.
 Every request's `params` carries `_meta` with `bhms/protocolVersion`.

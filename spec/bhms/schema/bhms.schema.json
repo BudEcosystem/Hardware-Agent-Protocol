@@ -145,6 +145,14 @@
       "response": "#/$defs/ProgramsListResponse",
       "tier": "optional",
       "capability": "programs.registry"
+    },
+    "operations/resolve": {
+      "params": "#/$defs/OperationsResolveParams",
+      "result": "#/$defs/OperationsResolveResult",
+      "request": "#/$defs/OperationsResolveRequest",
+      "response": "#/$defs/OperationsResolveResponse",
+      "tier": "optional",
+      "capability": "operations.resolve"
     }
   },
   "x-bhms-notifications": {
@@ -1530,6 +1538,10 @@
             "keyRetentionS": {
               "type": "integer",
               "minimum": 0
+            },
+            "resolve": {
+              "type": "boolean",
+              "description": "operations/resolve is offered (6.10)."
             }
           },
           "required": [
@@ -1693,7 +1705,7 @@
     "Scope": {
       "type": "string",
       "description": "Authorization scope (07-leases-and-authority.md 7.4).",
-      "pattern": "^(read|lease|stop|admin|operations:read|programs:run|programs:register|invoke:.+|stop:.+)$"
+      "pattern": "^(read|lease|stop|admin|operations:read|operations:resolve|programs:run|programs:register|invoke:.+|stop:.+)$"
     },
     "Principal": {
       "type": "object",
@@ -2893,6 +2905,27 @@
       ],
       "additionalProperties": false
     },
+    "OperatorMark": {
+      "type": "object",
+      "description": "Marks a reconciliation entry written by operations/resolve from an operator's statement, not from device evidence (BHMS-OPS-102).",
+      "properties": {
+        "principal": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "basis": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000
+        }
+      },
+      "required": [
+        "principal",
+        "basis"
+      ],
+      "additionalProperties": false
+    },
     "HistoryEntry": {
       "type": "object",
       "properties": {
@@ -2936,6 +2969,9 @@
         },
         "childOperationId": {
           "$ref": "#/$defs/ServerId"
+        },
+        "operator": {
+          "$ref": "#/$defs/OperatorMark"
         }
       },
       "required": [
@@ -3640,6 +3676,217 @@
         },
         "result": {
           "$ref": "#/$defs/OperationsCancelResult"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ],
+      "additionalProperties": false
+    },
+    "OperatorResolution": {
+      "type": "object",
+      "description": "An operator's resolution of an unknown operation, with the evidence it rests on (6.10).",
+      "properties": {
+        "state": {
+          "enum": [
+            "completed",
+            "failed"
+          ]
+        },
+        "basis": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2000,
+          "description": "Free text: what was inspected, by whom, and what was found."
+        },
+        "effect": {
+          "enum": [
+            "none",
+            "unverified",
+            "verified"
+          ],
+          "description": "Default: unverified for completed (none for an action without effect), unknown for failed."
+        },
+        "mayHaveActed": {
+          "type": "boolean",
+          "description": "failed only; false claims proof that nothing happened and requires effect none."
+        },
+        "result": {
+          "description": "completed only: the result, valid against the action's output."
+        },
+        "observations": {
+          "type": "object",
+          "propertyNames": {
+            "$ref": "#/$defs/Name"
+          },
+          "additionalProperties": {
+            "$ref": "#/$defs/Observation"
+          },
+          "description": "Measured, valid observations taken as evidence; required for effect verified."
+        }
+      },
+      "required": [
+        "state",
+        "basis"
+      ],
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "failed"
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "result"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "completed"
+              }
+            },
+            "required": [
+              "state"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "mayHaveActed"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "effect": {
+                "const": "verified"
+              }
+            },
+            "required": [
+              "effect"
+            ]
+          },
+          "then": {
+            "required": [
+              "observations"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mayHaveActed": {
+                "const": false
+              }
+            },
+            "required": [
+              "mayHaveActed"
+            ]
+          },
+          "then": {
+            "properties": {
+              "effect": {
+                "const": "none"
+              }
+            },
+            "required": [
+              "effect"
+            ]
+          }
+        }
+      ]
+    },
+    "OperationsResolveParams": {
+      "type": "object",
+      "properties": {
+        "_meta": {
+          "$ref": "#/$defs/RequestMeta"
+        },
+        "operationId": {
+          "$ref": "#/$defs/ServerId"
+        },
+        "resolution": {
+          "$ref": "#/$defs/OperatorResolution"
+        }
+      },
+      "required": [
+        "_meta",
+        "operationId"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsResolveResult": {
+      "type": "object",
+      "properties": {
+        "resultType": {
+          "$ref": "#/$defs/ResultType"
+        },
+        "_meta": {
+          "$ref": "#/$defs/ResultMeta"
+        },
+        "operation": {
+          "$ref": "#/$defs/Operation"
+        }
+      },
+      "required": [
+        "resultType",
+        "operation"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsResolveRequest": {
+      "type": "object",
+      "description": "operations/resolve request.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "method": {
+          "const": "operations/resolve"
+        },
+        "params": {
+          "$ref": "#/$defs/OperationsResolveParams"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "method",
+        "params"
+      ],
+      "additionalProperties": false
+    },
+    "OperationsResolveResponse": {
+      "type": "object",
+      "description": "operations/resolve result response.",
+      "properties": {
+        "jsonrpc": {
+          "const": "2.0"
+        },
+        "id": {
+          "$ref": "#/$defs/RequestId"
+        },
+        "result": {
+          "$ref": "#/$defs/OperationsResolveResult"
         }
       },
       "required": [

@@ -13,6 +13,7 @@ from typer.testing import CliRunner
 from bhms.cli.main import app
 from bhms.gateway import load_config
 from bhms.gateway.policy_check import check_policy
+from bhms.protocol.errors import BhmsError
 from bhms.runtime.authority import Policy, agent_scopes
 from helpers.gateway_rig import TOKENS, principals, rig
 
@@ -172,3 +173,73 @@ def test_the_agent_surface_says_that_stop_is_the_safe_action_on_a_fault():
     assert "bhms_stop" in BRIDGE_INSTRUCTIONS and "unexpected" in BRIDGE_INSTRUCTIONS
     spec = (Path(__file__).resolve().parents[3] / "spec" / "bhms" / "12-agent-surface.md").read_text()
     assert "## 12.7 Faults: stop is the safe action" in spec
+
+
+# ---------------------------------------------------------------------------- A4 at the gateway: operations/resolve is forwarded
+
+
+async def _unknown_through_gateway(r, client):
+    op = (await client.actions_invoke("a/axis-1", "explode", {}, wait_ms=2000)).operation
+    assert op.state == "unknown"
+    with pytest.raises(BhmsError) as exc:
+        await client.actions_invoke("a/axis-1", "move_to", {"target": 1})
+    assert exc.value.bhms_code == "STALE"  # the resources are inhibited (BHMS-OPS-042)
+    return op
+
+
+async def test_the_gateway_forwards_an_operator_resolution_to_the_upstream(tmp_path):
+    async with rig(tmp_path) as r:
+        assert r.gateway.rpc.capabilities["operations"]["resolve"] is True
+        agent = await r.client()
+        admin = await r.client(token=TOKENS["admin"])
+        op = await _unknown_through_gateway(r, agent)
+        with pytest.raises(BhmsError) as exc:  # the client that started it is not an operator
+            await agent.operations_resolve(op.operation_id, state="failed", basis="it looks fine to me")
+        assert exc.value.bhms_code == "UNAUTHORIZED" and "operations:resolve" in exc.value.hint
+        asked = (await admin.operations_resolve(op.operation_id)).operation  # only asks again: still unknown
+        assert asked.state == "unknown"
+        resolved = (await admin.operations_resolve(op.operation_id, state="failed",
+                                                   basis="axis inspected by the operator: at rest at 0 mm")).operation
+        assert resolved.state == "failed" and resolved.error.may_have_acted is True
+        last = [h for h in resolved.history if h.kind == "reconciliation"][-1]
+        assert last.operator.principal == "admin" and "axis inspected" in last.operator.basis
+        # the device server holds the same resolution, attributed to the gateway and the gateway's principal
+        theirs = r.servers["a"].journal.get(resolved.upstream.operation_id).wire(history=True)
+        mark = [h for h in theirs["history"] if h["kind"] == "reconciliation"][-1]["operator"]
+        assert theirs["state"] == "failed" and mark["principal"] == "gateway"
+        assert "via gateway gw-test" in mark["basis"] and "principal admin" in mark["basis"]
+        # the inhibition is lifted at both enforcement points
+        again = (await agent.actions_invoke("a/axis-1", "move_to", {"target": 1}, wait_ms=2000)).operation
+        assert again.state == "completed"
+        events = (await admin.events_read(types=["operation.resolved"])).events  # the gateway's own, and the upstream's
+        assert {e.operation_id for e in events} == {op.operation_id}
+        assert [e.data["principal"] for e in events if e.data.get("source") == "operator" and "principal" in e.data][0] == "admin"
+
+
+async def test_the_gateway_records_an_operator_resolution_itself_when_the_upstream_is_gone(tmp_path):
+    """The case of Task 10 gap 5 behind a gateway: the bridge (upstream) is dead and will not answer again."""
+    import asyncio
+
+    async with rig(tmp_path, names=("a",)) as r:
+        agent = await r.client()
+        admin = await r.client(token=TOKENS["admin"])
+        op = await _unknown_through_gateway(r, agent)
+        await r.servers["a"].close()  # the upstream process dies: its connection to the gateway drops
+        await r.listeners["a"].close()
+        for _ in range(100):
+            if not r.gateway.upstreams["a"].available:
+                break
+            await asyncio.sleep(0.05)
+        assert not r.gateway.upstreams["a"].available
+        still = (await admin.operations_resolve(op.operation_id)).operation  # nothing to ask: unchanged
+        assert still.state == "unknown"
+        with pytest.raises(BhmsError) as exc:
+            await admin.operations_resolve(op.operation_id, state="completed", basis="x", result={"not": "the output"},
+                                           effect="verified")
+        assert exc.value.bhms_code == "INVALID_ARGUMENT"
+        resolved = (await admin.operations_resolve(op.operation_id, state="failed", may_have_acted=False, effect="none",
+                                                   basis="controller found powered off since 09:00; it cannot have moved")).operation
+        assert resolved.state == "failed" and resolved.effect == "none" and resolved.error.may_have_acted is False
+        last = [h for h in resolved.history if h.kind == "reconciliation"][-1]
+        assert last.operator.principal == "admin" and "at the gateway" in last.detail and "not reachable" in last.detail
+        assert op.operation_id not in r.gateway.router.unknown

@@ -1179,6 +1179,42 @@
   "test": "After the crash above, the device command counter shows no resend."
  },
  {
+  "id": "BHMS-OPS-082",
+  "area": "OPS",
+  "level": "MUST",
+  "profile": "core",
+  "method": "fault",
+  "summary": "A server that can ask a device what happened (a reconciliation path: a device query, a replay ring, a device-side log) MUST attempt reconciliation of that device's `unknown` operations whenever the device… (06)",
+  "test": "Make an operation unknown, take the device offline and bring it back: the operation is reconciled from device evidence without a restart; with a device that cannot say, it stays unknown."
+ },
+ {
+  "id": "BHMS-OPS-100",
+  "area": "OPS",
+  "level": "MUST",
+  "profile": "authority",
+  "method": "wire",
+  "summary": "A server MUST answer `operations/resolve` only for a principal with `admin` or `operations:resolve`, on an operation that principal can see (BHMS-OPS-062); any other caller gets `UNAUTHORIZED` naming… (06)",
+  "test": "The owner and a read-only principal call operations/resolve on an unknown operation: UNAUTHORIZED; a principal with operations:resolve is served."
+ },
+ {
+  "id": "BHMS-OPS-101",
+  "area": "OPS",
+  "level": "MUST",
+  "profile": "authority",
+  "method": "fault",
+  "summary": "The server MUST first attempt reconciliation of the operation (BHMS-OPS-005); device evidence, when there is any, is what is recorded, and the `resolution` is then not used. (06)",
+  "test": "Resolve without a resolution: the device is asked and the operation stays unknown; resolve an operation the device can explain: the device's answer is recorded, without an operator mark."
+ },
+ {
+  "id": "BHMS-OPS-102",
+  "area": "OPS",
+  "level": "MUST",
+  "profile": "authority",
+  "method": "fault",
+  "summary": "If the operation is still `unknown` and `resolution` is given, the server MUST record it as a `reconciliation` history entry carrying `operator: {principal, basis}` (the caller's principal id and the… (06)",
+  "test": "Resolve an operation the device cannot explain: reconciliation entry with operator and basis after the unchanged earlier entries, operation.resolved event, the resources admit new work; a resolution that claims a verified effect without observations is refused."
+ },
+ {
   "id": "BHMS-OPS-090",
   "area": "OPS",
   "level": "MUST",

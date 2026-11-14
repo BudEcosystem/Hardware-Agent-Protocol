@@ -48,10 +48,12 @@ from bhms.gateway.journal import upstream_key
 from bhms.gateway.policy import refusal, unauthorized
 from bhms.gateway.upstreams import Upstream
 from bhms.jsonrpc.dispatcher import Server as RpcServer
-from bhms.jsonrpc.session import RequestContext
+from bhms.jsonrpc.session import JsonRpcError, RequestContext
 from bhms.protocol.errors import BhmsError
+from bhms.protocol.types import to_wire
 from bhms.runtime.authority import Principal
-from bhms.runtime.operations import (OperationRecord, intent_digest, key_conflict_error, now_ns, server_key)
+from bhms.runtime.operations import (InvalidTransition, OperationRecord, intent_digest, key_conflict_error, now_ns,
+                                     server_key)
 from bhms.runtime.store import StoreError
 from bhms.server.handlers import summary_matches, unknown_device
 from bhms.server.server import decode_cursor, encode_cursor
@@ -145,7 +147,8 @@ class Router:
             "devices/list": self.devices_list, "devices/describe": self.devices_describe,
             "properties/read": self.properties_read, "actions/invoke": self.actions_invoke,
             "operations/get": self.operations_get, "operations/wait": self.operations_wait,
-            "operations/list": self.operations_list, "operations/cancel": self.operations_cancel, "stop": self.stop,
+            "operations/list": self.operations_list, "operations/cancel": self.operations_cancel,
+            "operations/resolve": self.operations_resolve, "stop": self.stop,
             "subscriptions/listen": self.listen, "leases/acquire": self.leases_acquire,
             "leases/renew": self.leases_renew, "leases/release": self.leases_release, "events/read": self.events_read}
         for method, handler in table.items():
@@ -448,6 +451,82 @@ class Router:
         rec = self._operation_for(principal, params.operation_id)
         rec = await self._wait(rec, params.timeout_ms)
         return {"operation": self._wire_for(principal, rec, rec.wire(history=True))}
+
+    async def operations_resolve(self, params: Any, ctx: RequestContext) -> dict[str, Any]:
+        """``operations/resolve`` (§6.10) at a gateway: ask the upstream again; forward an operator's resolution to the
+        upstream that holds the device's record; record it on the gateway's own record when that upstream cannot be
+        asked. Needs ``admin`` or ``operations:resolve``."""
+        gw = self.gateway
+        principal = gw.auth.authenticate(ctx)
+        if not principal.has("operations:resolve"):
+            raise unauthorized("scope:resolve", principal, "resolve unknown operations", "operations:resolve")
+        rec = self._operation_for(principal, params.operation_id)
+        if rec.state == "unknown":
+            gw.require_journal()
+            await self.reconcile(rec)
+        if rec.state == "unknown":
+            await self._resolve_unknown(rec, principal, params.resolution, ctx)
+        return {"operation": self._wire_for(principal, rec, rec.wire(history=True))}
+
+    async def _resolve_unknown(self, rec: OperationRecord, principal: Principal, resolution: Any,
+                               ctx: RequestContext) -> None:
+        gw = self.gateway
+        up = gw.upstreams[rec.private["upstream"]]
+        uid = rec.private.get("upstreamOperationId")
+        why = (f"upstream {up.name} is not reachable" if not up.available else
+               f"upstream {up.name} has no record of the request" if uid is None else None)
+        if why is None:
+            forward: dict[str, Any] = {"operationId": uid}
+            if resolution is not None:
+                stated = to_wire(resolution)
+                stated["basis"] = f"{resolution.basis} [via gateway {gw.config.id}, principal {principal.id}]"[:2000]
+                forward["resolution"] = stated
+            try:
+                reply = await up.call("operations/resolve", forward, trace=trace_of(ctx))
+            except BhmsError as exc:
+                if exc.bhms_code != "UNSUPPORTED" and exc.field != "operationId":
+                    raise _upstream_refusal(up, exc) from None  # the upstream refused the resolution itself: nothing changed
+                why = (f"upstream {up.name} does not offer operations/resolve" if exc.bhms_code == "UNSUPPORTED" else
+                       f"upstream {up.name} does not know the operation any more")
+            except JsonRpcError as exc:
+                why = f"upstream {up.name} does not offer operations/resolve ({exc.message})"
+            except (TransportClosed, asyncio.TimeoutError) as exc:
+                why = f"upstream {up.name} did not answer ({type(exc).__name__})"
+            else:
+                entries = [h for h in reply["operation"].get("history", []) if h.get("kind") == "reconciliation"]
+                by_operator = bool(entries) and "operator" in entries[-1] and resolution is not None
+                try:
+                    gw.journal.mirror(rec, reply["operation"], source="operations/resolve", operator={
+                        "principal": principal.id, "basis": resolution.basis} if by_operator else None)
+                except StoreError as exc:
+                    gw.journal_failed(exc)
+                    raise BhmsError("BUSY", "the gateway's journal cannot be written; the operation is still unknown here",
+                                    retry="backoff", hint="retry when the gateway's journal is writable") from None
+                self.index(rec)
+                if rec.state != "unknown":
+                    self._resolved(rec, "operator" if by_operator else "device", principal)
+                return
+        if resolution is None:
+            return  # nobody to ask and nothing stated: the operation stays unknown
+        entry = gw.catalog.get(rec.op.get("deviceId", ""))
+        action = entry.action(rec.op.get("action", "")) if entry is not None else None
+        try:
+            gw.journal.resolve_locally(rec, resolution, principal.id, why, (action or {}).get("output"))
+        except (ValueError, InvalidTransition) as exc:
+            raise refusal("INVALID_ARGUMENT", "resolve:resolution", f"the resolution cannot be recorded: {exc}"[:1500],
+                          field="resolution", hint="check state, effect, result and observations against the operation "
+                                                   "(spec 6.10)") from None
+        except StoreError as exc:
+            gw.journal_failed(exc)
+            raise BhmsError("BUSY", "the gateway's journal cannot be written; the operation is still unknown",
+                            retry="backoff", hint="retry when the gateway's journal is writable") from None
+        self._resolved(rec, "operator", principal)
+
+    def _resolved(self, rec: OperationRecord, source: str, principal: Principal) -> None:
+        self.gateway.record("operation.resolved", severity="warning" if source == "operator" else "info",
+                            device_id=rec.op.get("deviceId"), operation_id=rec.id,
+                            data={"state": rec.state, "source": source, "principal": principal.id},
+                            message=f"{rec.id} left unknown: {rec.state} (resolved by {source})")
 
     async def operations_list(self, params: Any, ctx: RequestContext) -> dict[str, Any]:
         gw = self.gateway
