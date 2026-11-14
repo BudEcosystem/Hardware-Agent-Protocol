@@ -287,6 +287,7 @@ class Session:
         self._close_task: asyncio.Future[None] | None = None
         self._registry = registry if registry is not None else {}
         self._closed = asyncio.Event()
+        self._torn_down = asyncio.Event()  # set when _teardown has finished: transport closed, I/O tasks ended
 
     # ------------------------------------------------------------------ lifecycle
 
@@ -338,6 +339,8 @@ class Session:
             with contextlib.suppress(asyncio.TimeoutError):
                 await asyncio.wait_for(self._outbox.join(), self._flush_timeout)
             await self._teardown(TransportClosed("session closed"))
+        else:  # the peer or an I/O failure started the teardown: it may still be closing the transport
+            await self._torn_down.wait()
         await self.drain(self.drain_timeout)
 
     async def drain(self, timeout: float) -> None:
@@ -394,32 +397,35 @@ class Session:
             return
         self._closing = True
         self._closed.set()  # first, so concurrent callers and late enqueues see it
-        current = asyncio.current_task()
-        io_tasks = [task for task in (self._reader, self._writer) if task is not None and task is not current]
-        for task in io_tasks:
-            task.cancel()
-        await self._abandon_handlers()
-        for fut in self._pending.values():
-            if not fut.done():
-                fut.set_exception(reason)
-        self._pending.clear()
-        for stream in list(self._streams.values()):
-            stream._finish("error", reason)
-        self._streams.clear()
-        while not self._outbox.empty():  # wakes blocked producers and lets join() return
-            self._outbox.get_nowait()
-            self._outbox.task_done()
         try:
-            await asyncio.wait_for(self._transport.close(), self._flush_timeout)
-        except asyncio.TimeoutError:
-            log.warning("transport did not close within %.1f s (peer not reading?); aborting", self._flush_timeout)
-            self._transport.abort()
-        for task in list(self._background):
-            task.cancel()
-        # The reader and writer end here, not at some later turn of the loop: a caller that returns from close() and
-        # stops its loop must not leave them pending ("Task was destroyed but it is pending").
-        if io_tasks:
-            await asyncio.gather(*io_tasks, return_exceptions=True)
+            current = asyncio.current_task()
+            io_tasks = [task for task in (self._reader, self._writer) if task is not None and task is not current]
+            for task in io_tasks:
+                task.cancel()
+            await self._abandon_handlers()
+            for fut in self._pending.values():
+                if not fut.done():
+                    fut.set_exception(reason)
+            self._pending.clear()
+            for stream in list(self._streams.values()):
+                stream._finish("error", reason)
+            self._streams.clear()
+            while not self._outbox.empty():  # wakes blocked producers and lets join() return
+                self._outbox.get_nowait()
+                self._outbox.task_done()
+            try:
+                await asyncio.wait_for(self._transport.close(), self._flush_timeout)
+            except asyncio.TimeoutError:
+                log.warning("transport did not close within %.1f s (peer not reading?); aborting", self._flush_timeout)
+                self._transport.abort()
+            for task in list(self._background):
+                task.cancel()
+            # The reader and writer end here, not at some later turn of the loop: a caller that returns from close() and
+            # stops its loop must not leave them pending ("Task was destroyed but it is pending").
+            if io_tasks:
+                await asyncio.gather(*io_tasks, return_exceptions=True)
+        finally:
+            self._torn_down.set()  # close() callers that found the teardown under way wait for this
 
     # ------------------------------------------------------------------ outbound
 

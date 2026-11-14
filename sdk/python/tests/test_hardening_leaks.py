@@ -16,7 +16,7 @@ import pytest
 
 from bhms.client.client import Client
 from bhms.jsonrpc.session import Session
-from bhms.transport.base import TransportClosed
+from bhms.transport.base import DEFAULT_MAX_MESSAGE_BYTES, Peer, Transport, TransportClosed
 from bhms.transport.stdio import spawn_stdio
 
 HELPERS = Path(__file__).parent / "helpers"
@@ -74,6 +74,45 @@ async def test_close_releases_the_transport_of_a_child_that_died_mid_session():
     assert reader.done() and writer.done()
     del client, process, reader, writer
     _collect_without_warnings()
+
+
+class _SlowClosingTransport(Transport):
+    """The peer hangs up at once; closing the connection takes until ``release`` is set (a child that is slow to be
+    reaped, as under load)."""
+
+    def __init__(self) -> None:
+        self.peer = Peer("test")
+        self.max_message_bytes = DEFAULT_MAX_MESSAGE_BYTES
+        self.release = asyncio.Event()
+        self.close_started = asyncio.Event()
+        self.closed = False
+
+    async def send(self, data: bytes) -> None:
+        raise TransportClosed("peer gone")
+
+    async def receive(self) -> bytes:
+        raise TransportClosed("peer gone")
+
+    async def close(self) -> None:
+        self.close_started.set()
+        await self.release.wait()
+        self.closed = True
+
+
+async def test_close_waits_for_a_teardown_the_peer_started():
+    """Fix round 2 (seen as a flake of the test above under load): when the peer hangs up, the reader tears the session
+    down and waits for the transport to close; a ``close()`` arriving meanwhile returned at once, before the transport
+    was closed and the reader had ended, so the caller could stop its loop with the child's transport still open."""
+    transport = _SlowClosingTransport()
+    session = Session(transport, role="client", flush_timeout=30.0).start()
+    reader = session._reader
+    await asyncio.wait_for(transport.close_started.wait(), 5)  # the reader's teardown is closing the transport
+    closing = asyncio.ensure_future(session.close())
+    await asyncio.sleep(0.05)
+    assert not closing.done(), "close() returned while the teardown was still closing the transport"
+    transport.release.set()
+    await asyncio.wait_for(closing, 5)
+    assert transport.closed and reader.done() and session.closed
 
 
 async def test_a_graceful_close_releases_the_transport_too():
