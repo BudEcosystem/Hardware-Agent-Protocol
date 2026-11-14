@@ -400,12 +400,14 @@ RUNNABLE = [p for p in pages() if any("run" in b.flags for b in parse(p))]
 SLOW = [p for p in RUNNABLE if any("slow" in b.flags for b in parse(p))]
 
 
+@pytest.mark.timeout(900)  # a page is many commands, each bounded by its own block timeout
 @pytest.mark.parametrize("page", RUNNABLE, ids=_page_id)
 def test_page_runs(page):
     run_page(page, slow=False)
 
 
 @pytest.mark.slow
+@pytest.mark.timeout(3600)  # full conformance claims: about five minutes for the conformance page
 @pytest.mark.parametrize("page", SLOW, ids=_page_id)
 def test_page_runs_with_slow_blocks(page):
     run_page(page, slow=True)
