@@ -287,6 +287,12 @@ class ObservationHub:
             raise BhmsError("STALE", f"{device.device_id}.{prop}: no acquisition started after the request",
                             field="fresh", bound=True, hint="retry; the device did not acquire a new value")
         if max_age_ms is not None and (observation["ageMs"] is None or observation["ageMs"] > max_age_ms):
+            if observation["ageMs"] is None:  # unbounded acquisition latency: no age can satisfy a bound (BHMS-OBS-003)
+                raise BhmsError("STALE", f"{device.device_id}.{prop}: the age of the newest observation is unknown "
+                                "(the device reports no bounded acquisition latency), so it cannot satisfy maxAgeMs "
+                                f"{max_age_ms}", field="maxAgeMs", bound=max_age_ms,
+                                hint="read it without maxAgeMs and judge acquiredAt yourself, or give the device a "
+                                     "bounded acquisition latency")
             raise BhmsError("STALE", f"{device.device_id}.{prop}: the newest observation is "
                             f"{observation['ageMs']} ms old, above maxAgeMs {max_age_ms}", field="maxAgeMs",
                             bound=max_age_ms, hint="ask for a larger maxAgeMs or check the device's acquisition "
