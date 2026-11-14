@@ -181,6 +181,37 @@ async def test_an_ack_with_a_token_from_before_the_last_hello_confirms_nothing(t
         assert (await stop(client))["outcome"] == "confirmed"
 
 
+async def test_a_stop_in_progress_at_a_hello_is_sent_again_and_confirmed(tmp_path):
+    """A re-HELLO without a reboot (here: a frame of another epoch makes the bridge ask again) while a stop is initiated:
+    the endpoint forgets the stop's token, so its confirmation could never count. The bridge sends the stop again with a
+    new token after the HELLO, and the confirmation of that STOP confirms the stop."""
+    script = Scripted(cp.digest8_of(BENCH), epoch=7, flags=PERSISTENT)
+    async with scripted_rig(tmp_path, sidecar=BENCH, scripted=script) as (client, bridge, ep):
+        hello_seen = asyncio.Event()
+
+        async def endpoint(e, m):
+            e.say(cp.StopAck(cp.STOPACK_INITIATED, cp.EVIDENCE_NONE, 0, m.token))
+            if hello_seen.is_set():  # a STOP after the HELLO: carried out, confirmed with its own token
+                await asyncio.sleep(0.05)
+                e.say(cp.StopAck(cp.STOPACK_CONFIRMED, cp.EVIDENCE_MEASURED, 0, m.token), kind=cp.TELEMETRY)
+
+        ep.on[cp.Stop] = endpoint
+        hellos = len(ep.of(cp.HelloReq))
+        call = asyncio.create_task(client.stop("t", device_ids=["bench-rig"], wait_ms=4000))
+        for _ in range(100):
+            if ep.of(cp.Stop):
+                break
+            await asyncio.sleep(0.02)
+        await asyncio.sleep(0.1)  # the stop is initiated
+        hello_seen.set()
+        ep.say(cp.Status(1, cp.ST_RUNNING, 0, 0), session=8)  # the bridge asks for HELLO again; the endpoint's epoch is 7
+        s = to_wire(await call)["stops"][0]
+        assert len(ep.of(cp.HelloReq)) > hellos
+        stops = ep.of(cp.Stop)
+        assert len(stops) == 2 and stops[0].token != stops[1].token and 0 not in (stops[0].token, stops[1].token)
+        assert s["outcome"] == "confirmed" and s["evidence"] == "measured", s
+
+
 async def test_the_c_endpoint_gives_its_pre_hello_stop_token_zero_so_a_restarted_bridge_is_not_confirmed(tmp_path, native,
                                                                                                     monkeypatch):
     """The reviewer's reproduction against the real endpoint, with the worst case forced: both bridges issue the same
@@ -246,3 +277,45 @@ async def test_a_refused_compact_version_is_logged_once_at_error_then_quietly(tm
     about_version = [r for r in caplog.records if "compact version" in r.getMessage()]
     assert [r.levelno for r in about_version if r.levelno >= logging.WARNING] == [logging.ERROR]  # ...and says it once
     assert len(about_version) >= 3 and all(r.levelno == logging.DEBUG for r in about_version[1:])
+
+
+# ---------------------------------------------------------------- the conformance probe of the token drop at HELLO
+
+class _Verdicts:
+    """What ``_stop_across_hello`` asserts, collected (a failed expectation raises, as in a conformance run)."""
+
+    def expect(self, condition, message, ids=()):
+        assert condition, message
+
+
+async def _raw_bench(native, tmp_path, *args):
+    from bhms.conformance.compact_fixture import RawEndpoint
+    from bhms.testing.compact_endpoint import NativeEndpoint
+
+    endpoint = NativeEndpoint(native["sim_bench"], tmp_path, *args)
+    raw = RawEndpoint(endpoint, None)  # type: ignore[arg-type]
+    await raw._attach(endpoint)
+    await raw.hello()
+    return raw
+
+
+async def test_the_conformance_probe_of_the_token_drop_is_exercised_by_a_stop_that_outlasts_the_hello(tmp_path, native):
+    from bhms.conformance.checks.compact import _stop_across_hello
+
+    raw = await _raw_bench(native, tmp_path, "--stop-ms", "800")
+    try:
+        assert await _stop_across_hello(_Verdicts(), raw) is True  # confirmed after the HELLO, with token 0
+    finally:
+        await raw.close()
+
+
+async def test_the_conformance_probe_is_inconclusive_not_failed_when_the_stop_finishes_before_the_hello(tmp_path, native):
+    """initiated -> confirmed(0x33) -> HELLO is a legitimate order (the stop finished before the endpoint handled the
+    HELLO_REQ): it proves nothing about the token drop and must not fail a conforming endpoint."""
+    from bhms.conformance.checks.compact import _stop_across_hello
+
+    raw = await _raw_bench(native, tmp_path, "--stop-ms", "0")
+    try:
+        assert await _stop_across_hello(_Verdicts(), raw) is False
+    finally:
+        await raw.close()

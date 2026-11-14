@@ -261,24 +261,47 @@ async def endpoint_stop(c: Context) -> None:
     if first is None or not isinstance(first.message, cp.StopAck) or first.message.outcome != cp.STOPACK_INITIATED:
         return  # a stop confirmed at once leaves nothing pending across a HELLO
     # A stop still in progress when the endpoint says HELLO is nobody's afterwards: its confirming ack carries token 0, so the
-    # stop of a restarted gateway that reuses the token cannot be confirmed by it.
+    # stop of a restarted gateway that reuses the token cannot be confirmed by it. Only a stop that is still running when the
+    # HELLO goes out exercises this; one that finishes first is answered legitimately with its token, so try a few times.
+    for _ in range(3):
+        if await _stop_across_hello(c, raw):
+            return
+    c.warn("inconclusive (BHMS-CMP-050, token dropped at HELLO): every stop finished before the endpoint answered the "
+           "HELLO_REQ sent after its initiated ack, so no STOP_ACK crossed a HELLO")
+
+
+async def _stop_across_hello(c: Context, raw: Any) -> bool:
+    """STOP, then HELLO_REQ once the endpoint said ``initiated``. True when the confirmation came after the HELLO (it must carry
+    token 0 then); False when the stop finished before the HELLO (or at once), which proves nothing either way."""
     raw.send(cp.Stop(0, 0x33))
+    first = await raw.reply(2.0)
+    c.expect(first is not None and isinstance(first.message, cp.StopAck) and first.message.token == 0x33,
+             f"STOP must be acknowledged first, echoing its token 0x33: {first and first.message}", ("BHMS-CMP-050",))
+    if first.message.outcome != cp.STOPACK_INITIATED:
+        return False
     raw.nonce += 1
-    raw.send(cp.HelloReq(raw.nonce, 0), session=0)  # right behind the STOP: answered before the stop can finish
+    raw.send(cp.HelloReq(raw.nonce, 0), session=0)
     after: list[cp.Incoming] = []
-    while (got := await raw.reply(2.0)) is not None:
+    said_hello = confirmed = None
+    while (said_hello is None or confirmed is None) and (got := await raw.reply(2.0)) is not None:
         after.append(got)
-        if isinstance(got.message, cp.StopAck) and got.message.outcome == cp.STOPACK_CONFIRMED:
-            break
+        if isinstance(got.message, cp.Hello) and said_hello is None:
+            said_hello = len(after) - 1
+        if isinstance(got.message, cp.StopAck) and got.message.outcome == cp.STOPACK_CONFIRMED and confirmed is None:
+            confirmed = len(after) - 1
     kinds = [type(f.message).__name__ for f in after]
-    said_hello = next((i for i, f in enumerate(after) if isinstance(f.message, cp.Hello)), None)
-    c.expect(said_hello is not None and isinstance(after[-1].message, cp.StopAck) and after[-1].message.outcome == cp.STOPACK_CONFIRMED,
-             f"STOP then HELLO_REQ must be answered by STOP_ACK initiated, HELLO and the confirming STOP_ACK: {kinds}", ("BHMS-CMP-050",))
-    if said_hello is not None and said_hello < len(after) - 1:
-        late = [f.message for f in after[said_hello + 1:] if isinstance(f.message, cp.StopAck)]
-        c.expect(all(a.token == 0 for a in late),
-                 f"a STOP_ACK sent after a HELLO for a stop received before it must carry token 0, not the stop's token: {late}",
-                 ("BHMS-CMP-050",))
+    c.expect(said_hello is not None, f"a HELLO_REQ sent while a stop is in progress must be answered with HELLO: {kinds}",
+             ("BHMS-CMP-050",))
+    c.expect(confirmed is not None, f"a stop in progress must still be confirmed after the endpoint said HELLO: {kinds}",
+             ("BHMS-CMP-050",))
+    acks = [(i, f.message) for i, f in enumerate(after) if isinstance(f.message, cp.StopAck)]
+    c.expect(all(a.token == 0x33 for i, a in acks if i < said_hello),
+             f"a STOP_ACK sent before the HELLO must echo the STOP's token 0x33: {[a for _, a in acks]}", ("BHMS-CMP-050",))
+    late = [a for i, a in acks if i > said_hello]
+    c.expect(all(a.token == 0 for a in late),
+             f"a STOP_ACK sent after a HELLO for a stop received before it must carry token 0, not the stop's token: {late}",
+             ("BHMS-CMP-050",))
+    return confirmed > said_hello
 
 
 @check("compact.endpoint-value-quality", ["BHMS-CMP-060"], profile="compact", generic=True, needs=("compact",))

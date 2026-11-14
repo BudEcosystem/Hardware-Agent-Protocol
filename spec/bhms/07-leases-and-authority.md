@@ -150,7 +150,9 @@ cancellation was requested (their outcome is not yet known),
 `outcome` ∈ `confirmed` (the stop procedure finished, with `evidence`),
 `initiated` (dispatched, not yet confirmed), `unsupported` (no stop procedure;
 operations were still cancelled and leases revoked), `failed` (could not be
-dispatched — unreachable, unknown or invisible device).
+dispatched — unreachable, unknown or invisible device — or dispatched with an
+unknown outcome: the procedure failed or timed out (for example no confirmation
+within its bound), or was ended at shutdown; the device may or may not be stopped, and `error` says which).
 
 Stop is not cancel. `operations/cancel` asks one operation to end. `stop` makes
 devices execute their commissioned stop procedure, ends all their work, and
@@ -179,8 +181,9 @@ other devices are stopped.
 **BHMS-AUTH-024** `stop` MUST return within `waitMs` (default 0) plus the time to
 dispatch, reporting `initiated` for devices not yet confirmed. Later outcomes
 appear as `stop` events. A server that closes while a stop procedure is still
-running SHOULD wait for it for a bounded time and then record it as a `failed`
-`stop` event (the device may or may not be stopped): an initiated stop never ends
+running SHOULD wait for it at least for the device's declared stop bound
+(`stopMaxDurationMs`; a server-chosen minimum without one) and only then end it
+and record it as a `failed` `stop` event (the device may or may not be stopped): an initiated stop never ends
 without a recorded outcome.
 
 **BHMS-AUTH-025** If a server cannot write its journal, it MAY still execute a

@@ -61,7 +61,8 @@ class StopController:
     def __init__(self, server: DeviceServer) -> None:
         self.server = server
         self.tasks: set[asyncio.Task[Any]] = set()
-        self.close_timeout = 5.0  # how long ``close`` waits for stop procedures still running before it abandons them
+        self._ends: dict[asyncio.Task[Any], float] = {}  # running procedure -> loop time its declared bound ends
+        self.close_timeout = 5.0  # the least ``close`` waits for running stop procedures (also for those without a bound)
 
     async def stop(self, principal: Principal, params: Any) -> list[dict[str, Any]]:
         srv = self.server
@@ -110,7 +111,11 @@ class StopController:
             done.set_exception(exc)
             return done
         if inspect.isawaitable(outcome):
-            return self._spawn(_await(outcome))
+            task = self._spawn(_await(outcome))
+            if dev.stop_spec.max_duration_ms is not None:
+                self._ends[task] = asyncio.get_running_loop().time() + dev.stop_spec.max_duration_ms / 1000
+                task.add_done_callback(lambda t: self._ends.pop(t, None))
+            return task
         done.set_result(outcome)
         return done
 
@@ -242,10 +247,14 @@ class StopController:
         srv.executor.pump()
 
     async def close(self) -> None:
-        """Wait up to ``close_timeout`` for the stop procedures still running, then cancel the rest (each is recorded as a
-        failed stop by ``_finished``), so that no procedure outlives the server and its store."""
+        """Wait for the stop procedures still running, then cancel the rest (each is recorded as a failed stop by
+        ``_finished``), so that no procedure outlives the server and its store. The wait lasts until the declared bound
+        (``max_duration_ms``) of every running procedure has passed, and at least ``close_timeout``: a shutdown never cuts
+        a stop the device may still finish within its bound (BHMS-AUTH-024)."""
         if self.tasks:
-            await asyncio.wait(list(self.tasks), timeout=self.close_timeout)
+            loop = asyncio.get_running_loop()
+            until = max([loop.time() + self.close_timeout, *(self._ends.get(t, 0.0) for t in self.tasks)])
+            await asyncio.wait(list(self.tasks), timeout=max(0.0, until - loop.time()))
         pending = [t for t in self.tasks if not t.done()]
         for task in pending:
             task.cancel()

@@ -306,8 +306,12 @@ used for a stop the endpoint is still carrying out. Therefore:
 - the gateway MUST start its token sequence at an unpredictable non-zero value
   each time it starts, and MUST ignore a STOP_ACK whose token no STOP it sent
   since the last HELLO it adopted carried. A stop that is in progress when the
-  gateway adopts a HELLO can therefore only be confirmed by a STOP sent after
-  that HELLO.
+  gateway receives a HELLO it adopts can therefore only be confirmed by a STOP
+  sent after that HELLO, so the gateway MUST send such a stop again, with a new
+  token, once it has adopted the HELLO (a re-HELLO without a reboot, a new
+  session or a reconnection alike); the endpoint carries the stop out again and
+  confirms it with that token. (A gateway MAY bound how many HELLOs one stop
+  outlives; past that bound the stop ends `failed`.)
 
 *Endpoint-originated stops.* Token `0` marks every stop the gateway in session did
 not ask for: the hardware stop input, and a stop begun before the last HELLO. When
