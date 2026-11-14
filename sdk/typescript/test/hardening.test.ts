@@ -487,3 +487,26 @@ test("an int output bound is kept when the result is in range", async () => {
     assert.deepEqual(op.result, { n: 10 });
   } finally { await t.close(); }
 });
+
+test("reconciliation of an operation that required a verified effect: a completion the device cannot verify ends failed UNVERIFIED, as in Python", async () => {
+  const t = await custom((srv) => {
+    const d = srv.device("stage-1", { resources: ["stage-1/z"] });
+    d.reportAlive();
+    d.property("z", { unit: "mm", evidence: "measured" }, () => 1);
+    d.action("move", { effect: "reversible", idempotency: "absolute", maxDurationMs: 1000, completionEvidence: "measured", verifiedBy: ["z"] }, () => { throw new Error("link dropped"); });
+    d.reconcile(() => ({ state: "completed", evidence: "controller log: move finished" }));
+  });
+  try {
+    const op = (await t.client.actionsInvoke("stage-1", "move", {}, { require: { effect: "verified" }, waitMs: 2000 })).operation;
+    assert.equal(op.state, "unknown");
+    const dev = t.srv.devices.get("stage-1")!;
+    dev.setStatus("offline");
+    dev.setStatus(undefined);
+    let final = op;
+    await until("reconciliation", async () => (final = (await t.client.operationsGet(op.operationId)).operation).state !== "unknown");
+    assert.equal(final.state, "failed");
+    assert.equal(final.error?.bhmsCode, "UNVERIFIED");
+    assert.equal(final.error?.mayHaveActed, true);
+    assert.deepEqual(historyKinds(final).at(-1), ["reconciliation", "failed"]);
+  } finally { await t.close(); }
+});

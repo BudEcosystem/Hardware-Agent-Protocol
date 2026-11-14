@@ -686,6 +686,13 @@ export class Executor {
       const defect = checkResult(result, spec?.output !== undefined ? device.validator(`output:${spec.name}`, spec.output) : undefined);
       if (defect) throw new InvalidTransition(`the reconciled result of ${rec.id} cannot be recorded: ${defect.message}`);
       const effect: Effect = answer.effect ?? (rec.data.effectClass === "none" ? "none" : "unverified");
+      if (rec.op.require?.effect === "verified" && effect !== "verified") {
+        const err = new BhmsError("UNVERIFIED", `${rec.op.action} was found to have finished, but the required verified effect could not be established`, {
+          mayHaveActed: true, hint: "read the device state before deciding what to do",
+        });
+        j.transition(rec, "failed", { kind: "reconciliation", detail, error: err.toOperationError(), effect });
+        return;
+      }
       j.transition(rec, "completed", { kind: "reconciliation", detail, result, hasResult: true, effect, evidence: effect === "verified" ? rec.op.evidence : undefined });
     } else if (answer.state === "canceled") {
       j.transition(rec, "canceled", { kind: "reconciliation", detail, effect: answer.effect });
