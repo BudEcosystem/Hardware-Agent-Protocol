@@ -129,9 +129,9 @@ test("a JournalStore keeps its live state: recovery after a failed write does no
     await store.acquire();
     store.load();
     store.writeFence(3);
-    store.writeOp(oldRecord("op-a", "ka", "completed", new Date().toISOString()));
+    store.writeOp(oldRecord("op-a", "ka", "completed", new Date().toISOString()), true);
     (store as unknown as { fd: number }).fd = 99_999; // EBADF on the next write
-    assert.throws(() => store.writeOp(oldRecord("op-b", "kb", "completed", new Date().toISOString())), StoreError);
+    assert.throws(() => store.writeOp(oldRecord("op-b", "kb", "completed", new Date().toISOString()), true), StoreError);
     assert.equal(store.writable, false);
     assert.equal(store.probeWritable(), true);
     await store.close();

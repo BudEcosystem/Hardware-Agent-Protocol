@@ -5,11 +5,14 @@
  * restart needs), the server-wide lease **fence counter**, and the event log. A file line is one record
  * `{"k": "hdr"|"op"|"fence"|"ev", ...}`; for operations the last line of an id wins.
  *
- * Durability boundary (BHMS-OPS-003, BHMS-LSE-003): `writeOp` appends and `fsync`s the file before it returns, so the
- * server calls it for `accepted` (the intent) and for `dispatching` *before* a command can reach the device; a thrown
- * {@link StoreError} means nothing was committed and the caller must not dispatch. The fence counter is fsynced before the
- * lease that uses it exists. Events are appended without fsync (they are hints and are re-derivable from operations; a
- * crash can lose the last few). A torn final line (crash mid-write) is ignored and truncated on the next open; the file
+ * Durability boundary (BHMS-OPS-003, BHMS-LSE-003), the same as the Python journal's: every write is appended before it
+ * returns (so a process crash loses nothing: the line is in the OS page cache), and the file is `fsync`ed where a power
+ * loss must not lose it: `writeOp(rec, true)` for the `dispatching` record, *before* a command can reach the device (the
+ * fsync covers every earlier line, so the `accepted` line of the same operation too), and the fence counter before the
+ * lease that uses it exists. `accepted` (queued, never dispatched: rejected after a restart), completions (a lost
+ * completion recovers as `unknown`, the safe direction), programs (content-addressed; a run's `dispatching` fsync covers
+ * its program line) and events (hints, re-derivable from operations) are appended without fsync. A thrown
+ * {@link StoreError} means nothing was committed and the caller must not dispatch. A torn final line (crash mid-write) is ignored and truncated on the next open; the file
  * is compacted (latest record per operation, pruned by retention) on every open through write-temp, fsync, rename.
  *
  * {@link MemoryStore} has the same interface and no persistence: a server using it is `durable: false` and presents a
@@ -75,7 +78,8 @@ export interface Store {
   /** Take any exclusive ownership of the underlying storage; awaited before `load()`. */
   acquire?(): Promise<void>;
   load(): LoadedState;
-  writeOp(rec: StoredOperation): void;
+  /** Commit an operation record; `sync` makes it survive a power loss before this returns (the `dispatching` record). */
+  writeOp(rec: StoredOperation, sync: boolean): void;
   writeFence(n: number): void;
   writeProgram(p: StoredProgram): void;
   writeEvent(ev: Event): void;
@@ -108,7 +112,7 @@ export class MemoryStore implements Store {
     if (!this._writable) throw new StoreError("the journal is read-only");
     this.programs.set(p.digest, structuredClone(p));
   }
-  writeOp(rec: StoredOperation): void {
+  writeOp(rec: StoredOperation, _sync: boolean): void {
     if (!this._writable) throw new StoreError("the journal is read-only");
     this.ops.set(rec.id, structuredClone(rec));
   }
@@ -345,15 +349,20 @@ export class JournalStore implements Store {
     if (!this.writable) throw new StoreError("the journal is read-only");
     try {
       writeSync(this.fd, JSON.stringify(record) + "\n");
-      if (sync) fsyncSync(this.fd);
+      if (sync) this.syncFile();
     } catch (e) {
       this.broken = true;
       throw new StoreError(`journal write failed: ${(e as Error).message}`);
     }
   }
 
-  writeOp(rec: StoredOperation): void {
-    this.append({ k: "op", rec }, true);
+  /** Force everything appended so far onto stable storage. */
+  protected syncFile(): void {
+    fsyncSync(this.fd);
+  }
+
+  writeOp(rec: StoredOperation, sync: boolean): void {
+    this.append({ k: "op", rec }, sync);
     this.ops.set(rec.id, structuredClone(rec)); // only a committed write is part of the live state
   }
 
@@ -363,7 +372,7 @@ export class JournalStore implements Store {
   }
 
   writeProgram(p: StoredProgram): void {
-    this.append({ k: "prog", p }, true);
+    this.append({ k: "prog", p }, false);
     this.programs.set(p.digest, structuredClone(p));
   }
 

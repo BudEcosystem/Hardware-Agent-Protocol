@@ -8,7 +8,7 @@ import { test } from "node:test";
 import { BhmsError } from "../src/errors.js";
 import { Client } from "../src/client.js";
 import { DeviceServer } from "../src/server/server.js";
-import { MemoryStore, StoreError, type StoredOperation } from "../src/server/store.js";
+import { JournalStore, MemoryStore, StoreError, type StoredOperation } from "../src/server/store.js";
 import { memoryPair } from "../src/transport/memory.js";
 import { counters, inject, key, rig } from "./harness.js";
 import { sleep, tsDevicePath } from "./helpers.js";
@@ -73,10 +73,10 @@ test("a torn journal tail (crash mid-write) is ignored", async () => {
 class SpyStore extends MemoryStore {
   readonly order: string[] = [];
   failDispatch = false;
-  override writeOp(rec: StoredOperation): void {
+  override writeOp(rec: StoredOperation, sync: boolean): void {
     if (this.failDispatch && rec.op.state === "dispatching") throw new StoreError("disk full");
     this.order.push(`write:${rec.op.state}`);
-    super.writeOp(rec);
+    super.writeOp(rec, sync);
   }
 }
 
@@ -94,6 +94,39 @@ test("BHMS-OPS-003: accepted and dispatching are committed before the handler ru
     assert.equal(op.state, "completed");
     assert.deepEqual(store.order.slice(0, 4), ["write:accepted", "write:dispatching", "handler", "write:completed"]);
   } finally { await client.close(); await srv.close(200); }
+});
+
+class SyncCountingStore extends JournalStore {
+  readonly order: string[] = [];
+  override writeOp(rec: StoredOperation, sync: boolean): void {
+    this.order.push(`write:${rec.op.state}`);
+    super.writeOp(rec, sync);
+  }
+  protected override syncFile(): void {
+    this.order.push("fsync");
+    super.syncFile();
+  }
+}
+
+test("one fsync per invoke, on the dispatching record, before the handler runs (as the Python journal: Task 12b)", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "bhms-sync-"));
+  const store = new SyncCountingStore(join(dir, "j.jsonl"));
+  const srv = new DeviceServer("sync-count", { store, log: () => undefined });
+  const dev = srv.device("d-1", { resources: ["d-1/r"] });
+  dev.action("go", { effect: "reversible", idempotency: "idempotent", maxDurationMs: 1000 }, async () => { store.order.push("handler"); return {}; });
+  await srv.start();
+  const [c, s] = memoryPair();
+  srv.serve(s);
+  const client = await Client.fromTransport(c, { strict: true });
+  try {
+    store.order.length = 0;
+    const op = (await client.actionsInvoke("d-1", "go", {}, { waitMs: 1000 })).operation;
+    assert.equal(op.state, "completed");
+    // the accepted line needs no fsync of its own (an accepted operation is rejected after a restart: never dispatched);
+    // the dispatching fsync covers it and must precede the handler; the completion is not synced (a lost completion
+    // recovers as unknown, the safe direction)
+    assert.deepEqual(store.order, ["write:accepted", "write:dispatching", "fsync", "handler", "write:completed"]);
+  } finally { await client.close(); await srv.close(200); rmSync(dir, { recursive: true, force: true }); }
 });
 
 test("when the dispatch record cannot be written nothing is dispatched: rejected INTERNAL, mayHaveActed false", async () => {

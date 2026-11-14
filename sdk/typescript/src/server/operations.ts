@@ -153,7 +153,7 @@ export class Journal {
   /** Durably record a new `accepted` operation (the intent); throws StoreError when it cannot be committed. */
   create(data: StoredOperation): OperationRecord {
     data.history = [{ seq: 1, at: data.op.createdAt, kind: "state", state: "accepted" }];
-    this.store.writeOp(data);
+    this.store.writeOp(data, false); // the dispatching record's fsync covers it before anything is dispatched
     const rec = new OperationRecord(data);
     this.records.set(rec.id, rec);
     this.keys.set(Journal.keyOf(rec.principal, rec.op.operationKey), rec.id);
@@ -162,15 +162,16 @@ export class Journal {
   }
 
   private commit(rec: OperationRecord, next: StoredOperation, strict: boolean): void {
+    const sync = next.op.state === "dispatching" && rec.state !== "dispatching"; // the intent, before dispatch (BHMS-OPS-003)
     if (strict) {
-      this.store.writeOp(next);
+      this.store.writeOp(next, sync);
       rec.data = next;
       rec.dirty = false;
       return;
     }
     rec.data = next;
     try {
-      this.store.writeOp(next);
+      this.store.writeOp(next, sync);
       rec.dirty = false;
     } catch (e) {
       if (!(e instanceof StoreError)) throw e;
@@ -184,7 +185,7 @@ export class Journal {
     for (const rec of this.records.values()) {
       if (!rec.dirty) continue;
       try {
-        this.store.writeOp(rec.data);
+        this.store.writeOp(rec.data, false); // never a dispatching record: that write is strict (applied only once written)
         rec.dirty = false;
       } catch {
         return false;
