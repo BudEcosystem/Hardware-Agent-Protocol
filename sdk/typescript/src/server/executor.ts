@@ -8,7 +8,7 @@
  *   key produce one operation (BHMS-OPS-032).
  * - **Admission** (§6.5 steps 3-10): resolve device/action (`UNKNOWN_DEVICE`, `UNKNOWN_ACTION`), authorize
  *   (`UNAUTHORIZED`), description pin (`STALE`), arguments and envelope (`INVALID_ARGUMENT`, `OUT_OF_RANGE`,
- *   `UNIT_MISMATCH`), `require` (`UNSUPPORTED`), lease (BHMS-LSE-010), journal health and device reachability
+ *   `UNIT_MISMATCH`), `require` (`UNSUPPORTED`), lease (BHMS-LSE-010, BHMS-LSE-014), journal health and device reachability
  *   (`BUSY`, `DEVICE_UNAVAILABLE`), unresolved `unknown` operations on the same resources (`STALE` naming the operation,
  *   BHMS-OPS-042), `requiresFresh` (BHMS-OBS-030) and capacity (`BUSY`). Only then is the operation written.
  * - **Queueing**: operations whose resources are in use wait in `accepted`, FIFO per resource (they can be cancelled
@@ -39,9 +39,11 @@ import { admitArguments, emptyEnvelopeMember } from "./validation.js";
 import { emptyEnvelope, type Principal } from "./authority.js";
 import type { DeviceServer } from "./server.js";
 import { StoreError, type StoredOperation } from "./store.js";
-import { OperationRecord, unknownError, type Effect, type TransitionOptions } from "./operations.js";
+import { InvalidTransition, OperationRecord, unknownError, type Effect, type TransitionOptions } from "./operations.js";
 import type { Lease } from "./leases.js";
 import { iso, mono, newId, sleep } from "./time.js";
+import { checkResult } from "./results.js";
+import { INVALID_RESOLUTION_HINT, recordOperatorResolution, type OperatorResolution } from "./resolution.js";
 
 const INTENT_KEYS = ["deviceId", "action", "arguments", "deadlineMs", "require", "descriptionDigest"] as const;
 
@@ -73,21 +75,6 @@ interface Execution {
 }
 
 type Outcome = { kind: "return"; value: unknown } | { kind: "throw"; error: unknown };
-
-/** I-JSON check (RFC 7493): returns the path of the first value that cannot be recorded. */
-function notIJson(v: unknown, path = "result"): string | undefined {
-  if (typeof v === "number") {
-    if (!Number.isFinite(v)) return `${path} is not a finite number`;
-    if (Number.isInteger(v) && !Number.isSafeInteger(v)) return `${path} is an integer outside +-2^53`;
-  } else if (Array.isArray(v)) {
-    for (const [i, x] of v.entries()) { const r = notIJson(x, `${path}[${i}]`); if (r) return r; }
-  } else if (typeof v === "object" && v !== null) {
-    for (const [k, x] of Object.entries(v)) { const r = notIJson(x, `${path}.${k}`); if (r) return r; }
-  } else if (v === undefined || typeof v === "function" || typeof v === "bigint" || typeof v === "symbol") {
-    return `${path} is not a JSON value`;
-  }
-  return undefined;
-}
 
 export class Executor {
   private waiting: OperationRecord[] = [];
@@ -168,10 +155,7 @@ export class Executor {
     extra: { parentId?: string; deadlineAtMs?: number } = {},
   ): Promise<OperationRecord> {
     const srv = this.server;
-    const device = srv.devices.get(p.deviceId);
-    if (!device || !principal.canRead) {
-      throw new BhmsError("UNKNOWN_DEVICE", `no device ${JSON.stringify(p.deviceId)}`, { field: "deviceId", hint: "devices/list shows the devices you can use" });
-    }
+    const device = srv.visibleDevice(principal, p.deviceId);
     const spec = device.actions.get(p.action);
     if (!spec) {
       throw new BhmsError("UNKNOWN_ACTION", `${p.deviceId} has no action ${JSON.stringify(p.action)}`, { field: "action", bound: [...device.actions.keys()].sort(), hint: `the actions are: ${[...device.actions.keys()].sort().join(", ") || "(none)"}` });
@@ -192,8 +176,7 @@ export class Executor {
     if (p.require?.effect === "verified" && spec.completionEvidence !== "measured") {
       throw new BhmsError("UNSUPPORTED", `${p.action} cannot be verified: its completionEvidence is ${spec.completionEvidence}`, { field: "require", hint: "drop require, or use an action whose completionEvidence is measured (BHMS-OPS-007)" });
     }
-    let lease: Lease | undefined;
-    if (spec.requiresLease) lease = srv.leases.check(principal.id, p.leaseId, spec.resources);
+    const lease = srv.leases.admit(principal.id, p.leaseId, spec.resources, spec.requiresLease); // BHMS-LSE-010, BHMS-LSE-014
     srv.requireJournal();
     if (device.status === "offline") {
       throw new BhmsError("DEVICE_UNAVAILABLE", `${p.deviceId} is offline`, { hint: "retry later with the same operationKey" });
@@ -310,7 +293,7 @@ export class Executor {
       if (rec.data.deadlineMs !== undefined && Date.now() >= rec.data.deadlineMs) {
         throw new BhmsError("DEADLINE_EXCEEDED", "the deadline passed before the operation could be dispatched", { hint: "retry with a later deadline" });
       }
-      if (spec.requiresLease) srv.leases.check(rec.principal, rec.op.leaseId, spec.resources);
+      srv.leases.admit(rec.principal, rec.op.leaseId, spec.resources, spec.requiresLease); // a lease taken while it queued refuses it
       if (device.status === "offline") throw new BhmsError("DEVICE_UNAVAILABLE", `${device.deviceId} is offline`, { hint: "retry later" });
       this.assertNotInhibited(spec.resources, rec.id);
       if (spec.requiresFresh.length > 0) await srv.observations.requireFresh(device, spec.requiresFresh, undefined);
@@ -488,38 +471,45 @@ export class Executor {
     }
     let result = outcome.value;
     if (result === undefined || result === null) result = {};
-    const bad = notIJson(result);
-    if (bad) {
-      this.fail(exec, "INTERNAL", `the result is not I-JSON: ${bad}`, { effect: "unknown", hint: "return the value as a string, or as a float when rounding is acceptable (BHMS-OPS-008)" });
+    const defect = checkResult(result, spec.output !== undefined ? device.validator(`output:${spec.name}`, spec.output) : undefined);
+    if (defect?.kind === "out-of-range") {
+      // the device acted and reported a value: a measurement outside its declared range, not a result that "cannot be
+      // recorded" (BHMS-OPS-008); the value is kept in the message and in an evidence entry
+      const { effect, evidence } = this.completionEffect(exec);
+      const err = new BhmsError("OUT_OF_RANGE", `${spec.name} acted and returned ${defect.member} = ${JSON.stringify(defect.instance)}, outside its declared output range (${defect.keyword} ${JSON.stringify(defect.bound![defect.keyword!])})`, {
+        field: defect.member, bound: defect.bound, mayHaveActed: true, retry: "after-reconcile",
+        hint: `the device acted; the returned value is in this message and in the operation's history. Read ${device.deviceId}'s state before deciding what to do; the declared range may be too narrow for the instrument's tolerance`,
+      });
+      srv.journal.annotate(rec, "evidence", `result as returned (not recorded as result: ${defect.member} is outside the declared output range): ${JSON.stringify(result)}`);
+      this.apply(exec, "failed", { error: err.toOperationError(), effect, evidence, detail: err.message });
       return;
     }
-    if (spec.output !== undefined) {
-      const issues = device.validator(`output:${spec.name}`, spec.output).collect(result);
-      if (issues.length > 0) {
-        this.fail(exec, "INTERNAL", `the result does not match the action's output schema at ${issues[0].path.join(".") || "/"}: ${issues[0].message}`, { effect: "unknown", hint: "a server bug: the handler returned a value its own description forbids" });
-        return;
-      }
+    if (defect) {
+      this.fail(exec, "INTERNAL", `${spec.name} returned a result that cannot be recorded: ${defect.message}`, {
+        effect: "unknown", hint: "the device acted but the server cannot report a valid result; read the device state",
+      });
+      return;
     }
-    let effect: Effect;
-    let evidence: Operation["evidence"] | undefined;
-    const observed = Object.keys(exec.evidence).length > 0;
-    if (spec.effect === "none") {
-      effect = "none";
-    } else if (observed && exec.confirmed.length > 0 && exec.confirmed.every(Boolean)) {
-      effect = "verified";
-      evidence = { kind: "measured", observations: { ...exec.evidence } };
-    } else {
-      effect = "unverified";
-      evidence = observed ? { kind: "measured", observations: { ...exec.evidence } } : { kind: spec.completionEvidence === "none" ? "none" : "reported" };
-    }
+    const { effect, evidence } = this.completionEffect(exec);
     if (rec.op.require?.effect === "verified" && effect !== "verified") {
       this.fail(exec, "UNVERIFIED", `${spec.name} finished but its effect could not be verified by measurement`, {
         effect: "unverified", hint: "inspect the device before acting again; the effect may have happened",
       });
       return;
     }
-    if (evidence && evidence.kind === "none") evidence = undefined;
     this.apply(exec, "completed", { result, hasResult: true, effect, evidence, detail: "completed" });
+    device.reportAlive(); // a completed action is evidence that the device answers (BHMS-DEV-012)
+  }
+
+  /** The `effect` and `evidence` of a handler that returned (BHMS-OPS-006): `verified` only when every `ctx.verify` agreed. */
+  private completionEffect(exec: Execution): { effect: Effect; evidence?: Operation["evidence"] } {
+    if (exec.spec.effect === "none") return { effect: "none" };
+    const observed = Object.keys(exec.evidence).length > 0;
+    if (observed && exec.confirmed.length > 0 && exec.confirmed.every(Boolean)) {
+      return { effect: "verified", evidence: { kind: "measured", observations: { ...exec.evidence } } };
+    }
+    if (observed) return { effect: "unverified", evidence: { kind: "measured", observations: { ...exec.evidence } } };
+    return { effect: "unverified", evidence: exec.spec.completionEvidence === "none" ? undefined : { kind: "reported" } };
   }
 
   // ------------------------------------------------------------------------------------------------ cancel, stop, leases
@@ -637,23 +627,66 @@ export class Executor {
     }
   }
 
-  /** Ask the device's `reconcile` hook about one `unknown` operation and apply what its evidence proves (BHMS-OPS-005). */
+  /** Ask `device`'s reconcile hook about each of its `unknown` operations (a return to `online`, BHMS-OPS-082); the changed ones. */
+  async reconcileDevice(device: Device): Promise<OperationRecord[]> {
+    const changed: OperationRecord[] = [];
+    if (!device.reconcileHandler) return changed;
+    for (const rec of [...this.server.journal.records.values()]) {
+      if (rec.state === "unknown" && rec.op.kind === "action" && rec.op.deviceId === device.deviceId && await this.reconcileOne(rec)) changed.push(rec);
+    }
+    return changed;
+  }
+
+  /**
+   * Ask the device's `reconcile` hook about one `unknown` operation and record what its evidence proves (BHMS-OPS-005); true when
+   * an answer was recorded. The call is bounded by the server's `reconcileTimeoutS`; no answer, `undefined`, a failing hook or an
+   * answer the journal refuses (a result that fails {@link checkResult}, a transition its rules forbid) leaves it `unknown`:
+   * success is never assumed.
+   */
   async reconcileOne(rec: OperationRecord): Promise<boolean> {
-    const device = this.server.devices.get(rec.op.deviceId ?? "");
-    if (!device?.reconcileHandler || rec.state !== "unknown") return false;
+    const srv = this.server;
+    const device = srv.devices.get(rec.op.deviceId ?? "");
+    if (!device?.reconcileHandler || rec.state !== "unknown" || this.running.has(rec.id)) return false;
+    const bound = srv.opts.reconcileTimeoutS * 1000;
     let answer: Reconciled | undefined;
+    let timer: NodeJS.Timeout | undefined;
     try {
-      answer = await device.reconcileHandler(rec.wire());
+      const noAnswer = new Promise<"timeout">((resolve) => { timer = setTimeout(() => resolve("timeout"), bound); timer.unref(); });
+      const got = await Promise.race([Promise.resolve(device.reconcileHandler(rec.wire(true))), noAnswer]);
+      if (got === "timeout") {
+        srv.log(`reconcile of ${rec.id} by ${device.deviceId} got no answer in ${srv.opts.reconcileTimeoutS} s; it stays unknown`);
+        return false;
+      }
+      answer = got;
     } catch (e) {
-      this.server.log(`reconcile hook of ${device.deviceId} failed: ${String(e)}`);
+      srv.log(`reconcile hook of ${device.deviceId} failed for ${rec.id}: ${String(e)}; it stays unknown`);
+      return false;
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+    if (!answer || rec.state !== "unknown" || srv.closing) return false; // the device cannot say, or it settled meanwhile
+    try {
+      this.applyReconciliation(rec, device, answer);
+    } catch (e) {
+      if (!(e instanceof InvalidTransition)) throw e;
+      srv.log(`reconcile answer of ${device.deviceId} for ${rec.id} was refused (${e.message}); it stays unknown`);
       return false;
     }
-    if (!answer || rec.state !== "unknown") return false;
+    this.afterResolved(rec, "device");
+    return true;
+  }
+
+  /** Record a {@link Reconciled} answer (device evidence); the journal's invariants apply as to any completion. */
+  private applyReconciliation(rec: OperationRecord, device: Device, answer: Reconciled): void {
     const j = this.server.journal;
     const detail = answer.evidence;
     if (answer.state === "completed") {
+      const result = answer.result ?? {};
+      const spec = device.actions.get(rec.op.action ?? "");
+      const defect = checkResult(result, spec?.output !== undefined ? device.validator(`output:${spec.name}`, spec.output) : undefined);
+      if (defect) throw new InvalidTransition(`the reconciled result of ${rec.id} cannot be recorded: ${defect.message}`);
       const effect: Effect = answer.effect ?? (rec.data.effectClass === "none" ? "none" : "unverified");
-      j.transition(rec, "completed", { kind: "reconciliation", detail, result: answer.result ?? {}, hasResult: true, effect, evidence: effect === "verified" ? rec.op.evidence : undefined });
+      j.transition(rec, "completed", { kind: "reconciliation", detail, result, hasResult: true, effect, evidence: effect === "verified" ? rec.op.evidence : undefined });
     } else if (answer.state === "canceled") {
       j.transition(rec, "canceled", { kind: "reconciliation", detail, effect: answer.effect });
     } else {
@@ -663,9 +696,38 @@ export class Executor {
         : new BhmsError("DEVICE_UNAVAILABLE", answer.message ?? "the command never reached the device", { mayHaveActed: false, hint: "the device has no record of it; retry with a new operationKey if the intent still stands" });
       j.transition(rec, "failed", { kind: "reconciliation", detail, error: err.toOperationError(), effect: answer.effect ?? (mayHaveActed ? "unknown" : "none"), proof: mayHaveActed ? undefined : detail });
     }
-    j.liftInhibition(rec);
-    if (rec.op.parentOperationId !== undefined) this.server.programs?.settleAfterReconcile(rec.op.parentOperationId);
-    return true;
+  }
+
+  /**
+   * Record an operator's resolution of the `unknown` operation `rec` (`operations/resolve`, BHMS-OPS-102); the rules are those
+   * of {@link recordOperatorResolution}. A resolution the journal cannot record is `INVALID_ARGUMENT` naming `resolution`.
+   */
+  resolveByOperator(rec: OperationRecord, principal: string, resolution: OperatorResolution): void {
+    const device = this.server.devices.get(rec.op.deviceId ?? "");
+    const spec = device?.actions.get(rec.op.action ?? "");
+    const validator = device && spec?.output !== undefined ? device.validator(`output:${spec.name}`, spec.output) : undefined;
+    try {
+      recordOperatorResolution(this.server.journal, rec, resolution, principal, validator);
+    } catch (e) {
+      if (!(e instanceof InvalidTransition)) throw e;
+      throw new BhmsError("INVALID_ARGUMENT", `the resolution cannot be recorded: ${e.message}`.slice(0, 2000), { field: "resolution", hint: INVALID_RESOLUTION_HINT });
+    }
+    this.afterResolved(rec, "operator", principal);
+  }
+
+  /**
+   * After an `unknown` operation was resolved: lift its inhibition (BHMS-OPS-042), let its program settle, and record the
+   * resolution as an `operation.resolved` event, the audit trail of every resolution (BHMS-OPS-102).
+   */
+  private afterResolved(rec: OperationRecord, source: "device" | "operator", principal?: string): void {
+    const srv = this.server;
+    srv.journal.liftInhibition(rec);
+    if (rec.op.parentOperationId !== undefined) srv.programs?.settleAfterReconcile(rec.op.parentOperationId);
+    srv.events.append("operation.resolved", {
+      severity: source === "operator" ? "warning" : "info", deviceId: rec.op.deviceId, operationId: rec.id,
+      data: { state: rec.state, source, ...(principal !== undefined ? { principal } : {}) },
+      message: `${rec.id} left unknown: ${rec.state} (resolved by ${source})`,
+    });
   }
 
   /** Wait for every started handler to finish (used by tests and graceful shutdown). */

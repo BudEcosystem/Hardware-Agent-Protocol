@@ -22,8 +22,8 @@
  * ```
  *
  * Hooks: `onStop` (the commissioned stop procedure, BHMS-AUTH-021), `onHold` (`onLeaseLoss: "hold"`, BHMS-LSE-012),
- * `reconcile` (resolve an `unknown` operation from device evidence, BHMS-OPS-005) and `liveness` (reachability
- * evidence for `status`, BHMS-DEV-012).
+ * `reconcile` (resolve an `unknown` operation from device evidence, BHMS-OPS-005; asked again whenever the device returns,
+ * BHMS-OPS-082) and `liveness` (reachability evidence for `status`, optionally probed periodically, BHMS-DEV-012).
  *
  * Thread-safety: declare everything before serving; runtime methods run on the server's event loop.
  */
@@ -38,7 +38,7 @@ import type { DeviceServer } from "./server.js";
 
 const DEVICE_ID = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$/;
 const NAME = /^[a-z][a-z0-9_]{0,63}$/;
-const CORE_EVENT_TYPES = new Set(["device.online", "device.offline", "device.degraded", "device.replaced", "device.epoch", "device.fault", "operation.state", "stop", "lease.revoked", "lease.expired", "policy.changed"]);
+const CORE_EVENT_TYPES = new Set(["device.online", "device.offline", "device.degraded", "device.replaced", "device.epoch", "device.fault", "operation.state", "operation.resolved", "stop", "lease.revoked", "lease.expired", "policy.changed"]);
 const SUMMARY_HARD_LIMIT = 4096;
 
 /** An invalid declaration (raised at start, before anything is served). */
@@ -209,10 +209,15 @@ export class Device {
   holdHandler?: () => Promise<void> | void;
   reconcileHandler?: (op: Record<string, unknown>) => Promise<Reconciled | undefined> | Reconciled | undefined;
   livenessHandler?: () => Promise<boolean> | boolean;
+  /** Seconds between periodic liveness probes (`undefined`: the server's `livenessIntervalS`, off unless set). */
+  livenessIntervalS?: number;
+  /** How long one liveness probe may take before it counts as failed. */
+  livenessTimeoutS = 5;
   private cached?: DeviceDescription;
   private readonly validators = new Map<string, SchemaValidator>();
   private aliveAt?: number;
   private forced?: "offline" | "degraded";
+  private probeFailed = false;
   private readonly livenessS: number;
 
   constructor(readonly server: DeviceServer | undefined, readonly deviceId: string, private readonly o: DeviceOptions = {}) {
@@ -256,6 +261,9 @@ export class Device {
     const resources = options.resources ?? (effectful ? [...this.resources] : []);
     const unknown = resources.filter((r) => !this.resources.includes(r));
     if (unknown.length > 0) throw new DescriptionError(`action ${name}: resources ${unknown.join(", ")} are not declared by the device (BHMS-DEV-032)`);
+    if (options.effect === "hazardous" && !options.requiresLease) {
+      throw new DescriptionError(`action ${name}: a hazardous action must declare requiresLease: true (BHMS-DEV-033): its caller must hold exclusive control of the resources it acts on`);
+    }
     if (options.requiresLease && resources.length === 0) throw new DescriptionError(`action ${name}: requiresLease needs at least one resource (BHMS-DEV-032)`);
     const input = asObjectSchema(options.input, options.optional);
     const output = options.output === undefined ? undefined : asObjectSchema(options.output);
@@ -302,15 +310,36 @@ export class Device {
     return this;
   }
 
-  /** Register a hook resolving `unknown` operations from device evidence (BHMS-OPS-005). */
+  /**
+   * Register a hook resolving `unknown` operations from device evidence (BHMS-OPS-005).
+   *
+   * The server calls it for each of the device's `unknown` operations: after a restart, whenever the device **returns** (its
+   * status becomes `online` after `offline`, `degraded` or `unknown`: once per return, BHMS-OPS-082), on `operations/resolve`
+   * and on {@link DeviceServer.reconcile}. Each call is bounded by the server's `reconcileTimeoutS`. Return `undefined` (or
+   * throw) when the device cannot say what happened: the operation then stays `unknown`; success is never assumed.
+   */
   reconcile(handler: NonNullable<Device["reconcileHandler"]>): this {
     this.reconcileHandler = handler;
     return this;
   }
 
-  /** Register a reachability probe; a true result is evidence the device is online (BHMS-DEV-012). */
-  liveness(handler: () => Promise<boolean> | boolean): this {
+  /**
+   * Register the liveness probe `() => boolean` (sync or async).
+   *
+   * A true result is reachability evidence (BHMS-DEV-012). A false result, an exception or no answer within `timeoutS`
+   * (default 5) is evidence that the device is unreachable: its status becomes `offline` until a later probe (or any other
+   * evidence of life: a successful acquisition, a completed action, {@link reportAlive}) succeeds.
+   *
+   * The probe runs once when the server starts. With `intervalS` (or the server's `livenessIntervalS`; both off unless set) it
+   * also runs every `intervalS` seconds, so a bridge whose instrument died stops reporting its last status.
+   */
+  liveness(handler: () => Promise<boolean> | boolean, options: { intervalS?: number; timeoutS?: number } = {}): this {
+    if (options.intervalS !== undefined && !(options.intervalS > 0)) throw new RangeError("liveness intervalS must be positive (omit it to leave periodic probing off)");
+    if (options.timeoutS !== undefined && !(options.timeoutS > 0)) throw new RangeError("liveness timeoutS must be positive");
     this.livenessHandler = handler;
+    this.livenessIntervalS = options.intervalS;
+    this.livenessTimeoutS = options.timeoutS ?? 5;
+    this.server?.startLiveness(this);
     return this;
   }
 
@@ -406,20 +435,40 @@ export class Device {
 
   // ------------------------------------------------------------------------------------------------ status
 
-  /** Record reachability evidence now (BHMS-DEV-012). */
+  /**
+   * Record reachability evidence now (BHMS-DEV-012); the server also does this on every successful acquisition and every
+   * completed action. Evidence of life ends an `offline` that a failed liveness probe caused (a status forced with
+   * {@link setStatus} stays until it is cleared).
+   */
   reportAlive(): void {
+    const previous = this.status;
     this.aliveAt = mono();
+    this.probeFailed = false;
+    this.changedFrom(previous);
   }
 
-  /** Force `offline` or `degraded`; `undefined` returns to evidence-based `online`/`unknown`. */
+  /** Record evidence that the device does not answer (a failed liveness probe): `offline` until {@link reportAlive}. */
+  reportUnreachable(): void {
+    const previous = this.status;
+    this.probeFailed = true;
+    this.changedFrom(previous);
+  }
+
+  /** Force `offline` or `degraded`; `undefined` returns to evidence-based `online`/`offline`/`unknown`. */
   setStatus(status: "offline" | "degraded" | undefined): void {
     const previous = this.status;
     this.forced = status;
+    this.changedFrom(previous);
+  }
+
+  private changedFrom(previous: DeviceStatus): void {
     if (this.status !== previous) this.server?.statusChanged(this, previous);
   }
 
+  /** `offline`/`degraded` when forced; `offline` after a failed liveness probe; `online` with evidence within `livenessS`; else `unknown`. */
   get status(): DeviceStatus {
     if (this.forced) return this.forced;
+    if (this.probeFailed) return "offline";
     if (this.aliveAt !== undefined && mono() - this.aliveAt <= this.livenessS * 1000) return "online";
     return "unknown";
   }

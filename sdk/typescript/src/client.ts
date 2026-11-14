@@ -28,7 +28,7 @@ import { BhmsError, type BhmsCode } from "./errors.js";
 import type {
   ActionsInvokeResult, DevicesDescribeResult, DevicesListFilter, DevicesListResult, DiscoverResult, EventsReadResult,
   LeasesAcquireResult, LeasesReleaseResult, LeasesRenewResult, OperationsCancelResult, OperationsGetResult,
-  OperationsListResult, OperationsWaitResult, Program, ProgramsGetResult, ProgramsListResult, ProgramsRegisterResult,
+  OperationsListResult, OperationsResolveResult, OperationsWaitResult, OperatorResolution, Program, ProgramsGetResult, ProgramsListResult, ProgramsRegisterResult,
   ProgramsRunResult, PropertiesReadResult, StopResult, SubscriptionFilter,
 } from "./generated/types.js";
 import { METHODS, PROTOCOL_VERSION } from "./generated/types.js";
@@ -46,7 +46,7 @@ export const METHOD_ATTRS: Readonly<Record<string, string>> = {
   "server/discover": "discover", "devices/list": "devicesList", "devices/describe": "devicesDescribe",
   "properties/read": "propertiesRead", "actions/invoke": "actionsInvoke", "operations/get": "operationsGet",
   "operations/wait": "operationsWait", "operations/list": "operationsList", "operations/cancel": "operationsCancel",
-  stop: "stop", "subscriptions/listen": "subscribe", "leases/acquire": "leasesAcquire", "leases/renew": "leasesRenew",
+  "operations/resolve": "operationsResolve", stop: "stop", "subscriptions/listen": "subscribe", "leases/acquire": "leasesAcquire", "leases/renew": "leasesRenew",
   "leases/release": "leasesRelease", "events/read": "eventsRead", "programs/run": "programsRun",
   "programs/register": "programsRegister", "programs/get": "programsGet", "programs/list": "programsList",
 };
@@ -306,6 +306,19 @@ export class Client {
 
   operationsCancel(operationId: string, args: { reason?: string } = {}, o: CallOptions = {}): Promise<OperationsCancelResult> {
     return this.request("operations/cancel", Client.strip({ operationId, ...args }), o);
+  }
+
+  /**
+   * `operations/resolve` (§6.10; needs `operations:resolve` or `admin`): ask the device again about an `unknown` operation and,
+   * when it still cannot say and `resolution` is given, record the operator's statement. Device evidence always wins; an
+   * operator's resolution is recorded as a report (effect at most `unverified`, evidence `reported`, BHMS-OPS-102).
+   *
+   * ```ts
+   * await client.operationsResolve(id, { state: "failed", basis: "axis inspected at rest by J. Doe" });
+   * ```
+   */
+  operationsResolve(operationId: string, resolution?: OperatorResolution, o: CallOptions = {}): Promise<OperationsResolveResult> {
+    return this.request("operations/resolve", Client.strip({ operationId, resolution }), o);
   }
 
   /** `stop`: name `deviceIds` or pass `scope: "all"`. Stop is not cancel (BHMS-AUTH-020). */

@@ -186,13 +186,14 @@ test("IMPORTANT 7 (OBS-006): a transaction property keeps its retained sample af
   try {
     const { lease } = await r.client.leasesAcquire(["axis-1/motion"], 5000);
     const first = (await r.client.propertiesRead("axis-1", "fifo", { fresh: true })).observation;
-    await r.client.actionsInvoke("axis-1", "pulse", { count: 1 }, { waitMs: 1000 });
+    // the holder presents its lease on axis-1/motion (BHMS-LSE-014)
+    await r.client.actionsInvoke("axis-1", "pulse", { count: 1 }, { leaseId: lease.leaseId, waitMs: 1000 });
     const plain = (await r.client.propertiesRead("axis-1", "fifo")).observation;
     assert.equal(plain.sequence, first.sequence, "a plain read stays a retained read");
     assert.equal((await counters(r.client)).fifo_reads, 1);
     // while an on-demand non-transaction property is acquired anew
     const p1 = (await r.client.propertiesRead("axis-1", "position")).observation;
-    await r.client.actionsInvoke("axis-1", "move_to", { position: 9 }, { waitMs: 2000 });
+    await r.client.actionsInvoke("axis-1", "move_to", { position: 9 }, { leaseId: lease.leaseId, waitMs: 2000 });
     assert.ok((await r.client.propertiesRead("axis-1", "position")).observation.sequence > p1.sequence);
     await r.client.leasesRelease(lease.leaseId);
   } finally { await r.close(); }

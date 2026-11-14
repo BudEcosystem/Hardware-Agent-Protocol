@@ -142,6 +142,11 @@ export interface Plan {
   steps: PlanStep[];
   info: Obj;
   leaseResources: string[];
+  /**
+   * Every invoke step that uses resources without requiring a lease: such a step presents the program's lease when that
+   * lease holds any of its resources (BHMS-LSE-014), which must then cover all of them (BHMS-PRG-006).
+   */
+  sharedSteps: Array<{ path: string; action: string; resources: string[] }>;
 }
 
 class Validator {
@@ -154,6 +159,7 @@ class Validator {
   private readonly devices = new Set<string>();
   private readonly resources = new Set<string>();
   private readonly leaseResources = new Set<string>();
+  private readonly sharedSteps: Plan["sharedSteps"] = [];
   private inputs: Record<string, Obj> = {};
   private required = new Set<string>();
 
@@ -215,7 +221,7 @@ class Validator {
       maxDurationMs: program.maxDurationMs, stepCount: this.count, maxExecutedSteps: this.executed, devices: [...this.devices].sort(),
       resources: [...this.resources].sort(), requiresLease: this.leaseResources.size > 0,
     };
-    return { program, digest: progDigest, steps, info, leaseResources: [...this.leaseResources].sort() };
+    return { program, digest: progDigest, steps, info, leaseResources: [...this.leaseResources].sort(), sharedSteps: this.sharedSteps };
   }
 
   private define(name: string, path: string): void {
@@ -281,6 +287,7 @@ class Validator {
       this.devices.add(device.deviceId);
       for (const r of action.resources) this.resources.add(r);
       if (action.requiresLease) for (const r of action.resources) this.leaseResources.add(r);
+      else if (action.resources.length > 0) this.sharedSteps.push({ path, action: action.name, resources: [...action.resources] });
       if (raw.saveAs) { this.define(raw.saveAs, `${path}.saveAs`); defined.add(raw.saveAs); }
       return action.maxDurationMs;
     }
@@ -418,6 +425,25 @@ interface Run {
 
 const derivedKey = (parentId: string, path: string): string => "d-" + createHash("sha256").update(`${parentId}/${path}`).digest("hex").slice(0, 40);
 
+/**
+ * BHMS-PRG-006 with BHMS-LSE-014: a step that does not require a lease but uses a resource the program's own lease holds runs
+ * under that lease, so the lease must cover all of that step's resources. Refused at `programs/run`, before anything is
+ * recorded, naming the step: at run time the step would be refused by the program's own lease, which reads as a conflict
+ * with nobody.
+ */
+function checkSharedSteps(plan: Plan, lease: Lease): void {
+  const held = new Set(lease.resources);
+  for (const { path, action, resources } of plan.sharedSteps) {
+    const covered = [...new Set(resources)].filter((r) => held.has(r)).sort();
+    const missing = [...new Set(resources)].filter((r) => !held.has(r)).sort();
+    if (covered.length === 0 || missing.length === 0) continue;
+    throw new BhmsError("LEASE_CONFLICT", `${path} (${action}) uses ${resources.join(", ")}; the lease you run the program under holds ${covered.join(", ")} but not ${missing.join(", ")}`, {
+      field: "leaseId", bound: missing,
+      hint: `acquire one lease that also covers ${missing.join(", ")} and run the program under it: a step that uses a leased resource must present a lease covering all of its resources (BHMS-PRG-006, BHMS-LSE-014)`,
+    });
+  }
+}
+
 /** `effect` (and, when `verified`, the carried-up `evidence`) of a program from its children (BHMS-PRG-016). */
 function programOutcome(children: OperationRecord[]): { effect: Effect; evidence?: Operation["evidence"] } {
   const effectful = children.filter((c) => c.data.effectClass !== "none" && c.dispatched);
@@ -499,6 +525,7 @@ export class ProgramRunner {
     const { admitted, differs } = admitArguments(plan.program.input, params.arguments);
     let lease: Lease | undefined;
     if (plan.leaseResources.length > 0 || params.leaseId !== undefined) lease = srv.leases.check(principal.id, params.leaseId, plan.leaseResources);
+    if (lease) checkSharedSteps(plan, lease);
     srv.requireJournal();
     const now = Date.now();
     const op: Operation = {
@@ -671,6 +698,18 @@ export class ProgramRunner {
     if (truncated) this.checkBoundary(run);
   }
 
+  /**
+   * The lease an invoke step presents: the program's lease when the step requires one or when that lease holds any resource
+   * the step uses (a held lease refuses a request that does not present it, BHMS-LSE-014; admission made sure it then covers
+   * all of them, BHMS-PRG-006). The step's admission checks it like any other request's ({@link LeaseManager.admit}).
+   */
+  private stepLease(run: Run, action: ActionSpec): string | undefined {
+    if (run.leaseId === undefined) return undefined;
+    if (action.requiresLease) return run.leaseId;
+    const lease = this.server.leases.get(run.leaseId);
+    return lease && action.resources.some((r) => lease.resources.includes(r)) ? run.leaseId : undefined;
+  }
+
   private async invoke(run: Run, step: PlanStep, path: string): Promise<void> {
     const srv = this.server;
     const action = step.action!;
@@ -682,7 +721,8 @@ export class ProgramRunner {
         field: `program.steps[${path}].arguments`, hint: "check the saved value the step refers to",
       }).toOperationError());
     }
-    const params = { deviceId: step.device!.deviceId, action: action.name, arguments: args, ...(action.requiresLease && run.leaseId ? { leaseId: run.leaseId } : {}) } as unknown as ActionsInvokeParams;
+    const leaseId = this.stepLease(run, action);
+    const params = { deviceId: step.device!.deviceId, action: action.name, arguments: args, ...(leaseId !== undefined ? { leaseId } : {}) } as unknown as ActionsInvokeParams;
     const key = derivedKey(run.rec.id, path);
     const requestDigest = intentDigest({ deviceId: params.deviceId, action: params.action, arguments: args });
     const deadlineAtMs = Date.now() + Math.max(0, run.deadlineMono - mono());

@@ -82,6 +82,11 @@
  *     deep (limit 32, no `$ref`); `"wide"` gives it an `anyOf` of 20 000 empty schemas (limit 10 000, depth 1, no `$ref`);
  *     `"remote_ref"` gives it one property whose schema is `{"$ref": U}` (shallow and small; `U` defaults to
  *     `http://127.0.0.1:9/hostile-schema.json`). Another variant is `INVALID_ARGUMENT` with `field: "variant"`. `none` removes it.
+ *   - `amnesia`: until `none`, the reconcile hook of `axis-1` answers "cannot say" (`undefined`), so an `unknown` operation
+ *     stays `unknown` whoever asks the device (BHMS-OPS-082, BHMS-OPS-101): the case an operator resolves with
+ *     `operations/resolve`.
+ *   - `online` after `offline` is a *return* of `axis-1`: the server asks the reconcile hook about its `unknown` operations
+ *     once (BHMS-OPS-082).
  *   - `x-conformance/counters` also returns `trace`: the `traceparent`/`tracestate` of the last request that carried one
  *     (BHMS-LIF-018; set only when serving through {@link main}).
  *
@@ -110,7 +115,7 @@ import { sleep } from "../server/time.js";
 export const FAULTS = [
   "none", "sensor_invalid", "sensor_valid", "sensor_stale", "encoder_disagrees", "fail_next", "crash_next", "hang_next",
   "journal_readonly", "journal_writable", "offline", "online", "change_description", "deaf_next", "bad_digest", "good_digest",
-  "hostile_text", "hostile_schema",
+  "hostile_text", "hostile_schema", "amnesia",
 ] as const;
 
 /** The injected instruction of the fault `hostile_text` (BHMS-SEC-020); identical to the Python device's. */
@@ -264,7 +269,7 @@ export function build(options: ConformanceOptions = {}): { server: DeviceServer;
       } else if (fault === "bad_digest" || fault === "good_digest") {
         sim.badDigest = fault === "bad_digest";
         axisDevice.invalidate();
-      } else if (fault === "fail_next" || fault === "crash_next" || fault === "hang_next" || fault === "deaf_next") {
+      } else if (fault === "fail_next" || fault === "crash_next" || fault === "hang_next" || fault === "deaf_next" || fault === "amnesia") {
         sim.armed.add(fault);
       } else if (fault === "journal_readonly" || fault === "journal_writable") {
         server.store.setWritable(fault === "journal_writable");
@@ -416,7 +421,8 @@ function axis(srv: DeviceServer, sim: Simulator): Device {
     sim.halt.set();
   });
 
-  dev.reconcile(async (op): Promise<Reconciled> => {
+  dev.reconcile(async (op): Promise<Reconciled | undefined> => {
+    if (sim.armed.has("amnesia")) return undefined; // the device cannot say what happened: the operation stays unknown (BHMS-OPS-082/101)
     const id = op.operationId as string;
     const entries = new Set(sim.log.filter(([i]) => i === id).map(([, s]) => s));
     if (entries.has("done")) return { state: "completed", evidence: "device command log: done", result: sim.results.get(id) ?? {} };

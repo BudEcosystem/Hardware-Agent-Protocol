@@ -28,7 +28,7 @@ test("extension org.bhms/conformance version 2: faults, devices, and no authorit
     assert.deepEqual(ext.devices, ["axis-1", "pump-1"]);
     assert.deepEqual(ext.faults, [
       "none", "sensor_invalid", "sensor_valid", "sensor_stale", "encoder_disagrees", "fail_next", "crash_next", "hang_next", "journal_readonly",
-      "journal_writable", "offline", "online", "change_description", "deaf_next", "bad_digest", "good_digest", "hostile_text", "hostile_schema",
+      "journal_writable", "offline", "online", "change_description", "deaf_next", "bad_digest", "good_digest", "hostile_text", "hostile_schema", "amnesia",
     ]);
     assert.equal("authority" in r.client.discovered!.capabilities, false, "capabilities.authority is absent for a single-principal server");
     await assert.rejects(inject(r.client, "no_such_fault"), code("INVALID_ARGUMENT", (e) => e.field === "fault"));

@@ -51,7 +51,8 @@ import { LeaseManager, leaseWire, type Lease } from "./leases.js";
 import { listen } from "./listen.js";
 import { ObservationHub } from "./observations.js";
 import { DEFAULT_PROGRAM_LIMITS, ProgramRunner, type ProgramLimits } from "./programs.js";
-import { Journal } from "./operations.js";
+import { Journal, type OperationRecord } from "./operations.js";
+import type { OperatorResolution } from "./resolution.js";
 import { JournalStore, MemoryStore, StoreError, type Store } from "./store.js";
 import { sleep } from "./time.js";
 
@@ -95,6 +96,13 @@ export interface DeviceServerOptions {
   programLimits?: Partial<ProgramLimits>;
   /** Validate every result against the schema before sending (conformance mode). */
   strict?: boolean;
+  /**
+   * Seconds between periodic liveness probes of every device that declares a probe without its own `intervalS` (default: off;
+   * the probe then runs once at start). A failed probe makes the device `offline` (BHMS-DEV-012).
+   */
+  livenessIntervalS?: number;
+  /** Bound in seconds of one call of a device's reconcile hook (default 10); no answer leaves the operation `unknown`. */
+  reconcileTimeoutS?: number;
   log?: (message: string) => void;
 }
 
@@ -122,20 +130,51 @@ function decodeCursor(kind: string, cursor: string): string {
 }
 
 function capabilityMatches(pattern: string, caps: readonly string[]): boolean {
+  if (pattern === "*") return true;
   return pattern.endsWith(".*") ? caps.some((c) => c.startsWith(pattern.slice(0, -1))) : caps.includes(pattern);
 }
 
-/** Whether a `DeviceSummary` satisfies a `devices/list` filter (BHMS §4.2). */
-export function summaryMatches(f: DevicesListFilter | undefined, s: { capabilities: string[]; tags: string[]; name: string; summary: string }, status: string): boolean {
+/**
+ * How many words of `text` occur, ignoring case, in one of the strings of `haystack` (the word search of BHMS-DEV-013): the
+ * text is split at whitespace; one-character words are dropped when a longer word is present.
+ */
+export function wordScore(text: string, haystack: readonly string[]): number {
+  let words = [...new Set(text.toLowerCase().split(/\s+/).filter(Boolean))];
+  if (words.some((w) => [...w].length > 1)) words = words.filter((w) => [...w].length > 1);
+  const folded = haystack.map((h) => h.toLowerCase());
+  return words.filter((w) => folded.some((h) => h.includes(w))).length;
+}
+
+/**
+ * How many words of a `devices/list` `text` filter a device matches (§4.2, BHMS-DEV-013): {@link wordScore} over the device's
+ * id, name, summary, tags and capability ids. A device passes the filter when at least one word matches (any-word, OR); the
+ * count lets a client list the best match first.
+ */
+export function textScore(text: string, s: { deviceId: string; name: string; summary: string; tags: readonly string[]; capabilities: readonly string[] }): number {
+  return wordScore(text, [s.deviceId, s.name, s.summary, ...s.tags, ...s.capabilities]);
+}
+
+/** Whether a `DeviceSummary` satisfies a `devices/list` filter (BHMS §4.2: capability, tag, status, free text; AND). */
+export function summaryMatches(f: DevicesListFilter | undefined, s: { deviceId: string; capabilities: string[]; tags: string[]; name: string; summary: string }, status: string): boolean {
   if (!f) return true;
   if (f.capability !== undefined && !capabilityMatches(f.capability, s.capabilities)) return false;
   if (f.tag !== undefined && !s.tags.includes(f.tag)) return false;
   if (f.status !== undefined && f.status !== status) return false;
-  if (f.text !== undefined) {
-    const needle = f.text.toLowerCase();
-    if (![s.name, s.summary, ...s.tags].some((h) => h.toLowerCase().includes(needle))) return false;
+  return f.text === undefined || textScore(f.text, s) > 0;
+}
+
+/**
+ * The `UNKNOWN_DEVICE` refusal for `deviceId`. `visible` are the ids the caller may read (empty when it may read none,
+ * BHMS-DEV-010): ids that equal the request ignoring case, or that end in `/<request>` (the same device behind a gateway
+ * namespace), are named in `hint` and listed in `bound` (BHMS-DEV-014).
+ */
+export function unknownDevice(deviceId: string, visible: Iterable<string>, field: string | undefined = "deviceId"): BhmsError {
+  const wanted = deviceId.toLowerCase();
+  const candidates = [...visible].filter((v) => v.toLowerCase() === wanted || v.toLowerCase().endsWith("/" + wanted)).sort().slice(0, 5);
+  if (candidates.length > 0) {
+    return new BhmsError("UNKNOWN_DEVICE", `no device ${JSON.stringify(deviceId)}`, { field, bound: candidates, hint: `did you mean ${candidates.join(" or ")}? devices/list shows the devices you can use` });
   }
-  return true;
+  return new BhmsError("UNKNOWN_DEVICE", `no device ${JSON.stringify(deviceId)}`, { field, hint: "devices/list shows the devices you can use" });
 }
 
 function waitError(field: string, value: number, max: number): BhmsError {
@@ -154,11 +193,15 @@ export class DeviceServer {
   private readonly extensionInfo: Record<string, Record<string, unknown>> = {};
   private readonly extensionMethods = new Map<string, ExtensionHandler>();
   private listeners: Array<Listener | WsListener> = [];
-  private readonly lifecycleTimers = new Set<NodeJS.Timeout>();
   private started = false;
+  /** `start()` finished: a device that returns from now on triggers its reconcile hook (BHMS-OPS-082). */
+  private ready = false;
   private closed = false;
+  private readonly livenessTimers = new Map<string, NodeJS.Timeout>();
+  private readonly returning = new Map<string, Promise<void>>();
+  private readonly returnAgain = new Set<string>();
   private journalOk = true;
-  readonly opts: Required<Pick<DeviceServerOptions, "version" | "keyRetentionS" | "eventRetentionS" | "maxWaitMs" | "maxPageSize" | "leaseMinTtlMs" | "leaseMaxTtlMs" | "leaseMaxWaitMs" | "queueLimit" | "observationMinIntervalMs" | "cancelGraceMs" | "maxMessageBytes" | "strict">> & DeviceServerOptions;
+  readonly opts: Required<Pick<DeviceServerOptions, "version" | "keyRetentionS" | "eventRetentionS" | "maxWaitMs" | "maxPageSize" | "leaseMinTtlMs" | "leaseMaxTtlMs" | "leaseMaxWaitMs" | "queueLimit" | "observationMinIntervalMs" | "cancelGraceMs" | "maxMessageBytes" | "strict" | "reconcileTimeoutS">> & DeviceServerOptions;
 
   // set by start()
   store!: Store;
@@ -173,10 +216,12 @@ export class DeviceServer {
   constructor(readonly name: string, options: DeviceServerOptions = {}) {
     if (!/^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$/.test(name)) throw new RangeError(`server name ${JSON.stringify(name)} must be 1-128 characters of [A-Za-z0-9._-]`);
     if ((options.keyRetentionS ?? 7 * 86400) < 86_400) throw new RangeError("keyRetentionS must be at least 86400 (BHMS-OPS-034)");
+    if (options.livenessIntervalS !== undefined && !(options.livenessIntervalS > 0)) throw new RangeError("livenessIntervalS must be positive (leave it out to keep periodic liveness probes off)");
+    if (options.reconcileTimeoutS !== undefined && !(options.reconcileTimeoutS > 0)) throw new RangeError("reconcileTimeoutS must be positive");
     this.opts = {
       version: "0.1.0", keyRetentionS: 7 * 86400, eventRetentionS: 7 * 86400, maxWaitMs: 60_000, maxPageSize: 500, leaseMinTtlMs: 1000,
       leaseMaxTtlMs: 600_000, leaseMaxWaitMs: 30_000, queueLimit: 64, observationMinIntervalMs: 50, cancelGraceMs: 1000,
-      maxMessageBytes: 4_194_304, strict: false, ...options,
+      maxMessageBytes: 4_194_304, strict: false, reconcileTimeoutS: 10, ...options,
     };
     this.programLimits = { ...DEFAULT_PROGRAM_LIMITS, ...options.programLimits };
     const token = options.token ?? process.env.BHMS_TOKEN;
@@ -286,18 +331,79 @@ export class DeviceServer {
     for (const dev of this.devices.values()) {
       this.events.append("device.epoch", { deviceId: dev.deviceId, data: { epoch: this.observations.epoch }, message: "observation sequences restarted with the server" });
     }
-    for (const dev of this.devices.values()) if (dev.livenessHandler) this.probeLiveness(dev);
+    for (const dev of this.devices.values()) await this.checkLiveness(dev);
+    this.ready = true;
+    for (const dev of this.devices.values()) this.startLiveness(dev);
     this.executor.resume();
   }
 
-  private probeLiveness(dev: Device): void {
-    const probe = async (): Promise<void> => {
-      try { if (await dev.livenessHandler!()) dev.reportAlive(); } catch { /* unreachable: no evidence */ }
+  /** Run `dev`'s liveness probe once (bounded by its `livenessTimeoutS`) and record the evidence either way (BHMS-DEV-012). */
+  private async checkLiveness(dev: Device): Promise<void> {
+    const probe = dev.livenessHandler;
+    if (!probe) return;
+    let timer: NodeJS.Timeout | undefined;
+    let alive = false;
+    try {
+      const noAnswer = new Promise<"timeout">((resolve) => { timer = setTimeout(() => resolve("timeout"), dev.livenessTimeoutS * 1000); timer.unref(); });
+      const answer = await Promise.race([Promise.resolve().then(probe), noAnswer]);
+      if (answer === "timeout") throw new Error(`no answer within ${dev.livenessTimeoutS} s`);
+      alive = Boolean(answer);
+    } catch (e) {
+      if (dev.status !== "offline") this.log(`liveness probe of ${dev.deviceId} failed: ${e instanceof Error ? e.message : String(e)}`);
+    } finally {
+      if (timer) clearTimeout(timer);
+    }
+    if (this.closed) return;
+    if (alive) dev.reportAlive();
+    else dev.reportUnreachable();
+  }
+
+  /**
+   * Begin the periodic liveness probe of `dev` when it declares one with an interval (its own `intervalS` or the server's
+   * `livenessIntervalS`; off when neither is set). Called for every device by {@link start} and by {@link Device.liveness}
+   * after it; idempotent.
+   */
+  startLiveness(dev: Device): void {
+    const interval = dev.livenessIntervalS ?? this.opts.livenessIntervalS;
+    if (!this.ready || this.closed || !dev.livenessHandler || interval === undefined || this.livenessTimers.has(dev.deviceId)) return;
+    const tick = (): void => {
+      const timer = setTimeout(() => {
+        void this.checkLiveness(dev).finally(() => { if (this.livenessTimers.get(dev.deviceId) === timer) tick(); });
+      }, interval * 1000);
+      timer.unref();
+      this.livenessTimers.set(dev.deviceId, timer);
     };
-    void probe();
-    const t = setInterval(() => { void probe(); }, 15_000);
-    t.unref();
-    this.lifecycleTimers.add(t);
+    tick();
+  }
+
+  /**
+   * `dev` became `online` again: ask its reconcile hook about its `unknown` operations, once per return (a return during a
+   * running pass queues exactly one more pass), BHMS-OPS-082.
+   */
+  private deviceReturned(dev: Device): void {
+    if (!this.ready || this.closed || !dev.reconcileHandler) return;
+    if (this.returning.has(dev.deviceId)) {
+      this.returnAgain.add(dev.deviceId);
+      return;
+    }
+    const pass = async (): Promise<void> => {
+      try {
+        for (;;) {
+          this.returnAgain.delete(dev.deviceId);
+          const changed = await this.executor.reconcileDevice(dev);
+          if (changed.length > 0) {
+            this.log(`${dev.deviceId} returned: ${changed.length} unknown operation(s) reconciled from device evidence`);
+            this.executor.pump();
+          }
+          if (!this.returnAgain.has(dev.deviceId) || this.closed) return;
+        }
+      } catch (e) {
+        this.log(`reconciliation after ${dev.deviceId} returned failed: ${String(e)}`);
+      } finally {
+        this.returning.delete(dev.deviceId);
+      }
+    };
+    this.returning.set(dev.deviceId, pass());
   }
 
   /** Connect a transport to this server; returns its session. */
@@ -367,14 +473,16 @@ export class DeviceServer {
     await Promise.all(this.listeners.map((l) => l.close()));
     await sleep(0); // let subscription generators deliver their endReason
     await Promise.all([...this.sessions].map((s) => s.close()));
+    for (const t of this.livenessTimers.values()) clearTimeout(t);
+    this.livenessTimers.clear();
     if (this.started) {
+      if (this.returning.size > 0) await Promise.race([Promise.allSettled([...this.returning.values()]), sleep(drainMs)]);
       await this.programs?.close();
       await this.executor.idle(drainMs);
       this.leases.close();
       this.observations.close();
       await this.store.close();
     }
-    for (const t of this.lifecycleTimers) clearInterval(t);
   }
 
   // ------------------------------------------------------------------------------------------------ hooks used by the runtime
@@ -383,11 +491,10 @@ export class DeviceServer {
     return this.policy(ctx.peer);
   }
 
+  /** The device if the principal may read it; otherwise `UNKNOWN_DEVICE` with the near misses it may read (BHMS-DEV-010/014). */
   visibleDevice(principal: Principal, deviceId: string, field = "deviceId"): Device {
     const dev = this.devices.get(deviceId);
-    if (!dev || !principal.canRead) {
-      throw new BhmsError("UNKNOWN_DEVICE", `no device ${JSON.stringify(deviceId)}`, { field, hint: "devices/list shows the devices you can use" });
-    }
+    if (!dev || !principal.canRead) throw unknownDevice(deviceId, principal.canRead ? this.devices.keys() : [], field);
     return dev;
   }
 
@@ -395,11 +502,14 @@ export class DeviceServer {
     for (const l of [...this.deviceListeners]) l();
   }
 
-  statusChanged(dev: Device, _previous: string): void {
+  /** A device's status changed: record `device.<status>` and, on a return to `online`, reconcile its unknown work (BHMS-OPS-082). */
+  statusChanged(dev: Device, previous: string): void {
+    if (!this.started || this.closed) return;
     const s = dev.status;
     if (s === "online" || s === "offline" || s === "degraded") {
-      this.events.append(`device.${s}`, { deviceId: dev.deviceId, severity: s === "online" ? "info" : "warning" });
+      this.events.append(`device.${s}`, { deviceId: dev.deviceId, severity: s === "online" ? "info" : "warning", message: `${dev.deviceId} is ${s} (was ${previous})` });
     }
+    if (s === "online") this.deviceReturned(dev);
   }
 
   private leaseEnded(lease: Lease, reason: "expired" | "revoked"): void {
@@ -436,6 +546,34 @@ export class DeviceServer {
     await this.executor.reconcileAll();
   }
 
+  /**
+   * `operations/resolve` (§6.10): ask the device again about an `unknown` operation and, when it still cannot say and
+   * `resolution` is given, record the operator's resolution (BHMS-OPS-100..102).
+   *
+   * Needs `admin` or `operations:resolve`, on an operation the principal can see. Device evidence wins: the reconcile hook is
+   * asked first and its answer, if any, is what is recorded. An operation that is not `unknown` is returned unchanged; a
+   * program operation settles when its unknown steps are resolved. Nothing is ever removed from history.
+   */
+  async resolve(principal: Principal, operationId: string, resolution?: OperatorResolution): Promise<OperationRecord> {
+    if (!principal.has("operations:resolve")) {
+      throw new BhmsError("UNAUTHORIZED", "operations/resolve needs the operations:resolve scope (or admin)", {
+        hint: "missing scope operations:resolve; an operator resolves unknown operations, not the client that started them",
+      });
+    }
+    const rec = this.operationFor(principal, operationId);
+    if (rec.op.kind !== "action") {
+      throw new BhmsError("INVALID_ARGUMENT", `${operationId} is a program operation; it settles when its unknown step operations are resolved`, {
+        field: "operationId", hint: "list its steps with operations/list parentOperationId and resolve the unknown ones (BHMS-PRG-017)",
+      });
+    }
+    if (rec.state !== "unknown") return rec;
+    this.requireJournal();
+    await this.executor.reconcileOne(rec);
+    if (rec.state === "unknown" && resolution !== undefined) this.executor.resolveByOperator(rec, principal.id, resolution);
+    if (rec.state !== "unknown") this.executor.pump();
+    return rec;
+  }
+
   // ------------------------------------------------------------------------------------------------ discovery
 
   private capabilities(): Record<string, unknown> {
@@ -443,7 +581,7 @@ export class DeviceServer {
     return {
       devices: { listChanged: true },
       observations: { subscribe: true, minIntervalMs: o.observationMinIntervalMs },
-      operations: { durable: this.store.durable, cancel: true, keyRetentionS: this.store.durable ? o.keyRetentionS : 0 },
+      operations: { durable: this.store.durable, cancel: true, resolve: true, keyRetentionS: this.store.durable ? o.keyRetentionS : 0 },
       stop: {},
       subscriptions: { maxObservations: 256, maxOperationIds: 256 },
       leases: { minTtlMs: o.leaseMinTtlMs, maxTtlMs: o.leaseMaxTtlMs, maxWaitMs: o.leaseMaxWaitMs },
@@ -577,6 +715,10 @@ export class DeviceServer {
         if (rec.op.kind === "program") this.programs!.cancel(rec, p.reason as string | undefined);
         else this.executor.cancel(rec, p.reason as string | undefined);
         return complete({ operation: rec.wire() });
+      }
+      case "operations/resolve": {
+        const rec = await this.resolve(principal, p.operationId as string, p.resolution as OperatorResolution | undefined);
+        return complete({ operation: rec.wire(true) });
       }
       case "stop":
         return complete({ stops: await this.stop(principal, p as unknown as { deviceIds?: string[]; scope?: "all"; reason: string; waitMs?: number }) });

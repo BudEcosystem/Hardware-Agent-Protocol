@@ -156,6 +156,60 @@ test("contract v2 parity: extension declaration, counters shape and the descript
   } finally { await r.close(); }
 });
 
+test("Task 7b parity: word search, capability *, UNKNOWN_DEVICE hints, LSE-014 refusals and operator resolutions answer as the Python device does", { skip }, async () => {
+  const { rig, inject } = await import("./harness.js");
+  const r = await rig();
+  try {
+    for (const filter of [{ text: "AXIS-1 zz-none" }, { text: "syringe" }, { text: "x conformance" }, { text: "bhms.liquid.dispense" }, { text: "zz-none" }, { capability: "*" }, { capability: "*", text: "pump" }]) {
+      const [ts, py] = await Promise.all([r.client.devicesList({ filter }), client.devicesList({ filter })]);
+      assert.deepEqual(ts.devices.map((d) => d.deviceId), py.devices.map((d) => d.deviceId), `filter ${JSON.stringify(filter)}`);
+    }
+    const refusal = async (p: Promise<unknown>): Promise<unknown> => p.then(() => assert.fail("expected a refusal"), (e: BhmsError) => ({ code: e.bhmsCode, field: e.field, bound: e.bound, hint: e.hint, mayHaveActed: e.mayHaveActed }));
+    for (const id of ["AXIS-1", "Pump-1", "nothing"]) {
+      assert.deepEqual(await refusal(r.client.devicesDescribe(id)), await refusal(client.devicesDescribe(id)), `describe ${id}`);
+    }
+    const [tsLease, pyLease] = await Promise.all([r.client.leasesAcquire(["axis-1/motion"], 30_000), client.leasesAcquire(["axis-1/motion"], 30_000)]);
+    try {
+      assert.deepEqual(await refusal(r.client.actionsInvoke("axis-1", "pulse", { count: 1 })), await refusal(client.actionsInvoke("axis-1", "pulse", { count: 1 })), "LSE-014: no lease presented");
+      const fabricated = { leaseId: "lease-fabricated" };
+      const [a, b] = [await refusal(r.client.actionsInvoke("axis-1", "pulse", { count: 1 }, fabricated)), await refusal(client.actionsInvoke("axis-1", "pulse", { count: 1 }, fabricated))] as Array<{ code: string; field: string }>;
+      assert.deepEqual([a.code, a.field], [b.code, b.field], "LSE-007: a made-up lease");
+    } finally {
+      await Promise.all([r.client.leasesRelease(tsLease.lease.leaseId), client.leasesRelease(pyLease.lease.leaseId)]);
+    }
+    const lost = async (c: Client): Promise<string> => {
+      await c.request("x-conformance/inject", { fault: "amnesia" });
+      await c.request("x-conformance/inject", { fault: "crash_next" });
+      return (await c.actionsInvoke("axis-1", "pulse", { count: 1 }, { waitMs: 3000 })).operation.operationId;
+    };
+    const resolve = async (c: Client, id: string, resolution: Record<string, unknown>): Promise<unknown> => {
+      try {
+        const op = (await c.operationsResolve(id, resolution as never)).operation;
+        const last = op.history!.at(-1)!;
+        return { state: op.state, effect: op.effect, evidence: op.evidence, result: op.result, error: op.error && { code: op.error.bhmsCode, mayHaveActed: op.error.mayHaveActed, message: op.error.message }, last: { kind: last.kind, state: last.state, operatorBasis: last.operator?.basis } };
+      } catch (e) {
+        return { refused: (e as BhmsError).bhmsCode, field: (e as BhmsError).field, bound: (e as BhmsError).bound };
+      }
+    };
+    const [tsOp, pyOp] = [await lost(r.client), await lost(client)];
+    for (const resolution of [
+      { state: "completed", basis: "b" }, { state: "completed", basis: "b", result: { pulses: -1 } }, { state: "completed", basis: "b", result: { pulses: "many" } },
+      { state: "completed", basis: "counted by hand", result: { pulses: 7 } },
+    ]) {
+      assert.deepEqual(await resolve(r.client, tsOp, resolution), await resolve(client, pyOp, resolution), `resolution ${JSON.stringify(resolution)}`);
+    }
+    // refused by the schema's OperatorResolution rules: both INVALID_ARGUMENT; the TS validator names the schema path
+    // (resolution.effect, as spec/bhms/examples/invalid-resolve-*.json expect), pydantic's model validator names resolution
+    for (const resolution of [{ state: "failed", basis: "b", mayHaveActed: false, effect: "unverified" }, { state: "failed", basis: "b", effect: "none" }, { state: "completed", basis: "b", effect: "verified" }]) {
+      const [ts, py] = [await resolve(r.client, tsOp, resolution), await resolve(client, pyOp, resolution)] as Array<{ refused: string; field: string }>;
+      assert.equal(ts.refused, "INVALID_ARGUMENT", JSON.stringify(resolution));
+      assert.equal(py.refused, "INVALID_ARGUMENT", JSON.stringify(resolution));
+      assert.ok(ts.field.startsWith("resolution") && py.field.startsWith("resolution"), JSON.stringify([ts, py]));
+    }
+    await Promise.all([inject(r.client, "none"), client.request("x-conformance/inject", { fault: "none" })]);
+  } finally { await r.close(); }
+});
+
 test("schemaBoundsProblem answers exactly like bhms.protocol.schema.schema_bounds_problem on a corpus of boundary cases", { skip }, async () => {
   const { spawnSync } = await import("node:child_process");
   const { schemaBoundsProblem } = await import("../src/schema.js");

@@ -1,6 +1,6 @@
 /**
  * The operation journal: durable records of physical intents and their legal state changes
- * (spec/bhms/06-operations.md §6.2-6.3, §6.10).
+ * (spec/bhms/06-operations.md §6.2-6.3, §6.10-6.11).
  *
  * {@link Journal} is the only code that changes an operation. Every change goes through one of {@link Journal.transition},
  * {@link Journal.setCancel}, {@link Journal.setEffect} or {@link Journal.annotate}; each appends exactly one history entry
@@ -94,6 +94,11 @@ export interface TransitionOptions {
   /** Device evidence that no effect occurred (allows `mayHaveActed: false` on a dispatched failure). */
   proof?: string;
   cancel?: CancelState;
+  /**
+   * Marks a `reconciliation` entry that rests on an operator's statement (`operations/resolve`, BHMS-OPS-102) rather than on
+   * device evidence; only a reconciliation entry can carry it.
+   */
+  operator?: { principal: string; basis: string };
 }
 
 export type ChangeKind = "state" | "cancel" | "effect";
@@ -193,6 +198,7 @@ export class Journal {
     const current = rec.state;
     if (!TRANSITIONS[current].includes(state)) throw new InvalidTransition(`${rec.id}: ${current} -> ${state} is not allowed (BHMS-OPS-001/002)`);
     const kind = o.kind ?? "state";
+    if (o.operator !== undefined && kind !== "reconciliation") throw new InvalidTransition(`${rec.id}: only a reconciliation entry can carry an operator mark`);
     if (current === "unknown" && (kind !== "reconciliation" || !o.detail)) {
       throw new InvalidTransition(`${rec.id}: leaving unknown needs a reconciliation entry naming its evidence (BHMS-OPS-005)`);
     }
@@ -241,6 +247,7 @@ export class Journal {
     if (cancel !== undefined && cancel !== op.cancel.state) { op.cancel = { ...op.cancel, state: cancel }; entry.cancel = cancel; }
     if (o.evidence !== undefined) op.evidence = o.evidence;
     if (o.detail || o.proof) entry.detail = (o.detail ?? o.proof ?? "").slice(0, 1000);
+    if (o.operator !== undefined) entry.operator = { principal: o.operator.principal.slice(0, 128), basis: o.operator.basis.slice(0, 2000) };
     op.state = state;
     this.entry(rec, next, entry);
     const changed: ChangeKind[] = ["state"];

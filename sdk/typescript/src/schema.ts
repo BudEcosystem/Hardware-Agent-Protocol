@@ -32,6 +32,10 @@ export interface Issue {
   member?: string;
   /** True for errors found inside a failed `oneOf`/`anyOf` branch (not the combinator itself). */
   context: boolean;
+  /** For the range keywords (`minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`): the declared limit. */
+  limit?: number;
+  /** For the range keywords: the offending value. */
+  instance?: number;
 }
 
 const TOLERANCE = 1e-9;
@@ -115,8 +119,8 @@ export class SchemaValidator {
       return false;
     }
     const before = out.length;
-    const fail = (keyword: string, message: string, member?: string): void => {
-      out.push({ path, keyword, message, context, ...(member !== undefined ? { member } : {}) });
+    const fail = (keyword: string, message: string, member?: string, range?: { limit: number; instance: number }): void => {
+      out.push({ path, keyword, message, context, ...(member !== undefined ? { member } : {}), ...range });
     };
     const s = schema;
 
@@ -132,13 +136,13 @@ export class SchemaValidator {
     }
 
     if (typeof v === "number") {
-      if (typeof s.minimum === "number" && v < s.minimum) fail("minimum", `${v} is less than the minimum of ${s.minimum}`);
-      if (typeof s.maximum === "number" && v > s.maximum) fail("maximum", `${v} is greater than the maximum of ${s.maximum}`);
+      if (typeof s.minimum === "number" && v < s.minimum) fail("minimum", `${v} is less than the minimum of ${s.minimum}`, undefined, { limit: s.minimum, instance: v });
+      if (typeof s.maximum === "number" && v > s.maximum) fail("maximum", `${v} is greater than the maximum of ${s.maximum}`, undefined, { limit: s.maximum, instance: v });
       if (typeof s.exclusiveMinimum === "number" && v <= s.exclusiveMinimum) {
-        fail("exclusiveMinimum", `${v} is less than or equal to the minimum of ${s.exclusiveMinimum}`);
+        fail("exclusiveMinimum", `${v} is less than or equal to the minimum of ${s.exclusiveMinimum}`, undefined, { limit: s.exclusiveMinimum, instance: v });
       }
       if (typeof s.exclusiveMaximum === "number" && v >= s.exclusiveMaximum) {
-        fail("exclusiveMaximum", `${v} is greater than or equal to the maximum of ${s.exclusiveMaximum}`);
+        fail("exclusiveMaximum", `${v} is greater than or equal to the maximum of ${s.exclusiveMaximum}`, undefined, { limit: s.exclusiveMaximum, instance: v });
       }
       if (typeof s.multipleOf === "number" && !isMultipleOf(v, s.multipleOf)) {
         fail("multipleOf", `${v} is not a multiple of ${s.multipleOf}`);

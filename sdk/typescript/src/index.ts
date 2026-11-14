@@ -13,7 +13,7 @@ export { BhmsError, JsonRpcError, fromJsonRpc, CODES, RETRY_VALUES, OPERATION_ON
 export * from "./generated/types.js";
 export { Session, ClientStream, Complete, TransportClosed, SUBSCRIPTION_KEY, type Handler, type Notification, type Peer, type RequestContext, type Transport, type TransportSink } from "./jsonrpc/session.js";
 export { SchemaValidator, defValidator, loadSchema, schemaBoundsProblem, iterSubschemas, SchemaBoundsError, MAX_SCHEMA_DEPTH, MAX_SUBSCHEMAS, schemaPath, validateDef, fieldPath, bestIssue, isMultipleOf, type Issue } from "./schema.js";
-export { DeviceServer, summaryMatches, type DeviceServerOptions, type ExtensionHandler } from "./server/server.js";
+export { DeviceServer, summaryMatches, textScore, unknownDevice, wordScore, type DeviceServerOptions, type ExtensionHandler } from "./server/server.js";
 export { Device, DescriptionError, type ActionOptions, type DeviceOptions, type PropertyOptions } from "./server/device.js";
 export { Canceled, DeviceFault, Reading, type ActionContext, type Reconciled } from "./server/context.js";
 export { arrayOf, bool, int, num, objectOf, range, str, type Schema } from "./server/schemas.js";

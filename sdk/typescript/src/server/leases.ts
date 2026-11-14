@@ -9,7 +9,10 @@
  * - TTL and waits are range-checked (`OUT_OF_RANGE`) and unknown resources are `INVALID_ARGUMENT` at `resources[i]`
  *   (BHMS-LSE-004). A lease belongs to its principal (BHMS-LSE-005). Expiry runs on the monotonic clock with one timer per
  *   lease plus a lazy check on every use (BHMS-LSE-006). Unknown ids read as expired (BHMS-LSE-007).
- * - {@link LeaseManager.check} is the admission and pre-dispatch check of BHMS-LSE-010 with its exact codes.
+ * - {@link LeaseManager.check} is the lease check of BHMS-LSE-010 with its exact codes; {@link LeaseManager.admit} is what every
+ *   enforcement point calls (action admission, pre-dispatch, program steps): it validates any lease that was supplied
+ *   (BHMS-LSE-005/007 are unconditional) and refuses a request that presents no lease while one of its resources is leased
+ *   (BHMS-LSE-014), whoever asks.
  * - {@link LeaseManager.revokeCovering} (stop) revokes active leases and raises the fence of their resources so a
  *   superseded holder is `FENCED`.
  *
@@ -206,6 +209,26 @@ export class LeaseManager {
     const highest = Math.max(0, ...resources.map((r) => this.resourceFence.get(r) ?? 0));
     if (l.fence < highest) throw new BhmsError("FENCED", `lease ${leaseId} has fence ${l.fence}, below the resource fence ${highest}`, { field: "leaseId", hint: "acquire a new lease" });
     return l;
+  }
+
+  /**
+   * The lease check of one request that uses `resources` (an action, at admission and before dispatch; a program step).
+   *
+   * A supplied `leaseId` is always validated with {@link check}, whether or not the action declares `requiresLease`
+   * (BHMS-LSE-005, BHMS-LSE-007, BHMS-LSE-010). Without one, an action that requires a lease is `LEASE_REQUIRED`; any other is
+   * refused with `LEASE_CONFLICT` while a lease is `active` on one of its resources (BHMS-LSE-014): the refusal names the
+   * resources, never the holder or the lease, and is the same for every caller, the holder included (holding is shown by
+   * presenting the lease, not by identity). Returns the lease the request runs under, or `undefined` when it needs none.
+   */
+  admit(principal: string, leaseId: string | undefined, resources: readonly string[], required: boolean): Lease | undefined {
+    if (leaseId !== undefined || required) return this.check(principal, leaseId, resources);
+    const leased = resources.filter((r) => this.conflicts([r]).length > 0);
+    if (leased.length === 0) return undefined;
+    const names = leased.join(", ");
+    throw new BhmsError("LEASE_CONFLICT", `${names} ${leased.length === 1 ? "is" : "are"} leased and this request presents no lease`, {
+      field: "leaseId", bound: leased,
+      hint: `pass the leaseId of the lease on ${names} if you hold it; otherwise wait until that lease ends and retry (BHMS-LSE-014)`,
+    });
   }
 
   /** Whether `principal` holds an active lease covering every resource (authorizes a transaction read, BHMS-OBS-011). */
