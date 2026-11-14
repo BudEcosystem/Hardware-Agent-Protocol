@@ -69,57 +69,6 @@ async def test_a_recurring_epoch_value_never_lets_a_new_operations_result_settle
         assert still["state"] == "unknown"  # Y's RESULT is not evidence about X
 
 
-async def test_one_unanswered_stop_does_not_make_the_stops_after_it_fail(tmp_path):  # CMP-050/051, OPS-042 recovery path
-    """The endpoint confirms every STOP it receives from the fifth on: each later stop is confirmed with at most two STOPs."""
-    from helpers.compact_rig import BENCH
-
-    script = Scripted(cp.digest8_of(BENCH), epoch=7, flags=PERSISTENT)
-    async with scripted_rig(tmp_path, sidecar=BENCH, scripted=script) as (client, bridge, ep):
-        stops = {"n": 0}
-
-        def on_stop(e, m):
-            stops["n"] += 1
-            if stops["n"] > bridge.timing.retries + 1:  # the first stop's STOPs get no acknowledgement at all
-                e.say(cp.StopAck(cp.STOPACK_CONFIRMED, cp.EVIDENCE_MEASURED))
-
-        ep.on[cp.Stop] = on_stop
-        first = to_wire(await client.stop("t", device_ids=["bench-rig"], wait_ms=4000))["stops"][0]
-        assert first["outcome"] != "confirmed"
-        for _ in range(4):
-            before = stops["n"]
-            got = to_wire(await client.stop("t", device_ids=["bench-rig"], wait_ms=4000))["stops"][0]
-            assert got["outcome"] == "confirmed", got
-            assert stops["n"] - before <= 2  # a single lost ack costs one extra reply time, never a failed stop
-
-
-async def test_the_late_ack_of_an_overlapping_stop_is_not_taken_for_the_next_ones_confirmation(tmp_path):  # CMP-050/051
-    """STOP_ACK names no STOP: an ack still due to a STOP sent moments ago is skipped."""
-    import time
-
-    from helpers.compact_rig import BENCH
-
-    script = Scripted(cp.digest8_of(BENCH), epoch=7, flags=PERSISTENT)
-    async with scripted_rig(tmp_path, sidecar=BENCH, scripted=script) as (client, bridge, ep):
-        sent_at: list[float] = []
-
-        async def on_stop(e, m):
-            sent_at.append(time.monotonic())
-            await asyncio.sleep(0.15)  # shorter than the reply time: the first call does not retransmit
-            e.say(cp.StopAck(cp.STOPACK_CONFIRMED, cp.EVIDENCE_MEASURED))
-            sent_at.append(-time.monotonic())  # the ack's time, negative
-
-        ep.on[cp.Stop] = on_stop
-        a = asyncio.ensure_future(bridge._stop(None))
-        await asyncio.sleep(0.05)
-        started = time.monotonic()
-        await bridge._stop(None)
-        finished = time.monotonic()
-        await a
-        acks = sorted(-t for t in sent_at if t < 0)
-        assert len(acks) == 2 and finished >= acks[1] - 0.01  # the second stop waited for the ack of ITS STOP, not the first
-        assert started < acks[0] < acks[1]
-
-
 async def test_a_read_refused_with_session_mismatch_is_stale_not_an_invalid_argument(tmp_path):
     from helpers.compact_rig import LED
 

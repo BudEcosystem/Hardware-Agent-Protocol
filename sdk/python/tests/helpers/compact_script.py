@@ -22,7 +22,7 @@ class Scripted:
     :meth:`say`. Default behaviour: answer HELLO_REQ with a correct HELLO, QUERY of an unknown handle with HANDLE_UNKNOWN."""
 
     def __init__(self, digest8: bytes, *, epoch: int = 7, flags: int = cp.FLAG_PERSISTENT_EPOCH | cp.FLAG_FENCING,
-                 max_args: int = 16, last_handle: int = 0, version: int = 1) -> None:
+                 max_args: int = 16, last_handle: int = 0, version: int = cp.COMPACT_VERSION) -> None:
         self.digest8, self.epoch, self.flags, self.max_args = digest8, epoch, flags, max_args
         self.last_handle, self.version = last_handle, version
         self.on: dict[type, Behaviour] = {}

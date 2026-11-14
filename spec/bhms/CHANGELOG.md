@@ -2,6 +2,8 @@
 
 ## 2026-11-13 (v0.1)
 
+Compact round 3 (Task 9b fix 3): BHMS-Compact version 2: STOP carries a token and both STOP_ACKs echo it (hardware-stop acks use token 0), so a late ack of an earlier stop can never confirm another (BHMS-CMP-050); endpoints and gateways of different versions refuse each other.
+
 Compact round (Task 9b fix 1): `device.epoch` `data` members `persistent` and `purged` documented (9.2, BHMS-OPS-042); BHMS-CMP-022 defines the endpoint incarnation; BHMS-SEC-050 is enforced by the gateway (networked compact links are refused).
 
 Conformance round 3 (Task 7): BHMS-CNF-006 is an `inspection` row (the implementation's validator is a library that cannot be driven over the wire); `capabilities.authority` carries no members; EVT-013 is not applicable in v0.1 (read is one global scope).

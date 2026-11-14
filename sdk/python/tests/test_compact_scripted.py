@@ -160,7 +160,7 @@ async def test_a_frame_of_another_epoch_is_dropped_and_asks_for_a_new_hello(tmp_
 
 
 async def test_an_endpoint_that_speaks_another_compact_version_is_not_served(tmp_path):
-    ep = Scripted(cp.digest8_of(LED), version=2)
+    ep = Scripted(cp.digest8_of(LED), version=cp.COMPACT_VERSION + 1)
     async with scripted_rig(tmp_path, scripted=ep, served=False) as (client, bridge, _):
         await asyncio.sleep(0.6)
         assert bridge.device is None and not bridge.up

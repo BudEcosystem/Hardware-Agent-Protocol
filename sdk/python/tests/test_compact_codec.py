@@ -329,3 +329,31 @@ async def test_a_stop_still_gets_queued_when_a_stalled_line_refuses_ordinary_wri
     finally:
         await stream.close()
         os.close(read_end)
+
+
+async def test_every_dropped_stop_is_logged_not_only_the_first_or_every_hundredth(caplog):
+    read_end, write_end = os.pipe()
+    stream = c.FdStream(write_end)
+    try:
+        for _ in range(64):
+            stream.write(b"\x00" * 4096)
+        for _ in range(c.URGENT_HEADROOM):  # exhaust the reserved headroom, then every further STOP is refused
+            stream.write(b"\x00", urgent=True)
+        caplog.clear()
+        stream.dropped = 5  # not 1 and not a multiple of 100: the counter rule alone would stay silent
+        stream.write(b"\x00", urgent=True)
+        assert "INCLUDING A STOP" in caplog.text
+    finally:
+        await stream.close()
+        os.close(read_end)
+
+
+def test_the_stop_and_stop_ack_vectors_of_spec_11_with_their_tokens():
+    from bhms.transport import hm_frame
+
+    stop = bytes.fromhex("7e484d01010001000000000000002900000009000305032afb847e")
+    ack = bytes.fromhex("7e484d0102000100000000000000290000000a0005850102022a25ff7e")
+    assert hm_frame.encode(hm_frame.Frame(1, 1, 41, 9, c.Stop(3, 0x2A).encode())) == stop
+    assert hm_frame.encode(hm_frame.Frame(2, 1, 41, 10, c.StopAck(c.STOPACK_CONFIRMED, c.EVIDENCE_MEASURED, 2, 0x2A).encode())) == ack
+    assert c.decode(c.Stop(3, 0x2A).encode()) == c.Stop(3, 0x2A) and c.decode(c.StopAck(1, 2, 2, 0x2A).encode()).token == 0x2A
+    assert c.COMPACT_VERSION == 2

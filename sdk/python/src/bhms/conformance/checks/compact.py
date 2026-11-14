@@ -238,7 +238,7 @@ async def endpoint_stop(c: Context) -> None:
     await raw.exchange(cp.Invoke(1, 1, (3000).to_bytes(2, "little") + (500).to_bytes(2, "little", signed=True), 7))
     started = await raw.exchange(cp.Invoke(2, 3, (3000).to_bytes(2, "little")))
     c.expect(isinstance(started and started.message, cp.Status), "the long operation did not start", ("BHMS-CMP-050",))
-    raw.send(cp.Stop(0), session=hello.epoch + 9)
+    raw.send(cp.Stop(0, 0x5A), session=hello.epoch + 9)
     frames = [await raw.reply(2.0)]
     first = frames[0]
     c.expect(first is not None and isinstance(first.message, cp.StopAck), f"STOP was not acknowledged before anything else: {first and first.message}",
@@ -248,6 +248,7 @@ async def endpoint_stop(c: Context) -> None:
         if isinstance(got.message, cp.StopAck) and got.message.outcome == cp.STOPACK_CONFIRMED:
             break
     acks = [f.message for f in frames if f and isinstance(f.message, cp.StopAck)]
+    c.expect(acks and all(a.token == 0x5A for a in acks), f"every STOP_ACK must echo the STOP's token 0x5A: {acks}", ("BHMS-CMP-050",))
     if first is not None and isinstance(first.message, cp.StopAck) and first.message.outcome == cp.STOPACK_INITIATED:
         c.expect(len(acks) == 2 and acks[1].outcome == cp.STOPACK_CONFIRMED and frames[-1].kind == cp.TELEMETRY,
                  f"an initiated stop must be followed by a confirming STOP_ACK (kind 03): {acks}", ("BHMS-CMP-050",))
@@ -522,3 +523,36 @@ async def gateway_restart(c: Context) -> None:
     unknown = error_of(await raw.exchange(cp.Query(hello.last_handle + 40)))
     c.expect(unknown is not None and unknown.code == cp.E_HANDLE_UNKNOWN and raw.effects("SET") == 0,
              f"QUERY of a handle above lastHandle must be HANDLE_UNKNOWN without acting: {unknown}", ("BHMS-CMP-034",))
+
+
+@check("compact.gateway-stop-token", ["BHMS-CMP-050"], profile="compact", generic=True, needs=("compact",), timeout=60)
+async def gateway_stop_token(c: Context) -> None:
+    """Only a STOP_ACK echoing the token of the gateway's own STOP confirms it: acks with another token or the reserved token 0
+    (the endpoint's hardware stop input) are not evidence, even when they say confirmed/measured."""
+    wire = (await served_fixture(c)).wires["rig"]
+    wire.drop(TO_GATEWAY, count=1000, match=lambda m: isinstance(m, cp.StopAck))  # the endpoint's own acks never arrive
+    epoch = max((s.message.epoch for s in wire.log if isinstance(s.message, cp.Hello)), default=0)
+    mark = len(wire.log)
+
+    async def forge() -> None:
+        while True:
+            sent = [s.message.token for s in wire.log[mark:] if isinstance(s.message, cp.Stop) and s.direction == TO_DEVICE]
+            for token in {0, *((t % 255 + 1) for t in sent)} - set(sent):
+                ack = cp.StopAck(cp.STOPACK_CONFIRMED, cp.EVIDENCE_MEASURED, 0, token)
+                wire.inject(TO_GATEWAY, wire.frame_for(ack, epoch, kind=cp.STATUS_KIND))
+            await asyncio.sleep(0.05)
+
+    forger = asyncio.get_running_loop().create_task(forge())
+    try:
+        got = await c.ok("stop", {"reason": "compact conformance: forged acks", "deviceIds": [RIG], "waitMs": 3000})
+    finally:
+        forger.cancel()
+        await asyncio.gather(forger, return_exceptions=True)
+        wire.clear_rules()
+    c.expect(got["stops"][0]["outcome"] != "confirmed",
+             f"a STOP_ACK with a foreign token or token 0 must not confirm a gateway stop: {got['stops'][0]}", ("BHMS-CMP-050",))
+    sent = [s.message for s in wire.log[mark:] if isinstance(s.message, cp.Stop)]
+    c.expect(sent and all(m.token != 0 for m in sent), f"the gateway's STOP must carry a non-zero token: {sent}", ("BHMS-CMP-050",))
+    mark = len(wire.log)
+    real = await c.ok("stop", {"reason": "compact conformance: real acks", "deviceIds": [RIG], "waitMs": 3000})
+    c.expect(real["stops"][0]["outcome"] == "confirmed", f"a genuine echoed ack must confirm the stop: {real['stops'][0]}", ("BHMS-CMP-050",))

@@ -38,7 +38,8 @@ from typing import Any, Protocol
 
 CHANNEL = 1
 CONTROL, STATUS_KIND, TELEMETRY = 1, 2, 3
-COMPACT_VERSION = 1
+COMPACT_VERSION = 2  # 2: STOP and STOP_ACK carry a correlation token (BHMS-CMP-050)
+STOP_TOKEN_NONE = 0  # the token of a STOP_ACK the endpoint caused itself (hardware stop input): never a gateway's stop
 MAX_PAYLOAD = 192
 
 HELLO_REQ, INVOKE, CANCEL, READ, STOP, QUERY = 0x01, 0x02, 0x03, 0x04, 0x05, 0x06
@@ -167,9 +168,10 @@ class Read:
 @dataclass(frozen=True)
 class Stop:
     reason: int = 0
+    token: int = 1  # non-zero, chosen by the gateway; both STOP_ACKs of this STOP echo it
 
     def encode(self) -> bytes:
-        return struct.pack("<BB", STOP, self.reason)
+        return struct.pack("<BBB", STOP, self.reason, self.token)
 
 
 @dataclass(frozen=True)
@@ -223,9 +225,10 @@ class StopAck:
     outcome: int
     evidence: int = 0
     canceled: int = 0
+    token: int = 0  # the STOP's token, or 0 for a stop the endpoint started itself
 
     def encode(self) -> bytes:
-        return struct.pack("<BBBB", STOP_ACK, self.outcome, self.evidence, self.canceled)
+        return struct.pack("<BBBBB", STOP_ACK, self.outcome, self.evidence, self.canceled, self.token)
 
 
 @dataclass(frozen=True)
@@ -252,12 +255,12 @@ _FIXED: dict[int, tuple[struct.Struct, int, bool]] = {
     INVOKE: (struct.Struct("<HBIH"), 10, True),
     CANCEL: (struct.Struct("<H"), 3, False),
     READ: (struct.Struct("<HBB"), 5, False),
-    STOP: (struct.Struct("<B"), 2, False),
+    STOP: (struct.Struct("<BB"), 3, False),
     QUERY: (struct.Struct("<H"), 3, False),
     STATUS: (struct.Struct("<HBBB"), 6, False),
     RESULT: (struct.Struct("<HBBB"), 6, True),
     VALUE: (struct.Struct("<HBBBII"), 14, True),
-    STOP_ACK: (struct.Struct("<BBB"), 4, False),
+    STOP_ACK: (struct.Struct("<BBBB"), 5, False),
     ERROR: (struct.Struct("<BHBB"), 6, False),
 }
 
@@ -332,8 +335,8 @@ def read(request: int, prop: int, fresh: bool = False) -> bytes:
     return Read(request, prop, READ_FRESH if fresh else 0).encode()
 
 
-def stop(reason: int = 0) -> bytes:
-    return Stop(reason).encode()
+def stop(reason: int = 0, token: int = 1) -> bytes:
+    return Stop(reason, token).encode()
 
 
 def status(handle: int, state: int, cancel_state: int, progress: int) -> bytes:
@@ -348,8 +351,8 @@ def value(request: int, prop: int, quality: int, evidence: int, seq: int, age_ms
     return Value(request, prop, quality, evidence, seq, age_ms, raw).encode()
 
 
-def stop_ack(outcome: int, evidence: int, canceled: int) -> bytes:
-    return StopAck(outcome, evidence, canceled).encode()
+def stop_ack(outcome: int, evidence: int, canceled: int, token: int = 0) -> bytes:
+    return StopAck(outcome, evidence, canceled, token).encode()
 
 
 def error(req_type: int, ident: int, code: int, detail: int = 0) -> bytes:
@@ -660,7 +663,7 @@ class FdStream:
             return
         if len(self._out) + len(data) > MAX_PENDING_OUTPUT + (URGENT_HEADROOM if urgent else 0):
             self.dropped += 1  # whole writes only: a half frame would only cost the receiver a resynchronisation
-            if self.dropped == 1 or self.dropped % 100 == 0:
+            if urgent or self.dropped == 1 or self.dropped % 100 == 0:  # a dropped STOP is always said
                 log.warning("compact link: the serial line is not draining (%d bytes queued); %d write(s) dropped%s",
                             len(self._out), self.dropped, " (INCLUDING A STOP)" if urgent else "")
             return

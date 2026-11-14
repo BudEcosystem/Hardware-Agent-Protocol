@@ -19,7 +19,7 @@ FCS-16. Header fields are big-endian, as the frame defines.
 | magic, version | `HM`, `01` |
 | kind | `01` control (gateway → endpoint), `02` status (endpoint → gateway, replies), `03` telemetry (endpoint → gateway, unsolicited) |
 | flags | `00` |
-| channel | `01` = BHMS-Compact v1 |
+| channel | `01` = BHMS-Compact |
 | session (u64) | Endpoint boot epoch, zero-extended u32. `0` only on `HELLO_REQ` before the epoch is known |
 | sequence (u32) | Per-direction frame counter from 0 in each epoch; diagnostic only, never a deduplication key |
 | length | payload length |
@@ -45,7 +45,7 @@ its type and layout define.
 | Offset | Size | Field |
 |---:|---:|---|
 | 0 | 1 | `0x01` |
-| 1 | 1 | compact version = `1` |
+| 1 | 1 | compact version = `2` (version 1 had no STOP token; a gateway and an endpoint of different versions MUST NOT talk: see BHMS-CMP-050) |
 | 2 | 1 | flags: bit 0 `NEW_SESSION` (begin a new epoch; honoured only when no operation is active) |
 | 3 | 4 | nonce u32 (echoed) |
 
@@ -79,7 +79,7 @@ its type and layout define.
 
 ### READ `0x04` (G→E), 5 bytes — `[0x04][request u16][property index u8][flags u8: bit 0 FRESH]`
 
-### STOP `0x05` (G→E), 2 bytes — `[0x05][reason u8: 0 unspecified, 1 operator, 2 client, 3 gateway]`
+### STOP `0x05` (G→E), 3 bytes — `[0x05][reason u8: 0 unspecified, 1 operator, 2 client, 3 gateway][token u8, non-zero]`
 
 ### QUERY `0x06` (G→E), 3 bytes — `[0x06][handle u16]`
 
@@ -117,7 +117,7 @@ its type and layout define.
 | 10 | 4 | age ms u32 (`0xFFFFFFFF` = unbounded/unknown) |
 | 14 | k | value (property type width; k = 0 when quality is invalid or unknown) |
 
-### STOP_ACK `0x85` (E→G), 4 bytes — `[0x85][outcome: 0 initiated, 1 confirmed, 2 unsupported][evidence: 0 none, 1 reported, 2 measured][canceled count u8]`
+### STOP_ACK `0x85` (E→G), 5 bytes — `[0x85][outcome: 0 initiated, 1 confirmed, 2 unsupported][evidence: 0 none, 1 reported, 2 measured][canceled count u8][token u8]`
 
 ### ERROR `0xFF` (E→G), 6 bytes — `[0xFF][request type u8][handle or request u16][code u8][detail u8]`
 
@@ -283,7 +283,22 @@ monotonically per endpoint epoch.
 **BHMS-CMP-050** An endpoint MUST accept STOP with any session value, MUST process
 it before any queued work, MUST reply STOP_ACK immediately (`initiated` or
 `confirmed`), and MUST send a second STOP_ACK (kind 03) with `confirmed` when an
-initiated stop finishes with evidence.
+initiated stop finishes with evidence. Both STOP_ACKs of a STOP MUST echo its
+`token`; a STOP_ACK the endpoint causes itself (a hardware stop input) carries the
+reserved token `0`. A STOP with token `0` is still carried out (a stop is never
+refused for a bad token) and answered with token `0`. The gateway chooses a
+non-zero token per stop (all retransmissions of one stop reuse it; no two stops in
+progress share one) and MUST count only a STOP_ACK whose token belongs to a stop in
+progress as evidence about it: an ack with another token or token `0` never
+confirms a gateway stop (a token `0` ack is reported as a `stop` event of the
+device instead). A STOP_ACK has no other correlation, so the token is what makes a
+late or duplicated ack of an earlier stop harmless.
+
+**Version.** A `HELLO_REQ` whose compact version differs from the endpoint's is
+answered `ERROR UNSUPPORTED` with `detail` = the endpoint's version (never guessed
+at); a gateway that receives a HELLO or that ERROR for another version MUST NOT
+serve the endpoint and MUST log the versions. Version 2 changed STOP and STOP_ACK
+only.
 
 **BHMS-CMP-051** STOP MUST end every active operation on the endpoint (each then
 reports RESULT `canceled` or `failed`) and MUST raise the fence floor above every
@@ -326,6 +341,18 @@ bytes):
 These bytes were produced with `protocol/serial/frame.py` and are the first
 compact test vectors for Task 9.
 
+A gateway STOP (reason 3, token `0x2a`, session 41, frame sequence 9) and the
+endpoint's confirming ack (confirmed, measured, 2 operations canceled, the same
+token, sequence 10):
+
+```
+7e 48 4d 01 01 00 01 00 00 00 00 00 00 00 29 00 00 00 09 00 03 05 03 2a fb 84 7e
+```
+
+```
+7e 48 4d 01 02 00 01 00 00 00 00 00 00 00 29 00 00 00 0a 00 05 85 01 02 02 2a 25 ff 7e
+```
+
 ## 11.11 Endpoint behaviours fixed by the reference library (informative)
 
 `sdk/c` (BHMS-Compact C library, Task 9a) settled the points the layouts leave
@@ -351,8 +378,8 @@ open; other endpoints should match them so one gateway handles all of them.
   gateway MUST start a new session (BHMS-CMP-041) before its fences approach 2^32.
 - **Replies and unsolicited frames.** Replies to a control frame use kind 02. An
   operation that finishes later (after `STATUS running`) sends its RESULT, and
-  progress STATUS frames, as kind 03. A `HELLO_REQ` whose compact version is not 1
-  is answered `ERROR UNSUPPORTED` with `detail = 1`.
+  progress STATUS frames, as kind 03. A `HELLO_REQ` whose compact version is not 2
+  is answered `ERROR UNSUPPORTED` with `detail = 2`.
 - **Stop.** The first `STOP_ACK` is sent before the RESULT (kind 03, `canceled`)
   of each operation the stop ended; its `canceled` count says how many follow.
   A hardware stop input asserting sends the same sequence with the ack as

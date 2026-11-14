@@ -139,11 +139,14 @@ static int expect_one(rig *r, bhms_host_frame *f, uint8_t kind, uint8_t type) {
     return ok;
 }
 
+static uint8_t g_last_error_detail;
+
 static void expect_error(rig *r, uint8_t req_type, uint16_t id, uint8_t code) {
     bhms_host_frame f;
     bhms_error e;
     if (!expect_one(r, &f, BHMS_KIND_STATUS, BHMS_MSG_ERROR)) return;
     CHECK(bhms_dec_error(f.payload, f.length, &e) == 0);
+    g_last_error_detail = e.detail;
     CHECK(e.request_type == req_type && (id == 0xFFFFu || e.id == id) && e.code == code);
 }
 
@@ -174,7 +177,7 @@ static void test_hello_and_epoch(void) {
     rig_boot(&r, 0, &kDev);
     uint64_t e = hello(&r, 0, 0xCAFE, &h);
     CHECK(e == 1);
-    CHECK(h.version == 1 && h.flags == (BHMS_HELLO_FENCING | BHMS_HELLO_STOP_SUPPORTED));
+    CHECK(h.version == 2 && h.flags == (BHMS_HELLO_FENCING | BHMS_HELLO_STOP_SUPPORTED));
     CHECK(h.last_handle == 0 && h.ring == BHMS_RING_SIZE && h.max_active == BHMS_MAX_ACTIVE);
     CHECK(h.max_args == 7);
     static const uint8_t dg[8] = {0xde, 0xad, 0xbe, 0xef, 1, 2, 3, 4};
@@ -222,9 +225,10 @@ static void test_persistent_epoch(void) {
     rig_boot(&r, 0, &kDev);
     uint8_t b[16];
     size_t n = bhms_enc_hello_req(b, 0, 9);
-    b[1] = 2;
+    b[1] = 1; /* a version 1 gateway (STOP without a token) is refused, telling it our version in detail */
     gsend(&r, 0, b, n);
     expect_error(&r, BHMS_MSG_HELLO_REQ, 0, BHMS_E_UNSUPPORTED);
+    CHECK(g_last_error_detail == BHMS_VERSION);
 }
 
 static void test_invoke_result_exact(void) {
@@ -667,11 +671,11 @@ static void test_stop(void) {
 
     /* STOP with a foreign session is still accepted (CMP-050), confirmed at once;
      * every active op is canceled; ack comes first, then the RESULTs. */
-    gsend(&r, 12345, b, bhms_enc_stop(b, BHMS_STOP_OPERATOR));
+    gsend(&r, 12345, b, bhms_enc_stop(b, BHMS_STOP_OPERATOR, 0x2A));
     CHECK(next(&r, &f) == 1 && f.kind == BHMS_KIND_STATUS);
-    static const uint8_t ack[] = {0x85, BHMS_STOPACK_CONFIRMED, BHMS_EV_MEASURED, 2};
-    CHECK(f.length == 4);
-    CHECK_BYTES(f.payload, ack, 4);
+    static const uint8_t ack[] = {0x85, BHMS_STOPACK_CONFIRMED, BHMS_EV_MEASURED, 2, 0x2A}; /* the token is echoed */
+    CHECK(f.length == 5);
+    CHECK_BYTES(f.payload, ack, 5);
     CHECK(next(&r, &f) == 1 && f.kind == BHMS_KIND_TELEMETRY && f.payload[0] == BHMS_MSG_RESULT);
     CHECK(f.payload[3] == BHMS_ST_CANCELED);
     CHECK(next(&r, &f) == 1 && f.kind == BHMS_KIND_TELEMETRY && f.payload[0] == BHMS_MSG_RESULT);
@@ -685,12 +689,12 @@ static void test_stop(void) {
 
     /* INITIATED then confirmed: a second ack (kind 03) when the app confirms. */
     g.stop_mode = BHMS_STOPACK_INITIATED;
-    gsend(&r, e, b, bhms_enc_stop(b, BHMS_STOP_CLIENT));
-    CHECK(next(&r, &f) == 1 && f.payload[1] == BHMS_STOPACK_INITIATED);
+    gsend(&r, e, b, bhms_enc_stop(b, BHMS_STOP_CLIENT, 0x77));
+    CHECK(next(&r, &f) == 1 && f.payload[1] == BHMS_STOPACK_INITIATED && f.payload[4] == 0x77);
     CHECK(next(&r, &f) == 1); /* the canceled RESULT for handle 3 */
     bhms_stop_confirmed(&r.ep, BHMS_EV_MEASURED);
     CHECK(next(&r, &f) == 1 && f.kind == BHMS_KIND_TELEMETRY && f.payload[1] == BHMS_STOPACK_CONFIRMED);
-    CHECK(f.payload[3] == 1);
+    CHECK(f.payload[3] == 1 && f.payload[4] == 0x77); /* the confirming ack echoes the same token */
     bhms_stop_confirmed(&r.ep, BHMS_EV_MEASURED); /* only once */
     CHECK(next(&r, &f) == 0);
 
@@ -699,8 +703,8 @@ static void test_stop(void) {
     e = hello(&r, 0, 1, &h);
     invoke(&r, e, 1, 1, 0, 0, kMoveArgs, 7);
     CHECK(next(&r, &f) == 1);
-    gsend(&r, e, b, bhms_enc_stop(b, 0));
-    CHECK(next(&r, &f) == 1 && f.payload[1] == BHMS_STOPACK_UNSUPPORTED && f.payload[3] == 1);
+    gsend(&r, e, b, bhms_enc_stop(b, 0, 5));
+    CHECK(next(&r, &f) == 1 && f.payload[1] == BHMS_STOPACK_UNSUPPORTED && f.payload[3] == 1 && f.payload[4] == 5);
 }
 
 static void test_stop_pin_and_inhibit(void) {
@@ -714,6 +718,7 @@ static void test_stop_pin_and_inhibit(void) {
     r.host.pin = 1;
     bhms_poll(&r.ep);
     CHECK(next(&r, &f) == 1 && f.kind == BHMS_KIND_TELEMETRY && f.payload[0] == BHMS_MSG_STOP_ACK);
+    CHECK(f.payload[4] == 0); /* token 0: the hardware input, never a gateway's stop */
     CHECK(next(&r, &f) == 1 && f.payload[0] == BHMS_MSG_RESULT && f.payload[3] == BHMS_ST_CANCELED);
     bhms_poll(&r.ep); /* level, not edge: no second stop */
     CHECK(next(&r, &f) == 0 && g.stops == 1);
@@ -1078,7 +1083,7 @@ static void test_fence_saturation(void) {
     uint64_t e = hello(&r, 0, 1, &h);
     invoke(&r, e, 1, 0, 0xFFFFFFFFu, 0, kOn, 1);
     CHECK(next(&r, &f) == 1 && f.payload[0] == BHMS_MSG_RESULT);
-    gsend(&r, e, b, bhms_enc_stop(b, 0));
+    gsend(&r, e, b, bhms_enc_stop(b, 0, 1));
     CHECK(next(&r, &f) == 1);
     CHECK(r.ep.fence_floor == 0xFFFFFFFFu);
     invoke(&r, e, 2, 0, 0xFFFFFFFEu, 0, kOn, 1);

@@ -108,9 +108,9 @@ class LedAnalogE2E(unittest.TestCase):
         self.expect(wire, h.STATUS, 1, 5, h.error(h.INVOKE, 1, h.ERR["HANDLE_CONFLICT"]))
 
         # STOP with a stale session is accepted; this board has no stop procedure.
-        link.send(h.stop(1), 999)
+        link.send(h.stop(1, 9), 999)
         wire, _ = link.recv(TIMEOUT)
-        self.expect(wire, h.STATUS, 1, 6, h.stop_ack(2, 0, 0))
+        self.expect(wire, h.STATUS, 1, 6, h.stop_ack(2, 0, 0, 9))  # the token is echoed
         link.expect_silence()
         self.assertEqual(self.leds(), ["LED 1", "LED 0"])
 

@@ -48,12 +48,12 @@ static void test_message_layouts(void) {
     size_t n;
 
     n = bhms_enc_hello_req(b, BHMS_HELLO_REQ_NEW_SESSION, 0xA1B2C3D4u);
-    static const uint8_t hr[] = {0x01, 0x01, 0x01, 0xD4, 0xC3, 0xB2, 0xA1};
+    static const uint8_t hr[] = {0x01, 0x02, 0x01, 0xD4, 0xC3, 0xB2, 0xA1};
     CHECK(n == 7);
     CHECK_BYTES(b, hr, 7);
 
     n = bhms_enc_hello(b, 0x07, digest, 41, 0xA1B2C3D4u, 17, 4, 2, 16);
-    static const uint8_t h[] = {0x81, 0x01, 0x07, 1, 2, 3, 4, 5, 6, 7, 8, 41, 0, 0, 0,
+    static const uint8_t h[] = {0x81, 0x02, 0x07, 1, 2, 3, 4, 5, 6, 7, 8, 41, 0, 0, 0,
                                 0xD4, 0xC3, 0xB2, 0xA1, 17, 0, 4, 2, 16};
     CHECK(n == 24);
     CHECK_BYTES(b, h, 24);
@@ -73,10 +73,10 @@ static void test_message_layouts(void) {
     CHECK(n == 5);
     CHECK_BYTES(b, rd, 5);
 
-    n = bhms_enc_stop(b, BHMS_STOP_GATEWAY);
-    static const uint8_t st[] = {0x05, 0x03};
-    CHECK(n == 2);
-    CHECK_BYTES(b, st, 2);
+    n = bhms_enc_stop(b, BHMS_STOP_GATEWAY, 0x2A);
+    static const uint8_t st[] = {0x05, 0x03, 0x2A};
+    CHECK(n == 3);
+    CHECK_BYTES(b, st, 3);
 
     n = bhms_enc_status(b, 17, BHMS_ST_RUNNING, BHMS_CANCEL_REQUESTED, 50);
     static const uint8_t ss[] = {0x82, 0x11, 0x00, 0x02, 0x01, 50};
@@ -89,10 +89,10 @@ static void test_message_layouts(void) {
     CHECK(n == 16);
     CHECK_BYTES(b, v, 16);
 
-    n = bhms_enc_stop_ack(b, BHMS_STOPACK_CONFIRMED, BHMS_EV_MEASURED, 3);
-    static const uint8_t sa[] = {0x85, 1, 2, 3};
-    CHECK(n == 4);
-    CHECK_BYTES(b, sa, 4);
+    n = bhms_enc_stop_ack(b, BHMS_STOPACK_CONFIRMED, BHMS_EV_MEASURED, 3, 0x2A);
+    static const uint8_t sa[] = {0x85, 1, 2, 3, 0x2A};
+    CHECK(n == 5);
+    CHECK_BYTES(b, sa, 5);
 
     n = bhms_enc_error(b, BHMS_MSG_INVOKE, 0x0011, BHMS_E_OUT_OF_RANGE, 1);
     static const uint8_t e[] = {0xFF, 0x02, 0x11, 0x00, 4, 1};
@@ -118,7 +118,7 @@ static void test_decoders(void) {
 
     uint8_t b[32];
     size_t n = bhms_enc_hello_req(b, 0, 99);
-    CHECK(bhms_dec_hello_req(b, n, &hr) == 0 && hr.nonce == 99 && hr.version == 1);
+    CHECK(bhms_dec_hello_req(b, n, &hr) == 0 && hr.nonce == 99 && hr.version == 2);
     CHECK(bhms_dec_hello_req(b, n - 1, &hr) == -1);
     n = bhms_enc_hello(b, 3, (const uint8_t[8]){9, 9, 9, 9, 9, 9, 9, 9}, 7, 8, 9, 4, 1, 12);
     CHECK(bhms_dec_hello(b, n, &h) == 0 && h.epoch == 7 && h.nonce == 8 && h.last_handle == 9);
@@ -128,8 +128,9 @@ static void test_decoders(void) {
     CHECK(bhms_dec_status(b, n, &s) == 0 && s.handle == 5 && s.progress == 255);
     n = bhms_enc_value(b, 4, 2, 0, 0, 10, 20, (const uint8_t[]){1, 2, 3, 4}, 4);
     CHECK(bhms_dec_value(b, n, &v) == 0 && v.request == 4 && v.sequence == 10 && v.n_value == 4);
-    n = bhms_enc_stop_ack(b, 0, 0, 0);
-    CHECK(bhms_dec_stop_ack(b, n, &sa) == 0 && sa.outcome == 0);
+    n = bhms_enc_stop_ack(b, 0, 0, 0, 77);
+    CHECK(bhms_dec_stop_ack(b, n, &sa) == 0 && sa.outcome == 0 && sa.token == 77);
+    CHECK(bhms_dec_stop_ack(b, n - 1, &sa) == -1); /* a version 1 (4 byte) ack is not accepted */
     n = bhms_enc_error(b, 4, 77, 3, 0);
     CHECK(bhms_dec_error(b, n, &e) == 0 && e.id == 77 && e.code == 3 && e.request_type == 4);
     b[0] = 0x00;

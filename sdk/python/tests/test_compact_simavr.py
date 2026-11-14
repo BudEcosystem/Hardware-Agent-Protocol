@@ -35,12 +35,12 @@ REMOTE = (f"cd {LAB} && exec nice -n 10 docker run -i --rm --cpus=2 --user $(id 
 pytestmark = pytest.mark.skipif(not HOST, reason="opt-in: set BHMS_SIMAVR_SSH to the worker host that has the 9a AVR lab")
 
 
-async def bhms(*args: str) -> dict:
+async def bhms(*args: str, any_exit: bool = False) -> dict:
     process = await asyncio.create_subprocess_exec(
         sys.executable, "-m", "bhms", *args, "--json", env={**os.environ, "PYTHONPATH": str(SRC)},
         stdout=asyncio.subprocess.PIPE, stderr=asyncio.subprocess.PIPE)
     out, err = await asyncio.wait_for(process.communicate(), 60)
-    assert process.returncode == 0, (out + err).decode()
+    assert any_exit or process.returncode == 0, (out + err).decode()  # `call` exits non-zero for an unknown outcome
     return json.loads(out)
 
 
@@ -67,12 +67,24 @@ async def test_the_arduino_in_simavr_is_served_by_a_gateway_and_driven_with_bhms
             url = f"unix:{tmp_path}/gw.sock"
             listed = await bhms("ls", url)
             assert "led/bench-led" in json.dumps(listed)
-            called = await bhms("call", url, "led/bench-led", "led_set", "on=true", "--key", "simavr-1")
+            called = await bhms("call", url, "led/bench-led", "led_set", "on=true", "--key", "simavr-1", any_exit=True)
             op = called["data"]["operation"] if "operation" in called.get("data", {}) else called["data"]
-            assert op["state"] == "completed" and op["result"] == {"writes": 1}
+            # led_set declares maxDurationMs 100 and the board is behind ssh and docker (about 100 to 130 ms round trip), so the
+            # executor sometimes ends the operation at its bound before the RESULT arrives. Both outcomes are honest and the
+            # command ran exactly once either way: completed, or failed DEADLINE_EXCEEDED with mayHaveActed (checked on the pin).
+            if op["state"] == "unknown":
+                for _ in range(100):
+                    op = to_wire(await client.operations_get(op["operationId"]))["operation"]
+                    if op["state"] != "unknown":
+                        break
+                    await asyncio.sleep(0.2)
+            if op["state"] == "completed":
+                assert op["result"] == {"writes": 1}
+            else:
+                assert op["state"] == "failed" and op["error"]["bhmsCode"] == "DEADLINE_EXCEEDED" and op["error"]["mayHaveActed"], op
             read = await bhms("read", url, "led/bench-led", "analog0")
             assert json.dumps(read).count("341") >= 1  # 1667 mV on a 5000 mV reference is 341 counts
-            again = await bhms("call", url, "led/bench-led", "led_set", "on=true", "--key", "simavr-1")
+            again = await bhms("call", url, "led/bench-led", "led_set", "on=true", "--key", "simavr-1", any_exit=True)
             replay = again["data"]["operation"] if "operation" in again.get("data", {}) else again["data"]
             assert replay["operationId"] == op["operationId"]  # the retained operation answers the same key
             observed = to_wire(await client.operations_list(device_id="led/bench-led"))["operations"]

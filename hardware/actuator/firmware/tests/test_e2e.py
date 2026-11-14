@@ -137,7 +137,7 @@ def parse(fr):
     if isinstance(m, c.Value):
         return dict(type="value", request=m.request, prop=m.prop, quality=m.quality, evidence=m.evidence, raw=m.raw, age=m.age_ms)
     if isinstance(m, c.StopAck):
-        return dict(type="stop_ack", outcome=m.outcome, evidence=m.evidence, canceled=m.canceled, kind=fr.kind)
+        return dict(type="stop_ack", outcome=m.outcome, evidence=m.evidence, canceled=m.canceled, token=m.token, kind=fr.kind)
     return dict(type="other", payload=fr.payload)
 
 
@@ -203,11 +203,13 @@ class ArmE2E(unittest.TestCase):
         self.assertEqual(a.read("estop_state")["raw"], bytes([0]))
         self.assertEqual(a.read("estop_contact_open")["raw"], bytes([0]))
         # STOP at rest: initiated then confirmed (measured).
-        a.link.send(h.stop(2), a.session)
+        a.link.send(h.stop(2, 0x31), a.session)
         m, _ = a.until(lambda m: m["type"] == "stop_ack")
+        self.assertEqual(m["token"], 0x31)  # both acks echo the STOP's token
         self.assertIn(m["outcome"], (0, 1))
         if m["outcome"] == 0:
             m, _ = a.until(lambda m: m["type"] == "stop_ack")
+            self.assertEqual(m["token"], 0x31)
         self.assertEqual((m["outcome"], m["evidence"]), (1, 2))
 
     def test_estop_flow(self):
@@ -224,6 +226,7 @@ class ArmE2E(unittest.TestCase):
         # The pin edge stops the operation (CANCELED) and acknowledges the stop with the cancel count.
         ack, seen = a.until(lambda m: m["type"] == "stop_ack")
         self.assertEqual(ack["canceled"], 1)
+        self.assertEqual(ack["token"], 0)  # the hardware input's stop is never a gateway's (token 0)
         self.assertLess(time.monotonic() - t0, 1.0)
         res = a.result(hdl) if not any(s.get("handle") == hdl and s["state"] == ST["CANCELED"] for s in seen if s["type"] in ("result", "status")) else None
         if res is not None:
