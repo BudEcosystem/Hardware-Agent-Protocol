@@ -25,7 +25,6 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
 - BHMS-DEV-033 as a MUST: refuse a hazardous action without `requiresLease` when a description is built (the shared schema
   already rejects it).
 
-
 ## 2026-11-13 (v0.1)
 
 Conformance round 4 (Task 7): §13.3 states how the BHMS-SEC-021 bounds are counted (root at depth 0, the count includes the root and boolean schemas, the list of

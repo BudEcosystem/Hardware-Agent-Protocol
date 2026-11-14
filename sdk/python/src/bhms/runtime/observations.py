@@ -200,13 +200,13 @@ class ObservationHub:
     async def _call_getter(self, device: Device, spec: PropertySpec) -> Any:
         getter = spec.getter
         assert getter is not None
-        args = (device,) if spec.takes_ctx else ()
+        kwargs = spec.getter_arguments(device)
         timeout = spec.timeout_ms / 1000
         if inspect.iscoroutinefunction(getter):
-            return await asyncio.wait_for(getter(*args), timeout)
+            return await asyncio.wait_for(getter(**kwargs), timeout)
         if spec.blocking:
-            return await asyncio.wait_for(asyncio.to_thread(getter, *args), timeout)
-        return getter(*args)
+            return await asyncio.wait_for(asyncio.to_thread(getter, **kwargs), timeout)
+        return getter(**kwargs)
 
     async def publish(self, device: Device, prop: str, value: Any, *, quality: str = "valid",
                       uncertainty: float | None = None, source: str | None = None,

@@ -274,8 +274,13 @@ class PropertySpec:
     resources: tuple[str, ...] = ()
     validity_ms: int | None = None
     timeout_ms: int = 1000
-    takes_ctx: bool = False
+    device_param: str | None = None
+    """The getter parameter that receives the :class:`~bhms.server.device.Device` (see :func:`device_parameter`), if any."""
     blocking: bool = False
+
+    def getter_arguments(self, device: Any) -> dict[str, Any]:
+        """Keyword arguments for one call of the getter: the device under its declared parameter, nothing else."""
+        return {} if self.device_param is None else {self.device_param: device}
 
     def describe(self) -> dict[str, Any]:
         out: dict[str, Any] = {"description": self.description, "schema": self.schema, "evidence": self.evidence,
@@ -350,6 +355,38 @@ def _choice(value: Any, allowed: tuple[str, ...], what: str, owner: str) -> str:
     return value
 
 
+def _is_device_annotation(annotation: Any) -> bool:
+    return getattr(annotation, "__name__", None) == "Device" and getattr(annotation, "__module__", "") == "bhms.server.device"
+
+
+def device_parameter(sig: inspect.Signature, owner: str) -> str | None:
+    """The parameter of a property getter that receives the device, decided by declaration and never by arity.
+
+    A getter receives the :class:`~bhms.server.device.Device` only through a parameter **named** ``device`` or
+    **annotated** ``Device`` (positional-or-keyword or keyword-only; it is passed by keyword). Every other parameter is
+    the getter's own and must have a default, which the SDK never overrides — so ``def get(register=register)`` in a loop
+    keeps its register. Anything else is refused when the property is declared: a required parameter that is not marked
+    as the device, two candidates, ``*args``/``**kwargs`` or a positional-only device parameter.
+    """
+    candidates = [p for p in sig.parameters.values() if p.name == "device" or _is_device_annotation(p.annotation)]
+    if len(candidates) > 1:
+        raise DescriptionError(f"{owner}: the getter has more than one device parameter "
+                               f"({', '.join(p.name for p in candidates)}); keep one, named 'device' or annotated Device")
+    chosen = candidates[0] if candidates else None
+    for param in sig.parameters.values():
+        if param is chosen:
+            if param.kind not in (param.POSITIONAL_OR_KEYWORD, param.KEYWORD_ONLY):
+                raise DescriptionError(f"{owner}: the device parameter {param.name!r} must be a plain or keyword-only "
+                                       "parameter (it is passed by keyword)")
+            continue
+        if param.kind in (param.VAR_POSITIONAL, param.VAR_KEYWORD) or param.default is inspect.Parameter.empty:
+            raise DescriptionError(
+                f"{owner}: the getter's parameter {param.name!r} is ambiguous: name it 'device' (or annotate it Device) "
+                "to receive the device, or give it a default to keep it as the getter's own value; the SDK never "
+                "decides by the number of parameters")
+    return chosen.name if chosen is not None else None
+
+
 def build_property(fn: Callable[..., Any] | None, *, name: str | None = None, unit: str | None = None,
                    evidence: str = "reported", observable: bool = True, read_effect: str = "none",
                    max_rate_hz: float | None = None, requires_lease: bool = False,
@@ -365,12 +402,11 @@ def build_property(fn: Callable[..., Any] | None, *, name: str | None = None, un
     _choice(read_effect, ("none", "transaction"), "read_effect", owner)
     if requires_lease and read_effect != "transaction":
         raise DescriptionError(f"{owner}: requires_lease applies only to read_effect='transaction' (BHMS-DEV-050)")
-    takes_ctx = False
+    sig = _signature(fn, localns) if fn is not None else None
+    device_param = device_parameter(sig, owner) if sig is not None else None
     if schema is None:
-        if fn is None:
+        if sig is None:
             raise DescriptionError(f"{owner}: give schema= (or unit=) for a property without a getter")
-        sig = _signature(fn, localns)
-        takes_ctx = len(sig.parameters) > 0
         value_schema = schema_for(sig.return_annotation, where=f"{owner} return value", unit=unit)
     elif isinstance(schema, dict) and "type" in schema:
         value_schema = dict(schema)
@@ -378,14 +414,12 @@ def build_property(fn: Callable[..., Any] | None, *, name: str | None = None, un
         value_schema = {"type": "number", "x-bhms-unit": schema}
     else:
         value_schema = schema_for(schema, where=f"{owner} value", unit=unit)
-        if fn is not None:
-            takes_ctx = len(_signature(fn, localns).parameters) > 0
     if unit is not None and value_schema.get("type") in ("number", "integer", ["number", "null"],
                                                           ["integer", "null"]):
         value_schema.setdefault("x-bhms-unit", unit)
     text = describe_text(fn, description, 1000) if fn is not None else (description or "")
     return PropertySpec(prop_name, fn, value_schema, evidence, observable, read_effect, text, max_rate_hz,
-                        requires_lease, tuple(resources), validity_ms, timeout_ms, takes_ctx, blocking)
+                        requires_lease, tuple(resources), validity_ms, timeout_ms, device_param, blocking)
 
 
 def build_action(fn: Callable[..., Any], *, effect: str, idempotency: str, max_duration_ms: int | None = None,

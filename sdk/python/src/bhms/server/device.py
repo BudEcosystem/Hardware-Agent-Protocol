@@ -121,6 +121,10 @@ class Device:
         (``none``/``transaction``), ``max_rate_hz``, ``requires_lease``, ``resources``, ``validity_ms`` (age after
         which a retained value is ``stale``), ``timeout_ms`` (acquisition bound; default 1000), ``schema``,
         ``description``, ``name``, ``blocking`` (run a sync getter in a worker thread).
+
+        The getter takes no argument, or receives this device through a parameter named ``device`` (or annotated
+        ``Device``); any other parameter must have a default and keeps it (closures such as ``register=register``). The
+        choice is by declaration, never by the number of parameters; an ambiguous signature is a ``DescriptionError``.
         """
         if fn is None and ("schema" in options and "name" in options):
             spec = build_property(None, **options)
