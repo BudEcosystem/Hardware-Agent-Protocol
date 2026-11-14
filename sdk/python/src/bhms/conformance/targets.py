@@ -388,10 +388,28 @@ def _device_command(*extra: str, base: list[str] | None = None) -> list[str]:
     return [*(base if base is not None else [sys.executable, "-m", "bhms.testing.conformance_device"]), *extra]
 
 
+def _caller_paths(argv: list[str]) -> list[str]:
+    """``argv`` with every word that names an existing path relative to the caller's directory made absolute.
+
+    The runner starts a fixture in its own workspace, so ``--device-command "node dist/src/testing/conformanceDevice.js"``
+    (written relative to where the user runs ``bhms conformance``) would otherwise name a file that does not exist there.
+    The program itself (the first word) is resolved only when it is written as a path (``./sim``, ``bin/sim``), so
+    ``node`` or ``python3`` is still looked up on ``PATH``.
+    """
+    out = []
+    for index, word in enumerate(argv):
+        path = Path(word)
+        as_path = index > 0 or os.sep in word or word.startswith(".")
+        if as_path and not path.is_absolute() and path.exists():
+            word = str(path.resolve())
+        out.append(word)
+    return out
+
+
 def _conformance_device(flavour: str, keep: str | None, device_command: str | None = None) -> Target:
     import shlex
 
-    base = shlex.split(device_command) if device_command else None
+    base = _caller_paths(shlex.split(device_command)) if device_command else None
     if device_command is not None and not base:
         raise TargetError("--device-command is empty")
     launch = lambda *extra: _device_command(*extra, base=base)  # noqa: E731
