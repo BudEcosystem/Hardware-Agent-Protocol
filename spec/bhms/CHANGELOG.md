@@ -2,6 +2,34 @@
 
 ## Unreleased
 
+Performance round (Task 12b). Each entry names the evidence that caused it.
+
+- **BHMS-OPS-003 clarified (no new requirement)**: a `dispatching` record that was written but could not be made durable
+  (the journal's sync failed) counts as not written: nothing is dispatched, and since the record already reads `dispatching`
+  the operation ends `failed` with `mayHaveActed: false` and `effect: "none"` (the server proves nothing was sent);
+  concurrent intents may share one sync (group commit) provided none is dispatched or reported before the sync covering its
+  own record has completed. Evidence: Task 12a measured one fsync per intent capping durable throughput at about 550
+  operations per second whatever the number of clients; group commit in the Python SDK (Task 12b) separates the commit from
+  its sync, which made the "written but not durable" case reachable and in need of a defined outcome (a `dispatching` record
+  cannot become `rejected`).
+- **Gateway pending-forward barrier kept, with its reason stated (§7.6 *Operations*)**: the pending-forward record must be on
+  stable storage before a forward leaves; concurrent forwards may share the sync. Decision: keep it (Task 5's note that the
+  gateway needs no barrier is withdrawn). Evidence: without it a power loss after the send loses the record, so the gateway
+  can neither report the forward `unknown` nor inhibit its resources, and a client's same-key retry re-sends it; the upstream
+  deduplicates by key only while it keeps its own journal (BHMS-OPS-081), so an upstream whose epoch changed (a reset store,
+  a non-durable simulator) would act twice. Cost measured in Task 12b: one fsync per lone forward (unchanged); with group
+  commit concurrent forwards share it (`bench/scenarios/gateway_forward.py`).
+- **`SafetyDescription.stopMaxDurationMs` is at most 86 400 000** (one day, the bound of a program's `maxDurationMs`; §4.7
+  table, schema `maximum`, new example `invalid-safety-stop-bound-above-a-day.json`). Evidence: Task 9b review (deferred to
+  12b): a closing server waits for a running stop up to its declared bound (BHMS-AUTH-024), and an unbounded integer let a
+  description make that wait arbitrarily long. Both SDKs refuse such a bound when the stop procedure is declared. (The
+  action's `maxDurationMs` has no upper bound in the schema; see the Task 12b report.)
+- **§7.5 wording**: a `failed` stop's `message` (not `error`) says which kind of failure it was. Evidence: Task 9b review.
+- No requirement change, SDKs only: the Python store syncs barriers itself (one connection at `synchronous=NORMAL`, no
+  safety-level switching) and shares syncs between concurrent intents; the TypeScript journal fsyncs only the `dispatching`
+  record (and fences), as the Python one does; a Python server closing with a stop procedure running warns when it waits
+  beyond `close_timeout` and honours a ceiling (`stop_shutdown_ceiling_s`), recording the ended stop as `failed`.
+
 Hardening round (Task 7b). Each entry names the evidence that caused it.
 
 - **BHMS-LSE-014 (new, MUST, profile `leases`)**: while a lease is `active` on a resource, every action that declares the

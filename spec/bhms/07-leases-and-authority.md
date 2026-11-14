@@ -185,7 +185,7 @@ cancellation was requested (their outcome is not yet known),
 operations were still cancelled and leases revoked), `failed` (could not be
 dispatched — unreachable, unknown or invisible device — or dispatched with an
 unknown outcome: the procedure failed or timed out (for example no confirmation
-within its bound), or was ended at shutdown; the device may or may not be stopped, and `error` says which).
+within its bound), or was ended at shutdown; the device may or may not be stopped, and `message` says which).
 
 Stop is not cancel. `operations/cancel` asks one operation to end. `stop` makes
 devices execute their commissioned stop procedure, ends all their work, and
@@ -241,7 +241,11 @@ BHMS-DEV-002, BHMS-LSE-011, BHMS-LSE-013, BHMS-AUTH-014 and BHMS-SEC-022/061:
   (BHMS-DEV-021), so the description (and `descriptionDigest` pin) differ per principal that has bounds.
 - *Operations.* A refusal by the gateway or by the upstream before it created anything creates no visible operation
   (BHMS-OPS-040). Before it sends, the gateway durably records the intent (BHMS-OPS-003): a pending-forward record keyed
-  by `(principal, operationKey)` holding the upstream request, the derived key, the upstream's epoch and the resources. A
+  by `(principal, operationKey)` holding the upstream request, the derived key, the upstream's epoch and the resources. The
+  record must be on stable storage, not only written, before the request leaves: a gateway that lost it in a power loss
+  could neither report the forward as `unknown` nor inhibit its resources, and a client's retry would send it again, which
+  the upstream deduplicates only while it keeps its own journal (BHMS-OPS-030, BHMS-OPS-081). Concurrent forwards may share
+  one sync of that record (group commit). A
   refusal deletes it; the upstream's answer promotes it to the operation; a record found without an answer (a retry with the
   same key, or a restart) becomes an `unknown` operation (BHMS-OPS-004, BHMS-OPS-080) whose resources are inhibited
   (BHMS-OPS-042). The gateway reconciles by re-sending the **same** upstream request only while the upstream's epoch is
