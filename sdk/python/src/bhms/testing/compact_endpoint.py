@@ -23,10 +23,12 @@ Thread-safety: one event loop.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import os
 import shutil
 import socket
 import subprocess
+import sys
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -174,9 +176,11 @@ class _Rule:
 class Wire:
     """The serial line between a bridge and a :class:`NativeEndpoint`, with faults; see the module docstring."""
 
-    def __init__(self, endpoint: NativeEndpoint, path: str) -> None:
+    def __init__(self, endpoint: NativeEndpoint, path: str, *, log_limit: int | None = None) -> None:
+        """``log_limit`` keeps only the newest frames in :attr:`log` (``None``: all, for tests that inspect them)."""
         self.endpoint, self.path = endpoint, path
         self.log: list[Seen] = []
+        self.log_limit = log_limit
         self._rules: list[_Rule] = []
         self._held: dict[str, list[bytes]] = {}
         self._server: asyncio.AbstractServer | None = None
@@ -248,6 +252,8 @@ class Wire:
             message = None
         seen = Seen(direction, message, wire, frame.kind, frame.session)
         self.log.append(seen)
+        if self.log_limit is not None and len(self.log) > self.log_limit:
+            del self.log[: len(self.log) - self.log_limit]
         for rule in list(self._rules):
             if rule.direction == direction and rule.remaining > 0 and (rule.match is None or rule.match(message)):
                 rule.remaining -= 1
@@ -327,4 +333,59 @@ class Wire:
         return [s for s in self.log if isinstance(s.message, kind) and (direction is None or s.direction == direction)]
 
 
-__all__ = ["NativeEndpoint", "NativeUnavailable", "ProcessStream", "Seen", "TO_DEVICE", "TO_GATEWAY", "Wire", "build_native", "spawn_process_stream"]
+async def serve(binary: str, socket_path: str, workdir: str, args: list[str]) -> None:
+    """Run ``binary`` as an endpoint whose serial line is the Unix socket ``socket_path`` until cancelled."""
+    work = Path(workdir)
+    work.mkdir(parents=True, exist_ok=True)
+    wire = Wire(NativeEndpoint(Path(binary), work, *args, epoch=True), socket_path, log_limit=1000)
+    await wire.start()
+    try:
+        await asyncio.sleep(0.2)
+        process = wire.endpoint.process
+        if process is not None and process.poll() is not None:  # bad arguments, a missing library, an init failure
+            raise RuntimeError(f"{binary} exited at once with status {process.returncode}; its stderr: "
+                               f"{' | '.join(wire.endpoint.effects()[-5:]) or '(nothing)'}")
+        await asyncio.Event().wait()
+    finally:
+        await wire.close()
+
+
+def main(argv: list[str] | None = None) -> int:
+    """``python -m bhms.testing.compact_endpoint BINARY SOCKET [--workdir DIR] [-- ARGS...]``: a host build of a
+    BHMS-Compact endpoint (``sdk/c``'s ``sim_device``, the BHMS Arm's ``sim_arm``) served on a Unix socket, standing in
+    for a board on a serial port: a gateway's compact upstream connects with ``port = "unix:SOCKET"``. The endpoint gets a
+    persistent boot counter (``epoch.bin`` in the work directory) and its stderr lines go to ``stderr<N>.txt`` there.
+    SIGINT or SIGTERM stops it."""
+    import argparse
+    import signal
+
+    parser = argparse.ArgumentParser(prog="python -m bhms.testing.compact_endpoint", description=main.__doc__)
+    parser.add_argument("binary", help="the endpoint executable (its stdin/stdout is the serial line)")
+    parser.add_argument("socket", help="the Unix socket path to serve the line on")
+    parser.add_argument("--workdir", default="endpoint-work", help="epoch file and stderr logs (default endpoint-work)")
+    given = list(sys.argv[1:] if argv is None else argv)
+    split = given.index("--") if "--" in given else len(given)
+    options = parser.parse_args(given[:split])
+    extra = given[split + 1:]  # after --: arguments for the endpoint itself (sim_arm --tool 1, ...)
+
+    async def run() -> None:
+        task = asyncio.ensure_future(serve(options.binary, options.socket, options.workdir, extra))
+        loop = asyncio.get_running_loop()
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            loop.add_signal_handler(sig, task.cancel)
+        with contextlib.suppress(asyncio.CancelledError):
+            await task
+
+    try:
+        asyncio.run(run())
+    except (RuntimeError, OSError) as exc:
+        print(f"bhms.testing.compact_endpoint: {exc}", file=sys.stderr)
+        return 1
+    return 0
+
+
+__all__ = ["NativeEndpoint", "NativeUnavailable", "ProcessStream", "Seen", "TO_DEVICE", "TO_GATEWAY", "Wire", "build_native", "main",
+           "serve", "spawn_process_stream"]
+
+if __name__ == "__main__":
+    raise SystemExit(main())

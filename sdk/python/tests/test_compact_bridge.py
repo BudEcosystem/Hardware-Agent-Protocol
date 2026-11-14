@@ -238,3 +238,56 @@ async def test_a_disconnected_sensor_reads_invalid_without_a_substituted_value(t
         await rig.invoke("sensor", {"connected": True})
         again = (await rig.client.properties_read("bench-rig", "temp", fresh=True)).observation
         assert again.quality == "valid" and again.value == 21.5
+
+
+# ------------------------------------------------------------------ python -m bhms.testing.compact_endpoint (Task 14)
+
+
+async def test_the_module_entry_point_serves_an_endpoint_on_a_socket_for_a_gateway(tmp_path, native):
+    """`python -m bhms.testing.compact_endpoint BINARY SOCKET [--workdir DIR] [-- ARGS]` is what the Arduino and BHMS Arm
+    guides use in place of a board: a gateway's compact upstream on `unix:SOCKET` serves the endpoint."""
+    import json
+    import subprocess
+    import sys
+    from pathlib import Path
+
+    from bhms.client.client import Client
+    from bhms.gateway import Gateway, load_config
+    from bhms.testing.memory import connect_in_process
+
+    sock = tmp_path / "board.sock"
+    proc = subprocess.Popen([sys.executable, "-m", "bhms.testing.compact_endpoint", str(native["sim_device"]), str(sock),
+                             "--workdir", str(tmp_path / "work"), "--", "--analog", "7"], stderr=subprocess.PIPE)
+    try:
+        for _ in range(100):
+            if sock.exists():
+                break
+            await asyncio.sleep(0.05)
+        sidecar = tmp_path / "led.json"
+        sidecar.write_text(json.dumps(LED))
+        (tmp_path / "gw.toml").write_text(f'[gateway]\nid = "gw"\nstate_dir = "{tmp_path / "gw"}"\n\n[[upstream]]\nname = "led"\n'
+                                          f'type = "compact"\nport = "unix:{sock}"\nsidecar = "{sidecar}"\n')
+        async with Gateway(load_config(tmp_path / "gw.toml")) as gateway:
+            client = await Client.from_transport(await connect_in_process(gateway.rpc))
+            try:
+                for _ in range(100):
+                    if [d async for d in client.iter_devices()]:
+                        break
+                    await asyncio.sleep(0.05)
+                read = (await client.properties_read("led/bench-led", "analog0")).observation
+                assert read.value == 7 and read.evidence == "measured"  # the "-- --analog 7" reached the endpoint
+            finally:
+                await client.close()
+        assert (tmp_path / "work" / "epoch.bin").exists()  # --workdir was used, not passed to the endpoint
+        # `bhms gateway check-policy` waits for the board's HELLO instead of reporting "0 devices served" (Task 14)
+        from bhms.gateway.policy_check import collect_devices
+
+        assert [d["deviceId"] for d in await collect_devices(load_config(tmp_path / "gw.toml"))] == ["led/bench-led"]
+    finally:
+        proc.terminate()
+        proc.wait(10)
+        proc.stderr.close()
+    broken = subprocess.run([sys.executable, "-m", "bhms.testing.compact_endpoint", str(native["sim_device"]),
+                             str(tmp_path / "x.sock"), "--workdir", str(tmp_path / "w2"), "--", "--no-such-flag", "1"],
+                            capture_output=True, text=True, timeout=30)
+    assert broken.returncode == 1 and "exited at once" in broken.stderr and Path(native["sim_device"]).name in broken.stderr
