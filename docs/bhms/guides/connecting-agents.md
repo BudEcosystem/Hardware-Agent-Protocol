@@ -251,17 +251,21 @@ from bhms.client import Client
 async def main():
     async with await Client.connect("stdio:python examples/bhms/pump_server.py") as client:
         run = await run_agent(client, os.environ.get("OPENAI_MODEL", "gpt-5.4-mini"),
-                              "Dispense 600 uL with pump-1. If that is not possible, say why and dispense nothing.",
-                              budget=40_000)
+                              "Dispense 20 uL with pump-1, then report the total the pump has dispensed.", budget=40_000)
     for step in run.steps:
         print(step.tool, step.is_error, step.summary[:100])
     print(run.stopped, run.tokens, "tokens")
     print(run.final_text)
-    assert not any(s.tool == "bhms_invoke" and not s.is_error for s in run.steps), "600 uL is above the pump's 500 uL"
+    assert run.stopped == "final" and any(s.tool == "bhms_invoke" and not s.is_error for s in run.steps)
 
 
 asyncio.run(main())
 ```
+
+A bound limits one call, not a total. In a live run of this guide, asked to "dispense 600 uL; if that is not possible,
+dispense nothing", gpt-5.4-mini read the 500 uL maximum and dispensed 500 uL and then 100 uL. Each call was within
+its bounds and honestly reported; the total was not what the task allowed. If a total matters (a reagent budget, a
+dose), enforce it in the device or the gateway policy, or give the agent a reviewed program instead of the raw action.
 
 `AgentRun` records every step (`tool`, `arguments`, `summary`, `is_error`), the tokens spent and why the loop stopped
 (`final`, `budget`, `max_steps`). Use it to audit what an agent did; the server's journal has the authoritative record.
