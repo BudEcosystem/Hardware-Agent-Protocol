@@ -242,7 +242,13 @@ export class SchemaValidator {
         if (valid === 0) for (const b of branches) out.push(...b);
       }
     }
-    if (s.not !== undefined && this.check(s.not as JsonSchema, v, path, [], true)) fail("not", `${JSON.stringify(v)} should not be valid under the given schema`);
+    if (s.not !== undefined && this.check(s.not as JsonSchema, v, path, [], true)) {
+      // `not: {required: [m]}` forbids one member: name it, so the refusal points at the member at fault (Ruling R45)
+      const not = s.not as JsonSchema;
+      const required = typeof not === "object" && Object.keys(not).length === 1 && Array.isArray(not.required) ? (not.required as unknown[]) : [];
+      const forbidden = required.length === 1 ? String(required[0]) : undefined;
+      fail("not", forbidden !== undefined ? `${JSON.stringify(forbidden)} is not allowed here` : `${JSON.stringify(v)} should not be valid under the given schema`, forbidden);
+    }
     if (s.if !== undefined) {
       if (this.check(s.if as JsonSchema, v, path, [], false)) {
         if (s.then !== undefined) this.check(s.then as JsonSchema, v, path, out, context);

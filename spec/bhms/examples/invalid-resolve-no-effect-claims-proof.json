@@ -1,10 +1,9 @@
 {
-  "$comment": "mayHaveActed false claims proof that nothing happened and requires effect none (BHMS-OPS-102).",
+  "$comment": "mayHaveActed false claims proof that nothing happened and requires effect none (BHMS-OPS-102); the member at fault is effect (Ruling R45).",
   "against": "#/$defs/OperationsResolveRequest",
   "expect": {
-    "path": "/params/resolution",
-    "keyword": "required",
-    "message": "'effect'"
+    "path": "/params/resolution/effect",
+    "keyword": "const"
   },
   "message": {
     "jsonrpc": "2.0",
@@ -22,6 +21,7 @@
       "resolution": {
         "state": "failed",
         "basis": "Pump inspected by J. Doe at 09:41: syringe full, no liquid in the line. Treating the dispense as not performed.",
+        "effect": "unverified",
         "mayHaveActed": false
       }
     }

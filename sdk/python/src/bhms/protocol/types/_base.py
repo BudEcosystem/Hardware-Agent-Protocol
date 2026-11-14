@@ -14,6 +14,16 @@ from bhms.protocol.errors import CODES, OPERATION_ONLY_CODES, RETRY_VALUES
 # --------------------------------------------------------------------------- base
 
 
+class MemberError(ValueError):
+    """A model-level consistency rule broken by one member: ``member`` is that member's wire name, so the refusal names it
+    (``resolution.effect``) rather than the object that holds it (Ruling R45: the most specific member wins).
+    :func:`bhms.protocol.schema.from_pydantic_error` appends it to the field."""
+
+    def __init__(self, member: str, message: str) -> None:
+        super().__init__(message)
+        self.member = member
+
+
 class _Wire(BaseModel):
     """Closed, strict wire object with camelCase aliases and null discipline."""
 

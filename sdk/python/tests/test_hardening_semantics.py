@@ -367,7 +367,16 @@ async def test_who_may_resolve_and_what_a_resolution_must_say(tmp_path):
                               **basis)).field == "resolution.effect"
         # "nothing happened" is a claim of proof: it must come with effect none
         claim = await refused("resolver", "INVALID_ARGUMENT", state="failed", may_have_acted=False, effect="unverified", **basis)
-        assert claim.field == "resolution" and "effect none" in claim.message
+        assert claim.field == "resolution.effect" and "effect none" in claim.message
+        # Ruling R45: the most specific member wins (the member at fault, not the resolution object)
+        assert (await refused("resolver", "INVALID_ARGUMENT", state="failed", may_have_acted=False, **basis)).field \
+            == "resolution.effect"
+        assert (await refused("resolver", "INVALID_ARGUMENT", state="failed", effect="none", **basis)).field \
+            == "resolution.mayHaveActed"
+        assert (await refused("resolver", "INVALID_ARGUMENT", state="failed", result={"speed": 50.0}, **basis)).field \
+            == "resolution.result"
+        assert (await refused("resolver", "INVALID_ARGUMENT", state="completed", may_have_acted=True, result={"speed": 50.0},
+                              **basis)).field == "resolution.mayHaveActed"
         with pytest.raises(BhmsError) as exc:
             await c["resolver"].operations_resolve("op-does-not-exist", state="failed", **basis)
         assert exc.value.bhms_code == "INVALID_ARGUMENT" and exc.value.field == "operationId"

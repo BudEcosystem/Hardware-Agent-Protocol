@@ -8,7 +8,7 @@ from pydantic import Field, model_validator
 
 from bhms.protocol.types._base import (
     SETTLED_STATES, BhmsErrorCode, CancelState, ClientOperationKey, CompletionEvidence, Cursor, DeviceId, Digest,
-    EffectCertainty, EventType, Name, NonNegInt, NotificationMeta, OperationError, OperationKey, OperationState,
+    EffectCertainty, EventType, MemberError, Name, NonNegInt, NotificationMeta, OperationError, OperationKey, OperationState,
     PosInt, RequestId, ResourceId, ResultType, ServerId, SubscriptionMeta, Time, _bounded_int, _Params, _Result,
     _text, _Wire,
 )
@@ -167,11 +167,13 @@ class OperatorResolution(_Wire):
     def _consistent(self) -> OperatorResolution:
         given = self.model_fields_set
         if self.state == "failed" and "result" in given:
-            raise ValueError("result belongs to state completed")
+            raise MemberError("result", "result belongs to state completed")
         if self.state == "completed" and "may_have_acted" in given:
-            raise ValueError("mayHaveActed belongs to state failed")
+            raise MemberError("mayHaveActed", "mayHaveActed belongs to state failed")
         if self.state == "failed" and (self.effect == "none") != (self.may_have_acted is False):
-            raise ValueError("effect none and mayHaveActed false are one claim (nothing happened): state both or neither")
+            # the member at fault: mayHaveActed false needs effect none; effect none needs mayHaveActed false
+            raise MemberError("effect" if self.may_have_acted is False else "mayHaveActed",
+                              "effect none and mayHaveActed false are one claim (nothing happened): state both or neither")
         return self
 
 

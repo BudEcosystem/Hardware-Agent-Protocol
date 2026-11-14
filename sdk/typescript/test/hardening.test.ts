@@ -628,3 +628,27 @@ test("OPS-006: the journal refuses effect verified unless every observation is m
     assert.equal(ok.op.effect, "verified");
   } finally { await t.close(); }
 });
+
+test("Ruling R45: a resolution refusal names the member at fault, not the resolution object", async () => {
+  const r = await rig();
+  try {
+    const resolver = await r.connect(RESOLVER);
+    await inject(r.client, "amnesia");
+    const op = await lostPulse(r.client);
+    const basis = "inspected";
+    for (const [resolution, field] of [
+      [{ state: "failed", basis, mayHaveActed: false, effect: "unverified" }, "resolution.effect"],
+      [{ state: "failed", basis, mayHaveActed: false }, "resolution.effect"],
+      [{ state: "failed", basis, effect: "none" }, "resolution.mayHaveActed"],
+      [{ state: "failed", basis, result: { pulses: 1 } }, "resolution.result"],
+      [{ state: "completed", basis, mayHaveActed: true, result: { pulses: 1 } }, "resolution.mayHaveActed"],
+      [{ state: "completed", basis, effect: "verified", result: { pulses: 1 } }, "resolution.effect"],
+    ] as const) {
+      await assert.rejects(resolver.operationsResolve(op.operationId, resolution as never), code("INVALID_ARGUMENT", (e) => {
+        assert.equal(e.field, field, JSON.stringify(resolution));
+        return true;
+      }));
+    }
+    assert.equal((await r.client.operationsGet(op.operationId)).operation.state, "unknown", "nothing was recorded");
+  } finally { await r.close(); }
+});

@@ -198,13 +198,10 @@ test("Task 7b parity: word search, capability *, UNKNOWN_DEVICE hints, LSE-014 r
     ]) {
       assert.deepEqual(await resolve(r.client, tsOp, resolution), await resolve(client, pyOp, resolution), `resolution ${JSON.stringify(resolution)}`);
     }
-    // refused by the schema's OperatorResolution rules: both INVALID_ARGUMENT; the TS validator names the schema path
-    // (resolution.effect, as spec/bhms/examples/invalid-resolve-*.json expect), pydantic's model validator names resolution
-    for (const resolution of [{ state: "failed", basis: "b", mayHaveActed: false, effect: "unverified" }, { state: "failed", basis: "b", effect: "none" }, { state: "completed", basis: "b", effect: "verified" }]) {
-      const [ts, py] = [await resolve(r.client, tsOp, resolution), await resolve(client, pyOp, resolution)] as Array<{ refused: string; field: string }>;
-      assert.equal(ts.refused, "INVALID_ARGUMENT", JSON.stringify(resolution));
-      assert.equal(py.refused, "INVALID_ARGUMENT", JSON.stringify(resolution));
-      assert.ok(ts.field.startsWith("resolution") && py.field.startsWith("resolution"), JSON.stringify([ts, py]));
+    // refused by the OperatorResolution consistency rules: both name the member at fault (Ruling R45)
+    for (const resolution of [{ state: "failed", basis: "b", mayHaveActed: false, effect: "unverified" }, { state: "failed", basis: "b", mayHaveActed: false }, { state: "failed", basis: "b", effect: "none" },
+      { state: "failed", basis: "b", result: { pulses: 1 } }, { state: "completed", basis: "b", mayHaveActed: true, result: { pulses: 1 } }, { state: "completed", basis: "b", effect: "verified" }]) {
+      assert.deepEqual(await resolve(r.client, tsOp, resolution), await resolve(client, pyOp, resolution), `resolution ${JSON.stringify(resolution)}`);
     }
     await Promise.all([inject(r.client, "none"), client.request("x-conformance/inject", { fault: "none" })]);
   } finally { await r.close(); }

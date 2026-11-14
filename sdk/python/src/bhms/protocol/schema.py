@@ -217,7 +217,8 @@ def from_pydantic_error(exc: Any, *, what: str = "params") -> BhmsError:
     """Map a ``pydantic.ValidationError`` to ``INVALID_ARGUMENT`` naming the first offending member.
 
     ``field`` is the spec's path form (``arguments.position``, ``resources[2]``): dotted members, ``[i]``
-    indexes; pydantic's internal union/function markers are skipped.
+    indexes; pydantic's internal union/function markers are skipped. A model-level rule that raises
+    :class:`~bhms.protocol.types._base.MemberError` names the member at fault (``resolution.effect``).
     """
     first = exc.errors(include_url=False)[0]
     field = ""
@@ -226,6 +227,9 @@ def from_pydantic_error(exc: Any, *, what: str = "params") -> BhmsError:
             field += f"[{part}]"
         elif not any(c in part for c in "[()"):
             field += f".{part}" if field else part
+    member = getattr((first.get("ctx") or {}).get("error"), "member", None)
+    if isinstance(member, str):  # a model rule names the member at fault (Ruling R45: the most specific member wins)
+        field += f".{member}" if field else member
     message = f"{what}{'.' + field if field else ''}: {first['msg']}"[:500]
     return BhmsError("INVALID_ARGUMENT", message, field=field[:512],
                      hint=f"fix {field or what} ({first['type']}); see spec/bhms/schema/bhms.schema.json"[:2000])
