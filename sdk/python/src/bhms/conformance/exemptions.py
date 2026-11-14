@@ -20,10 +20,13 @@ EXEMPT: dict[str, tuple[str, str]] = {
     "BHMS-TRN-021": (INSPECTION, "refusal to start a non-loopback TCP listener without TLS is a start-up behaviour of the implementation"),
     "BHMS-TRN-050": (INSPECTION, "custom transports are documented and reviewed; the runner suite passing over one is the evidence"),
     "BHMS-DEV-031": (INSPECTION, "review of each measured action's evidence path"),
+    "BHMS-DEV-035": (INSPECTION, "review of measurement-like action outputs for a validity indicator (SHOULD)"),
     "BHMS-DEV-050": (INSPECTION, "review of driver acquisition effects (the transaction property of the conformance device is exercised by "
                      "observations.retained-after-effect)"),
     "BHMS-DEV-051": (INSPECTION, "review of evidence declarations against driver behaviour"),
     "BHMS-OPS-036": (INSPECTION, "client behaviour (key reuse and retention)"),
+    "BHMS-AUTH-015": (INSPECTION, "policy review: `bhms gateway check-policy <config>` reports principals that can act on a device they "
+                      "cannot stop and scopes that match nothing (SHOULD)"),
     "BHMS-ERR-002": (INSPECTION, "client SDKs dispatch on bhmsCode (code review and SDK unit test)"),
     "BHMS-SEC-002": (INSPECTION, "constant-time comparison and hashed storage need code review; transport.no-token-in-logs reports token leaks in "
                      "captured logs as a warning, never as a pass"),

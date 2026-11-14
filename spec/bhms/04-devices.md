@@ -180,6 +180,18 @@ invalid.
 **BHMS-DEV-034** Every `requiresFresh[i].property` MUST name a property of the same
 device, and the list MUST NOT name a property twice.
 
+**BHMS-DEV-035** An action whose result carries a measurement (a value computed
+from a sensor acquisition: a focus score, a mean intensity, a mass, an absorbance)
+SHOULD return with it a validity indicator that says whether the numbers describe
+the thing that was meant to be measured: a member `quality` with the values of an
+observation's `quality` (`valid`, `stale`, `invalid`, `unknown`, §5.1), or a
+boolean `valid`, preferably with the quantity that decides it (contrast, signal
+level, a specimen-present flag). When the indicator is not `valid`, the numeric
+members SHOULD be omitted or `null` rather than filled with a plausible value
+(compare BHMS-OBS-001). An operation that `completed` says the device did what
+was asked; it does not say that the reading means anything. Without the indicator
+a client cannot tell "no specimen" from a real reading.
+
 ## 4.5 Schemas, units and arguments
 
 `input`, `output` and property `schema` are JSON Schema 2020-12 documents with

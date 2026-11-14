@@ -166,6 +166,7 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-DEV-032 | MUST | core | An action's `resources` MUST be a subset of the device's `resources`. (04) | wire | Static check of every description: action resources subset of device resources; lease actions declare resources. |
 | BHMS-DEV-033 | MUST | core | An action with `effect: "hazardous"` MUST declare `requiresLease: true` (and therefore at least one resource, BHMS-DEV-032): a hazardous effect is never started by a caller t… (04) | wire | Describe every device: every hazardous action declares requiresLease (the schema rejects a description without it). |
 | BHMS-DEV-034 | MUST | core | Every `requiresFresh[i].property` MUST name a property of the same device, and the list MUST NOT name a property twice. (04) | wire | Static check: requiresFresh names existing properties of the device, each once. |
+| BHMS-DEV-035 | SHOULD | core | An action whose result carries a measurement (a value computed from a sensor acquisition: a focus score, a mean intensity, a mass, an absorbance) SHOULD return with it a validity indicator that says… (04) | inspection | Review each measurement-like action output: it declares `quality` or `valid`; provoke "nothing to measure" and see the indicator, not a plausible number. |
 | BHMS-DEV-040 | MUST | core | An action `input` MUST be `{"type": "object", …}` with `additionalProperties: false`. (04) | wire | Static check: inputs closed; no remote $ref; server never fetches (network sandbox). |
 | BHMS-DEV-041 | MUST | core | Every `number` or `integer` schema in an action `input` or `output`, a property `schema`, an event `data` schema and a program `input` MUST carry `x-bhms-unit` with a… (04) | schema | Every numeric schema in inputs, outputs, property schemas, event data and program inputs has x-bhms-unit (schema NumericUnitRule for top-level members and property schemas; deep scan for nested ones). |
 | BHMS-DEV-042 | MUST | core | Units SHOULD come from the BHMS unit registry below. (04) | wire | Static check units against the registry; SDK convert refuses unknown units. |
@@ -407,7 +408,7 @@ sentence of the requirement; the chapter text is normative.
 | BHMS-CNF-005 | MUST | core | A report MUST state whether devices were physical or simulated. (14) | inspection | Reports with simulated devices say so. |
 | BHMS-CNF-006 | MUST | core | An implementation's message validator MUST accept every valid example in `spec/bhms/examples/` and reject every `invalid-*` example. (14) | inspection | Run the example corpus through the implementation's validator: valid accepted, invalid rejected. The validator is a library of the implementation and cannot be driven over the wire, so this row needs review evidence (the SDK's own test suite) and is never an automated pass. |
 
-Total: 257 requirements — agent 21, compact 17, fault 48, inspection 21, schema 10, transport 14, wire 126.
+Total: 258 requirements — agent 21, compact 17, fault 48, inspection 22, schema 10, transport 14, wire 126.
 
 ## 14.5 The reference runner
 

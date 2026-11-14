@@ -62,6 +62,13 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   gateway to `admin` principals in `operations/get`, `wait` and `list`, never to anyone else and never in notifications.
   Evidence: Task 11 report, S6 (the upstream operation id was only in gateway internals, so a gateway record could not be
   joined to the device's own log). Requirement index: 257 rows.
+- **BHMS-DEV-035 (new, SHOULD, core)**: a measurement-like action result carries a validity indicator (`quality` as in an
+  observation, or a boolean `valid`, with the deciding quantity) and omits or nulls the numbers when it is not valid. Spec
+  only; no SDK behaviour. Evidence: Task 11 report, S10 (the microscope twin's `snap` returns `focus_score` and `mean_counts`
+  with nothing that says "no specimen"; three model tiers reported a focus plane on an empty field, `uc1-blank-field`).
+  **Learning for SimLab (Task 10/11 twins)**: `snap`, plate-reader and balance results should declare `quality`/`valid` (and
+  the capture time Task 10 already asked for), and the blank-field case should return `quality: "invalid"` with null scores;
+  agent tasks should then be judged on whether the model reads the indicator. Requirement index: 258 rows.
 
 ### TS SDK to follow
 

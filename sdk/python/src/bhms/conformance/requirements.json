@@ -648,6 +648,15 @@
   "test": "Static check: requiresFresh names existing properties of the device, each once."
  },
  {
+  "id": "BHMS-DEV-035",
+  "area": "DEV",
+  "level": "SHOULD",
+  "profile": "core",
+  "method": "inspection",
+  "summary": "An action whose result carries a measurement (a value computed from a sensor acquisition: a focus score, a mean intensity, a mass, an absorbance) SHOULD return with it a validity indicator that says… (04)",
+  "test": "Review each measurement-like action output: it declares `quality` or `valid`; provoke \"nothing to measure\" and see the indicator, not a plausible number."
+ },
+ {
   "id": "BHMS-DEV-040",
   "area": "DEV",
   "level": "MUST",

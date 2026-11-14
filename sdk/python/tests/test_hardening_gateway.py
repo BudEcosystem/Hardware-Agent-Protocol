@@ -13,7 +13,6 @@ from typer.testing import CliRunner
 from bhms.cli.main import app
 from bhms.gateway import load_config
 from bhms.gateway.policy_check import check_policy
-from bhms.protocol.errors import BhmsError
 from bhms.runtime.authority import Policy, agent_scopes
 from helpers.gateway_rig import TOKENS, principals, rig
 
