@@ -298,7 +298,8 @@ size_t bhms_enc_invoke(uint8_t *buf, uint16_t handle, uint8_t action, uint32_t f
 size_t bhms_enc_cancel(uint8_t *buf, uint16_t handle);
 size_t bhms_enc_query(uint8_t *buf, uint16_t handle);
 size_t bhms_enc_read(uint8_t *buf, uint16_t request, uint8_t property, uint8_t flags);
-/* `token` != 0 is chosen by the gateway and echoed by both STOP_ACKs; 0 is reserved for stops the endpoint starts itself. */
+/* `token` != 0 is chosen by the gateway and echoed by both STOP_ACKs; 0 is reserved for endpoint-originated stops: the stop
+ * input, and a stop still in progress when the endpoint said HELLO (it forgets the token then, BHMS-CMP-050). */
 size_t bhms_enc_stop(uint8_t *buf, uint8_t reason, uint8_t token);
 size_t bhms_enc_status(uint8_t *buf, uint16_t handle, uint8_t state, uint8_t cancel,
                        uint8_t progress);

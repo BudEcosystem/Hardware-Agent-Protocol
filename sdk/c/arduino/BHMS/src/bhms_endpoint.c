@@ -466,6 +466,10 @@ static void handle_hello_req(bhms_endpoint *ep, const uint8_t *p) {
         advance_epoch(ep, ep->epoch, ep->persistent);
         reset_session_state(ep);
     }
+    /* BHMS-CMP-050: a HELLO starts a gateway's session. A stop still being carried out stays pending and its confirming
+     * ack is still sent, but as an endpoint-originated stop (token 0): the gateway that sent it may be gone, and its
+     * successor may reuse the token (a gateway restart says a plain HELLO_REQ, so nothing else is cleared here). */
+    ep->stop_token = 0;
     if ((ep->dev->flags & BHMS_DEV_FENCING) != 0) flags |= BHMS_HELLO_FENCING;
     if (ep->persistent) flags |= BHMS_HELLO_PERSISTENT_EPOCH;
     if (ep->dev->stop != 0) flags |= BHMS_HELLO_STOP_SUPPORTED;
@@ -537,7 +541,9 @@ void bhms_poll(bhms_endpoint *ep) {
 
     if (pin && !ep->pin_asserted) {
         ep->pin_asserted = 1;
-        do_stop(ep, BHMS_STOP_OPERATOR, 0, 0); /* token 0: not a gateway's stop */
+        /* Token 0: not a gateway's stop. It also replaces the token of a gateway stop still in progress, whose
+         * confirming ack then carries 0 too: that gateway stop is not confirmed (BHMS-CMP-050, the safe direction). */
+        do_stop(ep, BHMS_STOP_OPERATOR, 0, 0);
     } else if (!pin) {
         ep->pin_asserted = 0;
     }

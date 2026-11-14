@@ -4,7 +4,7 @@
  * confirmed later, fences with a lease-requiring action, device faults, local refusals, a disconnectable sensor,
  * and (without --epoch) an endpoint with no persistent boot epoch. The description is bench.sidecar.json.
  *
- *   sim_bench [--epoch FILE] [--stop-immediate] [--no-stop]
+ *   sim_bench [--epoch FILE] [--stop-immediate] [--no-stop] [--stop-ms N]   (N: how long an initiated stop takes, default 100)
  * Effects are reported on stderr, one line each ("SET 500", "MOVE 3 start", "MOVE 3 cancel", "MOVE 3 done",
  * "LOCK 4 start", "STOP"), so a test can count what really happened. */
 #define _POSIX_C_SOURCE 200809L
@@ -140,6 +140,7 @@ static uint8_t offset_read(void *u, uint8_t fresh, bhms_value *v, bhms_sample *m
 }
 
 static int g_stop_immediate, g_no_stop;
+static uint32_t g_stop_ms = 100u;
 
 static uint8_t stop_proc(void *u, uint8_t reason, uint8_t *evidence) {
     (void)u;
@@ -148,7 +149,8 @@ static uint8_t stop_proc(void *u, uint8_t reason, uint8_t *evidence) {
     g_move.active = g_lock.active = 0;
     *evidence = BHMS_EV_MEASURED;
     if (g_stop_immediate) return BHMS_STOPACK_CONFIRMED;
-    g_stop_at = now_ms() + 100u;
+    g_stop_at = now_ms() + g_stop_ms;
+    if (g_stop_at == 0) g_stop_at = 1; /* 0 means no stop in progress */
     return BHMS_STOPACK_INITIATED;
 }
 
@@ -204,6 +206,7 @@ int main(int argc, char **argv) {
         if (strcmp(argv[i], "--epoch") == 0 && i + 1 < argc) epoch_path = argv[++i];
         else if (strcmp(argv[i], "--stop-immediate") == 0) g_stop_immediate = 1;
         else if (strcmp(argv[i], "--no-stop") == 0) g_no_stop = 1;
+        else if (strcmp(argv[i], "--stop-ms") == 0 && i + 1 < argc) g_stop_ms = (uint32_t)strtoul(argv[++i], NULL, 10);
         else return 2;
     }
     if (!g_no_stop) g_dev.stop = stop_proc;

@@ -284,8 +284,8 @@ monotonically per endpoint epoch.
 it before any queued work, MUST reply STOP_ACK immediately (`initiated` or
 `confirmed`), and MUST send a second STOP_ACK (kind 03) with `confirmed` when an
 initiated stop finishes with evidence. Both STOP_ACKs of a STOP MUST echo its
-`token`; a STOP_ACK the endpoint causes itself (a hardware stop input) carries the
-reserved token `0`. A STOP with token `0` is still carried out (a stop is never
+`token`; a STOP_ACK the endpoint causes itself (an endpoint-originated stop, see
+below) carries the reserved token `0`. A STOP with token `0` is still carried out (a stop is never
 refused for a bad token) and answered with token `0`. The gateway chooses a
 non-zero token per stop (all retransmissions of one stop reuse it; no two stops in
 progress share one) and MUST count only a STOP_ACK whose token belongs to a stop in
@@ -293,6 +293,35 @@ progress as evidence about it: an ack with another token or token `0` never
 confirms a gateway stop (a token `0` ack is reported as a `stop` event of the
 device instead). A STOP_ACK has no other correlation, so the token is what makes a
 late or duplicated ack of an earlier stop harmless.
+
+*Tokens end at a HELLO.* A gateway that restarts says a plain `HELLO_REQ` (the
+epoch does not change, nothing is purged), and it may issue a token its predecessor
+used for a stop the endpoint is still carrying out. Therefore:
+
+- the endpoint MUST forget the token of the stop in progress whenever it sends a
+  HELLO. The stop itself continues, and its confirming STOP_ACK is still sent, with
+  token `0`: after a HELLO, a stop received before it is an endpoint-originated
+  stop. No STOP_ACK sent after a HELLO carries the token of a STOP received before
+  that HELLO. (An `ERROR` answering a refused `HELLO_REQ` is not a HELLO.)
+- the gateway MUST start its token sequence at an unpredictable non-zero value
+  each time it starts, and MUST ignore a STOP_ACK whose token no STOP it sent
+  since the last HELLO it adopted carried. A stop that is in progress when the
+  gateway adopts a HELLO can therefore only be confirmed by a STOP sent after
+  that HELLO.
+
+*Endpoint-originated stops.* Token `0` marks every stop the gateway in session did
+not ask for: the hardware stop input, and a stop begun before the last HELLO. When
+the hardware stop input asserts while a gateway stop is in progress, the stop
+procedure runs again as the endpoint's own and the token becomes `0`: both
+remaining STOP_ACKs carry `0` and the gateway stop is **not** confirmed, although
+the device stops. This under-claim is deliberate (the safe direction: a gateway
+never reports a stop it cannot attribute to its own STOP as confirmed). The
+gateway MUST end such a stop `failed`, and its error SHOULD say that the endpoint
+reported an endpoint-originated stop and that the device may be stopped, so that
+the caller reads the device state; an operator who needs the confirmation sends
+stop again. For the same reason a gateway that closes (or restarts) ends its stops
+in progress `failed` at once: no acknowledgement can reach them any more, since its
+successor's first frame is a `HELLO_REQ`.
 
 **Version.** A `HELLO_REQ` whose compact version differs from the endpoint's is
 answered `ERROR UNSUPPORTED` with `detail` = the endpoint's version (never guessed

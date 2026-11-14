@@ -2,6 +2,8 @@
 
 ## 2026-11-13 (v0.1)
 
+Compact round 4 (Task 9b fix 4): BHMS-CMP-050: the endpoint forgets the token of a stop in progress at every HELLO it sends (the confirming ack then carries token 0), and the gateway starts its tokens at a random value and ignores acks whose token it has not sent since the last adopted HELLO, so a restarted gateway is never confirmed by its predecessor's stop; token 0 is defined as "endpoint-originated stop" (the stop input, or a stop begun before the last HELLO); the hardware stop input during a gateway stop makes that stop end `failed` (the device may be stopped; stated as the safe under-claim); a closing gateway ends its stops in progress `failed` at once. BHMS-AUTH-024: a server that closes while a stop procedure runs waits for it (bounded), then records it as a `failed` stop event. A refused compact version is logged at ERROR once, then at DEBUG. No layout change, compact version stays 2.
+
 Compact round 3 (Task 9b fix 3): BHMS-Compact version 2: STOP carries a token and both STOP_ACKs echo it (hardware-stop acks use token 0), so a late ack of an earlier stop can never confirm another (BHMS-CMP-050); endpoints and gateways of different versions refuse each other.
 
 Compact round (Task 9b fix 1): `device.epoch` `data` members `persistent` and `purged` documented (9.2, BHMS-OPS-042); BHMS-CMP-022 defines the endpoint incarnation; BHMS-SEC-050 is enforced by the gateway (networked compact links are refused).

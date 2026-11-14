@@ -707,6 +707,67 @@ static void test_stop(void) {
     CHECK(next(&r, &f) == 1 && f.payload[1] == BHMS_STOPACK_UNSUPPORTED && f.payload[3] == 1 && f.payload[4] == 5);
 }
 
+/* BHMS-CMP-050 (R40): a HELLO starts a session for the gateway, and a stop begun before it is nobody's stop afterwards. A
+ * gateway that restarted (plain HELLO_REQ, same epoch) may reuse the token of a stop the endpoint is still finishing; that
+ * stop's confirming ack must not be able to confirm the new gateway's stop, so it carries the reserved token 0. */
+static void test_stop_token_dropped_at_hello(void) {
+    rig r;
+    bhms_hello h;
+    bhms_host_frame f;
+    uint8_t b[16];
+    rig_boot(&r, 1, &kDev);
+    uint64_t e = hello(&r, 0, 1, &h);
+    g.stop_mode = BHMS_STOPACK_INITIATED;
+    gsend(&r, e, b, bhms_enc_stop(b, BHMS_STOP_GATEWAY, 1));
+    CHECK(next(&r, &f) == 1 && f.payload[1] == BHMS_STOPACK_INITIATED && f.payload[4] == 1);
+    CHECK(hello(&r, 0, 2, &h) == e); /* the gateway restarted: same epoch, nothing purged */
+    bhms_stop_confirmed(&r.ep, BHMS_EV_MEASURED);
+    CHECK(next(&r, &f) == 1 && f.kind == BHMS_KIND_TELEMETRY && f.payload[0] == BHMS_MSG_STOP_ACK);
+    CHECK(f.payload[1] == BHMS_STOPACK_CONFIRMED && f.payload[2] == BHMS_EV_MEASURED);
+    CHECK(f.payload[4] == 0); /* still reported, as an endpoint-originated stop */
+    CHECK(next(&r, &f) == 0);
+
+    /* A STOP after the HELLO is correlated as usual, also when it retransmits the token used before the HELLO. */
+    gsend(&r, e, b, bhms_enc_stop(b, BHMS_STOP_GATEWAY, 1));
+    CHECK(next(&r, &f) == 1 && f.payload[1] == BHMS_STOPACK_INITIATED && f.payload[4] == 1);
+    bhms_stop_confirmed(&r.ep, BHMS_EV_MEASURED);
+    CHECK(next(&r, &f) == 1 && f.payload[1] == BHMS_STOPACK_CONFIRMED && f.payload[4] == 1);
+
+    /* A refused HELLO_REQ (another version) is no HELLO: the stop in progress keeps its token. */
+    gsend(&r, e, b, bhms_enc_stop(b, BHMS_STOP_GATEWAY, 9));
+    CHECK(next(&r, &f) == 1 && f.payload[4] == 9);
+    {
+        size_t n = bhms_enc_hello_req(b, 0, 3);
+        b[1] = 1;
+        gsend(&r, 0, b, n);
+    }
+    expect_error(&r, BHMS_MSG_HELLO_REQ, 0, BHMS_E_UNSUPPORTED);
+    bhms_stop_confirmed(&r.ep, BHMS_EV_MEASURED);
+    CHECK(next(&r, &f) == 1 && f.payload[1] == BHMS_STOPACK_CONFIRMED && f.payload[4] == 9);
+}
+
+/* BHMS-CMP-050: the hardware stop input firing while a gateway stop is being carried out makes the stop the endpoint's own:
+ * both of its acks carry token 0, and the gateway's stop is not confirmed by them (the safe direction). */
+static void test_stop_pin_during_gateway_stop(void) {
+    rig r;
+    bhms_hello h;
+    bhms_host_frame f;
+    uint8_t b[16];
+    rig_boot(&r, 1, &kDev);
+    uint64_t e = hello(&r, 0, 1, &h);
+    g.stop_mode = BHMS_STOPACK_INITIATED;
+    gsend(&r, e, b, bhms_enc_stop(b, BHMS_STOP_GATEWAY, 0x31));
+    CHECK(next(&r, &f) == 1 && f.payload[1] == BHMS_STOPACK_INITIATED && f.payload[4] == 0x31);
+    r.host.pin = 1;
+    bhms_poll(&r.ep);
+    CHECK(next(&r, &f) == 1 && f.kind == BHMS_KIND_TELEMETRY && f.payload[0] == BHMS_MSG_STOP_ACK);
+    CHECK(f.payload[1] == BHMS_STOPACK_INITIATED && f.payload[4] == 0);
+    CHECK(g.stops == 2);
+    bhms_stop_confirmed(&r.ep, BHMS_EV_MEASURED);
+    CHECK(next(&r, &f) == 1 && f.payload[1] == BHMS_STOPACK_CONFIRMED && f.payload[4] == 0);
+    CHECK(next(&r, &f) == 0); /* one confirming ack, and never one with the gateway's token */
+}
+
 static void test_stop_pin_and_inhibit(void) {
     rig r;
     bhms_hello h;
@@ -1141,6 +1202,8 @@ int main(void) {
     RUN(test_read_and_publish);
     RUN(test_stop);
     RUN(test_stop_pin_and_inhibit);
+    RUN(test_stop_token_dropped_at_hello);
+    RUN(test_stop_pin_during_gateway_stop);
     RUN(test_new_session);
     RUN(test_link_faults);
     RUN(test_poll_bounded);

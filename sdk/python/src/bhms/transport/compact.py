@@ -39,7 +39,7 @@ from typing import Any, Protocol
 CHANNEL = 1
 CONTROL, STATUS_KIND, TELEMETRY = 1, 2, 3
 COMPACT_VERSION = 2  # 2: STOP and STOP_ACK carry a correlation token (BHMS-CMP-050)
-STOP_TOKEN_NONE = 0  # the token of a STOP_ACK the endpoint caused itself (hardware stop input): never a gateway's stop
+STOP_TOKEN_NONE = 0  # the token of an endpoint-originated STOP_ACK (its stop input, or a stop begun before its last HELLO): never a gateway's stop
 MAX_PAYLOAD = 192
 
 HELLO_REQ, INVOKE, CANCEL, READ, STOP, QUERY = 0x01, 0x02, 0x03, 0x04, 0x05, 0x06

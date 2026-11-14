@@ -348,6 +348,7 @@ class DeviceServer:
         if self.rpc is not None:
             await self.rpc.close()
         await self.programs.close()
+        await self.stopper.close()
         pending = [t for t in self.executor.tasks if not t.done()]
         if pending:
             await asyncio.wait(pending, timeout=self.rpc.drain_timeout if self.rpc else 10.0)

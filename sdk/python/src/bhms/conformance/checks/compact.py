@@ -230,7 +230,8 @@ async def endpoint_fences(c: Context) -> None:
 
 @check("compact.endpoint-stop", ["BHMS-CMP-050", "BHMS-CMP-051"], profile="compact", generic=True, needs=("compact",))
 async def endpoint_stop(c: Context) -> None:
-    """STOP is answered first with any session, confirmed later, ends active operations and fences older lease holders."""
+    """STOP is answered first with any session, confirmed later, ends active operations and fences older lease holders; a HELLO
+    drops the token of a stop in progress."""
     raw = await fixture(c).raw()
     hello = await raw.hello()
     if not hello.stop_supported:
@@ -257,6 +258,27 @@ async def endpoint_stop(c: Context) -> None:
              f"STOP must end every active operation (canceled or failed): {ended}", ("BHMS-CMP-051",))
     fenced = error_of(await raw.exchange(cp.Invoke(3, 1, MOVE, 7)))
     c.expect(fenced is not None and fenced.code == cp.E_FENCED, f"a pre-stop fence must be FENCED after STOP: {fenced}", ("BHMS-CMP-051",))
+    if first is None or not isinstance(first.message, cp.StopAck) or first.message.outcome != cp.STOPACK_INITIATED:
+        return  # a stop confirmed at once leaves nothing pending across a HELLO
+    # A stop still in progress when the endpoint says HELLO is nobody's afterwards: its confirming ack carries token 0, so the
+    # stop of a restarted gateway that reuses the token cannot be confirmed by it.
+    raw.send(cp.Stop(0, 0x33))
+    raw.nonce += 1
+    raw.send(cp.HelloReq(raw.nonce, 0), session=0)  # right behind the STOP: answered before the stop can finish
+    after: list[cp.Incoming] = []
+    while (got := await raw.reply(2.0)) is not None:
+        after.append(got)
+        if isinstance(got.message, cp.StopAck) and got.message.outcome == cp.STOPACK_CONFIRMED:
+            break
+    kinds = [type(f.message).__name__ for f in after]
+    said_hello = next((i for i, f in enumerate(after) if isinstance(f.message, cp.Hello)), None)
+    c.expect(said_hello is not None and isinstance(after[-1].message, cp.StopAck) and after[-1].message.outcome == cp.STOPACK_CONFIRMED,
+             f"STOP then HELLO_REQ must be answered by STOP_ACK initiated, HELLO and the confirming STOP_ACK: {kinds}", ("BHMS-CMP-050",))
+    if said_hello is not None and said_hello < len(after) - 1:
+        late = [f.message for f in after[said_hello + 1:] if isinstance(f.message, cp.StopAck)]
+        c.expect(all(a.token == 0 for a in late),
+                 f"a STOP_ACK sent after a HELLO for a stop received before it must carry token 0, not the stop's token: {late}",
+                 ("BHMS-CMP-050",))
 
 
 @check("compact.endpoint-value-quality", ["BHMS-CMP-060"], profile="compact", generic=True, needs=("compact",))
@@ -528,7 +550,7 @@ async def gateway_restart(c: Context) -> None:
 @check("compact.gateway-stop-token", ["BHMS-CMP-050"], profile="compact", generic=True, needs=("compact",), timeout=60)
 async def gateway_stop_token(c: Context) -> None:
     """Only a STOP_ACK echoing the token of the gateway's own STOP confirms it: acks with another token or the reserved token 0
-    (the endpoint's hardware stop input) are not evidence, even when they say confirmed/measured."""
+    (an endpoint-originated stop) are not evidence, even when they say confirmed/measured."""
     wire = (await served_fixture(c)).wires["rig"]
     wire.drop(TO_GATEWAY, count=1000, match=lambda m: isinstance(m, cp.StopAck))  # the endpoint's own acks never arrive
     epoch = max((s.message.epoch for s in wire.log if isinstance(s.message, cp.Hello)), default=0)

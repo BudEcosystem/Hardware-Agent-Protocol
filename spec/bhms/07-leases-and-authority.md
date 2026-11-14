@@ -178,7 +178,10 @@ other devices are stopped.
 
 **BHMS-AUTH-024** `stop` MUST return within `waitMs` (default 0) plus the time to
 dispatch, reporting `initiated` for devices not yet confirmed. Later outcomes
-appear as `stop` events.
+appear as `stop` events. A server that closes while a stop procedure is still
+running SHOULD wait for it for a bounded time and then record it as a `failed`
+`stop` event (the device may or may not be stopped): an initiated stop never ends
+without a recorded outcome.
 
 **BHMS-AUTH-025** If a server cannot write its journal, it MAY still execute a
 `stop`, MUST mark the result `detail: "degraded-audit"`, and MUST refuse all

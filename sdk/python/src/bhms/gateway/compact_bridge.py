@@ -52,6 +52,7 @@ import json
 import logging
 import os
 import random
+import secrets
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
@@ -74,6 +75,7 @@ log = logging.getLogger("bhms.gateway.compact")
 MAX_PURGE_IDS = 200  # operation ids one purge proof may name (spec 9.2); the rest stay inhibited
 HANDLE_ROTATE_AT = 65_000  # start a new session well before handle 65535 (BHMS-CMP-030)
 STOP_REASON_GATEWAY = 3
+ENDPOINT_STOP = "endpoint-originated stop"  # the `reason` of the stop event for a STOP_ACK with token 0 (BHMS-CMP-050)
 PROBE_HANDLE = 0xFFFF  # QUERY of a handle no INVOKE has used: answered HANDLE_UNKNOWN, proves liveness and the epoch
 
 # What each ERROR code that proves "not started" is reported as (spec 11.2).
@@ -142,6 +144,12 @@ def gateway_policy() -> Policy:
     return Policy({"gateway": {"uids": [os.getuid()], "scopes": ["admin"], "gateway": True}})
 
 
+def _initial_stop_token() -> int:
+    """Where a bridge's STOP token counter starts: random, because a restarted bridge that counted from the same value would
+    reuse its predecessor's tokens (BHMS-CMP-050). 0..254; the first token is this value plus one."""
+    return secrets.randbelow(255)
+
+
 def advanced(old: int, new: int) -> bool:
     """Whether ``new`` is a later boot epoch than ``old`` (u32 counter that skips 0 when it wraps, BHMS-CMP-020)."""
     return 0 < (new - old) % 2**32 < 2**31
@@ -198,9 +206,12 @@ class CompactBridge:
         self._waiters: dict[tuple[str, int], asyncio.Queue[Any]] = {}
         self._hello_waiter: tuple[int, asyncio.Future[cp.Incoming]] | None = None
         self._hello_lock = asyncio.Lock()  # one HELLO_REQ conversation at a time (the session task and a NEW_SESSION rotation)
-        self._stop_waiters: list[asyncio.Queue[cp.Incoming]] = []
-        self._stop_token = 0
+        self._stop_waiters: list[asyncio.Queue[cp.Incoming | None]] = []  # None: the bridge is closing
+        self._stop_token = _initial_stop_token()
         self._stop_tokens_live: set[int] = set()  # tokens of the _stop calls in progress: an ack counts only for its own call
+        self._stop_tokens_sent: set[int] = set()
+        """Tokens of the STOP frames sent since the last adopted HELLO. The endpoint forgets a stop's token at every HELLO it
+        sends, so an ack carrying any other token is not the answer to a STOP of this session and counts for nothing."""
         self._version_refused: int | None = None
         self._by_handle: dict[tuple[int, int], str] = {}  # (incarnation, handle) -> operation id
         self._action_names = {a.index: n for n, a in self.layouts.actions.items()}
@@ -236,6 +247,8 @@ class CompactBridge:
         if self._link is not None:
             await self._link.close()
             self._link = None
+        for queue in list(self._stop_waiters):  # no ack can reach a stop in progress now: it ends before the server closes
+            queue.put_nowait(None)
         if self._started:
             await self.server.close()
             self._started = False
@@ -401,16 +414,17 @@ class CompactBridge:
                 return
         if isinstance(message, cp.StopAck):
             if message.token == cp.STOP_TOKEN_NONE:
-                self._hardware_stop(message)  # the endpoint's own stop input: reported, never a gateway stop's confirmation
+                self._endpoint_stop(message)  # reported, never a gateway stop's confirmation
+            elif message.token not in self._stop_tokens_sent:
+                log.warning("compact %s: ignored a STOP_ACK with token %d, which no STOP since the last HELLO carried "
+                            "(BHMS-CMP-050)", self.name, message.token)
                 return
-            for queue in list(self._stop_waiters):
+            for queue in list(self._stop_waiters):  # a token 0 ack too: a waiting stop reports what it saw instead
                 queue.put_nowait(incoming)
             return
         if isinstance(message, cp.Error) and message.request_type == cp.HELLO_REQ:
-            if message.code == cp.E_UNSUPPORTED and self._version_refused != message.detail:
-                self._version_refused = message.detail
-                log.error("compact %s: the endpoint speaks compact version %d; this bridge speaks %d: the device is not served "
-                          "(BHMS-CMP-050 needs the STOP token of version 2)", self.name, message.detail, cp.COMPACT_VERSION)
+            if message.code == cp.E_UNSUPPORTED:
+                self._refuse_version(message.detail)
             return
         if isinstance(message, cp.Error):
             key = ("r", message.ident) if message.request_type == cp.READ else self._hkey(self.incarnation, message.ident)
@@ -434,13 +448,23 @@ class CompactBridge:
         """The waiter key of an operation handle: handles are unique only within one incarnation of the endpoint."""
         return ("h", incarnation << 16 | handle)
 
-    def _hardware_stop(self, ack: cp.StopAck) -> None:
-        """A STOP_ACK with the reserved token 0: the endpoint stopped itself (hardware stop input, BHMS-CMP-050)."""
+    def _endpoint_stop(self, ack: cp.StopAck) -> None:
+        """A STOP_ACK with the reserved token 0, an endpoint-originated stop (BHMS-CMP-050): its hardware stop input, or a
+        stop it was carrying out when it last said HELLO (whose token it forgot then)."""
         outcome = {cp.STOPACK_INITIATED: "initiated", cp.STOPACK_CONFIRMED: "confirmed"}.get(ack.outcome, "failed")
         with contextlib.suppress(StoreError):
             self.server.events.append("stop", severity="warning", device_id=self.device_id,
-                                      message="the endpoint's own stop input stopped it (not a gateway stop)",
-                                      data={"outcome": outcome, "reason": "endpoint hardware stop input", "canceled": ack.canceled})
+                                      message="the endpoint reported a stop of its own: its stop input, or a stop begun "
+                                              "before its last HELLO (not this gateway's stop in progress)",
+                                      data={"outcome": outcome, "reason": ENDPOINT_STOP, "canceled": ack.canceled})
+
+    def _refuse_version(self, version: int) -> None:
+        """Say that an endpoint of another compact version is not served: once at ERROR per version, then at DEBUG (the
+        bridge keeps asking about once a second, since the endpoint may be reflashed)."""
+        level = logging.DEBUG if self._version_refused == version else logging.ERROR
+        self._version_refused = version
+        log.log(level, "compact %s: the endpoint speaks compact version %d; this bridge speaks %d: the device is not served "
+                "(BHMS-CMP-050 needs the STOP token of version 2)", self.name, version, cp.COMPACT_VERSION)
 
     def _next_stop_token(self) -> int:
         """A non-zero token no running ``_stop`` call uses (the ack carries nothing else to tell stops apart)."""
@@ -470,9 +494,9 @@ class CompactBridge:
         ``new_session``: this HELLO answers the bridge's own NEW_SESSION request (and only then can it prove a purge)."""
         if hello.version != cp.COMPACT_VERSION:
             self._go_down("compact version mismatch")
-            log.error("compact %s: the endpoint speaks compact version %d; this bridge speaks %d", self.name, hello.version,
-                      cp.COMPACT_VERSION)
+            self._refuse_version(hello.version)
             return False
+        self._version_refused = None
         if hello.digest8 != self.digest8:
             self.mismatch = True
             self._go_down("digest mismatch")
@@ -492,6 +516,7 @@ class CompactBridge:
         # not count incarnations, which are never asked about (a journal written before this field existed is migrated by this).
         self.incarnation = max(1, self.incarnation, int(state.get("inc", 0))) + (1 if known is None or changed or possible_reset else 0)
         self.hello, self.epoch, self.persistent = hello, hello.epoch, hello.persistent
+        self._stop_tokens_sent.clear()  # the endpoint dropped its stop token when it sent this HELLO (BHMS-CMP-050)
         link.session = hello.epoch
         if changed or known is None:
             link.reset_sequence()
@@ -905,36 +930,59 @@ class CompactBridge:
         spec = self.server.devices[self.device_id].stop_spec
         assert spec is not None
         bound = (spec.max_duration_ms or self.timing.stop_confirm * 1000) / 1000
-        queue: asyncio.Queue[cp.Incoming] = asyncio.Queue()
+        queue: asyncio.Queue[cp.Incoming | None] = asyncio.Queue()
         self._stop_waiters.append(queue)
         token = self._next_stop_token()
         self._stop_tokens_live.add(token)
+        loop = asyncio.get_running_loop()
+
+        endpoint_stop = ("the endpoint reported an endpoint-originated stop (its own stop input, or a stop begun before its "
+                         "last HELLO) and no confirmation of this one; the device may be stopped \N{EM DASH} read its state "
+                         "(BHMS-CMP-050: only an acknowledgement carrying this stop's token confirms it)")
+        seen_endpoint_stop = False
+
+        async def own_ack(until: float, *, begun: bool) -> cp.StopAck | None:
+            """The next STOP_ACK of this stop before ``until``. Once this stop is ``begun`` (the endpoint said ``initiated``
+            with its token), an endpoint-originated ``confirmed`` means the endpoint replaced the token (BHMS-CMP-050): this
+            stop will not be confirmed and the wait ends at once. Before that the stop's own acks may still be on their way."""
+            nonlocal seen_endpoint_stop
+            while True:
+                try:
+                    item = await asyncio.wait_for(queue.get(), max(0.0, until - loop.time()))
+                except asyncio.TimeoutError:
+                    return None
+                if item is None:
+                    raise ConnectionError("the gateway's bridge to the endpoint closed before the stop was confirmed; the "
+                                          "device may or may not be stopped: read its state")
+                message = item.message
+                assert isinstance(message, cp.StopAck)
+                if message.token == token:  # an ack of another stop is no evidence about this one
+                    return message
+                if message.token == cp.STOP_TOKEN_NONE and message.outcome == cp.STOPACK_CONFIRMED:
+                    seen_endpoint_stop = True
+                    if begun:
+                        raise RuntimeError(endpoint_stop)
+
         try:
             ack: cp.StopAck | None = None
             for _ in range(self.timing.retries + 1):
+                self._stop_tokens_sent.add(token)
                 link.send(cp.Stop(STOP_REASON_GATEWAY, token), session=self.epoch or 0)
-                try:
-                    while True:
-                        first = await asyncio.wait_for(queue.get(), self.timing.reply)
-                        if first.message.token == token:  # an ack of another stop (or a stale one) is no evidence about this
-                            break
-                except asyncio.TimeoutError:
-                    continue
-                ack = first.message  # type: ignore[assignment]
-                break
+                ack = await own_ack(loop.time() + self.timing.reply, begun=False)
+                if ack is not None:
+                    break
             if ack is None:
-                raise TimeoutError("the endpoint did not acknowledge STOP")
+                if seen_endpoint_stop:
+                    raise RuntimeError(endpoint_stop)
+                raise TimeoutError(f"the endpoint did not acknowledge {self.timing.retries + 1} STOP transmissions")
             if ack.outcome == cp.STOPACK_UNSUPPORTED:
                 raise RuntimeError("the endpoint has no stop procedure although its description declares one")
             if ack.outcome == cp.STOPACK_INITIATED:
-                ack = None
-                deadline = asyncio.get_running_loop().time() + bound
-                while ack is None:
-                    left = deadline - asyncio.get_running_loop().time()
-                    second = await asyncio.wait_for(queue.get(), max(0.0, left))
-                    if (isinstance(second.message, cp.StopAck) and second.message.token == token
-                            and second.message.outcome == cp.STOPACK_CONFIRMED):
-                        ack = second.message
+                deadline = loop.time() + bound
+                while ack is not None and ack.outcome != cp.STOPACK_CONFIRMED:
+                    ack = await own_ack(deadline, begun=True)
+                if ack is None:
+                    raise TimeoutError(f"the endpoint began the stop but did not confirm it within {bound:g} s")
             if ack.evidence < (cp.EVIDENCE_MEASURED if spec.evidence == "measured" else cp.EVIDENCE_REPORTED):
                 raise RuntimeError(f"the endpoint confirmed STOP with evidence {ack.evidence}, weaker than the declared "
                                    f"{spec.evidence}: a stop without the declared evidence is never confirmed (BHMS-AUTH-022)")

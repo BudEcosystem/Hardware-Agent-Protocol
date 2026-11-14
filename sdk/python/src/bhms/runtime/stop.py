@@ -61,6 +61,7 @@ class StopController:
     def __init__(self, server: DeviceServer) -> None:
         self.server = server
         self.tasks: set[asyncio.Task[Any]] = set()
+        self.close_timeout = 5.0  # how long ``close`` waits for stop procedures still running before it abandons them
 
     async def stop(self, principal: Principal, params: Any) -> list[dict[str, Any]]:
         srv = self.server
@@ -210,7 +211,12 @@ class StopController:
 
     def _finished(self, dev: Device, reason: str, task: asyncio.Future[Any]) -> None:
         srv = self.server
-        if task.cancelled():
+        if task.cancelled():  # abandoned by ``close``: the outcome is unknown, and that is on record
+            with contextlib.suppress(StoreError):
+                srv.events.append("stop", severity="error", device_id=dev.device_id,
+                                  message="the server closed before the stop procedure reported its outcome: the device "
+                                          "may or may not be stopped",
+                                  data={"outcome": "failed", "reason": reason})
             return
         exc = task.exception()
         outcome = "failed" if exc is not None else "confirmed"
@@ -236,8 +242,14 @@ class StopController:
         srv.executor.pump()
 
     async def close(self) -> None:
+        """Wait up to ``close_timeout`` for the stop procedures still running, then cancel the rest (each is recorded as a
+        failed stop by ``_finished``), so that no procedure outlives the server and its store."""
         if self.tasks:
-            await asyncio.wait(list(self.tasks), timeout=5.0)
+            await asyncio.wait(list(self.tasks), timeout=self.close_timeout)
+        pending = [t for t in self.tasks if not t.done()]
+        for task in pending:
+            task.cancel()
+        await asyncio.gather(*pending, return_exceptions=True)
 
 
 async def _await(outcome: Any) -> Any:

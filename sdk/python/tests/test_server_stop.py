@@ -187,3 +187,38 @@ async def test_stop_with_an_unwritable_journal_is_degraded_audit(env):  # BHMS-A
     ok = (await client.actions_invoke("axis-1", "move_to", {"target": 1}, wait_ms=2000)).operation
     assert ok.state == "completed"
     assert running.operation_id
+
+
+async def test_close_ends_a_stop_procedure_that_never_reports_and_records_it(tmp_path):  # BHMS-AUTH-024
+    """A stop procedure still running when the server closes is waited for (bounded), then abandoned: its task ends with the
+    server (none is left pending on a closed event loop) and the abandonment is recorded, since the device may or may not
+    have stopped."""
+    srv = DeviceServer("hung-stop", state_dir=tmp_path)
+    dev = srv.device("press", resources=["press"])
+    entered = asyncio.Event()
+
+    @dev.on_stop(evidence="measured")
+    async def halt(ctx):
+        entered.set()
+        await asyncio.Event().wait()
+
+    listener = await srv.listen(f"unix:{tmp_path}/h.sock")
+    srv.stopper.close_timeout = 0.2
+    seen: list[dict] = []
+    srv.events.listen(lambda event, seq: seen.append(event))
+    client = await Client.connect(f"unix:{tmp_path}/h.sock")
+    try:
+        stop = (await client.stop("stop now", device_ids=["press"], wait_ms=50)).stops[0]
+        assert stop.outcome == "initiated" and entered.is_set()
+        tasks = list(srv.stopper.tasks)
+        assert tasks
+    finally:
+        await client.close()
+        await listener.close()
+    start = time.monotonic()
+    await srv.close()
+    assert time.monotonic() - start < 2.0
+    assert all(t.done() for t in tasks) and not srv.stopper.tasks
+    abandoned = [e for e in seen if e["type"] == "stop" and e["data"]["outcome"] == "failed"]
+    assert len(abandoned) == 1 and abandoned[0]["deviceId"] == "press", seen
+    assert "closed" in abandoned[0]["message"] and "may" in abandoned[0]["message"]
