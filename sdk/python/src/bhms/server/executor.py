@@ -32,7 +32,6 @@ import asyncio
 import contextlib
 import inspect
 import logging
-import math
 import threading
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
@@ -40,7 +39,8 @@ from typing import TYPE_CHECKING, Any
 from bhms.protocol.canonical import canonical
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.operations import InvalidTransition, OperationRecord, now_ns, unknown_error
-from bhms.runtime.resolution import RANGE_KEYWORDS, record_operator_resolution
+from bhms.runtime.resolution import INVALID_RESOLUTION_HINT, record_operator_resolution
+from bhms.runtime.results import check_result
 from bhms.runtime.store import StoreError
 from bhms.server.context import DEVICE_LOSS, ActionContext, Canceled, DeviceFault, Reconciled
 from bhms.server.decorators import ActionSpec
@@ -586,18 +586,10 @@ class Executor:
 
     @staticmethod
     def _result_problem(device: Device, spec: ActionSpec, result: Any) -> str | None:
-        """Why ``result`` cannot be recorded (not I-JSON, or not the declared output), else None."""
-        try:
-            canonical(result)
-        except BhmsError as exc:
-            where = _ijson_violation(result, "result")
-            if where:
-                return where
-            return f"the result is not JSON-serialisable ({exc.message})"
-        if spec.output:
-            for error in device.output_validator(spec.name).iter_errors(result):
-                return f"the result does not match the declared output schema: {error.message}"
-        return None
+        """Why ``result`` cannot be recorded (not I-JSON, or not the declared output), else None
+        (:func:`bhms.runtime.results.check_result`)."""
+        defect = check_result(result, device.output_validator(spec.name) if spec.output else None)
+        return defect.message if defect is not None else None
 
     @staticmethod
     def _result_out_of_range(device: Device, spec: ActionSpec, result: Any) -> BhmsError | None:
@@ -606,20 +598,13 @@ class Executor:
         measurement outside its declared range, not a result that "cannot be recorded"."""
         if not spec.output:
             return None
-        try:
-            canonical(result)
-        except BhmsError:
+        defect = check_result(result, device.output_validator(spec.name))
+        if defect is None or defect.kind != "out-of-range":
             return None
-        errors = list(device.output_validator(spec.name).iter_errors(result))
-        if not errors or any(e.validator not in RANGE_KEYWORDS for e in errors):
-            return None
-        first = errors[0]
-        member = ".".join(["result", *(str(part) for part in first.absolute_path)])
-        bound = {first.validator: first.validator_value}
         return BhmsError(
-            "OUT_OF_RANGE", f"{spec.name} acted and returned {member} = {first.instance!r}, outside its declared output "
-            f"range ({first.validator} {first.validator_value!r})"[:2000], field=member, bound=bound, may_have_acted=True,
-            retry="after-reconcile",
+            "OUT_OF_RANGE", f"{spec.name} acted and returned {defect.member} = {defect.instance!r}, outside its declared "
+            f"output range ({defect.keyword} {defect.bound[defect.keyword]!r})"[:2000], field=defect.member,
+            bound=defect.bound, may_have_acted=True, retry="after-reconcile",
             hint=f"the device acted; the returned value is in this message and in the operation's history. Read "
                  f"{device.device_id}'s state before deciding what to do; the declared range may be too narrow for the "
                  "instrument's tolerance")
@@ -847,7 +832,7 @@ class Executor:
             record_operator_resolution(self.server.journal, rec, resolution, principal, output_validator=validator)
         except InvalidTransition as exc:
             raise BhmsError("INVALID_ARGUMENT", f"the resolution cannot be recorded: {exc}"[:2000], field="resolution",
-                            hint="check state, effect and result against the operation (spec 6.10)") from None
+                            hint=INVALID_RESOLUTION_HINT) from None
         self._resolved_event(rec, "operator", principal)
 
     def apply_reconciliation(self, rec: OperationRecord, answer: Reconciled) -> None:
@@ -883,27 +868,6 @@ class Executor:
         else:
             journal.transition(rec, answer.state, effect=answer.effect, evidence=evidence, kind="reconciliation",
                                detail=detail)
-
-
-def _ijson_violation(value: Any, path: str) -> str | None:
-    """Name the first member of ``value`` that breaks the I-JSON number rule (BHMS-OPS-008), else None."""
-    if isinstance(value, bool):
-        return None
-    if isinstance(value, int) and not -(2 ** 53 - 1) <= value <= 2 ** 53 - 1:
-        return (f"{path} is the integer {value}, beyond +/-2^53 (9007199254740991); results are I-JSON, so numbers must "
-                "be exactly representable as IEEE 754 doubles: return it as a string, or as a float if rounding is "
-                "acceptable")
-    if isinstance(value, float) and not math.isfinite(value):
-        return f"{path} is {value}; NaN and Infinity are not JSON numbers: return null or a string"
-    if isinstance(value, dict):
-        for key, item in value.items():
-            if found := _ijson_violation(item, f"{path}.{key}"):
-                return found
-    elif isinstance(value, (list, tuple)):
-        for index, item in enumerate(value):
-            if found := _ijson_violation(item, f"{path}[{index}]"):
-                return found
-    return None
 
 
 async def _call_hook(hook: Any, *args: Any) -> Any:

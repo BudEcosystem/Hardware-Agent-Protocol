@@ -287,3 +287,21 @@ def test_check_policy_warns_on_resolve_without_operations_read():
     report = check_policy(policy.principals, [])
     assert any("operations:read" in w for w in report.warnings["half"]) and "whole" not in report.warnings
     assert report.warning_count == 1 and "operations:resolve" in report.render()
+
+
+def test_a_refused_resolution_names_only_members_a_resolution_has():
+    """Fix round 2: the gateway's hint still named ``observations``, which R38 removed from ``OperatorResolution``. The
+    device server and the gateway now give one hint, and it names only members the resolution carries."""
+    import inspect
+
+    from bhms.gateway.router import Router
+    from bhms.protocol.types.operations import OperatorResolution
+    from bhms.runtime.resolution import INVALID_RESOLUTION_HINT
+    from bhms.server.executor import Executor
+
+    named = {"state", "effect", "result"}
+    assert all(word in INVALID_RESOLUTION_HINT for word in named) and "observations" not in INVALID_RESOLUTION_HINT
+    assert named <= set(OperatorResolution.model_fields) and "observations" not in OperatorResolution.model_fields
+    for user in (Router._resolve_unknown, Executor.resolve_by_operator):
+        source = inspect.getsource(user)
+        assert "hint=INVALID_RESOLUTION_HINT" in source and "observations" not in source

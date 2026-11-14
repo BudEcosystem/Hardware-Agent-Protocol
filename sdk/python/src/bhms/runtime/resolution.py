@@ -22,14 +22,14 @@ from __future__ import annotations
 
 from typing import Any
 
-from bhms.protocol.canonical import canonical
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.operations import Journal, OperationRecord
+from bhms.runtime.results import check_result
 
-RANGE_KEYWORDS = frozenset({"minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum"})
-"""Output-schema keywords whose violation means "a number outside its declared range" (BHMS-OPS-008)."""
 OPERATOR_EVIDENCE = {"kind": "reported"}
 """The evidence of every operator resolution: a person's report, never a measurement (BHMS-OPS-102)."""
+INVALID_RESOLUTION_HINT = "check state, effect and result against the operation (spec 6.10)"
+"""The hint of a resolution the journal refuses to record (the members an ``OperatorResolution`` carries)."""
 
 
 def _refuse(member: str, message: str, hint: str, *, code: str = "INVALID_ARGUMENT", bound: Any = None) -> BhmsError:
@@ -37,7 +37,8 @@ def _refuse(member: str, message: str, hint: str, *, code: str = "INVALID_ARGUME
 
 
 def _checked_result(resolution: Any, action: str, validator: Any) -> Any:
-    """The result of a ``completed`` resolution, checked like a handler's result (I-JSON, the action's output schema)."""
+    """The result of a ``completed`` resolution, checked like a handler's result
+    (:func:`bhms.runtime.results.check_result`: I-JSON, the action's output schema)."""
     if "result" in resolution.model_fields_set:
         result = resolution.result
     elif validator is None:
@@ -45,21 +46,17 @@ def _checked_result(resolution: Any, action: str, validator: Any) -> Any:
     else:
         raise _refuse("result", f"state completed needs the result of {action}",
                       f"state the result {action} produced (bhms describe shows its output), or resolve it as failed")
-    try:
-        canonical(result)
-    except BhmsError as exc:
-        raise _refuse("result", f"cannot be recorded ({exc.message})", "results are I-JSON values") from None
-    errors = list(validator.iter_errors(result)) if validator is not None else []
-    if errors and all(error.validator in RANGE_KEYWORDS for error in errors):
-        first = errors[0]
-        member = ".".join(["result", *(str(part) for part in first.absolute_path)])
-        raise _refuse(member, f"{first.instance!r} is outside the declared output range of {action}",
+    defect = check_result(result, validator)
+    if defect is None:
+        return result
+    if defect.kind == "not-ijson":
+        raise _refuse("result", f"cannot be recorded ({defect.cause})", "results are I-JSON values")
+    if defect.kind == "out-of-range":
+        raise _refuse(defect.member, f"{defect.instance!r} is outside the declared output range of {action}",
                       "state the result the device produced, or resolve the operation as failed", code="OUT_OF_RANGE",
-                      bound={first.validator: first.validator_value})
-    if errors:
-        raise _refuse("result", f"does not match the declared output of {action}: {errors[0].message}",
-                      f"state a result that matches the output of {action}, or resolve the operation as failed")
-    return result
+                      bound=defect.bound)
+    raise _refuse("result", f"does not match the declared output of {action}: {defect.cause}",
+                  f"state a result that matches the output of {action}, or resolve the operation as failed")
 
 
 def record_operator_resolution(journal: Journal, rec: OperationRecord, resolution: Any, principal: str, *,
@@ -97,4 +94,4 @@ def record_operator_resolution(journal: Journal, rec: OperationRecord, resolutio
                        proof=None if acted else resolution.basis, **common)
 
 
-__all__ = ["OPERATOR_EVIDENCE", "RANGE_KEYWORDS", "record_operator_resolution"]
+__all__ = ["INVALID_RESOLUTION_HINT", "OPERATOR_EVIDENCE", "record_operator_resolution"]

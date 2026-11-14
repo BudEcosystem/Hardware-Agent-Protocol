@@ -54,6 +54,7 @@ from bhms.protocol.types import to_wire
 from bhms.runtime.authority import Principal
 from bhms.runtime.operations import (InvalidTransition, OperationRecord, intent_digest, key_conflict_error, now_ns,
                                      server_key)
+from bhms.runtime.resolution import INVALID_RESOLUTION_HINT
 from bhms.runtime.store import StoreError
 from bhms.server.handlers import summary_matches, unknown_device
 from bhms.server.server import decode_cursor, encode_cursor
@@ -514,8 +515,7 @@ class Router:
             gw.journal.resolve_locally(rec, resolution, principal.id, why, (action or {}).get("output"))
         except InvalidTransition as exc:
             raise refusal("INVALID_ARGUMENT", "resolve:resolution", f"the resolution cannot be recorded: {exc}"[:1500],
-                          field="resolution", hint="check state, effect, result and observations against the operation "
-                                                   "(spec 6.10)") from None
+                          field="resolution", hint=INVALID_RESOLUTION_HINT) from None
         except StoreError as exc:
             gw.journal_failed(exc)
             raise BhmsError("BUSY", "the gateway's journal cannot be written; the operation is still unknown",
