@@ -353,16 +353,21 @@ async def gateway_layout_indices(c: Context) -> None:
     c.expect(sorted(description["actions"], key=layout.get) != sorted(description["actions"]),
              "this fixture's indices must differ from alphabetical order to prove anything", ("BHMS-CMP-011",))
     held = await lease(c, RIG)
-    for name, arguments in (("lock", {"duration_ms": 20}), ("sensor", {"connected": True}), ("probe", {"mode": 0}),
-                            ("set_level", {"value": 1.0}), ("move", {"duration_ms": 20, "target": 1.0})):
-        mark = len(wire.log)
-        members = {"leaseId": held["leaseId"]} if name == "move" else {}
-        done = await c.run(RIG, name, arguments, waitMs=3000, **members)
-        c.expect(done["state"] == "completed", f"{name} ended {done['state']}", ("BHMS-CMP-011",))
-        sent = invokes(wire, mark)
-        c.expect(sent and sent[0].message.action == layout[name],
-                 f"{name} must be sent as action index {layout[name]}, was {sent and sent[0].message.action}", ("BHMS-CMP-011",))
-    await c.ok("leases/release", {"leaseId": held["leaseId"]})
+    try:
+        for name, arguments in (("lock", {"duration_ms": 20}), ("sensor", {"connected": True}), ("probe", {"mode": 0}),
+                                ("set_level", {"value": 1.0}), ("move", {"duration_ms": 20, "target": 1.0})):
+            mark = len(wire.log)
+            # while a resource is leased, even the holder presents its lease on every action that uses it (BHMS-LSE-014);
+            # an action on other resources runs without it (a lease that does not cover them is refused)
+            uses_axis = f"{RIG}/axis" in description["actions"][name].get("resources", [])
+            members = {"leaseId": held["leaseId"]} if uses_axis else {}
+            done = await c.run(RIG, name, arguments, waitMs=3000, **members)
+            c.expect(done["state"] == "completed", f"{name} ended {done['state']}", ("BHMS-CMP-011",))
+            sent = invokes(wire, mark)
+            c.expect(sent and sent[0].message.action == layout[name],
+                     f"{name} must be sent as action index {layout[name]}, was {sent and sent[0].message.action}", ("BHMS-CMP-011",))
+    finally:
+        await c.ok("leases/release", {"leaseId": held["leaseId"]})
 
 
 @check("compact.gateway-handles-and-fences", ["BHMS-CMP-030", "BHMS-CMP-041"], profile="compact", generic=True, needs=("compact",))
@@ -395,10 +400,12 @@ async def gateway_handles_and_fences(c: Context) -> None:
     fences = []
     for _ in range(3):
         held = await lease(c, RIG)
-        mark = len(wire.log)
-        await c.run(RIG, "move", {"duration_ms": 20, "target": 1.0}, waitMs=3000, leaseId=held["leaseId"])
-        fences.append(invokes(wire, mark)[0].message.fence)
-        await c.ok("leases/release", {"leaseId": held["leaseId"]})
+        try:
+            mark = len(wire.log)
+            await c.run(RIG, "move", {"duration_ms": 20, "target": 1.0}, waitMs=3000, leaseId=held["leaseId"])
+            fences.append(invokes(wire, mark)[0].message.fence)
+        finally:
+            await c.ok("leases/release", {"leaseId": held["leaseId"]})
     c.expect(fences == sorted(set(fences)) and fences[0] > 0, f"fences must be non-zero and strictly increasing: {fences}", ("BHMS-CMP-041",))
 
 
