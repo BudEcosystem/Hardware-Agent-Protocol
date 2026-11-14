@@ -92,6 +92,7 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   vectors (one source: `spec/bhms`) into every wheel and sdist and fails the build when they are missing; a dangling schema
   link in a copied source tree is reported with what to do. Evidence: Task 10 report, SDK gap 3 (a copied package failed at
   `DeviceServer.start()` with `FileNotFoundError`; a wheel built from such a copy was produced without the schema, silently).
+- Example `server.discover.response.json` advertises `capabilities.operations.resolve`.
 
 ### TS SDK to follow
 

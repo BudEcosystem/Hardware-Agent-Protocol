@@ -15,6 +15,7 @@ import pytest
 from typer.testing import CliRunner
 
 from bhms.cli.main import app
+from bhms.client.client import Client
 
 runner = CliRunner()
 
@@ -222,9 +223,33 @@ async def test_new_refuses_bad_names_and_existing_directories(tmp_path):
 
 async def test_every_command_is_registered_and_documented():
     result = await invoke("--help")
-    for command in ("new", "dev", "ls", "describe", "read", "call", "ops", "wait", "cancel", "stop", "gateway", "mcp", "doctor", "bench", "conformance"):
+    for command in ("new", "dev", "ls", "describe", "read", "call", "ops", "wait", "cancel", "resolve", "stop", "gateway", "mcp", "doctor",
+                    "bench", "conformance"):
         assert command in result.output
     assert "conformance" in result.output
+
+
+async def test_resolve_asks_the_device_again_and_records_an_operator_resolution(device_url):
+    """Task 7b A4: the operator path for an unknown operation (the CLI over a same-uid socket is the operator)."""
+    async def fault(name):
+        async with await Client.connect(device_url) as client:
+            await client.request("x-conformance/inject", {"fault": name})
+
+    await fault("amnesia")      # the device cannot say what happened
+    await fault("crash_next")
+    lost = await invoke("call", "-u", device_url, "axis-1", "pulse", "count=1", "--json")
+    op_id = json.loads(lost.output)["data"]["operation"]["operationId"]
+    assert lost.exit_code == 3 and json.loads(lost.output)["data"]["operation"]["state"] == "unknown"
+    asked = await invoke("resolve", "-u", device_url, op_id)
+    assert asked.exit_code == 3 and "unknown" in asked.output
+    usage = await invoke("resolve", "-u", device_url, op_id, "--state", "failed")
+    assert usage.exit_code == 2
+    done = await invoke("resolve", "-u", device_url, op_id, "--state", "failed", "--basis", "axis inspected: at rest")
+    assert done.exit_code == 0 and "failed" in done.output and "resolved by operator" in done.output
+    assert "axis inspected: at rest" in done.output
+    again = await invoke("call", "-u", device_url, "axis-1", "pulse", "count=1")
+    assert again.exit_code == 0  # the resource is usable again
+    await fault("none")
 
 
 async def test_bench_measures_real_round_trips(device_url):

@@ -192,6 +192,48 @@ def register(app: typer.Typer) -> None:
                 return emit(await AgentBridge(client).call("bhms_cancel", args), as_json, out)
         raise typer.Exit(run(go()))
 
+    @app.command("resolve")
+    def resolve(operation: Annotated[str, typer.Argument(help="The unknown operation.")], url: UrlOpt = None, token: TokenOpt = None,
+                state: Annotated[str | None, typer.Option(help="completed or failed: record this resolution if the device "
+                                                           "cannot say what happened. Needs --basis.")] = None,
+                basis: Annotated[str | None, typer.Option(help="What was inspected, by whom, and what was found.")] = None,
+                effect: Annotated[str | None, typer.Option(help="none, unverified or verified (verified needs measured "
+                                                            "observations, which this command cannot attach).")] = None,
+                result: Annotated[str | None, typer.Option(help="With --state completed: the result as JSON, valid for "
+                                                            "the action's output.")] = None,
+                nothing_happened: Annotated[bool, typer.Option("--nothing-happened", help="With --state failed: there is "
+                                                               "proof that the device did not act (effect none).")] = False,
+                as_json: JsonOpt = False) -> None:
+        """For operators: ask the device again about an unknown operation, or resolve it with evidence.
+
+        Without --state the server only re-runs reconciliation. With --state and --basis it records your resolution when
+        the device still cannot say (device evidence always wins). Needs the admin or operations:resolve scope.
+        Exit status: 0 resolved, 3 still unknown, 1 refused, 2 usage."""
+        if (state is None) != (basis is None):
+            raise typer.BadParameter("give --state and --basis together (or neither, to only ask the device again)")
+        try:
+            stated = json.loads(result) if result is not None else None
+        except ValueError as exc:
+            raise typer.BadParameter(f"--result is not JSON: {exc}") from None
+
+        async def go() -> int:
+            kw: dict[str, Any] = {"state": state, "basis": basis, "effect": "none" if nothing_happened else effect}
+            if nothing_happened:
+                kw["may_have_acted"] = False
+            if result is not None:
+                kw["result"] = stated
+            async with open_client(url, token=token) as client:
+                data = to_wire(await client.operations_resolve(operation, **kw))
+            op = data["operation"]
+            last = [h for h in op.get("history", []) if h.get("kind") == "reconciliation"][-1:]
+            block = None
+            if last and op["state"] != "unknown":
+                who = f"operator {last[0]['operator']['principal']}" if "operator" in last[0] else "device evidence"
+                block = f"resolved by {who}: {last[0].get('detail', '')}"
+            status = emit(ToolResult(render.summarize_operation(op), data, block=block), as_json, out)
+            return 3 if op["state"] == "unknown" else status
+        raise typer.Exit(run(go()))
+
     @app.command("stop")
     def stop(devices: Annotated[list[str] | None, typer.Argument(metavar="[DEVICE]...", help="Devices to stop.")] = None,
              all_devices: Annotated[bool, typer.Option("--all", help="Stop every device the server controls.")] = False,

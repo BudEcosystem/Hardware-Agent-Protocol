@@ -343,23 +343,27 @@ class Client:
         """``operations/cancel``: asks to cancel the physical work (distinct from cancelling a request)."""
         return await self._call("operations/cancel", timeout=timeout, operation_id=operation_id, reason=reason)
 
-    async def operations_resolve(self, operation_id: str, *, state: str | None = None, basis: str | None = None,
-                                 effect: str | None = None, may_have_acted: bool | None = None, result: Any = _NO_RESULT,
+    async def operations_resolve(self, operation_id: str, *, resolution: t.OperatorResolution | dict[str, Any] | None = None,
+                                 state: str | None = None, basis: str | None = None, effect: str | None = None,
+                                 may_have_acted: bool | None = None, result: Any = _NO_RESULT,
                                  observations: dict[str, Any] | None = None,
                                  timeout: float | None = None) -> t.OperationsResolveResult:
         """``operations/resolve`` (operators; needs ``admin`` or ``operations:resolve``): resolve an ``unknown`` operation.
 
-        With no ``state`` the server only asks the device again (its reconcile hook) and returns the operation, which may
-        still be ``unknown``. With ``state`` (``"completed"`` or ``"failed"``) and ``basis`` (free text: what was
-        inspected, by whom, what was found) the server records that resolution if the device still cannot say; device
-        evidence always wins. ``result`` belongs to ``completed`` and must match the action's output; ``effect``
+        With no resolution the server only asks the device again (its reconcile hook) and returns the operation, which
+        may still be ``unknown``. Give the resolution as keywords, or whole as ``resolution`` (an ``OperatorResolution``
+        or its wire dict), not both: ``state`` (``"completed"`` or ``"failed"``) and ``basis`` (free text: what was
+        inspected, by whom, what was found) make the server record that resolution if the device still cannot say;
+        device evidence always wins. ``result`` belongs to ``completed`` and must match the action's output; ``effect``
         ``"verified"`` needs ``observations`` (measured and valid); ``may_have_acted=False`` (``failed`` only) claims
         proof that nothing happened and needs ``effect="none"``. Check the returned operation's state and history.
         """
-        resolution: dict[str, Any] | None = None
         given = {"state": state, "basis": basis, "effect": effect, "mayHaveActed": may_have_acted,
                  "observations": observations}
-        if any(value is not None for value in given.values()) or result is not _NO_RESULT:
+        stated = any(value is not None for value in given.values()) or result is not _NO_RESULT
+        if stated and resolution is not None:
+            raise ValueError("give the resolution either whole (resolution=) or as keywords, not both")
+        if stated:
             resolution = {key: to_wire(value) if isinstance(value, (BaseModel, dict)) else value
                           for key, value in given.items() if value is not None}
             if result is not _NO_RESULT:

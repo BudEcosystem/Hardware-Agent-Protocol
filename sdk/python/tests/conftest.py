@@ -1,17 +1,28 @@
 """Suite-wide guards.
 
-* No test may leave files in the directory pytest runs from (fixtures use ``tmp_path``).
+* No test may leave files in the directory pytest runs from (fixtures use ``tmp_path``; Hypothesis is given a temporary
+  storage directory).
 * No test may leave an asyncio task or a subprocess transport behind (Task 7b, A6; see ``helpers/leaks.py``): the guard
   fails the test that leaked, by name, instead of whichever later test the garbage collector happens to interrupt.
 """
 
 from __future__ import annotations
 
+import atexit
 import os
+import shutil
+import tempfile
 
 import pytest
 
 from helpers.leaks import LeakWatch
+
+# Hypothesis keeps its example database and caches in ``.hypothesis`` under the working directory unless told otherwise:
+# send them to a directory that is removed at exit, so that no test leaves anything where pytest runs (Task 7b, D23).
+if "HYPOTHESIS_STORAGE_DIRECTORY" not in os.environ:
+    _HYPOTHESIS_HOME = tempfile.mkdtemp(prefix="bhms-hypothesis-")
+    os.environ["HYPOTHESIS_STORAGE_DIRECTORY"] = _HYPOTHESIS_HOME
+    atexit.register(shutil.rmtree, _HYPOTHESIS_HOME, ignore_errors=True)
 
 _GRACE_S = 1.0
 """How long a task that is already finishing (cancelled, or on its last await) gets to end before it counts as leaked."""

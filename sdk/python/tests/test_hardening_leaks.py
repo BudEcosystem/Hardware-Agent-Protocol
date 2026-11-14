@@ -120,3 +120,11 @@ async def test_the_guard_gives_a_finishing_task_its_grace():
         assert await watch.leaked_after(baseline, grace_s=1.0) == ([], [])
     finally:
         watch.uninstall()
+
+
+def test_hypothesis_keeps_its_files_out_of_the_working_directory():  # D23: it used to create .hypothesis where pytest runs
+    import os
+
+    home = os.environ["HYPOTHESIS_STORAGE_DIRECTORY"]
+    assert os.path.isabs(home) and not os.path.exists(".hypothesis")
+    assert os.path.commonpath([home, os.getcwd()]) != os.getcwd()

@@ -18,7 +18,7 @@ from bhms.transport import TransportClosed
 EXAMPLES = Path(__file__).resolve().parents[3] / "spec" / "bhms" / "examples"
 STDIO_SERVER = Path(__file__).parent / "helpers" / "stdio_server.py"
 CAPS = {k: v for k, v in json.loads((EXAMPLES / "server.discover.response.json").read_text())["message"]
-        ["result"]["capabilities"].items() if k in ("leases", "events", "programs")}
+        ["result"]["capabilities"].items() if k in ("leases", "events", "programs", "operations")}
 
 
 def example(name: str) -> dict:

@@ -119,9 +119,10 @@ DEFECTS: dict[str, BridgeDefect] = {d.name: d for d in (
 # Measured against the full agent profile (asserted by tests/test_conformance_broken_bridges.py): a defect that removes the
 # structured content trips every check that reads it.
 _EXACT = {
-    "no-structured-content": ("agent.freshness-and-keys", "agent.no-authority-from-arguments", "agent.refusals",
-                              "agent.results-and-summaries", "agent.wait-and-leases"),
-    "done-for-running": ("agent.results-and-summaries", "agent.wait-and-leases"),
+    "no-structured-content": ("agent.describe-topic", "agent.find-no-match", "agent.freshness-and-keys",
+                              "agent.no-authority-from-arguments", "agent.refusals", "agent.results-and-summaries",
+                              "agent.wait-and-leases"),
+    "done-for-running": ("agent.describe-topic", "agent.results-and-summaries", "agent.wait-and-leases"),  # it rewrites every text
 }
 DEFECTS = {name: replace(defect, checks=_EXACT.get(name, defect.checks)) for name, defect in DEFECTS.items()}
 

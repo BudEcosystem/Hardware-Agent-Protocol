@@ -25,6 +25,7 @@
         "operations": {
           "durable": true,
           "cancel": true,
+          "resolve": true,
           "keyRetentionS": 86400
         },
         "stop": {},
