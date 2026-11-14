@@ -68,3 +68,9 @@ async def spin(ctx, ...): ...
 - Unknown operations can be resolved by an operator: `bhms resolve <operation>` / `Client.operations_resolve` (scope
   `operations:resolve` or `admin`).
 - New units: `{rev}/min`, `{rev}/s`, `mol/L`, `mmol/L`, `umol/L`, `W`, `mW`, `kW`, `[ppm]`, `m3`, `L/h`.
+
+## TypeScript SDK
+
+`sdk/typescript` follows the same rules (Task 8c); its README, section "Migrating to this release", says what changes for
+TypeScript code. One difference to note: the TypeScript SDK probed liveness every 15 s by default before this release; it now
+probes once at start unless an interval is given, as the Python SDK does.
