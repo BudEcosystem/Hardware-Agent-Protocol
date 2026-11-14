@@ -8,7 +8,9 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   resource is refused with `LEASE_CONFLICT` (`field: "leaseId"`, `bound`: the leased resources, no holder) unless the request
   presents that lease, whether or not the action declares `requiresLease` and whoever asks; a `leaseId` supplied with any action
   is validated as in BHMS-LSE-010; both at admission and before dispatch; program steps present the program's lease when it
-  covers their resources. Requirement index: 251 rows. Evidence: Task 11 report, hostile suite "lease theft", issues T1a (the
+  holds any of their resources, and **BHMS-PRG-006** then requires it to cover all of that step's resources (refused at
+  `programs/run`, naming the step). The rule concerns actions; fresh `transaction` reads stay under BHMS-OBS-011 and
+  retained reads are never blocked by a lease. Requirement index: 251 rows. Evidence: Task 11 report, hostile suite "lease theft", issues T1a (the
   Python gateway dropped a `leaseId` supplied with an action that does not require one: three of four attempts reached the
   device) and T1b (LSE-010 checked leases only for `requiresLease` actions: the fourth reached it).
 - **BHMS-DEV-033 is a MUST** (was SHOULD): an action with `effect: "hazardous"` declares `requiresLease: true`; the schema
@@ -58,8 +60,8 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   `bhms gateway check-policy <config>` (what every scope matches; warnings for scopes that match nothing and for principals
   that can act but not stop). Evidence: Task 11 report, S5 (four `scope:stop` refusals: the agents reacted to a fault with
   `bhms_stop` and were left with no safe action) and S7 (`invoke:knob/*` matched nothing behind a gateway, silently).
-- **BHMS-OPS-064 (new, MUST, gateway)**: `Operation.upstream = {server, operationId}` (schema `OperationUpstream`), given by a
-  gateway to `admin` principals in `operations/get`, `wait` and `list`, never to anyone else and never in notifications.
+- **BHMS-OPS-064 (new, gateway)**: `Operation.upstream = {server, operationId}` (schema `OperationUpstream`). MUST NOT be
+  given to a principal without `admin`, nor in notifications; SHOULD be given to `admin` in `operations/get`, `wait` and `list`.
   Evidence: Task 11 report, S6 (the upstream operation id was only in gateway internals, so a gateway record could not be
   joined to the device's own log). Requirement index: 257 rows.
 - **BHMS-DEV-035 (new, SHOULD, core)**: a measurement-like action result carries a validity indicator (`quality` as in an
@@ -80,11 +82,15 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
 - **`operations/resolve` (new method, capability `operations.resolve`; §6.10, BHMS-OPS-100, 101, 102; profile `authority`)**:
   `{operationId, resolution?}` → `{operation}`. Scope `operations:resolve` (or `admin`); the device is asked first and its
   evidence wins; without `resolution` the call only asks again; an operator's `resolution` (`state`, free-text `basis`,
-  optional `effect`, `mayHaveActed`, `result`, `observations`) is recorded as a `reconciliation` entry carrying
-  `operator: {principal, basis}` after the unchanged history; every resolution is an `operation.resolved` event. Schema:
+  optional `effect`, `mayHaveActed`, `result`) is recorded as a `reconciliation` entry carrying
+  `operator: {principal, basis}` after the unchanged history; every resolution is an `operation.resolved` event. An
+  operator's statement is a report: the recorded effect is at most `unverified` and the evidence is `{"kind": "reported"}`;
+  `verified`/`measured` come only from the device's own evidence during the resolve; `resolution.effect` is `none` or
+  `unverified`, there is no `observations` member, and an operation that required a verified effect cannot be resolved as
+  `completed` (review of Task 7b, Ruling R38: a first version let typed-in observations stamp `verified`). Schema:
   `OperationsResolve*`, `OperatorResolution`, `OperatorMark`, `HistoryEntry.operator`, `Scope`, `ServerCapabilities.operations.
   resolve`; examples `operations.resolve.request.json`, `operations.resolve.response.json`,
-  `invalid-resolve-no-effect-claims-proof.json`. A gateway forwards it and, when the upstream cannot be asked, records the
+  `invalid-resolve-no-effect-claims-proof.json`, `invalid-resolve-claims-verified.json`. A gateway forwards it and, when the upstream cannot be asked, records the
   resolution on its own operation. Not on the agent surface. Chapter 6: "Operation notifications" is now §6.11. Evidence:
   Task 10 report, SDK gap 5 and its spec learning (an `unknown` the device cannot prove kept its resources inhibited with no
   operator path: "a dead bridge keeps its resources inhibited"). Requirement index: 262 rows.

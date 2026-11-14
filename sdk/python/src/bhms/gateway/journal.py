@@ -46,9 +46,8 @@ import orjson
 
 from bhms.protocol import schema
 from bhms.protocol.errors import BhmsError
-from bhms.protocol.types import to_wire
 from bhms.runtime.operations import InvalidTransition, Journal, OperationRecord, unknown_error
-from bhms.server.context import check_observations
+from bhms.runtime.resolution import record_operator_resolution
 
 log = logging.getLogger("bhms.gateway.journal")
 
@@ -269,32 +268,11 @@ class ForwardJournal(Journal):
 
         The gateway is an enforcement point of its own: its record is what inhibits the device's resources here. The
         upstream, if it ever returns with the operation still unknown, keeps its own inhibition until it is resolved
-        there. ``output`` is the action's output schema as served (a ``completed`` result must match it). Raises
-        ``ValueError`` naming what is wrong with the resolution; nothing is recorded then.
+        there. ``output`` is the action's output schema as served. The rules, and the refusals, are those of
+        :func:`bhms.runtime.resolution.record_operator_resolution`, the same function the device server uses.
         """
-        given = resolution.model_fields_set
-        operator = {"principal": principal, "basis": resolution.basis}
-        detail = f"operator resolution by {principal} at the gateway ({why}): {resolution.basis}"
-        observations = {name: to_wire(obs) for name, obs in (resolution.observations or {}).items()}
-        if observations:
-            check_observations(observations, "resolution")
-        if resolution.effect == "verified" and not observations:
-            raise ValueError("effect verified needs observations that are measured and valid (BHMS-OPS-006)")
-        evidence = {"kind": "measured", "observations": observations} if observations else None
-        if resolution.state == "completed":
-            result = resolution.result if "result" in given else {}
-            if output:
-                for error in schema.compile_schema(output).iter_errors(result):
-                    raise ValueError(f"result does not match the action's declared output: {error.message}")
-            effect = resolution.effect or ("none" if rec.private.get("effectClass", "none") == "none" else "unverified")
-            self.transition(rec, "completed", result=result, effect=effect, evidence=evidence, kind="reconciliation",
-                            detail=detail, operator=operator)
-            return
-        acted = True if resolution.may_have_acted is None else resolution.may_have_acted
-        error = BhmsError("DEVICE_FAULT", resolution.basis, may_have_acted=acted,
-                          hint="read the device state before retrying").to_operation_error()
-        self.transition(rec, "failed", error=error, effect=resolution.effect, evidence=evidence, kind="reconciliation",
-                        detail=detail, proof=None if acted else resolution.basis, operator=operator)
+        record_operator_resolution(self, rec, resolution, principal, where=f" at the gateway ({why})",
+                                   output_validator=schema.compile_schema(output) if output else None)
 
     def _sync_cancel(self, rec: OperationRecord, up: dict[str, Any]) -> bool:
         """Mirror a cancellation request the upstream recorded (``requested``/``acknowledged``/``refused``). The effect is

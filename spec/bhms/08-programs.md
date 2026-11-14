@@ -156,6 +156,12 @@ when the step is admitted.
 `programs:run` and an `invoke` scope for every `invoke` step and every fresh
 `transaction` read, and that `leaseId` (when any step's action requires a lease)
 is an active lease of the caller covering the union of those steps' resources.
+A step whose action does not require a lease but uses a resource that `leaseId`
+holds runs under that lease (BHMS-LSE-014); the lease MUST then cover all of that
+step's resources, otherwise `programs/run` is refused with `LEASE_CONFLICT`,
+`field: "leaseId"`, `bound` listing the resources the lease lacks, and a message
+naming the step. (A step on resources leased by someone else fails when it is
+reached, like any action.)
 
 **BHMS-PRG-007** The program `digest` MUST be the BHMS digest of the program
 object. Two programs are the same program exactly when their digests are equal.

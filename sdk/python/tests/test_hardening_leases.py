@@ -170,3 +170,47 @@ async def test_the_bridge_explains_a_conflict_with_its_own_lease(tmp_path):
         await bridge.aclose()
         await client.close()
         await srv.close()
+
+
+async def test_a_program_whose_lease_covers_only_part_of_a_step_is_refused_before_it_starts(tmp_path):
+    """Fix round 1: a non-lease step that touches a resource the program's own lease holds runs under that lease, so the
+    lease must cover all of the step's resources; the refusal names the step instead of a conflict with nobody."""
+    from bhms import DeviceServer
+
+    srv = DeviceServer("cell", state_dir=str(tmp_path))
+    dev = srv.device("cell-1", name="Cell", resources=["cell-1/arm", "cell-1/zone"])
+    dev.report_alive()
+    ran = []
+
+    @dev.action(effect="reversible", idempotency="relative", max_duration_ms=1000, resources=["cell-1/arm", "cell-1/zone"])
+    async def reach(ctx) -> None:
+        ran.append("reach")
+
+    @dev.action(effect="reversible", idempotency="relative", max_duration_ms=1000, resources=["cell-1/arm"])
+    async def nudge(ctx) -> None:
+        ran.append("nudge")
+
+    await srv.listen(f"unix:{tmp_path}/c.sock")
+    client = await Client.connect(f"unix:{tmp_path}/c.sock")
+    try:
+        def program(*actions):
+            return {"bhmsProgram": "2026-11-13", "name": "p", "description": "p", "maxDurationMs": 10_000,
+                    "input": {"type": "object", "additionalProperties": False, "properties": {}},
+                    "steps": [{"kind": "invoke", "deviceId": "cell-1", "action": a, "arguments": {}} for a in actions]}
+
+        arm = (await client.leases_acquire(["cell-1/arm"], 30_000)).lease
+        refused = await _refused(client.programs_run(arguments={}, program=program("nudge", "reach"), lease_id=arm.lease_id),
+                                 "LEASE_CONFLICT")
+        assert refused.field == "leaseId" and refused.bound == ["cell-1/zone"]
+        assert "program.steps[1]" in refused.message and "reach" in refused.message and "cell-1/zone" in refused.hint
+        assert ran == []  # refused whole, before the first step (BHMS-PRG-001)
+        ok = (await client.programs_run(arguments={}, program=program("nudge"), lease_id=arm.lease_id, wait_ms=5000)).operation
+        assert ok.state == "completed" and ran == ["nudge"]
+        await client.leases_release(arm.lease_id)
+        both = (await client.leases_acquire(["cell-1/arm", "cell-1/zone"], 30_000)).lease
+        ok = (await client.programs_run(arguments={}, program=program("nudge", "reach"), lease_id=both.lease_id,
+                                        wait_ms=5000)).operation
+        assert ok.state == "completed" and ran == ["nudge", "nudge", "reach"]
+    finally:
+        await client.close()
+        await srv.close()

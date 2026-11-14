@@ -243,3 +243,30 @@ async def test_the_topic_is_unsupported_where_programs_are_not_offered(tmp_path)
         await bridge.aclose()
         await client.close()
         await srv.close()
+
+
+def test_programs_are_searched_with_the_same_word_rule_as_devices():
+    """Fix round 1: bhms_find re-implemented any-word matching for programs and lacked the one-letter rule."""
+    from bhms.server.handlers import text_score, word_score
+
+    assert word_score("a homing routine", ("go_home", "Move every axis to its homing position.")) == 1  # "a" is ignored
+    assert word_score("a", ("go_home", "Move every axis.")) == 1 and word_score("zebra", ("go_home", "Move.")) == 0
+    summary = {"name": "Axis", "summary": "Linear axis", "tags": ["bench"], "capabilities": ["bhms.axis.linear"]}
+    assert text_score("a LINEAR thing", summary, "axis-1") == word_score("a LINEAR thing", ("axis-1", "Axis", "Linear axis",
+                                                                                           "bench", "bhms.axis.linear")) == 1
+    import inspect
+
+    from bhms.bridges.core import AgentBridge
+    assert "word_score(" in inspect.getsource(AgentBridge._programs) and "casefold" not in inspect.getsource(AgentBridge._programs)
+
+
+async def test_find_filters_programs_by_any_word_ignoring_one_letter_words(rig):
+    _, _, client, bridge = rig
+    program = {"bhmsProgram": "2026-11-13", "name": "go_home", "description": "Move the axis to zero.", "maxDurationMs": 10_000,
+               "input": {"type": "object", "additionalProperties": False, "properties": {}},
+               "steps": [{"kind": "invoke", "deviceId": "axis-1", "action": "move_to", "arguments": {"position": 0}}]}
+    await client.programs_register(program)
+    found = await bridge.call("bhms_find", {"text": "a routine to go_home"})
+    assert [p["name"] for p in found.data["programs"]] == ["go_home"]
+    none = await bridge.call("bhms_find", {"text": "a spectrometer"})  # "a" alone must not match "axis"
+    assert none.data["programs"] == []

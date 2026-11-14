@@ -147,6 +147,9 @@ class Plan:
     info: dict[str, Any]
     lease_resources: tuple[str, ...]
     input_validator: ArgumentValidator
+    shared_steps: tuple[tuple[str, str, tuple[str, ...]], ...] = ()
+    """``(path, action, resources)`` of every invoke step that uses resources without requiring a lease: such a step
+    presents the program's lease when that lease touches its resources (BHMS-LSE-014, BHMS-PRG-006)."""
 
 
 class _Validator:
@@ -161,6 +164,7 @@ class _Validator:
         self.devices: set[str] = set()
         self.resources: set[str] = set()
         self.lease_resources: set[str] = set()
+        self.shared_steps: list[tuple[str, str, tuple[str, ...]]] = []
         self.inputs: dict[str, Any] = {}
         self.required: set[str] = set()
 
@@ -223,7 +227,7 @@ class _Validator:
                 "maxExecutedSteps": self.executed, "devices": sorted(self.devices),
                 "resources": sorted(self.resources), "requiresLease": bool(self.lease_resources)}
         return Plan(program, program_digest, steps, info, tuple(sorted(self.lease_resources)),
-                    ArgumentValidator(program["input"], field_prefix="arguments"))
+                    ArgumentValidator(program["input"], field_prefix="arguments"), tuple(self.shared_steps))
 
     def _define(self, name: str, path: str) -> None:
         if name in self.names:
@@ -285,6 +289,8 @@ class _Validator:
             self.resources.update(spec.resources)
             if spec.requires_lease:
                 self.lease_resources.update(spec.resources)
+            elif spec.resources:
+                self.shared_steps.append((path, spec.name, tuple(spec.resources)))
             if raw.get("saveAs"):
                 self._define(raw["saveAs"], f"{path}.saveAs")
                 defined.add(raw["saveAs"])
@@ -509,6 +515,8 @@ class ProgramRunner:
         lease: Lease | None = None
         if plan.lease_resources or params.lease_id is not None:
             lease = srv.leases.check(principal, params.lease_id, plan.lease_resources)
+        if lease is not None:
+            self._check_shared_steps(plan, lease)
         srv.require_journal()
         deadline_ns = now_ns() + params.deadline_ms * 1_000_000 if params.deadline_ms is not None else None
         try:
@@ -669,13 +677,31 @@ class ProgramRunner:
         if truncated:
             self._check_boundary(run)
 
+    @staticmethod
+    def _check_shared_steps(plan: Plan, lease: Lease) -> None:
+        """BHMS-PRG-006: a step that does not require a lease but uses a resource the program's own lease holds runs under
+        that lease, so the lease must cover all of that step's resources. Refused before the first step, naming the step:
+        at run time the step would be refused by the program's own lease, which reads as a conflict with nobody."""
+        held = set(lease.resources)
+        for path, action, resources in plan.shared_steps:
+            missing = sorted(set(resources) - held)
+            if held.intersection(resources) and missing:
+                covered = sorted(held.intersection(resources))
+                raise BhmsError(
+                    "LEASE_CONFLICT", f"program.steps[{path}] ({action}) uses {', '.join(resources)}; the lease you run "
+                    f"the program under holds {', '.join(covered)} but not {', '.join(missing)}", field="leaseId",
+                    bound=missing, hint=f"acquire one lease that also covers {', '.join(missing)} and run the program "
+                    "under it: a step that uses a leased resource must present a lease covering all of its resources "
+                    "(BHMS-PRG-006, BHMS-LSE-014)")
+
     def _step_lease(self, run: _Run, spec: Any) -> str | None:
-        """The lease an invoke step presents: the program's lease when the step requires one or when that lease covers
-        every resource the step uses (a held lease refuses a request that does not present it, BHMS-LSE-014)."""
+        """The lease an invoke step presents: the program's lease when the step requires one or when that lease holds
+        any resource the step uses (a held lease refuses a request that does not present it, BHMS-LSE-014; admission
+        made sure it then covers all of them, BHMS-PRG-006)."""
         if run.lease_id is None or spec.requires_lease:
             return run.lease_id if spec.requires_lease else None
         lease = self.server.leases.get(run.lease_id)
-        if lease is not None and spec.resources and set(spec.resources).issubset(lease.resources):
+        if lease is not None and set(spec.resources).intersection(lease.resources):
             return run.lease_id
         return None
 

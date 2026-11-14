@@ -289,14 +289,15 @@ because the response wait elapsed.
 `INVALID_ARGUMENT`, `field: "operationId"`. Operations are visible to the
 principal that created them and to principals with `admin`.
 
-**BHMS-OPS-064** A gateway mints its own operation ids. In `operations/get`,
-`operations/wait` and `operations/list` it SHOULD give a principal with `admin`
-the member `upstream: {server, operationId}`: the namespace of the upstream
-server the operation was forwarded to and the operation's id on that server, so
-that a gateway record can be joined to the device server's own journal after an
-incident. It MUST NOT include `upstream` for any other principal (the owner and
-`operations:read` included) or in notifications: what lies behind a gateway is
-not a client's business. A device server never sends `upstream`.
+**BHMS-OPS-064** A gateway MUST NOT include the member `upstream` in an operation
+it gives to a principal without `admin` (the operation's owner and
+`operations:read` included), nor in any notification: what lies behind a gateway
+is not a client's business. To a principal with `admin` it SHOULD give, in
+`operations/get`, `operations/wait` and `operations/list`,
+`upstream: {server, operationId}`: the namespace of the upstream server the
+operation was forwarded to and the operation's id there (a gateway mints its own
+operation ids), so that a gateway record can be joined to the device server's own
+journal after an incident. A device server never sends `upstream`.
 
 **BHMS-OPS-063** An operation that a client has seen MUST remain retrievable with
 `operations/get` for at least `keyRetentionS` seconds after it settled.
@@ -345,11 +346,11 @@ restart; this covers the device's.)
 `operations/resolve {operationId, resolution?}` → `{operation}` (with `history`),
 offered when `capabilities.operations.resolve` is `true`.
 
-`resolution = {state, basis, effect?, mayHaveActed?, result?, observations?}`:
-`state` is `completed` or `failed`; `basis` (1–2000 characters) is free text saying
-what was inspected, by whom and what was found; `result` belongs to `completed`;
-`mayHaveActed` belongs to `failed`; `observations` is a map of `Observation`s
-offered as evidence.
+`resolution = {state, basis, effect?, mayHaveActed?, result?}`: `state` is
+`completed` or `failed`; `basis` (1–2000 characters) is free text saying what was
+inspected, by whom and what was found (readings the operator took belong here, as
+text); `result` belongs to `completed`; `mayHaveActed` belongs to `failed`;
+`effect` is `none` or `unverified`.
 
 An `unknown` operation inhibits its resources (BHMS-OPS-042) until evidence
 resolves it. When the device can never give that evidence (a dead bridge, a
@@ -373,13 +374,17 @@ returned unchanged, with nothing recorded.
 **BHMS-OPS-102** If the operation is still `unknown` and `resolution` is given, the
 server MUST record it as a `reconciliation` history entry carrying
 `operator: {principal, basis}` (the caller's principal id and the stated basis),
-after the earlier entries, which are never changed or removed. The rules of any
-other outcome apply: a `completed` resolution needs a `result` valid against the
-action's `output`; `effect` is `verified` only with `observations` that are
-`measured` and `valid` (BHMS-OPS-006), otherwise `unverified` (default for
-`completed`; `none` for an action without effect) or, for `failed`, `unknown`
-(default); `mayHaveActed: false` is a claim of proof that nothing happened and
-requires `effect: "none"`. A resolution that breaks a rule is refused
+after the earlier entries, which are never changed or removed. An operator's
+statement is a report, never a measurement: the recorded `effect` MUST NOT be
+`verified` and the operation's `evidence` MUST be `{"kind": "reported"}`, whatever
+the request says; `verified` and `measured` arise only from evidence the device
+itself supplies, which is the reconciliation of BHMS-OPS-101. Consequently an
+operation that required a verified effect (BHMS-OPS-007) cannot be resolved as
+`completed`. A `completed` resolution needs a `result` valid against the action's
+`output` and records `unverified` (`none` for an action without effect). A `failed`
+resolution records `unknown` (default) or `unverified`; `mayHaveActed: false` and
+`effect: "none"` are one claim, proof that nothing happened, and are stated
+together or not at all. A resolution that breaks a rule is refused
 (`INVALID_ARGUMENT`, or `OUT_OF_RANGE` for a result outside the declared output
 range) and nothing is recorded. Every resolution of an `unknown` operation,
 whatever its source, MUST be recorded as an `operation.resolved` event (§9.1) with
@@ -390,7 +395,7 @@ device's record, adding to `basis` who asked through which gateway, and mirrors
 the answer (its own entry carries `operator` with the caller's principal). When
 that upstream is not reachable, has no record of the request or does not offer
 the method, and a `resolution` is given, the gateway records the resolution on its
-own operation: it is an enforcement point of its own, and its record is what
+own operation under the same rules (BHMS-OPS-102): it is an enforcement point of its own, and its record is what
 inhibits the resources at the gateway. The upstream keeps its own inhibition
 until the operation is resolved there.
 

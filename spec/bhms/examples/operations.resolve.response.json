@@ -23,6 +23,9 @@
           "state": "none"
         },
         "effect": "none",
+        "evidence": {
+          "kind": "reported"
+        },
         "leaseId": "lease-12",
         "fence": 412,
         "createdAt": "2026-11-13T09:30:00.012Z",

@@ -27,6 +27,9 @@ def release_process(process: asyncio.subprocess.Process) -> None:
     to the garbage collector, which reports ``ResourceWarning: unclosed transport`` in whatever code runs at that time.
     Call this whenever a child is abandoned. Idempotent; never raises.
     """
+    # ``Process._transport`` is a private attribute of asyncio.subprocess.Process (as of CPython 3.12, which this was checked on: the
+    # BaseSubprocessTransport, set to None once asyncio has closed it itself). There is no public way to close it; if a
+    # future Python renames it, getattr finds nothing, this becomes a no-op, and tests/test_hardening_leaks.py fails.
     transport = getattr(process, "_transport", None)
     if transport is not None:
         with contextlib.suppress(Exception):

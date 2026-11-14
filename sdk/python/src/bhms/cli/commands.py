@@ -197,8 +197,8 @@ def register(app: typer.Typer) -> None:
                 state: Annotated[str | None, typer.Option(help="completed or failed: record this resolution if the device "
                                                            "cannot say what happened. Needs --basis.")] = None,
                 basis: Annotated[str | None, typer.Option(help="What was inspected, by whom, and what was found.")] = None,
-                effect: Annotated[str | None, typer.Option(help="none, unverified or verified (verified needs measured "
-                                                            "observations, which this command cannot attach).")] = None,
+                effect: Annotated[str | None, typer.Option(help="unverified (an operator's report never verifies; use "
+                                                            "--nothing-happened for effect none).")] = None,
                 result: Annotated[str | None, typer.Option(help="With --state completed: the result as JSON, valid for "
                                                             "the action's output.")] = None,
                 nothing_happened: Annotated[bool, typer.Option("--nothing-happened", help="With --state failed: there is "

@@ -14,6 +14,10 @@ from asyncio import base_subprocess
 from typing import Any
 
 Transport = base_subprocess.BaseSubprocessTransport
+# This helper reads private state of asyncio's subprocess transport: ``_closed``, ``_returncode`` and ``_wait()`` of
+# ``asyncio.base_subprocess.BaseSubprocessTransport``, as they are in CPython 3.12 (which this suite runs on). They have no
+# public equivalent. On a Python that renames them the guard raises AttributeError in every test, which is the signal
+# to revisit it, not a silent pass.
 
 
 class LeakWatch:

@@ -87,7 +87,11 @@ including one that does not declare `requiresLease`, MUST be validated as in
 BHMS-LSE-010 (BHMS-LSE-005 and BHMS-LSE-007 hold for every use of a lease). Both
 checks are made at admission and again immediately before dispatch; a program step
 is checked like any other action and presents the program's lease when that lease
-covers the step's resources. `stop` is never subject to this rule (BHMS-AUTH-020).
+holds any of the step's resources (BHMS-PRG-006 makes sure it then covers all of
+them). `stop` is never subject to this rule (BHMS-AUTH-020). The rule concerns
+actions: a fresh read of a `transaction` property is governed by BHMS-OBS-011
+(its own `requiresLease`), and retained and `readEffect: "none"` reads are never
+blocked by a lease, so anyone with `read` can still observe a leased device.
 
 A lease is therefore exclusive against everyone, not only against actions that ask
 for one: `requiresLease` says that an action cannot run *without* a lease; a held

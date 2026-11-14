@@ -39,8 +39,8 @@ from typing import TYPE_CHECKING, Any
 
 from bhms.protocol.canonical import canonical
 from bhms.protocol.errors import BhmsError
-from bhms.protocol.types import to_wire
 from bhms.runtime.operations import InvalidTransition, OperationRecord, now_ns, unknown_error
+from bhms.runtime.resolution import RANGE_KEYWORDS, record_operator_resolution
 from bhms.runtime.store import StoreError
 from bhms.server.context import DEVICE_LOSS, ActionContext, Canceled, DeviceFault, Reconciled
 from bhms.server.decorators import ActionSpec
@@ -52,8 +52,6 @@ if TYPE_CHECKING:
     from bhms.server.server import DeviceServer
 
 log = logging.getLogger("bhms.executor")
-_RANGE_KEYWORDS = frozenset({"minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum"})
-"""Output-schema keywords whose violation means "a number outside its declared range" (BHMS-OPS-008)."""
 
 
 @dataclass
@@ -613,7 +611,7 @@ class Executor:
         except BhmsError:
             return None
         errors = list(device.output_validator(spec.name).iter_errors(result))
-        if not errors or any(e.validator not in _RANGE_KEYWORDS for e in errors):
+        if not errors or any(e.validator not in RANGE_KEYWORDS for e in errors):
             return None
         first = errors[0]
         member = ".".join(["result", *(str(part) for part in first.absolute_path)])
@@ -840,53 +838,23 @@ class Executor:
                                       message=f"{rec.id} left unknown: {rec.state} (resolved by {source})")
 
     def resolve_by_operator(self, rec: OperationRecord, principal: str, resolution: Any) -> None:
-        """Record an operator's resolution of the ``unknown`` operation ``rec`` (``operations/resolve``, BHMS-OPS-102).
-
-        ``resolution`` is the validated ``OperatorResolution``. The same rules as for device evidence apply (a result
-        must match the action's output, ``verified`` needs measured and valid observations, "nothing happened" needs
-        ``effect: none``); what breaks one is refused with the member of ``resolution`` it concerns, and nothing is
-        recorded. The history entry is a ``reconciliation`` marked with the operator and the stated basis.
-        """
-        given = resolution.model_fields_set
-        observations = {name: to_wire(obs) for name, obs in (resolution.observations or {}).items()} or None
+        """Record an operator's resolution of the ``unknown`` operation ``rec`` (``operations/resolve``, BHMS-OPS-102);
+        the rules are those of :func:`bhms.runtime.resolution.record_operator_resolution`."""
         device = self.server.devices.get(rec.op.get("deviceId", ""))
         spec = device.actions.get(rec.op.get("action", "")) if device is not None else None
-        if resolution.state == "completed" and device is not None and spec is not None:
-            result = resolution.result if "result" in given else ({} if spec.output is None else None)
-            refusal = self._result_out_of_range(device, spec, result)
-            if refusal is not None:
-                raise BhmsError("OUT_OF_RANGE", f"resolution.{refusal.field} is outside the declared output range of "
-                                f"{spec.name}", field=f"resolution.{refusal.field}", bound=refusal.bound,
-                                hint="state the result the device produced, or resolve the operation as failed")
-            problem = self._result_problem(device, spec, result)
-            if problem:
-                raise BhmsError("INVALID_ARGUMENT", f"resolution.result cannot be recorded: {problem}"[:2000],
-                                field="resolution.result", hint=f"state completed needs a result that matches the "
-                                f"output of {spec.name} (bhms describe shows it); or resolve the operation as failed")
+        validator = device.output_validator(spec.name) if device is not None and spec is not None and spec.output else None
         try:
-            answer = Reconciled(resolution.state, evidence=resolution.basis, effect=resolution.effect,
-                                result=resolution.result if "result" in given else None, message=resolution.basis,
-                                may_have_acted=True if resolution.may_have_acted is None else resolution.may_have_acted,
-                                observations=observations)
-        except ValueError as exc:
-            raise BhmsError("INVALID_ARGUMENT", f"the resolution is not acceptable: {exc}"[:2000],
-                            field="resolution.observations", hint="observations must be measured and valid to support "
-                            "effect verified; otherwise state effect unverified") from None
-        try:
-            self.apply_reconciliation(rec, answer, operator={"principal": principal, "basis": resolution.basis})
-        except (ValueError, InvalidTransition) as exc:
+            record_operator_resolution(self.server.journal, rec, resolution, principal, output_validator=validator)
+        except InvalidTransition as exc:
             raise BhmsError("INVALID_ARGUMENT", f"the resolution cannot be recorded: {exc}"[:2000], field="resolution",
-                            hint="check state, effect and result against the operation (a required verified effect "
-                                 "needs measured observations)") from None
+                            hint="check state, effect and result against the operation (spec 6.10)") from None
         self._resolved_event(rec, "operator", principal)
 
-    def apply_reconciliation(self, rec: OperationRecord, answer: Reconciled, *,
-                             operator: dict[str, str] | None = None) -> None:
-        """Record a ``Reconciled`` answer; the invariants of ``Journal.transition`` apply as to any completion. With
-        ``operator`` the answer is an operator's statement, and the history entry says so."""
+    def apply_reconciliation(self, rec: OperationRecord, answer: Reconciled) -> None:
+        """Record a ``Reconciled`` answer (device evidence); the invariants of ``Journal.transition`` apply as to any
+        completion."""
         journal = self.server.journal
-        detail = (f"operator resolution by {operator['principal']}: {answer.evidence}" if operator is not None
-                  else f"reconciled from device evidence: {answer.evidence}")
+        detail = f"reconciled from device evidence: {answer.evidence}"
         device = self.server.devices.get(rec.op.get("deviceId", ""))
         spec = device.actions.get(rec.op.get("action", "")) if device is not None else None
         evidence = {"kind": "measured", "observations": answer.observations} if answer.observations else None
@@ -901,20 +869,20 @@ class Executor:
                     "UNVERIFIED", f"{rec.op.get('action')} was found to have finished, but the required verified "
                     "effect could not be established", may_have_acted=True,
                     hint="read the device state before deciding what to do").to_operation_error(),
-                    effect=effect, kind="reconciliation", detail=detail, operator=operator)
+                    effect=effect, kind="reconciliation", detail=detail)
                 return
             journal.transition(rec, "completed", result=result, effect=effect, evidence=evidence,
-                               kind="reconciliation", detail=detail, operator=operator)
+                               kind="reconciliation", detail=detail)
         elif answer.state == "failed":
             error = BhmsError(answer.code if answer.code in ("DEVICE_FAULT", "DEADLINE_EXCEEDED", "INTERNAL")
                               else "DEVICE_FAULT", (answer.message or answer.evidence)[:2000],
                               may_have_acted=answer.may_have_acted,
                               hint="read the device state before retrying").to_operation_error()
             journal.transition(rec, "failed", error=error, effect=answer.effect, evidence=evidence, kind="reconciliation",
-                               detail=detail, proof=None if answer.may_have_acted else answer.evidence, operator=operator)
+                               detail=detail, proof=None if answer.may_have_acted else answer.evidence)
         else:
             journal.transition(rec, answer.state, effect=answer.effect, evidence=evidence, kind="reconciliation",
-                               detail=detail, operator=operator)
+                               detail=detail)
 
 
 def _ijson_violation(value: Any, path: str) -> str | None:

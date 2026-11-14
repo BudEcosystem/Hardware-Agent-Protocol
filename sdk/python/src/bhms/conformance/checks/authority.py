@@ -291,11 +291,17 @@ async def operator_resolution(c: Context) -> None:
         claim = await resolver.request("operations/resolve", {"operationId": op["operationId"], "resolution": {
             "state": "failed", "basis": basis, "mayHaveActed": False, "effect": "unverified"}})
         c.refused(claim, "INVALID_ARGUMENT", what="a resolution that claims nothing happened without effect none", ids=("BHMS-OPS-102",))
+        verified = await resolver.request("operations/resolve", {"operationId": op["operationId"], "resolution": {
+            "state": "completed", "basis": basis, "effect": "verified", "result": {"pulses": 1}}})
+        c.refused(verified, "INVALID_ARGUMENT", what="an operator resolution that claims a verified effect", ids=("BHMS-OPS-102",))
         before = asked["history"]
         done = c.result(await resolver.request("operations/resolve", params))["operation"]
         c.expect(done["state"] == "failed" and (done.get("error") or {}).get("mayHaveActed") is True,
                  f"the operator's resolution must be recorded: {done['state']}", ("BHMS-OPS-102",))
         c.expect(done["history"][:len(before)] == before, "earlier history entries were changed or removed", ("BHMS-OPS-102",))
+        c.expect(done["effect"] != "verified" and (done.get("evidence") or {}).get("kind") == "reported"
+                 and "observations" not in (done.get("evidence") or {}),
+                 f"an operator's resolution is a report: effect {done['effect']}, evidence {done.get('evidence')}", ("BHMS-OPS-102",))
         last = done["history"][-1]
         me = (c.result(await resolver.request("server/discover", {})).get("principal") or {}).get("id")
         c.expect(last["kind"] == "reconciliation" and (last.get("operator") or {}).get("basis") == basis

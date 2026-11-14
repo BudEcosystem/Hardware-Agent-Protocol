@@ -71,6 +71,20 @@ async def _instrument_server(tmp_path, **server_kw):
             raise DeviceLost("power lost during spin")  # ... but its reply never arrived
         return {"speed": speed}
 
+    @dev.property(unit="{rev}/s", evidence="measured")
+    def speed() -> float:
+        """Tachometer."""
+        return max(inst.done.values(), default=0.0)
+
+    @dev.action(effect="irreversible", idempotency="relative", max_duration_ms=2000, completion_evidence="measured",
+                verified_by=["speed"])
+    async def checked_spin(ctx, speed: Range(0, 100, unit="{rev}/s")) -> {"speed": Range(0, 100, unit="{rev}/s")}:  # noqa: F821
+        inst.done[ctx.operation_id] = speed
+        if not inst.powered:
+            raise DeviceLost("power lost during spin")
+        await ctx.verify("speed", lambda v: v == speed)
+        return {"speed": speed}
+
     @dev.reconcile
     async def reconcile(op):
         inst.reconcile_calls.append(op["operationId"])
@@ -348,9 +362,9 @@ async def test_who_may_resolve_and_what_a_resolution_must_say(tmp_path):
         assert (await refused("resolver", "INVALID_ARGUMENT", state="completed", **basis)).field == "resolution.result"
         assert (await refused("resolver", "OUT_OF_RANGE", state="completed", result={"speed": 500.0}, **basis)).field \
             == "resolution.result.speed"
-        unproven = await refused("resolver", "INVALID_ARGUMENT", state="completed", result={"speed": 50.0}, effect="verified",
-                                 **basis)
-        assert unproven.field == "resolution" and "observations" in unproven.message
+        # an operator cannot attest a verified effect (R38): refused by the schema, nothing recorded
+        assert (await refused("resolver", "INVALID_ARGUMENT", state="completed", result={"speed": 50.0}, effect="verified",
+                              **basis)).field == "resolution.effect"
         # "nothing happened" is a claim of proof: it must come with effect none
         claim = await refused("resolver", "INVALID_ARGUMENT", state="failed", may_have_acted=False, effect="unverified", **basis)
         assert claim.field == "resolution" and "effect none" in claim.message
@@ -363,6 +377,7 @@ async def test_who_may_resolve_and_what_a_resolution_must_say(tmp_path):
         done = (await c["resolver"].operations_resolve(op.operation_id, state="completed", result={"speed": 50.0},
                                                        basis="run log of the instrument's own display shows run 118 at 50 rev/s")).operation
         assert done.state == "completed" and done.effect == "unverified" and done.result == {"speed": 50.0}
+        assert done.evidence.kind == "reported" and done.evidence.observations is None  # a report, never a measurement
         # a proven non-execution: effect none, mayHaveActed false
         inst.powered = False
         second = (await c["agent"].actions_invoke("spin-1", "spin", {"speed": 7.0}, wait_ms=2000)).operation
@@ -370,6 +385,63 @@ async def test_who_may_resolve_and_what_a_resolution_must_say(tmp_path):
         never = (await c["operator"].operations_resolve(second.operation_id, state="failed", may_have_acted=False, effect="none",
                                                         basis="the instrument was unplugged the whole time (photo in ticket 4411)")).operation
         assert never.state == "failed" and never.effect == "none" and never.error.may_have_acted is False
+    finally:
+        await _close(srv, c)
+
+
+async def test_typed_in_observations_cannot_make_an_operator_resolution_verified(tmp_path):
+    """Fix round 1 (R38): an admin resolve with effect "verified" and invented observations stamped the operation
+    verified with measured evidence. An operator resolution is at most unverified, with evidence kind reported."""
+    srv, dev, inst, c = await _resolve_rig(tmp_path)
+    try:
+        inst.powered = False
+        op = (await c["agent"].actions_invoke("spin-1", "spin", {"speed": 50.0}, wait_ms=2000)).operation
+        inst.powered, inst.knows = True, False
+        invented = {"speed": {"value": 50.0, "unit": "{rev}/s", "quality": "valid", "evidence": "measured", "sequence": 7,
+                              "epoch": "made-up", "acquiredAt": "2026-11-14T10:00:00.000Z", "ageMs": 0}}
+        for extra in ({"effect": "verified"}, {"observations": invented}, {"effect": "verified", "observations": invented}):
+            with pytest.raises(BhmsError) as exc:
+                await c["operator"].request("operations/resolve", {"operationId": op.operation_id, "resolution": {
+                    "state": "completed", "basis": "typed in", "result": {"speed": 50.0}, **extra}})
+            assert exc.value.bhms_code == "INVALID_ARGUMENT"
+        still = (await c["operator"].operations_get(op.operation_id)).operation
+        assert still.state == "unknown" and still.effect == "unknown" and still.evidence is None
+        done = (await c["operator"].operations_resolve(op.operation_id, state="completed", basis="display shows run 118",
+                                                       result={"speed": 50.0}, effect="unverified")).operation
+        assert (done.state, done.effect, done.evidence.kind, done.evidence.observations) == ("completed", "unverified",
+                                                                                             "reported", None)
+        # an operation that required a verified effect cannot be completed by an operator at all
+        inst.powered = False
+        strict = (await c["agent"].request("actions/invoke", {"deviceId": "spin-1", "action": "checked_spin",
+                                                              "arguments": {"speed": 5.0}, "require": {"effect": "verified"},
+                                                              "waitMs": 2000}))["operation"]
+        inst.powered = True
+        with pytest.raises(BhmsError) as exc:
+            await c["operator"].operations_resolve(strict["operationId"], state="completed", basis="x", result={"speed": 5.0})
+        assert exc.value.field == "resolution.state" and "verified" in exc.value.message
+    finally:
+        await _close(srv, c)
+
+
+async def test_verified_comes_only_from_the_device_during_a_resolve(tmp_path):
+    """The device-first path: when the device itself supplies measured evidence, the resolve records verified/measured,
+    and the operator's statement (given in the same call) is not used."""
+    srv, dev, inst, c = await _resolve_rig(tmp_path)
+    try:
+        inst.powered = False
+        op = (await c["agent"].actions_invoke("spin-1", "spin", {"speed": 50.0}, wait_ms=2000)).operation
+        inst.powered = True
+
+        @dev.reconcile
+        async def measured(found):
+            reading = await srv.observations.read(dev, "speed", fresh=True, internal=True)
+            return Reconciled("completed", evidence="tachometer read back", result={"speed": reading["value"]},
+                              effect="verified", observations={"speed": reading})
+
+        done = (await c["operator"].operations_resolve(op.operation_id, state="failed", basis="I think it did not run")).operation
+        assert (done.state, done.effect, done.evidence.kind) == ("completed", "verified", "measured")
+        assert done.evidence.observations["speed"].evidence == "measured" and done.result == {"speed": 50.0}
+        assert [h for h in done.history if h.kind == "reconciliation"][-1].operator is None
     finally:
         await _close(srv, c)
 

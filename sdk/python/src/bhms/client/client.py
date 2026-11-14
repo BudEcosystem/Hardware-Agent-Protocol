@@ -346,7 +346,6 @@ class Client:
     async def operations_resolve(self, operation_id: str, *, resolution: t.OperatorResolution | dict[str, Any] | None = None,
                                  state: str | None = None, basis: str | None = None, effect: str | None = None,
                                  may_have_acted: bool | None = None, result: Any = _NO_RESULT,
-                                 observations: dict[str, Any] | None = None,
                                  timeout: float | None = None) -> t.OperationsResolveResult:
         """``operations/resolve`` (operators; needs ``admin`` or ``operations:resolve``): resolve an ``unknown`` operation.
 
@@ -354,12 +353,12 @@ class Client:
         may still be ``unknown``. Give the resolution as keywords, or whole as ``resolution`` (an ``OperatorResolution``
         or its wire dict), not both: ``state`` (``"completed"`` or ``"failed"``) and ``basis`` (free text: what was
         inspected, by whom, what was found) make the server record that resolution if the device still cannot say;
-        device evidence always wins. ``result`` belongs to ``completed`` and must match the action's output; ``effect``
-        ``"verified"`` needs ``observations`` (measured and valid); ``may_have_acted=False`` (``failed`` only) claims
-        proof that nothing happened and needs ``effect="none"``. Check the returned operation's state and history.
+        device evidence always wins. ``result`` belongs to ``completed`` and must match the action's output. An
+        operator's statement is a report: the recorded effect is at most ``"unverified"`` (evidence ``reported``);
+        ``verified`` comes only from the device. ``may_have_acted=False`` (``failed`` only) claims proof that nothing
+        happened and goes with ``effect="none"``. Check the returned operation's state and history.
         """
-        given = {"state": state, "basis": basis, "effect": effect, "mayHaveActed": may_have_acted,
-                 "observations": observations}
+        given = {"state": state, "basis": basis, "effect": effect, "mayHaveActed": may_have_acted}
         stated = any(value is not None for value in given.values()) or result is not _NO_RESULT
         if stated and resolution is not None:
             raise ValueError("give the resolution either whole (resolution=) or as keywords, not both")

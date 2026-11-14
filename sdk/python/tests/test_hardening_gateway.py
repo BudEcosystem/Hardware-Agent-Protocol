@@ -233,13 +233,57 @@ async def test_the_gateway_records_an_operator_resolution_itself_when_the_upstre
         assert not r.gateway.upstreams["a"].available
         still = (await admin.operations_resolve(op.operation_id)).operation  # nothing to ask: unchanged
         assert still.state == "unknown"
-        with pytest.raises(BhmsError) as exc:
-            await admin.operations_resolve(op.operation_id, state="completed", basis="x", result={"not": "the output"},
-                                           effect="verified")
-        assert exc.value.bhms_code == "INVALID_ARGUMENT"
+        with pytest.raises(BhmsError) as exc:  # the shared rules apply here too: "nothing happened" is one claim
+            await admin.operations_resolve(op.operation_id, state="failed", basis="x", effect="unverified", may_have_acted=False)
+        assert exc.value.bhms_code == "INVALID_ARGUMENT" and exc.value.field == "resolution"
+        with pytest.raises(BhmsError) as exc:  # R38: no verified from an operator, on the gateway-local path either
+            await admin.request("operations/resolve", {"operationId": op.operation_id, "resolution": {
+                "state": "completed", "basis": "typed in", "effect": "verified"}})
+        assert exc.value.bhms_code == "INVALID_ARGUMENT" and exc.value.field == "resolution.effect"
         resolved = (await admin.operations_resolve(op.operation_id, state="failed", may_have_acted=False, effect="none",
                                                    basis="controller found powered off since 09:00; it cannot have moved")).operation
         assert resolved.state == "failed" and resolved.effect == "none" and resolved.error.may_have_acted is False
         last = [h for h in resolved.history if h.kind == "reconciliation"][-1]
         assert last.operator.principal == "admin" and "at the gateway" in last.detail and "not reachable" in last.detail
+        assert resolved.evidence.kind == "reported" and resolved.evidence.observations is None
         assert op.operation_id not in r.gateway.router.unknown
+
+
+async def test_a_gateway_local_completed_resolution_is_unverified_and_reported(tmp_path):
+    """R38 on the gateway-local path, which used to set evidence kind measured whenever observations were supplied; the
+    rules are the device server's (one shared function, bhms.runtime.resolution)."""
+    import asyncio
+
+    from bhms.gateway.journal import ForwardJournal
+    from bhms.server.executor import Executor
+
+    async with rig(tmp_path, names=("a",)) as r:
+        agent = await r.client()
+        admin = await r.client(token=TOKENS["admin"])
+        op = await _unknown_through_gateway(r, agent)
+        await r.servers["a"].close()
+        await r.listeners["a"].close()
+        for _ in range(100):
+            if not r.gateway.upstreams["a"].available:
+                break
+            await asyncio.sleep(0.05)
+        done = (await admin.operations_resolve(op.operation_id, state="completed", basis="operator saw it finish")).operation
+        assert (done.state, done.effect, done.evidence.kind, done.evidence.observations) == ("completed", "unverified",
+                                                                                             "reported", None)
+        assert [h for h in done.history if h.kind == "reconciliation"][-1].operator.principal == "admin"
+    import inspect
+
+    from bhms.runtime import resolution
+    for user in (ForwardJournal.resolve_locally, Executor.resolve_by_operator):  # both delegate; neither re-implements
+        source = inspect.getsource(user)
+        assert "record_operator_resolution(" in source and "DEVICE_FAULT" not in source and "transition(" not in source
+    assert resolution.OPERATOR_EVIDENCE == {"kind": "reported"}
+
+
+def test_check_policy_warns_on_resolve_without_operations_read():
+    """Fix round 1: such a principal can resolve only operations it started itself (BHMS-OPS-100)."""
+    policy = Policy({"half": {"uids": [1], "scopes": ["read", "operations:resolve"]},
+                     "whole": {"uids": [2], "scopes": ["read", "operations:read", "operations:resolve"]}})
+    report = check_policy(policy.principals, [])
+    assert any("operations:read" in w for w in report.warnings["half"]) and "whole" not in report.warnings
+    assert report.warning_count == 1 and "operations:resolve" in report.render()

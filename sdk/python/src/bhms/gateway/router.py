@@ -512,7 +512,7 @@ class Router:
         action = entry.action(rec.op.get("action", "")) if entry is not None else None
         try:
             gw.journal.resolve_locally(rec, resolution, principal.id, why, (action or {}).get("output"))
-        except (ValueError, InvalidTransition) as exc:
+        except InvalidTransition as exc:
             raise refusal("INVALID_ARGUMENT", "resolve:resolution", f"the resolution cannot be recorded: {exc}"[:1500],
                           field="resolution", hint="check state, effect, result and observations against the operation "
                                                    "(spec 6.10)") from None

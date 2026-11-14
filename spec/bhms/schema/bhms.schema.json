@@ -3687,7 +3687,7 @@
     },
     "OperatorResolution": {
       "type": "object",
-      "description": "An operator's resolution of an unknown operation, with the evidence it rests on (6.10).",
+      "description": "An operator's resolution of an unknown operation, with the basis it rests on (6.10). An operator's statement is a report: it never yields effect verified or measured evidence.",
       "properties": {
         "state": {
           "enum": [
@@ -3704,27 +3704,16 @@
         "effect": {
           "enum": [
             "none",
-            "unverified",
-            "verified"
+            "unverified"
           ],
-          "description": "Default: unverified for completed (none for an action without effect), unknown for failed."
+          "description": "completed: unverified (none for an action without effect), the default. failed: unknown by default; unverified; or none together with mayHaveActed false."
         },
         "mayHaveActed": {
           "type": "boolean",
-          "description": "failed only; false claims proof that nothing happened and requires effect none."
+          "description": "failed only; false claims proof that nothing happened and goes with effect none."
         },
         "result": {
           "description": "completed only: the result, valid against the action's output."
-        },
-        "observations": {
-          "type": "object",
-          "propertyNames": {
-            "$ref": "#/$defs/Name"
-          },
-          "additionalProperties": {
-            "$ref": "#/$defs/Observation"
-          },
-          "description": "Measured, valid observations taken as evidence; required for effect verified."
         }
       },
       "required": [
@@ -3774,23 +3763,6 @@
         {
           "if": {
             "properties": {
-              "effect": {
-                "const": "verified"
-              }
-            },
-            "required": [
-              "effect"
-            ]
-          },
-          "then": {
-            "required": [
-              "observations"
-            ]
-          }
-        },
-        {
-          "if": {
-            "properties": {
               "mayHaveActed": {
                 "const": false
               }
@@ -3807,6 +3779,32 @@
             },
             "required": [
               "effect"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "failed"
+              },
+              "effect": {
+                "const": "none"
+              }
+            },
+            "required": [
+              "state",
+              "effect"
+            ]
+          },
+          "then": {
+            "properties": {
+              "mayHaveActed": {
+                "const": false
+              }
+            },
+            "required": [
+              "mayHaveActed"
             ]
           }
         }

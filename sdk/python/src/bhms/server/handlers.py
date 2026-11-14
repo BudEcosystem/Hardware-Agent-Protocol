@@ -35,19 +35,21 @@ def _capability_matches(pattern: str, capabilities: tuple[str, ...] | list[str])
     return pattern in capabilities
 
 
-def text_score(text: str, summary: dict[str, Any], device_id: str) -> int:
-    """How many words of a ``devices/list`` ``text`` filter a device matches (§4.2, BHMS-DEV-013).
-
-    The text is split at whitespace into words; one-character words are dropped when a longer word is present ("a", "I").
-    A word matches when it occurs, ignoring case, in the device's id, name, summary, a tag or a capability id. A device
-    passes the filter when at least one word matches (any-word, OR); the count lets a bridge list the best match first.
-    """
+def word_score(text: str, haystack: Any) -> int:
+    """How many words of ``text`` occur, ignoring case, in one of the strings of ``haystack`` (the word search of
+    BHMS-DEV-013): the text is split at whitespace; one-character words are dropped when a longer word is present."""
     words = list(dict.fromkeys(text.casefold().split()))
     if any(len(word) > 1 for word in words):
         words = [word for word in words if len(word) > 1]
-    haystack = [h.casefold() for h in (device_id, summary["name"], summary["summary"], *summary["tags"],
-                                       *summary["capabilities"])]
-    return sum(1 for word in words if any(word in h for h in haystack))
+    folded = [str(item).casefold() for item in haystack]
+    return sum(1 for word in words if any(word in item for item in folded))
+
+
+def text_score(text: str, summary: dict[str, Any], device_id: str) -> int:
+    """How many words of a ``devices/list`` ``text`` filter a device matches (§4.2, BHMS-DEV-013): :func:`word_score` over
+    the device's id, name, summary, tags and capability ids. A device passes the filter when at least one word matches
+    (any-word, OR); the count lets a bridge list the best match first."""
+    return word_score(text, (device_id, summary["name"], summary["summary"], *summary["tags"], *summary["capabilities"]))
 
 
 def summary_matches(flt: Any, summary: dict[str, Any], status: str, *, device_id: str | None = None) -> bool:
@@ -259,4 +261,4 @@ def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one clo
         rpc.register(method, handler, cancellable=True if method == "leases/acquire" else None)
 
 
-__all__ = ["register", "summary_matches", "text_score", "unknown_device"]
+__all__ = ["register", "summary_matches", "text_score", "unknown_device", "word_score"]

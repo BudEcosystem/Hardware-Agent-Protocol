@@ -159,10 +159,9 @@ class OperationsCancelParams(_Params):
 class OperatorResolution(_Wire):
     state: Literal["completed", "failed"]
     basis: _text(2000, 1)
-    effect: Optional[Literal["none", "unverified", "verified"]] = None
+    effect: Optional[Literal["none", "unverified"]] = None
     may_have_acted: Optional[bool] = None
     result: Optional[Any] = None
-    observations: Optional[dict[Name, Observation]] = None
 
     @model_validator(mode="after")
     def _consistent(self) -> OperatorResolution:
@@ -171,10 +170,8 @@ class OperatorResolution(_Wire):
             raise ValueError("result belongs to state completed")
         if self.state == "completed" and "may_have_acted" in given:
             raise ValueError("mayHaveActed belongs to state failed")
-        if self.effect == "verified" and "observations" not in given:
-            raise ValueError("effect verified needs observations (measured and valid)")
-        if self.may_have_acted is False and self.effect != "none":
-            raise ValueError("mayHaveActed false claims that nothing happened and requires effect none")
+        if self.state == "failed" and (self.effect == "none") != (self.may_have_acted is False):
+            raise ValueError("effect none and mayHaveActed false are one claim (nothing happened): state both or neither")
         return self
 
 

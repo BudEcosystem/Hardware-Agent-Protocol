@@ -31,7 +31,7 @@ from bhms.client.client import Client
 from bhms.protocol import schema
 from bhms.protocol.errors import BhmsError
 from bhms.protocol.types import SETTLED_STATES, to_wire
-from bhms.server.handlers import text_score
+from bhms.server.handlers import text_score, word_score
 from bhms.server.validation import ArgumentValidator
 from bhms.transport.base import TransportClosed
 
@@ -356,9 +356,8 @@ class AgentBridge:
                 return None  # this principal cannot see the registry: omit, not an error (BHMS-AGT-001)
             raise
         items = [to_wire(p) for p in page.programs]
-        if text:  # the same rule as the devices/list text filter: any word, ignoring case (BHMS-DEV-013)
-            words = text.casefold().split()
-            items = [p for p in items if any(w in f"{p['name']} {p['description']}".casefold() for w in words)]
+        if text:  # the word search of the devices/list text filter, one-letter rule included (BHMS-DEV-013)
+            items = [p for p in items if word_score(text, (p["name"], p["description"])) > 0]
         return items
 
     async def _bhms_describe(self, args: dict[str, Any]) -> ToolResult:

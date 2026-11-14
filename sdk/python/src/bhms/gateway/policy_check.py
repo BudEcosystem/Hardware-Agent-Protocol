@@ -159,6 +159,10 @@ def check_policy(principals: Any, devices: list[dict[str, Any]]) -> PolicyReport
                                                        "stop, stop:<deviceGlob>, programs:run, programs:register, "
                                                        "operations:read, operations:resolve, admin)"))
         out[principal.id] = rows
+        if "operations:resolve" in principal.scopes and not principal.operations_all:
+            warnings.setdefault(principal.id, []).append(
+                "has operations:resolve without operations:read: it can resolve only the unknown operations it started "
+                "itself, which is not what an operator needs; grant operations:read too (BHMS-OPS-100)")
         if not principal.admin:
             unstoppable = sorted(
                 d["deviceId"] for d in devices if not principal.can_stop(d["deviceId"]) and any(
@@ -166,10 +170,10 @@ def check_policy(principals: Any, devices: list[dict[str, Any]]) -> PolicyReport
                         d["deviceId"], name, tuple(d.get("capabilities") or ()), a.get("effect") == "hazardous")
                     for name, a in (d.get("actions") or {}).items()))
             if unstoppable:
-                warnings[principal.id] = [
+                warnings.setdefault(principal.id, []).append(
                     f"may act on {', '.join(unstoppable)} but may not stop {'it' if len(unstoppable) == 1 else 'them'}: on a "
                     "fault the principal has no safe action; grant " + ", ".join(f"stop:{d}" for d in unstoppable)
-                    + " (bhms.runtime.authority.agent_scopes)"]
+                    + " (bhms.runtime.authority.agent_scopes)")
     return PolicyReport(out, warnings, len(devices))
 
 

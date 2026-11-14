@@ -77,7 +77,7 @@ class DeviceFault(Exception):
         if effect not in ("none", "unverified", "unknown", "verified"):
             raise ValueError(f"DeviceFault effect must be none, unverified, unknown or verified, got {effect!r}")
         if observations:
-            check_observations(observations, "DeviceFault")
+            _check_observations(observations, "DeviceFault")
         if effect == "verified" and not observations:
             raise ValueError("DeviceFault(effect='verified') needs observations={property: Observation} that are "
                              "measured and valid (BHMS-OPS-006); use effect='unverified' without a measurement")
@@ -100,7 +100,7 @@ DEVICE_LOSS: tuple[type[BaseException], ...] = (DeviceLost, ConnectionError, Tim
 """Exceptions that mean "the device stopped answering" rather than "the handler is broken"."""
 
 
-def check_observations(observations: dict[str, dict[str, Any]], owner: str) -> None:
+def _check_observations(observations: dict[str, dict[str, Any]], owner: str) -> None:
     """Observations that prove an effect are measured and valid (BHMS-OPS-006); refused when present but not."""
     for name, obs in observations.items():
         if not isinstance(obs, dict) or obs.get("evidence") != "measured" or obs.get("quality") != "valid":
@@ -150,7 +150,7 @@ class Reconciled:
         if self.effect not in (None, "none", "unverified", "unknown", "verified"):
             raise ValueError(f"Reconciled effect must be none, unverified, unknown or verified, got {self.effect!r}")
         if self.observations:
-            check_observations(self.observations, "Reconciled")
+            _check_observations(self.observations, "Reconciled")
         if self.effect == "verified" and not self.observations:
             raise ValueError("Reconciled(effect='verified') needs observations={property: Observation} that are "
                              "measured and valid (BHMS-OPS-006); use effect='unverified' for a report without a "

@@ -1139,8 +1139,8 @@
   "level": "MUST",
   "profile": "gateway",
   "method": "wire",
-  "summary": "A gateway mints its own operation ids. (06)",
-  "test": "An agent's operation through a gateway: the agent's get/wait/list carry no `upstream`; an admin's carry `upstream` whose operationId is the operation on the named upstream server."
+  "summary": "A gateway MUST NOT include the member `upstream` in an operation it gives to a principal without `admin` (the operation's owner and `operations:read` included), nor in any notification: what lies… (06)",
+  "test": "An agent's operation through a gateway: the agent's invoke/get/wait/list carry no `upstream` (MUST); an admin's get and list carry `upstream` whose operationId is the operation on the named upstream server (SHOULD: reported when absent)."
  },
  {
   "id": "BHMS-OPS-070",
@@ -1212,7 +1212,7 @@
   "profile": "authority",
   "method": "fault",
   "summary": "If the operation is still `unknown` and `resolution` is given, the server MUST record it as a `reconciliation` history entry carrying `operator: {principal, basis}` (the caller's principal id and the… (06)",
-  "test": "Resolve an operation the device cannot explain: reconciliation entry with operator and basis after the unchanged earlier entries, operation.resolved event, the resources admit new work; a resolution that claims a verified effect without observations is refused."
+  "test": "Resolve an operation the device cannot explain: reconciliation entry with operator and basis after the unchanged earlier entries, operation.resolved event, the resources admit new work; the recorded effect is not verified and the evidence kind is reported; a resolution that claims effect verified is refused."
  },
  {
   "id": "BHMS-OPS-090",
