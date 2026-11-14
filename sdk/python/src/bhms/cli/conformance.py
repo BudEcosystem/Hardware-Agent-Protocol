@@ -52,6 +52,9 @@ def register(app: typer.Typer) -> None:
             function_tools: Annotated[Path | None, typer.Option("--function-tools", help="Agent profile: JSON list of the OpenAI "
                                                                  "function-tool definitions of the bridge's adapter (BHMS-AGT-050).")] = None,
             physical_ok: Annotated[bool, typer.Option("--physical-ok", help="With --physical: allow checks that move or change the devices.")] = False,
+            device_command: Annotated[str | None, typer.Option("--device-command", help="With a conformance-device fixture: launch this "
+                                       "command (split like a shell line) instead of this SDK's own device, e.g. \"node dist/src/testing/"
+                                       "conformanceDevice.js\". It must accept [URL] [--state-dir DIR] [--memory] [--principals FILE].")] = None,
             verbose: Annotated[bool, typer.Option("--verbose", "-v", help="Also list passed checks' requirements and skipped rows.")] = False,
             list_coverage: Annotated[bool, typer.Option("--coverage", help="Print the requirement coverage table and exit.")] = False,
     ) -> None:
@@ -73,7 +76,7 @@ def register(app: typer.Typer) -> None:
                              only=tuple(only or ()), keep_state=keep_state, physical=physical, commit=commit,
                              device_target=device, argv=("bhms", "conformance", *sys.argv[2:]), allow_unproven=allow_unproven, conformance_device=tuple(conformance_device or ()),
                              upstreams=tuple(upstream or ()), physical_ok=physical_ok,
-                             function_tools=str(function_tools) if function_tools else None)
+                             function_tools=str(function_tools) if function_tools else None, device_command=device_command)
         try:
             report = asyncio.run(run_conformance(options))
         except KeyboardInterrupt:
