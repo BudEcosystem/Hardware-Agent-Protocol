@@ -238,3 +238,13 @@ async def test_a_result_outside_its_declared_range_is_reported_as_such_with_the_
     finally:
         await client.close()
         await srv.close()
+
+
+def test_the_migration_notes_cover_the_four_breaking_changes():
+    """Fix round 1: downstream code (SimLab) broke on these without a word in the user docs."""
+    from pathlib import Path
+
+    notes = (Path(__file__).resolve().parents[3] / "docs" / "bhms" / "migration.md").read_text()
+    for needle in ("BHMS-LSE-014", "lease_id=lease.lease_id", "BHMS-DEV-033", "requires_lease=True", "`offline`",
+                   "liveness", "bhms_code", "DeprecationWarning"):
+        assert needle in notes, needle
