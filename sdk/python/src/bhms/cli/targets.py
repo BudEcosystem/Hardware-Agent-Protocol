@@ -23,6 +23,7 @@ from typing import Any, TypeVar
 from bhms.client.client import Client
 from bhms.protocol.errors import BhmsError
 from bhms.transport.base import TransportClosed
+from websockets.exceptions import InvalidHandshake  # a refused WebSocket upgrade (HTTP 401 for a wrong token)
 
 T = TypeVar("T")
 URL_PREFIXES = ("stdio:", "unix:", "tcp://", "ws://", "wss://", "http://", "https://")
@@ -54,7 +55,7 @@ async def open_client(target: str | None = None, *, token: str | None = None, ti
         try:
             client = await Client.connect(chosen, token=token, timeout=timeout, strict=strict,
                                           client_info={"name": "bhms-cli", "version": "0.1.0"})
-        except (OSError, TransportClosed, ValueError, ImportError) as exc:
+        except (OSError, TransportClosed, ValueError, ImportError, InvalidHandshake) as exc:
             raise CliError(f"cannot connect to {chosen}: {exc}", _connect_hint(chosen, exc)) from None
         try:
             yield client
@@ -77,6 +78,9 @@ async def open_client(target: str | None = None, *, token: str | None = None, ti
 
 
 def _connect_hint(target: str, exc: BaseException) -> str:
+    status = getattr(getattr(exc, "response", None), "status_code", None)
+    if status in (401, 403):
+        return "the server refused the credential: pass --token or set BHMS_TOKEN to a token its policy lists"
     if target.startswith("http") and isinstance(exc, ImportError):
         return "HTTP needs the optional dependency: pip install 'bhms[http]'"
     if isinstance(exc, (FileNotFoundError, ConnectionRefusedError)):

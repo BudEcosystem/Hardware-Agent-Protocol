@@ -86,6 +86,23 @@ async def test_a_dead_target_fails_with_a_hint_not_a_traceback(tmp_path):
     assert "is the server running" in result.output
 
 
+async def test_a_refused_token_fails_with_a_hint_not_a_traceback(tmp_path):
+    from bhms import DeviceServer
+
+    srv = DeviceServer("token-check", state_dir=tmp_path, store=None, token="the-right-token")
+    srv.device("d-1")
+    listener = await srv.listen("ws://127.0.0.1:0")
+    try:
+        result = await invoke("ls", f"ws://127.0.0.1:{listener.address[1]}", "--token", "a-wrong-token")
+    finally:
+        await listener.close()
+        await srv.close()
+    assert result.exit_code == 1 and "Traceback" not in result.output, result.output
+    assert "cannot connect" in result.output and "HTTP 401" in result.output
+    assert "refused the credential" in result.output and "BHMS_TOKEN" in result.output
+    assert "a-wrong-token" not in result.output  # a token is never echoed (BHMS-SEC-002)
+
+
 async def test_describe_prints_the_signature_block_with_units_and_bounds(device_url):
     result = await invoke("describe", "-u", device_url, "pump-1")
     assert result.exit_code == 0
