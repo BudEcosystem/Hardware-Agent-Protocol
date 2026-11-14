@@ -36,7 +36,7 @@ from typing import Any
 
 from bhms.protocol import schema as schema_module
 from bhms.protocol.errors import BhmsError
-from bhms.protocol.units import UNITS, convert
+from bhms.protocol.units import ALIASES, UNITS, convert
 
 _RANGE_KEYWORDS = ("minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum", "minLength", "maxLength",
                    "minItems", "maxItems", "enum", "const")
@@ -62,6 +62,9 @@ def check_units(schema: Any, where: str) -> None:
             if not isinstance(unit, str) or not unit:
                 raise ValueError(f"{path}: a number/integer schema must carry x-bhms-unit (BHMS-DEV-041); use "
                                  '"1" for counts and "%" for percentages')
+            if unit in ALIASES:  # a common spelling that is not a UCUM code: refused, never guessed
+                raise ValueError(f"{path}: x-bhms-unit {unit!r} is not a UCUM code (BHMS-DEV-041); write "
+                                 f"{ALIASES[unit]!r}")
 
 
 def _fmt(value: Any) -> str:

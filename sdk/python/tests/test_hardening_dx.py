@@ -101,6 +101,23 @@ def test_rotational_speed_is_not_a_frequency_and_concentration_is_not_dimensionl
     assert "{rev}/min" in exc.value.hint
 
 
+@pytest.mark.parametrize("alias", sorted(units.ALIASES))
+def test_a_description_with_a_common_non_ucum_spelling_is_refused_naming_the_code(alias):
+    """Task 14: `Range(0, 5000, unit="rpm")` was accepted at declaration, at start and at invoke, although "rpm" is not a
+    UCUM code (BHMS-DEV-041) and the SDK knows the right one; it is now a DescriptionError naming it."""
+    from bhms.server.decorators import Range as UnitRange  # annotations are resolved in this frame (localns)
+
+    dev = Device(None, "centrifuge-1", resources=["centrifuge-1/rotor"])
+
+    @dev.action(effect="reversible", idempotency="absolute", max_duration_ms=1000)
+    async def spin(ctx, speed: UnitRange(0, 5000, unit=alias)):  # noqa: ARG001
+        return None
+
+    with pytest.raises(DescriptionError) as exc:
+        dev.description()
+    assert repr(units.ALIASES[alias]) in str(exc.value) and "BHMS-DEV-041" in str(exc.value)
+
+
 def test_the_spec_registry_table_lists_exactly_the_implemented_units():
     from pathlib import Path
 
