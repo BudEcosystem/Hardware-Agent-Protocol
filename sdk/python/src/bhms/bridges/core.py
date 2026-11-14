@@ -31,6 +31,7 @@ from bhms.client.client import Client
 from bhms.protocol import schema
 from bhms.protocol.errors import BhmsError
 from bhms.protocol.types import SETTLED_STATES, to_wire
+from bhms.server.handlers import text_score
 from bhms.server.validation import ArgumentValidator
 from bhms.transport.base import TransportClosed
 
@@ -327,6 +328,8 @@ class AgentBridge:
         filt = {k: args[k] for k in ("text", "capability", "tag", "status") if k in args}
         page = await self.client.devices_list(filter=filt or None, cursor=args.get("cursor"))
         data: dict[str, Any] = {"devices": [to_wire(d) for d in page.devices]}
+        if "text" in args:  # any word matches (BHMS-DEV-013): show the devices that match the most words first
+            data["devices"].sort(key=lambda d: -text_score(args["text"], d, d["deviceId"]))
         programs: list[dict[str, Any]] | None = None
         caps = self.capabilities
         registry = getattr(getattr(caps, "programs", None), "registry", False)
@@ -336,6 +339,12 @@ class AgentBridge:
                 data["programs"] = programs
         if page.next_cursor:
             data["nextCursor"] = page.next_cursor
+        total: int | None = None
+        if not data["devices"] and filt and "cursor" not in args:
+            # nothing matched: say how many devices there are, so "no match" is not read as "no devices" (Task 11 S1)
+            everything = await self.client.devices_list()
+            total = data["totalDevices"] = len(everything.devices)
+            return ToolResult(render.summarize_find([], programs, None, total=total, more=bool(everything.next_cursor)), data)
         return ToolResult(render.summarize_find(data["devices"], programs, page.next_cursor), data)
 
     async def _programs(self, text: str | None) -> list[dict[str, Any]] | None:
@@ -346,9 +355,9 @@ class AgentBridge:
                 return None  # this principal cannot see the registry: omit, not an error (BHMS-AGT-001)
             raise
         items = [to_wire(p) for p in page.programs]
-        if text:
-            words = text.lower().split()
-            items = [p for p in items if all(w in f"{p['name']} {p['description']}".lower() for w in words)]
+        if text:  # the same rule as the devices/list text filter: any word, ignoring case (BHMS-DEV-013)
+            words = text.casefold().split()
+            items = [p for p in items if any(w in f"{p['name']} {p['description']}".casefold() for w in words)]
         return items
 
     async def _bhms_describe(self, args: dict[str, Any]) -> ToolResult:

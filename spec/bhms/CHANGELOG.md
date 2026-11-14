@@ -33,6 +33,17 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   `BhmsError.bhms_code` is the one name of the code, `BhmsError.code` a deprecated alias for one release (gap 7); `DeviceLost`
   (Task 11 S9); `units.convert` overflow is `OUT_OF_RANGE` and `BhmsError` pickles (Task 1 minors); a stdio connection releases
   its child process and tasks on every close path (controller verification of the suite under `-W error`).
+- **BHMS-DEV-013 (new, MUST, core)**: the `devices/list` `text` filter is a word search: any word, ignoring case, over
+  `deviceId`, `name`, `summary`, tags and capabilities (one-character words are ignored beside a longer word); `capability: "*"`
+  lists every device (schema: `DevicesListFilter.capability`, `AgentFindInput.capability` carry the pattern). Was: one
+  case-insensitive substring over name, summary and tags. **BHMS-AGT-015 (new, MUST, agent)**: a `bhms_find` that matches no
+  device carries `totalDevices` (`AgentFindData`) and says in its summary how many devices exist and that `bhms_find` with no
+  arguments lists everything; the tool description says so too. Evidence: Task 11 report, S1 (`bhms_find "facility-1"` and
+  descriptive queries returned "0 devices"; three models then answered `cannot_do`) and S3 (`capability: "*"` was refused by a
+  pattern error).
+- **BHMS-DEV-014 (new, SHOULD, core)**: an `UNKNOWN_DEVICE` refusal names the visible devices whose id differs from the request
+  only in case or by a gateway namespace (`hint`, and `bound` as a list). Evidence: Task 11 report, S2 (`notice-1` was refused
+  with "no device" although `notice/notice-1` existed). Requirement index: 254 rows.
 
 ### TS SDK to follow
 
@@ -43,6 +54,10 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
 - BHMS-OPS-008: a result outside its declared output range ends `failed` with `OUT_OF_RANGE` (`field: "result.<member>"`), not
   `INTERNAL`.
 - The unit registry additions, if the TypeScript SDK grows a unit registry (it has none today).
+- BHMS-DEV-013 (`text` word search, `capability: "*"`) and BHMS-DEV-014 (candidate ids in the `UNKNOWN_DEVICE` hint) in the
+  TypeScript device server; conformance checks `descriptions.list-text-filter` and `descriptions.unknown-device-hint`.
+- Regenerate `src/generated/types.ts` (`npm run gen-types`): `AgentFindData.totalDevices`, the capability filter pattern, and
+  every schema change of this round listed above and below.
 
 ## 2026-11-13 (v0.1)
 

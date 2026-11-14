@@ -11,7 +11,7 @@ map; tool inputs use snake_case, and structured results are BHMS wire objects
 
 | Tool | Purpose | Input | Structured result | MCP annotations |
 |---|---|---|---|---|
-| `bhms_find` | Find devices, and saved programs when the server has a registry | `{text?, capability?, tag?, status?, cursor?}` | `{devices: DeviceSummary[], programs?: ProgramInfo[], nextCursor?}` | readOnly, idempotent |
+| `bhms_find` | Find devices, and saved programs when the server has a registry; with no arguments it lists every device | `{text?, capability?, tag?, status?, cursor?}` | `{devices: DeviceSummary[], programs?: ProgramInfo[], nextCursor?, totalDevices?}` | readOnly, idempotent |
 | `bhms_describe` | Describe one device precisely | `{device_id}` | `{description: DeviceDescription}` | readOnly, idempotent |
 | `bhms_read` | Read a property | `{device_id, property, max_age_ms?, fresh?}` | `{observation}` | readOnly (see below) |
 | `bhms_invoke` | Invoke an action and wait briefly for the outcome | `{device_id, action, arguments, operation_key?, wait_ms?, require_verified?}` | `{operation, replayed}` | destructive, not idempotent |
@@ -27,6 +27,14 @@ map; tool inputs use snake_case, and structured results are BHMS wire objects
 names and the input schemas of `x-bhms-agent-tools`. `bhms_run_program` MUST be
 omitted when the server does not advertise `programs`; programs in `bhms_find`
 results MUST be omitted when it does not advertise `programs.registry`.
+
+**BHMS-AGT-015** When a `bhms_find` filter matches no device, the bridge MUST NOT
+leave the model to conclude that there are no devices: the structured result MUST
+carry `totalDevices` (the number of devices an unfiltered `bhms_find` lists; its
+first page when there are more) and the summary MUST state that number and that
+`bhms_find` with no arguments lists everything. `text` follows BHMS-DEV-013 (any
+word, ids included); devices that match more words come first; a program matches
+when any word occurs in its name or description.
 
 **BHMS-AGT-002** A bridge MUST pass every tool call to BHMS methods with the
 bridge's own principal and MUST NOT accept identity, scopes, leases or bounds from

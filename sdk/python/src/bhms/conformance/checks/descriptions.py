@@ -7,7 +7,7 @@ from typing import Any
 
 from bhms.conformance.checks._util import walk_schema
 from bhms.conformance.context import Context
-from bhms.conformance.core import check
+from bhms.conformance.core import NotApplicable, check
 from bhms.protocol import units
 from bhms.protocol.canonical import canonical
 
@@ -28,6 +28,61 @@ async def digest_immutability(c: Context) -> None:
         c.expect(first["digest"] == second["digest"], f"{summary['deviceId']}: the digest changed between two describes")
         c.expect(set(first.get("actions", {})) == set(summary.get("actions", [])), f"{summary['deviceId']}: summary actions differ from the description")
         c.expect(set(first.get("properties", {})) == set(summary.get("properties", [])), f"{summary['deviceId']}: summary properties differ from the description")
+
+
+@check("descriptions.list-text-filter", ["BHMS-DEV-013"], generic=True)
+async def list_text_filter(c: Context) -> None:
+    """The text filter is a word search: any word, ignoring case, over id, name, summary, tags and capabilities; the
+    capability filter `*` lists every device."""
+    summaries = await c.devices()
+    if not summaries:
+        raise NotApplicable("the server lists no devices")
+    everything = {d["deviceId"] for d in summaries}
+    nothing = "zz-" + c.unique("nomatch").replace("-", "q")
+
+    async def listed(flt: dict[str, Any]) -> set[str]:
+        found: set[str] = set()
+        cursor = None
+        while True:
+            page = await c.ok("devices/list", {"filter": flt, "limit": 100, **({"cursor": cursor} if cursor else {})})
+            found |= {d["deviceId"] for d in page["devices"]}
+            cursor = page.get("nextCursor")
+            if not cursor:
+                return found
+
+    target = summaries[0]
+    device = target["deviceId"]
+    c.expect(await listed({"text": nothing}) == set(), "a text that occurs nowhere must match no device")
+    by_id = await listed({"text": f"{device.swapcase()} {nothing}"})
+    c.expect(device in by_id, f"text must match the device id, ignoring case, when any word matches: {device!r} not in {sorted(by_id)[:5]}")
+    for member in ("name", "summary"):
+        words = [w for w in target.get(member, "").split() if len(w) > 3 and all(ch.isalnum() or ch in "-_." for ch in w)]
+        if words:
+            found = await listed({"text": f"{nothing} {words[0].upper()}"})
+            c.expect(device in found, f"text must match a word of the device's {member} ({words[0]!r})")
+    if target.get("capabilities"):
+        found = await listed({"text": target["capabilities"][0]})
+        c.expect(device in found, f"text must match a capability id ({target['capabilities'][0]!r})")
+    c.expect(await listed({"capability": "*"}) == everything, "capability * must list every device")
+
+
+@check("descriptions.unknown-device-hint", ["BHMS-DEV-014"], generic=True)
+async def unknown_device_hint(c: Context) -> None:
+    """SHOULD (reported as a warning): an UNKNOWN_DEVICE refusal names the visible device whose id differs only in case
+    or by a gateway namespace."""
+    candidates = [d["deviceId"] for d in await c.devices()]
+    if not candidates:
+        raise NotApplicable("the server lists no devices")
+    known = set(candidates)
+    tries = [(d.swapcase(), d) for d in candidates if d.swapcase() not in known][:1]
+    tries += [(d.rsplit("/", 1)[1], d) for d in candidates if "/" in d and d.rsplit("/", 1)[1] not in known][:1]
+    if not tries:
+        raise NotApplicable("no device id has a near miss to ask for")
+    for asked, device in tries:
+        response = await c.call("devices/describe", {"deviceId": asked})
+        data = c.refused(response, "UNKNOWN_DEVICE", what=f"describe of {asked!r}")
+        if device not in str(data.get("hint", "")):
+            c.warn(f"UNKNOWN_DEVICE for {asked!r} does not suggest {device!r} in its hint")
 
 
 @check("descriptions.stale-digest", ["BHMS-DEV-022"], generic=True)

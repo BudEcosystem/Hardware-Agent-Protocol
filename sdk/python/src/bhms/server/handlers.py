@@ -27,16 +27,34 @@ def _limit(requested: int | None, maximum: int, default: int = 100) -> int:
 
 
 def _capability_matches(pattern: str, capabilities: tuple[str, ...] | list[str]) -> bool:
+    if pattern == "*":
+        return True
     if pattern.endswith(".*"):
         prefix = pattern[:-1]
         return any(c.startswith(prefix) for c in capabilities)
     return pattern in capabilities
 
 
-def summary_matches(flt: Any, summary: dict[str, Any], status: str) -> bool:
-    """Whether a ``DeviceSummary`` satisfies a ``devices/list`` filter (capability, tag, status, free text).
+def text_score(text: str, summary: dict[str, Any], device_id: str) -> int:
+    """How many words of a ``devices/list`` ``text`` filter a device matches (§4.2, BHMS-DEV-013).
 
-    Shared by :class:`~bhms.server.server.DeviceServer` and the gateway so both filter identically.
+    The text is split at whitespace into words; one-character words are dropped when a longer word is present ("a", "I").
+    A word matches when it occurs, ignoring case, in the device's id, name, summary, a tag or a capability id. A device
+    passes the filter when at least one word matches (any-word, OR); the count lets a bridge list the best match first.
+    """
+    words = list(dict.fromkeys(text.casefold().split()))
+    if any(len(word) > 1 for word in words):
+        words = [word for word in words if len(word) > 1]
+    haystack = [h.casefold() for h in (device_id, summary["name"], summary["summary"], *summary["tags"],
+                                       *summary["capabilities"])]
+    return sum(1 for word in words if any(word in h for h in haystack))
+
+
+def summary_matches(flt: Any, summary: dict[str, Any], status: str, *, device_id: str | None = None) -> bool:
+    """Whether a ``DeviceSummary`` satisfies a ``devices/list`` filter (capability, tag, status, free text; AND).
+
+    Shared by :class:`~bhms.server.server.DeviceServer` and the gateway so both filter identically; the gateway passes
+    the ``device_id`` it serves the device under (``<namespace>/<id>``), which is the id the text filter searches.
     """
     if flt is None:
         return True
@@ -46,11 +64,20 @@ def summary_matches(flt: Any, summary: dict[str, Any], status: str) -> bool:
         return False
     if flt.status is not None and flt.status != status:
         return False
-    if flt.text is not None:
-        needle = flt.text.casefold()
-        if not any(needle in h.casefold() for h in (summary["name"], summary["summary"], *summary["tags"])):
-            return False
-    return True
+    return flt.text is None or text_score(flt.text, summary, device_id or summary["deviceId"]) > 0
+
+
+def unknown_device(device_id: str, visible: Any, *, field: str | None = "deviceId") -> BhmsError:
+    """The ``UNKNOWN_DEVICE`` refusal for ``device_id``. ``visible`` are the ids the caller may read (empty when it may
+    read none, BHMS-DEV-010): ids that equal the request ignoring case, or that end in ``/<request>`` (the same device
+    behind a gateway namespace), are named in ``hint`` and listed in ``bound``."""
+    wanted = device_id.casefold()
+    candidates = sorted(v for v in visible if v.casefold() == wanted or v.casefold().endswith("/" + wanted))[:5]
+    if candidates:
+        return BhmsError("UNKNOWN_DEVICE", f"no device {device_id!r}", field=field, bound=candidates,
+                         hint=f"did you mean {' or '.join(candidates)}? devices/list shows the devices you can use")
+    return BhmsError("UNKNOWN_DEVICE", f"no device {device_id!r}", field=field,
+                     hint="devices/list shows the devices you can use")
 
 
 def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one closure per method, registered together
@@ -226,4 +253,4 @@ def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one clo
         rpc.register(method, handler, cancellable=True if method == "leases/acquire" else None)
 
 
-__all__ = ["register", "summary_matches"]
+__all__ = ["register", "summary_matches", "text_score", "unknown_device"]

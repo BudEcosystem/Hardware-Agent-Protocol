@@ -402,17 +402,27 @@ def summarize_stop(stops: list[dict[str, Any]]) -> str:
                    next_first=True)
 
 
-def summarize_find(devices: list[dict[str, Any]], programs: list[dict[str, Any]] | None, next_cursor: str | None) -> str:
+def summarize_find(devices: list[dict[str, Any]], programs: list[dict[str, Any]] | None, next_cursor: str | None, *,
+                   total: int | None = None, more: bool = False) -> str:
+    """``total`` is given when a filter matched no device: the number of devices an unfiltered find lists (``more``: and
+    further pages exist), so that "no match" is never read as "no devices"."""
+    count = lambda n, what: f"{n} {what}{'s' if n != 1 else ''}"  # noqa: E731
+    if total is not None:
+        head = f"0 devices match; {'at least ' if more else ''}{count(total, 'device')} exist{'s' if total == 1 and not more else ''}"
+        if programs:
+            head += f", {count(len(programs), 'program')} match{'es' if len(programs) == 1 else ''}"
+        return compose(head + ":", "", "call bhms_find with no arguments to list everything" if total else
+                       "this principal can read no device")
     items = [f"{d['deviceId']} {quote(d['name'])} {d['status']}" for d in devices]
-    head = f"{len(devices)} device{'s' if len(devices) != 1 else ''}"
+    head = count(len(devices), "device")
     if programs is not None:
-        head += f", {len(programs)} program{'s' if len(programs) != 1 else ''}"
+        head += f", {count(len(programs), 'program')}"
     nxt = ""
     if next_cursor:
         nxt = f'more: call bhms_find with cursor="{next_cursor}"'
     elif devices:
         nxt = "Next: bhms_describe a device before acting"
-    return compose(head + (":" if items else "; try a broader search"), "; ".join(items), nxt)
+    return compose(head + (":" if items else "; no device is visible to this principal"), "; ".join(items), nxt)
 
 
 def summarize_describe(description: dict[str, Any]) -> str:

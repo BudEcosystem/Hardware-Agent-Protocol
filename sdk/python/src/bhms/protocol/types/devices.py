@@ -135,8 +135,12 @@ class DeviceSummary(_Wire):
     properties: list[Name]
 
 
+CapabilityFilter = _pattern(r"^(\*|[a-z][a-z0-9-]*(\.[a-z0-9-]+)*(\.\*)?)$", max_length=128)
+"""A capability id, a prefix ending in ``.*``, or ``*`` for any capability (``devices/list`` and ``bhms_find``)."""
+
+
 class DevicesListFilter(_Wire):
-    capability: Optional[_pattern(r"^[a-z][a-z0-9-]*(\.[a-z0-9-]+)*(\.\*)?$", max_length=128)] = None
+    capability: Optional[CapabilityFilter] = None
     tag: Optional[Tag] = None
     text: Optional[_text(200, 1)] = None
     status: Optional[DeviceStatus] = None

@@ -34,11 +34,26 @@ BHMS-DEV-021); see §7.6.
 `{filter?: {capability?, tag?, text?, status?}, cursor?, limit?}` →
 `{devices: DeviceSummary[], nextCursor?}`.
 
-- `capability` matches an id exactly, or a prefix when it ends in `.*`
-  (`bhms.axis.*`).
-- `tag` matches one tag exactly. `text` is a case-insensitive substring match over
-  `name`, `summary` and tags. `status` matches the summary status.
+- `capability` matches an id exactly, a prefix when it ends in `.*`
+  (`bhms.axis.*`), or every device when it is `*`.
+- `tag` matches one tag exactly. `status` matches the summary status.
+- `text` is a word search (BHMS-DEV-013).
 - Filters combine with AND.
+
+**BHMS-DEV-013** A server MUST evaluate the `text` filter as follows: the text is
+split at whitespace into words; one-character words are ignored when a longer word
+is present; a device matches when **at least one** word occurs, ignoring case, as a
+substring of its `deviceId`, `name`, `summary`, one of its `tags` or one of its
+`capabilities`. A gateway searches the `deviceId` it serves the device under. A
+model that describes what it wants in a sentence, or that names a device by its
+id, must find the device; a phrase therefore matches broadly, and a client that
+shows results to a model SHOULD list the devices that match the most words first.
+
+**BHMS-DEV-014** An `UNKNOWN_DEVICE` refusal SHOULD name, in `hint` and as the list
+`bound`, the devices *visible to the caller* whose id equals the requested id
+ignoring case or ends in `/<requested id>` (the same device behind a gateway
+namespace: `notice-1` → `notice/notice-1`). It MUST NOT name a device the caller
+may not read (BHMS-DEV-010).
 
 `DeviceSummary`:
 

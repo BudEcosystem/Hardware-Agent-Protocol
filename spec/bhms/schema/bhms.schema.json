@@ -263,7 +263,7 @@
   },
   "x-bhms-agent-tools": {
     "bhms_find": {
-      "description": "Find devices (and saved programs) by text, capability, tag or status. Start here.",
+      "description": "Find devices (and saved programs) by text, capability, tag or status; with no arguments it lists every device. Start here.",
       "input": "#/$defs/AgentFindInput",
       "result": "#/$defs/AgentFindData"
     },
@@ -1945,8 +1945,8 @@
       "properties": {
         "capability": {
           "type": "string",
-          "description": "Exact id or prefix ending in .*",
-          "pattern": "^[a-z][a-z0-9-]*(\\.[a-z0-9-]+)*(\\.\\*)?$",
+          "description": "Exact id, a prefix ending in .*, or * for any capability",
+          "pattern": "^(\\*|[a-z][a-z0-9-]*(\\.[a-z0-9-]+)*(\\.\\*)?)$",
           "maxLength": 128
         },
         "tag": {
@@ -1955,7 +1955,8 @@
         "text": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 200
+          "maxLength": 200,
+          "description": "Words separated by whitespace; a device matches when any word occurs, ignoring case, in its id, name, summary, tags or capabilities."
         },
         "status": {
           "$ref": "#/$defs/DeviceStatus"
@@ -5615,13 +5616,14 @@
       "properties": {
         "text": {
           "type": "string",
-          "description": "Words to match in names, summaries and tags.",
+          "description": "Words; a device matches when any word occurs in its id, name, summary, tags or capabilities.",
           "minLength": 1,
           "maxLength": 200
         },
         "capability": {
           "type": "string",
-          "description": "Capability id, or prefix ending in .*",
+          "description": "Capability id, a prefix ending in .*, or * for any",
+          "pattern": "^(\\*|[a-z][a-z0-9-]*(\\.[a-z0-9-]+)*(\\.\\*)?)$",
           "maxLength": 128
         },
         "tag": {
@@ -5838,6 +5840,11 @@
         },
         "nextCursor": {
           "$ref": "#/$defs/Cursor"
+        },
+        "totalDevices": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Present when no device matched: how many devices an unfiltered bhms_find lists (its first page when there are more)."
         }
       },
       "required": [

@@ -11,7 +11,7 @@ from bhms.protocol.types._base import (
     ObjectSchema, OperationError, PosInt, ProtocolVersion, Reference, ResourceId, Scope, ServerId, Tag, VariableName,
     _bounded_int, _Params, _pattern, _Plain, _Result, _text, _Wire,
 )
-from bhms.protocol.types.devices import DeviceSummary
+from bhms.protocol.types.devices import CapabilityFilter, DeviceSummary
 from bhms.protocol.types.operations import Operation
 
 
@@ -205,7 +205,7 @@ AgentWait = _bounded_int(0, 60_000)
 
 class AgentFindInput(_Plain):
     text: Optional[_text(200, 1)] = None
-    capability: Optional[_text(128)] = None
+    capability: Optional[CapabilityFilter] = None
     tag: Optional[Tag] = None
     status: Optional[DeviceStatus] = None
     cursor: Optional[Cursor] = None
@@ -271,6 +271,7 @@ class AgentFindData(_Wire):
     devices: list[DeviceSummary]
     programs: Optional[list[ProgramInfo]] = None
     next_cursor: Optional[Cursor] = None
+    total_devices: Optional[NonNegInt] = None
 
 
 class AgentFunctionResult(_Wire):

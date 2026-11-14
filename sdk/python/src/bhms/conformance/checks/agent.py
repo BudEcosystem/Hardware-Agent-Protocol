@@ -158,6 +158,24 @@ async def refusals(c: Context) -> None:
         await c.reset()
 
 
+@check("agent.find-no-match", ["BHMS-AGT-015"], profile="agent", needs=NEEDS)
+async def find_no_match(c: Context) -> None:
+    """A bhms_find that matches nothing says how many devices exist and how to list them; a device is found by its id."""
+    agent = _agent(c)
+    everything = await agent.call("bhms_find", {})
+    total = len(everything.structured.get("devices", []))
+    c.expect(not everything.is_error and total > 0, f"bhms_find with no arguments must list the devices: {everything.summary}")
+    nothing = await agent.call("bhms_find", {"text": "zz-" + c.unique("nomatch").replace("-", "q")})
+    c.expect(not nothing.is_error and nothing.structured.get("devices") == [], f"no match is an empty result, not a refusal: {nothing.summary}")
+    c.expect(nothing.structured.get("totalDevices") == total,
+             f"a find with no match must carry totalDevices = {total}: {nothing.structured.get('totalDevices')!r}")
+    c.expect(str(total) in nothing.summary and "no arguments" in nothing.summary,
+             f"the summary must state the number of devices and that bhms_find with no arguments lists them: {nothing.summary}")
+    device = everything.structured["devices"][0]["deviceId"]
+    by_id = await agent.call("bhms_find", {"text": device.upper()})
+    c.expect(device in [d["deviceId"] for d in by_id.structured.get("devices", [])], f"bhms_find by device id must find {device}: {by_id.summary}")
+
+
 @check("agent.freshness-and-keys", ["BHMS-AGT-014", "BHMS-AGT-030", "BHMS-AGT-041"], profile="agent", needs=NEEDS)
 async def freshness_and_keys(c: Context) -> None:
     """A read after a move is the post-move reading; a call without operation_key is marked not retry-safe and sends no key;

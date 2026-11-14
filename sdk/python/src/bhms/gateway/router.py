@@ -53,7 +53,7 @@ from bhms.protocol.errors import BhmsError
 from bhms.runtime.authority import Principal
 from bhms.runtime.operations import (OperationRecord, intent_digest, key_conflict_error, now_ns, server_key)
 from bhms.runtime.store import StoreError
-from bhms.server.handlers import summary_matches
+from bhms.server.handlers import summary_matches, unknown_device
 from bhms.server.server import decode_cursor, encode_cursor
 from bhms.transport.base import TransportClosed
 
@@ -161,9 +161,9 @@ class Router:
     def _visible(self, principal: Principal, device_id: str, *, field: str = "deviceId") -> CatalogEntry:
         entry = self.gateway.catalog.get(device_id)
         if entry is None or not principal.can_read:
-            raise refusal("UNKNOWN_DEVICE", "scope:read" if entry is not None else "routing:unknown-device",
-                          f"no device {device_id!r}", field=field,
-                          hint="devices/list shows the devices you can use")
+            visible = list(self.gateway.catalog) if principal.can_read else ()
+            raise _tag(unknown_device(device_id, visible, field=field),
+                       "scope:read" if entry is not None else "routing:unknown-device")
         return entry
 
     async def devices_list(self, params: Any, ctx: RequestContext) -> dict[str, Any]:
@@ -178,7 +178,7 @@ class Router:
         more = False
         for entry in gw.catalog.after(after):
             status = self.status_of(entry)
-            if flt is not None and not summary_matches(flt, entry.upstream_summary, status):
+            if flt is not None and not summary_matches(flt, entry.upstream_summary, status, device_id=entry.device_id):
                 continue
             if len(devices) == limit:
                 more = True

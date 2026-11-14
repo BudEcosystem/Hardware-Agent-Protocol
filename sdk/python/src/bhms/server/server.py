@@ -383,8 +383,9 @@ class DeviceServer:
         """The device if the principal may read it; otherwise ``UNKNOWN_DEVICE`` (BHMS-DEV-010, BHMS-AUTH-002)."""
         dev = self.devices.get(device_id)
         if dev is None or not principal.can_read:
-            raise BhmsError("UNKNOWN_DEVICE", f"no device {device_id!r}", field=field,
-                            hint="devices/list shows the devices you can use")
+            from bhms.server.handlers import unknown_device
+
+            raise unknown_device(device_id, self.devices if principal.can_read else (), field=field)
         return dev
 
     # ------------------------------------------------------------------ journal health (BHMS-AUTH-025)

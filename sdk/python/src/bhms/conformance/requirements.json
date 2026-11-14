@@ -549,6 +549,24 @@
   "test": "Disconnect a device; status leaves online within its liveness interval."
  },
  {
+  "id": "BHMS-DEV-013",
+  "area": "DEV",
+  "level": "MUST",
+  "profile": "core",
+  "method": "wire",
+  "summary": "A server MUST evaluate the `text` filter as follows: the text is split at whitespace into words; one-character words are ignored when a longer word is present; a device matches when **at… (04)",
+  "test": "List with text = a device id in another case plus a word that matches nothing (the device is listed), text = one word of its name, and words that match nothing (empty list); capability `*` lists every device."
+ },
+ {
+  "id": "BHMS-DEV-014",
+  "area": "DEV",
+  "level": "SHOULD",
+  "profile": "core",
+  "method": "wire",
+  "summary": "An `UNKNOWN_DEVICE` refusal SHOULD name, in `hint` and as the list `bound`, the devices *visible to the caller* whose id equals the requested id ignoring case or ends in `/<requested id>` (the… (04)",
+  "test": "Describe an existing device id in another case (and, behind a gateway, without its namespace); report a refusal that does not name the candidate (SHOULD)."
+ },
+ {
   "id": "BHMS-DEV-020",
   "area": "DEV",
   "level": "MUST",
@@ -1960,6 +1978,15 @@
   "method": "agent",
   "summary": "`bhms_read` without `max_age_ms` and `fresh` SHOULD NOT hand a model a retained observation older than 1000 ms as if it were the current state: for a property with `readEffect: \"none\"` the bridge asks for `maxAgeMs: 1000`… (12)",
   "test": "Move then read through the bridge: the value is the post-move reading; a push-only property falls back to the retained observation with its age in the summary; transaction properties are not acquired by a default read."
+ },
+ {
+  "id": "BHMS-AGT-015",
+  "area": "AGT",
+  "level": "MUST",
+  "profile": "agent",
+  "method": "agent",
+  "summary": "When a `bhms_find` filter matches no device, the bridge MUST NOT leave the model to conclude that there are no devices: the structured result MUST carry `totalDevices` (the number of devices an… (12)",
+  "test": "bhms_find with words that match nothing: not an error, `devices` empty, `totalDevices` equals the unfiltered count, the summary states the count and \"no arguments\"; bhms_find by a device id finds it."
  },
  {
   "id": "BHMS-AGT-020",
