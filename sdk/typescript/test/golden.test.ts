@@ -73,11 +73,16 @@ test("the packaged schema is the spec schema, byte for byte", () => {
   assert.equal(readFileSync(schemaPath(), "utf8"), readFileSync(SCHEMA_FILE, "utf8"));
 });
 
-test("requestDigest follows the §6.4 intent formula (the invoke example's requestDigest is real)", async () => {
+test("requestDigest follows the §6.4 intent formula and equals the Python reference's digest of the invoke example", async () => {
   const { intentDigest } = await import("../src/server/executor.js");
   const inv = JSON.parse(readFileSync(join(EXAMPLES_DIR, "actions.invoke.request.json"), "utf8")) as { message: { params: Record<string, unknown> } };
-  const resp = JSON.parse(readFileSync(join(EXAMPLES_DIR, "actions.invoke.response.json"), "utf8")) as { message: { result: { operation: { requestDigest: string } } } };
-  assert.equal(intentDigest(inv.message.params), resp.message.result.operation.requestDigest);
+  // `bhms.runtime.operations.intent_digest("actions/invoke", params)` over the same params. The `requestDigest` printed in
+  // actions.invoke.response.json (sha256:f19b...) predates the last edit of the request example and is stale (see the report).
+  const pinned = "sha256:648f50c4685066d212a8f56f37dc0c30c75be69491c4a77e1cc039b9805d4093";
+  const actual = intentDigest(inv.message.params);
+  assert.equal(actual, pinned, `the intent digest of spec/bhms/examples/actions.invoke.request.json changed: the example was regenerated or edited. Recompute the reference value with
+    python3 -c "import json; from bhms.runtime.operations import intent_digest; print(intent_digest('actions/invoke', json.load(open('<examples>/actions.invoke.request.json'))['message']['params']))"
+  (PYTHONPATH=sdk/python/src), confirm it equals ${actual}, and only then update \`pinned\` in this test.`);
 });
 
 test("generated types are fresh (scripts/gen-types.mjs --check)", () => {

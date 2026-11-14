@@ -244,6 +244,8 @@ export type ServerCapabilities = {
     crossDeviceLeases: boolean;
     upstreams: number;
   };
+  /** The server serves several principals or enforces a scope policy (conformance profile authority); absent means single-principal. Carries no members: a caller learns nothing about the principals. */
+  authority?: Record<string, never>;
   extensions?: Extensions;
 };
 

@@ -186,3 +186,31 @@ async def test_a_multi_principal_target_is_reported_as_multi_principal():
     out = io.StringIO()
     render(report, console=Console(file=out, width=200, highlight=False))
     assert "authority: multi-principal" in out.getvalue() and "single-principal" not in out.getvalue()
+
+
+def test_device_command_replaces_the_command_of_every_conformance_device_fixture():
+    from bhms.conformance.targets import TargetError, resolve
+
+    base = ["node", "/opt/dev.js"]
+    for flavour in ("stdio", "ws", "unix", "principals"):
+        target = resolve(f"conformance-device:{flavour}", device_command="node /opt/dev.js")
+        assert target.command[:2] == base and "bhms.testing.conformance_device" not in " ".join(target.command), flavour
+        if target.extra_command:
+            assert target.extra_command[:2] == base
+    default = resolve("conformance-device")
+    assert default.command[1:3] == ["-m", "bhms.testing.conformance_device"]
+    with pytest.raises(TargetError, match="conformance-device fixtures only"):
+        resolve("gateway", device_command="node x.js")
+    with pytest.raises(TargetError, match="empty"):
+        resolve("conformance-device", device_command="  ")
+
+
+async def test_cli_device_command_launches_the_given_device_with_the_runners_fixtures(tmp_path):
+    out = tmp_path / "report.json"
+    command = f"{sys.executable} -m bhms.testing.conformance_device"  # any implementation's device goes here
+    result = await invoke("conformance", "conformance-device", "--device-command", command, "--only", "lifecycle.nan-tokens", "--json", str(out),
+                          "--seed", "3", "--allow-unproven", env={"COLUMNS": "200"})
+    assert result.exit_code == 0, result.output
+    assert "lifecycle.nan-tokens" in [c["check"] for c in json.loads(out.read_text())["checks"] if c["status"] == "passed"]
+    refused = await invoke("conformance", "gateway", "--device-command", command, "--json", "-", env={"COLUMNS": "200"})
+    assert refused.exit_code == 2, refused.output

@@ -17,6 +17,7 @@
  *
  * Thread-safety: single event loop; all calls are synchronous.
  */
+import { spawn } from "node:child_process";
 import { createHash, randomBytes } from "node:crypto";
 import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, realpathSync, renameSync, unlinkSync, writeSync } from "node:fs";
 import net from "node:net";
@@ -128,8 +129,69 @@ export const TERMINAL: ReadonlySet<string> = new Set(["completed", "failed", "ca
 
 export type LockMode = "auto" | "path";
 
+/** How long a start waits for a lock that its previous holder is still releasing (helper teardown, a restart racing a shutdown). */
+const LOCK_RETRY_MS = 2000;
+const LOCK_RETRY_STEP_MS = 50;
+
+type FlockOutcome = { kind: "held"; release: () => Promise<void> } | { kind: "busy" } | { kind: "unavailable"; why: string };
+
+/** One attempt: `flock -n <file> sh -c 'echo held; exec cat'`. No `-E`: util-linux and busybox both exit 1 for a held lock and
+ * say nothing, while an unsupported flag or option prints a usage message on stderr, which is how the two are told apart. */
+function flockOnce(lockFile: string): Promise<FlockOutcome> {
+  return new Promise((resolve) => {
+    const child = spawn("flock", ["-n", lockFile, "sh", "-c", "echo held; exec cat"], { stdio: ["pipe", "pipe", "pipe"] });
+    let stderr = "";
+    child.stderr.on("data", (d: Buffer) => { if (stderr.length < 400) stderr += d.toString(); });
+    child.once("error", (e: NodeJS.ErrnoException) => resolve({ kind: "unavailable", why: e.code === "ENOENT" ? "flock(1) is not installed" : `flock(1) cannot run: ${e.message}` }));
+    child.once("exit", () => {
+      // exited before "held": the lock is somebody else's (silent exit) or this flock does not understand the command line
+      setTimeout(() => resolve(stderr.trim() === "" ? { kind: "busy" } : { kind: "unavailable", why: `flock(1) refused its arguments: ${stderr.trim().split("\n")[0]}` }), 20);
+    });
+    child.stdout.once("data", () => {
+      child.unref();
+      for (const s of [child.stdin, child.stdout, child.stderr]) (s as unknown as { unref(): void }).unref();
+      let released: Promise<void> | undefined;
+      resolve({
+        kind: "held",
+        release: () => released ??= new Promise<void>((done) => {
+          if (child.exitCode !== null || child.signalCode !== null) { done(); return; }
+          child.ref(); // the loop must stay alive until the helper is really gone (the lock is free only then)
+          for (const pipe of [child.stdout, child.stderr]) (pipe as unknown as { ref(): void }).ref();
+          child.once("exit", () => done());
+          child.stdin.end();
+        }),
+      });
+    });
+  });
+}
+
 /**
- * The exclusive lock on a journal: a listening socket whose name is derived from the journal's real path, held open for as
+ * Linux: a kernel `flock(2)` on `<journal>.lock`, held by a small `flock(1)` helper process that lives exactly as long as
+ * this process keeps its stdin pipe open. Node has no flock binding, and the alternative (a listening socket) makes a stdio
+ * server a listener, which BHMS-SEC-003 forbids. The kernel drops the lock when the helper exits, and the helper exits when
+ * the pipe closes: on `release()` and also when this process dies by SIGKILL, so no stale state exists and a reused pid is
+ * irrelevant. A held lock is retried for {@link LOCK_RETRY_MS} (a restart can race the previous helper's teardown) before it
+ * is reported as in use. Returns `undefined`, after a warning on stderr, when `flock(1)` is missing or incompatible: the caller
+ * falls back to the socket lock, and BHMS-SEC-003 then does not hold for a stdio server.
+ */
+async function acquireFlock(journalPath: string): Promise<(() => Promise<void>) | undefined> {
+  const lockFile = `${journalPath}.lock`;
+  const deadline = Date.now() + LOCK_RETRY_MS;
+  for (;;) {
+    const r = await flockOnce(lockFile);
+    if (r.kind === "held") return r.release;
+    if (r.kind === "unavailable") {
+      process.stderr.write(`[bhms] warning: ${r.why}; locking the journal with a listening socket instead. A stdio server then holds a listening socket, which BHMS-SEC-003 forbids: install util-linux or busybox flock.\n`);
+      return undefined;
+    }
+    if (Date.now() >= deadline) throw new StoreError(`the journal ${journalPath} is in use by another server; one server owns a state directory`);
+    await new Promise((resolve) => setTimeout(resolve, LOCK_RETRY_STEP_MS));
+  }
+}
+
+/**
+ * The exclusive lock on a journal (macOS, other Unix, Windows, or Linux without a usable `flock(1)`). It does NOT exclude a
+ * server that uses the flock lock (and vice versa): never run two SDK builds with different lock kinds on one state directory. a listening socket whose name is derived from the journal's real path, held open for as
  * long as the store is. The kernel frees it when the holder dies (SIGKILL, power loss, pid reuse in a container are all
  * harmless), and `bind` is atomic, so two simultaneous starters cannot both win.
  *
@@ -140,6 +202,10 @@ export type LockMode = "auto" | "path";
  *   very takeover window on such systems could in theory both win (documented limit; Linux and Windows have no such window).
  */
 async function acquireLock(journalPath: string, mode: LockMode): Promise<() => Promise<void>> {
+  if (process.platform === "linux" && mode === "auto") {
+    const held = await acquireFlock(journalPath);
+    if (held) return held;
+  }
   const hash = createHash("sha256").update(realpathSync(dirname(journalPath)) + "/" + basename(journalPath)).digest("hex").slice(0, 24);
   let name: string;
   let file: string | undefined;

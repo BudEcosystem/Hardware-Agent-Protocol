@@ -13,18 +13,36 @@
  *
  * Thread-safety: principals are immutable snapshots.
  */
+import { createHash, timingSafeEqual } from "node:crypto";
+import { BhmsError } from "../errors.js";
 import type { Peer } from "../jsonrpc/session.js";
+import type { JsonSchema } from "../schema.js";
 
 function globToRegex(glob: string): RegExp {
   return new RegExp("^" + glob.split("*").map((p) => p.replace(/[.+?^${}()|[\]\\]/g, "\\$&")).join(".*") + "$", "s");
 }
 
+/** A policy bound on one top-level member of an action input (BHMS-AUTH-010): it can only narrow the device's own bounds. */
+export interface PolicyBound { minimum?: number; maximum?: number; enum?: unknown[] }
+/** `{"<deviceId>/<action>": {"<member>": bound}}` */
+export type PolicyBounds = Readonly<Record<string, Readonly<Record<string, PolicyBound>>>>;
+
 export class Principal {
   readonly scopes: readonly string[];
   readonly id: string;
-  constructor(id: string, scopes: readonly string[]) {
+  readonly bounds: PolicyBounds;
+  /** A gateway may use the `g-` idempotency-key prefix, which is reserved for gateways (BHMS-OPS-037). */
+  readonly gateway: boolean;
+  constructor(id: string, scopes: readonly string[], bounds: PolicyBounds = {}, gateway = false) {
+    this.gateway = gateway;
     this.id = id;
     this.scopes = [...new Set(scopes)];
+    this.bounds = bounds;
+  }
+
+  /** The policy bounds of this principal for `<deviceId>/<action>`, if any. */
+  boundsFor(deviceId: string, action: string): Readonly<Record<string, PolicyBound>> | undefined {
+    return this.bounds[`${deviceId}/${action}`];
   }
 
   get admin(): boolean { return this.scopes.includes("admin"); }
@@ -71,3 +89,119 @@ export type Policy = (peer: Peer) => Principal;
 
 /** The default policy: the transport's scopes, or `read` only. */
 export const defaultPolicy: Policy = (peer) => new Principal(peer.principal, peer.scopes ?? ["read"]);
+
+/** The policy of a server that is an upstream of a gateway (`--gateway`): every peer is a gateway principal (may use `g-` keys). */
+export const gatewayPolicy: Policy = (peer) => new Principal(peer.principal, peer.scopes ?? ["read"], {}, true);
+
+/** The stored form of a bearer token (BHMS-SEC-002): `"sha256:" + hex(sha256(token))`. */
+export function tokenDigest(token: string): string {
+  return "sha256:" + createHash("sha256").update(token).digest("hex");
+}
+
+/** One principal of a policy document (the `GatewayPolicy` of the schema). */
+export interface PolicyPrincipalDocument { tokens?: string[]; uids?: number[]; scopes: string[]; bounds?: Record<string, Record<string, PolicyBound>> }
+/** A policy document: `{"principals": {name: {tokens?, uids?, scopes, bounds?}}}` (`GatewayPolicy` of the schema). */
+export interface PolicyDocument { principals: Record<string, PolicyPrincipalDocument> }
+
+const DIGEST = /^sha256:[0-9a-f]{64}$/;
+
+function invalidPolicy(message: string): RangeError {
+  return new RangeError(`invalid policy document: ${message}`);
+}
+
+/**
+ * Named principals keyed by bearer-token digests, from a {@link PolicyDocument}. Immutable after construction.
+ *
+ * - WebSocket peers: the principal holding the presented token (constant-time comparison of digests, BHMS-SEC-002).
+ * - Every other peer keeps the transport's own scopes (stdio parent and Unix peers are `admin`). `uids` are accepted in the
+ *   document for compatibility but cannot match: Node exposes no `SO_PEERCRED`, so a Unix peer's uid is unknown.
+ *
+ * {@link authorityCapability} is `capabilities.authority`: `{}` when the policy defines several principals or any principal
+ * that is not an administrator, `undefined` for a single-principal server. It carries no member, so a caller learns
+ * nothing about how many principals exist.
+ */
+export class PolicyTable {
+  private readonly entries: Array<{ principal: Principal; digests: Buffer[] }>;
+
+  constructor(doc: PolicyDocument) {
+    if (typeof doc !== "object" || doc === null || typeof doc.principals !== "object" || doc.principals === null || Array.isArray(doc.principals)) {
+      throw invalidPolicy('"principals" must be an object');
+    }
+    this.entries = Object.keys(doc.principals).sort().map((name) => {
+      const spec = doc.principals[name];
+      if (typeof spec !== "object" || spec === null || !Array.isArray(spec.scopes) || !spec.scopes.every((x) => typeof x === "string")) {
+        throw invalidPolicy(`principal ${JSON.stringify(name)} needs a "scopes" array of strings`);
+      }
+      const tokens = spec.tokens ?? [];
+      if (!Array.isArray(tokens) || !tokens.every((t) => typeof t === "string" && DIGEST.test(t))) {
+        throw invalidPolicy(`principal ${JSON.stringify(name)}: tokens are "sha256:<64 hex>" digests, never the token itself (BHMS-SEC-002)`);
+      }
+      const uids = spec.uids ?? [];
+      if (!Array.isArray(uids) || !uids.every((u) => Number.isInteger(u) && u >= 0)) throw invalidPolicy(`principal ${JSON.stringify(name)}: uids are non-negative integers`);
+      for (const [key, members] of Object.entries(spec.bounds ?? {})) {
+        if (typeof members !== "object" || members === null || key.lastIndexOf("/") < 1) throw invalidPolicy(`principal ${JSON.stringify(name)}: bounds key ${JSON.stringify(key)} is "<deviceId>/<action>"`);
+      }
+      return { principal: new Principal(name, spec.scopes, structuredClone(spec.bounds ?? {})), digests: tokens.map((t) => Buffer.from(t)) };
+    });
+  }
+
+  get principals(): readonly Principal[] { return this.entries.map((e) => e.principal); }
+
+  authorityCapability(): Record<string, never> | undefined {
+    const ps = this.principals;
+    return ps.length > 1 || ps.some((p) => !p.scopes.includes("admin")) ? {} : undefined;
+  }
+
+  /** The principal holding `token`, or `undefined`. Compares digests of every stored token (no early exit). */
+  byToken(token: string | undefined): Principal | undefined {
+    if (!token) return undefined;
+    const presented = Buffer.from(tokenDigest(token));
+    let found: Principal | undefined;
+    for (const e of this.entries) for (const stored of e.digests) if (stored.length === presented.length && timingSafeEqual(stored, presented)) found = e.principal;
+    return found;
+  }
+
+  /** The principal of `peer` under this table (see the class docs). */
+  principalFor(peer: Peer): Principal {
+    if (peer.kind === "ws") {
+      const held = this.byToken(peer.token);
+      if (held) return held;
+      return new Principal(peer.principal, peer.scopes ?? ["read"]);
+    }
+    return defaultPolicy(peer);
+  }
+
+  /**
+   * Reject bounds that would widen a device bound (BHMS-SEC-011) or name an unknown action or argument; `describe(deviceId)`
+   * returns the device's description or `undefined`. Throws {@link RangeError}.
+   */
+  checkBounds(describe: (deviceId: string) => { actions: Record<string, { input: JsonSchema }> } | undefined): void {
+    for (const principal of this.principals) {
+      for (const [key, members] of Object.entries(principal.bounds)) {
+        const slash = key.lastIndexOf("/");
+        const action = describe(key.slice(0, slash))?.actions[key.slice(slash + 1)];
+        if (!action) throw new RangeError(`policy bounds for ${JSON.stringify(principal.id)} name unknown action ${JSON.stringify(key)}`);
+        const properties = ((action.input as { properties?: Record<string, Record<string, unknown>> }).properties) ?? {};
+        for (const [member, bound] of Object.entries(members)) {
+          const node = properties[member];
+          if (!node) throw new RangeError(`policy bounds for ${JSON.stringify(principal.id)}: ${key} has no argument ${JSON.stringify(member)}`);
+          if (typeof bound.minimum === "number" && typeof node.minimum === "number" && bound.minimum < node.minimum) {
+            throw new RangeError(`policy bound ${key}.${member}.minimum=${bound.minimum} widens the device bound ${node.minimum} (BHMS-SEC-011)`);
+          }
+          if (typeof bound.maximum === "number" && typeof node.maximum === "number" && bound.maximum > node.maximum) {
+            throw new RangeError(`policy bound ${key}.${member}.maximum=${bound.maximum} widens the device bound ${node.maximum} (BHMS-SEC-011)`);
+          }
+          if (Array.isArray(bound.enum) && Array.isArray(node.enum)) {
+            const allowed = new Set((node.enum as unknown[]).map((v) => JSON.stringify(v)));
+            if (!bound.enum.every((v) => allowed.has(JSON.stringify(v)))) throw new RangeError(`policy bound ${key}.${member}.enum widens the device enum (BHMS-SEC-011)`);
+          }
+        }
+      }
+    }
+  }
+}
+
+/** An `UNAUTHORIZED` for a policy that leaves no allowed value for an argument (BHMS-AUTH-011). */
+export function emptyEnvelope(deviceId: string, action: string, member: string, field: string): BhmsError {
+  return new BhmsError("UNAUTHORIZED", `your policy leaves no allowed value for ${member}`, { field, hint: `${deviceId}/${action} is unavailable to you (BHMS-AUTH-011)` });
+}

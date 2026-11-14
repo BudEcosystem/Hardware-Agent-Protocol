@@ -59,6 +59,8 @@ class RunOptions:
     physical_ok: bool = False
     function_tools: str | None = None
     """``--function-tools FILE``: the OpenAI function-tool definitions of the bridge's adapter (JSON list), for BHMS-AGT-050."""
+    device_command: str | None = None
+    """``--device-command``: the command the ``conformance-device`` fixtures launch instead of this SDK's own device."""
 
 
 @dataclass
@@ -260,7 +262,7 @@ async def run(opts: RunOptions) -> Report:
     seed = opts.seed if opts.seed is not None else int(time.time()) & 0xFFFFFF
     command = " ".join(shlex.quote(a) for a in opts.argv) if opts.argv else f"bhms conformance {shlex.quote(opts.target)}"
     try:
-        target = resolve(opts.target, token=opts.token, keep_state=opts.keep_state)
+        target = resolve(opts.target, token=opts.token, keep_state=opts.keep_state, device_command=opts.device_command)
     except TargetError as exc:
         return Report(_meta(opts, None, None, seed, command, [], {}), [], [], fatal=str(exc))
     given_tools: list[dict[str, Any]] | None = None

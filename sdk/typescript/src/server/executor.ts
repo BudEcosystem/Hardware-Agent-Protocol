@@ -35,8 +35,8 @@ import { digest } from "../canonical.js";
 import type { ActionsInvokeParams, Observation, Operation } from "../generated/types.js";
 import { Canceled, DeviceFault, type ActionContext, type Reconciled } from "./context.js";
 import type { Device, ActionSpec } from "./device.js";
-import { admitArguments } from "./validation.js";
-import type { Principal } from "./authority.js";
+import { admitArguments, emptyEnvelopeMember } from "./validation.js";
+import { emptyEnvelope, type Principal } from "./authority.js";
 import type { DeviceServer } from "./server.js";
 import { StoreError, type StoredOperation } from "./store.js";
 import { OperationRecord, unknownError, type Effect, type TransitionOptions } from "./operations.js";
@@ -120,6 +120,11 @@ export class Executor {
     create: (key: string, origin: "client" | "server") => Promise<OperationRecord>,
   ): Promise<{ rec: OperationRecord; replayed: boolean }> {
     const journal = this.server.journal;
+    if (key !== undefined && key.startsWith("g-") && !principal.gateway) {
+      throw new BhmsError("INVALID_ARGUMENT", "operationKey prefix g- is reserved for gateways", {
+        field: "operationKey", hint: "use a key that does not start with d- or g- (BHMS-OPS-037)",
+      });
+    }
     const lock = key === undefined ? undefined : `${principal.id}\0${key}`;
     if (key !== undefined) {
       for (;;) {
@@ -178,7 +183,12 @@ export class Executor {
     if (p.descriptionDigest !== undefined && p.descriptionDigest !== description.digest) {
       throw new BhmsError("STALE", `${p.deviceId}'s description changed`, { field: "descriptionDigest", bound: description.digest, hint: "describe the device again and replan against the new description" });
     }
-    const { admitted, differs } = admitArguments(spec.input, p.arguments);
+    const policyBounds = principal.boundsFor(device.deviceId, spec.name);
+    if (policyBounds) {
+      const empty = emptyEnvelopeMember(spec.input, policyBounds);
+      if (empty !== undefined) throw emptyEnvelope(device.deviceId, spec.name, empty, `arguments.${empty}`);
+    }
+    const { admitted, differs } = admitArguments(spec.input, p.arguments, "arguments", policyBounds);
     if (p.require?.effect === "verified" && spec.completionEvidence !== "measured") {
       throw new BhmsError("UNSUPPORTED", `${p.action} cannot be verified: its completionEvidence is ${spec.completionEvidence}`, { field: "require", hint: "drop require, or use an action whose completionEvidence is measured (BHMS-OPS-007)" });
     }

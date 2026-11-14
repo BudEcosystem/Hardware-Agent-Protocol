@@ -20,47 +20,27 @@
  * Thread-safety: pure functions.
  */
 import { BhmsError } from "../errors.js";
-import { SchemaValidator, bestIssue, fieldPath, type JsonSchema } from "../schema.js";
+import { SchemaValidator, bestIssue, fieldPath, iterSubschemas, type JsonSchema } from "../schema.js";
 
 type Obj = Record<string, unknown>;
 const isObj = (v: unknown): v is Obj => typeof v === "object" && v !== null && !Array.isArray(v);
 
-const MAX_DEPTH = 32;
-const MAX_NODES = 10_000;
-
-const SUBSCHEMA_LISTS = ["allOf", "anyOf", "oneOf", "prefixItems"];
-const SUBSCHEMA_SINGLE = ["items", "not", "if", "then", "else", "additionalProperties", "contains"];
-const SUBSCHEMA_MAPS = ["properties", "patternProperties", "$defs", "definitions", "dependentSchemas"];
 
 function isNumericType(t: unknown): boolean {
   if (typeof t === "string") return t === "number" || t === "integer";
   return Array.isArray(t) && t.some((x) => x === "number" || x === "integer");
 }
 
-/** Throws RangeError naming the path of the first violation of BHMS-DEV-040/041 or BHMS-SEC-021. */
+/**
+ * Throws RangeError naming the path of the first violation of BHMS-DEV-040/041 or BHMS-SEC-021. The walk is the SDK's one schema
+ * walker, {@link iterSubschemas}; its `SchemaBoundsError` is a `RangeError` too.
+ */
 export function checkUnits(schema: unknown, where: string): void {
-  let count = 0;
-  const walk = (node: unknown, path: string, depth: number): void => {
-    if (++count > MAX_NODES) throw new RangeError(`${where}: more than ${MAX_NODES} subschemas (BHMS-SEC-021)`);
-    if (depth > MAX_DEPTH) throw new RangeError(`${path}: schema nested deeper than ${MAX_DEPTH} (BHMS-SEC-021)`);
-    if (!isObj(node)) return;
-    const ref = node.$ref;
-    if (typeof ref === "string" && !ref.startsWith("#")) throw new RangeError(`${path}: $ref ${JSON.stringify(ref)} points outside the schema (BHMS-DEV-040)`);
-    if (isNumericType(node.type)) {
-      const unit = node["x-bhms-unit"];
-      if (typeof unit !== "string" || unit === "") throw new RangeError(`${path}: a number/integer schema must carry x-bhms-unit (BHMS-DEV-041); use "1" for counts and "%" for percentages`);
-    }
-    for (const k of SUBSCHEMA_SINGLE) if (k in node) walk(node[k], `${path}.${k}`, depth + 1);
-    for (const k of SUBSCHEMA_LISTS) {
-      const list = node[k];
-      if (Array.isArray(list)) list.forEach((c, i) => walk(c, `${path}.${k}[${i}]`, depth + 1));
-    }
-    for (const k of SUBSCHEMA_MAPS) {
-      const members = node[k];
-      if (isObj(members)) for (const [name, c] of Object.entries(members)) walk(c, `${path}.${k}.${name}`, depth + 1);
-    }
-  };
-  walk(schema, where, 0);
+  for (const [path, node] of iterSubschemas(schema, where)) {
+    if (!isObj(node) || !isNumericType(node.type)) continue;
+    const unit = node["x-bhms-unit"];
+    if (typeof unit !== "string" || unit === "") throw new RangeError(`${path}: a number/integer schema must carry x-bhms-unit (BHMS-DEV-041); use "1" for counts and "%" for percentages`);
+  }
 }
 
 function fmt(v: unknown): string {
@@ -188,7 +168,7 @@ export interface Admitted {
 }
 
 /** Admit `args` against an action `input` schema (see the module docs). */
-export function admitArguments(input: JsonSchema, args: Obj, rootPath = "arguments"): Admitted {
+export function admitArguments(input: JsonSchema, args: Obj, rootPath = "arguments", bounds?: Readonly<Record<string, MemberBound>>): Admitted {
   const admitted = walk(input, input, args, rootPath) as Obj;
   const rest = new SchemaValidator(input).collect(admitted);
   if (rest.length > 0) {
@@ -199,5 +179,64 @@ export function admitArguments(input: JsonSchema, args: Obj, rootPath = "argumen
       field: prefixed, hint: `fix ${prefixed} (schema keyword ${issue.keyword})`,
     });
   }
+  if (bounds) checkEnvelope(input, admitted, bounds, rootPath);
   return { admitted, differs: !sameJson(admitted, args) };
+}
+
+/** A policy bound on one member (BHMS-AUTH-010); the same shape as `PolicyBound` of the authority module. */
+export interface MemberBound { minimum?: number; maximum?: number; enum?: unknown[] }
+
+/** The effective envelope of a member: the intersection of the device's schema bounds and a policy bound (BHMS-AUTH-010/011). */
+export function effectiveBounds(node: Obj, policy: MemberBound): { minimum?: number; maximum?: number; enum?: unknown[]; empty?: true } {
+  const out: { minimum?: number; maximum?: number; enum?: unknown[]; empty?: true } = {};
+  const nums = (a: unknown, b: unknown): number[] => [a, b].filter((v): v is number => typeof v === "number");
+  const lows = nums(node.minimum, policy.minimum);
+  const highs = nums(node.maximum, policy.maximum);
+  if (lows.length > 0) out.minimum = Math.max(...lows);
+  if (highs.length > 0) out.maximum = Math.min(...highs);
+  const enums = [node.enum, policy.enum].filter(Array.isArray) as unknown[][];
+  if (enums.length > 0) {
+    const allowed = enums.length === 1 ? enums[0] : enums[0].filter((v) => enums[1].some((w) => JSON.stringify(v) === JSON.stringify(w)));
+    out.enum = allowed;
+    if (allowed.length === 0) out.empty = true;
+  }
+  if (out.minimum !== undefined && out.maximum !== undefined && out.minimum > out.maximum) out.empty = true;
+  return out;
+}
+
+/** The first member of `bounds` for which the policy leaves no allowed value at all (BHMS-AUTH-011), or `undefined`. */
+export function emptyEnvelopeMember(input: JsonSchema, bounds: Readonly<Record<string, MemberBound>>): string | undefined {
+  const props = isObj(input) && isObj(input.properties) ? (input.properties as Record<string, unknown>) : {};
+  for (const [member, bound] of Object.entries(bounds)) {
+    const node = props[member];
+    if (effectiveBounds(isObj(node) ? node : {}, bound).empty) return member;
+  }
+  return undefined;
+}
+
+/**
+ * Refuse an admitted value outside the effective envelope of the device's bounds and the principal's policy `bounds`:
+ * `OUT_OF_RANGE` whose `bound` is the effective bound (BHMS-AUTH-010). Called after schema admission, for top-level members.
+ */
+export function checkEnvelope(input: JsonSchema, admitted: Obj, bounds: Readonly<Record<string, MemberBound>>, rootPath = "arguments"): void {
+  const props = isObj(input) && isObj(input.properties) ? (input.properties as Record<string, unknown>) : {};
+  for (const [member, limits] of Object.entries(bounds)) {
+    if (!(member in admitted)) continue;
+    const value = admitted[member];
+    const node = isObj(props[member]) ? (props[member] as Obj) : {};
+    const unit = typeof node["x-bhms-unit"] === "string" && node["x-bhms-unit"] !== "1" ? ` ${node["x-bhms-unit"]}` : "";
+    const path = `${rootPath}.${member}`;
+    const effective = effectiveBounds(node, limits);
+    if (typeof value === "number") {
+      if (effective.minimum !== undefined && value < effective.minimum) {
+        throw outOfRange(path, "minimum", effective.minimum, `${path} ${value}${unit} is below the minimum ${effective.minimum}${unit}`, `send ${member} of at least ${effective.minimum}${unit} (your policy narrows this action)`);
+      }
+      if (effective.maximum !== undefined && value > effective.maximum) {
+        throw outOfRange(path, "maximum", effective.maximum, `${path} ${value}${unit} is above the maximum ${effective.maximum}${unit}`, `send ${member} of at most ${effective.maximum}${unit} (your policy narrows this action)`);
+      }
+    }
+    if (effective.enum !== undefined && !effective.enum.some((e) => JSON.stringify(e) === JSON.stringify(value))) {
+      throw outOfRange(path, "enum", effective.enum, `${path} ${fmt(value)} is not allowed for you`, `send one of ${effective.enum.map(fmt).join(", ")}`);
+    }
+  }
 }

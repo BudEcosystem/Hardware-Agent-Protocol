@@ -332,11 +332,18 @@ class Target:
 # ---------------------------------------------------------------------- resolution
 
 
-def resolve(spec: str, *, token: str | None = None, keep_state: str | None = None) -> Target:
-    """Turn a command-line target into a :class:`Target` (see the module docstring)."""
+def resolve(spec: str, *, token: str | None = None, keep_state: str | None = None, device_command: str | None = None) -> Target:
+    """Turn a command-line target into a :class:`Target` (see the module docstring).
+
+    ``device_command`` (``--device-command``) replaces the command the ``conformance-device`` fixtures launch (default: this SDK's
+    ``python -m bhms.testing.conformance_device``): any implementation's conformance device that honours the same command line
+    (``[URL] [--state-dir DIR] [--memory] [--principals POLICY.json]``) is then tested with the runner's own state directories,
+    kills, restarts and policy files."""
     token = token or os.environ.get("BHMS_TOKEN")
     if spec == "conformance-device" or spec.startswith("conformance-device:"):
-        return _conformance_device(spec.partition(":")[2] or "stdio", keep_state)
+        return _conformance_device(spec.partition(":")[2] or "stdio", keep_state, device_command)
+    if device_command is not None:
+        raise TargetError("--device-command applies to the conformance-device fixtures only")
     if spec == "agent-bridge":
         return _agent_bridge(keep_state)
     if spec.startswith("mcp:"):
@@ -369,32 +376,38 @@ def _workspace(prefix: str, keep: str | None) -> Path:
     return Path(tempfile.mkdtemp(prefix=f"bhms-conf-{prefix}-"))
 
 
-def _device_command(*extra: str) -> list[str]:
-    return [sys.executable, "-m", "bhms.testing.conformance_device", *extra]
+def _device_command(*extra: str, base: list[str] | None = None) -> list[str]:
+    return [*(base if base is not None else [sys.executable, "-m", "bhms.testing.conformance_device"]), *extra]
 
 
-def _conformance_device(flavour: str, keep: str | None) -> Target:
+def _conformance_device(flavour: str, keep: str | None, device_command: str | None = None) -> Target:
+    import shlex
+
+    base = shlex.split(device_command) if device_command else None
+    if device_command is not None and not base:
+        raise TargetError("--device-command is empty")
+    launch = lambda *extra: _device_command(*extra, base=base)  # noqa: E731
     work = _workspace("device", keep)
     state = work / "state"
     state.mkdir(exist_ok=True)
     log = work / "server.log"
     if flavour == "stdio":
-        target = Target("conformance-device", "stdio", command=_device_command("--state-dir", str(state)),
-                        extra_command=_device_command("--memory"), state_dir=state)
+        target = Target("conformance-device", "stdio", command=launch("--state-dir", str(state)),
+                        extra_command=launch("--memory"), state_dir=state)
     elif flavour == "ws":
         url = f"ws://127.0.0.1:{free_port()}"
-        target = Target("conformance-device:ws", "ws", url=url, command=_device_command(url, "--state-dir", str(state)), state_dir=state,
+        target = Target("conformance-device:ws", "ws", url=url, command=launch(url, "--state-dir", str(state)), state_dir=state,
                         token=TOKEN_PREFIX + "admin", env={"BHMS_TOKEN": TOKEN_PREFIX + "admin"})
     elif flavour == "principals":
         url = f"ws://127.0.0.1:{free_port()}"
         policy = work / "policy.json"
         policy.write_text(json.dumps(device_policy_document(device_roles())))
         target = Target("conformance-device:principals", "ws", url=url,
-                        command=_device_command(url, "--state-dir", str(state), "--principals", str(policy)), state_dir=state,
+                        command=launch(url, "--state-dir", str(state), "--principals", str(policy)), state_dir=state,
                         token=TOKEN_PREFIX + "admin", tokens={role: TOKEN_PREFIX + role for role in ROLES}, policy_path=policy)
     elif flavour == "unix":
         url = f"unix:{work / 'device.sock'}"
-        target = Target("conformance-device:unix", "unix", url=url, command=_device_command(url, "--state-dir", str(state)),
+        target = Target("conformance-device:unix", "unix", url=url, command=launch(url, "--state-dir", str(state)),
                         state_dir=state)
     else:
         raise TargetError(f"unknown conformance-device flavour {flavour!r} (stdio, ws, unix, principals)")
