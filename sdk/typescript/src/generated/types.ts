@@ -218,6 +218,8 @@ export type ServerCapabilities = {
     durable: boolean;
     cancel: boolean;
     keyRetentionS: number;
+    /** operations/resolve is offered (6.10). */
+    resolve?: boolean;
   };
   stop: Record<string, never>;
   subscriptions: {
@@ -326,9 +328,10 @@ export type DeviceSummary = {
 };
 
 export type DevicesListFilter = {
-  /** Exact id or prefix ending in .* */
+  /** Exact id, a prefix ending in .*, or * for any capability */
   capability?: string;
   tag?: Tag;
+  /** Words separated by whitespace; a device matches when any word occurs, ignoring case, in its id, name, summary, tags or capabilities. */
   text?: string;
   status?: DeviceStatus;
 };
@@ -566,6 +569,12 @@ export type Progress = {
   stepsTotal: number;
 };
 
+/** Marks a reconciliation entry written by operations/resolve from an operator's statement, not from device evidence (BHMS-OPS-102). */
+export type OperatorMark = {
+  principal: string;
+  basis: string;
+};
+
 export type HistoryEntry = {
   seq: number;
   at: Time;
@@ -576,6 +585,15 @@ export type HistoryEntry = {
   detail?: string;
   stepIndex?: number;
   childOperationId?: ServerId;
+  operator?: OperatorMark;
+};
+
+/** Where a gateway forwarded the operation: shown to admin principals only (7.6). */
+export type OperationUpstream = {
+  /** The gateway's name for the upstream server (the namespace prefix of its device ids). */
+  server: string;
+  /** The operation id on that server. */
+  operationId: ServerId;
 };
 
 /** Durable record of one physical intent (06-operations.md). */
@@ -607,6 +625,7 @@ export type Operation = {
   progress?: Progress;
   createdAt: Time;
   updatedAt: Time;
+  upstream?: OperationUpstream;
   history?: HistoryEntry[];
 };
 
@@ -755,6 +774,46 @@ export type OperationsCancelResponse = {
   jsonrpc: "2.0";
   id: RequestId;
   result: OperationsCancelResult;
+};
+
+/** An operator's resolution of an unknown operation, with the basis it rests on (6.10). An operator's statement is a report: it never yields effect verified or measured evidence. */
+export type OperatorResolution = {
+  state: "completed" | "failed";
+  /** Free text: what was inspected, by whom, and what was found. */
+  basis: string;
+  /** completed: unverified (none for an action without effect), the default. failed: unknown by default; unverified; or none together with mayHaveActed false. */
+  effect?: "none" | "unverified";
+  /** failed only; false claims proof that nothing happened and goes with effect none. */
+  mayHaveActed?: boolean;
+  /** completed only: the result, valid against the action's output. */
+  result?: unknown;
+};
+
+export type OperationsResolveParams = {
+  _meta: RequestMeta;
+  operationId: ServerId;
+  resolution?: OperatorResolution;
+};
+
+export type OperationsResolveResult = {
+  resultType: ResultType;
+  _meta?: ResultMeta;
+  operation: Operation;
+};
+
+/** operations/resolve request. */
+export type OperationsResolveRequest = {
+  jsonrpc: "2.0";
+  id: RequestId;
+  method: "operations/resolve";
+  params: OperationsResolveParams;
+};
+
+/** operations/resolve result response. */
+export type OperationsResolveResponse = {
+  jsonrpc: "2.0";
+  id: RequestId;
+  result: OperationsResolveResult;
 };
 
 /** Per-device stop outcome. */
@@ -1302,9 +1361,9 @@ export type GatewayPolicy = {
 };
 
 export type AgentFindInput = {
-  /** Words to match in names, summaries and tags. */
+  /** Words; a device matches when any word occurs in its id, name, summary, tags or capabilities. */
   text?: string;
-  /** Capability id, or prefix ending in .* */
+  /** Capability id, a prefix ending in .*, or * for any */
   capability?: string;
   tag?: Tag;
   status?: DeviceStatus;
@@ -1312,7 +1371,9 @@ export type AgentFindInput = {
 };
 
 export type AgentDescribeInput = {
-  device_id: DeviceId;
+  device_id?: DeviceId;
+  /** A guide instead of a device: program-grammar is the bhms_run_program format. */
+  topic?: "program-grammar";
 };
 
 export type AgentReadInput = {
@@ -1369,12 +1430,23 @@ export type AgentFindData = {
   devices: DeviceSummary[];
   programs?: ProgramInfo[];
   nextCursor?: Cursor;
+  /** Present when no device matched: how many devices an unfiltered bhms_find lists (its first page when there are more). */
+  totalDevices?: number;
 };
+
+/** Structured content of bhms_describe with topic: a guide as text. */
+export type AgentTopicData = {
+  topic: "program-grammar";
+  text: string;
+};
+
+/** Structured content of bhms_describe: a device description, or a guide when topic was given. */
+export type AgentDescribeData = DevicesDescribeResult | AgentTopicData;
 
 /** Result of a function-tool call: summary plus data or error. */
 export type AgentFunctionResult = {
   summary: string;
-  /** bhms_describe only: the compact signature block of BHMS-AGT-013 (function tools cannot carry it after the one-line summary). */
+  /** bhms_describe only: the compact signature block of BHMS-AGT-013, or the guide text of a topic (function tools cannot carry it after the one-line summary). */
   signature?: string;
   data?: Record<string, unknown>;
   error?: OperationError;
@@ -1401,6 +1473,7 @@ export interface Methods {
   "programs/register": { params: ProgramsRegisterParams; result: ProgramsRegisterResult };
   "programs/get": { params: ProgramsGetParams; result: ProgramsGetResult };
   "programs/list": { params: ProgramsListParams; result: ProgramsListResult };
+  "operations/resolve": { params: OperationsResolveParams; result: OperationsResolveResult };
 }
 
 /** Runtime table of the methods (tier and gating capability) from the schema's x-bhms-methods. */
@@ -1469,5 +1542,9 @@ export const METHODS = {
   "programs/list": {
     "tier": "optional",
     "capability": "programs.registry"
+  },
+  "operations/resolve": {
+    "tier": "optional",
+    "capability": "operations.resolve"
   }
 } as const;
