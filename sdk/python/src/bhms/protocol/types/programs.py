@@ -11,7 +11,7 @@ from bhms.protocol.types._base import (
     ObjectSchema, OperationError, PosInt, ProtocolVersion, Reference, ResourceId, Scope, ServerId, Tag, VariableName,
     _bounded_int, _Params, _pattern, _Plain, _Result, _text, _Wire,
 )
-from bhms.protocol.types.devices import CapabilityFilter, DeviceSummary
+from bhms.protocol.types.devices import CapabilityFilter, DevicesDescribeResult, DeviceSummary
 from bhms.protocol.types.operations import Operation
 
 
@@ -211,8 +211,18 @@ class AgentFindInput(_Plain):
     cursor: Optional[Cursor] = None
 
 
+AgentTopic = Literal["program-grammar"]
+
+
 class AgentDescribeInput(_Plain):
-    device_id: DeviceId
+    device_id: Optional[DeviceId] = None
+    topic: Optional[AgentTopic] = None
+
+    @model_validator(mode="after")
+    def _one_subject(self) -> AgentDescribeInput:
+        if (self.device_id is None) == (self.topic is None):
+            raise ValueError("give exactly one of device_id or topic")
+        return self
 
 
 class AgentReadInput(_Plain):
@@ -272,6 +282,14 @@ class AgentFindData(_Wire):
     programs: Optional[list[ProgramInfo]] = None
     next_cursor: Optional[Cursor] = None
     total_devices: Optional[NonNegInt] = None
+
+
+class AgentTopicData(_Wire):
+    topic: AgentTopic
+    text: str = Field(max_length=4000)
+
+
+AgentDescribeData = Union[DevicesDescribeResult, AgentTopicData]
 
 
 class AgentFunctionResult(_Wire):

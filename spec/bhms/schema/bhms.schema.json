@@ -270,7 +270,7 @@
     "bhms_describe": {
       "description": "Describe one device: its actions with argument units and bounds, properties, effects, lease and stop behaviour.",
       "input": "#/$defs/AgentDescribeInput",
-      "result": "#/$defs/DevicesDescribeResult"
+      "result": "#/$defs/AgentDescribeData"
     },
     "bhms_read": {
       "description": "Read a device property. The result says how the value was obtained (measured, reported, commanded...), its quality and age.",
@@ -5643,12 +5643,27 @@
       "properties": {
         "device_id": {
           "$ref": "#/$defs/DeviceId"
+        },
+        "topic": {
+          "enum": [
+            "program-grammar"
+          ],
+          "description": "A guide instead of a device: program-grammar is the bhms_run_program format."
         }
       },
-      "required": [
-        "device_id"
-      ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "oneOf": [
+        {
+          "required": [
+            "device_id"
+          ]
+        },
+        {
+          "required": [
+            "topic"
+          ]
+        }
+      ]
     },
     "AgentReadInput": {
       "type": "object",
@@ -5852,6 +5867,37 @@
       ],
       "additionalProperties": false
     },
+    "AgentTopicData": {
+      "type": "object",
+      "description": "Structured content of bhms_describe with topic: a guide as text.",
+      "properties": {
+        "topic": {
+          "enum": [
+            "program-grammar"
+          ]
+        },
+        "text": {
+          "type": "string",
+          "maxLength": 4000
+        }
+      },
+      "required": [
+        "topic",
+        "text"
+      ],
+      "additionalProperties": false
+    },
+    "AgentDescribeData": {
+      "description": "Structured content of bhms_describe: a device description, or a guide when topic was given.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/DevicesDescribeResult"
+        },
+        {
+          "$ref": "#/$defs/AgentTopicData"
+        }
+      ]
+    },
     "AgentFunctionResult": {
       "type": "object",
       "description": "Result of a function-tool call: summary plus data or error.",
@@ -5863,7 +5909,7 @@
         },
         "signature": {
           "type": "string",
-          "description": "bhms_describe only: the compact signature block of BHMS-AGT-013 (function tools cannot carry it after the one-line summary).",
+          "description": "bhms_describe only: the compact signature block of BHMS-AGT-013, or the guide text of a topic (function tools cannot carry it after the one-line summary).",
           "maxLength": 4000
         },
         "data": {

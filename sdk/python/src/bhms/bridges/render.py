@@ -321,20 +321,21 @@ def _result_text(result: Any, output: Any) -> str:
     return "" if result is None else with_unit(result, None)
 
 
-def _error_text(error: dict[str, Any]) -> tuple[str, str]:
-    """(code and message, hint). The message is the flexible part: it is cut, never the protected clauses."""
+def _error_text(error: dict[str, Any]) -> tuple[str, str, str]:
+    """(code, message, hint). The code is protected (it goes into the head of a summary); the message and the hint are
+    the flexible parts that are cut to fit."""
     message = clean(error.get("message", ""))
     if error.get("bhmsCode") in ("DEVICE_FAULT", "INTERNAL"):
         message = quote(message, 120)
-    code = error.get("bhmsCode", "ERROR")
-    return (f"{code}: {message}" if message else code), clean(error.get("hint", ""))
+    return error.get("bhmsCode", "ERROR"), message, clean(error.get("hint", ""))
 
 
 def summarize_operation(op: dict[str, Any], *, replayed: bool = False, description: dict[str, Any] | None = None,
                         keyed: bool = True, show_key: bool = False, wait_hint: bool = True) -> str:
     """``pump-1.dispense op-7f3a completed: dispensed 50 uL (effect verified, 2.1 s)``.
 
-    Protected, never truncated: the subject's operation id, ``state``, ``replayed`` (AGT-011), ``effect``, the phrase
+    Protected, never truncated: the subject's operation id, ``state``, the ``bhmsCode`` of a failed or rejected operation,
+    ``replayed`` (AGT-011), ``effect``, the phrase
     "outcome unknown \u2014 check before retrying" for a failure that may have acted or an unknown operation (AGT-020) and
     ``(not retry-safe: no operation_key)`` (AGT-030). Only result values, the error message and the hint are cut.
     """
@@ -354,15 +355,20 @@ def summarize_operation(op: dict[str, Any], *, replayed: bool = False, descripti
     suffix = f"({clauses})" + ("" if keyed or not show_key else " (not retry-safe: no operation_key)")
     colon = "" if replayed else ":"
     state_text = f"replayed: {state}" if replayed else state
+    code, message, hint = _error_text(err) if err and state in ("failed", "rejected") else ("", "", "")
+    if code:  # the code is part of the head: whatever else is shortened, the model still sees why it failed
+        state_text, colon = f"{state_text}{colon} {code}", ":" if message else ""
     fixed = len(f" {op_id} {state_text}{colon}") + len(suffix) + 1
     subject = cut(subject, 48 if fixed < 120 else 24)
+    if code and SUMMARY_LIMIT - fixed - len(subject) < _NEXT_ROOM:  # keep room for the next step beside the protected code
+        subject = cut(subject, max(8, SUMMARY_LIMIT - fixed - _NEXT_ROOM))
     head = f"{subject} {op_id} {state_text}{colon}"
     body, nxt = "", ""
     if state == "completed":
         output = ((description or {}).get("actions", {}).get(op.get("action"), {}) or {}).get("output")
         body = _result_text(op.get("result"), output)
     elif state in ("failed", "rejected"):
-        body, hint = _error_text(err) if err else (state, "")
+        body = message if code else state
         nxt = f"Next: {hint}" if hint else ""
     elif state == "unknown":
         hint = clean(err.get("hint", "")) or "reconcile with bhms_operation before acting again"
@@ -373,6 +379,31 @@ def summarize_operation(op: dict[str, Any], *, replayed: bool = False, descripti
         nxt = f'call bhms_operation(operation_id="{op_id}", wait_ms=30000)' if wait_hint else ""
         return compose(head, body, nxt, suffix, next_first=True)
     return compose(head, body, nxt, suffix)
+
+
+_NEXT_ROOM = 40
+"""Characters a summary keeps free for its next step when its protected parts are long."""
+_CANCEL_WORDS = {"requested": "cancel requested, not yet acknowledged", "acknowledged": "cancel acknowledged, still stopping",
+                 "confirmed": "cancel confirmed", "refused": "cancel refused by the device", "none": "no cancel recorded"}
+
+
+def summarize_cancel(op: dict[str, Any]) -> str:
+    """``axis-1.slow_move op-7f3a running: cancel requested, not yet acknowledged (effect unknown). Next: call bhms_operation(...)``.
+
+    While the operation is not settled the instruction to look again is kept whole: it is never cut in the middle of the
+    call. The subject is what gets shortened; when even that leaves no room for the id a second time (very long ids), the
+    instruction refers to "this operation_id", which the summary states once."""
+    cancel = (op.get("cancel") or {}).get("state", "none")
+    subject = f"{op.get('deviceId')}.{op.get('action')}" if op.get("deviceId") else "program"
+    op_id, state = op["operationId"], op["state"]
+    tail = f" {op_id} {state}: {_CANCEL_WORDS.get(cancel, cancel)} (effect {op.get('effect')})."
+    nxt = ""
+    if state not in SETTLED:
+        nxt = f'Next: call bhms_operation(operation_id="{op_id}", wait_ms=5000)'
+        if len(tail) + len(nxt) + 1 + 8 > SUMMARY_LIMIT:
+            nxt = "Next: call bhms_operation with this operation_id"
+    room = SUMMARY_LIMIT - len(tail) - (len(nxt) + 1 if nxt else 0)
+    return compose(cut(subject, max(room, 8)) + tail, next_step=nxt, next_first=True)
 
 
 def summarize_stop(stops: list[dict[str, Any]]) -> str:

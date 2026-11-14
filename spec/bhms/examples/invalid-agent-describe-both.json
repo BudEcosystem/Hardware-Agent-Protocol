@@ -1,0 +1,12 @@
+{
+  "$comment": "bhms_describe needs exactly one of device_id or topic.",
+  "against": "#/$defs/AgentDescribeInput",
+  "expect": {
+    "path": "",
+    "keyword": "oneOf"
+  },
+  "message": {
+    "device_id": "pump-1",
+    "topic": "program-grammar"
+  }
+}

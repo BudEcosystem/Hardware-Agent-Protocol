@@ -128,7 +128,7 @@ _DEF_NAMES = (
     "InvokeStep", "ReadStep", "WaitUntilStep", "AssertStep", "SleepStep", "RepeatStep", "Step", "Program",
     "ProgramInfo", "ArgumentBound", "PolicyPrincipal", "GatewayPolicy", "AgentFindInput", "AgentDescribeInput",
     "AgentReadInput", "AgentInvokeInput", "AgentOperationInput", "AgentCancelInput", "AgentStopInput",
-    "AgentRunProgramInput", "AgentFindData", "AgentFunctionResult",
+    "AgentRunProgramInput", "AgentFindData", "AgentTopicData", "AgentDescribeData", "AgentFunctionResult",
 )
 for _name in _DEF_NAMES:
     DEFS[_name] = globals()[_name]

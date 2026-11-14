@@ -1989,6 +1989,15 @@
   "test": "bhms_find with words that match nothing: not an error, `devices` empty, `totalDevices` equals the unfiltered count, the summary states the count and \"no arguments\"; bhms_find by a device id finds it."
  },
  {
+  "id": "BHMS-AGT-016",
+  "area": "AGT",
+  "level": "MUST",
+  "profile": "agent",
+  "method": "agent",
+  "summary": "A bridge that exposes `bhms_run_program` MUST answer `bhms_describe {\"topic\": \"program-grammar\"}` with the program grammar as text: after the summary line (MCP), as `signature` in a function result,… (12)",
+  "test": "bhms_describe with topic program-grammar: not an error, the text names the step kinds; with both device_id and topic: INVALID_ARGUMENT; the bhms_run_program description names the call."
+ },
+ {
   "id": "BHMS-AGT-020",
   "area": "AGT",
   "level": "MUST",

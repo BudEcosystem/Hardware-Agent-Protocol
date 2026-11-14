@@ -12,7 +12,7 @@ map; tool inputs use snake_case, and structured results are BHMS wire objects
 | Tool | Purpose | Input | Structured result | MCP annotations |
 |---|---|---|---|---|
 | `bhms_find` | Find devices, and saved programs when the server has a registry; with no arguments it lists every device | `{text?, capability?, tag?, status?, cursor?}` | `{devices: DeviceSummary[], programs?: ProgramInfo[], nextCursor?, totalDevices?}` | readOnly, idempotent |
-| `bhms_describe` | Describe one device precisely | `{device_id}` | `{description: DeviceDescription}` | readOnly, idempotent |
+| `bhms_describe` | Describe one device precisely, or return a guide (`topic`) | `{device_id \| topic}` | `{description: DeviceDescription}` or `{topic, text}` | readOnly, idempotent |
 | `bhms_read` | Read a property | `{device_id, property, max_age_ms?, fresh?}` | `{observation}` | readOnly (see below) |
 | `bhms_invoke` | Invoke an action and wait briefly for the outcome | `{device_id, action, arguments, operation_key?, wait_ms?, require_verified?}` | `{operation, replayed}` | destructive, not idempotent |
 | `bhms_operation` | Get or wait for an operation | `{operation_id, wait_ms?}` | `{operation}` | readOnly, idempotent |
@@ -92,6 +92,15 @@ argument names, types, units, bounds, `effect`, `idempotency`, `requiresLease`,
 unit and evidence, within 400 tokens; when a device is too large, it MUST list all
 names and say which details were elided.
 
+**BHMS-AGT-016** A bridge that exposes `bhms_run_program` MUST answer
+`bhms_describe {"topic": "program-grammar"}` with the program grammar as text: after
+the summary line (MCP), as `signature` in a function result, and as `text` in the
+structured result `{topic, text}`. The tool texts that mention the grammar MUST
+name this call, because a function-tool host has no resources to read. A bridge
+without `bhms_run_program` refuses the topic with `UNSUPPORTED`. `topic` is a
+closed list (`program-grammar` in this version); it is not a device id and reaches
+no device.
+
 **BHMS-AGT-014** `bhms_read` without `max_age_ms` and `fresh` SHOULD NOT hand a model a
 retained observation older than 1000 ms as if it were the current state: for a
 property with `readEffect: "none"` the bridge asks for `maxAgeMs: 1000` (a narrowing
@@ -159,13 +168,14 @@ forbids additional properties inside them.
 schema made self-contained: `$ref`s are inlined (a definition used more than once or
 a recursive one stays once under `$defs`) and a top-level `oneOf` is removed, because
 function-calling and several model APIs reject it. The bridge states the exactly-one
-rule in the tool description (`bhms_stop`: `device_ids` or `all`; `bhms_run_program`:
-`program` or `program_digest`) and enforces it itself, refusing a call that gives
-none or both before any request (BHMS-AGT-021). Both bridges publish the identical
-flattened schema.
+rule in the tool description (`bhms_describe`: `device_id` or `topic`; `bhms_stop`:
+`device_ids` or `all`; `bhms_run_program`: `program` or `program_digest`) and
+enforces it itself, refusing a call that gives none or both before any request
+(BHMS-AGT-021). Both bridges publish the identical flattened schema.
 
 A bridge MAY publish a large free-form member (`program`) as `{"type": "object"}` with a pointer to its
-grammar, provided the grammar is available on demand (the MCP resource `bhms://grammar/program`, and in every
-refusal of a malformed program) and the bridge validates the member itself against the normative schema, refusing
-before any request with the failing path (`program.steps[1].arguments`). The reference bridge's eight definitions
-total 1,344 tokens (o200k_base) with the program grammar on demand, against 2,760 inlined.
+grammar, provided the grammar is available on demand (`bhms_describe {"topic": "program-grammar"}`, BHMS-AGT-016; an MCP
+bridge MAY also serve it as the resource `bhms://grammar/program`; and in every refusal of a malformed program) and the
+bridge validates the member itself against the normative schema, refusing before any request with the failing path
+(`program.steps[1].arguments`). The reference bridge's eight definitions total 1,448 tokens (o200k_base) with the program
+grammar on demand, against 2,760 inlined; the ceiling is 1,500.

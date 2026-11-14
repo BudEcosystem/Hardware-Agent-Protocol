@@ -52,7 +52,7 @@ def test_the_program_grammar_is_on_demand_and_small_enough_to_attach_to_a_refusa
 
     run = next(t for t in tool_definitions() if t.name == "bhms_run_program")
     assert run.input_schema["properties"]["program"]["type"] == "object" and "$defs" not in run.input_schema
-    assert "bhms://grammar/program" in run.description
+    assert 'bhms_describe {"topic":"program-grammar"}' in run.description  # a tool call: function-tool hosts have no resources
     assert len(encoder().encode(PROGRAM_GRAMMAR)) <= 600
 
 

@@ -1,0 +1,7 @@
+{
+  "$comment": "bhms_describe with topic instead of device_id: the program grammar on demand (12.5).",
+  "against": "#/$defs/AgentDescribeInput",
+  "message": {
+    "topic": "program-grammar"
+  }
+}

@@ -16,6 +16,10 @@ from bhms.protocol import schema
 from bhms.protocol.errors import BhmsError
 
 GRAMMAR_URI = "bhms://grammar/program"
+GRAMMAR_TOPIC = "program-grammar"
+GRAMMAR_CALL = 'bhms_describe {"topic":"program-grammar"}'
+"""How any host fetches the grammar: a tool call. (MCP hosts may also read the resource :data:`GRAMMAR_URI`; function-tool
+hosts have no resources, which is why the tool texts name the call.)"""
 PROGRAM_GRAMMAR = """\
 BHMS program (JSON object). Validated whole before step 1 runs; no loops except repeat, no code.
 {"bhmsProgram":"2026-11-13","name":snake_case,"description":str,"input":{"type":"object","additionalProperties":false,"properties":{...},"required":[...]},"maxDurationMs":int,"steps":[Step,...],"output":{var:"${ref}"}?}
@@ -44,7 +48,7 @@ def _path(parts: list[Any]) -> str:
 
 def _refuse(message: str, path: str, hint: str) -> BhmsError:
     return BhmsError("INVALID_ARGUMENT", f"{path}: {message}"[:500], field=path,
-                     hint=f"{hint}. Grammar: read {GRAMMAR_URI} or the grammar below.\n{PROGRAM_GRAMMAR}"[:2000])
+                     hint=f"{hint}. Grammar: call {GRAMMAR_CALL} (MCP resource {GRAMMAR_URI}) or read it below.\n{PROGRAM_GRAMMAR}"[:2000])
 
 
 def _step(step: Any, where: list[Any]) -> None:

@@ -26,7 +26,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from bhms.bridges import render
-from bhms.bridges.grammar import GRAMMAR_URI, check_program
+from bhms.bridges.grammar import GRAMMAR_CALL, GRAMMAR_TOPIC, PROGRAM_GRAMMAR, check_program
 from bhms.client.client import Client
 from bhms.protocol import schema
 from bhms.protocol.errors import BhmsError
@@ -54,12 +54,13 @@ _ANNOTATIONS: dict[str, dict[str, bool]] = {
     "bhms_run_program": {"readOnlyHint": False, "destructiveHint": True, "idempotentHint": False},
 }
 _EXACTLY_ONE = {
+    "bhms_describe": ("device_id", "topic", "Give exactly one of device_id or topic."),
     "bhms_stop": ("device_ids", "all", "Give exactly one of device_ids or all."),
     "bhms_run_program": ("program", "program_digest", "Give exactly one of program or program_digest. "
-                         f"The program grammar is the resource {GRAMMAR_URI} and comes with any refusal of a malformed program."),
+                         f"Program grammar: {GRAMMAR_CALL}; it also comes with any refusal of a malformed program."),
 }
-_PROGRAM_PROPERTY = {"type": "object", "description": f"A bounded BHMS program. Grammar: {GRAMMAR_URI}; a malformed program is "
-                     "refused with the failing step path and the grammar."}
+_PROGRAM_PROPERTY = {"type": "object", "description": f"A bounded BHMS program. Grammar: {GRAMMAR_CALL}; a malformed program "
+                     "is refused with the failing step path and the grammar."}
 _MINIMAL_PROGRAM = {"bhmsProgram": "2026-11-13", "name": "p", "description": "p", "input": {
     "type": "object", "additionalProperties": False, "properties": {}}, "maxDurationMs": 1,
     "steps": [{"kind": "sleep", "durationMs": 1}]}
@@ -361,6 +362,13 @@ class AgentBridge:
         return items
 
     async def _bhms_describe(self, args: dict[str, Any]) -> ToolResult:
+        if "topic" in args:  # a guide, not a device: the one topic is the program grammar (BHMS-AGT-016)
+            if not _has(self.capabilities, "programs"):
+                raise BhmsError("UNSUPPORTED", "this server does not offer programs, so there is no program grammar to "
+                                "describe", field="topic", hint="use bhms_invoke for single actions; bhms_run_program is "
+                                "not available here")
+            return ToolResult(f"{GRAMMAR_TOPIC}: the format of the program member of bhms_run_program follows",
+                              {"topic": GRAMMAR_TOPIC, "text": PROGRAM_GRAMMAR}, block=PROGRAM_GRAMMAR)
         result = await self.client.devices_describe(args["device_id"])
         desc = to_wire(result.description)
         self._descriptions[args["device_id"]] = desc
@@ -489,15 +497,7 @@ class AgentBridge:
         result = await self.client.operations_cancel(args["operation_id"], reason=args.get("reason"))
         data = to_wire(result)
         op = data["operation"]
-        cancel = (op.get("cancel") or {}).get("state", "none")
-        subject = f"{op.get('deviceId')}.{op.get('action')}" if op.get("deviceId") else "program"
-        words = {"requested": "cancel requested, not yet acknowledged", "acknowledged": "cancel acknowledged, still stopping",
-                 "confirmed": "cancel confirmed", "refused": "cancel refused by the device", "none": "no cancel recorded"}
-        summary = render.compose(f"{subject} {op['operationId']} {op['state']}: {words.get(cancel, cancel)}"
-                                 f" (effect {op.get('effect')}).",
-                                 next_step="" if op["state"] in render.SETTLED else
-                                 f'call bhms_operation(operation_id="{op["operationId"]}", wait_ms=5000) to see it stop')
-        return ToolResult(summary, data)
+        return ToolResult(render.summarize_cancel(op), data)
 
     async def _bhms_stop(self, args: dict[str, Any]) -> ToolResult:
         if args.get("all"):

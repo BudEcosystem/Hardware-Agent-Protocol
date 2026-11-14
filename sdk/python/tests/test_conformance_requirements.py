@@ -14,7 +14,7 @@ SPEC = Path(__file__).resolve().parents[3] / "spec" / "bhms"
 def test_packaged_index_equals_the_specification():
     rows = requirements.parse_index((SPEC / "14-conformance.md").read_text())
     assert [dict(r) for r in requirements.load()] == rows
-    assert len(rows) == 254
+    assert len(rows) == 255
 
 
 def test_index_rows_are_well_formed():

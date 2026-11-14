@@ -176,6 +176,28 @@ async def find_no_match(c: Context) -> None:
     c.expect(device in [d["deviceId"] for d in by_id.structured.get("devices", [])], f"bhms_find by device id must find {device}: {by_id.summary}")
 
 
+@check("agent.describe-topic", ["BHMS-AGT-016"], profile="agent", needs=NEEDS)
+async def describe_topic(c: Context) -> None:
+    """The program grammar is one tool call away (bhms_describe with topic), and the tool texts say so."""
+    agent = _agent(c)
+    tools = {t["name"]: t for t in await agent.list_tools()}
+    if "bhms_run_program" not in tools:
+        refused = await agent.call("bhms_describe", {"topic": "program-grammar"})
+        c.expect(refused.is_error and refused.structured["error"]["bhmsCode"] == "UNSUPPORTED",
+                 f"without bhms_run_program the topic must be refused with UNSUPPORTED: {refused.summary}")
+        return
+    c.expect("bhms_describe" in tools["bhms_run_program"]["description"] and "program-grammar" in tools["bhms_run_program"]["description"],
+             "the bhms_run_program description must name the bhms_describe topic that returns the grammar")
+    grammar = await agent.call("bhms_describe", {"topic": "program-grammar"})
+    c.expect(not grammar.is_error and grammar.structured.get("topic") == "program-grammar", f"the topic must be served: {grammar.summary}")
+    text = grammar.structured.get("text", "")
+    c.expect(all(kind in text for kind in ("invoke", "read", "waitUntil", "assert", "sleep", "repeat")) and "maxDurationMs" in text,
+             "the grammar must name the six step kinds and maxDurationMs")
+    c.expect(text in grammar.text, "the grammar text must follow the summary line in the tool result")
+    both = await agent.call("bhms_describe", {"device_id": c.axis(), "topic": "program-grammar"})
+    c.expect(both.is_error and both.structured["error"]["bhmsCode"] == "INVALID_ARGUMENT", f"device_id and topic together must be refused: {both.summary}")
+
+
 @check("agent.freshness-and-keys", ["BHMS-AGT-014", "BHMS-AGT-030", "BHMS-AGT-041"], profile="agent", needs=NEEDS)
 async def freshness_and_keys(c: Context) -> None:
     """A read after a move is the post-move reading; a call without operation_key is marked not retry-safe and sends no key;

@@ -121,3 +121,125 @@ async def test_unknown_device_hint_on_a_device_server(rig):
     with pytest.raises(BhmsError) as exc:
         await client.devices_describe("Axis-1")
     assert exc.value.bhms_code == "UNKNOWN_DEVICE" and "did you mean axis-1" in exc.value.hint
+
+
+# ---------------------------------------------------------------------------- C20: what a summary never cuts
+
+from bhms.bridges import render  # noqa: E402
+
+
+def _failed(**over):
+    op = {"operationId": "op-0123456789abcdef0123456789abcdef", "kind": "action", "deviceId": "liquid-handler-on-bench-seven",
+          "action": "aspirate_from_reservoir_slowly", "state": "failed", "cancel": {"state": "none"}, "effect": "unverified",
+          "createdAt": "2026-11-14T10:00:00.000Z", "updatedAt": "2026-11-14T10:00:02.100Z",
+          "error": {"bhmsCode": "DEVICE_FAULT", "message": "air detected in the tip " * 12, "mayHaveActed": True,
+                    "retry": "after-reconcile", "hint": "read the tip volume sensor before deciding " * 6}}
+    op.update(over)
+    return op
+
+
+@pytest.mark.parametrize("state, code", [("failed", "DEVICE_FAULT"), ("failed", "OUT_OF_RANGE"), ("rejected", "LEASE_EXPIRED"),
+                                         ("failed", "DEADLINE_EXCEEDED")])
+def test_a_failed_summary_never_cuts_the_bhms_code(state, code):
+    """Task 6 minor: the code sat in the part of the summary that is shortened to fit 200 characters."""
+    op = _failed(state=state)
+    op["error"]["bhmsCode"] = code
+    for replayed in (False, True):
+        for keyed in (True, False):
+            text = render.summarize_operation(op, replayed=replayed, keyed=keyed, show_key=True)
+            assert len(text) <= render.SUMMARY_LIMIT and "\n" not in text
+            assert f" {code}" in text, text
+            assert state in text and op["operationId"] in text and "outcome unknown" in text
+
+
+def test_a_short_failed_summary_reads_as_before():
+    op = _failed(deviceId="pump-1", action="dispense", operationId="op-7f3a")
+    op["error"].update(message="over-pressure", hint="vent the line")
+    assert render.summarize_operation(op) == (
+        'pump-1.dispense op-7f3a failed: DEVICE_FAULT: "over-pressure" Next: vent the line '
+        "(effect unverified, 2.1 s; outcome unknown — check before retrying)")
+
+
+async def test_the_cancel_pending_summary_keeps_its_whole_next_step(rig):
+    """Task 6 minor: for a long device/action name the instruction to call bhms_operation was cut mid-call."""
+    srv, _, client, bridge = rig
+    lease = (await client.leases_acquire(["axis-1/motion"], 30_000)).lease
+    op = (await client.actions_invoke("axis-1", "guard_cancel", {"duration_ms": 5000}, lease_id=lease.lease_id)).operation
+    execution = srv.executor._running[op.operation_id]
+    hold = execution.cancelled  # the handler would stop at once: keep the cancel pending by not letting it see the request
+    execution.cancelled = __import__("asyncio").Event()
+    try:
+        result = await bridge.call("bhms_cancel", {"operation_id": op.operation_id, "reason": "x" * 400})
+        assert not result.is_error and result.data["operation"]["cancel"]["state"] == "requested"
+        assert f'Next: call bhms_operation(operation_id="{op.operation_id}", wait_ms=5000)' in result.summary
+        assert len(result.summary) <= render.SUMMARY_LIMIT
+    finally:
+        hold.set()
+        execution.cancelled = hold
+        await client.operations_wait(op.operation_id, 5000)
+    long_names = {"operationId": op.operation_id, "deviceId": "a-device-with-a-very-long-identifier-for-a-test/axis-1",
+                  "action": "an_action_with_a_long_name", "state": "running", "effect": "unknown", "cancel": {"state": "requested"}}
+    text = render.summarize_cancel(long_names)
+    assert f'Next: call bhms_operation(operation_id="{op.operation_id}", wait_ms=5000)' in text
+    assert len(text) <= render.SUMMARY_LIMIT and "cancel requested, not yet acknowledged" in text and "running" in text
+    long_id = "op-" + "f" * 60  # an id too long to state twice: the instruction is still whole
+    text = render.summarize_cancel({**long_names, "operationId": long_id})
+    assert text.endswith("Next: call bhms_operation with this operation_id") and long_id in text
+    assert len(text) <= render.SUMMARY_LIMIT
+
+
+# ---------------------------------------------------------------------------- C21: the program grammar through bhms_describe
+
+
+async def test_bhms_describe_serves_the_program_grammar_as_a_topic(rig):
+    """Task 6 minor: function-tool hosts cannot read the MCP resource bhms://grammar/program that the tool text named."""
+    from bhms.bridges.grammar import PROGRAM_GRAMMAR
+
+    _, _, _, bridge = rig
+    result = await bridge.call("bhms_describe", {"topic": "program-grammar"})
+    assert not result.is_error and result.data == {"topic": "program-grammar", "text": PROGRAM_GRAMMAR}
+    schema.validate("AgentTopicData", result.data)
+    schema.validate("AgentDescribeData", result.data)
+    assert result.block == PROGRAM_GRAMMAR and "\n" not in result.summary and "bhms_run_program" in result.summary
+    output = result.function_output()  # what an OpenAI function tool returns: the grammar is in it, no resource needed
+    schema.validate("AgentFunctionResult", output)
+    assert output["signature"] == PROGRAM_GRAMMAR
+    # device descriptions are unchanged, and exactly one of the two members is required
+    device = await bridge.call("bhms_describe", {"device_id": "axis-1"})
+    assert not device.is_error and device.data["description"]["deviceId"] == "axis-1"
+    schema.validate("AgentDescribeData", device.data)
+    for bad in ({}, {"device_id": "axis-1", "topic": "program-grammar"}, {"topic": "something-else"}):
+        refused = await bridge.call("bhms_describe", bad)
+        assert refused.error["bhmsCode"] == "INVALID_ARGUMENT", bad
+
+
+def test_the_tool_texts_point_at_the_describe_topic_and_stay_within_the_token_budget():
+    tools = {t.name: t for t in tool_definitions()}
+    describe, run = tools["bhms_describe"], tools["bhms_run_program"]
+    assert describe.input_schema["properties"]["topic"]["enum"] == ["program-grammar"]
+    assert "required" not in describe.input_schema and "oneOf" not in describe.input_schema  # BHMS-AGT-051
+    assert 'bhms_describe {"topic":"program-grammar"}' in run.description
+    assert 'bhms_describe {"topic":"program-grammar"}' in run.input_schema["properties"]["program"]["description"]
+
+
+async def test_a_malformed_program_refusal_names_the_describe_topic(rig):
+    _, _, _, bridge = rig
+    refused = await bridge.call("bhms_run_program", {"program": {"steps": "nope"}, "arguments": {}})
+    assert refused.error["bhmsCode"] == "INVALID_ARGUMENT" and 'bhms_describe {"topic":"program-grammar"}' in refused.error["hint"]
+
+
+async def test_the_topic_is_unsupported_where_programs_are_not_offered(tmp_path):
+    from bhms import DeviceServer
+
+    srv = DeviceServer("no-programs", state_dir=str(tmp_path), programs=False)
+    srv.device("d-1", name="D").report_alive()
+    await srv.start()
+    client = await Client.from_transport(await connect_in_process(srv.rpc), strict=True)
+    bridge = AgentBridge(client)
+    try:
+        refused = await bridge.call("bhms_describe", {"topic": "program-grammar"})
+        assert refused.error["bhmsCode"] == "UNSUPPORTED" and "programs" in refused.error["message"]
+    finally:
+        await bridge.aclose()
+        await client.close()
+        await srv.close()

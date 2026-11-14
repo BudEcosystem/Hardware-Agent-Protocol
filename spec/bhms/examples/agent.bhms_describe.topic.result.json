@@ -1,0 +1,8 @@
+{
+  "$comment": "Structured content of bhms_describe with topic program-grammar (text shortened).",
+  "against": "#/$defs/AgentDescribeData",
+  "message": {
+    "topic": "program-grammar",
+    "text": "BHMS program (JSON object). Validated whole before step 1 runs; no loops except repeat, no code."
+  }
+}

@@ -44,6 +44,14 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
 - **BHMS-DEV-014 (new, SHOULD, core)**: an `UNKNOWN_DEVICE` refusal names the visible devices whose id differs from the request
   only in case or by a gateway namespace (`hint`, and `bound` as a list). Evidence: Task 11 report, S2 (`notice-1` was refused
   with "no device" although `notice/notice-1` existed). Requirement index: 254 rows.
+- **BHMS-AGT-016 (new, MUST, agent)**: `bhms_describe` takes `{device_id | topic}`; `topic: "program-grammar"` returns the
+  program grammar (`AgentDescribeInput` gains `topic` and the exactly-one rule; new `AgentTopicData`, `AgentDescribeData`;
+  examples `agent.bhms_describe.topic.input.json`, `agent.bhms_describe.topic.result.json`, `invalid-agent-describe-both.json`).
+  The tool texts name the call instead of the MCP resource URI. The eight definitions total 1,448 tokens (ceiling 1,500).
+  Evidence: Task 6 review (minor, deferred to 7b): the OpenAI function-tool text named `bhms://grammar/program`, which a
+  function-tool host cannot read.
+- No requirement change, agent bridge: a failed or rejected operation's summary keeps its `bhmsCode` in the protected head,
+  and the cancel-pending summary keeps its next step whole (Task 6 review, minors).
 
 ### TS SDK to follow
 
@@ -58,6 +66,8 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   TypeScript device server; conformance checks `descriptions.list-text-filter` and `descriptions.unknown-device-hint`.
 - Regenerate `src/generated/types.ts` (`npm run gen-types`): `AgentFindData.totalDevices`, the capability filter pattern, and
   every schema change of this round listed above and below.
+- Nothing in the TypeScript SDK (it has no agent bridge); the regenerated types carry `AgentDescribeInput.topic`,
+  `AgentTopicData` and `AgentDescribeData`.
 
 ## 2026-11-13 (v0.1)
 
