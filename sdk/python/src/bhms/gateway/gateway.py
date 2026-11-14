@@ -235,6 +235,10 @@ class Gateway:
             listener = await serve_unix(path[2:] if path.startswith("//") else path, self.rpc.handle_connection)
         elif url.startswith(("ws://", "wss://", "http://", "https://")):
             scheme, host, port, path = _parse(url, default_path=self.config.http_path)
+            if scheme in ("wss", "https") and ssl is None:
+                raise ValueError(f"refusing to serve {url} without a TLS context: {scheme}:// promises encryption; "
+                                 "pass ssl=<SSLContext> to Gateway.listen (the TOML file has no TLS options), or listen "
+                                 "on ws:// or http:// on a loopback address behind a TLS-terminating proxy")
             if not is_loopback(host) and ssl is None:
                 raise ValueError(f"refusing to serve {url} without TLS: a non-loopback listener must use TLS "
                                  "(BHMS-SEC-004); pass ssl=<SSLContext> or bind 127.0.0.1")

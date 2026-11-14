@@ -146,6 +146,27 @@ async def test_non_loopback_http_needs_tls(tmp_path):  # BHMS-SEC-004
             await r.gateway.listen("ws://0.0.0.0:0")
 
 
+async def test_a_tls_scheme_without_a_tls_context_is_refused_not_served_in_clear(tmp_path):  # BHMS-SEC-004
+    """`wss://` and `https://` promise encryption: on loopback too, without ssl= the gateway refuses instead of serving
+    plain WebSocket or HTTP under a TLS scheme (found writing the gateway guide, Task 14)."""
+    async with rig(tmp_path, names=("a",)) as r:
+        for url in ("wss://127.0.0.1:0", "https://127.0.0.1:0/bhms"):
+            with pytest.raises(ValueError, match="without a TLS context"):
+                await r.gateway.listen(url)
+
+
+async def test_a_device_server_refuses_wss_without_a_tls_context(tmp_path):  # BHMS-SEC-004
+    from bhms import DeviceServer
+
+    srv = DeviceServer("tls-check", state_dir=tmp_path, store=None)
+    srv.device("d-1")
+    try:
+        with pytest.raises(ValueError, match="without a TLS context"):
+            await srv.listen("wss://127.0.0.1:0")
+    finally:
+        await srv.close()
+
+
 async def test_gateway_serves_stdio_from_a_toml_file(tmp_path):  # BHMS-SEC-003; python -m bhms.gateway
     helper = Path(__file__).parent / "helpers" / "gateway_upstream.py"
     config = tmp_path / "gw.toml"
