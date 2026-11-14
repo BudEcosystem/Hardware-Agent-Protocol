@@ -167,6 +167,20 @@ async def test_a_device_server_refuses_wss_without_a_tls_context(tmp_path):  # B
         await srv.close()
 
 
+def test_a_listener_that_cannot_open_is_a_message_and_exit_2_not_a_traceback(tmp_path):
+    """Task 14: a Unix socket path over the kernel's limit made `bhms gateway` die with an OSError traceback."""
+    import subprocess
+
+    deep = tmp_path / ("d" * 60) / ("e" * 60)
+    deep.mkdir(parents=True)
+    (deep / "gw.toml").write_text('[gateway]\nid = "gw-long"\nlisten = ["unix:gateway.sock"]\n')
+    done = subprocess.run([sys.executable, "-m", "bhms.gateway", str(deep / "gw.toml")], capture_output=True, text=True,
+                          timeout=60)
+    assert done.returncode == 2, done.stderr
+    assert "Traceback" not in done.stderr and "cannot serve the configured listeners" in done.stderr
+    assert "shorter path" in done.stderr
+
+
 async def test_gateway_serves_stdio_from_a_toml_file(tmp_path):  # BHMS-SEC-003; python -m bhms.gateway
     helper = Path(__file__).parent / "helpers" / "gateway_upstream.py"
     config = tmp_path / "gw.toml"

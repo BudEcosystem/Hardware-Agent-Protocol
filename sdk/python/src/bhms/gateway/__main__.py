@@ -27,6 +27,11 @@ def main(argv: list[str] | None = None) -> int:
     except ValueError as exc:  # refused at start-up (policy widens a bound, listener without TLS, ...)
         print(f"bhms.gateway: {exc}", file=sys.stderr)
         return 2
+    except OSError as exc:  # a listener that cannot be opened (address in use, socket path too long, no permission)
+        hint = (" (a Unix socket path is limited to about 107 bytes: listen on a shorter path)"
+                if "AF_UNIX path too long" in str(exc) else "")
+        print(f"bhms.gateway: cannot serve the configured listeners: {exc}{hint}", file=sys.stderr)
+        return 2
     return 0
 
 
