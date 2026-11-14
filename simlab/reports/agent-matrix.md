@@ -32,7 +32,7 @@ Raw records: `data/runs.jsonl` (one compact line per run), `data/hostile-*.json`
 | | result |
 |---|---|
 | Scripted baseline | 125 runs (25 tasks x 5 seeds, every fault variant), **125/125 success**; false certainty, duplicates, violations and fabricated support **0 in all 125**; silent ambiguity **measured only in the 20 runs of the 4 tasks that inject a lost reply, a power cut or a hub loss (0 there) and not measured (n/a) in the other 105**; 3,432 tool calls |
-| Hostile suite | **140 violation attempts** (9 categories): 140 blocked and 0 reached a device when effectful actions require leases; 136 blocked and **4 reached a device** with the twins as declared (lease theft, section 5) |
+| Hostile suite | **140 violation attempts** (9 categories), run in two configurations: **140 blocked and 0 reached a device in both** (effectful actions requiring leases, and the twins as declared). Re-run 2026-11-14 with the SDK of Task 7b; the Task 11 run had 136 blocked and 4 reached a device as declared (lease theft, fixed by BHMS-LSE-014 and the gateway lease check; section 4) |
 | Recovery drills (UC13) | 268 drills (power cut, lost reply, graceful gateway close and restart, object removed by hand; every execution step of UC4 and UC5), re-run after fix round 1: **0 violations**; outcome classes completed 167, failed_known 96, unknown_reported 5; all five zero-metrics 0, silent ambiguity measured from the operation records in every drill |
 | Model tiers | 66 runs (n = 1 to 3 per cell, so these are observations, not rates): false certainty, duplicates and violations **0 in every run**; silent ambiguity **not measured** (no model run injected a reply loss or crash; n/a, not 0); fabricated support **non-zero in 4 runs** (3 model tiers), all model behaviour (section 5) |
 | UC6 PAT | scripted: 5/5 rounds-to-tolerance, round 3 onward through `bhms_run_program` with **0 planning calls**; out-of-domain request refused with 0 effects and escalated. No model tier completed the qualification rounds inside its token budget (section 6) |
@@ -61,7 +61,7 @@ is in section 11. Reading it:
 
 ## 4. Hostile suite
 
-> **Update 2026-11-14 (Task 7b, fix round 1).** The `as-declared` result below (136 blocked, 4 reached a device) is superseded. It was measured before BHMS-LSE-014 and the gateway lease fix; the record is kept as `data/superseded/hostile-as-declared-2026-11-13.json`. Re-run on the same machine with the corrected SDK (`python -m simlab.agents.hostile --leases as-declared` and `--leases required`): **140 attempts, 140 blocked, 0 reached a device, 0 accepted, world audit violations 0** in both configurations (`data/hostile-as-declared.json`, `data/hostile-required.json`). The four lease thefts are now refused (`LEASE_CONFLICT`, `LEASE_CONFLICT`, `LEASE_EXPIRED`, `LEASE_CONFLICT`). The text and tables below are the original Task 11 record and were not regenerated; the model runs were not repeated.
+> **Update 2026-11-14 (Task 7b).** Current result, re-run on the same machine with the corrected SDK (`python -m simlab.agents.hostile --leases as-declared` and `--leases required`): **140 attempts, 140 blocked, 0 reached a device, 0 accepted, world audit violations 0** in both configurations; the four lease thefts are refused (`LEASE_CONFLICT`, `LEASE_CONFLICT`, `LEASE_EXPIRED`, `LEASE_CONFLICT`). The tables in section 11 are regenerated from these records. The prose of this section that describes four attempts reaching a device is the Task 11 record (before BHMS-LSE-014 and the gateway lease check); that run's data is kept as `data/superseded/hostile-as-declared-2026-11-13.json`. The model runs were not repeated.
 
 140 raw JSON-RPC attempts through the gateway, run twice (`data/hostile-*.json`). Categories: bounds (46), unknown devices
 (14), invented actions (15), key replay with changed arguments (10), reserved key prefixes (9), lease theft (9), missing scope
@@ -152,6 +152,8 @@ return therefore needs a device-side reconcile trigger the SDK does not provide 
 * The three UC6 model attempts did not complete (section 6); n = 1 per model cell elsewhere.
 
 ## 10. SDK, spec and twin issues found (concrete, for Task 15)
+
+> **Note 2026-11-14 (Task 7b).** T1a and T1b below, and the "as declared 136 blocked, 4 reached" of section 10b item 5, are the Task 11 record; the `data/hostile-as-declared.json` they cite is now `data/superseded/hostile-as-declared-2026-11-13.json`. Both are fixed (gateway lease validation; BHMS-LSE-014): the hostile suite re-run gives 140 blocked and 0 reached a device in both configurations (section 4).
 
 | id | issue | evidence | suggestion |
 |---|---|---|---|
@@ -362,9 +364,7 @@ device, `AMB` silent ambiguity (`n/a` = not measured in that run), `FAB` fabrica
 
 ## Hostile suite
 
-> **Update 2026-11-14 (Task 7b, fix round 1).** The `as-declared` result below (136 blocked, 4 reached a device) is superseded. It was measured before BHMS-LSE-014 and the gateway lease fix; the record is kept as `data/superseded/hostile-as-declared-2026-11-13.json`. Re-run on the same machine with the corrected SDK (`python -m simlab.agents.hostile --leases as-declared` and `--leases required`): **140 attempts, 140 blocked, 0 reached a device, 0 accepted, world audit violations 0** in both configurations (`data/hostile-as-declared.json`, `data/hostile-required.json`). The four lease thefts are now refused (`LEASE_CONFLICT`, `LEASE_CONFLICT`, `LEASE_EXPIRED`, `LEASE_CONFLICT`). The text and tables below are the original Task 11 record and were not regenerated; the model runs were not repeated.
-
-**hostile-as-declared**: 140 attempts, 136 blocked, 4 reached a device, 4 accepted, world audit violations 0
+**hostile-as-declared**: 140 attempts, 140 blocked, 0 reached a device, 0 accepted, world audit violations 0
 
 | category | attempts | blocked | reached a device | accepted |
 |---|--:|--:|--:|--:|
@@ -374,11 +374,9 @@ device, `AMB` silent ambiguity (`n/a` = not measured in that run), `FAB` fabrica
 | key_replay | 10 | 10 | 0 | 0 |
 | reserved_key | 9 | 9 | 0 | 0 |
 | identity | 8 | 8 | 0 | 0 |
-| lease_theft | 9 | 5 | 4 | 4 |
+| lease_theft | 9 | 9 | 0 | 0 |
 | no_scope | 18 | 18 | 0 | 0 |
 | injection | 11 | 11 | 0 | 0 |
-
-Accepted (not refused): invoke on a leased resource without the lease; invoke with another principal's lease id; invoke with a made-up lease id; invoke with the lease id of a wrong resource
 
 **hostile-required**: 140 attempts, 140 blocked, 0 reached a device, 0 accepted, world audit violations 0
 
