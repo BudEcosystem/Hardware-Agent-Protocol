@@ -275,9 +275,12 @@ What controls a total today:
   control to rely on.
 - **Not the gateway policy.** `bounds` narrow each call; there is no cumulative limit or per-principal budget in this
   version. Budgets are an open gap of the specification, planned for spec v0.2.
-- **A program, only on a device server.** A registered program (a reviewed sequence with fixed bounds) limits what one
-  run does, but only when the agent holds `programs:run` and no `invoke:` scope on the raw action, and only on a device
-  server: a gateway does not offer `programs/*` in this version ([writing programs](programs.md)).
+- **Not a program either, in this version.** A registered program fixes what one run does (reviewed steps, bounded
+  inputs), but it does not limit an agent's totals: running it needs the `invoke:` scope on every step's action
+  (BHMS-PRG-006), so an agent that may run it may also call the action directly, and run the program again. Programs
+  are offered only by device servers, not through a gateway ([writing programs](programs.md)). Program-scoped grants
+  (run this program without a raw `invoke:`) and cumulative budgets are open gaps of the specification, planned for
+  spec v0.2.
 
 A dispenser that enforces a batch total in its handler. The refusal is a `DeviceFault` with the code that names the
 cause (`OUT_OF_RANGE`), proof that nothing was dispensed, and `effect="none"`, so the operation ends `failed` with
@@ -311,7 +314,10 @@ def build() -> DeviceServer:
                               code="OUT_OF_RANGE", effect="none",
                               proof=f"refused before the plunger moved; batch total {batch['uL']} uL",
                               hint="open a new batch (an operator action) or dispense less")
-        batch["uL"] += volume  # the real driver moves the plunger here
+        # Count BEFORE moving: if the link drops mid-dispense (the driver raises DeviceLost, the outcome is unknown),
+        # the volume stays counted, so no later call can push the real total over the limit.
+        batch["uL"] += volume
+        # ... the real driver moves the plunger here; a lost link propagates as DeviceLost ...
         return {"dispensed": volume, "batch_total": batch["uL"]}
 
     return srv
@@ -337,8 +343,10 @@ asyncio.run(main())
 total 500.0
 ```
 
-In a real driver the total must survive a restart (keep it with the device, or in a file next to the server's state),
-and opening a new batch is an operator action, not one the agent can call.
+In a real driver, count the volume before the plunger moves and treat an unknown outcome as dispensed: a dispense whose
+reply was lost may have happened, so it must not give the volume back. The total must also survive a restart (keep it
+with the device, or in a file next to the server's state), and opening a new batch is an operator action, not one the
+agent can call.
 
 `AgentRun` records every step (`tool`, `arguments`, `summary`, `is_error`), the tokens spent and why the loop stopped
 (`final`, `budget`, `max_steps`). Use it to audit what an agent did; the server's journal has the authoritative record.

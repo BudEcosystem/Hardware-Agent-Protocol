@@ -4,8 +4,8 @@ This page takes you from nothing to a device that an AI agent can operate safely
 inspect and test it, connect Claude (or any MCP client) and an OpenAI model, and put a gateway with a policy in front.
 
 Every command and program on this page is executed by `sdk/python/tests/test_docs_examples.py`, in this order, so what
-you see is what it prints. Run the steps in one empty directory. The device is simulated; the section "For real hardware" at the end
-says what to change.
+you see is what it prints. Run the steps in one empty directory. The device is simulated; the section "For real
+hardware" at the end says what to change.
 
 ## 1. Install
 
