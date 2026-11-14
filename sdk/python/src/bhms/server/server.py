@@ -55,6 +55,7 @@ from bhms.jsonrpc.session import RequestContext
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.authority import Authenticator, Policy, Principal, token_digest
 from bhms.runtime.events import EventLog
+from bhms.runtime.heap import freeze_startup_heap
 from bhms.runtime.leases import Lease, LeaseManager
 from bhms.runtime.observations import ObservationHub
 from bhms.runtime.operations import Journal, OperationRecord, intent_digest, key_conflict_error, server_key
@@ -378,6 +379,7 @@ class DeviceServer:
         """Serve until the parent closes stdio (default) or until SIGINT/SIGTERM, then close cleanly."""
         await self.start()
         assert self.rpc is not None
+        freeze_startup_heap()  # no generation-2 pause over the start-up heap while serving (Task 12a: 42-81 ms)
         try:
             if url is None or url == "stdio":
                 await self.rpc.serve_stdio()

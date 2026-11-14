@@ -67,11 +67,14 @@ class _Plain(_Wire):
                               regex_engine="python-re")
 
 
+_ANY: TypeAdapter[Any] = TypeAdapter(Any)  # built once: constructing one costs ~57 us (Task 12a client profile)
+
+
 def to_wire(value: Any) -> Any:
     """Serialize a model (or any value containing models) to its JSON wire form."""
     if isinstance(value, BaseModel):
         return value.model_dump(mode="json", by_alias=True, exclude_unset=True)
-    return TypeAdapter(Any).dump_python(value, mode="json", by_alias=True, exclude_unset=True)
+    return _ANY.dump_python(value, mode="json", by_alias=True, exclude_unset=True)
 
 
 def _pattern(pattern: str, **kw: Any) -> Any:

@@ -40,7 +40,6 @@ from __future__ import annotations
 
 import asyncio
 import contextlib
-import gc
 import logging
 import signal
 import ssl as ssl_module
@@ -61,6 +60,7 @@ from bhms.protocol import schema
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.authority import Authenticator, Policy, Principal
 from bhms.runtime.events import EventLog
+from bhms.runtime.heap import freeze_startup_heap
 from bhms.runtime.leases import Lease
 from bhms.runtime.store import Store, StoreError
 
@@ -266,8 +266,7 @@ class Gateway:
         try:
             # A gateway serving ten thousand devices holds hundreds of thousands of long-lived objects; a generation-2
             # collection over them pauses the loop for ~200 ms. They never die, so move them out of the collector's way.
-            gc.collect()
-            gc.freeze()
+            freeze_startup_heap()
             stdio = False
             for url in self.config.listen:
                 if url == "stdio":
