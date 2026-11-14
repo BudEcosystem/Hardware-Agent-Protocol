@@ -124,6 +124,10 @@ class Target:
     compact: Any = None
     """``compact-gateway`` fixture: a :class:`~bhms.conformance.compact_fixture.CompactFixture` (endpoints, wires, raw links)."""
     notes: list[str] = field(default_factory=list)
+    extra_env: dict[str, str] = field(default_factory=dict)
+    """Environment of the further stdio processes :meth:`connect_extra` starts (a server script's own state directory)."""
+    scratch_dir: Path | None = None
+    """A directory the runner created for this target and removes in :meth:`aclose`."""
     _process: asyncio.subprocess.Process | None = field(default=None, repr=False)
     _base: Transport | None = field(default=None, repr=False)
     _extras: list[Transport] = field(default_factory=list, repr=False)
@@ -154,10 +158,11 @@ class Target:
             return None
         return open(self.log_path, "ab")  # noqa: SIM115  (handed to the child; closed with the process)
 
-    async def _spawn_stdio(self, command: list[str]) -> Transport:
+    async def _spawn_stdio(self, command: list[str], extra_env: dict[str, str] | None = None) -> Transport:
         stderr = self._stderr()
         try:
-            return await spawn_stdio(command, env=self._environment(), stderr=stderr, cwd=str(self.work_dir) if self.work_dir else None)
+            return await spawn_stdio(command, env={**self._environment(), **(extra_env or {})}, stderr=stderr,
+                                     cwd=str(self.work_dir) if self.work_dir else None)
         finally:
             if stderr is not None:
                 stderr.close()
@@ -207,7 +212,7 @@ class Target:
             command = self.extra_command or self.command
             if command is None:
                 raise TargetError("cannot open a second stdio connection without a command")
-            transport = await self._spawn_stdio(command)
+            transport = await self._spawn_stdio(command, self.extra_env)
         else:
             assert self.url is not None
             if role is not None and role not in self.tokens:
@@ -331,6 +336,8 @@ class Target:
             await self.compact.aclose()
         if self.work_dir is not None and self.notes_owned:
             shutil.rmtree(self.work_dir, ignore_errors=True)
+        if self.scratch_dir is not None:
+            shutil.rmtree(self.scratch_dir, ignore_errors=True)
 
     notes_owned: bool = False
 
@@ -369,7 +376,11 @@ def resolve(spec: str, *, token: str | None = None, keep_state: str | None = Non
         return Target(spec, kind, token, url=spec)
     path = Path(spec).expanduser()
     if path.is_file() and path.suffix == ".py":
-        return Target(spec, "stdio", token, command=[sys.executable, str(path.resolve())], work_dir=path.resolve().parent)
+        # Every further stdio connection is a further server process; with the script's (default) state directory it
+        # would find the journal locked by the first one and exit, which is not what a fresh-connection check tests.
+        scratch = Path(tempfile.mkdtemp(prefix="bhms-conf-extra-"))
+        return Target(spec, "stdio", token, command=[sys.executable, str(path.resolve())], work_dir=path.resolve().parent,
+                      extra_env={"BHMS_STATE_DIR": str(scratch)}, scratch_dir=scratch)
     if path.is_file() and path.suffix == ".toml":
         return Target(spec, "stdio", token, command=[sys.executable, "-m", "bhms.gateway", str(path.resolve())],
                       work_dir=path.resolve().parent)
