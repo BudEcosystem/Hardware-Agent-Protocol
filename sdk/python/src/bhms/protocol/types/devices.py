@@ -226,7 +226,7 @@ class EventTypeDescription(_Wire):
 class SafetyDescription(_Wire):
     stop: Literal["supported", "unsupported"]
     stop_evidence: CompletionEvidence
-    stop_max_duration_ms: Optional[NonNegInt] = None
+    stop_max_duration_ms: Optional[_bounded_int(0, 86_400_000)] = None
     on_disconnect: Literal["continue", "hold", "stop", "unknown"]
     summary: _text(1000)
 

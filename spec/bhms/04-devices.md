@@ -293,7 +293,7 @@ when the device usually reaches it.
 |---|---|---|---|
 | `stop` | `supported` \| `unsupported` | yes | Whether the device has a commissioned stop procedure |
 | `stopEvidence` | `measured` \| `reported` \| `none` | yes | Evidence a stop result can carry |
-| `stopMaxDurationMs` | integer | no | Upper bound on the stop procedure |
+| `stopMaxDurationMs` | integer 0..86 400 000 | no | Upper bound on the stop procedure (at most one day) |
 | `onDisconnect` | `continue` \| `hold` \| `stop` \| `unknown` | yes | What the device does when it loses its server or gateway |
 | `summary` | string ≤ 1000 | yes | Untrusted text describing stop behaviour |
 

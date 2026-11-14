@@ -2367,7 +2367,8 @@
         },
         "stopMaxDurationMs": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 0,
+          "maximum": 86400000
         },
         "onDisconnect": {
           "type": "string",

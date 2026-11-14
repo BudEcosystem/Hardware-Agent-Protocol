@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
 
 import pytest
@@ -11,6 +12,9 @@ from bhms import DeviceServer, Policy, token_digest
 from bhms.client.client import Client
 from bhms.protocol import types
 from bhms.protocol.errors import BhmsError
+from bhms.server.decorators import DescriptionError
+from bhms.server.device import Device
+from pydantic import ValidationError
 from helpers.devices import build, connect, serve
 
 
@@ -225,10 +229,10 @@ async def test_close_ends_a_stop_procedure_that_never_reports_and_records_it(tmp
     assert "closed" in abandoned[0]["message"] and "may" in abandoned[0]["message"]
 
 
-async def _stop_then_close(tmp_path, halt_body, *, max_duration_ms):
+async def _stop_then_close(tmp_path, halt_body, *, max_duration_ms, **server_kw):
     """Serve one device whose stop procedure is ``halt_body``, stop it, close the server at once; return (seconds the
     close took, the stop events recorded, the procedure's log)."""
-    srv = DeviceServer("closing", state_dir=tmp_path)
+    srv = DeviceServer("closing", state_dir=tmp_path, **server_kw)
     dev = srv.device("press", resources=["press"])
     log: list[str] = []
 
@@ -283,3 +287,65 @@ async def test_close_ends_a_hung_stop_after_its_declared_bound(tmp_path):  # BHM
     assert 0.8 < took < 2.0  # the bound runs from when the stop began, not from the close
     assert [e["data"]["outcome"] for e in events] == ["initiated", "failed"]
     assert "closed before the stop procedure reported" in events[-1]["message"]
+
+
+async def _ramp(log):
+    log.append("ramp start")
+    await asyncio.sleep(0.6)
+    log.append("ramp done")
+
+
+async def _hung(log):
+    log.append("start")
+    try:
+        await asyncio.Event().wait()
+    except asyncio.CancelledError:
+        log.append("cancelled")
+        raise
+
+
+async def test_close_says_which_stop_it_waits_for_when_it_waits_past_close_timeout(tmp_path, caplog):  # Task 12b
+    """A shutdown that waits longer than ``close_timeout`` for a stop says so at WARNING, naming the device and its bound:
+    an operator (or a supervisor's log) sees why the process has not exited."""
+    caplog.set_level(logging.WARNING, logger="bhms.stop")
+    took, events, log = await _stop_then_close(tmp_path, _ramp, max_duration_ms=3000)
+    assert log == ["ramp start", "ramp done"] and [e["data"]["outcome"] for e in events] == ["initiated", "confirmed"]
+    waits = [r for r in caplog.records if r.levelno == logging.WARNING and "press" in r.getMessage()]
+    assert len(waits) == 1 and "3000 ms" in waits[0].getMessage(), [r.getMessage() for r in caplog.records]
+
+
+async def test_close_does_not_warn_when_it_waits_no_longer_than_close_timeout(tmp_path, caplog):
+    caplog.set_level(logging.WARNING, logger="bhms.stop")
+    took, events, log = await _stop_then_close(tmp_path, _ramp, max_duration_ms=100)
+    assert not [r for r in caplog.records if r.name == "bhms.stop"]
+
+
+async def test_close_honours_its_ceiling_and_records_the_stop_it_ends(tmp_path, caplog):  # Task 12b, BHMS-AUTH-024
+    """A declared bound can be up to a day; a supervisor kills a process long before that. With a ceiling below the bound,
+    close waits until the ceiling, logs an ERROR naming the device, ends the procedure and records the ``failed`` stop
+    event, so the outcome is on record before any kill."""
+    caplog.set_level(logging.WARNING, logger="bhms.stop")
+    took, events, log = await _stop_then_close(tmp_path, _hung, max_duration_ms=60_000, stop_shutdown_ceiling_s=0.5)
+    assert log == ["start", "cancelled"]
+    assert 0.4 < took < 2.0
+    assert [e["data"]["outcome"] for e in events] == ["initiated", "failed"]
+    errors = [r.getMessage() for r in caplog.records if r.levelno == logging.ERROR]
+    assert len(errors) == 1 and "press" in errors[0] and "60000 ms" in errors[0] and "0.5 s" in errors[0], errors
+
+
+def test_the_shutdown_ceiling_must_be_positive(tmp_path):
+    with pytest.raises(ValueError, match="stop_shutdown_ceiling_s"):
+        DeviceServer("bad", state_dir=tmp_path, stop_shutdown_ceiling_s=0)
+
+
+def test_a_stop_bound_is_at_most_one_day():  # Task 12b: stopMaxDurationMs is capped like a program's maxDurationMs
+    dev = Device(None, "press", resources=["press"])
+    for bad in (86_400_001, -1, 1.5):
+        with pytest.raises(DescriptionError, match="max_duration_ms"):
+            dev.on_stop(lambda ctx: None, evidence="measured", max_duration_ms=bad)
+    dev.on_stop(lambda ctx: None, evidence="measured", max_duration_ms=86_400_000)
+    assert dev.description()["safety"]["stopMaxDurationMs"] == 86_400_000
+    safety = {"stop": "supported", "stopEvidence": "measured", "onDisconnect": "stop", "summary": "s",
+              "stopMaxDurationMs": 86_400_001}
+    with pytest.raises(ValidationError):
+        types.parse("SafetyDescription", safety)

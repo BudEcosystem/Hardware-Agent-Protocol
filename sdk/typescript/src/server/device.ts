@@ -42,6 +42,9 @@ const CORE_EVENT_TYPES = new Set(["device.online", "device.offline", "device.deg
 const SUMMARY_HARD_LIMIT = 4096;
 
 /** An invalid declaration (raised at start, before anything is served). */
+/** `safety.stopMaxDurationMs` is at most one day (§4.7), the bound of a program's `maxDurationMs`. */
+export const MAX_STOP_DURATION_MS = 86_400_000;
+
 export class DescriptionError extends Error {
   constructor(message: string) {
     super(message);
@@ -299,7 +302,11 @@ export class Device {
   onStop(options: { evidence?: "measured" | "reported"; maxDurationMs?: number }, handler: () => Promise<void> | void): this {
     const evidence = options.evidence ?? "reported";
     if (evidence !== "measured" && evidence !== "reported") throw new DescriptionError("onStop evidence must be 'measured' or 'reported' (a stop without evidence is never confirmed, BHMS-AUTH-022)");
-    this.stopSpec = { handler, evidence, maxDurationMs: options.maxDurationMs };
+    const bound = options.maxDurationMs;
+    if (bound !== undefined && !(Number.isInteger(bound) && bound >= 0 && bound <= MAX_STOP_DURATION_MS)) {
+      throw new DescriptionError(`onStop maxDurationMs must be an integer from 0 to ${MAX_STOP_DURATION_MS} (one day; safety.stopMaxDurationMs, §4.7), got ${bound}`);
+    }
+    this.stopSpec = { handler, evidence, maxDurationMs: bound };
     this.invalidate();
     return this;
   }

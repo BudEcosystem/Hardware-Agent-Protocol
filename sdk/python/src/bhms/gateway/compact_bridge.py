@@ -1023,10 +1023,10 @@ class CompactBridge:
                     ack = await attempt()
                     break
                 except _Rearm:
-                    log.info("compact %s: the endpoint said HELLO during a stop: STOP sent again (BHMS-CMP-050)", self.name)
-                    if rearm == STOP_REARMS:
+                    if rearm == STOP_REARMS:  # not sent again: the stop ends failed
                         raise RuntimeError(f"the endpoint said HELLO {STOP_REARMS + 1} times during the stop and never "
                                            "confirmed it; the device may or may not be stopped: read its state") from None
+                    log.info("compact %s: the endpoint said HELLO during a stop: STOP sent again (BHMS-CMP-050)", self.name)
             if ack.outcome == cp.STOPACK_UNSUPPORTED:
                 raise RuntimeError("the endpoint has no stop procedure although its description declares one")
             if ack.evidence < (cp.EVIDENCE_MEASURED if spec.evidence == "measured" else cp.EVIDENCE_REPORTED):

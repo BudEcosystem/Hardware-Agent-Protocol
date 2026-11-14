@@ -1,0 +1,15 @@
+{
+  "$comment": "stopMaxDurationMs is at most 86 400 000 (one day), the bound of a program's maxDurationMs (04 4.7): a closing server waits for a running stop up to this bound (BHMS-AUTH-024), so it must not be unbounded.",
+  "against": "#/$defs/SafetyDescription",
+  "expect": {
+    "path": "/stopMaxDurationMs",
+    "keyword": "maximum"
+  },
+  "message": {
+    "stop": "supported",
+    "stopEvidence": "reported",
+    "stopMaxDurationMs": 86400001,
+    "onDisconnect": "stop",
+    "summary": "Stop halts the plunger motor."
+  }
+}

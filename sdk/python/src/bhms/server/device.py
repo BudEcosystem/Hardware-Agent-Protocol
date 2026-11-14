@@ -59,6 +59,9 @@ SUMMARY_SOFT_LIMIT = 1600  # BHMS-DEV-011 SHOULD (about 400 tokens)
 SUMMARY_HARD_LIMIT = 4096  # BHMS-DEV-011 MUST
 
 
+MAX_STOP_DURATION_MS = 86_400_000  # safety.stopMaxDurationMs is at most one day (§4.7), as a program's maxDurationMs
+
+
 class StopSpec:
     """The commissioned stop procedure: ``handler(ctx)``; returning normally means the procedure finished."""
 
@@ -66,6 +69,10 @@ class StopSpec:
         if evidence not in ("measured", "reported"):
             raise DescriptionError("on_stop evidence must be 'measured' or 'reported' (a stop without evidence is "
                                    "never confirmed, BHMS-AUTH-022)")
+        if max_duration_ms is not None and (type(max_duration_ms) is not int
+                                            or not 0 <= max_duration_ms <= MAX_STOP_DURATION_MS):
+            raise DescriptionError(f"on_stop max_duration_ms must be an integer from 0 to {MAX_STOP_DURATION_MS} "
+                                   f"(one day; safety.stopMaxDurationMs, §4.7), got {max_duration_ms!r}")
         self.handler, self.evidence, self.max_duration_ms = handler, evidence, max_duration_ms
 
 

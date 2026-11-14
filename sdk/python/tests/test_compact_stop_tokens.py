@@ -319,3 +319,29 @@ async def test_the_conformance_probe_is_inconclusive_not_failed_when_the_stop_fi
         assert await _stop_across_hello(_Verdicts(), raw) is False
     finally:
         await raw.close()
+
+
+async def test_the_last_hello_a_stop_outlives_is_not_logged_as_a_resend(tmp_path, caplog, monkeypatch):  # Task 12b
+    """Each HELLO during a stop re-sends it and says so, except the one that exhausts the allowed re-arms: that stop is
+    not sent again, it fails, and the log must not claim otherwise."""
+    monkeypatch.setattr(compact_bridge, "STOP_REARMS", 2)
+    caplog.set_level(logging.INFO, logger="bhms.gateway.compact")
+    script = Scripted(cp.digest8_of(BENCH), epoch=7, flags=PERSISTENT)
+    async with scripted_rig(tmp_path, sidecar=BENCH, scripted=script) as (client, bridge, ep):
+        async def initiated(e, m):
+            e.say(cp.StopAck(cp.STOPACK_INITIATED, cp.EVIDENCE_NONE, 0, m.token))
+
+        ep.on[cp.Stop] = initiated
+        call = asyncio.create_task(client.stop("t", device_ids=["bench-rig"], wait_ms=8000))
+        for sent in range(1, compact_bridge.STOP_REARMS + 2):  # every transmission of the stop is ended by a HELLO
+            for _ in range(200):
+                if len(ep.of(cp.Stop)) >= sent:
+                    break
+                await asyncio.sleep(0.01)
+            await asyncio.sleep(0.05)
+            ep.say(cp.Status(1, cp.ST_RUNNING, 0, 0), session=8)  # a frame of another epoch: the bridge asks for HELLO
+        s = to_wire(await call)["stops"][0]
+    assert s["outcome"] == "failed" and "said HELLO 3 times" in s["error"]["message"], s
+    assert len(ep.of(cp.Stop)) == compact_bridge.STOP_REARMS + 1
+    resent = [r for r in caplog.records if "STOP sent again" in r.getMessage()]
+    assert len(resent) == compact_bridge.STOP_REARMS, [r.getMessage() for r in resent]

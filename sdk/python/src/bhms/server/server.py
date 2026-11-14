@@ -97,6 +97,8 @@ class DeviceServer:
         queue_limit: queued operations per device before ``BUSY``.
         observation_min_interval_ms: subscription rate floor.
         cancel_grace_ms: how long a cancelled handler may take to terminate after a duration bound.
+        stop_shutdown_ceiling_s: the longest :meth:`close` waits for a running stop procedure, whatever its declared
+            bound (BHMS-AUTH-024); set it below your supervisor's kill timeout so a stop ended at shutdown is recorded.
         programs: enable ``programs/*`` (with a durable registry).
         strict: full JSON Schema validation of every request and result (conformance mode).
     """
@@ -109,13 +111,17 @@ class DeviceServer:
                  lease_max_ttl_ms: int = 600_000, lease_max_wait_ms: int = 30_000, queue_limit: int = 64,
                  observation_min_interval_ms: int = 50, cancel_grace_ms: int = 1000, programs: bool = True,
                  program_limits: dict[str, int] | None = None, strict: bool = False,
-                 liveness_interval_s: float | None = None, reconcile_timeout_s: float = 10.0) -> None:
+                 liveness_interval_s: float | None = None, reconcile_timeout_s: float = 10.0,
+                 stop_shutdown_ceiling_s: float = 60.0) -> None:
         if not re.match(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$", name):
             raise ValueError(f"server name {name!r} must be 1-128 characters of [A-Za-z0-9._-]")
         if liveness_interval_s is not None and liveness_interval_s <= 0:
             raise ValueError("liveness_interval_s must be positive (None leaves periodic liveness probes off)")
         if reconcile_timeout_s <= 0:
             raise ValueError("reconcile_timeout_s must be positive")
+        if stop_shutdown_ceiling_s <= 0:
+            raise ValueError("stop_shutdown_ceiling_s must be positive")
+        self.stop_shutdown_ceiling_s = stop_shutdown_ceiling_s
         self.liveness_interval_s, self.reconcile_timeout_s = liveness_interval_s, reconcile_timeout_s
         if key_retention_s < 86_400:
             raise ValueError("key_retention_s must be at least 86400 (BHMS-OPS-034)")
@@ -213,7 +219,7 @@ class DeviceServer:
             from bhms.runtime.stop import StopController
 
             self.programs = ProgramRunner(self)
-            self.stopper = StopController(self)
+            self.stopper = StopController(self, close_ceiling=self.stop_shutdown_ceiling_s)
             self.subscriptions = Subscriptions(self)
             self.journal.on_unknown.append(self._record_unknown)
             self.journal.recover()  # BHMS-OPS-080: before any request is answered

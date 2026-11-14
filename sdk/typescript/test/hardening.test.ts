@@ -652,3 +652,13 @@ test("Ruling R45: a resolution refusal names the member at fault, not the resolu
     assert.equal((await r.client.operationsGet(op.operationId)).operation.state, "unknown", "nothing was recorded");
   } finally { await r.close(); }
 });
+
+test("a stop bound is at most one day (safety.stopMaxDurationMs, as a program's maxDurationMs; Task 12b)", () => {
+  const srv = new DeviceServer("stop-bound", { store: "memory", log: () => undefined });
+  const dev = srv.device("press", { resources: ["press"] });
+  for (const bad of [86_400_001, -1, 1.5]) {
+    assert.throws(() => dev.onStop({ evidence: "measured", maxDurationMs: bad }, () => undefined), DescriptionError);
+  }
+  dev.onStop({ evidence: "measured", maxDurationMs: 86_400_000 }, () => undefined);
+  assert.equal(dev.description().safety.stopMaxDurationMs, 86_400_000);
+});
