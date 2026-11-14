@@ -105,7 +105,7 @@ async def test_contention_exactly_one_wins_and_the_loser_learns_what_and_when(en
     losers = [r for r in results if isinstance(r, BhmsError)]
     assert len(winners) == 1 and len(losers) == 1
     err = losers[0]
-    assert err.code == "LEASE_CONFLICT" and err.bound == ["arm-1/motion"] and "expires in" in err.hint
+    assert err.bhms_code == "LEASE_CONFLICT" and err.bound == ["arm-1/motion"] and "expires in" in err.hint
     assert "alice" not in err.hint + err.message and "bob" not in err.hint + err.message
 
 
@@ -125,18 +125,18 @@ async def test_fences_increase_across_acquires_and_restarts_and_renew_keeps_it(e
     after = (await c2["alice"].leases_acquire(["arm-1/motion"], 1000)).lease
     assert after.fence > b.fence
     err = await refused(c2["alice"].leases_renew(b.lease_id, 1000))  # forgotten across the restart
-    assert err.code == "LEASE_EXPIRED"
+    assert err.bhms_code == "LEASE_EXPIRED"
 
 
 async def test_lease_parameter_bounds(env):  # BHMS-LSE-004
     srv, state, c = await env()
     for ttl in (10, 120_000):
         err = await refused(c["alice"].leases_acquire(["arm-1/motion"], ttl))
-        assert (err.code, err.field) == ("OUT_OF_RANGE", "ttlMs")
+        assert (err.bhms_code, err.field) == ("OUT_OF_RANGE", "ttlMs")
     err = await refused(c["alice"].leases_acquire(["arm-1/motion"], 1000, wait_ms=10_000))
-    assert (err.code, err.field) == ("OUT_OF_RANGE", "waitMs")
+    assert (err.bhms_code, err.field) == ("OUT_OF_RANGE", "waitMs")
     err = await refused(c["alice"].leases_acquire(["arm-1/motion", "arm-1/gripper", "arm-9"], 1000))
-    assert (err.code, err.field) == ("INVALID_ARGUMENT", "resources[2]")
+    assert (err.bhms_code, err.field) == ("INVALID_ARGUMENT", "resources[2]")
 
 
 async def test_a_lease_belongs_to_its_principal(env):  # BHMS-LSE-005
@@ -145,7 +145,7 @@ async def test_a_lease_belongs_to_its_principal(env):  # BHMS-LSE-005
     for call in (c["bob"].leases_renew(lease.lease_id, 1000), c["bob"].leases_release(lease.lease_id),
                  c["bob"].actions_invoke("arm-1", "move", {"x": 1}, lease_id=lease.lease_id)):
         err = await refused(call)
-        assert err.code == "LEASE_CONFLICT"
+        assert err.bhms_code == "LEASE_CONFLICT"
     assert state["moves"] == 0
 
 
@@ -153,31 +153,31 @@ async def test_expiry_renew_release_and_unknown_ids(env):  # BHMS-LSE-006, LSE-0
     srv, state, c = await env()
     lease = (await c["alice"].leases_acquire(["arm-1/motion"], 60)).lease
     await asyncio.sleep(0.15)
-    assert (await refused(c["alice"].leases_renew(lease.lease_id, 1000))).code == "LEASE_EXPIRED"
+    assert (await refused(c["alice"].leases_renew(lease.lease_id, 1000))).bhms_code == "LEASE_EXPIRED"
     released = (await c["alice"].leases_release(lease.lease_id)).lease
     assert released.state == "expired"  # not active: returned unchanged
-    assert (await refused(c["alice"].leases_renew("lease-fabricated", 1000))).code == "LEASE_EXPIRED"
+    assert (await refused(c["alice"].leases_renew("lease-fabricated", 1000))).bhms_code == "LEASE_EXPIRED"
     events = (await c["alice"].events_read(types=["lease.expired"])).events
     assert events and events[-1].data == {"leaseId": lease.lease_id}
 
 
 async def test_invoke_lease_refusals_never_dispatch(env):  # BHMS-LSE-010
     srv, state, c = await env()
-    assert (await refused(c["alice"].actions_invoke("arm-1", "move", {"x": 1}))).code == "LEASE_REQUIRED"
+    assert (await refused(c["alice"].actions_invoke("arm-1", "move", {"x": 1}))).bhms_code == "LEASE_REQUIRED"
     assert (await refused(c["alice"].actions_invoke("arm-1", "move", {"x": 1}, lease_id="lease-nope"))
-            ).code == "LEASE_EXPIRED"
+            ).bhms_code == "LEASE_EXPIRED"
     released = (await c["alice"].leases_acquire(["arm-1/motion"], 3000)).lease
     await c["alice"].leases_release(released.lease_id)
     assert (await refused(c["alice"].actions_invoke("arm-1", "move", {"x": 1}, lease_id=released.lease_id))
-            ).code == "LEASE_EXPIRED"
+            ).bhms_code == "LEASE_EXPIRED"
     grip = (await c["alice"].leases_acquire(["arm-1/gripper"], 3000)).lease
     err = await refused(c["alice"].actions_invoke("arm-1", "move", {"x": 1}, lease_id=grip.lease_id))
-    assert err.code == "LEASE_CONFLICT" and err.bound == ["arm-1/motion"]  # does not cover
+    assert err.bhms_code == "LEASE_CONFLICT" and err.bound == ["arm-1/motion"]  # does not cover
     motion = (await c["alice"].leases_acquire(["arm-1/motion"], 3000)).lease
     await c["bob"].stop("test", device_ids=["arm-1"])  # revokes every lease on the device
     assert (await refused(c["alice"].actions_invoke("arm-1", "move", {"x": 1}, lease_id=motion.lease_id))
-            ).code == "FENCED"
-    assert (await refused(c["alice"].leases_renew(motion.lease_id, 1000))).code == "FENCED"
+            ).bhms_code == "FENCED"
+    assert (await refused(c["alice"].leases_renew(motion.lease_id, 1000))).bhms_code == "FENCED"
     assert state["moves"] == 0
 
 
@@ -228,7 +228,7 @@ async def test_on_lease_loss_policies(env, action, expect):  # BHMS-LSE-012
     # no new operation starts under the expired lease
     err = await refused(c["alice"].actions_invoke("arm-1", action, {"x": 1} if action == "move" else {},
                                                   lease_id=lease.lease_id))
-    assert err.code == "LEASE_EXPIRED"
+    assert err.bhms_code == "LEASE_EXPIRED"
 
 
 async def test_hazardous_action_needs_a_literal_invoke_scope(env):  # BHMS-AUTH-003
@@ -237,4 +237,4 @@ async def test_hazardous_action_needs_a_literal_invoke_scope(env):  # BHMS-AUTH-
                            for name, t in TOKENS.items()}))
     lease = (await c["alice"].leases_acquire(["arm-1/motion"], 3000)).lease
     err = await refused(c["alice"].actions_invoke("arm-1", "swing", {}, lease_id=lease.lease_id))
-    assert err.code == "UNAUTHORIZED" and "invoke:arm-1/swing" in err.hint
+    assert err.bhms_code == "UNAUTHORIZED" and "invoke:arm-1/swing" in err.hint

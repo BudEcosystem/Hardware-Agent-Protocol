@@ -520,7 +520,7 @@ async def test_store_error_while_settling_keeps_the_resource_inhibited_until_unk
         fail["on"] = False  # the journal is writable again
         with pytest.raises(BhmsError) as refused:
             await client.actions_invoke("ax", "fine", {}, operation_key="f3")
-        assert refused.value.code == "STALE" and st["ran"] == 1, "the resource must stay inhibited"
+        assert refused.value.bhms_code == "STALE" and st["ran"] == 1, "the resource must stay inhibited"
         again = (await client.operations_get(op.operation_id)).operation
         assert again.state == "unknown" and again.error.bhms_code == "DEADLINE_EXCEEDED"
         assert again.error.may_have_acted is True

@@ -47,20 +47,20 @@ def test_compatible():
     assert not compatible("rad", "1")
     with pytest.raises(BhmsError) as ei:
         compatible("mm", "furlong")
-    assert ei.value.code == "INVALID_ARGUMENT"
+    assert ei.value.bhms_code == "INVALID_ARGUMENT"
 
 
 def test_incompatible_raises_unit_mismatch():
     with pytest.raises(BhmsError) as ei:
         convert(1, "mm", "s")
-    assert ei.value.code == "UNIT_MISMATCH"
+    assert ei.value.bhms_code == "UNIT_MISMATCH"
     assert "length" in ei.value.hint and "time" in ei.value.hint
 
 
 def test_unknown_unit_is_invalid_argument():
     with pytest.raises(BhmsError) as ei:
         convert(1, "furlong", "m")
-    assert ei.value.code == "INVALID_ARGUMENT"
+    assert ei.value.bhms_code == "INVALID_ARGUMENT"
     assert ei.value.field == "unit" and "furlong" in ei.value.message and ei.value.hint
 
 
@@ -68,4 +68,4 @@ def test_unknown_unit_is_invalid_argument():
 def test_bad_value_rejected(bad):
     with pytest.raises(BhmsError) as ei:
         convert(bad, "m", "mm")
-    assert ei.value.code == "INVALID_ARGUMENT"
+    assert ei.value.bhms_code == "INVALID_ARGUMENT"

@@ -123,7 +123,7 @@ async def connectivity_checks(target: str, token: str | None) -> list[Check]:
     except CliError as exc:
         checks.append(Check(FAIL, "connect", exc.message, exc.hint))
     except BhmsError as exc:
-        checks.append(Check(FAIL, "connect", f"{exc.code}: {exc.message}", exc.hint))
+        checks.append(Check(FAIL, "connect", f"{exc.bhms_code}: {exc.message}", exc.hint))
     except Exception as exc:  # report any other failure as a check
         checks.append(Check(FAIL, "connect", f"{type(exc).__name__}: {exc}", "run with a working target, see `bhms --help`"))
     return checks

@@ -119,7 +119,17 @@ verified; otherwise it ends `failed` with error `UNVERIFIED` and
 `mayHaveActed: true`.
 
 **BHMS-OPS-008** `result` MUST be present exactly when `state` is `completed` and
-MUST validate against the action's `output` schema.
+MUST validate against the action's `output` schema. When a returned result is
+well-formed except that a number lies outside the range its `output` schema
+declares (`minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`), the server
+MUST NOT complete the operation and MUST NOT lose the value: the operation ends
+`failed` with `OUT_OF_RANGE`, `field` naming the member (`result.volume`), `bound`
+the violated bound, `mayHaveActed: true` and `retry: "after-reconcile"`; `effect`
+and `evidence` are what the completion evidence supports (for an action with an
+effect never `none`: the device acted); `error.message` states the returned value
+and an `evidence` history entry records the result as returned. This is a
+measurement outside its declared range, which a client must be able to tell from
+a server fault; every other invalid result ends `failed` with `INTERNAL` (§6.2).
 
 **BHMS-OPS-009** `failed`, `rejected` and `unknown` operations MUST carry `error`.
 `error.mayHaveActed` MUST be `true` whenever the operation reached

@@ -274,15 +274,15 @@ class AgentBridge:
     def _refuse(self, exc: BhmsError, tool: str, arguments: dict[str, Any]) -> ToolResult:
         self.stats.refusals += 1
         error = exc.to_operation_error()
-        if exc.code == "LEASE_CONFLICT" and "your own earlier operation" not in error["hint"]:
+        if exc.bhms_code == "LEASE_CONFLICT" and "your own earlier operation" not in error["hint"]:
             error["hint"] = ("that resource is in use by another principal; " + error["hint"]).strip()[:2000]
-        elif exc.code == "DEADLINE_EXCEEDED" and exc.may_have_acted and tool in ("bhms_invoke", "bhms_run_program"):
+        elif exc.bhms_code == "DEADLINE_EXCEEDED" and exc.may_have_acted and tool in ("bhms_invoke", "bhms_run_program"):
             key = arguments.get("operation_key")
             error["hint"] = (f'repeat {tool} with the same operation_key "{key}" and identical arguments (it returns the '
                              "original operation instead of acting again)" if key else
                              "no operation_key was given, so a repeat could act twice: read the device's properties to "
                              "see whether it acted")
-        elif exc.code in ("UNKNOWN_DEVICE", "STALE") and exc.field in ("deviceId", "device_id", "descriptionDigest", None):
+        elif exc.bhms_code in ("UNKNOWN_DEVICE", "STALE") and exc.field in ("deviceId", "device_id", "descriptionDigest", None):
             self._descriptions.pop(str(arguments.get("device_id", "")), None)  # re-describe before the next attempt
             if exc.field == "descriptionDigest":
                 error["hint"] = ("the device description changed since it was cached: call bhms_describe again and "
@@ -342,7 +342,7 @@ class AgentBridge:
         try:
             page = await self.client.programs_list(limit=50)
         except BhmsError as exc:
-            if exc.code in ("UNAUTHORIZED", "UNSUPPORTED"):
+            if exc.bhms_code in ("UNAUTHORIZED", "UNSUPPORTED"):
                 return None  # this principal cannot see the registry: omit, not an error (BHMS-AGT-001)
             raise
         items = [to_wire(p) for p in page.programs]
@@ -369,7 +369,7 @@ class AgentBridge:
         try:
             result = await self._read(device, prop, kw)
         except BhmsError as exc:
-            if not (defaulted and exc.code == "STALE" and exc.field == "maxAgeMs"):
+            if not (defaulted and exc.bhms_code == "STALE" and exc.field == "maxAgeMs"):
                 raise
             result = await self._read(device, prop, {"max_age_ms": None, "fresh": None})  # push-only: its age is stated
         return ToolResult(render.summarize_observation(device, prop, to_wire(result.observation)), to_wire(result))
@@ -384,7 +384,7 @@ class AgentBridge:
         try:
             return await self.client.properties_read(device, prop, **kw)
         except BhmsError as exc:
-            if exc.code != "LEASE_REQUIRED" or not (kw.get("fresh") or kw.get("max_age_ms") is not None):
+            if exc.bhms_code != "LEASE_REQUIRED" or not (kw.get("fresh") or kw.get("max_age_ms") is not None):
                 raise  # a default read never starts a device transaction on its own (BHMS-OBS-011)
             desc = await self.description(device)
             spec = (desc.get("properties") or {}).get(prop) or {}
@@ -511,7 +511,7 @@ class AgentBridge:
         try:
             acquired = await self.client.leases_acquire(resources, self._ttl(), wait_ms=0)
         except BhmsError as exc:
-            if exc.code == "LEASE_CONFLICT" and any(set(resources) & set(h.resources) for h in self._held.values()):
+            if exc.bhms_code == "LEASE_CONFLICT" and any(set(resources) & set(h.resources) for h in self._held.values()):
                 raise self._own_conflict(exc) from None
             raise
         self.stats.leases_acquired += 1
@@ -544,7 +544,7 @@ class AgentBridge:
             try:
                 return await send(None)
             except BhmsError as exc:  # BHMS-LSE-014: a resource leased for this bridge's own unsettled operation
-                if exc.code == "LEASE_CONFLICT" and any(set(resources) & set(h.resources) for h in self._held.values()):
+                if exc.bhms_code == "LEASE_CONFLICT" and any(set(resources) & set(h.resources) for h in self._held.values()):
                     raise self._own_conflict(exc) from None
                 raise
         if needs_lease and not has_key:
@@ -552,7 +552,7 @@ class AgentBridge:
         try:
             return await send(None)
         except BhmsError as exc:
-            if exc.code != "LEASE_REQUIRED":
+            if exc.bhms_code != "LEASE_REQUIRED":
                 raise
             needed = resources or (exc.bound if isinstance(exc.bound, list) else [])
             if not needed:

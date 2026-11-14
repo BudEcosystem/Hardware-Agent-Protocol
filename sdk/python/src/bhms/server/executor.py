@@ -41,7 +41,7 @@ from bhms.protocol.canonical import canonical
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.operations import InvalidTransition, OperationRecord, now_ns, unknown_error
 from bhms.runtime.store import StoreError
-from bhms.server.context import ActionContext, Canceled, DeviceFault, Reconciled
+from bhms.server.context import DEVICE_LOSS, ActionContext, Canceled, DeviceFault, Reconciled
 from bhms.server.decorators import ActionSpec
 
 if TYPE_CHECKING:
@@ -51,6 +51,8 @@ if TYPE_CHECKING:
     from bhms.server.server import DeviceServer
 
 log = logging.getLogger("bhms.executor")
+_RANGE_KEYWORDS = frozenset({"minimum", "maximum", "exclusiveMinimum", "exclusiveMaximum"})
+"""Output-schema keywords whose violation means "a number outside its declared range" (BHMS-OPS-008)."""
 
 
 @dataclass
@@ -478,8 +480,13 @@ class Executor:
             outcome = ("fault", exc)
         except asyncio.CancelledError:
             outcome, aborted = ("crashed", RuntimeError("the server shut down while the handler was running")), True
+        except DEVICE_LOSS as exc:  # expected of real hardware: one line, no traceback; the outcome is unknown all the same
+            log.warning("%s lost during %s (operation %s): %s: %s", execution.device.device_id, execution.spec.name,
+                        execution.rec.id, type(exc).__name__, exc)
+            outcome = ("crashed", exc)
         except Exception as exc:  # noqa: BLE001 - after dispatch an unexplained failure has an unknown outcome
-            log.warning("handler %s/%s raised", execution.device.device_id, execution.spec.name, exc_info=exc)
+            log.error("handler %s/%s raised (operation %s): %s", execution.device.device_id, execution.spec.name,
+                      execution.rec.id, exc, exc_info=exc)
             outcome = ("crashed", exc)
         finally:
             for handle in (execution.timer, execution.grace):
@@ -544,9 +551,10 @@ class Executor:
             elif kind == "fault":
                 self._fault(execution, value)
             else:
+                what = (f"the link to {execution.device.device_id} was lost during {spec.name}"
+                        if isinstance(value, DEVICE_LOSS) else f"{spec.name} handler failed after dispatch")
                 journal.transition(rec, "unknown", error=unknown_error(
-                    f"{spec.name} handler failed after dispatch ({type(value).__name__}: {value}); whether the device "
-                    "acted is unknown"))
+                    f"{what} ({type(value).__name__}: {value}); whether the device acted is unknown"))
         elif rec.state == "unknown" and kind != "crashed":
             journal.transition(rec, "failed", error=self._deadline_error(execution, terminated=True),
                                effect=self._partial_effect(kind, value), kind="reconciliation",
@@ -592,10 +600,55 @@ class Executor:
                 return f"the result does not match the declared output schema: {error.message}"
         return None
 
+    @staticmethod
+    def _result_out_of_range(device: Device, spec: ActionSpec, result: Any) -> BhmsError | None:
+        """The ``OUT_OF_RANGE`` operation error for a result whose only defect is a numeric value outside the range its
+        ``output`` schema declares (BHMS-OPS-008), else None. The device acted and reported a value: that is a
+        measurement outside its declared range, not a result that "cannot be recorded"."""
+        if not spec.output:
+            return None
+        try:
+            canonical(result)
+        except BhmsError:
+            return None
+        errors = list(device.output_validator(spec.name).iter_errors(result))
+        if not errors or any(e.validator not in _RANGE_KEYWORDS for e in errors):
+            return None
+        first = errors[0]
+        member = ".".join(["result", *(str(part) for part in first.absolute_path)])
+        bound = {first.validator: first.validator_value}
+        return BhmsError(
+            "OUT_OF_RANGE", f"{spec.name} acted and returned {member} = {first.instance!r}, outside its declared output "
+            f"range ({first.validator} {first.validator_value!r})"[:2000], field=member, bound=bound, may_have_acted=True,
+            retry="after-reconcile",
+            hint=f"the device acted; the returned value is in this message and in the operation's history. Read "
+                 f"{device.device_id}'s state before deciding what to do; the declared range may be too narrow for the "
+                 "instrument's tolerance")
+
+    def _completion_effect(self, execution: Execution) -> tuple[str, dict[str, Any] | None]:
+        """The ``effect`` and ``evidence`` of a handler that returned (BHMS-OPS-006)."""
+        spec = execution.spec
+        if spec.effect == "none":
+            return "none", None
+        verified = bool(execution.confirmed) and all(execution.confirmed)
+        kind = "measured" if verified else ("none" if spec.completion_evidence == "none" else "reported")
+        evidence: dict[str, Any] = {"kind": kind}
+        if execution.evidence:
+            evidence["observations"] = execution.evidence
+        return ("verified" if verified else "unverified"), evidence
+
     def _complete(self, execution: Execution, result: Any) -> None:
         rec, spec, journal = execution.rec, execution.spec, self.server.journal
         if result is None and spec.output is None:
             result = {}
+        out_of_range = self._result_out_of_range(execution.device, spec, result)
+        if out_of_range is not None:
+            effect, evidence = self._completion_effect(execution)
+            journal.annotate(rec, "evidence", f"result as returned (not recorded as result: {out_of_range.field} is "
+                                              f"outside the declared output range): {canonical(result).decode()}"[:1000])
+            journal.transition(rec, "failed", error=out_of_range.to_operation_error(), effect=effect, evidence=evidence,
+                               detail=out_of_range.message[:1000])
+            return
         problem = self._result_problem(execution.device, spec, result)
         if problem:
             journal.transition(rec, "failed", error=BhmsError(
@@ -604,16 +657,7 @@ class Executor:
                 hint="the device acted but the server cannot report a valid result; read the device state")
                 .to_operation_error(), detail=f"invalid result {result!r}"[:1000])
             return
-        verified = bool(execution.confirmed) and all(execution.confirmed)
-        evidence: dict[str, Any] | None = None
-        if spec.effect == "none":
-            effect = "none"
-        else:
-            effect = "verified" if verified else "unverified"
-            kind = "measured" if verified else ("none" if spec.completion_evidence == "none" else "reported")
-            evidence = {"kind": kind}
-            if execution.evidence:
-                evidence["observations"] = execution.evidence
+        effect, evidence = self._completion_effect(execution)
         if rec.op.get("require") and effect != "verified":
             detail = "measurement contradicted the effect" if execution.confirmed else "no measurement was taken"
             journal.transition(rec, "failed", error=BhmsError(

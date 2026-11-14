@@ -181,7 +181,7 @@ def refuse(arguments, **kw) -> BhmsError:
 
 def test_out_of_range_is_refused_with_field_bound_and_hint_never_clamped():  # BHMS-DEV-044, ERR-011
     error = refuse({"target": 250})
-    assert error.code == "OUT_OF_RANGE" and error.field == "arguments.target"
+    assert error.bhms_code == "OUT_OF_RANGE" and error.field == "arguments.target"
     assert error.bound == {"maximum": 200}
     assert "250 mm" in error.message and "200 mm" in error.message
     assert "between 0 and 200 mm" in error.hint
@@ -195,7 +195,7 @@ def test_admission_applies_defaults_and_keeps_values_exact():  # BHMS-DEV-044
 def test_multiple_of_uses_tolerance():  # BHMS-DEV-071
     assert ArgumentValidator(MOVE).admit({"target": 0.3})["target"] == 0.3
     error = refuse({"target": 50.15})
-    assert error.code == "INVALID_ARGUMENT" and error.bound == {"multipleOf": 0.1}
+    assert error.bhms_code == "INVALID_ARGUMENT" and error.bound == {"multipleOf": 0.1}
     assert "50.1" in error.hint and "50.2" in error.hint
 
 
@@ -205,10 +205,10 @@ def test_quantity_objects_in_the_declared_unit_are_normalised():  # BHMS-DEV-043
 
 def test_quantity_in_another_unit_is_unit_mismatch_with_conversion_hint():  # BHMS-DEV-043, ERR-011
     error = refuse({"target": {"value": 2, "unit": "cm"}})
-    assert error.code == "UNIT_MISMATCH" and error.field == "arguments.target" and error.bound == "mm"
+    assert error.bhms_code == "UNIT_MISMATCH" and error.field == "arguments.target" and error.bound == "mm"
     assert "20 mm" in error.hint
     error = refuse({"target": {"value": 2, "unit": "s"}})
-    assert error.code == "UNIT_MISMATCH" and "cannot be converted" in error.hint
+    assert error.bhms_code == "UNIT_MISMATCH" and "cannot be converted" in error.hint
 
 
 @pytest.mark.parametrize("arguments, code, field", [
@@ -222,7 +222,7 @@ def test_quantity_in_another_unit_is_unit_mismatch_with_conversion_hint():  # BH
 ])
 def test_refusal_codes_and_fields(arguments, code, field):  # BHMS-DEV-044
     error = refuse(arguments)
-    assert (error.code, error.field) == (code, field)
+    assert (error.bhms_code, error.field) == (code, field)
 
 
 def test_unknown_member_hint_lists_accepted_members():
@@ -232,7 +232,7 @@ def test_unknown_member_hint_lists_accepted_members():
 
 def test_policy_bounds_narrow_the_envelope():  # BHMS-AUTH-010
     error = refuse({"target": 150}, bounds={"target": {"maximum": 100}})
-    assert error.code == "OUT_OF_RANGE" and error.bound == {"maximum": 100}
+    assert error.bhms_code == "OUT_OF_RANGE" and error.bound == {"maximum": 100}
     assert ArgumentValidator(MOVE).admit({"target": 90}, bounds={"target": {"maximum": 100}})["target"] == 90
 
 

@@ -78,7 +78,7 @@ def _limit(requested: int | None, maximum: int, default: int = 100) -> int:
 
 def _tag(exc: BhmsError, rule: str) -> BhmsError:
     """``exc`` with the policy rule that produced it named in message and hint."""
-    return BhmsError(exc.code, f"{exc.message} (gateway policy rule {rule})", field=exc.field, bound=exc.bound,
+    return BhmsError(exc.bhms_code, f"{exc.message} (gateway policy rule {rule})", field=exc.field, bound=exc.bound,
                      operation_id=exc.operation_id, may_have_acted=exc.may_have_acted, retry=exc.retry,
                      hint=f"{exc.hint} [rule: {rule}]")
 
@@ -472,7 +472,7 @@ class Router:
             reply = await up.call("operations/cancel", {"operationId": uid, **_reason(params.reason)}, trace=trace_of(ctx))
             self._apply(rec, reply["operation"], "operations/cancel")
         except (BhmsError, TransportClosed, asyncio.TimeoutError) as exc:
-            if isinstance(exc, BhmsError) and not exc.may_have_acted and exc.code != "DEVICE_UNAVAILABLE":
+            if isinstance(exc, BhmsError) and not exc.may_have_acted and exc.bhms_code != "DEVICE_UNAVAILABLE":
                 raise
             # BHMS-OPS-053: record the request and forward it when the upstream can be reached
             with contextlib.suppress(StoreError):
@@ -626,17 +626,17 @@ class Router:
         except BhmsError as exc:
             if rec.private.get("upstreamOperationId") is None and rec.state == "unknown":
                 mapped = _upstream_refusal(up, exc)
-                if not exc.may_have_acted and exc.code in _AFTER_KEY_LOOKUP:
+                if not exc.may_have_acted and exc.bhms_code in _AFTER_KEY_LOOKUP:
                     # A refusal the upstream issues only after its key lookup found nothing (BHMS-OPS-033, §6.5 steps 3-9):
                     # proof that the request was never admitted there.
                     with contextlib.suppress(StoreError):
                         gw.journal.transition(
                             rec, "failed", error=exc.to_operation_error(), effect="none", kind="reconciliation",
                             detail=f"upstream {up.name} refused the re-sent request after its key lookup found nothing: "
-                                   f"{exc.code}", proof=f"upstream {up.name} answered {exc.code} with mayHaveActed false")
+                                   f"{exc.bhms_code}", proof=f"upstream {up.name} answered {exc.bhms_code} with mayHaveActed false")
                 else:  # refused before the key lookup (authentication, shape, reserved key) or transiently: no proof
                     self._retry_at[rec.id] = time.monotonic() + 30.0
-                    self._note_unreconcilable(rec, f"the upstream refused the re-send ({mapped.code}: {mapped.message}); a "
+                    self._note_unreconcilable(rec, f"the upstream refused the re-send ({mapped.bhms_code}: {mapped.message}); a "
                                                    "refusal before its key lookup proves nothing, so the outcome stays "
                                                    "unknown")
             elif exc.field == "operationId":
@@ -836,7 +836,7 @@ class Router:
         for entry in entries:
             mine = results[entry.device_id]
             exc = task.exception() if task.done() else None
-            if not task.done() or (isinstance(exc, BhmsError) and exc.code == "DEADLINE_EXCEEDED"):
+            if not task.done() or (isinstance(exc, BhmsError) and exc.bhms_code == "DEADLINE_EXCEEDED"):
                 mine.update(outcome="initiated", evidence="none", detail=(
                     f"upstream {namespace} did not answer within the deadline; the stop request was sent and a later "
                     "stop event carries the outcome"))
@@ -915,7 +915,7 @@ _AFTER_KEY_LOOKUP = frozenset({"UNKNOWN_DEVICE", "UNKNOWN_ACTION", "OUT_OF_RANGE
 
 def _upstream_refusal(up: Upstream, exc: BhmsError) -> BhmsError:
     """The upstream's refusal, except that a refused ``g-`` key (BHMS-OPS-037) is a configuration error to name."""
-    if exc.code == "INVALID_ARGUMENT" and exc.field == "operationKey":
+    if exc.bhms_code == "INVALID_ARGUMENT" and exc.field == "operationKey":
         return BhmsError("INTERNAL", f"upstream {up.name!r} refuses the gateway's forwarded keys (g- prefix): it does not "
                          "treat this gateway as a gateway", may_have_acted=False,
                          hint=f"configure the principal this gateway connects as to {up.name!r} with gateway = true in "

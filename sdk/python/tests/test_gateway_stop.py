@@ -34,7 +34,7 @@ async def test_stop_all_reports_per_device_results_and_needs_no_other_scope(tmp_
         stopper = await r.client(token=TOKENS["stopper"])
         with pytest.raises(BhmsError) as exc:
             await stopper.actions_invoke("a/axis-1", "move_to", {"position": 1}, operation_key="x")
-        assert exc.value.code == "UNKNOWN_DEVICE"  # with only stop it cannot even see, let alone act (AUTH-002)
+        assert exc.value.bhms_code == "UNKNOWN_DEVICE"  # with only stop it cannot even see, let alone act (AUTH-002)
         stops = (await stopper.stop("test", scope="all")).stops
         assert [(s.device_id, s.outcome) for s in stops] == [
             ("a/axis-1", "confirmed"), ("a/pump-1", "unsupported"), ("b/axis-1", "confirmed"), ("b/pump-1", "unsupported")]
@@ -102,7 +102,7 @@ async def test_stop_cancels_operations_and_revokes_leases_everywhere(tmp_path): 
         assert settled.state == "canceled"
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/axis-1", "clamp", {"force": 1}, operation_key="c", lease_id=lease.lease_id)
-        assert exc.value.code == "FENCED"
+        assert exc.value.bhms_code == "FENCED"
         assert r.servers["a"].leases.active() == [] and r.servers["b"].leases.active() == []
 
 
@@ -139,7 +139,7 @@ async def test_stop_works_with_an_unwritable_journal_and_says_so(tmp_path):  # A
             assert stops[0].outcome == "confirmed" and stops[0].detail == "degraded-audit" and r.axes["a"].stops == 1
             with pytest.raises(BhmsError) as exc:
                 await client.actions_invoke("a/axis-1", "move_to", {"position": 1}, operation_key="j")
-            assert exc.value.code == "BUSY" and "isolation:journal" in exc.value.hint
+            assert exc.value.bhms_code == "BUSY" and "isolation:journal" in exc.value.hint
         finally:
             r.gateway.store.set_writable(True)
         assert (await client.actions_invoke("a/axis-1", "move_to", {"position": 1}, operation_key="j2",

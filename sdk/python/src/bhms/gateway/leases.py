@@ -220,7 +220,7 @@ class GatewayLeases:
 
 def _translate(exc: BhmsError, *, held_namespace: str | None) -> BhmsError:
     """An upstream lease refusal in the gateway's vocabulary: resource ids prefixed, holder never disclosed."""
-    if exc.code != "LEASE_CONFLICT" or not isinstance(exc.bound, list) or held_namespace is None:
+    if exc.bhms_code != "LEASE_CONFLICT" or not isinstance(exc.bound, list) or held_namespace is None:
         return exc
     return BhmsError("LEASE_CONFLICT", f"{', '.join(f'{held_namespace}/{r}' for r in exc.bound)} "
                      f"{'is' if len(exc.bound) == 1 else 'are'} leased by another holder", field="resources",

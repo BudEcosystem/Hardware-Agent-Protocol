@@ -59,7 +59,7 @@ def test_round_trip_every_code(code):
                             "mayHaveActed": True, "retry": "same-key", "hint": "do it"}
     back = from_jsonrpc(wire)
     assert back.to_jsonrpc() == wire
-    assert (back.code, back.field, back.bound, back.may_have_acted, back.retry, back.hint) == (
+    assert (back.bhms_code, back.field, back.bound, back.may_have_acted, back.retry, back.hint) == (
         code, "params.x", {"max": 5}, True, "same-key", "do it")
 
 

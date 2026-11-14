@@ -173,7 +173,7 @@ async def test_invalid_programs_are_refused_before_any_step(env, mutate, code, f
     mutate(prog)
     err = await refused(c["runner"].request("programs/run", {"program": prog, "arguments": {"start": 1, "steps": 1},
                                                             "operationKey": "bad"}))
-    assert err.code == code and err.may_have_acted is False
+    assert err.bhms_code == code and err.may_have_acted is False
     assert err.field is not None and err.field.startswith(field)
     if field == "program.maxDurationMs":
         assert err.bound == 2000 + 5 * (2000 + 1000)  # the computed worst case
@@ -183,27 +183,27 @@ async def test_invalid_programs_are_refused_before_any_step(env, mutate, code, f
 async def test_limits_are_enforced(env):  # BHMS-PRG-002 (§8.1 limits)
     srv, state, c = await env(program_limits={"maxSteps": 3})
     err = await refused(c["runner"].programs_run(program=program(), arguments={"start": 1, "steps": 1}))
-    assert (err.code, err.field) == ("OUT_OF_RANGE", "program.steps")
+    assert (err.bhms_code, err.field) == ("OUT_OF_RANGE", "program.steps")
 
 
 async def test_authority_is_checked_before_the_first_step(env):  # BHMS-PRG-006, PRG-021
     srv, state, c = await env()
     err = await refused(c["limited"].programs_run(program=program(), arguments={"start": 1, "steps": 1}))
-    assert err.code == "UNAUTHORIZED" and err.field == "program.steps[1].steps[0].action"
+    assert err.bhms_code == "UNAUTHORIZED" and err.field == "program.steps[1].steps[0].action"
     info = (await c["admin"].programs_register(program())).info
     err = await refused(c["limited"].programs_run(digest=info.digest, arguments={"start": 1, "steps": 1}))
-    assert err.code == "UNAUTHORIZED"  # registration grants nothing
+    assert err.bhms_code == "UNAUTHORIZED"  # registration grants nothing
     srv2_policy = {"tokens": [token_digest(TOKENS["runner"])], "scopes": ["read", "invoke:focus-1/*"]}
     srv.set_policy(Policy({"runner": srv2_policy}))
     err = await refused(c["runner"].programs_run(program=program(), arguments={"start": 1, "steps": 1}))
-    assert err.code == "UNAUTHORIZED" and "programs:run" in err.hint
+    assert err.bhms_code == "UNAUTHORIZED" and "programs:run" in err.hint
     assert state["calls"] == []
 
 
 async def test_arguments_are_validated_against_the_program_input(env):  # BHMS-PRG-001
     srv, state, c = await env()
     err = await refused(c["runner"].programs_run(program=program(), arguments={"start": 1, "steps": 9}))
-    assert (err.code, err.field) == ("OUT_OF_RANGE", "arguments.steps")
+    assert (err.bhms_code, err.field) == ("OUT_OF_RANGE", "arguments.steps")
 
 
 async def test_failing_step_records_partial_effects_and_stops(env):  # BHMS-PRG-011 (Task 4 acceptance)
@@ -280,9 +280,9 @@ async def test_cancel_and_stop_end_a_running_program(env):  # BHMS-PRG-014
 async def test_registry_digest_and_replay_across_forms(env):  # BHMS-PRG-007, PRG-020, PRG-022
     srv, state, c = await env()
     err = await refused(c["runner"].programs_get("sha256:" + "0" * 64))
-    assert (err.code, err.field) == ("INVALID_ARGUMENT", "digest")
+    assert (err.bhms_code, err.field) == ("INVALID_ARGUMENT", "digest")
     err = await refused(c["runner"].programs_run(digest="sha256:" + "0" * 64, arguments={}))
-    assert (err.code, err.field) == ("INVALID_ARGUMENT", "digest")
+    assert (err.bhms_code, err.field) == ("INVALID_ARGUMENT", "digest")
     info = (await c["admin"].programs_register(program())).info
     assert info.digest == digest(program()) and info.effect == "reversible" and info.devices == ["focus-1"]
     assert info.worst_case_duration_ms == 2000 + 5 * (2000 + 1000) and info.max_executed_steps == 1 + 5 * 3

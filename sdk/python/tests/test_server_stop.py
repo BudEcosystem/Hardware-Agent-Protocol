@@ -74,7 +74,7 @@ async def test_confirmed_stop_lifts_the_unknown_inhibition(env):  # BHMS-OPS-042
         await client.actions_invoke("axis-1", "move_to", {"target": 1})
     except BhmsError as exc:
         err = exc
-    assert err is not None and err.code == "STALE"
+    assert err is not None and err.bhms_code == "STALE"
     stop = (await client.stop("reset", device_ids=["axis-1"], wait_ms=1000)).stops[0]
     assert op.operation_id in stop.cancel_requested_operations
     ok = (await client.actions_invoke("axis-1", "move_to", {"target": 1}, wait_ms=2000)).operation
@@ -142,7 +142,7 @@ async def test_stop_is_not_blocked_by_leases_or_a_saturated_queue(env):  # BHMS-
         await client.actions_invoke("axis-1", "move_to", {"target": 1}, **held)
     with pytest.raises(BhmsError) as busy:
         await client.actions_invoke("axis-1", "move_to", {"target": 1}, **held)
-    assert busy.value.code == "BUSY"
+    assert busy.value.bhms_code == "BUSY"
     start = time.monotonic()
     stop = (await client.stop("now", device_ids=["axis-1"], wait_ms=1000)).stops[0]
     assert stop.outcome == "confirmed" and time.monotonic() - start < 0.5
@@ -161,10 +161,10 @@ async def test_stop_scope_is_independent(tmp_path):  # BHMS-SEC-040, AUTH-020
     try:
         with pytest.raises(BhmsError) as info:
             await worker.stop("no", device_ids=["axis-1"])
-        assert info.value.code == "UNAUTHORIZED"
+        assert info.value.bhms_code == "UNAUTHORIZED"
         with pytest.raises(BhmsError) as info:
             await stopper.actions_invoke("axis-1", "move_to", {"target": 1})
-        assert info.value.code == "UNKNOWN_DEVICE"  # no read scope: the device is not even visible
+        assert info.value.bhms_code == "UNKNOWN_DEVICE"  # no read scope: the device is not even visible
         stop = (await stopper.stop("yes", device_ids=["axis-1"], wait_ms=1000)).stops[0]
         assert stop.outcome == "confirmed"
     finally:
@@ -182,7 +182,7 @@ async def test_stop_with_an_unwritable_journal_is_degraded_audit(env):  # BHMS-A
     assert stop.outcome == "confirmed" and stop.detail == "degraded-audit" and axis.stops == 1
     with pytest.raises(BhmsError) as info:
         await client.actions_invoke("axis-1", "move_to", {"target": 1})
-    assert info.value.code == "BUSY" and info.value.may_have_acted is False
+    assert info.value.bhms_code == "BUSY" and info.value.may_have_acted is False
     assert axis.commands["move_to"] == 0
     srv.store.set_writable(True)
     ok = (await client.actions_invoke("axis-1", "move_to", {"target": 1}, wait_ms=2000)).operation

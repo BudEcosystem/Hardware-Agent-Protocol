@@ -47,7 +47,7 @@ async def test_a_rolled_back_admission_leaves_no_phantom_operation(tmp_path):
         journal.mirror = bad
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/axis-1", "move_to", {"target": 3}, operation_key="k1")
-        assert exc.value.code == "INTERNAL"
+        assert exc.value.bhms_code == "INTERNAL"
         journal.mirror = real
         assert journal.live() == [] and notified == [] and r.gateway.router.unknown == {}  # nothing was published
         assert [o async for o in client.iter_operations()] == []
@@ -122,7 +122,7 @@ async def test_a_pending_row_a_failed_record_leaves_inhibits_and_converts_when_w
         try:
             with pytest.raises(BhmsError) as exc:  # the resources are inhibited meanwhile
                 await client.actions_invoke("a/axis-1", "move_to", {"target": 5}, operation_key="other")
-            assert exc.value.code in ("STALE", "BUSY")
+            assert exc.value.bhms_code in ("STALE", "BUSY")
             await asyncio.sleep(0.8)
             assert journal.pending_all()  # not convertible while the journal cannot be written
         finally:
@@ -201,7 +201,7 @@ async def test_convert_pending_failure_on_a_retry_is_a_busy_error(tmp_path):  # 
         journal.convert_pending = lambda *a: (_ for _ in ()).throw(StoreError("simulated"))
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/axis-1", "move_to", {"target": 3}, operation_key="k")
-        assert exc.value.code == "BUSY" and exc.value.may_have_acted is False
+        assert exc.value.bhms_code == "BUSY" and exc.value.may_have_acted is False
         journal.convert_pending = real
         assert (await client.actions_invoke("a/axis-1", "move_to", {"target": 3}, operation_key="k")).replayed is True
         assert UID >= 0

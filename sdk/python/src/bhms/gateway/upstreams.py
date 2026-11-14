@@ -186,7 +186,7 @@ class Upstream:
         try:
             return await client.session.request(method, {"_meta": meta, **params}, timeout=seconds, queued=queued)
         except BhmsError as exc:
-            if exc.code == "DEADLINE_EXCEEDED" and exc.may_have_acted and method != "server/discover":
+            if exc.bhms_code == "DEADLINE_EXCEEDED" and exc.may_have_acted and method != "server/discover":
                 self.timeouts += 1
                 self._probe.set()  # is the peer alive at all? decide in seconds, not after every caller's timeout
             raise

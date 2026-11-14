@@ -29,7 +29,7 @@ def test_validate_accepts_and_refuses_with_json_pointer():
     schema.validate("Limits", {"maxMessageBytes": 1048576, "maxPageSize": 10, "maxWaitMs": 0})
     with pytest.raises(BhmsError) as exc:
         schema.validate("Limits", {"maxMessageBytes": 5, "maxPageSize": 10, "maxWaitMs": 0})
-    assert exc.value.code == "INVALID_ARGUMENT"
+    assert exc.value.bhms_code == "INVALID_ARGUMENT"
     assert exc.value.field == "/maxMessageBytes"
     assert exc.value.hint
 

@@ -8,6 +8,7 @@ correctly rounded float (25 Cel -> 298.15 K exactly).
 from __future__ import annotations
 
 import math
+import sys
 from fractions import Fraction
 from typing import NamedTuple
 
@@ -36,26 +37,40 @@ UNITS: dict[str, Unit] = {
     "K": Unit("temperature", _f(1)), "Cel": Unit("temperature", _f(1), _f("273.15")),
     "[degF]": Unit("temperature", _f(5) / 9, _f("459.67") * 5 / 9),
     "L": Unit("volume", _f(1)), "mL": Unit("volume", _f("0.001")),
-    "uL": Unit("volume", _f("0.000001")), "nL": Unit("volume", _f("0.000000001")),
+    "uL": Unit("volume", _f("0.000001")), "nL": Unit("volume", _f("0.000000001")), "m3": Unit("volume", _f(1000)),
     "kg": Unit("mass", _f(1)), "g": Unit("mass", _f("0.001")), "mg": Unit("mass", _f("0.000001")),
     "ug": Unit("mass", _f("0.000000001")),
     "Pa": Unit("pressure", _f(1)), "kPa": Unit("pressure", _f(1000)),
     "bar": Unit("pressure", _f(100000)), "mbar": Unit("pressure", _f(100)),
     "[psi]": Unit("pressure", _PSI),
     "L/min": Unit("flow", _f(1)), "mL/min": Unit("flow", _f("0.001")),
-    "uL/min": Unit("flow", _f("0.000001")),
+    "uL/min": Unit("flow", _f("0.000001")), "L/h": Unit("flow", _f(1) / 60),
     "A": Unit("current", _f(1)), "mA": Unit("current", _f("0.001")),
     "V": Unit("voltage", _f(1)), "mV": Unit("voltage", _f("0.001")),
     "Hz": Unit("frequency", _f(1)), "kHz": Unit("frequency", _f(1000)),
+    # Revolutions per time are UCUM annotated units. They are their own dimension: a rotor speed is not silently a
+    # frequency in Hz or an angular rate in rad/s (the same reasoning that keeps angles from being dimensionless).
+    "{rev}/s": Unit("rotational speed", _f(1)), "{rev}/min": Unit("rotational speed", _f(1) / 60),
+    "W": Unit("power", _f(1)), "mW": Unit("power", _f("0.001")), "kW": Unit("power", _f(1000)),
+    "mol/L": Unit("substance concentration", _f(1)), "mmol/L": Unit("substance concentration", _f("0.001")),
+    "umol/L": Unit("substance concentration", _f("0.000001")),
     "%": Unit("dimensionless", _f("0.01")), "1": Unit("dimensionless", _f(1)),
+    "[ppm]": Unit("dimensionless", _f("0.000001")),
 }
+
+ALIASES: dict[str, str] = {"rpm": "{rev}/min", "r/min": "{rev}/min", "RPM": "{rev}/min", "rps": "{rev}/s",
+                           "ppm": "[ppm]", "mM": "mmol/L", "uM": "umol/L", "M": "mol/L", "m^3": "m3", "m³": "m3",
+                           "l/h": "L/h", "degC": "Cel", "°C": "Cel", "psi": "[psi]"}
+"""Common non-UCUM spellings and the registry code to use instead. Never accepted: only named in the refusal's hint."""
 
 
 def _lookup(unit: str) -> Unit:
     found = UNITS.get(unit) if isinstance(unit, str) else None
     if found is None:
+        alias = ALIASES.get(unit) if isinstance(unit, str) else None
+        meant = f"write {alias} for {unit}; " if alias else ""
         raise BhmsError("INVALID_ARGUMENT", f"unknown unit {unit!r}", field="unit",
-                        hint=f"use one of the supported UCUM codes: {', '.join(UNITS)}")
+                        hint=f"{meant}use one of the supported UCUM codes: {', '.join(UNITS)}")
     return found
 
 
@@ -67,8 +82,9 @@ def compatible(a: str, b: str) -> bool:
 def convert(value: float, from_unit: str, to_unit: str) -> float:
     """Convert ``value`` between units of the same dimension.
 
-    Raises INVALID_ARGUMENT for unknown units or non-finite/non-numeric values and
-    UNIT_MISMATCH for incompatible dimensions. Pure; thread-safe.
+    Raises INVALID_ARGUMENT for unknown units or non-finite/non-numeric values,
+    UNIT_MISMATCH for incompatible dimensions and OUT_OF_RANGE when the result is
+    not a finite double. Pure; thread-safe.
     """
     src, dst = _lookup(from_unit), _lookup(to_unit)
     if isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value):
@@ -82,4 +98,9 @@ def convert(value: float, from_unit: str, to_unit: str) -> float:
         return value
     # Decimal shortest repr, so 298.15 means 298.15 rather than its binary neighbour.
     base = Fraction(repr(value)) * src.factor + src.offset
-    return float((base - dst.offset) / dst.factor)
+    try:
+        return float((base - dst.offset) / dst.factor)
+    except OverflowError:
+        raise BhmsError("OUT_OF_RANGE", f"{value!r} {from_unit} is too large to express in {to_unit} as a number",
+                        field="value", bound={"maximum": sys.float_info.max},
+                        hint=f"the converted value exceeds the largest finite double; keep the value in {from_unit}") from None

@@ -265,7 +265,7 @@ def _lease_not_enforced(server: Any) -> None:
         try:
             return original(principal, lease_id, resources)
         except BhmsError as exc:
-            if exc.code in ("LEASE_REQUIRED", "LEASE_EXPIRED", "LEASE_CONFLICT", "FENCED"):
+            if exc.bhms_code in ("LEASE_REQUIRED", "LEASE_EXPIRED", "LEASE_CONFLICT", "FENCED"):
                 return Lease(lease_id=lease_id or "lease-none", principal=principal.id, resources=tuple(resources), fence=1,
                              state="active", acquired_ns=0, ttl_ms=1, expires_mono=float("inf"), expires_ns=0)
             raise

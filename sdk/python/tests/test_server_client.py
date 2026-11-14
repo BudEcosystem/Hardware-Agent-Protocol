@@ -133,7 +133,7 @@ async def test_version_negotiation_retries_with_a_mutual_version(make_env):
     assert older.version == "2026-11-13"
     with pytest.raises(BhmsError) as exc:
         await Client.from_transport(await tr.connect_unix(env.path), versions=("2025-01-01",))
-    assert exc.value.code == "UNSUPPORTED_VERSION" and exc.value.bound == ["2026-11-13"]
+    assert exc.value.bhms_code == "UNSUPPORTED_VERSION" and exc.value.bound == ["2026-11-13"]
 
 
 async def raw_request(env, message: dict):
@@ -192,7 +192,7 @@ async def test_client_validates_before_sending(make_env):
     client = await env.client()
     with pytest.raises(BhmsError) as exc:
         await client.devices_list(limit=0)
-    assert exc.value.code == "INVALID_ARGUMENT" and exc.value.field == "limit"
+    assert exc.value.bhms_code == "INVALID_ARGUMENT" and exc.value.field == "limit"
     with pytest.raises(BhmsError):
         await client.leases_acquire(["a"], ttl_ms="soon")  # type: ignore[arg-type]
     assert "devices/list" not in seen
@@ -206,7 +206,7 @@ async def test_unadvertised_capability_gets_unsupported_naming_it(make_env):
                       (client.programs_get("sha256:" + "0" * 64), "programs.registry")):
         with pytest.raises(BhmsError) as exc:
             await call
-        assert exc.value.code == "UNSUPPORTED" and cap in exc.value.hint and cap in exc.value.message
+        assert exc.value.bhms_code == "UNSUPPORTED" and cap in exc.value.hint and cap in exc.value.message
 
 
 async def test_handler_error_mapping_through_the_dispatcher(make_env):
@@ -223,10 +223,10 @@ async def test_handler_error_mapping_through_the_dispatcher(make_env):
     client = await env.client()
     with pytest.raises(BhmsError) as exc:
         await client.devices_describe("nope")
-    assert (exc.value.code, exc.value.field) == ("UNKNOWN_DEVICE", "deviceId")
+    assert (exc.value.bhms_code, exc.value.field) == ("UNKNOWN_DEVICE", "deviceId")
     with pytest.raises(BhmsError) as exc:
         await client.operations_get("op-1")
-    assert exc.value.code == "INTERNAL" and "SECRET" not in str(exc.value) + exc.value.hint
+    assert exc.value.bhms_code == "INTERNAL" and "SECRET" not in str(exc.value) + exc.value.hint
     with pytest.raises(JsonRpcError) as rpc:
         await client.devices_list()  # no handler registered
     assert rpc.value.code == -32601
@@ -264,7 +264,7 @@ async def test_result_without_result_type_from_a_buggy_server_is_refused(make_en
     client = Client(session)
     with pytest.raises(BhmsError) as exc:
         await client.devices_list()
-    assert exc.value.code == "INTERNAL" and exc.value.may_have_acted and "resultType" in str(exc.value)
+    assert exc.value.bhms_code == "INTERNAL" and exc.value.may_have_acted and "resultType" in str(exc.value)
     await client.close()
     await listener.close()
 
@@ -302,7 +302,7 @@ async def test_server_side_waits_extend_the_client_timeout(make_env):
     await client.operations_wait("op-1", 1000)  # 0.2 s + 1 s: not cut short
     with pytest.raises(BhmsError) as exc:
         await client.operations_wait("op-1", 1000, timeout=0.1)
-    assert exc.value.code == "DEADLINE_EXCEEDED" and exc.value.may_have_acted
+    assert exc.value.bhms_code == "DEADLINE_EXCEEDED" and exc.value.may_have_acted
 
 
 def listen_handler(events: int, end_reason: str = "shutdown", closed: asyncio.Event | None = None):
@@ -366,7 +366,7 @@ async def test_subscribe_failure_raises_at_subscribe(make_env):
     client = await env.client()
     with pytest.raises(BhmsError) as exc:
         await client.subscribe(devices_list_changed=True)
-    assert exc.value.code == "UNAUTHORIZED"
+    assert exc.value.bhms_code == "UNAUTHORIZED"
     with pytest.raises(BhmsError):  # invalid filter is caught client-side
         await client.subscribe(observations=[{"deviceId": "x"}])
 
@@ -424,7 +424,7 @@ async def test_connect_to_a_non_bhms_peer_fails_cleanly(tmp_path):
     listener = await tr.serve_unix(str(tmp_path / "x.sock"), silent)
     with pytest.raises(BhmsError) as exc:
         await Client.connect(f"unix:{tmp_path}/x.sock", timeout=2)
-    assert exc.value.code == "INTERNAL"
+    assert exc.value.bhms_code == "INTERNAL"
     await listener.close()
 
 

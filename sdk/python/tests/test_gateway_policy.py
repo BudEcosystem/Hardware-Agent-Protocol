@@ -37,17 +37,17 @@ async def test_default_deny_and_read_only(tmp_path):  # BHMS-SEC-010, AUTH-002
         reader = await r.client()
         with pytest.raises(BhmsError) as exc:
             await reader.actions_invoke("a/axis-1", "move_to", {"target": 1}, operation_key="x")
-        assert exc.value.code == "UNAUTHORIZED" and "invoke:a/axis-1/move_to" in exc.value.hint
+        assert exc.value.bhms_code == "UNAUTHORIZED" and "invoke:a/axis-1/move_to" in exc.value.hint
         assert rule_of(exc.value) == "scope:invoke" and "scope:invoke" in exc.value.message
         assert r.axes["a"].commands["move_to"] == 0
         nobody = await r.client(token="nobody-tok")
         assert (await nobody.devices_list()).devices == []
         with pytest.raises(BhmsError) as exc:  # hidden devices read as unknown (BHMS-AUTH-002)
             await nobody.devices_describe("a/axis-1")
-        assert exc.value.code == "UNKNOWN_DEVICE" and rule_of(exc.value) == "scope:read"
+        assert exc.value.bhms_code == "UNKNOWN_DEVICE" and rule_of(exc.value) == "scope:read"
         with pytest.raises(BhmsError) as exc:
             await nobody.events_read()
-        assert exc.value.code == "UNAUTHORIZED" and rule_of(exc.value) == "scope:read"
+        assert exc.value.bhms_code == "UNAUTHORIZED" and rule_of(exc.value) == "scope:read"
 
 
 async def test_unknown_token_is_rejected_at_the_upgrade(tmp_path):  # BHMS-SEC-001, TRN-031
@@ -73,7 +73,7 @@ async def test_hazardous_actions_need_a_literal_scope(tmp_path):  # BHMS-AUTH-00
         await wait_for_device(client, "a/oven-1")
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/oven-1", "heat", {"target": 100}, operation_key="h")
-        assert exc.value.code == "UNAUTHORIZED" and rule_of(exc.value) == "scope:hazardous" and not heated
+        assert exc.value.bhms_code == "UNAUTHORIZED" and rule_of(exc.value) == "scope:hazardous" and not heated
         r.gateway.set_policy(Policy(principals(agent_scopes=["read", "lease", "invoke:a/oven-1/heat"])))
         lease = (await client.leases_acquire(["a/oven-1"], 30_000)).lease  # hazardous actions require one (BHMS-DEV-033)
         op = (await client.actions_invoke("a/oven-1", "heat", {"target": 100}, operation_key="h2", wait_ms=2000,
@@ -96,7 +96,7 @@ async def test_narrowed_bounds_are_served_and_enforced(tmp_path):  # BHMS-AUTH-0
         assert (await admin.devices_list()).devices[0].digest == theirs["digest"]
         with pytest.raises(BhmsError) as exc:
             await agent.actions_invoke("a/axis-1", "move_to", {"target": 150}, operation_key="big")
-        assert exc.value.code == "OUT_OF_RANGE" and exc.value.bound == {"maximum": 100}
+        assert exc.value.bhms_code == "OUT_OF_RANGE" and exc.value.bound == {"maximum": 100}
         assert rule_of(exc.value) == "bounds:target" and exc.value.may_have_acted is False
         assert r.axes["a"].commands["move_to"] == 0
         ok = await agent.actions_invoke("a/axis-1", "move_to", {"target": 100}, operation_key="ok", wait_ms=2000)
@@ -106,7 +106,7 @@ async def test_narrowed_bounds_are_served_and_enforced(tmp_path):  # BHMS-AUTH-0
         with pytest.raises(BhmsError) as exc:  # a pin on the admin's digest is stale for the agent
             await agent.actions_invoke("a/axis-1", "move_to", {"target": 5}, operation_key="pin",
                                        description_digest=theirs["digest"])
-        assert exc.value.code == "STALE" and exc.value.bound == mine["digest"]
+        assert exc.value.bhms_code == "STALE" and exc.value.bound == mine["digest"]
         pinned = await agent.actions_invoke("a/axis-1", "move_to", {"target": 5}, operation_key="pin",
                                             description_digest=mine["digest"], wait_ms=2000)
         assert pinned.operation.state == "completed"
@@ -122,7 +122,7 @@ async def test_empty_envelope_makes_the_action_unavailable(tmp_path):  # BHMS-AU
         assert "move_to" not in listing.actions
         with pytest.raises(BhmsError) as exc:
             await agent.actions_invoke("a/axis-1", "move_to", {"target": 400}, operation_key="e")
-        assert exc.value.code == "UNAUTHORIZED" and rule_of(exc.value) == "bounds:empty"
+        assert exc.value.bhms_code == "UNAUTHORIZED" and rule_of(exc.value) == "bounds:empty"
 
 
 async def test_a_policy_that_widens_a_device_bound_is_rejected(tmp_path):  # BHMS-SEC-011
@@ -150,7 +150,7 @@ async def test_policy_change_applies_to_new_admissions_and_is_recorded(tmp_path)
         r.gateway.set_policy(Policy(principals(agent_scopes=["read"])))
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/axis-1", "move_to", {"target": 2}, operation_key="2")
-        assert exc.value.code == "UNAUTHORIZED"
+        assert exc.value.bhms_code == "UNAUTHORIZED"
         events = (await client.events_read(after=before)).events
         assert [e.type for e in events] == ["policy.changed"]
 
@@ -166,7 +166,7 @@ async def test_operations_read_scope_sees_but_cannot_cancel(tmp_path):  # 7.4 op
         assert [x.operation_id async for x in auditor.iter_operations()] == [op.operation_id]
         with pytest.raises(BhmsError) as exc:
             await auditor.operations_cancel(op.operation_id)
-        assert exc.value.code == "UNAUTHORIZED" and rule_of(exc.value) == "ownership:cancel"
+        assert exc.value.bhms_code == "UNAUTHORIZED" and rule_of(exc.value) == "ownership:cancel"
         r.axes["a"].gate.set()
         assert UID >= 0
 
@@ -220,7 +220,7 @@ scopes = {scopes}
             gateway.reload_policy()
             with pytest.raises(BhmsError) as exc:
                 await client.actions_invoke("a/axis-1", "move_to", {"target": 2}, operation_key="2")
-            assert exc.value.code == "UNAUTHORIZED"
+            assert exc.value.bhms_code == "UNAUTHORIZED"
             write('["read", "bogus-scope"]')
             with pytest.raises(Exception):  # an invalid file is rejected and the current policy stays
                 gateway.reload_policy()

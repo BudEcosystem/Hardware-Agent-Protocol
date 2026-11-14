@@ -85,6 +85,21 @@ class DeviceFault(Exception):
         self.observations = observations
 
 
+class DeviceLost(Exception):  # noqa: N818 - named after what happened, like Canceled
+    """The link to the device was lost while a command may have been in flight (power loss, a dropped connection, no
+    reply): raise it, or a subclass, from a handler.
+
+    The operation ends ``unknown`` (BHMS-OPS-004) exactly as for any unexpected exception, since nobody knows whether
+    the device acted; the difference is in the log: device loss is an expected event of real hardware, so it is one
+    warning line without a traceback. The built-in ``ConnectionError`` and ``TimeoutError`` families are treated the
+    same way (:data:`DEVICE_LOSS`); every other exception is logged as an error with its traceback (a bug to fix).
+    """
+
+
+DEVICE_LOSS: tuple[type[BaseException], ...] = (DeviceLost, ConnectionError, TimeoutError)
+"""Exceptions that mean "the device stopped answering" rather than "the handler is broken"."""
+
+
 def _check_observations(observations: dict[str, dict[str, Any]], owner: str) -> None:
     """Observations that prove an effect are measured and valid (BHMS-OPS-006); refused when present but not."""
     for name, obs in observations.items():

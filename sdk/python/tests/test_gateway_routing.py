@@ -67,7 +67,7 @@ async def test_same_key_other_intent_is_key_conflict_naming_the_gateway_operatio
         first = (await client.actions_invoke("a/axis-1", "move_to", {"target": 5}, operation_key="k")).operation
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/axis-1", "move_to", {"target": 6}, operation_key="k")
-        assert exc.value.code == "KEY_CONFLICT" and exc.value.operation_id == first.operation_id
+        assert exc.value.bhms_code == "KEY_CONFLICT" and exc.value.operation_id == first.operation_id
         await asyncio.sleep(0.1)
         assert r.axes["a"].commands["move_to"] == 1
 
@@ -102,7 +102,7 @@ async def test_key_lookup_precedes_policy(tmp_path):  # BHMS-AUTH-014 + OPS-033
         assert again.replayed is True and again.operation.operation_id == first.operation_id
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/axis-1", "move_to", {"target": 3}, operation_key="new")
-        assert exc.value.code == "UNAUTHORIZED" and "scope:invoke" in exc.value.hint
+        assert exc.value.bhms_code == "UNAUTHORIZED" and "scope:invoke" in exc.value.hint
         assert r.axes["a"].commands["move_to"] == 1
 
 
@@ -115,11 +115,11 @@ async def test_refusals_create_no_operation(tmp_path):  # BHMS-OPS-040
                            (("a/axis-1", "move_to", {"target": 1, "extra": 1}), "INVALID_ARGUMENT")]:
             with pytest.raises(BhmsError) as exc:
                 await client.actions_invoke(*call, operation_key="r")
-            assert exc.value.code == code and exc.value.may_have_acted is False
+            assert exc.value.bhms_code == code and exc.value.may_have_acted is False
         assert [op async for op in client.iter_operations()] == []
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/axis-1", "move_to", {"target": 1}, operation_key="d-reserved")
-        assert exc.value.code == "INVALID_ARGUMENT"
+        assert exc.value.bhms_code == "INVALID_ARGUMENT"
 
 
 async def test_read_is_forwarded(tmp_path):
@@ -130,7 +130,7 @@ async def test_read_is_forwarded(tmp_path):
         assert obs.value == 33.0 and obs.quality == "valid" and obs.evidence == "measured"
         with pytest.raises(BhmsError) as exc:
             await client.properties_read("a/axis-1", "nope")
-        assert exc.value.code == "INVALID_ARGUMENT"
+        assert exc.value.bhms_code == "INVALID_ARGUMENT"
 
 
 async def test_get_wait_cancel_list_are_routed(tmp_path):  # BHMS-OPS-050, 053, 060
@@ -175,7 +175,7 @@ async def test_operations_are_visible_to_their_owner_and_admin_only(tmp_path):  
         op = (await owner.actions_invoke("a/axis-1", "move_to", {"target": 1}, operation_key="o", wait_ms=2000)).operation
         with pytest.raises(BhmsError) as exc:
             await other.operations_get(op.operation_id)
-        assert exc.value.code == "INVALID_ARGUMENT" and exc.value.field == "operationId"
+        assert exc.value.bhms_code == "INVALID_ARGUMENT" and exc.value.field == "operationId"
         assert [x async for x in other.iter_operations()] == []
         assert (await admin.operations_get(op.operation_id)).operation.operation_id == op.operation_id
         assert len([x async for x in admin.iter_operations()]) == 1

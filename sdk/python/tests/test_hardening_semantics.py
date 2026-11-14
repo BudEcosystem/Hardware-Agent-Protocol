@@ -35,4 +35,4 @@ def test_the_schema_rejects_a_hazardous_action_without_a_lease():
     schema.validate("ActionDescription", action)
     with pytest.raises(BhmsError) as exc:
         schema.validate("ActionDescription", {**action, "requiresLease": False})
-    assert exc.value.code == "INVALID_ARGUMENT" and "requiresLease" in (exc.value.field or "")
+    assert exc.value.bhms_code == "INVALID_ARGUMENT" and "requiresLease" in (exc.value.field or "")

@@ -40,7 +40,7 @@ async def test_a_failed_record_after_the_upstream_accepted_leaves_an_unknown_ope
         journal.admit_forwarded = lost
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/axis-1", "move_to", {"target": 3}, operation_key="k1", wait_ms=500)
-        assert exc.value.code == "INTERNAL" and exc.value.may_have_acted is True
+        assert exc.value.bhms_code == "INTERNAL" and exc.value.may_have_acted is True
         journal.admit_forwarded = real
         await asyncio.sleep(0.3)
         assert r.axes["a"].commands["move_to"] == 1

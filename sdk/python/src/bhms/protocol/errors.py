@@ -43,6 +43,7 @@ device (e.g. DEADLINE_EXCEEDED after dispatch).
 
 from __future__ import annotations
 
+import warnings
 from typing import Any, NamedTuple
 
 RETRY_VALUES = ("never", "same-key", "after-reconcile", "backoff")
@@ -54,36 +55,41 @@ class CodeSpec(NamedTuple):
     retry: str
 
 
-def _build() -> dict[str, CodeSpec]:
-    spec = [
-        ("INVALID_ARGUMENT", "never"), ("OUT_OF_RANGE", "never"), ("UNIT_MISMATCH", "never"),
-        ("UNKNOWN_DEVICE", "never"), ("UNKNOWN_ACTION", "never"), ("UNSUPPORTED", "never"),
-        ("LEASE_REQUIRED", "never"), ("LEASE_CONFLICT", "backoff"), ("LEASE_EXPIRED", "never"),
-        ("FENCED", "never"), ("KEY_CONFLICT", "never"), ("STALE", "after-reconcile"),
-        ("DEVICE_UNAVAILABLE", "backoff"), ("UNAUTHORIZED", "never"), ("BUSY", "backoff"),
-        ("DEADLINE_EXCEEDED", "after-reconcile"), ("INTERNAL", "never"),
-        ("UNSUPPORTED_VERSION", "never"), ("UNVERIFIED", "after-reconcile"),
-        ("DEVICE_FAULT", "after-reconcile"),
-    ]
-    out: dict[str, CodeSpec] = {}
-    next_number = -32001
-    for name, retry in spec:
-        if name in ("INVALID_ARGUMENT", "OUT_OF_RANGE", "UNIT_MISMATCH"):
-            out[name] = CodeSpec(_INVALID_PARAMS, retry)
-        else:
-            out[name] = CodeSpec(next_number, retry)
-            next_number -= 1
-    return out
-
-
-CODES: dict[str, CodeSpec] = _build()
+CODES: dict[str, CodeSpec] = {
+    # The numbers are wire contract (spec/bhms/10-errors.md): written out, never derived from their position.
+    "INVALID_ARGUMENT": CodeSpec(_INVALID_PARAMS, "never"),
+    "OUT_OF_RANGE": CodeSpec(_INVALID_PARAMS, "never"),
+    "UNIT_MISMATCH": CodeSpec(_INVALID_PARAMS, "never"),
+    "UNKNOWN_DEVICE": CodeSpec(-32001, "never"),
+    "UNKNOWN_ACTION": CodeSpec(-32002, "never"),
+    "UNSUPPORTED": CodeSpec(-32003, "never"),
+    "LEASE_REQUIRED": CodeSpec(-32004, "never"),
+    "LEASE_CONFLICT": CodeSpec(-32005, "backoff"),
+    "LEASE_EXPIRED": CodeSpec(-32006, "never"),
+    "FENCED": CodeSpec(-32007, "never"),
+    "KEY_CONFLICT": CodeSpec(-32008, "never"),
+    "STALE": CodeSpec(-32009, "after-reconcile"),
+    "DEVICE_UNAVAILABLE": CodeSpec(-32010, "backoff"),
+    "UNAUTHORIZED": CodeSpec(-32011, "never"),
+    "BUSY": CodeSpec(-32012, "backoff"),
+    "DEADLINE_EXCEEDED": CodeSpec(-32013, "after-reconcile"),
+    "INTERNAL": CodeSpec(-32014, "never"),
+    "UNSUPPORTED_VERSION": CodeSpec(-32015, "never"),
+    "UNVERIFIED": CodeSpec(-32016, "after-reconcile"),
+    "DEVICE_FAULT": CodeSpec(-32017, "after-reconcile"),
+}
 
 # Codes that describe admitted work; never sent as JSON-RPC errors (BHMS-ERR-012).
 OPERATION_ONLY_CODES: frozenset[str] = frozenset({"DEVICE_FAULT", "UNVERIFIED"})
 
 
 class BhmsError(Exception):
-    """A protocol error. Names the field, the bound and a fix whenever known."""
+    """A protocol error. Names the field, the bound and a fix whenever known.
+
+    ``bhms_code`` is the BHMS code (``"OUT_OF_RANGE"``): the same attribute name as on the ``OperationError`` and
+    ``ErrorData`` models, and the wire member ``bhmsCode``. ``code`` is a deprecated alias kept for one release (it is
+    easily mistaken for the JSON-RPC number); it warns with ``DeprecationWarning``. Instances pickle with every member.
+    """
 
     def __init__(self, code: str, message: str, *, field: str | None = None, bound: Any = None,
                  operation_id: str | None = None, may_have_acted: bool = False,
@@ -95,7 +101,7 @@ class BhmsError(Exception):
         if retry not in RETRY_VALUES:
             raise ValueError(f"invalid retry {retry!r}; must be one of {', '.join(RETRY_VALUES)}")
         super().__init__(message)
-        self.code = code
+        self.bhms_code = code
         self.message = message
         self.field = field
         self.bound = bound
@@ -104,8 +110,20 @@ class BhmsError(Exception):
         self.retry = retry
         self.hint = hint
 
+    @property
+    def code(self) -> str:
+        """Deprecated alias of :attr:`bhms_code` (removed after one release)."""
+        warnings.warn("BhmsError.code is deprecated; use BhmsError.bhms_code (the name OperationError uses)",
+                      DeprecationWarning, stacklevel=2)
+        return self.bhms_code
+
+    def __reduce__(self) -> tuple[Any, ...]:
+        """Pickle support: ``Exception`` would re-create the error from ``args`` alone and lose the keyword members."""
+        return (_rebuild, (self.bhms_code, self.message, self.field, self.bound, self.operation_id, self.may_have_acted,
+                           self.retry, self.hint))
+
     def _data(self) -> dict[str, Any]:
-        data: dict[str, Any] = {"bhmsCode": self.code}
+        data: dict[str, Any] = {"bhmsCode": self.bhms_code}
         if self.field is not None:
             data["field"] = self.field
         if self.bound is not None:
@@ -117,16 +135,22 @@ class BhmsError(Exception):
 
     def to_jsonrpc(self) -> dict[str, Any]:
         """JSON-RPC error object; ValueError for operation-only codes (BHMS-ERR-012)."""
-        if self.code in OPERATION_ONLY_CODES:
-            raise ValueError(f"{self.code} describes admitted work and is reported only in an operation's "
+        if self.bhms_code in OPERATION_ONLY_CODES:
+            raise ValueError(f"{self.bhms_code} describes admitted work and is reported only in an operation's "
                              "error; use to_operation_error()")
-        return {"code": CODES[self.code].number, "message": self.message, "data": self._data()}
+        return {"code": CODES[self.bhms_code].number, "message": self.message, "data": self._data()}
 
     def to_operation_error(self) -> dict[str, Any]:
         """The ``OperationError`` wire form: error data plus ``message`` (any code)."""
         data = self._data()
         data["message"] = self.message
         return data
+
+
+def _rebuild(code: str, message: str, field: str | None, bound: Any, operation_id: str | None, may_have_acted: bool,
+             retry: str, hint: str) -> BhmsError:
+    return BhmsError(code, message, field=field, bound=bound, operation_id=operation_id, may_have_acted=may_have_acted,
+                     retry=retry, hint=hint)
 
 
 def from_jsonrpc(err: dict[str, Any]) -> BhmsError:

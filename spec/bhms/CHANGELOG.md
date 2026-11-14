@@ -17,6 +17,22 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   built. Evidence: Task 10 report, SDK gap 8 (the centrifuge twin's hazardous `spin` ran without a lease) and its spec learning
   "hazardous should imply a lease". Decision: MUST, because with BHMS-LSE-014 a lease is what keeps every other caller off the
   resource while the hazardous effect runs; a SHOULD would leave that to each device author.
+- **BHMS-OPS-008 amended (result outside its declared range)**: a well-formed result whose number violates `minimum`/`maximum`/
+  `exclusive*` of the `output` schema ends the operation `failed` with `OUT_OF_RANGE` (`field: "result.<member>"`, `bound`,
+  `mayHaveActed: true`, `retry: "after-reconcile"`), `effect`/`evidence` as the completion evidence supports, the value in
+  `error.message` and in an `evidence` history entry; §10 says how to tell it from a refusal. Decision: reuse `OUT_OF_RANGE`
+  with `field`/`bound` rather than add a code (no new number, and "which member, which bound" is exactly what the code already
+  carries). Evidence: Task 11 report, S8 (a measured 200.138 uL against `Range(0, 200)` was reported as `INTERNAL` "returned a
+  result that cannot be recorded" although the device had acted).
+- **Unit registry (§4.5, BHMS-DEV-042)**: added `{rev}/min`, `{rev}/s` (rotational speed, its own dimension), `mol/L`, `mmol/L`,
+  `umol/L` (substance concentration), `W`, `mW`, `kW` (power), `[ppm]` (dimensionless, 10⁻⁶), `m3` (volume) and `L/h` (flow).
+  Choice for revolutions per minute: the UCUM annotated unit `{rev}/min`, not `{rpm}` and not a bare `/min`, so the code says
+  what is counted and is not convertible to `Hz`. Evidence: Task 10 report, SDK gap 2 (centrifuge speeds had to be declared in
+  Hz; concentrations, power and ppm had no unit).
+- No requirement change, Python SDK only: property getters receive the device by declaration (Task 10 gap 4);
+  `BhmsError.bhms_code` is the one name of the code, `BhmsError.code` a deprecated alias for one release (gap 7); `DeviceLost`
+  (Task 11 S9); `units.convert` overflow is `OUT_OF_RANGE` and `BhmsError` pickles (Task 1 minors); a stdio connection releases
+  its child process and tasks on every close path (controller verification of the suite under `-W error`).
 
 ### TS SDK to follow
 
@@ -24,6 +40,9 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   `leases.held-lease-blocks-everyone`; `stop.not-blocked-by-load` now presents the lease it holds.
 - BHMS-DEV-033 as a MUST: refuse a hazardous action without `requiresLease` when a description is built (the shared schema
   already rejects it).
+- BHMS-OPS-008: a result outside its declared output range ends `failed` with `OUT_OF_RANGE` (`field: "result.<member>"`), not
+  `INTERNAL`.
+- The unit registry additions, if the TypeScript SDK grows a unit registry (it has none today).
 
 ## 2026-11-13 (v0.1)
 

@@ -255,7 +255,7 @@ def test_key_conflict_names_the_operation_and_its_may_have_acted(store):  # BHMS
     journal = Journal(store)
     rec = new_op(journal)
     err = key_conflict_error(rec, "k1")
-    assert (err.code, err.operation_id, err.may_have_acted, err.field) == ("KEY_CONFLICT", rec.id, False,
+    assert (err.bhms_code, err.operation_id, err.may_have_acted, err.field) == ("KEY_CONFLICT", rec.id, False,
                                                                          "operationKey")
     assert "operations/get" in err.hint and "different form" in err.hint
     drive(journal, rec, "dispatching")

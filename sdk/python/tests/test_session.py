@@ -211,7 +211,7 @@ async def test_request_timeout_cancels_and_reports_outcome_unknown(rig):
     r = await rig(handler, server_kw={"cancellable": lambda m: True})
     with pytest.raises(BhmsError) as exc:
         await r.client.request("actions/invoke", {}, timeout=0.1)
-    assert exc.value.code == "DEADLINE_EXCEEDED" and exc.value.may_have_acted
+    assert exc.value.bhms_code == "DEADLINE_EXCEEDED" and exc.value.may_have_acted
     assert "operations/get" in exc.value.hint and exc.value.retry == "after-reconcile"
     await asyncio.wait_for(cancelled.wait(), 5)  # notifications/cancelled was sent (BHMS-LIF-053)
 
@@ -228,13 +228,16 @@ async def test_late_response_after_cancel_is_ignored(rig):
 
 
 async def test_default_timeout_applies(rig):
+    release = asyncio.Event()
+
     async def handler(ctx):
-        await asyncio.sleep(30)
+        await release.wait()
 
     r = await rig(handler, client_kw={"default_timeout": 0.1})
     with pytest.raises(BhmsError) as exc:
         await r.client.request("x", {})
-    assert exc.value.code == "DEADLINE_EXCEEDED"
+    assert exc.value.bhms_code == "DEADLINE_EXCEEDED"
+    release.set()  # the abandoned handler is detached, never cancelled (BHMS-LIF-050): let it end with the test
 
 
 async def test_error_mapping_and_no_traceback_leak(rig, caplog):
@@ -252,7 +255,7 @@ async def test_error_mapping_and_no_traceback_leak(rig, caplog):
     with pytest.raises(BhmsError) as exc:
         await r.client.request("bhms", {})
     e = exc.value
-    assert (e.code, e.field, e.bound, e.hint, e.may_have_acted) == ("OUT_OF_RANGE", "arguments.v", {"max": 5},
+    assert (e.bhms_code, e.field, e.bound, e.hint, e.may_have_acted) == ("OUT_OF_RANGE", "arguments.v", {"max": 5},
                                                                     "use <= 5", False)
     with pytest.raises(JsonRpcError) as rpc:
         await r.client.request("rpc", {})
@@ -261,7 +264,7 @@ async def test_error_mapping_and_no_traceback_leak(rig, caplog):
         for method in ("boom", "opcode"):
             with pytest.raises(BhmsError) as exc:
                 await r.client.request(method, {})
-            assert exc.value.code == "INTERNAL"
+            assert exc.value.bhms_code == "INTERNAL"
             assert "SECRET" not in str(exc.value) and "SECRET" not in exc.value.hint
             assert "Traceback" not in exc.value.hint and exc.value.may_have_acted  # unknown whether it acted
     assert "SECRET-internal-detail" in caplog.text  # logged locally, not sent
@@ -314,7 +317,7 @@ async def test_stream_error_surfaces_on_the_iterator(rig):
     with pytest.raises(BhmsError) as exc:
         async for _ in stream:
             pass
-    assert exc.value.code == "UNAUTHORIZED"
+    assert exc.value.bhms_code == "UNAUTHORIZED"
 
 
 async def test_stream_cancel_stops_the_generator_and_nothing_more_is_sent(rig):
@@ -683,7 +686,7 @@ async def test_max_inflight_requests_gives_busy(rig):
     r = await rig(handler, server_kw={"max_inflight_requests": 2})
     results = await asyncio.gather(*(r.client.request("x", {}) for i in range(4)), return_exceptions=True)
     busy = [x for x in results if isinstance(x, BhmsError)]
-    assert len(busy) == 2 and busy[0].code == "BUSY" and busy[0].retry == "backoff"
+    assert len(busy) == 2 and busy[0].bhms_code == "BUSY" and busy[0].retry == "backoff"
 
 
 async def test_roles_are_enforced(rig):
@@ -702,7 +705,7 @@ async def test_outbound_message_over_the_limit_is_refused_before_sending(rig):
     r = await rig(echo, client_kw={"max_message_bytes": 1_048_576})
     with pytest.raises(BhmsError) as exc:
         await r.client.request("x", {"p": "a" * (2 * MIB)})
-    assert exc.value.code == "INVALID_ARGUMENT" and "1048576" in exc.value.message
+    assert exc.value.bhms_code == "INVALID_ARGUMENT" and "1048576" in exc.value.message
     assert (await r.client.request("x", {}))["method"] == "x"
 
 
@@ -713,7 +716,7 @@ async def test_oversize_response_becomes_internal_error_not_a_dead_connection(ri
     r = await rig(handler, server_kw={"max_message_bytes": 1_048_576})
     with pytest.raises(BhmsError) as exc:
         await r.client.request("x", {})
-    assert exc.value.code == "INTERNAL" and exc.value.may_have_acted
+    assert exc.value.bhms_code == "INTERNAL" and exc.value.may_have_acted
 
 
 async def test_session_over_tcp_and_websocket(tmp_path):

@@ -40,7 +40,7 @@ def test_a_target_outside_the_travel_is_refused_and_nothing_moves():
             try:
                 await client.actions_invoke("{{device_id}}", "move_to", {"target": 500})
             except Exception as error:  # BhmsError: OUT_OF_RANGE, mayHaveActed false, with a hint
-                assert error.code == "OUT_OF_RANGE" and error.may_have_acted is False and error.hint
+                assert error.bhms_code == "OUT_OF_RANGE" and error.may_have_acted is False and error.hint
             else:
                 raise AssertionError("expected a refusal")
             assert (await client.properties_read("{{device_id}}", "position")).observation.value == 0.0

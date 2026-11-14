@@ -74,7 +74,7 @@ async def test_example_agent_policy_narrows_and_refuses_with_rules(tmp_path):
             assert mine.digest != theirs.digest
             with pytest.raises(BhmsError) as exc:
                 await agent.actions_invoke("bench/stage-z", "move_to", {"target": 150}, operation_key="big")
-            assert exc.value.code == "OUT_OF_RANGE" and "[rule: bounds:target]" in exc.value.hint
+            assert exc.value.bhms_code == "OUT_OF_RANGE" and "[rule: bounds:target]" in exc.value.hint
             with pytest.raises(BhmsError) as exc:
                 await agent.stop("x", scope="all")
             assert "[rule: scope:stop]" in exc.value.hint

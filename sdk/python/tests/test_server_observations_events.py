@@ -119,7 +119,7 @@ async def test_age_is_conservative_and_validity_makes_stale(env):  # BHMS-OBS-00
     obs = (await c["reader"].properties_read("pump-1", "pressure", fresh=True)).observation
     assert obs.age_ms >= 300
     err = await refused(c["reader"].properties_read("pump-1", "pressure", max_age_ms=100))
-    assert (err.code, err.field, err.bound) == ("STALE", "maxAgeMs", 100)
+    assert (err.bhms_code, err.field, err.bound) == ("STALE", "maxAgeMs", 100)
     state["latency"] = 0.0
     await c["reader"].properties_read("pump-1", "pressure", fresh=True)
     await asyncio.sleep(0.6)
@@ -133,7 +133,7 @@ async def test_unbounded_latency_has_null_age_and_fails_max_age(env):  # BHMS-OB
     obs = (await c["reader"].properties_read("pump-1", "temperature")).observation
     assert obs.age_ms is None and obs.acquired_at is None and obs.value == 21.5
     err = await refused(c["reader"].properties_read("pump-1", "temperature", max_age_ms=10_000))
-    assert err.code == "STALE" and err.field == "maxAgeMs"
+    assert err.bhms_code == "STALE" and err.field == "maxAgeMs"
 
 
 async def test_push_only_property_without_value_is_unknown_and_fresh_is_stale(env):  # BHMS-OBS-010
@@ -142,22 +142,22 @@ async def test_push_only_property_without_value_is_unknown_and_fresh_is_stale(en
     assert obs.quality == "unknown" and obs.value is None
     await srv.devices["pump-1"].publish("temperature", 22.0)
     err = await refused(c["reader"].properties_read("pump-1", "temperature", fresh=True))
-    assert (err.code, err.field) == ("STALE", "fresh")
+    assert (err.bhms_code, err.field) == ("STALE", "fresh")
 
 
 async def test_unknown_property_lists_the_properties(env):  # BHMS-OBS-012
     srv, state, c = await env()
     err = await refused(c["reader"].properties_read("pump-1", "flow"))
-    assert (err.code, err.field) == ("INVALID_ARGUMENT", "property")
+    assert (err.bhms_code, err.field) == ("INVALID_ARGUMENT", "property")
     assert "pressure" in err.hint and "fifo" in err.hint
 
 
 async def test_transaction_property_needs_invoke_scope_and_lease(env):  # BHMS-OBS-011, AUTH-012
     srv, state, c = await env()
     err = await refused(c["reader"].properties_read("pump-1", "fifo", fresh=True))
-    assert err.code == "UNAUTHORIZED" and "invoke:pump-1/fifo" in err.hint
+    assert err.bhms_code == "UNAUTHORIZED" and "invoke:pump-1/fifo" in err.hint
     err = await refused(c["operator"].properties_read("pump-1", "fifo", fresh=True))
-    assert err.code == "LEASE_REQUIRED"
+    assert err.bhms_code == "LEASE_REQUIRED"
     assert state["fifo_reads"] == 0
     lease = (await c["operator"].leases_acquire(["pump-1/plunger"], 5000)).lease
     obs = (await c["operator"].properties_read("pump-1", "fifo", fresh=True)).observation
@@ -171,7 +171,7 @@ async def test_requires_fresh_refuses_stale_at_admission(env):  # BHMS-OBS-030
     srv, state, c = await env()
     state["pressure_ok"] = False
     err = await refused(c["operator"].actions_invoke("pump-1", "dispense", {"volume": 5}, operation_key="f-1"))
-    assert (err.code, err.field, err.bound) == ("STALE", "requiresFresh[0]",
+    assert (err.bhms_code, err.field, err.bound) == ("STALE", "requiresFresh[0]",
                                                  {"property": "pressure", "maxAgeMs": 1000})
     assert "invalid" in err.hint and state["dispensed"] == 0
     state["pressure_ok"] = True
@@ -326,7 +326,7 @@ async def test_events_cursor_order_stability_and_gap(env):  # BHMS-EVT-001, EVT-
     foreign = "e.00000000." + page.events[0].cursor.rsplit(".", 1)[1]
     assert (await c["reader"].events_read(after=foreign)).gap is True
     err = await refused(c["reader"].events_read(after="garbage"))
-    assert (err.code, err.field) == ("INVALID_ARGUMENT", "after")
+    assert (err.bhms_code, err.field) == ("INVALID_ARGUMENT", "after")
     srv.store.prune_events(2 ** 62)  # retention expired for everything
     assert (await c["reader"].events_read(after=page.events[0].cursor)).gap is True
 

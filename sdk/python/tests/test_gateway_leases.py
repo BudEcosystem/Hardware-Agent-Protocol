@@ -64,7 +64,7 @@ async def test_nothing_is_held_when_one_upstream_cannot_grant(tmp_path):  # BHMS
         held = (await rival.leases_acquire(["pump-1/plunger"], 5000)).lease
         with pytest.raises(BhmsError) as exc:
             await client.leases_acquire([CLAMP, PLUNGER], 5000)
-        assert exc.value.code == "LEASE_CONFLICT" and exc.value.bound == [PLUNGER]
+        assert exc.value.bhms_code == "LEASE_CONFLICT" and exc.value.bound == [PLUNGER]
         assert held.lease_id not in str(exc.value) and "pump-1/plunger" not in exc.value.message.replace(PLUNGER, "")
         assert upstream_leases(r, "a") == [] and r.gateway.leases.manager.active() == []
         await rival.close()
@@ -79,10 +79,10 @@ async def test_gateway_arbitrates_contenders_and_never_names_the_holder(tmp_path
         lease = (await one.leases_acquire([CLAMP], 5000)).lease
         with pytest.raises(BhmsError) as exc:
             await two.leases_acquire([CLAMP], 5000)
-        assert exc.value.code == "LEASE_CONFLICT" and exc.value.bound == [CLAMP] and "agent" not in exc.value.message
+        assert exc.value.bhms_code == "LEASE_CONFLICT" and exc.value.bound == [CLAMP] and "agent" not in exc.value.message
         with pytest.raises(BhmsError) as exc:
             await two.leases_renew(lease.lease_id, 5000)  # another principal's lease
-        assert exc.value.code == "LEASE_CONFLICT"
+        assert exc.value.bhms_code == "LEASE_CONFLICT"
         waiter = asyncio.create_task(two.leases_acquire([CLAMP], 5000, wait_ms=3000))
         await asyncio.sleep(0.2)
         assert not waiter.done()
@@ -96,11 +96,11 @@ async def test_leased_actions_use_the_gateway_lease_and_forward_the_upstream_one
         other = await r.client(token=TOKENS["agent-b"])
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/axis-1", "clamp", {"force": 10}, operation_key="c0")
-        assert exc.value.code == "LEASE_REQUIRED"
+        assert exc.value.bhms_code == "LEASE_REQUIRED"
         lease = (await client.leases_acquire([CLAMP], 5000)).lease
         with pytest.raises(BhmsError) as exc:
             await other.actions_invoke("a/axis-1", "clamp", {"force": 10}, operation_key="c1", lease_id=lease.lease_id)
-        assert exc.value.code == "LEASE_CONFLICT"
+        assert exc.value.bhms_code == "LEASE_CONFLICT"
         op = (await client.actions_invoke("a/axis-1", "clamp", {"force": 10}, operation_key="c2",
                                           lease_id=lease.lease_id, wait_ms=2000)).operation
         assert op.state == "completed" and op.lease_id == lease.lease_id and op.fence == lease.fence
@@ -109,7 +109,7 @@ async def test_leased_actions_use_the_gateway_lease_and_forward_the_upstream_one
         await client.leases_release(lease.lease_id)
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/axis-1", "clamp", {"force": 10}, operation_key="c3", lease_id=lease.lease_id)
-        assert exc.value.code == "LEASE_EXPIRED"
+        assert exc.value.bhms_code == "LEASE_EXPIRED"
 
 
 async def test_a_superseded_holder_is_rejected_by_the_upstream(tmp_path):  # BHMS-LSE-011, 14-conformance fault row
@@ -126,7 +126,7 @@ async def test_a_superseded_holder_is_rejected_by_the_upstream(tmp_path):  # BHM
         assert newer.fence > lease.fence or newer.fence > 0
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/axis-1", "clamp", {"force": 10}, operation_key="old", lease_id=lease.lease_id)
-        assert exc.value.code in ("FENCED", "LEASE_EXPIRED", "LEASE_CONFLICT") and exc.value.may_have_acted is False
+        assert exc.value.bhms_code in ("FENCED", "LEASE_EXPIRED", "LEASE_CONFLICT") and exc.value.may_have_acted is False
         assert sim.counter == before  # the endpoint rejected the old holder; nothing executed
         await rival.close()
 
@@ -138,10 +138,10 @@ async def test_a_lost_upstream_lease_revokes_the_gateway_lease_on_renew(tmp_path
         r.servers["b"].leases.revoke_covering(["pump-1/plunger"])
         with pytest.raises(BhmsError) as exc:
             await client.leases_renew(lease.lease_id, 60000)
-        assert exc.value.code in ("FENCED", "LEASE_EXPIRED")
+        assert exc.value.bhms_code in ("FENCED", "LEASE_EXPIRED")
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/axis-1", "clamp", {"force": 1}, operation_key="x", lease_id=lease.lease_id)
-        assert exc.value.code == "FENCED"
+        assert exc.value.bhms_code == "FENCED"
         await asyncio.sleep(0.1)
         assert upstream_leases(r, "a") == []  # the part still held was released
 
@@ -156,7 +156,7 @@ async def test_expiry_releases_the_upstream_parts(tmp_path):  # BHMS-LSE-006
         assert upstream_leases(r, "a") == [] and upstream_leases(r, "b") == []
         with pytest.raises(BhmsError) as exc:
             await client.leases_renew(lease.lease_id, 1000)
-        assert exc.value.code == "LEASE_EXPIRED"
+        assert exc.value.bhms_code == "LEASE_EXPIRED"
 
 
 async def test_fences_increase_across_a_gateway_restart(tmp_path):  # BHMS-LSE-003
@@ -172,7 +172,7 @@ async def test_fences_increase_across_a_gateway_restart(tmp_path):  # BHMS-LSE-0
             async with await Client.connect(r.socket) as fresh:
                 with pytest.raises(BhmsError) as exc:  # leases are not persisted: the old id is unknown
                     await fresh.leases_renew(first.lease_id, 5000)
-                assert exc.value.code == "LEASE_EXPIRED"
+                assert exc.value.bhms_code == "LEASE_EXPIRED"
                 await asyncio.sleep(0.1)
                 second = (await fresh.leases_acquire([CLAMP], 5000)).lease
             await listener.close()

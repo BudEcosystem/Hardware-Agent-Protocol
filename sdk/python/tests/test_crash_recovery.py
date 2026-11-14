@@ -109,7 +109,7 @@ async def test_crash_after_dispatch_becomes_unknown(paths):  # BHMS-OPS-080, OPS
         with pytest.raises(BhmsError) as info:
             await client.actions_invoke("arm-1", "move", {"x": 1}, operation_key="k-other")
         op = await replay(client, "k-run")
-        assert info.value.code == "STALE" and info.value.operation_id == op.operation_id
+        assert info.value.bhms_code == "STALE" and info.value.operation_id == op.operation_id
         assert op.state == "unknown" and op.effect == "unknown"
         assert (op.error.bhms_code, op.error.may_have_acted, op.error.retry) == ("DEADLINE_EXCEEDED", True,
                                                                                  "after-reconcile")

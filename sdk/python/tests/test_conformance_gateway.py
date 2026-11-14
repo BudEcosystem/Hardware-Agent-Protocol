@@ -68,7 +68,7 @@ async def test_a_retained_transaction_observation_needs_only_read_authority(tmp_
         reader = await r.client(token="tok-reader")  # read scope only: no invoke, no lease
         with pytest.raises(BhmsError) as nothing_retained:
             await reader.properties_read("a/axis-1", "fifo")
-        assert nothing_retained.value.code == "UNAUTHORIZED"  # nothing is retained yet: a new transaction would be needed
+        assert nothing_retained.value.bhms_code == "UNAUTHORIZED"  # nothing is retained yet: a new transaction would be needed
         lease = (await admin.leases_acquire(["a/axis-1/motion"], 30_000)).lease
         popped = (await admin.properties_read("a/axis-1", "fifo", fresh=True)).observation
         await admin.leases_release(lease.lease_id)
@@ -78,10 +78,10 @@ async def test_a_retained_transaction_observation_needs_only_read_authority(tmp_
         assert within.sequence == popped.sequence
         with pytest.raises(BhmsError) as fresh:
             await reader.properties_read("a/axis-1", "fifo", fresh=True)  # a new acquisition needs invoke authority (BHMS-AUTH-012)
-        assert fresh.value.code == "UNAUTHORIZED"
+        assert fresh.value.bhms_code == "UNAUTHORIZED"
         with pytest.raises(BhmsError) as too_old:
             await reader.properties_read("a/axis-1", "fifo", max_age_ms=0)
-        assert too_old.value.code == "UNAUTHORIZED"
+        assert too_old.value.bhms_code == "UNAUTHORIZED"
 
 
 async def test_an_operation_that_misses_its_deadline_in_the_upstream_queue_is_rejected_through_the_gateway(tmp_path):  # OPS-070

@@ -104,3 +104,9 @@ unit.
 **BHMS-ERR-012** `DEVICE_FAULT` and `UNVERIFIED` MUST appear only as
 `OperationError`s of admitted operations (they describe what happened while
 acting), with `mayHaveActed: true`.
+
+`OUT_OF_RANGE` usually refuses a request before anything acts (`mayHaveActed:
+false`). It also appears as the `OperationError` of a `failed` operation whose
+device acted and returned a number outside its declared output range
+(BHMS-OPS-008): then `field` starts with `result.`, `mayHaveActed` is `true` and
+`retry` is `after-reconcile`. `field` and `mayHaveActed` tell the two apart.

@@ -192,16 +192,24 @@ MUST NOT convert a unit that is not in the registry.
 | angle | `rad`, `deg`, `mrad` (angles are not dimensionless) |
 | time | `s`, `ms`, `us`, `min`, `h` |
 | temperature | `K`, `Cel`, `[degF]` |
-| volume | `L`, `mL`, `uL`, `nL` |
+| volume | `L`, `mL`, `uL`, `nL`, `m3` |
 | mass | `kg`, `g`, `mg`, `ug` |
 | pressure | `Pa`, `kPa`, `bar`, `mbar`, `[psi]` |
-| flow | `L/min`, `mL/min`, `uL/min` |
+| flow | `L/min`, `mL/min`, `uL/min`, `L/h` |
 | current / voltage | `A`, `mA` / `V`, `mV` |
+| power | `W`, `mW`, `kW` |
 | frequency | `Hz`, `kHz` |
-| dimensionless | `1`, `%` (`50 %` = `0.5` of `1`) |
+| rotational speed | `{rev}/min`, `{rev}/s` (revolutions per time; not a frequency and not an angular rate) |
+| substance concentration | `mol/L`, `mmol/L`, `umol/L` |
+| dimensionless | `1`, `%`, `[ppm]` (`50 %` = `0.5` of `1`; `[ppm]` is 10⁻⁶) |
 
 The registry is implemented by `bhms.protocol.units` (exact rational
-conversion).
+conversion). Codes are UCUM, case-sensitive: revolutions per minute are written
+`{rev}/min` (the UCUM annotation `{rev}` says what is counted; `rpm`, `r/min` and a
+bare `/min` are not registry codes), parts per million `[ppm]`, millimolar
+`mmol/L`. Rotational speed is its own dimension, as angle is: a client converts
+`{rev}/min` to `{rev}/s` but never to `Hz` or `rad`/time, so a rotor speed cannot be
+mistaken for a signal frequency.
 
 **Quantity arguments.** Wherever a schema declares `x-bhms-unit`, a client MAY
 send a quantity object `{"value": <number>, "unit": "<ucum>"}` instead of a bare

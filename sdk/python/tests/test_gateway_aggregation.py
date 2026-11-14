@@ -51,7 +51,7 @@ async def test_stale_digest_is_refused_with_the_current_one(tmp_path):  # BHMS-D
         assert (await client.devices_describe("a/axis-1", digest=current)).description.digest == current
         with pytest.raises(BhmsError) as exc:
             await client.devices_describe("a/axis-1", digest="sha256:" + "0" * 64)
-        assert exc.value.code == "STALE" and exc.value.bound == current
+        assert exc.value.bhms_code == "STALE" and exc.value.bound == current
 
 
 async def test_unknown_device_and_filter_and_paging(tmp_path):
@@ -59,7 +59,7 @@ async def test_unknown_device_and_filter_and_paging(tmp_path):
         client = await r.client()
         with pytest.raises(BhmsError) as exc:
             await client.devices_describe("a/nope")
-        assert exc.value.code == "UNKNOWN_DEVICE" and "routing:unknown-device" in exc.value.hint
+        assert exc.value.bhms_code == "UNKNOWN_DEVICE" and "routing:unknown-device" in exc.value.hint
         first = await client.devices_list(limit=2)
         rest = await client.devices_list(limit=2, cursor=first.next_cursor)
         assert [d.device_id for d in first.devices + rest.devices] == ["a/axis-1", "b/axis-1", "c/axis-1"]
@@ -134,7 +134,7 @@ async def test_upstream_down_marks_devices_offline_and_recovers(tmp_path):
         assert statuses == {"a/axis-1": "offline", "b/axis-1": "online"}
         with pytest.raises(BhmsError) as exc:
             await client.properties_read("a/axis-1", "position")
-        assert exc.value.code == "DEVICE_UNAVAILABLE" and exc.value.may_have_acted is False
+        assert exc.value.bhms_code == "DEVICE_UNAVAILABLE" and exc.value.may_have_acted is False
         assert "isolation:upstream-unavailable" in exc.value.hint
         assert (await client.properties_read("b/axis-1", "position")).observation.quality == "valid"
         # it comes back: the gateway reconnects by itself

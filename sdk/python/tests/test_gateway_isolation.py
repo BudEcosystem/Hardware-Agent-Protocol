@@ -85,7 +85,7 @@ async def test_upstream_killed_mid_operation_becomes_unknown_then_reconciles(tmp
         assert listing[0].status == "offline"
         with pytest.raises(BhmsError) as exc:  # nothing new goes to a dead upstream
             await client.actions_invoke("dev/axis-1", "move", {"x": 1}, operation_key="new")
-        assert exc.value.code == "DEVICE_UNAVAILABLE" and exc.value.may_have_acted is False
+        assert exc.value.bhms_code == "DEVICE_UNAVAILABLE" and exc.value.may_have_acted is False
         # the gateway restarts the upstream; its durable journal recovers the operation as unknown and its reconcile
         # hook answers from the device log; the gateway records that as a reconciliation
         settled = await until(lambda: _state_is(client, op.operation_id, "failed"), timeout=30)
@@ -123,7 +123,7 @@ async def test_unknown_inhibits_the_resources_across_a_reconnect(tmp_path):  # B
         await until(lambda: _online(client), timeout=30)  # the upstream is back; the outcome is still unknown
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("dev/axis-1", "move", {"x": 1}, operation_key="blocked")
-        assert exc.value.code == "STALE" and exc.value.operation_id == op.operation_id
+        assert exc.value.bhms_code == "STALE" and exc.value.operation_id == op.operation_id
         assert "isolation:unknown-operation" in exc.value.hint
         assert (await client.operations_get(op.operation_id)).operation.state == "unknown"
         # a confirmed stop of the device lifts it (BHMS-OPS-042); the outcome itself stays unknown
@@ -189,7 +189,7 @@ async def test_stalled_server_isolated(tmp_path):  # BHMS-SEC-061
             started = time.perf_counter()
             with pytest.raises(BhmsError) as exc:  # fails fast now, it does not queue behind a dead peer
                 await client.actions_invoke("slow/axis-1", "move", {"x": 1}, operation_key="to-stalled")
-            assert exc.value.code == "DEVICE_UNAVAILABLE" and exc.value.may_have_acted is False
+            assert exc.value.bhms_code == "DEVICE_UNAVAILABLE" and exc.value.may_have_acted is False
             assert time.perf_counter() - started < 0.2
             got = await until(lambda: _state_is(client, op.operation_id, "unknown"), timeout=10)
             assert got.error.may_have_acted is True  # in flight when the link stalled
@@ -224,8 +224,8 @@ async def test_bounded_queue_refuses_with_busy_and_others_are_unaffected(tmp_pat
             assert time.perf_counter() - started < 1.0  # the other upstream is not held up by the saturated one
             results = await asyncio.gather(*calls, return_exceptions=True)
             assert all(isinstance(x, BhmsError) for x in results)
-            assert sorted(x.code for x in results) == ["BUSY", "LEASE_CONFLICT", "LEASE_CONFLICT"]  # 1 running, 1 queued
-            busy = next(x for x in results if x.code == "BUSY")
+            assert sorted(x.bhms_code for x in results) == ["BUSY", "LEASE_CONFLICT", "LEASE_CONFLICT"]  # 1 running, 1 queued
+            busy = next(x for x in results if x.bhms_code == "BUSY")
             assert busy.may_have_acted is False and "isolation:queue-bounded" in busy.hint
             assert r.gateway.leases.manager.active() == []  # nothing was left held by the refused attempts
         finally:

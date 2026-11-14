@@ -166,7 +166,7 @@ async def test_the_gateway_does_not_serve_each_hostile_schema_variant_on_its_own
         try:
             shown = await client.request("devices/describe", {"deviceId": "a/axis-1"})
         except BhmsError as exc:  # dropping the device is as good as keeping its last acceptable description
-            assert exc.code == "NOT_FOUND"
+            assert exc.bhms_code == "NOT_FOUND"
         else:
             assert not _is_hostile(shown, variant, url) and shown["description"] == plain["description"]
         await _inject(tmp_path, {"fault": "none"})
@@ -188,7 +188,7 @@ async def test_the_hostile_variants_are_independent_and_an_unknown_one_is_refuse
                 assert found[variant]["digest"] == digest({k: v for k, v in found[variant].items() if k != "digest"})
             with pytest.raises(BhmsError) as unknown:
                 await client.request("x-conformance/inject", {"fault": "hostile_schema", "variant": "both"})
-            assert unknown.value.code == "INVALID_ARGUMENT" and unknown.value.field == "variant"
+            assert unknown.value.bhms_code == "INVALID_ARGUMENT" and unknown.value.field == "variant"
             await client.request("x-conformance/inject", {"fault": "none"})
             assert axis.description() == plain
     finally:

@@ -54,13 +54,13 @@ def test_non_finite_rejected(bad):
     for fn in (canonical, digest):
         with pytest.raises(BhmsError) as ei:
             fn({"x": [bad]})
-        assert ei.value.code == "INVALID_ARGUMENT"
+        assert ei.value.bhms_code == "INVALID_ARGUMENT"
 
 
 def test_unserializable_rejected_as_invalid_argument():
     with pytest.raises(BhmsError) as ei:
         canonical({"x": object()})
-    assert ei.value.code == "INVALID_ARGUMENT"
+    assert ei.value.bhms_code == "INVALID_ARGUMENT"
 
 
 # --------------------------------------------------------------------------- fast path == reference (Task 4)

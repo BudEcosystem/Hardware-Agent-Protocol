@@ -21,7 +21,7 @@ MOTION, CLAMP = "a/axis-1/motion", "a/axis-1/clamp"
 async def _refused(call, code: str) -> BhmsError:
     with pytest.raises(BhmsError) as exc:
         await call
-    assert exc.value.code == code, exc.value
+    assert exc.value.bhms_code == code, exc.value
     assert exc.value.may_have_acted is False
     return exc.value
 

@@ -202,7 +202,7 @@ class Client:
         try:
             result = await self._call("server/discover", timeout=timeout)
         except BhmsError as exc:
-            if exc.code != "UNSUPPORTED_VERSION" or not isinstance(exc.bound, list):
+            if exc.bhms_code != "UNSUPPORTED_VERSION" or not isinstance(exc.bound, list):
                 raise
             common = [v for v in self._versions if v in exc.bound]
             if not common:

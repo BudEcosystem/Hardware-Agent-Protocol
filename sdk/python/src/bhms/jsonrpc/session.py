@@ -133,7 +133,7 @@ def _error_object(exc: BaseException) -> dict[str, Any]:
         try:
             error = exc.to_jsonrpc()
         except ValueError:
-            log.error("handler raised operation-only error %s as a JSON-RPC error", exc.code)
+            log.error("handler raised operation-only error %s as a JSON-RPC error", exc.bhms_code)
             error = _internal_error().to_jsonrpc()
     else:
         log.error("request handler failed", exc_info=exc)
@@ -395,9 +395,9 @@ class Session:
         self._closing = True
         self._closed.set()  # first, so concurrent callers and late enqueues see it
         current = asyncio.current_task()
-        for task in (self._reader, self._writer):
-            if task is not None and task is not current:
-                task.cancel()
+        io_tasks = [task for task in (self._reader, self._writer) if task is not None and task is not current]
+        for task in io_tasks:
+            task.cancel()
         await self._abandon_handlers()
         for fut in self._pending.values():
             if not fut.done():
@@ -416,6 +416,10 @@ class Session:
             self._transport.abort()
         for task in list(self._background):
             task.cancel()
+        # The reader and writer end here, not at some later turn of the loop: a caller that returns from close() and
+        # stops its loop must not leave them pending ("Task was destroyed but it is pending").
+        if io_tasks:
+            await asyncio.gather(*io_tasks, return_exceptions=True)
 
     # ------------------------------------------------------------------ outbound
 

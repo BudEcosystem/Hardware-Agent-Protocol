@@ -82,14 +82,14 @@ async def test_fault_injection(device):  # BHMS-OBS-001, OBS-030, OPS-007, ERR-0
     lease = (await client.leases_acquire(["pump-1/plunger"], 5000)).lease
     with pytest.raises(BhmsError) as info:
         await client.actions_invoke("pump-1", "dispense", {"volume": 5}, lease_id=lease.lease_id)
-    assert (info.value.code, info.value.field) == ("STALE", "requiresFresh[0]")
+    assert (info.value.bhms_code, info.value.field) == ("STALE", "requiresFresh[0]")
     await client.request("x-conformance/inject", {"fault": "none"})
     ok = (await client.actions_invoke("pump-1", "dispense", {"volume": 5}, lease_id=lease.lease_id,
                                       require={"effect": "verified"}, wait_ms=2000)).operation
     assert ok.state == "completed" and ok.effect == "verified"
     with pytest.raises(BhmsError) as info:
         await client.request("x-conformance/inject", {"fault": "meteor"})
-    assert info.value.code == "INVALID_ARGUMENT"
+    assert info.value.bhms_code == "INVALID_ARGUMENT"
 
 
 async def test_hang_is_released_by_stop_and_crash_is_unknown_then_reconciled(device):  # BHMS-OPS-004/005
@@ -114,7 +114,7 @@ async def test_journal_readonly_injection(device):  # BHMS-OPS-003, AUTH-025
     await client.request("x-conformance/inject", {"fault": "journal_readonly"})
     with pytest.raises(BhmsError) as info:
         await client.actions_invoke("axis-1", "pulse", {"count": 1})
-    assert info.value.code == "BUSY"
+    assert info.value.bhms_code == "BUSY"
     stop = (await client.stop("audit", device_ids=["axis-1"])).stops[0]
     assert stop.detail == "degraded-audit"
     await client.request("x-conformance/inject", {"fault": "journal_writable"})
@@ -143,7 +143,7 @@ async def test_example_server_over_stdio(tmp_path):
         assert res.operation.state == "completed" and res.operation.result == {"position": 120}
         with pytest.raises(BhmsError) as info:
             await client.actions_invoke("stage-z", "move_to", {"target": 250})
-        assert info.value.code == "OUT_OF_RANGE" and info.value.field == "arguments.target"
+        assert info.value.bhms_code == "OUT_OF_RANGE" and info.value.field == "arguments.target"
         obs = (await client.properties_read("stage-z", "position")).observation
         assert obs.value == 120 and obs.evidence == "simulated" and obs.unit == "um"
     assert (tmp_path / "bench-stage.sqlite3").exists()

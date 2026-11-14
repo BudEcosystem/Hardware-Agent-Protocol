@@ -67,11 +67,11 @@ async def test_key_conflict_creates_nothing(env):  # BHMS-OPS-031, OPS-040
     srv, axis, client, _ = await env()
     first = await client.actions_invoke("axis-1", "move_to", {"target": 7}, operation_key="k", wait_ms=2000)
     err = await refused(client.actions_invoke("axis-1", "move_to", {"target": 8}, operation_key="k"))
-    assert err.code == "KEY_CONFLICT" and err.operation_id == first.operation.operation_id
+    assert err.bhms_code == "KEY_CONFLICT" and err.operation_id == first.operation.operation_id
     assert err.may_have_acted is True and "operations/get" in err.hint
     quantity = await refused(client.actions_invoke("axis-1", "move_to", {"target": {"value": 7, "unit": "mm"}},
                                                    operation_key="k"))
-    assert quantity.code == "KEY_CONFLICT"  # same intent in a different form: the hint says to inspect first
+    assert quantity.bhms_code == "KEY_CONFLICT"  # same intent in a different form: the hint says to inspect first
     assert axis.commands["move_to"] == 1
     assert len((await client.operations_list()).operations) == 1
 
@@ -88,9 +88,9 @@ async def test_reserved_key_prefixes_are_refused(env):  # BHMS-OPS-037
     srv, axis, client, _ = await env()
     err = await refused(client.request("actions/invoke", {"deviceId": "axis-1", "action": "move_to",
                                                          "arguments": {"target": 1}, "operationKey": "d-123"}))
-    assert err.code == "INVALID_ARGUMENT" and err.field == "operationKey"
+    assert err.bhms_code == "INVALID_ARGUMENT" and err.field == "operationKey"
     err = await refused(client.actions_invoke("axis-1", "move_to", {"target": 1}, operation_key="g-123"))
-    assert err.code == "INVALID_ARGUMENT" and err.field == "operationKey"
+    assert err.bhms_code == "INVALID_ARGUMENT" and err.field == "operationKey"
     assert axis.commands["move_to"] == 0
 
 
@@ -109,7 +109,7 @@ async def test_reserved_key_prefixes_are_refused(env):  # BHMS-OPS-037
 async def test_admission_refusals_create_no_operation(env, call, code, field):  # BHMS-OPS-040, OPS-007, DEV-044
     srv, axis, client, _ = await env()
     err = await refused(client.actions_invoke(**call, operation_key="r-1"))
-    assert (err.code, err.field, err.may_have_acted) == (code, field, False)
+    assert (err.bhms_code, err.field, err.may_have_acted) == (code, field, False)
     assert err.hint
     assert sum(axis.commands.values()) == 0
     assert (await client.operations_list()).operations == []
@@ -127,7 +127,7 @@ async def test_short_wait_returns_unsettled_and_wait_settles_without_error(env):
     done = await client.operations_wait(res.operation.operation_id, 2000)
     assert done.operation.state == "completed" and done.operation.result == {"position": 2.0}
     err = await refused(client.operations_wait(res.operation.operation_id, 10 ** 7))
-    assert err.code == "OUT_OF_RANGE" and err.field == "timeoutMs"
+    assert err.bhms_code == "OUT_OF_RANGE" and err.field == "timeoutMs"
 
 
 async def test_queued_operation_cancel_prevents_dispatch(env):  # BHMS-OPS-050
@@ -209,7 +209,7 @@ async def test_handler_bug_is_unknown_and_inhibits_its_resources_until_reconcile
     op = res.operation
     assert op.state == "unknown" and "driver crashed" in op.error.message
     err = await refused(client.actions_invoke("axis-1", "move_to", {"target": 1}, operation_key="x-2"))
-    assert err.code == "STALE" and err.operation_id == op.operation_id and err.may_have_acted is False
+    assert err.bhms_code == "STALE" and err.operation_id == op.operation_id and err.may_have_acted is False
     # reconciliation from device evidence lifts the inhibition (BHMS-OPS-005)
     axis.reconcile_answer = Reconciled("failed", evidence="driver log shows no motion", effect="none",
                                        may_have_acted=False, message="the driver crashed before moving")
@@ -249,7 +249,7 @@ async def test_effect_none_action_completes_with_effect_none(env):  # BHMS-OPS-0
 async def test_get_unknown_operation_is_invalid_argument(env):  # BHMS-OPS-062
     srv, axis, client, _ = await env()
     err = await refused(client.operations_get("op-nope"))
-    assert err.code == "INVALID_ARGUMENT" and err.field == "operationId"
+    assert err.bhms_code == "INVALID_ARGUMENT" and err.field == "operationId"
 
 
 async def test_list_filters_and_pages_newest_first(env):  # BHMS-LIF-061/062
