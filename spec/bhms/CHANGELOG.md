@@ -99,8 +99,17 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   link in a copied source tree is reported with what to do. Evidence: Task 10 report, SDK gap 3 (a copied package failed at
   `DeviceServer.start()` with `FileNotFoundError`; a wheel built from such a copy was produced without the schema, silently).
 - Example `server.discover.response.json` advertises `capabilities.operations.resolve`.
+- **Refusal field of a resolution (Ruling R45, review of Task 8c)**: when an `OperatorResolution` breaks one of its
+  consistency rules, the refusal's `field` names the member at fault (`resolution.effect`, `resolution.mayHaveActed`,
+  `resolution.result`); `resolution` alone only when the object itself is wrong. The example
+  `invalid-resolve-no-effect-claims-proof.json` now carries `effect: "unverified"` with `mayHaveActed: false`, and its
+  `expect` points at `/params/resolution/effect` (`const`). Evidence: the Python SDK reported `resolution` (its model
+  validator) where the TypeScript SDK, following the schema path, reported `resolution.effect`; both now report the member.
 
-### TS SDK to follow
+### TS SDK to follow (done in Task 8c)
+
+All items below are implemented in `sdk/typescript` (Task 8c, commits `a860d95..`; fix round 1 of its review); the
+TypeScript conformance device claims the same profiles as the Python one with the same check results.
 
 - BHMS-LSE-014 in the TypeScript device server (admission and pre-dispatch) and the conformance check
   `leases.held-lease-blocks-everyone`; `stop.not-blocked-by-load` now presents the lease it holds.
@@ -108,7 +117,7 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   already rejects it).
 - BHMS-OPS-008: a result outside its declared output range ends `failed` with `OUT_OF_RANGE` (`field: "result.<member>"`), not
   `INTERNAL`.
-- The unit registry additions, if the TypeScript SDK grows a unit registry (it has none today).
+- The unit registry additions, if the TypeScript SDK grows a unit registry (it has none today: nothing to implement).
 - BHMS-DEV-013 (`text` word search, `capability: "*"`) and BHMS-DEV-014 (candidate ids in the `UNKNOWN_DEVICE` hint) in the
   TypeScript device server; conformance checks `descriptions.list-text-filter` and `descriptions.unknown-device-hint`.
 - Regenerate `src/generated/types.ts` (`npm run gen-types`): `AgentFindData.totalDevices`, the capability filter pattern, and
