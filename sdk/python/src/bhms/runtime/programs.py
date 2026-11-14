@@ -729,6 +729,9 @@ class ProgramRunner:
         except BhmsError as exc:
             raise _StepFailed(exc.to_operation_error()) from None
         run.child = child
+        if run.halted and not child.settled:
+            # cancelled or stopped while admit waited for the child's intent to be durable: forward it as cancel would
+            srv.executor.cancel(child, run.rec.op["cancel"].get("reason") or "program canceled")
         self._start_step(run, step, path, child)
         while not child.settled:
             remaining = run.deadline - time.monotonic()

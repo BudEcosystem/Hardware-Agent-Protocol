@@ -292,3 +292,66 @@ async def test_cancelling_an_in_doubt_operation_is_recorded_and_not_resent(tmp_p
         got = (await client.operations_get(op.operation_id)).operation
         assert got.state == "unknown" and got.cancel.state == "requested"  # never re-sent after a cancel (fix round 1)
         assert r.axes["a"].commands["slow"] == 1
+
+
+async def test_nothing_is_forwarded_before_the_pending_row_is_durable(tmp_path, monkeypatch):  # BHMS-OPS-003, Task 12b
+    """The gateway keeps its pending-forward barrier (spec learning, Task 12b): the forward leaves only once the fsync that
+    covers its pending row has returned. On a busy gateway that fsync is shared (group commit, in the store's sync
+    thread); here it is held, and the upstream must not have heard of the request meanwhile."""
+    import os
+    import threading
+
+    from bhms.runtime import store as store_module
+
+    gate, held = threading.Event(), threading.Event()
+    real = os.fdatasync
+
+    def held_sync(fd):
+        if threading.current_thread().name.startswith("bhms-store-sync"):
+            held.set()
+            gate.wait(10)
+        real(fd)
+
+    async with rig(tmp_path, names=("a",)) as r:
+        client = await r.client()
+        monkeypatch.setattr(store_module.os, "fdatasync", held_sync)
+        r.gateway.rpc.active += 100  # a busy gateway: its pending rows are synced in the sync thread
+        try:
+            invoke = asyncio.ensure_future(client.actions_invoke("a/axis-1", "move_to", {"target": 3}, operation_key="held",
+                                                                 wait_ms=2000))
+            for _ in range(400):
+                if held.is_set():
+                    break
+                await asyncio.sleep(0.005)
+            assert held.is_set()
+            assert r.gateway.journal.pending_get("agent", "held") is not None  # committed, not yet durable
+            await asyncio.sleep(0.1)
+            assert r.axes["a"].commands["move_to"] == 0  # nothing left for the upstream
+        finally:
+            gate.set()
+            r.gateway.rpc.active -= 100
+        op = (await invoke).operation
+        assert op.state == "completed" and r.axes["a"].commands["move_to"] == 1
+
+
+async def test_a_pending_row_that_cannot_be_made_durable_sends_nothing(tmp_path, monkeypatch):  # BHMS-OPS-003, Task 12b
+    import errno
+    import os
+
+    from bhms.runtime import store as store_module
+
+    real = os.fdatasync
+
+    def failing(fd):
+        if "/gw/" in os.readlink(f"/proc/self/fd/{fd}"):
+            raise OSError(errno.EIO, "Input/output error")
+        real(fd)
+
+    async with rig(tmp_path, names=("a",)) as r:
+        client = await r.client()
+        monkeypatch.setattr(store_module.os, "fdatasync", failing)
+        with pytest.raises(BhmsError) as info:
+            await client.actions_invoke("a/axis-1", "move_to", {"target": 3}, operation_key="eio", wait_ms=2000)
+        assert info.value.bhms_code == "BUSY" and "nothing was sent" in info.value.message
+        assert r.axes["a"].commands["move_to"] == 0
+        assert r.gateway.journal.pending_get("agent", "eio") is None

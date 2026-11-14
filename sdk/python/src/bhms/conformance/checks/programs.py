@@ -106,9 +106,9 @@ async def cancel(c: Context) -> None:
     base = await c.counter(axis)
     response = await c.call("programs/run", {"program": _program(c, vectors("programs")["valid"]["long"]), "arguments": {}})
     op = c.result(response)["operation"]
-    for _ in range(50):
+    for _ in range(100):  # the first step is running: its child exists and its command has reached the device
         kids = (await c.ok("operations/list", {"parentOperationId": op["operationId"]}))["operations"]
-        if kids:
+        if kids and await c.counter(axis) > base:
             break
         await asyncio.sleep(0.02)
     c.expect(kids, "the program never started its first step")

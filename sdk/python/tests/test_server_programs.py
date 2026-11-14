@@ -297,3 +297,45 @@ async def test_registry_digest_and_replay_across_forms(env):  # BHMS-PRG-007, PR
     by_digest = await c["runner"].programs_run(digest=info.digest, arguments={"start": 1, "steps": 1},
                                                operation_key="same")
     assert by_digest.replayed and by_digest.operation.operation_id == first.operation.operation_id
+
+
+async def test_a_cancel_during_the_first_childs_intent_sync_cancels_that_child(env, monkeypatch):  # BHMS-PRG-014, Task 12b
+    """The child's ``dispatching`` record is visible as soon as it is committed, but its handler waits for the fsync that
+    makes it durable (group commit). A program cancelled in that window cancels the child too: the child ends ``canceled``
+    with no effect, its command is never sent, and no later step starts."""
+    import os
+    import threading
+
+    from bhms.runtime import store as store_module
+
+    srv, state, c = await env()
+    gate, held = threading.Event(), threading.Event()
+    real = os.fdatasync
+
+    def held_sync(fd):  # deferred barriers (the store's sync thread) wait for the test; the loop's own barriers do not
+        if threading.current_thread().name.startswith("bhms-store-sync"):
+            held.set()
+            gate.wait(10)
+        real(fd)
+
+    monkeypatch.setattr(store_module.os, "fdatasync", held_sync)
+    monkeypatch.setattr(srv.executor, "_quiet", lambda: False)  # a busy server: intents are synced in the sync thread
+    prog = program(steps=[{"kind": "invoke", "deviceId": "focus-1", "action": "creep", "arguments": {}},
+                          {"kind": "invoke", "deviceId": "focus-1", "action": "mark", "arguments": {}}],
+                   input={"type": "object", "additionalProperties": False, "properties": {}})
+    prog.pop("output")
+    try:
+        op = (await c["admin"].programs_run(program=prog, arguments={})).operation
+        for _ in range(400):
+            if held.is_set():
+                break
+            await asyncio.sleep(0.005)
+        assert held.is_set(), "the first child's intent was never synced"
+        await c["admin"].operations_cancel(op.operation_id, reason="changed my mind")
+    finally:
+        gate.set()
+    final = (await c["admin"].operations_wait(op.operation_id, 5000)).operation
+    kids = (await c["admin"].operations_list(parent_operation_id=op.operation_id)).operations
+    assert final.state == "canceled"
+    assert len(kids) == 1 and kids[0].state == "canceled" and kids[0].effect == "none"
+    assert state["calls"] == []  # neither creep nor mark reached the device

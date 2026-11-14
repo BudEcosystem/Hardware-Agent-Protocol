@@ -92,9 +92,9 @@ async def crash_during_invoke(state: Path, sock: Path, marker: str, *, key: str,
     await client.close()
 
 
-async def replay(client: Client, key: str):
+async def replay(client: Client, key: str, device: str = "arm-1"):
     """Retry with the same key and intent: the stored operation comes back, nothing is re-sent."""
-    res = await client.actions_invoke("arm-1", "move", {"x": 42}, operation_key=key)
+    res = await client.actions_invoke(device, "move", {"x": 42}, operation_key=key)
     assert res.replayed is True
     return (await client.operations_get(res.operation.operation_id)).operation
 
@@ -210,6 +210,104 @@ async def test_completed_result_survives_restart_with_same_epoch(paths):  # BHMS
         again = await replay(client, "k-done")
         assert again.state == "completed" and again.operation_id == op.operation_id
         assert len(device_log(state)) == 2
+    finally:
+        await client.close()
+        proc.stop()
+
+
+async def crash_in_batch(state: Path, sock: Path, devices: int) -> tuple[list[str], list[str]]:
+    """Group commit: invoke ``move`` on ``devices`` devices at once under keys b-1..b-N; the first intent's fsync is slow,
+    the rest pile up behind it, and the process is SIGKILLed before the fsync covering that batch runs. Returns the keys
+    whose invoke was answered and those whose connection dropped first."""
+    proc, client = await start(state, sock, CRASH_PAUSE="in-batch", DEVICES=str(devices), RECONCILE="0")
+    keys = [f"b-{i}" for i in range(1, devices + 1)]
+    requests = {key: asyncio.ensure_future(client.actions_invoke(f"arm-{i}", "move", {"x": 42}, operation_key=key,
+                                                                 wait_ms=30_000))
+                for i, key in enumerate(keys, start=1)}
+    await proc.wait_for("paused")
+    proc.kill()
+    answered, dropped = [], []
+    for key, request in requests.items():
+        try:
+            await request
+            answered.append(key)
+        except Exception:  # noqa: BLE001 - TransportClosed: no answer
+            dropped.append(key)
+    await client.close()
+    return answered, dropped
+
+
+def acted(state: Path) -> dict[str, str]:
+    """What the device log says each operation did: ``done``, or ``start`` when it began and never finished."""
+    out: dict[str, str] = {}
+    for line in device_log(state):
+        word, op_id = line.split()
+        out[op_id] = "done" if word == "done" or out.get(op_id) == "done" else word
+    return out
+
+
+def check_reconciled(op, log: dict[str, str]) -> None:
+    """The outcome a reconciliation from the device log must give (see helpers/crash_server.py)."""
+    if log.get(op.operation_id) == "done":
+        assert op.state == "completed"
+    elif log.get(op.operation_id) == "start":
+        assert op.state == "failed" and op.error.may_have_acted is True
+    else:  # its intent was written but no handler ever ran
+        assert op.state == "failed" and op.effect == "none" and op.error.may_have_acted is False
+
+
+async def test_kill_during_a_group_commit_batch_recovers_honestly(paths):  # BHMS-OPS-003, OPS-080, OPS-081 (Task 12b)
+    state, sock = paths
+    answered, dropped = await crash_in_batch(state, sock, devices=5)
+    log = acted(state)
+    assert len(log) <= 1 and len(dropped) >= 4  # at most the intent the completed fsync covered reached a device
+    proc, client = await start(state, sock, DEVICES="5", RECONCILE="0")
+    try:
+        ops = {key: await replay(client, key, f"arm-{key[2:]}") for key in answered + dropped}  # SIGKILL keeps commits
+        assert len(ops) == 5
+        for op in ops.values():
+            assert op.state == ("completed" if log.get(op.operation_id) == "done" else "unknown")
+            if op.state == "unknown":
+                assert op.error.may_have_acted is True  # the server cannot vouch for what it did not see
+    finally:
+        await client.close()
+        proc.stop()
+    proc, client = await start(state, sock, DEVICES="5", RECONCILE="1")
+    try:
+        for key in answered + dropped:
+            check_reconciled(await replay(client, key, f"arm-{key[2:]}"), log)
+        assert acted(state) == log  # nothing was re-sent
+    finally:
+        await client.close()
+        proc.stop()
+
+
+async def test_power_loss_during_a_group_commit_batch_loses_only_unanswered_intents(paths):  # BHMS-OPS-003 (Task 12b)
+    """As above, but what a power loss would keep: the WAL is cut back to its size when the completed fsync began (and the
+    shared-memory index, which lives in RAM, is gone). The one intent that fsync covered survives (its completion may
+    not); the intents of the lost batch vanish, none of them was answered or reached a device, and a retry with the same
+    key runs each exactly once."""
+    state, sock = paths
+    answered, dropped = await crash_in_batch(state, sock, devices=5)
+    log = acted(state)
+    assert len(log) <= 1 and len(dropped) >= 4
+    db = state / "crash-server.sqlite3"
+    os.truncate(f"{db}-wal", int((state / "durable_wal_size").read_text()))
+    Path(f"{db}-shm").unlink(missing_ok=True)
+    proc, client = await start(state, sock, DEVICES="5", RECONCILE="1")
+    try:
+        survivors = []
+        for i in range(1, 6):
+            key = f"b-{i}"
+            res = await client.actions_invoke(f"arm-{i}", "move", {"x": 42}, operation_key=key, wait_ms=10_000)
+            if res.replayed:  # its intent was durable before its handler could run
+                survivors.append(key)
+                check_reconciled(res.operation, log)
+            else:  # lost with the batch: it had not been answered and no device had seen it
+                assert key in dropped and res.operation.state == "completed"
+        assert len(survivors) == 1
+        starts = [line.split()[1] for line in device_log(state) if line.startswith("start")]
+        assert len(starts) == len(set(starts)) == len(log) + 4  # each intent acted at most once
     finally:
         await client.close()
         proc.stop()

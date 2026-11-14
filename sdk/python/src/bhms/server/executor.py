@@ -11,8 +11,13 @@
 * **Queueing**: operations whose resources are in use wait in ``accepted`` in FIFO order per resource (they can be
   cancelled without effect, BHMS-OPS-050). A deadline that passes while queued rejects them (BHMS-OPS-070).
 * **Dispatch**: time-dependent checks are repeated immediately before dispatch (BHMS-OPS-041; failure → ``rejected``,
-  ``effect: none``); ``dispatching`` is committed with fsync before the handler starts (BHMS-OPS-003); when that write
-  fails nothing is dispatched.
+  ``effect: none``); ``dispatching`` is committed as a deferred barrier (group commit, :mod:`bhms.runtime.store`) and
+  the execution is registered at once, so ``stop``, cancellation and the duration bound reach it from that instant; the
+  handler is called only once the ``fdatasync`` covering that commit has returned (BHMS-OPS-003), and the reply to the
+  invoke is not sent before then either. When the record cannot be written, or cannot be made durable, nothing is
+  dispatched: the operation is ``rejected`` (write failed) or ``failed`` with ``mayHaveActed: false`` and the proof that
+  the handler was never called (sync failed). A stop, cancellation or bound that arrives before the handler is called
+  ends the operation without calling it (``effect: none``).
 * **Execution**: the handler runs as a task that no request owns — a client disconnect never cancels it
   (BHMS-LIF-050). Return → ``completed`` (result validated against ``output``, BHMS-OPS-008; ``verified`` only with
   measured evidence from ``ctx.verify``, BHMS-OPS-006/007); :class:`~bhms.server.context.Canceled` → ``canceled``;
@@ -72,6 +77,7 @@ class Execution:
     timer: asyncio.TimerHandle | None = None
     grace: asyncio.TimerHandle | None = None
     deadline_hit: bool = False
+    called: bool = False  # the handler was called (before that, provably nothing was sent to the device)
     stop_confirmed: bool = False  # a confirmed stop covered this operation (BHMS-OPS-042)
     evidence: dict[str, dict[str, Any]] = field(default_factory=dict)
     confirmed: list[bool] = field(default_factory=list)
@@ -298,13 +304,16 @@ class Executor:
                 request_digest=request_digest, require=require, lease_id=lease.lease_id if lease else None,
                 fence=lease.fence if lease else None, deadline_ns=deadline_ns,
                 private={"resources": list(spec.resources), "effectClass": spec.effect, **(private or {})},
-                dispatch=immediate)
+                dispatch=immediate, defer_sync=True)
         except StoreError as exc:
             self.server.journal_failed(exc)
             raise BhmsError("BUSY", "the operation journal cannot be written; nothing was recorded or sent",
                             retry="same-key", hint="retry later with the same operationKey") from None
         if immediate:
             self._start(rec, device, spec, admitted)
+            # The answer never precedes the durable intent; a failed sync is settled (and reported) by the execution.
+            with contextlib.suppress(StoreError):
+                await self.server.journal.durable(rec, inline=self._quiet())
         else:
             self._enqueue(rec, device, spec, admitted, principal)
         return rec
@@ -395,7 +404,7 @@ class Executor:
                 self._reject(rec, error)
                 return
             try:
-                self.server.journal.transition(rec, "dispatching")
+                self.server.journal.transition(rec, "dispatching", defer_sync=True)
             except StoreError as exc:
                 self.server.journal_failed(exc)
                 self._reject(rec, BhmsError("INTERNAL", "the dispatch record could not be written, so nothing was "
@@ -454,11 +463,34 @@ class Executor:
         execution.timer = loop.call_at(execution.deadline, self._on_deadline, execution)
         execution.task = self._spawn(self._run(execution))
 
+    def _quiet(self) -> bool:
+        """Nothing but the caller is being served: sync on the loop thread rather than hand the sync to a thread."""
+        rpc = self.server.rpc
+        return rpc is not None and rpc.quiet
+
+    async def _intent_durable(self, execution: Execution) -> tuple[str, Any] | None:
+        """Wait until the ``dispatching`` record is on stable storage (BHMS-OPS-003); None when the handler may be called,
+        else the outcome of an operation whose handler is never called (nothing was sent to the device)."""
+        try:
+            await self.server.journal.durable(execution.rec, inline=self._quiet())
+        except StoreError as exc:
+            self.server.journal_failed(exc)
+            return "unsent", ("failed", "INTERNAL", f"the dispatch record could not be made durable ({exc}), so the "
+                              "handler was not called (BHMS-OPS-003)")
+        if execution.deadline_hit:
+            return "unsent", ("failed", "DEADLINE_EXCEEDED", f"the {execution.bound_kind} of {execution.bound_ms} ms "
+                              "passed before the dispatch record was durable, so the handler was not called")
+        if execution.cancelled.is_set():
+            return "unsent", ("canceled", None, f"{execution.cancel_reason or 'a cancellation'} arrived before the "
+                              "handler was called")
+        return None
+
     async def _call(self, execution: Execution) -> Any:
         spec = execution.spec
         handler = spec.handler
         kwargs = {name: execution.admitted[name] for name in spec.params if name in execution.admitted}
         args = (ActionContext(execution),) if spec.ctx_param is not None else ()
+        execution.called = True
         if inspect.iscoroutinefunction(handler):
             return await handler(*args, **kwargs)
         if spec.blocking:
@@ -472,13 +504,18 @@ class Executor:
         outcome: tuple[str, Any]
         aborted = False
         try:
-            outcome = ("returned", await self._call(execution))
+            unsent = await self._intent_durable(execution)
+            outcome = unsent if unsent is not None else ("returned", await self._call(execution))
         except Canceled as exc:
             outcome = ("canceled", exc)
         except DeviceFault as exc:
             outcome = ("fault", exc)
         except asyncio.CancelledError:
-            outcome, aborted = ("crashed", RuntimeError("the server shut down while the handler was running")), True
+            if execution.called:
+                outcome = ("crashed", RuntimeError("the server shut down while the handler was running"))
+            else:
+                outcome = ("unsent", ("failed", "INTERNAL", "the server shut down before the handler was called"))
+            aborted = True
         except DEVICE_LOSS as exc:  # expected of real hardware: one line, no traceback; the outcome is unknown all the same
             log.warning("%s lost during %s (operation %s): %s: %s", execution.device.device_id, execution.spec.name,
                         execution.rec.id, type(exc).__name__, exc)
@@ -530,10 +567,29 @@ class Executor:
             return "verified", {"kind": "measured", "observations": execution.evidence}
         return "unverified", None
 
+    def _unsent(self, execution: Execution, state: str, code: str | None, why: str) -> None:
+        """Record an operation whose handler was never called: provably no effect (``effect: none``)."""
+        rec, journal = execution.rec, self.server.journal
+        if rec.state not in ("dispatching", "running", "unknown"):
+            return
+        detail = f"{why}; nothing was sent to the device"
+        reconciling = rec.state == "unknown"  # a bound or link loss marked it unknown while the sync ran
+        kind, entry = ("reconciliation", detail) if reconciling else ("state", None)
+        if state == "canceled":
+            journal.transition(rec, "canceled", effect="none", detail=detail, kind=kind)
+            return
+        error = BhmsError(code or "INTERNAL", detail[:2000], may_have_acted=False,
+                          hint="nothing happened on the device; retry with a new operationKey").to_operation_error()
+        journal.transition(rec, "failed", error=error, effect="none", proof="the handler was never called", kind=kind,
+                           detail=entry)
+
     def _settle(self, execution: Execution, outcome: tuple[str, Any]) -> None:
         rec, spec = execution.rec, execution.spec
         journal = self.server.journal
         kind, value = outcome
+        if kind == "unsent":
+            self._unsent(execution, *value)
+            return
         if spec.effect != "none":
             self.server.observations.after_effect(execution.device)  # BHMS-OBS-006: nothing retained predates the effect
         if rec.state in ("dispatching", "running"):

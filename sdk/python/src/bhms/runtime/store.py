@@ -3,19 +3,34 @@
 ``Store`` is the single persistence layer of the runtime; device servers and gateways (Task 5 journals) use it alike.
 It knows rows, not protocol rules: :mod:`bhms.runtime.operations` owns the state machine on top of it.
 
-Durability (``durability=``), measured in ``benchmarks/invoke_roundtrip.py``:
+Durability (``durability=``), measured in ``benchmarks/invoke_roundtrip.py`` and ``bench/``:
 
-* ``"dispatch"`` (default) — WAL with ``synchronous=NORMAL`` for ordinary commits and ``synchronous=FULL`` for every
-  *barrier* commit (``transaction(barrier=True)``). The runtime writes the ``dispatching`` record of an operation and
-  every fence counter in a barrier commit, so the intent is on stable storage (fsync of the WAL, which also covers every
-  earlier frame) before the handler can act (BHMS-OPS-003) and fences never repeat (BHMS-LSE-003). Every commit
-  survives a process crash (SIGKILL: the WAL frames are in the OS page cache). After a *power loss* a non-barrier
+* ``"dispatch"`` (default) — WAL with ``synchronous=NORMAL`` on the one serving connection, and a *barrier* for every commit
+  that must be on stable storage before the server acts on it (``transaction(barrier=True)``): the commit, then an
+  ``fdatasync`` of the WAL file, which covers that commit and every earlier frame. That is exactly what SQLite's
+  ``synchronous=FULL`` adds to ``NORMAL`` in WAL mode ("an additional sync of the WAL after each transaction commit",
+  sqlite.org/pragma.html#pragma_synchronous), done by the store so that it can be shared: the connection never switches
+  safety level. The runtime writes the ``dispatching`` record of an operation and every fence counter behind a barrier, so
+  the intent is on stable storage before the handler can act (BHMS-OPS-003) and fences never repeat (BHMS-LSE-003). Every
+  commit survives a process crash (SIGKILL: the WAL frames are in the OS page cache). After a *power loss* a non-barrier
   commit can be lost: a recorded completion may then reappear as ``dispatching`` and be recovered as ``unknown``
   (BHMS-OPS-080) — the safe direction; an intent is never lost after dispatch.
-* ``"full"`` — every commit is ``synchronous=FULL``.
+* ``"full"`` — every commit is ``synchronous=FULL`` (SQLite syncs each one itself).
 * ``"process"`` — ``synchronous=NORMAL`` everywhere, no barriers: durable against process crashes only (not power
   loss). Not honest for physical devices whose controllers survive a host power loss; offered for simulators and
   benchmarks.
+
+Group commit (Ruling R12). A barrier is either synchronous (``transaction(barrier=True)``: the event loop waits for the
+``fdatasync`` before the ``with`` block returns) or *deferred* (``transaction(barrier=True, defer_sync=True)``): the
+commit returns at once with a ticket (:attr:`Store.commit_seq`) and the caller awaits :meth:`Store.wait_synced`
+with it before it acts. Deferred barriers share ``fdatasync`` calls: one runs in a worker thread while the event loop goes
+on serving; every commit made while it runs is covered by the next one, which starts as soon as the running one ends.
+A lone caller waits for exactly one ``fdatasync`` (no batching window), and when the caller knows that nothing else is
+being served (``wait_synced(..., inline=True)``) that sync runs on the event loop thread, so a single client pays no
+thread hand-off; a hundred callers on distinct devices share a handful. The rule that matters is unchanged: nobody is told a barrier commit is durable before an ``fdatasync`` that
+began after that commit has returned. An ``fdatasync`` that fails makes the store refuse every later barrier
+(:class:`StoreError`): after an I/O error the kernel may have dropped the dirty pages, and a later successful sync would
+prove nothing about them.
 
 Checkpoints (copying the WAL back into the database file, which fsyncs) run in a background thread on its own
 connection (``wal_autocheckpoint`` is off on the serving connection), so the event loop never stalls behind one.
@@ -29,19 +44,25 @@ Errors: any SQLite failure on a write raises :class:`StoreError`; the transactio
 Example::
 
     store = Store("/var/lib/bhms/bench.sqlite3")
-    with store.transaction(barrier=True):
+    with store.transaction(barrier=True):  # durable when the block returns
         store.insert_operation(...)
+    with store.transaction(barrier=True, defer_sync=True):
+        store.insert_operation(...)
+    await store.wait_synced(store.commit_seq)  # durable from here on (shares its fsync with concurrent barriers)
 
-Thread-safety: one thread (the server's event loop) uses a store; it is not shared across threads.
+Thread-safety: one thread (the server's event loop) uses a store; it is not shared across threads (the ``fdatasync``
+of a deferred barrier runs in the store's own worker thread and touches nothing but the WAL file descriptor).
 """
 
 from __future__ import annotations
 
+import asyncio
+import concurrent.futures
 import contextlib
 import fcntl
+import logging
 import os
 import secrets
-import logging
 import sqlite3
 import threading
 from collections.abc import Iterator, Sequence
@@ -125,12 +146,22 @@ class Store:
                                    check_same_thread=False)
         self._db.execute("PRAGMA journal_mode=WAL")
         self._db.execute("PRAGMA busy_timeout=5000")
-        self._sync = ""
-        self._set_sync("FULL" if durability == "full" else "NORMAL")
+        # One safety level for the life of the connection: barriers sync the WAL themselves (module docstring).
+        self._db.execute(f"PRAGMA synchronous={'FULL' if durability == 'full' else 'NORMAL'}")
         self._db.executescript(_DDL)
         self._in_txn = False
         self._promote = False
         self._owner = threading.get_ident()
+        # Barriers sync the WAL only in "dispatch" mode on a file ("full" commits are synced by SQLite, "process" and
+        # in-memory stores have none).
+        self._barriers = self.path is not None and durability == "dispatch"
+        self._commits = 0  # commits made on this connection (the tickets of deferred barriers)
+        self._synced = 0  # every commit up to this one is on stable storage
+        self._sync_failure: OSError | None = None
+        self._wal_fd: int | None = None
+        self._syncer: concurrent.futures.ThreadPoolExecutor | None = None
+        self._flight: asyncio.Future[None] | None = None  # the fdatasync of deferred barriers now running
+        self._flight_target = 0  # the commits it covers
         self._checkpointer: _Checkpointer | None = None
         if self.path is not None:
             self._db.execute("PRAGMA wal_autocheckpoint=0")
@@ -147,6 +178,13 @@ class Store:
 
     def close(self) -> None:
         """Close the database (after a final checkpoint) and release the file lock (idempotent)."""
+        if self._syncer is not None:
+            self._syncer.shutdown(wait=True)  # a running fdatasync finishes before its descriptor is closed
+            self._syncer = None
+        if self._wal_fd is not None:
+            with contextlib.suppress(OSError):
+                os.close(self._wal_fd)
+            self._wal_fd = None
         if self._checkpointer is not None:
             self._checkpointer.stop()
             self._checkpointer = None
@@ -158,10 +196,111 @@ class Store:
                 os.close(self._lock_fd)
             self._lock_fd = None
 
-    def _set_sync(self, level: str) -> None:
-        if level != self._sync:
-            self._db.execute(f"PRAGMA synchronous={level}")
-            self._sync = level
+    # ------------------------------------------------------------------ barriers and group commit
+
+    @property
+    def commit_seq(self) -> int:
+        """The ticket of the latest commit: pass it to :meth:`wait_synced` after a deferred barrier."""
+        return self._commits
+
+    @property
+    def synced_seq(self) -> int:
+        """Every commit up to this ticket is on stable storage (equal to :attr:`commit_seq` where there are no barriers)."""
+        return self._synced if self._barriers else self._commits
+
+    def _wal(self) -> int:
+        """The descriptor the barriers sync: the WAL file, opened once (it exists once the connection has read the
+        database, and SQLite keeps it while the connection is open). The directory is synced once as well, so that the
+        WAL's directory entry is durable before any barrier relies on it (SQLite does the same on its first WAL sync)."""
+        if self._wal_fd is None:
+            assert self.path is not None
+            fd = os.open(f"{self.path}-wal", os.O_RDWR | os.O_CLOEXEC)
+            try:
+                directory = os.open(self.path.parent, os.O_RDONLY | os.O_CLOEXEC)
+                try:
+                    os.fsync(directory)
+                finally:
+                    os.close(directory)
+            except OSError:
+                os.close(fd)
+                raise
+            self._wal_fd = fd
+        return self._wal_fd
+
+    def _failed_sync(self, exc: OSError) -> StoreError:
+        self._sync_failure = self._sync_failure or exc
+        return StoreError(f"the journal could not be synced to stable storage ({exc}); barrier writes are refused "
+                          "until the server restarts")
+
+    def _sync_now(self) -> None:
+        """A synchronous barrier: every commit so far is on stable storage when this returns."""
+        if not self._barriers or self._synced >= self._commits:
+            return
+        if self._sync_failure is not None:
+            raise self._failed_sync(self._sync_failure)
+        target = self._commits
+        try:
+            os.fdatasync(self._wal())
+        except OSError as exc:
+            raise self._failed_sync(exc) from exc
+        self._synced = max(self._synced, target)
+
+    async def wait_synced(self, ticket: int, *, inline: bool = False) -> None:
+        """Return once every commit up to ``ticket`` (a :attr:`commit_seq`) is on stable storage.
+
+        Concurrent callers share ``fdatasync`` calls (group commit): a call that finds one running waits for it and,
+        if its own commit came later, for the next one, which covers every commit made meanwhile; a caller that finds
+        none starts one at once in the store's sync thread. ``inline=True`` is for a caller that knows nothing else is
+        waiting to be served: when no sync is running it syncs on the event loop thread, as a synchronous barrier does,
+        which saves the hand-off to the sync thread and back (0.1 to 0.2 ms) when there is nobody to share the sync
+        with. Raises :class:`StoreError` when the sync fails (and from then on). Cancelling a caller never cancels the
+        shared sync.
+        """
+        while self._barriers and self._synced < ticket:
+            if self._sync_failure is not None:
+                raise self._failed_sync(self._sync_failure)
+            flight = self._flight
+            if flight is None and inline:
+                self._sync_now()
+                continue
+            if flight is None:
+                flight = self._start_flush()
+            elif flight.done():
+                # finished, its callback not yet run: account for it now (awaiting a finished future never yields,
+                # so waiting for the callback here would spin the event loop)
+                self._land(flight, self._flight_target)
+                continue
+            with contextlib.suppress(OSError):  # recorded by _land, raised above on the next turn
+                await asyncio.shield(flight)
+
+    def _start_flush(self) -> asyncio.Future[None]:
+        loop = asyncio.get_running_loop()
+        if self._syncer is None:
+            self._syncer = concurrent.futures.ThreadPoolExecutor(1, thread_name_prefix="bhms-store-sync")
+        target = self._commits  # captured before the sync starts: these commits' frames are already in the WAL
+        try:
+            fd = self._wal()
+        except OSError as exc:
+            failed: asyncio.Future[None] = loop.create_future()
+            failed.set_exception(exc)
+            self._failed_sync(exc)
+            return failed
+        flight = loop.run_in_executor(self._syncer, os.fdatasync, fd)
+        flight.add_done_callback(lambda done: self._land(done, target))
+        self._flight, self._flight_target = flight, target
+        return flight
+
+    def _land(self, flight: asyncio.Future[None], target: int) -> None:
+        """Account for a finished sync (idempotent): every commit up to ``target`` is durable, or the store has failed."""
+        if self._flight is flight:
+            self._flight = None
+        if flight.cancelled():
+            return
+        exc = flight.exception()
+        if exc is not None:
+            self._failed_sync(exc)  # type: ignore[arg-type]
+        else:
+            self._synced = max(self._synced, target)
 
     def set_writable(self, writable: bool) -> None:
         """Switch the connection to SQLite's ``query_only`` mode (every write fails) or back.
@@ -185,10 +324,12 @@ class Store:
         return row[0] if row else None
 
     @contextlib.contextmanager
-    def transaction(self, *, barrier: bool = False) -> Iterator[None]:
-        """One write transaction. ``barrier=True`` commits with fsync unless ``durability="process"``.
+    def transaction(self, *, barrier: bool = False, defer_sync: bool = False) -> Iterator[None]:
+        """One write transaction. ``barrier=True`` makes it durable before the block returns (``durability="dispatch"``;
+        see the module docstring). With ``defer_sync=True`` as well, the commit returns before its sync: the caller must
+        ``await`` :meth:`wait_synced` with :attr:`commit_seq` before acting on it (group commit).
 
-        Nested use joins the outer transaction (a barrier inside makes the outer commit a barrier).
+        Nested use joins the outer transaction; a barrier inside makes the outer commit a synchronous barrier.
         """
         if threading.get_ident() != self._owner:
             # The in-transaction flag is not locked: a second thread could join another thread's transaction and
@@ -196,13 +337,10 @@ class Store:
             raise StoreError("the journal may only be written from the thread that opened it (the event loop); "
                              "marshal calls from worker threads with loop.call_soon_threadsafe")
         if self._in_txn:
-            if barrier and self.durability != "process" and self._sync != "FULL":
-                # SQLite cannot change the safety level inside a transaction: promote after the outer commit.
+            if barrier:
                 self._promote = True
             yield
             return
-        if self.durability == "dispatch":
-            self._set_sync("FULL" if barrier else "NORMAL")
         try:
             self._db.execute("BEGIN IMMEDIATE")
         except sqlite3.Error as exc:
@@ -211,35 +349,24 @@ class Store:
         try:
             yield
             self._db.execute("COMMIT")
+            self._commits += 1
+            if not self._barriers:
+                self._synced = self._commits
             if self._checkpointer is not None:
                 self._checkpointer.committed()
-            if self._promote:
+            if self._promote or (barrier and not defer_sync):
                 self._in_txn = False
-                self._fsync_barrier()
+                self._sync_now()
         except BaseException as exc:
-            with contextlib.suppress(sqlite3.Error):
-                self._db.execute("ROLLBACK")
+            if self._in_txn:
+                with contextlib.suppress(sqlite3.Error):
+                    self._db.execute("ROLLBACK")
             if isinstance(exc, sqlite3.Error):
                 raise StoreError(f"journal write failed: {exc}") from exc
             raise
         finally:
             self._in_txn = False
             self._promote = False
-
-    def _fsync_barrier(self) -> None:
-        """Force everything committed so far onto stable storage (a nested barrier inside a NORMAL transaction).
-
-        A FULL commit fsyncs the WAL, which covers every earlier frame; the marker row is the write that commit needs.
-        """
-        self._set_sync("FULL")
-        try:
-            self._db.execute("BEGIN IMMEDIATE")
-            self._db.execute("INSERT OR REPLACE INTO meta(key, value) VALUES('barrier', hex(randomblob(4)))")
-            self._db.execute("COMMIT")
-        except sqlite3.Error as exc:
-            with contextlib.suppress(sqlite3.Error):
-                self._db.execute("ROLLBACK")
-            raise StoreError(f"journal barrier failed: {exc}") from exc
 
     def _write(self, sql: str, args: Sequence[Any]) -> sqlite3.Cursor:
         try:
@@ -292,9 +419,7 @@ class Store:
                         "state, created_ns, updated_ns, record, private) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)",
                         (op_id, principal, key, request_digest, kind, device_id, parent_id, state, created_ns,
                          created_ns, orjson.dumps(record), orjson.dumps(private)))
-            for entry in history:
-                self._write("INSERT INTO history(op_id, seq, entry) VALUES(?,?,?)",
-                            (op_id, entry["seq"], orjson.dumps(entry)))
+            self._append_history(op_id, history)
 
     def update_operation(self, op_id: str, *, state: str, updated_ns: int, record: dict[str, Any],
                          history: Sequence[dict[str, Any]] = (), private: dict[str, Any] | None = None) -> None:
@@ -305,9 +430,16 @@ class Store:
             else:
                 self._write("UPDATE operations SET state=?, updated_ns=?, record=?, private=? WHERE id=?",
                             (state, updated_ns, orjson.dumps(record), orjson.dumps(private), op_id))
-            for entry in history:
-                self._write("INSERT INTO history(op_id, seq, entry) VALUES(?,?,?)",
-                            (op_id, entry["seq"], orjson.dumps(entry)))
+            self._append_history(op_id, history)
+
+    def _append_history(self, op_id: str, history: Sequence[dict[str, Any]]) -> None:
+        """All entries in one statement (an admission writes ``accepted`` and ``dispatching`` together)."""
+        if not history:
+            return
+        rows: list[Any] = []
+        for entry in history:
+            rows += (op_id, entry["seq"], orjson.dumps(entry))
+        self._write("INSERT INTO history(op_id, seq, entry) VALUES" + ",".join(["(?,?,?)"] * len(history)), rows)
 
     _OP_COLUMNS = "id, principal, record, private, created_ns"
 

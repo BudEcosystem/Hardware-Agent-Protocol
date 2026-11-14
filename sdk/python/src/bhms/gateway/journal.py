@@ -9,8 +9,10 @@ The gateway is a BHMS server, so the operations it admits are ordinary records o
   the gateway's identity, the client principal and the client's key, so a restarted gateway re-sends the *same* upstream
   key and the upstream deduplicates (BHMS-OPS-030); two principals (or two gateways) sending the same client key cannot
   collide.
-* :meth:`ForwardJournal.pending_put` — the intent is durable (a barrier commit) *before* anything is sent upstream
-  (BHMS-OPS-003): a private *pending-forward* row keyed by ``(principal, client key)`` with the exact upstream request, the
+* :meth:`ForwardJournal.pending_put` — the intent is durable (a barrier commit; concurrent forwards share its fsync,
+  see :mod:`bhms.runtime.store`) *before* anything is sent upstream (BHMS-OPS-003; kept by the Task 12b decision: without
+  it a power loss after the send would leave no record to report ``unknown`` and a retry would re-send): a private
+  *pending-forward* row keyed by ``(principal, client key)`` with the exact upstream request, the
   derived upstream key, the upstream's epoch and the resources. It is deleted when the upstream refuses before creating
   anything (BHMS-OPS-040: refusals create no operation), promoted to the visible operation in the same transaction as the
   answer is recorded (:meth:`admit_forwarded` / :meth:`admit_in_doubt`), and converted to an ``unknown`` operation by
@@ -48,6 +50,7 @@ from bhms.protocol import schema
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.operations import InvalidTransition, Journal, OperationRecord, unknown_error
 from bhms.runtime.resolution import record_operator_resolution
+from bhms.runtime.store import StoreError
 
 log = logging.getLogger("bhms.gateway.journal")
 
@@ -78,10 +81,21 @@ class ForwardJournal(Journal):
         self._deferred = None
         self._unit_records = []
 
-    def pending_put(self, principal: str, key: str, request: dict[str, Any]) -> None:
-        """Durably record the intent to forward ``request`` (everything :meth:`admit_in_doubt` needs) before sending."""
-        with self.store.transaction(barrier=True):
+    async def pending_put(self, principal: str, key: str, request: dict[str, Any], *, inline: bool = False) -> None:
+        """Durably record the intent to forward ``request`` (everything :meth:`admit_in_doubt` needs) before sending.
+
+        A deferred barrier: concurrent forwards share their ``fdatasync`` (group commit) and the event loop serves other
+        requests while it runs. Returns once the row is on stable storage; raises
+        :class:`~bhms.runtime.store.StoreError` when it cannot be written or made durable (the row is then removed if it
+        can be, and nothing may be sent). ``inline``: see :meth:`~bhms.runtime.store.Store.wait_synced`."""
+        with self.store.transaction(barrier=True, defer_sync=True):
             self.store.meta_set(self._pending_key(principal, key), orjson.dumps(request).decode())
+        try:
+            await self.store.wait_synced(self.store.commit_seq, inline=inline)
+        except StoreError:
+            with contextlib.suppress(StoreError):
+                self.pending_delete(principal, key)
+            raise
 
     def pending_get(self, principal: str, key: str) -> dict[str, Any] | None:
         raw = self.store.meta_get(self._pending_key(principal, key))

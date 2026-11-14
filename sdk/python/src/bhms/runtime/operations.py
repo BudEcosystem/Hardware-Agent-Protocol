@@ -186,7 +186,7 @@ class OperationRecord:
     ``private`` holds server-side facts that are not on the wire: ``resources``, ``effectClass``, ``deadlineNs``.
     """
 
-    __slots__ = ("op", "_history", "principal", "private", "_settled", "created_ns", "_journal")
+    __slots__ = ("op", "_history", "principal", "private", "_settled", "created_ns", "_journal", "sync_ticket")
 
     def __init__(self, op: dict[str, Any], history: list[dict[str, Any]] | None, principal: str,
                  private: dict[str, Any], created_ns: int, journal: Journal | None = None) -> None:
@@ -197,6 +197,7 @@ class OperationRecord:
         self.private = private
         self._settled: asyncio.Event | None = None
         self.created_ns = created_ns
+        self.sync_ticket = 0  # the store commit of its latest barrier write (see Journal.durable)
 
     @property
     def id(self) -> str:
@@ -325,10 +326,11 @@ class Journal:
                admitted: dict[str, Any] | None = None, require: dict[str, Any] | None = None,
                lease_id: str | None = None, fence: int | None = None, deadline_ns: int | None = None,
                progress: dict[str, int] | None = None, dispatch: bool = False,
-               barrier: bool | None = None) -> OperationRecord:
+               barrier: bool | None = None, defer_sync: bool = False) -> OperationRecord:
         """Durably record a new ``accepted`` operation (and, with ``dispatch``, ``dispatching`` in the same barrier
         commit; ``barrier`` defaults to ``dispatch``: a device server must have the intent on stable storage before it
-        acts, a gateway relies on its deterministic upstream key instead and passes ``False``). Raises
+        acts; a gateway's durable intent is its pending-forward row, so it passes ``False``). With ``defer_sync`` the
+        barrier is a deferred one (group commit): the caller awaits :meth:`durable` before it acts. Raises
         :class:`~bhms.runtime.store.StoreError` when it cannot be written (no operation exists)."""
         created = now_ns()
         at = iso(created)
@@ -367,12 +369,13 @@ class Journal:
             if private.get("effectClass", "none") != "none":
                 op["effect"] = entry["effect"] = "unknown"
             history.append(entry)
-        with self.store.transaction(barrier=dispatch if barrier is None else barrier):
+        with self.store.transaction(barrier=dispatch if barrier is None else barrier, defer_sync=defer_sync):
             self.store.insert_operation(op_id=op["operationId"], principal=principal, key=key,
                                         request_digest=request_digest, kind=kind, device_id=device_id,
                                         parent_id=parent_id, state=op["state"], created_ns=created, record=op,
                                         private=private, history=history)
         rec = self._remember(OperationRecord(op, history, principal, private, created, self))
+        rec.sync_ticket = self.store.commit_seq
         self._notify(rec, accepted)
         if dispatch:
             self._notify(rec)
@@ -384,13 +387,14 @@ class Journal:
                    result: Any = _UNSET, effect: str | None = None, evidence: dict[str, Any] | None = None,
                    detail: str | None = None, kind: str = "state", barrier: bool | None = None,
                    proof: str | None = None, cancel: str | None = None,
-                   operator: dict[str, str] | None = None) -> None:
+                   operator: dict[str, str] | None = None, defer_sync: bool = False) -> None:
         """Move ``rec`` to ``state``; see the module docstring for the rules. Writes one history entry.
 
         ``operator`` (``{"principal", "basis"}``) marks a ``reconciliation`` entry that rests on an operator's statement
         (``operations/resolve``, BHMS-OPS-102) rather than on device evidence.
 
-        ``barrier`` defaults to True for ``dispatching``. ``proof`` names device evidence that no effect occurred
+        ``barrier`` defaults to True for ``dispatching``; ``defer_sync`` makes it a deferred barrier (the caller awaits
+        :meth:`durable` before it acts). ``proof`` names device evidence that no effect occurred
         (required for a dispatched failure with ``mayHaveActed: false``). ``cancel`` sets ``cancel.state`` in the
         same entry (``confirmed`` on a termination observed after a cancel request).
         """
@@ -467,7 +471,8 @@ class Journal:
         private = None
         if state == "dispatching" and not rec.private.get("dispatched"):
             private = {**rec.private, "dispatched": True}
-        self._commit(rec, op, entry, barrier=state == "dispatching" if barrier is None else barrier, private=private)
+        self._commit(rec, op, entry, barrier=state == "dispatching" if barrier is None else barrier, private=private,
+                     defer_sync=defer_sync)
         if state == "unknown":
             for hook in self.on_unknown:
                 hook(rec)
@@ -541,14 +546,16 @@ class Journal:
             rec.op = {**rec.op, "progress": progress}
 
     def _commit(self, rec: OperationRecord, op: dict[str, Any], entry: dict[str, Any], *, barrier: bool = False,
-                private: dict[str, Any] | None = None, notify: bool = True) -> None:
+                private: dict[str, Any] | None = None, notify: bool = True, defer_sync: bool = False) -> None:
         history = self.history(rec)
         stamp = now_ns()
         entry = {"seq": len(history) + 1, "at": iso(stamp), **entry}
         op["updatedAt"] = entry["at"]
-        with self.store.transaction(barrier=barrier):
+        with self.store.transaction(barrier=barrier, defer_sync=defer_sync):
             self.store.update_operation(rec.id, state=op["state"], updated_ns=stamp, record=op, history=[entry],
                                         private=private)
+        if barrier:
+            rec.sync_ticket = self.store.commit_seq
         rec.op = op
         if private is not None:
             rec.private = private
@@ -567,6 +574,12 @@ class Journal:
             wire = wire if wire is not None else rec.wire()
             for listener in list(self.listeners):
                 listener(rec, wire)
+
+    async def durable(self, rec: OperationRecord, *, inline: bool = False) -> None:
+        """Return once ``rec``'s latest barrier write is on stable storage (at once for a synchronous barrier, or in a
+        store without barriers); raises :class:`~bhms.runtime.store.StoreError` when it cannot be made durable.
+        ``inline``: see :meth:`~bhms.runtime.store.Store.wait_synced`."""
+        await self.store.wait_synced(rec.sync_ticket, inline=inline)
 
     # ------------------------------------------------------------------ waiting and listing
 

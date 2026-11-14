@@ -366,7 +366,7 @@ class Router:
         self._forwarding.add(slot)
         try:
             try:  # the intent is durable before anything is sent (BHMS-OPS-003)
-                gw.journal.pending_put(principal.id, key, common)
+                await gw.journal.pending_put(principal.id, key, common, inline=gw.rpc is not None and gw.rpc.quiet)
             except StoreError as exc:
                 gw.journal_failed(exc)
                 raise BhmsError("BUSY", "the gateway's journal cannot be written; nothing was sent", retry="same-key",
