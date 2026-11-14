@@ -450,6 +450,9 @@ def build_action(fn: Callable[..., Any], *, effect: str, idempotency: str, max_d
     if unknown:
         raise DescriptionError(f"{owner}: resources {unknown} are not declared by the device "
                                f"({list(device_resources)}); action resources must be a subset (BHMS-DEV-032)")
+    if effect == "hazardous" and not requires_lease:
+        raise DescriptionError(f"{owner}: a hazardous action must declare requires_lease=True (BHMS-DEV-033): its "
+                               "caller must hold exclusive control of the resources it acts on")
     if requires_lease and not resources:
         raise DescriptionError(f"{owner}: requires_lease=True needs at least one resource (BHMS-DEV-032); declare "
                                "resources on the device or the action")

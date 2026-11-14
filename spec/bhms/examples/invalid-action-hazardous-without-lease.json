@@ -1,0 +1,90 @@
+{
+  "$comment": "A hazardous action must require a lease (BHMS-DEV-033).",
+  "against": "#/$defs/ActionDescription",
+  "expect": {
+    "path": "/requiresLease",
+    "keyword": "const"
+  },
+  "message": {
+    "description": "Dispense a volume at a rate. Stops early on over-pressure.",
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "volume"
+      ],
+      "properties": {
+        "volume": {
+          "type": "number",
+          "x-bhms-unit": "uL",
+          "minimum": 1,
+          "maximum": 1000,
+          "multipleOf": 0.1
+        },
+        "rate": {
+          "type": "number",
+          "x-bhms-unit": "uL/min",
+          "minimum": 1,
+          "maximum": 500,
+          "default": 100
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "dispensed"
+      ],
+      "properties": {
+        "dispensed": {
+          "type": "number",
+          "x-bhms-unit": "uL",
+          "multipleOf": 0.1
+        }
+      }
+    },
+    "effect": "hazardous",
+    "idempotency": "relative",
+    "cancel": "supported",
+    "completionEvidence": "measured",
+    "verifiedBy": [
+      "dispensed_volume"
+    ],
+    "typicalDurationMs": 2000,
+    "maxDurationMs": 60000,
+    "requiresLease": false,
+    "resources": [
+      "pump-1/plunger"
+    ],
+    "onLeaseLoss": "cancel",
+    "requiresFresh": [
+      {
+        "property": "pressure",
+        "maxAgeMs": 1000
+      }
+    ],
+    "preconditions": "Syringe loaded and primed.",
+    "compact": {
+      "index": 0,
+      "args": [
+        {
+          "name": "volume",
+          "type": "u16",
+          "scale": 0.1
+        },
+        {
+          "name": "rate",
+          "type": "u16"
+        }
+      ],
+      "result": [
+        {
+          "name": "dispensed",
+          "type": "u16",
+          "scale": 0.1
+        }
+      ]
+    }
+  }
+}

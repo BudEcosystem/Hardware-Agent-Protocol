@@ -64,7 +64,7 @@ async def test_hazardous_actions_need_a_literal_scope(tmp_path):  # BHMS-AUTH-00
         dev.report_alive()
         heated = []
 
-        @dev.action(effect="hazardous", idempotency="relative", max_duration_ms=1000)
+        @dev.action(effect="hazardous", idempotency="relative", max_duration_ms=1000, requires_lease=True)
         async def heat(ctx, target: Range(20, 300, unit="Cel")) -> None:  # noqa: F821
             """Heat to a target."""
             heated.append(target)
@@ -74,8 +74,10 @@ async def test_hazardous_actions_need_a_literal_scope(tmp_path):  # BHMS-AUTH-00
         with pytest.raises(BhmsError) as exc:
             await client.actions_invoke("a/oven-1", "heat", {"target": 100}, operation_key="h")
         assert exc.value.code == "UNAUTHORIZED" and rule_of(exc.value) == "scope:hazardous" and not heated
-        r.gateway.set_policy(Policy(principals(agent_scopes=["read", "invoke:a/oven-1/heat"])))
-        op = (await client.actions_invoke("a/oven-1", "heat", {"target": 100}, operation_key="h2", wait_ms=2000)).operation
+        r.gateway.set_policy(Policy(principals(agent_scopes=["read", "lease", "invoke:a/oven-1/heat"])))
+        lease = (await client.leases_acquire(["a/oven-1"], 30_000)).lease  # hazardous actions require one (BHMS-DEV-033)
+        op = (await client.actions_invoke("a/oven-1", "heat", {"target": 100}, operation_key="h2", wait_ms=2000,
+                                          lease_id=lease.lease_id)).operation
         assert op.state == "completed" and heated == [100]
 
 

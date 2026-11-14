@@ -206,6 +206,12 @@ class ActionDescription(_Wire):
     preconditions: Optional[_text(500)] = None
     compact: Optional[CompactActionLayout] = None
 
+    @model_validator(mode="after")
+    def _hazardous_requires_lease(self) -> ActionDescription:
+        if self.effect == "hazardous" and not self.requires_lease:
+            raise ValueError("a hazardous action must declare requiresLease: true (BHMS-DEV-033)")
+        return self
+
 
 class EventTypeDescription(_Wire):
     description: _text(1000)

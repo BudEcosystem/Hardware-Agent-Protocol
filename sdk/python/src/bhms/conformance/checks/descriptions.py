@@ -101,7 +101,7 @@ async def static_rules(c: Context) -> None:
 
 @check("descriptions.hazardous-actions-require-lease", ["BHMS-DEV-033"], generic=True)
 async def hazardous_lease(c: Context) -> None:
-    """SHOULD: actions with effect hazardous declare requiresLease."""
+    """MUST: actions with effect hazardous declare requiresLease."""
     problems = [f"{device}.{name} is hazardous without requiresLease"
                 for device, description in (await c.descriptions()).items()
                 for name, action in (description.get("actions") or {}).items()

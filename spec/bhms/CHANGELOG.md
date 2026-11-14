@@ -11,11 +11,20 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   covers their resources. Requirement index: 251 rows. Evidence: Task 11 report, hostile suite "lease theft", issues T1a (the
   Python gateway dropped a `leaseId` supplied with an action that does not require one: three of four attempts reached the
   device) and T1b (LSE-010 checked leases only for `requiresLease` actions: the fourth reached it).
+- **BHMS-DEV-033 is a MUST** (was SHOULD): an action with `effect: "hazardous"` declares `requiresLease: true`; the schema
+  (`ActionDescription`, `if effect = hazardous then requiresLease = true`) and the new example
+  `invalid-action-hazardous-without-lease.json` enforce it, and the Python SDK refuses the declaration when the description is
+  built. Evidence: Task 10 report, SDK gap 8 (the centrifuge twin's hazardous `spin` ran without a lease) and its spec learning
+  "hazardous should imply a lease". Decision: MUST, because with BHMS-LSE-014 a lease is what keeps every other caller off the
+  resource while the hazardous effect runs; a SHOULD would leave that to each device author.
 
 ### TS SDK to follow
 
 - BHMS-LSE-014 in the TypeScript device server (admission and pre-dispatch) and the conformance check
   `leases.held-lease-blocks-everyone`; `stop.not-blocked-by-load` now presents the lease it holds.
+- BHMS-DEV-033 as a MUST: refuse a hazardous action without `requiresLease` when a description is built (the shared schema
+  already rejects it).
+
 
 ## 2026-11-13 (v0.1)
 

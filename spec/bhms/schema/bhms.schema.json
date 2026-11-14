@@ -2304,7 +2304,24 @@
         "requiresLease",
         "resources"
       ],
-      "additionalProperties": false
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "effect": {
+            "const": "hazardous"
+          }
+        },
+        "required": [
+          "effect"
+        ]
+      },
+      "then": {
+        "properties": {
+          "requiresLease": {
+            "const": true
+          }
+        }
+      }
     },
     "EventTypeDescription": {
       "type": "object",

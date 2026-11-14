@@ -156,8 +156,11 @@ A command echo or the driver's return value is `reported`, not `measured`.
 `resources`. An action with `requiresLease: true` MUST declare at least one
 resource.
 
-**BHMS-DEV-033** Actions with `effect: "hazardous"` SHOULD declare
-`requiresLease: true`.
+**BHMS-DEV-033** An action with `effect: "hazardous"` MUST declare
+`requiresLease: true` (and therefore at least one resource, BHMS-DEV-032): a
+hazardous effect is never started by a caller that does not hold exclusive control
+of what it acts on. The schema enforces it; a description that violates it is
+invalid.
 
 **BHMS-DEV-034** Every `requiresFresh[i].property` MUST name a property of the same
 device, and the list MUST NOT name a property twice.

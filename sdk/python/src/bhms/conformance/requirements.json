@@ -614,11 +614,11 @@
  {
   "id": "BHMS-DEV-033",
   "area": "DEV",
-  "level": "SHOULD",
+  "level": "MUST",
   "profile": "core",
   "method": "wire",
-  "summary": "Actions with `effect: \"hazardous\"` SHOULD declare `requiresLease: true`. (04)",
-  "test": "Report hazardous actions without requiresLease (SHOULD)."
+  "summary": "An action with `effect: \"hazardous\"` MUST declare `requiresLease: true` (and therefore at least one resource, BHMS-DEV-032): a hazardous effect is never started by a caller t… (04)",
+  "test": "Describe every device: every hazardous action declares requiresLease (the schema rejects a description without it)."
  },
  {
   "id": "BHMS-DEV-034",
