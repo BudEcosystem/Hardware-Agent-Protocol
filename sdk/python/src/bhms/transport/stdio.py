@@ -19,6 +19,20 @@ from bhms.transport.base import DEFAULT_MAX_MESSAGE_BYTES, Peer, check_message_l
 from bhms.transport.stream import _CHUNK, StreamTransport
 
 
+def release_process(process: asyncio.subprocess.Process) -> None:
+    """Close the event loop's transport of a child process: its pipes are closed and the child is killed if it still runs.
+
+    asyncio closes that transport by itself only once the child has exited *and* every pipe has reached EOF. A child that
+    was killed, or whose connection was aborted, can miss that moment (the loop stops first); the transport is then left
+    to the garbage collector, which reports ``ResourceWarning: unclosed transport`` in whatever code runs at that time.
+    Call this whenever a child is abandoned. Idempotent; never raises.
+    """
+    transport = getattr(process, "_transport", None)
+    if transport is not None:
+        with contextlib.suppress(Exception):
+            transport.close()
+
+
 class SubprocessTransport(StreamTransport):
     """A :class:`StreamTransport` that owns the server subprocess it talks to."""
 
@@ -51,6 +65,8 @@ class SubprocessTransport(StreamTransport):
         self.abort()
 
     def abort(self) -> None:
+        """Kill the child if it still runs and release everything the event loop holds for it (also the last step of
+        :meth:`close`). Synchronous: a session that gave up waiting for ``close`` calls it and leaves nothing behind."""
         self._closed = True
         with contextlib.suppress(ProcessLookupError):
             if self.process.returncode is None:
@@ -59,6 +75,7 @@ class SubprocessTransport(StreamTransport):
         if transport is not None:
             with contextlib.suppress(Exception):  # an already-finished pipe/socket transport may have no loop left
                 transport.abort()
+        release_process(self.process)
 
 
 async def spawn_stdio(command: str | Sequence[str], *, env: Mapping[str, str] | None = None,

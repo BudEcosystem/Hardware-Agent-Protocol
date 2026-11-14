@@ -16,6 +16,8 @@ import os
 from dataclasses import dataclass, field
 from typing import Any
 
+from bhms.transport.stdio import release_process
+
 MCP_VERSION = "2025-06-18"
 
 
@@ -118,10 +120,7 @@ class AgentWire:
         except asyncio.TimeoutError:
             self.process.kill()
             await self.process.wait()
-        transport = getattr(self.process, "_transport", None)
-        if transport is not None:
-            with contextlib.suppress(Exception):
-                transport.close()
+        release_process(self.process)
         if self._reader is not None:
             self._reader.cancel()
             with contextlib.suppress(asyncio.CancelledError, Exception):

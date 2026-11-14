@@ -37,19 +37,14 @@ from bhms.testing.gateway_fixture import (NAMESPACES, ROLES, TOKEN_PREFIX, Role,
                                           localize_roles)
 from bhms.transport import connect_tcp, connect_unix, connect_websocket, spawn_stdio
 from bhms.transport.base import Transport, TransportClosed
+from bhms.transport.stdio import release_process
 
 URL_PREFIXES = ("unix:", "tcp://", "ws://", "wss://", "http://", "https://")
 BUILTINS = ("conformance-device", "conformance-device:stdio", "conformance-device:ws", "conformance-device:unix", "conformance-device:principals",
             "gateway", "gateway:stdio", "gateway:http", "agent-bridge", "mcp:<bridge command>")
 
 
-def _release(process: asyncio.subprocess.Process) -> None:
-    """Close the event loop's transport of a finished child so that no ResourceWarning outlives the run (a killed child's
-    transport is otherwise left to the garbage collector)."""
-    transport = getattr(process, "_transport", None)
-    if transport is not None:
-        with contextlib.suppress(Exception):
-            transport.close()
+_release = release_process  # a killed child's event-loop transport is closed here, never left to the garbage collector
 
 
 class TargetError(Exception):
