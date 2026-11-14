@@ -102,6 +102,7 @@ class Router:
         self._retry_at: dict[str, float] = {}
         self._early: OrderedDict[tuple[str, str], dict[str, Any]] = OrderedDict()  # notifications seen before indexing
         self.unknown: dict[str, OperationRecord] = {}
+        self._purged_ns: dict[str, int] = {}  # device -> when its endpoint proved a reset purged all earlier work
         # Retained observations of transaction properties (BHMS-OBS-011): last relayed sample per (device, property), valid
         # for the upstream epoch it came from; bounded.
         self._retained: OrderedDict[tuple[str, str], tuple[dict[str, Any], str | None, float]] = OrderedDict()
@@ -520,6 +521,9 @@ class Router:
 
     def _became_unknown(self, rec: OperationRecord) -> None:
         self.unknown[rec.id] = rec
+        purged = self._purged_ns.get(rec.op.get("deviceId", ""))
+        if purged is not None and rec.created_ns <= purged:  # the proof arrived before the reply that made it unknown
+            self._lift_purged(rec)
         with contextlib.suppress(StoreError):
             self.gateway.events.append("operation.state", severity="warning", device_id=rec.op.get("deviceId"),
                                        operation_id=rec.id, message=rec.op.get("error", {}).get("message"),
@@ -864,6 +868,23 @@ class Router:
                     self.gateway.events.append("stop", severity="warning", device_id=entry.device_id,
                                                message=reason[:1000], data={"outcome": stop["outcome"],
                                                                             "reason": reason})
+
+    def endpoint_purged(self, device_id: str) -> None:
+        """The upstream proved (``device.epoch`` with ``purged``, e.g. an advanced persistent compact boot epoch) that its endpoint
+        discarded everything dispatched before now: the unknown operations of that device stay unknown (their outcome is not
+        known) but stop blocking their resources (BHMS-OPS-042). Work forwarded after this moment is not covered."""
+        from bhms.runtime.operations import now_ns
+
+        self._purged_ns[device_id] = now_ns()
+        for rec in list(self.unknown.values()):
+            if rec.op.get("deviceId") == device_id:
+                self._lift_purged(rec)
+
+    def _lift_purged(self, rec: OperationRecord) -> None:
+        with contextlib.suppress(StoreError):
+            self.gateway.journal.mark_private(rec, inhibitionLifted=True)
+            self.gateway.journal.annotate(rec, "evidence", "the endpoint's boot epoch advanced, which proves it purged the "
+                                                           "old work: the resource inhibition is lifted; the outcome is still unknown")
 
     def _lift_inhibition(self, entry: CatalogEntry) -> None:
         """A confirmed stop lifts the unknown-operation inhibition of the device's operations (BHMS-OPS-042)."""

@@ -336,6 +336,9 @@ class Upstream:
                 if method == "notifications/subscriptions/acknowledged":
                     if params.get("eventsGap"):
                         self.hooks.events_gap(self)
+                    # A device that appeared (or changed) between the initial sync and this subscription (a board saying
+                    # HELLO late) was never announced to us: load the list again now that changes will be.
+                    self._resync.set()
                     continue
                 if method == "notifications/devices/listChanged":
                     self._resync.set()

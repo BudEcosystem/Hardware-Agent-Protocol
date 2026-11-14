@@ -10,6 +10,7 @@ import pytest
 from helpers.compact_rig import BENCH, LED, compact_gateway
 
 from bhms.gateway import ConfigError, load_config
+from bhms.protocol.errors import BhmsError
 from bhms.gateway.compact_bridge import CompactUpstream
 from bhms.protocol.types import to_wire
 from bhms.testing.compact_endpoint import TO_DEVICE, TO_GATEWAY
@@ -168,3 +169,49 @@ async def test_closing_the_gateway_closes_the_bridge_and_its_link(tmp_path, nati
         assert bridge.ready
         await rig.gateway.close()
         assert not bridge.ready and bridge._link is None and not bridge._started
+
+
+@pytest.mark.usefixtures("native")
+async def test_a_proven_epoch_advance_lifts_the_gateways_inhibition_of_the_unknown_operation(tmp_path, native):  # CMP-022, OPS-042
+    async with compact_gateway(tmp_path, native) as rig:
+        op = await rig.invoke("rig/bench-rig", "lock", {"duration_ms": 4000}, wait_ms=0)
+        for _ in range(100):
+            if rig.endpoint.count("LOCK-start"):
+                break
+            await asyncio.sleep(0.02)
+        await rig.wire.reboot()  # a persistent epoch: the new boot epoch proves the old work purged
+        for _ in range(200):
+            got = await rig.operation(op["operationId"])
+            if got["state"] == "unknown":
+                break
+            await asyncio.sleep(0.05)
+        assert got["state"] == "unknown"  # the outcome is never guessed ...
+        done = None
+        for _ in range(100):  # ... but the resource is free again once the gateway has seen the proof
+            try:
+                done = await rig.invoke("rig/bench-rig", "lock", {"duration_ms": 20})
+                break
+            except BhmsError as exc:
+                assert exc.code == "STALE"
+                await asyncio.sleep(0.05)
+        assert done is not None and done["state"] == "completed"
+        assert len(rig.wire.sent(cp.Invoke, TO_DEVICE)) == 2  # the first INVOKE was never sent again
+
+
+@pytest.mark.usefixtures("native")
+async def test_without_a_persistent_epoch_the_gateways_inhibition_stays_until_a_confirmed_stop(tmp_path, native):  # OPS-042
+    async with compact_gateway(tmp_path, native, epoch=False) as rig:
+        op = await rig.invoke("rig/bench-rig", "lock", {"duration_ms": 4000}, wait_ms=0)
+        for _ in range(100):
+            if rig.endpoint.count("LOCK-start"):
+                break
+            await asyncio.sleep(0.02)
+        await rig.wire.reboot()
+        for _ in range(200):
+            if (await rig.operation(op["operationId"]))["state"] == "unknown":
+                break
+            await asyncio.sleep(0.05)
+        await asyncio.sleep(0.5)
+        with pytest.raises(BhmsError) as inhibited:
+            await rig.invoke("rig/bench-rig", "lock", {"duration_ms": 20})
+        assert inhibited.value.code == "STALE"

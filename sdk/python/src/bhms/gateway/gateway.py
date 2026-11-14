@@ -452,6 +452,8 @@ class Gateway:
         self.events.append(kind, severity=event.get("severity", "info"),
                            device_id=gateway_id(up.name, device) if device else None, operation_id=gateway_op,
                            message=event.get("message"), data=data or None)
+        if kind == "device.epoch" and device and isinstance(data, dict) and data.get("purged") is True:
+            self.router.endpoint_purged(gateway_id(up.name, device))
 
 
 
