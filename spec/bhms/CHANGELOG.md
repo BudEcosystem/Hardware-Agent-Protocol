@@ -2,6 +2,8 @@
 
 ## 2026-11-13 (v0.1)
 
+Compact round (Task 9b fix 1): `device.epoch` `data` members `persistent` and `purged` documented (9.2, BHMS-OPS-042); BHMS-CMP-022 defines the endpoint incarnation; BHMS-SEC-050 is enforced by the gateway (networked compact links are refused).
+
 Conformance round 3 (Task 7): BHMS-CNF-006 is an `inspection` row (the implementation's validator is a library that cannot be driven over the wire); `capabilities.authority` carries no members; EVT-013 is not applicable in v0.1 (read is one global scope).
 
 Conformance round 2 (Task 7): profile `authority` (capability `capabilities.authority`, required by `gateway`; the multi-principal and scope-policy rows moved out of `core` so that a single-principal server can claim `core`), CNF-004 blocks on rows no check can prove, generic reports never claim.

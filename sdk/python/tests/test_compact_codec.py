@@ -268,3 +268,43 @@ async def test_end_of_stream_raises_link_closed_every_time():
 async def test_open_stream_refuses_unknown_forms():
     with pytest.raises(OSError):
         await c.open_stream("ttyACM0")
+
+
+async def test_input_without_a_flag_byte_cannot_grow_the_link_buffer():  # unbounded-memory guard
+    a, b = socket.socketpair()
+    link = c.CompactLink(c.FdStream(a.detach()))
+    link.start()
+    peer = c.FdStream(b.detach())
+    try:
+        for _ in range(20):
+            peer.write(b"\x55" * 1000)  # no 0x7E anywhere
+        for _ in range(100):
+            if link.stats["overlong"] >= 1:
+                break
+            await asyncio.sleep(0.02)
+        assert link.stats["overlong"] >= 1 and len(link._wire) <= link.frame.MAX_WIRE
+    finally:
+        await link.close()
+        await peer.close()
+
+
+async def test_a_serial_line_that_does_not_drain_cannot_grow_the_output_queue():
+    read_end, write_end = os.pipe()  # nobody reads: the pipe fills and writes would queue forever
+    stream = c.FdStream(write_end)
+    try:
+        for _ in range(64):
+            stream.write(b"\x00" * 4096)
+        assert len(stream._out) <= c.MAX_PENDING_OUTPUT and stream.dropped > 0
+    finally:
+        await stream.close()
+        os.close(read_end)
+
+
+def test_the_packaged_frame_module_is_byte_identical_to_the_firmware_protocol_source():
+    """``bhms/transport/hm_frame.py`` is a copy of ``protocol/serial/frame.py`` (a symlink does not survive packaging); the one
+    framing implementation stays one: refresh with ``cp protocol/serial/frame.py sdk/python/src/bhms/transport/hm_frame.py``."""
+    root = Path(__file__).resolve().parents[3]
+    source = root / "protocol" / "serial" / "frame.py"
+    copy = root / "sdk" / "python" / "src" / "bhms" / "transport" / "hm_frame.py"
+    assert not copy.is_symlink()
+    assert copy.read_bytes() == source.read_bytes()

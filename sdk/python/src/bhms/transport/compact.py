@@ -4,7 +4,7 @@ Implements spec/bhms/11-compact-binding.md for the gateway side (and for tests, 
 play either side): every message of §11.2 in both directions, the value codec of §11.4 with the refusals of
 BHMS-CMP-010, the ``compact`` layouts of a description (§4.8), the static layout rules BHMS-DEV-070/071, and
 :class:`CompactLink`, which carries payloads in the ``HM`` frames of ``protocol/serial/frame.py`` (reused through the
-:mod:`bhms.transport.hm_frame` symlink, never reimplemented) over a serial port, a pty, a Unix or a TCP socket.
+:mod:`bhms.transport.hm_frame` (a byte-identical copy, checked by a test; never reimplemented)) over a serial port, a pty, or a local Unix socket (never a network link, BHMS-SEC-050).
 
 This module is the one Python compact codec. The top level imports only the standard library so that firmware test
 harnesses without the SDK's dependencies can load it by path (``sdk/c/tests/host/bhms_host.py`` does); the description
@@ -615,6 +615,9 @@ class ByteStream(Protocol):
     async def close(self) -> None: ...
 
 
+MAX_PENDING_OUTPUT = 16 * 1024  # bytes queued for a non-draining serial line before further writes are refused
+
+
 class FdStream:
     """A non-blocking file descriptor (tty, pty, pipe) driven by the event loop."""
 
@@ -624,6 +627,7 @@ class FdStream:
         self._loop = asyncio.get_running_loop()
         self._inbox: asyncio.Queue[bytes] = asyncio.Queue()
         self._out = bytearray()
+        self.dropped = 0  # writes refused because the line has not drained (a stalled tty must not grow memory without bound)
         self._writing = False
         self._closed = False
         self._loop.add_reader(fd, self._on_readable)
@@ -649,6 +653,9 @@ class FdStream:
 
     def write(self, data: bytes) -> None:
         if self._closed:
+            return
+        if len(self._out) + len(data) > MAX_PENDING_OUTPUT:
+            self.dropped += 1  # whole writes only: a half frame would only cost the receiver a resynchronisation
             return
         self._out += data
         self._flush()
@@ -685,7 +692,7 @@ class FdStream:
 
 
 class SocketStream:
-    """An asyncio ``StreamReader``/``StreamWriter`` pair (Unix or TCP socket)."""
+    """An asyncio ``StreamReader``/``StreamWriter`` pair (a local Unix socket)."""
 
     def __init__(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         self._reader, self._writer = reader, writer
@@ -728,22 +735,33 @@ def _open_serial_fd(path: str, baud: int) -> int:
     return fd
 
 
+NETWORKED_SCHEMES = ("tcp:", "udp:", "ws:", "wss:", "http:", "https:", "tls:", "ssh:")
+
+
+def refuse_networked(port: str) -> None:
+    """Raise ``ValueError`` for a compact link that is not an exclusively owned local line (BHMS-SEC-050): the FCS-16 detects
+    corruption, not forgery, so a networked or shared link would let any host on it command the endpoint. No scheme here offers
+    an authenticated, encrypted channel, so every networked scheme is refused rather than offered in plaintext."""
+    if port.lower().startswith(NETWORKED_SCHEMES) or "://" in port:
+        raise ValueError(f"compact link {port!r} is networked: a gateway must not bridge a compact link without an authenticated, "
+                         "encrypted channel (BHMS-SEC-050); use the exclusively owned serial line (/dev/ttyACM0, pty:<path>) "
+                         "or a local unix:<path> socket")
+
+
 async def open_stream(port: str, baud: int = 115200) -> ByteStream:
     """Open the physical link: ``/dev/ttyACM0`` (also ``serial:`` and ``pty:`` followed by a device path; configured with
-    ``baud``, 8N1, raw), ``unix:/path/to/socket`` or ``tcp://host:port`` (a serial-to-network bridge)."""
+    ``baud``, 8N1, raw) or ``unix:/path/to/socket`` (a local socket owned by this host, e.g. a simulator). Networked links
+    are refused (:func:`refuse_networked`, BHMS-SEC-050)."""
+    refuse_networked(port)
     if port.startswith("unix:"):
         path = port[5:]
         reader, writer = await asyncio.open_unix_connection(path[2:] if path.startswith("//") else path)
-        return SocketStream(reader, writer)
-    if port.startswith("tcp://"):
-        host, _, number = port[6:].rstrip("/").rpartition(":")
-        reader, writer = await asyncio.open_connection(host.strip("[]"), int(number))
         return SocketStream(reader, writer)
     for prefix in ("serial:", "pty:"):
         if port.startswith(prefix):
             port = port[len(prefix):]
     if not port.startswith(("/", ".")):
-        raise OSError(f"cannot open {port!r}: expected a device path, unix:<path> or tcp://host:port")
+        raise OSError(f"cannot open {port!r}: expected a device path, pty:<path> or unix:<path>")
     return FdStream(_open_serial_fd(port, baud))
 
 
@@ -852,6 +870,9 @@ class CompactLink:
     def _feed(self, byte: int) -> None:
         event = self.decoder.feed(byte)
         self._wire.append(byte)
+        if len(self._wire) > self.frame.MAX_WIRE and byte != self.frame.FLAG:
+            self.stats["overlong"] += 1  # bytes without a flag: line noise, not a frame (the decoder bounds its own buffer too)
+            self._wire = bytearray()
         if byte == self.frame.FLAG:
             wire, self._wire = bytes(self._wire), bytearray([byte])
             if event is not None:

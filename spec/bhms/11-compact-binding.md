@@ -196,6 +196,17 @@ NOT re-send any of them. Only a `PERSISTENT_EPOCH` endpoint whose epoch value
 advanced, or an accepted `NEW_SESSION` (BHMS-CMP-023), proves that old work was
 purged and lifts the inhibition of BHMS-OPS-042.
 
+A gateway MUST identify an endpoint *incarnation* by more than the epoch value: it
+counts incarnations durably, starting a new one at its first HELLO, at every epoch
+change and at every HELLO that may follow a reset (that of an endpoint without
+`PERSISTENT_EPOCH`, or whose previous HELLO had no persistent epoch, since a
+failed epoch store repeats the value at the next boot). Handles are unique only
+within one incarnation (an epoch value can recur): `QUERY` (BHMS-CMP-034) and
+INVOKE retransmission (BHMS-CMP-033) are only for operations dispatched in the
+current incarnation, and retransmission only if the endpoint had
+`PERSISTENT_EPOCH` when the INVOKE was first sent. When the bridge proves the
+purge it emits `device.epoch` with `purged: true` (see 9.2).
+
 **BHMS-CMP-023** `NEW_SESSION` MUST increment the epoch (persistently when
 `PERSISTENT_EPOCH`), clear the ring and reset `lastHandle` to 0; an endpoint with
 an active operation MUST ignore the flag and report its current epoch. A HELLO

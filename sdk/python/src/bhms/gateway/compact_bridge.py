@@ -47,6 +47,7 @@ Thread-safety: one event loop (the gateway's).
 from __future__ import annotations
 
 import asyncio
+import collections
 import contextlib
 import json
 import logging
@@ -121,15 +122,19 @@ class Info:
     epoch: int
     persistent: bool
     action: int
+    incarnation: int = 0
+    """The gateway's count of endpoint incarnations at dispatch (:attr:`CompactBridge.incarnation`): an epoch value can recur and a
+    handle is only unique within one incarnation, so an operation is asked about only while this equals the current one (0 =
+    a record of a bridge that did not count: never asked)."""
 
     def dump(self) -> str:
         return json.dumps({"handle": self.handle, "epoch": self.epoch, "persistent": self.persistent,
-                           "action": self.action}, separators=(",", ":"))
+                           "action": self.action, "inc": self.incarnation}, separators=(",", ":"))
 
     @staticmethod
     def load(text: str) -> Info:
         raw = json.loads(text)
-        return Info(raw["handle"], raw["epoch"], raw["persistent"], raw["action"])
+        return Info(raw["handle"], raw["epoch"], raw["persistent"], raw["action"], raw.get("inc", 0))
 
 
 def gateway_policy() -> Policy:
@@ -153,7 +158,7 @@ class CompactBridge:
 
     Args:
         name: the upstream's name (the gateway prefixes the device id with it).
-        port: ``/dev/ttyACM0``, ``pty:/dev/pts/3``, ``unix:/path`` or ``tcp://host:port`` (:func:`bhms.transport.compact.open_stream`).
+        port: ``/dev/ttyACM0``, ``pty:/dev/pts/3``, or ``unix:/path`` (:func:`bhms.transport.compact.open_stream`); a networked link is refused (BHMS-SEC-050).
         sidecar: the full ``DeviceDescription`` (without ``digest``) with ``compact`` layouts, as a dict or a JSON file path.
         baud: serial speed.
         state_dir: directory of the bridge's journal (``None``: in memory, a new epoch and no durability; tests only).
@@ -164,6 +169,7 @@ class CompactBridge:
     def __init__(self, name: str, port: str, sidecar: dict[str, Any] | str | os.PathLike[str], *, baud: int = 115200,
                  state_dir: str | os.PathLike[str] | None = None, timing: Timing | None = None,
                  opener: Callable[[str, int], Awaitable[cp.ByteStream]] = cp.open_stream) -> None:
+        cp.refuse_networked(port)  # BHMS-SEC-050 (a replaced opener may use any label, but never a network URL)
         self.name, self.port, self.baud, self.timing = name, port, baud, timing or Timing()
         self.opener = opener
         raw = json.loads(Path(sidecar).read_text()) if isinstance(sidecar, str | os.PathLike) else dict(sidecar)
@@ -182,14 +188,20 @@ class CompactBridge:
         self.hello: cp.Hello | None = None
         self.epoch: int | None = None
         self.persistent = False
+        self.incarnation = 0
+        """Bumped (durably) at the first HELLO, at every epoch change and at every HELLO that may follow a reset: a HELLO of an
+        endpoint without a persistent epoch (or whose previous HELLO had none) proves nothing about continuity (BHMS-CMP-020)."""
         self.next_handle = 1
         self.up = False
         self.mismatch = False
         self._link: cp.CompactLink | None = None
         self._waiters: dict[tuple[str, int], asyncio.Queue[Any]] = {}
         self._hello_waiter: tuple[int, asyncio.Future[cp.Incoming]] | None = None
+        self._hello_lock = asyncio.Lock()  # one HELLO_REQ conversation at a time (the session task and a NEW_SESSION rotation)
         self._stop_waiters: list[asyncio.Queue[cp.Incoming]] = []
-        self._by_handle: dict[tuple[int, int], str] = {}
+        self._stop_sent: collections.deque[float] = collections.deque()
+        """Monotonic times of STOPs sent whose STOP_ACK has not been seen (an ack names no STOP, so acks are matched in order)."""
+        self._by_handle: dict[tuple[int, int], str] = {}  # (incarnation, handle) -> operation id
         self._action_names = {a.index: n for n, a in self.layouts.actions.items()}
         self._property_names = {p.index: n for n, p in self.layouts.properties.items()}
         self._request = 0
@@ -303,19 +315,20 @@ class CompactBridge:
     async def _handshake(self, link: cp.CompactLink, *, new_session: bool = False) -> cp.Hello:
         """HELLO_REQ until the endpoint answers (a board that just reset may take a while)."""
         flags = cp.HELLO_NEW_SESSION if new_session else 0
-        while True:
-            nonce = random.getrandbits(32)
-            future: asyncio.Future[cp.Incoming] = asyncio.get_running_loop().create_future()
-            self._hello_waiter = (nonce, future)
-            link.send(cp.HelloReq(nonce, flags), session=self.epoch or 0)
-            try:
-                reply = await asyncio.wait_for(asyncio.shield(future), self.timing.hello)
-            except asyncio.TimeoutError:
-                continue
-            finally:
-                self._hello_waiter = None
-            assert isinstance(reply.message, cp.Hello)
-            return reply.message
+        async with self._hello_lock:
+            while True:
+                nonce = random.getrandbits(32)
+                future: asyncio.Future[cp.Incoming] = asyncio.get_running_loop().create_future()
+                self._hello_waiter = (nonce, future)
+                link.send(cp.HelloReq(nonce, flags), session=self.epoch or 0)
+                try:
+                    reply = await asyncio.wait_for(asyncio.shield(future), self.timing.hello)
+                except asyncio.TimeoutError:
+                    continue
+                finally:
+                    self._hello_waiter = None
+                assert isinstance(reply.message, cp.Hello)
+                return reply.message
 
     async def _monitor(self, link: cp.CompactLink) -> None:
         """Probe an idle link, ask for a new HELLO on evidence of a restart, reconcile unknown operations."""
@@ -386,18 +399,20 @@ class CompactBridge:
             if not isinstance(message, cp.Error | cp.StopAck):
                 return
         if isinstance(message, cp.StopAck):
+            if self._stop_sent:
+                self._stop_sent.popleft()  # answers the oldest unanswered STOP
             for queue in list(self._stop_waiters):
                 queue.put_nowait(incoming)
             return
         if isinstance(message, cp.Error):
-            key = ("r", message.ident) if message.request_type == cp.READ else ("h", message.ident)
+            key = ("r", message.ident) if message.request_type == cp.READ else self._hkey(self.incarnation, message.ident)
         elif isinstance(message, cp.Value):
             if message.request == 0:
                 self._spawn(self._publish(message))
                 return
             key = ("r", message.request)
         elif isinstance(message, cp.Status | cp.Result):
-            key = ("h", message.handle)
+            key = self._hkey(self.incarnation, message.handle)
         else:
             return
         queue = self._waiters.get(key)
@@ -405,6 +420,11 @@ class CompactBridge:
             queue.put_nowait(incoming)
         elif isinstance(message, cp.Result):
             self._kick_reconcile()  # a RESULT nobody waits for: an operation that was unknown may be settled by it
+
+    @staticmethod
+    def _hkey(incarnation: int, handle: int) -> tuple[str, int]:
+        """The waiter key of an operation handle: handles are unique only within one incarnation of the endpoint."""
+        return ("h", incarnation << 16 | handle)
 
     def _register(self, key: tuple[str, int]) -> asyncio.Queue[Any]:
         queue: asyncio.Queue[Any] = asyncio.Queue()
@@ -421,8 +441,9 @@ class CompactBridge:
 
     # ------------------------------------------------------------------ HELLO and epochs (BHMS-CMP-020..023)
 
-    def _adopt(self, hello: cp.Hello, link: cp.CompactLink) -> bool:
-        """Apply a HELLO: check the digest, handle the epoch, serve the device. Returns whether the endpoint is served."""
+    def _adopt(self, hello: cp.Hello, link: cp.CompactLink, *, new_session: bool = False) -> bool:
+        """Apply a HELLO: check the digest, handle the epoch, serve the device. Returns whether the endpoint is served.
+        ``new_session``: this HELLO answers the bridge's own NEW_SESSION request (and only then can it prove a purge)."""
         if hello.version != cp.COMPACT_VERSION:
             log.error("compact %s: the endpoint speaks compact version %d; this bridge speaks %d", self.name, hello.version,
                       cp.COMPACT_VERSION)
@@ -436,10 +457,13 @@ class CompactBridge:
         self.mismatch = False
         state = self._link_state()
         known = self.epoch if self.epoch is not None else state.get("epoch")
+        was_persistent = bool(state.get("persistent", False))
         changed = known is not None and known != hello.epoch
-        possible_reset = known is not None and known == hello.epoch and not hello.persistent
-        proven = changed and (self._new_session_pending or (hello.persistent and advanced(known, hello.epoch)))
-        self._new_session_pending = False
+        # Only a persistent counter that was persistent at the previous HELLO too proves that an unchanged value means no reset
+        # (a failed epoch store makes the next boot repeat the value, BHMS-CMP-020): any other repeated HELLO may follow a reset.
+        possible_reset = known is not None and known == hello.epoch and not (hello.persistent and was_persistent)
+        proven = changed and (new_session or (hello.persistent and advanced(known, hello.epoch)))
+        self.incarnation = int(state.get("inc", 0)) + (1 if known is None or changed or possible_reset else 0)
         self.hello, self.epoch, self.persistent = hello, hello.epoch, hello.persistent
         link.session = hello.epoch
         if changed or known is None:
@@ -464,15 +488,26 @@ class CompactBridge:
         self._kick_reconcile()
         return True
 
-    _new_session_pending = False
-
     def _emit_epoch(self, hello: cp.Hello, changed: bool, proven: bool) -> None:
         reason = ("the endpoint reports a new boot epoch" if changed else
                   "the endpoint has no persistent epoch, so every HELLO may follow a reset (BHMS-CMP-020)")
         with contextlib.suppress(StoreError):
             self.server.events.append("device.epoch", severity="warning", device_id=self.device_id,
                                       message=f"{reason}; operations dispatched before are unknown",
-                                      data={"epoch": hello.epoch, "persistent": hello.persistent, "purged": proven})
+                                      data={"epoch": hello.epoch, "persistent": hello.persistent, "purged": proven,
+                                            **({"operationIds": self._purged_operation_ids()} if proven else {})})
+
+    def _purged_operation_ids(self, limit: int = 200) -> list[str]:
+        """The not-yet-terminal operations dispatched in an earlier incarnation: exactly the work a proven purge covers. The
+        gateway lifts the inhibition of these and of nothing else (spec 9.2); more than ``limit`` are left inhibited."""
+        ids = []
+        for row in self.server.store.operations_in_states(["accepted", "dispatching", "running", "unknown"]):
+            if row.record.get("kind") != "action" or row.record.get("deviceId") != self.device_id:
+                continue
+            info = self._info(row.id)
+            if info is not None and info.incarnation != self.incarnation:
+                ids.append(row.id)
+        return sorted(ids)[:limit]
 
     def _serve(self) -> None:
         if self.device is None:
@@ -495,7 +530,8 @@ class CompactBridge:
         return json.loads(raw) if raw else {}
 
     def _link_json(self) -> str:
-        return json.dumps({"epoch": self.epoch, "persistent": self.persistent, "next_handle": self.next_handle})
+        return json.dumps({"epoch": self.epoch, "persistent": self.persistent, "next_handle": self.next_handle,
+                           "inc": self.incarnation})
 
     def _save_link_state(self) -> None:
         try:
@@ -511,14 +547,14 @@ class CompactBridge:
         self._by_handle.clear()
         for key, raw in self.server.store.meta_prefix(self.prefix + "ops/").items():
             info = Info.load(raw)
-            self._by_handle[(info.epoch, info.handle)] = key.rsplit("/", 1)[1]
+            self._by_handle[(info.incarnation, info.handle)] = key.rsplit("/", 1)[1]
 
     def _settled(self, rec: OperationRecord) -> None:
         if rec.op.get("deviceId") != self.device_id or not rec.terminal:
             return
         info = self._info(rec.id)
         if info is not None:
-            self._by_handle.pop((info.epoch, info.handle), None)
+            self._by_handle.pop((info.incarnation, info.handle), None)
             with contextlib.suppress(StoreError):
                 self.server.store.meta_delete(f"{self.prefix}ops/{rec.id}")
 
@@ -535,7 +571,7 @@ class CompactBridge:
         """Operations dispatched before the proven purge stay unknown but no longer block their resources (BHMS-OPS-042)."""
         for rec in self._unknown_operations():
             info = self._info(rec.id)
-            if info is not None and info.epoch == self.epoch:
+            if info is not None and info.incarnation == self.incarnation:
                 continue
             self.server.executor.lift_inhibition(rec)
             with contextlib.suppress(StoreError):
@@ -606,7 +642,7 @@ class CompactBridge:
         assert self.epoch is not None
         handle = self.next_handle
         self.next_handle += 1
-        info = Info(handle, self.epoch, self.persistent, action)
+        info = Info(handle, self.epoch, self.persistent, action, self.incarnation)
         try:
             self.server.store.meta_set_many({f"{self.prefix}ops/{op_id}": info.dump(), self.prefix + "link": self._link_json()},
                                             barrier=True)
@@ -614,7 +650,7 @@ class CompactBridge:
             self.server.journal_failed(exc)
             raise self._refusal("the bridge journal cannot be written", "BUSY",
                                 "nothing was sent: the handle could not be recorded first") from None
-        self._by_handle[(self.epoch, handle)] = op_id
+        self._by_handle[(self.incarnation, handle)] = op_id
         return handle
 
     async def _rotate(self) -> None:
@@ -622,24 +658,24 @@ class CompactBridge:
         link = self._link
         if link is None or not self.ready or any(key[0] == "h" for key in self._waiters):
             return
-        self._new_session_pending = True
         try:
             hello = await asyncio.wait_for(self._handshake(link, new_session=True), self.timing.hello * 4)
         except asyncio.TimeoutError:
-            self._new_session_pending = False
             return
-        self._adopt(hello, link)
+        self._adopt(hello, link, new_session=True)
 
     async def _drive(self, ctx: ActionContext, handle: int, invoke: cp.Invoke, layout: cp.ActionLayout,
                      cancellable: bool) -> dict[str, Any]:
         """Send the INVOKE and follow it to a terminal outcome; see the module docstring for the policy."""
-        key = ("h", handle)
+        sent_inc = self.incarnation
+        key = self._hkey(sent_inc, handle)
         queue = self._register(key)
         loop = asyncio.get_running_loop()
         link = self._link
         assert link is not None
         timing = self.timing
         sent_epoch = self.epoch
+        sent_persistent = self.persistent  # what the endpoint was when this INVOKE went out, not what it later says it is
         invokes, queries, silent = 1, 0, 0
         heard, cancel_wanted, cancel_sent = False, False, False
         link.send(invoke, session=sent_epoch)
@@ -655,8 +691,10 @@ class CompactBridge:
                     if silent > timing.retries:
                         raise OutcomeUnknown(f"the endpoint did not answer {invokes} INVOKE and {queries} QUERY "
                                              f"transmissions for handle {handle}")
-                    if not heard and self.persistent and self.epoch == sent_epoch:
-                        link.send(invoke, session=sent_epoch)  # BHMS-CMP-033: only to a persistent-epoch endpoint
+                    if not heard and sent_persistent and self.incarnation == sent_inc:
+                        # BHMS-CMP-033: only to an endpoint that was persistent at dispatch and has not said a HELLO that may be a
+                        # reset since (a LinkEvent would have ended this loop)
+                        link.send(invoke, session=sent_epoch)
                         invokes += 1
                     else:
                         link.send(cp.Query(handle), session=self.epoch or 0)
@@ -780,9 +818,9 @@ class CompactBridge:
             return Reconciled("failed", evidence="the bridge journaled no handle for this operation, so no INVOKE was ever "
                               "sent to the endpoint", may_have_acted=False, effect="none", code="INTERNAL",
                               message="the operation was dispatched but its command never reached the wire")
-        if not self.ready or info.epoch != self.epoch:
-            return None  # earlier epoch: unknown stays (BHMS-CMP-022); link down: ask again when it is up
-        reply = await self._ask(info.handle)
+        if not self.ready or info.incarnation != self.incarnation:
+            return None  # earlier incarnation: unknown stays (BHMS-CMP-022); link down: ask again when it is up
+        reply = await self._ask(info.incarnation, info.handle)
         if reply is None:
             return None
         message = reply.message
@@ -802,11 +840,11 @@ class CompactBridge:
             return Reconciled("failed", evidence=f"{where}: rejected, it did not start", may_have_acted=False, effect="none")
         return None  # still running (its RESULT will arrive unprompted), HANDLE_UNKNOWN or a mismatch: evidence is missing
 
-    async def _ask(self, handle: int) -> cp.Incoming | None:
-        """QUERY ``handle`` and return the endpoint's STATUS or RESULT, or None (silence, an ERROR)."""
+    async def _ask(self, incarnation: int, handle: int) -> cp.Incoming | None:
+        """QUERY ``handle`` of the current incarnation and return the endpoint's STATUS or RESULT, or None (silence, an ERROR)."""
         link = self._link
-        key = ("h", handle)
-        if link is None or key in self._waiters:
+        key = self._hkey(incarnation, handle)
+        if link is None or key in self._waiters or incarnation != self.incarnation:
             return None
         queue = self._register(key)
         loop = asyncio.get_running_loop()
@@ -836,12 +874,23 @@ class CompactBridge:
         bound = (spec.max_duration_ms or self.timing.stop_confirm * 1000) / 1000
         queue: asyncio.Queue[cp.Incoming] = asyncio.Queue()
         self._stop_waiters.append(queue)
+        loop = asyncio.get_running_loop()
+        horizon = loop.time() - (bound + self.timing.reply * (self.timing.retries + 1))
+        while self._stop_sent and self._stop_sent[0] < horizon:
+            self._stop_sent.popleft()  # an ack that never came: forget it rather than skip a real one for ever
+        stale = len(self._stop_sent)  # acks still due to STOPs of earlier attempts are not evidence about this one
         try:
             ack: cp.StopAck | None = None
             for _ in range(self.timing.retries + 1):
                 link.send(cp.Stop(STOP_REASON_GATEWAY), session=self.epoch or 0)
+                self._stop_sent.append(loop.time())
                 try:
-                    first = await asyncio.wait_for(queue.get(), self.timing.reply)
+                    while True:
+                        first = await asyncio.wait_for(queue.get(), self.timing.reply)
+                        if stale > 0:
+                            stale -= 1
+                            continue
+                        break
                 except asyncio.TimeoutError:
                     continue
                 ack = first.message  # type: ignore[assignment]
@@ -888,7 +937,13 @@ class CompactBridge:
                     except asyncio.TimeoutError:
                         continue
                     if isinstance(item.message, cp.Error):
-                        raise BhmsError("INVALID_ARGUMENT", f"the endpoint refused READ: {item.message.name}")
+                        refused = item.message
+                        if refused.code == cp.E_SESSION_MISMATCH:  # the endpoint restarted: not the caller's argument
+                            self._needs_hello.set()
+                            raise BhmsError("STALE", "the endpoint restarted since the last HELLO (SESSION_MISMATCH); read again "
+                                            "once the link has said HELLO", hint="retry the read shortly")
+                        raise BhmsError(_ERROR_CODE.get(refused.code, "INTERNAL"),
+                                        f"the endpoint refused READ: {refused.name}")
                     return self._reading(item.message, layout)
                 raise asyncio.TimeoutError(f"no VALUE for {name}")
             finally:
@@ -961,6 +1016,10 @@ def upstream_from_config(name: str, entry: dict[str, Any], base: Path, state_dir
         if key in entry:
             timing[key] = int(entry[key])
     port = entry["port"]
+    try:
+        cp.refuse_networked(port)  # BHMS-SEC-050: the gateway does not start with a networked compact link
+    except ValueError as exc:
+        raise ValueError(f"{where}: {exc}") from None
     if port.startswith("unix:") and not port[5:].startswith(("/", "//")):
         port = f"unix:{base / port[5:]}"
     sidecar = Path(entry["sidecar"]).expanduser()

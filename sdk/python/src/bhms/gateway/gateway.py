@@ -449,11 +449,17 @@ class Gateway:
             mapped = self.leases.gateway_lease_of(data.get("leaseId", ""))
             data = {**data, "leaseId": mapped} if mapped else {k: v for k, v in data.items() if k != "leaseId"}
         device = event.get("deviceId")
+        purged_ids: list[str] = []
+        if kind == "device.epoch" and isinstance(data, dict) and data.get("purged") is True:
+            ids = data.get("operationIds")
+            purged_ids = [i for i in ids if isinstance(i, str)] if isinstance(ids, list) else []
+            mapped_ids = [g for g in (self.router.gateway_operation_id(up.name, i) for i in purged_ids) if g]
+            data = {**{k: v for k, v in data.items() if k != "operationIds"}, "operationIds": mapped_ids}  # this gateway's ids
         self.events.append(kind, severity=event.get("severity", "info"),
                            device_id=gateway_id(up.name, device) if device else None, operation_id=gateway_op,
                            message=event.get("message"), data=data or None)
-        if kind == "device.epoch" and device and isinstance(data, dict) and data.get("purged") is True:
-            self.router.endpoint_purged(gateway_id(up.name, device))
+        if purged_ids:
+            self.router.endpoint_purged(up.name, purged_ids)
 
 
 

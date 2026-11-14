@@ -26,7 +26,7 @@ Core types (`data` members in parentheses):
 |---|---|
 | `device.online`, `device.offline`, `device.degraded` | Reachability changed |
 | `device.replaced` | A device id was bound to different hardware (`previousDigest`) |
-| `device.epoch` | The device restarted its sequence or session (`epoch`) |
+| `device.epoch` | The device restarted its sequence or session (`epoch`, and optionally `persistent`, `purged`) |
 | `device.fault` | The device reported a fault (`code?`) |
 | `operation.state` | An operation changed state (`state`, `previousState`) |
 | `stop` | A stop was requested or its outcome became known (`outcome`, `reason`) |
@@ -35,6 +35,21 @@ Core types (`data` members in parentheses):
 
 Device-specific types are declared in the description's `events` map and MUST
 NOT equal a core type.
+
+`device.epoch` `data`: `epoch` (the new epoch value), `persistent` (boolean, the
+endpoint's `PERSISTENT_EPOCH` flag), and `purged` (boolean, default `false`).
+`purged: true` is the *endpoint-proven purge* of BHMS-OPS-042: the party that
+owns the link to the endpoint (a BHMS-Compact bridge, BHMS-CMP-022) asserts that
+the endpoint provably discarded everything dispatched before this event. Only
+that owner may emit it, and only on the evidence BHMS-CMP-022 lists; a device
+server that cannot prove a purge MUST omit the member or send `false`. A
+gateway that ingests `device.epoch` with `purged: true` MUST, for each operation
+of that device that is `unknown` or becomes `unknown` and was dispatched before
+the event, keep its state and `unknown` outcome but stop treating it as blocking
+its resources (BHMS-OPS-042); operations dispatched later are not covered. A
+gateway that restarts between the event and this lift MAY leave the inhibition in
+place until the next proof or a confirmed `stop` (under-lifting is allowed,
+lifting without proof is not).
 
 **BHMS-EVT-001** Cursors MUST be opaque, server-minted and totally ordered per
 server; an event read twice MUST have the same cursor and content.

@@ -41,6 +41,7 @@ import contextlib
 import logging
 import time
 from collections import OrderedDict
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any
 
 from bhms.gateway.catalog import CatalogEntry
@@ -102,7 +103,6 @@ class Router:
         self._retry_at: dict[str, float] = {}
         self._early: OrderedDict[tuple[str, str], dict[str, Any]] = OrderedDict()  # notifications seen before indexing
         self.unknown: dict[str, OperationRecord] = {}
-        self._purged_ns: dict[str, int] = {}  # device -> when its endpoint proved a reset purged all earlier work
         # Retained observations of transaction properties (BHMS-OBS-011): last relayed sample per (device, property), valid
         # for the upstream epoch it came from; bounded.
         self._retained: OrderedDict[tuple[str, str], tuple[dict[str, Any], str | None, float]] = OrderedDict()
@@ -521,9 +521,6 @@ class Router:
 
     def _became_unknown(self, rec: OperationRecord) -> None:
         self.unknown[rec.id] = rec
-        purged = self._purged_ns.get(rec.op.get("deviceId", ""))
-        if purged is not None and rec.created_ns <= purged:  # the proof arrived before the reply that made it unknown
-            self._lift_purged(rec)
         with contextlib.suppress(StoreError):
             self.gateway.events.append("operation.state", severity="warning", device_id=rec.op.get("deviceId"),
                                        operation_id=rec.id, message=rec.op.get("error", {}).get("message"),
@@ -869,15 +866,15 @@ class Router:
                                                message=reason[:1000], data={"outcome": stop["outcome"],
                                                                             "reason": reason})
 
-    def endpoint_purged(self, device_id: str) -> None:
-        """The upstream proved (``device.epoch`` with ``purged``, e.g. an advanced persistent compact boot epoch) that its endpoint
-        discarded everything dispatched before now: the unknown operations of that device stay unknown (their outcome is not
-        known) but stop blocking their resources (BHMS-OPS-042). Work forwarded after this moment is not covered."""
-        from bhms.runtime.operations import now_ns
-
-        self._purged_ns[device_id] = now_ns()
-        for rec in list(self.unknown.values()):
-            if rec.op.get("deviceId") == device_id:
+    def endpoint_purged(self, namespace: str, upstream_operation_ids: Iterable[str]) -> None:
+        """The upstream proved (``device.epoch`` with ``purged``: an advanced persistent compact boot epoch or an accepted
+        NEW_SESSION) that its endpoint discarded the work of exactly these operations. They stay as they are (``unknown`` keeps
+        its outcome) but stop blocking their resources (BHMS-OPS-042). Only the listed operations are covered: work dispatched
+        after the proof, or one this gateway cannot map (e.g. after a restart that lost the event), keeps its inhibition."""
+        for upstream_id in upstream_operation_ids:
+            gid = self.gateway_operation_id(namespace, upstream_id)
+            rec = self.gateway.journal.get(gid) if gid else None
+            if rec is not None and not rec.terminal:
                 self._lift_purged(rec)
 
     def _lift_purged(self, rec: OperationRecord) -> None:

@@ -18,7 +18,7 @@ key it concerns, never at the first request::
     [[upstream]]                       # a microcontroller speaking BHMS-Compact over serial (spec 11), served by a bridge
     name = "arm"
     type = "compact"
-    port = "/dev/ttyACM0"              # or pty:/dev/pts/N, unix:<path>, tcp://host:port
+    port = "/dev/ttyACM0"              # or pty:/dev/pts/N, unix:<path> (no networked links: BHMS-SEC-050)
     baud = 115200
     sidecar = "arm.sidecar.json"       # the full DeviceDescription with compact layouts; its digest must match the board's HELLO
     # reply_timeout_ms, retries, poll_interval_ms, probe_interval_ms, hello_timeout_ms: link timing (see compact_bridge)

@@ -90,10 +90,12 @@ async def test_a_lost_reply_is_retransmitted_to_a_persistent_endpoint_and_the_ac
 @pytest.mark.usefixtures("native")
 async def test_unknown_at_the_gateway_is_reconciled_from_the_endpoint_without_a_second_command(tmp_path, native):
     async with compact_gateway(tmp_path, native, epoch=False) as rig:  # a non-persistent endpoint: QUERY, never a retransmit
-        rig.wire.hold(TO_GATEWAY)
+        # Every RESULT is lost but the link lives (probes are answered): no HELLO may follow, so the incarnation is unchanged and
+        # QUERY is evidence; a HELLO of an endpoint without a persistent epoch would end the right to ask (BHMS-CMP-020).
+        rig.wire.drop(TO_GATEWAY, count=1000, match=lambda m: isinstance(m, cp.Result))
         op = await rig.invoke("rig/bench-rig", "set_level", {"value": 10.0}, operation_key="k-unk", wait_ms=4000)
         assert op["state"] in ("unknown", "dispatching", "running")
-        rig.wire.release(TO_GATEWAY, deliver=False)  # what it said while unreachable is lost for good
+        rig.wire.clear_rules()
         for _ in range(200):
             op = await rig.operation(op["operationId"])
             if op["state"] == "completed":
@@ -195,7 +197,9 @@ async def test_a_proven_epoch_advance_lifts_the_gateways_inhibition_of_the_unkno
                 assert exc.code == "STALE"
                 await asyncio.sleep(0.05)
         assert done is not None and done["state"] == "completed"
-        assert len(rig.wire.sent(cp.Invoke, TO_DEVICE)) == 2  # the first INVOKE was never sent again
+        # The bridge may legitimately retransmit before it learns of the reboot (refused with SESSION_MISMATCH, nothing ran): what
+        # matters is what the endpoint did. One lock started before the reboot and one after; none was run a second time.
+        assert rig.endpoint.count("LOCK-start") == 2
 
 
 @pytest.mark.usefixtures("native")
@@ -215,3 +219,68 @@ async def test_without_a_persistent_epoch_the_gateways_inhibition_stays_until_a_
         with pytest.raises(BhmsError) as inhibited:
             await rig.invoke("rig/bench-rig", "lock", {"duration_ms": 20})
         assert inhibited.value.code == "STALE"
+
+
+@pytest.mark.parametrize("port", ["tcp://10.0.0.5:7000", "TCP://host:1", "ws://host:1/x", "tls://host:1", "https://host/x"])
+def test_a_networked_compact_link_is_refused_at_configuration_load(tmp_path, port):  # BHMS-SEC-050
+    (tmp_path / "s.json").write_text(json.dumps(LED))
+    (tmp_path / "g.toml").write_text(f'[gateway]\nid = "g"\n\n[[upstream]]\nname = "u"\ntype = "compact"\nport = "{port}"\n'
+                                     'sidecar = "s.json"\n')
+    with pytest.raises(ConfigError, match="BHMS-SEC-050"):
+        load_config(tmp_path / "g.toml")
+
+
+async def test_the_link_opener_refuses_a_networked_port_even_when_used_directly():  # BHMS-SEC-050
+    from bhms.transport.compact import open_stream
+
+    with pytest.raises(ValueError, match="BHMS-SEC-050"):
+        await open_stream("tcp://127.0.0.1:9")
+
+
+@pytest.mark.usefixtures("native")
+async def test_a_purge_proof_lifts_only_the_operations_it_names_and_survives_a_gateway_restart(tmp_path, native):  # OPS-042, spec 9.2
+    """Under-lift is allowed, lifting without proof is not: the inhibition goes for the named operation only, durably."""
+    from bhms.gateway import Gateway, load_config
+
+    async def lock(client_invoke):
+        return await client_invoke("rig/bench-rig", "lock", {"duration_ms": 20})
+
+    async with compact_gateway(tmp_path, native) as rig:
+        rig.wire.drop(TO_GATEWAY, count=1000, match=lambda m: isinstance(m, cp.Result))
+        before = await rig.invoke("rig/bench-rig", "lock", {"duration_ms": 20}, wait_ms=4000)
+        rig.wire.clear_rules()
+        assert before["state"] == "unknown"
+        with pytest.raises(BhmsError) as refused:
+            await lock(rig.invoke)
+        assert refused.value.code == "STALE"
+        await rig.wire.reboot()  # the persistent epoch advances: the endpoint proves it purged `before`
+        for _ in range(200):
+            try:
+                assert (await lock(rig.invoke))["state"] == "completed"
+                break
+            except BhmsError as exc:
+                assert exc.code == "STALE"
+                await asyncio.sleep(0.05)
+        else:
+            pytest.fail("the purge proof never lifted the inhibition")
+        assert (await rig.operation(before["operationId"]))["state"] == "unknown"  # lifted, not settled: still unknown
+        # work dispatched after the proof is not covered by it
+        rig.wire.drop(TO_GATEWAY, count=1000, match=lambda m: isinstance(m, cp.Result))
+        after = await rig.invoke("rig/bench-rig", "lock", {"duration_ms": 20}, wait_ms=4000)
+        rig.wire.clear_rules()
+        assert after["state"] == "unknown"
+        rig.gateway.router.endpoint_purged("rig", [])  # a proof that names nothing (lost in a restart) lifts nothing
+        with pytest.raises(BhmsError) as still:
+            await lock(rig.invoke)
+        assert still.value.code == "STALE" and after["operationId"] in still.value.message
+        # `before` stays lifted across a gateway restart (the lift is journaled with the operation)
+        record = rig.gateway.journal.get(before["operationId"])
+        assert record is not None and record.private.get("inhibitionLifted") is True
+        await rig.gateway.close()
+        gateway = Gateway(load_config(rig.config_path))
+        await gateway.start()
+        try:
+            restarted = gateway.journal.get(before["operationId"])
+            assert restarted is not None and restarted.state == "unknown" and restarted.private.get("inhibitionLifted") is True
+        finally:
+            await gateway.close()

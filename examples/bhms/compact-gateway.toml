@@ -10,7 +10,8 @@
 # *sidecar* file next to the firmware. The bridge computes its digest and serves the device only when the board's HELLO
 # reports the first 8 bytes of that digest; a mismatch is logged and the device is not served (never guessed).
 #
-#   port      /dev/ttyACM0 (USB CDC / UART), pty:/dev/pts/N, unix:<path> or tcp://host:port (a serial-to-network bridge)
+#   port      /dev/ttyACM0 (USB CDC / UART), pty:/dev/pts/N or unix:<path>. A networked link (tcp://, ...) is refused at start-up:
+#             the FCS-16 detects corruption, not forgery, so the link must be an exclusively owned line (BHMS-SEC-050)
 #   baud      serial speed (default 115200, 8N1, raw)
 #   sidecar   the description JSON, relative to this file; `python sdk/c/tools/bhms_digest.py <sidecar> --check` validates
 #             it and prints the digest8 the firmware must report

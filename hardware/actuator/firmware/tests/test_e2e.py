@@ -1,6 +1,6 @@
 """End-to-end: the firmware's real endpoint and arm logic (sim_arm, host build under ASan/UBSan)
-on a pty, driven by the Task 9a Python harness (an independent struct-based implementation of the
-BHMS-Compact layouts): HELLO -> enable -> move_joints in limits -> coupled-limit violation refused
+on a pty, driven by the Task 9a Python harness, whose payload codec is the SDK's one compact codec
+(sdk/python/src/bhms/transport/compact.py; independent of the C library, so this stays a differential check): HELLO -> enable -> move_joints in limits -> coupled-limit violation refused
 (OUT_OF_RANGE naming the limit) -> E-stop pressed mid-move (operation stopped, state measured)
 -> restart inhibit -> STOP.
 
@@ -72,11 +72,10 @@ class Arm:
     def hello(self):
         sent, wire, fr = self.link.exchange(h.hello_req(0xBEEF), 0, TIMEOUT)
         assert fr is not None, "no HELLO"
-        p = fr.payload
-        assert p[0] == h.HELLO
-        t, ver, flags, digest, epoch, nonce, last, ring, max_active, max_args = struct.unpack("<BBB8sIIHBBB", p)
-        self.session = epoch
-        return dict(flags=flags, digest=digest, epoch=epoch, ring=ring, max_active=max_active, max_args=max_args)
+        m = h.codec.decode(fr.payload)
+        assert isinstance(m, h.codec.Hello)
+        self.session = m.epoch
+        return dict(flags=m.flags, digest=m.digest8, epoch=m.epoch, ring=m.ring, max_active=m.max_active, max_args=m.max_args)
 
     def next(self, timeout=TIMEOUT):
         if self.backlog:
@@ -126,24 +125,20 @@ class Arm:
 
 
 def parse(fr):
-    p = fr.payload
-    t = p[0]
-    if t == h.STATUS_MSG:
-        _, hd, st, cancel, prog = struct.unpack("<BHBBB", p[:6])
-        return dict(type="status", handle=hd, state=st, cancel=cancel, progress=prog, kind=fr.kind)
-    if t == h.RESULT:
-        _, hd, st, ev, fault = struct.unpack("<BHBBB", p[:6])
-        return dict(type="result", handle=hd, state=st, evidence=ev, fault=fault, fields=p[6:], kind=fr.kind)
-    if t == h.ERROR:
-        _, rt, ident, code, detail = struct.unpack("<BBHBB", p)
-        return dict(type="error", req=rt, id=ident, code=code, detail=detail)
-    if t == h.VALUE:
-        _, req, prop, q, ev, seq, age = struct.unpack("<BHBBBII", p[:14])
-        return dict(type="value", request=req, prop=prop, quality=q, evidence=ev, raw=p[14:], age=age)
-    if t == h.STOP_ACK:
-        _, outcome, ev, canceled = struct.unpack("<BBBB", p)
-        return dict(type="stop_ack", outcome=outcome, evidence=ev, canceled=canceled, kind=fr.kind)
-    return dict(type="other", payload=p)
+    """A received frame as the dict shape the tests below use, decoded by the SDK codec."""
+    c = h.codec
+    m = c.decode(fr.payload)
+    if isinstance(m, c.Status):
+        return dict(type="status", handle=m.handle, state=m.state, cancel=m.cancel, progress=m.progress, kind=fr.kind)
+    if isinstance(m, c.Result):
+        return dict(type="result", handle=m.handle, state=m.state, evidence=m.evidence, fault=m.fault, fields=m.fields, kind=fr.kind)
+    if isinstance(m, c.Error):
+        return dict(type="error", req=m.request_type, id=m.ident, code=m.code, detail=m.detail)
+    if isinstance(m, c.Value):
+        return dict(type="value", request=m.request, prop=m.prop, quality=m.quality, evidence=m.evidence, raw=m.raw, age=m.age_ms)
+    if isinstance(m, c.StopAck):
+        return dict(type="stop_ack", outcome=m.outcome, evidence=m.evidence, canceled=m.canceled, kind=fr.kind)
+    return dict(type="other", payload=fr.payload)
 
 
 def f32(m):

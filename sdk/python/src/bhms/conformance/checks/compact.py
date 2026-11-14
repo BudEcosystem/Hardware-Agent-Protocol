@@ -149,7 +149,7 @@ async def endpoint_sessions(c: Context) -> None:
     again = await raw.hello(new_session=True)
     c.expect(again.epoch != before.epoch, "NEW_SESSION while idle did not start a new epoch", ("BHMS-CMP-023",))
     if before.persistent:
-        c.expect(cp.HELLO == cp.HELLO and again.epoch == (before.epoch + 1) % 2**32 or again.epoch > before.epoch,
+        c.expect(again.epoch == (before.epoch + 1) % 2**32 or again.epoch > before.epoch,
                  f"a persistent epoch must increase: {before.epoch} -> {again.epoch}", ("BHMS-CMP-023",))
     c.expect(again.last_handle == 0, "NEW_SESSION did not reset lastHandle", ("BHMS-CMP-023",))
     first = result_of(await raw.exchange(cp.Invoke(1, 0, LEVEL)))
