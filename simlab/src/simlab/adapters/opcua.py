@@ -71,6 +71,11 @@ class Method:
     idempotency: str = "absolute"
     max_duration_ms: int = 10_000
     confirm: tuple[str, Callable[[Any, dict[str, Any]], bool]] | None = None  # (variable name, predicate)
+    requires_lease: bool = False  # must be True for effect "hazardous" (BHMS-DEV-033); the adapter declares it
+
+    def __post_init__(self) -> None:
+        if self.effect == "hazardous" and not self.requires_lease:
+            raise ValueError(f"OPC UA method {self.name!r}: a hazardous method must set requires_lease=True (BHMS-DEV-033)")
 
 
 @dataclass(frozen=True)
@@ -205,7 +210,8 @@ def build_server(world: World, profile: OpcUaProfile, endpoint: str, *, state_di
         declare_action(dev, method.name, caller(method), description=method.description,
                        params={a.name: Range(a.minimum, a.maximum, unit=a.unit) for a in method.arguments},
                        returns={"message": str}, effect=method.effect, idempotency=method.idempotency,
-                       completion_evidence="reported", max_duration_ms=method.max_duration_ms, resources=[resource])
+                       completion_evidence="reported", max_duration_ms=method.max_duration_ms, resources=[resource],
+                       requires_lease=method.requires_lease)
 
     @dev.reconcile
     async def reconcile(op: dict[str, Any]) -> Reconciled | None:

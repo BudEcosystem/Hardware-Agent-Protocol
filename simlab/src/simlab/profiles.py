@@ -43,7 +43,7 @@ CENTRIFUGE_OPCUA = OpcUaProfile(
     methods=(
         Method("start_program", ("Centrifuge",), "StartProgram", "Start a spin: ramp to the speed, hold, brake.",
                arguments=(Argument("speed_hz", "Hz", 1.5, 250.0), Argument("hold_seconds", "s", 1.0, 3600.0)),
-               effect="hazardous", idempotency="relative", max_duration_ms=10_000),
+               effect="hazardous", idempotency="relative", max_duration_ms=10_000, requires_lease=True),
         Method("open_lid", ("Centrifuge",), "OpenLid", "Open the lid (refused while the rotor turns).",
                confirm=("lid_open", lambda value, _args: value is True)),
         Method("close_lid", ("Centrifuge",), "CloseLid", "Close the lid.",

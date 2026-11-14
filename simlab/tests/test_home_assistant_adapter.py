@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 
 import pytest
+from bhms.protocol.errors import BhmsError
 
 from contract import check_description, check_observations
 from serving import read, run, serving
@@ -99,6 +100,12 @@ async def test_a_bad_token_is_unreachable_not_a_silent_success(tmp_path):
     w = World(BENCH, seed=9, attach_arm=False)
     srv, link = ha_adapter.build_server(w, FACILITY_HA, URL, "not-a-token", state_dir=tmp_path / "ha3")
     async with serving(srv, tmp_path) as client:
+        # the liveness probe was refused when the server started: the device is offline and nothing is sent (BHMS-DEV-012)
+        assert (await client.devices_list()).devices[0].status == "offline"
+        with pytest.raises(BhmsError) as refused:
+            await run(client, "facility-1", "turn_on", {"entity": "light.bed_light"})
+        assert refused.value.bhms_code == "DEVICE_UNAVAILABLE" and refused.value.may_have_acted is False
+        srv.devices["facility-1"].report_alive()  # the adapter's own answer, for a token revoked after the probe
         op = await run(client, "facility-1", "turn_on", {"entity": "light.bed_light"})
         assert op.state == "failed" and op.effect == "none" and "refused the token" in op.error.message
         assert (await read(client, "facility-1", "light_bed_light")).quality == "invalid"

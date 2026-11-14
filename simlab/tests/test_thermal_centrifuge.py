@@ -6,7 +6,7 @@ import math
 import pytest
 
 from contract import check_description, check_observations
-from serving import read, run, serving
+from serving import leased, read, run, serving
 from simlab.oracle import Claim, Oracle, Verdict
 from simlab.scene import BENCH
 from simlab.twins import centrifuge as fuge_twin
@@ -74,7 +74,7 @@ async def test_thermal_bounds_are_enforced_before_the_device(thermal):
     from bhms.protocol.errors import BhmsError
     with pytest.raises(BhmsError) as err:
         await client.actions_invoke("thermal-1", "set_temperature", {"target": 150.0})
-    assert err.value.code == "OUT_OF_RANGE"
+    assert err.value.bhms_code == "OUT_OF_RANGE"
     assert not model.enabled
 
 
@@ -147,7 +147,7 @@ async def test_centrifuge_contract_and_a_full_run(fuge):
     client, srv, model, w = fuge
     desc = await check_description(client, "centrifuge-1", measured_ok={"speed", "lid_open"})
     await check_observations(client, "centrifuge-1", desc)
-    assert desc["actions"]["spin"]["effect"] == "hazardous"
+    assert desc["actions"]["spin"]["effect"] == "hazardous" and desc["actions"]["spin"]["requiresLease"] is True  # DEV-033
     spin = await run(client, "centrifuge-1", "spin", {"speed": 60.0, "duration": 30}, wait_ms=60_000)
     assert spin.state == "completed" and spin.effect == "verified" and abs(spin.result["peak_speed"] - 60.0) < 0.6
     assert model.speed_hz() < 60.0  # braking after the hold
@@ -158,15 +158,17 @@ async def test_centrifuge_contract_and_a_full_run(fuge):
 
 async def test_open_lid_during_a_spin_is_refused_with_proof(fuge):
     client, srv, model, w = fuge
-    started = await client.actions_invoke("centrifuge-1", "spin", {"speed": 60.0, "duration": 600}, wait_ms=0)
-    await asyncio.sleep(0.2)
-    refused = await run(client, "centrifuge-1", "open_lid")
-    assert refused.state == "failed" and refused.effect == "none" and refused.error.may_have_acted is False
-    assert Oracle(w).judge(Claim(refused.operation_id, "failed", "failed", lambda s: False)) is Verdict.CONSISTENT
-    await client.operations_cancel(started.operation.operation_id, reason="end of test")
-    done = (await client.operations_wait(started.operation.operation_id, 20_000)).operation
-    assert done.state == "canceled"
-    assert model.speed_hz() < 60.0
+    async with leased(client, ["centrifuge-1/rotor"]) as lease_id:  # spin is hazardous: it requires a lease (BHMS-DEV-033)
+        started = await client.actions_invoke("centrifuge-1", "spin", {"speed": 60.0, "duration": 600}, wait_ms=0,
+                                              lease_id=lease_id)
+        await asyncio.sleep(0.2)
+        refused = await run(client, "centrifuge-1", "open_lid")
+        assert refused.state == "failed" and refused.effect == "none" and refused.error.may_have_acted is False
+        assert Oracle(w).judge(Claim(refused.operation_id, "failed", "failed", lambda s: False)) is Verdict.CONSISTENT
+        await client.operations_cancel(started.operation.operation_id, reason="end of test")
+        done = (await client.operations_wait(started.operation.operation_id, 20_000)).operation
+        assert done.state == "canceled"
+        assert model.speed_hz() < 60.0
 
 
 async def test_imbalance_refusal_through_bhms(tmp_path):

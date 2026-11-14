@@ -110,7 +110,7 @@ async def test_power_loss_mid_move_is_unknown_then_reconciled_from_the_device_lo
     assert summary.status == "offline"
     with pytest.raises(BhmsError) as refused:
         await client.actions_invoke("arm-1", "move_to_site", {"site": "hotel"})
-    assert refused.value.code == "DEVICE_UNAVAILABLE" and refused.value.may_have_acted is False
+    assert refused.value.bhms_code == "DEVICE_UNAVAILABLE" and refused.value.may_have_acted is False
     world.faults.clear("fault-1")
     (await srv.reconcile("arm-1"))
     settled = (await client.operations_get(op.operation_id)).operation

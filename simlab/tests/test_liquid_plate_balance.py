@@ -120,7 +120,7 @@ async def test_malformed_well_name_never_reaches_the_device(handler):
     from bhms.protocol.errors import BhmsError
     with pytest.raises(BhmsError) as err:
         await client.actions_invoke("lh-1", "aspirate", {"position": "deck", "well": "Z99", "volume": 10})
-    assert err.value.code == "INVALID_ARGUMENT"
+    assert err.value.bhms_code == "INVALID_ARGUMENT"
     assert [e for e in w.effect_log() if e.device == "lh-1"] == []
 
 

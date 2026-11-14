@@ -39,7 +39,7 @@ async def test_contract(rig):
     client, srv, model, w = rig
     desc = await check_description(client, "centrifuge-u1", measured_ok={"speed", "lid_open"})
     await check_observations(client, "centrifuge-u1", desc)
-    assert desc["actions"]["start_program"]["effect"] == "hazardous"
+    assert desc["actions"]["start_program"]["effect"] == "hazardous" and desc["actions"]["start_program"]["requiresLease"] is True
     assert all(a["completionEvidence"] == "reported" for a in desc["actions"].values())
 
 
@@ -96,7 +96,7 @@ async def test_sdk_bounds_apply_to_method_arguments(rig):
     from bhms.protocol.errors import BhmsError
     with pytest.raises(BhmsError) as err:
         await client.actions_invoke("centrifuge-u1", "start_program", {"speed_hz": 900.0, "hold_seconds": 5.0})
-    assert err.value.code == "OUT_OF_RANGE" and not model.running()
+    assert err.value.bhms_code == "OUT_OF_RANGE" and not model.running()
 
 
 async def test_power_loss_makes_reads_invalid_and_a_call_unknown(rig):

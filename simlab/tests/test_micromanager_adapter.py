@@ -48,4 +48,4 @@ async def test_out_of_range_never_reaches_the_core(rig):
     from bhms.protocol.errors import BhmsError
     with pytest.raises(BhmsError) as err:
         await client.actions_invoke("microscope-mm", "set_z", {"z": 500.0})
-    assert err.value.code == "OUT_OF_RANGE" and not [e for e in w.effect_log() if e.kind == "z_move"]
+    assert err.value.bhms_code == "OUT_OF_RANGE" and not [e for e in w.effect_log() if e.kind == "z_move"]

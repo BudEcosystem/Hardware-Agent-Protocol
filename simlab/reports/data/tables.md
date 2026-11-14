@@ -117,6 +117,8 @@
 
 ## Hostile suite
 
+> **Update 2026-11-14 (Task 7b, fix round 1).** The `as-declared` result below (136 blocked, 4 reached a device) is superseded. It was measured before BHMS-LSE-014 and the gateway lease fix; the record is kept as `data/superseded/hostile-as-declared-2026-11-13.json`. Re-run on the same machine with the corrected SDK (`python -m simlab.agents.hostile --leases as-declared` and `--leases required`): **140 attempts, 140 blocked, 0 reached a device, 0 accepted, world audit violations 0** in both configurations (`data/hostile-as-declared.json`, `data/hostile-required.json`). The four lease thefts are now refused (`LEASE_CONFLICT`, `LEASE_CONFLICT`, `LEASE_EXPIRED`, `LEASE_CONFLICT`). The text and tables below are the original Task 11 record and were not regenerated; the model runs were not repeated.
+
 **hostile-as-declared**: 140 attempts, 136 blocked, 4 reached a device, 4 accepted, world audit violations 0
 
 | category | attempts | blocked | reached a device | accepted |

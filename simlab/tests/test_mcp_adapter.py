@@ -91,7 +91,7 @@ async def test_argument_types_are_checked_before_the_server_sees_them(rig):
     from bhms.protocol.errors import BhmsError
     with pytest.raises(BhmsError) as err:
         await client.actions_invoke("mini", "set_lamp", {"on": "yes please"})
-    assert err.value.code in ("INVALID_ARGUMENT", "OUT_OF_RANGE", "TYPE_MISMATCH") or "on" in str(err.value)
+    assert err.value.bhms_code in ("INVALID_ARGUMENT", "OUT_OF_RANGE", "TYPE_MISMATCH") or "on" in str(err.value)
     assert server_state(state)["lamp"] is False
 
 

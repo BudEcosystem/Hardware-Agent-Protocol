@@ -28,7 +28,7 @@ async def expect_error(coro, code: str, what: str) -> BhmsError:
     try:
         await coro
     except BhmsError as exc:
-        check(exc.code == code, f"{what}: {exc.code} (wanted {code})")
+        check(exc.bhms_code == code, f"{what}: {exc.bhms_code} (wanted {code})")
         return exc
     raise AssertionError(f"{what}: no error raised")
 

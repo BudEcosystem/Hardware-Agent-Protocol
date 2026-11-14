@@ -253,7 +253,7 @@ async def f13_journal_unwritable_stop_still_works(run_dir: Path) -> Outcome:
             await client.actions_invoke("arm-1", "move_to_site", {"site": "reader"}, wait_ms=5000)
             refused = None
         except BhmsError as exc:
-            refused = exc.code
+            refused = exc.bhms_code
         moves = len([e for e in lab.world.effect_log() if e.kind == "move_started"])
         stopped = await client.stop("journal is unwritable", device_ids=["arm-1"], wait_ms=2000)
         stop_outcome = stopped.stops[0].outcome  # the stop path works with a read-only journal (degraded audit)

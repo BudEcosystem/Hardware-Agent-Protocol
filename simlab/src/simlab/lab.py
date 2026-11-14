@@ -42,8 +42,11 @@ EXTRA = ("knob", "notice", "clock", "cell")  # Actuator Node and the adversarial
 
 def demand_leases(server: DeviceServer) -> None:
     """Declare every effectful action of ``server`` ``requiresLease`` (BHMS-LSE-010), as a bench that wants exclusive access
-    would. The twins declare no lease by default (an action without ``requiresLease`` runs whoever holds the resource's lease),
-    which is what the agent matrix's hostile suite measures; the SDK offers no per-server switch, so the specs are replaced."""
+    would. "As declared", the twins require a lease only for hazardous actions (BHMS-DEV-033). Since BHMS-LSE-014 that no
+    longer leaves a leased resource open: while a lease is held on a resource, every action that uses it is refused unless the
+    request presents that lease, the holder's own requests included (the hostile suite's four "as declared" reaches of
+    2026-11-13 predate that rule and are refused now). What this switch still adds is that an action cannot start at all
+    without a lease. The SDK offers no per-server switch, so the specs are replaced."""
     for device in server.devices.values():
         for name, spec in list(device.actions.items()):
             if spec.effect != "none" and not spec.requires_lease:

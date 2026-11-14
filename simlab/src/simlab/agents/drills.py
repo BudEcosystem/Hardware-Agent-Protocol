@@ -82,10 +82,10 @@ class ResilientClient:
                 await self._reconnect()
                 continue  # the same key: the runtime answers with the operation it already has (BHMS-OPS-030)
             except BhmsError as exc:
-                if exc.code in ("BUSY", "STALE") and attempt < 4 + unavailable:
+                if exc.bhms_code in ("BUSY", "STALE") and attempt < 4 + unavailable:
                     await asyncio.sleep(0.3)
                     continue
-                if exc.code == "DEVICE_UNAVAILABLE" and not exc.may_have_acted and unavailable < 30:
+                if exc.bhms_code == "DEVICE_UNAVAILABLE" and not exc.may_have_acted and unavailable < 30:
                     unavailable += 1  # nothing happened (the refusal proves it): wait for the device, then ask again, same key
                     await asyncio.sleep(0.5)
                     continue

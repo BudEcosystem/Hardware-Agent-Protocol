@@ -207,6 +207,7 @@ def build_server(world: World, model: CentrifugeModel | None = None, *, state_di
 
     @dev.action(effect="hazardous", idempotency="relative", completion_evidence="measured",
                 verified_by=["speed"], cancel="supported", max_duration_ms=3_700_000, typical_duration_ms=300_000,
+                requires_lease=True, on_lease_loss="cancel",  # a hazardous action requires a lease (BHMS-DEV-033)
                 resources=[f"{device_id}/rotor"], preconditions="lid closed; rotor balanced within 1 g")
     async def spin(ctx, speed: Range(1.5, MAX_HZ, unit="Hz"), duration: Range(1, 3600, unit="s")  # noqa: F821
                    ) -> {"peak_speed": Range(0, MAX_HZ, unit="Hz", nullable=True)}:  # noqa: F821

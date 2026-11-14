@@ -2,6 +2,7 @@
 
 import pymodbus
 import pytest
+from bhms.protocol.errors import BhmsError
 
 from contract import check_description, check_observations
 from serving import read, run, serving
@@ -70,7 +71,7 @@ async def test_sdk_bounds_stop_an_unsafe_setpoint_before_any_modbus_traffic(rig)
     from bhms.protocol.errors import BhmsError
     with pytest.raises(BhmsError) as err:
         await client.actions_invoke("thermal-m1", "set_setpoint", {"value": 150.0})
-    assert err.value.code == "OUT_OF_RANGE"
+    assert err.value.bhms_code == "OUT_OF_RANGE"
     assert not [e for e in w.effect_log() if e.kind == "thermal_command"]
 
 
@@ -100,13 +101,20 @@ async def test_power_loss_is_unknown_and_reconciles_only_on_evidence(rig):
     from bhms.protocol.errors import BhmsError
     with pytest.raises(BhmsError) as refused:
         await client.actions_invoke("thermal-m1", "set_setpoint", {"value": 50.0})
-    assert refused.value.code == "STALE"
+    assert refused.value.bhms_code == "STALE"
 
 
 async def test_unreachable_instrument_fails_with_proof_of_no_effect(tmp_path):
     w = World(BENCH, seed=2, attach_arm=False)
     srv, link = modbus_adapter.build_server(w, THERMAL_MODBUS, "127.0.0.1", 1, state_dir=tmp_path / "x", timeout_s=0.3)
     async with serving(srv, tmp_path) as client:
+        # the liveness probe failed when the server started: the device is offline and nothing is sent (BHMS-DEV-012)
+        assert (await client.devices_list()).devices[0].status == "offline"
+        with pytest.raises(BhmsError) as refused:
+            await run(client, "thermal-m1", "set_setpoint", {"value": 40.0})
+        assert refused.value.bhms_code == "DEVICE_UNAVAILABLE" and refused.value.may_have_acted is False
+        # the adapter's own proof, for a link that drops between the probe and the command
+        srv.devices["thermal-m1"].report_alive()
         op = await run(client, "thermal-m1", "set_setpoint", {"value": 40.0})
         assert op.state == "failed" and op.effect == "none" and op.error.may_have_acted is False
         assert (await read(client, "thermal-m1", "temperature")).quality == "invalid"

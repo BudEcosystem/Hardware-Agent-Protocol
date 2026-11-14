@@ -99,7 +99,7 @@ class _Runner:
             item.outcome = f"accepted:{state or 'ok'}"
             item.refused = state in ("rejected",)
         except BhmsError as exc:
-            item.refused, item.outcome = True, f"refused:{exc.code}"
+            item.refused, item.outcome = True, f"refused:{exc.bhms_code}"
             hint = f"{exc.hint or ''} {exc.message}"
             item.rule = hint.split("rule: ")[-1].split("]")[0] if "rule: " in hint else ""
         except Exception as exc:  # a transport error is not a gateway decision: record it, do not call it blocked

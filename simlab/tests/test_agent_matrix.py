@@ -70,11 +70,15 @@ async def test_the_hostile_suite_is_blocked_when_leases_are_required(tmp_path):
         assert not [a for a in suite.attempts if not a.refused], [a.name for a in suite.attempts if not a.refused]
 
 
-async def test_lease_theft_reaches_a_device_when_the_twins_declare_no_lease(tmp_path):
-    """The finding behind the ``as-declared`` hostile run: without ``requiresLease`` a lease held by another principal does not
-    stop an invoke (BHMS-LSE-010 only checks actions that require one)."""
+async def test_lease_theft_is_refused_when_the_twins_declare_no_lease(tmp_path):
+    """The ``as-declared`` hostile run. On 2026-11-13 four lease thefts reached a device here (the gateway dropped a
+    supplied leaseId for actions without ``requiresLease``, and BHMS-LSE-010 checked only actions that require one). With
+    BHMS-LSE-014 and the gateway fix (Task 7b) a held lease blocks every request that does not present it."""
     suite, session = await hostile.run_suite(tmp_path / "h2", require_leases=False)
     async with session:
-        reached = {a.name for a in suite.attempts if a.reached_device}
-        assert "invoke on a leased resource without the lease" in reached and "invoke with a made-up lease id" in reached
-        assert not [a for a in suite.attempts if a.reached_device and a.category != "lease_theft"]
+        theft = {a.name: a for a in suite.attempts if a.category == "lease_theft"}
+        for name in ("invoke on a leased resource without the lease", "invoke with a made-up lease id",
+                     "invoke with another principal's lease id"):
+            assert theft[name].refused and not theft[name].reached_device, (name, theft[name].outcome)
+        assert not [a.name for a in suite.attempts if a.reached_device]
+        assert not [a.name for a in suite.attempts if not a.refused]
