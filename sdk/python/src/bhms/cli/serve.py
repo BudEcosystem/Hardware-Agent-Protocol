@@ -48,7 +48,9 @@ def register(app: typer.Typer) -> None:
         `bhms gateway check-policy <config>` does not serve: it starts the configured upstreams, reads their devices and
         lists, per principal and scope, which devices and actions each scope matches, with a warning for every scope that
         matches nothing (for example `invoke:bench/*`, which must be `invoke:bench/*/*` behind a gateway) and for a
-        principal that may act on a device it may not stop."""
+        principal that may act on a device it may not stop. It waits up to the file's connect_wait_ms (10 s by default)
+        for each upstream to serve a device, so an upstream that is down or serves no devices makes the check take that
+        long, and its devices are then missing from the report."""
         if config == "check-policy":
             raise typer.Exit(_check_policy(checked, as_json=as_json, strict=strict))
         if checked is not None:

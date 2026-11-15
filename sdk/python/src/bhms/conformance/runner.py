@@ -285,7 +285,8 @@ async def run(opts: RunOptions) -> Report:
             wire = Wire(await target.open_base(), recorder).start()
             first = await wire.request("server/discover", timeout=30)
         except (TargetError, OSError, TransportClosed, asyncio.TimeoutError) as exc:
-            return Report(_meta(opts, target, None, seed, command, [], {}), [], [], fatal=f"cannot reach {opts.target}: {exc}")
+            return Report(_meta(opts, target, None, seed, command, [], {}), [], [],
+                          fatal=f"cannot reach {opts.target}: {exc}{_stderr_tail(target)}")
         if first.result is None:
             return Report(_meta(opts, target, None, seed, command, [], {}), [], [],
                           fatal=f"server/discover failed: {first.describe()}")
@@ -446,6 +447,19 @@ def _meta(opts: RunOptions, target: Target | None, ctx: Context | None, seed: in
 
 STYLE = {Status.PASSED: "green", Status.FAILED: "bold red", Status.SKIPPED: "yellow", Status.NOT_APPLICABLE: "dim"}
 
+
+
+def _stderr_tail(target: Any, lines: int = 8) -> str:
+    """The last lines a fixture the runner started wrote to stderr, so "connection closed" comes with its reason."""
+    path = getattr(target, "log_path", None)
+    try:
+        text = path.read_text(errors="replace").strip() if path is not None and path.exists() else ""
+    except OSError:
+        return ""
+    if not text:
+        return ""
+    tail = "\n    ".join(text.splitlines()[-lines:])
+    return f"\n  the server's stderr ({path}) ends with:\n    {tail}"
 
 def render(report: Report, *, verbose: bool = False, console: Any = None) -> None:
     """Print the check table, the failures and the requirement summary."""

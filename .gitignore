@@ -26,5 +26,7 @@ research/host-contract/chunk-sync-source/glibc-objects/
 research/host-contract/mount-predicate-source/glibc-objects/
 .claude/worktrees/
 .hypothesis/
-# Gateway example run-time state
+# Gateway example run-time state (journals, fences and sockets of examples/bhms/*.toml when they are run in place)
 examples/bhms/state/
+examples/bhms/state-compact/
+examples/bhms/*.sock

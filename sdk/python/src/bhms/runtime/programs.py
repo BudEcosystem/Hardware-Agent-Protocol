@@ -192,8 +192,9 @@ class _Validator:
         try:
             check_units(program["input"], "program.input")
         except ValueError as exc:
-            raise self.fail("INVALID_ARGUMENT", "program.input", str(exc), "give every numeric input x-bhms-unit") \
-                from None
+            code = getattr(exc, "code", None)  # UnitSpellingError: name the registry code, not the missing-unit fix
+            hint = f"write the unit as {code!r}" if code else "give every numeric input x-bhms-unit"
+            raise self.fail("INVALID_ARGUMENT", "program.input", str(exc), hint) from None
         if program["maxDurationMs"] > limits["maxDurationMs"]:
             raise self.fail("OUT_OF_RANGE", "program.maxDurationMs", f"maxDurationMs {program['maxDurationMs']} is "
                             f"above this server's limit {limits['maxDurationMs']}",

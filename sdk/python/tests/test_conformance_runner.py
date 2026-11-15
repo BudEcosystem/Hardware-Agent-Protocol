@@ -205,6 +205,44 @@ def test_device_command_replaces_the_command_of_every_conformance_device_fixture
         resolve("conformance-device", device_command="  ")
 
 
+async def test_a_device_command_with_relative_paths_runs_from_the_callers_directory(tmp_path, monkeypatch):
+    """Task 14: `--device-command "node dist/src/testing/conformanceDevice.js"`, as the TypeScript README writes it, failed
+    with "cannot reach conformance-device: connection closed": the runner starts the device in its own workspace."""
+    (tmp_path / "bin").mkdir()
+    (tmp_path / "bin" / "device.py").write_text("import runpy\nrunpy.run_module('bhms.testing.conformance_device', "
+                                                 "run_name='__main__', alter_sys=True)\n")
+    (tmp_path / "broken.py").write_text("import sys\nprint('the device needs a licence file', file=sys.stderr)\n"
+                                        "sys.exit(1)\n")
+    monkeypatch.chdir(tmp_path)
+    from bhms.conformance.targets import resolve
+
+    assert resolve("conformance-device", device_command="python3 bin/device.py --x").command[:3] == [
+        "python3", str(tmp_path / "bin" / "device.py"), "--x"]
+    assert resolve("conformance-device", device_command="node dev.js").command[:2] == ["node", "dev.js"]  # not a file here
+    ran = await invoke("conformance", "conformance-device", "--device-command", f"{sys.executable} bin/device.py", "--only",
+                       "lifecycle.nan-tokens", "--allow-unproven", env={"COLUMNS": "200"})
+    assert ran.exit_code == 0, ran.output
+    broken = await invoke("conformance", "conformance-device", "--device-command", f"{sys.executable} broken.py",
+                          env={"COLUMNS": "200"})
+    assert broken.exit_code == 2 and "the device needs a licence file" in broken.output, broken.output
+
+
+async def test_a_durable_server_script_passes_the_fresh_connection_check(tmp_path):
+    """Task 14: against `bhms conformance server.py` (a durable server), BHMS-LIF-030 failed with "the server closed the
+    connection": the second stdio process found the first one's journal locked and exited. Further processes now get a
+    state directory of their own, which the runner removes afterwards."""
+    script = tmp_path / "server.py"
+    script.write_text("from bhms import DeviceServer\nsrv = DeviceServer('durable-script')\nsrv.device('d-1')\n"
+                      "srv.run()\n")
+    out = tmp_path / "report.json"
+    result = await invoke("conformance", str(script), "--only", "lifecycle.stateless-connection", "--allow-unproven",
+                          "--json", str(out), env={"COLUMNS": "200", "BHMS_STATE_DIR": str(tmp_path / "state")})
+    assert result.exit_code == 0, result.output
+    checks = {c["check"]: c["status"] for c in json.loads(out.read_text())["checks"]}
+    assert checks["lifecycle.stateless-connection"] == "passed"
+    assert (tmp_path / "state" / "durable-script.sqlite3").exists()  # the first process used the script's own state
+
+
 async def test_cli_device_command_launches_the_given_device_with_the_runners_fixtures(tmp_path):
     out = tmp_path / "report.json"
     command = f"{sys.executable} -m bhms.testing.conformance_device"  # any implementation's device goes here

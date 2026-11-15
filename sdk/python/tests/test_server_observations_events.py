@@ -136,6 +136,26 @@ async def test_unbounded_latency_has_null_age_and_fails_max_age(env):  # BHMS-OB
     assert err.bhms_code == "STALE" and err.field == "maxAgeMs"
 
 
+async def test_an_acquisition_of_unknown_age_is_refused_for_max_age_in_words_not_none():  # BHMS-OBS-003
+    """Task 14: the refusal read "the newest observation is None ms old" (a BHMS-Compact board's readings have no bounded
+    latency, so every read with maxAgeMs hit it)."""
+    from bhms import DeviceServer, Reading
+    from bhms.testing import connect
+
+    srv = DeviceServer("unbounded", store=None)
+    dev = srv.device("adc-1")
+
+    @dev.property(unit="1", evidence="measured")
+    def level() -> float:
+        return Reading(341.0, latency_ms=None)
+
+    async with connect(srv) as client:
+        err = await refused(client.properties_read("adc-1", "level", max_age_ms=500))
+    assert (err.bhms_code, err.field, err.bound) == ("STALE", "maxAgeMs", 500)
+    assert "None" not in err.message and "age of the newest observation is unknown" in err.message
+    assert "acquiredAt" in err.hint
+
+
 async def test_push_only_property_without_value_is_unknown_and_fresh_is_stale(env):  # BHMS-OBS-010
     srv, state, c = await env()
     obs = (await c["reader"].properties_read("pump-1", "temperature")).observation

@@ -17,6 +17,7 @@ returns their device descriptions. Thread-safety: pure functions; ``collect_devi
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -187,6 +188,14 @@ async def collect_devices(config: GatewayConfig) -> list[dict[str, Any]]:
     gateway = Gateway(replace(config, listen=()), memory=True)
     await gateway.start()
     try:
+        # A connected upstream can still be without devices: a BHMS-Compact board is served only after its HELLO has
+        # proven its description (and an upstream may simply be slow). Give each up to connect_wait_ms to show one, so
+        # the report is not "0 devices served" with a warning on every scope.
+        deadline = asyncio.get_running_loop().time() + config.connect_wait_ms / 1000
+        names = [upstream.name for upstream in config.upstreams]
+        while asyncio.get_running_loop().time() < deadline and not all(
+                any(device_id.startswith(f"{name}/") for device_id in gateway.catalog) for name in names):
+            await asyncio.sleep(0.05)
         return [gateway.catalog.get(device_id).description for device_id in gateway.catalog]
     finally:
         await gateway.close()

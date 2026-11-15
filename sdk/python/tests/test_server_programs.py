@@ -200,6 +200,16 @@ async def test_authority_is_checked_before_the_first_step(env):  # BHMS-PRG-006,
     assert state["calls"] == []
 
 
+async def test_a_program_input_in_a_non_ucum_spelling_names_the_registry_code(env):  # BHMS-DEV-041 (Task 14 fix round)
+    srv, state, c = await env()
+    prog = program()
+    prog["input"]["properties"]["start"]["x-bhms-unit"] = "degC"
+    err = await refused(c["runner"].programs_run(program=prog, arguments={"start": 1, "steps": 1}))
+    assert (err.bhms_code, err.field) == ("INVALID_ARGUMENT", "program.input")
+    assert "'Cel'" in err.hint and "x-bhms-unit 'degC' is not a UCUM code" in err.message
+    assert state["calls"] == []
+
+
 async def test_arguments_are_validated_against_the_program_input(env):  # BHMS-PRG-001
     srv, state, c = await env()
     err = await refused(c["runner"].programs_run(program=program(), arguments={"start": 1, "steps": 9}))

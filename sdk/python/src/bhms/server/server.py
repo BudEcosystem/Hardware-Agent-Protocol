@@ -352,6 +352,9 @@ class DeviceServer:
             listener = await serve_unix(path[2:] if path.startswith("//") else path, self.rpc.handle_connection)
         elif url.startswith(("ws://", "wss://")):
             host, port = _host_port(url)
+            if url.startswith("wss://") and ssl is None:
+                raise ValueError(f"refusing to serve {url} without a TLS context: wss:// promises encryption; pass "
+                                 "ssl=<SSLContext>, or use ws:// on a loopback address")
             if not is_loopback(host) and ssl is None:
                 raise ValueError(f"refusing to serve {url} without TLS: a non-loopback listener must use TLS "
                                  "(BHMS-SEC-004); pass ssl=<SSLContext> or bind 127.0.0.1")

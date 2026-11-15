@@ -2,6 +2,25 @@
 
 An independent research and design project for agents operating physical devices, from tiny microcontrollers and microscope retrofits to instrument fleets and industrial cells. Intended agent host: the adjacent `Bud-Meta-Harness` repository. This project is **not an implementation of Anthropic's unpublished MHS specification**.
 
+## BHMS: the protocol, SDKs and tools
+
+BHMS (Bud HMS, protocol version `2026-11-13`) is the protocol this research produced: JSON-RPC 2.0 in the shape of MCP,
+for AI agents, programs and people that discover, observe and operate physical devices, with durable idempotent
+operations, honest evidence labels, leases with fencing, unknown outcomes that are never guessed, and a stop that never
+waits. It is tested against simulated devices and host-built firmware; no physical device has been validated yet.
+
+- **Start here:** [developer documentation](docs/bhms/index.md), [quickstart](docs/bhms/quickstart.md) (a device server,
+  Claude through MCP, an OpenAI model, a gateway; every step executed by the test suite), [concepts](docs/bhms/concepts.md).
+- **Specification:** [`spec/bhms`](spec/bhms/README.md) (chapters 01 to 15, JSON Schema, examples, conformance index).
+- **Code:** Python SDK, gateway, agent bridges and conformance runner in [`sdk/python`](sdk/python/pyproject.toml)
+  (`pip install -e 'sdk/python[mcp,openai]'`, then `bhms --help`); [`sdk/typescript`](sdk/typescript/README.md);
+  the C library and Arduino wrapper for microcontrollers in [`sdk/c`](sdk/c/README.md); SimLab, a simulated laboratory
+  with real-protocol instruments, in [`simlab`](simlab/README.md); the open BHMS Arm in [`hardware/actuator`](hardware/actuator/README.md).
+- **Changes and numbers:** [migration notes](docs/bhms/migration.md), [performance](docs/bhms/performance.md).
+
+The rest of this README describes the earlier HMS research runtime (`hms/`, `protocol/`, `tests/`) and its retained
+evidence.
+
 **Current status:** the executable local simulation runtime combines the registry, admission policy, durable journal, checked API/SDK and `hctl` CLI. A native Harness overlay exercises real tool/PTC calls at a pinned commit in an isolated checkout, with full artifact and aggregate builds passing. A local MCP projection supports current and legacy clients over stdio. The runtime can mount multiple local and compact C simulation routes under one authority, with immutable operation routing, durable mappings, receipt reconciliation and host-process recovery. An explicitly selected shared-board GPIO/PWM simulation also uses the same public tools and resource admission. Primary-source research and checked WoT descriptions support the design. Real adapters, complete commissioned firmware, production Harness integration and physical validation remain unfinished. The user goal remains active. [Progress and requirement audit](PROGRESS.md) records the evidence and remaining work.
 
 The [qualification libraries are installed in the main project](artifacts/implementation/runtime-qualification-package/README.md):
