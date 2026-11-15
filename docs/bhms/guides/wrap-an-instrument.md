@@ -215,8 +215,8 @@ async def raw_command(ctx, command: str) -> {"acknowledged": bool}:  # noqa: F82
 
 @balance.liveness(interval_s=5)
 async def alive():
-    try:
-        return (await link.query("*OPC?")) == "1"
+    try:  # the identity query is answered whatever a command in progress does: liveness is not a command's reply
+        return (await link.query("*IDN?")).startswith("BudLab,")
     except (Refused, DeviceLost):
         return False
 
@@ -244,7 +244,7 @@ bhms read unix:balance.sock balance-1 mass
 
 ```text output
 action tare() effect=reversible repeat=idempotent lease=no cancel=no evidence=reported max=3s -> {acknowledged: boolean}
-property mass: number g measured observable
+property mass: number g -220..220 measured observable
 balance-1.mass = 12... g (measured, valid, ... old)
 balance-1.tare op-... completed: acknowledged true (effect unverified, ...)
 balance-1.mass = ... g (measured, valid, ... old)

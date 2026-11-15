@@ -7,7 +7,9 @@ the full claims take one to two minutes each and run in the slow test (`python3 
 
 ## Claims and reports
 
-A **claim** names the protocol version (`2026-11-13`) and the profiles it covers: `core` (every server), `leases`,
+A **claim** names the protocol version (`2026-11-15`; a run tests the newest version the target and the runner share,
+or the one given with `--protocol-version`, and marks requirements added after it not applicable, BHMS-CNF-007) and the
+profiles it covers: `core` (every server), `leases`,
 `events`, `programs`, `registry`, `authority`, `gateway`, `compact`, `ws`, `http`, `agent`. The runner always checks the
 profiles the server advertises in addition to the ones you ask for with `--profile`.
 
@@ -51,7 +53,7 @@ bhms conformance examples/bhms/pump_server.py
 ```text output
 requirements: ... passed, 0 failed, ... skipped, ... not-applicable MUST failures: 0
 generic report: the target does not host the conformance device ...
-claim core: NOT supported (0 MUST failed, ... MUST unproven); 17 MUST rows need review evidence
+claim core: NOT supported (0 MUST failed, ... MUST unproven); 19 MUST rows need review evidence
 ```
 
 `0 MUST failed` is what a generic report can tell you: nothing your server answered contradicts the protocol. It is not
@@ -78,7 +80,7 @@ bhms conformance agent-bridge --json agent-report.json
 ```
 
 ```text output
-requirements: 21 passed, 0 failed, 0 skipped, 0 not-applicable MUST failures: 0
+requirements: 22 passed, 0 failed, 1 skipped, 0 not-applicable MUST failures: 0
 claim agent: supported
 ```
 
@@ -96,7 +98,7 @@ print(report["exitCode"])
 ```
 
 ```text output
-2026-11-13 conformance simulated bhms conformance agent-bridge --json agent-report.json
+2026-11-15 conformance simulated bhms conformance agent-bridge --json agent-report.json
 {'agent': True}
 0
 ```
@@ -139,13 +141,14 @@ bhms conformance compact-gateway --profile compact
 ```
 
 ```text output
-requirements: 22 passed, 0 failed, 1 skipped, 0 not-applicable MUST failures: 0
-claim compact: NOT supported (0 MUST failed, 0 MUST unproven); 1 MUST rows need review evidence
+requirements: ... passed, 0 failed, 5 skipped, ... not-applicable MUST failures: 0
+claim compact: supported; 4 MUST rows need review evidence
 ```
 
-In this version the compact fixture is reported as generic (it does not host the conformance device), so the compact
-profile is not claimable from a run even when every row passes; this is recorded for the next revision of the
-specification.
+The fixture's endpoints are the reference C endpoints the runner builds and drives itself, so the run is a declared
+conformance run and the compact profile is claimable from it (v0.2). The rows that need review evidence are
+`inspection` rows: BHMS-SEC-050 (an exclusive link is a deployment fact) and three v0.2 gateway rules the reference
+endpoints cannot provoke (BHMS-CMP-036, 052, 053; the Python SDK's tests show them).
 
 ## Another SDK: `--device-command`
 

@@ -35,6 +35,7 @@ The public surface of `@bhms/sdk` (sdk/typescript), read from `src/index.ts` and
 | `transport/stdio` | `spawnServer`, `stdioServerTransport` |
 | `transport/socket` | `connectSocket`, `listenTcp`, `listenUnix` |
 | `transport/websocket` | `connectWebSocket`, `listenWebSocket` |
+| `version` | `SDK_PROTOCOL_VERSION` |
 
 ## `class Client` (client)
 

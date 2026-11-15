@@ -5,8 +5,9 @@ where the reference and the specification are. BHMS is a JSON-RPC 2.0 protocol, 
 programs and people that discover, observe and operate physical devices, with durable operations, leases, honest
 evidence and a stop that never waits.
 
-**Status.** Protocol version `2026-11-13` (v0.1). The Python SDK, gateway, agent bridges and conformance runner, the
-TypeScript SDK and the C library for microcontrollers are implemented and tested against simulated devices and
+**Status.** Protocol version `2026-11-15` (v0.2; servers also serve `2026-11-13`, v0.1). The Python SDK, gateway, agent
+bridges and conformance runner implement v0.2; the TypeScript SDK implements v0.1 until its v0.2 port; the C library for
+microcontrollers speaks BHMS-Compact version 2 (unchanged in v0.2). All are tested against simulated devices and
 host-built firmware. No physical device has been validated yet; every example here runs against simulations.
 
 ## Start here

@@ -349,6 +349,7 @@ Run the BHMS conformance suite against a server, gateway or agent bridge.
 | `--function-tools` | `PATH` |  |  | Agent profile: JSON list of the OpenAI function-tool definitions of the bridge's adapter (BHMS-AGT-050). |
 | `--physical-ok` | flag |  |  | With --physical: allow checks that move or change the devices. |
 | `--device-command` | `TEXT` |  |  | With a conformance-device fixture: launch this command (split like a shell line) instead of this SDK's own device, e.g. "node dist/src/testing/conformanceDevice.js". It must accept [URL] [--state-dir DIR] [--memory] [--principals FILE]. Relative paths in it are resolved against the directory you run bhms conformance from. |
+| `--protocol-version` | `TEXT` |  |  | Test this protocol version (default: the newest one the target and the runner share; requirements added later are not applicable). |
 | `--verbose`, `-v` | flag |  |  | Also list passed checks' requirements and skipped rows. |
 | `--coverage` | flag |  |  | Print the requirement coverage table and exit. |
 

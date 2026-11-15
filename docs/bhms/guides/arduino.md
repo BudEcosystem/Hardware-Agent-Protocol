@@ -152,7 +152,7 @@ bhms read unix:board-gw.sock led/bench-led analog0
 ```text output
 led/bench-led Bench LED board online bhms.io.gpio led_set analog0
 action led_set(on: boolean) effect=reversible repeat=idempotent lease=no cancel=no evidence=reported max=100ms -> {writes: integer}
-property analog0: integer measured
+property analog0: integer 0..1023 measured
 led/bench-led.led_set op-... completed: writes 1 (effect unverified, ...)
 led/bench-led.led_set op-... replayed: completed writes 1 (effect unverified, ...)
 led/bench-led.analog0 = ... (measured, valid, age unknown)
@@ -169,6 +169,11 @@ bhms read unix:board-gw.sock led/bench-led analog0 --max-age-ms 500
 ```text output
 Refused: bench-led.analog0: the age of the newest observation is unknown ...
 ```
+
+To make the reading usable with `maxAgeMs` and `requiresFresh`, the endpoint declares bounded latency by reporting the
+age it knows (spec BHMS-CMP-061): an `analogRead` taken in the read callback is 0 ms old, so set `meta->age_ms = 0` there
+(leave it at `BHMS_AGE_UNKNOWN` only when the value comes from somewhere whose age the firmware cannot bound). The gateway
+adds the time since it sent the READ.
  If the board resets while an operation is in flight, the gateway marks that operation `unknown` and does not re-send
 it; only a persistent boot epoch that advanced (or a new session the board accepted) proves the old work was purged.
 

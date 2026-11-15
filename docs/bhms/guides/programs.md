@@ -208,11 +208,72 @@ asyncio.run(main())
 ```
 
 ```text output
-1 device, 1 program: focus-1 "Focus axis" online Next: bhms_describe a device before acting
+1 device, 1 program: focus-1 "Focus axis" online; program focus_scan ... Next: bhms_describe a device before acting
 focus_scan sha256:...
 program ... completed: lastSharpness 1 (effect unverified, ...)
 program-grammar: the format of the program member of bhms_run_program follows
 ```
+
+## Program-scoped grants
+
+A principal with `programs:run` needs an `invoke:` scope for every step, so it may also call those actions directly.
+A **program-scoped grant**, the scope `programs:run:<digest>`, authorizes exactly one reviewed program instead: the
+agent can run that program (inline or by digest) and nothing else on its devices, because the digest fixes every step,
+its device, action and literal arguments (spec BHMS-PRG-023). A changed program has another digest and is refused.
+Leases, the principal's bounds, budgets and the hazardous-action rules still apply to every step:
+
+```python run
+import asyncio
+import os
+
+from bhms import BhmsError, DeviceServer, Range
+from bhms.protocol.canonical import digest
+from bhms.runtime.authority import Policy
+from bhms.testing import connect
+
+RINSE = {"bhmsProgram": "2026-11-15", "name": "rinse", "description": "Rinse the line with 50 uL.", "maxDurationMs": 10_000,
+         "input": {"type": "object", "additionalProperties": False, "properties": {}},
+         "steps": [{"kind": "invoke", "deviceId": "pump-1", "action": "dispense", "arguments": {"volume": 50}}]}
+
+
+def build() -> DeviceServer:
+    policy = Policy({"agent": {"uids": [os.getuid()], "scopes": ["read", f"programs:run:{digest(RINSE)}"]}},
+                    trust_same_uid=False)
+    srv = DeviceServer("rinse-bench", store=None, policy=policy)
+    pump = srv.device("pump-1", name="Syringe pump", resources=["pump-1/plunger"])
+    pump.report_alive()
+
+    @pump.action(effect="irreversible", idempotency="relative", max_duration_ms=10_000)
+    async def dispense(ctx, volume: Range(1, 500, unit="uL")) -> {"dispensed": "uL"}:  # noqa: F821
+        """Dispense a volume."""
+        return {"dispensed": volume}
+
+    return srv
+
+
+async def main():
+    async with connect(build()) as client:
+        op = (await client.programs_run(program=RINSE, arguments={}, wait_ms=5000)).operation
+        print("reviewed program:", op.state)
+        for what, call in (("raw dispense", client.actions_invoke("pump-1", "dispense", {"volume": 50})),
+                           ("changed program", client.programs_run(program={**RINSE, "name": "rinse_more"}, arguments={}))):
+            try:
+                await call
+            except BhmsError as exc:
+                print(f"{what}: {exc.bhms_code}")
+
+
+asyncio.run(main())
+```
+
+```text output
+reviewed program: completed
+raw dispense: UNAUTHORIZED
+changed program: UNAUTHORIZED
+```
+
+With a budget on `pump-1/dispense` in the same grant, the reviewed program also cannot run more often than the total
+allows: each step is charged when it is admitted.
 
 ## Leases in programs
 

@@ -9,7 +9,7 @@ The public surface of the `bhms` Python package (sdk/python), read from its sign
 
 | Name | Kind | Summary |
 |---|---|---|
-| `PROTOCOL_VERSION` | constant | `'2026-11-13'` |
+| `PROTOCOL_VERSION` | constant | `'2026-11-15'` |
 | `ActionContext` | class | Per-operation handle given to action handlers; see the module docstring. |
 | `Array` | class | An array of one item annotation: `points: Array(Range(0, 10, unit="mm"), max_items=16)`. |
 | `BhmsError` | class | A protocol error. Names the field, the bound and a fix whenever known. |
@@ -17,6 +17,7 @@ The public surface of the `bhms` Python package (sdk/python), read from its sign
 | `DescriptionError` | class | A device declaration that cannot produce a valid BHMS description; the message names the item and the fix. |
 | `Device` | class | One device: declarations, description and runtime helpers. Create with `device` (`Device(None, ...)` builds a standalone device for description generation only). |
 | `DeviceFault` | class | The device reported a fault while acting: the operation ends `failed` with `DEVICE_FAULT`. |
+| `DeviceLost` | class | The link to the device was lost while a command may have been in flight (power loss, a dropped connection, no reply): raise it, or a subclass, from a handler. |
 | `DeviceServer` | class | A BHMS device server; see the module docstring. |
 | `OneOf` | class | An enumerated value: `mode: OneOf("fast", "precise")`. |
 | `Policy` | class | Maps a transport `Peer` to a `Principal`; see the module docstring. |
@@ -420,7 +421,7 @@ Typed BHMS client over one `Session`; see the module docstring.
 | Member | Summary |
 |---|---|
 | `async connect(target: str, *, token: str \| None = None, client_info: dict[str, Any] \| None = None, timeout: float \| None = 30.0, strict: bool = False, max_message_bytes: int = 4194304) -> Client` | Open `target`, run `server/discover` and return a ready client (closes the transport on failure). |
-| `async from_transport(transport: Transport, *, client_info: dict[str, Any] \| None = None, timeout: float \| None = 30.0, strict: bool = False, versions: tuple[str, ...] = ('2026-11-13',)) -> Client` | Build a client on an already-open transport and perform discovery. |
+| `async from_transport(transport: Transport, *, client_info: dict[str, Any] \| None = None, timeout: float \| None = 30.0, strict: bool = False, versions: tuple[str, ...] = ('2026-11-15', '2026-11-13'), credential: str \| None = None) -> Client` | Build a client on an already-open transport and perform discovery. `credential`: a bearer token every request carries in `_meta["bhms/authorization"]` (transports without a credential header, BHMS-SEC-005). |
 | `async discover(*, timeout: float \| None = None) -> t.DiscoverResult` | `server/discover`; selects the protocol version and the outgoing message limit. |
 | `async close()` | Close the connection (BHMS-TRN-005: nothing durable is cancelled). |
 | `async request(method: str, params: dict[str, Any] \| None = None, *, timeout: float \| None = None) -> dict[str, Any]` | Raw request for extension methods: `_meta` is injected; the result object is returned unparsed. |
@@ -604,7 +605,9 @@ Serve the bridge for `client` on this process's stdin/stdout until the MCP clien
 async serve_http(client: Client, host: str, port: int, *, token: str | None = None)
 ```
 
-Serve Streamable HTTP at `http://host:port/mcp`. A non-loopback `host` requires a bearer `token`.
+Serve Streamable HTTP at `http://host:port/mcp` on a loopback `host`. Beyond loopback BHMS-SEC-004 needs TLS, which
+this bridge does not terminate: serve on 127.0.0.1 behind a TLS-terminating reverse proxy (the proxy model, spec 13.1)
+with a bearer `token`.
 
 
 ### `bhms.bridges.mcp.build_server`
@@ -749,7 +752,7 @@ Maps a transport `Peer` to a `Principal`; see the module docstring.
 | `from_document(document: dict[str, Any], **kw: Any) -> Policy` | Build from a `GatewayPolicy` document (validated against the schema). |
 | `with_token(token: str, *, scopes: tuple[str, ...] = ('admin',), name: str = 'token') -> Policy` | A policy with one bearer-token principal (plus stdio and same-uid defaults). |
 | `principals` (property) |  |
-| `authority_capability() -> dict[str, int] \| None` | `capabilities.authority` (conformance profile `authority`): `{}` when the policy defines more than one principal or any principal that is not an administrator, `None` for a single-principal server. It carries no member: a caller learns nothing about how many principals exist. |
+| `authority_capability() -> dict[str, bool] \| None` | `capabilities.authority` (conformance profile `authority`): present when the policy defines more than one principal, any principal that is not an administrator, or any budget; `None` for a single-principal server. `budgets: true` when any principal has a budget (7.4.1; shown to 2026-11-15 requests only). It names no principal: a caller learns nothing about how many principals exist. |
 | `by_token(token: str \| None) -> Principal \| None` | The principal holding `token` (constant-time comparison of digests, BHMS-SEC-002). |
 | `resolve(peer: Peer) -> Principal \| None` | The principal of `peer`, or None when the peer carries no valid credential. |
 | `check_bounds(describe: Any, *, allow_unknown: bool = False)` | Reject bounds that would widen a device bound (BHMS-SEC-011); `describe(device_id)` returns a description or None. Bounds for unknown devices/actions are rejected too, unless `allow_unknown` (a gateway whose upstream has not been described yet; the effective envelope is an intersection, so it never widens). |

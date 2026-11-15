@@ -375,7 +375,10 @@ verified_by=["temperature"]`, and confirm in the handler with `await ctx.verify(
 - `requires_lease=True` and `on_lease_loss` for hazardous actions, and a policy whose principals can stop what they can
   start ([deploying a gateway](gateway.md)).
 - A liveness probe (`@device.liveness(interval_s=5)`) so a dead link shows as `offline`.
-- Totals enforced in the device: a bound limits one call, and an agent will split a refused amount into allowed calls.
-  Keep running totals (dose, reagent, travel per run) in the device or its driver and refuse before acting; gateway
-  policy has no cumulative budgets in this version (an open gap, planned for spec v0.2). See
+- Totals, not only bounds: a bound limits one call, and an agent will split a refused amount into allowed calls. Give
+  the agent's grant a cumulative budget (`budgets` in the policy, spec 7.4.1: reserved at admission, spent unless the
+  outcome proves nothing happened, durable across restarts) on the device server or the gateway, and keep the limits
+  that are physical (a syringe's volume, a reagent's stock) in the device or its driver. See
   [connecting agents](connecting-agents.md#a-bound-limits-one-call-not-a-total).
+- A reviewed program as the agent's boundary: grant `programs:run:<digest>` instead of `invoke:` on the steps
+  ([writing programs](programs.md#program-scoped-grants)).

@@ -156,15 +156,25 @@ program, and completed effects are never rolled back.
 
 A program is content-addressed by its digest. Registered once (`programs/register`), it is run by digest with new
 arguments, and its `name`, `description` and `input` schema are what a model needs to use it as a tool
-([writing programs](guides/programs.md)).
+([writing programs](guides/programs.md)). A **program-scoped grant**, the scope `programs:run:<digest>`, lets a
+principal run exactly that reviewed program without an `invoke:` scope on its steps, so the program becomes the agent's
+boundary: it cannot call the step's action directly or run a changed program.
+
+## Budgets
+
+A bound limits one call; a **budget** limits a total ([spec 7.4.1](../../spec/bhms/07-leases-and-authority.md#741-cumulative-budgets)).
+A principal's grant may say "at most 0.5 mL of `pump-*/dispense` per day". The server or gateway reserves each call's
+amount when it admits the call, refuses the call that would exceed what remains before anything moves, and gives an amount
+back only when the outcome proves nothing happened (an `unknown` outcome counts as spent). The ledger is durable, and
+`bhms_describe` shows an agent what remains.
 
 ## Gateways
 
 A gateway is a server whose devices are its upstreams' devices, namespaced (`bench/stage-z`). It adds what one device
 server cannot ([spec 7.6](../../spec/bhms/07-leases-and-authority.md#76-gateways-notes)):
 
-- **Principals and scopes** per token or uid, with narrowed bounds per action (`bounds` in the policy). A principal sees
-  the narrowed schema in its descriptions, and is held to it.
+- **Principals and scopes** per token or uid, with narrowed bounds per action (`bounds` in the policy) and cumulative
+  `budgets` across every upstream. A principal sees the narrowed schema in its descriptions, and is held to it.
 - **Its own durable journal.** Before forwarding an invoke it records the intent, and it derives a deterministic upstream
   key, so a restarted gateway re-sends the same key and the upstream deduplicates.
 - **Cross-device leases**, acquired upstream in a fixed order, and a **stop fan-out** that bypasses every queue.

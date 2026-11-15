@@ -212,16 +212,16 @@ BHMS_TOKEN=arm-agent-token bhms call ws://127.0.0.1:8765 arm/bhms-arm enable --k
 Refused: ...
 ```
 
-A stop from any principal with the `stop` scope freezes the arm. It returns at once (a stop never waits), so the CLI
-and the agent tool report `initiated`; the confirmation, from the servos' measured moving flags, arrives as a `stop`
-event moments later:
+A stop from any principal with the `stop` scope freezes the arm. The stop itself never waits for anything; the CLI and
+the agent tool `bhms_stop` then wait up to 5 s for the confirmation (BHMS-AGT-033), which the arm gives from the servos'
+measured moving flags moments later, so they report `confirmed`; it is also recorded as a `stop` event:
 
 ```sh run requires=cmake
 BHMS_TOKEN=arm-agent-token bhms stop ws://127.0.0.1:8765 arm/bhms-arm
 ```
 
 ```text output
-stop not confirmed on 1 of 1 devices (1 initiated): arm/bhms-arm initiated Next: check them with bhms_read or stop again (0 operations canceled)
+stop: 1 confirmed arm/bhms-arm confirmed (0 operations canceled)
 ```
 
 ```python run requires=cmake
@@ -247,9 +247,9 @@ asyncio.run(main())
 confirmed measured
 ```
 
-A caller that can wait passes `wait_ms` (here 3 s, the arm's declared `stopMaxDurationMs`) and gets `confirmed` with
-`measured` evidence in the answer. The agent tool `bhms_stop` has no wait: an agent checks the outcome with `bhms_read`
-(the `arm_state` and speed properties) or stops again.
+A client passes `wait_ms` itself (here 3 s, the arm's declared `stopMaxDurationMs`) and gets `confirmed` with `measured`
+evidence in the answer. A stop that is still not confirmed after the agent tool's wait is reported `initiated`; the agent
+then checks with `bhms_read` (the `arm_state` and speed properties) or stops again.
 
 ## Two gaps this run shows
 

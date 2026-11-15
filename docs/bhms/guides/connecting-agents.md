@@ -103,7 +103,8 @@ claude mcp add lab --env BHMS_TOKEN="$LAB_AGENT_TOKEN" -- /srv/bhms/.venv/bin/bh
 ## MCP over Streamable HTTP
 
 For a host that connects over the network, serve the bridge with `--http HOST:PORT` (path `/mcp`) and require a bearer
-token from MCP clients with `--http-token` or `BHMS_MCP_TOKEN` (required on a non-loopback address). This token is the
+token from MCP clients with `--http-token` or `BHMS_MCP_TOKEN`. The bridge serves plain HTTP on a loopback address
+only; to reach it from another host, put a TLS-terminating reverse proxy in front of it (BHMS-SEC-004). This token is the
 MCP client's credential to the bridge; the bridge's own credential to its BHMS target is `--token`/`BHMS_TOKEN`.
 
 ```sh run background wait=tcp:127.0.0.1:8770
@@ -268,21 +269,74 @@ In a live run of an earlier version of this guide, asked to "dispense 600 uL; if
 nothing", gpt-5.4-mini read the pump's 500 uL maximum and dispensed 500 uL and then 100 uL. Each call was within its
 bounds and honestly reported; the total was not what the task allowed.
 
-What controls a total today:
+What controls a total, from v0.2 on:
 
-- **The device or its driver.** It is the only place that sees every call, whoever makes it and through whichever
-  gateway. Keep the running total in the device and refuse, before acting, a call that would exceed it. This is the
-  control to rely on.
-- **Not the gateway policy.** `bounds` narrow each call; there is no cumulative limit or per-principal budget in this
-  version. Budgets are an open gap of the specification, planned for spec v0.2.
-- **Not a program either, in this version.** A registered program fixes what one run does (reviewed steps, bounded
-  inputs), but it does not limit an agent's totals: running it needs the `invoke:` scope on every step's action
-  (BHMS-PRG-006), so an agent that may run it may also call the action directly, and run the program again. Programs
-  are offered only by device servers, not through a gateway ([writing programs](programs.md)). Program-scoped grants
-  (run this program without a raw `invoke:`) and cumulative budgets are open gaps of the specification, planned for
-  spec v0.2.
+- **A budget of the agent's grant** (spec 7.4.1). A policy principal may carry cumulative budgets: an action pattern,
+  the argument that is counted, a total and an optional rolling window. The server (or the gateway, across all its
+  upstreams) reserves each call's amount when it admits the call, refuses a call that would exceed what remains with
+  `OUT_OF_RANGE` before anything moves, and gives an amount back only when the outcome proves nothing happened: an
+  `unknown` outcome counts as spent. `bhms_describe` shows the agent what remains, so it can plan within the total or say
+  that it cannot.
+- **A reviewed program under a program-scoped grant.** `programs:run:<digest>` lets the agent run exactly that program
+  without a raw `invoke:` scope on its steps (BHMS-PRG-023): it cannot call the step's action directly, and a budget on that
+  action still limits how often the program can run. Programs are offered by device servers ([writing programs](programs.md)).
+- **The device or its driver**, which sees every call whoever makes it, remains the last line for limits that are physical
+  (a syringe's volume, a reagent's stock).
 
-A dispenser that enforces a batch total in its handler. The refusal is a `DeviceFault` with the code that names the
+The dispense run again, against a budget of 500 uL on the agent's grant:
+
+```python run
+import asyncio
+import os
+
+from bhms import DeviceServer, Range
+from bhms.bridges.core import AgentBridge
+from bhms.runtime.authority import Policy
+from bhms.testing import connect
+
+BUDGET = {"id": "dose", "action": "pump-1/dispense", "quantity": "/volume", "unit": "uL", "total": 500}
+
+
+def build() -> DeviceServer:
+    policy = Policy({"agent": {"uids": [os.getuid()], "scopes": ["read", "lease", "invoke:pump-1/*", "stop:pump-1"],
+                               "budgets": [BUDGET]}}, trust_same_uid=False)
+    srv = DeviceServer("dosing-bench", store=None, policy=policy)
+    pump = srv.device("pump-1", name="Syringe pump", resources=["pump-1/plunger"])
+    pump.report_alive()
+
+    @pump.action(effect="irreversible", idempotency="relative", max_duration_ms=10_000)
+    async def dispense(ctx, volume: Range(1, 500, unit="uL", step=0.1)) -> {"dispensed": "uL"}:  # noqa: F821
+        """Dispense a volume."""
+        return {"dispensed": volume}
+
+    return srv
+
+
+async def main():
+    async with connect(build()) as client:
+        bridge = AgentBridge(client)
+        for key, volume in (("dose-1", 500), ("dose-2", 100)):
+            print((await bridge.call("bhms_invoke", {"device_id": "pump-1", "action": "dispense",
+                                                     "arguments": {"volume": volume}, "operation_key": key})).summary)
+        print((await bridge.call("bhms_describe", {"device_id": "pump-1"})).block.splitlines()[-1])
+
+
+asyncio.run(main())
+```
+
+```text output
+pump-1.dispense op-... completed: dispensed 500 uL (effect unverified, ...)
+Refused: pump-1/dispense needs 100 uL of budget 'dose', which has 0 uL left of 500 uL. Next: ask for at most 0 uL ...
+budget dose: dispense /volume 0 uL left of 500 uL (in total); a call that may have acted counts
+```
+
+The second call reached nothing: the refusal is a JSON-RPC error with `mayHaveActed: false`, and its `bound` carries
+`{"maximum": 0, "budget": {...}}` for programs that read it. A gateway takes the same `budgets` in its TOML policy
+(`[principals.<name>] budgets = [{ id = "dose", action = "pump/*/dispense", quantity = "/volume", unit = "uL", total = 500 }]`)
+and enforces them across every upstream.
+
+Limits that belong to the instrument stay in its driver. A dispenser that enforces a batch total in its handler.
+The refusal is a `DeviceFault` with the code that names the
 cause (`OUT_OF_RANGE`), proof that nothing was dispensed, and `effect="none"`, so the operation ends `failed` with
 `mayHaveActed: false`:
 

@@ -27,6 +27,8 @@ Every key of the gateway TOML file read by `bhms gateway <file>` (and `python -m
 | `upstream_timeout_ms` | `10000` | Default bound of every call to an upstream (BHMS-SEC-061). |
 | `observation_min_interval_ms` | `50` |  |
 | `http_path` | `"/bhms"` | Path of the Streamable HTTP listener. |
+| `tls_cert` |  |  |
+| `tls_key` |  |  |
 
 ## `[[upstream]]`
 
@@ -53,6 +55,7 @@ A microcontroller speaking BHMS-Compact over a serial line, served by a bridge i
 |---|---|
 | `baud` | Serial speed (default 115200, 8N1, raw). |
 | `hello_timeout_ms` | Wait for one HELLO (default 1000). |
+| `link_allowance_ms` |  |
 | `poll_interval_ms` | QUERY period of a running operation (default 2000). |
 | `port` | `/dev/ttyACM0` (USB CDC or UART), `pty:/dev/pts/N` or `unix:<path>`; networked links are refused (BHMS-SEC-050). |
 | `probe_interval_ms` | Liveness probe period of an idle link (default 2000). |

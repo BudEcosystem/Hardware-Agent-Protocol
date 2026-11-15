@@ -221,11 +221,16 @@ thermo/thermo-1.temperature = ... Cel (simulated, valid, ... old)
 
 ## Before it runs for real
 
-- **Listeners and TLS.** A non-loopback listener must use TLS (BHMS-SEC-004), and the TOML file has no TLS options: run
-  the gateway on `ws://127.0.0.1:<port>` or `http://127.0.0.1:<port>/bhms` behind a TLS-terminating reverse proxy on the
-  same host, or embed it and pass `ssl=` to `Gateway.listen`. A `wss://` or `https://` URL without a TLS context is
-  refused rather than served in clear. Unix sockets need no token: the peer's uid is the identity. Set
+- **Listeners and TLS.** A non-loopback listener must use TLS (BHMS-SEC-004). Either give the gateway its certificate,
+  `tls_cert = "tls/cert.pem"` and `tls_key = "tls/key.pem"` in `[gateway]` (PEM files, paths relative to the TOML file),
+  and listen on `wss://` or `https://`; or run it on `ws://127.0.0.1:<port>` or `http://127.0.0.1:<port>/bhms` behind a
+  TLS-terminating reverse proxy on the same host that forwards the `Authorization` header (the proxy model). A scheme is a
+  promise (BHMS-SEC-007): a `wss://`/`https://` listener without TLS configuration, TLS options that no listener uses, and
+  TLS under a plain `ws://` are all refused at start. Unix sockets need no token: the peer's uid is the identity. Set
   `trust_same_uid = false` and list `uids` when other accounts on the host must not be admin.
+- **Budgets.** `bounds` narrow each call; a principal's `budgets` limit totals across every upstream, durably
+  (`budgets = [{ id = "dose", action = "pump/*/dispense", quantity = "/volume", unit = "uL", total = 500,
+  windowMs = 86400000 }]`; spec 7.4.1). `bhms_describe` shows the agent what remains.
 - **Tokens.** Only digests go in the file; hand each token to its principal through a secret store or an environment
   variable (`BHMS_TOKEN` for the CLI and `bhms mcp`). Upstreams that need a token get it with `token_env` or `token_file`.
 - **State.** `state_dir` holds the forwarding journal and fences. Keep it on a local disk that survives reboots, back

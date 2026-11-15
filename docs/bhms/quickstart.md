@@ -25,7 +25,7 @@ bhms doctor
 
 ```text output
 ok python ...
-ok schema bhms.schema.json, protocol 2026-11-13
+ok schema bhms.schema.json, protocol 2026-11-15
 ... checks, 0 failed; pass a target to check connectivity
 ```
 
@@ -174,7 +174,7 @@ printf 'ls\ndescribe 1\nquit\n' | bhms dev unix:stage.sock
 ```
 
 ```text output
-connected to quickstart-stage 0.1.0 as uid:..., protocol 2026-11-13
+connected to quickstart-stage 0.1.0 as uid:..., protocol 2026-11-15
 1 stage-z Z stage online move_to position
 ```
 
