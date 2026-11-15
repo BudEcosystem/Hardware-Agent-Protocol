@@ -55,7 +55,7 @@ from typing import Any
 from bhms.protocol.canonical import canonical, digest
 from bhms.protocol.errors import BhmsError
 from bhms.protocol.types import SETTLED_STATES, TERMINAL_STATES
-from bhms.runtime.store import Store, StoredOperation
+from bhms.runtime.store import Store, StoredOperation, StoreSyncError
 
 TRANSITIONS: dict[str, frozenset[str]] = {
     "accepted": frozenset({"dispatching", "rejected", "canceled"}),
@@ -421,11 +421,16 @@ class Journal:
                 op["effect"] = entry["effect"] = "unknown"
             history.append(entry)
         self._no_deferred_join(defer_sync)
-        with self.store.transaction(barrier=dispatch if barrier is None else barrier, defer_sync=defer_sync):
-            self.store.insert_operation(op_id=op["operationId"], principal=principal, key=key,
-                                        request_digest=request_digest, kind=kind, device_id=device_id,
-                                        parent_id=parent_id, state=op["state"], created_ns=created, record=op,
-                                        private=private, history=history)
+        try:
+            with self.store.transaction(barrier=dispatch if barrier is None else barrier, defer_sync=defer_sync):
+                self.store.insert_operation(op_id=op["operationId"], principal=principal, key=key,
+                                            request_digest=request_digest, kind=kind, device_id=device_id,
+                                            parent_id=parent_id, state=op["state"], created_ns=created, record=op,
+                                            private=private, history=history)
+        except StoreSyncError as exc:
+            # committed, not durable: the record exists (a same-key retry finds it), so the caller must settle it
+            exc.record = self._remember(OperationRecord(op, history, principal, private, created, self))  # type: ignore[attr-defined]
+            raise
         rec = self._remember(OperationRecord(op, history, principal, private, created, self))
         rec.sync_ticket = self._ticket()
         if defer_sync and (dispatch if barrier is None else barrier):
@@ -653,8 +658,15 @@ class Journal:
     async def durable(self, rec: OperationRecord, *, inline: bool = False) -> None:
         """Return once ``rec``'s latest barrier write is on stable storage (at once for a synchronous barrier, or in a
         store without barriers); raises :class:`~bhms.runtime.store.StoreError` when it cannot be made durable.
-        ``inline``: see :meth:`~bhms.runtime.store.Store.wait_synced`."""
-        await self.store.wait_synced(rec.sync_ticket, inline=inline)
+        ``inline``: see :meth:`~bhms.runtime.store.Store.wait_synced`.
+
+        "Latest" is checked again after each wait: a barrier write made while waiting (a queued operation dispatched while
+        its ``accepted`` sync ran) moves the ticket, and the caller is told only what is durable (fix round 3, R57)."""
+        while True:
+            ticket = rec.sync_ticket
+            await self.store.wait_synced(ticket, inline=inline)
+            if rec.sync_ticket == ticket:
+                return
 
     # ------------------------------------------------------------------ waiting and listing
 
@@ -690,10 +702,26 @@ class Journal:
         """One page of operations visible to ``principal`` (None = admin) and the next cursor (BHMS-LIF-061/062)."""
         position = self._parse_cursor(after) if after is not None else None
         hidden = {op_id for op_id, held in self._held.items() if held.shown is None}  # not yet shown to anyone
-        # fetch past the hidden rows, so that a full page and its cursor stay correct (they are never on a page)
-        rows = self.store.list_operations(principal=principal, device_id=device_id, state=state, parent_id=parent_id,
-                                          after=position, limit=limit + 1 + len(hidden))
-        rows = [row for row in rows if row.id not in hidden]
+        # A state filter applies to the state clients see. While a held write makes a shown record's stored state differ
+        # from it, filter here instead of in the query.
+        stale = state is not None and any(held.shown is not None and held.shown[0]["state"] != held.rec.state
+                                          for held in self._held.values())
+        want = limit + 1 + len(hidden)  # fetch past the hidden rows, so that a full page and its cursor stay correct
+        rows: list[StoredOperation] = []
+        cursor_at = position
+        while True:
+            batch = self.store.list_operations(principal=principal, device_id=device_id,
+                                               state=None if stale else state, parent_id=parent_id, after=cursor_at,
+                                               limit=want)
+            for row in batch:
+                if row.id in hidden:
+                    continue
+                if stale and self._shown_state(row) != state:
+                    continue
+                rows.append(row)
+            if len(rows) > limit or len(batch) < want:
+                break
+            cursor_at = (batch[-1].created_ns, batch[-1].id)
         more = len(rows) > limit
         rows = rows[:limit]
         page = []
@@ -701,6 +729,10 @@ class Journal:
             live = self._live.get(row.id)
             page.append(self.view(live) if live is not None else row.record)
         return page, (self._cursor(rows[-1]) if more and rows else None)
+
+    def _shown_state(self, row: StoredOperation) -> str:
+        live = self._live.get(row.id)
+        return self.view(live)["state"] if live is not None else row.record["state"]
 
     # ------------------------------------------------------------------ recovery
 

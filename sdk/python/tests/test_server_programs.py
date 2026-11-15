@@ -350,3 +350,26 @@ async def test_a_cancel_during_the_first_childs_intent_sync_cancels_that_child(e
     assert final.state == "canceled"
     assert len(kids) == 1 and kids[0].state == "canceled" and kids[0].effect == "none"
     assert state["calls"] == []  # neither creep nor mark reached the device
+
+
+async def test_a_program_whose_creation_cannot_be_made_durable_ends_rejected(env, monkeypatch):  # fix round 3
+    """The program's accepted record is a synchronous barrier; when its sync fails the row is committed all the same. It
+    must end rejected (nothing ran), so that a same-key retry does not replay an accepted program that never runs."""
+    import errno
+
+    from bhms.runtime import store as store_module
+
+    srv, state, c = await env()
+
+    def failing(fd):
+        raise OSError(errno.EIO, "Input/output error")
+
+    monkeypatch.setattr(store_module.os, "fdatasync", failing)
+    prog = program(steps=[{"kind": "invoke", "deviceId": "focus-1", "action": "mark", "arguments": {}}],
+                   input={"type": "object", "additionalProperties": False, "properties": {}})
+    prog.pop("output")
+    first = (await c["admin"].programs_run(program=prog, arguments={}, operation_key="p-eio")).operation
+    assert first.state == "rejected" and first.error.may_have_acted is False
+    again = await c["admin"].programs_run(program=prog, arguments={}, operation_key="p-eio")
+    assert again.replayed is True and again.operation.state == "rejected"
+    assert state["calls"] == []

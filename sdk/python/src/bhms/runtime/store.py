@@ -104,6 +104,11 @@ class StoreError(RuntimeError):
     """A write to the store failed (disk full, read-only, I/O error, constraint); nothing was committed."""
 
 
+class StoreSyncError(StoreError):
+    """A barrier could not be made durable: its commit is in the database (and survives a process crash) but may not
+    survive a power loss. The caller must not act on it and must settle what it wrote (BHMS-OPS-003)."""
+
+
 class StoreLocked(RuntimeError):
     """Another process holds the store file."""
 
@@ -249,11 +254,11 @@ class Store:
             for hook in list(self.on_synced):
                 hook(self._synced, False)
 
-    def _failed_sync(self, exc: OSError) -> StoreError:
+    def _failed_sync(self, exc: OSError) -> StoreSyncError:
         self._sync_failure = self._sync_failure or exc
         for hook in list(self.on_synced):  # every refusal: commits made after the first failure are never synced
             hook(self._synced, True)
-        return StoreError(f"the journal could not be synced to stable storage ({exc}); barrier writes are refused "
+        return StoreSyncError(f"the journal could not be synced to stable storage ({exc}); barrier writes are refused "
                           "until the server restarts")
 
     def _sync_now(self) -> None:

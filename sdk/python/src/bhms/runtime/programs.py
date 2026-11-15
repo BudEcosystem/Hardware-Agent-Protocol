@@ -40,7 +40,7 @@ from bhms.protocol.canonical import canonical, digest
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.operations import (OperationRecord, derived_key, intent_digest, key_conflict_error, most_severe,
                                      now_ns, program_outcome, server_key, unknown_error)
-from bhms.runtime.store import StoreError
+from bhms.runtime.store import StoreError, StoreSyncError
 from bhms.server.validation import ArgumentValidator, check_units, effective_bounds
 
 if TYPE_CHECKING:
@@ -529,6 +529,15 @@ class ProgramRunner:
                 private={"resources": list(plan.info["resources"]), "effectClass": plan.info["effect"],
                          "devices": plan.info["devices"]},
                 barrier=True)  # durable before it is answered or observed (Ruling R57)
+        except StoreSyncError as exc:
+            # written, not durable: it never runs; it ends rejected, so a same-key retry replays that (as TS does)
+            srv.journal_failed(exc)
+            rec = exc.record  # type: ignore[attr-defined]
+            with contextlib.suppress(StoreError):
+                srv.journal.transition(rec, "rejected", error=BhmsError(
+                    "INTERNAL", f"the program operation could not be made durable ({exc}); no step was run",
+                    may_have_acted=False, hint="retry later with a new operationKey").to_operation_error())
+            return rec
         except StoreError as exc:
             srv.journal_failed(exc)
             raise BhmsError("BUSY", "the operation journal cannot be written; nothing was recorded or run",

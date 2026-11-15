@@ -378,3 +378,59 @@ async def test_closing_the_store_releases_held_records(tmp_path):  # fix round 2
     assert not journal.observable(rec) and heard == []
     store.close()
     assert journal.observable(rec) and journal._held == {} and heard == ["accepted", "dispatching"]
+
+
+async def test_a_queued_op_dispatched_during_its_accepted_sync_is_answered_only_when_durable(blocking, monkeypatch):
+    """Fix round 3: the device frees up while the queued operation's accepted sync runs, so it is dispatched (a second
+    barrier, a later ticket) before that sync completes. The invoker is answered only once what it is told is durable,
+    and get/list show the operation, in that state, right after the answer (R57)."""
+    srv, client, spy, release, url = blocking
+    await client.actions_invoke("d", "go", {"value": 1}, wait_ms=0)  # holds the device
+    thread_syncs(monkeypatch, srv)
+    g1, g2 = threading.Event(), threading.Event()
+    spy.gate = g1  # the accepted record's sync
+    queued = asyncio.ensure_future(client.actions_invoke("d", "go", {"value": 2}, wait_ms=0))
+    rec = None
+    for _ in range(400):
+        rec = next((r for r in srv.journal.live() if r.state == "accepted"), None)
+        if rec is not None:
+            break
+        await asyncio.sleep(0.005)
+    assert rec is not None
+    accepted_ticket = rec.sync_ticket
+    release.set()  # the first operation completes: the queued one is dispatched while its accepted sync is held
+    for _ in range(400):
+        if rec.state != "accepted":
+            break
+        await asyncio.sleep(0.005)
+    assert rec.state in ("dispatching", "running", "completed") and rec.sync_ticket > accepted_ticket
+    spy.gate = g2  # the dispatching record's sync
+    g1.set()
+    await asyncio.sleep(0.1)
+    assert not queued.done()  # its accepted record is durable now, but what it would be told (dispatching) is not
+    g2.set()
+    op = (await asyncio.wait_for(queued, 5)).operation
+    assert srv.store.synced_seq >= rec.sync_ticket
+    got = (await client.operations_get(op.operation_id)).operation
+    listed = [o for o in (await client.operations_list(device_id="d")).operations if o.operation_id == op.operation_id]
+    assert len(listed) == 1
+    order = ["accepted", "dispatching", "running", "completed"]
+    assert order.index(got.state) >= order.index(op.state) and order.index(listed[0].state) >= order.index(op.state)
+
+
+async def test_a_state_filtered_list_uses_the_state_clients_see(blocking, monkeypatch):  # fix round 3
+    srv, client, spy, release, url = blocking
+    await client.actions_invoke("d", "go", {"value": 1}, wait_ms=0)
+    b = (await client.actions_invoke("d", "go", {"value": 2}, wait_ms=0)).operation
+    thread_syncs(monkeypatch, srv)
+    spy.gate = threading.Event()
+    release.set()
+    for _ in range(400):
+        if b.operation_id in srv.journal._held:
+            break
+        await asyncio.sleep(0.005)
+    assert srv.journal.get(b.operation_id).state == "dispatching"  # stored; its sync held, clients still see accepted
+    accepted = [o.operation_id for o in (await client.operations_list(state="accepted")).operations]
+    dispatching = [o.operation_id for o in (await client.operations_list(state="dispatching")).operations]
+    assert b.operation_id in accepted and b.operation_id not in dispatching
+    spy.gate.set()
