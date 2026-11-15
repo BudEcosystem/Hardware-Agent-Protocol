@@ -6,7 +6,7 @@
     "keyword": "anyOf"
   },
   "message": {
-    "bhms/protocolVersion": "2026-11-13",
+    "bhms/protocolVersion": "2026-11-15",
     "bhms/admin": true
   }
 }

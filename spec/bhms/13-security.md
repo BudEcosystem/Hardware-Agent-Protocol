@@ -10,7 +10,7 @@ right to stop is separate from the right to act.
 |---|---|
 | stdio | The parent process (trusted; the server acts for whoever launched it) |
 | Unix-domain socket | Peer credential (uid, gid, pid) mapped by policy |
-| TCP, WebSocket, Streamable HTTP | Bearer token mapped by policy; mutual TLS MAY be used instead |
+| TCP, WebSocket, Streamable HTTP | Bearer token mapped by policy — in the `Authorization` header (WebSocket upgrade, HTTP), or per request in `_meta["bhms/authorization"]` (TCP, a loopback WebSocket without the header; BHMS-SEC-005); mutual TLS MAY be used instead |
 | BHMS-Compact | The gateway end of an exclusively owned link (§13.6) |
 
 **BHMS-SEC-001** A server MUST establish the principal from the transport as in the
@@ -21,11 +21,43 @@ credential, except `server/discover`, which MAY be answered without `principal`.
 only their hashes, and MUST NOT log, echo or return a token.
 
 **BHMS-SEC-003** A stdio server MUST treat its parent as the only principal and MUST
-NOT open additional listeners unless configured to.
+NOT open additional listeners unless configured to. The parent's principal id is the same
+on every start (the SDKs: `stdio`), so that a request retried with its key after the server
+restarted finds its operation (keys are per principal, BHMS-OPS-030; Task 8).
 
 **BHMS-SEC-004** A server on a non-loopback network address MUST use TLS (or an
 equivalent authenticated, encrypted channel) and bearer or mutual-TLS
 authentication.
+
+TLS is configured in one of two ways, and an implementation says which it supports. **Native
+TLS:** the listener holds a certificate chain and key (the Python gateway: `tls_cert` and
+`tls_key` in `[gateway]`; a device server: an `SSLContext` passed to `listen`) and is reached by a
+`wss://`, `https://` or `tcps://` URL. **Proxy model:** the listener binds a loopback address in
+plain `ws://` or `http://` behind a TLS-terminating reverse proxy on the same host, which forwards
+the `Authorization` header unchanged; the proxy is then the network endpoint and BHMS-SEC-004
+applies to it. An MCP bridge serving Streamable HTTP is a server too: beyond loopback it needs TLS
+in one of these two ways, whatever bearer token it checks.
+
+**BHMS-SEC-005** On a transport without a credential header — raw TCP, a loopback WebSocket
+whose upgrade carried no `Authorization` header, and stdio — a request MAY carry its credential
+in `_meta["bhms/authorization"]` = `"Bearer <token>"` (since 2026-11-15; the one standard carrier,
+which replaces SDK-private ones). The server MUST authenticate such a request as the token's
+principal (on stdio it then replaces the parent, BHMS-SEC-003), MUST refuse it with `UNAUTHORIZED`
+when the token is not valid (never falling back to the transport's principal), and MUST treat the
+carrier as it treats any bearer token (BHMS-SEC-002): compared in constant time, never logged,
+journaled, echoed or forwarded upstream (a gateway uses its own credential). Requests stay
+stateless: a carrier authenticates its own request only.
+
+**BHMS-SEC-006** A request MUST NOT carry `bhms/authorization` on a transport that already
+identifies the caller — a Unix socket (peer credential), Streamable HTTP or a WebSocket whose
+upgrade carried `Authorization` — and the server MUST refuse such a request with `UNAUTHORIZED`:
+two credentials on one request are ambiguous.
+
+**BHMS-SEC-007** A URL scheme is a promise: a listener addressed as `wss://`, `https://` or
+`tcps://` MUST NOT serve without TLS, and an implementation MUST refuse to start such a listener
+when it has no TLS configuration (rather than serve plain text under a TLS scheme). Clients
+MUST send the carrier of BHMS-SEC-005 only over TLS or a local transport (loopback, Unix socket,
+stdio). (Task 14: `wss://` and `https://` listeners on loopback served plain text.)
 
 ## 13.2 Policy and scopes
 
@@ -45,7 +77,10 @@ a policy document:
 }
 ```
 
-The `GatewayPolicy` schema is in `bhms.schema.json`.
+The `GatewayPolicy` schema is in `bhms.schema.json`. A principal may also carry cumulative
+`budgets` (§7.4.1) and program-scoped grants among its scopes (BHMS-PRG-023). `uids` are
+honoured only where the platform reports the peer credential of a Unix socket (Linux
+`SO_PEERCRED`); an implementation that cannot read it ignores them and says so.
 
 **BHMS-SEC-010** Policy MUST default to deny: a principal with no matching scope
 has no access beyond `server/discover`.
@@ -70,8 +105,9 @@ as quoted data, never as system or developer instructions.
 resources (depth ≤ 32, ≤ 10 000 subschemas, time budget) and MUST NOT trigger
 network fetches (BHMS-DEV-040).
 
-The bounds are counted the same way by every implementation, so that a device
-server and a gateway never disagree about one schema. *Depth* is counted per
+Every implementation MUST count the bounds the same way, as follows, so that a device
+server and a gateway never disagree about one schema (Ruling R34 made this normative in
+2026-11-15). *Depth* is counted per
 embedded schema (an action `input` or `output`, a property `schema`, an event
 `data` schema, a program `input`): its root is depth 0 and each step into a
 subschema adds one, so the deepest subschema may be 32 steps below the root. The

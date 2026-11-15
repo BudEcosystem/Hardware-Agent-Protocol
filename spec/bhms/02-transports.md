@@ -16,7 +16,8 @@ connection; responses MAY arrive in any order and are correlated by `id`.
 
 **BHMS-TRN-004** A server MUST reject a message larger than its advertised
 `limits.maxMessageBytes` (at least 1 048 576 bytes) with `-32600` and MUST NOT
-buffer an unbounded partial message.
+buffer an unbounded partial message. On WebSocket the server MAY instead close the
+connection with status 1009 (message too big) when the frame exceeds what it reads at all.
 
 **BHMS-TRN-005** Closing a connection MUST NOT cancel, roll back or forget any
 operation, lease or durable record. It only abandons the requests in flight on
@@ -37,6 +38,13 @@ parent process is the principal for stdio (BHMS-SEC-003).
 **BHMS-TRN-012** On stdio a client MUST cancel an in-flight request with
 `notifications/cancelled`; there is no per-request stream to close.
 
+**BHMS-TRN-013** A host that launches a stdio server (an MCP host, a gateway) SHOULD pass the
+server's configuration explicitly in its environment — in the SDKs `BHMS_STATE_DIR` and, where a
+token is used, `BHMS_TOKEN` — because hosts commonly start servers with a minimal environment and
+every server would otherwise share the user's default state directory. A server SHOULD warn when it
+serves stdio with a default it was not given. (Task 14: MCP hosts started servers whose journals then
+mixed in `~/.local/state/bhms`.)
+
 ## 2.2 Unix-domain and TCP sockets
 
 The stdio framing (newline-delimited JSON) is reused unchanged over a reliable
@@ -46,7 +54,9 @@ byte stream.
 
 **BHMS-TRN-021** A TCP listener MUST bind only to a loopback address unless the
 connection is protected by TLS and every request is authenticated with a bearer
-token (BHMS-SEC-004).
+token (BHMS-SEC-004). A TCP connection has no header, so each request carries its
+credential in `_meta["bhms/authorization"]` (BHMS-SEC-005); a listener whose URL
+scheme promises TLS (`tcps://`) serves only with TLS (BHMS-SEC-007).
 
 **BHMS-TRN-022** A Unix-domain socket server SHOULD derive the principal from the
 peer credential (`SO_PEERCRED` or equivalent) and MUST create the socket with
@@ -59,12 +69,15 @@ text frame and MUST negotiate the subprotocol `bhms`.
 
 **BHMS-TRN-031** A WebSocket server reachable from anything but loopback MUST
 require `Authorization: Bearer <token>` on the upgrade request and MUST reject
-the upgrade with HTTP 401 when it is missing or invalid.
+the upgrade with HTTP 401 when it is missing or invalid. On loopback a server MAY
+accept an upgrade without the header (a local client that cannot set one); every
+request on such a connection then carries `_meta["bhms/authorization"]` or has no
+principal (BHMS-SEC-005).
 
 **BHMS-TRN-032** On WebSocket a client MUST cancel an in-flight request with
 `notifications/cancelled`.
 
-## 2.4 Streamable HTTP (optional in v0.1)
+## 2.4 Streamable HTTP (optional)
 
 A server MAY expose one HTTP endpoint (conventionally `/bhms`).
 

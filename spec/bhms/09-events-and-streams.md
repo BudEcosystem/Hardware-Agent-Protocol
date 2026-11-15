@@ -30,6 +30,7 @@ Core types (`data` members in parentheses):
 | `device.fault` | The device reported a fault (`code?`) |
 | `operation.state` | An operation changed state (`state`, `previousState`) |
 | `operation.resolved` | An `unknown` operation was resolved (`state`, `source`: `device` or `operator`, `principal?`; §6.10) |
+| `operation.late_report` | A terminal report arrived after the operation had ended and did not change it (`outcome`, `evidence`, `state`; BHMS-OPS-072; since 2026-11-15) |
 | `stop` | A stop was requested or its outcome became known (`outcome`, `reason`) |
 | `lease.revoked`, `lease.expired` | A lease ended other than by release (`leaseId`) |
 | `policy.changed` | The server's authorization policy changed |

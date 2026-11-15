@@ -68,7 +68,9 @@ property stays a retained read, BHMS-OBS-011.)
 **BHMS-OBS-010** If a server cannot produce an observation that satisfies
 `maxAgeMs` or `fresh`, it MUST answer `STALE` with `field` naming the unmet
 parameter and `bound` its value. It MUST NOT return an older observation as if it
-satisfied the requirement.
+satisfied the requirement. `fresh` asks for an acquisition that started after the request;
+it does not ask for `quality: "valid"`: a fresh acquisition of a stalled sensor is returned
+with the quality it has (`stale`, `invalid`), never refused as if no acquisition took place.
 
 **BHMS-OBS-011** A fresh acquisition of a property with `readEffect:
 "transaction"` MUST be authorized as an effect on that property's resources

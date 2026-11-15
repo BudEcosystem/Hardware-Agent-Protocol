@@ -1,0 +1,27 @@
+{
+  "$comment": "A budget must name the argument it counts (quantity, 7.4.1, BHMS-AUTH-030).",
+  "against": "#/$defs/GatewayPolicy",
+  "expect": {
+    "path": "/principals/lab-agent/budgets/0",
+    "keyword": "required",
+    "message": "'quantity'"
+  },
+  "message": {
+    "principals": {
+      "lab-agent": {
+        "scopes": [
+          "read",
+          "invoke:pump-*/dispense"
+        ],
+        "budgets": [
+          {
+            "id": "pump-volume",
+            "action": "pump-*/dispense",
+            "unit": "mL",
+            "total": 0.5
+          }
+        ]
+      }
+    }
+  }
+}

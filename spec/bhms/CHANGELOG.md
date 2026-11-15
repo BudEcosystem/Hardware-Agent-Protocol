@@ -1,6 +1,114 @@
 # BHMS changelog
 
-## Unreleased
+## v0.2 — 2026-11-15
+
+Protocol version `2026-11-15`. Servers of this version also serve `2026-11-13` requests with v0.1 behaviour (BHMS-LIF-026).
+Task 15a harvested every "spec learnings" section of Tasks 1–14, the benchmark and agent reports and the ledger's deferrals;
+the triage of each learning is in `.superpowers/sdd/2026-11-13-bhms-build-plan/task-15a-report.md`. Each entry names the
+evidence that caused it. Requirement index: 285 rows (23 added, §14.6).
+
+- **Versions (§3.3, BHMS-LIF-026, new, MUST, core; Ruling R55).** The version string is `2026-11-15`; servers list both
+  versions and answer each request with its version's messages: a 2026-11-13 request is never shown
+  `capabilities.authority.budgets`, `capabilities.programs.grants`, `principal.budgets` or a program-scoped grant among its
+  scopes, and is held to every limit all the same (a budget refusal is `OUT_OF_RANGE`, a code v0.1 defines). BHMS-LIF-024
+  now reads "per principal and version". Python: `bhms.protocol.version.SUPPORTED_VERSIONS`, `discover_for`; the client
+  retries with the newest shared version. Evidence: Ruling R55.
+- **Cumulative budgets (§7.4.1, BHMS-AUTH-030..035, new, MUST, authority; schema `Budget`, `BudgetState`,
+  `PolicyPrincipal.budgets`, `Principal.budgets`, `ServerCapabilities.authority.budgets`; Ruling R50).** A grant may carry
+  budgets (action pattern, JSON Pointer to a numeric argument with a unit, total, optional rolling window). Admission reserves
+  the charge in the one admission path, atomically and in the same write as the operation (a gateway: as its pending-forward
+  record); a request that would exceed a budget is refused `OUT_OF_RANGE` with `bound = {maximum, budget}` before anything is
+  dispatched; a reservation is released only when the outcome proves nothing happened (`rejected`, `failed` with
+  `mayHaveActed: false`, `canceled` with `effect: none`, or an upstream refusal before anything was created); `unknown`
+  counts as consumed; the ledger is durable (store table `budget_ledger`); `server/discover` shows what remains. BHMS-AUTH-010:
+  what remains narrows the effective envelope. Decision: `OUT_OF_RANGE` with a structured `bound`, not a new code — the
+  remaining budget *is* an envelope bound (AUTH-010), a v0.1 peer already reads that code, and the precedent of BHMS-OPS-008
+  (reuse the code that carries "which member, which bound"). Python: `bhms.runtime.budgets` (device server `Executor.admit`
+  and gateway `Router._admit` call the same `BudgetLedger.charges`; no second implementation). Evidence: Task 14 report §4
+  learning 1 (live gpt-5.4-mini, "dispense 600 uL; if not possible, dispense nothing": 500 uL then 100 uL against a 500 uL
+  per-call bound); `tests/test_budgets.py`, `tests/test_gateway_budgets.py`, conformance `authority.budget-total`,
+  `authority.budget-survives-restart`.
+- **Program-scoped grants (BHMS-PRG-023, new, MUST, authority; BHMS-PRG-006 amended; schema `Scope`
+  `programs:run:sha256:<hex>`, `ServerCapabilities.programs.grants`; Ruling R51).** `programs:run:<digest>` authorizes exactly
+  the reviewed program's steps without `invoke` scope on them; a changed program (another digest) is `UNAUTHORIZED`; leases,
+  envelopes, budgets and hazard rules still apply to each step (the digest names every step's action literally, which is
+  what BHMS-AUTH-003 asks of a hazardous one). Programs can now be an agent's safety boundary. Evidence: Ruling R46 (in v0.1
+  running a program needed `invoke` on every step, so the agent could call the action directly); `tests/test_program_grants.py`,
+  conformance `authority.program-grant`.
+- **Late terminal reports (BHMS-OPS-072, new, MUST, core; BHMS-OPS-004 and OPS-071 clarified; event type
+  `operation.late_report`; Ruling R52).** Terminal states stay immutable; a terminal report that arrives after the server ended
+  the operation is journaled (`correction` entry with outcome and evidence kind) and surfaced as an `operation.late_report`
+  event (`data: {outcome, evidence, state}`) to reconcile from. Python: the executor (duration bound, deadline, lease loss)
+  and the compact bridge (a RESULT that contradicts an ended operation). Evidence: Ruling R41 (a slow-link success read as
+  `failed DEADLINE_EXCEEDED` with no trace of the device's report); `tests/test_compact_v02.py`, conformance
+  `operations.late-terminal-report`.
+- **Compact bounds over a link (§11.12, BHMS-CMP-052, new, MUST, compact; Ruling R53).** A compact action's `maxDurationMs` is
+  the endpoint's execution bound; the bridge bounds the operation by it plus a link allowance computed from its link (baud,
+  largest frame, retransmissions, one QUERY period) or configured (`link_allowance_ms`). Evidence: Ruling R41, Task 9b round 5.
+- **Measured compact completion (BHMS-CMP-036, new, MUST, compact).** A RESULT `completed`/`measured` makes the effect `verified`
+  only through fresh, valid, measured `verifiedBy` readings, which become the operation's evidence. Evidence: Task 14 §3
+  deferred 2 and learning 3 (`move_joints`/`enable` of the BHMS Arm always completed `unverified`).
+- **Bounded reading latency (BHMS-CMP-061, new, SHOULD, compact).** An endpoint reports the age of values it acquires (0 for a
+  FRESH READ); the gateway adds the time since the READ left; unknown age still fails every freshness requirement. Evidence:
+  Task 14 learning 8 (every LedAnalog reading had unknown age, so no `requiresFresh` action could be admitted).
+- **STOP tokens (BHMS-CMP-053, new, MUST, compact).** A token of an unconfirmed stop is not reused before the next HELLO (the
+  8-bit space wraps after 255 stops); with every token taken the STOP goes out with token 0 and a HELLO is asked for; a STOP sent
+  again after a HELLO carries that HELLO's session. Compact version unchanged (2): no layout changed. Evidence: Task 9b review
+  minors deferred to v0.2.
+- **Action duration cap (BHMS-DEV-036, new, MUST, core; schema `ActionDescription.maxDurationMs` `maximum` 86 400 000; Ruling
+  R54).** Evidence: Task 12b report spec learning 3 (an action's bound was unbounded while the program's and the stop's were not).
+- **Request credential carrier (BHMS-SEC-005, 006, new, MUST, core; BHMS-SEC-007 a scheme is a promise, new, MUST, inspection;
+  `_meta` key `bhms/authorization`; TRN-021 and TRN-031 amended; Ruling R56).** One standard carrier, `"Bearer <token>"`, for raw
+  TCP, a loopback WebSocket without the header, and stdio; refused beside a transport credential; never logged or forwarded; sent
+  only over TLS or local transports. Python: `DeviceServer.listen("tcp://...")` (and `tcps://` with TLS) now serves, the client
+  sends the carrier on TCP. The TypeScript SDK's `_meta["org.bhms.sdk/bearer"]` moves to it in Task 15b. Evidence: Task 8
+  deferral (SDK-private carrier; Python had none); Task 14 learning 10 (`wss://` on loopback served plain text).
+- **TLS model (BHMS-SEC-004 amended).** Native TLS (gateway `[gateway] tls_cert`/`tls_key`; a device server's `SSLContext`) or
+  the proxy model (plain loopback behind a TLS-terminating proxy); an MCP bridge on Streamable HTTP is a server too. The gateway
+  refuses a TLS scheme without TLS configuration, TLS options no listener uses, and TLS under a plain scheme. Evidence: Task 14
+  learning 9, SDK/DX issue 11.
+- **Hints never contradict proof (BHMS-ERR-007, new, MUST, core; checked by the observers over all traffic).** Evidence: Task 14
+  §3 deferred 1 and learning 7 (a `DeviceFault` with proof kept "partial effects are possible").
+- **Agent surface.** BHMS-AGT-017 (new, MUST): `bhms_describe` lists the caller's budgets that apply, with what remains (Task 14
+  learning 1; the refusal's hint already says how much may still be asked for). BHMS-AGT-033 (new, SHOULD): `bhms_stop` waits a
+  bounded 5 s so an asynchronously confirming device is reported `confirmed` (Task 14 learning 6). BHMS-AGT-011 amended: a failure
+  summary keeps the code and the first clause of the message before the hint, and cuts at word boundaries (learning 13, DX issue
+  5); BHMS-AGT-015: matched programs are named (learning 15); the signature block shows long enums as `...(N values)` and
+  property bounds (learning 14). The eight tool definitions are unchanged.
+- **Stdio hosts (BHMS-TRN-013, new, SHOULD).** Hosts pass `BHMS_STATE_DIR`/`BHMS_TOKEN`; the Python server warns when it serves
+  stdio on the default state directory. Evidence: Task 14 learning 2.
+- **Unit spellings (§4.5).** The refused common spellings (`rpm`, `ppm`, `mM`, `degC`, ...) and the code to write instead are
+  listed for every SDK. Evidence: Task 14 learning 12, commit daac70e.
+- **Stop reader (BHMS-AUTH-027, new, SHOULD; Ruling R48).** A stop path independent of the journal's sync is recommended; the
+  current measured bound is stated. Not implemented in v0.2.
+- **Schema bound counting (BHMS-SEC-021)** is normative (Ruling R34: "Task 15 makes it normative").
+- **Conformance (BHMS-CNF-007, new, MUST, inspection; §14.6).** A run tests one version (the newest shared, or
+  `--protocol-version`) and marks rows added later not applicable; the runner's own `compact-gateway` fixture is a declared
+  fixture, so the compact profile is claimable from it; a gateway `.toml` target's further processes get their own journal
+  (`BHMS_GATEWAY_STATE_DIR`). Evidence: Task 14 learning 11 and DX issues 9, 10.
+- **Examples.** `actions.invoke.response.json` and eight other examples carried a `requestDigest` their own content does not
+  produce; all regenerated, and `sdk/python/tests/test_example_digests.py` recomputes every digest of the corpus (Task 8b spec
+  learning; Task 8 learning 12). `error.out-of-range.json` no longer advises splitting a dispense into two (the advice that
+  defeats a total). New: `error.out-of-range-budget.json`, `policy.gateway-budgets.json`, `event.operation-late-report.json`,
+  `invalid-action-max-duration-above-a-day.json`, `invalid-policy-budget-without-quantity.json`,
+  `invalid-scope-program-grant-short-digest.json`, `invalid-meta-authorization-not-bearer.json`; request examples carry
+  `2026-11-15`; `server.discover.response.json` shows budgets and a program grant.
+- No requirement change, Python SDK only (carried from the Task 12b review): a queued operation whose dispatch sync fails is
+  answered with its execution's outcome, not `dispatching`; a program whose creation sync and rejection both fail is refused
+  `BUSY` (no unrun `accepted` program is handed out); a committed but not durable barrier leaves memory and journal in agreement
+  (a program whose first-step barrier is not durable ends `failed`, nothing sent; gateway mirrors and recovery write their
+  `dispatching` without a barrier). The `wrap-an-instrument` guide's liveness probe uses `*IDN?`, so an injected lost `*OPC?`
+  no longer makes the device offline under load.
+
+### TS SDK to follow (Task 15b)
+
+Every row of §14.6, the version list (`2026-11-15` and `2026-11-13`, BHMS-LIF-026), budgets in the device server
+(BHMS-AUTH-030..035; the same rules, the same refusal), program-scoped grants (BHMS-PRG-023), late reports (BHMS-OPS-072),
+BHMS-DEV-036 at description build, the carrier (BHMS-SEC-005/006, replacing `org.bhms.sdk/bearer`), hints (BHMS-ERR-007) and
+the `tcps://`/`wss://` refusals (BHMS-SEC-007). Until then the TypeScript SDK serves and speaks `2026-11-13` only
+(`SDK_PROTOCOL_VERSION`); its types are regenerated from this schema.
+
+### Also in v0.2: the Task 7b and 12b rounds (formerly "Unreleased")
 
 Performance round (Task 12b). Each entry names the evidence that caused it.
 
@@ -151,7 +259,7 @@ Hardening round (Task 7b). Each entry names the evidence that caused it.
   `expect` points at `/params/resolution/effect` (`const`). Evidence: the Python SDK reported `resolution` (its model
   validator) where the TypeScript SDK, following the schema path, reported `resolution.effect`; both now report the member.
 
-### TS SDK to follow (done in Task 8c)
+#### TS SDK to follow (done in Task 8c)
 
 All items below are implemented in `sdk/typescript` (Task 8c, commits `a860d95..`; fix round 1 of its review); the
 TypeScript conformance device claims the same profiles as the Python one with the same check results.

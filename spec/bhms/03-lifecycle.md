@@ -25,6 +25,13 @@ value is `"complete"`. A client MUST treat any other value as an invalid result.
 found). It MUST answer a BHMS method whose capability it does not advertise with
 `UNSUPPORTED` (`-32003`) and a hint naming the capability.
 
+A request is checked in this order, so that two implementations refuse a request with
+several defects the same way (Tasks 3 and 8): the method (`-32601`), a `params` object and
+`_meta["bhms/protocolVersion"]` (`INVALID_ARGUMENT`, BHMS-LIF-011), the version
+(`UNSUPPORTED_VERSION`), the capability (`UNSUPPORTED`), then the shape of `params`
+(`INVALID_ARGUMENT` naming the member; a `required` or `additionalProperties` failure names
+the missing or extra member, not the object that contains it).
+
 **BHMS-LIF-014** A receiver MUST NOT respond to a notification. Notifications
 MUST NOT carry an `id`.
 
@@ -44,6 +51,7 @@ reverse-DNS prefix (`com.example/…`).
 | `bhms/protocolVersion` | request (required) | string | Protocol version of this request |
 | `bhms/clientInfo` | request | `Implementation` | Client name and version (display/logging only) |
 | `bhms/clientCapabilities` | request | `ClientCapabilities` | Client capabilities relevant to this request |
+| `bhms/authorization` | request | string `Bearer <token>` | The request's credential on a transport without a credential header (BHMS-SEC-005; since 2026-11-15) |
 | `bhms/serverInfo` | result | `Implementation` | Server name and version |
 | `bhms/subscriptionId` | notification, listen result | string \| integer | The `subscriptions/listen` request this message belongs to |
 | `traceparent`, `tracestate` | request | string | W3C trace context, propagated by gateways |
@@ -60,7 +68,25 @@ MUST NOT use `clientInfo` or `serverInfo` for any authorization decision.
 
 ## 3.3 Versioning
 
-The version string is a date. This revision is `2026-11-13`.
+The version string is a date. This revision is `2026-11-15` (v0.2); the previous one is
+`2026-11-13` (v0.1).
+
+A server MAY serve several versions and lists them in `supportedVersions` (newest first by
+convention). A client sends the newest version it shares with the server: it may send its
+newest and, on `UNSUPPORTED_VERSION`, retry with the newest version listed in `bound` that it
+also speaks (BHMS-LIF-019), or read `supportedVersions` first. Every request is answered with
+the behaviour of the version it names, because requests are stateless (BHMS-LIF-030): nothing
+is negotiated per connection.
+
+**BHMS-LIF-026** A server that serves an earlier version as well MUST answer a request of that
+version with that version's messages: it MUST NOT send it a member, value, capability or scope
+that only a later version defines (for 2026-11-13: `capabilities.authority.budgets`,
+`capabilities.programs.grants`, `principal.budgets`, and program-scoped grants among
+`principal.scopes`), and it MUST apply every rule that protects devices — scopes, leases,
+envelopes, budgets, stop — whatever the version: a peer never gains authority or loses a limit
+by speaking an older version. `supportedVersions` is the same in every answer. What a 2026-11-15
+server does for a 2026-11-13 request, in short, is v0.1 behaviour plus the limits v0.1 could not
+express, refused with codes v0.1 already defines (a budget refusal is `OUT_OF_RANGE`, BHMS-AUTH-032).
 
 **BHMS-LIF-019** If a server does not serve the requested version it MUST answer
 `UNSUPPORTED_VERSION` (`-32015`) with `field: "_meta.bhms/protocolVersion"` and
@@ -76,7 +102,7 @@ of the caller.
 
 ```json
 {"jsonrpc":"2.0","id":1,"method":"server/discover",
- "params":{"_meta":{"bhms/protocolVersion":"2026-11-13",
+ "params":{"_meta":{"bhms/protocolVersion":"2026-11-15",
                     "bhms/clientInfo":{"name":"bhms-cli","version":"0.1.0"}}}}
 ```
 
@@ -117,18 +143,19 @@ supported with defaults.
 | `subscriptions` | `maxObservations`, `maxOperationIds` | always present; bounds per `subscriptions/listen` |
 | `leases` | `minTtlMs`, `maxTtlMs`, `maxWaitMs` | `leases/*` |
 | `events` | `retentionS`, `maxPageSize` | `events/read` and `events` subscription |
-| `programs` | `registry: bool`, `limits` | `programs/run`; `programs/register`, `programs/get`, `programs/list` when `registry` |
+| `programs` | `registry: bool`, `limits`, `grants?: bool` | `programs/run`; `programs/register`, `programs/get`, `programs/list` when `registry`; `grants: true`: program-scoped grants are honoured (BHMS-PRG-023; 2026-11-15 requests only) |
 | `compact` | `links` | the server bridges BHMS-Compact endpoints |
 | `gateway` | `crossDeviceLeases: bool`, `upstreams` | the server aggregates other servers |
-| `authority` | `{}` (no members) | the server serves more than one principal or enforces a scope policy (conformance profile `authority`); absent means single-principal: every authenticated caller has full authority |
+| `authority` | `budgets?: bool` | the server serves more than one principal or enforces a scope policy (conformance profile `authority`); absent means single-principal: every authenticated caller has full authority. `budgets: true`: it enforces cumulative budgets (§7.4.1; 2026-11-15 requests only). It names no principal |
 | `extensions` | `{"<prefix>/<name>": object}` | negotiated extensions |
 
 **BHMS-LIF-023** A server MUST advertise `operations`, `stop` and `subscriptions`.
 If any action it exposes has `requiresLease: true`, it MUST advertise `leases`.
 
 **BHMS-LIF-024** Capabilities MUST NOT vary between requests of the same
-principal within one `epoch`, except `extensions` added or removed by a
-configuration change that also emits `notifications/devices/listChanged`.
+principal and version within one `epoch`, except `extensions` added or removed by a
+configuration change that also emits `notifications/devices/listChanged`. (A request of
+an earlier version is shown that version's capabilities, BHMS-LIF-026.)
 
 Client capabilities (`bhms/clientCapabilities`) are an object with optional
 `extensions`; v0.1 defines no other client capability.
@@ -157,7 +184,7 @@ tagged with the request's id.
 
 ```json
 {"jsonrpc":"2.0","id":"sub-1","method":"subscriptions/listen",
- "params":{"_meta":{"bhms/protocolVersion":"2026-11-13"},
+ "params":{"_meta":{"bhms/protocolVersion":"2026-11-15"},
   "notifications":{
     "devicesListChanged": true,
     "operations": {"deviceIds": ["pump-1"]},

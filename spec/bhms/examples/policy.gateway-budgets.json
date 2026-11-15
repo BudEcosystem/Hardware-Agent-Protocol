@@ -1,0 +1,30 @@
+{
+  "$comment": "A policy with a cumulative budget (7.4.1) and a program-scoped grant (BHMS-PRG-023): the agent may dispense at most 0.5 mL a day in all, and run the reviewed rinse program without invoke scope on its steps.",
+  "against": "#/$defs/GatewayPolicy",
+  "message": {
+    "principals": {
+      "lab-agent": {
+        "tokens": [
+          "sha256:3333333333333333333333333333333333333333333333333333333333333333"
+        ],
+        "scopes": [
+          "read",
+          "lease",
+          "invoke:pump-*/dispense",
+          "stop:pump-*",
+          "programs:run:sha256:5b3c1a0d9f8e7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b"
+        ],
+        "budgets": [
+          {
+            "id": "pump-volume",
+            "action": "pump-*/dispense",
+            "quantity": "/volume",
+            "unit": "mL",
+            "total": 0.5,
+            "windowMs": 86400000
+          }
+        ]
+      }
+    }
+  }
+}

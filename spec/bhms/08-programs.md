@@ -154,7 +154,8 @@ when the step is admitted.
 
 **BHMS-PRG-006** Before the first step, the server MUST verify that the caller has
 `programs:run` and an `invoke` scope for every `invoke` step and every fresh
-`transaction` read, and that `leaseId` (when any step's action requires a lease)
+`transaction` read — or the program-scoped grant for the program's digest, which takes
+the place of both (BHMS-PRG-023) — and that `leaseId` (when any step's action requires a lease)
 is an active lease of the caller covering the union of those steps' resources.
 A step whose action does not require a lease but uses a resource that `leaseId`
 holds runs under that lease (BHMS-LSE-014); the lease MUST then cover all of that
@@ -165,6 +166,27 @@ reached, like any action.)
 
 **BHMS-PRG-007** The program `digest` MUST be the BHMS digest of the program
 object. Two programs are the same program exactly when their digests are equal.
+
+**BHMS-PRG-023** A **program-scoped grant** `programs:run:<digest>` (since 2026-11-15)
+authorizes running exactly the program with that digest, inline or by registered digest,
+without `programs:run` and without an `invoke` scope on its steps: a run under it is
+authorized for that program's steps and nothing else. Because `deviceId`, `action` and
+`property` are literals in every program (§8.2), the grant names each step's action
+literally, which satisfies BHMS-AUTH-003 for a hazardous step. Everything else still
+applies to every step as to any action: leases (BHMS-PRG-006, BHMS-LSE-010/014, so a
+hazardous step needs its lease, BHMS-DEV-033), the effective envelope with the principal's
+policy bounds (BHMS-AUTH-010, BHMS-PRG-005), budgets (§7.4.1), `requiresFresh`, inhibition
+and capacity. A program with another digest — any change, even of its name or description —
+MUST be refused with `UNAUTHORIZED` naming the scope it would need, and the grant MUST NOT
+authorize any `actions/invoke`, fresh `transaction` read or other program. Registration
+grants nothing (BHMS-PRG-021): the grant comes from the policy, written by whoever reviewed
+the program. A server that honours program grants advertises `capabilities.programs.grants:
+true` to 2026-11-15 requests.
+
+A reviewed program can therefore be an agent's safety boundary: an agent whose principal
+holds `programs:run:<digest>` and `read` (and `lease` when a step needs one) can run the
+reviewed dose, scan or sequence, and nothing else on those devices; with a budget on the
+step's action (§7.4.1) it cannot run it more often than the total allows.
 
 ## 8.4 Execution
 

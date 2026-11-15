@@ -1,5 +1,5 @@
 {
-  "$comment": "Gateway advertising every capability, its storage epoch and the caller's effective scopes.",
+  "$comment": "Gateway advertising every capability, its storage epoch and the caller's effective scopes. Since 2026-11-15 (answer to a 2026-11-15 request): the agent's cumulative budget with what remains (7.4.1, BHMS-AUTH-035) and a program-scoped grant (BHMS-PRG-023).",
   "against": "#/$defs/DiscoverResponse",
   "message": {
     "jsonrpc": "2.0",
@@ -7,6 +7,7 @@
     "result": {
       "resultType": "complete",
       "supportedVersions": [
+        "2026-11-15",
         "2026-11-13"
       ],
       "serverInfo": {
@@ -52,7 +53,8 @@
             "maxVariables": 64,
             "maxProgramBytes": 65536,
             "maxDurationMs": 3600000
-          }
+          },
+          "grants": true
         },
         "compact": {
           "links": 2
@@ -65,6 +67,9 @@
           "com.example/calibration": {
             "version": "1"
           }
+        },
+        "authority": {
+          "budgets": true
         }
       },
       "epoch": "gw-2026-11-01-a",
@@ -80,7 +85,19 @@
           "read",
           "lease",
           "invoke:pump-*/dispense",
-          "programs:run"
+          "programs:run:sha256:5b3c1a0d9f8e7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b7c6d5e4f3a2b"
+        ],
+        "budgets": [
+          {
+            "id": "pump-volume",
+            "action": "pump-*/dispense",
+            "quantity": "/volume",
+            "unit": "mL",
+            "total": 0.5,
+            "windowMs": 86400000,
+            "remaining": 0.35,
+            "resetsAt": "2026-11-16T08:12:40.125Z"
+          }
         ]
       },
       "_meta": {

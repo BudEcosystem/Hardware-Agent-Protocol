@@ -266,6 +266,18 @@ reboot to the same epoch value finds an empty ring and is answered
 **BHMS-CMP-035** An endpoint MUST send RESULT exactly once per handle unprompted,
 and again in answer to QUERY or a retransmitted INVOKE.
 
+**BHMS-CMP-036** A RESULT's `evidence` byte is the endpoint's own claim. A gateway MUST
+make the operation's effect `verified` only when the RESULT says `completed` with evidence
+`measured`, the action declares `completionEvidence: "measured"`, and the gateway, right
+after the RESULT, reads each property the action names in `verifiedBy` with `FRESH` and gets
+VALUEs of quality `valid` and evidence `measured`: those observations are the operation's
+`evidence` (BHMS-OPS-006). Without them (evidence `reported` or `none`, no `verifiedBy`, a
+reading that fails or is not valid and measured) the effect is `unverified`, and an intent
+with `require: {effect: "verified"}` ends `failed` with `UNVERIFIED` (BHMS-OPS-007). A RESULT
+that arrives after the gateway ended the operation is a late report (BHMS-OPS-072). (Task 14:
+`move_joints` and `enable` of the BHMS Arm declare measured completion and always completed
+`unverified`, because the byte had no defined mapping.)
+
 ## 11.7 Fences
 
 **BHMS-CMP-040** An endpoint advertising `FENCING` MUST keep a fence floor (reset to
@@ -337,12 +349,30 @@ only.
 reports RESULT `canceled` or `failed`) and MUST raise the fence floor above every
 fence seen, so that a pre-stop lease holder is fenced.
 
+**BHMS-CMP-053** A gateway MUST NOT give a STOP a token that a stop sent since the last
+HELLO it adopted carried and that ended without its own confirmation: the endpoint may still
+be carrying that stop out, and its late `confirmed` would confirm the new one (the 8-bit token
+space wraps after 255 stops in one session). When every token is taken it sends the STOP with
+token `0` (carried out, never confirmed) and asks for a HELLO, after which the stop is sent
+again with a fresh token. A STOP sent again after a HELLO MUST carry, in its frame `session`,
+the epoch of that HELLO (an endpoint accepts STOP in any session, BHMS-CMP-050, but the frame
+names the session it belongs to). (Task 9b review, deferred to v0.2.)
+
 ## 11.9 Reads and telemetry
 
 **BHMS-CMP-060** VALUE MUST carry quality `invalid` or `unknown` with k = 0 rather
 than a substituted value when no measurement exists (BHMS-OBS-001). The gateway
 MUST build `Observation.epoch` from the boot epoch and `sequence` from the
 VALUE sequence.
+
+**BHMS-CMP-061** An endpoint declares bounded reading latency by reporting the age of each
+value: a value it acquires to answer a `FRESH` READ SHOULD carry its real age (0 when acquired
+for that READ; the C library: set `meta->age_ms` in the read callback), and `0xFFFFFFFF` is only
+for a value whose age it cannot bound. The gateway computes the observation's age as the
+reported age plus the time since it sent the READ (an upper bound of the link's share). A
+reading of unknown age fails every `maxAgeMs` and every `requiresFresh` (BHMS-OBS-003, BHMS-OBS-030),
+so an action with `requiresFresh` on a property whose endpoint reports no age can never be
+admitted. (Task 14: every reading of the LedAnalog sketch had unknown age.)
 
 ## 11.10 Worked example (informative)
 
@@ -424,3 +454,19 @@ open; other endpoints should match them so one gateway handles all of them.
   it is not regained by a later `NEW_SESSION`.
 - **Sequence.** The endpoint frame counter restarts at 0 with each epoch,
   including a `NEW_SESSION` (its HELLO is sequence 0).
+
+## 11.12 Duration bounds over a link
+
+**BHMS-CMP-052** In a compact description an action's `maxDurationMs` is the endpoint's
+execution bound: the longest the endpoint may run the operation after it started it, and an
+endpoint SHOULD end (RESULT `failed` or `canceled`) an operation that exceeds it. The link adds
+latency the endpoint cannot see (the INVOKE's and the RESULT's time on the wire, their
+retransmissions, a QUERY for a lost RESULT), so the gateway MUST bound the operation (BHMS-DEV-030,
+BHMS-OPS-071) by `maxDurationMs` plus a **link allowance** that it either computes from its link
+— the reference bridge: `2 × (retries + 1) × (reply timeout + 2 × the wire time of a largest
+frame at the link's baud) + one QUERY period` — or is configured with (`link_allowance_ms` of a
+compact upstream), and SHOULD name both in the error of an operation that exceeds them. The
+served description is unchanged (it is the endpoint's, digest included); a program's worst-case
+duration counts the declared `maxDurationMs`, so a program over compact devices declares its own
+`maxDurationMs` with room for the allowance. (Ruling R41 and R53: a fully successful action on a
+slow link read as `failed DEADLINE_EXCEEDED`.)

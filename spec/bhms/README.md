@@ -1,4 +1,4 @@
-# BHMS — Bud HMS Protocol, version 2026-11-13 (v0.1)
+# BHMS — Bud HMS Protocol, version 2026-11-15 (v0.2)
 
 BHMS lets AI agents, programs and people **discover, observe and operate physical
 devices** through one small protocol. It borrows MCP's shape (JSON-RPC 2.0,
@@ -16,7 +16,10 @@ semantics physical work needs and chat tools do not:
 - **Stop.** A separate, always-available path that never waits behind leases or
   queues.
 - **Bounded programs.** Validated step sequences with a declared worst-case
-  duration; the vehicle for reusable "programs as tools".
+  duration; the vehicle for reusable "programs as tools", and, with a program-scoped
+  grant, an agent's safety boundary.
+- **Budgets.** A grant can limit totals, not only single calls: cumulative budgets
+  are reserved at admission and spent unless the outcome proves nothing happened.
 
 The normative chapters are:
 
@@ -105,4 +108,8 @@ CMP compact binding, AGT agent surface, SEC security, CNF conformance).
 Identifiers are never reused; a withdrawn requirement keeps its number with the
 note "withdrawn".
 
-The protocol version string for this revision is **`2026-11-13`**.
+The protocol version string for this revision is **`2026-11-15`** (v0.2). Servers of this
+revision also serve **`2026-11-13`** (v0.1) requests with v0.1 behaviour (§3.3, BHMS-LIF-026).
+What v0.2 adds — cumulative budgets of grants, program-scoped grants, late-report evidence, the
+request credential carrier, compact link allowances and measured compact completion — is listed
+with its evidence in [CHANGELOG.md](CHANGELOG.md).

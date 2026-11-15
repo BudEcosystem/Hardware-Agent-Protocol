@@ -1,0 +1,18 @@
+{
+  "$comment": "A terminal report that arrived after the operation had ended (BHMS-OPS-072): the operation stays failed; the event is the evidence an operator reconciles from.",
+  "against": "#/$defs/Event",
+  "message": {
+    "cursor": "ev-000140",
+    "time": "2026-11-15T10:02:17.512Z",
+    "type": "operation.late_report",
+    "severity": "warning",
+    "deviceId": "arm-1",
+    "operationId": "op-7f3a91c2d4e5",
+    "message": "arm-1 reported completed after op-7f3a91c2d4e5 ended failed: RESULT completed for handle 17 (fault 0)",
+    "data": {
+      "outcome": "completed",
+      "evidence": "measured",
+      "state": "failed"
+    }
+  }
+}

@@ -34,7 +34,7 @@ carry `totalDevices` (the number of devices an unfiltered `bhms_find` lists; its
 first page when there are more) and the summary MUST state that number and that
 `bhms_find` with no arguments lists everything. `text` follows BHMS-DEV-013 (any
 word, ids included); devices that match more words come first; a program matches
-when any word occurs in its name or description.
+when any word occurs in its name or description, and the summary names each matched program.
 
 **BHMS-AGT-002** A bridge MUST pass every tool call to BHMS methods with the
 bridge's own principal and MUST NOT accept identity, scopes, leases or bounds from
@@ -77,7 +77,9 @@ result's summary is one line).
 
 **BHMS-AGT-011** A summary MUST state units for every quantity, the operation's
 `state` and `effect` for operation results, and `quality`, `evidence` and age for
-observations. When the result has `replayed: true` the summary MUST contain the
+observations. For a `failed` or `rejected` operation it keeps the `bhmsCode` and the first
+clause of the message before any hint: a hint is what is shortened first (Task 14 learning 13);
+text is cut at a word boundary, never inside a word that changes its sense. When the result has `replayed: true` the summary MUST contain the
 word "replayed" (for example `… op-7f3a replayed: completed …`), so a model knows
 it did not act again. It MUST NOT say "done", "success" or "stopped" for an operation
 that is not `completed` or a stop that is not `confirmed`.
@@ -101,6 +103,21 @@ without `bhms_run_program` refuses the topic with `UNSUPPORTED`. `topic` is a
 closed list (`program-grammar` in this version); it is not a device id and reaches
 no device.
 
+**BHMS-AGT-017** When the bridge's principal has budgets (§7.4.1, `server/discover`
+`principal.budgets`), `bhms_describe` MUST list after the signature block every budget that
+counts an action of the described device, with what remains, its total and window — for
+example `budget pump-volume: dispense /volume 100 uL left of 500 uL (in total); a call that may
+have acted counts` — and the line MUST NOT be elided. A budget refusal is an ordinary refusal
+(BHMS-AGT-020) whose summary carries the server's hint, which says how much may still be asked
+for. (Task 14: a live model asked for 600 uL dispensed 500 uL and then 100 uL; with the budget in
+front of it, it can plan within the total or report that it cannot.)
+
+**BHMS-AGT-033** `bhms_stop` SHOULD pass a bounded `waitMs` (the reference bridges: 5000 ms,
+at most `limits.maxWaitMs`), so that a device that confirms its stop asynchronously can be
+reported `confirmed` instead of always `initiated`; when a device is still not confirmed the
+summary says how to check (`bhms_read`, or `bhms_stop` again). The stop itself never waits for
+anything (BHMS-AUTH-020).
+
 **BHMS-AGT-014** `bhms_read` without `max_age_ms` and `fresh` SHOULD NOT hand a model a
 retained observation older than 1000 ms as if it were the current state: for a
 property with `readEffect: "none"` the bridge asks for `maxAgeMs: 1000` (a narrowing
@@ -113,7 +130,10 @@ states its age. A read of a `transaction` property is never made fresh by defaul
 
 A refusal is a tool result with MCP `isError: true` (function tools:
 `{summary, error}`), whose summary reads `Refused: <message>. Next: <hint>` and
-whose structured content is `{error: OperationError}`.
+whose structured content is `{error: OperationError}`. An admitted operation that ended
+`failed`, `rejected` or `unknown` is not a refusal: it is marked `isError: true` as well (the
+model must not read it as success), but its structured content stays the BHMS result
+`{operation, replayed}` and its summary is the operation's (Task 6).
 
 **BHMS-AGT-020** Every BHMS error MUST be turned into a refusal carrying
 `bhmsCode`, `message`, `field`, `bound`, `mayHaveActed`, `retry` and `hint`

@@ -82,7 +82,9 @@ A server SHOULD probe the reachability of a device behind a link that can fail
 silently (a bridge to an instrument) periodically, not only when it starts;
 evidence that the device does not answer SHOULD end `online` at once (`offline`)
 rather than when the liveness interval runs out, and the return to `online`
-triggers reconciliation (BHMS-OPS-082).
+triggers reconciliation (BHMS-OPS-082). Evidence of reachability is any answer the device
+gave: a successful probe, a read, an action that completed or failed with the device's own
+report (Task 8c: a completed action has to count, or a device visibly at work reads `offline`).
 
 ## 4.3 `devices/describe`
 
@@ -93,7 +95,10 @@ two describe results with the same digest MUST be byte-identical in canonical
 JSON.
 
 **BHMS-DEV-021** `digest` MUST equal `"sha256:" + hex(sha256(JCS(description
-without its digest member)))`. A client SHOULD verify it.
+without its digest member)))`. A client SHOULD verify it. The digest covers the
+description exactly as served, defaults an SDK fills in (`safety.summary`,
+`onDisconnect`, `readEffect`, `cancel`, `completionEvidence`, default `resources`) included:
+two implementations give a device the same digest only when they serve the same bytes.
 
 **BHMS-DEV-022** When `params.digest` is given and differs from the current
 description, the server MUST answer `STALE` with `field: "digest"` and `bound`
@@ -166,6 +171,12 @@ server-side deduplication exists:
 `maxDurationMs`, and the server MUST enforce it: an operation still running after
 `maxDurationMs` MUST be cancelled if the action supports cancellation and MUST
 end `failed` (error `DEADLINE_EXCEEDED`) or `unknown`, never `completed`.
+
+**BHMS-DEV-036** An action's `maxDurationMs` MUST be at most 86 400 000 (one day), the
+bound of a program's `maxDurationMs` and of `stopMaxDurationMs` (schema `maximum`): a server
+must honour a declared bound, so an unbounded integer would let a description make a server
+wait arbitrarily long. SDKs refuse a larger bound when the description is built. (Since
+2026-11-15; Task 12b report, Ruling R54.)
 
 **BHMS-DEV-031** `completionEvidence: "measured"` MUST be declared only when the
 server obtains an independent measurement (for example an encoder, a scale, a
@@ -242,6 +253,22 @@ bare `/min` are not registry codes), parts per million `[ppm]`, millimolar
 `mmol/L`. Rotational speed is its own dimension, as angle is: a client converts
 `{rev}/min` to `{rev}/s` but never to `Hz` or `rad`/time, so a rotor speed cannot be
 mistaken for a signal frequency.
+
+Common spellings that are **not** registry codes, and the code to write instead. An SDK
+MUST refuse them where a unit is declared (BHMS-DEV-042 makes the registry the vocabulary)
+and SHOULD name the code in its refusal, so that `Range(..., unit="rpm")` fails when the
+description is built rather than when a client meets it:
+
+| Written | Code |
+|---|---|
+| `rpm`, `RPM`, `r/min` | `{rev}/min` |
+| `rps` | `{rev}/s` |
+| `ppm` | `[ppm]` |
+| `M`, `mM`, `uM` | `mol/L`, `mmol/L`, `umol/L` |
+| `degC`, `°C` | `Cel` |
+| `m^3`, `m³` | `m3` |
+| `l/h` | `L/h` |
+| `psi` | `[psi]` |
 
 **Quantity arguments.** Wherever a schema declares `x-bhms-unit`, a client MAY
 send a quantity object `{"value": <number>, "unit": "<ucum>"}` instead of a bare

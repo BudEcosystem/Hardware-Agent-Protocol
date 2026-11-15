@@ -1,0 +1,28 @@
+{
+  "$comment": "The request credential carrier is \"Bearer <token>\" (BHMS-SEC-005).",
+  "against": "#/$defs/DevicesListRequest",
+  "expect": {
+    "path": "/params/_meta/bhms~1authorization",
+    "keyword": "pattern"
+  },
+  "message": {
+    "jsonrpc": "2.0",
+    "id": 2,
+    "method": "devices/list",
+    "params": {
+      "_meta": {
+        "bhms/protocolVersion": "2026-11-15",
+        "bhms/clientInfo": {
+          "name": "bhms-cli",
+          "version": "0.1.0"
+        },
+        "bhms/authorization": "token-without-scheme"
+      },
+      "filter": {
+        "capability": "bhms.liquid.*",
+        "status": "online"
+      },
+      "limit": 50
+    }
+  }
+}

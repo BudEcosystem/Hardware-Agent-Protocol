@@ -1,9 +1,9 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:bhms:schema:2026-11-13",
-  "title": "BHMS protocol 2026-11-13",
-  "description": "Normative JSON Schema for BHMS v0.1 (spec/bhms). A message that fails this schema is a bug in its sender.",
-  "x-bhms-protocolVersion": "2026-11-13",
+  "$id": "urn:bhms:schema:2026-11-15",
+  "title": "BHMS protocol 2026-11-15",
+  "description": "Normative JSON Schema for BHMS v0.2 (spec/bhms). A message that fails this schema is a bug in its sender. Servers also serve 2026-11-13 (v0.1) requests: 03-lifecycle.md 3.3.",
+  "x-bhms-protocolVersion": "2026-11-15",
   "x-bhms-methods": {
     "server/discover": {
       "params": "#/$defs/DiscoverParams",
@@ -536,6 +536,13 @@
         "tracestate": {
           "type": "string",
           "maxLength": 512
+        },
+        "bhms/authorization": {
+          "type": "string",
+          "description": "Bearer credential for transports without a credential header (13.1, BHMS-SEC-005; since 2026-11-15). Never logged.",
+          "pattern": "^Bearer [A-Za-z0-9._~+/=-]+$",
+          "minLength": 8,
+          "maxLength": 4096
         }
       },
       "required": [
@@ -547,7 +554,8 @@
             "enum": [
               "bhms/protocolVersion",
               "bhms/clientInfo",
-              "bhms/clientCapabilities"
+              "bhms/clientCapabilities",
+              "bhms/authorization"
             ]
           },
           {
@@ -1623,6 +1631,10 @@
             },
             "limits": {
               "$ref": "#/$defs/ProgramLimits"
+            },
+            "grants": {
+              "type": "boolean",
+              "description": "The server honours program-scoped grants programs:run:<digest> (BHMS-PRG-023; announced to 2026-11-15 requests only)."
             }
           },
           "required": [
@@ -1663,8 +1675,12 @@
         },
         "authority": {
           "type": "object",
-          "description": "The server serves several principals or enforces a scope policy (conformance profile authority); absent means single-principal. Carries no members: a caller learns nothing about the principals.",
-          "properties": {},
+          "description": "The server serves several principals or enforces a scope policy (conformance profile authority); absent means single-principal. It names no principal. budgets: the server enforces cumulative budgets (7.4.1; announced to 2026-11-15 requests only).",
+          "properties": {
+            "budgets": {
+              "type": "boolean"
+            }
+          },
           "additionalProperties": false
         },
         "extensions": {
@@ -1704,8 +1720,8 @@
     },
     "Scope": {
       "type": "string",
-      "description": "Authorization scope (07-leases-and-authority.md 7.4).",
-      "pattern": "^(read|lease|stop|admin|operations:read|operations:resolve|programs:run|programs:register|invoke:.+|stop:.+)$"
+      "description": "Authorization scope (07-leases-and-authority.md 7.4). programs:run:<digest> is a program-scoped grant (8.3, BHMS-PRG-023; since 2026-11-15).",
+      "pattern": "^(read|lease|stop|admin|operations:read|operations:resolve|programs:run|programs:run:sha256:[0-9a-f]{64}|programs:register|invoke:.+|stop:.+)$"
     },
     "Principal": {
       "type": "object",
@@ -1722,6 +1738,14 @@
             "$ref": "#/$defs/Scope"
           },
           "uniqueItems": true
+        },
+        "budgets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/BudgetState"
+          },
+          "maxItems": 64,
+          "description": "The principal's budgets with what remains (2026-11-15 requests only)."
         }
       },
       "required": [
@@ -2271,7 +2295,8 @@
         },
         "maxDurationMs": {
           "type": "integer",
-          "minimum": 1
+          "minimum": 1,
+          "maximum": 86400000
         },
         "requiresLease": {
           "type": "boolean"
@@ -5855,6 +5880,14 @@
               "$ref": "#/$defs/ArgumentBound"
             }
           }
+        },
+        "budgets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Budget"
+          },
+          "maxItems": 64,
+          "uniqueItems": true
         }
       },
       "required": [
@@ -6205,6 +6238,120 @@
           ]
         }
       ]
+    },
+    "Budget": {
+      "type": "object",
+      "description": "A cumulative budget of a grant (07-leases-and-authority.md 7.4.1; since 2026-11-15).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Budget id, unique among the principal's budgets.",
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+        },
+        "action": {
+          "type": "string",
+          "description": "<deviceGlob>/<actionGlob> (split at the last /, * matches any sequence).",
+          "minLength": 3,
+          "maxLength": 256,
+          "pattern": "^.+/[^/]+$"
+        },
+        "quantity": {
+          "type": "string",
+          "description": "JSON Pointer (RFC 6901) into the action's arguments, naming a numeric member that declares x-bhms-unit.",
+          "minLength": 2,
+          "maxLength": 256,
+          "pattern": "^(/[^/]+)+$"
+        },
+        "unit": {
+          "type": "string",
+          "description": "UCUM unit of total; the quantity's declared unit must convert to it (4.5).",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "total": {
+          "type": "number",
+          "description": "The most the quantities may add up to (in unit), over the window or for the life of the grant.",
+          "exclusiveMinimum": 0
+        },
+        "windowMs": {
+          "type": "integer",
+          "description": "Rolling window: only reservations made in the last windowMs count. Absent: the whole life of the budget.",
+          "minimum": 1000,
+          "maximum": 31536000000
+        }
+      },
+      "required": [
+        "id",
+        "action",
+        "quantity",
+        "unit",
+        "total"
+      ],
+      "additionalProperties": false
+    },
+    "BudgetState": {
+      "type": "object",
+      "description": "A budget of the caller and what remains of it (server/discover principal.budgets; since 2026-11-15).",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Budget id, unique among the principal's budgets.",
+          "pattern": "^[a-z][a-z0-9_-]{0,63}$"
+        },
+        "action": {
+          "type": "string",
+          "description": "<deviceGlob>/<actionGlob> (split at the last /, * matches any sequence).",
+          "minLength": 3,
+          "maxLength": 256,
+          "pattern": "^.+/[^/]+$"
+        },
+        "quantity": {
+          "type": "string",
+          "description": "JSON Pointer (RFC 6901) into the action's arguments, naming a numeric member that declares x-bhms-unit.",
+          "minLength": 2,
+          "maxLength": 256,
+          "pattern": "^(/[^/]+)+$"
+        },
+        "unit": {
+          "type": "string",
+          "description": "UCUM unit of total; the quantity's declared unit must convert to it (4.5).",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "total": {
+          "type": "number",
+          "description": "The most the quantities may add up to (in unit), over the window or for the life of the grant.",
+          "exclusiveMinimum": 0
+        },
+        "windowMs": {
+          "type": "integer",
+          "description": "Rolling window: only reservations made in the last windowMs count. Absent: the whole life of the budget.",
+          "minimum": 1000,
+          "maximum": 31536000000
+        },
+        "remaining": {
+          "type": "number",
+          "description": "total minus the quantities that count now (never below 0).",
+          "minimum": 0
+        },
+        "resetsAt": {
+          "$ref": "#/$defs/Time",
+          "description": "With windowMs: when the oldest counted reservation leaves the window."
+        }
+      },
+      "required": [
+        "id",
+        "action",
+        "quantity",
+        "unit",
+        "total",
+        "remaining"
+      ],
+      "additionalProperties": false
     }
-  }
+  },
+  "x-bhms-supportedVersions": [
+    "2026-11-15",
+    "2026-11-13"
+  ]
 }

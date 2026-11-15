@@ -48,6 +48,12 @@ codes share `-32602`.
 when there is one, and `hint` MUST say what to do next. A server MUST NOT put
 secrets, tokens or the identity of another principal in any error member.
 
+**BHMS-ERR-007** A `hint` MUST NOT contradict `mayHaveActed` or the evidence behind it: an
+error with `mayHaveActed: false` (the server or the device proves nothing happened) MUST NOT
+say that partial effects are possible, that the device may have acted or that the outcome is
+unknown, and it SHOULD say that nothing happened. (Task 14: a `DeviceFault` with proof still
+carried the default hint "partial effects are possible".)
+
 **BHMS-ERR-004** `mayHaveActed` MUST be `true` whenever a device may have acted
 because of the request (for example a dispatch that timed out), and MUST be
 `false` only when the server knows no command reached a device. Admission

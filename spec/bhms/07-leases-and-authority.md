@@ -20,7 +20,8 @@ two devices that share a work zone declare the same id (`cell-a/zone-1`).
 over every requested resource or holds none of them. While waiting (up to
 `waitMs`), it MUST NOT hold a subset.
 
-**BHMS-LSE-002** A server MUST NOT grant two `active` leases that share a resource.
+**BHMS-LSE-002** A server MUST NOT grant two `active` leases that share a resource
+(whoever holds them: a principal's second acquire of a resource it holds conflicts too).
 A conflicting acquire that cannot be satisfied within `waitMs` MUST fail with
 `LEASE_CONFLICT`, naming the conflicting resources in `bound` and when the
 blocking lease expires in `hint`, without disclosing the holder's identity.
@@ -107,8 +108,9 @@ gateway policy grants each principal **scopes**:
 | `read` | `server/discover` details, `devices/*`, retained `properties/read`, `events/read`, subscriptions, own operations |
 | `invoke:<pattern>` | `actions/invoke` and fresh `transaction` reads on matching actions/properties |
 | `lease` | `leases/*` |
-| `stop` or `stop:<deviceGlob>` | `stop` on all or matching devices |
+| `stop` or `stop:<deviceGlob>` | `stop` on all or matching devices (also without `read`: a stop-only principal stops what its scope names; a device outside it is a `failed` entry of the result, never a request error) |
 | `programs:run` | `programs/run` (each step also needs its `invoke` scope) |
+| `programs:run:<digest>` | `programs/run` of exactly the program with that digest, its steps included (a program-scoped grant, BHMS-PRG-023; since 2026-11-15) |
 | `programs:register` | `programs/register` |
 | `operations:read` | `operations/get`, `operations/wait`, `operations/list` and operation notifications for other principals' operations (never `operations/cancel`, BHMS-OPS-054) |
 | `operations:resolve` | `operations/resolve` on operations the principal can see: asking the device again and recording an operator's resolution of an `unknown` operation (§6.10) |
@@ -143,8 +145,9 @@ must name the action literally (for example `invoke:oven-*/heat`), or be `admin`
 
 **BHMS-AUTH-010** For every numeric or enumerated argument the server MUST enforce
 the **effective envelope**: the intersection of the device's schema bounds, the
-principal's policy bounds for that action, and — inside a program — the program's
-input bounds that produced the value. A value outside it MUST be refused with
+principal's policy bounds for that action, — inside a program — the program's
+input bounds that produced the value, and what remains of every budget of the
+principal that counts the argument (§7.4.1). A value outside it MUST be refused with
 `OUT_OF_RANGE` whose `bound` is the effective bound.
 
 **BHMS-AUTH-011** Policy can only narrow: an envelope computed from policy or a
@@ -171,6 +174,85 @@ upstreamKey = "g-" + lowercase(base32(sha256(gatewayId "\n" principal "\n" clien
 
 (`base32` is RFC 4648 without padding; `gatewayId` is the gateway's configured identity; the result is 28 characters of
 `[g\-a-z2-7]`, a valid `operationKey`). A request without a client key gets a gateway-generated one first (BHMS-OPS-035).
+
+### 7.4.1 Cumulative budgets
+
+A bound limits one call, never a total: an agent asked for 600 uL from a pump whose
+`dispense` allows 500 uL per call can dispense 500 uL and then 100 uL, each call in
+bounds. A **budget** limits the total. A grant (a principal of a policy) MAY carry
+budgets (`PolicyPrincipal.budgets`, schema `Budget`):
+
+| Member | Type | Meaning |
+|---|---|---|
+| `id` | `^[a-z][a-z0-9_-]{0,63}$` | Unique among the principal's budgets; with the principal it names the budget's ledger |
+| `action` | `<deviceGlob>/<actionGlob>` | The actions it counts (split at the last `/`, `*` matches any sequence, as in §7.4) |
+| `quantity` | JSON Pointer (RFC 6901) | The numeric member of the arguments it counts, which declares `x-bhms-unit` (`/volume`, `/dose/volume`) |
+| `unit` | UCUM code (§4.5) | The unit of `total`; the quantity's declared unit must convert to it |
+| `total` | number > 0 | The most the counted quantities may add up to |
+| `windowMs` | integer, 1000 – 31 536 000 000 | Optional rolling window: only reservations made in the last `windowMs` count; absent, the budget counts for its whole life |
+
+Example (a gateway's TOML policy and a device server's JSON policy carry the same object):
+
+```json
+{"id": "pump-volume", "action": "pump-*/dispense", "quantity": "/volume", "unit": "mL", "total": 0.5, "windowMs": 86400000}
+```
+
+A request **matches** a budget when the budget's `action` pattern names the request's
+`<deviceId>/<action>`; its **charge** is the absolute value of the argument the
+`quantity` names, as admitted (defaults applied, quantity objects replaced by their
+value, in the action's declared unit), converted to the budget's `unit`. What
+**remains** of a budget is `total` minus the charges of its reservations that count
+(within the window, when it has one), never below 0.
+
+**BHMS-AUTH-030** A server that enforces a policy carrying budgets MUST count every
+admitted request of the principal that matches a budget, and MUST NOT admit a request
+whose charge exceeds what remains of any budget it matches, however the requests are
+split, ordered or raced. Program steps are requests like any other (each step is
+charged when it is admitted; a run whose later step exceeds a budget ends `failed` at
+that step).
+
+**BHMS-AUTH-031** The server MUST reserve each charge as part of admitting the request:
+in the same admission path as the lease check (BHMS-LSE-010), with nothing between the
+check of what remains and the reservation that another admission could use, and durably
+in the same write as the operation's `accepted` record (a gateway: as its pending-forward
+record, §7.6). A budget whose `quantity` does not name a numeric argument with a unit
+convertible to the budget's `unit` in an action it matches MUST make that action
+unavailable to the principal: the policy is refused when it is loaded against known
+descriptions, and otherwise the request is refused with `UNAUTHORIZED` naming the budget.
+
+**BHMS-AUTH-032** A request that would exceed a budget MUST be refused before anything is
+dispatched (never a partial dispatch) with `OUT_OF_RANGE`, `field` naming the counted
+argument (`arguments.volume`), `mayHaveActed: false`, and `bound` =
+`{"maximum": <what remains, in the argument's unit>, "budget": BudgetState}`, where
+`BudgetState` is the budget with `remaining` and, for a windowed budget, `resetsAt` (when
+the oldest counted reservation leaves the window). `message` names the budget and what
+remains; `hint` says how much may still be asked for. (The remaining budget narrows the
+effective envelope, BHMS-AUTH-010; `OUT_OF_RANGE` with a structured `bound` is the refusal
+an agent already knows how to read. An exhausted budget gives `maximum` 0, not
+`UNAUTHORIZED`: the action is still the principal's, the amount is spent.)
+
+**BHMS-AUTH-033** A reservation MUST be released only when the operation's terminal
+outcome proves that nothing happened: `rejected`, `failed` with `mayHaveActed: false`, or
+`canceled` with `effect: "none"` (a gateway also releases it when the upstream refused the
+forward before creating anything). An `unknown` operation, and every other outcome, counts
+as consumed: an outcome that may have acted is spent.
+
+**BHMS-AUTH-034** Reservations MUST be durable: what a budget has spent survives a restart
+of the server (and its window keeps running on the server's wall clock). A crash between
+an operation's settlement and the release of its reservation leaves it consumed until the
+server, at its next start, finds the operation settled with proof of no effect.
+
+**BHMS-AUTH-035** For a request of version 2026-11-15, `server/discover` MUST give a
+principal that has budgets `principal.budgets` (each a `BudgetState`, with what remains
+now), and a server that enforces budgets MUST advertise `capabilities.authority.budgets:
+true`. Neither appears in a 2026-11-13 answer (BHMS-LIF-026); the budgets are enforced
+whatever the version of the request.
+
+A gateway enforces the budgets of its own policy across all its upstreams with the same
+rules (its principal's budgets count what it forwards), and an upstream enforces its own
+policy's budgets for the gateway's principal. A budget is the operator's limit, not the
+agent's: a model never sees a way to raise or reset one (a new ledger starts only under a
+new budget `id`).
 
 ## 7.5 Stop
 
@@ -200,7 +282,8 @@ the device's stop procedure (when `safety.stop` is `supported`); move its
 `accepted` operations to `canceled` (`effect: "none"`); record a `stop` history
 entry and a cancellation request on its `dispatching`, `running` and `unknown`
 operations and on program operations with steps on it; revoke every `active`
-lease covering its resources (raising their fences); emit a `stop` event. The
+lease covering its resources (raising their fences: every revoked resource's highest fence
+becomes a fresh value of the server's fence counter); emit a `stop` event. The
 stop result covers operations whose intent is written but not yet durable as
 well (it is exempt from the "not reported before durable" rule of BHMS-OPS-003):
 such an operation is never dispatched and ends `canceled` with `effect: "none"`.
@@ -215,7 +298,9 @@ request: that device's result is `failed` with error `UNKNOWN_DEVICE`, and the
 other devices are stopped.
 
 **BHMS-AUTH-024** `stop` MUST return within `waitMs` (default 0) plus the time to
-dispatch, reporting `initiated` for devices not yet confirmed. Later outcomes
+dispatch, reporting `initiated` for devices not yet confirmed. (A stop procedure that
+finishes while the server dispatches it, before the result is built, is `confirmed` even at
+`waitMs: 0`.) Later outcomes
 appear as `stop` events. A server that closes while a stop procedure is still
 running SHOULD wait for it at least for the device's declared stop bound
 (`stopMaxDurationMs`; a server-chosen minimum without one) and only then end it
@@ -228,6 +313,13 @@ ordinary new operations until the journal is writable.
 
 **BHMS-AUTH-026** A stop MUST NOT accept parameters that command motion,
 setpoints or any effect other than the device's commissioned stop procedure.
+
+**BHMS-AUTH-027** A durable server SHOULD read and dispatch `stop` on a path that does not
+wait for the journal's `fdatasync` (a reader thread or process of its own): on a server
+whose one event loop also runs a synchronous or inline sync, a `stop` that arrives meanwhile
+is read only when that sync returns. The reference Python server does not yet do this; its
+stop latency is bounded by one `fdatasync` in flight, about 1.3 ms typically on the shared
+test host of Task 12b, with loop stalls of up to 261.7 ms measured there (Ruling R48).
 
 ## 7.6 Gateways (notes)
 

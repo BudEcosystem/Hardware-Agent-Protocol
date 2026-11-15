@@ -52,6 +52,14 @@ was returned for the same key.
 | `history` | `HistoryEntry[]` | no | Returned by `operations/get` and `operations/wait`; omitted in lists and notifications |
 
 `OperationError` is the error data of §10 plus `message`.
+
+`effect` while an operation is not yet settled: `none` while `accepted` (nothing was sent);
+`unknown` from `dispatching` on for an action whose effect class is not `none` (`none` for one
+whose class is `none`), until the outcome says more. A `failed` operation records what its
+evidence supports: `unknown` after a reported device fault unless the device proves no effect
+(`none`) or reports a partial one (`unverified`). A `completed` operation whose measured
+verification disagrees, without `require`, is `unverified` with the measurements as evidence.
+(Task 8: a second implementation needs these values to write the same histories.)
 `HistoryEntry = {seq, at, kind, state?, cancel?, effect?, detail?, stepIndex?, childOperationId?, operator?}`
 (`operator: {principal, basis}` only on a `reconciliation` entry written from an operator's resolution, §6.10),
 `kind` ∈ `state`, `cancel`, `effect`, `evidence`, `reconciliation`, `correction`,
@@ -109,7 +117,8 @@ ends `canceled` with `effect: "none"`.
 
 **BHMS-OPS-004** Once an operation has reached `dispatching`, a transport error,
 timeout, lost reply or process crash MUST result in `unknown` (or a state proven
-by device evidence), never `failed` with `mayHaveActed: false` and never
+by device evidence that arrives before the operation is ended; a later one is a late report,
+BHMS-OPS-072), never `failed` with `mayHaveActed: false` and never
 `completed` without completion evidence. Every transition into `unknown` MUST
 carry `error.bhmsCode: "DEADLINE_EXCEEDED"` with `mayHaveActed: true` and
 `retry: "after-reconcile"`, whatever the cause (lost reply, link loss, server
@@ -275,7 +284,9 @@ device when possible.
 
 **BHMS-OPS-054** Only the principal that created an operation, or one with the
 `admin` scope, MAY cancel it; others MUST receive `UNAUTHORIZED`. Cancellation
-MUST NOT require a lease.
+MUST NOT require a lease. (An operation the caller cannot see at all is
+`INVALID_ARGUMENT` by BHMS-OPS-062 first; `UNAUTHORIZED` answers only a caller that can see
+it, for example with `operations:read`, but did not create it.)
 
 **BHMS-OPS-055** `canceled` MUST NOT be presented as "safe" or "at rest". A client
 that needs the device halted MUST use `stop`.
@@ -322,7 +333,20 @@ journal after an incident. A device server never sends `upstream`.
 operation is `dispatching` or `running`, the server MUST request cancellation when
 the action supports it and MUST end the operation `failed` with
 `DEADLINE_EXCEEDED` and `mayHaveActed: true`, or `unknown` when termination is not
-observed.
+observed. (A BHMS-Compact bridge adds a link allowance to `maxDurationMs`, BHMS-CMP-052.)
+
+**BHMS-OPS-072** A terminal report that reaches the server after it ended the operation
+(its duration bound or deadline passed, BHMS-OPS-071; its lease was lost under `onLeaseLoss:
+hold`, BHMS-LSE-012; a compact RESULT after the bridge gave up) MUST NOT change the
+operation: terminal states are immutable (BHMS-OPS-002), and an operation that went `unknown`
+meanwhile is reconciled as BHMS-OPS-071 says, never to `completed` by a report that came after
+its bound. The server MUST record the late report as evidence: a `correction` history entry
+on the operation that states the late outcome and its evidence kind, and, when it advertises
+`events`, an `operation.late_report` event (§9.2) naming the operation, with `data: {outcome,
+evidence, state}` (`outcome` what the device reported: `completed`, `failed` or `canceled`;
+`evidence` its kind: `measured`, `reported` or `none`; `state` the operation's recorded state).
+An operator or agent reconciles from that evidence: by reading the device, or, while the
+operation is `unknown`, with `operations/resolve` (§6.10).
 
 ## 6.9 Crash windows
 

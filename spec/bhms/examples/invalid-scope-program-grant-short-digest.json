@@ -1,0 +1,18 @@
+{
+  "$comment": "A program-scoped grant names a full program digest (BHMS-PRG-023).",
+  "against": "#/$defs/GatewayPolicy",
+  "expect": {
+    "path": "/principals/lab-agent/scopes/1",
+    "keyword": "pattern"
+  },
+  "message": {
+    "principals": {
+      "lab-agent": {
+        "scopes": [
+          "read",
+          "programs:run:sha256:5b3c1a0d"
+        ]
+      }
+    }
+  }
+}

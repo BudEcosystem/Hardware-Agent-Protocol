@@ -15,7 +15,7 @@
         },
         "mayHaveActed": false,
         "retry": "never",
-        "hint": "send a volume between 1 and 1000 uL, or split into two dispenses"
+        "hint": "send a volume between 1 and 1000 uL"
       }
     }
   }
