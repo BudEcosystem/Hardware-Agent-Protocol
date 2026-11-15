@@ -37,7 +37,7 @@ The public surface of the `bhms` Python package (sdk/python), read from its sign
 ### `bhms.DeviceServer`
 
 ```python no-run
-DeviceServer(name: str, *, version: str = '0.1.0', title: str | None = None, instructions: str | None = None, state_dir: str | os.PathLike[str] | None = None, store: Any = <default>, durability: str = 'dispatch', policy: Policy | None = None, token: str | None = None, key_retention_s: int = 604800, event_retention_s: int = 604800, max_wait_ms: int = 60000, max_page_size: int = 500, lease_min_ttl_ms: int = 1000, lease_max_ttl_ms: int = 600000, lease_max_wait_ms: int = 30000, queue_limit: int = 64, observation_min_interval_ms: int = 50, cancel_grace_ms: int = 1000, programs: bool = True, program_limits: dict[str, int] | None = None, strict: bool = False, liveness_interval_s: float | None = None, reconcile_timeout_s: float = 10.0)
+DeviceServer(name: str, *, version: str = '0.1.0', title: str | None = None, instructions: str | None = None, state_dir: str | os.PathLike[str] | None = None, store: Any = <default>, durability: str = 'dispatch', policy: Policy | None = None, token: str | None = None, key_retention_s: int = 604800, event_retention_s: int = 604800, max_wait_ms: int = 60000, max_page_size: int = 500, lease_min_ttl_ms: int = 1000, lease_max_ttl_ms: int = 600000, lease_max_wait_ms: int = 30000, queue_limit: int = 64, observation_min_interval_ms: int = 50, cancel_grace_ms: int = 1000, programs: bool = True, program_limits: dict[str, int] | None = None, strict: bool = False, liveness_interval_s: float | None = None, reconcile_timeout_s: float = 10.0, stop_shutdown_ceiling_s: float = 60.0)
 ```
 
 `DeviceServer`: a complete, honest BHMS server for devices declared with decorators.
@@ -96,6 +96,7 @@ A BHMS device server; see the module docstring.
 - `queue_limit`: queued operations per device before `BUSY`.
 - `observation_min_interval_ms`: subscription rate floor.
 - `cancel_grace_ms`: how long a cancelled handler may take to terminate after a duration bound.
+- `stop_shutdown_ceiling_s`: the longest `close` waits for a running stop procedure, whatever its declared bound (BHMS-AUTH-024); set it below your supervisor's kill timeout so a stop ended at shutdown is recorded.
 - `programs`: enable `programs/*` (with a durable registry).
 - `strict`: full JSON Schema validation of every request and result (conformance mode).
 
