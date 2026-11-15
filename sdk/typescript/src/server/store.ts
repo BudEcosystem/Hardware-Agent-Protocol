@@ -93,6 +93,8 @@ export interface Store {
   /** Commit an operation record; `sync` makes it survive a power loss before this returns (the `dispatching` record). */
   writeOp(rec: StoredOperation, sync: boolean): void;
   writeFence(n: number): void;
+  /** Force everything written so far onto stable storage; throws {@link StoreSyncError} when that fails. */
+  sync(): void;
   writeProgram(p: StoredProgram): void;
   writeEvent(ev: Event): void;
   setWritable(writable: boolean): void;
@@ -132,6 +134,7 @@ export class MemoryStore implements Store {
     if (!this._writable) throw new StoreError("the journal is read-only");
     this.fence = n;
   }
+  sync(): void { /* nothing is durable */ }
   writeEvent(ev: Event): void { this.events.push(ev); }
   setWritable(w: boolean): void { this._writable = w; }
   probeWritable(): boolean { return this._writable; }
@@ -377,6 +380,16 @@ export class JournalStore implements Store {
   /** Force everything appended so far onto stable storage. */
   protected syncFile(): void {
     fsyncSync(this.fd);
+  }
+
+  sync(): void {
+    if (!this.writable) throw new StoreError("the journal is read-only");
+    try {
+      this.syncFile();
+    } catch (e) {
+      this.broken = true;
+      throw new StoreSyncError(`journal fsync failed: ${(e as Error).message}`);
+    }
   }
 
   writeOp(rec: StoredOperation, sync: boolean): void {

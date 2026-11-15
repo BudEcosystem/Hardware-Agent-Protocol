@@ -15,11 +15,18 @@ Performance round (Task 12b). Each entry names the evidence that caused it.
 - **"Reported" in OPS-003 means any observer** (Task 12b fix round 1, Ruling R47): the invoker's answer, operation
   notifications, `operations/get` and `operations/list` (and so a gateway mirroring the server) all wait for the sync covering
   the record. Evidence: the Task 12b review probe — a second client subscribed to the device's operations heard `accepted`
-  then `dispatching` while the sync had not completed; after a power loss that operation id would have vanished. A queued
-  `accepted` record is not behind a barrier (it recovers `rejected`) and stays observable at its commit, in both SDKs.
+  then `dispatching` while the sync had not completed; after a power loss that operation id would have vanished.
+  Observability is per record and monotonic (fix round 2, Ruling R57): once shown, a record stays visible, as its last
+  durable state, while a later barrier write (a queued operation's `dispatching`) waits for its sync; only that write's
+  notification waits. A queued `accepted` record is durable before it is answered or observed (§6.5 step 10, "Durably
+  record `accepted`"): both SDKs now make it a barrier. (Fix round 1 said here that a queued `accepted` "recovers
+  `rejected`" without one; that held after a process crash but not after a power loss, where it could vanish after being
+  answered. Withdrawn.) The `stop` result is exempt (Ruling R58): it may name operations whose intent sync has not
+  completed; it cancels them and each ends `canceled` with `effect: "none"`.
 - **Learning, v0.2 idea (Ruling R48)**: on a durable server a synchronous or inline sync runs on the server's one event loop,
   so a `stop` arriving meanwhile is read only when that sync returns: stop latency is bounded by one `fdatasync` in flight
-  (up to 192 ms measured on Task 12b's shared host, about 1.3 ms typically). A reader for `stop` that does not share the
+  (about 1.3 ms typically on Task 12b's shared host; inline-sync loop stalls of up to 261.7 ms measured there, 356.9 ms in a
+  variant without the start-up heap freeze). A reader for `stop` that does not share the
   loop with the journal (a separate thread or process that reads the connections and dispatches the stop procedure) would
   remove that bound; not done in v0.1.
 - **Gateway pending-forward barrier kept, with its reason stated (§7.6 *Operations*)**: the pending-forward record must be on

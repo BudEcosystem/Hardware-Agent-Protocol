@@ -200,7 +200,10 @@ the device's stop procedure (when `safety.stop` is `supported`); move its
 `accepted` operations to `canceled` (`effect: "none"`); record a `stop` history
 entry and a cancellation request on its `dispatching`, `running` and `unknown`
 operations and on program operations with steps on it; revoke every `active`
-lease covering its resources (raising their fences); emit a `stop` event.
+lease covering its resources (raising their fences); emit a `stop` event. The
+stop result covers operations whose intent is written but not yet durable as
+well (it is exempt from the "not reported before durable" rule of BHMS-OPS-003):
+such an operation is never dispatched and ends `canceled` with `effect: "none"`.
 
 **BHMS-AUTH-022** `outcome: "confirmed"` MUST be reported only with `reported` or
 `measured` evidence that the stop procedure finished. A server MUST NOT report

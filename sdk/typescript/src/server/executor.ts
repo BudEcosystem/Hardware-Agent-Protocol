@@ -213,7 +213,17 @@ export class Executor {
       if (e instanceof StoreError) { srv.journalFailed(e); throw srv.journalBusy(); }
       throw e;
     }
-    this.enqueue(rec);
+    this.enqueue(rec); // an immediate dispatch has made it durable (its dispatching fsync) by the time this returns
+    if (rec.state === "accepted") {
+      // queued, or waiting for a fresh read: durable before it is answered or announced (§6.5 step 10, Ruling R57)
+      try {
+        srv.journal.makeDurable(rec);
+      } catch (e) {
+        if (!(e instanceof StoreError)) throw e;
+        srv.journalFailed(e);
+        this.rejectQueued(rec, new BhmsError("INTERNAL", `the operation could not be made durable (${e.message}); nothing was sent to the device`, { hint: "retry later with a new operationKey" }));
+      }
+    }
     return rec;
   }
 

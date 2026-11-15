@@ -213,3 +213,168 @@ async def test_a_failed_intent_sync_is_reported_settled_even_with_wait_ms_0(rig)
     op = (await client.actions_invoke("dev-6", "set_point", {"value": 1}, wait_ms=0)).operation
     assert op.state == "failed" and op.error.may_have_acted is False and op.effect == "none"
     assert calls == []
+
+
+async def test_after_a_failed_sync_later_operations_are_never_held(rig, tmp_path):  # fix round 2, N1
+    """The store refuses every barrier after a failed sync; each operation that waits on one is released at once with its
+    settled outcome (here: failed, nothing sent), never left invisible."""
+    srv, client, spy, calls = rig
+    spy.fail = True
+    first = (await client.actions_invoke("dev-6", "set_point", {"value": 1}, wait_ms=2000)).operation
+    assert first.state == "failed"
+    assert srv.store.probe_writable()  # a non-barrier write still works: the degraded audit is lifted (BHMS-AUTH-025)
+    srv._journal_ok = True
+    watcher = await connect(f"unix:{tmp_path}/s.sock")
+    sub = await watcher.subscribe(operations={"deviceIds": ["dev-7"]})
+    try:
+        second = (await client.actions_invoke("dev-7", "set_point", {"value": 1}, wait_ms=2000)).operation
+        assert second.state == "failed" and second.error.may_have_acted is False
+        assert srv.journal._held == {}
+        assert (await watcher.operations_get(second.operation_id)).operation.state == "failed"
+        assert [o.operation_id for o in (await watcher.operations_list(device_id="dev-7")).operations] == [second.operation_id]
+        states = []
+        while "failed" not in states:
+            states.append((await asyncio.wait_for(sub.__anext__(), 2)).params.operation.state)
+        assert states[0] == "accepted" and states[-1] == "failed"
+    finally:
+        await sub.cancel()
+        await watcher.close()
+
+
+async def test_a_listed_page_keeps_its_cursor_when_a_held_record_falls_in_it(rig, monkeypatch):  # fix round 2, N3
+    srv, client, spy, calls = rig
+    older = [(await client.actions_invoke("dev-1", "set_point", {"value": i}, wait_ms=2000)).operation.operation_id
+             for i in range(3)]
+    shared = srv.store.wait_synced  # a busy server: the new intent's sync runs in the thread, where it is held
+    monkeypatch.setattr(srv.store, "wait_synced", lambda ticket, inline=False: shared(ticket))
+    spy.gate = threading.Event()
+    invoke = asyncio.ensure_future(client.actions_invoke("dev-2", "set_point", {"value": 7}, wait_ms=0))
+    try:
+        for _ in range(400):
+            if srv.journal._held:
+                break
+            await asyncio.sleep(0.005)
+        assert srv.journal._held
+        seen, cursor = [], None
+        while True:
+            page = await client.operations_list(limit=2, cursor=cursor)
+            seen += [o.operation_id for o in page.operations]
+            cursor = page.next_cursor
+            if cursor is None:
+                break
+        assert sorted(seen) == sorted(older)  # every older operation reachable; the held one not shown
+    finally:
+        spy.gate.set()
+    await invoke
+
+
+@pytest.fixture
+async def blocking(tmp_path, monkeypatch):
+    """A durable server with one device whose ``go(1)`` waits for ``release`` (so that later operations queue)."""
+    spy = SyncSpy()
+    monkeypatch.setattr(store_module.os, "fdatasync", spy)
+    srv = DeviceServer("held-transition", state_dir=tmp_path / "state")
+    dev = srv.device("d", resources=["d"])
+    dev.report_alive()
+    release = asyncio.Event()
+
+    @dev.action(effect="reversible", idempotency="absolute", max_duration_ms=5000, cancel="supported")
+    async def go(ctx, value: Range(0, 100, unit="1")) -> None:  # noqa: F821
+        if value == 1:
+            await release.wait()
+
+    url, listener = await serve(srv, tmp_path)
+    spy.store = srv.store
+    client = await connect(url)
+    try:
+        yield srv, client, spy, release, url
+    finally:
+        if spy.gate is not None:
+            spy.gate.set()
+        release.set()
+        await client.close()
+        await listener.close()
+        await srv.close()
+
+
+def thread_syncs(monkeypatch, srv) -> None:
+    """As on a busy server: intents are synced in the sync thread (where the spy can hold them), never inline."""
+    shared = srv.store.wait_synced
+    monkeypatch.setattr(srv.store, "wait_synced", lambda ticket, inline=False: shared(ticket))
+
+
+async def test_a_queued_accepted_is_durable_before_it_is_answered_or_observed(blocking, monkeypatch):  # R57
+    srv, client, spy, release, url = blocking
+    await client.actions_invoke("d", "go", {"value": 1}, wait_ms=0)  # holds the device
+    thread_syncs(monkeypatch, srv)
+    spy.gate = threading.Event()
+    watcher = await connect(url)
+    sub = await watcher.subscribe(operations={"deviceIds": ["d"]})
+    try:
+        queued = asyncio.ensure_future(client.actions_invoke("d", "go", {"value": 2}, wait_ms=0))
+        rec = None
+        for _ in range(400):
+            rec = next((r for r in srv.journal.live() if r.state == "accepted"), None)
+            if rec is not None:
+                break
+            await asyncio.sleep(0.005)
+        assert rec is not None and srv.store.synced_seq < rec.sync_ticket
+        await asyncio.sleep(0.1)
+        assert not queued.done()  # not answered before its accepted record is durable
+        with pytest.raises(asyncio.TimeoutError):
+            await asyncio.wait_for(sub.__anext__(), 0.2)
+        assert (await watcher.operations_list(device_id="d")).operations[0].state != "accepted"
+        spy.gate.set()
+        op = (await queued).operation
+        assert op.state == "accepted" and srv.store.synced_seq >= rec.sync_ticket
+        assert (await asyncio.wait_for(sub.__anext__(), 2)).params.operation.state == "accepted"
+    finally:
+        spy.gate.set()
+        await sub.cancel()
+        await watcher.close()
+
+
+async def test_a_queued_operation_stays_visible_while_its_dispatch_is_syncing(blocking, monkeypatch):  # R57, N2
+    """Observability is monotonic: an operation already answered as accepted stays visible (as accepted) while its
+    dispatching transition waits for its sync; the transition's own notification waits for the sync."""
+    srv, client, spy, release, url = blocking
+    await client.actions_invoke("d", "go", {"value": 1}, wait_ms=0)
+    b = (await client.actions_invoke("d", "go", {"value": 2}, wait_ms=0)).operation
+    assert b.state == "accepted"
+    thread_syncs(monkeypatch, srv)
+    spy.gate = threading.Event()
+    sub = await client.subscribe(operations={"operationIds": [b.operation_id]})
+    release.set()
+    for _ in range(400):
+        if b.operation_id in srv.journal._held:
+            break
+        await asyncio.sleep(0.005)
+    assert srv.journal.get(b.operation_id).state == "dispatching"  # committed, its sync held
+    assert (await client.operations_get(b.operation_id)).operation.state == "accepted"
+    assert [o.state for o in (await client.operations_list(device_id="d")).operations
+            if o.operation_id == b.operation_id] == ["accepted"]
+    with pytest.raises(asyncio.TimeoutError):
+        await asyncio.wait_for(sub.__anext__(), 0.2)
+    spy.gate.set()
+    done = (await client.operations_wait(b.operation_id, 2000)).operation
+    assert done.state == "completed"
+    states = []
+    while "completed" not in states:
+        states.append((await asyncio.wait_for(sub.__anext__(), 2)).params.operation.state)
+    assert states[0] == "dispatching"
+    await sub.cancel()
+
+
+async def test_closing_the_store_releases_held_records(tmp_path):  # fix round 2, N1 (shutdown)
+    from bhms.runtime.operations import Journal
+    from bhms.runtime.store import Store
+
+    store = Store(tmp_path / "s.db")
+    journal = Journal(store)
+    heard: list[str] = []
+    journal.listeners.append(lambda rec, wire: heard.append(wire["state"]))
+    rec = journal.create(principal="p", key="k", key_origin="client", kind="action", request_digest="d", arguments={},
+                         private={}, device_id="d1", dispatch=True, defer_sync=True)
+    assert not journal.observable(rec) and heard == []
+    store.close()
+    assert journal.observable(rec) and journal._held == {} and heard == ["accepted", "dispatching"]

@@ -108,7 +108,8 @@ export interface TransitionOptions {
 }
 
 export type ChangeKind = "state" | "cancel" | "effect";
-export type Listener = (rec: OperationRecord, changed: ChangeKind[]) => void;
+/** `wire` is the operation as it was when the change was made (a change announced later, once durable, carries it). */
+export type Listener = (rec: OperationRecord, changed: ChangeKind[], wire?: Operation) => void;
 
 export class Journal {
   readonly records = new Map<string, OperationRecord>();
@@ -119,6 +120,9 @@ export class Journal {
   readonly onSettled: Array<(rec: OperationRecord) => void> = [];
   /** Called when a write fails (the server then degrades). */
   onWriteFailure?: (e: StoreError) => void;
+
+  /** New records not yet durable: their `accepted` notification waits (Ruling R57). */
+  private readonly unannounced = new Map<string, Operation>();
 
   constructor(private readonly store: Store) {}
 
@@ -150,15 +154,33 @@ export class Journal {
 
   get(id: string): OperationRecord | undefined { return this.records.get(id); }
 
-  /** Durably record a new `accepted` operation (the intent); throws StoreError when it cannot be committed. */
+  /**
+   * Record a new `accepted` operation; throws StoreError when it cannot be written. It is not yet durable, and nobody hears
+   * of it: its notification waits until it is (the `dispatching` fsync of an immediate dispatch covers it, or
+   * {@link makeDurable} for an operation that stays queued). The caller answers only after one of the two (Ruling R57).
+   */
   create(data: StoredOperation): OperationRecord {
     data.history = [{ seq: 1, at: data.op.createdAt, kind: "state", state: "accepted" }];
-    this.store.writeOp(data, false); // the dispatching record's fsync covers it before anything is dispatched
+    this.store.writeOp(data, false);
     const rec = new OperationRecord(data);
     this.records.set(rec.id, rec);
     this.keys.set(Journal.keyOf(rec.principal, rec.op.operationKey), rec.id);
-    this.notify(rec, ["state"]);
+    this.unannounced.set(rec.id, rec.wire());
     return rec;
+  }
+
+  /** Make a new record durable (fsync) and announce it, if it is not already; throws StoreError when the sync fails. */
+  makeDurable(rec: OperationRecord): void {
+    if (!this.unannounced.has(rec.id)) return;
+    this.store.sync();
+    this.announce(rec);
+  }
+
+  private announce(rec: OperationRecord): void {
+    const wire = this.unannounced.get(rec.id);
+    if (wire === undefined) return;
+    this.unannounced.delete(rec.id);
+    this.notify(rec, ["state"], wire);
   }
 
   private commit(rec: OperationRecord, next: StoredOperation, strict: boolean): void {
@@ -172,6 +194,7 @@ export class Journal {
       }
       rec.data = next;
       rec.dirty = false;
+      if (sync) this.announce(rec); // its accepted line is durable now too
       return;
     }
     rec.data = next;
@@ -336,9 +359,10 @@ export class Journal {
     this.commit(rec, next, false);
   }
 
-  private notify(rec: OperationRecord, changed: ChangeKind[]): void {
+  private notify(rec: OperationRecord, changed: ChangeKind[], wire?: Operation): void {
+    if (this.unannounced.has(rec.id)) this.announce(rec); // a change after a failed sync: say accepted first
     for (const l of [...this.listeners]) {
-      try { l(rec, changed); } catch { /* a subscriber must not break the journal */ }
+      try { l(rec, changed, wire); } catch { /* a subscriber must not break the journal */ }
     }
     const w = [...rec.waiters];
     rec.waiters.clear();

@@ -134,6 +134,32 @@ test("one fsync per invoke, on the dispatching record, before the handler runs (
   } finally { await client.close(); await srv.close(200); rmSync(dir, { recursive: true, force: true }); }
 });
 
+test("a queued accepted is fsynced before it is answered or notified; an immediate one is covered by its dispatching fsync (Ruling R57)", async () => {
+  const dir = mkdtempSync(join(tmpdir(), "bhms-queued-"));
+  const store = new SyncCountingStore(join(dir, "j.jsonl"));
+  const srv = new DeviceServer("queued-sync", { store, log: () => undefined });
+  const dev = srv.device("d-1", { resources: ["d-1/r"] });
+  let release!: () => void;
+  const gate = new Promise<void>((r) => { release = r; });
+  dev.action("go", { effect: "reversible", idempotency: "idempotent", maxDurationMs: 5000 }, async () => { store.order.push("handler"); await gate; return {}; });
+  await srv.start();
+  srv.journal.listeners.add((_rec, _changed, wire) => { store.order.push(`notify:${(wire ?? _rec.wire()).state}`); });
+  const [c, s] = memoryPair();
+  srv.serve(s);
+  const client = await Client.fromTransport(c, { strict: true });
+  try {
+    store.order.length = 0;
+    const first = (await client.actionsInvoke("d-1", "go", {}, { waitMs: 0 })).operation;
+    assert.equal(first.state, "dispatching");
+    assert.deepEqual(store.order.slice(0, 5), ["write:accepted", "write:dispatching", "fsync", "notify:accepted", "notify:dispatching"]);
+    store.order.length = 0;
+    const queued = (await client.actionsInvoke("d-1", "go", {}, { waitMs: 0 })).operation;
+    assert.equal(queued.state, "accepted");
+    assert.deepEqual(store.order, ["write:accepted", "fsync", "notify:accepted"]); // durable before anyone hears of it
+    release();
+  } finally { release(); await client.close(); await srv.close(200); rmSync(dir, { recursive: true, force: true }); }
+});
+
 test("when the dispatch record cannot be written nothing is dispatched: rejected INTERNAL, mayHaveActed false", async () => {
   const store = new SpyStore();
   store.failDispatch = true;

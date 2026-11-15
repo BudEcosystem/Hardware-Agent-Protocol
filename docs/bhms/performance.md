@@ -27,6 +27,13 @@ What changed (see the Task 12b report for the tests and commits):
 * **Gateway pending-forward barrier: kept**, now a shared (group-committed) barrier; the decision and its reason are in the spec
   (06 BHMS-OPS-003, 07 §7.6) and below.
 * **TypeScript journal:** one `fsync` per invoke (the `dispatching` record) instead of three.
+* **Fix round 2 (Ruling R57):** a queued operation's `accepted` record is a (group-committed) barrier too, durable before it is
+  answered or observed, in both SDKs; an operation once visible stays visible as its last durable state. This adds one
+  shared sync per queued operation; the one-client path is unchanged. Measured on the workstation (quick sizes, two
+  interleaved pairs, `2026-11-16-workstation-12b-fix2-*`): same device with 10 / 100 clients 218-219 / 199-217/s before,
+  208-215 / 190-214/s after (the queued `accepted` syncs of concurrent admissions are shared); spread over devices
+  223-244 / 241-255/s before, 711-815 / 1,326-1,452/s after. The AMD pair run for it (`2026-11-16-bmh-worker-12b-*17`)
+  met load 53 to 74 and is not comparable (the base's concurrency warm-up failed there).
 * **Fix round 1 (Ruling R47):** an operation written behind a deferred barrier is not observable (notifications held and
   released in order, not in `operations/get`/`operations/list`) until its sync has completed; the B1 pairs 13 to 16 and
   `cont8` ran this code. (The TypeScript server fsyncs the `dispatching` record synchronously before notifying, so it already
@@ -194,8 +201,9 @@ rounds x 3 variants x 8,000 sequential durable invokes (`2026-11-14-bmh-worker-1
   that arrives meanwhile, `stop` included, waits for it (the loop stalls above are exactly that).
 
 **Stop latency on a durable server (Ruling R48).** Because of the inline path, the time from a `stop` arriving to its stop
-procedure being dispatched is bounded by one `fdatasync` in flight: typically about 1.3 ms on this host, at worst the slowest
-sync measured, 192.6 ms (run 2, round 1; 321 ms in a variant without the heap freeze). The design is kept (the inline sync is
+procedure being dispatched is bounded by one `fdatasync` in flight: typically about 1.3 ms on this host; the largest
+inline-sync loop stall measured is 261.7 ms (run 2, round 2, checkpointer-off variant), and 356.9 ms in the variant without
+the heap freeze (run 2, round 1). The design is kept (the inline sync is
 what keeps a lone client's latency at the 12a level); a `stop` reader that does not share the journal's event loop is
 recorded as a v0.2 idea in the spec CHANGELOG.
 

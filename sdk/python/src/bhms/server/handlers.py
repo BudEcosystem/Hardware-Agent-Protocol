@@ -134,11 +134,11 @@ def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one clo
         rec, replayed = await srv.invoke(principal, params, ctx.params)
         if params.wait_ms:
             rec = await srv.journal.wait(rec, params.wait_ms / 1000)
-        return {"operation": rec.wire(), "replayed": replayed}
+        return {"operation": srv.journal.view(rec), "replayed": replayed}
 
     async def operations_get(params: Any, ctx: RequestContext) -> dict[str, Any]:
         principal = srv.authenticate(ctx)
-        return {"operation": srv.operation_for(principal, params.operation_id).wire(history=True)}
+        return {"operation": srv.journal.view(srv.operation_for(principal, params.operation_id), history=True)}
 
     async def operations_wait(params: Any, ctx: RequestContext) -> dict[str, Any]:
         principal = srv.authenticate(ctx)
@@ -146,7 +146,7 @@ def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one clo
             raise _wait_error("timeoutMs", params.timeout_ms, srv.max_wait_ms)
         rec = srv.operation_for(principal, params.operation_id)
         rec = await srv.journal.wait(rec, params.timeout_ms / 1000)
-        return {"operation": rec.wire(history=True)}
+        return {"operation": srv.journal.view(rec, history=True)}
 
     async def operations_list(params: Any, ctx: RequestContext) -> dict[str, Any]:
         principal = srv.authenticate(ctx)
@@ -173,12 +173,12 @@ def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one clo
             await srv.programs.cancel(rec, params.reason)
         else:
             srv.executor.cancel(rec, params.reason)
-        return {"operation": rec.wire()}
+        return {"operation": srv.journal.view(rec)}
 
     async def operations_resolve(params: Any, ctx: RequestContext) -> dict[str, Any]:
         principal = srv.authenticate(ctx)
         rec = await srv.resolve(principal, params.operation_id, params.resolution)
-        return {"operation": rec.wire(history=True)}
+        return {"operation": srv.journal.view(rec, history=True)}
 
     async def stop(params: Any, ctx: RequestContext) -> dict[str, Any]:
         principal = srv.authenticate(ctx)
@@ -229,7 +229,7 @@ def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one clo
         rec, replayed = await srv.programs.run(principal, params, ctx.params)
         if params.wait_ms:
             rec = await srv.journal.wait(rec, params.wait_ms / 1000)
-        return {"operation": rec.wire(), "replayed": replayed}
+        return {"operation": srv.journal.view(rec), "replayed": replayed}
 
     async def programs_register(params: Any, ctx: RequestContext) -> dict[str, Any]:
         principal = srv.authenticate(ctx)

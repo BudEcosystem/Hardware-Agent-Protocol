@@ -101,7 +101,11 @@ because the record already reads `dispatching` the operation ends `failed`
 Concurrent intents may share one sync (group commit) as long as none is
 dispatched, and none is reported to anyone (the invoker's answer, operation
 notifications, `operations/get`, `operations/list`, a gateway mirroring it),
-before the sync covering its own record has completed.
+before the sync covering its own record has completed. Once reported, an
+operation stays visible as its last durable state while a later record of it
+waits for its sync. The one exception is `stop` (BHMS-AUTH-021): its result may
+name an operation whose intent is not yet durable; the stop cancels it, and it
+ends `canceled` with `effect: "none"`.
 
 **BHMS-OPS-004** Once an operation has reached `dispatching`, a transport error,
 timeout, lost reply or process crash MUST result in `unknown` (or a state proven

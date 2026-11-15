@@ -9,7 +9,8 @@
   reachability (``DEVICE_UNAVAILABLE``), unresolved ``unknown`` operations on the same resources (``STALE`` naming the
   operation, BHMS-OPS-042), ``requiresFresh`` (BHMS-OBS-030), capacity (``BUSY``). Only then is the operation written.
 * **Queueing**: operations whose resources are in use wait in ``accepted`` in FIFO order per resource (they can be
-  cancelled without effect, BHMS-OPS-050). A deadline that passes while queued rejects them (BHMS-OPS-070).
+  cancelled without effect, BHMS-OPS-050). The ``accepted`` record is a (group-committed) barrier: it is durable before
+  it is answered or observed (§6.5 step 10, Ruling R57), so a power loss can only reject it, never lose it. A deadline that passes while queued rejects them (BHMS-OPS-070).
 * **Dispatch**: time-dependent checks are repeated immediately before dispatch (BHMS-OPS-041; failure → ``rejected``,
   ``effect: none``); ``dispatching`` is committed as a deferred barrier (group commit, :mod:`bhms.runtime.store`) and
   the execution is registered at once, so ``stop``, cancellation and the duration bound reach it from that instant; the
@@ -304,7 +305,7 @@ class Executor:
                 request_digest=request_digest, require=require, lease_id=lease.lease_id if lease else None,
                 fence=lease.fence if lease else None, deadline_ns=deadline_ns,
                 private={"resources": list(spec.resources), "effectClass": spec.effect, **(private or {})},
-                dispatch=immediate, defer_sync=True)
+                dispatch=immediate, barrier=True, defer_sync=True)
         except StoreError as exc:
             self.server.journal_failed(exc)
             raise BhmsError("BUSY", "the operation journal cannot be written; nothing was recorded or sent",
@@ -320,7 +321,17 @@ class Executor:
                 if execution is not None and execution.task is not None:
                     await asyncio.wait({execution.task})
         else:
+            # Queued: the accepted record is durable before it is answered or observed (§6.5 step 10, Ruling R57), so
+            # that it is rejected, never lost, after a power loss.
             self._enqueue(rec, device, spec, admitted, principal)
+            try:
+                await self.server.journal.durable(rec, inline=True)
+            except StoreError as exc:
+                self.server.journal_failed(exc)
+                if rec.state == "accepted" and self._drop_queued(rec) is not None:
+                    self._reject(rec, BhmsError("INTERNAL", f"the operation could not be made durable ({exc}); nothing "
+                                                "was sent to the device", hint="retry later with a new operationKey"))
+                    self.pump()
         return rec
 
     # ------------------------------------------------------------------ queueing and dispatch

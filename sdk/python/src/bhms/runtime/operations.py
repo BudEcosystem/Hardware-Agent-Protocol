@@ -31,7 +31,13 @@ Example::
         rec = journal.lookup_key(principal, key) or journal.create(...)
     journal.transition(rec, "dispatching", barrier=True)
 
-Thread-safety: one event loop; methods are synchronous except :meth:`wait` and :meth:`admission`.
+Observability (BHMS-OPS-003, Rulings R47 and R57): a record written behind a deferred barrier is held until its sync
+completes. A new record is invisible meanwhile (no notification; :meth:`Journal.observable` is False, so operations/get
+and operations/list do not show it); an already visible record stays visible as it was before the write
+(:meth:`Journal.view`), and only the write's notification waits. Held notifications are released in order when the sync
+completes, and all of them when a sync fails or the store closes.
+
+Thread-safety: one event loop; methods are synchronous except :meth:`wait`, :meth:`durable` and :meth:`admission`.
 """
 
 from __future__ import annotations
@@ -180,6 +186,16 @@ def most_severe(effects: Iterable[str]) -> str:
     return max(effects, key=lambda e: _EFFECT_RANK[e], default="none")
 
 
+class _Held:
+    """A record whose latest barrier write waits for its sync: what clients see meanwhile (``shown``: the wire object and
+    history length before the write, or None for a new record) and its notifications, in order."""
+
+    __slots__ = ("rec", "shown", "wires")
+
+    def __init__(self, rec: OperationRecord, shown: tuple[dict[str, Any], int] | None) -> None:
+        self.rec, self.shown, self.wires = rec, shown, []
+
+
 class OperationRecord:
     """In-memory mirror of one operation: the wire object (without history), history, owner and private data.
 
@@ -255,7 +271,7 @@ class Journal:
         self._cursor_tag = hashlib.sha256(f"ops:{store.epoch}".encode()).hexdigest()[:8]
         # Records written behind a deferred barrier whose sync has not completed (Ruling R47): no observer learns of them
         # (their notifications wait here, in order) and operations/get and operations/list do not show them.
-        self._held: dict[str, tuple[OperationRecord, list[dict[str, Any]]]] = {}
+        self._held: dict[str, _Held] = {}
         store.on_synced.append(self._synced)
 
     unknown_error = staticmethod(unknown_error)
@@ -282,22 +298,35 @@ class Journal:
         return self._remember(OperationRecord(row.record, None, row.principal, row.private, row.created_ns, self))
 
     def observable(self, rec: OperationRecord) -> bool:
-        """Whether ``rec`` may be shown to a client: not while its latest barrier write is not yet durable (BHMS-OPS-003,
-        Ruling R47; the invoker's own answer waits for the same sync)."""
-        return rec.id not in self._held
+        """Whether ``rec`` may be shown to a client: not while its first barrier write (its creation) is not yet durable
+        (BHMS-OPS-003, Ruling R47; the invoker's own answer waits for the same sync). Observability is monotonic (Ruling
+        R57): once shown, a record stays visible, as its last durable state, while a later barrier write waits."""
+        held = self._held.get(rec.id)
+        return held is None or held.shown is not None
 
-    def _hold(self, rec: OperationRecord) -> None:
+    def view(self, rec: OperationRecord, *, history: bool = False) -> dict[str, Any]:
+        """The ``Operation`` a client may see: the record, or, while a barrier write of an already visible record waits
+        for its sync, the record as it was before that write (Ruling R57)."""
+        held = self._held.get(rec.id)
+        if held is None or held.shown is None:
+            return rec.wire(history=history)
+        op, entries = held.shown
+        return {**op, "history": self.history(rec)[:entries]} if history else dict(op)
+
+    def _hold(self, rec: OperationRecord, shown: tuple[dict[str, Any], int] | None) -> None:
+        """After a deferred barrier write of ``rec``: until its sync completes, its notifications wait (in order) and
+        clients see ``shown`` (its state before the write) or, for a new record, nothing."""
         if rec.id not in self._held and self.store.synced_seq < rec.sync_ticket:
-            self._held[rec.id] = (rec, [])
+            self._held[rec.id] = _Held(rec, shown)
 
-    def _synced(self, synced: int, failed: bool) -> None:
-        """Release the notifications of records that became durable (all of them when the sync failed: they are then
-        settled from what the server knows, ``failed`` with nothing sent), oldest commit first."""
-        for op_id, (rec, wires) in list(self._held.items()):
-            if failed or rec.sync_ticket <= synced:
+    def _synced(self, synced: int, release_all: bool) -> None:
+        """Release records whose barrier write became durable (all of them when a sync failed or the store closed: they
+        are then shown as they are, settled from what the server knows), oldest commit first."""
+        for op_id, held in list(self._held.items()):
+            if release_all or held.rec.sync_ticket <= synced:
                 del self._held[op_id]
-                for wire in wires:
-                    self._deliver(rec, wire)
+                for wire in held.wires:
+                    self._deliver(held.rec, wire)
 
     def get(self, op_id: str) -> OperationRecord | None:
         """The operation with ``op_id`` (live object when in memory) or None."""
@@ -400,7 +429,7 @@ class Journal:
         rec = self._remember(OperationRecord(op, history, principal, private, created, self))
         rec.sync_ticket = self._ticket()
         if defer_sync and (dispatch if barrier is None else barrier):
-            self._hold(rec)
+            self._hold(rec, None)
         self._notify(rec, accepted)
         if dispatch:
             self._notify(rec)
@@ -577,13 +606,14 @@ class Journal:
         entry = {"seq": len(history) + 1, "at": iso(stamp), **entry}
         op["updatedAt"] = entry["at"]
         self._no_deferred_join(defer_sync)
+        shown = (rec.op, len(history)) if self.observable(rec) else None  # what clients saw before this write
         with self.store.transaction(barrier=barrier, defer_sync=defer_sync):
             self.store.update_operation(rec.id, state=op["state"], updated_ns=stamp, record=op, history=[entry],
                                         private=private)
         if barrier:
             rec.sync_ticket = self._ticket()
             if defer_sync:
-                self._hold(rec)
+                self._hold(rec, shown)
         rec.op = op
         if private is not None:
             rec.private = private
@@ -610,7 +640,7 @@ class Journal:
         held = self._held.get(rec.id)
         if held is not None:
             if self.listeners:
-                held[1].append(wire if wire is not None else rec.wire())
+                held.wires.append(wire if wire is not None else rec.wire())
             return
         self._deliver(rec, wire)
 
@@ -659,15 +689,17 @@ class Journal:
              state: str | None = None, parent_id: str | None = None) -> tuple[list[dict[str, Any]], str | None]:
         """One page of operations visible to ``principal`` (None = admin) and the next cursor (BHMS-LIF-061/062)."""
         position = self._parse_cursor(after) if after is not None else None
+        hidden = {op_id for op_id, held in self._held.items() if held.shown is None}  # not yet shown to anyone
+        # fetch past the hidden rows, so that a full page and its cursor stay correct (they are never on a page)
         rows = self.store.list_operations(principal=principal, device_id=device_id, state=state, parent_id=parent_id,
-                                          after=position, limit=limit + 1)
-        rows = [row for row in rows if row.id not in self._held]
+                                          after=position, limit=limit + 1 + len(hidden))
+        rows = [row for row in rows if row.id not in hidden]
         more = len(rows) > limit
         rows = rows[:limit]
         page = []
         for row in rows:
             live = self._live.get(row.id)
-            page.append(live.wire() if live is not None else row.record)
+            page.append(self.view(live) if live is not None else row.record)
         return page, (self._cursor(rows[-1]) if more and rows else None)
 
     # ------------------------------------------------------------------ recovery

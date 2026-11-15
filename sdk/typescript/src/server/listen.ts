@@ -19,7 +19,7 @@
  * Thread-safety: single event loop.
  */
 import { BhmsError } from "../errors.js";
-import type { Event, RefusedFilter, SubscriptionFilter } from "../generated/types.js";
+import type { Event, Operation, RefusedFilter, SubscriptionFilter } from "../generated/types.js";
 import { Complete, type Notification, type Peer } from "../jsonrpc/session.js";
 import type { Principal } from "./authority.js";
 import type { DeviceServer } from "./server.js";
@@ -92,11 +92,11 @@ export async function* listen(
         ...(ops.deviceIds !== undefined ? { deviceIds } : {}),
         ...(ops.all !== undefined ? { all: ops.all } : {}),
       };
-      const l = (rec: OperationRecord, _changed: ChangeKind[]): void => {
+      const l = (rec: OperationRecord, _changed: ChangeKind[], wire?: Operation): void => {
         if (!canSee(rec)) return;
         const match = ops.all === true || okIds.includes(rec.id) || (rec.op.deviceId !== undefined && deviceIds.includes(rec.op.deviceId));
         if (!match) return;
-        push({ note: { method: "notifications/operation", params: { operation: rec.wire() } }, droppable: false });
+        push({ note: { method: "notifications/operation", params: { operation: wire ?? rec.wire() } }, droppable: false });
       };
       srv.journal.listeners.add(l);
       cleanups.push(() => srv.journal.listeners.delete(l));

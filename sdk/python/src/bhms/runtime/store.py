@@ -29,8 +29,10 @@ A lone caller waits for exactly one ``fdatasync`` (no batching window), and with
 that finds nobody to share with syncs on the event loop thread, so a single client pays no thread hand-off; a hundred
 callers on distinct devices share a handful. The price of the inline sync (and of every synchronous barrier: fence
 counters, a compact bridge's handle record): while it runs the event loop reads nothing, ``stop`` included, so on a durable
-server the latency of a ``stop`` is bounded by one ``fdatasync`` in flight (Ruling R48; up to 192 ms measured on the shared
-AMD host of Task 12b, about 1.3 ms typically). Only the thread path leaves the loop serving while the disk is slow. The rule that matters is unchanged: nobody is told a barrier commit is durable before an ``fdatasync`` that
+server the latency of a ``stop`` is bounded by one ``fdatasync`` in flight (Ruling R48): about 1.3 ms typically on the
+shared AMD host of Task 12b, and loop stalls of up to 261.7 ms measured there (356.9 ms in a variant without the start-up
+heap freeze). Only the thread path leaves the loop serving while the disk is slow. The rule that matters is unchanged:
+nobody is told a barrier commit is durable before an ``fdatasync`` that
 began after that commit has returned. An ``fdatasync`` that fails makes the store refuse every later barrier
 (:class:`StoreError`): after an I/O error the kernel may have dropped the dirty pages, and a later successful sync would
 prove nothing about them.
@@ -166,7 +168,8 @@ class Store:
         self._flight: asyncio.Future[None] | None = None  # the fdatasync of deferred barriers now running
         self._flight_target = 0  # the commits it covers
         self._lone: dict[int, int] = {}  # tickets of the inline callers now checking whether they are alone
-        # called as ``hook(synced_seq, failed)`` whenever more commits become durable, or the store's sync fails
+        # called as ``hook(synced_seq, release_all)`` whenever more commits become durable, and with release_all True
+        # whenever a barrier is refused because a sync failed (every time) and when the store closes
         self.on_synced: list[Callable[[int, bool], None]] = []
         self._checkpointer: _Checkpointer | None = None
         if self.path is not None:
@@ -184,6 +187,8 @@ class Store:
 
     def close(self) -> None:
         """Close the database (after a final checkpoint) and release the file lock (idempotent)."""
+        for hook in list(self.on_synced):  # nothing waits for a sync any more
+            hook(self._synced, True)
         if self._syncer is not None:
             self._syncer.shutdown(wait=True)  # a running fdatasync finishes before its descriptor is closed
             self._syncer = None
@@ -245,11 +250,9 @@ class Store:
                 hook(self._synced, False)
 
     def _failed_sync(self, exc: OSError) -> StoreError:
-        first = self._sync_failure is None
         self._sync_failure = self._sync_failure or exc
-        if first:
-            for hook in list(self.on_synced):
-                hook(self._synced, True)
+        for hook in list(self.on_synced):  # every refusal: commits made after the first failure are never synced
+            hook(self._synced, True)
         return StoreError(f"the journal could not be synced to stable storage ({exc}); barrier writes are refused "
                           "until the server restarts")
 

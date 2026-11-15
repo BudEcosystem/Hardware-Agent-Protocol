@@ -552,6 +552,14 @@ export class ProgramRunner {
       if (e instanceof StoreError) { srv.journalFailed(e); throw srv.journalBusy(); }
       throw e;
     }
+    try {
+      srv.journal.makeDurable(rec); // durable before it is answered or announced (Ruling R57)
+    } catch (e) {
+      if (!(e instanceof StoreError)) throw e;
+      srv.journalFailed(e); // written, not durable: never run; it ends rejected
+      srv.journal.transition(rec, "rejected", { error: new BhmsError("INTERNAL", `the program operation could not be made durable (${e.message}); no step was run`, { mayHaveActed: false, hint: "retry later with a new operationKey" }).toOperationError() });
+      return rec;
+    }
     const run: Run = { rec, plan, principal, leaseId: lease?.leaseId, variables: { ...admitted }, deadlineMono: mono() + bound, wake: new Wake(), halted: false, shutdown: false, done: 0 };
     this.runs.set(rec.id, run);
     run.task = this.execute(run);

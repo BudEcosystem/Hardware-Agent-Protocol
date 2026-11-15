@@ -549,7 +549,7 @@ class Router:
         gw = self.gateway
         principal = gw.auth.authenticate(ctx)
         rec = gw.journal.get(params.operation_id)
-        if rec is None:
+        if rec is None or not gw.journal.observable(rec):  # as the device server's cancel (Ruling R47)
             raise refusal("INVALID_ARGUMENT", "scope:operations", f"no operation {params.operation_id!r}",
                           field="operationId", hint="use an operationId returned to you")
         if rec.principal != principal.id and not principal.admin:

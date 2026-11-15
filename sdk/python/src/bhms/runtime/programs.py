@@ -527,7 +527,8 @@ class ProgramRunner:
                 lease_id=lease.lease_id if lease else None, fence=lease.fence if lease else None,
                 deadline_ns=deadline_ns, progress={"stepsCompleted": 0, "stepsTotal": plan.info["maxExecutedSteps"]},
                 private={"resources": list(plan.info["resources"]), "effectClass": plan.info["effect"],
-                         "devices": plan.info["devices"]})
+                         "devices": plan.info["devices"]},
+                barrier=True)  # durable before it is answered or observed (Ruling R57)
         except StoreError as exc:
             srv.journal_failed(exc)
             raise BhmsError("BUSY", "the operation journal cannot be written; nothing was recorded or run",
