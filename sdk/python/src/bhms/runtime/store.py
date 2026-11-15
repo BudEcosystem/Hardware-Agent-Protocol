@@ -97,6 +97,9 @@ CREATE TABLE IF NOT EXISTS events(seq INTEGER PRIMARY KEY AUTOINCREMENT, time_ns
   type TEXT NOT NULL, device_id TEXT, event BLOB NOT NULL);
 CREATE TABLE IF NOT EXISTS programs(digest TEXT PRIMARY KEY, program BLOB NOT NULL, info BLOB NOT NULL,
   created_ns INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS budget_ledger(principal TEXT NOT NULL, budget TEXT NOT NULL, op_key TEXT NOT NULL,
+  amount REAL NOT NULL, at_ns INTEGER NOT NULL, released INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY(principal, budget, op_key)) WITHOUT ROWID;
 """
 
 
@@ -456,6 +459,26 @@ class Store:
 
     def counter(self, name: str) -> int:
         return int(self.meta_get(f"counter:{name}") or "0")
+
+    # ------------------------------------------------------------------ budget reservations (bhms.runtime.budgets)
+
+    def put_reservations(self, principal: str, key: str, charges: Sequence[tuple[str, float]], at_ns: int) -> None:
+        """Record what an admission reserves of each budget (``(budget id, amount)``); joins the caller's transaction (the
+        operation's or the pending forward's), so the reservation is durable exactly when that record is. Never pruned."""
+        with self.transaction():
+            for budget, amount in charges:
+                self._write("INSERT OR REPLACE INTO budget_ledger(principal, budget, op_key, amount, at_ns, released) "
+                            "VALUES(?,?,?,?,?,0)", (principal, budget, key, amount, at_ns))
+
+    def release_reservations(self, principal: str, key: str) -> None:
+        """Mark the reservations of ``(principal, operationKey)`` released (the operation proved it had no effect)."""
+        with self.transaction():
+            self._write("UPDATE budget_ledger SET released=1 WHERE principal=? AND op_key=?", (principal, key))
+
+    def open_reservations(self) -> list[tuple[str, str, str, float, int]]:
+        """Every reservation not released: ``(principal, budget id, operationKey, amount, at_ns)`` in admission order."""
+        return self._db.execute("SELECT principal, budget, op_key, amount, at_ns FROM budget_ledger WHERE released=0 "
+                                "ORDER BY at_ns").fetchall()
 
     # ------------------------------------------------------------------ operations
 

@@ -39,7 +39,7 @@ from typing import Any
 from bhms.gateway.catalog import Catalog, CatalogEntry
 from bhms.protocol.canonical import digest
 from bhms.protocol.errors import BhmsError
-from bhms.runtime.authority import Policy, Principal
+from bhms.runtime.authority import Policy, Principal, check_budgets
 from bhms.server.validation import effective_bounds
 
 
@@ -106,9 +106,11 @@ class GatewayPolicy:
     # ------------------------------------------------------------------ loading
 
     def check_loadable(self, catalog: Catalog) -> None:
-        """Reject bounds that would widen a device bound (BHMS-SEC-011); unknown devices are tolerated."""
-        self.policy.check_bounds(lambda device_id: (e.description if (e := catalog.get(device_id)) else None),
-                                 allow_unknown=True)
+        """Reject bounds that would widen a device bound (BHMS-SEC-011) and budgets that cannot measure an action they name
+        (BHMS-AUTH-031); unknown devices are tolerated (admission refuses an unmeasurable action later)."""
+        describe = lambda device_id: (e.description if (e := catalog.get(device_id)) else None)  # noqa: E731
+        self.policy.check_bounds(describe, allow_unknown=True)
+        check_budgets(self.policy, describe, sorted(catalog), allow_unknown=True)
 
 
 def _narrow(description: dict[str, Any], bounds: dict[str, dict[str, dict[str, Any]]]) -> dict[str, Any]:

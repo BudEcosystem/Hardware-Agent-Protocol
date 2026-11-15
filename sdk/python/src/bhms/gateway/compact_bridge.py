@@ -51,10 +51,12 @@ import contextlib
 import enum
 import json
 import logging
+import math
 import os
 import random
 import secrets
 import time
+from collections import OrderedDict
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -66,6 +68,7 @@ from bhms.runtime.operations import OperationRecord
 from bhms.runtime.store import StoreError
 from bhms.server.context import ActionContext, Canceled, DeviceFault, Reading, Reconciled
 from bhms.server.device import Device
+from bhms.server.executor import record_late_report
 from bhms.server.server import DeviceServer
 from bhms.testing.memory import connect_in_process
 from bhms.transport import compact as cp
@@ -77,6 +80,10 @@ MAX_PURGE_IDS = 200  # operation ids one purge proof may name (spec 9.2); the re
 HANDLE_ROTATE_AT = 65_000  # start a new session well before handle 65535 (BHMS-CMP-030)
 STOP_REASON_GATEWAY = 3
 STOP_REARMS = 5  # HELLOs a stop in progress outlives (each one re-sends it); more and it ends failed
+_RESULT_STATE = {cp.ST_COMPLETED: "completed", cp.ST_FAILED: "failed", cp.ST_CANCELED: "canceled",
+                 cp.ST_REJECTED: "rejected"}
+MAX_WIRE_FRAME_BYTES = 2 * (20 + 192 + 2) + 2  # header, largest payload and FCS all stuffed, plus the two flags (11.1)
+ENDED_REMEMBERED = 64  # recently ended operations whose late RESULT is still recognised (BHMS-OPS-072)
 ENDPOINT_STOP = "endpoint-originated stop"  # the `reason` of the stop event for a STOP_ACK with token 0 (BHMS-CMP-050)
 PROBE_HANDLE = 0xFFFF  # QUERY of a handle no INVOKE has used: answered HANDLE_UNKNOWN, proves liveness and the epoch
 
@@ -99,6 +106,13 @@ class Timing:
     probe_misses: int = 3  # unanswered probes before the link is declared down and HELLO is repeated
     hello: float = 1.0  # wait for one HELLO (a board that just reset needs a moment; HELLO_REQ repeats)
     stop_confirm: float = 5.0  # wait for the second STOP_ACK when the stop description declares no bound
+
+    def link_allowance_ms(self, baud: int) -> int:
+        """What the link may add to an action's ``maxDurationMs`` (the endpoint's execution bound, BHMS-CMP-052): getting the
+        INVOKE to the endpoint and learning its RESULT, each with up to ``retries`` retransmissions of a largest frame
+        (every byte stuffed) at ``baud``, plus one ``poll`` period to ask for a lost RESULT."""
+        frame = MAX_WIRE_FRAME_BYTES * 10 / max(1, baud)
+        return math.ceil(1000 * (2 * (self.retries + 1) * (self.reply + 2 * frame) + self.poll))
 
 
 class _StopSignal(enum.Enum):
@@ -189,9 +203,15 @@ class CompactBridge:
 
     def __init__(self, name: str, port: str, sidecar: dict[str, Any] | str | os.PathLike[str], *, baud: int = 115200,
                  state_dir: str | os.PathLike[str] | None = None, timing: Timing | None = None,
-                 opener: Callable[[str, int], Awaitable[cp.ByteStream]] = cp.open_stream) -> None:
+                 opener: Callable[[str, int], Awaitable[cp.ByteStream]] = cp.open_stream,
+                 link_allowance_ms: int | None = None) -> None:
         cp.refuse_networked(port)  # BHMS-SEC-050 (a replaced opener may use any label, but never a network URL)
         self.name, self.port, self.baud, self.timing = name, port, baud, timing or Timing()
+        if link_allowance_ms is not None and link_allowance_ms < 0:
+            raise ValueError("link_allowance_ms must be 0 or more")
+        self.link_allowance_ms = (self.timing.link_allowance_ms(baud) if link_allowance_ms is None
+                                  else link_allowance_ms)
+        """Added to every action's ``maxDurationMs`` for the operation's bound (BHMS-CMP-052)."""
         self.opener = opener
         raw = json.loads(Path(sidecar).read_text()) if isinstance(sidecar, str | os.PathLike) else dict(sidecar)
         problems = cp.layout_problems(raw)
@@ -226,8 +246,14 @@ class CompactBridge:
         """Tokens of the STOP frames sent since the endpoint's last HELLO (one answering our HELLO_REQ). The endpoint forgets a
         stop's token at every HELLO it sends, so an ack carrying any other token is not the answer to a STOP of this session
         and counts for nothing."""
+        self._stop_tokens_unresolved: set[int] = set()
+        """Tokens of stops sent since the last HELLO that ended without their confirmation: the endpoint may still be carrying
+        such a stop out and confirm it with that token, so it is never given to another stop before the next HELLO
+        (BHMS-CMP-050)."""
+        self._hello_epoch: int | None = None  # the epoch of the newest HELLO that answered our HELLO_REQ
         self._version_refused: int | None = None
         self._by_handle: dict[tuple[int, int], str] = {}  # (incarnation, handle) -> operation id
+        self._ended: OrderedDict[tuple[int, int], str] = OrderedDict()  # handles of recently ended operations
         self._action_names = {a.index: n for n, a in self.layouts.actions.items()}
         self._property_names = {p.index: n for n, p in self.layouts.properties.items()}
         self._request = 0
@@ -421,6 +447,7 @@ class CompactBridge:
             if waiter is not None and waiter[0] == message.nonce and not waiter[1].done():
                 waiter[1].set_result(incoming)
                 if message.version == cp.COMPACT_VERSION and message.digest8 == self.digest8:
+                    self._hello_epoch = message.epoch
                     self._endpoint_said_hello()
             return
         stale = self.epoch is not None and incoming.session != self.epoch
@@ -457,7 +484,23 @@ class CompactBridge:
         if queue is not None:
             queue.put_nowait(incoming)
         elif isinstance(message, cp.Result):
-            self._kick_reconcile()  # a RESULT nobody waits for: an operation that was unknown may be settled by it
+            if not self._late_result(message):
+                self._kick_reconcile()  # a RESULT nobody waits for: an operation that was unknown may be settled by it
+
+    def _late_result(self, message: cp.Result) -> bool:
+        """A RESULT for an operation the bridge already ended (its duration bound and link allowance passed, BHMS-CMP-052):
+        the record does not change (BHMS-OPS-071); a RESULT that says something else than the record is journaled and
+        surfaced as an ``operation.late_report`` event (BHMS-OPS-072). True when the RESULT was such a late one."""
+        op_id = self._ended.get((self.incarnation, message.handle))
+        rec = self.server.journal.get(op_id) if op_id is not None else None
+        if rec is None:
+            return False
+        outcome = _RESULT_STATE.get(message.state, "failed")
+        if outcome != rec.state:
+            evidence = {cp.EVIDENCE_MEASURED: "measured", cp.EVIDENCE_REPORTED: "reported"}.get(message.evidence, "none")
+            record_late_report(self.server, rec, self.device_id, outcome, evidence,
+                               f"RESULT {outcome} for handle {message.handle} (fault {message.fault})", correction=True)
+        return True
 
     @staticmethod
     def _hkey(incarnation: int, handle: int) -> tuple[str, int]:
@@ -488,16 +531,30 @@ class CompactBridge:
         progress is sent again with a new token, the only way it can still be confirmed. Done here, in frame order, so a
         token 0 ack the endpoint sends after its HELLO reaches a stop only after it has been re-armed."""
         self._stop_tokens_sent.clear()
+        self._stop_tokens_unresolved.clear()
         for queue in list(self._stop_waiters):
             queue.put_nowait(_StopSignal.HELLO)
 
+    def _stop_session(self) -> int:
+        """The session a STOP frame carries: the epoch of the newest HELLO, even before the bridge has adopted it (a stop
+        re-armed by that HELLO is sent at once). The endpoint accepts STOP in any session (BHMS-CMP-050); the frame still
+        names the current one."""
+        return self._hello_epoch if self._hello_epoch is not None else (self.epoch or 0)
+
     def _next_stop_token(self) -> int:
-        """A non-zero token no running ``_stop`` call uses (the ack carries nothing else to tell stops apart)."""
+        """A non-zero token that neither a running ``_stop`` call nor an unresolved stop of this session uses (the ack carries
+        nothing else to tell stops apart, BHMS-CMP-050). 0 when all 255 are taken: the STOP is still sent (and carried out),
+        it cannot be confirmed with token 0, and a new HELLO is asked for, after which the stop is sent again with a fresh
+        token."""
+        taken = self._stop_tokens_live | self._stop_tokens_unresolved
         for _ in range(255):
             self._stop_token = self._stop_token % 255 + 1
-            if self._stop_token not in self._stop_tokens_live:
+            if self._stop_token not in taken:
                 return self._stop_token
-        raise RuntimeError("255 stops are in progress at once")
+        log.warning("compact %s: every STOP token of this session belongs to a stop in progress or unconfirmed; sending "
+                    "STOP with token 0 and asking for a new HELLO so the stop can be confirmed (BHMS-CMP-050)", self.name)
+        self._needs_hello.set()
+        return cp.STOP_TOKEN_NONE
 
     def _register(self, key: tuple[str, int]) -> asyncio.Queue[Any]:
         queue: asyncio.Queue[Any] = asyncio.Queue()
@@ -598,6 +655,7 @@ class CompactBridge:
                 stop=self._stop if self.sidecar["safety"].get("stop") == "supported" else None,
                 read_timeout_ms=int(self.timing.reply * 1000 * 2))
             self.device.liveness_s = max(10.0, self.timing.probe * 5)
+            self.device.bound_allowance_ms = self.link_allowance_ms  # maxDurationMs is the endpoint's own (BHMS-CMP-052)
             self.device.reconcile(self._reconcile)
             log.info("compact %s: serving %s (epoch %d, persistent %s, ring %d, fencing %s, stop %s)", self.name,
                      self.device_id, self.epoch, self.persistent, self.hello.ring if self.hello else 0,
@@ -637,6 +695,9 @@ class CompactBridge:
         info = self._info(rec.id)
         if info is not None:
             self._by_handle.pop((info.incarnation, info.handle), None)
+            self._ended[(info.incarnation, info.handle)] = rec.id  # a RESULT may still arrive (BHMS-OPS-072)
+            while len(self._ended) > ENDED_REMEMBERED:
+                self._ended.popitem(last=False)
             with contextlib.suppress(StoreError):
                 self.server.store.meta_delete(f"{self.prefix}ops/{rec.id}")
 
@@ -707,7 +768,7 @@ class CompactBridge:
         handle = self._assign(ctx.operation_id, layout.index)
         message = cp.Invoke(handle, layout.index, args, fence, 0)
         try:
-            return await self._drive(ctx, handle, message, layout, cancellable)
+            result, evidence = await self._drive(ctx, handle, message, layout, cancellable)
         except OutcomeUnknown as unknown:
             if unknown.lift:  # the epoch advance proved the old work purged: the resources are free (BHMS-OPS-042)
                 rec = self.server.journal.get(ctx.operation_id)
@@ -717,6 +778,23 @@ class CompactBridge:
                         self.server.journal.annotate(rec, "evidence", "the endpoint's boot epoch advanced: it purged this "
                                                      "operation's work; the outcome stays unknown (BHMS-CMP-022)")
             raise
+        await self._verify(ctx, name, evidence)
+        return result
+
+    async def _verify(self, ctx: ActionContext, name: str, evidence: int) -> None:
+        """BHMS-CMP-036: a RESULT ``completed`` with evidence ``measured`` makes the effect ``verified`` only through the
+        action's ``verifiedBy`` properties, read fresh right after the RESULT: each valid, measured VALUE is attached as the
+        operation's evidence (BHMS-OPS-006). Without ``measured`` evidence, ``verifiedBy`` or a valid measured reading the
+        effect stays ``unverified`` (and ``require: verified`` ends ``UNVERIFIED``)."""
+        action = self.sidecar["actions"][name]
+        if evidence != cp.EVIDENCE_MEASURED or action.get("completionEvidence") != "measured":
+            return
+        for prop in action.get("verifiedBy") or ():
+            try:
+                await ctx.verify(prop)
+            except Exception as exc:  # noqa: BLE001 - an unreadable verification leaves the effect unverified
+                log.warning("compact %s: verifying %s by %s failed (%s); the effect stays unverified", self.name, name,
+                            prop, exc)
 
 
     def _assign(self, op_id: str, action: int) -> int:
@@ -747,7 +825,7 @@ class CompactBridge:
         self._adopt(hello, link, new_session=True)
 
     async def _drive(self, ctx: ActionContext, handle: int, invoke: cp.Invoke, layout: cp.ActionLayout,
-                     cancellable: bool) -> dict[str, Any]:
+                     cancellable: bool) -> tuple[dict[str, Any], int]:
         """Send the INVOKE and follow it to a terminal outcome; see the module docstring for the policy."""
         sent_inc = self.incarnation
         key = self._hkey(sent_inc, handle)
@@ -798,7 +876,7 @@ class CompactBridge:
                         heard = True
                         next_try = loop.time() + timing.poll
                         if isinstance(message, cp.Result):
-                            return self._finish(message, layout)
+                            return self._finish(message, layout), message.evidence
                         await self._on_status(ctx, message)
                         if message.state == cp.ST_REJECTED:
                             raise DeviceFault("the endpoint rejected the operation", effect="none",
@@ -982,7 +1060,7 @@ class CompactBridge:
                 assert isinstance(item, cp.Incoming)
                 message = item.message
                 assert isinstance(message, cp.StopAck)
-                if message.token == token:  # an ack of another stop is no evidence about this one
+                if token != cp.STOP_TOKEN_NONE and message.token == token:  # an ack of another stop is no evidence
                     return message
                 if message.token == cp.STOP_TOKEN_NONE and message.outcome == cp.STOPACK_CONFIRMED:
                     seen_endpoint_stop = True
@@ -997,8 +1075,9 @@ class CompactBridge:
                 if link is None or link.closed:
                     raise ConnectionError("the link to the endpoint was lost before the stop was acknowledged; the device "
                                           "may or may not be stopped: read its state")
-                self._stop_tokens_sent.add(token)
-                link.send(cp.Stop(STOP_REASON_GATEWAY, token), session=self.epoch or 0)
+                if token != cp.STOP_TOKEN_NONE:
+                    self._stop_tokens_sent.add(token)
+                link.send(cp.Stop(STOP_REASON_GATEWAY, token), session=self._stop_session())
                 ack = await own_ack(loop.time() + self.timing.reply, begun=False)
                 if ack is not None:
                     break
@@ -1014,11 +1093,13 @@ class CompactBridge:
                     raise TimeoutError(f"the endpoint began the stop but did not confirm it within {bound:g} s")
             return ack
 
+        confirmed = False
         try:
             for rearm in range(STOP_REARMS + 1):
                 self._stop_tokens_live.discard(token)
                 token = self._next_stop_token()  # a new token after a HELLO: the endpoint forgot the old one
-                self._stop_tokens_live.add(token)
+                if token != cp.STOP_TOKEN_NONE:
+                    self._stop_tokens_live.add(token)
                 try:
                     ack = await attempt()
                     break
@@ -1032,9 +1113,12 @@ class CompactBridge:
             if ack.evidence < (cp.EVIDENCE_MEASURED if spec.evidence == "measured" else cp.EVIDENCE_REPORTED):
                 raise RuntimeError(f"the endpoint confirmed STOP with evidence {ack.evidence}, weaker than the declared "
                                    f"{spec.evidence}: a stop without the declared evidence is never confirmed (BHMS-AUTH-022)")
+            confirmed = ack.outcome == cp.STOPACK_CONFIRMED
         finally:
             self._stop_waiters.remove(queue)
             self._stop_tokens_live.discard(token)
+            if not confirmed and token != cp.STOP_TOKEN_NONE and token in self._stop_tokens_sent:
+                self._stop_tokens_unresolved.add(token)  # its ack may still come: not reused before the next HELLO
 
     # ------------------------------------------------------------------ properties (BHMS-CMP-060)
 
@@ -1054,6 +1138,7 @@ class CompactBridge:
             queue = self._register(key)
             try:
                 for _ in range(2 if retry else 1):
+                    sent = asyncio.get_running_loop().time()
                     link.send(cp.Read(request, layout.index, cp.READ_FRESH), session=self.epoch or 0)
                     try:
                         item = await asyncio.wait_for(queue.get(), self.timing.reply)
@@ -1067,14 +1152,16 @@ class CompactBridge:
                                             "once the link has said HELLO", hint="retry the read shortly")
                         raise BhmsError(_ERROR_CODE.get(refused.code, "INTERNAL"),
                                         f"the endpoint refused READ: {refused.name}")
-                    return self._reading(item.message, layout)
+                    # the age the endpoint reports, plus the link's share: at most the time since the READ left (BHMS-CMP-061)
+                    return self._reading(item.message, layout,
+                                         link_ms=(asyncio.get_running_loop().time() - sent) * 1000)
                 raise asyncio.TimeoutError(f"no VALUE for {name}")
             finally:
                 self._unregister(key)
 
         return read
 
-    def _reading(self, message: cp.Value, layout: cp.PropertyLayout) -> Reading:
+    def _reading(self, message: cp.Value, layout: cp.PropertyLayout, *, link_ms: float = 0.0) -> Reading:
         quality = cp.QUALITY_NAMES.get(message.quality, "unknown")
         evidence = cp.VALUE_EVIDENCE_NAMES.get(message.evidence)
         value = None
@@ -1083,7 +1170,9 @@ class CompactBridge:
         elif message.raw:
             raise cp.CompactError("VALUE with quality invalid/unknown must carry no value bytes (BHMS-CMP-060)")
         # An invalid or unknown reading has no value to age; its acquisition attempt is as old as this reply.
-        age = 0.0 if value is None else (None if message.age_ms == cp.AGE_UNKNOWN else float(message.age_ms))
+        # An endpoint declares bounded reading latency by reporting the age (BHMS-CMP-061); AGE_UNKNOWN stays unknown, and a
+        # reading of unknown age fails every maxAgeMs and requiresFresh (BHMS-OBS-003).
+        age = 0.0 if value is None else (None if message.age_ms == cp.AGE_UNKNOWN else float(message.age_ms) + link_ms)
         return Reading(value, quality, evidence, latency_ms=age, sequence=message.sequence, epoch=f"compact:{self.epoch}")
 
     async def _publish(self, message: cp.Value) -> None:
@@ -1121,7 +1210,8 @@ class CompactUpstream:
 
 _TIMING_KEYS = {"reply_timeout_ms": "reply", "poll_interval_ms": "poll", "probe_interval_ms": "probe",
                 "hello_timeout_ms": "hello", "stop_confirm_ms": "stop_confirm"}
-COMPACT_KEYS = frozenset({"type", "port", "baud", "sidecar", "retries", "probe_misses", *_TIMING_KEYS})
+COMPACT_KEYS = frozenset({"type", "port", "baud", "sidecar", "retries", "probe_misses", "link_allowance_ms",
+                          *_TIMING_KEYS})
 
 
 def upstream_from_config(name: str, entry: dict[str, Any], base: Path, state_dir: Path) -> CompactUpstream:
@@ -1148,8 +1238,9 @@ def upstream_from_config(name: str, entry: dict[str, Any], base: Path, state_dir
     sidecar = Path(entry["sidecar"]).expanduser()
     sidecar = sidecar if sidecar.is_absolute() else base / sidecar
     try:
+        allowance = int(entry["link_allowance_ms"]) if "link_allowance_ms" in entry else None
         bridge = CompactBridge(name, port, sidecar, baud=int(entry.get("baud", 115200)), state_dir=state_dir / "compact",
-                               timing=Timing(**timing))
+                               timing=Timing(**timing), link_allowance_ms=allowance)
     except (OSError, ValueError, KeyError) as exc:
         raise ValueError(f"{where}: sidecar {sidecar}: {exc}") from None
     return CompactUpstream(bridge)

@@ -27,6 +27,7 @@ Thread-safety: one event loop; methods may be awaited concurrently (requests are
 from __future__ import annotations
 
 import logging
+import ssl as ssl_module
 from collections.abc import AsyncIterator
 from dataclasses import dataclass
 from types import TracebackType
@@ -40,12 +41,11 @@ from bhms.protocol import schema
 from bhms.protocol import types as t
 from bhms.protocol.errors import BhmsError
 from bhms.protocol.types import METHODS, NOTIFICATIONS, to_wire
-from bhms.protocol.version import PROTOCOL_VERSION
+from bhms.protocol.version import SUPPORTED_VERSIONS, is_v0_1
 from bhms.transport.base import DEFAULT_MAX_MESSAGE_BYTES, Transport
 
 log = logging.getLogger("bhms.client")
 
-SUPPORTED_VERSIONS: tuple[str, ...] = (PROTOCOL_VERSION,)
 DEFAULT_CLIENT_INFO: dict[str, str] = {"name": "bhms-python", "version": "0.1.0"}
 
 METHOD_ATTRS: dict[str, str] = {m: m.replace("/", "_") for m in METHODS} | {
@@ -65,11 +65,13 @@ async def open_transport(target: str, *, token: str | None = None,
         if path.startswith("//"):
             path = path[2:]
         return await connect_unix(path, max_message_bytes=max_message_bytes)
-    if target.startswith("tcp://"):
-        host, sep, port = target[len("tcp://"):].rstrip("/").rpartition(":")
+    if target.startswith(("tcp://", "tcps://")):
+        scheme = target.split("://", 1)[0]
+        host, sep, port = target[len(scheme) + 3:].rstrip("/").rpartition(":")
         if not sep or not port.isdigit() or not host:
-            raise ValueError(f"bad tcp target {target!r}; expected tcp://host:port")
-        return await connect_tcp(host.strip("[]"), int(port), max_message_bytes=max_message_bytes)
+            raise ValueError(f"bad {scheme} target {target!r}; expected {scheme}://host:port")
+        context = ssl_module.create_default_context() if scheme == "tcps" else None  # a scheme is a promise (BHMS-SEC-007)
+        return await connect_tcp(host.strip("[]"), int(port), ssl=context, max_message_bytes=max_message_bytes)
     if target.startswith(("ws://", "wss://")):
         return await connect_websocket(target, token=token, max_message_bytes=max_message_bytes)
     if target.startswith(("http://", "https://")):
@@ -169,8 +171,11 @@ class Client:
     """Typed BHMS client over one :class:`~bhms.jsonrpc.session.Session`; see the module docstring."""
 
     def __init__(self, session: Session, *, client_info: dict[str, Any] | None = None, strict: bool = False,
-                 versions: tuple[str, ...] = SUPPORTED_VERSIONS) -> None:
+                 versions: tuple[str, ...] = SUPPORTED_VERSIONS, credential: str | None = None) -> None:
         self.session = session
+        self._credential = credential
+        """Bearer token sent in ``_meta["bhms/authorization"]`` on transports without a credential header (TCP, BHMS-SEC-005);
+        never logged or shown."""
         self.client_info = client_info or DEFAULT_CLIENT_INFO
         self.strict = strict
         self._versions = versions
@@ -185,15 +190,17 @@ class Client:
                       max_message_bytes: int = DEFAULT_MAX_MESSAGE_BYTES) -> Client:
         """Open ``target``, run ``server/discover`` and return a ready client (closes the transport on failure)."""
         transport = await open_transport(target, token=token, max_message_bytes=max_message_bytes)
-        return await cls.from_transport(transport, client_info=client_info, timeout=timeout, strict=strict)
+        carried = token if target.startswith(("tcp://", "tcps://")) else None  # TCP has no header: the carrier
+        return await cls.from_transport(transport, client_info=client_info, timeout=timeout, strict=strict, credential=carried)
 
     @classmethod
     async def from_transport(cls, transport: Transport, *, client_info: dict[str, Any] | None = None,
                              timeout: float | None = 30.0, strict: bool = False,
-                             versions: tuple[str, ...] = SUPPORTED_VERSIONS) -> Client:
-        """Build a client on an already-open transport and perform discovery."""
+                             versions: tuple[str, ...] = SUPPORTED_VERSIONS, credential: str | None = None) -> Client:
+        """Build a client on an already-open transport and perform discovery. ``credential``: a bearer token every request
+        carries in ``_meta["bhms/authorization"]`` (transports without a credential header, BHMS-SEC-005)."""
         session = Session(transport, role="client", default_timeout=timeout).start()
-        client = cls(session, client_info=client_info, strict=strict, versions=versions)
+        client = cls(session, client_info=client_info, strict=strict, versions=versions, credential=credential)
         try:
             await client.discover()
         except BaseException:
@@ -233,7 +240,10 @@ class Client:
     # ------------------------------------------------------------------ plumbing
 
     def _meta(self) -> dict[str, Any]:
-        return {"bhms/protocolVersion": self.version, "bhms/clientInfo": self.client_info}
+        meta = {"bhms/protocolVersion": self.version, "bhms/clientInfo": self.client_info}
+        if self._credential and not is_v0_1(self.version):  # a v0.1 server knows no bhms/authorization (BHMS-LIF-016)
+            meta["bhms/authorization"] = f"Bearer {self._credential}"
+        return meta
 
     def _params(self, method: str, wire: dict[str, Any]) -> dict[str, Any]:
         params = {"_meta": self._meta(), **wire}

@@ -27,6 +27,10 @@ The gateway is a BHMS server, so the operations it admits are ordinary records o
   ``unknown`` (BHMS-OPS-080) until the router reconciles it with the upstream; the stock ``Journal.recover`` (which
   rejects ``accepted`` operations) is not used.
 
+A mirrored ``dispatching`` is bookkeeping, not an intent: the gateway's durable intent is the pending-forward row, so those
+transitions are written without a barrier (a lost one recovers as ``unknown``, the safe direction) and a failed sync can never
+leave memory and journal disagreeing (Task 12b review).
+
 Private facts kept per operation (``rec.private``): ``upstream`` (name), ``upstreamDeviceId``, ``upstreamKey``,
 ``upstreamRequest`` (params as forwarded, without ``_meta``), ``upstreamOperationId`` (once known), ``upstreamEpoch`` (the
 upstream's epoch at forward time: a re-send is only safe while it is unchanged, BHMS-OPS-081), ``resources`` (gateway
@@ -81,7 +85,8 @@ class ForwardJournal(Journal):
         self._deferred = None
         self._unit_records = []
 
-    async def pending_put(self, principal: str, key: str, request: dict[str, Any], *, inline: bool = False) -> None:
+    async def pending_put(self, principal: str, key: str, request: dict[str, Any], *, inline: bool = False,
+                          reservation: Any = None) -> None:
         """Durably record the intent to forward ``request`` (everything :meth:`admit_in_doubt` needs) before sending.
 
         A deferred barrier: concurrent forwards share their ``fdatasync`` (group commit) and the event loop serves other
@@ -92,14 +97,23 @@ class ForwardJournal(Journal):
         A failed sync followed by a power loss: the row was committed but its sync failed, and its deletion may not
         reach the disk either (the store refuses barriers from then on). A restarted gateway may then find the row and
         turn it into an ``unknown`` operation although nothing was sent: the conservative direction (reconciled by
-        asking the upstream, which has no record of the key)."""
+        asking the upstream, which has no record of the key).
+
+        ``reservation`` (a :class:`~bhms.runtime.budgets.Reservation`) is written in the same transaction: the budget it
+        charges is durable exactly when the intent is, and it is released when nothing was sent (BHMS-AUTH-031/033)."""
         with self.store.transaction(barrier=True, defer_sync=True):
             self.store.meta_set(self._pending_key(principal, key), orjson.dumps(request).decode())
+            if reservation is not None:
+                reservation.write()
+        if reservation is not None:
+            reservation.commit()
         try:
             await self.store.wait_synced(self.store.commit_seq, inline=inline)
         except StoreError:
             with contextlib.suppress(StoreError):
                 self.pending_delete(principal, key)
+            if reservation is not None:
+                reservation.ledger.release(principal, key)  # nothing was sent
             raise
 
     def pending_get(self, principal: str, key: str) -> dict[str, Any] | None:
@@ -218,7 +232,8 @@ class ForwardJournal(Journal):
         current, theirs = rec.state, upstream_op.get("state")
         try:
             if theirs == "dispatching" and current == "accepted":
-                self.transition(rec, "dispatching", detail=f"{source}: upstream {rec.private.get('upstream')} sent it to the device")
+                self.transition(rec, "dispatching", detail=f"{source}: upstream {rec.private.get('upstream')} sent it to the device",
+                                barrier=False)
                 changed = True
             elif theirs in ("accepted", "dispatching", None) or (current == "unknown" and theirs == "unknown"):
                 pass  # still queued or still unknown upstream: nothing new to record
@@ -246,7 +261,8 @@ class ForwardJournal(Journal):
                                 proof=f"{source}: upstream {rec.private.get('upstream')} rejected it before dispatch (no effect)")
                 return
             if not before_dispatch:
-                self.transition(rec, "dispatching", detail=f"{source}: upstream {rec.private.get('upstream')} reports {theirs}")
+                self.transition(rec, "dispatching", detail=f"{source}: upstream {rec.private.get('upstream')} reports {theirs}",
+                                barrier=False)
         reconciling = rec.state == "unknown"
         kind = "reconciliation" if reconciling else "state"
         detail = f"{source}: upstream {rec.private.get('upstream')} reports {theirs}"
@@ -308,7 +324,8 @@ class ForwardJournal(Journal):
         if rec.state not in ("accepted", "dispatching", "running"):
             return False
         if rec.state == "accepted":
-            self.transition(rec, "dispatching", detail="the upstream link failed while the operation was queued upstream")
+            self.transition(rec, "dispatching", detail="the upstream link failed while the operation was queued upstream",
+                            barrier=False)
         self.transition(rec, "unknown", error=unknown_error(cause))
         return True
 
@@ -322,7 +339,8 @@ class ForwardJournal(Journal):
             if rec is None:
                 continue
             if rec.state == "accepted":
-                self.transition(rec, "dispatching", detail="found accepted after a restart; it may have been forwarded")
+                self.transition(rec, "dispatching", detail="found accepted after a restart; it may have been forwarded",
+                                barrier=False)
             self.link_lost(rec, f"the gateway restarted while the operation was {rec.state}; the upstream may have "
                                 "acted and is asked to reconcile")
             moved.append(rec)

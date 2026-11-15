@@ -14,8 +14,14 @@ Scope checks follow §7.4: ``read``; ``invoke:<deviceGlob>/<actionGlob>`` (split
 * Unix socket — a principal whose ``uids`` lists the peer uid; otherwise, with ``trust_same_uid`` (default), a peer
   with the server's own uid is ``uid:<n>`` with ``admin``;
 * WebSocket — the bearer token, compared in constant time against stored ``sha256`` digests only (BHMS-SEC-002);
-* TCP — this SDK has no TCP credential, so a TCP peer gets no principal (requests other than ``server/discover`` are
-  refused, BHMS-SEC-001).
+* TCP, and a loopback WebSocket whose upgrade carried no ``Authorization`` header — the request credential carrier
+  ``_meta["bhms/authorization"] = "Bearer <token>"`` of each request (BHMS-SEC-005); without it the request has no
+  principal (requests other than ``server/discover`` are refused, BHMS-SEC-001);
+* stdio — a request that carries ``bhms/authorization`` is the token's principal instead of the parent's.
+
+The carrier is refused where the transport already identifies the caller (a Unix peer credential, an HTTP or WebSocket
+``Authorization`` header): two credentials on one request are ambiguous (BHMS-SEC-006). It is never logged or echoed
+(BHMS-SEC-002).
 
 A policy document is the ``GatewayPolicy`` of the schema (``{"principals": {name: {tokens?, uids?, scopes, bounds?}}}``);
 ``bounds`` narrow numeric/enumerated arguments per ``"<deviceId>/<action>"`` (BHMS-AUTH-010).
@@ -37,13 +43,14 @@ import hmac
 import os
 import re
 import weakref
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from dataclasses import dataclass, field
 from functools import lru_cache
 from typing import Any
 
 from bhms.protocol import types
 from bhms.protocol.errors import BhmsError
+from bhms.runtime.budgets import Budget
 from bhms.transport.base import Peer
 
 
@@ -88,9 +95,20 @@ class Principal:
     scopes: tuple[str, ...]
     bounds: dict[str, dict[str, dict[str, Any]]] = field(default_factory=dict)
     gateway: bool = False
+    budgets: tuple[Budget, ...] = ()
 
     def wire(self) -> dict[str, Any]:
         return {"id": self.id, "scopes": list(self.scopes)}
+
+    def can_run_program(self, program_digest: str) -> bool:
+        """Whether a scope lets this principal run the program ``program_digest``: ``programs:run`` (each step then needs its
+        own ``invoke`` scope, BHMS-PRG-006) or the program-scoped grant ``programs:run:<digest>`` (BHMS-PRG-023)."""
+        return self.has("programs:run") or f"programs:run:{program_digest}" in self.scopes
+
+    def program_grant(self, program_digest: str) -> bool:
+        """Whether this principal holds the program-scoped grant for ``program_digest``: a run of exactly that program is
+        authorized for its steps without ``invoke`` scopes on them (BHMS-PRG-023)."""
+        return f"programs:run:{program_digest}" in self.scopes
 
     @property
     def admin(self) -> bool:
@@ -175,8 +193,9 @@ class Policy:
             parsed = types.PolicyPrincipal.model_validate(body)
             bounds = {key: {member: types.to_wire(bound) for member, bound in members.items()}
                       for key, members in (parsed.bounds or {}).items()}
+            budgets = tuple(Budget.from_wire(types.to_wire(b)) for b in parsed.budgets or ())
             entries.append(_Entry(name, tuple(parsed.tokens or ()), tuple(parsed.uids or ()),
-                                  Principal(name, tuple(parsed.scopes), bounds, gateway)))
+                                  Principal(name, tuple(parsed.scopes), bounds, gateway, budgets)))
         self._entries = tuple(entries)
         self.trust_same_uid = trust_same_uid
         self.stdio = Principal("stdio", stdio_scopes, gateway=True)  # a launching gateway may use g- keys (OPS-037)
@@ -197,12 +216,16 @@ class Policy:
     def principals(self) -> tuple[Principal, ...]:
         return tuple(e.principal for e in self._entries)
 
-    def authority_capability(self) -> dict[str, int] | None:
-        """``capabilities.authority`` (conformance profile ``authority``): ``{}`` when the policy defines more than one principal or
-        any principal that is not an administrator, ``None`` for a single-principal server. It carries no member: a caller learns
-        nothing about how many principals exist."""
+    def authority_capability(self) -> dict[str, bool] | None:
+        """``capabilities.authority`` (conformance profile ``authority``): present when the policy defines more than one
+        principal, any principal that is not an administrator, or any budget; ``None`` for a single-principal server.
+        ``budgets: true`` when any principal has a budget (7.4.1; shown to 2026-11-15 requests only). It names no
+        principal: a caller learns nothing about how many principals exist."""
         entries = self.principals
-        return {} if len(entries) > 1 or any("admin" not in p.scopes for p in entries) else None
+        budgets = any(p.budgets for p in entries)
+        if len(entries) > 1 or any("admin" not in p.scopes for p in entries) or budgets:
+            return {"budgets": True} if budgets else {}
+        return None
 
     def by_token(self, token: str | None) -> Principal | None:
         """The principal holding ``token`` (constant-time comparison of digests, BHMS-SEC-002)."""
@@ -263,11 +286,61 @@ class Policy:
                     effective_bounds(node, bound)  # validates the shape
 
 
+CARRIER = "bhms/authorization"
+CARRIER_TRANSPORTS = ("tcp", "stdio", "ws")
+"""Transports on which the request credential carrier is honoured (BHMS-SEC-005): ``ws`` only when its upgrade carried no
+``Authorization`` header."""
+
+
+def carried_token(ctx: Any) -> str | None:
+    """The bearer token of the request credential carrier ``_meta["bhms/authorization"]`` (``"Bearer <token>"``), or None."""
+    params = getattr(ctx, "params", None)
+    meta = params.get("_meta") if isinstance(params, dict) else None
+    value = meta.get(CARRIER) if isinstance(meta, dict) else None
+    if not isinstance(value, str) or not value.startswith("Bearer "):
+        return None
+    return value[len("Bearer "):] or None
+
+
+def carrier_refusal(peer: Peer) -> BhmsError | None:
+    """The refusal of a carrier sent where the transport already identifies the caller (BHMS-SEC-006), else None."""
+    if peer.kind in CARRIER_TRANSPORTS and not (peer.kind == "ws" and peer.token is not None):
+        return None
+    how = {"unix": "the Unix peer credential", "http": "the Authorization header",
+           "ws": "the Authorization header of the WebSocket upgrade"}.get(peer.kind, "the transport")
+    return BhmsError("UNAUTHORIZED", f"this connection is already identified by {how}; a request must not carry a second "
+                     "credential in _meta[\"bhms/authorization\"]",
+                     hint="drop _meta[\"bhms/authorization\"] on this transport (BHMS-SEC-006)")
+
+
+def check_budgets(policy: Policy, describe: Callable[[str], dict[str, Any] | None], devices: Iterable[str], *,
+                  allow_unknown: bool = False) -> None:
+    """Reject a budget that names an action whose quantity it cannot measure (BHMS-AUTH-031): its JSON Pointer must name a
+    numeric argument whose ``x-bhms-unit`` converts to the budget's unit, for every served action the budget's pattern
+    matches. ``describe(device_id)`` returns a description or None; ``devices`` are the served device ids. With
+    ``allow_unknown`` (a gateway whose upstreams are not all described yet) an undescribed device is skipped; admission
+    refuses such an action later rather than leave it unlimited."""
+    for principal in policy.principals:
+        for budget in principal.budgets:
+            for device_id in devices:
+                desc = describe(device_id)
+                if desc is None:
+                    if allow_unknown:
+                        continue
+                    raise ValueError(f"policy budget {budget.id!r} of {principal.id!r}: {device_id} has no description")
+                for action, spec in desc["actions"].items():
+                    if budget.matches(device_id, action) and budget.declared_unit(spec["input"]) is None:
+                        raise ValueError(f"policy budget {budget.id!r} of {principal.id!r} names {device_id}/{action}, "
+                                         f"but {budget.quantity} is not a numeric argument of it in a unit convertible "
+                                         f"to {budget.unit} (BHMS-AUTH-031)")
+
+
 class Authenticator:
-    """Resolves and caches the principal of each connection from the *current* policy (BHMS-SEC-001).
+    """Resolves the principal of each request from the *current* policy (BHMS-SEC-001) and caches it per connection.
 
     A server and a gateway both own one: ``authenticate(ctx)`` is what every handler calls first; ``reset()`` drops the
-    cache when the policy changes so that new requests follow it at once (BHMS-SEC-012).
+    cache when the policy changes so that new requests follow it at once (BHMS-SEC-012). A request that carries the
+    credential carrier (BHMS-SEC-005) is resolved from its token, never from the cache: requests are stateless.
     """
 
     def __init__(self, policy: Callable[[], Policy]) -> None:
@@ -275,7 +348,14 @@ class Authenticator:
         self._principals: weakref.WeakKeyDictionary[Any, Principal | None] = weakref.WeakKeyDictionary()
 
     def principal_of(self, ctx: Any) -> Principal | None:
-        """The principal of ``ctx.session`` (None when its transport carries no valid credential)."""
+        """The principal of the request ``ctx`` (None when it carries no valid credential). Raises ``UNAUTHORIZED`` for a
+        carrier on a transport that already identifies the caller (BHMS-SEC-006)."""
+        token = carried_token(ctx)
+        if token is not None:
+            refused = carrier_refusal(ctx.peer)
+            if refused is not None:
+                raise refused
+            return self._policy().by_token(token)
         session = ctx.session
         if session in self._principals:
             return self._principals[session]
@@ -287,13 +367,17 @@ class Authenticator:
         """The request's principal, or ``UNAUTHORIZED`` when the transport carries no valid credential."""
         found = self.principal_of(ctx)
         if found is None:
-            raise BhmsError("UNAUTHORIZED", "this connection carries no valid credential",
-                            hint="connect over stdio or a permitted Unix socket, or present a bearer token "
-                                 "(BHMS-SEC-001)")
+            carried = carried_token(ctx) is not None
+            raise BhmsError("UNAUTHORIZED", "the request's bhms/authorization token is not valid" if carried else
+                            "this connection carries no valid credential",
+                            hint="connect over stdio or a permitted Unix socket, or present a bearer token: the "
+                                 "Authorization header (WebSocket, HTTP) or _meta[\"bhms/authorization\"] = \"Bearer "
+                                 "<token>\" (TCP, BHMS-SEC-005)")
         return found
 
     def reset(self) -> None:
         self._principals.clear()
 
 
-__all__ = ["STDIO_PRINCIPAL", "Authenticator", "Policy", "Principal", "glob_match", "token_digest"]
+__all__ = ["CARRIER", "STDIO_PRINCIPAL", "Authenticator", "Policy", "Principal", "carried_token", "check_budgets", "glob_match",
+           "token_digest"]

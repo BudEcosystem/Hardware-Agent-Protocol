@@ -434,3 +434,32 @@ async def test_a_state_filtered_list_uses_the_state_clients_see(blocking, monkey
     dispatching = [o.operation_id for o in (await client.operations_list(state="dispatching")).operations]
     assert b.operation_id in accepted and b.operation_id not in dispatching
     spy.gate.set()
+
+
+async def test_a_queued_op_whose_dispatch_sync_fails_is_answered_with_its_outcome(blocking, monkeypatch):  # 12b carried
+    """Task 12b review (deferred to 15a): a queued operation dispatched while its accepted sync runs, whose syncs then fail,
+    was answered ``dispatching`` (a state that is not durable and that it never keeps). Like an immediate dispatch, the
+    invoker waits for the execution, which settles it ``failed`` with ``mayHaveActed: false`` without calling the handler."""
+    srv, client, spy, release, url = blocking
+    await client.actions_invoke("d", "go", {"value": 1}, wait_ms=0)  # holds the device
+    thread_syncs(monkeypatch, srv)
+    gate = threading.Event()
+    spy.gate = gate  # the accepted record's sync
+    queued = asyncio.ensure_future(client.actions_invoke("d", "go", {"value": 2}, wait_ms=0))
+    rec = None
+    for _ in range(400):
+        rec = next((r for r in srv.journal.live() if r.state == "accepted"), None)
+        if rec is not None:
+            break
+        await asyncio.sleep(0.005)
+    assert rec is not None
+    release.set()  # dispatched while its accepted sync is held
+    for _ in range(400):
+        if rec.state != "accepted":
+            break
+        await asyncio.sleep(0.005)
+    assert rec.state == "dispatching"
+    spy.fail = True
+    gate.set()
+    op = (await asyncio.wait_for(queued, 5)).operation
+    assert op.state == "failed" and op.error.may_have_acted is False and op.effect == "none", op

@@ -8,6 +8,8 @@ key it concerns, never at the first request::
     state_dir = "state"                # the forwarding journal lives here (relative paths: next to this file)
     listen = ["unix:gateway.sock", "ws://127.0.0.1:8765", "http://127.0.0.1:8766/bhms"]   # and/or "stdio"
     upstream_timeout_ms = 10000        # per-call timeout on every upstream (BHMS-SEC-061)
+    # tls_cert = "tls/cert.pem"        # with tls_key: the certificate of the wss:// and https:// listeners (BHMS-SEC-004/007);
+    # tls_key = "tls/key.pem"          # without them, listen in plain text on loopback behind a TLS-terminating proxy
 
     [[upstream]]                       # one per device server; ``name`` prefixes its device ids: name/deviceId
     name = "bench"
@@ -22,6 +24,7 @@ key it concerns, never at the first request::
     baud = 115200
     sidecar = "arm.sidecar.json"       # the full DeviceDescription with compact layouts; its digest must match the board's HELLO
     # reply_timeout_ms, retries, poll_interval_ms, probe_interval_ms, hello_timeout_ms: link timing (see compact_bridge)
+    # link_allowance_ms = 5000         # added to each action's maxDurationMs (default: computed from the link, BHMS-CMP-052)
 
     [principals.lab-agent]             # GatewayPolicy: tokens are sha256 digests, never plaintext (BHMS-SEC-002)
     tokens = ["sha256:<hex of the token>"]
@@ -29,9 +32,14 @@ key it concerns, never at the first request::
                                        # an agent can stop what it can move (authority.agent_scopes); check with
                                        # ``bhms gateway check-policy <this file>``
     bounds = {"bench/stage-z/move_to" = {target = {maximum = 100}}}
+    budgets = [{ id = "travel", action = "bench/*/move_by", quantity = "/distance", unit = "mm", total = 500,
+                 windowMs = 3600000 }]           # cumulative, across every upstream (spec 7.4.1)
 
 A ``type = "compact"`` upstream is a :class:`~bhms.gateway.compact_bridge.CompactBridge` in the gateway's process (its journal is
 ``<state_dir>/compact/<name>.sqlite3``); see ``examples/bhms/compact-gateway.toml``.
+
+``BHMS_GATEWAY_STATE_DIR`` in the environment overrides ``state_dir`` (a second process on the same file, as the conformance
+runner starts, needs its own journal).
 
 Every ``[gateway]`` key has a default; see :class:`GatewayConfig`. :func:`load_config` reads a file,
 :meth:`GatewayConfig.from_dict` an already-parsed table (tests, embedding).
@@ -44,6 +52,7 @@ from __future__ import annotations
 import os
 import re
 import shlex
+import ssl
 import sys
 import tomllib
 from collections.abc import Awaitable, Callable
@@ -112,6 +121,8 @@ class GatewayConfig:
     ``principals`` is a ``GatewayPolicy`` document's ``principals`` table (tokens as ``sha256:`` digests).
     ``durability`` is the store mode of :mod:`bhms.runtime.store` (``dispatch``: fsync before every dispatch, which for a gateway is the pending-forward row written before an invoke is sent).
     ``trust_same_uid`` grants ``admin`` to Unix-socket peers with the gateway's uid that no principal names.
+    ``tls_cert``/``tls_key`` (PEM, together) are the certificate of the ``wss://``/``https://`` listeners; a TLS listener
+    without them, or them without a TLS listener, is a configuration error (BHMS-SEC-007).
     """
 
     id: str = "gateway"
@@ -134,6 +145,8 @@ class GatewayConfig:
     upstream_timeout_ms: int = 10_000
     observation_min_interval_ms: int = 50
     http_path: str = "/bhms"
+    tls_cert: Path | None = None
+    tls_key: Path | None = None
     source: Path | None = field(default=None, compare=False)
 
     def __post_init__(self) -> None:
@@ -146,11 +159,33 @@ class GatewayConfig:
             raise ConfigError(f"upstream names must be unique, got {sorted(n for n in names if names.count(n) > 1)}")
         if self.key_retention_s < 86_400:
             raise ConfigError("key_retention_s must be at least 86400 (BHMS-OPS-034)")
+        if (self.tls_cert is None) != (self.tls_key is None):
+            raise ConfigError("tls_cert and tls_key go together: the certificate chain (PEM) and its private key (PEM)")
+        tls_listeners = [u for u in self.listen if u.startswith(("wss://", "https://"))]
+        if tls_listeners and self.tls_cert is None:
+            raise ConfigError(f"{tls_listeners[0]} promises TLS but [gateway] has no tls_cert/tls_key (BHMS-SEC-007); add "
+                              "them, or listen on ws:// or http:// on a loopback address behind a TLS-terminating proxy")
+        if self.tls_cert is not None and not tls_listeners:
+            raise ConfigError("tls_cert/tls_key are set but no listener uses wss:// or https://: the plain listeners would "
+                              "not use them (BHMS-SEC-007)")
         try:
             types.GatewayPolicy.model_validate({"principals": {
                 n: {k: v for k, v in p.items() if k != "gateway"} for n, p in self.principals.items()}})
         except ValueError as exc:
             raise ConfigError(f"[principals] is not a valid GatewayPolicy: {exc}") from None
+
+    def tls_context(self) -> ssl.SSLContext | None:
+        """The server TLS context of the ``wss://``/``https://`` listeners (``tls_cert`` and ``tls_key``, PEM files), or
+        None without them. TLS 1.2 at least; the key file is read here, never logged."""
+        if self.tls_cert is None or self.tls_key is None:
+            return None
+        context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+        context.minimum_version = ssl.TLSVersion.TLSv1_2
+        try:
+            context.load_cert_chain(str(self.tls_cert), str(self.tls_key))
+        except (OSError, ssl.SSLError) as exc:
+            raise ConfigError(f"cannot load tls_cert {self.tls_cert} / tls_key {self.tls_key}: {exc}") from None
+        return context
 
     @classmethod
     def from_dict(cls, document: dict[str, Any], *, base_dir: Path | None = None,
@@ -166,7 +201,12 @@ class GatewayConfig:
         bad = set(section) - known
         if bad:
             raise ConfigError(f"unknown [gateway] key(s) {sorted(bad)}; known: {sorted(known)}")
-        if "state_dir" in section:
+        for key in ("tls_cert", "tls_key"):
+            if key in section:
+                section[key] = _path(section[key], base)
+        if os.environ.get("BHMS_GATEWAY_STATE_DIR"):  # a second process on the same file (conformance, tests) needs its own
+            section["state_dir"] = Path(os.environ["BHMS_GATEWAY_STATE_DIR"])
+        elif "state_dir" in section:
             section["state_dir"] = _path(section["state_dir"], base)
         else:
             section["state_dir"] = base / "state"

@@ -170,7 +170,8 @@ async def test_stop_with_an_immediate_confirmation_needs_no_second_ack(tmp_path,
 
 async def test_stop_works_with_a_stale_session_and_reports_an_endpoint_without_a_stop_procedure(tmp_path, native):
     async with compact_rig(tmp_path, native, args=("--no-stop",)) as rig:
-        rig.bridge.epoch = 77  # the bridge's idea of the session is wrong: STOP is accepted regardless (CMP-050)
+        rig.bridge.epoch = rig.bridge._hello_epoch = 77  # the bridge's idea of the session is wrong: STOP is accepted
+        # regardless (CMP-050)
         stop = to_wire(await rig.client.stop("test", device_ids=[rig.device], wait_ms=1500))["stops"][0]
         assert stop["outcome"] == "failed"  # the description promised a stop; the endpoint says it has none
         assert rig.wire.sent(cp.StopAck)[0].message.outcome == cp.STOPACK_UNSUPPORTED

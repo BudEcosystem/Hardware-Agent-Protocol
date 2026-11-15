@@ -39,8 +39,8 @@ from bhms.jsonrpc.session import (METHOD_NOT_FOUND, Complete, JsonRpcError, Noti
 from bhms.protocol import schema
 from bhms.protocol.errors import BhmsError
 from bhms.protocol.types import METHODS, to_wire
-from bhms.protocol.version import PROTOCOL_VERSION
-from bhms.transport.base import Peer, Transport
+from bhms.protocol.version import PROTOCOL_VERSION, SUPPORTED_VERSIONS, discover_for
+from bhms.transport.base import Transport
 
 log = logging.getLogger("bhms.jsonrpc")
 
@@ -48,7 +48,7 @@ META_VERSION_FIELD = "_meta.bhms/protocolVersion"
 _EXTENSION_NAME = re.compile(r"^(?!bhms/)(?:[a-z0-9][a-z0-9.-]*/[^/\s]+/[^/\s]+|x-[a-z0-9-]+/[^/\s]+)$")
 
 MethodHandler = Callable[[Any, RequestContext], Awaitable[Any]]
-PrincipalResolver = Callable[[Peer], dict[str, Any] | None]
+PrincipalResolver = Callable[[RequestContext], dict[str, Any] | None]
 
 
 def _version_error(supported: tuple[str, ...]) -> BhmsError:
@@ -73,13 +73,14 @@ class Server:
         epoch: identity of the durable state (BHMS-OPS-034).
         supported_versions: versions this server serves.
         instructions: optional guidance for models (untrusted text).
-        principal: ``peer -> {"id", "scopes"} | None`` resolved per ``server/discover`` request.
+        principal: ``ctx -> {"id", "scopes", "budgets"?} | None`` resolved per ``server/discover`` request (the request
+            context: its transport peer and, on transports without a credential header, its ``bhms/authorization``).
         max_page_size / max_wait_ms: reported in ``limits``; ``limits.maxMessageBytes`` is the connection's real limit.
         strict: full JSON Schema validation of requests and results.
     """
 
     def __init__(self, *, server_info: dict[str, Any], capabilities: dict[str, Any] | None = None,
-                 epoch: str = "ephemeral", supported_versions: tuple[str, ...] = (PROTOCOL_VERSION,),
+                 epoch: str = "ephemeral", supported_versions: tuple[str, ...] = SUPPORTED_VERSIONS,
                  instructions: str | None = None, principal: PrincipalResolver | None = None,
                  max_page_size: int = 100, max_wait_ms: int = 30_000, strict: bool = False,
                  drain_timeout: float = 10.0) -> None:
@@ -191,10 +192,10 @@ class Server:
                        "maxWaitMs": self.max_wait_ms}}
         if self.instructions:
             result["instructions"] = self.instructions
-        principal = self.principal(ctx.peer) if self.principal is not None else None
+        principal = self.principal(ctx) if self.principal is not None else None
         if principal is not None:
             result["principal"] = principal
-        return result
+        return discover_for(result, request_version(ctx))
 
     # ------------------------------------------------------------------ serving
 
@@ -225,6 +226,13 @@ class Server:
         """Close every live connection (in-flight requests are abandoned, BHMS-TRN-005)."""
         await asyncio.gather(*(s.close() for s in list(self.sessions)))
         await drain_detached(self._detached, self.drain_timeout)  # handlers detached by connections that already dropped
+
+
+def request_version(ctx: RequestContext) -> str | None:
+    """The protocol version a request speaks (``_meta["bhms/protocolVersion"]``; validated by :meth:`Server.dispatch`)."""
+    params = ctx.params if isinstance(ctx.params, dict) else {}
+    meta = params.get("_meta")
+    return meta.get("bhms/protocolVersion") if isinstance(meta, dict) else None
 
 
 async def _wire_stream(stream: AsyncIterator[Any]) -> AsyncIterator[Notification | Complete]:

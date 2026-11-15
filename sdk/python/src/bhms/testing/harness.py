@@ -3,7 +3,7 @@
 Example (a pytest test for your device)::
 
     async def test_move():
-        async with connect(build(state_dir=None)) as client:
+        async with connect(build()) as client:  # build() returns a DeviceServer, e.g. DeviceServer("demo", store=None)
             op = (await client.actions_invoke("stage", "move_to", {"target": 10}, wait_ms=1000)).operation
             assert op.state == "completed"
 

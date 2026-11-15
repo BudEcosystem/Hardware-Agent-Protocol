@@ -31,7 +31,7 @@ import contextlib
 import logging
 import re
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, Any
 
@@ -414,6 +414,10 @@ class _StepUnknown(Exception):
     pass
 
 
+class _Settled(Exception):  # noqa: N818 - control flow: the program was settled where the condition arose
+    pass
+
+
 class _Halted(Exception):  # noqa: N818 - control flow: cancel or stop observed between steps
     pass
 
@@ -431,6 +435,39 @@ class _Run:
     child: OperationRecord | None = None
     done: int = 0
     task: asyncio.Task[None] | None = None
+
+
+def program_step_scopes(program: dict[str, Any]) -> tuple[str, ...]:
+    """The literal ``invoke`` scopes a program-scoped grant implies (BHMS-PRG-023): one ``invoke:<deviceId>/<action>`` per
+    ``invoke`` step and one ``invoke:<deviceId>/<property>`` per ``read``/``waitUntil`` step (a fresh ``transaction``
+    read is an effect, BHMS-AUTH-012), nested ``repeat`` bodies included. ``deviceId``, ``action`` and ``property`` are
+    literals in every program (8.2), so these scopes name exactly the reviewed steps."""
+    found: list[str] = []
+
+    def walk(steps: Any) -> None:
+        for step in steps if isinstance(steps, list) else ():
+            if not isinstance(step, dict):
+                continue
+            kind = step.get("kind")
+            if kind == "repeat":
+                walk(step.get("steps"))
+            elif kind == "invoke" and isinstance(step.get("deviceId"), str) and isinstance(step.get("action"), str):
+                found.append(f"invoke:{step['deviceId']}/{step['action']}")
+            elif kind in ("read", "waitUntil") and isinstance(step.get("deviceId"), str) and \
+                    isinstance(step.get("property"), str):
+                found.append(f"invoke:{step['deviceId']}/{step['property']}")
+
+    walk(program.get("steps"))
+    return tuple(dict.fromkeys(found))
+
+
+def granted_principal(principal: Principal, program: dict[str, Any]) -> Principal:
+    """The principal a run under a program-scoped grant acts as: the same id, bounds and budgets, plus literal ``invoke``
+    scopes for exactly the program's steps (:func:`program_step_scopes`). Leases, envelopes, budgets, hazard rules and
+    every admission check then apply to each step as to any action (BHMS-PRG-023); nothing outside the program is
+    authorized."""
+    extra = tuple(s for s in program_step_scopes(program) if s not in principal.scopes)
+    return replace(principal, scopes=principal.scopes + extra)
 
 
 class ProgramRunner:
@@ -508,9 +545,13 @@ class ProgramRunner:
                 raise BhmsError("INVALID_ARGUMENT", f"no registered program {program_digest}", field="digest",
                                 hint="register it with programs/register, or send it inline (BHMS-PRG-020)")
             program = stored[0]
-        if not principal.has("programs:run"):
-            raise BhmsError("UNAUTHORIZED", "programs/run needs the programs:run scope",
-                            hint="missing scope programs:run")
+        if not principal.can_run_program(program_digest):
+            raise BhmsError("UNAUTHORIZED", f"you may not run program {program_digest}", field="program" if
+                            raw.get("program") is not None else "digest",
+                            hint=f"missing scope programs:run (with an invoke scope for every step) or the program-scoped "
+                                 f"grant programs:run:{program_digest}; a changed program has another digest (BHMS-PRG-023)")
+        if principal.program_grant(program_digest):
+            principal = granted_principal(principal, program)  # exactly this program's steps (BHMS-PRG-023)
         plan = self.validate(principal, program)
         admitted = plan.input_validator.admit(raw["arguments"])
         lease: Lease | None = None
@@ -533,10 +574,17 @@ class ProgramRunner:
             # written, not durable: it never runs; it ends rejected, so a same-key retry replays that (as TS does)
             srv.journal_failed(exc)
             rec = exc.record  # type: ignore[attr-defined]
-            with contextlib.suppress(StoreError):
+            try:
                 srv.journal.transition(rec, "rejected", error=BhmsError(
                     "INTERNAL", f"the program operation could not be made durable ({exc}); no step was run",
                     may_have_acted=False, hint="retry later with a new operationKey").to_operation_error())
+            except StoreError:
+                # Not even the rejection can be written: never hand out an accepted program that nothing will run (Task
+                # 12b review). The record stays accepted, unrun, until the restart records it rejected (BHMS-PRG-017).
+                raise BhmsError("BUSY", "the operation journal is failing: the program was recorded but cannot be made "
+                                "durable or rejected; no step was run", retry="after-reconcile",
+                                hint="nothing ran; once the server's journal works again (it records this program rejected "
+                                     "at its next start), check operations/list before running it again") from None
             return rec
         except StoreError as exc:
             srv.journal_failed(exc)
@@ -559,6 +607,8 @@ class ProgramRunner:
                 await self._steps(run, run.plan.steps, "")
                 output = resolve(run.plan.program.get("output") or {}, run.variables)
                 journal.transition(run.rec, "completed", result=output, **self._outcome(run))
+            except _Settled:
+                pass
             except _Halted:
                 self._halt(run)
             except _StepUnknown:
@@ -628,10 +678,21 @@ class ProgramRunner:
                 raise _StepFailed(exc.to_operation_error()) from None
 
     def _begin(self, run: _Run) -> None:
-        """Move the program to ``running`` (a barrier commit via ``dispatching``) before its first step can act."""
+        """Move the program to ``running`` (a barrier commit via ``dispatching``) before its first step can act. A
+        ``dispatching`` record that was committed but could not be made durable started nothing: the program ends
+        ``failed`` with ``mayHaveActed: false`` at once (BHMS-OPS-003; Task 12b review), and no step runs."""
         if run.rec.state == "accepted":
-            self.server.journal.transition(run.rec, "dispatching")
-            self.server.journal.transition(run.rec, "running", detail="first step started")
+            journal = self.server.journal
+            try:
+                journal.transition(run.rec, "dispatching")
+            except StoreSyncError as exc:
+                self.server.journal_failed(exc)
+                journal.transition(run.rec, "failed", error=BhmsError(
+                    "INTERNAL", f"the program's dispatch record could not be made durable ({exc}); no step was started",
+                    may_have_acted=False, hint="nothing ran; retry later with a new operationKey").to_operation_error(),
+                    effect="none", proof="no step was started: the dispatch record was not durable")
+                raise _Settled from None
+            journal.transition(run.rec, "running", detail="first step started")
 
     def _start_step(self, run: _Run, step: Step, path: str, child: OperationRecord | None = None) -> None:
         journal = self.server.journal

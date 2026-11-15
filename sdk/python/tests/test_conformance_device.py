@@ -161,8 +161,13 @@ async def test_example_server_over_websocket(tmp_path, monkeypatch):
     assert oct(os.stat(token_file).st_mode & 0o777) == "0o600"
     url = f"ws://127.0.0.1:{listener.address[1]}"
     try:
-        with pytest.raises(Exception):  # noqa: B017 - no bearer token: HTTP 401 at the handshake
-            await Client.connect(url)
+        # No bearer token: a loopback upgrade is accepted (a request may carry _meta["bhms/authorization"], BHMS-SEC-005), but
+        # without a credential the connection has no principal and every request beyond server/discover is refused.
+        async with await Client.connect(url) as anonymous:
+            assert (await anonymous.discover()).principal is None
+            with pytest.raises(BhmsError) as refused:
+                await anonymous.devices_list()
+            assert refused.value.bhms_code == "UNAUTHORIZED"
         async with await Client.connect(url, token=token_file.read_text().strip()) as client:
             res = await client.actions_invoke("stage-z", "move_to", {"target": 33}, wait_ms=2000)
             assert res.operation.state == "completed" and res.operation.result == {"position": 33}

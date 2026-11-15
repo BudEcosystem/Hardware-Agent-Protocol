@@ -112,7 +112,8 @@ ExtensionKey = _pattern(r"^(?!bhms/)[a-z][a-z0-9-]*(\.[a-z][a-z0-9-]*)*/[A-Za-z0
 Extensions = dict[ExtensionKey, dict[str, Any]]
 JsonSchema = Union[dict[str, Any], bool]
 ResultType = Literal["complete"]
-Scope = _pattern(r"^(read|lease|stop|admin|operations:read|operations:resolve|programs:run|programs:register|invoke:.+|stop:.+)$")
+Scope = _pattern(r"^(read|lease|stop|admin|operations:read|operations:resolve|programs:run|programs:run:sha256:[0-9a-f]{64}|"
+                 r"programs:register|invoke:.+|stop:.+)$")
 NonNegInt = _bounded_int(ge=0)
 PosInt = _bounded_int(ge=1)
 PositiveNumber = Annotated[float, Field(gt=0)]
@@ -192,6 +193,8 @@ class RequestMeta(_Wire):
     protocol_version: ProtocolVersion = Field(alias="bhms/protocolVersion")
     client_info: Optional[Implementation] = Field(None, alias="bhms/clientInfo")
     client_capabilities: Optional[ClientCapabilities] = Field(None, alias="bhms/clientCapabilities")
+    authorization: Optional[Annotated[str, Field(pattern=r"^Bearer [A-Za-z0-9._~+/=-]+$", min_length=8, max_length=4096)]] = \
+        Field(None, alias="bhms/authorization", repr=False)
     traceparent: Optional[_text(256)] = Field(None, alias="traceparent")
     tracestate: Optional[_text(512)] = Field(None, alias="tracestate")
 

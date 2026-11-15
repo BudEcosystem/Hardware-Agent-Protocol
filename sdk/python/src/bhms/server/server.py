@@ -53,7 +53,8 @@ from typing import Any
 from bhms.jsonrpc.dispatcher import Server as RpcServer
 from bhms.jsonrpc.session import RequestContext
 from bhms.protocol.errors import BhmsError
-from bhms.runtime.authority import Authenticator, Policy, Principal, token_digest
+from bhms.runtime.authority import Authenticator, Policy, Principal, check_budgets, token_digest
+from bhms.runtime.budgets import BudgetLedger, principal_wire
 from bhms.runtime.events import EventLog
 from bhms.runtime.heap import freeze_startup_heap
 from bhms.runtime.leases import Lease, LeaseManager
@@ -127,6 +128,7 @@ class DeviceServer:
             raise ValueError("key_retention_s must be at least 86400 (BHMS-OPS-034)")
         self.name, self.version, self.title, self.instructions = name, version, title, instructions
         self.state_dir = Path(state_dir) if state_dir is not None else default_state_dir()
+        self._state_dir_defaulted = state_dir is None and not os.environ.get("BHMS_STATE_DIR")
         self._store_arg = store
         self.durability = durability
         self.token = token or os.environ.get("BHMS_TOKEN")
@@ -223,11 +225,15 @@ class DeviceServer:
             self.subscriptions = Subscriptions(self)
             self.journal.on_unknown.append(self._record_unknown)
             self.journal.recover()  # BHMS-OPS-080: before any request is answered
+            self.budgets = BudgetLedger(self.store, self.journal)
+            self.budgets.repair(self.journal.lookup_key)
             self.executor.load_inhibitions()
             self.store.prune_operations(["completed", "failed", "canceled", "rejected"],
                                         _ns_ago(self.key_retention_s))
             self.events.prune()
-            self.policy.check_bounds(lambda d: self.devices[d].description() if d in self.devices else None)
+            describe = lambda d: self.devices[d].description() if d in self.devices else None  # noqa: E731
+            self.policy.check_bounds(describe)
+            check_budgets(self.policy, describe, sorted(self.devices))
             self.rpc = self._make_rpc()
             self._started = True
             for dev in self.devices.values():
@@ -253,8 +259,8 @@ class DeviceServer:
             "stop": {}, "subscriptions": {"maxObservations": 256, "maxOperationIds": 256},
             "leases": self.leases.capability,
             "events": {"retentionS": self.event_retention_s, "maxPageSize": self.max_page_size}}
-        if self.programs_enabled:
-            caps["programs"] = {"registry": True, "limits": self.program_limits}
+        if self.programs_enabled:  # grants: program-scoped grants are honoured (BHMS-PRG-023; v0.2 requests see it)
+            caps["programs"] = {"registry": True, "limits": self.program_limits, "grants": True}
         authority = self.policy.authority_capability()
         if authority is not None:
             caps["authority"] = authority
@@ -264,9 +270,12 @@ class DeviceServer:
         if self.title:
             info["title"] = self.title
 
-        def principal(peer: Any) -> dict[str, Any] | None:
-            found = self.policy.resolve(peer)
-            return found.wire() if found is not None else None
+        def principal(ctx: RequestContext) -> dict[str, Any] | None:
+            try:
+                found = self.auth.principal_of(ctx)
+            except BhmsError:  # a misplaced credential carrier: server/discover still answers, without a principal
+                return None
+            return principal_wire(found, self.budgets) if found is not None else None
 
         rpc = RpcServer(server_info=info, capabilities=caps, epoch=self.store.epoch, instructions=self.instructions,
                         principal=principal, max_page_size=self.max_page_size, max_wait_ms=self.max_wait_ms,
@@ -342,7 +351,7 @@ class DeviceServer:
     async def listen(self, url: str, *, ssl: ssl_module.SSLContext | None = None) -> Any:
         """Start (if needed) and accept connections on ``unix:<path>`` or ``ws[s]://host:port``; returns the
         listener (``await listener.close()`` stops accepting)."""
-        from bhms.transport import serve_unix, serve_websocket
+        from bhms.transport import serve_tcp, serve_unix, serve_websocket
         from bhms.transport.stream import is_loopback
 
         await self.start()
@@ -359,14 +368,25 @@ class DeviceServer:
                 raise ValueError(f"refusing to serve {url} without TLS: a non-loopback listener must use TLS "
                                  "(BHMS-SEC-004); pass ssl=<SSLContext> or bind 127.0.0.1")
             self._ensure_token()
-            listener = await serve_websocket(host, port, self.rpc.handle_connection,
-                                             authenticate=lambda token: self.policy.by_token(token) is not None,
-                                             ssl=ssl)
-        elif url.startswith("tcp://"):
-            raise ValueError("TCP carries no credential in this SDK, so every request would be refused "
-                             "(BHMS-SEC-001); serve unix:<path> or ws://host:port instead")
+            loopback = is_loopback(host)
+            # A loopback upgrade without Authorization is accepted: each request on it then carries its credential in
+            # _meta["bhms/authorization"] or is refused (BHMS-SEC-005); beyond loopback the header is required (BHMS-TRN-031).
+            listener = await serve_websocket(
+                host, port, self.rpc.handle_connection, ssl=ssl,
+                authenticate=lambda token: (token is None and loopback) or self.policy.by_token(token) is not None)
+        elif url.startswith(("tcp://", "tcps://")):
+            host, port = _host_port(url)
+            if url.startswith("tcps://") and ssl is None:
+                raise ValueError(f"refusing to serve {url} without a TLS context: tcps:// promises encryption; pass "
+                                 "ssl=<SSLContext>, or use tcp:// on a loopback address")
+            if not is_loopback(host) and ssl is None:
+                raise ValueError(f"refusing to serve {url} without TLS: a TCP listener beyond loopback must use TLS "
+                                 "(BHMS-TRN-021, BHMS-SEC-004); pass ssl=<SSLContext> or bind 127.0.0.1")
+            self._ensure_token()  # every TCP request carries _meta["bhms/authorization"] (BHMS-SEC-005)
+            listener = await serve_tcp(host, port, self.rpc.handle_connection, ssl=ssl)
         else:
-            raise ValueError(f"unsupported url {url!r}; use stdio (default), unix:<path> or ws://host:port")
+            raise ValueError(f"unsupported url {url!r}; use stdio (default), unix:<path>, ws://host:port or "
+                             "tcp://host:port")
         self._listeners.append(listener)
         return listener
 
@@ -391,6 +411,12 @@ class DeviceServer:
         freeze_startup_heap()  # no generation-2 pause over the start-up heap while serving (Task 12a: 42-81 ms)
         try:
             if url is None or url == "stdio":
+                if self._state_dir_defaulted and self._store_arg is _DEFAULT:
+                    # MCP hosts start servers with a minimal environment (Task 14 learning 2): every server they launch
+                    # then shares the user's default state directory (BHMS-TRN-013).
+                    log.warning("serving stdio with the default state directory %s (BHMS_STATE_DIR is not set): a host "
+                                "that starts servers with a minimal environment must pass BHMS_STATE_DIR (and "
+                                "BHMS_TOKEN where used) explicitly", self.state_dir)
                 await self.rpc.serve_stdio()
                 return
             await self.listen(url, ssl=ssl)
@@ -458,7 +484,9 @@ class DeviceServer:
 
     def set_policy(self, policy: Policy) -> None:
         """Replace the policy; takes effect for new admissions at once and is recorded (BHMS-SEC-012)."""
-        policy.check_bounds(lambda d: self.devices[d].description() if d in self.devices else None)
+        describe = lambda d: self.devices[d].description() if d in self.devices else None  # noqa: E731
+        policy.check_bounds(describe)
+        check_budgets(policy, describe, sorted(self.devices))
         if self.token:
             policy = _with_admin_token(policy, self.token)
         before = {p.id: p for p in self.policy.principals}
@@ -619,6 +647,8 @@ def _with_admin_token(policy: Policy, token: str) -> Policy:
             spec["bounds"] = principal.bounds
         if principal.gateway:
             spec["gateway"] = True
+        if principal.budgets:
+            spec["budgets"] = [budget.wire() for budget in principal.budgets]
         entries[principal.id] = spec
     if "token" not in entries:
         entries["token"] = {"tokens": [token_digest(token)], "scopes": ["admin"]}

@@ -13,6 +13,7 @@ from bhms.jsonrpc.dispatcher import Server
 from bhms.jsonrpc.session import Complete, JsonRpcError, Notification, Session
 from bhms.protocol import schema, types
 from bhms.protocol.errors import BhmsError
+from bhms.protocol.version import PROTOCOL_VERSION, SUPPORTED_VERSIONS
 from bhms.transport import TransportClosed
 
 EXAMPLES = Path(__file__).resolve().parents[3] / "spec" / "bhms" / "examples"
@@ -98,7 +99,7 @@ async def test_every_method_round_trips_the_spec_examples(make_env, strict):
         assert types.dump(types.METHODS[method].result.__name__, result) == expected, method
         got = types.to_wire(seen[method])
         assert got == request | {"_meta": got["_meta"]}, method
-        assert got["_meta"]["bhms/protocolVersion"] == "2026-11-13"
+        assert got["_meta"]["bhms/protocolVersion"] == PROTOCOL_VERSION
         assert got["_meta"]["bhms/clientInfo"]["name"] == "bhms-python"
 
 
@@ -111,10 +112,10 @@ def test_client_has_a_typed_method_for_every_schema_method():
 
 
 async def test_connect_discovers_and_exposes_server_description(make_env):
-    env = await make_env(principal=lambda peer: {"id": f"uid:{peer.uid}", "scopes": ["read"]}, instructions="be kind")
+    env = await make_env(principal=lambda ctx: {"id": f"uid:{ctx.peer.uid}", "scopes": ["read"]}, instructions="be kind")
     client = await env.client()
     d = client.server
-    assert d.server_info.name == "test-server" and d.epoch == "epoch-1" and d.supported_versions == ["2026-11-13"]
+    assert d.server_info.name == "test-server" and d.epoch == "epoch-1" and d.supported_versions == list(SUPPORTED_VERSIONS)
     assert d.instructions == "be kind" and d.principal.id.startswith("uid:")
     assert d.limits.max_message_bytes == 4 * 1024 * 1024 == client.session.max_message_bytes
     for cap in ("operations", "stop", "subscriptions", "leases"):
@@ -133,7 +134,7 @@ async def test_version_negotiation_retries_with_a_mutual_version(make_env):
     assert older.version == "2026-11-13"
     with pytest.raises(BhmsError) as exc:
         await Client.from_transport(await tr.connect_unix(env.path), versions=("2025-01-01",))
-    assert exc.value.bhms_code == "UNSUPPORTED_VERSION" and exc.value.bound == ["2026-11-13"]
+    assert exc.value.bhms_code == "UNSUPPORTED_VERSION" and exc.value.bound == list(SUPPORTED_VERSIONS)
 
 
 async def raw_request(env, message: dict):
@@ -156,7 +157,7 @@ async def test_missing_meta_and_version_errors_follow_lif_011_and_019(make_env):
         assert err["data"]["field"] == "_meta.bhms/protocolVersion", params
     err = (await raw_request(env, {"jsonrpc": "2.0", "id": 1, "method": "devices/list",
                                    "params": {"_meta": {"bhms/protocolVersion": "1999-01-01"}}}))["error"]
-    assert err["code"] == -32015 and err["data"]["bound"] == ["2026-11-13"]
+    assert err["code"] == -32015 and err["data"]["bound"] == list(SUPPORTED_VERSIONS)
     assert err["data"]["field"] == "_meta.bhms/protocolVersion"
 
 
@@ -430,7 +431,7 @@ async def test_connect_to_a_non_bhms_peer_fails_cleanly(tmp_path):
 
 async def test_ws_bearer_token_is_passed_by_connect(tmp_path):
     server = Server(server_info={"name": "s", "version": "1"},
-                    principal=lambda peer: {"id": f"token:{peer.token}", "scopes": ["read"]})
+                    principal=lambda ctx: {"id": f"token:{ctx.peer.token}", "scopes": ["read"]})
     listener = await tr.serve_websocket("127.0.0.1", 0, server.handle_connection,
                                         authenticate=lambda tok: tok == "good")
     url = "ws://%s:%d" % listener.address

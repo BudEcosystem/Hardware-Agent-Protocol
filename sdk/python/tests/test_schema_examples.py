@@ -88,7 +88,8 @@ def _all_errors(errors):
 
 
 def _pointer(error) -> str:
-    return "".join(f"/{part}" for part in error.absolute_path)
+    """The instance location as an RFC 6901 JSON Pointer (``~`` and ``/`` in a key escaped, as every validator reports it)."""
+    return "".join("/" + str(part).replace("~", "~0").replace("/", "~1") for part in error.absolute_path)
 
 
 @pytest.mark.parametrize("path", INVALID, ids=lambda p: p.name)

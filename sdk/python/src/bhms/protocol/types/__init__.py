@@ -119,7 +119,7 @@ _DEF_NAMES = (
     "JsonSchema", "ObjectSchema", "Implementation", "ClientCapabilities", "ResultType", "RequestMeta", "ResultMeta",
     "SubscriptionMeta", "NotificationMeta", "BhmsErrorCode", "RetryClass", "ErrorData", "OperationError",
     "ErrorObject", "JSONRPCRequest", "JSONRPCNotification", "JSONRPCResultResponse", "JSONRPCErrorResponse",
-    "ProgramLimits", "ServerCapabilities", "Limits", "Scope", "Principal", "DeviceStatus", "EffectClass",
+    "ProgramLimits", "ServerCapabilities", "Limits", "Scope", "Budget", "BudgetState", "Principal", "DeviceStatus", "EffectClass",
     "Idempotency", "EvidenceKind", "CompletionEvidence", "DeviceSummary", "DevicesListFilter", "CompactType",
     "CompactField", "CompactActionLayout", "CompactValue", "PropertyDescription", "FreshnessRequirement",
     "ActionDescription",

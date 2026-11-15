@@ -377,12 +377,14 @@ class Journal:
                admitted: dict[str, Any] | None = None, require: dict[str, Any] | None = None,
                lease_id: str | None = None, fence: int | None = None, deadline_ns: int | None = None,
                progress: dict[str, int] | None = None, dispatch: bool = False,
-               barrier: bool | None = None, defer_sync: bool = False) -> OperationRecord:
+               barrier: bool | None = None, defer_sync: bool = False, reservation: Any = None) -> OperationRecord:
         """Durably record a new ``accepted`` operation (and, with ``dispatch``, ``dispatching`` in the same barrier
         commit; ``barrier`` defaults to ``dispatch``: a device server must have the intent on stable storage before it
         acts; a gateway's durable intent is its pending-forward row, so it passes ``False``). With ``defer_sync`` the
-        barrier is a deferred one (group commit): the caller awaits :meth:`durable` before it acts. Raises
-        :class:`~bhms.runtime.store.StoreError` when it cannot be written (no operation exists)."""
+        barrier is a deferred one (group commit): the caller awaits :meth:`durable` before it acts. ``reservation`` (a
+        :class:`~bhms.runtime.budgets.Reservation`) is written in the same transaction, so the budget it charges is
+        durable exactly when the operation is (BHMS-AUTH-031). Raises :class:`~bhms.runtime.store.StoreError` when it
+        cannot be written (no operation exists, nothing is reserved)."""
         created = now_ns()
         at = iso(created)
         op: dict[str, Any] = {"operationId": new_id("op"), "operationKey": key, "keyOrigin": key_origin,
@@ -427,10 +429,16 @@ class Journal:
                                             request_digest=request_digest, kind=kind, device_id=device_id,
                                             parent_id=parent_id, state=op["state"], created_ns=created, record=op,
                                             private=private, history=history)
+                if reservation is not None:
+                    reservation.write()
         except StoreSyncError as exc:
             # committed, not durable: the record exists (a same-key retry finds it), so the caller must settle it
+            if reservation is not None:
+                reservation.commit()
             exc.record = self._remember(OperationRecord(op, history, principal, private, created, self))  # type: ignore[attr-defined]
             raise
+        if reservation is not None:
+            reservation.commit()
         rec = self._remember(OperationRecord(op, history, principal, private, created, self))
         rec.sync_ticket = self._ticket()
         if defer_sync and (dispatch if barrier is None else barrier):
@@ -612,13 +620,23 @@ class Journal:
         op["updatedAt"] = entry["at"]
         self._no_deferred_join(defer_sync)
         shown = (rec.op, len(history)) if self.observable(rec) else None  # what clients saw before this write
-        with self.store.transaction(barrier=barrier, defer_sync=defer_sync):
-            self.store.update_operation(rec.id, state=op["state"], updated_ns=stamp, record=op, history=[entry],
-                                        private=private)
+        try:
+            with self.store.transaction(barrier=barrier, defer_sync=defer_sync):
+                self.store.update_operation(rec.id, state=op["state"], updated_ns=stamp, record=op, history=[entry],
+                                            private=private)
+        except StoreSyncError:
+            # Committed but not durable: memory must say what the journal says (no zombie, Task 12b review); the caller
+            # settles what it wrote (BHMS-OPS-003).
+            self._applied(rec, op, entry, history, private, notify)
+            raise
         if barrier:
             rec.sync_ticket = self._ticket()
             if defer_sync:
                 self._hold(rec, shown)
+        self._applied(rec, op, entry, history, private, notify)
+
+    def _applied(self, rec: OperationRecord, op: dict[str, Any], entry: dict[str, Any], history: list[dict[str, Any]],
+                 private: dict[str, Any] | None, notify: bool) -> None:
         rec.op = op
         if private is not None:
             rec.private = private
@@ -788,8 +806,9 @@ class Journal:
                     "INTERNAL", "the server restarted before the program's first step", may_have_acted=False,
                     hint="no step ran; run the program again").to_operation_error())
                 return
-            # A child exists although the program never recorded dispatching: consult the children, not the parent.
-            self.transition(rec, "dispatching")
+            # A child exists although the program never recorded dispatching: consult the children, not the parent. Nothing
+            # is dispatched here, so no barrier (a failed sync must not leave the program half-recorded, Task 12b review).
+            self.transition(rec, "dispatching", barrier=False)
         last, children = self._step_summary(rec)
         if any(c.state == "unknown" for c in children):
             self.transition(rec, "unknown", error=unknown_error(

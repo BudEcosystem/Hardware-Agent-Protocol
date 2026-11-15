@@ -102,6 +102,9 @@ class Device:
         self.on_disconnect = on_disconnect
         self.safety_summary = safety_summary
         self.liveness_s = liveness_s
+        self.bound_allowance_ms = 0
+        """Added to each action's ``maxDurationMs`` when the server bounds an operation: a bridge whose link adds latency
+        (a BHMS-Compact link, BHMS-CMP-052) sets it; the description is unchanged."""
         self.extensions = extensions
         self.properties: dict[str, PropertySpec] = {}
         self.actions: dict[str, ActionSpec] = {}

@@ -66,6 +66,7 @@ class EventsCapability(_Wire):
 class ProgramsCapability(_Wire):
     registry: bool
     limits: ProgramLimits
+    grants: Optional[bool] = None
 
 
 class CompactCapability(_Wire):
@@ -78,7 +79,7 @@ class GatewayCapability(_Wire):
 
 
 class AuthorityCapability(_Wire):
-    pass
+    budgets: Optional[bool] = None
 
 
 class ServerCapabilities(_Wire):
@@ -102,9 +103,39 @@ class Limits(_Wire):
     max_wait_ms: NonNegInt
 
 
+BudgetId = _pattern(r"^[a-z][a-z0-9_-]{0,63}$")
+BudgetAction = Annotated[str, Field(min_length=3, max_length=256, pattern=r"^.+/[^/]+$")]
+BudgetPointer = Annotated[str, Field(min_length=2, max_length=256, pattern=r"^(/[^/]+)+$")]
+
+
+class Budget(_Wire):
+    """A cumulative budget of a grant (07-leases-and-authority.md 7.4.1)."""
+
+    id: BudgetId
+    action: BudgetAction
+    quantity: BudgetPointer
+    unit: _text(64, 1)
+    total: Annotated[float, Field(gt=0)]
+    window_ms: Optional[_bounded_int(1000, 31_536_000_000)] = None
+
+
+class BudgetState(_Wire):
+    """A budget of the caller with what remains of it (``server/discover`` ``principal.budgets``)."""
+
+    id: BudgetId
+    action: BudgetAction
+    quantity: BudgetPointer
+    unit: _text(64, 1)
+    total: Annotated[float, Field(gt=0)]
+    window_ms: Optional[_bounded_int(1000, 31_536_000_000)] = None
+    remaining: Annotated[float, Field(ge=0)]
+    resets_at: Optional[Time] = None
+
+
 class Principal(_Wire):
     id: _text(128, 1)
     scopes: list[Scope]
+    budgets: Optional[Annotated[list[BudgetState], Field(max_length=64)]] = None
 
 
 class DiscoverParams(_Params):
@@ -203,7 +234,7 @@ class ActionDescription(_Wire):
     completion_evidence: CompletionEvidence
     verified_by: Optional[list[Name]] = None
     typical_duration_ms: Optional[NonNegInt] = None
-    max_duration_ms: PosInt
+    max_duration_ms: _bounded_int(1, 86_400_000)
     requires_lease: bool
     resources: list[ResourceId]
     on_lease_loss: Optional[Literal["finish", "cancel", "hold"]] = None

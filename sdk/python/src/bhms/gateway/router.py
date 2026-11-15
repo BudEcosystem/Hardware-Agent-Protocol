@@ -339,6 +339,10 @@ class Router:
             raise up.unavailable()
         self._check_inhibition(resources)
         gw.require_journal()
+        # Per-principal budgets across every upstream (BHMS-AUTH-031/032): the same ledger module as a device server, checked
+        # with no await before the pending-forward row that carries the reservation is written.
+        reservation = gw.budgets.charges(principal, key, entry.device_id, params.action, admitted,
+                                         description["actions"][params.action]["input"])
         ukey = upstream_key(gw.config.id, principal.id, key)
         forward: dict[str, Any] = {"deviceId": entry.upstream_id, "action": params.action,
                                    "arguments": raw["arguments"], "operationKey": ukey,
@@ -356,17 +360,18 @@ class Router:
                       arguments=raw["arguments"], device_id=entry.device_id, action=params.action, private=private,
                       require=raw.get("require"), lease_id=lease_id, fence=fence, deadline_ns=deadline_ns,
                       admitted=admitted)
-        return await self._forward(principal, key, up, forward, common, resources, ctx)
+        return await self._forward(principal, key, up, forward, common, resources, ctx, reservation)
 
     async def _forward(self, principal: Principal, key: str, up: Upstream, forward: dict[str, Any],
-                       common: dict[str, Any], resources: tuple[str, ...], ctx: RequestContext) -> OperationRecord:
+                       common: dict[str, Any], resources: tuple[str, ...], ctx: RequestContext,
+                       reservation: Any = None) -> OperationRecord:
         """Write the pending row, send, and record the answer (or its absence); see the module docstring."""
         gw = self.gateway
         slot = (principal.id, key)
         self._forwarding.add(slot)
         try:
             try:  # the intent is durable before anything is sent (BHMS-OPS-003)
-                await gw.journal.pending_put(principal.id, key, common, inline=True)
+                await gw.journal.pending_put(principal.id, key, common, inline=True, reservation=reservation)
             except StoreError as exc:
                 gw.journal_failed(exc)
                 raise BhmsError("BUSY", "the gateway's journal cannot be written; nothing was sent", retry="same-key",
@@ -378,6 +383,7 @@ class Router:
                 if not exc.may_have_acted:
                     with contextlib.suppress(StoreError):
                         gw.journal.pending_delete(principal.id, key)
+                    gw.budgets.release(principal.id, key)  # refused upstream before anything was created: nothing spent
                     raise _upstream_refusal(up, exc) from None  # refused before anything was created: no operation (OPS-040)
                 cause = f"upstream {up.name}: {exc.message}"
             except (TransportClosed, asyncio.TimeoutError) as exc:

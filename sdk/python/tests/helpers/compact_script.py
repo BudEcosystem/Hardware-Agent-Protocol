@@ -27,6 +27,7 @@ class Scripted:
         self.last_handle, self.version = last_handle, version
         self.on: dict[type, Behaviour] = {}
         self.seen: list[Any] = []
+        self.frames: list[cp.Incoming] = []  # every frame received, with its session
         self.link: cp.CompactLink | None = None
         self._task: asyncio.Task[None] | None = None
 
@@ -49,6 +50,7 @@ class Scripted:
                 assert incoming is not None
                 message = incoming.message
                 self.seen.append(message)
+                self.frames.append(incoming)
                 handler = self.on.get(type(message))
                 if handler is not None:
                     result = handler(self, message)

@@ -7,7 +7,8 @@
   ``UNKNOWN_ACTION``), authorize (``UNAUTHORIZED``), description pin (``STALE``), arguments and envelope
   (:class:`~bhms.server.validation.ArgumentValidator`), ``require`` (``UNSUPPORTED``), lease (BHMS-LSE-010, BHMS-LSE-014), device
   reachability (``DEVICE_UNAVAILABLE``), unresolved ``unknown`` operations on the same resources (``STALE`` naming the
-  operation, BHMS-OPS-042), ``requiresFresh`` (BHMS-OBS-030), capacity (``BUSY``). Only then is the operation written.
+  operation, BHMS-OPS-042), ``requiresFresh`` (BHMS-OBS-030), capacity (``BUSY``), the caller's cumulative budgets
+  (:mod:`bhms.runtime.budgets`, BHMS-AUTH-032). Only then is the operation written, with its budget reservation.
 * **Queueing**: operations whose resources are in use wait in ``accepted`` in FIFO order per resource (they can be
   cancelled without effect, BHMS-OPS-050). The ``accepted`` record is a (group-committed) barrier: it is durable before
   it is answered or observed (§6.5 step 10, Ruling R57), so a power loss can only reject it, never lose it. A deadline that passes while queued rejects them (BHMS-OPS-070).
@@ -115,6 +116,7 @@ class Executor:
         self._unsettled: dict[str, OperationRecord] = {}  # dispatched ops whose settlement could not be journaled
         self._retry: asyncio.TimerHandle | None = None
         self._pending: dict[str, OperationRecord] = {}  # popped from _waiting, pre-dispatch checks in flight
+        self._dispatching: dict[str, asyncio.Task[Any]] = {}  # the task running those checks, per operation
         self._busy: dict[str, str] = {}
         self._running: dict[str, Execution] = {}
         self._inhibited: dict[str, set[str]] = {}
@@ -295,6 +297,9 @@ class Executor:
             await self.server.observations.require_fresh(device, spec.requires_fresh, principal, params.lease_id)
         lease = self.check_lease(principal, spec, params.lease_id)  # re-check after the awaits above
         self._check_inhibition(spec.resources)
+        # Budgets (BHMS-AUTH-031/032): checked here, with no await before the record is written, and reserved in the
+        # operation's own transaction, so two admissions can never both spend what remains.
+        reservation = self.server.budgets.charges(principal, key, device.device_id, spec.name, admitted, spec.input)
         if deadline_ns is None and params.deadline_ms is not None:
             deadline_ns = now_ns() + params.deadline_ms * 1_000_000
         immediate = self._free(spec.resources)
@@ -305,7 +310,7 @@ class Executor:
                 request_digest=request_digest, require=require, lease_id=lease.lease_id if lease else None,
                 fence=lease.fence if lease else None, deadline_ns=deadline_ns,
                 private={"resources": list(spec.resources), "effectClass": spec.effect, **(private or {})},
-                dispatch=immediate, barrier=True, defer_sync=True)
+                dispatch=immediate, barrier=True, defer_sync=True, reservation=reservation)
         except StoreError as exc:
             self.server.journal_failed(exc)
             raise BhmsError("BUSY", "the operation journal cannot be written; nothing was recorded or sent",
@@ -332,7 +337,21 @@ class Executor:
                     self._reject(rec, BhmsError("INTERNAL", f"the operation could not be made durable ({exc}); nothing "
                                                 "was sent to the device", hint="retry later with a new operationKey"))
                     self.pump()
+                else:
+                    # Dispatched (or in its pre-dispatch checks) while its accepted sync ran: as for an immediate dispatch,
+                    # answer with the outcome its execution records (failed, nothing sent: the store now refuses every
+                    # barrier), never with a dispatching that is not durable (Task 12b review, carried to 15a).
+                    await self._settled_dispatch(rec)
         return rec
+
+    async def _settled_dispatch(self, rec: OperationRecord) -> None:
+        """Wait until a queued operation's pre-dispatch checks and, when it was dispatched, its execution have ended."""
+        checking = self._dispatching.get(rec.id)
+        if checking is not None:
+            await asyncio.wait({checking})
+        execution = self._running.get(rec.id)
+        if execution is not None and execution.task is not None:
+            await asyncio.wait({execution.task})
 
     # ------------------------------------------------------------------ queueing and dispatch
 
@@ -391,7 +410,9 @@ class Executor:
             for resource in resources:
                 self._busy[resource] = rec.id  # reserved while the pre-dispatch checks run
             self._pending[rec.id] = rec  # still visible to stop and cancel until the dispatch commit
-            self._spawn(self._dispatch_queued(rec, queued))
+            task = self._spawn(self._dispatch_queued(rec, queued))
+            self._dispatching[rec.id] = task
+            task.add_done_callback(lambda _, op_id=rec.id: self._dispatching.pop(op_id, None))
 
     async def _dispatch_queued(self, rec: OperationRecord, queued: _Queued) -> None:
         """Pre-dispatch checks, then the dispatch commit, for an operation taken off the queue.
@@ -467,7 +488,9 @@ class Executor:
     def _start(self, rec: OperationRecord, device: Device, spec: ActionSpec, admitted: dict[str, Any], *,
                reserved: bool = False) -> None:
         loop = asyncio.get_running_loop()
-        bound_ms, bound_kind = spec.max_duration_ms, "maxDurationMs"
+        allowance = device.bound_allowance_ms
+        bound_ms = spec.max_duration_ms + allowance
+        bound_kind = "maxDurationMs" if not allowance else f"maxDurationMs plus a {allowance} ms link allowance"
         deadline_ns = rec.private.get("deadlineNs")
         if deadline_ns is not None and (deadline_ns - now_ns()) / 1e6 < bound_ms:
             bound_ms, bound_kind = max(0, int((deadline_ns - now_ns()) / 1e6)), "deadline"
@@ -609,6 +632,8 @@ class Executor:
                                    effect=self._partial_effect(kind, value),
                                    cancel="confirmed" if kind == "canceled" else None,
                                    detail=self._late_detail(kind, value))
+                if kind == "returned":  # the device finished after the bound: evidence, not the outcome (BHMS-OPS-072)
+                    self._late_report(execution, kind, value)
             elif kind == "returned":
                 self._complete(execution, value)
             elif kind == "canceled":
@@ -626,9 +651,31 @@ class Executor:
                                effect=self._partial_effect(kind, value), kind="reconciliation",
                                detail=f"handler finished after the {execution.bound_kind} bound: "
                                       f"{self._late_detail(kind, value)}")
+            if kind == "returned":
+                self._late_report(execution, kind, value)
         elif rec.terminal:
-            journal.annotate(rec, "correction", f"handler finished after the operation ended: "
+            journal.annotate(rec, "correction", f"late {self._late_outcome(kind)} report after the operation ended "
+                                                f"{rec.state} (evidence {self._late_evidence(execution, kind)}): "
                                                 f"{self._late_detail(kind, value)}")
+            if kind != "crashed":
+                self._late_report(execution, kind, value)
+
+    @staticmethod
+    def _late_outcome(kind: str) -> str:
+        return {"returned": "completed", "canceled": "canceled", "fault": "failed"}.get(kind, "failed")
+
+    @staticmethod
+    def _late_evidence(execution: Execution, kind: str) -> str:
+        if kind == "returned" and execution.confirmed and all(execution.confirmed):
+            return "measured"
+        return "none" if kind == "returned" and execution.spec.completion_evidence == "none" else "reported"
+
+    def _late_report(self, execution: Execution, kind: str, value: Any) -> None:
+        """A terminal report that arrived after the server ended the operation (a duration bound, a deadline, a lease loss)
+        does not change it (BHMS-OPS-002, BHMS-OPS-071); it is evidence, surfaced as an ``operation.late_report`` event so
+        that an operator or agent can reconcile (BHMS-OPS-072)."""
+        record_late_report(self.server, execution.rec, execution.device.device_id, self._late_outcome(kind),
+                           self._late_evidence(execution, kind), f"{execution.spec.name}: {self._late_detail(kind, value)}")
 
     def _partial_effect(self, kind: str, value: Any) -> str:
         if kind in ("canceled", "fault"):
@@ -723,9 +770,13 @@ class Executor:
         journal = self.server.journal
         if fault.partial:
             journal.annotate(execution.rec, "evidence", f"partial effect: {fault.partial}")
+        # A hint never contradicts the proof (Task 14 learning 7, BHMS-ERR-007): with proof that nothing happened there are
+        # no partial effects to warn about.
+        default = (f"nothing happened on {execution.device.device_id} ({fault.proof}); fix the cause before retrying"
+                   if fault.proof is not None else
+                   f"read {execution.device.device_id}'s state before retrying; partial effects are possible")
         error = BhmsError(fault.code, fault.message[:2000], may_have_acted=fault.proof is None,
-                          hint=fault.hint or f"read {execution.device.device_id}'s state before retrying; partial "
-                                             "effects are possible").to_operation_error()
+                          hint=(fault.hint or default)[:2000]).to_operation_error()
         effect = fault.effect if fault.proof is None else "none"
         evidence = {"kind": "measured", "observations": fault.observations} if effect == "verified" else None
         journal.transition(execution.rec, "failed", error=error, effect=effect, evidence=evidence, proof=fault.proof)
@@ -937,6 +988,22 @@ class Executor:
                                detail=detail)
 
 
+def record_late_report(server: DeviceServer, rec: OperationRecord, device_id: str, outcome: str, evidence: str,
+                       detail: str, *, correction: bool = False) -> None:
+    """Record a terminal report that arrived after ``rec`` had ended (BHMS-OPS-072): never a change of its state, result or
+    effect (BHMS-OPS-002), but evidence an operator or agent can act on: with ``correction`` a ``correction`` history entry
+    naming the late outcome and its evidence kind, and, always, an ``operation.late_report`` event
+    (``data: {outcome, evidence, state}``). The executor and the BHMS-Compact bridge both use it."""
+    if correction:
+        with contextlib.suppress(StoreError):
+            server.journal.annotate(rec, "correction", f"late {outcome} report after the operation ended {rec.state} "
+                                                       f"(evidence {evidence}): {detail}"[:1000])
+    with contextlib.suppress(StoreError):
+        server.events.append("operation.late_report", severity="warning", device_id=device_id, operation_id=rec.id,
+                             data={"outcome": outcome, "evidence": evidence, "state": rec.state},
+                             message=f"{device_id} reported {outcome} after {rec.id} ended {rec.state}: {detail}"[:1000])
+
+
 async def _call_hook(hook: Any, *args: Any) -> Any:
     outcome = hook(*args)
     if inspect.isawaitable(outcome):
@@ -944,4 +1011,4 @@ async def _call_hook(hook: Any, *args: Any) -> Any:
     return outcome
 
 
-__all__ = ["Execution", "Executor"]
+__all__ = ["Execution", "Executor", "record_late_report"]

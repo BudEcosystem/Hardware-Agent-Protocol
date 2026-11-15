@@ -59,6 +59,7 @@ from bhms.jsonrpc.session import RequestContext
 from bhms.protocol import schema
 from bhms.protocol.errors import BhmsError
 from bhms.runtime.authority import Authenticator, Policy, Principal
+from bhms.runtime.budgets import BudgetLedger, principal_wire
 from bhms.runtime.events import EventLog
 from bhms.runtime.heap import freeze_startup_heap
 from bhms.runtime.leases import Lease
@@ -136,6 +137,9 @@ class Gateway:
             self.subscriptions = GatewaySubscriptions(self)  # type: ignore[arg-type]
             self.journal.recover_forwarded()  # BHMS-OPS-080: before any request is answered
             self.journal.convert_all_pending()  # forwards whose answer was never recorded are unknown operations
+            self.budgets = BudgetLedger(self.store, self.journal)  # per-principal budgets across upstreams (7.4.1)
+            self.budgets.repair(self.journal.lookup_key, ((p, k) for p, _, k in (
+                key[len("pending:"):].partition("\n") for key in self.journal.pending_all())))
             self.store.prune_operations(["completed", "failed", "canceled", "rejected"],
                                         _ns_ago(cfg.key_retention_s))
             self.events.prune()
@@ -169,9 +173,12 @@ class Gateway:
         if authority is not None:
             caps["authority"] = authority
 
-        def principal(peer: Any) -> dict[str, Any] | None:
-            found = self.policy.policy.resolve(peer)
-            return found.wire() if found is not None else None
+        def principal(ctx: RequestContext) -> dict[str, Any] | None:
+            try:
+                found = self.auth.principal_of(ctx)
+            except BhmsError:  # a misplaced credential carrier: server/discover still answers, without a principal
+                return None
+            return principal_wire(found, self.budgets) if found is not None else None
 
         rpc = RpcServer(server_info={"name": cfg.id, "version": "0.1.0", "title": "BHMS gateway"}, capabilities=caps,
                         epoch=self.store.epoch, instructions=cfg.instructions, principal=principal,
@@ -235,14 +242,29 @@ class Gateway:
             listener = await serve_unix(path[2:] if path.startswith("//") else path, self.rpc.handle_connection)
         elif url.startswith(("ws://", "wss://", "http://", "https://")):
             scheme, host, port, path = _parse(url, default_path=self.config.http_path)
+            if ssl is None and scheme in ("wss", "https"):
+                ssl = self.config.tls_context()
             if scheme in ("wss", "https") and ssl is None:
-                raise ValueError(f"refusing to serve {url} without a TLS context: {scheme}:// promises encryption; "
-                                 "pass ssl=<SSLContext> to Gateway.listen (the TOML file has no TLS options), or listen "
-                                 "on ws:// or http:// on a loopback address behind a TLS-terminating proxy")
+                raise ValueError(f"refusing to serve {url} without a TLS context: {scheme}:// promises encryption "
+                                 "(BHMS-SEC-007); set tls_cert and tls_key in [gateway], pass ssl=<SSLContext> to "
+                                 "Gateway.listen, or listen on ws:// or http:// on a loopback address behind a "
+                                 "TLS-terminating proxy")
+            if scheme in ("ws", "http") and ssl is not None:
+                raise ValueError(f"refusing to serve {url} with TLS: use {scheme}s:// so the scheme says what the "
+                                 "listener does (BHMS-SEC-007)")
             if not is_loopback(host) and ssl is None:
                 raise ValueError(f"refusing to serve {url} without TLS: a non-loopback listener must use TLS "
-                                 "(BHMS-SEC-004); pass ssl=<SSLContext> or bind 127.0.0.1")
-            authenticate = lambda token: self.policy.policy.by_token(token) is not None  # noqa: E731
+                                 "(BHMS-SEC-004); use wss:// or https:// with tls_cert/tls_key, or bind 127.0.0.1 "
+                                 "behind a TLS-terminating proxy")
+            loopback = is_loopback(host)
+
+            def authenticate(token: str | None) -> bool:
+                # A loopback WebSocket upgrade without Authorization is accepted: each request on it then carries
+                # _meta["bhms/authorization"] or is refused (BHMS-SEC-005). HTTP requests carry the header itself.
+                if token is None:
+                    return loopback and scheme.startswith("ws")
+                return self.policy.policy.by_token(token) is not None
+
             if scheme.startswith("ws"):
                 listener = await serve_websocket(host, port, self.rpc.handle_connection, authenticate=authenticate,
                                                  ssl=ssl)

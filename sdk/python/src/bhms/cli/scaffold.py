@@ -63,7 +63,7 @@ def register(app: typer.Typer) -> None:
             files = scaffold(name, target)
             for f in files:
                 console.print(f"created {_shown(f)}", soft_wrap=True, markup=False)
-            console.print(f"\nnext:\n  cd {name} && python -m pytest\n  bhms dev {name}/server.py", soft_wrap=True,
+            console.print(f"\nnext:\n  cd {name} && python -m pytest\n  bhms dev server.py", soft_wrap=True,
                           markup=False)
 
         async def wrapper() -> None:

@@ -11,7 +11,7 @@ from bhms.protocol.types._base import (
     ObjectSchema, OperationError, PosInt, ProtocolVersion, Reference, ResourceId, Scope, ServerId, Tag, VariableName,
     _bounded_int, _Params, _pattern, _Plain, _Result, _text, _Wire,
 )
-from bhms.protocol.types.devices import CapabilityFilter, DevicesDescribeResult, DeviceSummary
+from bhms.protocol.types.devices import Budget, CapabilityFilter, DevicesDescribeResult, DeviceSummary
 from bhms.protocol.types.operations import Operation
 
 
@@ -192,6 +192,14 @@ class PolicyPrincipal(_Wire):
     uids: Optional[list[NonNegInt]] = None
     scopes: list[Scope]
     bounds: Optional[dict[PolicyActionKey, dict[Name, ArgumentBound]]] = None
+    budgets: Optional[Annotated[list[Budget], Field(max_length=64)]] = None
+
+    @model_validator(mode="after")
+    def _distinct_budgets(self) -> PolicyPrincipal:
+        ids = [b.id for b in self.budgets or ()]
+        if len(ids) != len(set(ids)):
+            raise ValueError("budget ids must be unique per principal (7.4.1)")
+        return self
 
 
 class GatewayPolicy(_Wire):
