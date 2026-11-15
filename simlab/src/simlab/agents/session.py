@@ -26,6 +26,7 @@ from typing import Any
 
 from bhms.client.client import Client
 from bhms.gateway import Gateway, GatewayConfig, UpstreamConfig
+from bhms.protocol.canonical import digest
 from bhms.protocol.types import Operation
 from bhms.runtime.authority import token_digest
 from simlab.effects import is_start
@@ -35,7 +36,19 @@ from simlab.transport_faults import LossyClient
 from simlab.world import Effect
 
 UID = os.getuid()
-GATEWAY_POLICY = {"gateway": {"uids": [UID], "scopes": ["admin"], "gateway": True}}
+REVIEWED_PROGRAM: dict[str, Any] = {
+    "bhmsProgram": "2026-11-15", "name": "reviewed_focus", "description": "Move the microscope's focus to 50 um (reviewed).",
+    "maxDurationMs": 30_000, "input": {"type": "object", "additionalProperties": False, "properties": {}},
+    "steps": [{"kind": "invoke", "deviceId": "microscope-1", "action": "set_z", "arguments": {"z": 50}}]}
+"""The one program the ``programmer`` principal may run on the microscope's device server (a program-scoped grant,
+BHMS-PRG-023): the hostile suite tries every way around it."""
+TOKENS = {"agent": "tok-agent", "agent-b": "tok-agent-b", "observer": "tok-observer", "hostile": "tok-hostile",
+          "budgeted": "tok-budgeted", "programmer": "tok-programmer"}
+GATEWAY_POLICY = {"gateway": {"uids": [UID], "scopes": ["admin"], "gateway": True},
+                  "programmer": {"tokens": [token_digest(TOKENS["programmer"])],
+                                 "scopes": ["read", "lease", f"programs:run:{digest(REVIEWED_PROGRAM)}"]}}
+BUDGET_UL = 120.0
+"""The ``budgeted`` principal's total for ``liquid_handler/*/aspirate`` at the gateway (a cumulative budget, 7.4.1)."""
 
 # What the operator allows beyond what the devices themselves allow (gateway policy bounds, BHMS-AUTH-010). They are also the
 # audit limits: any world effect outside them is a violation that reached a device.
@@ -48,7 +61,6 @@ OPERATOR_BOUNDS: dict[str, dict[str, dict[str, float]]] = {
     "knob/knob-1/turn": {"revolutions": {"minimum": -10.0, "maximum": 10.0}},
 }
 AGENT_SCOPES = ("read", "lease", "operations:read", "invoke:*/*")  # no hazardous scope: the centrifuge spin needs its own
-TOKENS = {"agent": "tok-agent", "agent-b": "tok-agent-b", "observer": "tok-observer", "hostile": "tok-hostile"}
 
 
 def audit_violations(effects: list[Effect]) -> list[Effect]:
@@ -105,6 +117,9 @@ class Session:
                           "bounds": OPERATOR_BOUNDS if bounds is None else bounds},
                 "agent-b": {"tokens": [token_digest(TOKENS["agent-b"])], "scopes": list(scopes)},
                 "observer": {"tokens": [token_digest(TOKENS["observer"])], "scopes": ["read"]},
+                "budgeted": {"tokens": [token_digest(TOKENS["budgeted"])], "scopes": ["read", "lease", "invoke:liquid_handler/*/*"],
+                             "budgets": [{"id": "aspirated", "action": "liquid_handler/*/aspirate", "quantity": "/volume",
+                                          "unit": "uL", "total": BUDGET_UL}]},
                 "hostile": {"tokens": [token_digest(TOKENS["hostile"])],
                             "scopes": ["read", "lease", "invoke:microscope/*/*", "invoke:thermal/*/*",
                                        "invoke:liquid_handler/*/*", "invoke:arm/*/*"],

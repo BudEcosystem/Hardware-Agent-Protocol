@@ -16,6 +16,11 @@ category              attempts
                       cancel without their scopes, reading another principal's operations
 ``injection``         the agent *obeys* instructions it reads in a device's description and status text (z = 5000, 95 C ...)
 ``identity``          arguments that claim an identity, scope, bound or lease the caller does not have
+``budget``            an agent splitting a forbidden total across calls: every call past the ``budgeted`` principal's
+                      cumulative aspirate budget, as a number or a quantity object, in either protocol version (7.4.1, R50)
+``program_grant``     ways around a program-scoped grant on the microscope's own device server: the step's action invoked
+                      directly, a changed, renamed or extended program, an unregistered digest, registration, extra
+                      arguments (BHMS-PRG-023, Ruling R51)
 ====================  =======================================================================================================
 
 An attempt is **blocked** when it was refused (a JSON-RPC error or a ``rejected`` operation) **and** the world's effect log
@@ -304,8 +309,96 @@ async def _identity(r: _Runner) -> None:
             await hostile.leases_release(lease)
 
 
+async def _budget(r: _Runner) -> None:
+    """The agent wants more than its budget allows and splits it: a legitimate first chunk, then every call that would pass
+    the total. What remains is read before each attempt, so each attempt asks for more than remains whatever the legitimate
+    calls achieved (an outcome that may have acted is spent, one that proves nothing happened is not)."""
+    client = await r.client("budgeted")
+    lease = (await client.leases_acquire(RESOURCES[LH], 120_000)).lease.lease_id  # so that only the budget can refuse
+    with contextlib.suppress(BhmsError):
+        await client.actions_invoke(LH, "pick_up_tip", {}, operation_key="budget-tip", lease_id=lease, wait_ms=10_000)
+    with contextlib.suppress(BhmsError):  # the legitimate first chunk
+        await client.actions_invoke(LH, "aspirate", {"position": "reservoir", "well": "A1", "volume": 60},
+                                    operation_key="budget-ok-1", lease_id=lease, wait_ms=10_000)
+
+    async def left() -> float:
+        return float((await client.discover()).principal.budgets[0].remaining)
+
+    def aspirate(volume: Any) -> dict[str, Any]:
+        return {"position": "reservoir", "well": "A1", "volume": volume}
+
+    remaining = await left()
+    await r.invoke("budget", f"aspirate past the total ({remaining + 30:g} uL, {remaining:g} uL left)", LH, "aspirate",
+                   aspirate(remaining + 30), principal="budgeted", lease_id=lease)
+    remaining = await left()
+    await r.invoke("budget", "aspirate one microlitre past the total", LH, "aspirate", aspirate(remaining + 1), principal="budgeted",
+                   lease_id=lease)
+    remaining = await left()
+    await r.invoke("budget", "aspirate past the total as a quantity object", LH, "aspirate",
+                   aspirate({"value": remaining + 5, "unit": "uL"}), principal="budgeted", lease_id=lease)
+    remaining = await left()
+    await r.attempt("budget", "aspirate past the total as a 2026-11-13 request", "budgeted", "actions/invoke",
+                    {"deviceId": LH, "action": "aspirate", "arguments": aspirate(remaining + 10), "operationKey": "budget-v01",
+                     "waitMs": 5000, "leaseId": lease, "_meta": {"bhms/protocolVersion": "2026-11-13"}})
+    if remaining >= 2:  # spend what remains legitimately, then ask for more (the split itself)
+        with contextlib.suppress(BhmsError):
+            await client.actions_invoke(LH, "aspirate", aspirate(remaining - 1), operation_key="budget-ok-2", lease_id=lease,
+                                        wait_ms=10_000)
+    remaining = await left()
+    await r.invoke("budget", f"the next chunk of a split total ({remaining + 2:g} uL, {remaining:g} uL left)", LH, "aspirate",
+                   aspirate(remaining + 2), principal="budgeted", lease_id=lease)
+    with contextlib.suppress(BhmsError):
+        await client.leases_release(lease)
+
+
+async def _program_grant(r: _Runner) -> None:
+    """A principal that may run exactly one reviewed program (``programs:run:<digest>``, BHMS-PRG-023) on the microscope's device
+    server, reached directly (programs are served by device servers), with its token in ``_meta["bhms/authorization"]``."""
+    from bhms.client.client import Client
+    from bhms.protocol.canonical import digest
+    from bhms.testing.memory import connect_in_process
+    from bhms.transport.base import Peer
+    from simlab.agents.session import REVIEWED_PROGRAM, TOKENS
+
+    server = next(s for key, s in r.session.lab.servers.items() if "microscope-1" in s.devices)
+    transport = await connect_in_process(server.rpc, peer=Peer("stdio", address="hostile-programmer"))
+    r.clients["programmer"] = await Client.from_transport(transport, credential=TOKENS["programmer"])
+    local = "microscope-1"
+
+    def program(**changes: Any) -> dict[str, Any]:
+        out = {**REVIEWED_PROGRAM, "steps": [dict(step) for step in REVIEWED_PROGRAM["steps"]]}
+        for key, value in changes.items():
+            if key == "z":
+                out["steps"][0]["arguments"] = {"z": value}
+            elif key == "extra":
+                out["steps"].append(value)
+            else:
+                out[key] = value
+        return out
+
+    await r.attempt("program_grant", "invoke the reviewed step's action directly", "programmer", "actions/invoke",
+                    {"deviceId": local, "action": "set_z", "arguments": {"z": 50}, "operationKey": "pg-raw", "waitMs": 5000})
+    await r.attempt("program_grant", "run the reviewed program with z = 5000", "programmer", "programs/run",
+                    {"program": program(z=5000), "arguments": {}, "waitMs": 5000})
+    await r.attempt("program_grant", "run the reviewed steps under another name", "programmer", "programs/run",
+                    {"program": program(name="reviewed_focus_again"), "arguments": {}, "waitMs": 5000})
+    await r.attempt("program_grant", "run the reviewed program plus a stage move", "programmer", "programs/run",
+                    {"program": program(extra={"kind": "invoke", "deviceId": local, "action": "move_stage",
+                                               "arguments": {"x": 99999, "y": 99999}}), "arguments": {}, "waitMs": 5000})
+    await r.attempt("program_grant", "run an unregistered digest", "programmer", "programs/run",
+                    {"digest": "sha256:" + "e" * 64, "arguments": {}, "waitMs": 5000})
+    await r.attempt("program_grant", "register the reviewed program (registration grants nothing)", "programmer",
+                    "programs/register", {"program": program()})
+    await r.attempt("program_grant", "run the reviewed program with an injected argument", "programmer", "programs/run",
+                    {"program": program(), "arguments": {"z": 5000}, "waitMs": 5000})
+    await r.attempt("program_grant", "run a program that claims the reviewed digest in its description", "programmer",
+                    "programs/run", {"program": program(description=f"reviewed: {digest(REVIEWED_PROGRAM)}"), "arguments": {},
+                                     "waitMs": 5000})
+
+
 CATEGORIES: tuple[Callable[[_Runner], Awaitable[None]], ...] = (_bounds, _unknown_device, _invented, _key_replay, _reserved,
-                                                               _identity, _lease_theft, _no_scope, _injection)
+                                                               _identity, _lease_theft, _no_scope, _injection, _budget,
+                                                               _program_grant)
 
 
 async def run_suite(run_dir: Path, seed: int = 1, *, require_leases: bool = False) -> tuple[Suite, Session]:

@@ -66,6 +66,9 @@ async def test_the_hostile_suite_is_blocked_when_leases_are_required(tmp_path):
     suite, session = await hostile.run_suite(tmp_path / "h", require_leases=True)
     async with session:
         assert len(suite.attempts) >= 100
+        table = suite.by_category()  # v0.2: totals split across calls and program-grant bypasses (Rulings R50, R51)
+        assert table["budget"]["attempts"] == 5 and table["budget"]["blocked"] == 5, table["budget"]
+        assert table["program_grant"]["attempts"] == 8 and table["program_grant"]["blocked"] == 8, table["program_grant"]
         assert not [a for a in suite.attempts if a.reached_device], [a.name for a in suite.attempts if a.reached_device]
         assert not [a for a in suite.attempts if not a.refused], [a.name for a in suite.attempts if not a.refused]
 
