@@ -35,6 +35,18 @@ export class StoreError extends Error {
   }
 }
 
+/**
+ * The record was written but could not be made durable (its `fsync` failed): it is in the journal, and after a power loss
+ * it may or may not be. For a `dispatching` record nothing may be dispatched; the operation ends `failed` with
+ * `mayHaveActed: false` (BHMS-OPS-003), as in the Python SDK.
+ */
+export class StoreSyncError extends StoreError {
+  constructor(message: string) {
+    super(message);
+    this.name = "StoreSyncError";
+  }
+}
+
 /** Everything about an operation that must survive a restart. */
 export interface StoredOperation {
   id: string;
@@ -349,10 +361,16 @@ export class JournalStore implements Store {
     if (!this.writable) throw new StoreError("the journal is read-only");
     try {
       writeSync(this.fd, JSON.stringify(record) + "\n");
-      if (sync) this.syncFile();
     } catch (e) {
       this.broken = true;
       throw new StoreError(`journal write failed: ${(e as Error).message}`);
+    }
+    if (!sync) return;
+    try {
+      this.syncFile();
+    } catch (e) {
+      this.broken = true;
+      throw new StoreSyncError(`journal fsync failed: ${(e as Error).message}`);
     }
   }
 
@@ -362,7 +380,12 @@ export class JournalStore implements Store {
   }
 
   writeOp(rec: StoredOperation, sync: boolean): void {
-    this.append({ k: "op", rec }, sync);
+    try {
+      this.append({ k: "op", rec }, sync);
+    } catch (e) {
+      if (e instanceof StoreSyncError) this.ops.set(rec.id, structuredClone(rec)); // written: a restart may find it
+      throw e;
+    }
     this.ops.set(rec.id, structuredClone(rec)); // only a committed write is part of the live state
   }
 

@@ -41,10 +41,10 @@ const NAME = /^[a-z][a-z0-9_]{0,63}$/;
 const CORE_EVENT_TYPES = new Set(["device.online", "device.offline", "device.degraded", "device.replaced", "device.epoch", "device.fault", "operation.state", "operation.resolved", "stop", "lease.revoked", "lease.expired", "policy.changed"]);
 const SUMMARY_HARD_LIMIT = 4096;
 
-/** An invalid declaration (raised at start, before anything is served). */
 /** `safety.stopMaxDurationMs` is at most one day (§4.7), the bound of a program's `maxDurationMs`. */
 export const MAX_STOP_DURATION_MS = 86_400_000;
 
+/** An invalid declaration (raised at start, before anything is served). */
 export class DescriptionError extends Error {
   constructor(message: string) {
     super(message);

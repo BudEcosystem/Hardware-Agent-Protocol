@@ -8,7 +8,7 @@ import { test } from "node:test";
 import { BhmsError } from "../src/errors.js";
 import { Client } from "../src/client.js";
 import { DeviceServer } from "../src/server/server.js";
-import { JournalStore, MemoryStore, StoreError, type StoredOperation } from "../src/server/store.js";
+import { JournalStore, MemoryStore, StoreError, StoreSyncError, type StoredOperation } from "../src/server/store.js";
 import { memoryPair } from "../src/transport/memory.js";
 import { counters, inject, key, rig } from "./harness.js";
 import { sleep, tsDevicePath } from "./helpers.js";
@@ -73,8 +73,13 @@ test("a torn journal tail (crash mid-write) is ignored", async () => {
 class SpyStore extends MemoryStore {
   readonly order: string[] = [];
   failDispatch = false;
+  failDispatchSync = false;
   override writeOp(rec: StoredOperation, sync: boolean): void {
     if (this.failDispatch && rec.op.state === "dispatching") throw new StoreError("disk full");
+    if (this.failDispatchSync && rec.op.state === "dispatching") {
+      super.writeOp(rec, sync); // written, then the fsync failed
+      throw new StoreSyncError("journal fsync failed: EIO");
+    }
     this.order.push(`write:${rec.op.state}`);
     super.writeOp(rec, sync);
   }
@@ -143,6 +148,27 @@ test("when the dispatch record cannot be written nothing is dispatched: rejected
   try {
     const op = (await client.actionsInvoke("d-1", "go", {}, { waitMs: 1000 })).operation;
     assert.equal(op.state, "rejected");
+    assert.equal(op.effect, "none");
+    assert.equal(op.error?.bhmsCode, "INTERNAL");
+    assert.equal(op.error?.mayHaveActed, false);
+    assert.equal(ran, false);
+  } finally { await client.close(); await srv.close(200); }
+});
+
+test("BHMS-OPS-003: a dispatching record written but not made durable sends nothing and ends failed, mayHaveActed false (Task 12b)", async () => {
+  const store = new SpyStore();
+  store.failDispatchSync = true;
+  const srv = new DeviceServer("spy3", { store, log: () => undefined });
+  const dev = srv.device("d-1", { resources: ["d-1/r"] });
+  let ran = false;
+  dev.action("go", { effect: "reversible", idempotency: "idempotent", maxDurationMs: 1000 }, async () => { ran = true; return {}; });
+  await srv.start();
+  const [c, s] = memoryPair();
+  srv.serve(s);
+  const client = await Client.fromTransport(c, { strict: true });
+  try {
+    const op = (await client.actionsInvoke("d-1", "go", {}, { waitMs: 1000 })).operation;
+    assert.equal(op.state, "failed");
     assert.equal(op.effect, "none");
     assert.equal(op.error?.bhmsCode, "INTERNAL");
     assert.equal(op.error?.mayHaveActed, false);

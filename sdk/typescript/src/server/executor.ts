@@ -38,7 +38,7 @@ import type { Device, ActionSpec } from "./device.js";
 import { admitArguments, emptyEnvelopeMember } from "./validation.js";
 import { emptyEnvelope, type Principal } from "./authority.js";
 import type { DeviceServer } from "./server.js";
-import { StoreError, type StoredOperation } from "./store.js";
+import { StoreError, StoreSyncError, type StoredOperation } from "./store.js";
 import { InvalidTransition, OperationRecord, unknownError, type Effect, type TransitionOptions } from "./operations.js";
 import type { Lease } from "./leases.js";
 import { iso, mono, newId, sleep } from "./time.js";
@@ -309,6 +309,16 @@ export class Executor {
     try {
       srv.journal.transition(rec, "dispatching", { strict: true }); // durable before the command can reach the device
     } catch (e) {
+      if (e instanceof StoreSyncError) { // written but not durable (BHMS-OPS-003): nothing is sent; it reads dispatching
+        srv.journalFailed(e);
+        this.server.journal.transition(rec, "failed", {
+          error: new BhmsError("INTERNAL", `the dispatch record could not be made durable (${e.message}), so the handler was not called; nothing was sent to the device`, { mayHaveActed: false, hint: "nothing happened on the device; retry with a new operationKey" }).toOperationError(),
+          effect: "none", proof: "the handler was never called",
+        });
+        this.release(rec);
+        this.pump();
+        return;
+      }
       if (e instanceof StoreError) {
         srv.journalFailed(e);
         this.reject(rec, new BhmsError("INTERNAL", "the dispatch record could not be written, so nothing was sent", { hint: "retry with the same operationKey when the journal is writable" }));

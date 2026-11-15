@@ -24,7 +24,7 @@
 import { BhmsError, type ErrorData } from "../errors.js";
 import { canonicalString } from "../canonical.js";
 import type { HistoryEntry, Operation } from "../generated/types.js";
-import { StoreError, TERMINAL, type Store, type StoredOperation } from "./store.js";
+import { StoreError, StoreSyncError, TERMINAL, type Store, type StoredOperation } from "./store.js";
 import { iso } from "./time.js";
 
 export type OperationState = Operation["state"];
@@ -164,7 +164,12 @@ export class Journal {
   private commit(rec: OperationRecord, next: StoredOperation, strict: boolean): void {
     const sync = next.op.state === "dispatching" && rec.state !== "dispatching"; // the intent, before dispatch (BHMS-OPS-003)
     if (strict) {
-      this.store.writeOp(next, sync);
+      try {
+        this.store.writeOp(next, sync);
+      } catch (e) {
+        if (e instanceof StoreSyncError) { rec.data = next; rec.dirty = false; } // written, not durable: it is the record now
+        throw e;
+      }
       rec.data = next;
       rec.dirty = false;
       return;
