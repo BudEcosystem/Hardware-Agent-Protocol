@@ -522,7 +522,8 @@ class DeviceServer:
     def operation_for(self, principal: Principal, op_id: str) -> OperationRecord:
         """An operation the principal may see, else ``INVALID_ARGUMENT`` (BHMS-OPS-062)."""
         rec = self.journal.get(op_id)
-        if rec is None or (rec.principal != principal.id and not principal.operations_all):
+        if rec is None or not self.journal.observable(rec) or (rec.principal != principal.id
+                                                                and not principal.operations_all):
             raise BhmsError("INVALID_ARGUMENT", f"no operation {op_id!r} is visible to you", field="operationId",
                             hint="use an operationId returned to you (operations/list shows yours)")
         return rec

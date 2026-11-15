@@ -87,7 +87,12 @@ class ForwardJournal(Journal):
         A deferred barrier: concurrent forwards share their ``fdatasync`` (group commit) and the event loop serves other
         requests while it runs. Returns once the row is on stable storage; raises
         :class:`~bhms.runtime.store.StoreError` when it cannot be written or made durable (the row is then removed if it
-        can be, and nothing may be sent). ``inline``: see :meth:`~bhms.runtime.store.Store.wait_synced`."""
+        can be, and nothing may be sent). ``inline``: see :meth:`~bhms.runtime.store.Store.wait_synced`.
+
+        A failed sync followed by a power loss: the row was committed but its sync failed, and its deletion may not
+        reach the disk either (the store refuses barriers from then on). A restarted gateway may then find the row and
+        turn it into an ``unknown`` operation although nothing was sent: the conservative direction (reconciled by
+        asking the upstream, which has no record of the key)."""
         with self.store.transaction(barrier=True, defer_sync=True):
             self.store.meta_set(self._pending_key(principal, key), orjson.dumps(request).decode())
         try:

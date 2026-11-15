@@ -349,3 +349,30 @@ def test_a_stop_bound_is_at_most_one_day():  # Task 12b: stopMaxDurationMs is ca
               "stopMaxDurationMs": 86_400_001}
     with pytest.raises(ValidationError):
         types.parse("SafetyDescription", safety)
+
+
+async def test_a_ceiling_below_close_timeout_also_reports_unbounded_procedures(tmp_path, caplog):  # fix round 1
+    caplog.set_level(logging.WARNING, logger="bhms.stop")
+    srv = DeviceServer("closing", state_dir=tmp_path, stop_shutdown_ceiling_s=0.3)
+    dev = srv.device("press", resources=["press"])
+    log: list[str] = []
+
+    @dev.on_stop(evidence="measured")  # no declared bound
+    async def halt(ctx):
+        await _hung(log)
+
+    listener = await srv.listen(f"unix:{tmp_path}/c.sock")
+    seen: list[dict] = []
+    srv.events.listen(lambda event, seq: seen.append(event))
+    client = await Client.connect(f"unix:{tmp_path}/c.sock")
+    try:
+        assert (await client.stop("stop now", device_ids=["press"], wait_ms=50)).stops[0].outcome == "initiated"
+    finally:
+        await client.close()
+        await listener.close()
+    start = time.monotonic()
+    await srv.close()  # close_timeout is 5 s; the ceiling, 0.3 s, wins
+    assert time.monotonic() - start < 2.0 and log == ["start", "cancelled"]
+    errors = [r.getMessage() for r in caplog.records if r.levelno == logging.ERROR]
+    assert len(errors) == 1 and "press" in errors[0] and "no declared bound" in errors[0], errors
+    assert [e["data"]["outcome"] for e in seen if e["type"] == "stop"] == ["initiated", "failed"]

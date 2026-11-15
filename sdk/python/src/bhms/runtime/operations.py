@@ -253,6 +253,10 @@ class Journal:
         self._cache_size = cache_size
         self._admissions: dict[tuple[str, str], tuple[asyncio.Lock, int]] = {}
         self._cursor_tag = hashlib.sha256(f"ops:{store.epoch}".encode()).hexdigest()[:8]
+        # Records written behind a deferred barrier whose sync has not completed (Ruling R47): no observer learns of them
+        # (their notifications wait here, in order) and operations/get and operations/list do not show them.
+        self._held: dict[str, tuple[OperationRecord, list[dict[str, Any]]]] = {}
+        store.on_synced.append(self._synced)
 
     unknown_error = staticmethod(unknown_error)
 
@@ -276,6 +280,24 @@ class Journal:
         if found is not None:
             return found
         return self._remember(OperationRecord(row.record, None, row.principal, row.private, row.created_ns, self))
+
+    def observable(self, rec: OperationRecord) -> bool:
+        """Whether ``rec`` may be shown to a client: not while its latest barrier write is not yet durable (BHMS-OPS-003,
+        Ruling R47; the invoker's own answer waits for the same sync)."""
+        return rec.id not in self._held
+
+    def _hold(self, rec: OperationRecord) -> None:
+        if rec.id not in self._held and self.store.synced_seq < rec.sync_ticket:
+            self._held[rec.id] = (rec, [])
+
+    def _synced(self, synced: int, failed: bool) -> None:
+        """Release the notifications of records that became durable (all of them when the sync failed: they are then
+        settled from what the server knows, ``failed`` with nothing sent), oldest commit first."""
+        for op_id, (rec, wires) in list(self._held.items()):
+            if failed or rec.sync_ticket <= synced:
+                del self._held[op_id]
+                for wire in wires:
+                    self._deliver(rec, wire)
 
     def get(self, op_id: str) -> OperationRecord | None:
         """The operation with ``op_id`` (live object when in memory) or None."""
@@ -369,13 +391,16 @@ class Journal:
             if private.get("effectClass", "none") != "none":
                 op["effect"] = entry["effect"] = "unknown"
             history.append(entry)
+        self._no_deferred_join(defer_sync)
         with self.store.transaction(barrier=dispatch if barrier is None else barrier, defer_sync=defer_sync):
             self.store.insert_operation(op_id=op["operationId"], principal=principal, key=key,
                                         request_digest=request_digest, kind=kind, device_id=device_id,
                                         parent_id=parent_id, state=op["state"], created_ns=created, record=op,
                                         private=private, history=history)
         rec = self._remember(OperationRecord(op, history, principal, private, created, self))
-        rec.sync_ticket = self.store.commit_seq
+        rec.sync_ticket = self._ticket()
+        if defer_sync and (dispatch if barrier is None else barrier):
+            self._hold(rec)
         self._notify(rec, accepted)
         if dispatch:
             self._notify(rec)
@@ -551,11 +576,14 @@ class Journal:
         stamp = now_ns()
         entry = {"seq": len(history) + 1, "at": iso(stamp), **entry}
         op["updatedAt"] = entry["at"]
+        self._no_deferred_join(defer_sync)
         with self.store.transaction(barrier=barrier, defer_sync=defer_sync):
             self.store.update_operation(rec.id, state=op["state"], updated_ns=stamp, record=op, history=[entry],
                                         private=private)
         if barrier:
-            rec.sync_ticket = self.store.commit_seq
+            rec.sync_ticket = self._ticket()
+            if defer_sync:
+                self._hold(rec)
         rec.op = op
         if private is not None:
             rec.private = private
@@ -569,7 +597,24 @@ class Journal:
             for hook in self.on_settled:
                 hook(rec)
 
+    def _no_deferred_join(self, defer_sync: bool) -> None:
+        if defer_sync and self.store.in_transaction:
+            raise RuntimeError("a deferred barrier cannot join an outer transaction: its ticket would not be its own "
+                               "commit (write it in its own transaction)")
+
+    def _ticket(self) -> int:
+        """The commit that holds the write just made: the next one when it joined an outer transaction."""
+        return self.store.commit_seq + (1 if self.store.in_transaction else 0)
+
     def _notify(self, rec: OperationRecord, wire: dict[str, Any] | None = None) -> None:
+        held = self._held.get(rec.id)
+        if held is not None:
+            if self.listeners:
+                held[1].append(wire if wire is not None else rec.wire())
+            return
+        self._deliver(rec, wire)
+
+    def _deliver(self, rec: OperationRecord, wire: dict[str, Any] | None = None) -> None:
         if self.listeners:
             wire = wire if wire is not None else rec.wire()
             for listener in list(self.listeners):
@@ -616,6 +661,7 @@ class Journal:
         position = self._parse_cursor(after) if after is not None else None
         rows = self.store.list_operations(principal=principal, device_id=device_id, state=state, parent_id=parent_id,
                                           after=position, limit=limit + 1)
+        rows = [row for row in rows if row.id not in self._held]
         more = len(rows) > limit
         rows = rows[:limit]
         page = []

@@ -63,6 +63,7 @@ class StopController:
         self.tasks: set[asyncio.Task[Any]] = set()
         # running procedure -> (loop time its declared bound ends, device id, declared bound in ms)
         self._ends: dict[asyncio.Task[Any], tuple[float, str, int]] = {}
+        self._devices: dict[asyncio.Task[Any], str] = {}  # running procedure -> its device
         self.close_timeout = 5.0  # the least ``close`` waits for running stop procedures (also for those without a bound)
         self.close_ceiling = close_ceiling  # the most ``close`` waits, whatever the declared bounds (a supervisor kills)
 
@@ -114,6 +115,8 @@ class StopController:
             return done
         if inspect.isawaitable(outcome):
             task = self._spawn(_await(outcome))
+            self._devices[task] = dev.device_id
+            task.add_done_callback(lambda t: self._devices.pop(t, None))
             bound_ms = dev.stop_spec.max_duration_ms
             if bound_ms is not None:
                 self._ends[task] = (asyncio.get_running_loop().time() + bound_ms / 1000, dev.device_id, bound_ms)
@@ -273,11 +276,17 @@ class StopController:
             await asyncio.wait(list(self.tasks), timeout=max(0.0, min(until, ceiling) - loop.time()))
             if until > ceiling:
                 for task in self.tasks:
-                    if not task.done() and task in self._ends:
-                        end, device_id, bound_ms = self._ends[task]
-                        log.error("closing: the stop procedure of %s is still running at the shutdown ceiling (%g s), "
-                                  "before its declared bound (stopMaxDurationMs %d ms): ending it and recording a failed "
-                                  "stop; the device may or may not be stopped", device_id, self.close_ceiling, bound_ms)
+                    if task.done():
+                        continue
+                    entry = self._ends.get(task)
+                    if entry is not None:
+                        _, device_id, bound_ms = entry
+                        bound = f"before its declared bound (stopMaxDurationMs {bound_ms} ms)"
+                    else:
+                        device_id, bound = self._devices.get(task, "?"), "with no declared bound"
+                    log.error("closing: the stop procedure of %s is still running at the shutdown ceiling (%g s), %s: "
+                              "ending it and recording a failed stop; the device may or may not be stopped", device_id,
+                              self.close_ceiling, bound)
         pending = [t for t in self.tasks if not t.done()]
         for task in pending:
             task.cancel()

@@ -27,7 +27,10 @@ with it before it acts. Deferred barriers share ``fdatasync`` calls: one runs in
 on serving; every commit made while it runs is covered by the next one, which starts as soon as the running one ends.
 A lone caller waits for exactly one ``fdatasync`` (no batching window), and with ``wait_synced(..., inline=True)`` a caller
 that finds nobody to share with syncs on the event loop thread, so a single client pays no thread hand-off; a hundred
-callers on distinct devices share a handful. The rule that matters is unchanged: nobody is told a barrier commit is durable before an ``fdatasync`` that
+callers on distinct devices share a handful. The price of the inline sync (and of every synchronous barrier: fence
+counters, a compact bridge's handle record): while it runs the event loop reads nothing, ``stop`` included, so on a durable
+server the latency of a ``stop`` is bounded by one ``fdatasync`` in flight (Ruling R48; up to 192 ms measured on the shared
+AMD host of Task 12b, about 1.3 ms typically). Only the thread path leaves the loop serving while the disk is slow. The rule that matters is unchanged: nobody is told a barrier commit is durable before an ``fdatasync`` that
 began after that commit has returned. An ``fdatasync`` that fails makes the store refuse every later barrier
 (:class:`StoreError`): after an I/O error the kernel may have dropped the dirty pages, and a later successful sync would
 prove nothing about them.
@@ -65,7 +68,7 @@ import os
 import secrets
 import sqlite3
 import threading
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -163,6 +166,8 @@ class Store:
         self._flight: asyncio.Future[None] | None = None  # the fdatasync of deferred barriers now running
         self._flight_target = 0  # the commits it covers
         self._lone: dict[int, int] = {}  # tickets of the inline callers now checking whether they are alone
+        # called as ``hook(synced_seq, failed)`` whenever more commits become durable, or the store's sync fails
+        self.on_synced: list[Callable[[int, bool], None]] = []
         self._checkpointer: _Checkpointer | None = None
         if self.path is not None:
             self._db.execute("PRAGMA wal_autocheckpoint=0")
@@ -228,8 +233,23 @@ class Store:
             self._wal_fd = fd
         return self._wal_fd
 
+    @property
+    def in_transaction(self) -> bool:
+        """A transaction is open (a nested ``transaction()`` joins it and commits with it)."""
+        return self._in_txn
+
+    def _synced_to(self, target: int) -> None:
+        if target > self._synced:
+            self._synced = target
+            for hook in list(self.on_synced):
+                hook(self._synced, False)
+
     def _failed_sync(self, exc: OSError) -> StoreError:
+        first = self._sync_failure is None
         self._sync_failure = self._sync_failure or exc
+        if first:
+            for hook in list(self.on_synced):
+                hook(self._synced, True)
         return StoreError(f"the journal could not be synced to stable storage ({exc}); barrier writes are refused "
                           "until the server restarts")
 
@@ -244,7 +264,7 @@ class Store:
             os.fdatasync(self._wal())
         except OSError as exc:
             raise self._failed_sync(exc) from exc
-        self._synced = max(self._synced, target)
+        self._synced_to(target)
 
     async def wait_synced(self, ticket: int, *, inline: bool = False) -> None:
         """Return once every commit up to ``ticket`` (a :attr:`commit_seq`) is on stable storage.
@@ -320,7 +340,7 @@ class Store:
         if exc is not None:
             self._failed_sync(exc)  # type: ignore[arg-type]
         else:
-            self._synced = max(self._synced, target)
+            self._synced_to(target)
 
     def set_writable(self, writable: bool) -> None:
         """Switch the connection to SQLite's ``query_only`` mode (every write fails) or back.

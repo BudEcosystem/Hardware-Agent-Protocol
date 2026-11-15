@@ -18,6 +18,7 @@ import time
 import pytest
 
 from bhms import DeviceServer, Range
+from bhms.protocol.errors import BhmsError
 from bhms.runtime import store as store_module
 from helpers.devices import connect, serve
 
@@ -162,3 +163,53 @@ async def test_operations_queued_on_one_device_are_synced_inline(rig, monkeypatc
                                      for i in range(20)))
     assert {r.operation.state for r in results} == {"completed"}
     assert threads.count("MainThread") >= 18, threads  # (the first admissions may still find each other)
+
+
+async def test_an_intent_is_not_observable_before_its_sync_has_completed(rig, tmp_path, monkeypatch):  # R47, OPS-003
+    """No observer (a subscriber, operations/list, operations/get) learns of an operation whose dispatching record is
+    written but not yet durable: after a power loss it would vanish. Once the sync completes, the subscriber hears
+    accepted then dispatching, in order, and list/get show it."""
+    srv, client, spy, calls = rig
+    shared = srv.store.wait_synced  # a busy server: the intent's sync runs in the sync thread, where it is held
+    monkeypatch.setattr(srv.store, "wait_synced", lambda ticket, inline=False: shared(ticket))
+    spy.gate = threading.Event()
+    watcher = await connect(f"unix:{tmp_path}/s.sock")
+    sub = await watcher.subscribe(operations={"deviceIds": ["dev-5"]})
+    try:
+        invoke = asyncio.ensure_future(client.actions_invoke("dev-5", "set_point", {"value": 7}, wait_ms=0))
+        rec = None
+        for _ in range(400):
+            rec = next((r for r in srv.journal.live() if r.op.get("deviceId") == "dev-5"), None)
+            if rec is not None:
+                break
+            await asyncio.sleep(0.005)
+        assert rec is not None and srv.store.synced_seq < rec.sync_ticket  # committed, not durable
+        with pytest.raises(asyncio.TimeoutError):
+            await asyncio.wait_for(sub.__anext__(), 0.2)
+        listed = (await watcher.operations_list(device_id="dev-5")).operations
+        assert listed == []
+        with pytest.raises(BhmsError) as info:
+            await watcher.operations_get(rec.id)
+        assert info.value.bhms_code == "INVALID_ARGUMENT"
+        assert not invoke.done()
+        spy.gate.set()
+        op = (await invoke).operation
+        states = []
+        while len(states) < 2:
+            item = await asyncio.wait_for(sub.__anext__(), 2)
+            states.append(item.params.operation.state)
+        assert states == ["accepted", "dispatching"]
+        assert [o.operation_id for o in (await watcher.operations_list(device_id="dev-5")).operations] == [op.operation_id]
+        assert (await watcher.operations_get(op.operation_id)).operation.operation_id == op.operation_id
+    finally:
+        spy.gate.set()
+        await sub.cancel()
+        await watcher.close()
+
+
+async def test_a_failed_intent_sync_is_reported_settled_even_with_wait_ms_0(rig):  # Task 12b fix round 1
+    srv, client, spy, calls = rig
+    spy.fail = True
+    op = (await client.actions_invoke("dev-6", "set_point", {"value": 1}, wait_ms=0)).operation
+    assert op.state == "failed" and op.error.may_have_acted is False and op.effect == "none"
+    assert calls == []

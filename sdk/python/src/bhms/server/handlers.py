@@ -162,7 +162,7 @@ def register(srv: DeviceServer, rpc: RpcServer) -> None:  # noqa: C901 - one clo
     async def operations_cancel(params: Any, ctx: RequestContext) -> dict[str, Any]:
         principal = srv.authenticate(ctx)
         rec = srv.journal.get(params.operation_id)
-        if rec is None:
+        if rec is None or not srv.journal.observable(rec):
             raise BhmsError("INVALID_ARGUMENT", f"no operation {params.operation_id!r}", field="operationId",
                             hint="use an operationId returned to you")
         if rec.principal != principal.id and not principal.admin:

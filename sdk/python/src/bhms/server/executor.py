@@ -311,9 +311,14 @@ class Executor:
                             retry="same-key", hint="retry later with the same operationKey") from None
         if immediate:
             self._start(rec, device, spec, admitted)
-            # The answer never precedes the durable intent; a failed sync is settled (and reported) by the execution.
-            with contextlib.suppress(StoreError):
+            # The answer never precedes the durable intent. When the sync fails the execution settles the operation
+            # (failed, nothing sent) without calling the handler: answer with that outcome, not with dispatching.
+            try:
                 await self.server.journal.durable(rec, inline=True)
+            except StoreError:
+                execution = self._running.get(rec.id)
+                if execution is not None and execution.task is not None:
+                    await asyncio.wait({execution.task})
         else:
             self._enqueue(rec, device, spec, admitted, principal)
         return rec

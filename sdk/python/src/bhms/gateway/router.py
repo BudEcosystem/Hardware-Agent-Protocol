@@ -422,7 +422,8 @@ class Router:
 
     def _operation_for(self, principal: Principal, op_id: str) -> OperationRecord:
         rec = self.gateway.journal.get(op_id)
-        if rec is None or (rec.principal != principal.id and not principal.operations_all):
+        journal = self.gateway.journal
+        if rec is None or not journal.observable(rec) or (rec.principal != principal.id and not principal.operations_all):
             raise refusal("INVALID_ARGUMENT", "scope:operations", f"no operation {op_id!r} is visible to you",
                           field="operationId",
                           hint="use an operationId returned to you (operations/list shows yours); seeing other "

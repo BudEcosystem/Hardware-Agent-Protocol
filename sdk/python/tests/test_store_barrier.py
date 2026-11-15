@@ -263,3 +263,18 @@ async def test_inline_callers_with_other_commits_waiting_share_one_sync_in_the_t
     await asyncio.gather(*(intent(f"k{i}") for i in range(8)))  # eight intents at once: nobody syncs alone
     assert threads and all(name.startswith("bhms-store-sync") for name in threads) and len(threads) < 8
     assert dispatch_store.synced_seq == dispatch_store.commit_seq
+
+
+def test_a_deferred_barrier_cannot_join_an_outer_transaction(dispatch_store):  # fix round 1: tickets are own commits
+    from bhms.runtime.operations import Journal
+
+    journal = Journal(dispatch_store)
+    with pytest.raises(RuntimeError, match="outer transaction"):
+        with dispatch_store.transaction():
+            journal.create(principal="p", key="k", key_origin="client", kind="action", request_digest="d",
+                           arguments={}, private={}, device_id="d1", dispatch=True, defer_sync=True)
+    with dispatch_store.transaction():  # a synchronous barrier may join: its ticket is the outer commit
+        rec = journal.create(principal="p", key="k2", key_origin="client", kind="action", request_digest="d",
+                             arguments={}, private={}, device_id="d1", dispatch=True)
+        assert rec.sync_ticket == dispatch_store.commit_seq + 1
+    assert dispatch_store.synced_seq >= rec.sync_ticket
