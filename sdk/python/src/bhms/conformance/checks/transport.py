@@ -311,9 +311,20 @@ async def credentials_required(c: Context) -> None:
                                                 additional_headers={"Authorization": f"Bearer {token}"} if token else None)
             except InvalidStatus as exc:
                 c.expect(exc.response.status_code == 401, f"HTTP {exc.response.status_code} for token {token!r}, expected 401")
-            else:
+                continue
+            try:
+                if token is not None or not c.target.loopback:
+                    c.fail(f"a WebSocket upgrade with token {token!r} was accepted")
+                # A loopback upgrade without the header may be accepted (BHMS-TRN-031, BHMS-SEC-005): the connection then has no
+                # principal, and every request that carries no credential of its own is refused.
+                meta = {"bhms/protocolVersion": tested_version(), "bhms/clientInfo": {"name": "bhms-conformance", "version": "0.1.0"}}
+                await conn.send(json.dumps({"jsonrpc": "2.0", "id": 1, "method": "devices/list", "params": {"_meta": meta}}))
+                reply = json.loads(await asyncio.wait_for(conn.recv(), 10))
+                code = ((reply.get("error") or {}).get("data") or {}).get("bhmsCode")
+                c.expect(code == "UNAUTHORIZED", f"a request on a header-less loopback upgrade without a credential must be refused "
+                         f"UNAUTHORIZED: {reply}")
+            finally:
                 await conn.close()
-                c.fail(f"a WebSocket upgrade with token {token!r} was accepted")
         return
     import aiohttp
 

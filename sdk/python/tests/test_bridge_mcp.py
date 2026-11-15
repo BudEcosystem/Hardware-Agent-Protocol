@@ -234,7 +234,8 @@ def test_plain_http_on_a_public_address_is_refused_even_with_a_token():  # BHMS-
     for token in ("", "s3cret"):
         result = subprocess.run([sys.executable, "-m", "bhms", "mcp", TARGET, "--http", "0.0.0.0:0"], capture_output=True,
                                 text=True, timeout=60, env={**os.environ, "BHMS_MCP_TOKEN": token})
-        assert result.returncode == 1 and "TLS is required" in result.stdout + result.stderr
+        said = " ".join((result.stdout + result.stderr).split())  # the CLI wraps long lines
+        assert result.returncode == 1 and "TLS is required" in said, said
     assert time.monotonic() > 0
 
 

@@ -217,3 +217,27 @@ def test_budget_wire_round_trip_and_pattern():
     assert budget.field() == "arguments.volume"
     with pytest.raises(ValueError):
         Budget.from_wire({**VOLUME, "unit": "rpm"})
+
+
+def test_a_release_inside_an_enclosing_transaction_waits_for_its_commit(tmp_path):  # BHMS-AUTH-033 (gateway units of work)
+    from bhms.runtime.budgets import BudgetLedger, Charge, Reservation
+    from bhms.runtime.operations import Journal
+    from bhms.runtime.store import Store
+
+    store = Store(tmp_path / "ledger.sqlite3")
+    try:
+        journal = Journal(store)
+        ledger = BudgetLedger(store, journal)
+        budget = Budget.from_wire(VOLUME)
+        reservation = Reservation(ledger, "agent", "k-1", (Charge(budget, 200.0, "uL"),))
+        rec = journal.create(principal="agent", key="k-1", key_origin="client", kind="action", request_digest="sha256:" + "0" * 64,
+                             arguments={"volume": 200}, private={"effectClass": "irreversible"}, device_id="pump-1",
+                             action="dispense", reservation=reservation)
+        assert ledger.remaining("agent", budget)[0] == 300
+        with store.transaction():  # e.g. a gateway recording an upstream's rejection in one unit of work
+            journal.transition(rec, "rejected", error={"bhmsCode": "INTERNAL", "message": "m", "mayHaveActed": False,
+                                                       "retry": "never", "hint": "h"})
+            assert ledger.remaining("agent", budget)[0] == 300  # not before the unit commits
+        assert ledger.remaining("agent", budget)[0] == 500  # released once the rejection is committed
+    finally:
+        store.close()

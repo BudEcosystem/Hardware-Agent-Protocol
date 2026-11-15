@@ -25,7 +25,7 @@
         },
         "mayHaveActed": false,
         "retry": "never",
-        "hint": "ask for at most 150 uL (/volume); part of it is freed at 2026-11-16T08:12:40.125Z, or nothing: the budget counts every call that may have acted, an unknown outcome included (BHMS-AUTH-032)"
+        "hint": "ask for at most 150 uL (/volume); part of it is freed at 2026-11-16T08:12:40.125Z, or for nothing: nothing was done; earlier calls stay counted unless they ended with proof that nothing happened (BHMS-AUTH-032)"
       }
     }
   }

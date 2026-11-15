@@ -171,6 +171,7 @@ class BudgetLedger:
         self.journal = journal
         self._rows: dict[tuple[str, str], list[_Row]] = {}
         self._by_key: dict[tuple[str, str], list[str]] = {}  # (principal, operationKey) -> budget ids reserved
+        self._deferred: set[tuple[str, str]] = set()  # releases asked for inside an enclosing transaction
         for principal, budget, op_key, amount, at_ns in store.open_reservations():
             self._rows.setdefault((principal, budget), []).append(_Row(op_key, amount, at_ns))
             self._by_key.setdefault((principal, op_key), []).append(budget)
@@ -187,6 +188,7 @@ class BudgetLedger:
 
     def remaining(self, principal: str, budget: Budget, *, at_ns: int | None = None) -> tuple[float, int | None]:
         """``(what remains of budget, when the oldest counted reservation leaves its window or None)``."""
+        self._flush_deferred()
         at = now_ns() if at_ns is None else at_ns
         counted = self._counted(principal, budget, at)
         used = math.fsum(row.amount for row in counted)
@@ -258,6 +260,11 @@ class BudgetLedger:
         budgets = self._by_key.get((principal, key))
         if not budgets:
             return False
+        if self.store.in_transaction:
+            # Inside an enclosing unit of work (a gateway's forward record) that may still roll back: release once it is
+            # known to have committed, from what the journal then says (the safe direction meanwhile is "consumed").
+            self._deferred.add((principal, key))
+            return False
         from bhms.runtime.store import StoreError
 
         try:
@@ -268,6 +275,15 @@ class BudgetLedger:
             rows = self._rows.get((principal, budget), [])
             rows[:] = [row for row in rows if row.op_key != key]
         return True
+
+    def _flush_deferred(self) -> None:
+        if not self._deferred or self.store.in_transaction:
+            return
+        pending, self._deferred = self._deferred, set()
+        for principal, key in pending:
+            rec = self.journal.lookup_key(principal, key)
+            if rec is not None and rec.terminal and proves_no_effect(rec.op):
+                self.release(principal, key)
 
     def on_settled(self, rec: OperationRecord) -> None:
         """Journal hook: an operation that ended with proof of no effect gives its reservation back (BHMS-AUTH-033)."""
@@ -330,15 +346,19 @@ def _exceeded(device_id: str, action: str, budget: Budget, amount: float, left: 
     """The refusal of a request that would exceed ``budget`` (BHMS-AUTH-032)."""
     maximum = _round(units.convert(left, budget.unit, declared))
     window = f" per {budget.window_ms} ms window" if budget.window_ms is not None else ""
+
+    def amount_of(value: float, unit: str) -> str:
+        return f"{_round(value)}" if unit == "1" else f"{_round(value)} {unit}"
+
     state: dict[str, Any] = {**budget.wire(), "remaining": _round(left)}
     when = ""
     if resets is not None:
         state["resetsAt"] = iso(resets)
         when = f"; part of it is freed at {state['resetsAt']}"
-    message = (f"{device_id}/{action} needs {_round(amount)} {budget.unit} of budget {budget.id!r}, which has "
-               f"{_round(left)} {budget.unit} left of {_round(budget.total)} {budget.unit}{window}")
-    hint = (f"ask for at most {maximum} {declared} ({budget.quantity}){when}, or nothing: the budget counts every call that "
-            "may have acted, an unknown outcome included (BHMS-AUTH-032)")
+    message = (f"{device_id}/{action} needs {amount_of(amount, budget.unit)} of budget {budget.id!r}, which has "
+               f"{amount_of(left, budget.unit)} left of {amount_of(budget.total, budget.unit)}{window}")
+    hint = (f"ask for at most {amount_of(maximum, declared)} ({budget.quantity}){when}, or for nothing: nothing was done; "
+            "earlier calls stay counted unless they ended with proof that nothing happened (BHMS-AUTH-032)")
     return BhmsError("OUT_OF_RANGE", message[:2000], field=budget.field(field_prefix),
                      bound={"maximum": maximum, "budget": state}, hint=hint[:2000])
 
