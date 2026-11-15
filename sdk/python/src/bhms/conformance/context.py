@@ -72,8 +72,10 @@ class Context:
 
     @property
     def conformance_declared(self) -> bool:
-        """The target is a conformance device by declaration: the extension, or an explicit assertion of device ids."""
-        return self.declares_extension or bool(self.asserted)
+        """The target is a conformance device by declaration: the extension, an explicit assertion of device ids, or the
+        runner's own ``compact-gateway`` fixture (its endpoints are the reference C endpoints the runner built and drives
+        over fault-injecting links, so the compact profile is claimable from it; Task 14 learning 11)."""
+        return self.declares_extension or bool(self.asserted) or getattr(self.target, "compact", None) is not None
 
     @property
     def effects_allowed(self) -> bool:

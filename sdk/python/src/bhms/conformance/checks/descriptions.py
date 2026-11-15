@@ -245,6 +245,11 @@ compact_problems = layout_problems  # the rules live with the one compact codec 
 @check("compact.layout-rules", ["BHMS-DEV-070", "BHMS-DEV-071"], profile="compact", generic=True)
 async def compact_layouts(c: Context) -> None:
     """Compact layouts map every input member once, name output members and are mirrored by multipleOf and bounds."""
+    if getattr(c.target, "compact", None) is not None:  # the runner's compact fixture: its endpoints say HELLO after it starts
+        from bhms.conformance.checks.compact import served_fixture
+
+        await served_fixture(c)
+        await c.devices(refresh=True)
     found = False
     problems: list[tuple[str, str]] = []
     for description in (await c.descriptions()).values():
@@ -276,3 +281,13 @@ async def description_change(c: Context) -> None:
     c.expect(listed["digest"] == after, "the list summary must carry the new digest")
     stale = await c.call("devices/describe", {"deviceId": axis, "digest": before})
     c.refused(stale, "STALE", field="digest", what="describe with the superseded digest")
+
+
+@check("descriptions.duration-bounds", ["BHMS-DEV-036"], generic=True)
+async def duration_bounds(c: Context) -> None:
+    """No served action declares a ``maxDurationMs`` above one day (86 400 000 ms)."""
+    for device_id, description in (await c.descriptions()).items():
+        for name, action in (description.get("actions") or {}).items():
+            bound = action.get("maxDurationMs")
+            c.expect(isinstance(bound, int) and bound <= 86_400_000,
+                     f"{device_id}/{name} declares maxDurationMs {bound!r}, above 86400000", ("BHMS-DEV-036",))

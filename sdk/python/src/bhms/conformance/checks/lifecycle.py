@@ -12,7 +12,7 @@ import rfc8785
 from bhms.conformance.checks._util import raw_bytes, vectors
 from bhms.conformance.context import Context
 from bhms.conformance.core import check
-from bhms.protocol.version import PROTOCOL_VERSION
+from bhms.conformance.wire import tested_version
 from bhms.transport.base import TransportClosed
 
 CORE_METHODS = ("server/discover", "devices/list", "devices/describe", "properties/read", "actions/invoke", "operations/get",
@@ -194,7 +194,7 @@ async def version_negotiation(c: Context) -> None:
     c.expect(response.rpc_code == -32015, f"UNSUPPORTED_VERSION must be -32015, is {response.rpc_code}")
     bound = data.get("bound")
     c.expect(isinstance(bound, list) and bound, f"bound must list the supported versions, is {bound!r}")
-    c.expect(PROTOCOL_VERSION in c.discover_result.get("supportedVersions", []), "discover.supportedVersions lacks the tested version")
+    c.expect(tested_version() in c.discover_result.get("supportedVersions", []), "discover.supportedVersions lacks the tested version")
     c.expect(sorted(bound) == sorted(c.discover_result["supportedVersions"]), f"bound {bound} differs from discover.supportedVersions")
     discover = await c.call("server/discover", {}, meta={"bhms/protocolVersion": "1999-01-01"})
     c.refused(discover, "UNSUPPORTED_VERSION", field="_meta.bhms/protocolVersion", may_have_acted=False, what="server/discover")
@@ -400,3 +400,23 @@ async def subscription_stream(c: Context) -> None:
     c.expect(not stream.final.done(), "the server sent a final result after the client cancelled the subscription", ("BHMS-LIF-044",))
     settled = await c.settle(quiet["operationId"])
     c.expect(settled["state"] == "completed", "an operation's outcome must be retrievable with operations/get without a subscription", ("BHMS-LIF-046",))
+
+
+@check("lifecycle.earlier-version-behaviour", ["BHMS-LIF-026"], generic=True)
+async def earlier_version_behaviour(c: Context) -> None:
+    """A server serving 2026-11-13 too answers such a request with v0.1 behaviour: nothing a later version added is shown."""
+    if "2026-11-13" not in c.discover_result.get("supportedVersions", []) or tested_version() == "2026-11-13":
+        c.not_applicable("the server is tested at, or serves only, one version")
+    legacy = c.result(await c.call("server/discover", {}, meta={**c.wire.meta(), "bhms/protocolVersion": "2026-11-13"}),
+                      "server/discover at 2026-11-13", ("BHMS-LIF-026",))
+    caps = legacy.get("capabilities") or {}
+    principal = legacy.get("principal") or {}
+    c.expect(not (caps.get("authority") or {}), f"capabilities.authority has no member in v0.1: {caps.get('authority')!r}",
+             ("BHMS-LIF-026",))
+    c.expect("grants" not in (caps.get("programs") or {}), "capabilities.programs.grants is not a v0.1 member", ("BHMS-LIF-026",))
+    c.expect("budgets" not in principal, "principal.budgets is not a v0.1 member", ("BHMS-LIF-026",))
+    c.expect(not any(s.startswith("programs:run:") for s in principal.get("scopes", [])),
+             "a program-scoped grant is not a v0.1 scope", ("BHMS-LIF-026",))
+    current = c.result(await c.call("server/discover", {}), "server/discover at the tested version")
+    c.expect(current.get("supportedVersions") == legacy.get("supportedVersions"),
+             "supportedVersions must not depend on the request's version", ("BHMS-LIF-026",))

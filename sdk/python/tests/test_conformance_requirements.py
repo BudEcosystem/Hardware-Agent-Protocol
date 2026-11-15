@@ -14,7 +14,10 @@ SPEC = Path(__file__).resolve().parents[3] / "spec" / "bhms"
 def test_packaged_index_equals_the_specification():
     rows = requirements.parse_index((SPEC / "14-conformance.md").read_text())
     assert [dict(r) for r in requirements.load()] == rows
-    assert len(rows) == 262
+    assert len(rows) == 285
+    added = {r["id"] for r in rows if r["since"] == "2026-11-15"}  # section 14.6: what v0.2 added
+    assert len(added) == 23 and {"BHMS-AUTH-030", "BHMS-PRG-023", "BHMS-OPS-072", "BHMS-LIF-026"} <= added
+    assert {r["since"] for r in rows} == {"2026-11-13", "2026-11-15"}
 
 
 def test_index_rows_are_well_formed():

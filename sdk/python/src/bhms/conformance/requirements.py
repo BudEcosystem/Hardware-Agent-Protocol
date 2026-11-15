@@ -2,7 +2,7 @@
 
 ``python -m bhms.conformance.requirements --write`` regenerates the JSON from the specification chapter (run it from a
 checkout); ``tests/test_conformance_requirements.py`` fails when the two differ, so a runner can never report against a
-stale index. Each row: ``id, area, level (MUST|SHOULD|MAY), profile, method, summary, test``.
+stale index. Each row: ``id, area, level (MUST|SHOULD|MAY), profile, method, summary, test, since``.
 
 Thread-safety: the loaded index is immutable.
 """
@@ -20,16 +20,36 @@ from typing import Any
 ROW = re.compile(r"^\| (BHMS-[A-Z]+-\d{3}) \| (MUST|SHOULD|MAY) \| (\S+) \| (.*) \| (\w+) \| (.*) \|$")
 
 
+FIRST_VERSION = "2026-11-13"
+ADDED = re.compile(r"^### Added in (\d{4}-\d{2}-\d{2})")
+ID = re.compile(r"BHMS-[A-Z]+-\d{3}")
+
+
 def parse_index(text: str) -> list[dict[str, str]]:
-    """Rows of the requirement index (section 14.4) of the conformance chapter."""
+    """Rows of the requirement index (section 14.4) of the conformance chapter, each with ``since``: the protocol version
+    that introduced it (section 14.6 lists the requirements of every later version; all others date from the first)."""
     index = text.split("## 14.4 Requirement index", 1)[1]
+    since: dict[str, str] = {}
+    if "## 14.6 " in index:
+        version = None
+        for line in index.split("## 14.6 ", 1)[1].splitlines():
+            if line.startswith("## "):
+                break
+            added = ADDED.match(line)
+            if added:
+                version = added.group(1)
+            elif line.startswith("### "):
+                version = None  # another list (amendments keep the version that introduced the requirement)
+            elif version is not None:
+                for rid in ID.findall(line):
+                    since[rid] = version
     rows = []
     for line in index.splitlines():
         match = ROW.match(line)
         if match:
             rid, level, profile, summary, method, test = match.groups()
             rows.append({"id": rid, "area": rid.split("-")[1], "level": level, "profile": profile, "method": method,
-                         "summary": summary, "test": test})
+                         "summary": summary, "test": test, "since": since.get(rid, FIRST_VERSION)})
     return rows
 
 

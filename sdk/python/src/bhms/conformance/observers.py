@@ -84,6 +84,7 @@ def observe(recorder: Recorder, descriptions: dict[str, dict[str, Any]], *, stri
         (lambda: _operation_invariants(recorder, obs, descriptions), ("BHMS-OPS-001", "BHMS-OPS-008", "BHMS-OPS-009")),
         (lambda: _stops(recorder, obs), ("BHMS-AUTH-022",)),
         (lambda: _notifications(recorder, obs), ("BHMS-LIF-041", "BHMS-EVT-030")),
+        (lambda: _consistent_hints(recorder, obs), ("BHMS-ERR-007",)),
     )
     for step, ids in steps:
         try:
@@ -345,9 +346,31 @@ def _notifications(recorder: Recorder, obs: Observation) -> None:
                 obs.bad("BHMS-EVT-030", f"observation notification of {size} bytes exceeds 64 KiB")
 
 
+CONTRADICTING_HINT = re.compile(r"partial effects? (are|is|were)? ?possible|may (have|still have) acted|outcome (is )?unknown",
+                                re.IGNORECASE)
+
+
+def _consistent_hints(recorder: Recorder, obs: Observation) -> None:
+    """BHMS-ERR-007: an error that says ``mayHaveActed: false`` (nothing happened) never advises about effects that may have
+    happened (Task 14 learning 7: a refusal with proof still said "partial effects are possible")."""
+    obs.ok("BHMS-ERR-007")
+    for seen in _inbound(recorder):
+        msg = seen.message
+        if not isinstance(msg, dict):
+            continue
+        errors = []
+        if isinstance(msg.get("error"), dict) and isinstance(msg["error"].get("data"), dict):
+            errors.append(msg["error"]["data"])
+        errors += [op["error"] for op in _operations(seen) if isinstance(op.get("error"), dict)]
+        for data in errors:
+            hint = data.get("hint")
+            if data.get("mayHaveActed") is False and isinstance(hint, str) and CONTRADICTING_HINT.search(hint):
+                obs.bad("BHMS-ERR-007", f"{data.get('bhmsCode')}: mayHaveActed false, but the hint says {hint[:160]!r}")
+
+
 def observed_ids() -> tuple[str, ...]:
     """The requirement IDs :func:`observe` reports on (an ID with no finding was observed and is fine)."""
     return ("BHMS-TRN-001", "BHMS-LIF-052", "BHMS-TRN-010", "BHMS-LIF-012", "BHMS-LIF-003", "BHMS-ERR-001", "BHMS-ERR-003",
             "BHMS-ERR-005", "BHMS-ERR-006", "BHMS-ERR-010", "BHMS-ERR-012", "BHMS-DEV-011", "BHMS-OBS-005", "BHMS-OBS-001",
             "BHMS-OPS-001", "BHMS-OPS-002", "BHMS-OPS-004", "BHMS-OPS-005", "BHMS-OPS-006", "BHMS-OPS-008", "BHMS-OPS-009", "BHMS-AUTH-022",
-            "BHMS-EVT-030", "BHMS-LIF-041")
+            "BHMS-EVT-030", "BHMS-LIF-041", "BHMS-ERR-007")

@@ -45,11 +45,18 @@ def rows(results: list[CheckResult], profiles: list[str], unavailable: dict[str,
         for rid in result.ids:
             failed_here = result.status is Status.FAILED and (not result.failed_ids or rid in result.failed_ids)
             by_id.setdefault(rid, []).append((result, failed_here))
+    from bhms.conformance.wire import tested_version
+
     out = []
+    tested = tested_version()
     for row in requirements.for_profiles(set(profiles)):
         rid = row["id"]
         entries = by_id.get(rid, [])
         base = dict(id=rid, level=row["level"], profile=row["profile"], method=row["method"])
+        if row.get("since", tested) > tested:  # a requirement of a later version than the one tested (BHMS-CNF-001)
+            out.append(RequirementRow(status=Status.NOT_APPLICABLE, reason=f"introduced in {row['since']}; this run tests "
+                                      f"{tested}", **base))
+            continue
         failed = [(r, f) for r, f in entries if f]
         passed = [r for r, f in entries if r.status is Status.PASSED and not f]
         if failed:

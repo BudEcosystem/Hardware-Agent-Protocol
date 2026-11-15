@@ -57,7 +57,7 @@ async def test_python_reference_server_passes_every_core_check():
 async def test_report_states_what_bhms_cnf_001_to_005_require():
     report = (await reference()).to_json()
     meta = report["conformance"]
-    assert meta["protocolVersion"] == "2026-11-13"                                   # CNF-001
+    assert meta["protocolVersion"] == "2026-11-15"                                   # CNF-001
     assert {"core", "leases", "events", "programs", "registry"} <= set(meta["profiles"])
     assert meta["transport"] == "stdio" and meta["implementation"]["name"] == "conformance-device"
     assert meta["schemaDigest"].startswith("sha256:") and meta["seed"] == 7        # CNF-003

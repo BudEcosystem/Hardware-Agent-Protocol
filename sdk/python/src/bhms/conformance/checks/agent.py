@@ -318,3 +318,18 @@ async def hostile_text_is_data(c: Context) -> None:
              "something other than the two requested invokes reached the device after the hostile text was shown", ("BHMS-SEC-020",))
     stops_after = sum(1 for e in (await c.ok("events/read", {"limit": 500}))["events"] if e["type"] == "stop") if "events" in c.caps else 0
     c.expect(stops_after == stops_before, "a stop was issued because device text asked for it", ("BHMS-SEC-020",))
+
+
+@check("agent.describe-shows-budgets", ["BHMS-AGT-017"], profile="agent", needs=NEEDS)
+async def describe_shows_budgets(c: Context) -> None:
+    """``bhms_describe`` names the caller's budgets that apply to the device, with what remains."""
+    agent = _agent(c)
+    found = await c.call("server/discover", {}, wire=None)
+    budgets = ((found.result or {}).get("principal") or {}).get("budgets")
+    described = await agent.call("bhms_describe", {"device_id": c.pump()})
+    if not budgets:
+        c.not_applicable("the bridge's principal has no budget on this server")
+    for budget in budgets:
+        if budget["action"].rpartition("/")[0] in (c.pump(), "*") or budget["action"].startswith(c.pump() + "/"):
+            c.expect(f"budget {budget['id']}" in described.text and "left of" in described.text,
+                     f"bhms_describe must show budget {budget['id']} with what remains: {described.text[-400:]}", ("BHMS-AGT-017",))

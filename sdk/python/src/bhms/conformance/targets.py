@@ -382,8 +382,10 @@ def resolve(spec: str, *, token: str | None = None, keep_state: str | None = Non
         return Target(spec, "stdio", token, command=[sys.executable, str(path.resolve())], work_dir=path.resolve().parent,
                       extra_env={"BHMS_STATE_DIR": str(scratch)}, scratch_dir=scratch)
     if path.is_file() and path.suffix == ".toml":
+        scratch = Path(tempfile.mkdtemp(prefix="bhms-conf-extra-"))  # as for a .py: further processes get their own journal
         return Target(spec, "stdio", token, command=[sys.executable, "-m", "bhms.gateway", str(path.resolve())],
-                      work_dir=path.resolve().parent)
+                      work_dir=path.resolve().parent, extra_env={"BHMS_GATEWAY_STATE_DIR": str(scratch)},
+                      scratch_dir=scratch)
     raise TargetError(f"{spec!r} is neither a built-in fixture ({', '.join(BUILTINS)}) nor a URL, a server .py or a gateway .toml")
 
 
@@ -417,7 +419,12 @@ def _caller_paths(argv: list[str]) -> list[str]:
     return out
 
 
-def _conformance_device(flavour: str, keep: str | None, device_command: str | None = None) -> Target:
+AGENT_BUDGET = {"id": "agent-dose", "action": "pump-1/dispense", "quantity": "/volume", "unit": "uL", "total": 100000}
+"""The budget the agent-bridge fixture's principal carries, so that ``bhms_describe`` has one to show (BHMS-AGT-017)."""
+
+
+def _conformance_device(flavour: str, keep: str | None, device_command: str | None = None,
+                        extra: tuple[str, ...] = ()) -> Target:
     import shlex
 
     base = _caller_paths(shlex.split(device_command)) if device_command else None
@@ -433,8 +440,8 @@ def _conformance_device(flavour: str, keep: str | None, device_command: str | No
                         extra_command=launch("--memory"), state_dir=state)
     elif flavour == "ws":
         url = f"ws://127.0.0.1:{free_port()}"
-        target = Target("conformance-device:ws", "ws", url=url, command=launch(url, "--state-dir", str(state)), state_dir=state,
-                        token=TOKEN_PREFIX + "admin", env={"BHMS_TOKEN": TOKEN_PREFIX + "admin"})
+        target = Target("conformance-device:ws", "ws", url=url, command=launch(url, "--state-dir", str(state), *extra),
+                        state_dir=state, token=TOKEN_PREFIX + "admin", env={"BHMS_TOKEN": TOKEN_PREFIX + "admin"})
     elif flavour == "principals":
         url = f"ws://127.0.0.1:{free_port()}"
         policy = work / "policy.json"
@@ -507,7 +514,7 @@ def _compact_gateway(keep: str | None) -> Target:
 
 def _agent_bridge(keep: str | None) -> Target:
     """The Python MCP bridge (``bhms mcp``) in front of a WebSocket conformance device."""
-    device = _conformance_device("ws", keep)
+    device = _conformance_device("ws", keep, extra=("--budget", json.dumps(AGENT_BUDGET)))
     command = [sys.executable, "-m", "bhms", "mcp", device.url or "", "--token", device.token or ""]
     adapter = [sys.executable, "-c", "import json; from bhms.bridges.openai_tools import tools_for_openai; "
                "print(json.dumps(tools_for_openai()))"]

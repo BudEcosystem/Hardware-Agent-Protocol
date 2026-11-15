@@ -9,7 +9,7 @@ from typing import Any
 
 from bhms.conformance.context import Context
 from bhms.conformance.core import check
-from bhms.protocol.version import PROTOCOL_VERSION
+from bhms.conformance.wire import tested_version
 
 
 @check("transport.concurrent-requests", ["BHMS-TRN-003"], generic=True)
@@ -128,7 +128,7 @@ async def _http(c: Context, body: Any, headers: dict[str, str] | None = None, *,
     import aiohttp
 
     base = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream",
-            "BHMS-Protocol-Version": PROTOCOL_VERSION, "BHMS-Method": body.get("method", "") if isinstance(body, dict) else ""}
+            "BHMS-Protocol-Version": tested_version(), "BHMS-Method": body.get("method", "") if isinstance(body, dict) else ""}
     if c.target.token:
         base["Authorization"] = f"Bearer {c.target.token}"
     base.update(headers or {})
@@ -165,7 +165,7 @@ async def http_close_cancels_wait(c: Context) -> None:
     request = {"jsonrpc": "2.0", "id": 3, "method": "actions/invoke", "params": {
         "_meta": c.wire.meta(), "deviceId": axis, "action": "slow_move", "arguments": {"duration_ms": 500}, "waitMs": 5000,
         "operationKey": c.unique("http-close")}}
-    headers = {"Content-Type": "application/json", "BHMS-Protocol-Version": PROTOCOL_VERSION, "BHMS-Method": "actions/invoke"}
+    headers = {"Content-Type": "application/json", "BHMS-Protocol-Version": tested_version(), "BHMS-Method": "actions/invoke"}
     if c.target.token:
         headers["Authorization"] = f"Bearer {c.target.token}"
     try:
@@ -241,7 +241,7 @@ async def http_malformed(c: Context) -> None:
 
     from bhms.conformance.checks._util import raw_bytes, vectors
 
-    headers = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream", "BHMS-Protocol-Version": PROTOCOL_VERSION,
+    headers = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream", "BHMS-Protocol-Version": tested_version(),
                "BHMS-Method": "devices/list"}
     if c.target.token:
         headers["Authorization"] = f"Bearer {c.target.token}"
@@ -318,10 +318,59 @@ async def credentials_required(c: Context) -> None:
     import aiohttp
 
     request = {"jsonrpc": "2.0", "id": 1, "method": "devices/list", "params": {"_meta": c.wire.meta()}}
-    headers = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream", "BHMS-Protocol-Version": PROTOCOL_VERSION,
+    headers = {"Content-Type": "application/json", "Accept": "application/json, text/event-stream", "BHMS-Protocol-Version": tested_version(),
                "BHMS-Method": "devices/list"}
     async with aiohttp.ClientSession() as session:
         for token in (None, "not-a-valid-token-" + c.unique("t")):
             async with session.post(c.target.url, data=json.dumps(request),
                                     headers={**headers, **({"Authorization": f"Bearer {token}"} if token else {})}) as response:
                 c.expect(response.status == 401, f"a request with token {token!r} got HTTP {response.status}, expected 401")
+
+
+@check("transport.credential-carrier", ["BHMS-SEC-005", "BHMS-SEC-006"], needs=("ws",), generic=True)
+async def credential_carrier(c: Context) -> None:
+    """On a loopback WebSocket opened without an Authorization header every request carries its credential in
+    ``_meta["bhms/authorization"]``; a carrier beside the header is refused."""
+    if not c.target.loopback:
+        c.not_applicable("a WebSocket beyond loopback requires the Authorization header (BHMS-TRN-031)")
+    if not c.target.token:
+        c.skip("unproven: the target's bearer token is not known to the runner")
+    import websockets
+    from websockets.exceptions import InvalidStatus
+
+    async def ask(conn: Any, meta_extra: dict[str, Any], ident: int) -> dict[str, Any]:
+        meta = {"bhms/protocolVersion": tested_version(), "bhms/clientInfo": {"name": "bhms-conformance", "version": "0.1.0"},
+                **meta_extra}
+        await conn.send(json.dumps({"jsonrpc": "2.0", "id": ident, "method": "devices/list", "params": {"_meta": meta}}))
+        while True:
+            reply = json.loads(await asyncio.wait_for(conn.recv(), 10))
+            if reply.get("id") == ident:
+                return reply
+
+    def code(reply: dict[str, Any]) -> str | None:
+        return ((reply.get("error") or {}).get("data") or {}).get("bhmsCode")
+
+    try:
+        bare = await websockets.connect(c.target.url, subprotocols=["bhms"])
+    except InvalidStatus as exc:
+        c.fail(f"a loopback upgrade without Authorization was refused (HTTP {exc.response.status_code}): the request carrier "
+               "cannot be used", ("BHMS-SEC-005",))
+    try:
+        c.expect(code(await ask(bare, {}, 1)) == "UNAUTHORIZED", "a request with no credential at all must be refused",
+                 ("BHMS-SEC-005",))
+        good = await ask(bare, {"bhms/authorization": f"Bearer {c.target.token}"}, 2)
+        c.expect("result" in good, f"a request carrying a valid bhms/authorization must be served: {good.get('error')}",
+                 ("BHMS-SEC-005",))
+        c.expect(code(await ask(bare, {"bhms/authorization": "Bearer not-a-valid-token-for-conformance"}, 3)) == "UNAUTHORIZED",
+                 "a request carrying an invalid bhms/authorization must be refused", ("BHMS-SEC-005",))
+        c.expect(c.target.token not in json.dumps(good), "the server echoed the bearer token", ("BHMS-SEC-005",))
+    finally:
+        await bare.close()
+    headed = await websockets.connect(c.target.url, subprotocols=["bhms"],
+                                      additional_headers={"Authorization": f"Bearer {c.target.token}"})
+    try:
+        twice = await ask(headed, {"bhms/authorization": f"Bearer {c.target.token}"}, 4)
+        c.expect(code(twice) == "UNAUTHORIZED", "a carrier on a connection already identified by its Authorization header must be "
+                 f"refused: {twice}", ("BHMS-SEC-006",))
+    finally:
+        await headed.close()

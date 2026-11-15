@@ -324,3 +324,112 @@ async def operator_resolution(c: Context) -> None:
         entry = [h for h in won["history"] if h["kind"] == "reconciliation"][-1]
         c.expect(won["state"] == "failed" and "operator" not in entry,
                  f"device evidence (started, not finished) must be recorded, not the operator's claim: {won['state']} {entry}", ("BHMS-OPS-101",))
+
+
+# ---------------------------------------------------------------------- cumulative budgets and program grants (v0.2)
+
+
+def _pulse(device: str, count: int, **members: Any) -> dict[str, Any]:
+    return {"deviceId": device, "action": "pulse", "arguments": {"count": count}, **members}
+
+
+async def _remaining(wire: Any, budget_id: str) -> float | None:
+    found = (await wire.request("server/discover", {})).result or {}
+    for budget in (found.get("principal") or {}).get("budgets") or []:
+        if budget["id"] == budget_id:
+            return budget["remaining"]
+    return None
+
+
+@check("authority.budget-total", ["BHMS-AUTH-030", "BHMS-AUTH-031", "BHMS-AUTH-032", "BHMS-AUTH-033", "BHMS-AUTH-035"],
+       profile="authority", needs=NEEDS, timeout=60)
+async def budget_total(c: Context) -> None:
+    """A budget of 5 pulses (role ``budgeted``) is never exceeded however the calls are split or raced; the refusal says
+    what remains; an operation rejected before dispatch gives its reservation back; discover shows what remains."""
+    device = _axis(c)
+    async with c.fresh_wire("budgeted") as agent:
+        found = c.result(await agent.request("server/discover", {}), "discover of a budgeted principal", ("BHMS-AUTH-035",))
+        c.expect((found["capabilities"].get("authority") or {}).get("budgets") is True,
+                 "capabilities.authority.budgets must be true on a server enforcing budgets", ("BHMS-AUTH-035",))
+        before = await _remaining(agent, "pulses")
+        c.expect(before == 5, f"principal.budgets must show the budget with what remains (5), got {before!r}", ("BHMS-AUTH-035",))
+        # released: an operation that is rejected before dispatch (its deadline passes while it waits behind slow_move)
+        holder = await c.invoke_op(device, "slow_move", {"duration_ms": 3000})
+        queued = c.result(await agent.request("actions/invoke", _pulse(device, 2, deadlineMs=200)), "a queued pulse")
+        late = await c.settle(queued["operation"]["operationId"]) if queued["operation"]["state"] not in ("rejected",) else \
+            queued["operation"]
+        await c.ok("operations/cancel", {"operationId": holder["operationId"]})
+        await c.settle(holder["operationId"])
+        if late["state"] == "rejected":
+            c.expect(await _remaining(agent, "pulses") == 5,
+                     "a reservation must be released when the operation is rejected before dispatch", ("BHMS-AUTH-033",))
+        else:
+            c.warn(f"the queued pulse ended {late['state']} rather than rejected; release on rejection not exercised")
+        base = await c.counter(device)
+        responses = await asyncio.gather(*(agent.request("actions/invoke", _pulse(device, 1, waitMs=3000)) for _ in range(8)))
+        admitted = [r for r in responses if r.result is not None]
+        refusals = [r for r in responses if r.result is None]
+        c.expect(len(admitted) == 5, f"5 of 8 concurrent 1-pulse calls fit a budget of 5; {len(admitted)} were admitted",
+                 ("BHMS-AUTH-030", "BHMS-AUTH-031"))
+        for refusal in refusals:
+            data = c.refused(refusal, "OUT_OF_RANGE", field="arguments.count", what="a call beyond the budget", ids=("BHMS-AUTH-032",))
+            budget = (data.get("bound") or {}).get("budget") or {}
+            c.expect(budget.get("id") == "pulses" and "remaining" in budget and "maximum" in (data.get("bound") or {}),
+                     f"the refusal must name the budget and what remains in bound: {data.get('bound')!r}", ("BHMS-AUTH-032",))
+        for response in admitted:
+            await c.settle(response.result["operation"]["operationId"])
+        c.expect(await c.counter(device) == base + 5, "exactly the admitted pulses must reach the device (never a partial dispatch)",
+                 ("BHMS-AUTH-030", "BHMS-AUTH-032"))
+        data = c.refused(await agent.request("actions/invoke", _pulse(device, 1)), "OUT_OF_RANGE", field="arguments.count",
+                         what="a call on an exhausted budget", ids=("BHMS-AUTH-032",))
+        c.expect((data.get("bound") or {}).get("maximum") == 0, f"an exhausted budget leaves maximum 0: {data.get('bound')!r}",
+                 ("BHMS-AUTH-032",))
+        c.expect(await _remaining(agent, "pulses") == 0, "principal.budgets must show the budget exhausted", ("BHMS-AUTH-035",))
+        legacy = await agent.request("server/discover", {}, meta={**agent.meta(), "bhms/protocolVersion": "2026-11-13"})
+        if legacy.result is not None:
+            c.expect("budgets" not in (legacy.result.get("principal") or {}),
+                     "a 2026-11-13 request must not be shown principal.budgets", ("BHMS-AUTH-035",))
+
+
+@check("authority.budget-survives-restart", ["BHMS-AUTH-034"], profile="authority", needs=("principals", "restart", "durable"),
+       timeout=90)
+async def budget_restart(c: Context) -> None:
+    """What a budget has spent is durable: after a restart the budget shows the same remainder."""
+    device = _axis(c)
+    async with c.fresh_wire("budgeted-restart") as agent:
+        op = c.result(await agent.request("actions/invoke", _pulse(device, 7, waitMs=3000)), "a budgeted pulse")["operation"]
+        if op["state"] not in ("completed", "failed", "canceled", "rejected"):
+            await c.settle(op["operationId"])
+        before = await _remaining(agent, "pulses-durable")
+    await c.reconnect_base(await c.target.restart(kill=True))
+    await c.locate()
+    async with c.fresh_wire("budgeted-restart") as agent:
+        after = await _remaining(agent, "pulses-durable")
+    c.expect(before is not None and after == before, f"a budget must keep what it spent across a restart: {before!r} -> {after!r}",
+             ("BHMS-AUTH-034",))
+
+
+@check("authority.program-grant", ["BHMS-PRG-023"], profile="authority", needs=("principals", "cap:programs"))
+async def program_grant(c: Context) -> None:
+    """``programs:run:<digest>`` (role ``programmer``) runs exactly the reviewed program without an invoke scope on its step;
+    the step's action itself, and any changed program, stay refused."""
+    from bhms.testing.gateway_fixture import GRANT_PROGRAM
+
+    device = _axis(c)
+    if device != "axis-1":
+        c.not_applicable("the reviewed program names axis-1 of a device server (a gateway serves no programs)")
+    base = await c.counter(device)
+    async with c.fresh_wire("programmer") as agent:
+        c.refused(await agent.request("actions/invoke", _pulse(device, 1)), "UNAUTHORIZED",
+                  what="the program's step action invoked directly under a program grant", ids=("BHMS-PRG-023",))
+        changed = json.loads(json.dumps(GRANT_PROGRAM))
+        changed["steps"][0]["arguments"]["count"] = 2
+        c.refused(await agent.request("programs/run", {"program": changed, "arguments": {}}), "UNAUTHORIZED",
+                  what="a modified program (another digest) under a program grant", ids=("BHMS-PRG-023",))
+        c.expect(await c.counter(device) == base, "a refused request under a program grant reached the device", ("BHMS-PRG-023",))
+        run = c.result(await agent.request("programs/run", {"program": GRANT_PROGRAM, "arguments": {}, "waitMs": 5000}),
+                       "the reviewed program under its grant", ("BHMS-PRG-023",))["operation"]
+        if run["state"] not in ("completed", "failed", "canceled", "rejected", "unknown"):
+            run = await c.settle(run["operationId"])
+        c.expect(run["state"] == "completed", f"the reviewed program must run under its grant, ended {run['state']}", ("BHMS-PRG-023",))
+    c.expect(await c.counter(device) == base + 1, "the granted program's one step must reach the device once", ("BHMS-PRG-023",))

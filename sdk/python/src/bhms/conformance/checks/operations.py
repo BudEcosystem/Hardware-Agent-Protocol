@@ -414,3 +414,34 @@ async def reconcile_on_return(c: Context) -> None:
     await asyncio.sleep(0.5)
     still = await c.get_op(op["operationId"])
     c.expect(still["state"] == "unknown", f"a device that cannot say what happened must leave the operation unknown, is {still['state']}")
+
+
+@check("operations.late-terminal-report", ["BHMS-OPS-072"], needs=("cap:leases", "cap:events"), timeout=60)
+async def late_terminal_report(c: Context) -> None:
+    """A terminal report that arrives after the server ended the operation (here: its lease expired under ``onLeaseLoss:
+    hold``, so it ended failed while the device kept running) does not change it; it is an ``operation.late_report`` event
+    naming the operation, and (on the server that ended it) a ``correction`` history entry."""
+    axis = c.axis()
+    ttl = max(300, int((c.caps.get("leases") or {}).get("minTtlMs", 300)))
+    lease = (await c.ok("leases/acquire", {"resources": [f"{axis}/motion"], "ttlMs": ttl}))["lease"]
+    op = await c.invoke_op(axis, "guard_hold", {"duration_ms": ttl + 1500}, leaseId=lease["leaseId"])
+    ended = await c.settle(op["operationId"], timeout=20)
+    c.expect(ended["state"] == "failed", f"the operation must end failed when its lease expires (onLeaseLoss hold): {ended['state']}",
+             ("BHMS-OPS-072",))
+    deadline = time.monotonic() + 15
+    late: list[dict[str, Any]] = []
+    while time.monotonic() < deadline and not late:
+        page = await c.ok("events/read", {"types": ["operation.late_report"], "limit": 100})
+        late = [e for e in page["events"] if e.get("operationId") == op["operationId"]]
+        if not late:
+            await asyncio.sleep(0.25)
+    c.expect(bool(late), "no operation.late_report event named the operation after its handler finished", ("BHMS-OPS-072",))
+    data = late[0].get("data") or {}
+    c.expect(data.get("outcome") in ("completed", "failed", "canceled") and data.get("evidence") in ("measured", "reported", "none")
+             and data.get("state") == "failed", f"the event's data must give outcome, evidence and state: {data}", ("BHMS-OPS-072",))
+    after = await c.get_op(op["operationId"])
+    c.expect(after["state"] == "failed" and after.get("error", {}).get("bhmsCode") == ended.get("error", {}).get("bhmsCode"),
+             "a late report must not change the terminal operation", ("BHMS-OPS-072",))
+    if not c.is_gateway:
+        c.expect(any(h.get("kind") == "correction" for h in after.get("history", [])),
+                 "the late report must be journaled as a correction history entry", ("BHMS-OPS-072",))

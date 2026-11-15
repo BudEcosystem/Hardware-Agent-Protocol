@@ -49,5 +49,5 @@ async def test_the_unbroken_bridge_passes_the_agent_profile():
 
     report = await run(RunOptions(target="agent-bridge", profiles=("agent",), seed=9))
     assert [c.name for c in report.checks if c.status is Status.FAILED] == []
-    assert sum(c.status is Status.PASSED for c in report.checks) == 11 and not report.must_failed
+    assert sum(c.status is Status.PASSED for c in report.checks) == 12 and not report.must_failed  # + agent.describe-shows-budgets
     assert report.exit_code == 0 and report.claims["agent"]["claimable"] and not report.unproven_must

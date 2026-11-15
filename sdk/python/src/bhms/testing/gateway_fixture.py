@@ -12,16 +12,35 @@ Thread-safety: pure functions.
 
 from __future__ import annotations
 
+import json
+
 from dataclasses import dataclass, field
 from pathlib import Path
 
 
 @dataclass(frozen=True)
 class Role:
-    """A principal of the gateway fixture: its scopes and, optionally, bounds that narrow device bounds."""
+    """A principal of the gateway fixture: its scopes and, optionally, bounds that narrow device bounds and cumulative
+    budgets (7.4.1)."""
 
     scopes: tuple[str, ...]
     bounds: dict[str, dict[str, dict[str, float]]] = field(default_factory=dict)
+    budgets: tuple[dict[str, object], ...] = ()
+
+
+GRANT_PROGRAM: dict[str, object] = {
+    "bhmsProgram": "2026-11-15", "name": "conformance_grant", "maxDurationMs": 10_000,
+    "description": "One pulse of axis-1: the reviewed program the programmer role may run without invoke scope.",
+    "input": {"type": "object", "additionalProperties": False, "properties": {}},
+    "steps": [{"kind": "invoke", "deviceId": "axis-1", "action": "pulse", "arguments": {"count": 1}}]}
+"""The program of the ``programmer`` role's program-scoped grant (BHMS-PRG-023); device-local ids (programs are served by
+device servers)."""
+
+
+def _grant_scope() -> str:
+    from bhms.protocol.canonical import digest
+
+    return f"programs:run:{digest(GRANT_PROGRAM)}"
 
 
 ROLES: dict[str, Role] = {
@@ -34,6 +53,11 @@ ROLES: dict[str, Role] = {
     "globber": Role(("read", "lease", "invoke:u0/axis-1/*")),
     "exact": Role(("read", "lease", "invoke:u0/axis-1/overdrive")),
     "resolver": Role(("read", "operations:read", "operations:resolve")),
+    "budgeted": Role(("read", "invoke:u0/axis-1/pulse"), budgets=(
+        {"id": "pulses", "action": "u0/axis-1/pulse", "quantity": "/count", "unit": "1", "total": 5},)),
+    "budgeted-restart": Role(("read", "invoke:u0/axis-1/pulse"), budgets=(
+        {"id": "pulses-durable", "action": "u0/axis-1/pulse", "quantity": "/count", "unit": "1", "total": 1000},)),
+    "programmer": Role(("read", "lease", _grant_scope())),
 }
 TOKEN_PREFIX = "conformance-token-"
 NAMESPACES = ("u0", "u1")
@@ -61,6 +85,9 @@ def gateway_toml(flavour: str, url: str | None, state: Path | None, principals: 
                 inner = ", ".join(f"{m} = {{ {', '.join(f'{k} = {v}' for k, v in b.items())} }}" for m, b in members.items())
                 parts.append(f'"{action}" = {{ {inner} }}')
             lines.append("bounds = { " + ", ".join(parts) + " }")
+        if spec.budgets:
+            lines.append("budgets = [" + ", ".join(
+                "{ " + ", ".join(f"{k} = {json.dumps(v)}" for k, v in budget.items()) + " }" for budget in spec.budgets) + "]")
         lines.append("")
     return "\n".join(lines)
 
@@ -72,7 +99,8 @@ def localize_roles(roles: dict[str, Role]) -> dict[str, Role]:
         return text.replace("u0/*/*", "axis-1/*").replace("u0/", "")
 
     return {name: Role(tuple(local(s) for s in role.scopes),
-                       {local(action): members for action, members in role.bounds.items()}) for name, role in roles.items()}
+                       {local(action): members for action, members in role.bounds.items()},
+                       tuple({**b, "action": local(str(b["action"]))} for b in role.budgets)) for name, role in roles.items()}
 
 
 def device_roles() -> dict[str, Role]:
@@ -89,5 +117,7 @@ def device_policy_document(principals: dict[str, Role]) -> dict[str, dict[str, o
         entry: dict[str, object] = {"tokens": [token_digest(TOKEN_PREFIX + name)], "scopes": list(role.scopes)}
         if role.bounds:
             entry["bounds"] = {action: members for action, members in role.bounds.items()}
+        if role.budgets:
+            entry["budgets"] = [dict(b) for b in role.budgets]
         out[name] = entry
     return {"principals": out}

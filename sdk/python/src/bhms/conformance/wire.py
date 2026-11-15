@@ -19,11 +19,21 @@ import contextlib
 import itertools
 import json
 import time
+from contextvars import ContextVar
 from dataclasses import dataclass, field
 from typing import Any
 
 from bhms.protocol.version import PROTOCOL_VERSION
 from bhms.transport.base import FrameTooLarge, Transport, TransportClosed
+
+TESTED_VERSION: ContextVar[str] = ContextVar("bhms_conformance_version", default=PROTOCOL_VERSION)
+"""The protocol version a run tests: the newest one the target serves (or ``--protocol-version``); every request of the run
+carries it (BHMS-CNF-001: a claim names its version)."""
+
+
+def tested_version() -> str:
+    return TESTED_VERSION.get()
+
 
 CLIENT_INFO = {"name": "bhms-conformance", "version": "0.1.0"}
 SUBSCRIPTION_KEY = "bhms/subscriptionId"
@@ -240,7 +250,7 @@ class Wire:
         await self.send_bytes(json.dumps(message, allow_nan=False).encode())
 
     def meta(self, **overrides: Any) -> dict[str, Any]:
-        meta: dict[str, Any] = {"bhms/protocolVersion": PROTOCOL_VERSION, "bhms/clientInfo": CLIENT_INFO}
+        meta: dict[str, Any] = {"bhms/protocolVersion": TESTED_VERSION.get(), "bhms/clientInfo": CLIENT_INFO}
         meta.update(overrides)
         return meta
 

@@ -7,7 +7,7 @@ from collections.abc import Iterator
 from importlib import resources
 from typing import Any
 
-from bhms.protocol.version import PROTOCOL_VERSION
+from bhms.conformance.wire import tested_version
 
 
 def vectors(name: str) -> dict[str, Any]:
@@ -16,7 +16,7 @@ def vectors(name: str) -> dict[str, Any]:
 
 
 def raw_bytes(template: str, encoding: str | None, meta: dict[str, Any]) -> bytes:
-    text = template.replace("{{meta}}", json.dumps(meta)).replace("{{version}}", PROTOCOL_VERSION)
+    text = template.replace("{{meta}}", json.dumps(meta)).replace("{{version}}", tested_version())
     return text.encode(encoding or "utf-8")
 
 

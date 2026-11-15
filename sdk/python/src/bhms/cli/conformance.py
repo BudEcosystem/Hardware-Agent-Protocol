@@ -56,6 +56,8 @@ def register(app: typer.Typer) -> None:
                                        "command (split like a shell line) instead of this SDK's own device, e.g. \"node dist/src/testing/"
                                        "conformanceDevice.js\". It must accept [URL] [--state-dir DIR] [--memory] [--principals FILE]. Relative paths in it "
                                        "are resolved against the directory you run bhms conformance from.")] = None,
+            protocol_version: Annotated[str | None, typer.Option("--protocol-version", help="Test this protocol version (default: "
+                                         "the newest one the target and the runner share; requirements added later are not applicable).")] = None,
             verbose: Annotated[bool, typer.Option("--verbose", "-v", help="Also list passed checks' requirements and skipped rows.")] = False,
             list_coverage: Annotated[bool, typer.Option("--coverage", help="Print the requirement coverage table and exit.")] = False,
     ) -> None:
@@ -77,7 +79,8 @@ def register(app: typer.Typer) -> None:
                              only=tuple(only or ()), keep_state=keep_state, physical=physical, commit=commit,
                              device_target=device, argv=("bhms", "conformance", *sys.argv[2:]), allow_unproven=allow_unproven, conformance_device=tuple(conformance_device or ()),
                              upstreams=tuple(upstream or ()), physical_ok=physical_ok,
-                             function_tools=str(function_tools) if function_tools else None, device_command=device_command)
+                             function_tools=str(function_tools) if function_tools else None, device_command=device_command,
+                             protocol_version=protocol_version)
         try:
             report = asyncio.run(run_conformance(options))
         except KeyboardInterrupt:

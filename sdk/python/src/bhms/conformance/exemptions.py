@@ -40,5 +40,18 @@ EXEMPT: dict[str, tuple[str, str]] = {
                      "in tests/test_schema_examples.py (index method: inspection)"),
     "BHMS-EVT-013": (NOT_APPLICABLE, "in v0.1 `read` is one global scope: no principal can read some devices but not others, so there is no event "
                      "to hide; the row applies once a per-device read scope exists (a request without read scope is refused outright)"),
+    "BHMS-TRN-013": (INSPECTION, "host behaviour (SHOULD): a stdio server warns when it serves the default state directory "
+                     "(sdk/python: DeviceServer.serve)"),
+    "BHMS-AUTH-027": (INSPECTION, "server architecture (SHOULD): whether stop is read on a path that does not share the journal's sync"),
+    "BHMS-SEC-007": (INSPECTION, "refusing to start a TLS-scheme listener without TLS is start-up behaviour (tests/test_gateway_tls.py, "
+                     "tests/test_carrier.py)"),
+    "BHMS-CNF-007": (INSPECTION, "a property of the report the runner writes (tests/test_conformance_versions.py), not of the target"),
+    "BHMS-CMP-036": (INSPECTION, "the reference endpoints declare no measured action; the gateway's mapping is shown by "
+                     "tests/test_compact_v02.py::test_a_measured_result_is_verified_by_a_fresh_verified_by_reading"),
+    "BHMS-CMP-052": (INSPECTION, "the reference endpoints cannot be made to finish after their bound but within the link allowance on the "
+                     "fixture's links without starving the bridge's silence detector; shown by tests/test_compact_v02.py"),
+    "BHMS-CMP-053": (INSPECTION, "a token wrap needs 255 unconfirmed stops in one session; shown by tests/test_compact_v02.py"),
+    "BHMS-CMP-061": (INSPECTION, "endpoint behaviour (SHOULD): the read callback reports the age it can bound"),
+    "BHMS-AGT-033": (INSPECTION, "bridge behaviour (SHOULD): the bounded wait of bhms_stop (tests/test_bridge_core.py)"),
     "BHMS-SEC-050": (INSPECTION, "that a link is an exclusively owned physical line is deployment review; the gateway itself refuses any networked compact port at configuration load (tests/test_compact_gateway.py::test_a_networked_compact_link_is_refused_at_configuration_load)"),
 }

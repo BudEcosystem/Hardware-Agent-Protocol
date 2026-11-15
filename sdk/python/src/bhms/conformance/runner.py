@@ -26,10 +26,10 @@ from bhms.conformance.context import CONFORMANCE_EXTENSION, Context
 from bhms.conformance.core import (CAPABILITY_PROFILES, REGISTRY, CheckFailed, CheckResult, CheckSpec, NotApplicable,
                                    RequirementRow, Skipped, Status)
 from bhms.conformance.targets import Target, TargetError, connect_url, resolve
-from bhms.conformance.wire import Recorder, Wire
+from bhms.conformance.wire import TESTED_VERSION, Recorder, Wire
 from bhms.protocol.canonical import digest as jcs_digest
 from bhms.protocol.schema import load_schema
-from bhms.protocol.version import PROTOCOL_VERSION
+from bhms.protocol.version import PROTOCOL_VERSION, SUPPORTED_VERSIONS
 from bhms.transport.base import TransportClosed
 
 
@@ -61,6 +61,8 @@ class RunOptions:
     """``--function-tools FILE``: the OpenAI function-tool definitions of the bridge's adapter (JSON list), for BHMS-AGT-050."""
     device_command: str | None = None
     """``--device-command``: the command the ``conformance-device`` fixtures launch instead of this SDK's own device."""
+    protocol_version: str | None = None
+    """``--protocol-version``: the version to test; default the newest one both the runner and the target serve."""
 
 
 @dataclass
@@ -147,6 +149,23 @@ def expand_profiles(selected: tuple[str, ...], caps: dict[str, Any], kind: str) 
     return chosen, unavailable
 
 
+def _common_version(response: Any) -> str | None:
+    """The newest version this runner tests that a target refusing the current one with ``UNSUPPORTED_VERSION`` serves."""
+    error = getattr(response, "error", None) or {}
+    data = error.get("data") or {} if isinstance(error, dict) else {}
+    bound = data.get("bound") if data.get("bhmsCode") == "UNSUPPORTED_VERSION" else None
+    if not isinstance(bound, list):
+        return None
+    return next((v for v in SUPPORTED_VERSIONS if v in bound and v != TESTED_VERSION.get()), None)
+
+
+def _added_later(ids: Any) -> bool:
+    """Whether every requirement in ``ids`` was introduced after the version this run tests."""
+    rows = requirements.by_id()
+    tested = TESTED_VERSION.get()
+    return bool(ids) and all(rows.get(rid, {}).get("since", tested) > tested for rid in ids)
+
+
 def _has_capability(caps: dict[str, Any], capability: str) -> bool:
     node: Any = caps
     for part in capability.split("."):
@@ -159,6 +178,8 @@ def _has_capability(caps: dict[str, Any], capability: str) -> bool:
 def _gate(spec: CheckSpec, ctx: Context, opts: RunOptions) -> str | tuple[Status, str] | None:
     """``None`` to run; otherwise the status and reason the check gets without running."""
     caps = ctx.caps
+    if _added_later(spec.ids):
+        return Status.NOT_APPLICABLE, f"introduced after {TESTED_VERSION.get()}, the version this run tests"
     if spec.profile == "authority" and not _has_capability(caps, "authority") and ctx.is_gateway:
         return Status.SKIPPED, "unproven: a gateway claims the authority profile but advertises no capabilities.authority"
     if spec.profile in CAPABILITY_PROFILES and not _has_capability(caps, CAPABILITY_PROFILES[spec.profile]):
@@ -262,6 +283,19 @@ async def _heal(ctx: Context) -> str | None:
 
 
 async def run(opts: RunOptions) -> Report:
+    """Run the checks against ``opts.target`` at the protocol version the target and the runner share (or the one asked
+    for); the version is the report's ``protocolVersion`` and requirements added after it are not applicable."""
+    if opts.protocol_version is not None and opts.protocol_version not in SUPPORTED_VERSIONS:
+        return Report(_meta(opts, None, None, 0, "", [], {}), [], [], fatal=f"--protocol-version {opts.protocol_version} is "
+                      f"not one this runner tests ({', '.join(SUPPORTED_VERSIONS)})")
+    token = TESTED_VERSION.set(opts.protocol_version or PROTOCOL_VERSION)
+    try:
+        return await _run(opts)
+    finally:
+        TESTED_VERSION.reset(token)
+
+
+async def _run(opts: RunOptions) -> Report:
     seed = opts.seed if opts.seed is not None else int(time.time()) & 0xFFFFFF
     command = " ".join(shlex.quote(a) for a in opts.argv) if opts.argv else f"bhms conformance {shlex.quote(opts.target)}"
     try:
@@ -284,6 +318,10 @@ async def run(opts: RunOptions) -> Report:
         try:
             wire = Wire(await target.open_base(), recorder).start()
             first = await wire.request("server/discover", timeout=30)
+            older = _common_version(first) if opts.protocol_version is None else None
+            if older is not None:  # BHMS-LIF-019: test the newest version both serve
+                TESTED_VERSION.set(older)
+                first = await wire.request("server/discover", timeout=30)
         except (TargetError, OSError, TransportClosed, asyncio.TimeoutError) as exc:
             return Report(_meta(opts, target, None, seed, command, [], {}), [], [],
                           fatal=f"cannot reach {opts.target}: {exc}{_stderr_tail(target)}")
@@ -422,7 +460,7 @@ def _meta(opts: RunOptions, target: Target | None, ctx: Context | None, seed: in
           unavailable: dict[str, str]) -> dict[str, Any]:
     info = (ctx.discover_result.get("serverInfo") if ctx else None) or {}
     return {
-        "protocolVersion": PROTOCOL_VERSION,
+        "protocolVersion": TESTED_VERSION.get(),
         "profiles": profiles or list(opts.profiles),
         "profilesNotApplicable": unavailable,
         "transport": target.kind if target else None,

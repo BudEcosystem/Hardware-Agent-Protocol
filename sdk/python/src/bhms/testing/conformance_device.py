@@ -513,8 +513,21 @@ def main(argv: list[str] | None = None) -> None:
                         "SIGHUP re-reads it (applies to new admissions at once): the device then advertises capabilities.authority")
     parser.add_argument("--gateway", action="store_true",
                         help="treat same-uid Unix peers as a gateway (may use g- keys), as an upstream of a gateway on this host")
+    parser.add_argument("--budget", default=None, metavar="JSON",
+                        help="a Budget (7.4.1) for the BHMS_TOKEN principal (admin), so a bridge using that token has one to "
+                             "show (the agent-bridge fixture)")
     args = parser.parse_args(argv)
     extra: dict[str, Any] = {}
+    if args.budget:
+        import os
+
+        from bhms.runtime.authority import Policy, token_digest
+
+        token = os.environ.get("BHMS_TOKEN")
+        if not token:
+            parser.error("--budget needs the BHMS_TOKEN environment variable (the principal it applies to)")
+        extra["policy"] = Policy({"token": {"tokens": [token_digest(token)], "scopes": ["admin"],
+                                            "budgets": [json.loads(args.budget)]}})
     if args.gateway:
         from bhms.testing.gateway_fleet import gateway_uid_policy
 
