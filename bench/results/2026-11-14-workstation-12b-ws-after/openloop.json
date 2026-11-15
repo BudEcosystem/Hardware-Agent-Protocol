@@ -1,0 +1,131 @@
+{
+ "result": {
+  "dispatch": {
+   "measured_capacity_per_s": 1054,
+   "50% of closed-loop capacity": {
+    "n": 2716,
+    "failures": 0,
+    "min_ms": 4.0618,
+    "p50_ms": 11.4434,
+    "p95_ms": 21.713,
+    "p99_ms": 34.3892,
+    "max_ms": 69.824,
+    "throughput_per_s": 542.0157,
+    "offered_per_s": 527,
+    "achieved_per_s": 542,
+    "arrivals": 2716,
+    "load": {
+     "before": {
+      "load1": 6.10302734375,
+      "load5": 4.34521484375,
+      "load15": 4.478515625,
+      "t": 1794680223.070595
+     },
+     "after": {
+      "load1": 6.0146484375,
+      "load5": 4.3564453125,
+      "load15": 4.4814453125,
+      "t": 1794680228.0834987
+     }
+    }
+   },
+   "90% of closed-loop capacity": {
+    "n": 4828,
+    "failures": 0,
+    "min_ms": 4.1873,
+    "p50_ms": 8.4717,
+    "p95_ms": 12.9141,
+    "p99_ms": 17.8442,
+    "max_ms": 33.4314,
+    "throughput_per_s": 961.5307,
+    "offered_per_s": 949,
+    "achieved_per_s": 962,
+    "arrivals": 4828,
+    "load": {
+     "before": {
+      "load1": 6.0146484375,
+      "load5": 4.3564453125,
+      "load15": 4.4814453125,
+      "t": 1794680228.0835152
+     },
+     "after": {
+      "load1": 5.85302734375,
+      "load5": 4.35009765625,
+      "load15": 4.478515625,
+      "t": 1794680233.1102633
+     }
+    }
+   }
+  },
+  "process": {
+   "measured_capacity_per_s": 2295,
+   "10% of closed-loop capacity": {
+    "n": 1172,
+    "failures": 0,
+    "min_ms": 0.6628,
+    "p50_ms": 2.054,
+    "p95_ms": 8.8358,
+    "p99_ms": 13.573,
+    "max_ms": 17.0977,
+    "throughput_per_s": 234.0548,
+    "offered_per_s": 229,
+    "achieved_per_s": 234,
+    "arrivals": 1172,
+    "load": {
+     "before": {
+      "load1": 5.85302734375,
+      "load5": 4.35009765625,
+      "load15": 4.478515625,
+      "t": 1794680236.8136988
+     },
+     "after": {
+      "load1": 5.38427734375,
+      "load5": 4.27783203125,
+      "load15": 4.4541015625,
+      "t": 1794680241.821869
+     }
+    }
+   },
+   "20% of closed-loop capacity": {
+    "n": 2349,
+    "failures": 0,
+    "min_ms": 0.5651,
+    "p50_ms": 1.5346,
+    "p95_ms": 4.472,
+    "p99_ms": 10.406,
+    "max_ms": 31.3942,
+    "throughput_per_s": 469.2128,
+    "offered_per_s": 459,
+    "achieved_per_s": 469,
+    "arrivals": 2349,
+    "load": {
+     "before": {
+      "load1": 5.38427734375,
+      "load5": 4.27783203125,
+      "load15": 4.4541015625,
+      "t": 1794680241.8218784
+     },
+     "after": {
+      "load1": 4.95263671875,
+      "load5": 4.20654296875,
+      "load15": 4.43017578125,
+      "t": 1794680246.829693
+     }
+    }
+   }
+  }
+ },
+ "seconds": 27.5,
+ "load_around": {
+  "before": [
+   6.28662109375,
+   4.35107421875,
+   4.4814453125
+  ],
+  "after": [
+   5.11669921875,
+   4.2529296875,
+   4.4443359375
+  ]
+ }
+}

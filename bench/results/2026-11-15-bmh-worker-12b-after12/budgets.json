@@ -1,0 +1,128 @@
+[
+ {
+  "budget": "B1 durable invoke (dispatch, unix, waitMs=0; fdatasync floor) p50",
+  "limit": "<= 2.30 ms (floor p50 1.30 + 1)",
+  "measured": "1.70 ms",
+  "pass": true,
+  "detail": "overhead above floor: 0.40 ms"
+ },
+ {
+  "budget": "B1 durable invoke (dispatch, unix, waitMs=0; fdatasync floor) p99",
+  "limit": "<= 11.51 ms (5 x 2.30)",
+  "measured": "2.67 ms",
+  "pass": true,
+  "detail": "host fsync p99 is 1.41 ms"
+ },
+ {
+  "budget": "B1 durable invoke (dispatch, unix, waitMs=0; SQLite FULL commit floor) p50",
+  "limit": "<= 2.30 ms (floor p50 1.30 + 1)",
+  "measured": "1.70 ms",
+  "pass": true,
+  "detail": "overhead above floor: 0.40 ms"
+ },
+ {
+  "budget": "B1 durable invoke (dispatch, unix, waitMs=0; SQLite FULL commit floor) p99",
+  "limit": "<= 11.52 ms (5 x 2.30)",
+  "measured": "2.67 ms",
+  "pass": true,
+  "detail": "host fsync p99 is 1.41 ms"
+ },
+ {
+  "budget": "B1 durable invoke (dispatch, unix, waitMs=1000; fdatasync floor) p50",
+  "limit": "<= 2.30 ms (floor p50 1.30 + 1)",
+  "measured": "1.70 ms",
+  "pass": true,
+  "detail": "overhead above floor: 0.40 ms"
+ },
+ {
+  "budget": "B1 durable invoke (dispatch, unix, waitMs=1000; fdatasync floor) p99",
+  "limit": "<= 11.51 ms (5 x 2.30)",
+  "measured": "2.31 ms",
+  "pass": true,
+  "detail": "host fsync p99 is 1.41 ms"
+ },
+ {
+  "budget": "B1 durable invoke (dispatch, unix, waitMs=1000; SQLite FULL commit floor) p50",
+  "limit": "<= 2.30 ms (floor p50 1.30 + 1)",
+  "measured": "1.70 ms",
+  "pass": true,
+  "detail": "overhead above floor: 0.40 ms"
+ },
+ {
+  "budget": "B1 durable invoke (dispatch, unix, waitMs=1000; SQLite FULL commit floor) p99",
+  "limit": "<= 11.52 ms (5 x 2.30)",
+  "measured": "2.31 ms",
+  "pass": true,
+  "detail": "host fsync p99 is 1.41 ms"
+ },
+ {
+  "budget": "B2 non-durable invoke (process, unix, waitMs=0) p50",
+  "limit": "<= 1.00 ms",
+  "measured": "0.19 ms",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "budget": "B2 non-durable invoke (process, unix, waitMs=1000) p50",
+  "limit": "<= 1.00 ms",
+  "measured": "0.22 ms",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "budget": "B2 non-durable invoke (memory, unix, waitMs=0) p50",
+  "limit": "<= 1.00 ms",
+  "measured": "0.15 ms",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "budget": "B2 non-durable invoke (memory, unix, waitMs=1000) p50",
+  "limit": "<= 1.00 ms",
+  "measured": "0.16 ms",
+  "pass": true,
+  "detail": ""
+ },
+ {
+  "budget": "B3 gateway lists 1000 upstreams correctly",
+  "limit": "10000 devices, each once, in order",
+  "measured": "-",
+  "pass": false,
+  "detail": "not measured"
+ },
+ {
+  "budget": "B4 devices/list 10,000 devices (unix, limit 100) per page",
+  "limit": "<= 50 ms",
+  "measured": "-",
+  "pass": false,
+  "detail": "not measured"
+ },
+ {
+  "budget": "B4 devices/list 10,000 devices (unix, limit 500) per page",
+  "limit": "<= 50 ms",
+  "measured": "-",
+  "pass": false,
+  "detail": "not measured"
+ },
+ {
+  "budget": "B4 devices/list 10,000 devices (http, limit 100) per page",
+  "limit": "<= 50 ms",
+  "measured": "-",
+  "pass": false,
+  "detail": "not measured"
+ },
+ {
+  "budget": "B4 devices/list 10,000 devices (http, limit 500) per page",
+  "limit": "<= 50 ms",
+  "measured": "-",
+  "pass": false,
+  "detail": "not measured"
+ },
+ {
+  "budget": "B5 compact typical invoke frame (native pty)",
+  "limit": "<= 64 bytes",
+  "measured": "-",
+  "pass": false,
+  "detail": "not measured"
+ }
+]

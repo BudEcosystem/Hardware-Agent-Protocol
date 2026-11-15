@@ -1,10 +1,191 @@
 # BHMS performance
 
-Measured 2026-11-13 and revised after review (fix round 1) against `feat/bhms` at 73974f8 (Python SDK, gateway, TypeScript SDK, C compact library), with the harness in
-[`bench/`](../../bench/README.md). Raw JSON for every number below is in `bench/results/`. This document states each budget
-(Ruling R12, revised) with its measured number, shows the misses, and says what is and is not known about why.
+Measured 2026-11-13 (Task 12a, the "before" record, revised after review) against `feat/bhms` at 73974f8, and again on 2026-11-14/15
+(Task 12b, before and after its SDK changes, base `f60771b`), with the harness in [`bench/`](../../bench/README.md). Raw JSON for
+every number below is in `bench/results/`. This document states each budget (Ruling R12, revised) with its measured number, shows
+the misses, and says what is and is not known about why. The first part is Task 12b; everything from "Task 12a verdict" on is the
+Task 12a record, unchanged except for this heading.
 
-## Verdict
+## Task 12b: after the performance changes (before and after)
+
+Task 12b (feat/bhms `f60771b..`) changed the SDKs as the Task 12a proposals said and re-ran the same harness. The "before" numbers
+in this part are **not** the 12a runs: they are the base commit `f60771b` measured again on the AMD machine in the same sessions,
+interleaved with the "after" runs (`before<N>` then `after<N>`, same scenarios, same pinning procedure), so that both sides saw the
+same host. Raw JSON and samples: `bench/results/2026-11-14-bmh-worker-12b-*`, `2026-11-15-bmh-worker-12b-*` and
+`2026-11-14-workstation-12b-*`. The Task 12a record follows unchanged below this part.
+
+What changed (see the Task 12b report for the tests and commits):
+
+* **Group commit (Ruling R12).** A barrier is a commit at `synchronous=NORMAL` plus an `fdatasync` of the WAL (what SQLite's FULL
+  adds in WAL mode); the connection never switches safety level. Concurrent intents share one `fdatasync` in the store's sync
+  thread while the event loop keeps serving; an intent with nobody to share with (one client, or operations queued on one device)
+  is synced on the event loop thread, as before, with no thread hand-off. No handler runs, and no invoke is answered, before the
+  `fdatasync` covering its own `dispatching` record has returned.
+* **Hot paths.** `to_wire` no longer builds a `TypeAdapter` per call; an invoke is 8 SQL statements and 2 commits instead of 11
+  and 2 (no `PRAGMA synchronous` toggles, one INSERT for all history entries of a commit); `DeviceServer.serve` freezes its
+  start-up heap (`gc.collect(); gc.freeze()`, as `Gateway.serve` did).
+* **Gateway pending-forward barrier: kept**, now a shared (group-committed) barrier; the decision and its reason are in the spec
+  (06 BHMS-OPS-003, 07 §7.6) and below.
+* **TypeScript journal:** one `fsync` per invoke (the `dispatching` record) instead of three.
+
+### Budgets, before and after (AMD machine)
+
+| id | budget | before (`f60771b`, same sessions) | after (12b) | verdict after |
+|---|---|---|---|---|
+| B1 | durable invoke p50 <= floor + 1 ms, p99 <= 5x | 7 of 8 runs pass; quiet host p50 1.70 to 1.80 ms, p99 2.7 to 3.0 ms | 7 of 10 runs pass (5 of 7 with the final code); quiet host p50 **1.69 to 1.78 ms**, p99 2.3 to 2.9 ms; misses only at load 12 to 36 | **FAIL** (aggregate; see below) |
+| B2 | non-durable p50 <= 1 ms | 8 of 8 pass (process 0.19 to 0.24 ms) | 10 of 10 pass (process 0.18 to 0.32 ms, memory 0.14 to 0.25 ms) | **PASS** |
+| B3 | gateway lists 1,000 upstreams correctly | PASS (12a) | PASS: 10,000 listed, unique, ordered, equal to the expected ids | **PASS** |
+| B4 | `devices/list` of 10,000 devices <= 50 ms per page | PASS (12a: worst p99 26 ms) | PASS: worst p99 15.4 ms (HTTP, limit 500; unix 7.4 ms) | **PASS** |
+| B5 | compact typical invoke frame <= 64 B | PASS (35 to 37 B) | PASS: request 35 to 37 B, reply 31 to 34 B | **PASS** |
+
+#### B1 across runs (`bench/aggregate.py`, all AMD runs of this task)
+
+| run | code | load1 (invoke) | fdatasync p50 | dispatch w0 p50 / p99 | dispatch w1000 p50 / p99 | B1 |
+|---|---|---|---:|---|---|---|
+| before5 / after5 | base / 12b (first policy) | 3-2 / 2-2 | 1.30 / 1.30 | 1.80 / 2.81 vs **1.70 / 2.88** | 1.80 / 2.91 vs **1.70 / 2.73** | PASS / PASS |
+| before6 / after6 | base / 12b (first policy) | 2-3 / 4-6 | 1.30 / 1.30 | 1.73 / 3.00 vs 2.20 / 4.37 | 1.78 / 2.84 vs 2.03 / 4.59 | PASS / PASS |
+| before7 / after7 | base / 12b (first policy) | 7-10 / 12-14 | 1.40 / 1.41 | 1.99 / 35.52 vs 2.20 / 33.47 | 2.94 / 35.43 vs 2.14 / 4.71 | FAIL / FAIL |
+| before8 / after8 | base / 12b | 22-24 / 18-16 | 1.31 / 1.41 | 1.93 / 4.60 vs **1.71 / 2.89** | 1.85 / 3.46 vs **1.71 / 2.91** | PASS / PASS |
+| before9 / after9 | base / 12b | 14-14 / 16-17 | 1.30 / 1.30 | 1.78 / 2.98 vs 2.18 / 5.16 | 1.78 / 2.99 vs 1.79 / 2.99 | PASS / PASS |
+| before10 / after10 | base / 12b | 14-15 / **26-33** | 1.30 / 1.39 | 1.77 / 3.01 vs 4.18 / 10.92 | 1.78 / 3.00 vs 4.59 / 12.78 | PASS / FAIL |
+| before11 / after11 | base / 12b | 3-4 / 4-4 | 1.30 / 1.30 | 1.71 / 3.01 vs **1.69 / 2.62** | 1.72 / 2.91 vs **1.70 / 2.75** | PASS / PASS |
+| before12 / after12 | base / 12b | 5-5 / 4-4 | 1.30 / 1.30 | 1.70 / 2.69 vs **1.70 / 2.67** | 1.73 / 2.92 vs **1.70 / 2.31** | PASS / PASS |
+| after-full2 | 12b | **28-36** | 1.40 | 2.63 / 9.48 | 3.05 / 8.52 | FAIL |
+| after-full3 | 12b | 5-4 | 1.30 | **1.69 / 3.04** | **1.78 / 2.71** | PASS |
+
+"First policy" is the 12b code before commit `03140b0` (a lone intent was synced inline only when the server had one request in
+flight); it differs from the final code only for concurrent same-device work, not for these one-client cells.
+
+* **B1 aggregate: FAIL.** With the final code 5 of 7 runs pass (after8, 9, 11, 12 and the full run after-full3); over every 12b run 7 of 10. The base code fails 1
+  of its 8 runs in the same sessions. Every miss is at a host load the passing runs did not see: `after10` (load 26 to 33) and
+  `after-full2` (28 to 36) miss the p50 by CPU contention (the process-mode p50 rose too, 0.18 -> 0.32 ms); `before7` and `after7`
+  miss the p99 with 33 to 36 ms tails that the raw `fdatasync` probe of the same run shows as well (`fsync 600B` p99 32 ms, 86
+  samples over 10 ms in `before7`; `fdatasync 4096B` p99 33 ms, 136 over 10 ms in `after7`): a shared-NVMe episode, not BHMS.
+  When base and 12b ran at comparable load the 12b p50 was equal or lower (1.69 to 1.71 against 1.70 to 1.80 ms quiet; 1.71
+  against 1.93 at load 16 to 24); the overhead above the fdatasync floor on a quiet host is 0.39 to 0.41 ms (12a: 0.5).
+* B1 stays what Task 12a called it: met on a quiet fast machine, not a property that holds on a loaded shared host. Group commit
+  cannot change the one-client case (one intent, one `fdatasync`); it changes everything with more than one intent in flight.
+
+### Concurrency: group commit (AMD, `concurrency` scenario, `waitMs=1000`, closed loop)
+
+Operations per second and p50, quiet host (runs 11 and 12, load 3 to 5; runs 8 and 9 at load 14 to 24 agree within 10%):
+
+| case | before (base) | after (12b) | change |
+|---|---|---|---|
+| dispatch, 1 client | 553 to 556/s, p50 1.7 to 1.8 ms | 541 to 576/s, p50 1.7 to 1.8 ms | unchanged |
+| dispatch, 10 clients on 10 devices (spread/10) | 579 to 623/s, p50 15.7 to 15.9 ms | **2,203 to 2,235/s, p50 3.6 ms** | 3.6x |
+| dispatch, 100 clients on 100 devices (spread/100) | 568 to 591/s, p50 162 to 163 ms | **6,226 to 6,450/s, p50 15.2 to 15.5 ms** | 10.7x |
+| dispatch, 10 / 100 clients on one device | 576 to 584 / 564 to 568/s | 576 to 594 / 557 to 574/s | unchanged (serial by design) |
+| process, 100 clients spread | 6,254 to 6,562/s | 6,217 to 7,032/s | unchanged |
+
+Durable throughput across devices now reaches the non-durable (process-mode) ceiling of the single CPython event loop (about
+6,300/s): the fsync is no longer the bottleneck. Operations queued on one device still need one sync each (the next one is
+dispatched only after the previous completes); syncing those inline keeps their rate where it was. The first 12b policy offloaded
+those syncs to the thread whenever more than one request was in flight; under load 12 to 41 that made the serial chain slower (the
+100-client same-device warm-up overran its 2 s wait in `after7` and in the first full run), which is why commit `03140b0` replaced
+it with the "anyone else waiting?" check. The warm-up itself now waits for queued work to finish (a harness fix).
+
+### Gateway forwarding (`gateway_forward` scenario, new; quiet host, runs 3 and 4)
+
+| gateway journal | clients | before (base) | after (12b) |
+|---|---|---|---|
+| dispatch (pending-forward barrier) | 1 | 420 to 457/s, p50 2.02 to 2.19 ms | 351 to 433/s, p50 2.10 to 2.23 ms |
+| dispatch | 10 | 263 to 400/s, p50 22 to 23 ms | **1,046 to 1,145/s, p50 8.1 to 8.4 ms** |
+| dispatch | 100 | 267 to 278/s, p50 345 to 388 ms | **917 to 1,248/s, p50 45 to 112 ms** |
+| process (no barrier) | 1 / 10 / 100 | 1,660 to 1,773 / 1,969 to 2,322 / 2,161 to 2,303/s | 1,661 to 1,770 / 2,173 to 2,462 / 1,854 to 2,607/s |
+
+One forward on its own still waits for one fsync (2.1 ms against 0.55 ms without a barrier): that is the cost of the barrier, and it
+is kept (below). Concurrent forwards now share it: 3.3 to 4.5x the throughput at 10 and 100 clients, half of the no-barrier
+ceiling on this single-loop test. The `gateway` scenario's per-invoke overhead (dispatch journal, one client) is 1.89 / 1.92 ms (waitMs 0 / 1000; 12a run 4: 2.15 / 2.80 ms). In the two full runs the 100-client forwarding cell, which runs in the harness process right after the 1,000-upstream `gateway` scenario, showed one stall of about 1.2 s (p99 1,204 and 1,231 ms, 520 and 660/s); run alone it never did (max 148 to 201 ms). That is most likely a garbage collection of the harness process over the previous scenario's heap (the harness does not freeze its own heap); it is not a budget and was not pursued further.
+
+### TypeScript journal (`ts_vs_py`, `axis-1.pulse`, `waitMs=1000`; quiet host, runs 3 and 4)
+
+| server | before (base) | after (12b) |
+|---|---|---|
+| TypeScript, durable | p50 8.10 / 8.38 ms, 92 to 110/s | **p50 4.17 / 4.67 ms, 207 to 225/s** |
+| Python, durable | p50 5.05 / 5.22 ms | p50 4.84 / 4.59 ms |
+| TypeScript / Python, no store | 1.30 / 1.30 to 1.40 ms | 1.28 to 1.29 / 1.27 to 1.34 ms |
+
+One fsync per invoke instead of three: the TypeScript durable p50 halves and is now at (or below) the Python server's.
+
+### Hot paths
+
+* Statements per durable invoke (traced on the server's connection, `tests/test_hot_paths.py`): 11 with 2 commits before
+  (`PRAGMA synchronous=FULL`, BEGIN, INSERT operation, 2x INSERT history, COMMIT, `PRAGMA synchronous=NORMAL`, BEGIN, UPDATE,
+  INSERT history, COMMIT) -> **8 with 2 commits**, no PRAGMA.
+* The client builds no `TypeAdapter` per call (57 us per call in the 12a profile). Together with the statement and toggle
+  savings, the quiet-host durable p50 is 0.05 to 0.1 ms lower (1.69 to 1.71 against 1.70 to 1.80 ms) and process mode
+  0.18 against 0.19 ms; memory mode 0.14 against 0.15 ms. These are small, as Task 12a predicted.
+* `gc.freeze()` at serve: the one-time generation-2 collection over the start-up heap fell from 29 to 90 ms (collecting 29,053
+  objects) to 7 to 40 ms collecting 62 to 96 objects (tail experiment GC logs below).
+
+### Tail stalls (item 5): cause established
+
+`bench/scripts/tail_experiment.py` now attributes every invoke slower than 10 ms to what overlapped it in time: an `fdatasync`
+over 5 ms in the server, a server event-loop stall, a client event-loop stall (`bench/stalls.py`), or nothing. Two runs of 3
+rounds x 3 variants x 8,000 sequential durable invokes (`2026-11-14-bmh-worker-12b-tail-run1`, `2026-11-15-...-tail-run2`):
+
+* **The 60 to 360 ms stalls are single `fdatasync` calls of the same length.** In every round the maximum invoke latency matches
+  the slowest `fdatasync` of the server in that round (for example 158.9 ms fdatasync / 159.3 ms loop stall; 191.6 / 192.6; 321 /
+  357), and of the run-2 invokes over 10 ms, 175 of 234, 25 of 26 and 30 of 33 (as shipped), 8 of 8, 37 of 48 and 7 of 7
+  (checkpointer off), 12 of 12, 68 of 77 and 9 of 10 (no gc.freeze) overlapped an `fdatasync` over 5 ms. The client's own loop
+  was never the cause (worst client stall 17.8 ms, 11 samples in the most loaded round). The raw fsync probe of the bench runs
+  shows the same disk tail (`fdatasync` max 35 to 239 ms). It is the shared NVMe (or its filesystem journal under other
+  tenants' writes), not the checkpointer (the variant with it off has the same maxima) and not the garbage collector (it is
+  frozen now; the remaining gen-2 collections are 7 to 40 ms over fewer than 100 objects and their timing does not match the
+  stalls).
+* Not fixable in BHMS: a durable invoke is bound to its own fsync. What 12b changes is that a slow sync of one intent no longer
+  holds every other intent: with more than one in flight the sync runs off the event loop and later intents join the next one.
+
+### Workstation (quick sizes; i7-10700KF, fsync p50 2.85 to 3.25 ms, load 4 to 7)
+
+Three interleaved quick runs each (`2026-11-14-workstation-12b-ws-*`): B1 fails both before (0 of 3 runs under the fdatasync floor)
+and after (0 of 3) by 0.1 to 1 ms at p50 (100 samples per cell make these noisy: one after run read 6.2 ms at waitMs=0 against 4.3
+and 4.2 in the other two); a 300-sample interleaved check gave 3.95 to 4.16 ms after against 4.56 to 4.67 ms before. B2 passes in
+2 of 3 runs on both sides (process 0.51 to 0.69 ms on this quieter desk host; 12a had 1.4 ms at load 11 to 15). Concurrency
+spread/100: 189 to 238/s before, 1,316 to 1,935/s after; gateway forwarding dispatch/100: 202 to 206/s before, 748/s after.
+
+### The gateway barrier decision (item 3)
+
+Kept, with group commit. Reason (now in 07 §7.6): the pending-forward record is the gateway's only evidence that a forward left.
+If it were only written, a power loss after the send would lose it: the gateway could not report the operation `unknown` or inhibit
+its resources, and the client's same-key retry would send it again, which the upstream deduplicates only while it keeps its own
+journal (BHMS-OPS-030, BHMS-OPS-081); an upstream whose epoch changed (a reset or non-durable store) would act twice. The
+evidence that the barrier is not free is above (one fsync per lone forward); the evidence that it no longer serialises the gateway
+is the 3.3 to 4.5x at 10 and 100 clients. Tests: `test_nothing_is_forwarded_before_the_pending_row_is_durable`,
+`test_a_pending_row_that_cannot_be_made_durable_sends_nothing` (tests/test_gateway_routing.py). Task 5's "no barrier needed" note is
+withdrawn in the CHANGELOG.
+
+### The full run after the changes (`2026-11-15-bmh-worker-12b-after-full3`, load 4 to 11)
+
+Every scenario of `bench/run.py --full` (simavr from the AVR container of the same session); all budgets PASS in this run.
+`python bench/tables.py bench/results/2026-11-15-bmh-worker-12b-after-full3` prints every table; the cells that changed:
+
+| cell | 12a run 4 | 12b after-full3 |
+|---|---|---|
+| invoke unix/dispatch waitMs 0 / 1000, p50 | 1.80 / 1.81 ms | 1.69 / 1.78 ms |
+| invoke unix/process waitMs 0, p50 / memory p50 | 0.21 / 0.17 ms | 0.18 / 0.15 ms |
+| concurrency dispatch/spread/100 | 576/s, p50 164 ms | 5,399/s, p50 17.6 ms |
+| concurrency dispatch/same-device/100 | 546/s | 529/s |
+| gateway overhead, dispatch journal, waitMs 0 / 1000 | +2.15 / +2.80 ms | +1.89 / +1.92 ms |
+| TypeScript / Python durable server (`ts_vs_py`) | 6.08 / 4.71 ms | 3.92 / 3.14 ms |
+| MCP bridge / native | 3.23 / 2.13 ms | 3.01 / 1.71 ms |
+| compact native invoke p50; simavr invoke p50 | 0.041; 7.17 ms | 0.043; 7.16 ms |
+| crash recovery, 1,000 unknown operations, restart to first response (all reported unknown) | 0.756 s | 0.824 s (baseline without operations 0.748 s) |
+
+### Remaining misses
+
+* **B1 under load** (above): the remaining non-disk time on a quiet host is 0.39 to 0.41 ms (Python, server and client, see the
+  12a profile below); under CPU contention it grows past the 1 ms allowance. A native transport (uvloop, proposal 7) is the only
+  lever left on the one-client path and was not done (out of scope until 1 to 4 were done; it would also be a new optional
+  dependency).
+* Same-device durable throughput is about 560/s: one sync per operation, by design (an intent of a queued operation becomes
+  durable only when it is dispatched, so that it recovers `rejected`, not `unknown`; Task 12a proposal 1's caveat, not changed).
+
+
+# Task 12a record (before the changes)
+
+## Task 12a verdict (before)
 
 BHMS meets its throughput and scale budgets and misses its latency budgets as a *reliable* property. The durable path is bound by
 the disk's `fsync`, the non-durable path by CPython; both scale to the hardware's limit rather than collapsing. Concretely:

@@ -1,0 +1,134 @@
+{
+ "result": {
+  "listeners=1": {
+   "listeners": 1,
+   "events": 30,
+   "load": {
+    "before": {
+     "load1": 3.99609375,
+     "load5": 4.03125,
+     "load15": 4.28466796875,
+     "t": 1794680517.8209834
+    },
+    "after": {
+     "load1": 3.99609375,
+     "load5": 4.03125,
+     "load15": 4.28466796875,
+     "t": 1794680517.995241
+    }
+   },
+   "delivery": {
+    "n": 30,
+    "failures": 0,
+    "min_ms": 3.7032,
+    "p50_ms": 5.3288,
+    "p95_ms": 7.6129,
+    "p99_ms": 11.1857,
+    "max_ms": 11.1857,
+    "throughput_per_s": 172.1703
+   },
+   "slowest_listener_ms": {
+    "n": 30,
+    "failures": 0,
+    "min_ms": 3.7032,
+    "p50_ms": 5.3288,
+    "p95_ms": 7.6129,
+    "p99_ms": 11.1857,
+    "max_ms": 11.1857,
+    "throughput_per_s": 172.1703
+   },
+   "deliveries_lost": 0
+  },
+  "listeners=10": {
+   "listeners": 10,
+   "events": 30,
+   "load": {
+    "before": {
+     "load1": 3.99609375,
+     "load5": 4.03125,
+     "load15": 4.28466796875,
+     "t": 1794680518.52996
+    },
+    "after": {
+     "load1": 3.99609375,
+     "load5": 4.03125,
+     "load15": 4.28466796875,
+     "t": 1794680518.6987417
+    }
+   },
+   "delivery": {
+    "n": 300,
+    "failures": 0,
+    "min_ms": 3.6342,
+    "p50_ms": 5.5919,
+    "p95_ms": 6.9262,
+    "p99_ms": 7.161,
+    "max_ms": 7.2106,
+    "throughput_per_s": 1777.58
+   },
+   "slowest_listener_ms": {
+    "n": 30,
+    "failures": 0,
+    "min_ms": 3.9217,
+    "p50_ms": 5.6382,
+    "p95_ms": 7.013,
+    "p99_ms": 7.2106,
+    "max_ms": 7.2106,
+    "throughput_per_s": 177.758
+   },
+   "deliveries_lost": 0
+  },
+  "listeners=100": {
+   "listeners": 100,
+   "events": 30,
+   "load": {
+    "before": {
+     "load1": 3.99609375,
+     "load5": 4.03125,
+     "load15": 4.28466796875,
+     "t": 1794680519.3811631
+    },
+    "after": {
+     "load1": 3.99609375,
+     "load5": 4.03125,
+     "load15": 4.28466796875,
+     "t": 1794680519.6865401
+    }
+   },
+   "delivery": {
+    "n": 3000,
+    "failures": 0,
+    "min_ms": 5.2346,
+    "p50_ms": 8.8684,
+    "p95_ms": 11.3166,
+    "p99_ms": 12.1647,
+    "max_ms": 12.6446,
+    "throughput_per_s": 9824.3318
+   },
+   "slowest_listener_ms": {
+    "n": 30,
+    "failures": 0,
+    "min_ms": 8.634,
+    "p50_ms": 10.0253,
+    "p95_ms": 12.238,
+    "p99_ms": 12.6446,
+    "max_ms": 12.6446,
+    "throughput_per_s": 98.2433
+   },
+   "deliveries_lost": 0
+  }
+ },
+ "seconds": 2.4,
+ "load_around": {
+  "before": [
+   3.99609375,
+   4.03125,
+   4.28466796875
+  ],
+  "after": [
+   3.99609375,
+   4.03125,
+   4.28466796875
+  ]
+ }
+}

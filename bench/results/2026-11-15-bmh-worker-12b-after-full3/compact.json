@@ -1,0 +1,117 @@
+{
+ "result": {
+  "native": {
+   "invoke": {
+    "n": 3000,
+    "min_ms": 0.0416,
+    "p50_ms": 0.043,
+    "p95_ms": 0.0465,
+    "p99_ms": 0.06,
+    "max_ms": 0.2772,
+    "mean_ms": 0.0438
+   },
+   "read": {
+    "n": 1500,
+    "min_ms": 0.0414,
+    "p50_ms": 0.0426,
+    "p95_ms": 0.0507,
+    "p99_ms": 0.0686,
+    "max_ms": 0.1525,
+    "mean_ms": 0.044
+   },
+   "invoke_request_bytes": [
+    35,
+    36,
+    37
+   ],
+   "invoke_reply_bytes": [
+    31,
+    32,
+    34
+   ],
+   "read_frame_bytes": [
+    29,
+    30,
+    31,
+    40,
+    41,
+    42,
+    43
+   ],
+   "hello_bytes": 48,
+   "typical_invoke_frame_bytes": 37,
+   "frame_budget_bytes": 64
+  },
+  "simavr": {
+   "invoke": {
+    "n": 1000,
+    "min_ms": 1.0254,
+    "p50_ms": 7.1639,
+    "p95_ms": 8.4383,
+    "p99_ms": 9.9877,
+    "max_ms": 81.015,
+    "mean_ms": 7.3991
+   },
+   "read": {
+    "n": 500,
+    "min_ms": 5.9085,
+    "p50_ms": 7.1987,
+    "p95_ms": 8.5212,
+    "p99_ms": 10.0272,
+    "max_ms": 10.7825,
+    "mean_ms": 7.3679
+   },
+   "invoke_request_bytes": [
+    35,
+    36,
+    37
+   ],
+   "invoke_reply_bytes": [
+    31,
+    32,
+    34
+   ],
+   "read_frame_bytes": [
+    29,
+    30,
+    40,
+    41,
+    42
+   ],
+   "hello_bytes": 48,
+   "typical_invoke_frame_bytes": 37,
+   "frame_budget_bytes": 64,
+   "baud": 115200,
+   "wire_floor_ms": 6.163,
+   "invoke_over_floor_ms": 1.001,
+   "label": "simavr",
+   "cmd": "/tmp/runner --mcu atmega328p --freq 16000000 --adc0-mv 1667 --led-pin 5 /tmp/avr/atmega328p/atmega328p.elf --eeprom {tmp}/e.bin",
+   "load": {
+    "before": [
+     "27.07",
+     "23.27",
+     "22.39"
+    ],
+    "after": [
+     "26.73",
+     "23.31",
+     "22.41"
+    ]
+   },
+   "python": "3.12.3"
+  }
+ },
+ "seconds": 1.7,
+ "load_around": {
+  "before": [
+   8.79736328125,
+   6.3486328125,
+   7.95068359375
+  ],
+  "after": [
+   8.5732421875,
+   6.3427734375,
+   7.93994140625
+  ]
+ }
+}

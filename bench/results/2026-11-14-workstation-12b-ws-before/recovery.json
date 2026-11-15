@@ -1,0 +1,83 @@
+{
+ "result": {
+  "devices=10 unknown=0": {
+   "devices": 10,
+   "unknown_expected": 0,
+   "journal_bytes": 214056,
+   "to_ready_s": 0.458,
+   "to_first_response_s": 0.458,
+   "unknown_after": 0,
+   "load": {
+    "before": {
+     "load1": 3.99609375,
+     "load5": 4.03125,
+     "load15": 4.28466796875,
+     "t": 1794680520.2937253
+    },
+    "after": {
+     "load1": 3.99609375,
+     "load5": 4.03125,
+     "load15": 4.28466796875,
+     "t": 1794680520.8187516
+    }
+   }
+  },
+  "devices=10 unknown=10": {
+   "devices": 10,
+   "unknown_expected": 10,
+   "journal_bytes": 514816,
+   "to_ready_s": 0.447,
+   "to_first_response_s": 0.448,
+   "unknown_after": 10,
+   "load": {
+    "before": {
+     "load1": 3.99609375,
+     "load5": 4.03125,
+     "load15": 4.28466796875,
+     "t": 1794680521.3271024
+    },
+    "after": {
+     "load1": 3.99609375,
+     "load5": 4.03125,
+     "load15": 4.28466796875,
+     "t": 1794680521.8380127
+    }
+   }
+  },
+  "devices=100 unknown=100": {
+   "devices": 100,
+   "unknown_expected": 100,
+   "journal_bytes": 4329936,
+   "to_ready_s": 0.616,
+   "to_first_response_s": 0.616,
+   "unknown_after": 100,
+   "load": {
+    "before": {
+     "load1": 3.916015625,
+     "load5": 4.013671875,
+     "load15": 4.27734375,
+     "t": 1794680522.8812945
+    },
+    "after": {
+     "load1": 3.916015625,
+     "load5": 4.013671875,
+     "load15": 4.27734375,
+     "t": 1794680523.6085522
+    }
+   }
+  }
+ },
+ "seconds": 3.8,
+ "load_around": {
+  "before": [
+   3.99609375,
+   4.03125,
+   4.28466796875
+  ],
+  "after": [
+   3.916015625,
+   4.013671875,
+   4.27734375
+  ]
+ }
+}

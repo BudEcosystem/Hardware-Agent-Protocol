@@ -1,0 +1,62 @@
+{
+ "environment": {
+  "host": "bud-dev",
+  "cpu": "Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz",
+  "cpus_online": 16,
+  "affinity": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9,
+   10,
+   11,
+   12,
+   13,
+   14,
+   15
+  ],
+  "mem_gb": 62.7,
+  "kernel": "7.0.0-42-generic",
+  "os": "PRETTY_NAME=\"Ubuntu 24.04.5 LTS\"",
+  "python": "3.12.3",
+  "node": "v20.20.1",
+  "packages": {
+   "mcp": "1.26.0",
+   "websockets": "15.0.1",
+   "aiohttp": "3.13.3",
+   "orjson": "3.11.5",
+   "pydantic": "2.12.3",
+   "bhms": "0.1.0"
+  },
+  "git": "",
+  "state_dir_fs": "/dev/nvme0n1p2 ext4   rw,noatime",
+  "state_root": "/home/bud/.cache/bhms-bench",
+  "load": {
+   "load1": 5.27490234375,
+   "load5": 4.41259765625,
+   "load15": 4.392578125,
+   "t": 1794680610.360578
+  },
+  "date": "2026-11-14T23:53:30+0530",
+  "mode": "quick",
+  "node_binary": "/home/bud/.nvm/versions/node/v20.20.1/bin/node"
+ },
+ "scenarios": {
+  "fsync": {
+   "seconds": 5.1,
+   "error": null
+  },
+  "invoke": {
+   "seconds": 10.4,
+   "error": null
+  }
+ },
+ "budgets_passed": 8,
+ "budgets_total": 18
+}

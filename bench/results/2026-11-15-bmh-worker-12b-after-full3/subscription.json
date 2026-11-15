@@ -1,0 +1,173 @@
+{
+ "result": {
+  "listeners=1": {
+   "listeners": 1,
+   "events": 200,
+   "load": {
+    "before": {
+     "load1": 8.86279296875,
+     "load5": 6.275390625,
+     "load15": 7.94482421875,
+     "t": 1794704248.7959607
+    },
+    "after": {
+     "load1": 8.86279296875,
+     "load5": 6.275390625,
+     "load15": 7.94482421875,
+     "t": 1794704249.4182765
+    }
+   },
+   "delivery": {
+    "n": 200,
+    "failures": 0,
+    "min_ms": 1.61,
+    "p50_ms": 1.833,
+    "p95_ms": 2.6644,
+    "p99_ms": 3.5611,
+    "max_ms": 238.4374,
+    "throughput_per_s": 321.3881
+   },
+   "slowest_listener_ms": {
+    "n": 200,
+    "failures": 0,
+    "min_ms": 1.61,
+    "p50_ms": 1.833,
+    "p95_ms": 2.6644,
+    "p99_ms": 3.5611,
+    "max_ms": 238.4374,
+    "throughput_per_s": 321.3881
+   },
+   "deliveries_lost": 0
+  },
+  "listeners=10": {
+   "listeners": 10,
+   "events": 200,
+   "load": {
+    "before": {
+     "load1": 8.86279296875,
+     "load5": 6.275390625,
+     "load15": 7.94482421875,
+     "t": 1794704249.8734264
+    },
+    "after": {
+     "load1": 8.86279296875,
+     "load5": 6.275390625,
+     "load15": 7.94482421875,
+     "t": 1794704250.5230849
+    }
+   },
+   "delivery": {
+    "n": 2000,
+    "failures": 0,
+    "min_ms": 1.6922,
+    "p50_ms": 1.9158,
+    "p95_ms": 2.1466,
+    "p99_ms": 3.2458,
+    "max_ms": 245.5347,
+    "throughput_per_s": 3078.6088
+   },
+   "slowest_listener_ms": {
+    "n": 200,
+    "failures": 0,
+    "min_ms": 1.8021,
+    "p50_ms": 1.9705,
+    "p95_ms": 2.1663,
+    "p99_ms": 3.2458,
+    "max_ms": 245.5347,
+    "throughput_per_s": 307.8609
+   },
+   "deliveries_lost": 0
+  },
+  "listeners=50": {
+   "listeners": 50,
+   "events": 200,
+   "load": {
+    "before": {
+     "load1": 8.9541015625,
+     "load5": 6.33740234375,
+     "load15": 7.9560546875,
+     "t": 1794704251.1170645
+    },
+    "after": {
+     "load1": 8.9541015625,
+     "load5": 6.33740234375,
+     "load15": 7.9560546875,
+     "t": 1794704251.8902094
+    }
+   },
+   "delivery": {
+    "n": 10000,
+    "failures": 0,
+    "min_ms": 1.8879,
+    "p50_ms": 2.5033,
+    "p95_ms": 3.1313,
+    "p99_ms": 4.0853,
+    "max_ms": 218.6294,
+    "throughput_per_s": 12934.4472
+   },
+   "slowest_listener_ms": {
+    "n": 200,
+    "failures": 0,
+    "min_ms": 2.3856,
+    "p50_ms": 2.7559,
+    "p95_ms": 3.364,
+    "p99_ms": 4.2336,
+    "max_ms": 218.6294,
+    "throughput_per_s": 258.6889
+   },
+   "deliveries_lost": 0
+  },
+  "listeners=100": {
+   "listeners": 100,
+   "events": 200,
+   "load": {
+    "before": {
+     "load1": 8.9541015625,
+     "load5": 6.33740234375,
+     "load15": 7.9560546875,
+     "t": 1794704252.362803
+    },
+    "after": {
+     "load1": 8.9541015625,
+     "load5": 6.33740234375,
+     "load15": 7.9560546875,
+     "t": 1794704253.1843224
+    }
+   },
+   "delivery": {
+    "n": 20000,
+    "failures": 0,
+    "min_ms": 2.1724,
+    "p50_ms": 3.2204,
+    "p95_ms": 4.1003,
+    "p99_ms": 5.301,
+    "max_ms": 95.8326,
+    "throughput_per_s": 24345.5526
+   },
+   "slowest_listener_ms": {
+    "n": 200,
+    "failures": 0,
+    "min_ms": 3.1948,
+    "p50_ms": 3.5973,
+    "p95_ms": 4.6528,
+    "p99_ms": 5.6238,
+    "max_ms": 95.8326,
+    "throughput_per_s": 243.4555
+   },
+   "deliveries_lost": 0
+  }
+ },
+ "seconds": 4.8,
+ "load_around": {
+  "before": [
+   8.86279296875,
+   6.275390625,
+   7.94482421875
+  ],
+  "after": [
+   8.9541015625,
+   6.33740234375,
+   7.9560546875
+  ]
+ }
+}

@@ -1,0 +1,131 @@
+{
+ "result": {
+  "dispatch": {
+   "measured_capacity_per_s": 262,
+   "50% of closed-loop capacity": {
+    "n": 683,
+    "failures": 0,
+    "min_ms": 3.9995,
+    "p50_ms": 6.6284,
+    "p95_ms": 24.407,
+    "p99_ms": 35.0793,
+    "max_ms": 40.0125,
+    "throughput_per_s": 136.0216,
+    "offered_per_s": 131,
+    "achieved_per_s": 136,
+    "arrivals": 683,
+    "load": {
+     "before": {
+      "load1": 4.640625,
+      "load5": 4.12939453125,
+      "load15": 4.33154296875,
+      "t": 1794680464.4677522
+     },
+     "after": {
+      "load1": 4.66943359375,
+      "load5": 4.14404296875,
+      "load15": 4.33544921875,
+      "t": 1794680469.4895444
+     }
+    }
+   },
+   "90% of closed-loop capacity": {
+    "n": 1208,
+    "failures": 0,
+    "min_ms": 3.7312,
+    "p50_ms": 18.606,
+    "p95_ms": 57.9324,
+    "p99_ms": 68.7935,
+    "max_ms": 77.9517,
+    "throughput_per_s": 240.9558,
+    "offered_per_s": 236,
+    "achieved_per_s": 241,
+    "arrivals": 1208,
+    "load": {
+     "before": {
+      "load1": 4.66943359375,
+      "load5": 4.14404296875,
+      "load15": 4.33544921875,
+      "t": 1794680469.4895551
+     },
+     "after": {
+      "load1": 4.37548828125,
+      "load5": 4.091796875,
+      "load15": 4.3173828125,
+      "t": 1794680474.5037317
+     }
+    }
+   }
+  },
+  "process": {
+   "measured_capacity_per_s": 2444,
+   "10% of closed-loop capacity": {
+    "n": 1254,
+    "failures": 0,
+    "min_ms": 0.655,
+    "p50_ms": 1.5343,
+    "p95_ms": 2.5709,
+    "p99_ms": 3.4544,
+    "max_ms": 21.3593,
+    "throughput_per_s": 250.5126,
+    "offered_per_s": 244,
+    "achieved_per_s": 251,
+    "arrivals": 1254,
+    "load": {
+     "before": {
+      "load1": 4.26513671875,
+      "load5": 4.0732421875,
+      "load15": 4.31005859375,
+      "t": 1794680478.1551077
+     },
+     "after": {
+      "load1": 4.08349609375,
+      "load5": 4.03857421875,
+      "load15": 4.29736328125,
+      "t": 1794680483.1618114
+     }
+    }
+   },
+   "20% of closed-loop capacity": {
+    "n": 2517,
+    "failures": 0,
+    "min_ms": 0.6514,
+    "p50_ms": 1.5366,
+    "p95_ms": 2.5546,
+    "p99_ms": 3.0817,
+    "max_ms": 5.1293,
+    "throughput_per_s": 502.6047,
+    "offered_per_s": 489,
+    "achieved_per_s": 503,
+    "arrivals": 2517,
+    "load": {
+     "before": {
+      "load1": 4.08349609375,
+      "load5": 4.03857421875,
+      "load15": 4.29736328125,
+      "t": 1794680483.1618237
+     },
+     "after": {
+      "load1": 4.2373046875,
+      "load5": 4.0712890625,
+      "load15": 4.306640625,
+      "t": 1794680488.1713107
+     }
+    }
+   }
+  }
+ },
+ "seconds": 27.9,
+ "load_around": {
+  "before": [
+   4.52197265625,
+   4.09765625,
+   4.322265625
+  ],
+  "after": [
+   4.2373046875,
+   4.0712890625,
+   4.306640625
+  ]
+ }
+}

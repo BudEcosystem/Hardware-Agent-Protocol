@@ -1,0 +1,58 @@
+{
+ "environment": {
+  "host": "jithin-HP-Z2-Mini-G1a-Workstation-Desktop-PC",
+  "cpu": "AMD RYZEN AI MAX+ PRO 395 w/ Radeon 8060S",
+  "cpus_online": 32,
+  "affinity": [
+   1,
+   7,
+   19,
+   21,
+   23,
+   24,
+   25,
+   31
+  ],
+  "mem_gb": 91.8,
+  "kernel": "7.3.0-9-generic",
+  "os": "PRETTY_NAME=\"Ubuntu 26.10\"",
+  "python": "3.12.16",
+  "node": "v20.20.1",
+  "packages": {
+   "mcp": "2.3.0",
+   "websockets": "17.4",
+   "aiohttp": "3.14.5",
+   "orjson": "3.13.0",
+   "pydantic": "2.14.3",
+   "bhms": "0.1.0"
+  },
+  "git": "",
+  "state_dir_fs": "/dev/nvme0n1p6 ext4 rw,relatime",
+  "state_root": "/home/jithin/hms-lab/bench-state",
+  "load": {
+   "load1": 5.103515625,
+   "load5": 5.82666015625,
+   "load15": 6.6669921875,
+   "t": 1794680013.95568
+  },
+  "date": "2026-11-14T23:43:33+0530",
+  "mode": "full",
+  "node_binary": "/home/jithin/hms-lab/node/bin/node"
+ },
+ "scenarios": {
+  "fsync": {
+   "seconds": 26.2,
+   "error": null
+  },
+  "invoke": {
+   "seconds": 53.5,
+   "error": null
+  },
+  "concurrency": {
+   "seconds": 15.1,
+   "error": "Traceback (most recent call last):\n  File \"/home/jithin/hms-lab/repo-bench-base/bench/run.py\", line 96, in main\n    result = await module.run(ctx)\n             ^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/jithin/hms-lab/repo-bench-base/bench/scenarios/concurrency.py\", line 72, in run\n    out[key] = await cell(ctx, durability, clients, spread, max(total, clients * 2))\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/jithin/hms-lab/repo-bench-base/bench/scenarios/concurrency.py\", line 33, in cell\n    await asyncio.gather(*(one(j, -i - 1) for j in range(clients) for i in range(min(5, per))))  # warm-up\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/jithin/hms-lab/repo-bench-base/bench/scenarios/concurrency.py\", line 30, in one\n    raise RuntimeError(res.operation.state)\nRuntimeError: dispatching\n"
+  }
+ },
+ "budgets_passed": 6,
+ "budgets_total": 18
+}

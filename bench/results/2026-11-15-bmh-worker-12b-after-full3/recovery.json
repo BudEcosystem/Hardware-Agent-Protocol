@@ -1,0 +1,105 @@
+{
+ "result": {
+  "devices=1000 unknown=0": {
+   "devices": 1000,
+   "unknown_expected": 0,
+   "journal_bytes": 9140608,
+   "to_ready_s": 0.747,
+   "to_first_response_s": 0.748,
+   "unknown_after": 0,
+   "load": {
+    "before": {
+     "load1": 8.9541015625,
+     "load5": 6.33740234375,
+     "load15": 7.9560546875,
+     "t": 1794704254.3157218
+    },
+    "after": {
+     "load1": 8.9541015625,
+     "load5": 6.33740234375,
+     "load15": 7.9560546875,
+     "t": 1794704255.0790305
+    }
+   }
+  },
+  "devices=10 unknown=10": {
+   "devices": 10,
+   "unknown_expected": 10,
+   "journal_bytes": 514816,
+   "to_ready_s": 0.2,
+   "to_first_response_s": 0.201,
+   "unknown_after": 10,
+   "load": {
+    "before": {
+     "load1": 8.9541015625,
+     "load5": 6.33740234375,
+     "load15": 7.9560546875,
+     "t": 1794704255.455418
+    },
+    "after": {
+     "load1": 8.79736328125,
+     "load5": 6.3486328125,
+     "load15": 7.95068359375,
+     "t": 1794704255.9269626
+    }
+   }
+  },
+  "devices=100 unknown=100": {
+   "devices": 100,
+   "unknown_expected": 100,
+   "journal_bytes": 4329936,
+   "to_ready_s": 0.26,
+   "to_first_response_s": 0.26,
+   "unknown_after": 100,
+   "load": {
+    "before": {
+     "load1": 8.79736328125,
+     "load5": 6.3486328125,
+     "load15": 7.95068359375,
+     "t": 1794704256.4789555
+    },
+    "after": {
+     "load1": 8.79736328125,
+     "load5": 6.3486328125,
+     "load15": 7.95068359375,
+     "t": 1794704257.0032873
+    }
+   }
+  },
+  "devices=1000 unknown=1000": {
+   "devices": 1000,
+   "unknown_expected": 1000,
+   "journal_bytes": 48495576,
+   "to_ready_s": 0.823,
+   "to_first_response_s": 0.824,
+   "unknown_after": 1000,
+   "load": {
+    "before": {
+     "load1": 8.79736328125,
+     "load5": 6.3486328125,
+     "load15": 7.95068359375,
+     "t": 1794704258.419583
+    },
+    "after": {
+     "load1": 8.79736328125,
+     "load5": 6.3486328125,
+     "load15": 7.95068359375,
+     "t": 1794704259.3513691
+    }
+   }
+  }
+ },
+ "seconds": 6.0,
+ "load_around": {
+  "before": [
+   8.9541015625,
+   6.33740234375,
+   7.9560546875
+  ],
+  "after": [
+   8.79736328125,
+   6.3486328125,
+   7.95068359375
+  ]
+ }
+}

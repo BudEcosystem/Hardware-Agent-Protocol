@@ -1,0 +1,86 @@
+{
+ "result": {
+  "state_root": "/home/jithin/hms-lab/bench-state/tmpa3pkf3cz",
+  "fdatasync_600B": {
+   "n": 3000,
+   "failures": 0,
+   "min_ms": 1.2911,
+   "p50_ms": 1.5958,
+   "p95_ms": 3.034,
+   "p99_ms": 5.0361,
+   "max_ms": 32.4849,
+   "throughput_per_s": 521.4445
+  },
+  "fdatasync_4096B": {
+   "n": 3000,
+   "failures": 0,
+   "min_ms": 1.2932,
+   "p50_ms": 1.6177,
+   "p95_ms": 4.6392,
+   "p99_ms": 7.0703,
+   "max_ms": 45.7302,
+   "throughput_per_s": 453.0815
+  },
+  "fsync_600B": {
+   "n": 3000,
+   "failures": 0,
+   "min_ms": 1.2818,
+   "p50_ms": 1.4253,
+   "p95_ms": 2.3488,
+   "p99_ms": 3.2282,
+   "max_ms": 11.2305,
+   "throughput_per_s": 642.0555
+  },
+  "fsync_4096B": {
+   "n": 3000,
+   "failures": 0,
+   "min_ms": 1.2899,
+   "p50_ms": 1.6083,
+   "p95_ms": 3.5858,
+   "p99_ms": 5.6705,
+   "max_ms": 13.1844,
+   "throughput_per_s": 511.6721
+  },
+  "sqlite_wal_commit": {
+   "NORMAL": {
+    "p50_ms": 0.0059,
+    "p99_ms": 0.0219
+   },
+   "FULL": {
+    "p50_ms": 1.6246,
+    "p99_ms": 9.0923
+   }
+  },
+  "load": {
+   "before": {
+    "load1": 19.6923828125,
+    "load5": 13.3076171875,
+    "load15": 9.501953125,
+    "t": 1794680308.030495
+   },
+   "after": {
+    "load1": 22.345703125,
+    "load5": 14.46728515625,
+    "load15": 9.98876953125,
+    "t": 1794680333.364533
+   }
+  },
+  "reference": {
+   "fsync_p50_ms": 1.5958,
+   "fsync_p99_ms": 5.0361
+  }
+ },
+ "seconds": 25.3,
+ "load_around": {
+  "before": [
+   19.6923828125,
+   13.3076171875,
+   9.501953125
+  ],
+  "after": [
+   22.345703125,
+   14.46728515625,
+   9.98876953125
+  ]
+ }
+}

@@ -1,0 +1,58 @@
+{
+ "result": {
+  "native": {
+   "invoke": {
+    "n": 500,
+    "min_ms": 0.0889,
+    "p50_ms": 0.0926,
+    "p95_ms": 0.1086,
+    "p99_ms": 0.1497,
+    "max_ms": 0.1633,
+    "mean_ms": 0.095
+   },
+   "read": {
+    "n": 250,
+    "min_ms": 0.0899,
+    "p50_ms": 0.0927,
+    "p95_ms": 0.1076,
+    "p99_ms": 0.1178,
+    "max_ms": 0.128,
+    "mean_ms": 0.0947
+   },
+   "invoke_request_bytes": [
+    35,
+    36,
+    37
+   ],
+   "invoke_reply_bytes": [
+    31,
+    32,
+    34
+   ],
+   "read_frame_bytes": [
+    29,
+    30,
+    40,
+    41,
+    42,
+    43
+   ],
+   "hello_bytes": 48,
+   "typical_invoke_frame_bytes": 37,
+   "frame_budget_bytes": 64
+  }
+ },
+ "seconds": 0.8,
+ "load_around": {
+  "before": [
+   3.916015625,
+   4.013671875,
+   4.27734375
+  ],
+  "after": [
+   3.916015625,
+   4.013671875,
+   4.27734375
+  ]
+ }
+}

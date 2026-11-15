@@ -1,0 +1,86 @@
+{
+ "result": {
+  "state_root": "/home/bud/.cache/bhms-bench/tmpwv5nr2f8",
+  "fdatasync_600B": {
+   "n": 300,
+   "failures": 0,
+   "min_ms": 2.6349,
+   "p50_ms": 2.8523,
+   "p95_ms": 3.0582,
+   "p99_ms": 3.8912,
+   "max_ms": 6.1176,
+   "throughput_per_s": 345.4671
+  },
+  "fdatasync_4096B": {
+   "n": 300,
+   "failures": 0,
+   "min_ms": 2.6817,
+   "p50_ms": 2.9864,
+   "p95_ms": 3.1262,
+   "p99_ms": 6.1161,
+   "max_ms": 9.0888,
+   "throughput_per_s": 326.0787
+  },
+  "fsync_600B": {
+   "n": 300,
+   "failures": 0,
+   "min_ms": 2.6328,
+   "p50_ms": 2.8853,
+   "p95_ms": 3.1705,
+   "p99_ms": 6.007,
+   "max_ms": 6.3738,
+   "throughput_per_s": 332.3683
+  },
+  "fsync_4096B": {
+   "n": 300,
+   "failures": 0,
+   "min_ms": 2.7739,
+   "p50_ms": 2.9541,
+   "p95_ms": 3.3208,
+   "p99_ms": 6.0164,
+   "max_ms": 9.1663,
+   "throughput_per_s": 321.6345
+  },
+  "sqlite_wal_commit": {
+   "NORMAL": {
+    "p50_ms": 0.0116,
+    "p99_ms": 0.0306
+   },
+   "FULL": {
+    "p50_ms": 3.0199,
+    "p99_ms": 6.1985
+   }
+  },
+  "load": {
+   "before": {
+    "load1": 4.953125,
+    "load5": 4.26171875,
+    "load15": 4.34423828125,
+    "t": 1794680578.2286897
+   },
+   "after": {
+    "load1": 5.037109375,
+    "load5": 4.291015625,
+    "load15": 4.353515625,
+    "t": 1794680583.0938442
+   }
+  },
+  "reference": {
+   "fsync_p50_ms": 2.8523,
+   "fsync_p99_ms": 3.8912
+  }
+ },
+ "seconds": 4.9,
+ "load_around": {
+  "before": [
+   4.953125,
+   4.26171875,
+   4.34423828125
+  ],
+  "after": [
+   5.037109375,
+   4.291015625,
+   4.353515625
+  ]
+ }
+}
