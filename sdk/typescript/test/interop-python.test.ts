@@ -21,7 +21,7 @@ after(async () => { if (client) await client.close(); });
 test("discover: identity, capabilities, epoch and principal", { skip }, () => {
   const d = client.discovered!;
   assert.equal(d.serverInfo.name, "conformance-device");
-  assert.deepEqual(d.supportedVersions, ["2026-11-13"]);
+  assert.deepEqual(d.supportedVersions, ["2026-11-15", "2026-11-13"]);  // the Python server serves v0.2 and v0.1
   assert.ok(d.capabilities.leases && d.capabilities.events && d.capabilities.programs);
   assert.ok(d.epoch.length > 0);
 });

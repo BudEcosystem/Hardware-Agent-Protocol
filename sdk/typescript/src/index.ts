@@ -25,3 +25,4 @@ export { memoryPair } from "./transport/memory.js";
 export { spawnServer, stdioServerTransport } from "./transport/stdio.js";
 export { connectSocket, listenTcp, listenUnix } from "./transport/socket.js";
 export { connectWebSocket, listenWebSocket } from "./transport/websocket.js";
+export { SDK_PROTOCOL_VERSION } from "./version.js";

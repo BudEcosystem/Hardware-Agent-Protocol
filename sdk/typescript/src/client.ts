@@ -31,7 +31,8 @@ import type {
   OperationsListResult, OperationsResolveResult, OperationsWaitResult, OperatorResolution, Program, ProgramsGetResult, ProgramsListResult, ProgramsRegisterResult,
   ProgramsRunResult, PropertiesReadResult, StopResult, SubscriptionFilter,
 } from "./generated/types.js";
-import { METHODS, PROTOCOL_VERSION } from "./generated/types.js";
+import { METHODS } from "./generated/types.js";
+import { SDK_PROTOCOL_VERSION as PROTOCOL_VERSION } from "./version.js";
 import { Session, type ClientStream, type Notification, type Transport } from "./jsonrpc/session.js";
 import { loadSchema, validateDef } from "./schema.js";
 import { spawnServer } from "./transport/stdio.js";

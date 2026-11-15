@@ -32,7 +32,7 @@ import { BhmsError } from "../errors.js";
 import { canonicalString, digest } from "../canonical.js";
 import type { ActionsInvokeParams, Observation, Operation } from "../generated/types.js";
 import { validateDef, type JsonSchema } from "../schema.js";
-import { PROTOCOL_VERSION } from "../generated/types.js";
+import { SDK_PROTOCOL_VERSION as PROTOCOL_VERSION } from "../version.js";
 import type { Principal } from "./authority.js";
 import type { Device, ActionSpec, PropertySpec } from "./device.js";
 import { intentDigest } from "./executor.js";
