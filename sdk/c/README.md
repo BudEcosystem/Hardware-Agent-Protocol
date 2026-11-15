@@ -62,6 +62,14 @@ validates it against the BHMS device model and prints the `digest8` initialiser;
 An integer wire field without `scale` needs a `type: integer` (or `multipleOf: 1`)
 schema in the sidecar (BHMS-DEV-071).
 
+Two v0.2 rules for the sidecar and the read callbacks (spec/bhms/11-compact-binding.md): an action's
+`maxDurationMs` is the endpoint's own execution bound, and the gateway adds a link allowance for the
+INVOKE and the RESULT on the wire (§11.12, BHMS-CMP-052), so do not pad it for the link; and a read
+callback that acquires the value itself reports its age (`meta->age_ms = 0` for a value read in the
+call), because a reading of unknown age (`BHMS_AGE_UNKNOWN`, the default) fails every `maxAgeMs` and
+`requiresFresh` (BHMS-CMP-061). A RESULT with evidence `measured` verifies the effect only through the
+action's `verifiedBy` properties, which the gateway reads fresh after it (BHMS-CMP-036).
+
 Thread-safety: single owner. Call every `bhms_*` function from one context; none
 is interrupt-safe.
 
