@@ -23,14 +23,18 @@ async def cell(ctx: Context, durability: str, clients: int, spread: bool, total:
     async with device_server(ctx, durability, "unix", devices=100 if spread else 1, queue_limit=1024) as (target, _):
         conns = [await Client.connect(target, timeout=120) for _ in range(clients)]
         try:
-            async def one(j: int, i: int) -> None:
+            async def one(j: int, i: int, *, settle: bool = False) -> None:
                 device = f"dev-{j % 100 + 1}" if spread else "dev-1"
                 res = await conns[j].actions_invoke(device, "set_point", {"value": abs(i)}, operation_key=f"{tag}-{j}-{i}", wait_ms=2000)
-                if res.operation.state != "completed":
-                    raise RuntimeError(res.operation.state)
+                op = res.operation
+                if settle and op.state in ("accepted", "dispatching", "running"):
+                    # warm-up only: 500 invokes queued on one device can outlast 2 s on a loaded host; wait them out
+                    op = (await conns[j].operations_wait(op.operation_id, 60_000)).operation
+                if op.state != "completed":
+                    raise RuntimeError(op.state)
 
             per = max(1, total // clients)
-            await asyncio.gather(*(one(j, -i - 1) for j in range(clients) for i in range(min(5, per))))  # warm-up
+            await asyncio.gather(*(one(j, -i - 1, settle=True) for j in range(clients) for i in range(min(5, per))))  # warm-up
             samples: list[float] = []
             failures = 0
             row: dict = {}

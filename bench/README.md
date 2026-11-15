@@ -37,6 +37,8 @@ Servers: `servers/device_server.py` (N devices; `set_point`, `emit_tick`, `hang`
 which follow Task 5's in-process design and say so).
 
 `budgets.py` holds the budgets (Ruling R12 revised) and evaluates them; a missing measurement counts as a failure.
+`aggregate.py <run dirs>` recomputes the B1/B2 verdict over several runs. `scripts/tail_experiment.py` attributes every slow durable
+invoke to a slow `fdatasync`, a server or client event-loop stall, or nothing seen (`stalls.py`).
 
 ## simavr
 
