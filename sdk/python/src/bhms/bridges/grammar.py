@@ -22,7 +22,7 @@ GRAMMAR_CALL = 'bhms_describe {"topic":"program-grammar"}'
 hosts have no resources, which is why the tool texts name the call.)"""
 PROGRAM_GRAMMAR = """\
 BHMS program (JSON object). Validated whole before step 1 runs; no loops except repeat, no code.
-{"bhmsProgram":"2026-11-13","name":snake_case,"description":str,"input":{"type":"object","additionalProperties":false,"properties":{...},"required":[...]},"maxDurationMs":int,"steps":[Step,...],"output":{var:"${ref}"}?}
+{"bhmsProgram":"2026-11-15","name":snake_case,"description":str,"input":{"type":"object","additionalProperties":false,"properties":{...},"required":[...]},"maxDurationMs":int,"steps":[Step,...],"output":{var:"${ref}"}?}
 Every number in input needs "x-bhms-unit". maxDurationMs must cover the declared worst case. Values may be "${input_name}" or "${saved_var}" references.
 Step kinds ("id" snake_case optional on all):
  {"kind":"invoke","deviceId":str,"action":str,"arguments":{...},"saveAs":var?}
@@ -32,7 +32,7 @@ Step kinds ("id" snake_case optional on all):
  {"kind":"sleep","durationMs":1..3600000}
  {"kind":"repeat","times":1..1000|"${ref}","as":var?,"steps":[Step,...]}
 Predicate P: {"op":"eq|ne|lt|le|gt|ge","left":v,"right":v} | {"op":"within","left":v,"right":v,"tolerance":v} | {"all":[P..]} | {"any":[P..]} | {"not":P}
-Example: {"bhmsProgram":"2026-11-13","name":"go_home","description":"Move to 0.","input":{"type":"object","additionalProperties":false,"properties":{}},"maxDurationMs":10000,"steps":[{"kind":"invoke","deviceId":"axis-1","action":"move_to","arguments":{"position":0}}]}
+Example: {"bhmsProgram":"2026-11-15","name":"go_home","description":"Move to 0.","input":{"type":"object","additionalProperties":false,"properties":{}},"maxDurationMs":10000,"steps":[{"kind":"invoke","deviceId":"axis-1","action":"move_to","arguments":{"position":0}}]}
 Prefer registering a program once and running it by program_digest (see bhms_find)."""
 
 _STEP_DEFS = {"invoke": "InvokeStep", "read": "ReadStep", "waitUntil": "WaitUntilStep", "assert": "AssertStep",

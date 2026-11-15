@@ -39,6 +39,7 @@ log = logging.getLogger("bhms.bridge")
 
 READ_MAX_AGE_MS = 1000  # BHMS-AGT-014
 DEFAULT_WAIT_MS = 5000
+STOP_WAIT_MS = 5000  # how long bhms_stop waits for confirmations (BHMS-AGT-033)
 MAX_WAIT_MS = 60_000
 LEASE_TTL_MS = 15_000
 SIGNATURE_KEY = "signature"
@@ -371,7 +372,17 @@ class AgentBridge:
         result = await self.client.devices_describe(args["device_id"])
         desc = to_wire(result.description)
         self._descriptions[args["device_id"]] = desc
-        return ToolResult(render.summarize_describe(desc), to_wire(result), block=render.signature_block(desc))
+        return ToolResult(render.summarize_describe(desc), to_wire(result),
+                          block=render.signature_block(desc, budgets=await self._budgets()))
+
+    async def _budgets(self) -> list[dict[str, Any]]:
+        """The bridge principal's budgets with what remains, fresh from ``server/discover`` (BHMS-AGT-017); none from a
+        server that enforces none (or speaks v0.1)."""
+        authority = to_wire(self.capabilities).get("authority") if self.capabilities is not None else None
+        if not (authority or {}).get("budgets"):
+            return []
+        principal = (await self.client.discover()).principal
+        return to_wire(principal).get("budgets", []) if principal is not None else []
 
     async def _bhms_read(self, args: dict[str, Any]) -> ToolResult:
         device, prop = args["device_id"], args["property"]
@@ -499,10 +510,13 @@ class AgentBridge:
         return ToolResult(render.summarize_cancel(op), data)
 
     async def _bhms_stop(self, args: dict[str, Any]) -> ToolResult:
+        # A bounded wait, so a device that confirms asynchronously can be reported confirmed rather than always
+        # initiated (BHMS-AGT-033, Task 14 learning 6); the stop itself never waits for anything (BHMS-AUTH-020).
+        wait_ms = min(STOP_WAIT_MS, self.max_wait_ms)
         if args.get("all"):
-            result = await self.client.stop(args["reason"], scope="all")
+            result = await self.client.stop(args["reason"], scope="all", wait_ms=wait_ms)
         else:
-            result = await self.client.stop(args["reason"], device_ids=list(args["device_ids"]))
+            result = await self.client.stop(args["reason"], device_ids=list(args["device_ids"]), wait_ms=wait_ms)
         data = to_wire(result)
         return ToolResult(render.summarize_stop(data["stops"]), data,
                           failed=any(s.get("outcome") == "failed" for s in data["stops"]))

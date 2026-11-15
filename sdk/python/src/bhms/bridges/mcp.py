@@ -264,11 +264,15 @@ class _BearerGate:
 
 
 async def serve_http(client: Client, host: str, port: int, *, token: str | None = None) -> None:
-    """Serve Streamable HTTP at ``http://host:port/mcp``. A non-loopback ``host`` requires a bearer ``token``."""
+    """Serve Streamable HTTP at ``http://host:port/mcp`` on a loopback ``host``. Beyond loopback BHMS-SEC-004 needs TLS, which
+    this bridge does not terminate: serve on 127.0.0.1 behind a TLS-terminating reverse proxy (the proxy model, spec 13.1)
+    with a bearer ``token``."""
     import uvicorn
 
-    if not is_loopback(host) and not token:
-        raise ValueError(f"refusing to listen on {host} without a token: pass --http-token (or BHMS_MCP_TOKEN), or bind 127.0.0.1")
+    if not is_loopback(host):
+        raise ValueError(f"refusing to serve MCP over plain HTTP on {host}: beyond loopback TLS is required (BHMS-SEC-004) and "
+                         "this bridge serves plain HTTP; bind 127.0.0.1 behind a TLS-terminating reverse proxy and pass "
+                         "--http-token (or BHMS_MCP_TOKEN)")
     bridge = AgentBridge(client)
     try:
         app, _ = http_app(build_server(bridge), host=host, token=token)

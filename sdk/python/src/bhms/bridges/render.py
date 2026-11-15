@@ -40,7 +40,15 @@ def clean(text: Any) -> str:
 
 
 def cut(text: str, limit: int) -> str:
-    return text if len(text) <= limit else text[: max(limit - 1, 0)].rstrip() + "…"
+    """``text`` within ``limit`` characters; a cut ends at a word boundary when one is near (never in the middle of a word
+    that could change its sense, Task 14 SDK/DX issue 5) and is marked with an ellipsis."""
+    if len(text) <= limit:
+        return text
+    head = text[: max(limit - 1, 0)]
+    space = head.rfind(" ")
+    if space >= max(limit - 16, limit * 2 // 3, 1):
+        head = head[:space]
+    return head.rstrip(" ,;:") + "…"
 
 
 def quote(text: Any, limit: int = DEVICE_TEXT_LIMIT) -> str:
@@ -105,14 +113,23 @@ def op_duration_ms(op: dict[str, Any]) -> float | None:
 
 
 def compose(head: str, body: str = "", next_step: str = "", suffix: str = "", limit: int = SUMMARY_LIMIT, *,
-            next_first: bool = False) -> str:
+            next_first: bool = False, body_first: bool = False) -> str:
     """Join the parts within ``limit``: head and suffix are kept, then the next step, and the body takes what is left
-    (``next_first``: the next step is kept whole, the body shrinks instead)."""
+    (``next_first``: the next step is kept whole, the body shrinks instead; ``body_first``: the body is kept as far as it
+    fits and the next step takes what is left: a failure's cause matters more than the generic advice, Task 14 learning 13)."""
     head, body, next_step, suffix = clean(head), clean(body), clean(next_step), clean(suffix)
     room = limit - len(head) - (len(suffix) + 1 if suffix else 0)
     if room < 0:  # head alone is too long: cut the head, never the suffix
         head = cut(head, limit - (len(suffix) + 1 if suffix else 0))
         room = 0
+    if body_first and room >= 64:  # with less room the next step keeps its share (it is what the model must do)
+        clause = re.split(r"(?<=[;.])\s|\s\(", body, maxsplit=1)[0] if body else ""
+        keep = min(len(clause), max(room * 60 // 100, min(24, room - 1))) if next_step else room - 1
+        bod = cut(body, min(room - 1, max(keep, min(len(body), room - (len(next_step) + 1 if next_step else 0) - 1)))) \
+            if body and room > 2 else ""
+        left = room - (len(bod) + 1 if bod else 0)
+        nxt = cut(next_step, left - 1) if next_step and left > 12 else ""
+        return " ".join(p for p in (head, bod, nxt, suffix) if p)
     cap = room - 1 if next_first else max(room * 55 // 100, min(room - 1, 40))
     nxt = cut(next_step, cap) if next_step and room > 1 else ""
     room_body = room - (len(nxt) + 1 if nxt else 0)
@@ -125,7 +142,8 @@ def compose(head: str, body: str = "", next_step: str = "", suffix: str = "", li
 def type_text(node: dict[str, Any]) -> str:
     kind = node.get("type")
     if "enum" in node:
-        return "|".join(num(v) for v in node["enum"][:8]) + ("|..." if len(node["enum"]) > 8 else "")
+        values = node["enum"]
+        return "|".join(num(v) for v in values[:8]) + (f"|... ({len(values)} values)" if len(values) > 8 else "")
     if "const" in node:
         return num(node["const"])
     if isinstance(kind, list):
@@ -252,6 +270,9 @@ def _property_line(name: str, prop: dict[str, Any], level: int) -> str:
     text += f": {type_text(node)}"
     if isinstance(unit, str) and unit != "1":
         text += f" {unit}"
+    bounds = bounds_text(node) if level == 0 else ""
+    if bounds:
+        text += f" {bounds}"
     text += f" {prop.get('evidence', 'reported')}"
     if prop.get("observable"):
         text += " observable"
@@ -260,16 +281,37 @@ def _property_line(name: str, prop: dict[str, Any], level: int) -> str:
     return text
 
 
-def signature_block(description: dict[str, Any], *, max_tokens: int = SIGNATURE_TOKENS) -> str:
-    """The compact device description (BHMS-AGT-013): every action and property, within ``max_tokens``.
+def budget_lines(description: dict[str, Any], budgets: list[dict[str, Any]] | None) -> list[str]:
+    """One line per budget of the caller that applies to an action of this device, with what remains (BHMS-AGT-017):
+    ``budget pump-volume: dispense /volume 100 uL left of 500 uL (per 1 h; next frees 2026-...Z)``."""
+    from bhms.runtime.budgets import Budget
+
+    lines = []
+    for raw in budgets or ():
+        budget = Budget.from_wire({k: raw[k] for k in ("id", "action", "quantity", "unit", "total", "windowMs") if k in raw})
+        names = [a for a in description.get("actions") or {} if budget.matches(str(description.get("deviceId")), a)]
+        if not names:
+            continue
+        window = f"per {duration(budget.window_ms)}" if budget.window_ms else "in total"
+        frees = f"; next frees {raw['resetsAt']}" if raw.get("resetsAt") else ""
+        lines.append(f"budget {budget.id}: {','.join(names)} {budget.quantity} {num(raw['remaining'])} {budget.unit} "
+                     f"left of {num(budget.total)} {budget.unit} ({window}{frees}); a call that may have acted counts")
+    return lines
+
+
+def signature_block(description: dict[str, Any], *, max_tokens: int = SIGNATURE_TOKENS,
+                    budgets: list[dict[str, Any]] | None = None) -> str:
+    """The compact device description (BHMS-AGT-013): every action and property, within ``max_tokens``, and the caller's
+    budgets that apply to its actions with what remains (BHMS-AGT-017; never elided).
 
     Elision levels: 0 full; 1 drops outputs and freshness; 2 keeps argument names and types only; 3 lists names only.
     The last line says what was elided and that ``structuredContent`` carries the full description.
     """
     notes = {1: "elided: action outputs and freshness preconditions", 2: "elided: bounds, units, effects and "
              "lease/cancel details", 3: "elided: all details, only names are listed"}
+    extra = budget_lines(description, budgets)
     for level in range(4):
-        text = _block(description, level)
+        text = "\n".join([_block(description, level), *extra])
         if level:
             text += f"\n({notes[level]}; the full description is in the structured result)"
         if estimate_tokens(text) <= max_tokens:
@@ -370,6 +412,7 @@ def summarize_operation(op: dict[str, Any], *, replayed: bool = False, descripti
     elif state in ("failed", "rejected"):
         body = message if code else state
         nxt = f"Next: {hint}" if hint else ""
+        return compose(head, body, nxt, suffix, body_first=True)  # the cause first; the hint is what gets cut
     elif state == "unknown":
         hint = clean(err.get("hint", "")) or "reconcile with bhms_operation before acting again"
         nxt = f"Next: {hint}"
@@ -448,6 +491,7 @@ def summarize_find(devices: list[dict[str, Any]], programs: list[dict[str, Any]]
     head = count(len(devices), "device")
     if programs is not None:
         head += f", {count(len(programs), 'program')}"
+        items += [f"program {p['name']} {str(p.get('digest', ''))[7:19]}" for p in programs]  # named (Task 14 learning 15)
     nxt = ""
     if next_cursor:
         nxt = f'more: call bhms_find with cursor="{next_cursor}"'

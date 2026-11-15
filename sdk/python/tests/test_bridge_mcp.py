@@ -230,10 +230,11 @@ async def test_streamable_http_with_a_bearer_token():
         proc.stderr.close()
 
 
-def test_http_on_a_public_address_requires_a_token():
-    result = subprocess.run([sys.executable, "-m", "bhms", "mcp", TARGET, "--http", "0.0.0.0:0"], capture_output=True, text=True,
-                            timeout=60, env={**os.environ, "BHMS_MCP_TOKEN": ""})
-    assert result.returncode == 1 and "without a token" in result.stdout + result.stderr
+def test_plain_http_on_a_public_address_is_refused_even_with_a_token():  # BHMS-SEC-004 (Task 14 DX issue 11)
+    for token in ("", "s3cret"):
+        result = subprocess.run([sys.executable, "-m", "bhms", "mcp", TARGET, "--http", "0.0.0.0:0"], capture_output=True,
+                                text=True, timeout=60, env={**os.environ, "BHMS_MCP_TOKEN": token})
+        assert result.returncode == 1 and "TLS is required" in result.stdout + result.stderr
     assert time.monotonic() > 0
 
 
