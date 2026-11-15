@@ -1,0 +1,54 @@
+{
+ "environment": {
+  "host": "jithin-HP-Z2-Mini-G1a-Workstation-Desktop-PC",
+  "cpu": "AMD RYZEN AI MAX+ PRO 395 w/ Radeon 8060S",
+  "cpus_online": 32,
+  "affinity": [
+   2,
+   12,
+   16,
+   18,
+   24,
+   26,
+   28,
+   30
+  ],
+  "mem_gb": 91.8,
+  "kernel": "7.3.0-9-generic",
+  "os": "PRETTY_NAME=\"Ubuntu 26.10\"",
+  "python": "3.12.16",
+  "node": null,
+  "packages": {
+   "mcp": "2.3.0",
+   "websockets": "17.4",
+   "aiohttp": "3.14.5",
+   "orjson": "3.13.0",
+   "pydantic": "2.14.3",
+   "bhms": "0.1.0"
+  },
+  "git": "",
+  "state_dir_fs": "/dev/nvme0n1p6 ext4 rw,relatime",
+  "state_root": "/home/jithin/hms-lab/bench-state",
+  "load": {
+   "load1": 20.232421875,
+   "load5": 25.8662109375,
+   "load15": 34.658203125,
+   "t": 1794763058.7125375
+  },
+  "date": "2026-11-15T22:47:38+0530",
+  "mode": "full",
+  "node_binary": null
+ },
+ "scenarios": {
+  "fsync": {
+   "seconds": 19.2,
+   "error": null
+  },
+  "invoke": {
+   "seconds": 33.8,
+   "error": null
+  }
+ },
+ "budgets_passed": 12,
+ "budgets_total": 18
+}

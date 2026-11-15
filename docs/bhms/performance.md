@@ -27,12 +27,16 @@ What changed (see the Task 12b report for the tests and commits):
 * **Gateway pending-forward barrier: kept**, now a shared (group-committed) barrier; the decision and its reason are in the spec
   (06 BHMS-OPS-003, 07 §7.6) and below.
 * **TypeScript journal:** one `fsync` per invoke (the `dispatching` record) instead of three.
+* **Fix round 1 (Ruling R47):** an operation written behind a deferred barrier is not observable (notifications held and
+  released in order, not in `operations/get`/`operations/list`) until its sync has completed; the B1 pairs 13 to 16 and
+  `cont8` ran this code. (The TypeScript server fsyncs the `dispatching` record synchronously before notifying, so it already
+  behaved so.)
 
 ### Budgets, before and after (AMD machine)
 
 | id | budget | before (`f60771b`, same sessions) | after (12b) | verdict after |
 |---|---|---|---|---|
-| B1 | durable invoke p50 <= floor + 1 ms, p99 <= 5x | 7 of 8 runs pass; quiet host p50 1.70 to 1.80 ms, p99 2.7 to 3.0 ms | 7 of 10 runs pass (5 of 7 with the final code); quiet host p50 **1.69 to 1.78 ms**, p99 2.3 to 2.9 ms; misses only at load 12 to 36 | **FAIL** (aggregate; see below) |
+| B1 | durable invoke p50 <= floor + 1 ms, p99 <= 5x | 8 of 13 runs pass (7 of 8 before fix round 1); quiet host p50 1.70 to 1.80 ms, p99 2.7 to 3.0 ms | 8 of 15 runs pass (7 of 10 before fix round 1); quiet host p50 **1.69 to 1.78 ms**, p99 2.3 to 2.9 ms; misses at load 12 to 84, where the base misses too | **FAIL** (aggregate; see below) |
 | B2 | non-durable p50 <= 1 ms | 8 of 8 pass (process 0.19 to 0.24 ms) | 10 of 10 pass (process 0.18 to 0.32 ms, memory 0.14 to 0.25 ms) | **PASS** |
 | B3 | gateway lists 1,000 upstreams correctly | PASS (12a) | PASS: 10,000 listed, unique, ordered, equal to the expected ids | **PASS** |
 | B4 | `devices/list` of 10,000 devices <= 50 ms per page | PASS (12a: worst p99 26 ms) | PASS: worst p99 15.4 ms (HTTP, limit 500; unix 7.4 ms) | **PASS** |
@@ -52,17 +56,53 @@ What changed (see the Task 12b report for the tests and commits):
 | before12 / after12 | base / 12b | 5-5 / 4-4 | 1.30 / 1.30 | 1.70 / 2.69 vs **1.70 / 2.67** | 1.73 / 2.92 vs **1.70 / 2.31** | PASS / PASS |
 | after-full2 | 12b | **28-36** | 1.40 | 2.63 / 9.48 | 3.05 / 8.52 | FAIL |
 | after-full3 | 12b | 5-4 | 1.30 | **1.69 / 3.04** | **1.78 / 2.71** | PASS |
+| before13..16, cont8 / after13..16, cont8 | base / 12b with R47 (fix round 1) | 20 to 84 | 1.30 to 3.00 | see the paired table | | before: 1 of 5 pass; after: 1 of 5 pass |
 
 "First policy" is the 12b code before commit `03140b0` (a lone intent was synced inline only when the server had one request in
 flight); it differs from the final code only for concurrent same-device work, not for these one-client cells.
 
-* **B1 aggregate: FAIL.** With the final code 5 of 7 runs pass (after8, 9, 11, 12 and the full run after-full3); over every 12b run 7 of 10. The base code fails 1
-  of its 8 runs in the same sessions. Every miss is at a host load the passing runs did not see: `after10` (load 26 to 33) and
+* **B1 aggregate: FAIL.** With the final code 5 of 7 runs pass (after8, 9, 11, 12 and the full run after-full3); over every 12b run 7 of 10
+  (fix round 1 added after13 to after16 and after-cont8: after15 passes, the others ran at load 25 to 84 and fail).
+  Every miss is at a host load the passing runs did not see: `after10` (load 26 to 33) and
   `after-full2` (28 to 36) miss the p50 by CPU contention (the process-mode p50 rose too, 0.18 -> 0.32 ms); `before7` and `after7`
   miss the p99 with 33 to 36 ms tails that the raw `fdatasync` probe of the same run shows as well (`fsync 600B` p99 32 ms, 86
   samples over 10 ms in `before7`; `fdatasync 4096B` p99 33 ms, 136 over 10 ms in `after7`): a shared-NVMe episode, not BHMS.
-  When base and 12b ran at comparable load the 12b p50 was equal or lower (1.69 to 1.71 against 1.70 to 1.80 ms quiet; 1.71
-  against 1.93 at load 16 to 24); the overhead above the fdatasync floor on a quiet host is 0.39 to 0.41 ms (12a: 0.5).
+  The base code fails 1 of 8 in those sessions; it also fails at the loads where 12b failed once it ran there (fix round 1,
+  below).
+
+**All paired runs** (each `before<N>` ran right before `after<N>` on the same CPUs; dispatch p50 waitMs 0 / 1000 in ms, load1
+of the invoke scenario; `cont8` had 8 busy loops of our own on the same 8 CPUs, a controlled contention):
+
+| pair | load before / after | before w0 / w1000 | after w0 / w1000 | after - before (w0 / w1000) |
+|---|---|---|---|---|
+| 5 | 3-2 / 2-2 | 1.80 / 1.80 | 1.70 / 1.70 | -0.10 / -0.10 |
+| 6 | 2-3 / 4-6 | 1.73 / 1.78 | 2.20 / 2.03 | +0.47 / +0.25 |
+| 7 | 7-10 / 12-14 | 1.99 / 2.94 | 2.20 / 2.14 | +0.21 / -0.80 |
+| 8 | 22-24 / 18-16 | 1.93 / 1.85 | 1.71 / 1.71 | -0.22 / -0.14 |
+| 9 | 14-14 / 16-17 | 1.78 / 1.78 | 2.18 / 1.79 | +0.40 / +0.01 |
+| 10 | 14-15 / 26-33 | 1.77 / 1.78 | 4.18 / 4.59 | +2.41 / +2.81 (after at a much higher load) |
+| 11 | 3-4 / 4-4 | 1.71 / 1.72 | 1.69 / 1.70 | -0.02 / -0.02 |
+| 12 | 5-5 / 4-4 | 1.70 / 1.73 | 1.70 / 1.70 | 0.00 / -0.03 |
+| 13 (fix round 1) | 81-84 / 82-68 | 4.73 / 5.00 | 7.33 / 7.48 | +2.60 / +2.48 |
+| 14 (fix round 1) | 51-43 / 39-38 | 4.99 / 4.10 | 5.15 / 3.46 | +0.16 / -0.64 |
+| 15 (fix round 1) | 21-20 / 20-19 | 2.15 / 1.90 | 1.79 / 1.91 | -0.36 / +0.01 |
+| 16 (fix round 1) | 20-22 / 25-42 | 2.71 / 2.80 | 5.05 / 5.31 | +2.34 / +2.51 (after at a higher load) |
+| cont8 (fix round 1) | 25-36 / 45-39 | 3.47 / 3.53 | 3.99 / 3.38 | +0.52 / -0.15 |
+
+  Read honestly: on a quiet host (pairs 5, 11, 12) 12b is equal or 0.1 ms faster. Under load the pairs scatter both ways: at
+  waitMs=0 12b is slower in 8 of 13 pairs (median +0.16 ms over the 11 pairs at comparable load, +2.6 ms in pair 13 at load
+  82), at waitMs=1000 the median is -0.03 ms. The base fails too at the loads where 12b first failed (pairs 13 and 14 at load
+  38 to 84: both fail; before16 fails at load 20 to 22). What 12b adds on the one-client path was measured directly: (a) the
+  "anyone else waiting?" check yields once to the event loop, one extra loop iteration per invoke (the contended cProfile:
+  `_run_once` 23,121 calls against 19,821 for 3,300 invokes, 7.0 against 6.0 per invoke), about 25 us on an idle desktop core
+  (`wait_synced(inline=True)` 72.6 us against a synchronous barrier's 47.2 us on tmpfs); (b) under contention it does not grow:
+  in the contended py-spy profile `Store._alone` is on the stack in 108 of 19,770 server samples (0.55%), and the admission
+  and the execution of one operation share one `fdatasync` (3,301 for 3,300 invokes) and one inline sync (6,601 `_sync_now`
+  calls, half of which return at once). So the cost is real but about 25 us, against the ~10 to 20 us saved by dropping the
+  two `PRAGMA synchronous` switches per invoke; the larger under-load differences are within the run-to-run scatter of this
+  host (the same code differs by up to 0.5 ms between consecutive runs at load 14 to 20). Profiles:
+  `bench/results/2026-11-15-bmh-worker-12b-profile-contended/{before,after}/` (cProfile and py-spy, 8 busy loops on the
+  server's CPUs). The overhead above the fdatasync floor on a quiet host is 0.39 to 0.41 ms (12a: 0.5).
 * B1 stays what Task 12a called it: met on a quiet fast machine, not a property that holds on a loaded shared host. Group commit
   cannot change the one-client case (one intent, one `fdatasync`); it changes everything with more than one intent in flight.
 
@@ -125,17 +165,39 @@ One fsync per invoke instead of three: the TypeScript durable p50 halves and is 
 over 5 ms in the server, a server event-loop stall, a client event-loop stall (`bench/stalls.py`), or nothing. Two runs of 3
 rounds x 3 variants x 8,000 sequential durable invokes (`2026-11-14-bmh-worker-12b-tail-run1`, `2026-11-15-...-tail-run2`):
 
-* **The 60 to 360 ms stalls are single `fdatasync` calls of the same length.** In every round the maximum invoke latency matches
-  the slowest `fdatasync` of the server in that round (for example 158.9 ms fdatasync / 159.3 ms loop stall; 191.6 / 192.6; 321 /
-  357), and of the run-2 invokes over 10 ms, 175 of 234, 25 of 26 and 30 of 33 (as shipped), 8 of 8, 37 of 48 and 7 of 7
+* **The 60 to 360 ms stalls are single `fdatasync` calls of the same length.** Per round, the slowest invoke against the
+  server's slowest `fdatasync` (and the event-loop stall it caused, the sync running inline on the loop), as measured:
+
+  | run / round | as shipped | checkpointer off | no gc.freeze |
+  |---|---|---|---|
+  | run 1, round 1 | 17.8 / 158.9 (loop 159.3) ms | 95.9 / 98.5 (99.2) | 100.8 / 99.8 (100.3) |
+  | run 1, round 2 | 62.4 / 61.3 (62.0) | 62.4 / 134.9 (134.8) | 99.6 / 98.7 (97.4) |
+  | run 1, round 3 | 10.7 / none over 5 ms | 107.2 / 106.1 (105.0) | 55.4 / 29.8 (50.0) |
+  | run 2, round 1 | 62.4 / 191.6 (192.6) | 120.7 / 119.5 (118.6) | 359.1 / 321.1 (356.9) |
+  | run 2, round 2 | 26.1 / 19.0 (22.7) | 122.5 / 260.4 (261.7) | 23.6 / 21.8 (21.5) |
+  | run 2, round 3 | 66.0 / 170.5 (171.2) | 120.9 / 119.6 (118.6) | 172.8 / 171.0 (170.9) |
+
+  In 12 of the 18 rounds the slowest invoke is within about 5 ms of the slowest `fdatasync` or of the loop stall it caused;
+  one round had no sync over 5 ms. In the other five (run 1 round 1 and run 2 rounds 1 and 3 as shipped: 17.8, 62.4 and 66.0
+  ms invokes against 158.9, 191.6 and 170.5 ms syncs; and the two checkpointer-off rounds with 134.9 and 260.4 ms syncs) the
+  slowest sync did not fall on a measured invoke (the 200 warm-up invokes, or the store's own barriers at start-up), and the
+  loop stall it caused matched it all the same. Of the run-2 invokes over 10 ms, 175 of 234, 25 of 26 and 30 of 33 (as shipped), 8 of 8, 37 of 48 and 7 of 7
   (checkpointer off), 12 of 12, 68 of 77 and 9 of 10 (no gc.freeze) overlapped an `fdatasync` over 5 ms. The client's own loop
   was never the cause (worst client stall 17.8 ms, 11 samples in the most loaded round). The raw fsync probe of the bench runs
   shows the same disk tail (`fdatasync` max 35 to 239 ms). It is the shared NVMe (or its filesystem journal under other
   tenants' writes), not the checkpointer (the variant with it off has the same maxima) and not the garbage collector (it is
   frozen now; the remaining gen-2 collections are 7 to 40 ms over fewer than 100 objects and their timing does not match the
   stalls).
-* Not fixable in BHMS: a durable invoke is bound to its own fsync. What 12b changes is that a slow sync of one intent no longer
-  holds every other intent: with more than one in flight the sync runs off the event loop and later intents join the next one.
+* Not fixable in BHMS: a durable invoke is bound to its own fsync. On the **thread path** (more than one intent waiting) a slow
+  sync no longer holds other intents: the loop keeps serving and later intents join the next sync. On the **inline path** (a
+  lone intent, and every synchronous barrier) the sync runs on the event loop, which reads nothing while it lasts: a request
+  that arrives meanwhile, `stop` included, waits for it (the loop stalls above are exactly that).
+
+**Stop latency on a durable server (Ruling R48).** Because of the inline path, the time from a `stop` arriving to its stop
+procedure being dispatched is bounded by one `fdatasync` in flight: typically about 1.3 ms on this host, at worst the slowest
+sync measured, 192.6 ms (run 2, round 1; 321 ms in a variant without the heap freeze). The design is kept (the inline sync is
+what keeps a lone client's latency at the 12a level); a `stop` reader that does not share the journal's event loop is
+recorded as a v0.2 idea in the spec CHANGELOG.
 
 ### Workstation (quick sizes; i7-10700KF, fsync p50 2.85 to 3.25 ms, load 4 to 7)
 

@@ -1,0 +1,16 @@
+{
+ "error": "Traceback (most recent call last):\n  File \"/home/jithin/hms-lab/repo-bench-base/bench/run.py\", line 96, in main\n    result = await module.run(ctx)\n             ^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/jithin/hms-lab/repo-bench-base/bench/scenarios/concurrency.py\", line 72, in run\n    out[key] = await cell(ctx, durability, clients, spread, max(total, clients * 2))\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/jithin/hms-lab/repo-bench-base/bench/scenarios/concurrency.py\", line 33, in cell\n    await asyncio.gather(*(one(j, -i - 1) for j in range(clients) for i in range(min(5, per))))  # warm-up\n    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/jithin/hms-lab/repo-bench-base/bench/scenarios/concurrency.py\", line 30, in one\n    raise RuntimeError(res.operation.state)\nRuntimeError: dispatching\n",
+ "seconds": 20.3,
+ "load_around": {
+  "before": [
+   42.92041015625,
+   62.89892578125,
+   53.25830078125
+  ],
+  "after": [
+   40.48486328125,
+   61.0439453125,
+   52.85302734375
+  ]
+ }
+}

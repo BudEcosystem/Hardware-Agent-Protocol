@@ -1,0 +1,81 @@
+         3013453 function calls (2986514 primitive calls) in 14.463 seconds
+
+   Ordered by: cumulative time
+   List reduced from 1091 to 40 due to restriction <40>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    23121    0.072    0.000   42.723    0.002 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py:1922(_run_once)
+    29736    0.104    0.000   33.928    0.001 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/asyncio/events.py:86(_run)
+    29736    0.036    0.000   26.293    0.001 {method 'run' of '_contextvars.Context' objects}
+        3    0.000    0.000   14.581    4.860 /home/jithin/hms-lab/repo-bench-12b/bench/servers/device_server.py:56(serve)
+        1    0.000    0.000   14.473   14.473 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py:160(run)
+        4    0.000    0.000   14.473    3.618 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py:655(run_until_complete)
+        4    0.000    0.000   14.473    3.618 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py:631(run_forever)
+        1    0.000    0.000   14.472   14.472 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/asyncio/runners.py:86(run)
+        1    0.000    0.000   14.471   14.471 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/server/server.py:407(close)
+     9901    0.019    0.000   10.723    0.001 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/jsonrpc/session.py:682(_run_request)
+     9901    0.027    0.000   10.656    0.001 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/jsonrpc/dispatcher.py:144(dispatch)
+     9900    0.014    0.000   10.515    0.001 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/server/handlers.py:132(actions_invoke)
+     6600    0.028    0.000   10.358    0.002 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/server/server.py:503(invoke)
+     6600    0.032    0.000   10.095    0.002 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/server/executor.py:274(admit)
+    13200    0.010    0.000    9.298    0.001 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/operations.py:623(durable)
+    13200    0.009    0.000    9.257    0.001 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/store.py:269(wait_synced)
+     6601    0.009    0.000    9.224    0.001 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/store.py:256(_sync_now)
+     3301    9.190    0.003    9.190    0.003 {built-in method posix.fdatasync}
+    23121    0.032    0.000    8.684    0.000 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/selectors.py:451(select)
+    23121    2.342    0.000    2.342    0.000 {method 'poll' of 'select.epoll' objects}
+     6600    0.018    0.000    0.528    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/server/executor.py:503(_run)
+        1    0.000    0.000    0.480    0.480 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/store.py:185(close)
+        1    0.000    0.000    0.479    0.479 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/store.py:645(stop)
+29751/29575    0.451    0.000    0.448    0.000 {method 'execute' of 'sqlite3.Connection' objects}
+     3300    0.008    0.000    0.428    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/server/executor.py:586(_settle)
+     3300    0.019    0.000    0.417    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/server/executor.py:680(_complete)
+     3300    0.042    0.000    0.384    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/operations.py:345(create)
+     3300    0.019    0.000    0.351    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/operations.py:411(transition)
+     3300    0.030    0.000    0.316    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/operations.py:573(_commit)
+    26479    0.009    0.000    0.274    0.000 {built-in method builtins.next}
+    26412    0.019    0.000    0.266    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/store.py:366(transaction)
+     3300    0.008    0.000    0.253    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/server/executor.py:236(admit_arguments)
+     3300    0.010    0.000    0.240    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/server/validation.py:147(admit)
+    13206    0.006    0.000    0.237    0.000 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/contextlib.py:141(__exit__)
+3309/3301    0.015    0.000    0.210    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/jsonschema/validators.py:349(iter_errors)
+     3303    0.006    0.000    0.147    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/jsonrpc/session.py:557(_read_loop)
+     3303    0.007    0.000    0.140    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/jsonrpc/session.py:463(_write_loop)
+     9902    0.010    0.000    0.140    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/protocol/canonical.py:99(canonical)
+    13203    0.004    0.000    0.136    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/store.py:411(_write)
+3319/3301    0.008    0.000    0.132    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/jsonschema/_keywords.py:290(properties)
+
+
+         3013453 function calls (2986514 primitive calls) in 14.463 seconds
+
+   Ordered by: internal time
+   List reduced from 1091 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+     3301    9.190    0.003    9.190    0.003 {built-in method posix.fdatasync}
+    23121    2.342    0.000    2.342    0.000 {method 'poll' of 'select.epoll' objects}
+29751/29575    0.451    0.000    0.448    0.000 {method 'execute' of 'sqlite3.Connection' objects}
+    29736    0.104    0.000   33.928    0.001 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/asyncio/events.py:86(_run)
+     3302    0.082    0.000    0.082    0.000 {method 'send' of '_socket.socket' objects}
+     3302    0.079    0.000    0.100    0.000 {method 'validate_python' of 'pydantic_core._pydantic_core.SchemaValidator' objects}
+        1    0.077    0.077    0.077    0.077 {built-in method gc.collect}
+     3305    0.075    0.000    0.075    0.000 {method 'recv' of '_socket.socket' objects}
+    23121    0.072    0.000   42.723    0.002 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/asyncio/base_events.py:1922(_run_once)
+26487/9902    0.050    0.000    0.124    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/protocol/canonical.py:60(_encode)
+     3300    0.042    0.000    0.384    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/operations.py:345(create)
+    29736    0.036    0.000   26.293    0.001 {method 'run' of '_contextvars.Context' objects}
+     6600    0.032    0.000   10.095    0.002 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/server/executor.py:274(admit)
+    23121    0.032    0.000    8.684    0.000 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/selectors.py:451(select)
+     3300    0.030    0.000    0.316    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/operations.py:573(_commit)
+     6600    0.028    0.000   10.358    0.002 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/server/server.py:503(invoke)
+   226405    0.028    0.000    0.035    0.000 {built-in method builtins.isinstance}
+   145924    0.027    0.000    0.027    0.000 {method 'get' of 'dict' objects}
+     9901    0.027    0.000   10.656    0.001 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/jsonrpc/dispatcher.py:144(dispatch)
+    26555    0.027    0.000    0.050    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/jsonschema/_types.py:94(is_type)
+     6601    0.025    0.000    0.041    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/operations.py:85(iso)
+     3301    0.025    0.000    0.064    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/jsonrpc/session.py:623(_on_request)
+     6600    0.022    0.000    0.124    0.000 /home/jithin/hms-lab/repo-bench-12b/sdk/python/src/bhms/runtime/operations.py:631(wait)
+3409/3301    0.021    0.000    0.120    0.000 /home/jithin/hms-lab/venvs/bench/lib/python3.12/site-packages/jsonschema/validators.py:396(descend)
+    33039    0.020    0.000    0.024    0.000 /home/jithin/.local/share/uv/python/cpython-3.12.16-linux-x86_64-gnu/lib/python3.12/asyncio/events.py:36(__init__)
+
+
