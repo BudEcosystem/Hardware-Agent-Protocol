@@ -99,8 +99,9 @@ sync of the journal failed) counts as not written: nothing is dispatched, and
 because the record already reads `dispatching` the operation ends `failed`
 (`mayHaveActed: false`, `effect: "none"`: the server can prove nothing was sent).
 Concurrent intents may share one sync (group commit) as long as none is
-dispatched, and none is reported, before the sync covering its own record has
-completed.
+dispatched, and none is reported to anyone (the invoker's answer, operation
+notifications, `operations/get`, `operations/list`, a gateway mirroring it),
+before the sync covering its own record has completed.
 
 **BHMS-OPS-004** Once an operation has reached `dispatching`, a transport error,
 timeout, lost reply or process crash MUST result in `unknown` (or a state proven

@@ -12,6 +12,16 @@ Performance round (Task 12b). Each entry names the evidence that caused it.
   operations per second whatever the number of clients; group commit in the Python SDK (Task 12b) separates the commit from
   its sync, which made the "written but not durable" case reachable and in need of a defined outcome (a `dispatching` record
   cannot become `rejected`).
+- **"Reported" in OPS-003 means any observer** (Task 12b fix round 1, Ruling R47): the invoker's answer, operation
+  notifications, `operations/get` and `operations/list` (and so a gateway mirroring the server) all wait for the sync covering
+  the record. Evidence: the Task 12b review probe — a second client subscribed to the device's operations heard `accepted`
+  then `dispatching` while the sync had not completed; after a power loss that operation id would have vanished. A queued
+  `accepted` record is not behind a barrier (it recovers `rejected`) and stays observable at its commit, in both SDKs.
+- **Learning, v0.2 idea (Ruling R48)**: on a durable server a synchronous or inline sync runs on the server's one event loop,
+  so a `stop` arriving meanwhile is read only when that sync returns: stop latency is bounded by one `fdatasync` in flight
+  (up to 192 ms measured on Task 12b's shared host, about 1.3 ms typically). A reader for `stop` that does not share the
+  loop with the journal (a separate thread or process that reads the connections and dispatches the stop procedure) would
+  remove that bound; not done in v0.1.
 - **Gateway pending-forward barrier kept, with its reason stated (§7.6 *Operations*)**: the pending-forward record must be on
   stable storage before a forward leaves; concurrent forwards may share the sync. Decision: keep it (Task 5's note that the
   gateway needs no barrier is withdrawn). Evidence: without it a power loss after the send loses the record, so the gateway
