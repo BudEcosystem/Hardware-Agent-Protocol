@@ -1,0 +1,11 @@
+# Preparation source coverage
+
+The source baseline is the sealed shared-kernel project: parent index 0a4a518555e08415a9d893bba106616323a3f1a237b61bf0bc171ee8f2979909, 746 indexed files verified by exact bytes. Forty project files are copied to originals/project and project before edits. baseline-pins.json records exact source/copy/hash joins. The phase-size proposal index is 358207f52b904bcb6bb717e83b06846904ac56b9d4b295b85a68cd8f03559a27; its sealed 30 files were not edited.
+
+The preceding design fully read endpoint.c, standing.c, endpoint_kernel.c/h, link.c, avr_runtime.c, avr_clock.c, boot_epoch.c and standing_fixture.c and precisely scoped retained assembly/WPA ranges. That coverage remains in the sealed design. This preparation reread complete changed kernel C/header, affected finite admission/report/limits/poll source and standing lease/freshness/acquisition/account/cutoff/loss functions with their unchanged surrounding guards and commits; complete old numeric/differential controls, fixture headers/service and affected original control timelines were read. Changes are exact diffs against retained originals.
+
+The parent runner is retained byte-exact as runner-baseline.py and originals/run_checks.py. Its native/control selection, source-freeze, owner preparation, command settlement, AVR profile/tool/plugin pinning, inventory and terminal publication paths were read while adapting the narrow source delta. Root separately reports a complete 836-line parent-runner read. No parent runner/helper module was imported or loaded.
+
+Source-only filesystem operations created copies, diffs, hashes and JSON metadata; they do not compile or interpret C or execute candidate modules. No compiler query, native process/control, AVR compilation, nm/objdump, emulator, device access, flashing or auditor invocation occurred. No RESULTS or attempt receipt is present. Required controls, generated size, aliases/sharing and combined stack evidence remain pending.
+
+Review timing is explicit: core-draft01 and controls-draft01/02/03 are immutable intermediate snapshots. The current final source/pin files identify the actual prepared candidate; independent review coverage is recorded separately and must not be inferred merely from a matching filename.

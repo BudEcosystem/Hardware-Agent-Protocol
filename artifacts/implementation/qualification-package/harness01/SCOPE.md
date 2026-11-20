@@ -1,0 +1,3 @@
+# Full qualification through the explicit package
+
+One original thirty-case worker, real reducer and authority-vault publication, catalog recording and promotion, one completed simulated GPIO application, drift refusal and cold vault/bridge history. Only the namespace, pinned source closure and fixed entry path change. No oracle substitution. Original bounds: 60-second worker, 180-second parent, six parent SQLite opens, 16 MiB/file, 256 MiB scratch, 8,192 files, 8 MiB log, five-second vault lease and 15 MiB vault. No physical endpoint, MCU, inference, network or live service. Interrupted case databases are never opened or repaired. Native image and owned-process accounting guards remain. Public qualification requires a separately enforceable storage profile.

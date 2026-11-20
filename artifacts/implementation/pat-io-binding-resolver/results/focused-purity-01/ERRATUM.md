@@ -1,0 +1,3 @@
+The frozen candidate03 README incorrectly says the conservative provider-source digest includes test source. The exact copied `hms/synthetic_io_installation.py:30` selects Python files beneath `hms` and its vendor tree, schemas and two named data files; it excludes the tests directory. The fixture-only correction therefore does not change this driver digest. Both the failed29 and focused-one receipts retained the same actual digest, `sha256:edde52c2f9da389baf03bf1dc4674ed03e7bfd277a06ea4d37f534ea9cfa5c2d`.
+
+The erroneous frozen README remains unchanged. This correction affects documentation only, with no source, test, harness, descriptor, result or old proof modification. The source closure is still not binary, environment or physical attestation.

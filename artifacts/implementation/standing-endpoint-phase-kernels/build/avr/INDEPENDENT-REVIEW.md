@@ -1,0 +1,11 @@
+# Independent source review
+
+Reviewer /root/persistent_endpoint_gap/phase_core_review read core-draft01's complete 498-line diff, complete before/after kernel C/header, affected finite admission/report/limits/poll and standing lease/acquisition/account/cutoff/loss functions, plus proposal semantics and controls. It found no concrete source blocker. The snapshot index is 8270e57b908f8a782a55cd0424de7f1cc69beecf1d26d73f4195d460a4dcaf6f; exact diff e20843dae877dec0525a24f11ab75dcedd6caccf571e5b19813942701222a517.
+
+The reviewer then read complete controls-draft01 and both narrow follow-up deltas. It identified missing start-low16 age overlap and INT32_MAX threshold-neighbor coverage. Draft02 resolves both and adds root's full-position carry family; draft03 checks all four finite timestamp captures. The reviewer confirmed current control bytes equal draft03 index 6519667fa4c65285d914fab6c8cf5bc933c531d1497ac8caea268b8a01b1f8db and reported no remaining source/oracle blocker. Its timeline review confirms transition14, loss handoff27, witness28 and duration14, with distinct remaining13/14 outcomes. Direct private accounting is correctly limited to phase behavior.
+
+Root separately read the full core diff/kernel and surrounding baseline paths, all control deltas and the complete 836-line parent runner plus new runner delta. Root requested and reviewed the carry-family and all-four-timestamp additions. Source review does not establish compiled correctness, runtime fit or complete stack behavior.
+
+The reviewer completed the complete 157-line runner delta, native/AVR source selection, freeze/final-audit and unchanged owner/bounds context, and independently regenerated the exact delta. It confirmed appropriate kernel linkage in all three domains, phase_access replacing standalone standing.c only in differential builds, explicit byte1 for all regular candidate paths and byte/fallback selections for controls. The only finite-script change is the backend1 COMMON flag. Runner SHA is 225dcb6c523f275ed64c11a02874e4a60ccc561cfac31cc136e47c19ff9c13f1; delta is 1a6e84ba3ab89dd7d9d52fb5e362500b4e9c22716ff313b2e3dbd4dc27506289. No concrete wiring blocker was found; final frozen metadata preflight remains root-owned.
+
+No reviewer imported or executed candidate/runner/helper code, queried a compiler or ran controls.

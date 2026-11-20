@@ -1,0 +1,9 @@
+This is a **design-only** handoff for a separate trusted `IoRegistryPatBindings`; no resolver implementation, project import, test or Runtime execution has occurred in this lane.
+
+[DESIGN.md](DESIGN.md) specifies the fixed primitive semantic policy, exact full-installation/source identity, complete bounded inventory, minimal-state/authorization ordering, current binding/history/resource-proof joins, retained-session handling and planned acceptance cases. Missing or damaged otherwise-authorized candidates are indeterminate, so they cannot create false uniqueness. The existing legacy resolver is left unchanged.
+
+[inputs.json](inputs.json) pins 151 copied full748 baseline inputs and 34 reference copies. The references preserve the historical I/O PAT design’s 22 selected inputs, the staged fixed-unit compiler and its separately sealed pure34 proof. [reading.json](reading.json) distinguishes full and selected source reads from the larger acquired closure. [source-plan.json](source-plan.json) lists the proposed two new files, bounds and unimplemented obligations.
+
+The resolver will describe exact installed schemas without inventing fresh authority, sample times, keys or sessions. Expired presence can carry a checked retained session but is not a fresh-read/admission promise. Relevant generation changes unsupported by the immutable provider must refuse completeness; unrelated generation changes with the same scoped proof/binding remain usable. A new resolver/compiler source closure changes driver/installation/evaluation identities.
+
+The pure34 compiler result does not qualify GPIO/PWM behavior. Whole-domain timing, an independent I/O outcome oracle, versioned evidence/catalog integration and a trusted service remain separate. No live files or prior proof trees were changed. Root review is required before source implementation, and execution requires a later separate release.

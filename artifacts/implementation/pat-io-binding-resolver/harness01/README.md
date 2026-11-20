@@ -1,0 +1,9 @@
+This is the sealed source-only harness for the separately frozen resolver source02. No project imports, SQLite connections, tests or Runtime execution were performed while preparing this harness. Execution requires a separate parent release for one named attempt.
+
+The selection contains exactly 29 methods. The source02 closure has 163 retained files, including the 155 copied project inputs. The harness checks the exact fixed-unit compiler source, actual entry objects and module origins, seven selected installed dependency closures, bytecode exclusions, compiler/provider-source identities and before/after input stability.
+
+The original test fixtures use private SQLite/IoRuntime state. The planned capture check requires 33 complete state snapshots and 66 logical database backups, with same-case SQLite path provenance and exact backup hashes. No provider tick, subprocess, network, lifecycle, public service, model inference or physical execution is part of the selected methods. The fixed child deadline is 600 seconds; operation bounds are unchanged. Detailed retention and identity limits are in [SCOPE.md](SCOPE.md).
+
+[run_attempt.py](run_attempt.py) and [attempt_child.py](attempt_child.py) narrowly adapt the reviewed pure34 runner/child. [borrowed-inputs.json](borrowed-inputs.json) pins those original sources and their actual historical result; that result is not evidence for this new resolver harness. [source-review.json](source-review.json) records the source-only checks. The [targets.json](targets.json) selection enumerates every method and expected replacement state.
+
+Collection bounds are not an aggregate disk quota, an OS sandbox, hard real-time supervision, independent semantic reduction of backups, or I/O qualification. The existing compiler five-package identity remains distinct from this harness’s seven-package acquisition and is not repaired here.

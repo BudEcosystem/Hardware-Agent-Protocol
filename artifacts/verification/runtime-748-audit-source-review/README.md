@@ -1,0 +1,9 @@
+# Runtime748 audit source review
+
+One definite lifecycle mapping error was found and corrected by the owner: manifest paths use `project/hms/`, while both filters used `hms/`. The old filters selected0 records; the corrected filters select the exact unchanged48 records for03/04/05. Exact before/after source and the two-line diff are retained. The before file was reconstructed after a copy raced the owner correction, with its SHA-256 checked against the independently announced frozen before hash; see `before/source-provenance.json`.
+
+No remaining schema/mapping mistake was found in the inspected new public I/O/status-recovery and lifecycle gates. Independent JSON inspection confirms the historical four-test core equals failed747's151 copied inputs, and the corrected five-test core equals the current full748 captured-before151 inputs. The strict map compares `files_before`, whose entries include `bytes`, not hash-only `files`. Only `tests/test_io_transport.py` differs between those historical/current cores.
+
+The current full748 attempt was still running at inspection. This artifact is not a passing full run or successful auditor result. Neither auditor nor link checker nor project code/tests were imported or executed. `inspect_mappings.py` only reads JSON/source bytes with the standard library. Lifecycle03/04/05 remain unexecuted source preparations. Earlier failure receipts and review histories are preserved.
+
+`review.json` records findings and scope; `mapping-values.json` records inspected values; `references.json` pins retained JSON copies. `index.json` covers every regular retained file except itself. The final source hash is df7c2314e6200e9cfbfbb7d65c331b8d28f447d5bc0c80c5fd0ba37b0a64f08e; link checker is b06575a0b3ecf404396f3bd6af12e3108f49c0b041749218c2e6696a79a33d00.

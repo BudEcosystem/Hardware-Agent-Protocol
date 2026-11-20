@@ -1,0 +1,166 @@
+"""Add exact, bounded pure normalization reuse with conservative dependency guards."""
+import ast,difflib
+from pathlib import Path
+B=Path('artifacts/implementation/pat-io-installation-reuse');p=B/'implementation01/project/hms/synthetic_io_installation.py';before=p.read_text()
+after=before.replace('import copy\n','import copy\nfrom collections import OrderedDict\nimport threading\nfrom types import FunctionType\n')
+after=after.replace('from .contracts import canonical, identifier, parse_json','from . import contracts as _contracts, resource_topology as _topology, resource_catalog as _catalog, registry as _registry\nfrom .contracts import canonical, identifier, parse_json')
+anchor="    require(value['driverDigest'] == implementation_digest(), 'IO_DRIVER_CHANGED')\n    document = parse_topology(value['topology'])"
+replacement="""    current_source = implementation_digest()  # Never memoize the current source check.
+    require(value['driverDigest'] == current_source, 'IO_DRIVER_CHANGED')
+    cached = _cached_normalization(encoded, current_source)
+    if cached is not None:
+        return _thaw_normalization(cached)
+    result = _normalize_validated(value)
+    _remember_normalization(encoded, current_source, result)
+    return result
+
+
+def _normalize_validated(value):
+    # Original pure semantic validation, after the unchanged bounded/type/profile
+    # and fresh source checks. This path remains the fallback for changed helpers.
+    document = parse_topology(value['topology'])"""
+assert after.count(anchor)==1;after=after.replace(anchor,replacement)
+addition='''
+
+# Only exact already-validated immutable data is retained. Every caller still
+# bounds/encodes its original input, rejects floats, detaches/parses it, checks
+# the closed profile and recomputes the installed source identity before lookup.
+# Eight keys retain at most512KiB plus their bounded frozen normalized trees.
+# This is not an RSS limit, authority cache, source attestation or disk quota.
+_NORMALIZATION_LIMIT = 8
+_NORMALIZATION_KEY_LIMIT = 8 * 65536
+_NORMALIZATION_MEMO = OrderedDict()
+_NORMALIZATION_KEY_BYTES = 0
+_NORMALIZATION_LOCK = threading.Lock()
+
+
+def _freeze_normalization(value, depth=0):
+    if depth > 32:
+        return None
+    kind = type(value)
+    if kind is dict:
+        if len(value)>16384 or not all(type(key)is str for key in value):return None
+        rows=tuple((key,_freeze_normalization(child,depth+1))for key,child in value.items())
+        return None if any(child is None for _,child in rows) else ('dict',rows)
+    if kind is list:
+        if len(value)>16384:return None
+        rows=tuple(_freeze_normalization(child,depth+1)for child in value)
+        return None if any(child is None for child in rows) else ('list',rows)
+    if kind in (str,int,bool,float,type(None)):
+        return ('scalar',kind,value)
+    if kind in (set,frozenset) and len(value)<=16384 and all(type(item)is str for item in value):
+        return ('set',kind,frozenset(value))
+    return None
+
+
+def _same_normalization_config(value, frozen):
+    if frozen is None:return False
+    if frozen[0]=='dict':
+        if type(value)is not dict or len(value)!=len(frozen[1]) or not all(type(key)is str for key in value):return False
+        return all(key in value and _same_normalization_config(value[key],child)for key,child in frozen[1])
+    if frozen[0]=='list':
+        return type(value)is list and len(value)==len(frozen[1]) and all(_same_normalization_config(a,b)for a,b in zip(value,frozen[1]))
+    if frozen[0]=='set':
+        return type(value)is frozen[1] and all(type(item)is str for item in value) and frozenset(value)==frozen[2]
+    return type(value)is frozen[1] and value==frozen[2]
+
+
+def _thaw_normalization(frozen):
+    if frozen[0]=='dict':return {key:_thaw_normalization(child)for key,child in frozen[1]}
+    if frozen[0]=='list':return [_thaw_normalization(child)for child in frozen[1]]
+    # Accepted normalization results contain only JSON scalars, never sets.
+    assert frozen[0]=='scalar'
+    return frozen[2]
+
+
+def _function_anchor(function):
+    if type(function)is not FunctionType:return None
+    cells=tuple(cell.cell_contents for cell in function.__closure__ or ())
+    children=tuple((child,child.__code__ if type(child)is FunctionType else None)for child in cells)
+    return (function,function.__code__,function.__defaults__,function.__kwdefaults__,children)
+
+
+def _same_normalization_function(function, anchor):
+    if anchor is None or function is not anchor[0] or type(function)is not FunctionType:return False
+    if function.__code__ is not anchor[1] or function.__defaults__ is not anchor[2] or function.__kwdefaults__ is not anchor[3]:return False
+    cells=function.__closure__ or ()
+    if len(cells)!=len(anchor[4]):return False
+    for cell,(expected,code) in zip(cells,anchor[4]):
+        actual=cell.cell_contents
+        if actual is not expected or code is not None and (type(actual)is not FunctionType or actual.__code__ is not code):return False
+    return True
+
+
+def _normalization_allowed(source):
+    if source != _NORMALIZATION_IMPORTED_SOURCE:return False
+    for namespace,name,anchor in _NORMALIZATION_FUNCTIONS:
+        if not _same_normalization_function(namespace.get(name),anchor):return False
+    for namespace,name,frozen in _NORMALIZATION_CONSTANTS:
+        if not _same_normalization_config(namespace.get(name),frozen):return False
+    for profile,validator,schema,method,type_checker,keywords,format_checker in _NORMALIZATION_VALIDATORS:
+        if _topology._VALIDATORS.get(profile) is not validator:return False
+        if not _same_normalization_config(validator.schema,schema):return False
+        cls=type(validator)
+        if not _same_normalization_function(cls.iter_errors,method) or cls.TYPE_CHECKER is not type_checker or validator.format_checker is not format_checker:return False
+        current=cls.VALIDATORS
+        if type(current)is not dict or len(current)!=len(keywords) or not all(type(key)is str for key in current):return False
+        if any(not _same_normalization_function(current.get(key),anchor)for key,anchor in keywords):return False
+    return True
+
+
+def _cached_normalization(encoded, source):
+    global _NORMALIZATION_KEY_BYTES
+    with _NORMALIZATION_LOCK:
+        if not _normalization_allowed(source):
+            _NORMALIZATION_MEMO.clear();_NORMALIZATION_KEY_BYTES=0
+            return None
+        frozen=_NORMALIZATION_MEMO.get(encoded)
+        if frozen is not None:_NORMALIZATION_MEMO.move_to_end(encoded)
+        return frozen
+
+
+def _remember_normalization(encoded, source, value):
+    global _NORMALIZATION_KEY_BYTES
+    with _NORMALIZATION_LOCK:
+        if not _normalization_allowed(source):
+            _NORMALIZATION_MEMO.clear();_NORMALIZATION_KEY_BYTES=0
+            return
+        frozen=_freeze_normalization(value)
+        if frozen is None:return
+        if encoded in _NORMALIZATION_MEMO:
+            _NORMALIZATION_MEMO.move_to_end(encoded)
+            return
+        while _NORMALIZATION_MEMO and (len(_NORMALIZATION_MEMO)>=_NORMALIZATION_LIMIT or
+                _NORMALIZATION_KEY_BYTES+len(encoded)>_NORMALIZATION_KEY_LIMIT):
+            old,_=_NORMALIZATION_MEMO.popitem(last=False);_NORMALIZATION_KEY_BYTES-=len(old)
+        if len(encoded)<=_NORMALIZATION_KEY_LIMIT:
+            _NORMALIZATION_MEMO[encoded]=frozen;_NORMALIZATION_KEY_BYTES+=len(encoded)
+
+
+# Imported code is trusted; these conservative guards disable reuse when selected
+# validation dependencies change. They are not complete Python-process attestation.
+# In-place mutation of private validator machinery retains the original fallback
+# semantics; runtime configuration is installed through explicit source/schema
+# versions and validator replacement, not through a public mutation API.
+_NORMALIZATION_FUNCTIONS = tuple((namespace,name,_function_anchor(value))
+    for namespace in (globals(),vars(_topology),vars(_catalog),vars(_registry),vars(_contracts))
+    for name,value in tuple(namespace.items()) if type(value)is FunctionType)
+_NORMALIZATION_CONSTANTS = tuple((namespace,name,_freeze_normalization(namespace[name]))for namespace,names in (
+    (globals(),('PROFILE','DRIVER','PRIMITIVES','MAX_DURATION_MS','_NORMALIZATION_LIMIT','_NORMALIZATION_KEY_LIMIT')),
+    (vars(_topology),('PROFILE','GENERATION_PROFILE','PROOF_PROFILE','MAX_DEPTH','MAX_CLAIMS','_PHYSICAL','_ACCESS')),
+    (vars(_contracts),('MAX_BYTES','MAX_DEPTH','MAX_NODES','SAFE_INTEGER')))
+    for name in names)
+_NORMALIZATION_VALIDATORS = tuple((profile,validator,_freeze_normalization(validator.schema),
+    _function_anchor(type(validator).iter_errors),type(validator).TYPE_CHECKER,
+    tuple((key,_function_anchor(function))for key,function in type(validator).VALIDATORS.items()),validator.format_checker)
+    for profile in (_topology.PROFILE,_topology.GENERATION_PROFILE)
+    for validator in (_topology._VALIDATORS[profile],))
+_NORMALIZATION_IMPORTED_SOURCE = implementation_digest()
+'''
+after+=addition;ast.parse(after);p.write_text(after)
+(B/'normalization-reuse.patch').write_text(''.join(difflib.unified_diff(before.splitlines(True),after.splitlines(True),fromfile='uninstrumented/hms/synthetic_io_installation.py',tofile=str(p))))
+# The moved semantic body remains AST-identical after extracting the unchanged prefix.
+a=ast.parse(before);b=ast.parse(after);old=next(n for n in a.body if isinstance(n,ast.FunctionDef)and n.name=='normalize_installation');new=next(n for n in b.body if isinstance(n,ast.FunctionDef)and n.name=='_normalize_validated')
+start=next(i for i,n in enumerate(old.body)if isinstance(n,ast.Assign)and any(isinstance(t,ast.Name)and t.id=='document'for t in n.targets))
+assert [ast.dump(n,include_attributes=False)for n in old.body[start:]]==[ast.dump(n,include_attributes=False)for n in new.body]
+print('Original semantic normalization body retained exactly; new memo source AST parsed, not executed.')

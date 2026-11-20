@@ -1,0 +1,1 @@
+Independent source-only review of the two-line fixture correction and fixed one-method harness adaptation. No scoped source blocker found. All162 candidate and16 harness pins verified; only the selected test changes, all production/helpers/other28 remain exact. Original failed29 is preserved. No reviewer imports, tests or DB opens; execution requires separate parent release.

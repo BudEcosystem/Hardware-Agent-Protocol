@@ -1,0 +1,11 @@
+# Source/data reading scope
+
+This packet records source-only preparation. Hash verification and copying are not claims of semantic full-file reading. No candidate code or runner was imported or executed.
+
+The prior sealed attribution packet already records complete standing-controller source and finite endpoint/assembly review. In this successor, the seven copy sites, all twelve constant absent writes and their enclosing OPEN/mutation/loss/handler/transition/poll contexts were reread from the exact current `standing.c` (749 lines). The complete file was covered across bounded reads; a combined-output truncation was followed by the missing middle-region read. The endpoint reread is the complete finite-service/cutoff/wrapper/common-hook region, baseline lines 518–620, plus lines 85–185 covering context invalidation, clock update/sample and initialization; this is not a new full reading of the other endpoint functions. The complete current `standing_controls.c`, `standing_fixture.c`, `standing_fixture.h` and `standing_vectors.h` were used for timeline/offset tracing, with the fixture/header coverage also retained in the preceding source-review task.
+
+The complete parent `project-source-review.json`, `PROFILE.md` and `retention.json` were read. Exact copies retained under `inputs/` are point-in-time evidence; historical booleans in those parent preparation documents are not current execution status. Parent outcome remains the sealed results/audit, summarized in this README.
+
+From the retained primary GCC `Optimize-Options.txt`, the relevant current reread covers lines 205–228 (sibling calls and per-function noinline exemption). The entire text file is copied and hash-pinned for reproducibility, without claiming it was fully reread here. No external source acquisition was needed.
+
+All 36 baseline project files were copied exactly to both `originals/project/` and initial `project/`. Only the three files shown in `project.diff` then changed. WIRE, wire vectors and retention are exact parent copies. LTO, fit and attribution full index revalidation results and original path/hash mappings are in `source-pins.json`; no sealed file was edited.

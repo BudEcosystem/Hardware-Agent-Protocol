@@ -1,0 +1,9 @@
+# Unchanged target with explicit byte backend
+
+The target remains ATmega328P, 16MHz declared clock, 32,768 physical flash, 32,256 application flash, 2,048 SRAM and 1,024 EEPROM. The nine charged storage roots and all 29 retained function roots plus main are unchanged in retention.json. Preserve the 256-byte arena, 128-byte standing protocol state plus 32-byte glue ceiling, 64-byte protection storage and 512-byte stack reservation. No smaller service/profile or larger board is substituted.
+
+AVR compile and GCC-driver link retain -Os, one-job/one-partition LTO, fat objects, linker plugin, saved temporaries, IPA dumps, existing warnings and no sibling-call optimization. Both stages explicitly add -DHMS_EP_BYTE_BACKEND=1. This is a compile-time backend selection, not a relaxed arithmetic or whole-program assumption. Scalar fallback controls separately select 0. All AVR source units/services remain; tests/phase_access.c never enters target units.
+
+The retained bin path is artifacts/implementation/avr-link-integration/toolchains/avr-gcc-7.3.0-cponmrdo/avr/bin beneath the repository. toolchain-pins.json and plugin lookup provenance are copied exactly. The selected archive-derived compiler, lto1, wrapper, plugin aliases, headers/libraries/specs and /usr/bin/make plus /bin/sh bytes/alias remain pinned. No tool query or helper load occurred during preparation.
+
+The runner retains explicit MAKE and private TMPDIR, excludes inherited make/jobserver flags, and pins the driver's ordered first-readable R_OK plugin lookup before/after commands. Existing pre-LTO .su records remain explicitly pre-LTO; final artifact inventory alone does not qualify final stack. Any eventual valid link still requires exact retained roots/storage, byte-loop/call/frame review, combined foreground/callback/ISR evidence and physical driver qualification.

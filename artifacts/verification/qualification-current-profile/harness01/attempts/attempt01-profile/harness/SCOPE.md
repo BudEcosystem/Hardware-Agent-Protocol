@@ -1,0 +1,3 @@
+# Original full flow with current diagnostic instrumentation
+
+One complete original thirty-case worker is requested, followed by the real reducer, vault/catalog and at most one simulated application if reached. No substituted oracle. The exact [diagnostic plan](../PLAN.md) applies. Original 60/180-second, 6 parent SQLite, 16 MiB/file, 256 MiB scratch, 8192-file, 8 MiB-log, 5-second lease and 15 MiB-vault bounds remain. Native retention image and owned-process accounting guards remain exact. No physical, network, MCU, inference or live service execution. An interrupted worker remains incomplete and its case databases are not opened or repaired.

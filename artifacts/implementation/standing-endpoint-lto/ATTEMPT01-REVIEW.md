@@ -1,0 +1,11 @@
+# First LTO attempt: plugin query refusal
+
+The single reviewed AVR attempt ended with exit 1 before any source compilation or linking. GCC's `-print-file-name=liblto_plugin.so` query returned only `liblto_plugin.so`. The runner refused to treat that unresolved name as the pinned plugin and rejected its resulting path outside the compiler tree. The archive-derived plugin file and its aliases had already passed byte/alias verification; this result does not establish that the plugin is missing or that LTO is unsupported.
+
+The exact invocation selected the reviewed retained toolchain through `--toolchain-bin`. [checks-avr.json](checks-avr.json) and `build/avr/` preserve the frozen source/profile, all nine command intent/start/result records and stdout/stderr. All nine driver-query commands exited successfully and were reaped; the refusal occurred in subsequent path validation. Source, private-copy, installed-file, alias and interpreter pins remained stable. Ownership closed empty; cleanup errors, pending interrupts and observed remaining groups were absent.
+
+The backend program queries resolved `lto1` and `lto-wrapper` inside the reviewed tree. The [plugin query output](build/avr/avr-plugin-path.stdout) was unresolved. No C unit, make recipe, target or emulator was executed; no object, map, ELF, symbol report, `.su` or saved assembly was generated. [lto-artifacts.json](build/avr/lto-artifacts.json) therefore inventories zero files and leaves final stack coverage and runtime fit false. No native suite was rerun; the exact unchanged C source retains its separately sealed parent native results.
+
+The attempt receipt SHA256 is `b14620dbf0401d61822630faead07263b0b26fc6f11fbad543036d55c87776a0`. The reviewed runner remains `dfc11868dd929b043f036158a4a77bceb02edd8cc407f05548aefc5d354cd537`; its source/profile inputs have not been edited. No retry occurred.
+
+The next diagnostic is to establish the correct installed-driver plugin lookup mechanism and join it to the already pinned plugin bytes. An unresolved generic file-search result must not be accepted as successful plugin selection. Any corrected probe or runner delta needs its own retained review and attempt; this refusal and its snapshots remain intact.

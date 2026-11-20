@@ -1,0 +1,9 @@
+# Bounded source proposal
+
+1. Revalidate the sealed LTO, fit and attribution indices and copy the 36 current C/project inputs with exact baseline snapshots. Done using data reads only; the LTO/fit/attribution checks covered 487/420/25 indexed files.
+2. Prepare only seven encoded timestamp copies, twelve constant absent fills, one conditional finite-service noinline annotation, and one meaningful 64-bit controller timeline case. Done as source, with the complete diff and proof retained. No runner is present and nothing in `project/` has executed.
+3. Root reviews this source proposal, byte pins and control timeline. After that review, derive a future runner from the already reviewed LTO runner and its live-owner helper contract, preserving query/tool/plugin pins, minimal environment, single-job LTO, per-attempt refusal preservation and process settlement. Its expected standing-case count will be 14. Any runner delta must itself receive root review before an invocation.
+4. Only after explicit root execution authorization, run one reviewed native attempt and then the authorized AVR compile/link attempt. Preserve failures without changing target, region limits, root policy, reservations or warning options. Record combined effects; do not invent per-substitution size savings.
+5. Gate any stack or fit conclusion on the actual generated finite/standing boundary and complete final linked resource evidence. Failed-link map arithmetic, saved assembly and backend `.su` observations remain narrower evidence. Physical commissioning, host/PAT dependencies and installed real-device I/O contracts remain separate work.
+
+No public or sealed source changes, compiler queries, compiler invocations, candidate imports, native tests, target/emulator runs, ports, flashing or device access are part of this source-preparation stage.

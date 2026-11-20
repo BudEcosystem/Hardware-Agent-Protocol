@@ -1,0 +1,11 @@
+# Lifecycle settlement staging — source preparation in progress
+
+This directory is an isolated implementation workspace. No lifecycle source has been imported, tested, or executed. Test execution requires the parent agent's explicit shared-freeze release and an initial independent source review.
+
+`baseline/inputs.json` records 146 exact files from the passed current-provider preparation, whose original 139-file baseline is the full696 checkpoint. The baseline includes retained project binaries as acquisition only; this lane does not execute native endpoints. `baseline/design` preserves all 15 design input pins, original design and both amendments. `baseline/design-review` preserves the independent design review. Earlier stages and live sources are unchanged.
+
+The intended scope is the reviewed finite synthetic generation effect and exact receipt-gated publication, including all sibling claims, stable management authority, disabled-state preservation, scoped revision rebase, current versus historical bindings and one authority transaction for generation/binding/terminal/release. It does not invoke OS services, physical drivers or neural models. No complete implementation claim is made while this source preparation is incomplete.
+
+Initial shared extractions are documented in `extraction.json`: the Registry binding validation/write tail is AST-identical after replacing the contextual deployment expression with a deployment argument; the original administrator authorization prefix stays in the public wrapper. The same-instance claim guard is unchanged. Journal's resource-release transaction body is extracted without AST changes. These are text/AST comparisons, not behavioral tests.
+
+Proposed storage uses a distinct lifecycle Registry profile and complete `lc_*` tables for management installation, route/instance requirements, dispatch, provider receipt and publication records. Ordinary topology/route tables remain exact. The management resolver derives its claim list from `generation_change_claims`, never caller-provided atoms. Its internal effect publication does not accept an administrator Context or claim-owner exemption. Lifecycle public mounting is outside this isolated slice.

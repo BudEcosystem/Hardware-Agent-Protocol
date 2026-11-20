@@ -1,0 +1,9 @@
+# Explicit shared-regression selection
+
+This source-only plan selects 160 qualified individual methods against immutable lifecycle snapshot 08: 30 lifecycle, 14 ordinary I/O API, 24 original synthetic-provider, 21 topology, 32 resource admission, 17 Registry review, and 22 Journal. `targets.json` records exact source pins, line numbers and method AST hashes. `commands.json` and `command.txt` describe one proposed run; parent release is still required.
+
+The two existing Journal methods `test_subprocess_crash_windows` and `test_interrupted_transactions_restore_atomic_state` invoke subprocesses and are not selected. They are not marked skipped or replaced. The child audit guard, source-origin checks, bytecode veto, seven selected distribution inventories, owned-child cleanup, private scratch policy and default 600-second bound remain unchanged. This selection does not exercise subprocess crash recovery.
+
+The earlier 44-method result remains failed (43 clean methods and one expectation error). Snapshot 08 changed only the exact exception/code and zero-row assertions in one method, and its separately released focused test passed. This planned combined run supersedes the proposed separate 44-method rerun and does not change frozen snapshot-08 commands or historical evidence.
+
+After a release, the producer must check the actual log contains exactly these 160 method results, exact terminal counts, input/external and runner identity stability, origin checks and child cleanup; preserve all failures and raw scratch. Existing lifecycle/provider capture hooks retain their logical snapshots; the unchanged shared tests do not acquire extra per-case database snapshots. Selected dependency and actual origin records do not constitute a whole-host closure. No public lifecycle profile/mount, OS driver/service, physical I/O, MCU, model or native-timing qualification is claimed.

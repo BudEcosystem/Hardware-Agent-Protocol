@@ -1,0 +1,3 @@
+# 2 exact no-worker controls
+
+[Targets](targets.json) use implementation02 with unchanged production. The native guard is derived from the full-worker harness: exact source digest, loaded descriptor bytes, ownership, seals and bounded scan roots are verified. Only the selected fixture name determines its private supervisor root. No unrecognized native image is accepted. Parent 180 seconds; child 120 CPU seconds, 512 MiB address space and 64 SQLite opens; 16 MiB/file, 256 MiB retained scratch, 8,192 files, 4 MiB output and five-second vault lifetime remain unchanged. No qualification worker, network, physical I/O or live service. The semantic oracle remains a fixture. Separate scopes do not imply an aggregate timing pass.

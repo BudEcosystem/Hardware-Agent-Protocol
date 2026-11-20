@@ -1,0 +1,11 @@
+# Complete recorded I/O catalog integration
+
+The candidate passes **21 pure controls and the complete actual catalog integration**. The process scope executes the full 30-case worker, independently inspects and imports its original evidence, promotes the catalog entry, completes one simulated PAT application, replays the exact original key, refuses a new application after configuration drift, and replays history after runtime/session reopening.
+
+Only `hms/synthetic_io_installation.py` changes in production. The definition builder derives one complete static resource proof per instance during a call, instead of repeating that derivation for each action and final binding. Public handler lookups still derive fresh proofs. The seven new controls compare exact legacy outputs and observe four derivations instead of eight for the four-instance fixture; all 14 inherited normalization controls pass. No cross-call cache, current-authority cache or diagnostic signal handler is added.
+
+The authority database is **16,199,680 bytes**, leaving **577,536 bytes** under the unchanged 16 MiB single-file limit. The [read-only actual-data audit](actual-catalog-audit.json) verifies all 4,011 evidence references and 2,798 exact bodies, original source/handoff/worker/catalog joins, recomputed identities, one activation and completion, zero cancellations, zero claims and zero board owners. The [aggregate audit](RESULTS.json) verifies source, acquired origins and original/copied scratch files without rerunning methods.
+
+The two passing scopes contain 22 completed methods. A separate harness startup failure remains retained: no method, database or worker ran there. The [preceding catalog failures](../pat-io-recorded-catalog/README.md) and [interrupted diagnostic profile](../pat-io-catalog-worker-profile/README.md) also remain unchanged. This passing scope does not establish the exact cause of those timeouts or a general timing guarantee.
+
+See [design](DESIGN.md), [review](REVIEW.md), [results](results/README.md), and [next integration work](NEXT.md). The public runtime is unchanged. Protected control capacity, public catalog mounting, prompt learning, persistent Arduino applications, real device/driver/hub providers and physical qualification remain required by the active HMS goal.

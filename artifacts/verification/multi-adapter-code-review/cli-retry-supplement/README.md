@@ -1,0 +1,19 @@
+# CLI refusal-retry supplement
+
+This is a read-only review of the modified `tests/test_multi_cli.py` retry helper and the `scripts/check_runtime.py` trace-retention change. No production file changed. Twenty-five of the original review's 26 live source pins still match; the original CLI test pin is now historical supporting evidence. The original frozen receipt and all its files remain unchanged.
+
+No blocking safety-boundary issue was found. The retry helper is appropriate for this test's sole-caller, serial scenario workflow:
+
+- It retries only explicit `IpcError` responses with code `OBSERVATION_STALE` or `DEVICE_UNAVAILABLE`. The IPC client maps uncertain transport outcomes to different codes, which propagate without retry.
+- Every attempt checks the same canonical parameters. Prepare retries keep the same arguments, namespace, operation key, and timing. After prepare succeeds, invoke retries retain the exact returned envelope, including the intent and its binding/session fields. Each IPC transport request may have a new correlation ID; operation identity is unchanged.
+- Before every retry, a separate SQLite connection checks unchanged counts for operations, claims, and compact command mappings, plus absence of the namespace/key mapping. The harness waits for each earlier scenario to complete and release claims. Operations are retained rather than deleted, so accepted-then-failed work cannot disappear from these checks merely because its claims were released.
+- A count mismatch, existing replay key, different error code, transport error, accepted operation failure, or unsuccessful completion fails the test. The helper does not retry accepted work. Offline replay after daemon reopen uses the ordinary one-attempt client directly.
+- `LAST_REPORT` retains every eligible refusal with its code, operation key, canonical-parameter digest, before/after counts, and absent-key assertion, followed by accepted/completed scenario records and offline replay count. The runner writes this trace even on suite failure. A successful full runtime receipt is still gated on the whole suite and unchanged input hashes.
+
+The database checks are specific to this serial test with one caller and retained operation/command records. They are not a general concurrent admission detector, a replacement for replay identity, or a proposed retry policy for production clients. Failed prepare attempts have no returned invoke envelope; the exact returned intent is fixed once prepare succeeds. Original intent timing is never extended.
+
+One nonblocking timing limitation remains explicit. The three-second threshold is checked after each eligible refusal. The subsequent 50 ms backoff can carry the next attempt beyond that threshold, and a final in-flight call can take its normal IPC timeout. This is a bounded retry policy, not a hard three-second elapsed-time or attempt-start guarantee. A late successful final response is accepted. Runtime start/completion cutoffs still use the unchanged original intent timing. No latency, freshness-availability, or timing-isolation guarantee follows from a passing test.
+
+The original no-retry isolated run and the three retained earlier load failures remain separate evidence. This supplement neither replaces them nor asserts an execution result for the modified test. The root runtime receipt owns execution results. The reviewer and corroborating reviewer performed source inspection and integrity hashing only; no test, runtime, target, emulator, or hardware execution occurred for this supplement.
+
+`verify.py` checks the original retained evidence, the 25 unchanged live pins, and the two current supporting inputs. It does not rerun any test. The original verifier's default live-source check is expected to reject the changed historical CLI test; its `--retained-only` mode remains appropriate for the original frozen record.

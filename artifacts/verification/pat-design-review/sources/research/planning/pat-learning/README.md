@@ -1,0 +1,13 @@
+# Experiential learning and deterministic Program as Tools
+
+This lane examines the boundary between learning reusable programs and invoking a previously admitted program without further inference. It informs HMS design; it implements no controller, model, firmware, or automatic skill promotion.
+
+The full [Voyager arXiv v2 paper](https://arxiv.org/pdf/2305.16291v2) was read, including references and Appendices A/B: 2,553 LF-bounded lines, 42 pages, 14 figures, six tables. All figures and tables were visually corroborated on 18 selected PDF pages, alongside the algorithm and two code examples. The remaining PDF pages were read through extracted text, not visually inspected. The official [project page](https://voyager.minedojo.org/index.html) has 208 fully read extracted lines. Its media-coverage quotations were read as page content; the linked articles were neither acquired nor used as technical evidence.
+
+Thirteen complete files were read at official [MineDojo/Voyager commit 55e45a8](https://github.com/MineDojo/Voyager/tree/55e45a880755d0c8c66ca7fb5fe7962ac8974f89), dated 2023-07-27. This is selected-file coverage, not a whole-repository or dependency audit. The commit predates the October 2023 paper revision. [Repository pins](repository-pin.json) bind every selected file to its Git blob and SHA-256. No downloaded program or dependency was installed, imported, compiled, or executed.
+
+The [OpenReview publisher candidate](https://openreview.net/forum?id=ehfRiF0R3a) could not be acquired: browser challenge, direct PDF HTTP 403, and API HTTP 429. Publisher metadata, final-paper differences, and final-paper reading remain unresolved. The root project URL initially returned 503; its ordinary `index.html` URL succeeded. Failed attempts remain in the manifest. This lane makes no TMLR-final-version reading claim.
+
+Read [the analysis](notes/critique.md), [figure observations](notes/figures.md), and [explicit reading queue](queue.json). LRLL, AutoSkill, and Skill++ have selected arXiv metadata/abstract coverage only; their papers and implementations remain unread. Prior SayCan and Code as Policies reading was not duplicated. References within Voyager are not thereby read. The broader literature review remains open.
+
+[manifest.jsonl](manifest.jsonl) records acquisition; [reading.json](reading.json) separately records exact source/range hashes, scope, and figures. Run `python3 research/planning/pat-learning/verify.py` from the repository root for offline verification. [verification.json](verification.json) reports integrity and negative coverage checks. Hashes establish archive consistency, not independent proof of human reading or the correctness of the paper's claims.

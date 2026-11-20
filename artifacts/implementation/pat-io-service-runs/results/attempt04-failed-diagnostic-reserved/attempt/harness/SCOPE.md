@@ -1,0 +1,3 @@
+# Passive worker diagnostic
+
+The exact same reserved-worker method and unchanged source are executed once in a fresh isolated test authority. The earlier failed attempt remains immutable; this is a diagnostic experiment, not a resumed mutation or a fix. The [reviewed observer](observer-reviewed.py) reads bounded process CPU/fault/RSS counters for descendants of its original launcher and system pressure once per second. It cannot signal or alter scheduling, source, deadlines, effect budgets or worker inputs. The original child SQL/launch scopes and180s outer/60s worker deadlines remain unchanged.

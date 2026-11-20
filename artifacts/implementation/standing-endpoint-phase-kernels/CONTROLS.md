@@ -1,0 +1,16 @@
+# Controls prepared, not executed
+
+The original finite 26-case/2,548-assertion suite, runtime 11/143,471 controls and standing 14/766 cases remain the retained coverage requirements. These counts are parent observations, not new passing results. No new total assertion count or trace hash is specified.
+
+Six numeric groups consist of the exact three parent bodies and three additions. They cover all 256 digit values at all eight positions, carries through lower digits and all-MAX wrap, full64 borrow and upper-half discrimination, every encoded/native predicate, room and elapsed threshold neighbors including INT32_MAX, overlapping duration snapshots, unchanged output on sum overflow, overlapping cutoff/base, and both age writers with output over either end's or start's low bytes. Run the same source with byte backend 1 and scalar fallback 0, plain and sanitized, retaining the selected backend and requiring equal observed coverage.
+
+Twenty differential groups contain the exact old 14 standing groups and two finite groups plus four additions:
+
+- All four captured finite timestamp fields are rewritten by test-owned describe/guard hooks. Initial invalid captures cannot be repaired afterward; valid captured times remain authoritative when later request bytes become invalid. Guard clock expiry still wins over a later request extension. Accepted later request bytes are asserted but never used for ordinary test I/O.
+- High-bit/carry standing acquisition checks original quality, epoch, gap, time, range and duplicate priority. Native report injection is explicit and occurs after the unchanged fixture's actual authority gate. Full before/after state and report/callback bytes are traced.
+- Native-only direct account access checks commit-before-false, chronological/overflow refusals and noncommitting checks. This is not claimed as a reachable handoff under the current cutoff. phase_access.c includes selected standing.c exactly and replaces its standalone object only in differential builds.
+- A seeded near-exhaustion account is followed by actual suspend/loss/witness service. Transition14 to witness28 consumes14: remaining13 preserves copied witness fields but refuses valid quiescence; remaining14 commits UINT32_MAX and quiescence. Both retain claims. This is a counter-boundary model, not a claim of physical history.
+
+Compare complete outputs across exact parent scalar, new byte and new scalar fallback, each plain and sanitized. The old callback argument and primitive metadata traces remain; pointer normalization remains confined to the two existing endpoint pointer representations. Independent old body span/hash checks are performed by the runner before child launch. The numerical backend field is intentionally different and is excluded only from byte/fallback numeric coverage equality, not from controller state traces.
+
+Native fixtures, headers and the firmware target are otherwise unchanged. WIRE.md and wire-vectors.json are exact copies of the parent's wire contract. Compile/link failures, differing traces, warnings and cleanup refusals must be retained without changing expected results merely to pass. There is no physical or complete stack qualification in these controls.

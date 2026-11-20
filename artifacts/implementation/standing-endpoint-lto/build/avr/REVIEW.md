@@ -1,0 +1,13 @@
+# Source review basis
+
+The fit seal `ede57dc170628262e80e865c6326e1a5813e04a90e962317b9f698d76726afc0` was revalidated for all 420 files / 11851715 bytes. The compiler-review seal `aa5b1846621d0ec07f2d5fbbeb6b127c9ba239df4771eadd6b52cb3d957bed3e` was revalidated for all nine files / 419901 bytes. Hash verification is not a claim of reading every indexed file. No sealed or public file was changed.
+
+The project diff is empty: all 36 current source/vector/spec files match the parent, including the thirteen-case native control and exact target reservations. The profile changes compilation and explicit symbol retention only. The linked generic API bodies and charged objects must remain present even if LTO could otherwise internalize or eliminate them. The exact 29/9 root list is joined to the parent failed map; no previously-unlinked helper is added. New forced visibility must be reported in any comparison.
+
+The compiler review's NOTES and relevant retained GCC 7.3 sections were read: Optimize Options lines 1288–1535; Developer Options lines 215–238, 327–359, 513–551 and 625–673. These support matching compile/link options, GCC-driver linking, one job/partition, fat-object semantics, saved intermediates and diagnostic dumps. They do not promise complete final AVR stack evidence or exact backend filenames. The actual ATmega328P specs and plugin libtool metadata were also read; their installation-time paths are not substituted for the verified current tree.
+
+Twenty-four selected archive-derived file/alias entries are verified against the already pinned official archive. LTO backend and plugin hashes are retained, along with data-only ELF `DT_NEEDED` names. Make and the possible recipe shell are separately pinned host inputs. Every remaining AVR header/library/spec is verified by the runner before compiler use. Host loader/libraries remain trusted unpinned dependencies, and before/after byte checks do not imply filesystem immutability.
+
+The implementation preserves the existing owner, wait/reap, signal masking, timeout, resource and receipt logic. Additional alias snapshots join the existing before/after checks. Saved artifacts are inspected only after ownership settlement. An inventory failure is caught by the outer terminal-failure path and cannot turn a refused attempt into a success. No candidate module has been imported or compiled for this review.
+
+Parent review must assess the exact runner diff and root/pin files before any build. Current source readiness establishes neither LTO correctness, flash fit, final stack bounds, UART timing nor physical operation.

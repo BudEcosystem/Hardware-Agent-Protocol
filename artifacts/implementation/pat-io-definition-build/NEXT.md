@@ -1,0 +1,10 @@
+# Next work after complete catalog integration
+
+Use this passing uninstrumented source and its exact [actual-data audit](actual-catalog-audit.json). Keep the preceding failures and diagnostic signal handler out of production. The 21 passing pure methods and passing process scope need no unchanged rerun.
+
+1. Define and implement protected control capacity for the public service. The observed 577,536 bytes of authority-file headroom is not a reservation for admitted operation status, cancellation or recovery. Account separately for evidence ingestion, control history, active work and filesystem/SQLite failure behavior; preserve atomic original-run/catalog joins and the current resource ceilings. Never discard history or expand a failed run's limits to obtain room.
+2. Mount the qualified service/catalog/execution profile explicitly through the runtime factory, checked API/SDK, `hctl` and MCP. Preserve administrative installation, exact original invocation, explicit preparation, historical replay and current applicability. Missing/cold/incomplete evidence must remain unavailable, not trigger implicit novelty or a replacement qualification worker.
+3. Verify the integrated paths in a fresh Harness overlay against the intended Bud-Meta-Harness commit. Keep public transport retries distinct from effect retries, and use the same authority and resource checks across device, driver and intelligence-hub routes.
+4. Complete the broader user objective: natural-language task synthesis, observation and validated PAT learning; persistent constrained-device execution; real I/O, driver and hub resource providers; microscopic motion/calibration; and home, laboratory and manufacturing qualification. Continue the remaining full-source research backlog. The present actual worker executes original host simulations, not physical hardware.
+
+The profile supports a concrete computation reduction but does not establish the previous deadline's exact cause or reliable execution under arbitrary hub contention. Compute and storage capacity remain deployment requirements.

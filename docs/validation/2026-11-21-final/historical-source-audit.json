@@ -1,0 +1,54 @@
+{
+  "files": 233654,
+  "bytes": 3428626614,
+  "uniqueContents": 5110,
+  "uniqueBytes": 101002743,
+  "credentialPatternPaths": [],
+  "selection": {
+    "extensions": [
+      ".c",
+      ".cc",
+      ".cjs",
+      ".cmake",
+      ".cpp",
+      ".cxx",
+      ".go",
+      ".h",
+      ".hpp",
+      ".ino",
+      ".js",
+      ".md",
+      ".mjs",
+      ".py",
+      ".rs",
+      ".scad",
+      ".sh",
+      ".svg",
+      ".ts",
+      ".tsx"
+    ],
+    "names": [
+      "CMakeLists.txt",
+      "COPYING",
+      "Cargo.toml",
+      "LICENSE",
+      "LICENSE.md",
+      "LICENSE.txt",
+      "Makefile",
+      "NOTICE",
+      "package.json",
+      "pyproject.toml",
+      "requirements.txt",
+      "tsconfig.json"
+    ],
+    "excludedDirectories": [
+      ".git",
+      ".pytest_cache",
+      ".venv",
+      "__pycache__",
+      "node_modules",
+      "site-packages",
+      "venv"
+    ]
+  }
+}

@@ -1,0 +1,3 @@
+Independent read-only review of the explicit I/O runtime factory, CLI, example builder and nine profile test methods. One malformed primitive-input defect was reported and corrected by the owner; the reviewed exact-string guard and CLI negative subcases address it. No remaining blocker was found in the selected entry-point scope. No imports, tests, Runtime instances or subprocesses under test were executed by this reviewer. Owner focused/full validation remains separate.
+
+`final-source/` pins the frozen reviewed bytes. `initial-snapshot/` was copied after the concurrent primitive fix was already present; it is deliberately not described as before-fix evidence. The pre-fix finding came from the earlier read-tool output. No live source was edited.

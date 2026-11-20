@@ -1,0 +1,38 @@
+# Remaining route from checked trials to I/O PAT qualification
+
+This audit follows the [24-test outcome result](results/attempt01/README.md) and
+preserves the requirements of the [finite I/O design](../../verification/io-pat-qualification-design/DESIGN.md)
+and [timing/outcome design](../pat-io-timing-oracle-design/DESIGN.md). A consistent,
+independently checked trial is necessary evidence; it is not a complete group or
+permission to promote an application.
+
+| Required qualification evidence | Current authoritative implementation/evidence | Remaining work |
+|---|---|---|
+| Whole declared-domain compatibility and timing | `pat_io_contracts.py` produces the finite contract; new `pat_io_outcome_history.py` reconstructs it independently | Bind both computations to the current trusted worker/configuration; preserve unsupported-domain refusal before execution |
+| Exact nominal/boundary/negative parameter matrix | The subsequent [combined planner](../pat-io-combined-matrix/results/attempt01/README.md) preserves domain cases and accounts for all 25 fixed challenges; 61 pure tests pass | Implement the recorded worker extensions and exact expected-outcome reduction; planned coverage is not executed coverage. The ordinary parameterized example exceeds the original case ceiling and refuses |
+| Completion objective versus fault response | Outcome checking distinguishes satisfied, failed and incomplete contracts; the [forward-time checker](../pat-io-timing-challenges/results/attempts03-05/README.md) verifies exact expected responses for eight named challenges on both primitives | Extend exact expected-response reduction to every remaining required trial and the complete group. A correct cancellation can pass its fault check while failing the PAT completion objective; incomplete effects cannot qualify |
+| Nominal scheduler timing | Configured nominal/16-step captures and 16 checked forward-time histories retain delayed dispatch, boundary polls and late parent reporting; the [clock semantic checker](../pat-io-clock-history/results/README.md) preserves dispatch/guard event times independently | Integrate all schedules into current candidate group execution with measured aggregate bounds |
+| Cancellation and reopen | Original `test_pat_io_trials.py` captures accepted/pending cancellation and reopen; the configured family has pending reopen and later cancellation | Put every mandated case into the paired-configuration matrix and verify its exact trusted schedule, authority and terminal state |
+| Lost pending/completion replies | Configured active/recovery fixtures cover retained activation, completed-before-withdrawal and failed reconciliation | Execute the required variants on the actual candidate/environment and account for them in one group; historical fixtures are not a current candidate's matrix |
+| Exact replay and changed same-key conflict | The subsequent [versioned recorder/checker](../pat-io-conflict-history/results/attempt02/README.md) retains one changed first-argument request under the original keys and independently verifies nine replay/conflict cases | Integrate this extension into exact candidate matrix execution; full-read withdrawal, pruned namespaces and other unsupported contexts cannot inherit this result. Do not retry mutation with a new key |
+| Start, run, wall, lease and clock boundaries | Eight checked forward-time cases per primitive plus [six new clock/guard captures](../pat-io-clock-challenges/results/attempts01-02/README.md), with versioned separate clocks and new-owner recovery | The [composed semantic checker](../pat-io-clock-history/results/README.md) now verifies all six exact clock/guard responses, including cached samples, atomic no-start release and retained recovery. Integrate those checks with current candidate group execution; these historical fixtures do not establish full coverage |
+| Shared pin/PWM/alias exclusion and independent-pad progress | The [resource capture stage](../pat-io-resource-challenge/results/attempt01-passed72/README.md) declares four actors and an original GPIO probe before effects; matrix 0.2 reserves five possible admissions inside the unchanged 512 ceiling. The [complete resource-history composition](../pat-io-resource-semantics/results/README.md) passes 152 selected tests and independently verifies both actual captures, including exact authority, effects, events, samples, returned results and zero unresolved work | Integrate this fixed provider/authority challenge into the current candidate group with exact identities and actual aggregate budgets. A complete historical resource challenge does not qualify a candidate or establish current attestation. No hidden actors, replacement mutation keys or budget guard masking |
+| Permission, binding and session changes | Retained-read withdrawal and supported reopen history are checked. The [new authority capture stage](../pat-io-authority-challenges/results/attempt01-passed76/README.md) passes 76 selected methods: six actual GPIO/PWM binding/full-withdrawal cases, exact request/schedule checks, explicit unavailable current resolution and 16 public denials across recovery. Matrix 0.3 budgets a separately declared original binding probe | The [complete authority composition](../pat-io-authority-semantics/results/README.md) now passes 181 distinct tests and independently validates all six exact histories. Integrate the complete checks into exact current-candidate group execution with attestation and aggregate budgets. A changed dependency cannot inherit qualification or silently rebind an old request |
+| Unresolved or contradictory evidence | Existing readers refuse missing/contradictory evidence; original trials preserve unknown effects | The supervised worker/group result must retain an inconclusive attempt with the exact evidence, never turn expected refusal into zero unresolved effects |
+| Current implementation and configuration identity | Harness pins actual selected imports; compiler identity still has its documented optional-dependency gap | Reconstruct the current worker/environment, close identity scope and bind artifact/config/policy/source/attempt/run associations. Historical fixture identities remain historical |
+| Group budgets and retained evidence | Current trial has 4,096 combined records, 16 MiB, 64 KiB documents, 2,048 ticks and 60-second wall limit | Enforce these at group scope with 32-case/512-operation preflight and 20 MiB derived-closure accounting. Per-trial limits alone do not establish aggregate admission |
+| Persistent service and public PAT tools | Fan-specific evidence/memo libraries and separately staged supervisor exist | Finish fixed trusted service configuration, actual aggregate storage enforcement, durable ownership, serialized evidence import and atomic catalog association before mounting qualification |
+
+The closed combined matrix and preflight now exist as an isolated library. The
+next implementation continues the remaining phase-engine extensions, followed
+by fresh candidate trials, group budget enforcement and independent expected-outcome
+reduction. The planner separates candidate executions from fixed provider/authority
+challenges, with exact binding and budget associations for both. It refuses a case
+count that exceeds the original limits. Its passing planning tests do not establish
+that the present engine can execute all of those challenges or fit actual evidence
+and wall-time limits.
+
+Finite I/O qualification still does not implement persistent Arduino controllers,
+natural-language synthesis/learning, physical driver providers, microscope
+commissioning or intelligence-hub lifecycle/compute management. Those remain
+part of the original end-to-end goal.

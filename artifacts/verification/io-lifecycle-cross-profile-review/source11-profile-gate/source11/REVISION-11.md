@@ -1,0 +1,9 @@
+# Snapshot 11: ordinary bootstrap storage-profile gate
+
+This source-only candidate follows the retained actual source10 reproduction. Ordinary IoRuntime opened a partially provisioned lifecycle authority, called its real ordinary catalog and board constructors once each, created a board without lifecycle identity/history, and marked ordinary routes ready. Exact lifecycle reopen then refused IO_STORAGE_SHAPE. Six logical snapshots and the raw failed workspace are retained; no operations or effects were submitted.
+
+The sole executable delta is in synthetic_io_runtime.py after Registry construction and before ordinary catalog construction: under the existing Journal mutex, require storage profile hms.registry/0.1 or hms.registry/resource-roots/0.1; otherwise raise IO_REGISTRY_PROFILE. Fresh ordinary creation still starts with the legacy Registry profile, while ordinary reopening uses resource roots. The exact lifecycle profile is refused before ordinary provisioning. Journal opening may advance authority epoch and recovery metadata before this gate; no whole-DB byte identity promise is made.
+
+LifecycleRuntime and LifecycleCatalog retain their intentional nested IoAdapterCatalog path. No catalog, Registry, board, effect, public API, installation grammar or lifecycle settlement code changes. All tests, the other155 project inputs, runner, child, limits and origin checks are byte-identical to10. Prior snapshots/failed runs are immutable.
+
+commands-11.json proposes a single matching partial-setup after-case and a separately released four-method ordinary creation/reopen/identity regression selection. Existing fixtures and assertions remain exact. No tests, project imports, Runtime or DB execution occurred during preparation. The historical160 result remains failed; a focused corrected structural test passed separately. No full-suite/current-live/public lifecycle or physical qualification is claimed.

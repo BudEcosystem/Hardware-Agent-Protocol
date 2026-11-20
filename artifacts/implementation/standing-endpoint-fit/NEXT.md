@@ -1,0 +1,9 @@
+# Next work after the measured reduction
+
+Preserve this packet as a native pass and another complete-target flash refusal. The 582-byte combined improvement removes the static-budget excess, but 10296 bytes still exceed physical flash and 10808 exceed the application ceiling. Further work belongs in a fresh isolated candidate with the same original target and explicit resource limits.
+
+The next compiler-profile hypothesis is informed by the separate [GCC option research](../../../research/constrained/avr/compiler-options-review/NOTES.md). LTO remains research only here: no flags or build used it. A future experiment must pin the actual compiler/backend/plugin inputs and preserve all externally reachable endpoint/link/ISR entry points, fixed storage reservations and complete finite/standing behavior. Any result needs final-image static and foreground/callback/helper/ISR evidence; compilation or a smaller image alone does not establish runtime fit.
+
+Keep the 13 standing controls, original finite and AVR register regressions, exact wire vectors, actual-boundary authority checks, ledger/ACK/resume rules and post-handoff witness behavior. Continue measuring combined source/profile deltas without inventing individual savings. Do not replace the standing controller with a finite OP loop, remove clock/NVM/UART/stop reservations, narrow timestamp semantics or silently enlarge the MCU. If a coherent implementation still cannot meet the original budgets, retain the explicit unsupported-fit outcome and define any larger-device profile separately.
+
+Durable host deployment, reconciliation and evidence ACK storage, PAT dependency/qualification integration, and commissioned bounded physical drivers remain required for the full prompted-application system. No further compiler-profile, implementation or device work was performed in this packet.

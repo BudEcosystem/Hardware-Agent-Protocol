@@ -1,0 +1,160 @@
+/* One source is compiled against both frozen baseline and candidate cores.
+ * It traces the unchanged14 standing controls and explicit finite boundaries.
+ * Only two pointer representations are zeroed; no logical state is normalized. */
+#if defined(HMS_EQ_BASELINE)
+#include "../../originals/project/tests/standing_fixture.h"
+#include "../../originals/project/protocol/endpoint/link.h"
+#else
+#include "standing_fixture.h"
+#include "../protocol/endpoint/link.h"
+#endif
+#include <stdio.h>
+#include <string.h>
+
+static void trace_fixture_init(hms_st_arena *,hms_ep_config *,hms_st_config *);
+static uint8_t trace_handle(hms_endpoint *,uint8_t,uint8_t,uint64_t,uint32_t,
+    const uint8_t *,uint16_t,uint64_t,uint16_t,uint8_t *,uint16_t *);
+static void trace_poll(hms_endpoint *,uint64_t,uint16_t);
+#define hms_st_fixture_init trace_fixture_init
+#define hms_endpoint_handle trace_handle
+#define hms_endpoint_poll trace_poll
+#define main retained_standing_main
+#if defined(HMS_EQ_BASELINE)
+#include "../../originals/project/tests/standing_controls.c"
+#else
+#include "standing_controls.c"
+#endif
+#undef main
+#undef hms_endpoint_poll
+#undef hms_endpoint_handle
+#undef hms_st_fixture_init
+
+static hms_ep_config callbacks;
+static hms_st_config standing_callbacks;
+static uint32_t describe_advance,clock_advance,describes,guards,clocks;
+static unsigned trace_records;
+static void blob(const void *data,size_t length) {
+    const uint8_t *p=data;size_t i;
+    for(i=0;i<length;++i)printf("%02x",(unsigned)p[i]);
+}
+static void snapshot(const char *kind,const hms_endpoint *e) {
+    hms_endpoint copy;
+    ++trace_records;printf("S %u %s ",trace_records,kind);
+    memcpy(&copy,e,sizeof(copy));
+    memset(&copy.config,0,sizeof(copy.config));memset(&copy.standing,0,sizeof(copy.standing));
+    blob(&copy,sizeof(copy));putchar(' ');
+    blob(w.s.bytes,sizeof(w.s.bytes));putchar(' ');blob(&w.arena,sizeof(w.arena));putchar('\n');
+}
+static uint8_t trace_constant(void *u,uint8_t kind,uint8_t index) {
+    uint8_t value=callbacks.constant_byte(u,kind,index);
+    printf("C constant %u %u %u\n",(unsigned)kind,(unsigned)index,(unsigned)value);return value;
+}
+static uint8_t trace_describe(void *u,uint16_t id,const uint8_t *a,uint8_t n,hms_ep_primitive *out) {
+    uint8_t value;++describes;
+    p64((uint8_t *)u+FX_CLOCK,r64((uint8_t *)u+FX_CLOCK)+describe_advance);
+    value=callbacks.describe(u,id,a,n,out);
+    printf("C describe %u %u %u %llu\n",(unsigned)id,(unsigned)n,(unsigned)value,
+        (unsigned long long)r64((uint8_t *)u+FX_CLOCK));return value;
+}
+static uint8_t trace_guard(void *u,uint16_t id,const uint8_t *a,uint8_t n) {
+    uint8_t value;++guards;value=callbacks.guard(u,id,a,n);
+    printf("C finite-guard %u %u %u %llu\n",(unsigned)id,(unsigned)n,(unsigned)value,
+        (unsigned long long)r64((uint8_t *)u+FX_CLOCK));return value;
+}
+static uint8_t trace_clock(void *u,uint64_t *now,uint16_t *flags) {
+    uint8_t value;++clocks;
+    p64((uint8_t *)u+FX_CLOCK,r64((uint8_t *)u+FX_CLOCK)+clock_advance);
+    value=callbacks.sample_clock(u,now,flags);
+    printf("C clock %u %llu %u\n",(unsigned)value,(unsigned long long)*now,(unsigned)*flags);return value;
+}
+static void trace_finite_step(void *u,uint8_t phase,uint16_t id,const uint8_t *a,uint8_t n,
+        uint64_t now,const hms_ep_step_limits *limits,hms_ep_report *out) {
+    printf("C finite-step-before %u %u %u %llu %llu %llu\n",(unsigned)phase,(unsigned)id,(unsigned)n,
+        (unsigned long long)now,(unsigned long long)limits->latest_start,(unsigned long long)limits->ordinary_until);
+    snapshot("finite-step-before",&w.e);callbacks.step(u,phase,id,a,n,now,limits,out);
+    printf("C finite-report ");blob(out,sizeof(*out));putchar('\n');snapshot("finite-step-after",&w.e);
+}
+static uint32_t trace_epoch(void *u,uint8_t channel) {
+    uint32_t value=standing_callbacks.source_epoch(u,channel);
+    printf("C epoch %u %lu\n",(unsigned)channel,(unsigned long)value);return value;
+}
+static uint8_t trace_standing_guard(void *u,const uint8_t *configuration,uint8_t initial) {
+    uint8_t value=standing_callbacks.guard(u,configuration,initial);
+    printf("C standing-guard %u %u %llu\n",(unsigned)initial,(unsigned)value,
+        (unsigned long long)r64((uint8_t *)u+FX_CLOCK));return value;
+}
+static void trace_standing_step(void *u,const hms_standing *authority,uint8_t phase,uint8_t command,
+        uint64_t now,uint64_t cutoff,uint8_t *report) {
+    printf("C standing-step-before %u %u %llu %llu\n",(unsigned)phase,(unsigned)command,
+        (unsigned long long)now,(unsigned long long)cutoff);
+    snapshot("standing-step-before",&w.e);
+    standing_callbacks.step(u,authority,phase,command,now,cutoff,report);
+    printf("C standing-report ");blob(report,32);putchar('\n');snapshot("standing-step-after",&w.e);
+}
+static void trace_fixture_init(hms_st_arena *a,hms_ep_config *finite,hms_st_config *standing) {
+    hms_st_fixture_init(a,finite,standing);callbacks=*finite;standing_callbacks=*standing;
+    finite->constant_byte=trace_constant;finite->describe=trace_describe;finite->guard=trace_guard;
+    finite->sample_clock=trace_clock;finite->step=trace_finite_step;
+    standing->source_epoch=trace_epoch;standing->guard=trace_standing_guard;standing->step=trace_standing_step;
+    describe_advance=clock_advance=describes=guards=clocks=0;
+}
+static uint8_t trace_handle(hms_endpoint *e,uint8_t kind,uint8_t channel,uint64_t session,uint32_t sequence,
+        const uint8_t *p,uint16_t n,uint64_t now,uint16_t flags,uint8_t *out,uint16_t *length) {
+    uint8_t result=hms_endpoint_handle(e,kind,channel,session,sequence,p,n,now,flags,out,length);
+    printf("A handle %u %lu %u %llu %u ",(unsigned)result,(unsigned long)sequence,(unsigned)n,
+        (unsigned long long)now,(unsigned)flags);
+    if(out!=NULL && result!=0u)blob(out,length!=NULL?*length:7u);
+    putchar('\n');snapshot("handle",e);return result;
+}
+static void trace_poll(hms_endpoint *e,uint64_t now,uint16_t flags) {
+    hms_endpoint_poll(e,now,flags);printf("A poll %llu %u\n",(unsigned long long)now,(unsigned)flags);
+    snapshot("poll",e);
+}
+static int finite_callback_boundaries(void) {
+    const uint64_t base=UINT64_C(0x81234567fffffff8);
+    uint8_t arm[48],request[96],query[44];unsigned mode;
+    for(mode=0;mode<6u;++mode){
+        int expected_status;uint64_t after;
+        CHECK(setup());p64(w.arena.driver+FX_CLOCK,base);
+        memset(arm,0,sizeof(arm));arm[0]=1;arm[1]=17;p32(arm+2,2);p16(arm+6,1);
+        memset(arm+8,0x55,32);p64(arm+40,base+500u);CHECK(call(arm,48)==HMS_EP_OK);
+        CHECK(w.length==69u && r64(w.out+48)==base && r64(w.out+56)==base+500u);
+        memset(request,0,sizeof(request));request[0]=1;request[1]=32;
+        p32(request+2,2);p16(request+6,1);p32(request+8,1);memset(request+12,0x22,32);
+        p16(request+44,1);request[46]=3;
+        p64(request+52,base+3u);p64(request+60,base+10u);p64(request+68,base+100u);
+        p32(request+76,100);p64(request+80,base+300u);p32(request+88,1);p32(request+92,1);
+        describes=guards=clocks=0;
+        if(mode<3u){describe_advance=3;clock_advance=(uint32_t)(4u+mode);p32(w.arena.driver+FX_GUARD_ADVANCE,2);}
+        else{describe_advance=12;clock_advance=0;p32(w.arena.driver+FX_GUARD_ADVANCE,0);}
+        if(mode==4u)w.arena.driver[FX_DENY]=1;
+        if(mode==5u)p64(request+68,UINT64_MAX);
+        expected_status=mode==0u?HMS_EP_OK:(mode==4u?HMS_EP_BAD_STATE:(mode==5u?HMS_EP_BAD_TIME:HMS_EP_START_EXPIRED));
+        CHECK(call(request,96)==expected_status);
+        CHECK(describes==1u && guards==(mode==5u?0u:1u) && clocks==(mode<4u?1u:0u));
+        after=mode<3u?base+9u+mode:(mode==3u?base+12u:base);
+        CHECK(w.e.now_tick==after && r32(w.arena.driver+FX_DISPATCHES)==0u);
+        if(mode==0u){
+            CHECK(w.e.receipt.queued_at==base+9u && w.e.receipt.execution==HMS_EP_QUEUED);
+            CHECK(w.e.call_high_water==1u && w.e.fence_floor[0]==1u && w.e.fence_floor[1]==1u);
+            describe_advance=clock_advance=0;p32(w.arena.driver+FX_GUARD_ADVANCE,0);
+            tick(base+9u);CHECK(w.e.receipt.started_at==base+9u && r32(w.arena.driver+FX_DISPATCHES)==1u);
+            tick(base+11u);CHECK(w.e.receipt.execution==HMS_EP_COMPLETED && w.e.receipt.held_mask==0u);
+            memcpy(query,request,44);query[1]=33;CHECK(call(query,44)==HMS_EP_OK && w.length==86u);
+            CHECK(r64(w.out+61)==base+9u && r64(w.out+69)==base+9u && r64(w.out+77)==base+11u);
+            CHECK(trace_handle(&w.e,1,0,1,++w.request,query,44,base+11u,25,NULL,&w.length)==1u && w.length==0u);
+            CHECK(trace_handle(&w.e,1,0,1,++w.request,query,44,base+11u,25,w.out,NULL)==1u && w.out[6]==0u);
+        }else{
+            CHECK(w.e.operation_length==0u && w.e.receipt.held_mask==0u && w.e.call_high_water==0u);
+            CHECK(w.e.fence_floor[0]==0u && w.e.fence_floor[1]==0u && w.s.bytes[ST_SLOT]==ST_EMPTY);
+        }
+    }
+    return 1;
+}
+int main(void) {
+    unsigned before;
+    if(retained_standing_main()!=0)return 1;
+    before=assertions;if(!finite_callback_boundaries())return 1;
+    printf("{\"equivalence_cases\":15,\"old_cases\":14,\"assertions\":%u,\"added_assertions\":%u,\"trace_records\":%u,\"physical_qualification\":false}\n",
+        assertions,assertions-before,trace_records);return 0;
+}

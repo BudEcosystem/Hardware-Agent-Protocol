@@ -1,0 +1,26 @@
+# Standing endpoint programs: proposed lifecycle
+
+Status: source-grounded design only. This packet changes no public code and does not modify the sealed [AVR integration evidence](../../implementation/avr-link-integration/README.md). No code, tests, compiler, target, emulator or physical device was executed for this design.
+
+A prompted application needs a retained deployment whose local triggers and feedback can run repeatedly without planning-model calls. The existing finite OP executor does not provide that lifecycle. ARM renews context eligibility and cannot extend an admitted OP. The host PAT compiler accepts finite ordered sequences, not dynamic observations or standing feedback. Those contracts remain valid and must not be relabeled as persistent control.
+
+The proposed first implementation is a separately negotiated **single standing controller** profile for the original ATmega328P. It installs immutable configuration for a bounded, already installed hysteresis/feedback kernel; samples two installed local inputs; holds its complete resource set; and responds locally to fresh observations until suspended, stopped, expired or faulted. A deterministic host renews authority and durably collects bounded transition records. The agent is needed for a new intent, unsupported context or a justified revision, not for each sample or output transition.
+
+The profile is intentionally narrow: one retained deployment or one retained finite OP, no concurrent local OPs, two scalar observation channels, two unacknowledged transition/evidence records, no arbitrary code upload and no automatic continuation after reset. It is a genuine renewable deployment with local triggers; it is not a host loop replaying OP/ARM. Other devices and independently admitted hub jobs may operate concurrently through the common host resource graph.
+
+| Design document | Contents |
+| --- | --- |
+| [LIFECYCLE.md](LIFECYCLE.md) | Identity/version/renewal, trigger freshness, state transitions, cancellation, quiescence, failures and durable evidence limits |
+| [WIRE-AND-HOST.md](WIRE-AND-HOST.md) | Proposed wire operations, shared arbitration, concrete endpoint/host/PAT changes and larger profiles |
+| [ATMEGA328P-BUDGET.md](ATMEGA328P-BUDGET.md) | Exact sealed baseline, proposed storage ceilings, deliberately unsupported features and required target checks |
+| [IMPLEMENTATION-PATH.md](IMPLEMENTATION-PATH.md) | One cohesive implementation slice and meaningful acceptance scenarios |
+| [MEMORY-RECONCILIATION.md](MEMORY-RECONCILIATION.md) | Every retained field, exact 128-byte worksheet, immutable-buffer reuse and narrowed resume/ownership rules |
+| [SOURCE-COVERAGE.md](SOURCE-COVERAGE.md) | Point-in-time local sources, frozen copies and exact interpretation boundaries |
+
+The memory route is plausible but unproved. The sealed image has 193 SRAM bytes outside its reserved stack and only 25 bytes unassigned within its stack planning scenario. This design caps new standing-protocol state and glue at 160 static bytes and allocates the controller, observations and two record slots inside the existing full 256-byte primitive allowance. It retains the 64-byte protection reservation, 512-byte stack reservation, 64-byte ISR allowance and 128-byte callback-growth allowance. No standing code has been compiled; failure of those ceilings must produce an unsupported-target result rather than silently choosing a larger MCU or removing reservations.
+
+The field audit makes the tradeoffs explicit: one aggregate quiescence witness; ownership retained until RETIRE; suspended evidence durably collected before RESUME prepares fresh observations and a later START; and exact immutable OPEN reuse instead of duplicate identity buffers. OPEN is at most134 bytes and each STATUS page remains within192. The packet retains exact copies of all18 consulted inputs under `source-snapshots/`, mapped by [evidence.json](evidence.json). Root documentation changed after those captures; the copies establish what was consulted, not the current root-document contents or a full reading beyond SOURCE-COVERAGE.
+
+The strongest unresolved durability boundary is explicit: the AVR boot reservation protects activation namespaces from reuse, but it is not a per-event durable journal. The host durably reserves the deployment/boot namespace before activation; the MCU uses non-wrapping activation numbers within it. A power loss may destroy unacknowledged activation evidence, so the host retains an unknown effect interval and claims. It cannot claim a complete recovered trace or exactly-once physical effects. Applications requiring replay of every trigger/outcome through power loss need a different storage-qualified endpoint profile.
+
+The initial kernel can express a configured enclosure controller with temperature demand and fan feedback, including an ineffective-response exception. Its physical loss action must come from a commissioned installation; this design does not assume that fan-off, fan-on or any other generic electrical state is safe. Actual device drivers, independent stopping, hub providers, aggregate host storage enforcement, qualification, PAT learning/promotion and public mounting remain required work.

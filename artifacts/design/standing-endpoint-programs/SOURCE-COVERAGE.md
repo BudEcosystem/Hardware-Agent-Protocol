@@ -1,0 +1,26 @@
+# Source coverage and interpretation
+
+This packet uses point-in-time local source/specification evidence and the sealed AVR integration. No tests, imports of project code, compiler, native probe, target, emulator or device were executed. Files were read as text; the new files are design prose. Data-only metadata/copy operations retained all18 inputs under `source-snapshots/<original path>` and verified their exact byte hashes against [evidence.json](evidence.json). No acquired source was executed and no new network acquisition was needed.
+
+Root documentation changed after these captures. The hashes and copies describe the consulted versions, not a claim that current root paths remain byte-identical. Links below identify original locations for context; the evidence mapping identifies the frozen copy for review. Retaining a complete file does not enlarge the reading coverage stated below.
+
+| Source | Coverage and use |
+| --- | --- |
+| [Endpoint header](../../../protocol/endpoint/endpoint.h) | Complete header: exact fields, one192-byte immutable OP buffer, eight fence floors, receipt, callback/report shapes and one-owner limits |
+| [Finite wire contract](../../../spec/11-endpoint-wire.md) | Selected lifecycle/identity/wire/clock/receipt sections, especially lines16–41,43–86,88–168: ARM cannot extend OP; qualified boot; nonpreemptive fences; exact replay; no receipt eviction; quiescence distinct from completion |
+| [Endpoint implementation](../../../protocol/endpoint/endpoint.c) | Previously reviewed selected functions retained as implementation basis: update/sample_clock/admit/handle/owns_resources/cutoff_reason/poll. The current header and spec were reread; no claim of a new complete C implementation audit |
+| [Endpoint README](../../../protocol/endpoint/README.md) | Existing C integration, native harness and physical-qualification boundaries; its older placeholder target result is superseded for this design by the sealed combined image below |
+| [Prompt-to-PAT](../../../docs/prompt-to-pat.md) | Selected standing-application/artifact/learning/example sections around lines528–690 and nearby historical implementation notes. Explicitly requires standing triggers, versioned intent, local outage policy, exact dependencies and separate proposed context-program profile |
+| [PAT foundation](../../../docs/pat-foundation.md) | Artifact/lowering/catalog/execution sections: bound sequences, strict unsupported-feature refusal, evidence-based promotion and simulation limits |
+| [PAT execution](../../../docs/pat-execution.md) | Current structured selection, authority, durable identity/atomic linkage and restart behavior; finite procedure linkage is not a standing store |
+| [PAT contracts source](../../../hms/pat_contracts.py) | Lines1–160 read: fixed profile names, closed artifact fields, scalar domain and static-applicability restrictions |
+| [PAT execution source](../../../hms/pat_execution.py) | Lines1–180 read: closed run schema, `px_instances`/`px_triggers`, unique procedure linkage, original-key owner/status checks and finite lowering |
+| [I/O/driver/hub architecture](../../../docs/io-driver-hub-control.md) | Selected current status and ownership/lifecycle/observation sections, including lines215–295. Input acquisition identity, aliasing, driver generation, hub outage and provider qualification requirements |
+| [Resource catalog](../../../hms/resource_catalog.py) and [topology](../../../hms/resource_topology.py) | Symbol/line search only in this continuation: resolve/publish-generation, binding-proof, aliases/footprint and generation-change claim functions. Their full bodies were not reread here; the proposal requires implementation-stage source review before refactoring them |
+| [Sealed AVR integration](../../implementation/avr-link-integration/README.md), [stack review](../../implementation/avr-link-integration/STACK-REVIEW.md), [next work](../../implementation/avr-link-integration/NEXT.md) | Current native/cross-link/static constraints and explicitly unfinished standing/physical work. These artifacts are read-only inputs, never edited here |
+| [Hub provider gap](../hub-provider-gap/README.md) | Complete review: current simulation-only provider mounting, proposed owned-process capability, actual host/GB10 qualification and storage limits |
+| [Retained Firmata scheduler primary source](../../../research/protocols/repos/firmata-protocol/scheduler.md) | Complete short scheduler document read as an existing message-task mechanism. It describes stored messages, scheduling/delay/repetition, task deletion/query/reset. It is not evidence for the proposed HMS identity/lease/ownership/effect/durability contract, nor a claim of Firmata compatibility |
+
+The proposed identities, lifecycle, packet fields, allocations and first-kernel restrictions are original HMS design decisions, not claims that existing local code or Firmata implements them. The host and driver/profile designs remain distinct from measured platform support. No full-repository, full-vendor-manual or current external compatibility audit is claimed.
+
+An attempted read of `hms/resource_admission.py` found that path does not exist. Subsequent inspection used the actual `resource_catalog.py` and `resource_topology.py` paths; no conclusions depend on a nonexistent module.

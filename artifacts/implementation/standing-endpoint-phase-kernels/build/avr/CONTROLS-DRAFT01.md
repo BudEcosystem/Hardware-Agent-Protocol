@@ -1,0 +1,17 @@
+# Controls draft 01: unexecuted
+
+history/controls-draft01 contains exact source snapshots and a diff. The original 14 standing controls and the original three kernel control bodies remain unchanged; the two previous finite differential group bodies also remain unchanged. Counts below identify declared groups, not observed assertions or passing results.
+
+Kernel main now declares six groups: the original three plus all single-digit positions/values with full64 borrow and upper-half discrimination; overlapping elapsed snapshots and checked duration sums; and cutoff/base plus native/encoded age overlap. Failed sums must leave their output sentinel unchanged. Native builds must run this same six-group source with byte backend 1 and scalar fallback 0, both plain and sanitized, require observed assertion agreement and keep each backend field explicit.
+
+The differential source declares 20 groups: 14 old standing, two old finite, and four new groups. New callback hooks are inactive for every old test. Each complete trace must match across the exact parent scalar source, candidate byte backend, and candidate scalar fallback, in both modes. No expected assertion total or trace hash is invented.
+
+Finite capture tests rewrite a test-owned request's time bytes inside describe or guard, after the original entry captures. The request buffer is separate from arguments and endpoint state. They distinguish initial invalid times repaired later from valid captures damaged later, and guard clock expiry from a later request extension. Successful admission still copies the mutated request as the baseline does; the test does not execute ordinary I/O from that request.
+
+Standing report tests use actual acquisition and controller service at a high-bit/carry clock base. The native callback wrapper changes only its returned report, testing quality/epoch/sequence refusal priority, absent/future/older times, range, valid new observation and equal-sequence identical/conflicting contents. Driver authority gates and captured report ownership remain in the original fixture.
+
+Native-only phase_access.c includes exactly the selected standing.c and adds one accounting accessor. It replaces standalone standing.c only in the differential executable, never in firmware or other suites. This lets the direct private control observe commit-before-false at max_on without fabricating a valid driver handoff that the installed cutoff would forbid. It is explicitly not a reachability claim. It also checks chronological and sum overflow refusals, and noncommitting checks.
+
+The full-controller loss group seeds the bounded account near UINT32_MAX, then performs actual suspend, loss output and witness service. With transition at 14 and witness at 28, duration is 14: remaining 13 must retain copied witness fields while refusing WITNESS_VALID, while remaining 14 commits UINT32_MAX and valid aggregate quiescence. Claims remain held in both cases. The seeded counter is a fault/boundary model, not evidence of a physical operation with that history.
+
+Runner changes are still pending. Its baseline trace must now link the exact parent's endpoint_kernel.c; both candidate implementations use the new phase access unit only for differential checks. All regular candidate/AVR paths select byte backend 1. The separate fallback checks explicitly select 0. No test, compiler, candidate, auditor, helper import or tool query has run.

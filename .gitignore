@@ -7,7 +7,8 @@ build/
 dist/
 *.egg-info/
 .superpowers/
-# Retained evidence store (26 GB); content-addressed ingest is separate work.
+# Historical source, documentation and build definitions here are tracked explicitly.
+# Generated evidence stores, captured runtime data and binaries remain local (26 GB total).
 artifacts/
 # Research: keep notes, manifests and reading receipts; not raw downloads or checkouts.
 research/**/raw/

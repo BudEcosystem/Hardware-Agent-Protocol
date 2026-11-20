@@ -1,0 +1,9 @@
+# Bounded fit experiment
+
+Keep the original 16 MHz ATmega328P, 2048-byte SRAM, 32768-byte physical flash and 32256-byte application ceiling. Preserve the exact 128-byte standing state, total 32-byte pointer/configuration/core glue allowance, 256-byte arena, 64-byte protection reservation and 512-byte stack reservation with its existing ISR and callback allowances. Compiler-generated constant storage counts toward complete-image static usage.
+
+The source delta is limited to descriptor field stores, signed 32-bit feedback improvement justified by admitted input bounds, four same-operator byte comparisons between encoded unsigned timestamps, and a full-controller range/direction control. The runner changes only its required standing case count from 12 to 13. Timestamp representation, arithmetic, lifecycle transitions, callback order, resource authority, ledger/witness evidence and exact replay remain unchanged. No broad inlining or compiler-profile change is selected. Any size effects will be reported for this combined candidate, without invented per-change savings.
+
+After root source review, the existing controlled runner can execute original finite and AVR register controls plus the thirteen standing cases in plain and ASan/UBSan modes. Root can then compile/link the unchanged complete AVR composition. Every attempt gets new retained source copies, command receipts and logs. A continued overflow is a measured unsupported-fit result and must be preserved.
+
+Successful compilation/linking would still require complete static accounting and combined foreground/callback/helper/ISR stack analysis, plus exact linked USART instruction review. Neither local `.su` reports nor static-plus-reserved-stack arithmetic establishes runtime fit. No target execution, emulator or device access is part of this experiment. Decoded-local aliases and native-time arithmetic are outside the byte-comparison change.

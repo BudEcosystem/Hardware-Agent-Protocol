@@ -1,0 +1,1 @@
+Read-only review of the sole candidate11 profile gate and separate five-method selection. No reviewer execution. This does not claim a full regression pass, public lifecycle mounting or physical qualification. The gate precedes ordinary provisioning but follows Journal ownership acquisition.

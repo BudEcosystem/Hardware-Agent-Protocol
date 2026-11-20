@@ -1,0 +1,45 @@
+# Independent AVR Timer1 clock review
+
+Reviewed 2026-11-07 against producer receipt SHA-256 `24154c331330b6acade0406deb1d2e1604f44d060a4eb254881c4c27cf3eb574`. The four reviewed source/test/checker files match the producer's frozen hashes. All edits for this review are confined to this directory. The producer's inputs, outputs and receipts are unchanged by this work.
+
+**Result:** no implementation defect found within the declared exclusive-Timer1, immutable-epoch and strict half-period overflow-service contract. This is a conditional source/host-model review, not a deployment approval or a proof that the contract holds on hardware.
+
+The complete 986 lines of `avr_clock.c`, `avr_clock.h`, `avr_clock_probe.c` and `check_avr_clock.py` were read, along with the producer's README and selected existing official-datasheet excerpts. `review.json` records exact full-source LF ranges. `input-snapshots.json` retains 42 exact source/output snapshots, including the producer's receipt. Snapshot acquisition does not imply every linked binary, disassembly line or source reference was manually read.
+
+## Independent checks
+
+`independent_probe.c` is a separately written native register/history model linked against a frozen copy of the original clock C source. It records actual logical counter history at low-byte captures; the returned sample must equal a real capture and lie within the read's time interval. It does not reproduce the driver's TOV-before/TOV-after branch algorithm as its timestamp oracle.
+
+Both optimized GCC and ASan/UBSan builds pass the same campaign:
+
+- 131,920 scheduled interleavings, including all 4,096 tick/no-tick combinations at twelve timer-read boundaries for twenty starting states, plus 50,000 deterministic multistep schedules across all register reads. Unreached second-read slots are intentionally inert, so this is a scheduled-case count rather than a count of unique executed traces.
+- 8,192,056 nominal-millisecond comparisons against direct 64-bit division: all 125 possible high-word remainders times every 16-bit low word, plus 56 upper-word edge pairs. This covers all residual values of the decomposition; it does not exhaust every 48-bit timestamp.
+- 100,000 monotonic sequences with overflow service, 534 counted qualification/status/configuration/late-boundary cases, and additional assertions for exhaustion, regression, disappearing flags, pre-CLI interrupt, post-restore interrupt and post-restore invalidation.
+- Five deliberate contract violations with two through six unserviced wraps. They reproduce undetectable undercount and are explicitly expected to pass as aliased samples before invalidation. They are limitation witnesses, not successful recovery tests.
+
+Each baseline executes 150,427,739 assertions, many of them repeated shim checks; this number is not a count of independent requirements. Twelve independently compiled source mutants all fail the quick review probe with expected assertion exit 11: missing pending compensation, missing wrap reread, swapped byte reads, relaxed read/ISR late thresholds, cleared sticky qualification, removed epoch check, wrong conversion divisor, removed exhaustion guard, ignored regression, changed interrupt-state restoration and consumption of the pending flag. Compile errors, crashes and timeouts are not accepted as mutant rejection.
+
+`results.json` records exact baseline/mutant binaries, commands, diagnostics and compiler identity. The native compiler matches the producer's retained hash. No AVR ELF, emulator, hardware, acquired controller program, SDK example or model was executed. The existing official AVR toolchain and its target image were not rerun by this independent lane.
+
+## Findings by boundary
+
+| Boundary | Independent assessment |
+| --- | --- |
+| TOV1/TCNT1 race | Reading flag, low/high, flag with interrupts masked is consistent under the one-pending-wrap assumption. A 0→1 transition rereads the counter; a pending flag compensates only the local high word. A wrap after the final flag read can leave an older valid capture. The subsequent ISR must account it once. |
+| Low/high latch | The retained datasheet says low-byte read captures the shared high TEMP byte; the implementation follows that order. Exclusive TEMP ownership and masked access are necessary. The independent model includes ticks between bytes, and swapping read order is detected. |
+| ISR accounting | The helper assumes ordinary vector entry already cleared TOV1. It rejects a newly pending flag and a sampled count ≥32768, then increments the 32-bit wrap count at most once. Manual foreground calls or nested/unannounced vector ownership violate its API. Model direct calls without vector clear are rejected. |
+| Saved SREG | Source calls save/CLI and restore on every operational path. Native tests include I initially clear and all 256 status patterns, and reject forced interrupt enabling. The producer checks seven linked CLI/restore windows including compiler stack updates. Native hook results do not prove target instruction timing or all compiler dataflow. Arithmetic after restore may alter ordinary C-ABI arithmetic flags; the API promises no such flag preservation after return. |
+| Epoch and qualification | Init/start do not qualify. Qualification requires the identical nonzero, nonsentinel epoch plus exactly all assurance bits, and cannot clear a fault. Epoch durability/nonreuse and true source/service/continuity assurance remain external facts. `init` can reset memory if a trusted caller violates the one-init-per-boot contract; this API is not a defense against malicious trusted code or RAM corruption. |
+| Sticky fault | Runtime errors OR their fault reasons and clear qualification; requalifying or starting again cannot repair the same live object. Output is byte-identical on non-OK. Config restoration after a fault does not restore authority. |
+| 48-bit horizon | Maximum raw value is representable. A subsequent pending or serviced overflow faults before a successful high-word wrap. At the service boundary `32768`, late detection can take precedence over exhaustion; either outcome refuses an OK sample. |
+| Conversion | Writing high=125q+r gives raw=8192000q+65536r+low; division by 250 yields 32768q+floor((65536r+low)/250). The residual is ≤8191999 and fits uint32. The implementation's casts avoid 16-bit AVR promotion/shift overflow. Exact host oracle tests cover every residual and selected upper quotients. Nominal units do not establish oscillator accuracy. |
+| Half-period threshold | `>=32768` is deliberately strict; both read and ISR boundary mutants using `>` fail. Sampling below the threshold does not prove that eventual ISR accounting happened before it: the entire installation must honor the bound, including other ISRs and critical windows. No cycle/latency measurement was made. |
+| Undetectable alias | TOV1 is sticky, not an overflow counter. Multiple missed wraps can return the same registers as one pending wrap. Five counterexamples corroborate the documented limit. Temporary register changes restored before inspection can similarly escape detection; prior invalidation and independent inhibition remain necessary. |
+| Capture versus invalidation | A result linearizes in the masked capture window. An ISR/invalidation after restoration may fault the live clock before an earlier sample is returned. The independent probe confirms that old sample can legitimately return OK and the next read fails. Consumers must not turn that sample into a future execution grant or combine it with unrelated later flags as a coherent platform snapshot. |
+| Producer checker | Its source/test model, archive pinning, source snapshots, build-only AVR inspection and negative text fixtures are internally consistent with the stated scope. The CFG checker validates selected order/control-flow/register properties, not complete pointer/register-value dataflow. Its literal instruction-pattern constraints are tied to this exact compiler/build. No new whole-disassembly manual-read claim or independent firmware-size proof is made here. |
+
+No change request was sent because no defect was found within the documented contract. Physical oscillator qualification, interrupt scheduling assurance, epoch storage, coherent endpoint integration, independent inhibition, complete call-stack analysis and combined endpoint/UART/EEPROM/clock memory/timing qualification remain unfinished.
+
+## Reproduction and retained evidence
+
+From the HMS root, `python3 -I -B artifacts/verification/avr-clock-review/verify.py` verifies retained snapshots, receipt/output hashes and coverage declarations without compiling or executing anything. `run_review.py` reruns the original native probe/mutations inside this directory only; it requires the frozen live producer inputs/outputs and the recorded host compiler to remain identical. The offline verifier verifies historical snapshots and current implementation/test/checker hashes, so a later regeneration of the producer's timestamped receipt does not erase this review.

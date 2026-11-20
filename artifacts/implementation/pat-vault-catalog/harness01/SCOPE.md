@@ -1,0 +1,3 @@
+# Fourteen no-worker catalog controls
+
+Exact methods are listed in [targets](targets.json). Parent 180 seconds; child 120 CPU seconds, 512 MiB address space, 64 declared SQLite connections. Original 16 MiB/file, 256 MiB scratch, 8,192 files and 4 MiB output limits remain. Vault snapshot lifetime remains five seconds. Only the selected fixture oracle is substituted. No worker, network, physical I/O or live service is allowed. The reviewed native retention scanner may run on fixture files. Raw private scratch and exact copies remain. Source audit hooks are cooperative checks, not OS isolation or an aggregate disk reservation.

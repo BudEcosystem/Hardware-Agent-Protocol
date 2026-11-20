@@ -1,0 +1,11 @@
+# Retained auditor source — not executed
+
+audit_retained.py is adapted from the sealed shared-kernel auditor; audit-parent.py is its exact copied source, SHA 892c961d48d24e097c34fb11d3b18555574712740421c07374d0b4a9822262ff. auditor-diff.patch contains the complete delta. These files sit outside the 139 frozen run inputs and change none of those bytes. Root must review this exact auditor before execution.
+
+The proposed audit reads only retained JSON/text/file bytes and current process identities. It imports no candidate/runner/helper, launches no subprocess and runs no compiler or target. Its only future write is a new exclusive AUDIT.json after all joins pass. No audit result is claimed by this preparation note.
+
+Changes join the current 41-project/40-original source manifest, 139 frozen inputs, the new parent/proposal seals, all four staged history indexes and all 19 unchanged old control bodies. The native command plan is 34, including byte/fallback numeric controls and three controller trace domains per mode. It checks the retained compile argv selects the required backend/kernel/access source; phase_access must replace standalone standing.c in differential builds. Existing command-intent/start/result, process-identity/reap, source-copy, runtime/tool/plugin/alias, stdout/stderr and public244 checks remain.
+
+After root reported both terminal receipts, the source was bound to their exact hashes, 58 command/reap identities, numeric 6/86,889 observations, differential20/1,617 (851 beyond old766), 1,177 trace records and the exact common six-trace hash. These are values the future auditor must verify, not an already-passed audit claim. AVR is required to be the actual retained failed link with 6,418 reported physical overflow, 58 generated artifacts, exact map hash and no ELF. Failed-map section arithmetic is deliberately not qualified by this auditor; generated-code/map review is separate.
+
+The existing success-path section/root/storage checks remain fail-closed for source clarity, but this bound pair requires the actual AVR failure. No success or runtime-fit claim can be manufactured by the presence of backend .su files or native equality. Even an eventual auditor pass establishes retained evidence consistency and observed identity absence, not complete stack, timing, runtime fit or physical I/O qualification.

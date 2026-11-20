@@ -1,0 +1,11 @@
+# Remaining work
+
+The catalog candidate is not ready for public mounting. Keep the original failed scopes and all partial states immutable. The 19 passing controls need no unchanged rerun.
+
+1. Diagnose the worker deadline using source review and a separately bounded observation design. Existing timestamps do not identify CPU, I/O, scheduling or lock-wait causes. Any new diagnostic execution needs a fresh reviewed scope and must retain the original 60-second worker limit, complete matrix and effect/storage limits. Do not repeat the unchanged failing scope or increase a deadline to obtain a pass.
+2. After an evidence-supported correction, qualify a fresh complete worker → original import → catalog → one simulated application → original-key replay → changed-configuration refusal → cold historical replay scope. The current actual attempts do not establish the last three steps. A successful future scope requires its own audit; the unexecuted `audit-actual.py` targets failed harness83 and must not be used to relabel that failure.
+3. Review protected control capacity before public mounting. The observed authority database is close to the original file ceiling. Evidence limits and cache charges are not disk quotas or guarantees that cancellation/status writes remain possible under pressure.
+4. Integrate the qualified profile explicitly through runtime/API/CLI/MCP and the Harness overlay, with authorization, error distinctions and replay preserved. Unavailable qualification is not novelty and must not trigger implicit agent work or a replacement qualification run.
+5. Continue the broader goal: bounded prompt-to-program generation, observation and validated PAT learning; persistent constrained-device execution; real I/O and driver providers; hub compute, service and lifecycle providers; and home, laboratory, microscope and manufacturing qualification. The same control/authority model must cover the device, driver and intelligence hub, while each provider retains its own execution and recovery contract.
+
+Continue the remaining full-source research backlog in parallel with software work when helpers become available. These host simulation results do not substitute for full reading or physical commissioning.

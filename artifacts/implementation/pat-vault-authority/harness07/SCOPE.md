@@ -1,0 +1,3 @@
+# Diagnostic scope
+
+One original after-seal reconciliation method on unchanged production. cProfile runs around the method and writes at most 160 function records after it stops. The parent remains bounded to 180 seconds, 4 MiB output, 16 MiB/file, 256 MiB scratch and 8,192 entries. The child retains 120 CPU seconds, 512 MiB address space and 64 SQLite connections. Fresh private raw state and exact retained copies remain. No network, qualification worker or physical execution. The declared semantic oracle is a substitute. The original ten-method SIGKILL failure remains failed, with missing final receipts.

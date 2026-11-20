@@ -1,0 +1,15 @@
+# Exact shared bodies for finite-I/O evidence
+
+This stage continues the [real bound-worker import](../pat-io-bound-import/README.md). All261 prior project files are copied unchanged. The new host package has its own source identity, metadata anchor, schema and explicit construction. It neither migrates nor resets the frozen legacy consumer or its evidence. The producer's source/image selection remains unchanged.
+
+The original integration completed30 cases and exact historical replay but failed its unchanged16MiB single-file retention limit: the authority database was17,591,296 bytes. The [sizing model](../pat-io-bound-import/deduplication-sizing.json) reconstructs all4011 evidence rows byte-for-byte using2798 unique bodies and estimates a1,463,296-byte allocation reduction after indexes. That estimate is not a new store implementation or a passing retention result.
+
+The compact store retains every run/path reference and stores an exact body once per SHA-256 digest. References, bodies, import receipts and run associations share one Journal transaction. Reuse of an existing body compares its actual bytes; digest columns alone are not trusted. No compression, lossy reduction, dropped cases or weakened outcome check is introduced.
+
+Bound actual body size, object/reference counts, per-run expanded closure, aggregate expanded validation work, unique stored bytes and conservative metadata charges. Retain all original maximum ceilings. Explicit installed creation options may lower capacities. Missing bodies, orphan objects, bad types/sizes/digests, changed references, extra/shadow schema, conflicting bodies and inconsistent chains refuse without repair. A rollback leaves no publication; loss of a commit reply resolves the original record. Complete semantic inspection remains outside the Journal transaction.
+
+Legacy and compact mounts are separate explicit profiles. The new package pins the existing semantic reader/reducer dependencies plus its own source without altering legacy identity. Historical import/read remains distinct from fresh catalog eligibility. The same authority, original-run and configuration joins remain mandatory.
+
+Required checks include exact reconstruction, shared bodies across runs, changed/missing/orphan bodies, rehashed cross-run substitution, rollback/lost replies, lowered object/expanded quotas, type/size preflight, legacy coexistence and real worker/import/replay. Actual integration retains the full30-case matrix, original60-second worker/group and180-second outer limits,16MiB single-file ceiling and original aggregate retention/effect limits. No failed old logical run is retried or reclassified.
+
+Deduplication alone cannot guarantee arbitrary high-entropy data fits16MiB. Allocated SQLite pages, sidecars, control capacity and admission availability require separate evidence and capacity contracts. Public catalog/Harness tooling, prompt learning, persistent Arduino applications, actual device/driver/hub providers, streams/timing and microscope commissioning remain part of the active full goal.

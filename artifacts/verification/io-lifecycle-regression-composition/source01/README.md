@@ -1,0 +1,9 @@
+# Exact two-case lifecycle regression composition — not executed
+
+This source preparation copies the reviewed07 runner/child and all156 current project inputs unchanged. It also retains the exact historical01 manifest and its11 listed files:10 HMS source files and one old test file. The runner's existing `--source-snapshot 01` option overlays only those10 HMS rows, while the current test methods stay unchanged. The old test file is acquisition context and is never overlaid.
+
+This is a later composed counterfactual, not an original historical01 execution. The current source includes later ordinary-output and harness context outside the10 selected old HMS rows. Exact current and old byte identities are in `provenance.json` and the retained source manifests.
+
+`commands.json` records the two proposed commands. The first runs only the exact publication replay proof/revision method and final operation-lookup delay method against the historical HMS overlay. Preserve all actual failures, errors, subtest distinctions and one logical database snapshot per case; a setup error or unrelated failure is not evidence of the intended regression. Diagnose the old run before requesting a separate release for the same two current-source methods without the overlay. There is no automatic old-to-current sequence and no full-suite invocation.
+
+The07 real private `/tmp` scratch policy is unchanged: retain its actual identity/path and terminal inventory; explicitly acquire remaining raw outputs before any future cleanup. The strict seven-package, source-origin and bytecode checks remain in place. No source imports, tests, Runtime actions or database opens occurred in preparing this composition. No production source changed. No broader lifecycle, public API, hardware/MCU/model or OS driver/service qualification is claimed.

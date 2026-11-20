@@ -1,0 +1,9 @@
+# Existing-state replacement source status
+
+This directory contains an unexecuted source candidate for replacing an existing bounded state file through the retained littlefs bridge. The delegated preparation turn was stopped by automatic review, which flagged possible cybersecurity risk. No compiler, native test, modeled fault matrix or full storage replay was executed by that branch. No physical block device, mounted filesystem, service or user data was accessed by the proposed experiment.
+
+Root subsequently inspected the proposed bridge delta and finite in-memory model/runner source. The added bridge entry point opens an existing file with TRUNC but without CREAT; it does not change the original hierarchy or creation paths. The proposed model retains a fixed128MiB logical geometry and bounds event/trial preparation. Its cut/error cases model selected program/erase/sync persistence outcomes and cold readonly inspection. This is a proposal, not evidence of successful or power-loss-safe replacement.
+
+Preparation remains incomplete: PLAN.md, MODEL.md and REVIEW.md required by the proposed runner are absent. The runner's unreaped-child group cleanup also needs the explicit raw SIGCHLD/sole-owner precondition already required by the current host harness; no execution is authorized by source presence. Retain this draft without substituting it for a passing artifact. Any future reviewed model must clearly state exclusions, preserve every failed attempt, and precede adoption or an unchanged full-workflow gate.
+
+The prior compact-bitmap candidate remains unadopted. The complete4270-file/169-directory replay,128MiB geometry,180-second wall/120-second CPU gate and durability barriers remain unchanged. This source preparation establishes no performance gain, successful replacement, backing guarantee or qualification.

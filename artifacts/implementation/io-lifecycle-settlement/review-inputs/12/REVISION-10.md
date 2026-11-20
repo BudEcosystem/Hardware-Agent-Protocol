@@ -1,0 +1,7 @@
+# Snapshot 10: normalize only the expected installation identity
+
+Source preparation only. Snapshot09's partial-setup attempt failed a fixture identity assertion before any ordinary opener or lifecycle reopen. The retained catalog stores a normalized installation; installation_digest hashes its supplied tree without performing normalization. Producer inspection of a copied immutable authority database retained the five raw/stored list differences and zero operations/claims/effects. All failed09 evidence remains unchanged.
+
+The sole code change derives expected_lifecycle_digest = installation_digest(normalize(self.configuration)) once in the provisioning scenario and uses it for the initial catalog digest and later board identity assertions. The fixture still passes/captures its original raw configuration, so actual Runtime normalization remains exercised. The existing normalization helper returns a detached value; the original input is not replaced. All48 HMS files, other155 project inputs, corrected structural guard, runner, child, constructor spies, checkpoints, raw retention and default600-second bound remain unchanged09.
+
+No project imports, tests, Runtime, database opens or effects were performed while preparing10. commands-10.json records only the same held partial-setup target. Earlier documents/commands are historical copies. The cross-profile behavior remains an independently identified source finding, not yet a reproduced execution defect. Production remains deliberately unfixed for the controlled before case.

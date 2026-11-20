@@ -1,0 +1,11 @@
+# Recorded finite-I/O catalog integration
+
+Continue from the [passing compact store](../pat-io-content-store/README.md) and the [source-informed invocation/applicability design](../../verification/pat-io-recorded-catalog-design/DESIGN.md). All 266 inherited project files remain unchanged. A separate host package connects the original import to a versioned catalog receipt and current source-device applicability without changing the producer image. The [results](results/README.md) distinguish passing fixture controls from incomplete actual integration.
+
+Preparation must authorize and inspect the original retained run outside catalog admission. The admission verifier must reread bounded current Journal bytes, use the process-owned prepared result, and check the current configuration and source descriptors through installed read-only providers. It must never call the external supervisor, filesystem reader, worker launcher or full semantic reducer under the catalog transaction.
+
+The static compiler environment stays at its existing version; original invocation and applicability are separate explicit receipt records. Historical recording/replay remains distinct from promotion and fresh deterministic execution. The execution integration must preserve relevant candidates when evidence or context is unavailable, rather than manufacture novelty or uniqueness.
+
+Keep original limits, failed histories, logical keys and authority associations. Fixtures must declare substituted worker/semantic success; actual integration must retain the full 30-case worker and complete independent reduction. No physical I/O, live model/service, acquired controller execution or adjacent Harness mutation is part of this candidate stage. The full goal remains active.
+
+Preparation also records unresolved qualification coverage. A reservation for the same artifact and configuration that lacks a complete imported evaluation inhibits fresh reuse, including after re-preparing an older successful run. Historical catalog reads remain available. This prevents a new failed or incomplete campaign from being ignored merely by warming old evidence again; no replacement run or destructive repair resolves it implicitly.

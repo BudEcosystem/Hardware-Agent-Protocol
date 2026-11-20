@@ -1,0 +1,10 @@
+# Original execution boundaries
+
+Six new private SQLite clock cases plus one pre-runtime refusal and39 unchanged
+pure transcript methods.
+Keep the original 180-second deadline, 16 MiB scratch, 8,192 inventory files,
+256 MiB input, 16 MiB file, 4 MiB JSON and 8 MiB log ceilings. Only exact
+selected trial-0/state authority/board databases may connect. Preserve originals,
+partial output and failures. No network/subprocesses, physical devices, MCU/emulator,
+inference or live services. Primary-agent review; helpers remain usage-limited.
+Full semantic clock-fault composition and qualification remain unfinished.
