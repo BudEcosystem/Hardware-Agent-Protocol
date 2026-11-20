@@ -3,8 +3,32 @@
 Measured 2026-11-13 (Task 12a, the "before" record, revised after review) against `feat/bhms` at 73974f8, and again on 2026-11-14/15
 (Task 12b, before and after its SDK changes, base `f60771b`), with the harness in [`bench/`](../../bench/README.md). Raw JSON for
 every number below is in `bench/results/`. This document states each budget (Ruling R12, revised) with its measured number, shows
-the misses, and says what is and is not known about why. The first part is Task 12b; everything from "Task 12a verdict" on is the
-Task 12a record, unchanged except for this heading.
+the misses, and says what is and is not known about why. The final verification section precedes the Task 12b record;
+everything from "Task 12a verdict" on is the Task 12a record, unchanged except for this heading.
+
+## Final verification — 2026-11-21
+
+The final workstation rerun and focused quieter follow-up preserve the existing budgets.
+The [validation report](validation-report.md) gives the environment, limitations and evidence links.
+The full run completed all 13 scenarios with 18/20 checks passing: B2–B5 passed, while B1
+`waitMs=0` median latency missed both durable baselines. The focused run completed fsync and
+invoke with no scenario errors, but both B1 medians missed both baselines. All B1 p99 checks
+and B2 checks passed in both runs. Lower shared-host load did not eliminate the miss; its cause
+is not established by these measurements. No budget was relaxed.
+
+| run | load1 (invoke scenario) | fdatasync p50 | SQLite FULL p50 | dispatch w0 p50 / p99 | dispatch w1000 p50 / p99 | B1 vs fdatasync | B1 vs SQLite FULL | B2 (process) |
+|---|---|---:|---:|---|---|---|---|---|
+| 2026-11-21-final-workstation | 3 to 4 | 2.91 | 2.86 | 3.94 / 8.79 | 3.81 / 6.87 | FAIL (w0 p50) | FAIL (w0 p50) | PASS |
+| 2026-11-21-final-workstation-quiet | 2 to 2 | 3.17 | 3.49 | 5.74 / 8.62 | 4.50 / 7.64 | FAIL (w0 p50, w1000 p50) | FAIL (w0 p50, w1000 p50) | PASS |
+
+* B1 under the fdatasync floor: **FAIL**, 0 of 2 runs pass.
+* B1 under the SQLite FULL commit floor: **FAIL**, 0 of 2 runs pass.
+* B2 (process mode, p50 <= 1 ms): 2 of 2 runs pass.
+
+Raw results and compressed samples: [full run](../../bench/results/2026-11-21-final-workstation/summary.json),
+[focused follow-up](../../bench/results/2026-11-21-final-workstation-quiet/summary.json).
+The follow-up omits B3–B5 by design; their `not measured` entries do not supersede the full run.
+Physical timing, AVR execution in this final rerun and disk power-loss behavior remain unverified.
 
 ## Task 12b: after the performance changes (before and after)
 

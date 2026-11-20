@@ -1,0 +1,151 @@
+environment: Intel(R) Core(TM) i7-10700KF CPU @ 3.80GHz, 16 CPUs, affinity 8, python 3.12.3, node v20.20.1, fs /dev/nvme0n1p2 ext4   rw,noatime, load 1.74
+== fsync ...
+   fsync: ok in 41.9 s, load 1.7 -> 3.0
+== transports ...
+   transports: ok in 7.2 s, load 3.0 -> 3.1
+== invoke ...
+   invoke: ok in 62.4 s, load 3.1 -> 4.3
+== concurrency ...
+   concurrency: ok in 49.8 s, load 4.3 -> 4.2
+== openloop ...
+the journal cannot be written (the journal could not be synced to stable storage ([Errno 2] No such file or directory: '/home/bud/.cache/bhms-bench/tmpjlf3fzyi/tmpwuzuabbj/bench.sqlite3-wal'); barrier writes are refused until the server restarts); ordinary operations are refused until it can
+could not record the outcome of op-18e9da5c2edc4886ea36d7d01a; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f095bbab19518de58; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f362d05eb338f5487; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c260b399295deb90aa0; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c263fdb967b3a6d1256; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c26675f8ff5d9da617c; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c26ba9d627ab906c19d; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c26e5b8cb2497865f35; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c296fd4d2bc9e5baebc; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c299a0ced5c5fef496b; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c29bede7fef1db4f79b; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c29e150b775b598b14e; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e6bab912fa40cc0ac; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2eab7d311d3d93476d; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2ed70ef50eb026caee; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f023ae72f2e3f115d; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f30aa8c7bdd982c80; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c26066f75629619c182; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c263ab0a882ff4912ba; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c26627fc6aadb2a5a37; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c26b4de7845816ef096; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c26e02b3ef989110494; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c296a676224ae1af60e; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2993046a64251e1686; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c29b9b2e0ddf59bc7ca; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c29dc82209fcc494c5d; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2a1f744d85ed72bf75; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c29d76fac9729f88e23; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c29fc5067d660c3d923; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c240cd77d7635831936; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c243850b13435897edd; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e145745529b87dcb2; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e42cc1b0391976e00; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2a013571dbcdd5bf90; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2a0680bb2b375d1b86; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2a247ca7d9e7e3b14c; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2a29703ea99e1885ed; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f5b58c031822ce861; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f61158b1e9da5269a; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f84818f4c7b607be4; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f89d7c213dff09857; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e1df6d735cc15f777; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e234c7ea85309f300; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e47e1143c35baf14c; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e4cb8b002bd5f4163; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e71377ccb6a6de78c; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e7720638de85ba3ad; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2eb10de3f6478d258c; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f40e23e263950522d; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c32450726950dd70296; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c327a7ea07abdbf3635; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c32af5fe337cd77467f; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c32b597e9f09b7b25e7; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c32e50cbbf7bcb0d99d; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c32ea928e84f3e13593; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c305ff37e712ec6cdb6; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c306684e4f6f7e21f59; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c318eb95b2fbd7e099d; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c31d0e756487a376112; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c320b9edef43057916a; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c318941a69c0b8ae178; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c31cb77785760936c3d; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c3206531ce9aa5e1269; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f668dd6201b4c56db; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f6c285c6fa3b55ab1; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f8f1cca05e7454064; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f949b955bf63fbcb6; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e28b1deeb58aaef79; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e51cbc8a347771675; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c30e71a4461f1acd4d9; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c312246949cef70f75f; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2eb65bc0eee55d9e71; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2ee1b80683aa432e88; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f0f03cfba80ed9e68; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f3ba27918c2986474; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c26104a3725c3497579; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2644a25ecec0391edc; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c266caf75182ddf33e4; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c26bfdf005368395b7c; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c30584fac13033f0396; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c30a51362409940684d; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c30ab46ad932412be78; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c30e1cdc61d5bd1ffdb; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c311d11c211ebb5247b; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e2dfa44de755610fe; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e5743ab446506468a; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e81af1257d3855bfa; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2ec15dc5ccdbba89ac; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2eec6c525f1a91822d; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f1a6dcda9924dd397; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f462518dc5df338ea; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c324a0fdb520cc66e9e; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c32800559d30ddeedee; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c30b0b146f684406ad7; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c30ec4309fc57c2f4d5; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c3127929bbc09490a25; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2e7c867885c732c0a2; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2ebbf17a3f63004b80; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2ee6e30d6db2ea21c9; holding its resources and retrying as unknown
+could not record the outcome of op-18e9da5c2f14d615e4f4db0924; holding its resources and retrying as unknown
+   openloop: ok in 88.9 s, load 4.2 -> 3.8
+== gateway ...
+   gateway: ok in 45.8 s, load 3.8 -> 3.2
+== gateway_forward ...
+   gateway_forward: ok in 28.7 s, load 3.2 -> 3.3
+== gateway_http ...
+   gateway_http: ok in 17.2 s, load 3.3 -> 3.6
+== subscription ...
+   subscription: ok in 6.9 s, load 3.6 -> 3.6
+== recovery ...
+   recovery: ok in 10.7 s, load 3.6 -> 3.3
+== compact ...
+   compact: ok in 1.1 s, load 3.3 -> 3.3
+== mcp_compare ...
+   mcp_compare: ok in 11.5 s, load 3.3 -> 3.4
+== ts_vs_py ...
+   ts_vs_py: ok in 22.0 s, load 3.4 -> 3.0
+
+FAIL  B1 durable invoke (dispatch, unix, waitMs=0; fdatasync floor) p50: 3.94 ms (limit <= 3.91 ms (floor p50 2.91 + 1))  [overhead above floor: 1.03 ms]
+PASS  B1 durable invoke (dispatch, unix, waitMs=0; fdatasync floor) p99: 8.79 ms (limit <= 19.54 ms (5 x 3.91))  [host fsync p99 is 5.90 ms]
+FAIL  B1 durable invoke (dispatch, unix, waitMs=0; SQLite FULL commit floor) p50: 3.94 ms (limit <= 3.86 ms (floor p50 2.86 + 1))  [overhead above floor: 1.08 ms]
+PASS  B1 durable invoke (dispatch, unix, waitMs=0; SQLite FULL commit floor) p99: 8.79 ms (limit <= 19.32 ms (5 x 3.86))  [host fsync p99 is 5.90 ms]
+PASS  B1 durable invoke (dispatch, unix, waitMs=1000; fdatasync floor) p50: 3.81 ms (limit <= 3.91 ms (floor p50 2.91 + 1))  [overhead above floor: 0.90 ms]
+PASS  B1 durable invoke (dispatch, unix, waitMs=1000; fdatasync floor) p99: 6.87 ms (limit <= 19.54 ms (5 x 3.91))  [host fsync p99 is 5.90 ms]
+PASS  B1 durable invoke (dispatch, unix, waitMs=1000; SQLite FULL commit floor) p50: 3.81 ms (limit <= 3.86 ms (floor p50 2.86 + 1))  [overhead above floor: 0.94 ms]
+PASS  B1 durable invoke (dispatch, unix, waitMs=1000; SQLite FULL commit floor) p99: 6.87 ms (limit <= 19.32 ms (5 x 3.86))  [host fsync p99 is 5.90 ms]
+PASS  B2 non-durable invoke (process, unix, waitMs=0) p50: 0.52 ms (limit <= 1.00 ms)
+PASS  B2 non-durable invoke (process, unix, waitMs=1000) p50: 0.61 ms (limit <= 1.00 ms)
+PASS  B2 non-durable invoke (memory, unix, waitMs=0) p50: 0.57 ms (limit <= 1.00 ms)
+PASS  B2 non-durable invoke (memory, unix, waitMs=1000) p50: 0.48 ms (limit <= 1.00 ms)
+PASS  B3 gateway lists 1000 upstreams correctly: listed 10000, unique True, ordered True, equals expected True; start 3.74 s (limit 10000 devices, each once, in code-point order)  [asserted directly from the paged catalog (scenarios/gateway.py listing)]
+PASS  B4 devices/list 10,000 devices (unix, limit 100) per page: p99 2.4 ms, max 2.5 ms, p50 2.3 ms (limit <= 50 ms (p99), complete and ordered)  [every device listed once in order: True]
+PASS  B4 devices/list 10,000 devices (unix, limit 500) per page: p99 16.6 ms, max 16.6 ms, p50 10.1 ms (limit <= 50 ms (p99), complete and ordered)  [every device listed once in order: True]
+PASS  B4 devices/list 10,000 devices (http, limit 100) per page: p99 1.9 ms, max 8.8 ms, p50 1.6 ms (limit <= 50 ms (p99), complete and ordered)  [every device listed once in order: True]
+PASS  B4 devices/list 10,000 devices (http, limit 500) per page: p99 14.8 ms, max 14.8 ms, p50 6.1 ms (limit <= 50 ms (p99), complete and ordered)  [every device listed once in order: True]
+PASS  B4 devices/list 10,000 devices (gateway_scale, unix, limit 100) per page: p99 1.2 ms, max 1.2 ms, p50 1.1 ms (limit <= 50 ms (p99))
+PASS  B4 devices/list 10,000 devices (gateway_scale, unix, limit 500) per page: p99 10.5 ms, max 10.5 ms, p50 5.7 ms (limit <= 50 ms (p99))
+PASS  B5 compact typical invoke frame (native pty): 37 bytes (request [35, 36, 37], reply [31, 32, 34]) (limit <= 64 bytes)
+
+results: bench/results/2026-11-21-final-workstation

@@ -367,3 +367,11 @@ if __name__ == "__main__":
 
 ### Task 16: Final verification
 - Full test suites (Python, TypeScript, C, SimLab), conformance in all SDKs, benchmarks re-run, docs examples run, and a final validation report at `docs/bhms/validation-report.md` stating exactly what passed, at which evidence tier, and what is still unverified (above all, nothing physical has run).
+
+
+### Final execution record — 2026-11-21
+
+Tasks 15b and 16 are complete: TypeScript v0.2 parity, v0.1 compatibility, both-language conformance,
+full SDK/firmware/SimLab suites, executable documentation and final benchmark reruns are recorded in
+[the final validation report](../../bhms/validation-report.md). B1 remains a measured budget miss under
+Ruling R59; physical-device validation and deployment inspection obligations remain unverified.

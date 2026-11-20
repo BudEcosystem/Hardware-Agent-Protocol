@@ -1,0 +1,136 @@
+{
+  "mainCommit": "1f6f7555b1d1cd4b024213865a5b44ff842c3a05",
+  "remoteMainCommit": "1f6f7555b1d1cd4b024213865a5b44ff842c3a05",
+  "branches": [
+    {
+      "name": "feat/bhms",
+      "commit": "f277cef19f6aa55475318126669c3f9584f745d8",
+      "containedInMain": true,
+      "matchesRemote": true
+    },
+    {
+      "name": "main",
+      "commit": "1f6f7555b1d1cd4b024213865a5b44ff842c3a05",
+      "containedInMain": true,
+      "matchesRemote": true
+    },
+    {
+      "name": "worktree-agent-a2d1c731155fcb443",
+      "commit": "944ae34b5dfab2aeae6f39e68a4fbf738a761929",
+      "containedInMain": true,
+      "matchesRemote": true
+    },
+    {
+      "name": "worktree-agent-a3a956c3a7d0bb4e4",
+      "commit": "a2cbdae15163b9b1e8641b6f0b1d08f4ae36d96a",
+      "containedInMain": true,
+      "matchesRemote": true
+    },
+    {
+      "name": "worktree-agent-a4783014c8ad51d47",
+      "commit": "80ce6e1c35dc7d4c84623c52756244b693ffa01e",
+      "containedInMain": true,
+      "matchesRemote": true
+    },
+    {
+      "name": "worktree-agent-a5753036fa96a1825",
+      "commit": "5b4d37bf29d186a60521ab9e22126c6153fb7632",
+      "containedInMain": true,
+      "matchesRemote": true
+    },
+    {
+      "name": "worktree-agent-a6efe17871ab3b271",
+      "commit": "d4af141c41ef8aad8425f7b70d3a01ca4192bf63",
+      "containedInMain": true,
+      "matchesRemote": true
+    },
+    {
+      "name": "worktree-agent-a83e0c7fc75ad241c",
+      "commit": "5d4f59b2c87c8eebd3909b5b765fe72edc3319ef",
+      "containedInMain": true,
+      "matchesRemote": true
+    },
+    {
+      "name": "worktree-agent-aac87679b18c6deb7",
+      "commit": "2bd0acf6c2d93a375bdceb695b159c4c6c4086f1",
+      "containedInMain": true,
+      "matchesRemote": true
+    },
+    {
+      "name": "worktree-agent-aad8d48737562405a",
+      "commit": "1e935d636a45001e91c0048d057ad6c4a4fc5891",
+      "containedInMain": true,
+      "matchesRemote": true
+    },
+    {
+      "name": "worktree-agent-ab52db4132cdf4809",
+      "commit": "cc19e06ca89d360a9f78c7aa02fec20c46f384e3",
+      "containedInMain": true,
+      "matchesRemote": true
+    },
+    {
+      "name": "worktree-agent-aedf1a6a0bc36dca3",
+      "commit": "003f56a45ca27079fe547f499d9d5478a82d504e",
+      "containedInMain": true,
+      "matchesRemote": true
+    }
+  ],
+  "stashes": [],
+  "historicalSourceFilesTracked": 238927,
+  "worktrees": [
+    {
+      "path": "/home/bud/Desktop/bud/hms",
+      "status": [
+        "M README.md",
+        "?? bench/results/2026-11-21-final-workstation-quiet/",
+        "?? bench/results/2026-11-21-final-workstation/",
+        "?? docs/bhms/validation-report.md",
+        "?? docs/validation/2026-11-21-final/actuator-firmware.log",
+        "?? docs/validation/2026-11-21-final/benchmark-full.log",
+        "?? docs/validation/2026-11-21-final/c-sdk.log"
+      ]
+    },
+    {
+      "path": "/home/bud/Desktop/bud/hms/.claude/worktrees/agent-a2d1c731155fcb443",
+      "status": []
+    },
+    {
+      "path": "/home/bud/Desktop/bud/hms/.claude/worktrees/agent-a3a956c3a7d0bb4e4",
+      "status": []
+    },
+    {
+      "path": "/home/bud/Desktop/bud/hms/.claude/worktrees/agent-a4783014c8ad51d47",
+      "status": [
+        "?? logs/"
+      ]
+    },
+    {
+      "path": "/home/bud/Desktop/bud/hms/.claude/worktrees/agent-a5753036fa96a1825",
+      "status": []
+    },
+    {
+      "path": "/home/bud/Desktop/bud/hms/.claude/worktrees/agent-a6efe17871ab3b271",
+      "status": []
+    },
+    {
+      "path": "/home/bud/Desktop/bud/hms/.claude/worktrees/agent-a83e0c7fc75ad241c",
+      "status": []
+    },
+    {
+      "path": "/home/bud/Desktop/bud/hms/.claude/worktrees/agent-aac87679b18c6deb7",
+      "status": []
+    },
+    {
+      "path": "/home/bud/Desktop/bud/hms/.claude/worktrees/agent-aad8d48737562405a",
+      "status": []
+    },
+    {
+      "path": "/home/bud/Desktop/bud/hms/.claude/worktrees/agent-ab52db4132cdf4809",
+      "status": []
+    },
+    {
+      "path": "/home/bud/Desktop/bud/hms/.claude/worktrees/agent-aedf1a6a0bc36dca3",
+      "status": []
+    }
+  ]
+}

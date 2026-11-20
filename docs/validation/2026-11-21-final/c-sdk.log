@@ -1,0 +1,90 @@
+Start testing: Nov 21 01:18 IST
+----------------------------------------------------------
+1/5 Testing: test_codec
+1/5 Test: test_codec
+Command: "/tmp/hap-c-build/test_codec"
+Directory: /tmp/hap-c-build
+"test_codec" start time: Nov 21 01:18 IST
+Output:
+----------------------------------------------------------
+test_codec: 2063 checks, 0 failures
+<end of output>
+Test time =   0.02 sec
+----------------------------------------------------------
+Test Passed.
+"test_codec" end time: Nov 21 01:18 IST
+"test_codec" time elapsed: 00:00:00
+----------------------------------------------------------
+
+2/5 Testing: test_endpoint
+2/5 Test: test_endpoint
+Command: "/tmp/hap-c-build/test_endpoint"
+Directory: /tmp/hap-c-build
+"test_endpoint" start time: Nov 21 01:18 IST
+Output:
+----------------------------------------------------------
+test_endpoint: 107068 checks, 0 failures
+<end of output>
+Test time =   0.25 sec
+----------------------------------------------------------
+Test Passed.
+"test_endpoint" end time: Nov 21 01:18 IST
+"test_endpoint" time elapsed: 00:00:00
+----------------------------------------------------------
+
+3/5 Testing: e2e_native_pty
+3/5 Test: e2e_native_pty
+Command: "/usr/bin/cmake" "-E" "env" "BHMS_SIM_DEVICE=/tmp/hap-c-build/sim_device" "/usr/bin/python3" "-B" "/home/bud/Desktop/bud/hms/sdk/c/tests/host/test_e2e.py"
+Directory: /tmp/hap-c-build
+"e2e_native_pty" start time: Nov 21 01:18 IST
+Output:
+----------------------------------------------------------
+......
+----------------------------------------------------------------------
+Ran 6 tests in 1.701s
+
+OK
+<end of output>
+Test time =   1.82 sec
+----------------------------------------------------------
+Test Passed.
+"e2e_native_pty" end time: Nov 21 01:18 IST
+"e2e_native_pty" time elapsed: 00:00:01
+----------------------------------------------------------
+
+4/5 Testing: description_mirror
+4/5 Test: description_mirror
+Command: "/usr/bin/python3" "-B" "/home/bud/Desktop/bud/hms/sdk/c/tests/host/test_description_mirror.py"
+Directory: /tmp/hap-c-build
+"description_mirror" start time: Nov 21 01:18 IST
+Output:
+----------------------------------------------------------
+....
+----------------------------------------------------------------------
+Ran 4 tests in 0.568s
+
+OK
+<end of output>
+Test time =   0.67 sec
+----------------------------------------------------------
+Test Passed.
+"description_mirror" end time: Nov 21 01:18 IST
+"description_mirror" time elapsed: 00:00:00
+----------------------------------------------------------
+
+5/5 Testing: arduino_library_in_sync
+5/5 Test: arduino_library_in_sync
+Command: "/home/bud/Desktop/bud/hms/sdk/c/scripts/sync_arduino.sh" "--check"
+Directory: /tmp/hap-c-build
+"arduino_library_in_sync" start time: Nov 21 01:18 IST
+Output:
+----------------------------------------------------------
+<end of output>
+Test time =   0.01 sec
+----------------------------------------------------------
+Test Passed.
+"arduino_library_in_sync" end time: Nov 21 01:18 IST
+"arduino_library_in_sync" time elapsed: 00:00:00
+----------------------------------------------------------
+
+End testing: Nov 21 01:18 IST

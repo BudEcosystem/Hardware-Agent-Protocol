@@ -1,0 +1,8 @@
+| run | load1 (invoke scenario) | fdatasync p50 | SQLite FULL p50 | dispatch w0 p50 / p99 | dispatch w1000 p50 / p99 | B1 vs fdatasync | B1 vs SQLite FULL | B2 (process) |
+|---|---|---:|---:|---|---|---|---|---|
+| 2026-11-21-final-workstation | 3 to 4 | 2.91 | 2.86 | 3.94 / 8.79 | 3.81 / 6.87 | FAIL (w0 p50) | FAIL (w0 p50) | PASS |
+| 2026-11-21-final-workstation-quiet | 2 to 2 | 3.17 | 3.49 | 5.74 / 8.62 | 4.50 / 7.64 | FAIL (w0 p50, w1000 p50) | FAIL (w0 p50, w1000 p50) | PASS |
+
+* B1 under the fdatasync floor: **FAIL**, 0 of 2 runs pass.
+* B1 under the SQLite FULL commit floor: **FAIL**, 0 of 2 runs pass.
+* B2 (process mode, p50 <= 1 ms): 2 of 2 runs pass.
