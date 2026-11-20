@@ -5,7 +5,8 @@
  * loopback must require `Authorization: Bearer <token>` on the upgrade and reject it with HTTP 401 otherwise
  * (BHMS-TRN-031): {@link listenWebSocket} refuses a non-loopback host unless a `token` is configured (and TLS is then the
  * operator's responsibility, BHMS-SEC-004 — terminate it in front of this listener). With a `token`, a missing or wrong
- * bearer is rejected on loopback too; the principal of an authenticated socket is `ws:token` with `admin`.
+ * bearer is rejected on loopback too unless `allowAnonymousLoopback` is enabled. That option passes headerless peers
+ * with no scopes to a server that authenticates each request; it never grants a transport principal privileges.
  *
  * `ws` is loaded lazily so that stdio-only users need not install it.
  *
@@ -65,6 +66,9 @@ class WsTransport implements Transport {
 
 /** Connect to `ws://host:port/path` as a client, negotiating the `bhms` subprotocol. */
 export async function connectWebSocket(url: string, options: { token?: string; maxMessageBytes?: number } = {}): Promise<Transport> {
+  if (options.token && url.startsWith("ws:") && !LOOPBACK.has(new URL(url).hostname.replace(/^\[|\]$/g, ""))) {
+    throw new RangeError("credentials require TLS or a local transport (BHMS-SEC-007)");
+  }
   const { WebSocket } = await loadWs();
   const max = options.maxMessageBytes ?? DEFAULT_MAX_MESSAGE_BYTES;
   const socket = new WebSocket(url, SUBPROTOCOL, {
@@ -100,14 +104,15 @@ function bearerOk(req: IncomingMessage, token: string): boolean {
 
 /**
  * Listen for WebSocket clients. `token` makes the bearer check mandatory (required off loopback, BHMS-TRN-031); the peer is
- * then `ws:token` with `scopes` (default `admin`). `verifyToken` replaces that single-token check with the caller's own
+ * then `ws:token` with `scopes` (default `admin`). `allowAnonymousLoopback` permits a headerless loopback upgrade only;
+ * its requests still need authentication by the session handler. `verifyToken` replaces the single-token check with the caller's own
  * (e.g. a policy table): the peer carries the presented token so the server can resolve its principal per request.
  */
 export async function listenWebSocket(
   host: string,
   port: number,
   onTransport: (t: Transport) => void,
-  options: { token?: string; verifyToken?: (token: string) => boolean; scopes?: string[]; maxMessageBytes?: number; path?: string } = {},
+  options: { allowAnonymousLoopback?: boolean; token?: string; verifyToken?: (token: string) => boolean; scopes?: string[]; maxMessageBytes?: number; path?: string } = {},
 ): Promise<WsListener> {
   if (!LOOPBACK.has(host) && !options.token && !options.verifyToken) {
     throw new RangeError(`refusing to listen on ${host} without a bearer token (BHMS-TRN-031)`);
@@ -123,7 +128,8 @@ export async function listenWebSocket(
   http.on("upgrade", (req: IncomingMessage, socket: Duplex, head: Buffer) => {
     if (options.path && req.url !== options.path) { socket.write("HTTP/1.1 404 Not Found\r\nConnection: close\r\n\r\n"); socket.destroy(); return; }
     const bearer = /^Bearer (.+)$/.exec(req.headers.authorization ?? "")?.[1];
-    if (options.verifyToken ? !(bearer !== undefined && options.verifyToken(bearer)) : options.token && !bearerOk(req, options.token)) {
+    const anonymous = options.allowAnonymousLoopback && LOOPBACK.has(host) && req.headers.authorization === undefined;
+    if (!anonymous && (options.verifyToken ? !(bearer !== undefined && options.verifyToken(bearer)) : options.token && !bearerOk(req, options.token))) {
       socket.write("HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Bearer\r\nConnection: close\r\n\r\n");
       socket.destroy();
       return;
@@ -138,9 +144,9 @@ export async function listenWebSocket(
     wss.handleUpgrade(req, socket, head, (ws) => {
       if (ws.protocol !== SUBPROTOCOL) { ws.close(1002, "subprotocol bhms required"); return; }
       // with `verifyToken` the server's policy maps the bearer token to a principal on every request, so the peer carries it
-      const peer: Peer = options.verifyToken
+      const peer: Peer = anonymous ? { principal: "ws:anonymous", kind: "ws", scopes: [] } : options.verifyToken
         ? { principal: "ws:token", kind: "ws", token: bearer }
-        : { principal: options.token ? "ws:token" : "ws:loopback", kind: "ws", scopes: options.scopes ?? ["admin"] };
+        : { principal: options.token ? "ws:token" : "ws:loopback", kind: "ws", token: bearer, scopes: options.scopes ?? ["admin"] };
       onTransport(new WsTransport(ws, peer, max));
     });
   });

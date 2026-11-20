@@ -39,7 +39,7 @@ test("a WebSocket listener without a configured token generates one (mode 0600) 
     const address = (await srv.run("ws://127.0.0.1:0"))!;
     const tokenFile = join(dir, "ws-stage.token");
     assert.equal(statSync(tokenFile).mode & 0o777, 0o600);
-    await assert.rejects(Client.connect(`ws://${address}`), /401/);
+    await assert.rejects(Client.connect(`ws://${address}`), (e: unknown) => e instanceof BhmsError && e.bhmsCode === "UNAUTHORIZED");
     const client = await Client.connect(`ws://${address}`, { token: readFileSync(tokenFile, "utf8").trim(), strict: true });
     const op = (await client.actionsInvoke("stage-z", "move_to", { target: 33 }, { waitMs: 2000 })).operation;
     assert.equal(op.state, "completed");

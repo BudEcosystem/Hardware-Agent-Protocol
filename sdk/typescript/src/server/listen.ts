@@ -38,6 +38,7 @@ export async function* listen(
   peer: Peer,
   filter: SubscriptionFilter,
   signal: AbortSignal,
+  authenticate: () => Principal = () => srv.policy(peer),
 ): AsyncGenerator<Notification | Complete> {
   const refused: RefusedFilter[] = [];
   const honoured: SubscriptionFilter = {};
@@ -158,7 +159,12 @@ export async function* listen(
     const closing = srv.closingSignal;
     for (;;) {
       if (signal.aborted) return; // the client is gone: say nothing more (BHMS-LIF-051)
-      if (!srv.policy(peer).canRead) { end = "unauthorized"; queue.length = 0; }
+      try {
+        if (!authenticate().canRead) { end = "unauthorized"; queue.length = 0; }
+      } catch (error) {
+        if (!(error instanceof BhmsError) || error.bhmsCode !== "UNAUTHORIZED") throw error;
+        end = "unauthorized"; queue.length = 0;
+      }
       if (closing.aborted && !end) end = "shutdown";
       const item = queue.shift();
       if (item) { yield item.note; continue; }

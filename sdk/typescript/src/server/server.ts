@@ -31,7 +31,7 @@
  * Thread-safety: one event loop; declare devices before `start()` (later declarations are announced with
  * `notifications/devices/listChanged`).
  */
-import { randomBytes } from "node:crypto";
+import { randomBytes, timingSafeEqual } from "node:crypto";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -422,6 +422,9 @@ export class DeviceServer {
    * for listeners resolves with the address once listening (call `close()` to stop).
    */
   async run(url?: string): Promise<string | undefined> {
+    if (url && /^(wss|https|tcps):/.test(url)) {
+      throw new RangeError("TLS listeners require TLS configuration; this SDK has no native TLS listener (BHMS-SEC-007)");
+    }
     if (url?.startsWith("tcp://")) {
       throw new RangeError("TCP carries no credential, so a server will not serve it (BHMS-SEC-001); use unix:<path> or ws://127.0.0.1:<port> with a bearer token");
     }
@@ -441,8 +444,8 @@ export class DeviceServer {
       const u = new URL(url);
       if (!this.table) this.ensureToken();
       listener = await listenWebSocket(u.hostname.replace(/^\[|\]$/g, ""), Number(u.port || 80), (t) => { this.serve(t); },
-        this.table ? { verifyToken: (token) => this.table!.byToken(token) !== undefined, maxMessageBytes: this.opts.maxMessageBytes }
-          : { token: this.opts.token, maxMessageBytes: this.opts.maxMessageBytes });
+        this.table ? { allowAnonymousLoopback: true, verifyToken: (token) => this.table!.byToken(token) !== undefined, maxMessageBytes: this.opts.maxMessageBytes }
+          : { allowAnonymousLoopback: true, token: this.opts.token, maxMessageBytes: this.opts.maxMessageBytes });
     } else {
       throw new RangeError(`unsupported url ${JSON.stringify(url)}; use stdio, unix:<path> or ws://127.0.0.1:<port>`);
     }
@@ -451,7 +454,8 @@ export class DeviceServer {
   }
 
   /**
-   * A WebSocket listener always requires a bearer token (BHMS-TRN-031, BHMS-SEC-001): one passed as `token`, taken from
+   * A WebSocket listener requires a bearer credential, on the upgrade or on each headerless loopback request:
+   * one passed as `token`, taken from
    * `$BHMS_TOKEN`, or else generated and written to `<stateDir>/<name>.token` with mode 0600. Tokens are never logged
    * (BHMS-SEC-002); only the file's path is.
    */
@@ -488,7 +492,34 @@ export class DeviceServer {
 
   // ------------------------------------------------------------------------------------------------ hooks used by the runtime
 
+  private readonly originalAuthContext = new WeakMap<RequestContext, RequestContext>();
+
   authenticate(ctx: RequestContext): Principal {
+    const original = this.originalAuthContext.get(ctx);
+    if (original) return this.authenticate(original);
+    const params = ctx.params as { _meta?: Record<string, unknown> } | undefined;
+    const meta = params?._meta;
+    if (meta && Object.hasOwn(meta, "bhms/authorization")) {
+      if (ctx.peer.kind === "unix" || (ctx.peer.kind === "ws" && ctx.peer.token !== undefined)) {
+        throw new BhmsError("UNAUTHORIZED", "two credentials on one request are ambiguous", { hint: "use only the transport credential" });
+      }
+      const carrier = meta["bhms/authorization"];
+      const token = typeof carrier === "string" && carrier.length <= 4096 ? /^Bearer ([A-Za-z0-9._~+/=-]+)$/.exec(carrier)?.[1] : undefined;
+      const principal = this.table?.byToken(token);
+      if (principal) return principal;
+      if (!this.table && token && this.opts.token) {
+        const a = Buffer.from(tokenDigest(token));
+        const b = Buffer.from(tokenDigest(this.opts.token));
+        if (timingSafeEqual(a, b)) return new Principal("token", ["admin"]);
+      }
+      throw new BhmsError("UNAUTHORIZED", "the request credential is not valid", { hint: "supply a valid Bearer credential" });
+    }
+    if (ctx.peer.kind === "ws" && !ctx.peer.token && !ctx.peer.scopes?.length) {
+      throw new BhmsError("UNAUTHORIZED", "this connection needs a request credential", { hint: 'send _meta["bhms/authorization"] with a valid Bearer credential' });
+    }
+    if (ctx.peer.kind === "ws" && ctx.peer.token && this.table && !this.table.byToken(ctx.peer.token)) {
+      throw new BhmsError("UNAUTHORIZED", "the transport credential is no longer valid", { hint: "connect with a valid credential" });
+    }
     return this.policy(ctx.peer);
   }
 
@@ -613,6 +644,8 @@ export class DeviceServer {
     if (typeof params !== "object" || params === null || Array.isArray(params)) throw metaError("_meta.bhms/protocolVersion", "params must be an object carrying _meta.bhms/protocolVersion");
     const meta = (params as Record<string, unknown>)._meta;
     if (typeof meta !== "object" || meta === null || !("bhms/protocolVersion" in meta)) throw metaError("_meta.bhms/protocolVersion", "missing _meta.bhms/protocolVersion");
+    // Authenticate before schema diagnostics: they include invalid values and must never echo credentials.
+    this.authenticate(ctx);
     const version = (meta as Record<string, unknown>)["bhms/protocolVersion"];
     if (version !== PROTOCOL_VERSION) {
       throw new BhmsError("UNSUPPORTED_VERSION", `protocol version ${JSON.stringify(version)} is not served`, {
@@ -625,7 +658,11 @@ export class DeviceServer {
       });
     }
     if (ext) {
-      const out = await ext(params as Record<string, unknown>, ctx);
+      const safeParams = { ...(params as Record<string, unknown>), _meta: { ...(meta as Record<string, unknown>) } };
+      delete safeParams._meta["bhms/authorization"];
+      const safeContext = { ...ctx, params: safeParams };
+      this.originalAuthContext.set(safeContext, ctx);
+      const out = await ext(safeParams, safeContext);
       return { resultType: "complete", ...out };
     }
     const defs = loadSchema()["x-bhms-methods"] as Record<string, { params: string; result: string }>;
@@ -724,7 +761,7 @@ export class DeviceServer {
       case "stop":
         return complete({ stops: await this.stop(principal, p as unknown as { deviceIds?: string[]; scope?: "all"; reason: string; waitMs?: number }) });
       case "subscriptions/listen":
-        return listen(this, principal, ctx.peer, p.notifications as never, ctx.signal);
+        return listen(this, principal, ctx.peer, p.notifications as never, ctx.signal, () => this.authenticate(ctx));
       case "leases/acquire":
       case "leases/renew":
       case "leases/release": {

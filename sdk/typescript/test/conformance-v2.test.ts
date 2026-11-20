@@ -347,7 +347,7 @@ test("multi-principal server: capabilities.authority is {} and the effective env
     await assert.rejects(agent.actionsInvoke("axis-1", "move_to", { position: 150 }), code("OUT_OF_RANGE", (e) => (e.bound as { maximum: number }).maximum === 100), "the refused policy did not take effect");
     // unknown tokens never reach the protocol
     await assert.rejects(Client.connect(`ws://${address}`, { token: "wrong" }), /401/);
-    await assert.rejects(Client.connect(`ws://${address}`), /401/);
+    await assert.rejects(Client.connect(`ws://${address}`), (e: unknown) => e instanceof BhmsError && e.bhmsCode === "UNAUTHORIZED");
     const reader = await connect("reader");
     clients.push(reader);
     await assert.rejects(reader.actionsInvoke("axis-1", "pulse", { count: 1 }), code("UNAUTHORIZED", (e) => e.hint.includes("invoke")));

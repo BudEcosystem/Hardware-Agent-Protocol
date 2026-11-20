@@ -154,6 +154,12 @@ export class Client {
 
   /** Open `target` (see module docs), discover the server and return a ready client. */
   static async connect(target: string, options: ClientOptions = {}): Promise<Client> {
+    if ((options.token || options.bearer) && /^(tcp|ws):\/\//.test(target)) {
+      const host = new URL(target).hostname.replace(/^\[|\]$/g, "");
+      if (!["localhost", "127.0.0.1", "::1"].includes(host)) {
+        throw new RangeError("credentials require TLS or a local transport (BHMS-SEC-007)");
+      }
+    }
     const opened = await openTransport(target, { token: options.token });
     try {
       const client = await Client.fromTransport(opened.transport, target.startsWith("tcp://") ? { ...options, bearer: options.token } : options);

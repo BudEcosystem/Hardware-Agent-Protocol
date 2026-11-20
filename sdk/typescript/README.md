@@ -1,6 +1,14 @@
 # @bhms/sdk (TypeScript)
 
-Client, device server and conformance device for the Bhms protocol; behaviour matches the Python reference in `sdk/python`.
+Client, device server and conformance device for the BHMS protocol. The v0.2 port from the Python reference is in progress;
+version negotiation remains `2026-11-13` until the port is complete.
+
+The server accepts `_meta["bhms/authorization"] = "Bearer <token>"` on stdio and headerless loopback WebSockets.
+Each credential authenticates only its own request; invalid credentials never fall back to the parent or connection identity.
+Unix sockets and WebSockets with an upgrade credential reject a second request credential. Loopback WebSocket clients
+without an upgrade header must authenticate each request; other listeners still require the upgrade header.
+Native TLS listeners are unavailable: `wss://`, `https://` and `tcps://` listener URLs are refused before opening the store.
+Clients sending credentials to remote hosts must use TLS.
 
 ## Migrating to this release (hardening round, spec/bhms/CHANGELOG.md "Unreleased")
 

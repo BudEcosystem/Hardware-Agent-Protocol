@@ -102,7 +102,14 @@ evidence that caused it. Requirement index: 285 rows (23 added, §14.6).
 
 ### TS SDK to follow (Task 15b)
 
-Port in progress: action declarations now enforce BHMS-DEV-036. Late terminal reports append
+Port in progress: the server recognizes the standard request credential, rejects conflicting
+transport credentials, authenticates before schema errors can echo a token, and reauthenticates
+subscriptions. Headerless loopback WebSockets require a credential on every request. TLS listener
+schemes fail before opening the store when TLS is unavailable, and client connections refuse
+credentials over remote plaintext TCP/WebSocket. The client carrier and raw TCP path still need
+migration before v0.2 negotiation is enabled.
+
+Action declarations now enforce BHMS-DEV-036. Late terminal reports append
 correction history and `operation.late_report` events; a lease revoked under `onLeaseLoss: hold`
 ends the operation immediately, preserving that outcome when its handler later returns.
 Regression coverage includes duration boundaries, late returns after duration expiry, and

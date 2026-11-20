@@ -100,7 +100,7 @@ test("TS client and TS server over WebSocket: bearer token required, the princip
       child.stderr!.on("data", (d: Buffer) => { const m = /listening on (\S+)/.exec(d.toString()); if (m) resolve(m[1]); });
       child.once("exit", () => reject(new Error("server exited")));
     });
-    await assert.rejects(Client.connect(`ws://${address}`), /401/);
+    await assert.rejects(Client.connect(`ws://${address}`), (e: unknown) => e instanceof BhmsError && e.bhmsCode === "UNAUTHORIZED");
     await assert.rejects(Client.connect(`ws://${address}`, { token: "nope" }), /401/);
     const client = await Client.connect(`ws://${address}`, { token: "s3cret-token", strict: true });
     try {
