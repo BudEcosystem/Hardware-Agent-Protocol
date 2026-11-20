@@ -1,0 +1,11 @@
+--- artifacts/implementation/pat-io-configuration-history/implementation01/project/hms/pat_io_configuration_history.py
++++ artifacts/implementation/pat-io-configuration-history/implementation02/project/hms/pat_io_configuration_history.py
+@@ -234,7 +234,7 @@
+             else:
+                 env = detail['envelope']; properties.update(frequencyHz={'type':'integer','minimum':env['minFrequencyHz'],'maximum':env['maxFrequencyHz']},
+                     dutyPermille={'type':'integer','minimum':0,'maximum':1000},resolutionBits={'type':'integer','const':env['resolutionBits']})
+-            schema = {'type':'object','properties':properties,'required':sorted(properties),'additionalProperties':False}
++            schema = {'type':'object','properties':properties,'required':list(properties),'additionalProperties':False}
+             schemas[action] = schema; resources['io-root:'+action] = consumers[instance,action]['rootAliases'][0]
+             expected = {'inputSchema':schema,'maxRunMs':5000,'effect':detail['primitive'],'completionEvidence':['simulation'],
+                         'preconditions':[],'resources':['io-root:'+action]}

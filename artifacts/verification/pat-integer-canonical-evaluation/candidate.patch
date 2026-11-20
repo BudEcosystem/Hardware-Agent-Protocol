@@ -1,0 +1,11 @@
+--- reference_functions.py
++++ candidate_functions.py
+@@ -92,7 +92,7 @@
+ def canonical(value) -> bytes:
+     check_tree(value)
+     try:
+-        result = rfc8785.dumps(value)
++        result = _canonical_bytes(value)
+     except (ValueError, UnicodeError, RecursionError) as error:
+         raise ContractError("cannot canonicalize JSON") from error
+     if len(result) > MAX_BYTES:

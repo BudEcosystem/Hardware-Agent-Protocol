@@ -1,0 +1,11 @@
+--- harness01/attempt_child.py
++++ harness02/attempt_child.py
+@@ -22,7 +22,7 @@
+ config = json.loads(configuration.read_text())
+ root = Path(config['project']).resolve()
+ out = Path(config['attempt']).resolve()
+-sys.path[:0] = [str(root), str(root / 'tests')] + config['externalRoots']
++sys.path[:0] = [str(root), str(root / 'tests'), str(root / 'supervisor')] + config['externalRoots']
+ sys.dont_write_bytecode = True
+ acquired = {str((root / value['path']).resolve()): value['sha256'] for value in config['expectedInputs']}
+ external = {value['resolvedPath']: value['sha256'] for value in config['expectedExternalInputs']}

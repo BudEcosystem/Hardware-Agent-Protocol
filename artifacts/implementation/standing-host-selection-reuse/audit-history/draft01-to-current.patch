@@ -1,0 +1,11 @@
+--- audit-history/draft01/audit_retained.py
++++ audit_retained.py
+@@ -248,7 +248,7 @@
+         else:
+             need(entry['direction']=='response' and entry['session']==1 and len(body)>=66 and entry['sequence']==last_rx+1,'Complete decoded reply sequence')
+             tx=u32(body,2);need(tx in requests and tx not in responses and body[1]==bytes.fromhex(requests[tx]['raw'])[1]|128,'Unique actual response request join')
+-            need(body[6]==(8 if name=='expiry_after_commit' and body[1]==195 else 0),'Only expected NOT_SEEN response, all other exchanges successful')
++            need(body[6]==(20 if name=='expiry_after_commit' and body[1]==195 else 0),'Only expected NOT_SEEN response, all other exchanges successful')
+             if body[1]>=192 and body[6]==0:reference(body,mapping,8)
+             last_rx=entry['sequence'];responses[tx]=entry
+     need(counts==OPCOUNTS[name] and set(requests)==set(responses) and last_tx==route['tx'] and

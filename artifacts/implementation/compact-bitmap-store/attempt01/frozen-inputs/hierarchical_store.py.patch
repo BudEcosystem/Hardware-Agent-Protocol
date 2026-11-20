@@ -1,0 +1,50 @@
+--- inline-hierarchical-store/hierarchical_store.py
++++ compact-bitmap-store/hierarchical_store.py
+@@ -14,7 +14,7 @@
+ from chunk_store_base import CHUNK, MAX_FILE, MAX_HANDLES, MAX_TRANSFER, MAP_BYTES, INTERNAL_MAX
+ from native import Native
+ 
+-PROFILE='hms.hierarchical-chunk-store.inline512/0.1'
++PROFILE='hms.hierarchical-chunk-store.compact-bitmap/0.1'
+ MAX_INODES=8192
+ MAX_DEPTH=32
+ MAX_PATH=4095
+@@ -112,9 +112,20 @@
+         self.native.write('super.tmp',_pack(self.super))
+         self.native.call('hm_rename',b'super.tmp',b'super')
+ 
++    def _encode_inode(self,inode):
++        if inode['kind']!='file':return _pack(inode)
++        try:_integer(inode['size'],MAX_FILE)
++        except Reject as error:raise StorageError('INVALID_INODE') from error
++        bitmap=self._bitmap(inode)
++        chunks=(inode['size']+CHUNK-1)//CHUNK;length=(chunks+7)//8
++        if any(bitmap[length:]) or (chunks%8 and bitmap[length-1]>>(chunks%8)):
++            raise StorageError('CHUNK_OUTSIDE_FILE')
++        disk=dict(inode,chunks=base64.b64encode(bitmap[:length]).decode('ascii'))
++        return _pack(disk)
++
+     def _save_inode(self,inode):
+         path=self._directory(inode['id'])
+-        self.native.write(path+'/state.tmp',_pack(inode))
++        self.native.write(path+'/state.tmp',self._encode_inode(inode))
+         self.native.call('hm_rename',(path+'/state.tmp').encode(),(path+'/state').encode())
+ 
+     def _initialize_inode(self,identity,kind):
+@@ -157,6 +168,16 @@
+             if set(inode)!={'id','kind','size','chunks'}:raise StorageError('INVALID_INODE')
+             try:_integer(inode['size'],MAX_FILE)
+             except Reject as error:raise StorageError('INVALID_INODE') from error
++            chunks=(inode['size']+CHUNK-1)//CHUNK;length=(chunks+7)//8
++            value=inode['chunks']
++            if type(value) is not str or len(value)!=4*((length+2)//3):
++                raise StorageError('INVALID_CHUNK_MAP')
++            try:bitmap=base64.b64decode(value,validate=True)
++            except ValueError as error:raise StorageError('INVALID_CHUNK_MAP') from error
++            if len(bitmap)!=length or base64.b64encode(bitmap).decode('ascii')!=value:
++                raise StorageError('INVALID_CHUNK_MAP')
++            if chunks%8 and bitmap[-1]>>(chunks%8):raise StorageError('CHUNK_OUTSIDE_FILE')
++            inode['chunks']=base64.b64encode(bitmap+b'\0'*(MAP_BYTES-length)).decode('ascii')
+             if any(n*CHUNK>=inode['size'] for n in self._present(inode)):
+                 raise StorageError('CHUNK_OUTSIDE_FILE')
+         return inode

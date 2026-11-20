@@ -1,0 +1,42 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-service-runs/harness11/run_attempt.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-document-validation/harness11/run_attempt.py
+@@ -23,8 +23,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '8086023d524443fb617b654ad7573f1ef25a7388e12f991d28457457a720ba8d'
+-PREFIX = 'artifacts/implementation/pat-io-service-runs/implementation01/'
++FROZEN_INDEX = '31118f7405fcce5f4828bf4d256faea21e61b6d5bae470632376d9c8c484c4c0'
++PREFIX = 'artifacts/implementation/pat-io-document-validation/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -93,7 +93,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 249:
++    if len(expected) != 251:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -294,7 +294,7 @@
+     record = {'profile': 'hms.io-group-worker-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+               'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 1,
+-              'projectInputCount': 246, 'frozenPreparationInputCount': 249,
++              'projectInputCount': 248, 'frozenPreparationInputCount': 251,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+@@ -311,8 +311,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 246:
+-            raise ValueError('Candidate project closure must contain exactly 246 files')
++        if len(selected) != 248:
++            raise ValueError('Candidate project closure must contain exactly 248 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative

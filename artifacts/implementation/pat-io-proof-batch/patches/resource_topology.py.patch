@@ -1,0 +1,50 @@
+--- baseline/hms/resource_topology.py
++++ candidate/hms/resource_topology.py
+@@ -377,6 +377,10 @@
+     consumers = [row for row in document["consumers"] if row["instanceId"] == instance_id]
+     _require(consumers, "RESOURCE_UNKNOWN_CONSUMER")
+     atoms, closures = _atom_index(document), _alias_closures(document)
++    return _binding_proof_from_validated(document, current, instance_id, consumers, atoms, closures)
++
++
++def _binding_proof_from_validated(document, current, instance_id, consumers, atoms, closures):
+     details = {row["actionId"]: _consumer_details(document, row, atoms, closures) for row in consumers}
+     nodes = set().union(*(value["nodes"] for value in details.values()))
+     aliases = set().union(*(value["aliases"] for value in details.values()))
+@@ -401,6 +405,36 @@
+     return copy.deepcopy(result)
+ 
+ 
++class _BindingProofBuild:
++    """One pure definition call's detached static snapshot; never live authority.
++
++    Construction is lazy so the original first-handler refusal order remains.
++    The enclosing pure build must not mutate its input or validation helpers.
++    This private object must not escape that build or serve public proof calls.
++    """
++    __slots__ = ('topology', 'generations', 'document', 'current', 'atoms', 'closures')
++
++    def __init__(self, topology, generations):
++        self.topology, self.generations = topology, generations
++        self.document = self.current = self.atoms = self.closures = None
++
++    @_errors
++    def __call__(self, instance_id):
++        identifier(instance_id)
++        if self.document is None:
++            document = parse_topology(self.topology)
++            current = _generations(document, self.generations)
++            self.document, self.current = document, current
++        document, current = self.document, self.current
++        consumers = [row for row in document["consumers"] if row["instanceId"] == instance_id]
++        _require(consumers, "RESOURCE_UNKNOWN_CONSUMER")
++        if self.atoms is None:
++            atoms, closures = _atom_index(document), _alias_closures(document)
++            self.atoms, self.closures = atoms, closures
++        return _binding_proof_from_validated(document, current, instance_id, consumers, self.atoms, self.closures)
++
++
++
+ @_errors
+ def generation_change_claims(topology, target):
+     """Resolve refuse-if-busy scope for every action of each rebound instance.

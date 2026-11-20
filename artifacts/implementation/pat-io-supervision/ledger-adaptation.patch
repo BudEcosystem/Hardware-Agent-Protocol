@@ -1,0 +1,15 @@
+--- original/attempt_ledger.py
++++ artifacts/implementation/pat-io-supervision/implementation01/project/supervisor/attempt_ledger.py
+@@ -72,9 +72,9 @@
+         fingerprint(archive['returnDigest']);checked(lease is not None)
+     integrity = archive['evidenceIntegrity'];usage = archive['usage']
+     if integrity is not None:
+-        closed(integrity, {'recordCount','bytes','orderedDigest'})
+-        number(integrity['recordCount'],1,4096)
+-        number(integrity['bytes'],1,request['trust']['input']['limits']['maxOutputBytes'])
++        closed(integrity, {'fileCount','bytes','orderedDigest'})
++        number(integrity['fileCount'],1,request['limits']['maxFilesPerAttempt'])
++        number(integrity['bytes'],1,request['groupLimits']['maxDerivedBytes'])
+         fingerprint(integrity['orderedDigest'])
+         checked(type(result) is bytes and len(result) > 0)
+     if usage is not None:

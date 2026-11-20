@@ -1,0 +1,102 @@
+--- pure65/attempt_child.py
++++ trial20/attempt_child.py
+@@ -1,7 +1,8 @@
+-"""Pure65 child: isolated startup, exact selected tests and scoped origin evidence."""
++"""IoTrial20 child: isolated startup, exact selected tests and scoped origin evidence."""
+ import hashlib
+ import json
+ import os
++import re
+ from pathlib import Path
+ import sys
+ import sysconfig
+@@ -24,6 +25,9 @@
+ executed, resource_reads, denied_bytecode = set(), set(), set()
+ prohibited = []
+ errors = []
++sqlite_connections = []
++current_test = None
++scratch = Path(config['scratch']).resolve()
+ counts = origins = None
+ loaded_ids, executed_ids = [], []
+ own_path = Path(__file__).resolve()
+@@ -56,10 +60,25 @@
+ def audit(event, args):
+     if event.startswith('socket.') or event in {
+             'subprocess.Popen', 'os.system', 'os.exec', 'os.fork', 'os.forkpty',
+-            'os.posix_spawn', 'sqlite3.connect', 'sqlite3.connect/handle'}:
++            'os.posix_spawn'}:
+         if len(prohibited) < 64:
+             prohibited.append(event)
+-        raise RuntimeError('Pure65 forbids network, subprocesses and SQLite connections: ' + event)
++        raise RuntimeError('IoTrial20 forbids network and subprocesses: ' + event)
++    if event == 'sqlite3.connect':
++        raw = os.fsdecode(os.fspath(args[0]))
++        path = Path(raw).resolve()
++        valid = (type(current_test) is str and current_test in config['targets'] and
++                 Path(raw).is_absolute() and not raw.startswith('file:') and path.is_relative_to(scratch))
++        relative = path.relative_to(scratch).parts if valid else ()
++        valid = (valid and len(relative) == 4 and relative[0] == current_test.split('.')[-1] and
++                 relative[1:3] == ('trial-0', 'state') and
++                 (relative[3] == 'authority.db' or re.fullmatch(r'synthetic-io-board-[0-9a-f]{64}\.db', relative[3]) is not None))
++        if not valid:
++            prohibited.append('sqlite3.connect:outside_exact_test_state')
++            raise RuntimeError('SQLite connection outside exact retained trial state')
++        if len(sqlite_connections) >= 1024:
++            raise RuntimeError('SQLite connection inventory exceeds fixed bound')
++        sqlite_connections.append({'testId': current_test, 'database': str(path)})
+     if event == 'exec':
+         origin = args[0].co_filename
+         remember(executed, origin)
+@@ -146,12 +165,12 @@
+     # Snapshot before hash reads themselves emit further harmless open events.
+     for origin in sorted(resource_reads):
+         add('selected_external_read', origin)
+-    return {'profile': 'hms.io-timing-actual-origins/1',
++    return {'profile': 'hms.io-trial-engine-actual-origins/1',
+             'summary': {'complete': True, 'allOriginsMatched': not violations and not prohibited,
+                         'recordCount': len(rows), 'violationCount': len(violations),
+                         'prohibitedAttemptCount': len(prohibited)},
+             'records': rows, 'violations': violations, 'prohibitedAttempts': prohibited,
+-            'deniedBytecodeReads': sorted(denied_bytecode),
++            'deniedBytecodeReads': sorted(denied_bytecode), 'sqliteConnections': sqlite_connections,
+             'limits': 'Selected source/package origins are checked; startup stdlib and dynamically linked system libraries are not a full pre-execution closure. Frozen/synthetic code is distinct. Temporary identity-fixture resources are generated data, not imported code. Audit hooks are cooperative guardrails, not an OS sandbox.'}
+ 
+ 
+@@ -168,7 +187,7 @@
+ 
+ try:
+     if (not sys.flags.isolated or not sys.flags.no_site or not sys.flags.dont_write_bytecode or
+-            len(config['targets']) != 65 or len(set(config['targets'])) != 65):
++            len(config['targets']) != 20 or len(set(config['targets'])) != 20):
+         raise RuntimeError('Required child isolation flags or exact target count missing')
+     write('child-runtime.json', {'executable': sys.executable, 'version': sys.version,
+         'flags': repr(sys.flags), 'path': sys.path, 'cwd': str(Path.cwd()),
+@@ -181,11 +200,17 @@
+     tests = unittest.defaultTestLoader.loadTestsFromNames(config['targets'])
+     loaded_ids = flatten(tests)
+     if loaded_ids != config['targets']:
+-        raise RuntimeError('Loaded methods do not exactly match the reviewed pure65 selection')
++        raise RuntimeError('Loaded methods do not exactly match the reviewed trial20 selection')
+     class RecordingResult(unittest.TextTestResult):
+         def startTest(self, test):
++            global current_test
++            current_test = test.id()
+             executed_ids.append(test.id())
+             super().startTest(test)
++        def stopTest(self, test):
++            global current_test
++            super().stopTest(test)
++            current_test = None
+     result = unittest.TextTestRunner(verbosity=2, resultclass=RecordingResult).run(tests)
+     counts = {'testsRun': result.testsRun, 'failures': len(result.failures), 'errors': len(result.errors),
+         'skips': len(result.skipped), 'expectedFailures': len(result.expectedFailures),
+@@ -214,7 +239,7 @@
+         write('child-errors.json', errors)
+     except BaseException:
+         errors.append({'phase': 'child-errors', 'type': 'ReceiptWriteFailure'})
+-passed = (not errors and counts is not None and counts['testsRun'] == 65 and
++passed = (not errors and counts is not None and counts['testsRun'] == 20 and
+     all(counts[key] == 0 for key in counts if key != 'testsRun') and
+     loaded_ids == config['targets'] == executed_ids and origins is not None and
+     origins['summary']['allOriginsMatched'])

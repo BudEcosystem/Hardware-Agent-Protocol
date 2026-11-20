@@ -1,0 +1,38 @@
+--- artifacts/implementation/pat-io-active-revocation/implementation01/project/hms/pat_io_board_history.py
++++ artifacts/implementation/pat-io-authorized-history/implementation01/project/hms/pat_io_board_history.py
+@@ -200,8 +200,10 @@
+     require(valid, 'PAT_IO_HISTORY_CANCEL_CAUSE')
+ 
+ 
+-def _reduce(transcript, setup):
++def _reduce(transcript, setup, *, checked_causes=None):
+     model = _Model(setup)
++    checked_causes = {} if checked_causes is None else checked_causes
++    consumed_causes = set()
+     openings = [(i, d['value']) for i, d in enumerate(transcript['records']) if d['kind'] == 'runtime_opened']
+     by_epoch = {value['ownerEpoch']: value for _, value in openings}
+     previous_versions, previous_operations, previous_links, previous_authority = {}, {}, {}, {}
+@@ -339,7 +341,14 @@
+                     require(epoch == opened['ownerEpoch'] and value['dueMonoMs'] <= now < timing['latestCompletionUnixMs'] and
+                             now < value['budgetOriginMonoMs'] + timing['maxRunMs'] and now < lease, 'PAT_IO_HISTORY_COMPLETION_TIME')
+                 else:
+-                    _cause(result['reason'], value, op, now, label, opened)
++                    cause_key = (cp['record'], operation_id)
++                    if result['reason'] == 'authority_or_binding_lost' and cause_key in checked_causes:
++                        # Only the composed checker supplies this private handoff,
++                        # after deriving the cause from separately trusted grants.
++                        require(checked_causes[cause_key] == result['reason'], 'PAT_IO_HISTORY_CANCEL_CAUSE')
++                        consumed_causes.add(cause_key)
++                    else:
++                        _cause(result['reason'], value, op, now, label, opened)
+                 observed_transitions.append({'operationId': operation_id, 'sequence': sequence, 'state': state,
+                                              'clock': now, 'phase': cp['value']['phase'],
+                                              'authorityStateAtCapture': op['state'], 'authorityClaimsAtCapture': len(held)})
+@@ -391,6 +400,7 @@
+         final = {'instances': [{'instanceId': instance, 'activations': c[0], 'completedCycles': c[1], 'canceledActivations': c[2]}
+                                for instance, c in sorted(counts.items())],
+                  'modeledBoardIdle': not owners, 'pendingOperationIds': sorted(op for op, r in latest.items() if r['state'] == 'pending')}
++    require(consumed_causes == set(checked_causes), 'PAT_IO_HISTORY_UNUSED_CAUSE')
+     return {'profile': 'hms.pat.io-board-history-inspection/0.1', 'checkpointsChecked': len(transcript['checkpoints']),
+             'receiptVersionsChecked': len(previous_versions), 'transitions': observed_transitions,
+             'boardHistoryChecked': True, **final, 'authoritySemanticsChecked': False,

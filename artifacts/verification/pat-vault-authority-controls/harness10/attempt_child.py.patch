@@ -1,0 +1,29 @@
+--- sealed-harness19/attempt_child.py
++++ harness10/attempt_child.py
+@@ -64,7 +64,7 @@
+     return path.is_relative_to(stdlib) and not {'site-packages', 'dist-packages'}.intersection(path.parts)
+ 
+ 
+-CONTROL_TARGETS = ['test_vault_authority.VaultAuthorityTests.test_expired_snapshot_before_commit_rolls_back_publication']
++CONTROL_TARGETS = ['test_vault_authority_edges.VaultAuthorityEdgeTests.test_malformed_authority_record_refuses_before_body_fetch_without_repair', 'test_vault_authority_edges.VaultAuthorityEdgeTests.test_installation_failure_before_commit_retains_uninstalled_vault']
+ 
+ # The native open audit event omits dir_fd. Preserve the original os.open
+ # call and expose its resolved pathname only to this synchronous audit hook.
+@@ -227,7 +227,7 @@
+ 
+ try:
+     if (not sys.flags.isolated or not sys.flags.no_site or not sys.flags.dont_write_bytecode or
+-            len(config['targets']) != 1 or len(set(config['targets'])) != 1):
++            len(config['targets']) != 2 or len(set(config['targets'])) != 2):
+         raise RuntimeError('Required child isolation flags or exact target count missing')
+     if config['targets'] != CONTROL_TARGETS:
+         raise RuntimeError('Exact literal target selection changed')
+@@ -284,7 +284,7 @@
+         write('child-errors.json', errors)
+     except BaseException:
+         errors.append({'phase': 'child-errors', 'type': 'ReceiptWriteFailure'})
+-passed = (not errors and counts is not None and counts['testsRun'] == 1 and
++passed = (not errors and counts is not None and counts['testsRun'] == 2 and
+     all(counts[key] == 0 for key in counts if key != 'testsRun') and
+     loaded_ids == config['targets'] == executed_ids and origins is not None and
+     origins['summary']['allOriginsMatched'])

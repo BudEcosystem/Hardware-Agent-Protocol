@@ -1,0 +1,51 @@
+--- baseline/hms/synthetic_io_installation.py
++++ candidate/hms/synthetic_io_installation.py
+@@ -24,6 +24,7 @@
+ DRIVER = 'sqlite-finite-io/1'
+ PRIMITIVES = {'gpio_pulse': 'gpio_access', 'pwm_burst': 'pwm_access'}
+ MAX_DURATION_MS = 5000
++_DEFINITION_BINDING_PROOF = binding_proof
+ 
+ 
+ def require(condition, code):
+@@ -126,7 +127,7 @@
+     return _handler_details(document, instance, action, None)[0]
+ 
+ 
+-def _handler_details(document, instance, action, proof):
++def _handler_details(document, instance, action, proof, build=None):
+     # definitions() may share one pure, freshly derived instance proof while
+     # building that instance's actions. Nothing survives the build call.
+     row = next((item for item in document['handlers'] if item['instanceId'] == instance and item['actionId'] == action), None)
+@@ -144,7 +145,14 @@
+         details.update(pin=channel['pin'], timer=channel['timer'])
+         details['timerEnvelope'] = copy.deepcopy(topology['nodes'][channel['timer']]['properties'])
+     if proof is None:
+-        proof = binding_proof(topology, document['initialGenerations'], instance)
++        if build is None or binding_proof is not _DEFINITION_BINDING_PROOF:
++            proof = binding_proof(topology, document['initialGenerations'], instance)
++        else:
++            # This cell belongs only to the enclosing pure definitions() call.
++            # First-handler lookup still precedes all topology validation.
++            if build[0] is None:
++                build[0] = _topology._BindingProofBuild(topology, document['initialGenerations'])
++            proof = build[0](instance)
+     details['claims'] = proof['expandedClaims'][action]
+     return details, proof
+ 
+@@ -163,13 +171,13 @@
+ 
+ def definitions(document):
+     """Return original I/O type bundles and proof-derived exact bindings."""
+-    result = {}
++    result = {}; build = [None]
+     instances = sorted({row['instanceId'] for row in document['handlers']})
+     for instance in instances:
+         bundle = None; resources = {}; proof = None
+         for row in (item for item in document['handlers'] if item['instanceId'] == instance):
+             action = row['actionId']
+-            detail, proof = _handler_details(document, instance, action, proof)
++            detail, proof = _handler_details(document, instance, action, proof, build)
+             role = 'io-root:' + action
+             part = type_bundle('finite-io-' + hashlib.sha256(instance.encode()).hexdigest()[:16], action,
+                 argument_schema(detail), {'type': 'integer', 'minimum': 0, 'maximum': 9007199254740991},

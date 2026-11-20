@@ -1,0 +1,18 @@
+--- preceding/bootstrap-prefix
++++ bootstrap.py
+@@ -1,4 +1,4 @@
+-"""Exact method comparison on new memory databases, with a memory evidence sink."""
++"""Pinned standard-library and exact validation-code bootstrap."""
+ import ast
+ from collections import OrderedDict
+ from decimal import Decimal, DecimalException
+@@ -48,7 +48,8 @@
+ 
+ def guard(event, args):
+     forbidden = event.startswith('socket.') or event in {
+-        'subprocess.Popen', 'os.system', 'os.exec', 'os.fork', 'os.forkpty', 'os.posix_spawn'}
++        'subprocess.Popen', 'os.system', 'os.exec', 'os.fork', 'os.forkpty', 'os.posix_spawn',
++        'sqlite3.enable_load_extension', 'sqlite3.load_extension'}
+     if event == 'sqlite3.connect':
+         if args != (':memory:',):
+             forbidden = True

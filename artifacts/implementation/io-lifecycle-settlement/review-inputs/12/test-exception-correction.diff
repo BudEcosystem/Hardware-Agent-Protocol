@@ -1,0 +1,15 @@
+--- snapshot07/project/tests/test_io_lifecycle.py
++++ snapshot08/project/tests/test_io_lifecycle.py
+@@ -298,7 +298,11 @@
+ 
+     def test_bad_typed_revision_and_ordinary_grants_do_not_authorize_management(self):
+         request = self.request(); request['intent']['arguments']['expectedRevision'] = True
+-        with self.assertRaises(ContractError):self.runtime.journal.submit(self.owner,canonical(request))
++        with self.assertRaises(JournalError) as refused:
++            self.runtime.journal.submit(self.owner,canonical(request))
++        self.assertEqual(refused.exception.code,'ARGUMENT_SCHEMA_MISMATCH')
++        self.assertEqual(self.runtime.journal._db.execute('SELECT count(*) FROM operations').fetchone()[0],0)
++        self.assertEqual(self.runtime.journal._db.execute('SELECT count(*) FROM claims').fetchone()[0],0)
+         user = Context('gpio-user',self.owner.deployment)
+         self.runtime.registry.grant(self.owner,user.principal,'*','namespace')
+         self.runtime.registry.grant(self.owner,user.principal,'sim:gpio5','read')

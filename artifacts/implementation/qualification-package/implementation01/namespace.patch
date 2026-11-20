@@ -1,0 +1,1331 @@
+--- evidence/archive.py
++++ hms_qualification/evidence/archive.py
+@@ -6,9 +6,9 @@
+ import stat
+ 
+ from hms.contracts import canonical
+-from attempt_ledger import _validate_record
+-from bundle_io import directory, launch_input
+-import supervisor_contracts as supervisor
++from hms_qualification.supervisor.attempt_ledger import _validate_record
++from hms_qualification.supervisor.bundle_io import directory, launch_input
++import hms_qualification.supervisor.supervisor_contracts as supervisor
+ from .contracts import require, document, sha
+ 
+ 
+--- evidence/contracts.py
++++ hms_qualification/evidence/contracts.py
+@@ -7,7 +7,7 @@
+ 
+ from hms.contracts import canonical, parse_json
+ from hms.journal import JournalError
+-from qualification_supervisor import _image_rows
++from hms_qualification.supervisor.qualification_supervisor import _image_rows
+ 
+ PROFILE = 'hms.pat.io-evidence-import/0.1'
+ EVALUATION = 'hms.pat.io-recorded-evaluation/0.1'
+--- evidence/store.py
++++ hms_qualification/evidence/store.py
+@@ -5,8 +5,8 @@
+ """
+ from hms.contracts import canonical, SAFE_INTEGER
+ from hms.registry import _resource_stored_row
+-import io_service_execution as execution_module
+-import io_services as services
++import hms_qualification.supervisor.io_service_execution as execution_module
++import hms_qualification.supervisor.io_services as services
+ from . import archive, reducer
+ from .contracts import (PROFILE, EVALUATION, MAX_RUNS, MAX_DOCUMENTS, MAX_STORE_DOCUMENTS,
+     MAX_DOCUMENT_BYTES, MAX_RUN_BYTES, MAX_STORE_BYTES, RECORD_BYTES, EvidenceError,
+--- evidence_authority/contracts.py
++++ hms_qualification/evidence_authority/contracts.py
+@@ -2,9 +2,8 @@
+ import hashlib
+ from pathlib import Path
+ 
+-from evidence.contracts import (errors, require, number, exact, document, sha,
+-    hash_value, closure, RECORD_BYTES, MAX_RUNS, EVALUATION, EvidenceError)
+-from evidence_vault.contracts import identity as vault_identity
++from hms_qualification.evidence.contracts import errors, require, number, exact, document, sha, hash_value, closure, RECORD_BYTES, MAX_RUNS, EVALUATION, EvidenceError
++from hms_qualification.evidence_vault.contracts import identity as vault_identity
+ 
+ PROFILE = 'hms.pat.vault-import/0.1'
+ INTENT = 'hms.pat.vault-import-intent/0.1'
+--- evidence_authority/store.py
++++ hms_qualification/evidence_authority/store.py
+@@ -9,13 +9,13 @@
+ from hms.contracts import canonical, SAFE_INTEGER
+ from hms.journal import Journal, JournalError
+ from hms.registry import _resource_stored_row
+-import io_service_execution as execution_module
+-import io_services as services
+-from evidence import archive, reducer
+-from evidence_vault import EvidenceVault
+-from evidence_vault import contracts as vault_contracts
+-from evidence_vault.connection import _Snapshot
+-from evidence_vault.store import DOMAIN as MANIFEST_DOMAIN
++import hms_qualification.supervisor.io_service_execution as execution_module
++import hms_qualification.supervisor.io_services as services
++from hms_qualification.evidence import archive, reducer
++from hms_qualification.evidence_vault import EvidenceVault
++from hms_qualification.evidence_vault import contracts as vault_contracts
++from hms_qualification.evidence_vault.connection import _Snapshot
++from hms_qualification.evidence_vault.store import DOMAIN as MANIFEST_DOMAIN
+ from . import contracts as c
+ 
+ ANCHOR = 'vault_evidence_import'
+--- evidence_compact/contracts.py
++++ hms_qualification/evidence_compact/contracts.py
+@@ -2,7 +2,7 @@
+ import hashlib
+ from pathlib import Path
+ 
+-from evidence.contracts import identity as legacy_identity, require, hash_value
++from hms_qualification.evidence.contracts import identity as legacy_identity, require, hash_value
+ 
+ PROFILE = 'hms.pat.io-evidence-compact/0.1'
+ SOURCE_FILES = ('__init__.py', 'contracts.py', 'store.py')
+--- evidence_compact/store.py
++++ hms_qualification/evidence_compact/store.py
+@@ -6,12 +6,10 @@
+ import re
+ from hms.contracts import canonical, SAFE_INTEGER
+ from hms.registry import _resource_stored_row
+-import io_service_execution as execution_module
+-import io_services as services
+-from evidence import archive, reducer
+-from evidence.contracts import (EVALUATION, MAX_RUNS, MAX_DOCUMENTS, MAX_STORE_DOCUMENTS,
+-    MAX_DOCUMENT_BYTES, MAX_RUN_BYTES, MAX_STORE_BYTES, RECORD_BYTES, EvidenceError,
+-    require, errors, number, exact, path, document, sha, hash_value, closure, closure_rows)
++import hms_qualification.supervisor.io_service_execution as execution_module
++import hms_qualification.supervisor.io_services as services
++from hms_qualification.evidence import archive, reducer
++from hms_qualification.evidence.contracts import EVALUATION, MAX_RUNS, MAX_DOCUMENTS, MAX_STORE_DOCUMENTS, MAX_DOCUMENT_BYTES, MAX_RUN_BYTES, MAX_STORE_BYTES, RECORD_BYTES, EvidenceError, require, errors, number, exact, path, document, sha, hash_value, closure, closure_rows
+ from .contracts import PROFILE, identity
+ 
+ ANCHOR = 'io_evidence_compact'
+--- evidence_vault/contracts.py
++++ hms_qualification/evidence_vault/contracts.py
+@@ -8,9 +8,7 @@
+ 
+ from hms.contracts import canonical
+ from hms.journal import JournalError
+-from evidence.contracts import (identity as legacy_identity, document, closure,
+-    closure_rows, path as document_path, sha, hash_value, MAX_DOCUMENTS,
+-    MAX_STORE_DOCUMENTS, MAX_DOCUMENT_BYTES, MAX_RUN_BYTES, MAX_STORE_BYTES, RECORD_BYTES)
++from hms_qualification.evidence.contracts import identity as legacy_identity, document, closure, closure_rows, path as document_path, sha, hash_value, MAX_DOCUMENTS, MAX_STORE_DOCUMENTS, MAX_DOCUMENT_BYTES, MAX_RUN_BYTES, MAX_STORE_BYTES, RECORD_BYTES
+ 
+ PROFILE = 'hms.pat.evidence-vault/0.1'
+ MANIFEST = 'hms.pat.evidence-vault-manifest/0.1'
+--- hms/api_contracts.py
++++ hms/api_contracts.py
+@@ -351,9 +351,9 @@
+             else:
+                 _require(result["next"] == result["head"])
+             for event in events:
+-                if "evidence" in event["payload"]:
+-                    _evidence(event["payload"]["evidence"])
+-                    evidence = event["payload"]["evidence"]
++                if 'hms_qualification.evidence' in event["payload"]:
++                    _evidence(event["payload"]['hms_qualification.evidence'])
++                    evidence = event["payload"]['hms_qualification.evidence']
+                     assertions = set(evidence["assertions"])
+                     if event["kind"] in {"execution_evidence", "reconciled"}:
+                         assertion = {"running": "running", "completed": "completed", "failed": "failed", "canceled": "terminated",
+--- hms/endpoint_binding.py
++++ hms/endpoint_binding.py
+@@ -598,7 +598,7 @@
+                     self.journal.policy.evidence(op, evidence)
+                     _require(op['may_have_acted'] and state in TERMINAL, 'ENDPOINT_INVALID_DISPUTE')
+                     self.db.execute("UPDATE operations SET verification='disputed' WHERE id=?", (operation_id,))
+-                    self.journal._event(operation_id, now, 'evidence_dispute', {'evidence':evidence.payload()})
++                    self.journal._event(operation_id, now, 'evidence_dispute', {'hms_qualification.evidence':evidence.payload()})
+                 elif receipt.verification == 2:
+                     _require(op['verification'] == 'failed', 'ENDPOINT_VERIFICATION_CONFLICT')
+             elif receipt.execution == Execution.QUEUED:
+@@ -610,7 +610,7 @@
+                 self.journal.policy.evidence(op, evidence)
+                 self.db.execute('UPDATE operations SET cancel_state=? WHERE id=?',
+                                 ('acknowledged' if accepted else 'rejected', operation_id))
+-                self.journal._event(operation_id, now, 'cancel_ack', {'accepted':accepted,'evidence':evidence.payload()})
++                self.journal._event(operation_id, now, 'cancel_ack', {'accepted':accepted,'hms_qualification.evidence':evidence.payload()})
+             if receipt.verification == 3:
+                 state = self._state()
+                 state['fault'] = state['fault'] or 'ENDPOINT_EVIDENCE_DISPUTED'
+@@ -622,7 +622,7 @@
+                 evidence = self._evidence(operation_id, receipt.revision, 'resources_quiescent')
+                 self.journal.policy.evidence(op, evidence)
+                 self.db.execute('DELETE FROM claims WHERE operation_id=?', (operation_id,))
+-                self.journal._event(operation_id, now, 'resources_released', {'evidence':evidence.payload()})
++                self.journal._event(operation_id, now, 'resources_released', {'hms_qualification.evidence':evidence.payload()})
+             self.db.execute('UPDATE ep_commands SET receipt=?, result=? WHERE operation_id=? AND adapter=?',
+                             (frame.payload, canonical(output) if output is not None else None, operation_id, self.adapter_id))
+         if output is not None and receipt.verification != 3 and (previous is None or previous.result != receipt.result):
+--- hms/journal.py
++++ hms/journal.py
+@@ -724,7 +724,7 @@
+             self._db.execute("UPDATE operations SET may_have_acted=0, verification='unverified' WHERE id=?", (op["id"],))
+             self._db.execute("DELETE FROM claims WHERE operation_id=?", (op["id"],))
+         self._event(op["id"], now, "reconciled" if op["state"] == "outcome_unknown" else "execution_evidence",
+-                    {"state": state, "evidence": data})
++                    {"state": state, 'hms_qualification.evidence': data})
+ 
+     def record_execution(self, ticket: Ticket, state: str, evidence: Evidence):
+         with self._transaction():
+@@ -792,7 +792,7 @@
+                 raise JournalError("INVALID_CANCEL_ACK")
+             self._db.execute("UPDATE operations SET cancel_state=? WHERE id=?",
+                              ("acknowledged" if accepted else "rejected", op["id"]))
+-            self._event(op["id"], self._record_now(), "cancel_ack", {"accepted": accepted, "evidence": data})
++            self._event(op["id"], self._record_now(), "cancel_ack", {"accepted": accepted, 'hms_qualification.evidence': data})
+             return self._operation(op["id"])
+ 
+     def release_resources(self, operation_id: str, evidence: Evidence):
+@@ -804,7 +804,7 @@
+                     "disputed" in data["assertions"] or "resources_quiescent" not in data["assertions"]):
+                 raise JournalError("QUIESCENCE_REQUIRED")
+             self._db.execute("DELETE FROM claims WHERE operation_id=?", (operation_id,))
+-            self._event(operation_id, self._record_now(), "resources_released", {"evidence": data})
++            self._event(operation_id, self._record_now(), "resources_released", {'hms_qualification.evidence': data})
+ 
+     def dispute(self, operation_id: str, evidence: Evidence):
+         with self._transaction():
+@@ -814,7 +814,7 @@
+             if op["state"] not in TERMINAL or not op["may_have_acted"] or "disputed" not in data["assertions"]:
+                 raise JournalError("INVALID_DISPUTE")
+             self._db.execute("UPDATE operations SET verification='disputed' WHERE id=?", (operation_id,))
+-            self._event(operation_id, self._record_now(), "evidence_dispute", {"evidence": data})
++            self._event(operation_id, self._record_now(), "evidence_dispute", {'hms_qualification.evidence': data})
+ 
+     def events(self, context: Context, operation_id: str, *, after=0, limit=100):
+         if type(after) is not int or after < 0 or type(limit) is not int or not 1 <= limit <= 100:
+--- hms/pat_io_operation_history.py
++++ hms/pat_io_operation_history.py
+@@ -328,22 +328,22 @@
+                         require(canonical(link) == canonical(expected) and row['digest'] == digest(b'HMS-SYNTHETIC-IO-DISPATCH-v1', expected), 'DISPATCH_LINK')
+                         st.update(state='dispatching', may_have_acted=1, attempt_id=data['attemptId'], owner_epoch=opened['ownerEpoch'], link=link)
+                     elif kind in {'execution_evidence', 'reconciled'}:
+-                        closed(data, {'state', 'evidence'}, 'TRANSITION')
++                        closed(data, {'state', 'hms_qualification.evidence'}, 'TRANSITION')
+                         target = data['state']
+                         require(label in DRIVE and target in EDGES.get(state, set()) and
+                                 ((state == 'outcome_unknown') == (kind == 'reconciled')), 'TRANSITION')
+                         assertion = {'running': 'running', 'completed': 'completed', 'failed': 'failed',
+                                      'canceled': 'terminated', 'rejected_before_start': 'start_excluded'}[target]
+-                        _evidence(data['evidence'], assertion, op, st['claims'], st['link'], t, model, checked_no_starts)
++                        _evidence(data['hms_qualification.evidence'], assertion, op, st['claims'], st['link'], t, model, checked_no_starts)
+                         st.update(state=target, owner_epoch=opened['ownerEpoch'])
+                         if target == 'canceled': st['cancel_state'] = 'confirmed'
+                         if target == 'rejected_before_start':
+                             require(op_id in checked_no_starts, 'NO_START_UNIMPLEMENTED')
+                             consumed_no_starts.add(op_id); st.update(may_have_acted=0, held=False)
+                     elif kind == 'resources_released':
+-                        closed(data, {'evidence'}, 'RELEASE')
++                        closed(data, {'hms_qualification.evidence'}, 'RELEASE')
+                         require(state in TERMINAL and st['held'] and label in DRIVE, 'RELEASE')
+-                        _evidence(data['evidence'], 'resources_quiescent', op, st['claims'], st['link'], t, model, checked_no_starts)
++                        _evidence(data['hms_qualification.evidence'], 'resources_quiescent', op, st['claims'], st['link'], t, model, checked_no_starts)
+                         st['held'] = False
+                     elif kind in {'outcome_unknown', 'recovery_unknown'}:
+                         allowed = {'owner_reopened'} if kind == 'recovery_unknown' else {'io_acceptance_unknown', 'io_completion_unknown'}
+--- hms/pat_simulation_evidence.py
++++ hms/pat_simulation_evidence.py
+@@ -196,7 +196,7 @@
+     evidence = None
+     try:
+         result = _read_file(root, 'test-return.json', MAX_DOCUMENT)
+-        evidence = os.open('evidence', os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=root)
++        evidence = os.open('hms_qualification.evidence', os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=root)
+         # Iterate with a hard item cap instead of materializing an unbounded list.
+         names = []
+         with os.scandir(evidence) as entries:
+@@ -470,16 +470,16 @@
+             require(type(op['attempt_id']) is str and re.fullmatch('[0-9a-f]{32}', op['attempt_id']) is not None)
+             dispatch_epoch = 2 if fault == 'reopen_accepted' or (fault == 'completion_evidence_loss' and index > 0) else 1
+             expected_events += [('dispatch_claimed', {'attemptId': op['attempt_id'], 'ownerEpoch': dispatch_epoch}),
+-                ('execution_evidence', {'state': 'running', 'evidence': evidence('running')})]
++                ('execution_evidence', {'state': 'running', 'hms_qualification.evidence': evidence('running')})]
+             if fault == 'cancel_running':
+-                expected_events += [('cancel_requested', {}), ('cancel_ack', {'accepted': True, 'evidence': evidence('cancel_ack')}),
+-                    ('execution_evidence', {'state': 'canceled', 'evidence': evidence('terminated')})]
++                expected_events += [('cancel_requested', {}), ('cancel_ack', {'accepted': True, 'hms_qualification.evidence': evidence('cancel_ack')}),
++                    ('execution_evidence', {'state': 'canceled', 'hms_qualification.evidence': evidence('terminated')})]
+             elif fault in {'reopen_pending', 'completion_evidence_loss'} and index == 0:
+                 expected_events += [('recovery_unknown', {'reason': 'owner_reopened'}),
+-                    ('reconciled', {'state': state, 'evidence': evidence('terminated' if canceled else 'completed')})]
++                    ('reconciled', {'state': state, 'hms_qualification.evidence': evidence('terminated' if canceled else 'completed')})]
+             else:
+-                expected_events += [('execution_evidence', {'state': 'completed', 'evidence': evidence('completed')})]
+-            expected_events += [('resources_released', {'evidence': evidence('resources_quiescent')})]
++                expected_events += [('execution_evidence', {'state': 'completed', 'hms_qualification.evidence': evidence('completed')})]
++            expected_events += [('resources_released', {'hms_qualification.evidence': evidence('resources_quiescent')})]
+         require(same([[event['kind'], event['payload']] for event in events], [[kind, payload] for kind, payload in expected_events]))
+         require(all(1000000 <= event['time_ms'] <= final['clock'] for event in events))
+         require(op['owner_epoch'] == (2 if fault in FAULTS[2:] else 1))
+--- hms/pat_simulation_worker.py
++++ hms/pat_simulation_worker.py
+@@ -649,10 +649,10 @@
+     info = directory.lstat()
+     require(stat.S_ISDIR(info.st_mode) and not directory.is_symlink() and info.st_uid == os.geteuid() and
+             info.st_mode & 0o077 == 0 and not any(directory.iterdir()), 'PAT_SIM_PRIVATE_DIRECTORY_REQUIRED')
+-    (directory / 'evidence').mkdir(mode=0o700)
++    (directory / 'hms_qualification.evidence').mkdir(mode=0o700)
+     (directory / 'work').mkdir(mode=0o700)
+     budget = _Budget(capsule['limits'])
+-    evidence = _Evidence(directory / 'evidence', budget)
++    evidence = _Evidence(directory / 'hms_qualification.evidence', budget)
+     results, trial = [], None
+     pages, storage = [], []
+     outcome, reason, unresolved = 'inconclusive', None, None
+--- recorded_io/bridge.py
++++ hms_qualification/recorded_io/bridge.py
+@@ -10,9 +10,9 @@
+ from hms.pat_contracts import pat_digest
+ from hms.pat_io_combined_matrix import POLICY as MATRIX_POLICY
+ from hms.pat_io_run_bundle import parse_io_run_bundle
+-from evidence import reducer
+-from evidence.contracts import sha, hash_value
+-from evidence_compact.store import CompactIoEvidenceStore
++from hms_qualification.evidence import reducer
++from hms_qualification.evidence.contracts import sha, hash_value
++from hms_qualification.evidence_compact.store import CompactIoEvidenceStore
+ from . import contracts, projection
+ from .contracts import require, checked, detached
+ 
+--- recorded_io/contracts.py
++++ hms_qualification/recorded_io/contracts.py
+@@ -5,8 +5,8 @@
+ 
+ from hms.contracts import canonical, parse_json
+ from hms.journal import JournalError
+-from evidence.contracts import sha, hash_value
+-from evidence_compact.contracts import identity as consumer_identity
++from hms_qualification.evidence.contracts import sha, hash_value
++from hms_qualification.evidence_compact.contracts import identity as consumer_identity
+ 
+ INVOCATION = 'hms.pat.io-recorded-invocation/0.1'
+ APPLICABILITY = 'hms.pat.io-source-applicability/0.1'
+--- recorded_io/projection.py
++++ hms_qualification/recorded_io/projection.py
+@@ -5,7 +5,7 @@
+ reads compare exact control bytes and selected evidence, not stored pass flags.
+ """
+ from hms.contracts import SAFE_INTEGER
+-from evidence.contracts import MAX_DOCUMENT_BYTES, MAX_STORE_BYTES, MAX_STORE_DOCUMENTS, sha
++from hms_qualification.evidence.contracts import MAX_DOCUMENT_BYTES, MAX_STORE_BYTES, MAX_STORE_DOCUMENTS, sha
+ from .contracts import require, MAX_MEMO_BYTES
+ 
+ I = ('integer', SAFE_INTEGER)
+@@ -26,8 +26,8 @@
+     ('ioec_runs', 32, (('sequence', I), ('evaluator', T), ('run', T), ('receipt', ('blob', 16384)))),
+     ('ioec_documents', MAX_STORE_DOCUMENTS, (('sequence', I), ('path', ('text', 288)), ('digest', ('text', 71)))),
+ )
+-ANCHORS = ('deployment', 'version', 'io_service_configuration', 'io_service_runs',
+-           'io_service_execution', 'io_evidence_compact')
++ANCHORS = ('deployment', 'version', 'io_service_configuration', 'hms_qualification.supervisor.io_service_runs',
++           'hms_qualification.supervisor.io_service_execution', 'io_evidence_compact')
+ 
+ def _charge(rows):
+     return sum(512 + sum(len(value.encode('utf-8')) if type(value) is str else
+--- scripts/build_api_schema.py
++++ scripts/build_api_schema.py
+@@ -109,15 +109,15 @@
+     definitions["namespace"] = obj({"token": identifier, "epoch": positive, "expiresUnixMs": tick, "authorityId": identifier})
+     definitions["prepared"] = obj({"request": ref("invoke"), "requestDigest": digest, "admitted": {"const": False}})
+     assertions = ["running", "completed", "failed", "terminated", "cancel_ack", "resources_quiescent", "physical_verified", "verification_failed", "disputed", "start_excluded"]
+-    definitions["evidence"] = obj({"kind": {"enum": ["sensor", "controller", "simulation", "runtime"]},
++    definitions['hms_qualification.evidence'] = obj({"kind": {"enum": ["sensor", "controller", "simulation", "runtime"]},
+         "source": identifier, "reference": identifier, "assertions": array({"enum": assertions}, 32, 1)})
+     payloads = {
+         "accepted": obj({"digest": digest}), "dispatch_claimed": obj({"attemptId": identifier, "ownerEpoch": positive}),
+-        "execution_evidence": obj({"state": {"enum": ["running", "completed", "failed", "canceled", "rejected_before_start"]}, "evidence": ref("evidence")}),
+-        "reconciled": obj({"state": {"enum": ["running", "completed", "failed", "canceled", "rejected_before_start"]}, "evidence": ref("evidence")}),
++        "execution_evidence": obj({"state": {"enum": ["running", "completed", "failed", "canceled", "rejected_before_start"]}, 'hms_qualification.evidence': ref('hms_qualification.evidence')}),
++        "reconciled": obj({"state": {"enum": ["running", "completed", "failed", "canceled", "rejected_before_start"]}, 'hms_qualification.evidence': ref('hms_qualification.evidence')}),
+         "canceled_before_dispatch": obj({"proof": {"const": "exclusive_accepted_state"}}), "cancel_requested": obj({}),
+-        "cancel_ack": obj({"accepted": boolean, "evidence": ref("evidence")}),
+-        "resources_released": obj({"evidence": ref("evidence")}), "evidence_dispute": obj({"evidence": ref("evidence")}),
++        "cancel_ack": obj({"accepted": boolean, 'hms_qualification.evidence': ref('hms_qualification.evidence')}),
++        "resources_released": obj({'hms_qualification.evidence': ref('hms_qualification.evidence')}), "evidence_dispute": obj({'hms_qualification.evidence': ref('hms_qualification.evidence')}),
+         **{name: obj({"reason": identifier}) for name in ("recovery_unknown", "outcome_unknown", "rejected_before_dispatch")}}
+     definitions["event"] = {"oneOf": [obj({"operation_id": identifier, "sequence": positive, "time_ms": tick,
+         "clock_status": {"enum": ["unqualified_host_clock", "regressed_clamped", "unavailable_clamped"]},
+--- supervisor/attempt_ledger.py
++++ hms_qualification/supervisor/attempt_ledger.py
+@@ -12,9 +12,8 @@
+ from hms.contracts import canonical
+ from hms.journal import JournalError
+ from hms.state_path import private_state_directory
+-from retention_native import scan_usage, NativeRetentionError
+-from supervisor_contracts import (SupervisorError, require, digest, document,
+-    parse_request, request_digest, run_key, safe_file, read_file)
++from hms_qualification.supervisor.retention_native import scan_usage, NativeRetentionError
++from hms_qualification.supervisor.supervisor_contracts import SupervisorError, require, digest, document, parse_request, request_digest, run_key, safe_file, read_file
+ 
+ ACTIVE = ('admitted', 'launching', 'running', 'stopping', 'interrupted')
+ TRANSITIONS = {'admitted': {'launching', 'interrupted', 'archived'},
+--- supervisor/authority_ledger.py
++++ hms_qualification/supervisor/authority_ledger.py
+@@ -2,8 +2,8 @@
+ import re
+ import uuid
+ 
+-from attempt_ledger import AttemptLedger, ATTEMPT_SQL, INDEX_SQL
+-from supervisor_contracts import require
++from hms_qualification.supervisor.attempt_ledger import AttemptLedger, ATTEMPT_SQL, INDEX_SQL
++from hms_qualification.supervisor.supervisor_contracts import require
+ 
+ PROFILE = 'hms.pat.supervisor-authority/0.1'
+ META_SQL = 'CREATE TABLE qs_meta(version INTEGER NOT NULL CHECK(version=2), authority TEXT NOT NULL CHECK(length(authority)=43))'
+--- supervisor/bundle_io.py
++++ hms_qualification/supervisor/bundle_io.py
+@@ -6,7 +6,7 @@
+ 
+ from hms.contracts import canonical
+ from hms.pat_io_run_bundle import parse_io_run_bundle
+-from supervisor_contracts import require, read_file, write_file, document, request_digest, same
++from hms_qualification.supervisor.supervisor_contracts import require, read_file, write_file, document, request_digest, same
+ 
+ 
+ def directory(parent, name, *, create=False):
+--- supervisor/io_service_execution.py
++++ hms_qualification/supervisor/io_service_execution.py
+@@ -14,15 +14,15 @@
+ from hms.contracts import SAFE_INTEGER, canonical
+ from hms.journal import JournalError
+ from hms.registry import _resource_stored_row
+-from authority_ledger import AuthorityAttemptLedger, authority_id
+-import io_services as services
+-import io_service_runs as runs_module
+-import qualification_supervisor as supervision
+-import supervisor_contracts as contracts
++from hms_qualification.supervisor.authority_ledger import AuthorityAttemptLedger, authority_id
++import hms_qualification.supervisor.io_services as services
++import hms_qualification.supervisor.io_service_runs as runs_module
++import hms_qualification.supervisor.qualification_supervisor as supervision
++import hms_qualification.supervisor.supervisor_contracts as contracts
+ 
+ PROFILE = 'hms.pat.io-service-execution/0.1'
+ RECEIPT_PROFILE = 'hms.pat.io-service-handoff/0.1'
+-ANCHOR = 'io_service_execution'
++ANCHOR = 'hms_qualification.supervisor.io_service_execution'
+ MAX_HANDOFFS = 32
+ MAX_DATA_BYTES = 256 * 1024
+ RECEIPT_LIMIT = 4096
+--- supervisor/io_service_runs.py
++++ hms_qualification/supervisor/io_service_runs.py
+@@ -12,14 +12,14 @@
+ from hms.journal import JournalError
+ from hms.pat_contracts import parse_pat, pat_digest
+ from hms.registry import _resource_stored_row
+-import io_services as services
+-import io_service_store as configuration_store
+-import supervisor_contracts as contracts
++import hms_qualification.supervisor.io_services as services
++import hms_qualification.supervisor.io_service_store as configuration_store
++import hms_qualification.supervisor.supervisor_contracts as contracts
+ 
+ PROFILE = 'hms.pat.io-service-runs/0.1'
+ INTENT_PROFILE = 'hms.pat.io-service-run-intent/0.1'
+ RECEIPT_PROFILE = 'hms.pat.io-service-run-reservation/0.1'
+-ANCHOR = 'io_service_runs'
++ANCHOR = 'hms_qualification.supervisor.io_service_runs'
+ MAX_RUNS = 32
+ MAX_DATA_BYTES = 8 * 1024 * 1024
+ MAX_DOCUMENTS = 39
+--- supervisor/io_service_store.py
++++ hms_qualification/supervisor/io_service_store.py
+@@ -12,7 +12,7 @@
+ from hms.journal import Context, JournalError
+ from hms.pat_io_bindings import IoRegistryPatBindings
+ from hms.registry import _resource_stored_row
+-import io_services as services
++import hms_qualification.supervisor.io_services as services
+ 
+ PROFILE = 'hms.pat.io-service-store/0.1'
+ REQUEST_PROFILE = 'hms.pat.io-service-configuration-mutation/0.1'
+--- supervisor/io_services.py
++++ hms_qualification/supervisor/io_services.py
+@@ -19,8 +19,7 @@
+ from hms.pat_io_group_worker import _identities
+ from hms.pat_io_run_bundle import CEILINGS, parse_io_run_bundle, prepare_io_run_bundle
+ from hms.synthetic_io_installation import DRIVER, definitions, installation_digest, normalize_installation
+-from supervisor_contracts import (DEFAULT_LIMITS, parse_limits, parse_request, prepare_request, request_digest,
+-                                  same, snapshot_bundle, supervisor_identity)
++from hms_qualification.supervisor.supervisor_contracts import DEFAULT_LIMITS, parse_limits, parse_request, prepare_request, request_digest, same, snapshot_bundle, supervisor_identity
+ 
+ CONFIG_PROFILE = 'hms.pat.io-simulation-services/0.1'
+ PIN_PROFILE = 'hms.pat.io-service-pin/0.1'
+--- supervisor/qualification_supervisor.py
++++ hms_qualification/supervisor/qualification_supervisor.py
+@@ -15,10 +15,9 @@
+ 
+ from hms.contracts import canonical
+ from hms import pat_simulation_worker as worker
+-from bundle_io import retain_bundle, output_integrity, launch_input
+-from attempt_ledger import AttemptLedger, tree_usage
+-from supervisor_contracts import (SOURCE_FILES, SupervisorError, require, digest, document,
+-    parse_request, validate_fresh, run_key, request_digest, safe_file, read_file, write_file, same, runtime_files, snapshot_bundle)
++from hms_qualification.supervisor.bundle_io import retain_bundle, output_integrity, launch_input
++from hms_qualification.supervisor.attempt_ledger import AttemptLedger, tree_usage
++from hms_qualification.supervisor.supervisor_contracts import SOURCE_FILES, SupervisorError, require, digest, document, parse_request, validate_fresh, run_key, request_digest, safe_file, read_file, write_file, same, runtime_files, snapshot_bundle
+ 
+ 
+ def _directory(parent, name, *, create=False):
+--- supervisor/supervisor_contracts.py
++++ hms_qualification/supervisor/supervisor_contracts.py
+@@ -17,7 +17,7 @@
+ DEFAULT_LIMITS = {'maxRetainedBytes': 256*1024*1024, 'attemptReservationBytes': 64*1024*1024,
+     'maxArchives': 32, 'maxFilesPerAttempt': 8192, 'maxStreamBytes': 65536,
+     'maxFileBytes': 64*1024*1024, 'stopGraceMs': 1000, 'settleGraceMs': 1000}
+-SOURCE_FILES = ('supervisor_contracts.py', 'attempt_ledger.py', 'qualification_supervisor.py', 'worker_entry.py', 'bundle_io.py', 'io_services.py', 'io_service_store.py', 'io_service_runs.py', 'authority_ledger.py', 'io_service_execution.py', 'retention_native.py', 'retention_scanmodule.c', 'retention_scan.so')
++SOURCE_FILES = ('hms_qualification.supervisor.supervisor_contracts.py', 'hms_qualification.supervisor.attempt_ledger.py', 'hms_qualification.supervisor.qualification_supervisor.py', 'hms_qualification.supervisor.worker_entry.py', 'hms_qualification.supervisor.bundle_io.py', 'hms_qualification.supervisor.io_services.py', 'hms_qualification.supervisor.io_service_store.py', 'hms_qualification.supervisor.io_service_runs.py', 'hms_qualification.supervisor.authority_ledger.py', 'hms_qualification.supervisor.io_service_execution.py', 'hms_qualification.supervisor.retention_native.py', 'retention_scanmodule.c', 'retention_scan.so')
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs', 'rpds-py', 'typing_extensions', 'idna')
+ 
+ class SupervisorError(JournalError):
+--- supervisor/worker_entry.py
++++ hms_qualification/supervisor/worker_entry.py
+@@ -26,10 +26,10 @@
+ 
+ from hms.contracts import canonical
+ from hms.pat_io_group_worker import run_io_group
+-from bundle_io import load_bundle, check_bundle
+-from supervisor_contracts import parse_request, request_digest, digest, exact
++from hms_qualification.supervisor.bundle_io import load_bundle, check_bundle
++from hms_qualification.supervisor.supervisor_contracts import parse_request, request_digest, digest, exact
+ from hms import pat_simulation_worker as worker
+-from supervisor_contracts import (require, safe_file, document, validate_fresh, write_file)
++from hms_qualification.supervisor.supervisor_contracts import require, safe_file, document, validate_fresh, write_file
+ 
+ 
+ def main():
+--- tests/fixtures/pat_evidence_before_memo.py
++++ tests/fixtures/pat_evidence_before_memo.py
+@@ -196,7 +196,7 @@
+     evidence = None
+     try:
+         result = _read_file(root, 'test-return.json', MAX_DOCUMENT)
+-        evidence = os.open('evidence', os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=root)
++        evidence = os.open('hms_qualification.evidence', os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=root)
+         # Iterate with a hard item cap instead of materializing an unbounded list.
+         names = []
+         with os.scandir(evidence) as entries:
+@@ -470,16 +470,16 @@
+             require(type(op['attempt_id']) is str and re.fullmatch('[0-9a-f]{32}', op['attempt_id']) is not None)
+             dispatch_epoch = 2 if fault == 'reopen_accepted' or (fault == 'completion_evidence_loss' and index > 0) else 1
+             expected_events += [('dispatch_claimed', {'attemptId': op['attempt_id'], 'ownerEpoch': dispatch_epoch}),
+-                ('execution_evidence', {'state': 'running', 'evidence': evidence('running')})]
++                ('execution_evidence', {'state': 'running', 'hms_qualification.evidence': evidence('running')})]
+             if fault == 'cancel_running':
+-                expected_events += [('cancel_requested', {}), ('cancel_ack', {'accepted': True, 'evidence': evidence('cancel_ack')}),
+-                    ('execution_evidence', {'state': 'canceled', 'evidence': evidence('terminated')})]
++                expected_events += [('cancel_requested', {}), ('cancel_ack', {'accepted': True, 'hms_qualification.evidence': evidence('cancel_ack')}),
++                    ('execution_evidence', {'state': 'canceled', 'hms_qualification.evidence': evidence('terminated')})]
+             elif fault in {'reopen_pending', 'completion_evidence_loss'} and index == 0:
+                 expected_events += [('recovery_unknown', {'reason': 'owner_reopened'}),
+-                    ('reconciled', {'state': state, 'evidence': evidence('terminated' if canceled else 'completed')})]
++                    ('reconciled', {'state': state, 'hms_qualification.evidence': evidence('terminated' if canceled else 'completed')})]
+             else:
+-                expected_events += [('execution_evidence', {'state': 'completed', 'evidence': evidence('completed')})]
+-            expected_events += [('resources_released', {'evidence': evidence('resources_quiescent')})]
++                expected_events += [('execution_evidence', {'state': 'completed', 'hms_qualification.evidence': evidence('completed')})]
++            expected_events += [('resources_released', {'hms_qualification.evidence': evidence('resources_quiescent')})]
+         require(same([[event['kind'], event['payload']] for event in events], [[kind, payload] for kind, payload in expected_events]))
+         require(all(1000000 <= event['time_ms'] <= final['clock'] for event in events))
+         require(op['owner_epoch'] == (2 if fault in FAULTS[2:] else 1))
+--- tests/io_supervisor_crash_driver.py
++++ tests/io_supervisor_crash_driver.py
+@@ -31,7 +31,7 @@
+         executable,argv,cwd,environment=args
+         entry=Path(argv[3]) if type(argv) in (list,tuple) and len(argv)==7 else Path('/invalid')
+         assert not launches and executable==sys.executable and argv[:3]==[sys.executable,'-I','-B']
+-        assert entry.name=='worker_entry.py' and entry.parent.name=='supervisor'
++        assert entry.name=='hms_qualification.supervisor.worker_entry.py' and entry.parent.name=='supervisor'
+         assert entry.parent.parent.parent==Path(config['root']) and re.fullmatch(r'code-[0-9a-f]{64}',entry.parent.parent.name)
+         assert str(cwd)==str(entry.parent.parent) and all(type(p) is str and p.isdecimal() for p in argv[4:])
+         assert environment=={'LANG':'C.UTF-8','LC_ALL':'C.UTF-8'}
+@@ -40,9 +40,9 @@
+         raise RuntimeError('Only the declared original supervisor worker may launch')
+     if event=='sqlite3.connect':assert Path(os.fsdecode(os.fspath(args[0])))==Path(config['root'])/'attempts.db'
+ sys.addaudithook(audit)
+-from supervisor_contracts import document,read_file,write_file
+-from bundle_io import load_bundle
+-from qualification_supervisor import QualificationSupervisor
++from hms_qualification.supervisor.supervisor_contracts import document, read_file, write_file
++from hms_qualification.supervisor.bundle_io import load_bundle
++from hms_qualification.supervisor.qualification_supervisor import QualificationSupervisor
+ from hms.contracts import canonical
+ 
+ fd=os.open(prepared,os.O_RDONLY|os.O_DIRECTORY|os.O_NOFOLLOW)
+--- tests/test_api_review.py
++++ tests/test_api_review.py
+@@ -149,8 +149,8 @@
+             result = copy.deepcopy(self.events)
+             event = next(e for e in result["events"] if e["kind"] == "execution_evidence"
+                          and e["payload"]["state"] == "completed")
+-            event["payload"]["evidence"]["kind"] = kind
+-            event["payload"]["evidence"]["assertions"] = ["running"] if kind == "simulation" else ["completed"]
++            event["payload"]['hms_qualification.evidence']["kind"] = kind
++            event["payload"]['hms_qualification.evidence']["assertions"] = ["running"] if kind == "simulation" else ["completed"]
+             with self.subTest(kind=kind), self.assertRaises(ResponseError):
+                 validate_result("events", result)
+ 
+@@ -161,7 +161,7 @@
+             result = copy.deepcopy(self.events)
+             event = result["events"][-1]
+             event["kind"] = kind
+-            event["payload"] = payload | {"evidence": {
++            event["payload"] = payload | {'hms_qualification.evidence': {
+                 "kind": "simulation", "source": "simulator:local",
+                 "reference": "review:receipt", "assertions": ["running"],
+             }}
+--- tests/test_business_precommit.py
++++ tests/test_business_precommit.py
+@@ -367,10 +367,10 @@
+ class VaultCommitTests(BusinessCommitTests):
+     """Selected methods only; the runner avoids repeating inherited controls."""
+     def vault(self):
+-        from evidence_vault import EvidenceVault, descriptor
+-        from evidence_vault.contracts import sha
++        from hms_qualification.evidence_vault import EvidenceVault, descriptor
++        from hms_qualification.evidence_vault.contracts import sha
+         parent = self.root/'vault'; parent.mkdir(mode=0o700)
+-        vault = EvidenceVault(parent/'evidence.db', descriptor(self.journal.authority_id, max_pages=64), create=True)
++        vault = EvidenceVault(parent/'hms_qualification.evidence.db', descriptor(self.journal.authority_id, max_pages=64), create=True)
+         intent, binding = sha(b'byte retention fixture'), sha(b'original fixture association')
+         vault.seal(intent, binding, {'fixture/bytes': b'identity only; not qualification'})
+         return vault, intent, binding
+@@ -390,7 +390,7 @@
+     def test_vault_expiry_between_initial_validation_and_commit_rolls_back(self):
+         vault, intent, binding = self.vault()
+         clock = [1000]
+-        with vault, patch('evidence_vault.connection.time.monotonic_ns', side_effect=lambda: clock[0]):
++        with vault, patch('hms_qualification.evidence_vault.connection.time.monotonic_ns', side_effect=lambda: clock[0]):
+             with vault.snapshot(intent, binding, lifetime_ms=1) as lease:
+                 lease.check(vault)
+                 self.arm(lambda: lease.check(vault))
+--- tests/test_endpoint_binding_review.py
++++ tests/test_endpoint_binding_review.py
+@@ -108,7 +108,7 @@
+         self.assertTrue(status['resourceClaims'])
+         self.assertIsNone(status['result'])
+         events = h.call('events', operationId=op['operationId'])
+-        self.assertIn('verification_failed', events['events'][-1]['payload']['evidence']['assertions'])
++        self.assertIn('verification_failed', events['events'][-1]['payload']['hms_qualification.evidence']['assertions'])
+ 
+     def test_active_verification_claim_is_refused_without_losing_claims(self):
+         h = self.open_harness()
+--- tests/test_evidence_vault.py
++++ tests/test_evidence_vault.py
+@@ -9,9 +9,9 @@
+ from hms.contracts import canonical
+ from hms.journal import Journal
+ from journal_support import CONTEXT, TestPolicy, evidence, request
+-from evidence_vault import EvidenceVault, VaultError, descriptor
+-from evidence_vault import contracts as c
+-from evidence_vault.store import DOMAIN
++from hms_qualification.evidence_vault import EvidenceVault, VaultError, descriptor
++from hms_qualification.evidence_vault import contracts as c
++from hms_qualification.evidence_vault.store import DOMAIN
+ 
+ 
+ AUTHORITY = '1' * 32
+@@ -33,9 +33,9 @@
+         parent = self.root / name
+         parent.mkdir(mode=0o700)
+         expected = descriptor(AUTHORITY, **limits)
+-        obj = EvidenceVault(parent / 'evidence.db', expected, create=True)
++        obj = EvidenceVault(parent / 'hms_qualification.evidence.db', expected, create=True)
+         self.handles.append(obj)
+-        return obj, parent / 'evidence.db', expected
++        return obj, parent / 'hms_qualification.evidence.db', expected
+ 
+     def reopen(self, path, expected):
+         obj = EvidenceVault(path, expected)
+@@ -115,7 +115,7 @@
+         parent = self.root / 'public'
+         parent.mkdir(mode=0o700)
+         parent.chmod(0o755)
+-        self.code('PRIVATE_DIRECTORY_REQUIRED', EvidenceVault, parent / 'evidence.db', descriptor(AUTHORITY), create=True)
++        self.code('PRIVATE_DIRECTORY_REQUIRED', EvidenceVault, parent / 'hms_qualification.evidence.db', descriptor(AUTHORITY), create=True)
+         self.assertEqual(list(parent.iterdir()), [])
+ 
+     def test_reopen_refuses_retained_or_dangling_sidefile(self):
+@@ -225,7 +225,7 @@
+         vault, path, expected = self.vault()
+         vault.seal(INTENT, BINDING, {'a': b'a'})
+         ticks = [1000000000]
+-        with patch('evidence_vault.connection.time.monotonic_ns', side_effect=lambda: ticks[0]):
++        with patch('hms_qualification.evidence_vault.connection.time.monotonic_ns', side_effect=lambda: ticks[0]):
+             with self.assertRaises(VaultError) as caught:
+                 with vault.snapshot(INTENT, BINDING, lifetime_ms=1) as snapshot:
+                     ticks[0] += 1000000
+--- tests/test_io_evidence_bound_process.py
++++ tests/test_io_evidence_bound_process.py
+@@ -5,9 +5,9 @@
+ from hms.journal import JournalError
+ from test_io_service_execution import IoServiceExecutionTests
+ from test_io_service_runs import business
+-from evidence import archive as evidence_archive
+-from evidence.store import IoEvidenceStore
+-import supervisor_contracts as contracts
++from hms_qualification.evidence import archive as evidence_archive
++from hms_qualification.evidence.store import IoEvidenceStore
++import hms_qualification.supervisor.supervisor_contracts as contracts
+ 
+ 
+ class IoEvidenceBoundProcessTests(IoServiceExecutionTests):
+--- tests/test_io_evidence_compact.py
++++ tests/test_io_evidence_compact.py
+@@ -5,11 +5,11 @@
+ from hms.contracts import canonical
+ from hms.journal import JournalError
+ from test_io_evidence_import_history import IoEvidenceImportHistoryTests
+-from evidence import archive, reducer
+-from evidence.contracts import sha, closure, identity as legacy_identity, MAX_STORE_BYTES
+-from evidence.store import IoEvidenceStore as LegacyIoEvidenceStore
+-from evidence_compact.store import CompactIoEvidenceStore
+-from evidence_compact import contracts as compact_contracts
++from hms_qualification.evidence import archive, reducer
++from hms_qualification.evidence.contracts import sha, closure, identity as legacy_identity, MAX_STORE_BYTES
++from hms_qualification.evidence.store import IoEvidenceStore as LegacyIoEvidenceStore
++from hms_qualification.evidence_compact.store import CompactIoEvidenceStore
++from hms_qualification.evidence_compact import contracts as compact_contracts
+ 
+ 
+ class CompactIoEvidenceTests(IoEvidenceImportHistoryTests):
+--- tests/test_io_evidence_compact_process.py
++++ tests/test_io_evidence_compact_process.py
+@@ -5,9 +5,9 @@
+ from hms.journal import JournalError
+ from test_io_service_execution import IoServiceExecutionTests
+ from test_io_service_runs import business
+-from evidence import archive as evidence_archive
+-from evidence_compact.store import CompactIoEvidenceStore
+-import supervisor_contracts as contracts
++from hms_qualification.evidence import archive as evidence_archive
++from hms_qualification.evidence_compact.store import CompactIoEvidenceStore
++import hms_qualification.supervisor.supervisor_contracts as contracts
+ 
+ 
+ class CompactIoEvidenceProcessTests(IoServiceExecutionTests):
+--- tests/test_io_evidence_import.py
++++ tests/test_io_evidence_import.py
+@@ -11,11 +11,11 @@
+ from hms.contracts import canonical
+ from hms.journal import Context, JournalError
+ from test_io_service_execution import IoServiceExecutionTests
+-from bundle_io import retain_bundle, launch_input
+-import supervisor_contracts as contracts
+-from evidence import archive, reducer
+-from evidence.contracts import sha, EvidenceError
+-from evidence.store import IoEvidenceStore, ANCHOR
++from hms_qualification.supervisor.bundle_io import retain_bundle, launch_input
++import hms_qualification.supervisor.supervisor_contracts as contracts
++from hms_qualification.evidence import archive, reducer
++from hms_qualification.evidence.contracts import sha, EvidenceError
++from hms_qualification.evidence.store import IoEvidenceStore, ANCHOR
+ 
+ 
+ class IoEvidenceImportTests(IoServiceExecutionTests):
+@@ -232,7 +232,7 @@
+ 
+     def test_current_consumer_identity_is_checked_before_replay(self):
+         self.fixture(); self.import_fixture()
+-        with patch('evidence.store.identity', return_value='sha256:' + '0' * 64):
++        with patch('hms_qualification.evidence.store.identity', return_value='sha256:' + '0' * 64):
+             with self.assertRaisesRegex(JournalError, 'IMPLEMENTATION_CHANGED'): self.import_call()
+ 
+     def test_transaction_reentry_is_refused(self):
+--- tests/test_io_evidence_import_history.py
++++ tests/test_io_evidence_import_history.py
+@@ -6,12 +6,12 @@
+ from hms.contracts import canonical
+ from hms.journal import JournalError
+ from test_io_evidence_import import IoEvidenceImportTests
+-from bundle_io import retain_bundle, launch_input
+-from evidence import archive, reducer
+-from evidence.contracts import closure, sha, MAX_STORE_DOCUMENTS
+-from evidence.store import IoEvidenceStore
+-from io_service_execution import BoundQualificationSupervisor
+-import supervisor_contracts as contracts
++from hms_qualification.supervisor.bundle_io import retain_bundle, launch_input
++from hms_qualification.evidence import archive, reducer
++from hms_qualification.evidence.contracts import closure, sha, MAX_STORE_DOCUMENTS
++from hms_qualification.evidence.store import IoEvidenceStore
++from hms_qualification.supervisor.io_service_execution import BoundQualificationSupervisor
++import hms_qualification.supervisor.supervisor_contracts as contracts
+ 
+ 
+ class IoEvidenceImportHistoryTests(IoEvidenceImportTests):
+--- tests/test_io_recorded_catalog.py
++++ tests/test_io_recorded_catalog.py
+@@ -12,12 +12,12 @@
+ from hms.pat_contracts import pat_digest
+ from test_io_evidence_compact import CompactIoEvidenceTests
+ from test_io_service_runs import business
+-from evidence import reducer
+-from evidence_compact.store import CompactIoEvidenceStore
+-from recorded_io.bridge import RecordedIoBridge
+-from recorded_io.catalog import RecordedPatCatalog, DOMAIN
+-from recorded_io.execution import RecordedPatExecutionStore
+-from recorded_io import contracts
++from hms_qualification.evidence import reducer
++from hms_qualification.evidence_compact.store import CompactIoEvidenceStore
++from hms_qualification.recorded_io.bridge import RecordedIoBridge
++from hms_qualification.recorded_io.catalog import RecordedPatCatalog, DOMAIN
++from hms_qualification.recorded_io.execution import RecordedPatExecutionStore
++from hms_qualification.recorded_io import contracts
+ 
+ class RecordedIoCatalogTests(CompactIoEvidenceTests):
+     def installed(self, *, byte_limit=contracts.MAX_MEMO_BYTES):
+--- tests/test_io_recorded_catalog_process.py
++++ tests/test_io_recorded_catalog_process.py
+@@ -7,14 +7,14 @@
+ from hms.pat_contracts import pat_digest
+ from hms.synthetic_io_runtime import IoRuntime
+ from test_io_service_execution import IoServiceExecutionTests
+-from evidence_compact.store import CompactIoEvidenceStore
+-from recorded_io.bridge import RecordedIoBridge
+-from recorded_io.catalog import RecordedPatCatalog
+-from recorded_io.execution import RecordedPatExecutionStore
+-from io_service_store import IoServiceConfigurationStore
+-from io_service_runs import IoServiceRunStore
+-from io_service_execution import IoServiceExecutionStore, BoundQualificationSupervisor
+-import supervisor_contracts as contracts
++from hms_qualification.evidence_compact.store import CompactIoEvidenceStore
++from hms_qualification.recorded_io.bridge import RecordedIoBridge
++from hms_qualification.recorded_io.catalog import RecordedPatCatalog
++from hms_qualification.recorded_io.execution import RecordedPatExecutionStore
++from hms_qualification.supervisor.io_service_store import IoServiceConfigurationStore
++from hms_qualification.supervisor.io_service_runs import IoServiceRunStore
++from hms_qualification.supervisor.io_service_execution import IoServiceExecutionStore, BoundQualificationSupervisor
++import hms_qualification.supervisor.supervisor_contracts as contracts
+ 
+ class RecordedIoCatalogProcessTests(IoServiceExecutionTests):
+     def test_actual_original_matrix_catalog_execution_and_historical_replay(self):
+--- tests/test_io_service_authority.py
++++ tests/test_io_service_authority.py
+@@ -18,9 +18,9 @@
+ from test_pat_io_contracts import program
+ from test_io_service_configuration import configuration
+ from test_io_supervisor_process import IoSupervisorProcessTests
+-import io_services as services
+-import io_service_store as store
+-import supervisor_contracts as contracts
++import hms_qualification.supervisor.io_services as services
++import hms_qualification.supervisor.io_service_store as store
++import hms_qualification.supervisor.supervisor_contracts as contracts
+ 
+ 
+ def runtime_at(path, document, *, create=True):
+--- tests/test_io_service_configuration.py
++++ tests/test_io_service_configuration.py
+@@ -18,8 +18,8 @@
+ from test_pat_io_contracts import program
+ from test_pat_io_group_history import authority
+ from test_io_supervisor_process import IoSupervisorProcessTests
+-import io_services as service
+-import supervisor_contracts as contracts
++import hms_qualification.supervisor.io_services as service
++import hms_qualification.supervisor.supervisor_contracts as contracts
+ 
+ 
+ def configuration(document, selected):
+@@ -117,7 +117,7 @@
+         self.assertEqual(self.pin['configurationDigest'], service.configuration_digest(self.config))
+         self.assertEqual(self.pin['implementation']['driverDigest'], self.document['driverDigest'])
+         self.assertEqual(self.pin['supervisorIdentity'], self.prepared['request']['supervisorIdentity'])
+-        self.assertIn('io_services.py', contracts.SOURCE_FILES)
++        self.assertIn('hms_qualification.supervisor.io_services.py', contracts.SOURCE_FILES)
+         self.assertEqual(service.prepare_service_pin(self.config, self.document), self.pin)
+ 
+     def test_changed_configuration_revision_or_evaluator_refuses_existing_pin(self):
+--- tests/test_io_service_execution.py
++++ tests/test_io_service_execution.py
+@@ -8,8 +8,8 @@
+ from hms.contracts import canonical
+ from hms.journal import Context, JournalError
+ from test_io_service_runs import IoServiceRunTests, business
+-import io_service_execution as execution
+-import supervisor_contracts as contracts
++import hms_qualification.supervisor.io_service_execution as execution
++import hms_qualification.supervisor.supervisor_contracts as contracts
+ 
+ 
+ class IoServiceExecutionTests(IoServiceRunTests):
+@@ -317,7 +317,7 @@
+     def test_owned_group_persists_handoff_before_launch_and_replays_after_drift(self):
+         from hms.pat_io_group_history import inspect_io_group
+         from hms.pat_io_run_bundle import parse_io_run_bundle
+-        import bundle_io
++        import hms_qualification.supervisor.bundle_io as bundle_io
+         self.create(); phases = []; saved = self.original['preparedRun']
+         self.emit('source-business-before', self.before_business)
+         self.emit('run-reservation', {k:self.original[k] for k in ('reservation', 'reservationDigest')})
+--- tests/test_io_service_execution_history.py
++++ tests/test_io_service_execution_history.py
+@@ -7,7 +7,7 @@
+ from hms.journal import JournalError
+ from test_io_service_execution import IoServiceExecutionTests
+ from test_io_service_runs import business
+-import io_service_execution as execution
++import hms_qualification.supervisor.io_service_execution as execution
+ 
+ 
+ class IoServiceExecutionHistoryTests(IoServiceExecutionTests):
+--- tests/test_io_service_runs.py
++++ tests/test_io_service_runs.py
+@@ -17,11 +17,11 @@
+ from test_pat_io_combined_matrix import bindings
+ from test_pat_io_contracts import program
+ from test_io_supervisor_process import IoSupervisorProcessTests
+-import io_services as services
+-import io_service_store as config_store
+-import io_service_runs as run_store
+-import supervisor_contracts as contracts
+-import qualification_supervisor as supervision
++import hms_qualification.supervisor.io_services as services
++import hms_qualification.supervisor.io_service_store as config_store
++import hms_qualification.supervisor.io_service_runs as run_store
++import hms_qualification.supervisor.supervisor_contracts as contracts
++import hms_qualification.supervisor.qualification_supervisor as supervision
+ 
+ 
+ class IoServiceRunTests(unittest.TestCase):
+--- tests/test_io_supervisor_contracts.py
++++ tests/test_io_supervisor_contracts.py
+@@ -17,9 +17,9 @@
+ from test_pat_io_combined_matrix import bindings
+ from test_pat_io_contracts import program
+ from test_pat_io_group_history import authority
+-import supervisor_contracts as contracts
+-import bundle_io
+-import qualification_supervisor as supervision
++import hms_qualification.supervisor.supervisor_contracts as contracts
++import hms_qualification.supervisor.bundle_io as bundle_io
++import hms_qualification.supervisor.qualification_supervisor as supervision
+ 
+ 
+ class IoSupervisorContractsTests(unittest.TestCase):
+--- tests/test_local_start.py
++++ tests/test_local_start.py
+@@ -65,7 +65,7 @@
+         self.assertEqual(self.adapter.plant.db.execute('SELECT count(*) FROM fences').fetchone()[0], 0)
+         events = self.runtime.journal.events(OWNER, status['operationId'])['events']
+         self.assertFalse(any(event['payload'].get('state') == 'running' for event in events))
+-        self.assertTrue(any('start_excluded' in event['payload'].get('evidence', {}).get('assertions', [])
++        self.assertTrue(any('start_excluded' in event['payload'].get('hms_qualification.evidence', {}).get('assertions', [])
+                             for event in events))
+         floors = [tuple(row) for row in self.runtime.journal._db.execute('SELECT * FROM resource_floors')]
+         self.assertEqual(self.runtime.request(OWNER, 'invoke', {'request': self.request}), status)
+--- tests/test_pat_evidence_memo.py
++++ tests/test_pat_evidence_memo.py
+@@ -128,7 +128,7 @@
+ 
+     def setUp(self):
+         self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
+-        self.path=Path(self.tmp.name)/'evidence.sqlite';shutil.copyfile(self.__class__.path,self.path)
++        self.path=Path(self.tmp.name)/'hms_qualification.evidence.sqlite';shutil.copyfile(self.__class__.path,self.path)
+         self.db=sqlite3.connect(self.path);self.addCleanup(self.db.close)
+         self.store=f.FastEvidenceStore(self.db,self.trust,memo=self.memo)
+         self.context=Context('review-reader',self.trust['deployment'])
+--- tests/test_pat_io_clock_semantics.py
++++ tests/test_pat_io_clock_semantics.py
+@@ -79,7 +79,7 @@
+         elif table == 'events':
+             def event(row):
+                 value = json.loads(row['payload'])
+-                evidence = value.get('evidence')
++                evidence = value.get('hms_qualification.evidence')
+                 if evidence:
+                     old = 'sha256:' + evidence['reference'].removeprefix('io-receipt:')
+                     evidence['reference'] = 'io-receipt:' + mapping[old].removeprefix('sha256:')
+--- tests/test_pat_io_operation_history.py
++++ tests/test_pat_io_operation_history.py
+@@ -215,7 +215,7 @@
+             for row in t['events']:
+                 if row['kind'] == 'execution_evidence' and json.loads(row['payload'])['state'] == 'running':
+                     value = json.loads(row['payload']); row['kind'] = 'resources_released'
+-                    row['payload'] = canonical({'evidence': value['evidence']}).decode()
++                    row['payload'] = canonical({'hms_qualification.evidence': value['hms_qualification.evidence']}).decode()
+         self.rejected(GPIO, mutate, 'RELEASE')
+ 
+     def test_completed_assertion_cannot_use_pending_receipt(self):
+@@ -224,7 +224,7 @@
+                 value = json.loads(row['payload'])
+                 if row['kind'] == 'execution_evidence' and value['state'] == 'completed':
+                     receipt = next(r for r in t['io_authority_receipts'] if r['operation'] == row['operation_id'] and r['sequence'] == 1)
+-                    value['evidence']['reference'] = 'io-receipt:' + receipt['digest'].removeprefix('sha256:')
++                    value['hms_qualification.evidence']['reference'] = 'io-receipt:' + receipt['digest'].removeprefix('sha256:')
+                     row['payload'] = canonical(value).decode()
+         self.rejected(GPIO, mutate, 'EVIDENCE_ASSERTION')
+ 
+@@ -232,14 +232,14 @@
+         def mutate(cp, t):
+             for row in t['events']:
+                 if row['kind'] == 'execution_evidence':
+-                    payload(row, lambda v: v['evidence']['assertions'].append('physical_verified'))
++                    payload(row, lambda v: v['hms_qualification.evidence']['assertions'].append('physical_verified'))
+         self.rejected(GPIO, mutate, 'EVIDENCE')
+ 
+     def test_receipt_reference_cannot_be_invented(self):
+         def mutate(cp, t):
+             for row in t['events']:
+                 if row['kind'] == 'execution_evidence':
+-                    payload(row, lambda v: v['evidence'].update(reference='io-receipt:' + '0' * 64))
++                    payload(row, lambda v: v['hms_qualification.evidence'].update(reference='io-receipt:' + '0' * 64))
+         self.rejected(GPIO, mutate, 'EVIDENCE_REFERENCE')
+ 
+     def test_dispatch_link_cannot_forge_its_fence_with_a_fresh_digest(self):
+@@ -261,7 +261,7 @@
+             for row in t['events']:
+                 if row['kind'] == 'execution_evidence' and json.loads(row['payload'])['state'] == 'completed':
+                     def change(value):
+-                        value['state'] = 'canceled'; value['evidence']['assertions'] = ['terminated']
++                        value['state'] = 'canceled'; value['hms_qualification.evidence']['assertions'] = ['terminated']
+                     payload(row, change)
+         self.rejected(GPIO, mutate, 'EVIDENCE_ASSERTION')
+ 
+--- tests/test_pat_simulation_evidence.py
++++ tests/test_pat_simulation_evidence.py
+@@ -243,7 +243,7 @@
+ 
+     def test_acquisition_refuses_symlink_extra_name_and_file_size(self):
+         with tempfile.TemporaryDirectory() as td:
+-            root = Path(td); (root/'evidence').mkdir()
++            root = Path(td); (root/'hms_qualification.evidence').mkdir()
+             original = RETAINED/'case-04/test-return.json'
+             (root/'test-return.json').symlink_to(original)
+             with self.assertRaises(OSError): e.read_retained_attempt(root)
+@@ -323,7 +323,7 @@
+ 
+     def setUp(self):
+         self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
+-        self.path = Path(self.temp.name)/'evidence.sqlite'
++        self.path = Path(self.temp.name)/'hms_qualification.evidence.sqlite'
+         self.db = sqlite3.connect(self.path); self.addCleanup(self.db.close)
+         self.template.backup(self.db)
+         self.store = e.EvidenceStore(self.db, self.trust)
+--- tests/test_pat_simulation_worker.py
++++ tests/test_pat_simulation_worker.py
+@@ -255,7 +255,7 @@
+         self.assertEqual(result['reason'], 'PAT_SIM_OUTPUT_LIMIT')
+         self.assertEqual(result['outputBytes'], 0)
+         self.assertEqual(result['completedCases'], 0)
+-        self.assertEqual(list((directory / 'evidence').iterdir()), [])
++        self.assertEqual(list((directory / 'hms_qualification.evidence').iterdir()), [])
+         self.assertIsNone(result['unresolvedEffects'])
+ 
+     def test_original_timing_bounds_are_not_widened_for_behavioral_success(self):
+--- tests/test_registry_review.py
++++ tests/test_registry_review.py
+@@ -231,7 +231,7 @@
+             self.journal.dispute(operation["id"], self.evidence("disputed", source="simulator:replacement"))
+         events = self.journal.events(self.owner, operation["id"])["events"]
+         self.assertEqual(events[-1]["kind"], "evidence_dispute")
+-        self.assertEqual(events[-1]["payload"]["evidence"]["source"], self.adapter)
++        self.assertEqual(events[-1]["payload"]['hms_qualification.evidence']["source"], self.adapter)
+         self.assertEqual(self.journal.status(self.owner, operation["id"])["state"], "completed")
+ 
+     def test_grant_enabled_rejects_truthy_non_booleans_without_granting(self):
+--- tests/test_supervisor_authority.py
++++ tests/test_supervisor_authority.py
+@@ -7,9 +7,9 @@
+ from hms.contracts import canonical
+ from hms.journal import JournalError
+ from test_io_supervisor_contracts import IoSupervisorContractsTests, contracts
+-from attempt_ledger import AttemptLedger
+-from authority_ledger import AuthorityAttemptLedger
+-from io_service_execution import BoundQualificationSupervisor
++from hms_qualification.supervisor.attempt_ledger import AttemptLedger
++from hms_qualification.supervisor.authority_ledger import AuthorityAttemptLedger
++from hms_qualification.supervisor.io_service_execution import BoundQualificationSupervisor
+ 
+ 
+ class SupervisorAuthorityTests(IoSupervisorContractsTests):
+--- tests/test_vault_authority.py
++++ tests/test_vault_authority.py
+@@ -8,10 +8,10 @@
+ 
+ from hms.contracts import canonical
+ from hms.journal import Context, JournalError
+-from evidence import archive, reducer
+-from evidence_vault import EvidenceVault, descriptor
+-from evidence_authority import VaultEvidenceStore
+-from evidence_authority import contracts as c
++from hms_qualification.evidence import archive, reducer
++from hms_qualification.evidence_vault import EvidenceVault, descriptor
++from hms_qualification.evidence_authority import VaultEvidenceStore
++from hms_qualification.evidence_authority import contracts as c
+ from test_io_evidence_import import IoEvidenceImportTests
+ 
+ 
+@@ -21,7 +21,7 @@
+         folder.mkdir(mode=0o700)
+         self.expected_vault = descriptor(self.runtime.journal.authority_id,
+             max_pages=options.pop('vault_pages', 2048))
+-        self.vault = EvidenceVault(folder / 'evidence.db', self.expected_vault, create=True)
++        self.vault = EvidenceVault(folder / 'hms_qualification.evidence.db', self.expected_vault, create=True)
+         self.addCleanup(self.vault.close)
+         self.evidence = VaultEvidenceStore(self.service, self.vault, create=True, owner=self.owner, **options)
+         return self.evidence
+@@ -55,7 +55,7 @@
+     def test_mount_requires_real_authority_and_admin_and_exact_vault(self):
+         self.create()
+         parent = self.parent / 'wrong-vault'; parent.mkdir(mode=0o700)
+-        wrong = EvidenceVault(parent / 'evidence.db', descriptor('0' * 32), create=True)
++        wrong = EvidenceVault(parent / 'hms_qualification.evidence.db', descriptor('0' * 32), create=True)
+         self.addCleanup(wrong.close)
+         with self.assertRaisesRegex(JournalError, 'AUTHORITY_MISMATCH'):
+             VaultEvidenceStore(self.service, wrong, create=True, owner=self.owner)
+--- tests/test_vault_authority_edges.py
++++ tests/test_vault_authority_edges.py
+@@ -2,11 +2,11 @@
+ from unittest.mock import patch
+ 
+ from hms.journal import JournalError
+-from evidence import archive, reducer
+-from evidence_vault import EvidenceVault, descriptor
+-from evidence_vault.connection import _Snapshot
+-from evidence_authority import VaultEvidenceStore
+-from evidence_authority import contracts as c
++from hms_qualification.evidence import archive, reducer
++from hms_qualification.evidence_vault import EvidenceVault, descriptor
++from hms_qualification.evidence_vault.connection import _Snapshot
++from hms_qualification.evidence_authority import VaultEvidenceStore
++from hms_qualification.evidence_authority import contracts as c
+ from test_vault_authority import VaultAuthorityTests
+ 
+ EXPECTED_CONSUMER = 'sha256:0e7ff6440fdb93e941ff4b5b0f2f275558f67f1e63a3c719c66756f81b7971d5'
+@@ -17,7 +17,7 @@
+         self.create()
+         folder = self.parent / 'vault'; folder.mkdir(mode=0o700)
+         self.expected_vault = descriptor(self.runtime.journal.authority_id, max_pages=2048)
+-        self.vault = EvidenceVault(folder / 'evidence.db', self.expected_vault, create=True)
++        self.vault = EvidenceVault(folder / 'hms_qualification.evidence.db', self.expected_vault, create=True)
+         self.addCleanup(self.vault.close)
+         return self.vault
+ 
+--- tests/test_vault_batch.py
++++ tests/test_vault_batch.py
+@@ -6,8 +6,8 @@
+ import threading
+ from unittest.mock import patch
+ 
+-from evidence_vault import EvidenceVault, VaultError, descriptor
+-from evidence_vault import contracts as c
++from hms_qualification.evidence_vault import EvidenceVault, VaultError, descriptor
++from hms_qualification.evidence_vault import contracts as c
+ from hms.contracts import canonical
+ from hms.journal import Journal
+ from journal_support import CONTEXT, TestPolicy, request
+@@ -37,7 +37,7 @@
+         else:
+             parent=self.root/'bulk';parent.mkdir(mode=0o700)
+             expected=descriptor(journal.authority_id,max_pages=128)
+-            path=parent/'evidence.db';vault=EvidenceVault(path,expected,create=True)
++            path=parent/'hms_qualification.evidence.db';vault=EvidenceVault(path,expected,create=True)
+             self.handles.append(vault)
+         keys=tuple((c.sha(('intent:'+name).encode()),c.sha(('binding:'+name).encode())) for name in ('one','two'))
+         files=({'a':b'alpha','same':b'shared'}, {'b':b'alpha' if shared else b'bravo','same':b'shared'})
+@@ -200,7 +200,7 @@
+ 
+     def test_expiry_invalidates_entire_view_and_restores_connection(self):
+         vault,_,_,keys,_,_=self.populated();tick=[1000]
+-        with patch('evidence_vault.connection.time.monotonic_ns',side_effect=lambda:tick[0]):
++        with patch('hms_qualification.evidence_vault.connection.time.monotonic_ns',side_effect=lambda:tick[0]):
+             with self.assertRaises(VaultError) as caught:
+                 with vault.snapshot_many(keys,lifetime_ms=1) as view:
+                     tick[0]+=1000000
+@@ -275,7 +275,7 @@
+ 
+     def test_joint_expiry_at_commit_rolls_back_all_admission_rows(self):
+         journal,policy,wire=self.joint();vault,_,_,keys,_,_=self.populated(journal=journal);tick=[1000]
+-        with patch('evidence_vault.connection.time.monotonic_ns',side_effect=lambda:tick[0]):
++        with patch('hms_qualification.evidence_vault.connection.time.monotonic_ns',side_effect=lambda:tick[0]):
+             with self.assertRaises(VaultError) as caught:
+                 with vault.snapshot_many(keys,lifetime_ms=1) as view:
+                     self.arm(journal,policy,lambda:view.check(vault))
+@@ -288,7 +288,7 @@
+ 
+     def test_joint_lease_cleanup_failure_after_commit_preserves_original_replay(self):
+         journal,policy,wire=self.joint();vault,_,_,keys,_,_=self.populated(journal=journal);tick=[1000]
+-        with patch('evidence_vault.connection.time.monotonic_ns',side_effect=lambda:tick[0]):
++        with patch('hms_qualification.evidence_vault.connection.time.monotonic_ns',side_effect=lambda:tick[0]):
+             with self.assertRaises(VaultError) as caught:
+                 with vault.snapshot_many(keys,lifetime_ms=1) as view:
+                     self.arm(journal,policy,lambda:view.check(vault))
+--- tests/test_vault_catalog_inventory.py
++++ tests/test_vault_catalog_inventory.py
+@@ -7,7 +7,7 @@
+ 
+ from hms.journal import Context, JournalError
+ from hms.pat_contracts import pat_digest
+-from evidence import reducer
++from hms_qualification.evidence import reducer
+ from test_pat_io_contracts import program
+ from test_io_evidence_import_history import IoEvidenceImportHistoryTests
+ from test_vault_recorded_catalog import VaultRecordedCatalogTests
+--- tests/test_vault_catalog_process.py
++++ tests/test_vault_catalog_process.py
+@@ -8,15 +8,15 @@
+ 
+ from hms.journal import JournalError
+ from hms.pat_contracts import pat_digest
+-from evidence import archive, reducer
+-from evidence_authority import VaultEvidenceStore
+-from evidence_vault import EvidenceVault, descriptor
+-from vault_recorded_io.bridge import VaultRecordedIoBridge
+-from vault_recorded_io.catalog import VaultRecordedPatCatalog
+-from vault_recorded_io.execution import VaultRecordedPatExecutionStore
++from hms_qualification.evidence import archive, reducer
++from hms_qualification.evidence_authority import VaultEvidenceStore
++from hms_qualification.evidence_vault import EvidenceVault, descriptor
++from hms_qualification.vault_recorded_io.bridge import VaultRecordedIoBridge
++from hms_qualification.vault_recorded_io.catalog import VaultRecordedPatCatalog
++from hms_qualification.vault_recorded_io.execution import VaultRecordedPatExecutionStore
+ from test_io_service_execution import IoServiceExecutionTests
+ from test_io_service_authority import business
+-import supervisor_contracts as contracts
++import hms_qualification.supervisor.supervisor_contracts as contracts
+ 
+ 
+ class VaultCatalogProcessTests(IoServiceExecutionTests):
+@@ -34,7 +34,7 @@
+             sessionDriftTested=False, catalogIntegrationRequired=True, physicalDeviceExecuted=False))
+         self.create(); folder = self.parent/'vault'; folder.mkdir(mode=0o700)
+         expected = descriptor(self.runtime.journal.authority_id)
+-        self.vault = EvidenceVault(folder/'evidence.db', expected, create=True)
++        self.vault = EvidenceVault(folder/'hms_qualification.evidence.db', expected, create=True)
+         self.addCleanup(self.vault.close)
+         consumer = VaultEvidenceStore(self.service, self.vault, create=True, owner=self.owner)
+         self.assertEqual(consumer.consumer_identity, 'sha256:5e9214b37a96f897253ea2f1859090327039f5aaeb9512aa49df880484cf4523')
+@@ -123,7 +123,7 @@
+             with self.assertRaises(JournalError) as changed: executor.run(self.owner, request | {'runKey':'application:2'})
+             self.assertNotEqual(changed.exception.code, 'PAT_NO_MATCH')
+             mark('changed_configuration_refused')
+-            self.vault.close(); self.vault = EvidenceVault(folder/'evidence.db', expected)
++            self.vault.close(); self.vault = EvidenceVault(folder/'hms_qualification.evidence.db', expected)
+             self.addCleanup(self.vault.close)
+             consumer = VaultEvidenceStore(self.service, self.vault)
+             bridge = VaultRecordedIoBridge(consumer, self.runtime, (evaluator,))
+@@ -143,7 +143,7 @@
+             (1,1,1,1,1,1,1))
+         self.assertEqual([list(value) for value in self.runtime.io_board.db.execute('SELECT * FROM io_effects')], effects)
+         storage = dict(authorityBytes=(self.parent/'runtime/authority.db').stat().st_size,
+-            vaultBytes=(folder/'evidence.db').stat().st_size,
++            vaultBytes=(folder/'hms_qualification.evidence.db').stat().st_size,
+             references=self.vault._db.execute('SELECT count(*) FROM ev_documents').fetchone()[0],
+             bodies=self.vault._db.execute('SELECT count(*) FROM ev_bodies').fetchone()[0])
+         self.assertLessEqual(storage['authorityBytes'], 16777216); self.assertLessEqual(storage['vaultBytes'], 15728640)
+--- tests/test_vault_original_run.py
++++ tests/test_vault_original_run.py
+@@ -4,11 +4,11 @@
+ 
+ from test_io_service_execution import IoServiceExecutionTests
+ 
+-from evidence import archive, reducer
+-from evidence_authority import VaultEvidenceStore
+-from evidence_vault import EvidenceVault, descriptor
++from hms_qualification.evidence import archive, reducer
++from hms_qualification.evidence_authority import VaultEvidenceStore
++from hms_qualification.evidence_vault import EvidenceVault, descriptor
+ from test_io_service_authority import business
+-import supervisor_contracts as contracts
++import hms_qualification.supervisor.supervisor_contracts as contracts
+ 
+ 
+ class VaultOriginalRunTests(IoServiceExecutionTests):
+@@ -27,7 +27,7 @@
+         self.create()
+         folder=self.parent/'vault'; folder.mkdir(mode=0o700)
+         expected=descriptor(self.runtime.journal.authority_id)
+-        self.vault=EvidenceVault(folder/'evidence.db',expected,create=True)
++        self.vault=EvidenceVault(folder/'hms_qualification.evidence.db',expected,create=True)
+         self.addCleanup(self.vault.close)
+         consumer=VaultEvidenceStore(self.service,self.vault,create=True,owner=self.owner)
+         self.assertEqual(consumer.consumer_identity,'sha256:5e9214b37a96f897253ea2f1859090327039f5aaeb9512aa49df880484cf4523')
+@@ -73,7 +73,7 @@
+                 expected_revision=1,runtime=self.runtime)
+             mark('configuration_drift_committed')
+             self.vault.close()
+-            self.vault=EvidenceVault(folder/'evidence.db',expected)
++            self.vault=EvidenceVault(folder/'hms_qualification.evidence.db',expected)
+             self.addCleanup(self.vault.close)
+             consumer=VaultEvidenceStore(self.service,self.vault)
+             mark('cold_vault_reopened')
+@@ -86,7 +86,7 @@
+         self.assertEqual(self.vault._db.execute('SELECT count(*) FROM ev_manifests').fetchone()[0],1)
+         self.assertEqual(business(self.runtime),self.before_business)
+         storage=dict(authorityBytes=(self.parent/'runtime/authority.db').stat().st_size,
+-            vaultBytes=(folder/'evidence.db').stat().st_size,
++            vaultBytes=(folder/'hms_qualification.evidence.db').stat().st_size,
+             references=self.vault._db.execute('SELECT count(*) FROM ev_documents').fetchone()[0],
+             bodies=self.vault._db.execute('SELECT count(*) FROM ev_bodies').fetchone()[0])
+         self.assertLessEqual(storage['authorityBytes'],16777216)
+--- tests/test_vault_recorded_catalog.py
++++ tests/test_vault_recorded_catalog.py
+@@ -13,14 +13,14 @@
+ from hms.pat_compiler import compiler_digest
+ from hms.pat_contracts import pat_digest
+ from hms.pat_execution import PatExecutionStore
+-from evidence import reducer
++from hms_qualification.evidence import reducer
+ from test_vault_authority import VaultAuthorityTests
+ from test_io_service_authority import business
+ from test_pat_io_contracts import program
+-from vault_recorded_io import contracts
+-from vault_recorded_io.bridge import VaultRecordedIoBridge
+-from vault_recorded_io.catalog import VaultRecordedPatCatalog
+-from vault_recorded_io.execution import VaultRecordedPatExecutionStore
++from hms_qualification.vault_recorded_io import contracts
++from hms_qualification.vault_recorded_io.bridge import VaultRecordedIoBridge
++from hms_qualification.vault_recorded_io.catalog import VaultRecordedPatCatalog
++from hms_qualification.vault_recorded_io.execution import VaultRecordedPatExecutionStore
+ 
+ 
+ class VaultRecordedCatalogTests(VaultAuthorityTests):
+--- vault_recorded_io/bridge.py
++++ hms_qualification/vault_recorded_io/bridge.py
+@@ -11,10 +11,10 @@
+ from hms.pat_contracts import pat_digest
+ from hms.pat_io_combined_matrix import POLICY as MATRIX_POLICY
+ from hms.pat_io_run_bundle import parse_io_run_bundle
+-from evidence import reducer
+-from evidence.contracts import sha, hash_value
+-from evidence_authority.store import VaultEvidenceStore
+-from evidence_vault.store import DOMAIN as MANIFEST_DOMAIN
++from hms_qualification.evidence import reducer
++from hms_qualification.evidence.contracts import sha, hash_value
++from hms_qualification.evidence_authority.store import VaultEvidenceStore
++from hms_qualification.evidence_vault.store import DOMAIN as MANIFEST_DOMAIN
+ from . import contracts, projection
+ from .contracts import require, checked, detached
+ 
+--- vault_recorded_io/contracts.py
++++ hms_qualification/vault_recorded_io/contracts.py
+@@ -5,8 +5,8 @@
+ 
+ from hms.contracts import canonical, parse_json
+ from hms.journal import JournalError
+-from evidence.contracts import sha, hash_value
+-from evidence_authority.contracts import identity as consumer_identity
++from hms_qualification.evidence.contracts import sha, hash_value
++from hms_qualification.evidence_authority.contracts import identity as consumer_identity
+ 
+ INVOCATION = 'hms.pat.io-vault-recorded-invocation/0.1'
+ APPLICABILITY = 'hms.pat.io-vault-source-applicability/0.1'
+--- vault_recorded_io/projection.py
++++ hms_qualification/vault_recorded_io/projection.py
+@@ -25,8 +25,8 @@
+     ('evi_intents', 32, (('sequence', I), ('evaluator', T), ('run', T), ('intent', ('text', 71)), ('record', ('blob', 16384)))),
+     ('evi_publications', 32, (('sequence', I), ('intent', ('text', 71)), ('record', ('blob', 16384)))),
+ )
+-ANCHORS = ('deployment', 'version', 'io_service_configuration', 'io_service_runs',
+-           'io_service_execution', 'vault_evidence_import')
++ANCHORS = ('deployment', 'version', 'io_service_configuration', 'hms_qualification.supervisor.io_service_runs',
++           'hms_qualification.supervisor.io_service_execution', 'vault_evidence_import')
+ 
+ def _charge(rows):
+     return sum(512 + sum(len(value.encode('utf-8')) if type(value) is str else

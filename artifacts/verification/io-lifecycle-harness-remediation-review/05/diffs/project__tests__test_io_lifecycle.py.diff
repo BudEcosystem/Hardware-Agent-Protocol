@@ -1,0 +1,20 @@
+--- 04/project/tests/test_io_lifecycle.py
++++ 05/project/tests/test_io_lifecycle.py
+@@ -17,7 +17,7 @@
+ from hms.synthetic_lifecycle_runtime import LifecycleRuntime
+ from test_io_synthetic_provider import installation as ordinary_installation
+ from test_resource_topology import node, pin, generations
+-from io_evidence_capture import EvidenceWorkspace, snapshot_databases
++from io_evidence_capture import EvidenceWorkspace, snapshot_databases, close_retaining
+ 
+ EVIDENCE_DIRECTORY = None
+ 
+@@ -52,7 +52,7 @@
+         self.addCleanup(self.capture)
+         self.runtime = LifecycleRuntime(self.directory,create=True,owner=self.owner,installation=self.configuration,
+             wall_clock_ms=lambda:self.wall,monotonic_ms=lambda:self.mono)
+-        self.addCleanup(lambda:self.runtime.close() if self.runtime is not None else None)
++        self.addCleanup(lambda:close_retaining(self.temp,self.runtime))
+         self.namespace = self.runtime.journal.issue_namespace(self.owner,100000)['token']
+ 
+     def tearDown(self):

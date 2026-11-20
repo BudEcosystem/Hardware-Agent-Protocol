@@ -1,0 +1,12 @@
+--- ported/hms/synthetic_io_installation.py
++++ live/hms/synthetic_io_installation.py
+@@ -78,7 +78,8 @@
+         require(key in expected and key not in seen, 'IO_HANDLER_CLOSURE')
+         seen.add(key)
+         consumer = expected[key]
+-        require(handler['primitive'] in PRIMITIVES and len(consumer['rootAliases']) == 1, 'IO_HANDLER_UNSUPPORTED')
++        require(type(handler['primitive']) is str and handler['primitive'] in PRIMITIVES and
++                len(consumer['rootAliases']) == 1, 'IO_HANDLER_UNSUPPORTED')
+         access = document['nodes'][document['aliases'][consumer['rootAliases'][0]]['node']]
+         require(access['kind'] == PRIMITIVES[handler['primitive']], 'IO_HANDLER_TYPE_MISMATCH')
+         if access['kind'] == 'gpio_access':

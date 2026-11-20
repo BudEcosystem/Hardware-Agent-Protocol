@@ -1,0 +1,126 @@
+--- source01/hms/pat_io_bindings.py
++++ source02/hms/pat_io_bindings.py
+@@ -353,7 +353,8 @@
+         self._context(context)
+         program = parse_pat(artifact)
+         if explicit is not None:
+-            _require(type(explicit) is dict and set(explicit) == set(program['roles']),
++            _require(type(explicit) is dict and len(explicit) == len(program['roles']) and
++                     all(type(role) is str for role in explicit) and set(explicit) == set(program['roles']),
+                      'PAT_INVALID_BINDING_REGISTRATION')
+             for instance in explicit.values():
+                 identifier(instance)
+--- source01/tests/test_pat_io_bindings.py
++++ source02/tests/test_pat_io_bindings.py
+@@ -5,7 +5,6 @@
+ import json
+ from pathlib import Path
+ import sqlite3
+-import tempfile
+ import threading
+ import unittest
+ from unittest.mock import patch
+@@ -19,6 +18,7 @@
+ from test_io_synthetic_provider import installation
+ from test_pat_compiler import artifact
+ from test_resource_topology import generations
++from io_evidence_capture import EvidenceWorkspace, close_retaining, snapshot_databases
+ 
+ EVIDENCE_DIRECTORY = None
+ OWNER = Context('io-pat-owner', 'simulation:io-hub')
+@@ -91,37 +91,66 @@
+ 
+ class IoPatBindingTests(unittest.TestCase):
+     def setUp(self):
+-        self.temp = tempfile.TemporaryDirectory()
++        self.temp = EvidenceWorkspace()
+         self.addCleanup(self.temp.cleanup)
+         self.now = 1000
+         self.runtime = None
+         self._captured = False
+-        self.replace(installation())
+-        self.addCleanup(lambda: self.runtime.close() if self.runtime is not None else None)
++        self._capture_number = 0
++        self._states = []
++        # LIFO: capture while open, then close, then erase only if neither
++        # capture/setup nor close failed. Ownership exists before risky setup.
++        self.addCleanup(self.close_current)
+         self.addCleanup(self.capture)
++        try:
++            self.replace(installation())
++        except BaseException as error:
++            self.temp.failed(error, phase='setup')
++            raise
++
++    def close_current(self):
++        close_retaining(self.temp, self.runtime)
++        self.runtime = None
+ 
+     def replace(self, document):
+-        if self.runtime is not None:
+-            self.runtime.close()
+-        self.directory = Path(self.temp.name) / ('state-' + str(len(list(Path(self.temp.name).iterdir()))))
+-        self.runtime = IoRuntime(self.directory, create=True, owner=OWNER, installation=document,
+-                                 wall_clock_ms=lambda: self.now, monotonic_ms=lambda: self.now)
+-        self.document = copy.deepcopy(self.runtime.catalog.document)
+-        self.records = registrations(self.document)
+-        self.provider = IoRegistryPatBindings(self.runtime, self.records)
++        self._captured = False
++        try:
++            self.close_current()
++            self.directory = Path(self.temp.name) / ('state-' + str(len(self._states)))
++            state = {'directory': self.directory, 'installation': copy.deepcopy(document),
++                     'registrationIdentity': None, 'setupComplete': False}
++            self._states.append(state)
++            self.runtime = IoRuntime(self.directory, create=True, owner=OWNER, installation=document,
++                                     wall_clock_ms=lambda: self.now, monotonic_ms=lambda: self.now)
++            self.document = copy.deepcopy(self.runtime.catalog.document)
++            self.records = registrations(self.document)
++            self.provider = IoRegistryPatBindings(self.runtime, self.records)
++            state.update(installation=self.document, registrationIdentity=self.provider.registration_identity,
++                         setupComplete=True)
++        except BaseException as error:
++            self.temp.failed(error, phase='replacement-setup')
++            raise
+ 
+     def capture(self):
+         if EVIDENCE_DIRECTORY is None or self._captured:
+             return
++        try:
++            target = EVIDENCE_DIRECTORY / self._testMethodName / ('%02d-final' % self._capture_number)
++            self._capture_number += 1
++            # Every replacement state is retained, including partial setup and
++            # the16-instance positive preceding the17-instance refusal fixture.
++            for state in self._states:
++                if not state['directory'].exists():
++                    continue
++                snapshot_databases(state['directory'], target / state['directory'].name,
++                    {'nowMs': self.now, 'installation': state['installation'],
++                     'registrationIdentity': state['registrationIdentity'],
++                     'setupComplete': state['setupComplete'],
++                     'scope': 'Original SQLite resolver fixture; no pulse/qualification/physical execution.'})
++        except BaseException as error:
++            self.temp.failed(error, phase='capture')
++            raise
+         self._captured = True
+-        target = EVIDENCE_DIRECTORY / self._testMethodName
+-        target.mkdir(parents=True)
+-        for source_path in sorted(self.directory.glob('*.db')):
+-            with sqlite3.connect('file:' + str(source_path) + '?mode=ro', uri=True) as source:
+-                with sqlite3.connect(target / source_path.name) as destination:
+-                    source.backup(destination)
+-        (target / 'context.json').write_text(json.dumps({'nowMs': self.now,
+-            'installation': self.document, 'registrationIdentity': self.provider.registration_identity}, indent=2) + '\n')
+ 
+     def resolve(self, context=OWNER, value=None, provider=None, request=None):
+         chosen = provider or self.provider
+@@ -468,6 +497,9 @@
+         self.assertEqual(len(self.resolve(request={'roleInstances': {'io0': 'sim:gpio6'}})['assignments']), 3)
+         with self.runtime.journal._transaction():
+             self.code('PAT_BINDING_NOT_REGISTERED', lambda: self.provider.for_roles(OWNER, program(), {'io0': 'sim:missing'}))
++            oversized = {'role:' + str(index): 'sim:gpio5' for index in range(17)}
++            with patch('hms.pat_io_bindings.set', side_effect=AssertionError('keys materialized before count'), create=True):
++                self.code('PAT_INVALID_BINDING_REGISTRATION', lambda: self.provider.for_roles(OWNER, program(), oversized))
+ 
+     def test_environment_retains_installed_duration_domain_without_execution_claim(self):
+         value = program(duration_maximum=5000)

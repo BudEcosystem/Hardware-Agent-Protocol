@@ -1,0 +1,80 @@
+--- stage89/run_controls.py
++++ stage90/run_controls.py
+@@ -1,4 +1,7 @@
+ """Frozen selected scopes, independent retained scratch, stop at first failure."""
++import fcntl
++import stat
++import tempfile
+ import hashlib
+ import json
+ import os
+@@ -11,7 +14,7 @@
+ 
+ BASE=Path(__file__).resolve().parent
+ ROOT=BASE.parents[2]
+-SOURCE=BASE/'implementation01'
++SOURCE=ROOT/'artifacts/implementation/supervisor-storage-bindings/implementation01'
+ MAX_FILE=16*1024*1024
+ MAX_SCRATCH=256*1024*1024
+ os.umask(0o077)
+@@ -28,6 +31,22 @@
+             assert size<=MAX_FILE and total<=MAX_SCRATCH
+             rows.append(dict(path=path.relative_to(root).as_posix(),bytes=size,sha256=sha(path)))
+     return rows
++def identity(path):
++    info=path.lstat();assert stat.S_ISDIR(info.st_mode) and not path.is_symlink()
++    return dict(device=info.st_dev,inode=info.st_ino,uid=info.st_uid,mode=stat.S_IMODE(info.st_mode),sticky=bool(info.st_mode&stat.S_ISVTX))
++def acquire_leases(root):
++    held=[];records=[]
++    try:
++        for path in sorted(root.rglob('*')):
++            if path.is_file() and ('owner' in path.name or 'lease' in path.name) and path.stat().st_size==0:
++                fd=os.open(path,os.O_RDWR|os.O_NOFOLLOW|os.O_CLOEXEC);held.append(fd);info=os.fstat(fd)
++                assert stat.S_ISREG(info.st_mode) and info.st_nlink==1 and info.st_uid==os.getuid() and stat.S_IMODE(info.st_mode)==0o600
++                fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
++                records.append(dict(path=str(path.relative_to(root)),device=info.st_dev,inode=info.st_ino))
++        return held,records
++    except BaseException:
++        for fd in held:os.close(fd)
++        raise
+ frozen=read(SOURCE/'index.json')
+ selection=read(BASE/'control-selection.json')
+ assert sha(SOURCE/'index.json')==selection['sourceIndexSha256']
+@@ -42,7 +61,14 @@
+ for scope in selection['scopes']:
+     out=BASE/'controls'/scope['name'];out.mkdir(parents=True,exist_ok=False)
+     project=out/'project';shutil.copytree(SOURCE/'project',project)
+-    scratch=out/'scratch';scratch.mkdir(mode=0o700)
++    scratch_parent=Path('/tmp');parent_identity=identity(scratch_parent)
++    assert parent_identity['uid'] in (0,os.getuid()) and (not parent_identity['mode']&0o022 or parent_identity['sticky'])
++    scratch=Path(tempfile.mkdtemp(prefix='hms-split-controls-',dir=str(scratch_parent)))
++    scratch_identity=identity(scratch)
++    assert scratch_identity['uid']==os.getuid() and scratch_identity['mode']==0o700
++    assert identity(scratch_parent)==parent_identity
++    write(out/'raw-scratch-before.json',dict(path=str(scratch),identity=scratch_identity,parentIdentity=parent_identity,
++        policy='Original raw scratch retained; copied bindings are evidence only'))
+     child=out/'control_child.py';shutil.copyfile(BASE/'control_child.py',child)
+     inputs=inventory(project)
+     assert len(inputs)==selection['projectFiles']
+@@ -75,7 +101,20 @@
+             if process.poll() is None:process.kill();process.wait(timeout=5)
+             process.stdout.close()
+     elapsed=time.monotonic()-started
+-    after=inventory(project);retained=inventory(scratch);verify()
++    after=inventory(project);verify()
++    assert identity(scratch)==scratch_identity and identity(scratch_parent)==parent_identity
++    leases,lease_records=acquire_leases(scratch)
++    try:
++        retained=inventory(scratch)
++        shutil.copytree(scratch,out/'scratch')
++        assert inventory(out/'scratch')==retained==inventory(scratch)
++        assert identity(scratch)==scratch_identity and identity(scratch_parent)==parent_identity
++        write(out/'writer-quiescence.json',dict(held=lease_records,parentExitCode=process.returncode,
++            scope='Original zero-length owner/writer files; only the declared diagnostic child was allowed'))
++        write(out/'raw-scratch-after.json',dict(path=str(scratch),identity=identity(scratch),parentIdentity=identity(scratch_parent),
++            rawScratchRetained=True,copyVerified=True))
++    finally:
++        for fd in leases:os.close(fd)
+     child_result=read(out/'child-result.json') if (out/'child-result.json').exists() else None
+     passed=error is None and elapsed<60 and process.returncode==0 and child_result is not None and child_result['passed'] and inputs==after
+     result=dict(name=scope['name'],passed=passed,exitCode=process.returncode,elapsedSeconds=elapsed,error=error,

@@ -1,0 +1,14 @@
+--- artifacts/implementation/pat-io-pending-recovery/implementation01/project/hms/pat_io_board_history.py
++++ artifacts/implementation/pat-io-recovery-history/implementation01/project/hms/pat_io_board_history.py
+@@ -342,9 +342,9 @@
+                             now < value['budgetOriginMonoMs'] + timing['maxRunMs'] and now < lease, 'PAT_IO_HISTORY_COMPLETION_TIME')
+                 else:
+                     cause_key = (cp['record'], operation_id)
+-                    if result['reason'] == 'authority_or_binding_lost' and cause_key in checked_causes:
++                    if result['reason'] in {'authority_or_binding_lost','reconciliation_stop'} and cause_key in checked_causes:
+                         # Only the composed checker supplies this private handoff,
+-                        # after deriving the cause from separately trusted grants.
++                        # after deriving the cause from trusted grants/faults and prior state.
+                         require(checked_causes[cause_key] == result['reason'], 'PAT_IO_HISTORY_CANCEL_CAUSE')
+                         consumed_causes.add(cause_key)
+                     else:

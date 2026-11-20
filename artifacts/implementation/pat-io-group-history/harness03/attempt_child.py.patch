@@ -1,0 +1,11 @@
+--- artifacts/implementation/pat-io-encoding/harness04/attempt_child.py
++++ artifacts/implementation/pat-io-group-history/harness03/attempt_child.py
+@@ -67,7 +67,7 @@
+     if event == 'sqlite3.connect':
+         raw = os.fsdecode(os.fspath(args[0])); path = Path(raw).resolve()
+         valid = (type(current_test) is str and current_test in config['targets'] and
+-            current_test in ['test_pat_io_group_worker.IoGroupWorkerTests.test_complete_gpio_group', 'test_pat_io_group_worker.IoGroupWorkerTests.test_complete_pwm_group', 'test_pat_io_group_worker.IoGroupWorkerTests.test_record_limit_retains_partial_attempt_and_stops_later_cases'] and
++            current_test in ['test_pat_io_group_history.IoGroupHistoryTests.test_complete_gpio_history', 'test_pat_io_group_history.IoGroupHistoryTests.test_complete_pwm_history'] and
+             Path(raw).is_absolute() and not raw.startswith('file:') and path.is_relative_to(scratch))
+         parts = path.relative_to(scratch).parts if valid else ()
+         valid = (valid and len(parts) == 5 and parts[0] == current_test.split('.')[-1] and

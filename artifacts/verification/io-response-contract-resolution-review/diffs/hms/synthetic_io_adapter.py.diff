@@ -1,0 +1,10 @@
+--- artifacts/verification/io-provider-runtime-integration/attempts/20261107T005504.237197Z-360d486cb278/inputs-before/hms/synthetic_io_adapter.py
++++ hms/synthetic_io_adapter.py
+@@ -303,5 +303,6 @@
+             self._check_receipt(operation,receipt)
+             if receipt['state'] in {'pending','rejected_before_start'}:
+                 return None
+-            return {'evidenceKind':'simulation','output':{'primitive':self.board._details[(operation['intent']['instanceId'],operation['intent']['actionId'])]['primitive'],
++            return {'evidenceKind':'simulation','output':{'profile':'hms.synthetic-io-result/1',
++                'primitive':self.board._details[(operation['intent']['instanceId'],operation['intent']['actionId'])]['primitive'],
+                 'result':receipt['result'],'safeIdleState':receipt['idleState'],'receiptDigest':receipt_digest(receipt)}}

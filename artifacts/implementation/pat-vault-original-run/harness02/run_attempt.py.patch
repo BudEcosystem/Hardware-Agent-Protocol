@@ -1,0 +1,40 @@
+--- harness01/run_attempt.py
++++ harness02/run_attempt.py
+@@ -23,8 +23,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '14e33c595526a7a7d626d635dcff7327fef65e9a94b28c85b7d43a109b212414'
+-PREFIX = 'artifacts/implementation/pat-vault-original-run/implementation01/'
++FROZEN_INDEX = '4a1f5b97cb29e897fc865ca5dcf46397bfdec6c4154a302dfdac1b546e66c4f4'
++PREFIX = 'artifacts/implementation/pat-vault-original-run/implementation02/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -93,7 +93,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 289:
++    if len(expected) != 290:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -282,7 +282,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation01'
++    stage = here.parent / 'implementation02'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -294,7 +294,7 @@
+     record = {'profile': 'hms.io-group-worker-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+               'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 1,
+-              'projectInputCount': 286, 'frozenPreparationInputCount': 289,
++              'projectInputCount': 286, 'frozenPreparationInputCount': 290,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,

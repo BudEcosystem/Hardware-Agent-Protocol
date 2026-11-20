@@ -1,0 +1,68 @@
+--- artifacts/implementation/pat-io-run-bundle/extend-results.py
++++ artifacts/implementation/pat-io-run-bundle/extend-results-corrected.py
+@@ -9,7 +9,7 @@
+ def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+ def write(p,v): p.write_text(json.dumps(v,indent=2)+'\n')
+ old=read(B/'RESULTS.json'); assert old['distinctPassingMethods']==148
+-shutil.copyfile(B/'RESULTS.json',B/'RESULTS-source02.json')
++assert (B/'RESULTS.json').read_bytes()==(B/'RESULTS-source02.json').read_bytes()
+ name='attempt03-passed149'; folder=R/name; p=read(folder/'proof.json'); a=folder/'attempt'; result=read(a/'result.json')
+ assert p['status']==result['status']=='passed' and result['currentPass'] and result['childState']=='exited'
+ assert p['counts']==dict(testsRun=149,failures=0,errors=0,skips=0,expectedFailures=0,unexpectedSuccesses=0)
+@@ -29,10 +29,30 @@
+ priorrows={f.relative_to(prior).as_posix():f.read_bytes() for f in prior.rglob('*') if f.is_file()}
+ assert set(rows)==set(priorrows)==set(expected+['header.json','association.json','trusted-context.json'])
+ changed=sorted(k for k in rows if rows[k]!=priorrows[k])
+-assert changed==['association.json','header.json','inputs/implementation.json']
++assert changed==sorted(['association.json','header.json','inputs/implementation.json','inputs/installation.json',
++    'inputs/descriptor.json','inputs/bindings.json','inputs/matrix.json']+['cases/%02d.json'%i for i in range(30)])
++assert json.loads(rows['inputs/matrix.json'])['cases']==json.loads(priorrows['inputs/matrix.json'])['cases']
++assert json.loads(rows['inputs/matrix.json'])['programs']==json.loads(priorrows['inputs/matrix.json'])['programs']
++leaves=[]
++def differences(left,right,path):
++    assert type(left) is type(right)
++    if type(left) is dict:
++        assert set(left)==set(right)
++        for k in left: differences(left[k],right[k],path+[k])
++    elif type(left) is list:
++        assert len(left)==len(right)
++        for i,(x,y) in enumerate(zip(left,right)): differences(x,y,path+[i])
++    elif left!=right:
++        assert type(left) is str and type(right) is str
++        import re
++        assert re.fullmatch(r'(sha256:)?[0-9a-f]{64}',left) and re.fullmatch(r'(sha256:)?[0-9a-f]{64}',right)
++        leaves.append(dict(path=path,before=left,after=right))
++for k in changed: differences(json.loads(priorrows[k]),json.loads(rows[k]),[k])
++write(B/'SOURCE03-IDENTITY-DELTA.json',dict(scope='Every changed example leaf is an exact hash string; full case/program bodies and non-hash fields are unchanged.',changedFiles=changed,leaves=leaves))
+ identity=read(example/'inputs/implementation.json'); oldidentity=read(prior/'inputs/implementation.json')
+ assert identity['workerDigest']!=oldidentity['workerDigest']
+-assert {k:v for k,v in identity.items() if k!='workerDigest'}=={k:v for k,v in oldidentity.items() if k!='workerDigest'}
++assert identity['driverDigest']!=oldidentity['driverDigest']
++assert {k:v for k,v in identity.items() if k not in ('workerDigest','driverDigest')}=={k:v for k,v in oldidentity.items() if k not in ('workerDigest','driverDigest')}
+ entry=dict(attempt=name,status='passed',counts=p['counts'],testSeconds=p['testSeconds'],elapsedSeconds=p['elapsedSeconds'],
+     sourceIndexSha256=p['sourceIndexSha256'],harnessIndexSha256=p['harnessIndexSha256'],actualOrigins=p['actualOrigins']['recordCount'],
+     rawScratch=p['rawScratch'],rawScratchFiles=p['rawScratchFiles'],rawScratchBytes=p['rawScratchBytes'],attemptFilesAcquired=p['attemptFilesAcquired'],
+@@ -56,8 +76,10 @@
+ its {len(raw)}bytes remain within the original per-carrier limit. The [association record](attempt/scratch/io-run-bundle-example/association.json)
+ reports exact fresh reconstruction; configuration/run/implementation attestation,
+ actual aggregate enforcement, physical measurement and qualification remain false.
+-Source03's changed worker identity changes only implementation/header/association bytes in
+-the retained example; candidate, cases, authority and logical context remain identical.
++Source03 changes both conservative driver and worker identities. Installation, descriptor, binding,
++static-contract and enclosing manifest hashes change transitively; the exact case/program bodies,
++candidate, original authority and logical context remain identical. Every changed example leaf
++is a hash string; the retained identity-delta report records each path and both values.
+ The [key guard](../../KEY-GUARD.md) adds one regression and changes only validation order.
+ No supervisor launch, runtime effects, device/MCU, inference or live service ran.
+ ''')
+@@ -81,7 +103,9 @@
+ All228original baseline project files remain byte-identical in current source03. Each attempt
+ retains230project inputs,233frozen entries,6active harness inputs and159external pins.
+ Complete original attempts, raw scratch and the initial failed assertion remain retained.
+-Current example worker identity reflects the source03 change; other example inputs are unchanged.
++Current driver/worker identities and dependent hashes reflect the source03 change; non-hash
++fields and exact case/program bodies are unchanged. The initial reporting reduction's overly narrow
++identity-change assertion is preserved in [analysis correction](../ANALYSIS-CORRECTION.md).
+ No SQL connection, runtime/device effect, inference or live service ran. Primary-agent review only.
+ 
+ The [design](../DESIGN.md) is an input association component. Trusted service configuration,

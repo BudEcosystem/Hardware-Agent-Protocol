@@ -1,0 +1,38 @@
+--- artifacts/implementation/pat-io-observation-history/implementation01/project/hms/pat_io_procedure_history.py
++++ artifacts/implementation/pat-io-refusal-history/implementation01/project/hms/pat_io_procedure_history.py
+@@ -183,7 +183,9 @@
+                 'delivery': self.delivery}
+ 
+ 
+-def _fold(transcript):
++def _fold(transcript, *, checked_refusals=None):
++    checked_refusals = {} if checked_refusals is None else checked_refusals
++    consumed_refusals = set()
+     by_phase = {call['phase']: call for call in transcript['calls']}
+     checkpoints = {cp['record']: cp for cp in transcript['checkpoints']}
+     sequence = None
+@@ -205,8 +207,14 @@
+                 call = by_phase[cp['value']['phase']]
+                 operation = call['label']
+                 if operation == 'submit':
+-                    require(call['returned'], 'SUBMIT_FAILURE_UNIMPLEMENTED')
+-                    if sequence is None:
++                    if not call['returned']:
++                        require(index in checked_refusals, 'SUBMIT_FAILURE_UNIMPLEMENTED')
++                        require(checked_refusals[index] == 'ACCESS_DENIED' and sequence is None and
++                                call['outcome']['exception'] == 'JournalError' and
++                                call['outcome']['code'] == 'ACCESS_DENIED' and current == previous,
++                                'SUBMIT_REFUSAL')
++                        consumed_refusals.add(index)
++                    elif sequence is None:
+                         require(len(current['pr_procedures']) == 1 and len(current['namespaces']) == 1, 'PARENT_INVENTORY')
+                         sequence = _Sequence(current['pr_procedures'][0], now, current['namespaces'][0]['expires_ms'])
+                 elif operation == 'cancel':
+@@ -252,6 +260,7 @@
+             require(canonical(observation['procedure']) == canonical(status) and observation['operationIds'] == identities and
+                     observation['unresolvedOperations'] == unresolved, 'OBSERVATION')
+             observations_checked += 1
++    require(consumed_refusals == set(checked_refusals), 'UNUSED_REFUSAL')
+     status = sequence.status(_child_view(current)) if sequence is not None else None
+     return {'profile': 'hms.pat.io-procedure-history-inspection/0.1', 'procedureHistoryChecked': True,
+             'operationHistoryChecked': True, 'checkpointsChecked': len(checkpoints),

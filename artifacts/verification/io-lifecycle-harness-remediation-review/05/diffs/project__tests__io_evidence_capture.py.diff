@@ -1,0 +1,37 @@
+--- 04/project/tests/io_evidence_capture.py
++++ 05/project/tests/io_evidence_capture.py
+@@ -14,18 +14,31 @@
+     def __init__(self):
+         self.name=tempfile.mkdtemp(prefix='hms-io-proof-')
+         self.capture_failed=False
++        self.failures=[]
+ 
+-    def failed(self, error):
++    def failed(self, error, phase='capture'):
+         self.capture_failed=True
++        self.failures.append({'phase':phase,'type':type(error).__name__,'message':str(error)[:4096]})
+         try:
+-            (Path(self.name)/'capture-failure.json').write_text(json.dumps({
+-                'type':type(error).__name__,'message':str(error)[:4096],
++            (Path(self.name)/'retention-failures.json').write_text(json.dumps({
++                'failures':self.failures,
+                 'rawWorkspaceRetained':True,'scope':'Raw database/WAL files are not a verified logical snapshot.'},indent=2)+'\n')
+         except BaseException:pass
+ 
+     def cleanup(self):
+         if not self.capture_failed:
+             shutil.rmtree(self.name)
++
++
++def close_retaining(workspace, runtime):
++    """Retain post-close-failure state even if tearDown already captured success."""
++    if runtime is None:
++        return
++    try:
++        runtime.close()
++    except BaseException as exc:
++        workspace.failed(exc,phase='runtime-close')
++        raise
+ 
+ 
+ def snapshot_databases(directory, target, context):

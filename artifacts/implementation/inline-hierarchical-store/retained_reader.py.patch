@@ -1,0 +1,19 @@
+--- statx-mount-provider/retained_reader.py
++++ inline-hierarchical-store/retained_reader.py
+@@ -69,12 +69,13 @@
+         for fd in self.fds.values():os.close(fd)
+         self.fds.clear()
+ 
+-def inspect(path,anchor,library_hash,*,replaced_owner=False):
++def inspect(path,anchor,library_hash,*,replaced_owner=False,
++            expected_profile='hms.hierarchical-chunk-store.inline512/0.1',library_path=None):
+     image=ReadOnlyImage(path,anchor,replaced_owner=replaced_owner);native=None
+     try:
+-        native=Native(image,ATTEMPT/'hierarchical-store.so',library_hash);native.call('hm_mount')
++        native=Native(image,ATTEMPT/'hierarchical-store.so' if library_path is None else library_path,library_hash);native.call('hm_mount')
+         superblock=unpack(native.read('super'));assert superblock['identity']==image.anchor['identity']
+-        assert superblock['profile']=='hms.hierarchical-chunk-store/0.1' and superblock['root']==1
++        assert superblock['profile']==expected_profile and superblock['root']==1
+         nodes={};physical={}
+         for bucket,kind,size in native.entries('objects',256):
+             assert kind==2 and size==0

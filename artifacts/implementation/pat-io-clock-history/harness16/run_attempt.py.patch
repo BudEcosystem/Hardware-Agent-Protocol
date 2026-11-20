@@ -1,0 +1,78 @@
+--- artifacts/implementation/pat-io-clock-history/harness14/run_attempt.py
++++ artifacts/implementation/pat-io-clock-history/harness16/run_attempt.py
+@@ -1,4 +1,4 @@
+-"""Original isolated clock27 runner. Execute only after parent review/release.
++"""Original isolated clock13 runner. Execute only after parent review/release.
+ 
+ No project imports occur in this launcher. Seven selected distribution closures
+ are acquired independently of the compiler's five-package identity.
+@@ -177,7 +177,7 @@
+         while selector.get_map():
+             remaining = deadline - time.monotonic()
+             if remaining <= 0:
+-                raise TimeoutError('ClockHistory27 child exceeded original harness deadline')
++                raise TimeoutError('ClockHistory13 child exceeded original harness deadline')
+             for key, _ in selector.select(min(remaining, 0.1)):
+                 block = os.read(key.fileobj.fileno(), 65536)
+                 if not block:
+@@ -190,13 +190,13 @@
+                 log.write(block)
+                 count += len(block)
+             if time.monotonic() >= deadline:
+-                raise TimeoutError('ClockHistory27 child crossed harness deadline during pipe collection')
++                raise TimeoutError('ClockHistory13 child crossed harness deadline during pipe collection')
+     remaining = deadline - time.monotonic()
+     if remaining <= 0:
+-        raise TimeoutError('ClockHistory27 child crossed harness deadline at EOF')
++        raise TimeoutError('ClockHistory13 child crossed harness deadline at EOF')
+     process.wait(timeout=remaining)
+     if time.monotonic() >= deadline:
+-        raise TimeoutError('ClockHistory27 child crossed harness deadline at process exit')
++        raise TimeoutError('ClockHistory13 child crossed harness deadline at process exit')
+     return count
+ 
+ 
+@@ -204,7 +204,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 27 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 13 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -239,7 +239,7 @@
+     started = time.monotonic()
+     record = {'profile': 'hms.io-clock-history-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 27,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 13,
+               'projectInputCount': 8022, 'frozenPreparationInputCount': 8025,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+@@ -273,11 +273,11 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 27 or
+-                len(targets['targets']) != 27 or
+-                len(set(targets['targets'])) != 27 or
+-                sum(name.startswith('test_pat_io_observation_history.') for name in targets['targets']) != 27):
+-            raise ValueError('Closed clock27 method selection changed')
++        if (targets['testCount'] != 13 or
++                len(targets['targets']) != 13 or
++                len(set(targets['targets'])) != 13 or
++                sum(name.startswith('test_pat_io_observation_history.') for name in targets['targets']) != 13):
++            raise ValueError('Closed clock13 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+         scratch_parent = Path('/tmp')
+@@ -286,7 +286,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-clock-history-clock27-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-clock-history-clock13-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

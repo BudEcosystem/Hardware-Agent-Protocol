@@ -1,0 +1,325 @@
+--- source-freeze05/PLAN.md
++++ source-freeze06/PLAN.md
+@@ -1,10 +1,9 @@
+ # Source review and bounded execution plan
+ 
+-Status: **revised source unexecuted; first attempt failed**. Root attempt01
+-completed both native compiles and the original12-case/638-assertion evaluator,
+-then failed schema validation during fixture construction before a native fixture
+-launched. Its outputs and freeze04 remain retained. Root review is required before
+-the revised fixed attempt02 runs. Partial control success must not be reported as
++Status: **revised source unexecuted; attempts01/02 failed**. Both root attempts
++completed both native compiles and their original12-case/638-assertion evaluator,
++then failed topology validation before any native fixture launched. Their outputs
++and freezes04/05 remain retained. Root review is required before fixed attempt03. Partial control success must not be reported as
+ completion of the full approved standing host plan.
+ 
+ The new files are a strict v2 codec, native pipe bridge, closed installation
+@@ -17,7 +16,10 @@
+ The explicit local-sqlite-ordering-test profile owns one shared claims table and
+ resource floors, both finite/standing aliases, original deployment key and
+ selection provenance. A standing deployment claims acquisition/output atoms and
+-an endpoint slot/lifecycle atom. Hub/service dependencies appear in the original
++an endpoint slot/lifecycle atom. Physical graph proofs remain exactly the two
++hardware atoms; the separate installed slot is validated as the actual driver
++lifecycle atom on every alias dependency path, then added to both families’
++shared claim sets. Hub/service dependencies appear in the original
+ topology proof; containment alone does not claim a hub or create a quantitative
+ reservation. The candidate is installed only in its original test assembly.
+ There is no public mount, physical transport or commissioned driver.
+@@ -47,9 +49,9 @@
+ ambiguity never authorizes a new original body. Catalog withdrawal blocks fresh
+ extension; it cannot prove the existing output stopped.
+ 
+-`run_checks.py` has one fixed invocation and creates a new `host-attempt02`.
+-It verifies the retained attempt01 result and uses distinct qualification run
+-and attempt identities ending in`:2`; no earlier provenance is reused.
++`run_checks.py` has one fixed invocation and creates a new `host-attempt03`.
++It verifies both retained attempt01/02 results and uses distinct qualification run
++and attempt identities ending in`:3`; no earlier provenance is reused.
+ Existing attempt directories are never overwritten. It freezes all copied/new
+ project inputs, owner bytes and review documents; hashes the public244 receipt
+ and every original before and after each command. It performs four fixed owned
+@@ -99,7 +101,8 @@
+ 
+ - prepare→OPEN→START→activation/feedback→commit→ACK→STOP/episode→RETIRE;
+ - finite/standing conflicts in both directions, direct Registry aliases and
+-  lifecycle refusal, including same original key across families;
++  lifecycle refusal, including same original key across families, exact physical2
++  versus actual3 claim sets, and invalid slot/dependency/source identity refusal;
+ - OPEN reply lost after durable rx, owner reopen and explicit observation;
+ - ACK reply lost after durable rx, reopen and read-only exact acceptance join;
+ - activation collection rollback after rx commit, no speculative ACK;
+--- source-freeze05/README.md
++++ source-freeze06/README.md
+@@ -1,6 +1,6 @@
+ # Standing host deployment source candidate
+ 
+-Status: **first attempt failed; revised source unexecuted, not qualified, not complete**. This isolated
++Status: **attempts01/02 failed; revised source unexecuted, not qualified, not complete**. This isolated
+ vertical path uses the copied actual standing C endpoint and its original native
+ fixture. No public input or sealed parent packet is changed. It does not expose
+ a physical/public mount or claim protected control-storage capacity.
+@@ -9,9 +9,9 @@
+ profile and cumulative limits. It supplies no program, driver path, raw endpoint
+ packet or qualification result. A separate literal standing PAT compiler/catalog
+ selects the installed synthetic configuration from an original native evaluator
+-attempt. Root attempt01 produced the actual original12-case/638-assertion
+-evaluator evidence, then failed fixture construction before any native fixture
+-launched. The revised runner must produce fresh attempt02 qualification provenance.
++attempt. Root attempts01/02 each produced actual original12-case/638-assertion evaluator
++evidence, then failed topology validation before any native fixture launched.
++The revised runner must produce fresh attempt03 qualification provenance.
+ 
+ The copied Journal gains an explicit storage version and one shared finite and
+ standing claims authority. The same claims/fence table protects both instance
+@@ -56,3 +56,8 @@
+ profile labels in the fixture, and assigns a distinct fixed attempt02. See
+ [REVISION-05.md](REVISION-05.md). All twenty host cases and limits remain intact;
+ the revised source has not been executed.
++
++Revision06 preserves freeze05 and attempt02. It separates the physical graph
++footprint from the explicitly installed driver lifecycle slot while retaining
++three actual shared claims. [REVISION-06.md](REVISION-06.md) records the correction
++and strengthened existing control; fixed attempt03 remains unexecuted.
+--- source-freeze05/project/hms/standing_contracts.py
++++ source-freeze06/project/hms/standing_contracts.py
+@@ -163,10 +163,41 @@
+     for name in resources:
+         identifier(name)
+     require(value['slotResource'] not in resources, 'FOOTPRINT')
++    # GPIO alias proofs describe physical footprints only. The installed
++    # endpoint slot is an additional exclusive lifecycle atom, never a pin.
++    slot = topology['atoms'].get(value['slotResource'])
++    require(slot is not None and slot['purpose'] == 'lifecycle' and
++            topology['nodes'][slot['node']]['kind'] == 'driver', 'SLOT_RESOURCE')
++    driver = slot['node']
++    require(topology['nodes'][driver]['properties']['implementationDigest'] ==
++            value['driverSourceDigest'], 'SLOT_DRIVER_IDENTITY')
+     for instance in (value['instanceId'], value['finiteInstanceId']):
+         proof = binding_proof(topology, generations, instance)
+         require(set(proof['expandedClaims']) == {'control'}, 'FOOTPRINT')
+-        require(set(proof['expandedClaims']['control']) == set(resources + [value['slotResource']]), 'FOOTPRINT')
++        require(set(proof['expandedClaims']['control']) == set(resources), 'FOOTPRINT')
++        require(driver in proof['dependencies'], 'SLOT_DEPENDENCY')
++        # Require the installed driver on each participating alias's explicit
++        # dependency path. A sibling alias or descriptive containment cannot
++        # supply authority for an otherwise unrelated acquisition/output path.
++        aliases = set()
++        pending = list(proof['actionRoots']['control'])
++        while pending:
++            alias = pending.pop()
++            if alias in aliases:
++                continue
++            aliases.add(alias)
++            pending.extend(name for name in topology['aliases'][alias]['includes']
++                           if name in topology['aliases'])
++        for alias in aliases:
++            dependencies = set()
++            pending = list(topology['nodes'][topology['aliases'][alias]['node']]['requires'])
++            while pending:
++                dependency = pending.pop()
++                if dependency in dependencies:
++                    continue
++                dependencies.add(dependency)
++                pending.extend(topology['nodes'][dependency]['requires'])
++            require(driver in dependencies, 'SLOT_DEPENDENCY')
+     endpoint = value['endpoint']
+     exact(endpoint, ('incarnationHex', 'firmwareHex', 'manifestHex', 'boot', 'kernel', 'mask', 'epochs'))
+     hex_bytes(endpoint['incarnationHex'], 16, nonzero=True)
+@@ -242,8 +273,9 @@
+ 
+     def resources(self, instance):
+         require(instance in {self.installation['instanceId'], self.installation['finiteInstanceId']}, 'INSTANCE')
+-        proof = binding_proof(self.installation['topology'], self.installation['generations'], instance)
+-        return tuple(sorted(proof['expandedClaims']['control']))
++        installation = parse_installation(self.installation)
++        proof = binding_proof(installation['topology'], installation['generations'], instance)
++        return tuple(sorted(proof['expandedClaims']['control'] + [installation['slotResource']]))
+ 
+     def admit(self, context, intent, now_ms):
+         installation, proof = self.fresh(context)
+--- source-freeze05/project/hms/standing_store.py
++++ source-freeze06/project/hms/standing_store.py
+@@ -236,7 +236,7 @@
+         c.require(route['standingFloor']<2**32-1,'COUNTER_EXHAUSTED')
+         route['standingFloor']+=1
+         owner='standing:'+uuid.uuid4().hex
+-        resources=tuple(sorted(proof['expandedClaims']['control']))
++        resources=self.policy.resources(installation['instanceId'])
+         claims=self.journal._reserve_standing_resources(owner,context,(installation['instanceId'],),resources)
+         for i in range(2):
+             c.require(route['fences'][i]<2**32-1,'COUNTER_EXHAUSTED');route['fences'][i]+=1
+--- source-freeze05/project/tests/standing_host_controls.py
++++ source-freeze06/project/tests/standing_host_controls.py
+@@ -19,6 +19,8 @@
+ from hms.registry import Registry
+ from hms.demo import type_bundle,object_schema
+ from hms.standing_capacity import check as capacity_check
++from hms import standing_contracts as installed_contracts
++from hms import resource_topology as graph
+ 
+ checks=0
+ FINAL_DESTINATION=None
+@@ -106,15 +108,40 @@
+ 
+ 
+ def shared_authority(f):
++    physical=set(f.installation['hardwareResources'])
++    actual=physical|{f.installation['slotResource']}
++    require(len(physical)==2 and len(actual)==3)
++    for instance in (f.installation['instanceId'],f.installation['finiteInstanceId']):
++        proof=graph.binding_proof(f.installation['topology'],f.installation['generations'],instance)
++        require(set(proof['expandedClaims']['control'])==physical)
++        require(set(f.policy.resources(instance))==actual)
++    invalid=copy.deepcopy(f.installation);invalid['slotResource']='atom:service'
++    refusal('STANDING_SLOT_RESOURCE',installed_contracts.parse_installation,invalid)
++    invalid=copy.deepcopy(f.installation)
++    invalid['topology']['nodes']['output-access']['requires']=[]
++    invalid['generations']['topologyDigest']=graph.topology_digest(invalid['topology'])
++    refusal('STANDING_SLOT_DEPENDENCY',installed_contracts.parse_installation,invalid)
++    invalid=copy.deepcopy(f.installation)
++    invalid['topology']['nodes']['driver']['properties']['implementationDigest']='sha256:'+'0'*64
++    invalid['generations']['topologyDigest']=graph.topology_digest(invalid['topology'])
++    refusal('STANDING_SLOT_DRIVER_IDENTITY',installed_contracts.parse_installation,invalid)
+     with f.policy.hold_image():
+         operation=f.journal.submit(OWNER,f.finite_request())
++    require({claim['resource'] for claim in operation['claims']}==actual)
++    for target in ('driver','service'):
++        with f.journal._transaction():refusal('STANDING_CLAIMS_UNRESOLVED',f.policy.require_lifecycle_quiescent,OWNER,target)
+     refusal('RESOURCE_BUSY',f.host.prepare,OWNER,f.request())
+     require(f.journal._instance_claimed('native:standing') and f.journal._instance_claimed('native:finite'))
+     f.journal.request_cancel(OWNER,operation['id'])
+     identifier=opened(f)
++    row=f.store.row(identifier)
++    require(set(row['mapping']['resourceProof']['expandedClaims']['control'])==physical)
++    require({claim['resource'] for claim in row['mapping']['claims']}==actual)
++    require({entry[0] for entry in f.journal._db.execute('SELECT resource FROM claims WHERE operation_id=?',(identifier,))}==actual)
+     with f.policy.hold_image():refusal('RESOURCE_BUSY',f.journal.submit,OWNER,f.finite_request('second'))
+     require(f.journal._instance_claimed('native:finite'))
+-    with f.journal._transaction():refusal('STANDING_CLAIMS_UNRESOLVED',f.policy.require_lifecycle_quiescent,OWNER,'driver')
++    for target in ('driver','service'):
++        with f.journal._transaction():refusal('STANDING_CLAIMS_UNRESOLVED',f.policy.require_lifecycle_quiescent,OWNER,target)
+     registry=Registry(f.journal,monotonic_ms=lambda:1000,bootstrap_owner=OWNER)
+     bundle=type_bundle('standing-alias','control',object_schema({}),{'type':'integer'},unit='1',effect='setpoint',resource='slot')
+     digest=registry.publish_type(OWNER,canonical(bundle))
+--- source-freeze05/project/tests/standing_host_fixture.py
++++ source-freeze06/project/tests/standing_host_fixture.py
+@@ -41,8 +41,8 @@
+     atoms={name:{'node':which,'purpose':purpose} for name,which,purpose in (
+         ('atom:demand','demand','exclusive_hardware'),('atom:output','output','exclusive_hardware'),
+         ('atom:slot','driver','lifecycle'),('atom:service','service','lifecycle'))}
+-    aliases={'alias:demand':{'node':'demand-access','includes':['atom:demand','atom:slot']},
+-             'alias:output':{'node':'output-access','includes':['atom:output','atom:slot']}}
++    aliases={'alias:demand':{'node':'demand-access','includes':['atom:demand']},
++             'alias:output':{'node':'output-access','includes':['atom:output']}}
+     topology={'profile':graph.PROFILE,'topologyId':'native:standing-host','deployment':OWNER.deployment,
+         'nodes':nodes,'atoms':atoms,'aliases':aliases,'consumers':[{'instanceId':name,'actionId':'control',
+             'rootAliases':['alias:demand','alias:output'],'requires':[]} for name in ('native:standing','native:finite')]}
+--- source-freeze05/run_checks.py
++++ source-freeze06/run_checks.py
+@@ -23,8 +23,9 @@
+ GUARDIAN_SHA='cf682bcfae001f5e1d33cad603ec4a7e3911dc4eab8557714b6973deec7bb206'
+ HELPER_SHA='a6ee94bcf3dc03df19f0dd07a81663badd4875ef1a6c429afbc55d7b2373b977'
+ ENV={'LANG':'C','LC_ALL':'C','PATH':'/usr/bin:/bin'}
+-PRIOR_RESULT=HERE/'host-attempt01/RESULTS.json'
+-PRIOR_RESULT_SHA='cfbbc3228cedcacf17d52c89ed9f6d8a8bcd241406c2ec184d3035737420f9b9'
++PRIOR_RESULTS={
++    'host-attempt01/RESULTS.json':'cfbbc3228cedcacf17d52c89ed9f6d8a8bcd241406c2ec184d3035737420f9b9',
++    'host-attempt02/RESULTS.json':'36734ab63224978efcb34c21b245953cd882c8000deba21348050807d717eaba'}
+ FINAL_DESTINATION=None
+ FINAL_REPORT=None
+ BACKEND=Path('/usr/libexec/gcc/x86_64-linux-gnu/13')
+@@ -90,8 +91,8 @@
+     os.umask(0o077);baseline()
+     require(digest(HERE/'owner/guardian.py')==GUARDIAN_SHA and digest(HERE/'owner/libharness-owner.so')==HELPER_SHA,'Owner source changed')
+     from guardian import Guardian
+-    require(digest(PRIOR_RESULT)==PRIOR_RESULT_SHA,'Prior attempt result changed')
+-    attempt=HERE/'host-attempt02';attempt.mkdir(mode=0o700)
++    require(all(digest(HERE/path)==pin for path,pin in PRIOR_RESULTS.items()),'Prior attempt result changed')
++    attempt=HERE/'host-attempt03';attempt.mkdir(mode=0o700)
+     FINAL_DESTINATION=attempt/'RESULTS.json'
+     FINAL_REPORT={'passed':False,'phase':'preparation','reason':None}
+     replace_result(FINAL_DESTINATION,FINAL_REPORT)
+@@ -99,7 +100,7 @@
+     origin=json.loads((HERE/'source-pins.json').read_bytes())
+     names=sorted({row['project'] for row in origin['files'] if row['project'] is not None}|set(NEW))
+     files=['project/'+name for name in names]+['owner/guardian.py','owner/libharness-owner.so',
+-        'run_checks.py','PLAN.md','README.md','CAPACITY-REVIEW.md','source-pins.json','SOURCE-REVIEW.json','source-diff.patch','REVISION-02.md','revision-02.patch','REVISION-03.md','revision-03.patch','REVISION-04.md','revision-04.patch','REVISION-05.md','revision-05.patch']
++        'run_checks.py','PLAN.md','README.md','CAPACITY-REVIEW.md','source-pins.json','SOURCE-REVIEW.json','source-diff.patch','REVISION-02.md','revision-02.patch','REVISION-03.md','revision-03.patch','REVISION-04.md','revision-04.patch','REVISION-05.md','revision-05.patch','REVISION-06.md','revision-06.patch']
+     reviewed=json.loads((HERE/'SOURCE-REVIEW.json').read_bytes())
+     require(all(digest(HERE/row['path'])==row['sha256'] for row in reviewed['files']),'Reviewed source bytes changed')
+     pins={}
+@@ -123,8 +124,8 @@
+         'fixedCommands':4,'commandWallSeconds':30,
+         'cleanupSeconds':8,'cpuSeconds':30,'addressBytes':512*1024*1024,'fileBytes':1024*1024,
+         'openFiles':64,'physicalEligible':False,'protectedCapacity':False,'candidatePreviouslyExecuted':True,
+-        'priorAttemptResult':{'path':'host-attempt01/RESULTS.json','sha256':PRIOR_RESULT_SHA},
+-        'attemptName':'host-attempt02','revisedSourcePreviouslyExecuted':False})
++        'priorAttemptResults':[{'path':path,'sha256':pin} for path,pin in PRIOR_RESULTS.items()],
++        'attemptName':'host-attempt03','revisedSourcePreviouslyExecuted':False})
+     project=frozen/'project';evidence=attempt/'qualification';evidence.mkdir()
+     # This authorized runner imports only after freezing its complete candidate.
+     # Qualification bytes are then produced by the actual original child below.
+@@ -137,7 +138,7 @@
+ 
+     def stable():
+         baseline()
+-        require(digest(PRIOR_RESULT)==PRIOR_RESULT_SHA,'Prior attempt result changed')
++        require(all(digest(HERE/path)==pin for path,pin in PRIOR_RESULTS.items()),'Prior attempt result changed')
+         for row in origin['files']:
+             require(digest(HERE/row['copy'])==digest(REPO/row['source'])==row['sha256'],'Original source preservation changed')
+         require(digest(interpreter)==digest('/proc/self/exe')==runtime,'Interpreter changed')
+@@ -212,7 +213,7 @@
+     try:
+         qualification=evidence/'standing-controls'
+         run([gcc,*COMMON,*CORE,'tests/standing_controls.c','-o',qualification],'compile-qualification')
+-        common={'evaluatorId':EVALUATOR,'runId':'native-standing-original:2','attemptId':'native-standing-attempt:2',
++        common={'evaluatorId':EVALUATOR,'runId':'native-standing-original:3','attemptId':'native-standing-attempt:3',
+             'runnerDigest':runner_digest,'domainDigest':DOMAIN_DIGEST,'sourcePins':SOURCE_PINS,
+             'binaryPath':'standing-controls','binaryDigest':'sha256:'+digest(qualification),'argv':[str(qualification)]}
+         reservation={'profile':'hms.standing-native-reservation/0.1',**common,'limits':RUN_LIMITS,'state':'reserved'}
+--- /dev/null
++++ source-freeze06/REVISION-06.md
+@@ -0,0 +1,41 @@
++# Physical footprint and installed endpoint-slot authority
++
++Status: source-only correction after root attempts01/02 failed before any native
++fixture launched. Freeze05's exact277 files and source review are preserved in
++`history/source-freeze05`; both attempts remain unchanged. Root separately audited
++eight outer reaps, two original12-case/638-assertion evaluator results, no native
++fixtures and stable inputs/tools. This source preparation did not rerun or audit
++the attempts.
++
++The original graph requires each GPIO alias closure to equal its physical pin
++footprint (`resource_topology.py:294–303`). A lifecycle atom cannot be included as
++a GPIO footprint. The fixture now lists only the physical atom for each alias.
++The installed host parser requires each finite/standing proof's control claims
++to equal exactly the two hardware resources. It separately validates the slot as
++a distinct lifecycle atom on a driver node whose implementation digest equals the
++installed driver source digest. That driver must belong to both instance proofs
++and each participating alias's explicit transitive `requires` path. Containment
++and sibling paths do not establish slot authority.
++
++`InstalledPolicy.resources` adds that validated slot to the physical claims;
++`StandingStore.admit` uses this same resolver. Finite and standing reservation
++therefore both claim exactly the same three atoms in the original shared table.
++`mapping.resourceProof` retains the unmodified two-atom physical proof, while
++`mapping.claims` records all three actual claims. PAT artifact/compiler/selection
++and the mapping already bind the complete installation digest, including topology,
++generations and slotResource; no PAT schema or qualification claim is changed.
++The approved host plan explicitly requires a separate installed endpoint slot
++and distinguishes logical exclusive claims from quantitative capacity (lines78–85).
++
++The existing shared_authority control now asserts exact physical/actual sets for
++both families, rejects a service atom substituted as slot, a disconnected output
++alias and a driver source mismatch, and checks driver/service lifecycle exclusion
++while either family holds claims. The same twenty cases and all caps remain.
++Graph/schema, shared Journal, direct Registry guards and PAT source are unchanged.
++No additional row fields or physical/capacity eligibility are introduced.
++
++The fixed runner now exclusively creates host-attempt03 with distinct original
++qualification IDs ending in`:3`, verifies both prior result hashes before/after
++commands, and accurately retains previous-execution metadata. `revision-06.patch`
++records the exact delta. Actual owner death and other completion gates remain
++outstanding; no third attempt was executed during source preparation.

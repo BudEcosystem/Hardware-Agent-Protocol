@@ -1,0 +1,11 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-evidence-import/harness01/attempt_child.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-bound-import/harness03/attempt_child.py
+@@ -57,7 +57,7 @@
+     return path.is_relative_to(stdlib) and not {'site-packages', 'dist-packages'}.intersection(path.parts)
+ 
+ 
+-CONTROL_TARGETS = ['test_io_evidence_import.IoEvidenceImportTests.test_association_change_after_inspection_prevents_publication']
++CONTROL_TARGETS = ['test_io_evidence_import_history.IoEvidenceImportHistoryTests.test_cross_run_control_substitution_refuses_after_rehashing_closure']
+ 
+ def audit(event, args):
+     if event.startswith('socket.') or event in {'subprocess.Popen','os.system','os.exec','os.fork','os.forkpty','os.posix_spawn'}:

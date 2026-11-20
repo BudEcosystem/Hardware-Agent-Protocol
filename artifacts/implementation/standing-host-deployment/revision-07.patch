@@ -1,0 +1,187 @@
+--- source-freeze06/PLAN.md
++++ source-freeze07/PLAN.md
+@@ -1,9 +1,11 @@
+ # Source review and bounded execution plan
+ 
+-Status: **revised source unexecuted; attempts01/02 failed**. Both root attempts
+-completed both native compiles and their original12-case/638-assertion evaluator,
+-then failed topology validation before any native fixture launched. Their outputs
+-and freezes04/05 remain retained. Root review is required before fixed attempt03. Partial control success must not be reported as
++Status: **revised source unexecuted; attempts01–03 failed**. Each root attempt
++completed both native compiles and its original12-case/638-assertion evaluator.
++Attempts01/02 stopped before fixture launch; attempt03 passed nine host cases
++(81 checks), then the capacity test requested an invalid running→running
++transition. Root reported ten clean native exits and four outer reaps. All prior
++outputs/freezes remain retained. Root review is required before fixed attempt04. Partial control success must not be reported as
+ completion of the full approved standing host plan.
+ 
+ The new files are a strict v2 codec, native pipe bridge, closed installation
+@@ -49,9 +51,9 @@
+ ambiguity never authorizes a new original body. Catalog withdrawal blocks fresh
+ extension; it cannot prove the existing output stopped.
+ 
+-`run_checks.py` has one fixed invocation and creates a new `host-attempt03`.
+-It verifies both retained attempt01/02 results and uses distinct qualification run
+-and attempt identities ending in`:3`; no earlier provenance is reused.
++`run_checks.py` has one fixed invocation and creates a new `host-attempt04`.
++It verifies retained attempt01–03 results and uses distinct qualification run
++and attempt identities ending in`:4`; no earlier provenance is reused.
+ Existing attempt directories are never overwritten. It freezes all copied/new
+ project inputs, owner bytes and review documents; hashes the public244 receipt
+ and every original before and after each command. It performs four fixed owned
+@@ -112,7 +114,9 @@
+   bounded loss cleanup;
+ - committed suspension episode followed by explicit RESUME then separate START;
+ - finite ordinary event exhaustion with retained cancellation/terminal/release
+-  slots, plus refusal of an unknown writer table;
++  slots: one legal running transition plus five explicitly test-only trusted
++  ordinary event writes, exact eight-record limit and overflow rollback, then
++  public settlement continuations; plus refusal of an unknown writer table;
+ - explicit settlement of a prepared START after reopen, preserving its key/body
+   and admitting a separate new START without retrying the old original;
+ - explicit never-handed-off OPEN settlement and subsequent deployment with
+--- source-freeze06/README.md
++++ source-freeze07/README.md
+@@ -1,6 +1,6 @@
+ # Standing host deployment source candidate
+ 
+-Status: **attempts01/02 failed; revised source unexecuted, not qualified, not complete**. This isolated
++Status: **attempts01–03 failed; revised source unexecuted, not qualified, not complete**. This isolated
+ vertical path uses the copied actual standing C endpoint and its original native
+ fixture. No public input or sealed parent packet is changed. It does not expose
+ a physical/public mount or claim protected control-storage capacity.
+@@ -9,9 +9,9 @@
+ profile and cumulative limits. It supplies no program, driver path, raw endpoint
+ packet or qualification result. A separate literal standing PAT compiler/catalog
+ selects the installed synthetic configuration from an original native evaluator
+-attempt. Root attempts01/02 each produced actual original12-case/638-assertion evaluator
+-evidence, then failed topology validation before any native fixture launched.
+-The revised runner must produce fresh attempt03 qualification provenance.
++attempt. Root attempts01–03 each produced actual original12-case/638-assertion evaluator
++evidence. The third reached nine passing host cases before a capacity-control
++error; the revised runner must produce fresh attempt04 qualification provenance.
+ 
+ The copied Journal gains an explicit storage version and one shared finite and
+ standing claims authority. The same claims/fence table protects both instance
+@@ -61,3 +61,8 @@
+ footprint from the explicitly installed driver lifecycle slot while retaining
+ three actual shared claims. [REVISION-06.md](REVISION-06.md) records the correction
+ and strengthened existing control; fixed attempt03 remains unexecuted.
++
++Revision07 preserves freeze06 and attempt03, corrects only the finite capacity
++control, and prepares fixed attempt04. [REVISION-07.md](REVISION-07.md) distinguishes
++its trusted test-only event fill from legal public state transitions. Production
++code, twenty cases and all limits remain unchanged.
+--- source-freeze06/project/tests/standing_host_controls.py
++++ source-freeze07/project/tests/standing_host_controls.py
+@@ -230,12 +230,30 @@
+         operation=f.journal.submit(OWNER,f.finite_request())
+         ticket=f.journal.claim_dispatch(operation['id'])
+     evidence=Evidence('simulation','native:standing-route','native:trace',('running',))
+-    for _ in range(6):f.journal.record_execution(ticket,'running',evidence)
+-    refusal('STANDING_FINITE_EVENT_CAPACITY',f.journal.record_execution,ticket,'running',evidence)
++    f.journal.record_execution(ticket,'running',evidence)
++    # Test-only trusted storage fill: this nonreserved kind exercises the
++    # ordinary accounting partition, not additional execution transitions.
++    def fill(index):
++        with f.journal._transaction():
++            f.journal._event(operation['id'],f.journal._record_now(),
++                             'control_capacity_fill',{'testOnly':True,'index':index})
++    for index in range(5):fill(index)
++    def retained_events():
++        return [tuple(row) for row in f.journal._db.execute(
++            'SELECT sequence,kind,payload FROM events WHERE operation_id=? ORDER BY sequence',(operation['id'],))]
++    before=retained_events();saved=canonical(f.journal.status(OWNER,operation['id']))
++    require([row[1] for row in before]==['accepted','dispatch_claimed','execution_evidence']+['control_capacity_fill']*5)
++    require(len(before)==8 and f.journal.status(OWNER,operation['id'])['state']=='running')
++    refusal('STANDING_FINITE_EVENT_CAPACITY',fill,5)
++    require(retained_events()==before and canonical(f.journal.status(OWNER,operation['id']))==saved)
+     f.journal.request_cancel(OWNER,operation['id'])
+     f.journal.acknowledge_cancel(ticket,True,Evidence('simulation','native:standing-route','native:trace',('cancel_ack',)))
+     f.journal.record_execution(ticket,'canceled',Evidence('simulation','native:standing-route','native:trace',('terminated',)))
+     f.journal.release_resources(operation['id'],Evidence('simulation','native:standing-route','native:trace',('resources_quiescent',)))
++    after=retained_events()
++    require(len(after)==12 and after[:8]==before and [row[1] for row in after[8:]]==
++            ['cancel_requested','cancel_ack','execution_evidence','resources_released'])
++    require(f.journal.status(OWNER,operation['id'])['state']=='canceled')
+     with f.journal._transaction():
+         summary=capacity_check(f.journal._db,JournalError)
+         require(summary['maxLogicalBytes']==16*1024*1024 and summary['finiteOwners'][operation['id']]<=64*1024)
+--- source-freeze06/run_checks.py
++++ source-freeze07/run_checks.py
+@@ -25,7 +25,8 @@
+ ENV={'LANG':'C','LC_ALL':'C','PATH':'/usr/bin:/bin'}
+ PRIOR_RESULTS={
+     'host-attempt01/RESULTS.json':'cfbbc3228cedcacf17d52c89ed9f6d8a8bcd241406c2ec184d3035737420f9b9',
+-    'host-attempt02/RESULTS.json':'36734ab63224978efcb34c21b245953cd882c8000deba21348050807d717eaba'}
++    'host-attempt02/RESULTS.json':'36734ab63224978efcb34c21b245953cd882c8000deba21348050807d717eaba',
++    'host-attempt03/RESULTS.json':'eec2e7b188f2e40666cab604d75074f22b9e179d80b4ba26dfebfd370c575ebd'}
+ FINAL_DESTINATION=None
+ FINAL_REPORT=None
+ BACKEND=Path('/usr/libexec/gcc/x86_64-linux-gnu/13')
+@@ -92,7 +93,7 @@
+     require(digest(HERE/'owner/guardian.py')==GUARDIAN_SHA and digest(HERE/'owner/libharness-owner.so')==HELPER_SHA,'Owner source changed')
+     from guardian import Guardian
+     require(all(digest(HERE/path)==pin for path,pin in PRIOR_RESULTS.items()),'Prior attempt result changed')
+-    attempt=HERE/'host-attempt03';attempt.mkdir(mode=0o700)
++    attempt=HERE/'host-attempt04';attempt.mkdir(mode=0o700)
+     FINAL_DESTINATION=attempt/'RESULTS.json'
+     FINAL_REPORT={'passed':False,'phase':'preparation','reason':None}
+     replace_result(FINAL_DESTINATION,FINAL_REPORT)
+@@ -100,7 +101,7 @@
+     origin=json.loads((HERE/'source-pins.json').read_bytes())
+     names=sorted({row['project'] for row in origin['files'] if row['project'] is not None}|set(NEW))
+     files=['project/'+name for name in names]+['owner/guardian.py','owner/libharness-owner.so',
+-        'run_checks.py','PLAN.md','README.md','CAPACITY-REVIEW.md','source-pins.json','SOURCE-REVIEW.json','source-diff.patch','REVISION-02.md','revision-02.patch','REVISION-03.md','revision-03.patch','REVISION-04.md','revision-04.patch','REVISION-05.md','revision-05.patch','REVISION-06.md','revision-06.patch']
++        'run_checks.py','PLAN.md','README.md','CAPACITY-REVIEW.md','source-pins.json','SOURCE-REVIEW.json','source-diff.patch','REVISION-02.md','revision-02.patch','REVISION-03.md','revision-03.patch','REVISION-04.md','revision-04.patch','REVISION-05.md','revision-05.patch','REVISION-06.md','revision-06.patch','REVISION-07.md','revision-07.patch']
+     reviewed=json.loads((HERE/'SOURCE-REVIEW.json').read_bytes())
+     require(all(digest(HERE/row['path'])==row['sha256'] for row in reviewed['files']),'Reviewed source bytes changed')
+     pins={}
+@@ -125,7 +126,7 @@
+         'cleanupSeconds':8,'cpuSeconds':30,'addressBytes':512*1024*1024,'fileBytes':1024*1024,
+         'openFiles':64,'physicalEligible':False,'protectedCapacity':False,'candidatePreviouslyExecuted':True,
+         'priorAttemptResults':[{'path':path,'sha256':pin} for path,pin in PRIOR_RESULTS.items()],
+-        'attemptName':'host-attempt03','revisedSourcePreviouslyExecuted':False})
++        'attemptName':'host-attempt04','revisedSourcePreviouslyExecuted':False})
+     project=frozen/'project';evidence=attempt/'qualification';evidence.mkdir()
+     # This authorized runner imports only after freezing its complete candidate.
+     # Qualification bytes are then produced by the actual original child below.
+@@ -213,7 +214,7 @@
+     try:
+         qualification=evidence/'standing-controls'
+         run([gcc,*COMMON,*CORE,'tests/standing_controls.c','-o',qualification],'compile-qualification')
+-        common={'evaluatorId':EVALUATOR,'runId':'native-standing-original:3','attemptId':'native-standing-attempt:3',
++        common={'evaluatorId':EVALUATOR,'runId':'native-standing-original:4','attemptId':'native-standing-attempt:4',
+             'runnerDigest':runner_digest,'domainDigest':DOMAIN_DIGEST,'sourcePins':SOURCE_PINS,
+             'binaryPath':'standing-controls','binaryDigest':'sha256:'+digest(qualification),'argv':[str(qualification)]}
+         reservation={'profile':'hms.standing-native-reservation/0.1',**common,'limits':RUN_LIMITS,'state':'reserved'}
+--- /dev/null
++++ source-freeze07/REVISION-07.md
+@@ -0,0 +1,27 @@
++# Finite capacity control uses legal execution transitions
++
++Status: source-only test correction after root attempt03. Freeze06's exact279
++files and source review are preserved under `history/source-freeze06`; attempt03
++remains unchanged. Root reported both builds and original12/638 passing, nine
++host cases/81 checks passing, ten native cleanEOF exit0 records and four outer
++reaps with the owner empty/closed. The failure was a test error: repeated
++record_execution(running) calls violate the unchanged public state machine.
++
++The corrected control makes one legal dispatching→running transition. Accepted,
++dispatch_claimed and running execution_evidence are the first three ordinary
++events. Five bounded trusted `_event` writes in explicit transactions use the
++label `control_capacity_fill` with testOnly=true; the existing classifier at
++Journal lines504–524 treats this nonreserved kind as ordinary. These writes are
++test-only storage filling, not additional execution transitions or a new public
++API. The control requires the exact eight original events, refuses the ninth,
++and compares retained event rows plus operation status to prove rollback. It
++then performs the original public cancel request, cancel acknowledgement,
++canceled terminal evidence and resource release, requiring all four retained
++continuations and the unchanged first eight records.
++
++No production code, SUCCESSORS transition, capacity classifier, twenty-case
++count or cap is changed. The fixed runner exclusively creates host-attempt04,
++uses fresh qualification IDs ending in`:4`, and pins all three prior result
++hashes before/after commands. `revision-07.patch` captures this delta. The revised
++source has not run; outstanding owner-death and remaining qualification gates
++are unchanged.

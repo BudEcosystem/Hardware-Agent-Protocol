@@ -1,0 +1,18 @@
+--- reference_method.py
++++ candidate_method.py
+@@ -8,9 +8,12 @@
+         require([r[0] for r in keys] == ['cursor_key', 'deployment', 'revision', 'version'], 'PAT_IO_CONFIGURATION_STORAGE_SHAPE')
+     count = db.execute('SELECT count(*) FROM ' + table + where, params).fetchone()[0]
+     require(type(count) is int and count <= limit, 'PAT_IO_CONFIGURATION_STORAGE_LIMIT')
+-    actual_types = db.execute('SELECT DISTINCT ' + ','.join('typeof(' + c + ')' for c in columns) + ' FROM ' + table + where + ' LIMIT 2', params).fetchall()
+-    require(not count or len(actual_types) == 1 and tuple(actual_types[0]) == tuple(kinds), 'PAT_IO_CONFIGURATION_STORAGE_TYPE')
+-    sizes = db.execute('SELECT ' + ','.join('max(length(CAST(' + c + ' AS BLOB)))' for c in columns) + ' FROM ' + table + where, params).fetchone()
++    type_check = ' AND '.join('typeof(' + c + ') = ?' for c in columns)
++    sizes_sql = ','.join('max(length(CAST(' + c + ' AS BLOB)))' for c in columns)
++    metadata = db.execute('SELECT min(' + type_check + '),' + sizes_sql + ' FROM ' + table + where,
++                          (*kinds, *params)).fetchone()
++    require(not count or metadata[0] == 1, 'PAT_IO_CONFIGURATION_STORAGE_TYPE')
++    sizes = metadata[1:]
+     require(all(v is None or type(v) is int and v <= 65536 for v in sizes), 'PAT_IO_CONFIGURATION_STORAGE_LIMIT')
+     rows = db.execute('SELECT ' + fields + ' FROM ' + table + where + ' ORDER BY ' + fields + ' LIMIT ?', (*params, limit + 1)).fetchall()
+     require(len(rows) == count, 'PAT_IO_CONFIGURATION_STORAGE_CHANGED')

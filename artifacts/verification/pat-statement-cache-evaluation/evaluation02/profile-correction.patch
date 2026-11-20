@@ -1,0 +1,11 @@
+--- attempt01/child.py
++++ evaluation02/child.py
+@@ -9,7 +9,7 @@
+ 
+ BASE = Path(__file__).resolve().parent
+ exec(compile((BASE / 'bootstrap.py').read_bytes(), str(BASE / 'bootstrap.py'), 'exec'), globals())
+-LEGACY = specifications['RECORD_PROFILE']
++LEGACY = json.loads(verify('fixture-profile.json'))['legacyProfile']
+ AUTHORITY, BOARD = specifications['_AUTHORITY'], specifications['_BOARD']
+ 
+ 

@@ -1,0 +1,24 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-evidence-import/harness01/attempt_child.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-bound-import/harness05/attempt_child.py
+@@ -57,7 +57,7 @@
+     return path.is_relative_to(stdlib) and not {'site-packages', 'dist-packages'}.intersection(path.parts)
+ 
+ 
+-CONTROL_TARGETS = ['test_io_evidence_import.IoEvidenceImportTests.test_association_change_after_inspection_prevents_publication']
++CONTROL_TARGETS = ['test_io_evidence_import_history.IoEvidenceImportHistoryTests.test_replaced_supervisor_authority_refuses_existing_import']
+ 
+ def audit(event, args):
+     if event.startswith('socket.') or event in {'subprocess.Popen','os.system','os.exec','os.fork','os.forkpty','os.posix_spawn'}:
+@@ -65,10 +65,10 @@
+     if event == 'sqlite3.connect':
+         path=Path(os.fsdecode(os.fspath(args[0])))
+         method=current_test.rsplit('.',1)[1] if current_test in CONTROL_TARGETS else 'invalid'
+-        valid=((path.parent.name in {'supervisor'} and path.name=='attempts.db') or (path.parent.name=='runtime' and (path.name=='authority.db' or re.fullmatch(r'synthetic-io-board-[0-9a-f]{64}\.db',path.name))))
++        valid=((path.parent.name in {'supervisor','replacement'} and path.name=='attempts.db') or (path.parent.name=='runtime' and (path.name=='authority.db' or re.fullmatch(r'synthetic-io-board-[0-9a-f]{64}\.db',path.name))))
+         if current_test not in CONTROL_TARGETS or path.parent.parent!=scratch/method or not valid:
+             prohibited.append(event); raise RuntimeError('Only exact declared authority/handoff fixture databases may open')
+-        if len(sqlite_connections)>=3 or sum(c['testId']==current_test for c in sqlite_connections)>=3:
++        if len(sqlite_connections)>=4 or sum(c['testId']==current_test for c in sqlite_connections)>=4:
+             raise RuntimeError('Declared database inventory bound')
+         sqlite_connections.append({'testId':current_test,'database':str(path)})
+     if event == 'exec':

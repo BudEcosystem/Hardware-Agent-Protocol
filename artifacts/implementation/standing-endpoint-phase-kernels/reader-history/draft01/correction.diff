@@ -1,0 +1,41 @@
+--- artifacts/implementation/standing-endpoint-phase-kernels/reader-history/draft01/codegen_measure.py	2026-11-09 22:21:32.853680961 +0530
++++ artifacts/implementation/standing-endpoint-phase-kernels/codegen_measure.py	2026-11-09 22:21:32.880401883 +0530
+@@ -111,13 +111,26 @@
+         stack = re.findall(r'/\* stack size = ([0-9]+) \*/',body)
+         assert len(frame)==len(stack)==1
+         prologue = next(i for i in range(index,end+1) if lines[i].startswith('/* prologue:'))
+-        pushes = [r for r in instructions if r[0]=='push' and r[2]<=prologue+1]
+-        assert len(pushes)==int(stack[0])-int(frame[0]), (name,pushes,frame,stack)
++        prologue_instructions = [r for r in instructions if r[2]<=prologue+1]
++        pushes = [r for r in prologue_instructions if r[0]=='push']
++        # This GCC profile uses named __zero_reg__ pushes as one-byte local
++        # allocation, and rcall . as two-byte allocation on ATmega328P.
++        # IRQ saves use explicit r1/r0 (including the second r0 SREG save),
++        # and must remain charged as saves rather than local allocation.
++        local_pushes = [r for r in pushes if r[1]=='__zero_reg__']
++        saved_pushes = [r for r in pushes if re.fullmatch(r'r(?:[0-9]|[12][0-9]|3[01])',r[1])]
++        assert len(saved_pushes)+len(local_pushes)==len(pushes), (name,pushes)
++        local_calls = [r for r in prologue_instructions if r[0]=='rcall' and r[1]=='.']
++        pushed_local_bytes = len(local_pushes)+2*len(local_calls)
++        assert pushed_local_bytes==0 or pushed_local_bytes==int(frame[0]), (name,pushed_local_bytes,frame)
++        assert len(saved_pushes)==int(stack[0])-int(frame[0]), (name,saved_pushes,frame,stack)
+         functions.append(dict(name=name,section=section,bytes=size,address=rows[0]['address'],
+             firstLine=index+1,lastLine=end+1,rangeSha256=sha(''.join(raw[index:end+1]).encode()),
+             instructions=len(instructions),instructionBytes=size-tables,tableBytes=tables,
+             opcodeBytes=dict(sorted(operations.items())),transfers=calls,stackOperations=stack_ops,
+-            frameLocalBytes=int(frame[0]),savedRegisterBytes=len(pushes),entryStackBytes=int(stack[0])))
++            frameLocalBytes=int(frame[0]),savedRegisterBytes=len(saved_pushes),entryStackBytes=int(stack[0]),
++            pushedLocalBytes=pushed_local_bytes,prologueLocalAllocationSites=[
++                dict(line=r[2],opcode=r[0],operands=r[1]) for r in local_pushes+local_calls]))
+     su_lines = text(assembly_name+'u').splitlines()
+     assert len(functions)==len(su_lines)
+     owners = collections.Counter(); call_counts = collections.Counter()
+@@ -156,7 +169,7 @@
+         automaticCoverage=dict(map='all positive allocated text input sections, aggregate sections,30 function roots and9 storage roots',
+             assembly='all emitted function ranges and widths, alias definitions, explicit transfers and stack operations',
+             backend='all emitted functions joined in order to backend .su; these are not pre-LTO .su'),
+-        frameLimit='Local/save comments checked against prologue pushes. Backend additional count is not manual outgoing-lifetime or CFG proof.')
++        frameLimit='Local/save comments checked against profile-specific register-save and local-allocation pushes, including rcall .; IRQ r1/r0/SREG saves remain charged. Backend additional count is not manual outgoing-lifetime or CFG proof.')
+ 
+ 
+ def main():

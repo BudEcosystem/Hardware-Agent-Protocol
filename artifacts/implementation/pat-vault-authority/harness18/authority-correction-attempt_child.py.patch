@@ -1,0 +1,11 @@
+--- harness13/attempt_child.py
++++ harness18/attempt_child.py
+@@ -64,7 +64,7 @@
+     return path.is_relative_to(stdlib) and not {'site-packages', 'dist-packages'}.intersection(path.parts)
+ 
+ 
+-CONTROL_TARGETS = ['test_vault_authority.VaultAuthorityTests.test_configuration_change_after_seal_prevents_publication', 'test_vault_authority.VaultAuthorityTests.test_original_attempt_change_after_seal_prevents_publication']
++CONTROL_TARGETS = ['test_vault_authority.VaultAuthorityTests.test_configuration_change_after_seal_prevents_publication', 'test_vault_authority.VaultAuthorityTests.test_revocation_after_seal_preserves_authority_refusal']
+ 
+ # The native open audit event omits dir_fd. Preserve the original os.open
+ # call and expose its resolved pathname only to this synchronous audit hook.

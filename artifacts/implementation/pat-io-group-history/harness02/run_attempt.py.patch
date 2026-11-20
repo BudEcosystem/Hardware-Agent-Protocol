@@ -1,0 +1,60 @@
+--- artifacts/implementation/pat-io-encoding/harness03/run_attempt.py
++++ artifacts/implementation/pat-io-group-history/harness02/run_attempt.py
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '61a0f9ac76a93364ad66277cb4f7eda6a5d80435c7d117f9385ced068b4c9032'
+-PREFIX = 'artifacts/implementation/pat-io-encoding/implementation01/'
++FROZEN_INDEX = 'e5d542ef3b80276050dc3346ffcb1ffd2bb98c2a81fb283b22286cd7274f689c'
++PREFIX = 'artifacts/implementation/pat-io-group-history/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -91,7 +91,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 225:
++    if len(expected) != 228:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -240,7 +240,7 @@
+     record = {'profile': 'hms.io-group-worker-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+               'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 1,
+-              'projectInputCount': 222, 'frozenPreparationInputCount': 225,
++              'projectInputCount': 225, 'frozenPreparationInputCount': 228,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+@@ -257,8 +257,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 222:
+-            raise ValueError('Candidate project closure must contain exactly 222 files')
++        if len(selected) != 225:
++            raise ValueError('Candidate project closure must contain exactly 225 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -276,7 +276,7 @@
+         if (targets['testCount'] != 1 or
+                 len(targets['targets']) != 1 or
+                 len(set(targets['targets'])) != 1 or
+-                targets['targets'] != ['test_pat_io_group_worker.IoGroupWorkerTests.test_complete_gpio_group']):
++                targets['targets'] != ['test_pat_io_group_history.IoGroupHistoryTests.test_complete_gpio_history']):
+             raise ValueError('Closed group1 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+@@ -286,7 +286,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-encoding-group1-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-group-history-group1-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

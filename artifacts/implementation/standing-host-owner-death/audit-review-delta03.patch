@@ -1,0 +1,55 @@
+--- audit-draft02-ac2b1cf5.py
++++ audit_retained.py
+@@ -171,20 +171,30 @@
+     connection=sqlite3.connect(database.as_uri()+'?mode=ro&immutable=1',uri=True)
+     try:
+         need(connection.execute('PRAGMA quick_check').fetchall()==[('ok',)],'Retained database consistency')
+-        rows=connection.execute('SELECT id,document FROM sd_deployments').fetchall();need(len(rows)==1,'One retained deployment')
+-        need(rows[0][0]==view['row']['id'] and rows[0][1].hex()==view['rowRaw'],'Final database deployment snapshot')
++        need(connection.execute('PRAGMA foreign_key_check').fetchall()==[],'Retained foreign-key integrity')
++        row=view['row'];owner=row['id']
++        rows=connection.execute('SELECT id,principal,deployment,namespace,caller_key,request_digest,document FROM sd_deployments').fetchall()
++        expected=(owner,row['principal'],row['deployment'],row['namespace'],row['key'],row['requestDigest'],bytes.fromhex(view['rowRaw']))
++        need(rows==[expected],'Exact indexed replay/owner/deployment record')
++        need(connection.execute('SELECT id,kind,principal,deployment FROM resource_owners').fetchall()==
++             [(owner,'standing_deployment',row['principal'],row['deployment'])],'Common owner identity/kind')
++        need(connection.execute('SELECT count(*) FROM sd_conflicts').fetchone()==(0,),'No retained conflicts in clean fixed slice')
+         need(json.loads(connection.execute('SELECT document FROM sd_route').fetchone()[0])==view['route'],'Final database route')
+         metadata=dict(connection.execute('SELECT key,value FROM meta'))
+         need(metadata['authority']==view['authorityId'] and int(metadata['owner_epoch'])==view['ownerEpoch'],'Final authority/owner epoch')
+         meta=json.loads(connection.execute('SELECT document FROM sd_meta').fetchone()[0]);installed=meta['installation']
+         need(identity('HMS-STANDING-INSTALLATION-v0.1',installed)==meta['installationDigest']==view['installationDigest'],'Complete original installation binding')
+         for table,(keys,_,_) in TABLES.items():
+-            rows=connection.execute('SELECT '+','.join(keys)+',document FROM '+table+' ORDER BY '+','.join(keys)).fetchall()
+-            observed=[{'key':dict(zip(keys,row[:-1])),'document':row[-1].hex()} for row in rows]
++            rows=connection.execute('SELECT deployment_id,'+','.join(keys)+',document FROM '+table+' ORDER BY '+','.join(keys)).fetchall()
++            need(all(entry[0]==owner for entry in rows),'Exact record owner '+table)
++            observed=[{'key':dict(zip(keys,entry[1:-1])),'document':entry[-1].hex()} for entry in rows]
+             need(observed==view['records'][table],'Final exact keyed '+table)
+-        claims=[{'resource':r[0],'fence':r[1]} for r in connection.execute('SELECT resource,fence FROM claims ORDER BY resource')]
++        rows=connection.execute('SELECT deployment,resource,operation_id,fence FROM claims ORDER BY resource').fetchall()
++        need(all(entry[0]==row['deployment'] and entry[2]==owner for entry in rows),'Actual shared claim owner/deployment')
++        claims=[{'resource':entry[1],'fence':entry[3]} for entry in rows]
+         need(claims==view['claims'],'Final actual shared claim set')
+-        need([r[0] for r in connection.execute('SELECT instance_id FROM resource_owner_instances ORDER BY instance_id')]==view['aliases'],'Retained alias ownership')
++        need(connection.execute('SELECT owner_id,instance_id FROM resource_owner_instances ORDER BY instance_id').fetchall()==
++             [(owner,instance) for instance in view['aliases']],'Exact retained alias ownership')
+     finally:connection.close()
+ 
+ 
+@@ -321,7 +331,14 @@
+     need(digest_file(HERE/'SOURCE-REVIEW.json')==REVIEW_SHA and digest_file(ATTEMPT/'frozen/SOURCE-REVIEW.json')==REVIEW_SHA,'Exact executed manifest')
+     for name,pin in intent['sourcePins'].items():need(digest_file(HERE/name)==digest_file(ATTEMPT/'frozen'/name)==pin,'Prepared/frozen executed input bytes')
+     need(len(review['files'])==287 and set(intent['sourcePins'])=={r['path'] for r in review['files']}|{'SOURCE-REVIEW.json'},'Exact corrected inventory')
+-    for row in inputs['copies']+inputs['originalProvenance']:need(digest_file(HERE/row['copy'])==digest_file(REPO/row['source'])==row['sha256'],'Original source/provenance copies')
++    for row in review['files']:
++        need(intent['sourcePins'][row['path']]==row['sha256'],'Reviewed manifest/intent digest association')
++        for path in (HERE/row['path'],ATTEMPT/'frozen'/row['path']):
++            need(path.stat().st_size==row['bytes'] and digest_file(path)==row['sha256'],'Exact reviewed file bytes')
++    need(len(inputs['copies'])==261 and len(inputs['originalProvenance'])==19,'Exact copied/provenance counts')
++    for row in inputs['copies']+inputs['originalProvenance']:
++        need(digest_file(HERE/row['copy'])==digest_file(REPO/row['source'])==row['sha256'],'Original source/provenance copies')
++        need((HERE/row['copy']).stat().st_size==(REPO/row['source']).stat().st_size==row['bytes'],'Original copied byte counts')
+     parent=REPO/inputs['parentPacket']['path'];need(digest_file(parent/'index.json')==inputs['parentPacket']['indexSha256'],'Sealed parent index')
+     parent_index=data(parent/'index.json',canonical=False,limit=2*1024*1024)
+     need({str(f.relative_to(parent)) for f in parent.rglob('*') if f.is_file()}=={r['path'] for r in parent_index['files']}|{'index.json'},'Exact parent inventory')

@@ -1,0 +1,44 @@
+--- artifacts/implementation/pat-io-conflict-history/harness01/attempt_child.py
++++ artifacts/implementation/pat-io-conflict-history/harness03/attempt_child.py
+@@ -1,4 +1,4 @@
+-"""ConflictHistory52 child: isolated startup, exact selected tests and scoped origin evidence."""
++"""ConflictHistory4 child: isolated startup, exact selected tests and scoped origin evidence."""
+ import hashlib
+ import json
+ import os
+@@ -63,7 +63,7 @@
+             'os.posix_spawn'}:
+         if len(prohibited) < 64:
+             prohibited.append(event)
+-        raise RuntimeError('ConflictHistory52 forbids network and subprocesses: ' + event)
++        raise RuntimeError('ConflictHistory4 forbids network and subprocesses: ' + event)
+     if event == 'sqlite3.connect':
+         raw = os.fsdecode(os.fspath(args[0])); path = Path(raw).resolve()
+         valid = (type(current_test) is str and current_test in config['targets'] and
+@@ -186,7 +186,7 @@
+ 
+ try:
+     if (not sys.flags.isolated or not sys.flags.no_site or not sys.flags.dont_write_bytecode or
+-            len(config['targets']) != 52 or len(set(config['targets'])) != 52):
++            len(config['targets']) != 4 or len(set(config['targets'])) != 4):
+         raise RuntimeError('Required child isolation flags or exact target count missing')
+     write('child-runtime.json', {'executable': sys.executable, 'version': sys.version,
+         'flags': repr(sys.flags), 'path': sys.path, 'cwd': str(Path.cwd()),
+@@ -199,7 +199,7 @@
+     tests = unittest.defaultTestLoader.loadTestsFromNames(config['targets'])
+     loaded_ids = flatten(tests)
+     if loaded_ids != config['targets']:
+-        raise RuntimeError('Loaded methods do not exactly match the reviewed conflict52 selection')
++        raise RuntimeError('Loaded methods do not exactly match the reviewed conflict4 selection')
+     class RecordingResult(unittest.TextTestResult):
+         def startTest(self, test):
+             global current_test
+@@ -239,7 +239,7 @@
+         write('child-errors.json', errors)
+     except BaseException:
+         errors.append({'phase': 'child-errors', 'type': 'ReceiptWriteFailure'})
+-passed = (not errors and counts is not None and counts['testsRun'] == 52 and
++passed = (not errors and counts is not None and counts['testsRun'] == 4 and
+     all(counts[key] == 0 for key in counts if key != 'testsRun') and
+     loaded_ids == config['targets'] == executed_ids and origins is not None and
+     origins['summary']['allOriginsMatched'])

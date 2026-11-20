@@ -1,0 +1,69 @@
+--- artifacts/implementation/pat-io-supervision-recovery/implementation01/project/supervisor/worker_entry.py
++++ artifacts/implementation/pat-io-supervision-profile/implementation01/project/supervisor/worker_entry.py
+@@ -32,6 +32,55 @@
+ from supervisor_contracts import (require, safe_file, document, validate_fresh, write_file)
+ 
+ 
++
++def _profile_group(directory, call):
++    """Diagnostic only: bounded profile; SIGTERM is re-raised to this process."""
++    import cProfile
++    import signal
++    import time
++    profiler = cProfile.Profile()
++    wall, cpu = time.monotonic(), time.process_time()
++    finishing = False
++    previous = signal.getsignal(signal.SIGTERM)
++    require(previous == signal.SIG_DFL, 'QUALIFICATION_PROFILE_SIGNAL_STATE')
++    def finish(reason):
++        nonlocal finishing
++        if finishing: return
++        finishing = True
++        profiler.disable()
++        wall_elapsed, cpu_elapsed = time.monotonic()-wall, time.process_time()-cpu
++        entries = profiler.getstats()
++        require(len(entries)<=8192, 'QUALIFICATION_PROFILE_LIMIT')
++        rows = []
++        for entry in entries:
++            code = entry.code
++            if isinstance(code,str): label = code
++            else:
++                path = Path(code.co_filename)
++                name = str(path.relative_to(worker._ROOT)) if path.is_relative_to(worker._ROOT) else str(path)
++                label = name+':'+str(code.co_firstlineno)+':'+code.co_name
++            require(len(label)<=512, 'QUALIFICATION_PROFILE_LIMIT')
++            rows.append(dict(label=label,calls=entry.callcount,recursiveCalls=entry.reccallcount,
++                cumulativeMicroseconds=int(entry.totaltime*1000000),selfMicroseconds=int(entry.inlinetime*1000000)))
++        rows.sort(key=lambda r:(-r['cumulativeMicroseconds'],r['label']))
++        value = dict(profile='hms.diagnostic.io-worker-profile/0.1',reason=reason,
++            scope='Instrumented original run_io_group only; profiler overhead and interrupted data do not qualify performance or effects.',
++            wallMicroseconds=int(wall_elapsed*1000000),cpuMicroseconds=int(cpu_elapsed*1000000),
++            totalFunctions=len(rows),top40=rows[:40],top40Self=sorted(rows,key=lambda r:(-r['selfMicroseconds'],r['label']))[:40])
++        write_file(directory,'worker-profile.json',canonical(value))
++    def terminated(signum, frame):
++        try: finish('SIGTERM')
++        finally:
++            signal.signal(signal.SIGTERM,signal.SIG_DFL)
++            signal.raise_signal(signal.SIGTERM)
++    signal.signal(signal.SIGTERM,terminated)
++    profiler.enable()
++    try: return call()
++    finally:
++        try: finish('returned-or-exception')
++        finally: signal.signal(signal.SIGTERM,previous)
++
++
+ def main():
+     require(len(sys.argv) == 4, 'QUALIFICATION_ENTRY_ARGUMENTS')
+     directory, input_fd, lease = (int(value) for value in sys.argv[1:])
+@@ -60,8 +109,8 @@
+     attempt = Path.cwd()
+     require(attempt.name == launch['attemptId'], 'QUALIFICATION_INPUT_ASSOCIATION')
+     inputs = parsed['expected_inputs']
+-    result = run_io_group(attempt / 'output', candidate=inputs['candidate'], installation=inputs['installation'],
+-        descriptor=inputs['descriptor'], challenge_bindings=inputs['bindings'], limits=request['groupLimits'])
++    result = _profile_group(directory, lambda: run_io_group(attempt / 'output', candidate=inputs['candidate'], installation=inputs['installation'],
++        descriptor=inputs['descriptor'], challenge_bindings=inputs['bindings'], limits=request['groupLimits']))
+     returned = dict(profile='hms.pat.io-supervisor-return/0.1', attemptId=launch['attemptId'],
+         requestDigest=request_digest(request), bundleDigest=request['bundleDigest'],
+         groupResultDigest=digest(canonical(result)), status=result['status'])

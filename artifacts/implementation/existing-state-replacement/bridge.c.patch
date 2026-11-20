@@ -1,0 +1,20 @@
+--- inline-hierarchical-store/bridge.c
++++ existing-state-replacement/bridge.c
+@@ -130,3 +130,17 @@
+     int rc=lfs_fs_traverse(&x->fs,count_block,x);
+     return rc<0 ? rc : (int)x->used;
+ }
++
++/* Existing-only replacement. The serialized owner supplies a complete body.
++ * Creation, rename, superblock and hierarchy policy remain separate callers. */
++int hm_replace_existing(struct bridge *x, const char *path, const void *data, uint32_t n) {
++    if(n>INTERNAL_MAX) return LFS_ERR_FBIG;
++    unsigned char cache[CACHE]; struct lfs_file_config cfg={.buffer=cache}; lfs_file_t file;
++    int rc=lfs_file_opencfg(&x->fs,&file,path,LFS_O_RDWR|LFS_O_TRUNC,&cfg);
++    if(rc) return rc;
++    rc=lfs_file_write(&x->fs,&file,data,n);
++    if(rc>=0) rc=rc==(int)n ? 0 : LFS_ERR_IO;
++    if(!rc) rc=lfs_file_sync(&x->fs,&file);
++    int close_rc=lfs_file_close(&x->fs,&file);
++    return rc<0 ? rc : close_rc;
++}

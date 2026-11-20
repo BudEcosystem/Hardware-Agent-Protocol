@@ -1,0 +1,31 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-recorded-catalog/harness83/run_attempt.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-catalog-worker-profile/harness01/run_attempt.py
+@@ -23,8 +23,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = 'daa1013a169c99db81196efa1e0ba1cd3b3a2a1216f1094ff1e79d4ee4b37abc'
+-PREFIX = 'artifacts/implementation/pat-io-recorded-catalog/implementation04/'
++FROZEN_INDEX = 'edc5f4dd343334eb46f78e640036e8d922e1a577b28aef20373f144619982535'
++PREFIX = 'artifacts/implementation/pat-io-catalog-worker-profile/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -282,7 +282,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation04'
++    stage = here.parent / 'implementation01'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -340,7 +340,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-snapshot-reuse-service1-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-current-worker-profile-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

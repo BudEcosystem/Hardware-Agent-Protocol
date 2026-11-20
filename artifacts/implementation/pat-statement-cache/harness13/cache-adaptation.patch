@@ -1,0 +1,20 @@
+--- baseline/run_attempt.py
++++ candidate/run_attempt.py
+@@ -13,7 +13,7 @@
+ ROOT = Path(__file__).resolve().parents[4]
+ HARNESS = Path(__file__).resolve().parent
+ BASE = HARNESS.parent
+-SOURCE = BASE / 'implementation03'
++SOURCE = BASE / 'implementation01'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_TOTAL = 256 * 1024 * 1024
+ 
+@@ -30,7 +30,7 @@
+     with path.open('xb') as stream:
+         stream.write(wire)
+ 
+-assert sha(SOURCE / 'index.json') == 'ec6df4066c89f38328030a28e2a5bd71d137abbc67cd51cb161cc246e2e8a268'
++assert sha(SOURCE / 'index.json') == '7ecd42fec5cef9374573ae8b3d0747060bdc8c4cd8ca552e9c3de4d64a2ec23e'
+ source_pin = read(SOURCE / 'index.json')
+ harness_pin = read(HARNESS / 'index.json')
+ external = read(HARNESS / 'references/external-inputs.json')

@@ -1,0 +1,60 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-execution-handoff/harness26/run_attempt.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-evidence-import/harness06/run_attempt.py
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '52590e9723805e43f76ad50c94d306d4d6a45c031e00b5fff2b6572c38ee4b90'
+-PREFIX = 'artifacts/implementation/pat-io-execution-handoff/implementation02/'
++FROZEN_INDEX = '25678ecd4d7c3daf4719b51d97fa323da2d2cba3b899d72ee77c7e65bb4adb4c'
++PREFIX = 'artifacts/implementation/pat-io-evidence-import/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -91,7 +91,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 256:
++    if len(expected) != 262:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -228,7 +228,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation02'
++    stage = here.parent / 'implementation01'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -240,7 +240,7 @@
+     record = {'profile': 'hms.io-group-worker-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+               'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 1,
+-              'projectInputCount': 253, 'frozenPreparationInputCount': 256,
++              'projectInputCount': 259, 'frozenPreparationInputCount': 262,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+@@ -257,8 +257,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 253:
+-            raise ValueError('Candidate project closure must contain exactly 253 files')
++        if len(selected) != 259:
++            raise ValueError('Candidate project closure must contain exactly 259 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -276,7 +276,7 @@
+         if (targets['testCount'] != 1 or
+                 len(targets['targets']) != 1 or
+                 len(set(targets['targets'])) != 1 or
+-                targets['targets'] != ['test_io_service_execution_history.IoServiceExecutionHistoryTests.test_later_handoff_cannot_move_time_before_prior_receipt']):
++                targets['targets'] != ['test_io_evidence_import.IoEvidenceImportTests.test_current_authorization_required_even_for_replay']):
+             raise ValueError('Closed runs15 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.

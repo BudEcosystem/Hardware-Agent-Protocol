@@ -1,0 +1,11 @@
+--- artifacts/implementation/pat-io-supervision/acquire-failed-setup.py
++++ artifacts/implementation/pat-io-supervision/acquire-canonical-order.py
+@@ -12,7 +12,7 @@
+  for p in sorted(folder.rglob('*')):
+   assert not p.is_symlink()
+   if p.is_file():rows.append(dict(path=p.relative_to(folder).as_posix(),bytes=p.stat().st_size,sha256=sha(p)))
+- return rows
++ return sorted(rows,key=lambda row:row['path'])
+ def identity(p):
+  s=p.lstat();assert stat.S_ISDIR(s.st_mode)
+  return dict(path=str(p),device=s.st_dev,inode=s.st_ino,uid=s.st_uid,gid=s.st_gid,mode=stat.S_IMODE(s.st_mode))

@@ -1,0 +1,131 @@
+--- harness01/attempt_child.py
++++ harness08/attempt_child.py
+@@ -1,5 +1,6 @@
+ """Authority-vault controls: exact sources, no worker or physical effect."""
+ import hashlib
++import fcntl
+ import json
+ import os
+ import re
+@@ -64,7 +65,7 @@
+     return path.is_relative_to(stdlib) and not {'site-packages', 'dist-packages'}.intersection(path.parts)
+ 
+ 
+-CONTROL_TARGETS = ['test_vault_recorded_catalog.VaultRecordedCatalogTests.test_original_receipt_records_vault_identity_and_promotes', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_admission_and_commit_do_no_external_reads', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_expired_recording_view_rolls_back_evaluation', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_expired_promotion_view_rolls_back_decision', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_expired_admission_view_rolls_back_instance_and_procedure', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_cold_history_works_with_closed_vault_and_fresh_admission_refuses', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_configuration_drift_preserves_history_and_refuses_new_use', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_missing_evidence_is_not_novelty_or_automatic_requalification', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_revoked_admin_before_publication_cannot_record', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_inactive_source_cannot_fall_through_to_no_match', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_legacy_catalog_and_execution_mounts_are_refused', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_small_preparation_budget_publishes_no_receipt', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_changed_catalog_inventory_before_selection_refuses', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_unresolved_original_run_prevents_reuse_after_repreparation']
++CONTROL_TARGETS = ['test_vault_recorded_catalog.VaultRecordedCatalogTests.test_expired_promotion_view_rolls_back_decision', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_expired_admission_view_rolls_back_instance_and_procedure', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_cold_history_works_with_closed_vault_and_fresh_admission_refuses']
+ 
+ # The native open audit event omits dir_fd. Preserve the original os.open
+ # call and expose its resolved pathname only to this synchronous audit hook.
+@@ -90,7 +91,72 @@
+ os.open = checked_os_open
+ 
+ 
++native_load = None
++native_image = None
++native_scans = {}
++NATIVE_DIGEST = 'ce475ab2a70fb94e84d5d2f2f4c22cb8858d3305005bd154ebda996aae0774ff'
++
++def verify_native_image(value):
++    descriptor = value['descriptor']
++    info = os.fstat(descriptor)
++    required = fcntl.F_SEAL_WRITE | fcntl.F_SEAL_SHRINK | fcntl.F_SEAL_GROW | fcntl.F_SEAL_SEAL
++    return (stat.S_ISREG(info.st_mode) and info.st_nlink == 0 and info.st_uid == os.getuid()
++        and info.st_dev == value['device'] and info.st_ino == value['inode']
++        and 0 < info.st_size <= 65536 and not os.get_inheritable(descriptor)
++        and fcntl.fcntl(descriptor, fcntl.F_GET_SEALS) & required == required
++        and hashlib.sha256(os.pread(descriptor, 65537, 0)).hexdigest() == NATIVE_DIGEST)
++
++def native_boundary(event, args):
++    global native_load, native_image
++    if current_test not in config['targets']:
++        prohibited.append(event)
++        raise RuntimeError('Native retention is only authorized inside an exact selected control')
++    expected = scratch / current_test.split('.')[-1] / 'supervisor'
++    if event == 'hms.retention.load.v1':
++        artifact = root / 'supervisor/retention_scan.so'
++        if (native_load is not None or args != (str(artifact), NATIVE_DIGEST, 'hms.retention.linux-cpython312-x86_64/1')
++                or acquired.get(str(artifact)) != NATIVE_DIGEST or sha(artifact) != NATIVE_DIGEST):
++            prohibited.append(event)
++            raise RuntimeError('Native artifact differs from exact acquired image')
++        native_load = dict(artifactOrigin=str(artifact), sha256=NATIVE_DIGEST, profile=args[2])
++    elif event == 'hms.retention.image.v1':
++        if (native_load is None or native_image is not None or len(args) != 5
++                or type(args[0]) is not str or re.fullmatch(r'/proc/self/fd/[0-9]+', args[0]) is None
++                or args[1] != NATIVE_DIGEST or any(type(value) is not int for value in args[2:])):
++            prohibited.append(event)
++            raise RuntimeError('Unexpected native memory image')
++        value = dict(origin=args[0], descriptor=int(args[0].rsplit('/', 1)[1]), sha256=args[1],
++                     device=args[2], inode=args[3], requestedSeals=args[4])
++        if not verify_native_image(value):
++            prohibited.append(event)
++            raise RuntimeError('Native memory image is not the exact sealed artifact')
++        native_image = value
++    elif event == 'hms.retention.scan.v1':
++        valid = (native_image is not None and len(args) == 3 and type(args[0]) is bytes
++                 and type(args[1]) is int and type(args[2]) is int)
++        if valid:
++            path = Path(os.fsdecode(args[0]))
++            root_scan = path == expected
++            attempt_scan = path.parent == expected and re.fullmatch(r'[0-9a-f]{32}', path.name) is not None
++            valid = ((root_scan or attempt_scan) and 0 <= args[1] <= (262144 if root_scan else 8192)
++                     and 0 <= args[2] <= (268435456 if root_scan else 67108864))
++        if not valid:
++            prohibited.append(event)
++            raise RuntimeError('Native scan is outside the owned supervisor scope')
++        key = str(path)
++        entry = native_scans.setdefault(key, dict(path=key, calls=0, maxFiles=0, maxBytes=0))
++        entry['calls'] += 1
++        entry['maxFiles'] = max(entry['maxFiles'], args[1])
++        entry['maxBytes'] = max(entry['maxBytes'], args[2])
++    else:
++        prohibited.append(event)
++        raise RuntimeError('Unknown native retention event')
++
++
+ def audit(event, args):
++    if event.startswith('hms.retention.'):
++        native_boundary(event, args)
++        return
+     if event.startswith('socket.') or event in {'subprocess.Popen','os.system','os.exec','os.fork','os.forkpty','os.posix_spawn'}:
+         prohibited.append(event); raise RuntimeError('Control selection forbids network and subprocesses')
+     if event == 'sqlite3.connect':
+@@ -154,6 +220,13 @@
+     def add(label, origin):
+         if not isinstance(origin, str) or origin.startswith('<') or origin in {'built-in', 'frozen'}:
+             rows.append({'source': label, 'origin': str(origin), 'kind': 'interpreter_or_synthetic'})
++            return
++        if label == 'module:_hms_retention_native_v1':
++            if native_image is None or origin != native_image['origin'] or not verify_native_image(native_image):
++                raise RuntimeError('Loaded native module has no exact held image')
++            rows.append(dict(source=label, origin=origin, kind='sealed_native_image',
++                sha256=NATIVE_DIGEST, artifactOrigin=native_load['artifactOrigin'],
++                device=native_image['device'], inode=native_image['inode'], matchesBefore=True))
+             return
+         path = Path(origin).resolve()
+         key = (label, str(path))
+@@ -210,6 +283,7 @@
+                         'recordCount': len(rows), 'violationCount': len(violations),
+                         'prohibitedAttemptCount': len(prohibited)},
+             'records': rows, 'violations': violations, 'prohibitedAttempts': prohibited,
++            'nativeRetention': dict(load=native_load, image=native_image, scans=list(native_scans.values())),
+             'deniedBytecodeReads': sorted(denied_bytecode),
+             'limits': 'Selected source/package origins are checked; startup stdlib and dynamically linked system libraries are not a full pre-execution closure. Frozen/synthetic code is distinct. Temporary identity-fixture resources are generated data, not imported code. Audit hooks are cooperative guardrails, not an OS sandbox.'}
+ 
+@@ -227,7 +301,7 @@
+ 
+ try:
+     if (not sys.flags.isolated or not sys.flags.no_site or not sys.flags.dont_write_bytecode or
+-            len(config['targets']) != 14 or len(set(config['targets'])) != 14):
++            len(config['targets']) != 3 or len(set(config['targets'])) != 3):
+         raise RuntimeError('Required child isolation flags or exact target count missing')
+     if config['targets'] != CONTROL_TARGETS:
+         raise RuntimeError('Exact literal target selection changed')
+@@ -288,7 +362,7 @@
+         write('child-errors.json', errors)
+     except BaseException:
+         errors.append({'phase': 'child-errors', 'type': 'ReceiptWriteFailure'})
+-passed = (not errors and counts is not None and counts['testsRun'] == 14 and
++passed = (not errors and counts is not None and counts['testsRun'] == 3 and
+     all(counts[key] == 0 for key in counts if key != 'testsRun') and
+     loaded_ids == config['targets'] == executed_ids and origins is not None and
+     origins['summary']['allOriginsMatched'])

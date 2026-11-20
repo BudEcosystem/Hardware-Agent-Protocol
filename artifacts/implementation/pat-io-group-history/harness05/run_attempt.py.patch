@@ -1,0 +1,13 @@
+--- artifacts/implementation/pat-io-group-history/harness02/run_attempt.py
++++ artifacts/implementation/pat-io-group-history/harness05/run_attempt.py
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = 'e5d542ef3b80276050dc3346ffcb1ffd2bb98c2a81fb283b22286cd7274f689c'
+-PREFIX = 'artifacts/implementation/pat-io-group-history/implementation01/'
++FROZEN_INDEX = 'e57ba4465307e2802c9bdba37e1777183336530bde3f5a1cc96db0d8a8bd08a3'
++PREFIX = 'artifacts/implementation/pat-io-group-history/implementation02/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192

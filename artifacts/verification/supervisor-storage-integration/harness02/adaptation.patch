@@ -1,0 +1,45 @@
+--- stage90/batched-controls
++++ stage90/per-control-diagnostics
+@@ -2,6 +2,7 @@
+ import fcntl
+ import stat
+ import tempfile
++import resource
+ import hashlib
+ import json
+ import os
+@@ -13,7 +14,7 @@
+ import time
+ 
+ BASE=Path(__file__).resolve().parent
+-ROOT=BASE.parents[2]
++ROOT=BASE.parents[3]
+ SOURCE=ROOT/'artifacts/implementation/supervisor-storage-bindings/implementation01'
+ MAX_FILE=16*1024*1024
+ MAX_SCRATCH=256*1024*1024
+@@ -80,6 +81,7 @@
+     write(out/'intent.json',dict(command=command,environment=environment,wallSeconds=60,cpuSeconds=40,
+         addressSpaceBytes=512*1024*1024,maxFileBytes=MAX_FILE,maxScratchBytes=MAX_SCRATCH,fdLimit=128,
+         sourceIndexSha256=selection['sourceIndexSha256'],childSha256=sha(child),targets=scope['targets']))
++    usage_before=resource.getrusage(resource.RUSAGE_CHILDREN)
+     started=time.monotonic();error=None
+     with (out/'output.log').open('xb') as log:
+         process=subprocess.Popen(command,cwd=project,env=environment,stdin=subprocess.DEVNULL,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+@@ -101,6 +103,8 @@
+             if process.poll() is None:process.kill();process.wait(timeout=5)
+             process.stdout.close()
+     elapsed=time.monotonic()-started
++    usage_after=resource.getrusage(resource.RUSAGE_CHILDREN)
++    child_cpu=dict(userSeconds=usage_after.ru_utime-usage_before.ru_utime,systemSeconds=usage_after.ru_stime-usage_before.ru_stime)
+     after=inventory(project);verify()
+     assert identity(scratch)==scratch_identity and identity(scratch_parent)==parent_identity
+     leases,lease_records=acquire_leases(scratch)
+@@ -118,7 +122,7 @@
+     child_result=read(out/'child-result.json') if (out/'child-result.json').exists() else None
+     passed=error is None and elapsed<60 and process.returncode==0 and child_result is not None and child_result['passed'] and inputs==after
+     result=dict(name=scope['name'],passed=passed,exitCode=process.returncode,elapsedSeconds=elapsed,error=error,
+-        sourceUnchanged=inputs==after,child=child_result,scratchFiles=len(retained),scratchBytes=sum(r['bytes'] for r in retained))
++        sourceUnchanged=inputs==after,childCpu=child_cpu,child=child_result,scratchFiles=len(retained),scratchBytes=sum(r['bytes'] for r in retained))
+     write(out/'scratch-index.json',retained);write(out/'result.json',result);results.append(result)
+     print(json.dumps({k:result[k] for k in ('name','passed','elapsedSeconds','error')}),flush=True)
+     if not passed:break

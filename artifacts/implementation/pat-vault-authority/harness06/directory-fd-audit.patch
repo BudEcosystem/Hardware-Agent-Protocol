@@ -1,0 +1,52 @@
+--- harness04
++++ harness06
+@@ -8,6 +8,8 @@
+ import sysconfig
+ import traceback
+ import resource
++import stat
++import threading
+ from urllib.parse import urlsplit, unquote
+ 
+ MAX_JSON = 4 * 1024 * 1024
+@@ -63,6 +65,30 @@
+ 
+ 
+ CONTROL_TARGETS = ['test_vault_authority.VaultAuthorityTests.test_configuration_change_after_seal_prevents_publication', 'test_vault_authority.VaultAuthorityTests.test_original_attempt_change_after_seal_prevents_publication', 'test_vault_authority.VaultAuthorityTests.test_corrupt_published_body_is_refused_without_repair', 'test_vault_authority.VaultAuthorityTests.test_unavailable_vault_does_not_become_novelty_or_replacement', 'test_vault_authority.VaultAuthorityTests.test_intent_capacity_refuses_second_run_before_archive_read', 'test_vault_authority.VaultAuthorityTests.test_supervisor_source_and_archive_reads_stay_outside_control_transaction', 'test_vault_authority.VaultAuthorityTests.test_temporary_shadow_refuses', 'test_vault_authority.VaultAuthorityTests.test_no_paths_callbacks_or_transaction_reentry', 'test_vault_authority.VaultAuthorityTests.test_bulk_full_keeps_original_intent_and_no_publication']
++
++# The native open audit event omits dir_fd. Preserve the original os.open
++# call and expose its resolved pathname only to this synchronous audit hook.
++# This is a cooperative fixture guard, not an OS isolation boundary.
++native_open = os.open
++open_context = threading.local()
++def checked_os_open(path, flags, mode=0o777, *, dir_fd=None):
++    name = os.fsdecode(path)
++    target = Path(name)
++    if dir_fd is not None and not target.is_absolute():
++        if type(dir_fd) is not int or not stat.S_ISDIR(os.fstat(dir_fd).st_mode):
++            raise RuntimeError('Invalid directory descriptor')
++        parent = Path(os.readlink('/proc/self/fd/' + str(dir_fd)))
++        if not parent.is_absolute():
++            raise RuntimeError('Unresolved directory descriptor')
++        target = parent / target
++    previous = getattr(open_context, 'current', None)
++    open_context.current = (name, target.resolve())
++    try:
++        return native_open(path, flags, mode, dir_fd=dir_fd)
++    finally:
++        open_context.current = previous
++os.open = checked_os_open
++
+ 
+ def audit(event, args):
+     if event.startswith('socket.') or event in {'subprocess.Popen','os.system','os.exec','os.fork','os.forkpty','os.posix_spawn'}:
+@@ -99,7 +125,8 @@
+     if event == 'open' and isinstance(args[0], (str, bytes)):
+         path = Path(os.fsdecode(args[0]))
+         if args[2] & (os.O_WRONLY | os.O_RDWR | os.O_CREAT):
+-            target = path.resolve()
++            opened = getattr(open_context, 'current', None)
++            target = opened[1] if opened is not None and opened[0] == os.fsdecode(args[0]) else path.resolve()
+             receipts = {'child-runtime.json', 'compiler-before.json', 'compiler-after.json',
+                 'driver-before.json', 'driver-after.json', 'loader-errors.json', 'imports.json',
+                 'sqlite-connections.json', 'actual-tests.json', 'test-return.json', 'child-errors.json'}

@@ -1,0 +1,141 @@
+--- runner-baseline.py
++++ run_checks.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Isolated copy/boundary checks. Never execute an AVR image or access devices.
++"""Isolated shared-kernel checks. Never execute an AVR image or access devices.
+ 
+ Source review must precede invocation. Host compilers execute; native probes use
+ only original in-memory register models. AVR output is compile/link evidence.
+@@ -28,8 +28,9 @@
+ BUILD = None  # Assigned to a new, stage-specific attempt directory in main.
+ ARCHIVE = REPO / 'research/constrained/avr/raw/avr-gcc-7.3.0-atmel3.6.1-arduino7-x86_64-pc-linux-gnu.tar.bz2'
+ ARCHIVE_SHA = 'bd8c37f6952a2130ac9ee32c53f6a660feb79bee8353c8e289eb60fdcefed91e'
+-DEFAULT_BIN = Path('/tmp/hms-avr-toolchain-7.3.0-atmel3.6.1-arduino7/avr/bin')
+-UNITS = [('protocol/endpoint/endpoint.c','endpoint'),('protocol/endpoint/link.c','link'),
++DEFAULT_BIN = REPO / 'artifacts/implementation/avr-link-integration/toolchains/avr-gcc-7.3.0-cponmrdo/avr/bin'
++UNITS = [('protocol/endpoint/endpoint.c','endpoint'),('protocol/endpoint/endpoint_kernel.c','kernel'),
++         ('protocol/endpoint/link.c','link'),
+          ('protocol/endpoint/standing.c','standing'),
+          ('protocol/serial/frame.c','frame'),('tests/endpoint_fixture.c','fixture'),
+          ('protocol/platform/avr_uart.c','uart'),('protocol/platform/avr_usart.c','usart'),
+@@ -391,7 +392,7 @@
+ def native_coverage():
+     """Verify retained old case bytes; this reads source, never imports it."""
+     coverage=json.loads((BUILD/'native-coverage.json').read_text())
+-    require(coverage['schema']=='hms-copy-boundary-native-coverage/1','Unknown native coverage profile')
++    require(coverage['schema']=='hms-shared-kernel-native-coverage/1','Unknown native coverage profile')
+     require(coverage['baseline_source']=='originals/project/tests/standing_controls.c' and
+             coverage['current_source']=='project/tests/standing_controls.c','Unexpected control source path')
+     baseline=(BUILD/coverage['baseline_source']).read_bytes()
+@@ -399,8 +400,8 @@
+     require(hashlib.sha256(baseline).hexdigest()==coverage['baseline_sha256'] and
+             hashlib.sha256(current).hexdigest()==coverage['current_sha256'],'Control source differs from reviewed profile')
+     rows=coverage['unchanged_case_bodies']
+-    require(len(rows)==13 and [row['name'] for row in rows]==coverage['baseline_case_order'] and
+-            len(set(coverage['baseline_case_order']))==13,'Retained control case set differs')
++    require(len(rows)==14 and [row['name'] for row in rows]==coverage['baseline_case_order'] and
++            len(set(coverage['baseline_case_order']))==14,'Retained control case set differs')
+     for row in rows:
+         a,b=row['baseline_span'];c,d=row['current_span']
+         require(0<=a<b<=len(baseline) and 0<=c<d<=len(current),'Invalid control body range')
+@@ -411,12 +412,11 @@
+         matches=re.findall(pattern,source)
+         require(len(matches)==1 and [part.strip().decode('ascii') for part in matches[0].split(b',')]==expected,
+                 'Control invocation order differs from reviewed profile')
+-    require(coverage['current_case_order']==coverage['baseline_case_order'][:2]+
+-            ['encoded_time_boundaries']+coverage['baseline_case_order'][2:] and
+-            coverage['expected_standing_cases']==14 and coverage['baseline_standing_assertions']==673,
+-            'Unexpected standing coverage increment')
+-    result={'baseline_case_bodies_verified':13,'standing_cases_required':14,
+-            'baseline_observed_assertions':673,'coverage_profile_sha256':digest(BUILD/'native-coverage.json')}
++    require(coverage['current_case_order']==coverage['baseline_case_order'] and
++            coverage['expected_standing_cases']==14 and coverage['baseline_standing_assertions']==766 and
++            baseline==current,'Original fourteen standing controls must remain byte-exact')
++    result={'baseline_case_bodies_verified':14,'standing_cases_required':14,
++            'baseline_observed_assertions':766,'coverage_profile_sha256':digest(BUILD/'native-coverage.json')}
+     save_new(BUILD/'native-source-coverage.json',result)
+     return result
+ 
+@@ -447,7 +447,7 @@
+             'Original finite/pipe baseline coverage changed')
+     inputs=[path for path,_ in UNITS]+['tests/reference_link.c','tests/avr_runtime_probe.c']
+     macros=['-DHMS_AVR_UART_TEST','-DHMS_AVR_USART_TEST','-DHMS_AVR_CLOCK_TEST','-DHMS_AVR_EEPROM_TEST']
+-    reports={};standing_reports={}
++    reports={};standing_reports={};kernel_reports={};equivalence_reports={};equivalence_traces={}
+     for mode in ('plain','asan'):
+         flags=['-O2'] if mode=='plain' else ['-O1','-fsanitize=address,undefined','-fno-omit-frame-pointer','-fno-pie','-no-pie']
+         exe=BUILD/('runtime-'+mode)
+@@ -459,18 +459,50 @@
+                 'Probe baseline coverage changed')
+         standing_exe=BUILD/('standing-'+mode)
+         standing_inputs=['protocol/serial/frame.c','protocol/endpoint/endpoint.c',
+-                         'protocol/endpoint/standing.c','protocol/endpoint/link.c',
++                         'protocol/endpoint/standing.c','protocol/endpoint/link.c','protocol/endpoint/endpoint_kernel.c',
+                          'tests/standing_fixture.c','tests/standing_controls.c']
+         run([gcc,*COMMON,*flags,*standing_inputs,'-o',standing_exe],'standing-compile-'+mode)
+         standing_reports[mode]=json.loads(run([standing_exe],'standing-probe-'+mode,sanitizer=mode=='asan'))
+         require(standing_reports[mode]['cases']==14,'Standing control coverage changed')
+         require(type(standing_reports[mode]['assertions']) is int and
+-                standing_reports[mode]['assertions']>coverage['baseline_observed_assertions'],
+-                'Standing assertion coverage did not extend the retained baseline')
++                standing_reports[mode]['assertions']==coverage['baseline_observed_assertions'],
++                'Original standing assertion coverage changed')
+         require(standing_reports[mode]['physical_qualification'] is False,'Synthetic controls overclaimed')
++        kernel_exe=BUILD/('kernel-'+mode)
++        run([gcc,*COMMON,*flags,'protocol/endpoint/endpoint_kernel.c','tests/kernel_controls.c','-o',kernel_exe],
++            'kernel-compile-'+mode)
++        kernel_reports[mode]=json.loads(run([kernel_exe],'kernel-probe-'+mode,sanitizer=mode=='asan'))
++        require(kernel_reports[mode]['cases']==3 and type(kernel_reports[mode]['assertions']) is int and
++                kernel_reports[mode]['assertions']>1000 and kernel_reports[mode]['physical_qualification'] is False,
++                'Kernel controls incomplete or overclaimed')
++        trace_outputs={}
++        for domain in ('baseline','candidate'):
++            baseline=domain=='baseline'
++            prefix=BUILD/'originals/project' if baseline else PROJECT
++            trace_inputs=[str(prefix/path) for path in ('protocol/serial/frame.c','protocol/endpoint/endpoint.c',
++                'protocol/endpoint/standing.c','protocol/endpoint/link.c','tests/standing_fixture.c')]
++            if not baseline:trace_inputs.append(str(PROJECT/'protocol/endpoint/endpoint_kernel.c'))
++            trace_exe=BUILD/('equivalence-'+domain+'-'+mode)
++            defines=['-DHMS_EQ_BASELINE'] if baseline else []
++            run([gcc,*COMMON,*flags,*defines,*trace_inputs,'tests/endpoint_equivalence.c','-o',trace_exe],
++                'equivalence-compile-'+domain+'-'+mode)
++            trace_outputs[domain]=run([trace_exe],'equivalence-probe-'+domain+'-'+mode,sanitizer=mode=='asan')
++        require(trace_outputs['baseline']==trace_outputs['candidate'],
++                'Baseline/candidate complete state, callback, effect or response trace differs')
++        trace=trace_outputs['candidate'];summary=json.loads(trace.splitlines()[-1])
++        require(summary['equivalence_cases']==16 and summary['old_cases']==14 and
++                summary['physical_qualification'] is False and summary['added_assertions']>0 and
++                summary['assertions']==766+summary['added_assertions'] and summary['trace_records']>0,
++                'Differential trace coverage incomplete')
++        equivalence_traces[mode]=hashlib.sha256(trace.encode('utf-8')).hexdigest()
++        equivalence_reports[mode]={'summary':summary,'complete_trace_sha256':equivalence_traces[mode],
++            'baseline_matches_candidate':True,'raw_outputs_retained':True}
+     require(reports['plain']==reports['asan'],'Plain/sanitized integration reports disagree')
+     require(standing_reports['plain']==standing_reports['asan'],'Plain/sanitized standing reports disagree')
++    require(kernel_reports['plain']==kernel_reports['asan'],'Plain/sanitized kernel reports disagree')
++    require(equivalence_reports['plain']==equivalence_reports['asan'],'Plain/sanitized complete traces disagree')
+     return {'original':original,'integration':reports,'standing':standing_reports,
++            'kernel':kernel_reports,'equivalence':equivalence_reports,
+             'source_coverage':coverage,'standing_observed_assertions':standing_reports['plain']['assertions'],
+             'plain_sanitized_reports_agree':True,
+             'compiler_path':str(gcc),'compiler_sha256':digest(gcc),'compiler_version':version,
+@@ -617,6 +649,7 @@
+             'pre_lto_stack_records':'pre-lto-stack-records.json; not final-image evidence',
+             'combined_foreground_isr_stack_analysis':'UNQUALIFIED: requires actual final backend/disassembly/IPA coverage and graph accounting',
+             'finite_poll_frame_boundary_review':'PENDING: inspect actual finite callee and standing branch frame lifetimes',
++            'shared_kernel_phase_review':'PENDING: inspect sharing/clones, finite handle route and every new caller/callee frame',
+             'tx_register_instruction_window_review':'PENDING: inspect exact linked sequence and max baud interval',
+             'target_runtime_fit_demonstrated':False,'target_executed':False}
+ 
+@@ -745,7 +778,9 @@
+                'PLUGIN-LOOKUP-REVIEW.md','plugin-lookup-source-pins.json',
+                'CONTROLS.md','SOURCE-COVERAGE.md','INDEPENDENT-REVIEW.md','native-coverage.json',
+                'runner-input-pins.json','runner-diff.patch','runner-baseline.py',
+-               'originals/project/tests/standing_controls.c','history/source-proposal/index.json']
++               'parent-pins.json','endpoint-transformations.json','standing-transformations.json']
++        fixed += [str(path.relative_to(HERE)) for path in sorted((HERE/'originals/project').rglob('*')) if path.is_file()]
++        fixed += [str(path.relative_to(HERE)) for path in sorted((HERE/'history').rglob('*')) if path.is_file()]
+         fixed += [row['target'] for row in json.loads((HERE/'runner-owner-pins.json').read_text())['files']]
+         for name in fixed:sources[name]=digest(HERE/name)
+         SOURCE_PINS=sources;report['sources']=dict(sources)

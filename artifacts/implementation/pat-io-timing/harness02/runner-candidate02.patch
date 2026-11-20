@@ -1,0 +1,40 @@
+--- harness01/run_attempt.py
++++ harness02/run_attempt.py
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '55ce18263a9034072408cd7749ac7261bc58a73cdec5c561ce23c512d81730fb'
+-PREFIX = 'artifacts/implementation/pat-io-timing/implementation01/'
++FROZEN_INDEX = 'bd255e36907847007697849d0e7be691f5b3646e859e8a0680b9bd9a10150eb9'
++PREFIX = 'artifacts/implementation/pat-io-timing/implementation02/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -91,7 +91,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 163:
++    if len(expected) != 164:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -228,7 +228,7 @@
+             not 1 <= args.timeout_seconds <= 600):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation01'
++    stage = here.parent / 'implementation02'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -240,7 +240,7 @@
+     record = {'profile': 'hms.io-timing-pure-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+               'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 65,
+-              'projectInputCount': 157, 'frozenPreparationInputCount': 163,
++              'projectInputCount': 157, 'frozenPreparationInputCount': 164,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,

@@ -1,0 +1,69 @@
+--- prior-actual/run_attempt.py
++++ vault-actual/run_attempt.py
+@@ -23,8 +23,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '7a52bf04800bde161cfb778fca0da5cec996468fe03d9944902e73e11c6817cc'
+-PREFIX = 'artifacts/implementation/pat-io-definition-build/implementation01/'
++FROZEN_INDEX = '14e33c595526a7a7d626d635dcff7327fef65e9a94b28c85b7d43a109b212414'
++PREFIX = 'artifacts/implementation/pat-vault-original-run/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -93,7 +93,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 278:
++    if len(expected) != 289:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -217,7 +217,7 @@
+     return {'path': str(path), 'device': info.st_dev, 'inode': info.st_ino,
+             'uid': info.st_uid, 'gid': info.st_gid, 'mode': stat.S_IMODE(info.st_mode)}
+ 
+-PROCESS_METHOD = 'test_actual_original_matrix_catalog_execution_and_historical_replay'
++PROCESS_METHOD = 'test_actual_original_matrix_import_and_cold_vault_history'
+ 
+ def acquire_process_quiescence(scratch):
+     """Hold actual owner/writer locks through inventory; no PID authority."""
+@@ -294,7 +294,7 @@
+     record = {'profile': 'hms.io-group-worker-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+               'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 1,
+-              'projectInputCount': 275, 'frozenPreparationInputCount': 278,
++              'projectInputCount': 286, 'frozenPreparationInputCount': 289,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+@@ -311,8 +311,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 275:
+-            raise ValueError('Candidate project closure must contain exactly 275 files')
++        if len(selected) != 286:
++            raise ValueError('Candidate project closure must contain exactly 286 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -330,7 +330,7 @@
+         if (targets['testCount'] != 1 or
+                 len(targets['targets']) != 1 or
+                 len(set(targets['targets'])) != 1 or
+-                targets['targets'] != ['test_io_recorded_catalog_process.RecordedIoCatalogProcessTests.test_actual_original_matrix_catalog_execution_and_historical_replay']):
++                targets['targets'] != ['test_vault_original_run.VaultOriginalRunTests.test_actual_original_matrix_import_and_cold_vault_history']):
+             raise ValueError('Closed service1 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+@@ -340,7 +340,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-definition-build-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-vault-original-run-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

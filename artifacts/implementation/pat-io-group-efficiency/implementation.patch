@@ -1,0 +1,295 @@
+--- artifacts/implementation/pat-io-schema-memo/implementation01/project/hms/journal.py
++++ artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/journal.py
+@@ -171,7 +171,11 @@
+     Do not put the DB on a network filesystem or restore it independently of
+     its authority/replay state. Policies must not block, do I/O, or reenter.
+     """
+-    def __init__(self, path, policy: Policy, *, clock_ms: Callable[[], int], create=False):
++    def __init__(self, path, policy: Policy, *, clock_ms: Callable[[], int], create=False, page_size=None):
++        # Closed opt-in layout for the compact synthetic worker. None retains
++        # the platform's existing/default layout; reopening never converts it.
++        if page_size is not None and (type(page_size) is not int or page_size != 1024):
++            raise JournalError('UNSUPPORTED_DATABASE_PAGE_SIZE')
+         self.path = Path(path).resolve()
+         self.policy = policy
+         self.clock_ms = clock_ms
+@@ -199,6 +203,10 @@
+             self._db = sqlite3.connect(str(self.path), isolation_level=None,
+                                        check_same_thread=False, timeout=0.2)
+             self._db.row_factory = sqlite3.Row
++            if create and page_size is not None:
++                self._db.execute('PRAGMA page_size=1024')
++            if page_size is not None and self._db.execute('PRAGMA page_size').fetchone()[0] != page_size:
++                raise JournalError('UNSUPPORTED_DATABASE_PAGE_SIZE')
+             if self._db.execute("PRAGMA journal_mode=DELETE").fetchone()[0] != "delete":
+                 raise JournalError("UNSUPPORTED_DURABILITY_MODE")
+             self._db.execute("PRAGMA synchronous=EXTRA")
+--- artifacts/implementation/pat-io-schema-memo/implementation01/project/hms/pat_io_authority_capture.py
++++ artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/pat_io_authority_capture.py
+@@ -24,7 +24,8 @@
+         self._check_budget()
+         self.runtime = IoRuntime(self.directory/'state', create=create,
+             owner=self.owner if create else None, installation=self.document,
+-            wall_clock_ms=self.clock, monotonic_ms=self.clock)
++            wall_clock_ms=self.clock, monotonic_ms=self.clock,
++            storage_profile=self._storage_profile)
+         require(not self.runtime.route_errors and not self.runtime._threads and
+             set(self.runtime.adapters)==set(self.document['routes']['adapters']), 'PAT_IO_TRIAL_RECONSTRUCTION')
+         original = self.runtime.journal.submission_guard
+@@ -124,8 +125,12 @@
+ def run_authority_challenge(directory, *, matrix, candidate, installation, descriptor, challenge_bindings, case_id, group_budget=None):
+     if group_budget is not None: group_budget.assert_case(case_id)
+     matrix = snapshot(matrix,'PAT_IO_AUTHORITY_MATRIX')
+-    policy = IoCombinedMatrixPolicy(installation)
+-    matrix_digest = policy.validate(matrix,candidate,descriptor,challenge_bindings,limits=matrix.get('limits'))
++    if group_budget is None:
++        matrix_digest = IoCombinedMatrixPolicy(installation).validate(
++            matrix,candidate,descriptor,challenge_bindings,limits=matrix.get('limits'))
++    else:
++        matrix_digest = group_budget.validated_matrix_digest(matrix=matrix,candidate=candidate,
++            installation=installation,descriptor=descriptor,challenge_bindings=challenge_bindings)
+     require(type(case_id) is str,'PAT_IO_AUTHORITY_CASE')
+     cases = [c for c in matrix['cases'] if c['caseId']==case_id]
+     require(len(cases)==1,'PAT_IO_AUTHORITY_CASE');case=cases[0]
+--- artifacts/implementation/pat-io-schema-memo/implementation01/project/hms/pat_io_clock_capture.py
++++ artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/pat_io_clock_capture.py
+@@ -95,8 +95,12 @@
+ def run_clock_challenge(directory, *, matrix, candidate, installation, descriptor, challenge_bindings, case_id, group_budget=None):
+     if group_budget is not None: group_budget.assert_case(case_id)
+     matrix = snapshot(matrix, 'PAT_IO_CLOCK_MATRIX')
+-    policy = IoCombinedMatrixPolicy(installation)
+-    matrix_digest = policy.validate(matrix,candidate,descriptor,challenge_bindings,limits=matrix.get('limits'))
++    if group_budget is None:
++        matrix_digest = IoCombinedMatrixPolicy(installation).validate(
++            matrix,candidate,descriptor,challenge_bindings,limits=matrix.get('limits'))
++    else:
++        matrix_digest = group_budget.validated_matrix_digest(matrix=matrix,candidate=candidate,
++            installation=installation,descriptor=descriptor,challenge_bindings=challenge_bindings)
+     require(type(case_id) is str, 'PAT_IO_CLOCK_CASE')
+     cases = [c for c in matrix['cases'] if c['caseId']==case_id]
+     require(len(cases)==1, 'PAT_IO_CLOCK_CASE'); case=cases[0]
+--- artifacts/implementation/pat-io-schema-memo/implementation01/project/hms/pat_io_group_budget.py
++++ artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/pat_io_group_budget.py
+@@ -8,12 +8,17 @@
+ import time
+ 
+ from .pat_contracts import integer, require, snapshot
++from .pat_io_validated_matrix import ValidatedIoMatrix
+ 
+ 
+ class IoGroupBudget:
+-    def __init__(self, matrix, *, started):
++    def __init__(self, matrix, *, started, validated_plan=None):
+         # Only the trusted coordinator supplies the already validated matrix.
+         self._matrix = snapshot(matrix)
++        require(validated_plan is None or type(validated_plan) is ValidatedIoMatrix, 'PAT_IO_GROUP_PLAN_TYPE')
++        if validated_plan is not None:
++            validated_plan.assert_matrix(self._matrix)
++        self._validated_plan = validated_plan
+         self._limits = self._matrix['limits']
+         self._started = self._last_clock = started
+         self._active = None
+@@ -141,6 +146,12 @@
+         self.check()
+         require(case_id == self._case['caseId'], 'PAT_IO_GROUP_CASE_MISMATCH')
+ 
++    def validated_matrix_digest(self, **inputs):
++        self.check()
++        require(not self._bound, 'PAT_IO_GROUP_ENGINE_REUSE')
++        require(self._group._validated_plan is not None, 'PAT_IO_GROUP_PLAN_REQUIRED')
++        return self._group._validated_plan.validate_inputs(**inputs)
++
+     def assert_evidence(self, configuration):
+         self.check()
+         require(configuration['combinedRecords'] == self._records and
+--- artifacts/implementation/pat-io-schema-memo/implementation01/project/hms/pat_io_group_worker.py
++++ artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/pat_io_group_worker.py
+@@ -15,7 +15,7 @@
+ from .journal import JournalError
+ from .pat_compiler import compile_pat, compiler_digest
+ from .pat_contracts import PatError, require, snapshot
+-from .pat_io_combined_matrix import IoCombinedMatrixPolicy
++from .pat_io_validated_matrix import ValidatedIoMatrix
+ from .pat_io_conflict_capture import ConflictIoTrialEngine
+ from .pat_io_group_budget import IoGroupBudget
+ from .pat_io_timing_worker import run_timing_challenge, SCHEDULES
+@@ -37,6 +37,7 @@
+     current = _source_identity()
+     require(current == _IMPORTED_IDENTITY, 'PAT_IO_GROUP_IMPLEMENTATION_CHANGED')
+     return dict(compilerDigest=compiler_digest(), driverDigest=implementation_digest(),
++        storageProfile=ConflictIoTrialEngine._storage_profile,
+         workerDigest='sha256:' + hashlib.sha256(b'HMS-PAT-IO-GROUP-WORKER-v0.1\0' +
+             canonical(dict(profile=PROFILE, installedClosure=current))).hexdigest())
+ 
+@@ -133,13 +134,12 @@
+     started=time.monotonic()
+     options=dict(candidate=snapshot(candidate), installation=snapshot(installation),
+         descriptor=snapshot(descriptor),challenge_bindings=snapshot(challenge_bindings))
+-    policy=IoCombinedMatrixPolicy(options['installation'])
+-    matrix=policy.generate(options['candidate'],options['descriptor'],options['challenge_bindings'],limits=limits)
+-    matrix_digest=policy.validate(matrix,options['candidate'],options['descriptor'],options['challenge_bindings'],limits=matrix['limits'])
++    validated_plan=ValidatedIoMatrix(**options,limits=limits)
++    matrix=validated_plan.matrix();matrix_digest=validated_plan.digest
+     identity=_identities()
+     root=private_state_directory(directory)
+     require(not any(root.iterdir()),'PAT_IO_GROUP_DIRECTORY_NOT_EMPTY')
+-    budget=IoGroupBudget(matrix,started=started)
++    budget=IoGroupBudget(matrix,started=started,validated_plan=validated_plan)
+     refs=[]; results=[]; error=None
+     try:
+         for name,value in [('candidate.json',options['candidate']),('installation.json',options['installation']),
+--- artifacts/implementation/pat-io-schema-memo/implementation01/project/hms/pat_io_lifecycle_capture.py
++++ artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/pat_io_lifecycle_capture.py
+@@ -62,8 +62,12 @@
+                             challenge_bindings, case_id, group_budget=None):
+     if group_budget is not None: group_budget.assert_case(case_id)
+     matrix = snapshot(matrix,'PAT_IO_LIFECYCLE_MATRIX')
+-    matrix_digest = IoCombinedMatrixPolicy(installation).validate(
+-        matrix,candidate,descriptor,challenge_bindings,limits=matrix.get('limits'))
++    if group_budget is None:
++        matrix_digest = IoCombinedMatrixPolicy(installation).validate(
++            matrix,candidate,descriptor,challenge_bindings,limits=matrix.get('limits'))
++    else:
++        matrix_digest = group_budget.validated_matrix_digest(matrix=matrix,candidate=candidate,
++            installation=installation,descriptor=descriptor,challenge_bindings=challenge_bindings)
+     require(type(case_id) is str,'PAT_IO_LIFECYCLE_CASE')
+     cases = [c for c in matrix['cases'] if c['caseId']==case_id]
+     require(len(cases)==1,'PAT_IO_LIFECYCLE_CASE');case=cases[0]
+--- artifacts/implementation/pat-io-schema-memo/implementation01/project/hms/pat_io_resource_capture.py
++++ artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/pat_io_resource_capture.py
+@@ -26,7 +26,8 @@
+         require(create and self.runtime is None, 'PAT_IO_RESOURCE_REOPEN_UNSUPPORTED')
+         self._check_budget()
+         self.runtime = IoRuntime(self.directory/'state', create=True, owner=self.owner,
+-            installation=self.document, wall_clock_ms=self.clock, monotonic_ms=self.clock)
++            installation=self.document, wall_clock_ms=self.clock, monotonic_ms=self.clock,
++            storage_profile=self._storage_profile)
+         require(not self.runtime.route_errors and not self.runtime._threads and
+                 set(self.runtime.adapters)==set(self.document['routes']['adapters']), 'PAT_IO_TRIAL_RECONSTRUCTION')
+         original = self.runtime.journal.submission_guard
+@@ -118,8 +119,12 @@
+ def run_resource_challenge(directory, *, matrix, candidate, installation, descriptor, challenge_bindings, case_id, group_budget=None):
+     if group_budget is not None: group_budget.assert_case(case_id)
+     matrix=snapshot(matrix,'PAT_IO_RESOURCE_MATRIX')
+-    policy=IoCombinedMatrixPolicy(installation)
+-    matrix_digest=policy.validate(matrix,candidate,descriptor,challenge_bindings,limits=matrix.get('limits'))
++    if group_budget is None:
++        matrix_digest = IoCombinedMatrixPolicy(installation).validate(
++            matrix,candidate,descriptor,challenge_bindings,limits=matrix.get('limits'))
++    else:
++        matrix_digest = group_budget.validated_matrix_digest(matrix=matrix,candidate=candidate,
++            installation=installation,descriptor=descriptor,challenge_bindings=challenge_bindings)
+     require(type(case_id) is str,'PAT_IO_RESOURCE_CASE')
+     cases=[c for c in matrix['cases'] if c['caseId']==case_id]
+     require(len(cases)==1,'PAT_IO_RESOURCE_CASE');case=cases[0]
+--- artifacts/implementation/pat-io-schema-memo/implementation01/project/hms/pat_io_timing_worker.py
++++ artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/pat_io_timing_worker.py
+@@ -35,9 +35,12 @@
+ """
+     if group_budget is not None: group_budget.assert_case(case_id)
+     matrix = snapshot(matrix, 'PAT_IO_TIMING_MATRIX')
+-    policy = IoCombinedMatrixPolicy(installation)
+-    matrix_digest = policy.validate(matrix, candidate, descriptor, challenge_bindings,
+-                                    limits=matrix.get('limits'))
++    if group_budget is None:
++        matrix_digest = IoCombinedMatrixPolicy(installation).validate(
++            matrix,candidate,descriptor,challenge_bindings,limits=matrix.get('limits'))
++    else:
++        matrix_digest = group_budget.validated_matrix_digest(matrix=matrix,candidate=candidate,
++            installation=installation,descriptor=descriptor,challenge_bindings=challenge_bindings)
+     require(type(case_id) is str, 'PAT_IO_TIMING_CASE')
+     cases = [case for case in matrix['cases'] if case['caseId'] == case_id]
+     require(len(cases) == 1, 'PAT_IO_TIMING_CASE')
+--- artifacts/implementation/pat-io-schema-memo/implementation01/project/hms/pat_io_trials.py
++++ artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/pat_io_trials.py
+@@ -78,6 +78,7 @@
+     """Trusted local test component; never accept a directory from a PAT payload."""
+ 
+     _record_profile = RECORD_PROFILE
++    _storage_profile = 'hms.sqlite.compact/0.1'
+ 
+     def __init__(self, directory, artifact, installation, descriptor, *, group_budget=None):
+         self.runtime = None
+@@ -147,7 +148,8 @@
+         self._check_budget()
+         wall, monotonic = self._clock_sources()
+         self.runtime = IoRuntime(self.directory / 'state', create=create, owner=self.owner if create else None,
+-                                 installation=self.document, wall_clock_ms=wall, monotonic_ms=monotonic)
++                                 installation=self.document, wall_clock_ms=wall, monotonic_ms=monotonic,
++            storage_profile=self._storage_profile)
+         require(not self.runtime.route_errors and not self.runtime._threads and
+                 set(self.runtime.adapters) == set(self.document['routes']['adapters']), 'PAT_IO_TRIAL_RECONSTRUCTION')
+         original = self.runtime.journal.submission_guard
+--- artifacts/implementation/pat-io-schema-memo/implementation01/project/hms/synthetic_io_board.py
++++ artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/synthetic_io_board.py
+@@ -29,7 +29,8 @@
+ 
+ 
+ class SyntheticIoBoard:
+-    def __init__(self, path, installation, *, authority_id, owner_epoch, clock_epoch, create=False):
++    def __init__(self, path, installation, *, authority_id, owner_epoch, clock_epoch, create=False, page_size=None):
++        require(page_size is None or (type(page_size) is int and page_size == 1024), 'IO_BOARD_PAGE_SIZE')
+         self.installation = normalize_installation(installation)
+         self.installation_digest = installation_digest(self.installation)
+         self.authority_id = identifier(authority_id)
+@@ -67,6 +68,10 @@
+                 require(self.path.is_file() and not self.path.is_symlink(), 'IO_BOARD_MISSING')
+             self.db = sqlite3.connect(str(self.path), isolation_level=None, check_same_thread=False, timeout=0.2)
+             self.db.row_factory = sqlite3.Row
++            if create and page_size is not None:
++                self.db.execute('PRAGMA page_size=1024')
++            require(page_size is None or self.db.execute('PRAGMA page_size').fetchone()[0] == page_size,
++                    'IO_BOARD_PAGE_SIZE')
+             self.db.execute('PRAGMA journal_mode=DELETE'); self.db.execute('PRAGMA synchronous=EXTRA')
+             if create:
+                 self._create()
+--- artifacts/implementation/pat-io-schema-memo/implementation01/project/hms/synthetic_io_runtime.py
++++ artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/synthetic_io_runtime.py
+@@ -19,7 +19,11 @@
+ 
+ class IoRuntime(Runtime):
+     def __init__(self, state_dir, *, create=False, owner=None, installation=None,
+-                 wall_clock_ms=None, monotonic_ms=None):
++                 wall_clock_ms=None, monotonic_ms=None, storage_profile=None):
++        require(storage_profile is None or
++                (type(storage_profile) is str and storage_profile == 'hms.sqlite.compact/0.1'),
++                'IO_STORAGE_PROFILE')
++        page_size = 1024 if storage_profile is not None else None
+         document = normalize_installation(installation) if installation is not None else None
+         if create:
+             require(document is not None and owner is not None and owner.deployment == document['topology']['deployment'],
+@@ -37,7 +41,8 @@
+         self.adapters = {}
+         self.directory = private_state_directory(state_dir,create=create)
+         try:
+-            self.journal = Journal(self.directory/'authority.db',self.policy,clock_ms=self.wall_clock_ms,create=create)
++            self.journal = Journal(self.directory/'authority.db',self.policy,clock_ms=self.wall_clock_ms,
++                create=create,page_size=page_size)
+             self.registry = Registry(self.journal,monotonic_ms=self.monotonic_ms,bootstrap_owner=owner if create else None)
+             self.policy.attach(self.registry); self.deployment = self.registry.deployment
+             self.catalog = IoAdapterCatalog(self.journal,self.registry,create=create,owner=owner,installation=document)
+@@ -50,7 +55,8 @@
+                 require(self.journal._db.execute('SELECT 1 FROM operations WHERE may_have_acted=1 LIMIT 1').fetchone() is None,
+                         'IO_BOARD_MISSING_WITH_EFFECT_HISTORY')
+             self.io_board = SyntheticIoBoard(path,self.catalog.document,create=new_board,
+-                authority_id=self.journal.authority_id,owner_epoch=self.journal.owner_epoch,clock_epoch=self.registry.receipt_epoch)
++                authority_id=self.journal.authority_id,owner_epoch=self.journal.owner_epoch,
++                clock_epoch=self.registry.receipt_epoch,page_size=page_size)
+             # One board object and one recovery pass, regardless of route count.
+             for route in self.catalog.installations:
+                 adapter = route['adapterId']; self._route_locks[adapter] = threading.RLock()
+--- artifacts/implementation/pat-io-schema-memo/implementation01/project/tests/test_pat_io_group_worker.py
++++ artifacts/implementation/pat-io-group-efficiency/implementation01/project/tests/test_pat_io_group_worker.py
+@@ -171,6 +171,12 @@
+         self.assertLessEqual(total_records,4096);self.assertLessEqual(total_bytes,16*1024*1024)
+         self.assertLessEqual(total_bytes+state_bytes,20*1024*1024)
+         self.assertEqual(operations,28)
++        self.assertEqual(result['identities']['storageProfile'],'hms.sqlite.compact/0.1')
++        databases=list(self.directory.glob('case-*/state/*.db'));self.assertEqual(len(databases),52)
++        for path in databases:
++            with path.open('rb')as stream:header=stream.read(100)
++            self.assertEqual(header[:16],b'SQLite format 3\0')
++            self.assertEqual(int.from_bytes(header[16:18],'big'),1024)
+         self.assertTrue(all(p.is_file() for p in self.directory.glob('case-*/manifest.json')))
+ 
+     def test_complete_gpio_group(self):self.full(False)

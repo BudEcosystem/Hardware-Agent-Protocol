@@ -1,0 +1,37 @@
+--- previous/run_attempt.py
++++ namespaced/run_attempt.py
+@@ -13,7 +13,7 @@
+ ROOT = Path(__file__).resolve().parents[4]
+ HARNESS = Path(__file__).resolve().parent
+ BASE = HARNESS.parent
+-SOURCE = BASE / 'implementation02'
++SOURCE = BASE / 'implementation03'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_TOTAL = 256 * 1024 * 1024
+ 
+@@ -30,6 +30,7 @@
+     with path.open('xb') as stream:
+         stream.write(wire)
+ 
++assert sha(SOURCE / 'index.json') == 'ec6df4066c89f38328030a28e2a5bd71d137abbc67cd51cb161cc246e2e8a268'
+ source_pin = read(SOURCE / 'index.json')
+ harness_pin = read(HARNESS / 'index.json')
+ external = read(HARNESS / 'references/external-inputs.json')
+@@ -72,7 +73,7 @@
+     with destination.open('xb') as stream:
+         stream.write(path.read_bytes())
+     inputs.append(dict(path=relative.as_posix(), bytes=row['bytes'], sha256=row['sha256']))
+-assert len(inputs) == 301
++assert len(inputs) == 304
+ child_path = attempt / 'attempt_child.py'
+ with child_path.open('xb') as stream:
+     stream.write((HARNESS / 'attempt_child.py').read_bytes())
+@@ -182,7 +183,7 @@
+ result = dict(status='passed' if not errors else 'failed', errors=errors, counts=counts,
+     childState='exited', exitCode=exit_code, pid=child.pid, elapsedSeconds=elapsed,
+     sourceIndexSha256=sha(SOURCE / 'index.json'), harnessIndexSha256=sha(HARNESS / 'index.json'),
+-    sourceInputs=301, inputAndExternalVerificationPassed=not any(item.startswith('final inputs') for item in errors),
++    sourceInputs=304, inputAndExternalVerificationPassed=not any(item.startswith('final inputs') for item in errors),
+     timeoutSeconds=180, maxSingleFileBytes=MAX_FILE, maxTotalScratchBytes=MAX_TOTAL,
+     scratchRetained=True, scratchBytes=total, scratchEntries=len(files), rawScratch=str(scratch), originalScratchRetained=True,
+     noWorkerLaunched=True, noPhysicalEffects=True, totalDiskQuotaEnforced=False,

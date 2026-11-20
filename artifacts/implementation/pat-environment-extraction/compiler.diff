@@ -1,0 +1,168 @@
+--- baseline/hms/pat_compiler.py
++++ staged/hms/pat_compiler.py
+@@ -213,6 +213,92 @@
+     return digest
+ 
+ 
++def _binding_dependencies(artifact, bindings):
++    dependencies = []
++    for role, requirement in artifact["roles"].items():
++        descriptor = bindings[role]
++        type_digest = _binding(descriptor, requirement)
++        binding = descriptor["binding"]
++        dependencies.append({"role": role, "descriptionDigest": type_digest,
++            "bindingDigest": "sha256:" + hashlib.sha256(canonical(binding)).hexdigest(),
++            "instanceId": binding["instanceId"], "bindingGeneration": binding["generation"],
++            "controlGeneration": binding["controlGeneration"], "calibrationRevision": binding["calibrationRevision"],
++            "endpointSession": descriptor["endpointSession"], "driverProfile": descriptor["driverProfile"],
++            "driverDigest": descriptor["driverDigest"], "installationDigest": descriptor["installationDigest"],
++            "metadataDigest": "sha256:" + hashlib.sha256(canonical(descriptor["argumentMetadata"])).hexdigest()})
++    dependencies.sort(key=lambda value: value["role"])
++    return dependencies
++
++
++def _validate_static_step(artifact, step, descriptor):
++    """Prove full declared domains and semantics without selecting a value."""
++    action = descriptor["type"]["execution"]["actions"][step["actionId"]]
++    require(step["timing"]["maxRunMs"] <= action["maxRunMs"], "PAT_TIME_BOUNDS")
++    schemas = (action["inputSchema"], descriptor["binding"]["argumentSchemas"][step["actionId"]])
++    arguments = step["arguments"]
++    metadata = descriptor["argumentMetadata"][step["actionId"]]
++    for schema in schemas:
++        require(set(schema["required"]) <= set(arguments) <= set(schema["properties"]), "PAT_ARGUMENT_DOMAIN")
++        for argument, expression in arguments.items():
++            if "parameter" in expression:
++                declaration = artifact["parameters"][expression["parameter"]]
++                _domain_subset(declaration["valueSchema"], schema["properties"][argument])
++                require(declaration["unit"] == metadata[argument]["unit"] and
++                        declaration["frame"] == metadata[argument]["frame"], "PAT_SEMANTICS_MISMATCH")
++            else:
++                require(_fits(schema["properties"][argument], expression["literal"]), "PAT_ARGUMENT_DOMAIN")
++    for argument in arguments:
++        for dimension in ("unit", "frame"):
++            info = metadata[argument]
++            companion = info[dimension + "Argument"]
++            if companion is not None:
++                require(companion in arguments, "PAT_SEMANTICS_MISMATCH")
++                expression = arguments[companion]
++                if "parameter" in expression:
++                    _domain_subset(artifact["parameters"][expression["parameter"]]["valueSchema"],
++                                   {"type": "string", "maxLength": 4096, "const": info[dimension]})
++                else:
++                    require(equal(expression["literal"], info[dimension]), "PAT_SEMANTICS_MISMATCH")
++    return schemas
++
++
++def _environment_evidence(dependencies, deployment):
++    environment = {"profile": "hms.pat.environment/0.1", "deployment": deployment,
++        "evidenceMode": "simulation", "compilerDigest": COMPILER_DIGEST, "roles": {
++        row["role"]: {"typeDigest": row["descriptionDigest"], "bindingDigest": row["bindingDigest"],
++                      "installationDigest": row["installationDigest"], "argumentMetadataDigest": row["metadataDigest"],
++                      "driverProfile": row["driverProfile"], "driverDigest": row["driverDigest"]}
++        for row in dependencies}}
++    return {"evaluationEnvironment": environment,
++            "environmentDigest": "sha256:" + hashlib.sha256(
++                b"HMS-PAT-ENVIRONMENT-v0.1\0" + canonical(environment)).hexdigest()}
++
++
++@_input_errors
++def evaluation_environment(artifact, bindings, *, deployment, evidence_mode="simulation"):
++    """Return detached static dependency evidence without constructing a run.
++
++    Validate the entire declared parameter domain against the exact role
++    snapshots. This is not a parameter applicability, current installation,
++    freshness, authority or qualification check. Descriptors remain trusted
++    caller data. No time, run key or sample parameter assignment is needed.
++    Endpoint sessions are validated and retained in dependencies but excluded
++    from the evaluation environment, exactly as in compile_pat.
++    """
++    artifact = parse_pat(artifact)
++    bindings = snapshot(bindings, "PAT_INVALID_BINDING")
++    closed(bindings, artifact["roles"], "PAT_INVALID_BINDING")
++    name(deployment, "PAT_INVALID_CONTEXT")
++    require(type(evidence_mode) is str and evidence_mode == "simulation", "PAT_INVALID_CONTEXT")
++    dependencies = _binding_dependencies(artifact, bindings)
++    for step in artifact["steps"]:
++        _validate_static_step(artifact, step, bindings[step["role"]])
++    result = {"patDigest": pat_digest(artifact), "compilerDigest": COMPILER_DIGEST,
++              **_environment_evidence(dependencies, deployment), "dependencies": dependencies}
++    canonical(result)
++    return result
++
++
+ @_input_errors
+ def compile_pat(artifact, parameters, bindings, *, origin_ms, replay_namespace,
+                 procedure_key, operation_keys, caller_deadline_ms, context):
+@@ -243,49 +329,23 @@
+     budget = artifact["timingBudget"]
+     end = origin_ms + budget["latestCompletionOffsetMs"]
+     require(end <= min(caller_deadline_ms, SAFE_INTEGER), "PAT_TIME_BOUNDS")
+-    dependencies = []
+-    for role, requirement in artifact["roles"].items():
+-        descriptor = bindings[role]
+-        type_digest = _binding(descriptor, requirement)
+-        binding = descriptor["binding"]
+-        dependencies.append({"role": role, "descriptionDigest": type_digest,
+-            "bindingDigest": "sha256:" + hashlib.sha256(canonical(binding)).hexdigest(),
+-            "instanceId": binding["instanceId"], "bindingGeneration": binding["generation"],
+-            "controlGeneration": binding["controlGeneration"], "calibrationRevision": binding["calibrationRevision"],
+-            "endpointSession": descriptor["endpointSession"], "driverProfile": descriptor["driverProfile"],
+-            "driverDigest": descriptor["driverDigest"], "installationDigest": descriptor["installationDigest"],
+-            "metadataDigest": "sha256:" + hashlib.sha256(canonical(descriptor["argumentMetadata"])).hexdigest()})
++    dependencies = _binding_dependencies(artifact, bindings)
+     children = []
+     for step in artifact["steps"]:
+         descriptor = bindings[step["role"]]
+         binding = descriptor["binding"]
+-        action = descriptor["type"]["execution"]["actions"][step["actionId"]]
+-        require(step["timing"]["maxRunMs"] <= action["maxRunMs"], "PAT_TIME_BOUNDS")
+-        schemas = (action["inputSchema"], binding["argumentSchemas"][step["actionId"]])
++        schemas = _validate_static_step(artifact, step, descriptor)
+         args = {key: parameters[expression["parameter"]] if "parameter" in expression else expression["literal"]
+                 for key, expression in step["arguments"].items()}
+         metadata = descriptor["argumentMetadata"][step["actionId"]]
+         for schema in schemas:
+-            require(set(schema["required"]) <= set(args) <= set(schema["properties"]), "PAT_ARGUMENT_DOMAIN")
+             require(next(Draft202012Validator(schema).iter_errors(args), None) is None, "PAT_ARGUMENT_DOMAIN")
+-            for argument, expression in step["arguments"].items():
+-                if "parameter" in expression:
+-                    declaration = artifact["parameters"][expression["parameter"]]
+-                    _domain_subset(declaration["valueSchema"], schema["properties"][argument])
+-                    require(declaration["unit"] == metadata[argument]["unit"] and
+-                            declaration["frame"] == metadata[argument]["frame"], "PAT_SEMANTICS_MISMATCH")
+-                else:
+-                    require(_fits(schema["properties"][argument], expression["literal"]), "PAT_ARGUMENT_DOMAIN")
+         for argument in args:
+             for dimension in ("unit", "frame"):
+                 info = metadata[argument]
+                 companion = info[dimension + "Argument"]
+                 if companion is not None:
+                     require(companion in args and equal(args[companion], info[dimension]), "PAT_SEMANTICS_MISMATCH")
+-                    expression = step["arguments"][companion]
+-                    if "parameter" in expression:
+-                        _domain_subset(artifact["parameters"][expression["parameter"]]["valueSchema"],
+-                                       {"type": "string", "maxLength": 4096, "const": info[dimension]})
+         window = step["timing"]
+         intent = {"instanceId": binding["instanceId"], "actionId": step["actionId"],
+             "endpointSession": descriptor["endpointSession"], "controlGeneration": binding["controlGeneration"],
+@@ -306,19 +366,11 @@
+         request = parse_procedure(request)
+     except ContractError as error:
+         raise PatError("PAT_LOWERING_INVALID") from error
+-    dependencies.sort(key=lambda value: value["role"])
+-    evaluation_environment = {"profile": "hms.pat.environment/0.1", "deployment": context["deployment"],
+-        "evidenceMode": "simulation", "compilerDigest": COMPILER_DIGEST, "roles": {
+-        row["role"]: {"typeDigest": row["descriptionDigest"], "bindingDigest": row["bindingDigest"],
+-                      "installationDigest": row["installationDigest"], "argumentMetadataDigest": row["metadataDigest"],
+-                      "driverProfile": row["driverProfile"], "driverDigest": row["driverDigest"]}
+-        for row in dependencies}}
+     binding_document = {"bindings": bindings, "compilerDigest": COMPILER_DIGEST,
+                         "targetProfile": artifact["targetProfile"]}
+     result = {"request": request, "requestDigest": procedure_digest(request), "patDigest": pat_digest(artifact),
+         "compilerDigest": COMPILER_DIGEST,
+-        "evaluationEnvironment": evaluation_environment,
+-        "environmentDigest": "sha256:" + hashlib.sha256(b"HMS-PAT-ENVIRONMENT-v0.1\0" + canonical(evaluation_environment)).hexdigest(),
++        **_environment_evidence(dependencies, context["deployment"]),
+         "runBindingDigest": "sha256:" + hashlib.sha256(b"HMS-PAT-RUN-BINDING-v0.1\0" + canonical(binding_document)).hexdigest(),
+         "dependencies": dependencies,
+         "report": {"targetProfile": artifact["targetProfile"], "stepCount": len(children), "admitted": False,

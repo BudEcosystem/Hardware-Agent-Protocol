@@ -1,0 +1,154 @@
+--- snapshot08/project/tests/test_io_lifecycle.py
++++ snapshot09/project/tests/test_io_lifecycle.py
+@@ -447,3 +447,151 @@
+             self.runtime.registry._bind_checked_in_tx(binding,self.owner.deployment)
+         with self.assertRaisesRegex(JournalError,'RELEASE_TRANSACTION_REQUIRED'):
+             self.runtime.journal._release_resources_in_tx('not:an:operation',None)
++
++
++class LifecycleProvisioningTests(unittest.TestCase):
++    """Partial setup owns its evidence before any Runtime constructor is called."""
++    def setUp(self):
++        self.temp = EvidenceWorkspace(); self.addCleanup(self.temp.cleanup)
++        self.directory = Path(self.temp.name)/'partial-runtime'
++        self.owner = Context('owner','simulation:io-hub'); self.configuration = installation()
++        self.owned = {'initial':None,'ordinary':None,'lifecycle':None}
++        self.observed = {}; self.capture_number = 0
++        self.addCleanup(self.finalize)
++
++    def capture(self, label):
++        if EVIDENCE_DIRECTORY is None or not self.directory.exists():
++            return
++        target = EVIDENCE_DIRECTORY/self._testMethodName/('%02d-'%self.capture_number+label)
++        self.capture_number += 1
++        try:
++            snapshot_databases(self.directory,target,{'installation':self.configuration,
++                'observed':self.observed,'scope':'Controlled pre-board provisioning cut; no operations submitted or tick called.'})
++        except BaseException as exc:
++            self.temp.failed(exc); raise
++
++    def close_owned(self, name):
++        runtime = self.owned[name]; self.owned[name] = None
++        close_retaining(self.temp,runtime)
++
++    def finalize(self):
++        errors = []
++        for name in self.owned:
++            try:
++                self.close_owned(name)
++            except BaseException as exc:
++                errors.append(exc)
++        try:
++            self.capture('final-after-cleanup')
++        finally:
++            if errors:
++                raise errors[0]
++
++    def authority_state(self):
++        db = sqlite3.connect((self.directory/'authority.db').resolve().as_uri()+'?mode=ro',uri=True)
++        try:
++            rows = lambda sql: [list(row) for row in db.execute(sql)]
++            return {
++                'profile':db.execute("SELECT value FROM reg_meta WHERE key='version'").fetchone()[0],
++                'ownerEpoch':db.execute("SELECT value FROM meta WHERE key='owner_epoch'").fetchone()[0],
++                'catalog':rows('SELECT current_revision,topology_digest,routes_digest FROM rc_catalog'),
++                'ioInstallation':rows('SELECT digest FROM rt_io_installation'),
++                'lifecycleInstallation':rows('SELECT digest FROM lc_installation'),
++                'instances':rows('SELECT id,deployment,type_digest,identity_kind,identity_ref,retired FROM reg_instances ORDER BY id'),
++                'bindings':rows('SELECT instance,generation,active FROM reg_bindings ORDER BY instance'),
++                'bindingHistory':rows('SELECT instance,generation,digest FROM reg_binding_history ORDER BY instance,generation'),
++                'ordinaryReady':rows('SELECT adapter,ready FROM rt_adapters ORDER BY adapter'),
++                'lifecycleReady':rows('SELECT adapter,ready FROM lc_routes ORDER BY adapter'),
++                'counts':{table:db.execute('SELECT count(*) FROM '+table).fetchone()[0] for table in
++                    ('operations','claims','lc_dispatch','lc_receipts','lc_publications','io_dispatch_links','io_authority_receipts')},
++                'boardFiles':sorted(path.name for path in self.directory.glob('synthetic-io-board-*.db'))}
++        finally:
++            db.close()
++
++    def test_ordinary_runtime_refuses_committed_lifecycle_setup_before_board_creation(self):
++        try:
++            self.exercise_partial_bootstrap()
++        except BaseException as exc:
++            # Assertion failures also preserve raw DB/WAL state even after a
++            # successful logical capture. Final cleanup never erases that state.
++            self.temp.failed(exc,phase='partial-provisioning-test')
++            raise
++
++    def exercise_partial_bootstrap(self):
++        from hms.synthetic_io_runtime import IoRuntime
++        from hms.synthetic_io_catalog import IoAdapterCatalog
++        from hms.synthetic_io_board import SyntheticIoBoard
++        from hms.synthetic_lifecycle_contracts import STORAGE_PROFILE, installation_digest
++        class BeforeBoardCut(RuntimeError):
++            pass
++        def cut_before_board(*_args,**_kwargs):
++            self.observed['cut'] = self.authority_state()
++            self.capture('catalog-committed-before-board')
++            raise BeforeBoardCut('controlled cut before LifecycleBoard constructor')
++        with patch('hms.synthetic_lifecycle_runtime.LifecycleBoard',side_effect=cut_before_board) as cut:
++            with self.assertRaises(BeforeBoardCut):
++                self.owned['initial'] = LifecycleRuntime(self.directory,create=True,owner=self.owner,installation=self.configuration,
++                    wall_clock_ms=lambda:1000,monotonic_ms=lambda:1000)
++        cut.assert_called_once()
++        initial = self.authority_state(); self.observed['afterCutClose'] = initial
++        self.capture('partial-authority-before-ordinary-open')
++        self.assertEqual(initial['profile'],STORAGE_PROFILE)
++        self.assertEqual(initial['boardFiles'],[])
++        self.assertTrue(initial['ordinaryReady']); self.assertTrue(initial['lifecycleReady'])
++        self.assertTrue(all(ready==0 for _,ready in initial['ordinaryReady']+initial['lifecycleReady']))
++        self.assertTrue(all(count==0 for count in initial['counts'].values()))
++        self.assertEqual(initial['lifecycleInstallation'],[[installation_digest(self.configuration)]])
++
++        ordinary_error = None
++        # Spies call the real constructors: an unfixed ordinary opener is allowed
++        # to demonstrate its wrong provisioning path, never blocked by the test.
++        with patch('hms.synthetic_io_runtime.IoAdapterCatalog',wraps=IoAdapterCatalog) as catalog_call, \
++             patch('hms.synthetic_io_runtime.SyntheticIoBoard',wraps=SyntheticIoBoard) as board_call:
++            try:
++                self.owned['ordinary'] = IoRuntime(self.directory,wall_clock_ms=lambda:1000,monotonic_ms=lambda:1000)
++            except Exception as exc:
++                ordinary_error = exc
++            self.observed['ordinaryOpen'] = {'returnedRuntime':self.owned['ordinary'] is not None,
++                'errorType':None if ordinary_error is None else type(ordinary_error).__name__,
++                'errorCode':getattr(ordinary_error,'code',None),
++                'catalogConstructorCalls':catalog_call.call_count,'boardConstructorCalls':board_call.call_count}
++        after_ordinary = self.authority_state(); self.observed['afterOrdinaryOpen'] = after_ordinary
++        self.capture('after-ordinary-attempt-before-close')
++        self.close_owned('ordinary')
++        self.capture('after-ordinary-close-before-lifecycle-reopen')
++
++        # Always retain the ensuing lifecycle recovery outcome before asserting
++        # the desired refusal. A failing-before run therefore exposes stranding.
++        lifecycle_error = None
++        try:
++            self.owned['lifecycle'] = LifecycleRuntime(self.directory,installation=self.configuration,
++                wall_clock_ms=lambda:1000,monotonic_ms=lambda:1000)
++        except Exception as exc:
++            lifecycle_error = exc
++        self.observed['lifecycleReopen'] = {'returnedRuntime':self.owned['lifecycle'] is not None,
++            'errorType':None if lifecycle_error is None else type(lifecycle_error).__name__,
++            'errorCode':getattr(lifecycle_error,'code',None)}
++        recovered = self.authority_state(); self.observed['afterLifecycleReopen'] = recovered
++        self.capture('after-lifecycle-reopen-before-close')
++
++        self.assertIsInstance(ordinary_error,JournalError)
++        self.assertEqual(ordinary_error.code,'IO_REGISTRY_PROFILE')
++        self.assertEqual(self.observed['ordinaryOpen']['catalogConstructorCalls'],0)
++        self.assertEqual(self.observed['ordinaryOpen']['boardConstructorCalls'],0)
++        # Opening Journal may advance its authority epoch. No whole-DB equality
++        # claim is made; exact installation/enrollment/binding and ready state is.
++        self.assertEqual({key:value for key,value in after_ordinary.items() if key!='ownerEpoch'},
++                         {key:value for key,value in initial.items() if key!='ownerEpoch'})
++        self.assertIsNone(lifecycle_error)
++        runtime = self.owned['lifecycle']; self.assertIsNotNone(runtime)
++        self.assertEqual(runtime.io_board.lifecycle_digest,installation_digest(self.configuration))
++        self.assertEqual(runtime.io_board._meta('profile'),'hms.synthetic-io-board/lifecycle/1')
++        self.assertEqual([tuple(row) for row in runtime.io_board.db.execute(
++            'SELECT revision,operation FROM io_lc_snapshots ORDER BY revision')],[(1,'')])
++        self.assertEqual(runtime.io_board.db.execute('SELECT count(*) FROM io_lc_receipts').fetchone()[0],0)
++        self.assertEqual(runtime.io_board.db.execute('SELECT count(*) FROM io_receipts').fetchone()[0],0)
++        self.assertEqual(runtime.io_board.db.execute('SELECT sum(activations)+sum(completed)+sum(canceled) FROM io_effects').fetchone()[0],0)
++        self.assertTrue(all(count==0 for count in recovered['counts'].values()))
++        self.assertTrue(all(ready==1 for _,ready in recovered['ordinaryReady']+recovered['lifecycleReady']))
++        for field in ('profile','catalog','ioInstallation','lifecycleInstallation','instances','bindings','bindingHistory'):
++            self.assertEqual(recovered[field],initial[field])

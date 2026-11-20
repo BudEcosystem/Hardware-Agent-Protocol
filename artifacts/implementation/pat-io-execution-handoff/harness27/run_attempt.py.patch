@@ -1,0 +1,77 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-execution-handoff/harness19/run_attempt.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-execution-handoff/harness27/run_attempt.py
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = 'f53286e08e528fd764893afc6f6765128c388a349ef536c2f22b17bc521f6035'
+-PREFIX = 'artifacts/implementation/pat-io-execution-handoff/implementation01/'
++FROZEN_INDEX = '52590e9723805e43f76ad50c94d306d4d6a45c031e00b5fff2b6572c38ee4b90'
++PREFIX = 'artifacts/implementation/pat-io-execution-handoff/implementation02/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -91,7 +91,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 255:
++    if len(expected) != 256:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -204,7 +204,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 6 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 1 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -228,7 +228,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation01'
++    stage = here.parent / 'implementation02'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -239,8 +239,8 @@
+     started = time.monotonic()
+     record = {'profile': 'hms.io-group-worker-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 6,
+-              'projectInputCount': 252, 'frozenPreparationInputCount': 255,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 1,
++              'projectInputCount': 253, 'frozenPreparationInputCount': 256,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+@@ -257,8 +257,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 252:
+-            raise ValueError('Candidate project closure must contain exactly 252 files')
++        if len(selected) != 253:
++            raise ValueError('Candidate project closure must contain exactly 253 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -273,10 +273,10 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 6 or
+-                len(targets['targets']) != 6 or
+-                len(set(targets['targets'])) != 6 or
+-                targets['targets'] != ['test_io_service_execution.IoServiceExecutionTests.test_added_execution_trigger_refuses', 'test_io_service_execution.IoServiceExecutionTests.test_after_admission_interruption_reconciles_original_without_launch', 'test_io_service_execution.IoServiceExecutionTests.test_another_current_admin_resolves_same_original_association', 'test_io_service_execution.IoServiceExecutionTests.test_association_rollback_retains_admission_and_reconciles_once', 'test_io_service_execution.IoServiceExecutionTests.test_authorization_revoked_after_admission_prevents_launch', 'test_io_service_execution.IoServiceExecutionTests.test_before_admission_failure_leaves_no_attempt_or_handoff']):
++        if (targets['testCount'] != 1 or
++                len(targets['targets']) != 1 or
++                len(set(targets['targets'])) != 1 or
++                targets['targets'] != ['test_io_service_execution_history.IoServiceExecutionHistoryTests.test_reordering_committed_rows_is_not_a_new_valid_history']):
+             raise ValueError('Closed runs15 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.

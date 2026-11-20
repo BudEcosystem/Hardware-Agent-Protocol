@@ -1,0 +1,45 @@
+--- original/worker_entry.py
++++ artifacts/implementation/pat-io-supervision/implementation01/project/supervisor/worker_entry.py
+@@ -25,7 +25,9 @@
+ socket.getaddrinfo = _no_network
+ 
+ from hms.contracts import canonical
+-from hms.pat_simulation_worker import run_worker
++from hms.pat_io_group_worker import run_io_group
++from bundle_io import load_bundle, check_bundle
++from supervisor_contracts import parse_request, request_digest, digest, exact
+ from hms import pat_simulation_worker as worker
+ from supervisor_contracts import (require, safe_file, document, validate_fresh, write_file)
+ 
+@@ -41,7 +43,13 @@
+     os.lseek(input_fd, 0, os.SEEK_SET)
+     body = os.read(input_fd, source.st_size + 1)
+     require(len(body) == source.st_size)
+-    request = validate_fresh(document(body))
++    launch = document(body)
++    exact(launch, {'profile','attemptId','request'})
++    require(launch['profile']=='hms.pat.io-supervisor-launch/0.1')
++    request = parse_request(launch['request'])
++    bundle = load_bundle(directory, request)
++    validate_fresh(request, bundle)
++    parsed = check_bundle(request, bundle)
+     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+     _, hard = resource.getrlimit(resource.RLIMIT_FSIZE)
+     cap = request['limits']['maxFileBytes']
+@@ -50,8 +58,14 @@
+     os.fchdir(directory)
+     # The real protected pathname is necessary for SQLite's stock pathname VFS.
+     attempt = Path.cwd()
+-    result = run_worker(request['trust']['input'], attempt / 'output')
+-    write_file(directory, 'worker-return.json', canonical(result))
++    require(attempt.name == launch['attemptId'], 'QUALIFICATION_INPUT_ASSOCIATION')
++    inputs = parsed['expected_inputs']
++    result = run_io_group(attempt / 'output', candidate=inputs['candidate'], installation=inputs['installation'],
++        descriptor=inputs['descriptor'], challenge_bindings=inputs['bindings'], limits=request['groupLimits'])
++    returned = dict(profile='hms.pat.io-supervisor-return/0.1', attemptId=launch['attemptId'],
++        requestDigest=request_digest(request), bundleDigest=request['bundleDigest'],
++        groupResultDigest=digest(canonical(result)), status=result['status'])
++    write_file(directory, 'worker-return.json', canonical(returned))
+     # Do not explicitly unlock/close the inherited writer lease before exit.
+     return 0
+ 

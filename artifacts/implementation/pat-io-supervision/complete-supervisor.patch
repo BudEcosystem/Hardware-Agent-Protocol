@@ -1,0 +1,285 @@
+--- artifacts/verification/pat-supervisor-current-integration/src/attempt_ledger.py
++++ artifacts/implementation/pat-io-supervision/implementation01/project/supervisor/attempt_ledger.py
+@@ -72,9 +72,9 @@
+         fingerprint(archive['returnDigest']);checked(lease is not None)
+     integrity = archive['evidenceIntegrity'];usage = archive['usage']
+     if integrity is not None:
+-        closed(integrity, {'recordCount','bytes','orderedDigest'})
+-        number(integrity['recordCount'],1,4096)
+-        number(integrity['bytes'],1,request['trust']['input']['limits']['maxOutputBytes'])
++        closed(integrity, {'fileCount','bytes','orderedDigest'})
++        number(integrity['fileCount'],1,request['limits']['maxFilesPerAttempt'])
++        number(integrity['bytes'],1,request['groupLimits']['maxDerivedBytes'])
+         fingerprint(integrity['orderedDigest'])
+         checked(type(result) is bytes and len(result) > 0)
+     if usage is not None:
+--- artifacts/verification/pat-supervisor-current-integration/src/qualification_supervisor.py
++++ artifacts/implementation/pat-io-supervision/implementation01/project/supervisor/qualification_supervisor.py
+@@ -15,10 +15,10 @@
+ 
+ from hms.contracts import canonical
+ from hms import pat_simulation_worker as worker
+-from hms.pat_simulation_evidence import _records
++from bundle_io import retain_bundle, output_integrity, launch_input
+ from attempt_ledger import AttemptLedger, tree_usage
+ from supervisor_contracts import (SOURCE_FILES, SupervisorError, require, digest, document,
+-    parse_request, validate_fresh, run_key, request_digest, safe_file, read_file, write_file, same, runtime_files)
++    parse_request, validate_fresh, run_key, request_digest, safe_file, read_file, write_file, same, runtime_files, snapshot_bundle)
+ 
+ 
+ def _directory(parent, name, *, create=False):
+@@ -36,6 +36,9 @@
+     """Bounded unique original-source/resource inventory, before admission."""
+     rows = [(row['path'], worker._ROOT / row['path'], row['sha256'])
+             for row in worker._IMPORTED_IDENTITY['sources']]
++    # The conservative I/O driver identity also includes this non-Python input.
++    manifest = worker._ROOT / 'protocol/endpoint/scenario-manifest.json'
++    rows.append(('protocol/endpoint/scenario-manifest.json', manifest, hashlib.sha256(manifest.read_bytes()).hexdigest()))
+     rows += [('supervisor/' + name, Path(__file__).with_name(name),
+               hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()) for name in SOURCE_FILES]
+     # -I excludes the user's site directory. Copy only the already installed
+@@ -105,29 +108,6 @@
+     return target
+ 
+ 
+-def _evidence(directory, request, result):
+-    """Bounded complete byte/hash closure check, not semantic qualification."""
+-    output = _directory(directory, 'output')
+-    evidence = None
+-    try:
+-        evidence = _directory(output, 'evidence')
+-        names = []
+-        with os.scandir(evidence) as entries:
+-            for entry in entries:
+-                require(len(names) < 4096 and re.fullmatch(r'[0-9]{6}\.json', entry.name) is not None,
+-                        'QUALIFICATION_EVIDENCE_INVALID')
+-                names.append(entry.name)
+-        require(sorted(names) == ['%06d.json' % i for i in range(len(names))], 'QUALIFICATION_EVIDENCE_INVALID')
+-        files = []; remaining = request['trust']['input']['limits']['maxOutputBytes']
+-        for name in sorted(names):
+-            body = read_file(evidence, name, maximum=min(65536, remaining))
+-            remaining -= len(body); files.append({'path': 'evidence/' + name, 'body': body})
+-        _records(result, files)
+-        return {'recordCount': len(files), 'bytes': sum(len(f['body']) for f in files),
+-                'orderedDigest': digest(b''.join(hashlib.sha256(f['body']).digest() for f in files))}
+-    finally:
+-        if evidence is not None: os.close(evidence)
+-        os.close(output)
+ 
+ 
+ class QualificationSupervisor:
+@@ -153,7 +133,7 @@
+     def _checkpoint(self, phase, row):
+         """Private test crash seam. Production caller supplies no callbacks."""
+ 
+-    def execute(self, value):
++    def execute(self, value, bundle=None):
+         request = parse_request(value)
+         old = self.lookup(*run_key(request))
+         if old is not None:
+@@ -162,22 +142,24 @@
+         require(self._execution.acquire(blocking=False), 'QUALIFICATION_BUSY')
+         try:
+             # Source/config validation precedes admission writes, never replay.
+-            request = validate_fresh(request)
++            bundle = snapshot_bundle(bundle)
++            request = validate_fresh(request, bundle)
+             image_charge=_image_charge(self.ledger,request)
+             row, created = self.ledger.admit(request,_image_charge=image_charge)
+             if not created: return row
+             self._checkpoint('admitted', row)
+-            return self._launch(row)
++            return self._launch(row, bundle)
+         finally: self._execution.release()
+ 
+-    def _launch(self, row):
++    def _launch(self, row, bundle):
+         identifier = row['record']['attemptId']; request = row['request']
+         directory = lease = input_fd = None
+         process = None
+         try:
+             image = _image(self.ledger, request)
+             directory = _directory(self.ledger.fd, identifier, create=True)
+-            write_file(directory, 'input.json', canonical(request))
++            retain_bundle(directory, request, bundle)
++            write_file(directory, 'input.json', canonical(launch_input(request, identifier)))
+             output = _directory(directory, 'output', create=True); os.close(output)
+             lease = os.open('writer.lease', os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=directory)
+             info = safe_file(lease); fcntl.flock(lease, fcntl.LOCK_EX | fcntl.LOCK_NB)
+@@ -221,7 +203,7 @@
+                 os.set_blocking(stream.fileno(), False); selector.register(stream, selectors.EVENT_READ, name)
+                 fd = os.open(name + '.log', os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=directory)
+                 safe_file(fd); logs[name] = fd
+-            deadline = started + request['trust']['input']['limits']['workerDeadlineMs'] / 1000
++            deadline = started + request['groupLimits']['maxWallMs'] / 1000
+             while True:
+                 now = time.monotonic()
+                 if reason is None:
+@@ -350,10 +332,8 @@
+             body = None; integrity = None; failure = None
+             try:
+                 body = read_file(directory, 'worker-return.json')
+-                result = document(body); cap = row['request']['trust']['input']
+-                for key in ('attemptId', 'environmentDigest', 'matrixDigest', 'identities', 'configuration'):
+-                    require(same(result[key], cap[key]), 'QUALIFICATION_RESULT_ASSOCIATION')
+-                integrity = _evidence(directory, row['request'], result)
++                result = document(body)
++                integrity = output_integrity(directory, row['request'], result, identifier)
+             except Exception as error:
+                 failure = getattr(error, 'code', 'QUALIFICATION_RETURN_UNAVAILABLE')
+             usage = None
+--- artifacts/verification/pat-supervisor-current-integration/src/supervisor_contracts.py
++++ artifacts/implementation/pat-io-supervision/implementation01/project/supervisor/supervisor_contracts.py
+@@ -9,15 +9,16 @@
+ 
+ from hms.contracts import ContractError, canonical, parse_json
+ from hms.journal import JournalError
+-from hms.pat_simulation_evidence import same, trusted_binding, document, exact, integer
+-from hms.pat_simulation_worker import parse_capsule, simulation_identities
++from hms.pat_simulation_evidence import same, document, exact, integer
++from hms.pat_io_run_bundle import (bundle_digest, parse_io_run_bundle,
++    validate_fresh_io_run_bundle, _context, _paths, _hash, CEILINGS)
+ 
+-PROFILE = 'hms.pat.qualification-attempt/0.1'
++PROFILE = 'hms.pat.io-supervisor-request/0.1'
+ DEFAULT_LIMITS = {'maxRetainedBytes': 256*1024*1024, 'attemptReservationBytes': 64*1024*1024,
+     'maxArchives': 32, 'maxFilesPerAttempt': 8192, 'maxStreamBytes': 65536,
+     'maxFileBytes': 64*1024*1024, 'stopGraceMs': 1000, 'settleGraceMs': 1000}
+-SOURCE_FILES = ('supervisor_contracts.py', 'attempt_ledger.py', 'qualification_supervisor.py', 'worker_entry.py')
+-PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs', 'rpds-py')
++SOURCE_FILES = ('supervisor_contracts.py', 'attempt_ledger.py', 'qualification_supervisor.py', 'worker_entry.py', 'bundle_io.py')
++PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs', 'rpds-py', 'typing_extensions', 'idna')
+ 
+ class SupervisorError(JournalError):
+     pass
+@@ -29,7 +30,7 @@
+     return 'sha256:'+hashlib.sha256(body).hexdigest()
+ 
+ def request_digest(request):
+-    return digest(b'HMS-PAT-QUALIFICATION-REQUEST-v0.1\0'+canonical(request))
++    return digest(b'HMS-PAT-IO-SUPERVISOR-REQUEST-v0.1\0'+canonical(request))
+ 
+ def errors(function):
+     @wraps(function)
+@@ -50,12 +51,28 @@
+ @errors
+ def parse_request(value):
+     # This structural replay parser deliberately does not consult current code.
+-    body=canonical(value);exact(value,{'profile','trust','supervisorIdentity','limits'})
++    body=canonical(value);exact(value,{'profile','context','bundleHeader','bundleDigest','supervisorIdentity','limits','groupLimits','implementation'})
+     require(value['profile']==PROFILE)
+-    trust=value['trust'];exact(trust,{'profile','deployment','runId','evaluator','input'})
+-    exact(trust['evaluator'],{'evaluatorId','implementationDigest','policyDigest','requiredChecks','evidenceProfile'})
+-    for name in (trust['deployment'],trust['runId'],trust['evaluator']['evaluatorId']):
+-        require(type(name) is str and 1<=len(name)<=160)
++    context=_context(value['context']);header=value['bundleHeader']
++    exact(header, {'profile','context','manifest','inputBytes','caseIds','matrixDigest','inputSetDigest'})
++    require(header['profile']=='hms.pat.io-run-bundle/0.1' and same(header['context'],context))
++    require(bundle_digest(canonical(header))==value['bundleDigest'])
++    integer(header['inputBytes'],1,39*65536)
++    ids=header['caseIds'];require(type(ids) is list and 1<=len(ids)<=32)
++    require(all(type(v) is str and re.fullmatch(r'sha256:[0-9a-f]{64}',v) for v in ids) and len(set(ids))==len(ids))
++    paths=_paths(len(ids));manifest=header['manifest'];require(type(manifest) is list and len(manifest)==len(paths))
++    for path,row in zip(paths,manifest):
++        exact(row,{'path','bytes','sha256'});integer(row['bytes'],1,65536)
++        require(row['path']==path and type(row['sha256']) is str and re.fullmatch(r'[0-9a-f]{64}',row['sha256']))
++    require(sum(row['bytes'] for row in manifest)==header['inputBytes'] and
++        header['inputSetDigest']==_hash(b'HMS-PAT-IO-INPUT-SET-v0.1',manifest))
++    require(type(header['matrixDigest']) is str and re.fullmatch(r'sha256:[0-9a-f]{64}',header['matrixDigest']))
++    exact(value['groupLimits'],CEILINGS)
++    for key,maximum in CEILINGS.items():integer(value['groupLimits'][key],1,maximum)
++    exact(value['implementation'],{'compilerDigest','driverDigest','workerDigest','storageProfile'})
++    for key in ('compilerDigest','driverDigest','workerDigest'):
++        require(type(value['implementation'][key]) is str and re.fullmatch(r'sha256:[0-9a-f]{64}',value['implementation'][key]))
++    require(value['implementation']['storageProfile']=='hms.sqlite.compact/0.1')
+     require(type(value['supervisorIdentity']) is str and re.fullmatch(r'sha256:[0-9a-f]{64}',value['supervisorIdentity']) is not None)
+     parse_limits(value['limits'])
+     result=parse_json(body);require(same(value,result))
+@@ -69,21 +86,34 @@
+     return digest(b'HMS-PAT-QUALIFICATION-SUPERVISOR-v0.1\0'+canonical({'sources':rows,'worker':worker_identities,
+         'runtimeFiles':len(files),'runtimeDigest':'sha256:'+closure}))
+ 
+-def prepare_request(trust, limits=None):
+-    trust=trusted_binding(trust);parse_capsule(trust['input'])
++@errors
++def snapshot_bundle(value):
++    exact(value, {'header','documents','bundleDigest'})
++    require(type(value['header']) is bytes and type(value['documents']) is dict and 1<=len(value['documents'])<=39)
++    require(all(type(k) is str and type(v) is bytes and 0<len(v)<=65536 for k,v in value['documents'].items()))
++    return dict(header=value['header'],documents=dict(value['documents']),bundleDigest=value['bundleDigest'])
++
++@errors
++def prepare_request(bundle, *, context, limits=None):
++    bundle=snapshot_bundle(bundle)
++    parsed=validate_fresh_io_run_bundle(bundle['header'],bundle['documents'],expected_context=context,
++        expected_bundle_digest=bundle['bundleDigest'])
++    header=document(bundle['header']);inputs=parsed['expected_inputs']
+     limits=parse_limits(DEFAULT_LIMITS if limits is None else limits)
+-    require(limits['attemptReservationBytes'] >= trust['input']['limits']['maxOutputBytes']+2*limits['maxStreamBytes']+131072,
++    require(limits['attemptReservationBytes'] >= inputs['matrix']['limits']['maxDerivedBytes']+
++        header['inputBytes']+len(bundle['header'])+2*limits['maxStreamBytes']+3*65536,
+             'QUALIFICATION_RESERVATION_TOO_SMALL')
+-    return parse_request({'profile':PROFILE,'trust':trust,'limits':limits,
+-                          'supervisorIdentity':supervisor_identity(trust['input']['identities'])})
++    return parse_request(dict(profile=PROFILE,context=parsed['context'],bundleHeader=header,bundleDigest=bundle['bundleDigest'],
++        limits=limits,groupLimits=inputs['matrix']['limits'],implementation=inputs['implementation'],
++        supervisorIdentity=supervisor_identity(inputs['implementation'])))
+ 
+-def validate_fresh(request):
++def validate_fresh(request, bundle):
+     request=parse_request(request)
+-    require(same(prepare_request(request['trust'],request['limits']),request),'QUALIFICATION_IMPLEMENTATION_CHANGED')
++    require(same(prepare_request(bundle,context=request['context'],limits=request['limits']),request),'QUALIFICATION_IMPLEMENTATION_CHANGED')
+     return request
+ 
+ def run_key(request):
+-    trust=request['trust'];return trust['deployment'],trust['evaluator']['evaluatorId'],trust['runId']
++    context=request['context'];return context['deployment'],context['evaluatorId'],context['runId']
+ 
+ def safe_file(fd, *, mode=0o600, maximum=None):
+     info=os.fstat(fd)
+--- artifacts/verification/pat-supervisor-current-integration/src/worker_entry.py
++++ artifacts/implementation/pat-io-supervision/implementation01/project/supervisor/worker_entry.py
+@@ -25,7 +25,9 @@
+ socket.getaddrinfo = _no_network
+ 
+ from hms.contracts import canonical
+-from hms.pat_simulation_worker import run_worker
++from hms.pat_io_group_worker import run_io_group
++from bundle_io import load_bundle, check_bundle
++from supervisor_contracts import parse_request, request_digest, digest, exact
+ from hms import pat_simulation_worker as worker
+ from supervisor_contracts import (require, safe_file, document, validate_fresh, write_file)
+ 
+@@ -41,7 +43,13 @@
+     os.lseek(input_fd, 0, os.SEEK_SET)
+     body = os.read(input_fd, source.st_size + 1)
+     require(len(body) == source.st_size)
+-    request = validate_fresh(document(body))
++    launch = document(body)
++    exact(launch, {'profile','attemptId','request'})
++    require(launch['profile']=='hms.pat.io-supervisor-launch/0.1')
++    request = parse_request(launch['request'])
++    bundle = load_bundle(directory, request)
++    validate_fresh(request, bundle)
++    parsed = check_bundle(request, bundle)
+     resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+     _, hard = resource.getrlimit(resource.RLIMIT_FSIZE)
+     cap = request['limits']['maxFileBytes']
+@@ -50,8 +58,14 @@
+     os.fchdir(directory)
+     # The real protected pathname is necessary for SQLite's stock pathname VFS.
+     attempt = Path.cwd()
+-    result = run_worker(request['trust']['input'], attempt / 'output')
+-    write_file(directory, 'worker-return.json', canonical(result))
++    require(attempt.name == launch['attemptId'], 'QUALIFICATION_INPUT_ASSOCIATION')
++    inputs = parsed['expected_inputs']
++    result = run_io_group(attempt / 'output', candidate=inputs['candidate'], installation=inputs['installation'],
++        descriptor=inputs['descriptor'], challenge_bindings=inputs['bindings'], limits=request['groupLimits'])
++    returned = dict(profile='hms.pat.io-supervisor-return/0.1', attemptId=launch['attemptId'],
++        requestDigest=request_digest(request), bundleDigest=request['bundleDigest'],
++        groupResultDigest=digest(canonical(result)), status=result['status'])
++    write_file(directory, 'worker-return.json', canonical(returned))
+     # Do not explicitly unlock/close the inherited writer lease before exit.
+     return 0
+ 

@@ -1,0 +1,85 @@
+--- artifacts/implementation/pat-io-refusal-history/harness02-refusal56/run_attempt.py
++++ artifacts/implementation/pat-io-refusal-history/harness04-refusal29/run_attempt.py
+@@ -1,4 +1,4 @@
+-"""Original isolated refusal56 runner. Execute only after parent review/release.
++"""Original isolated refusal29 runner. Execute only after parent review/release.
+ 
+ No project imports occur in this launcher. Seven selected distribution closures
+ are acquired independently of the compiler's five-package identity.
+@@ -177,7 +177,7 @@
+         while selector.get_map():
+             remaining = deadline - time.monotonic()
+             if remaining <= 0:
+-                raise TimeoutError('RefusalHistory56 child exceeded original harness deadline')
++                raise TimeoutError('RefusalHistory29 child exceeded original harness deadline')
+             for key, _ in selector.select(min(remaining, 0.1)):
+                 block = os.read(key.fileobj.fileno(), 65536)
+                 if not block:
+@@ -190,13 +190,13 @@
+                 log.write(block)
+                 count += len(block)
+             if time.monotonic() >= deadline:
+-                raise TimeoutError('RefusalHistory56 child crossed harness deadline during pipe collection')
++                raise TimeoutError('RefusalHistory29 child crossed harness deadline during pipe collection')
+     remaining = deadline - time.monotonic()
+     if remaining <= 0:
+-        raise TimeoutError('RefusalHistory56 child crossed harness deadline at EOF')
++        raise TimeoutError('RefusalHistory29 child crossed harness deadline at EOF')
+     process.wait(timeout=remaining)
+     if time.monotonic() >= deadline:
+-        raise TimeoutError('RefusalHistory56 child crossed harness deadline at process exit')
++        raise TimeoutError('RefusalHistory29 child crossed harness deadline at process exit')
+     return count
+ 
+ 
+@@ -204,7 +204,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 56 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 29 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -239,13 +239,13 @@
+     started = time.monotonic()
+     record = {'profile': 'hms.io-refusal-history-pure-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 56,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 29,
+               'projectInputCount': 7060, 'frozenPreparationInputCount': 7065,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+                          'retainedLogBytes': MAX_LOG, 'scratchRetentionBytes': MAX_SCRATCH_BYTES},
+-              'scope': 'Independent refusal56 disjoint pure selection for derived-refusal validation; no Runtime construction, SQLite connection, network, native endpoints, model or hardware execution.'}
++              'scope': 'Independent refusal29 disjoint pure selection for derived-refusal validation; no Runtime construction, SQLite connection, network, native endpoints, model or hardware execution.'}
+     write_json(attempt / 'started.json', record)
+     try:
+         own_before = [row(here / name, name) for name in OWN_FILES]
+@@ -273,12 +273,11 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 56 or
+-                len(targets['targets']) != 56 or
+-                len(set(targets['targets'])) != 56 or
+-                sum(name.startswith('test_pat_io_observation_history.IoObservationHistoryTests.') for name in targets['targets']) != 27 or
++        if (targets['testCount'] != 29 or
++                len(targets['targets']) != 29 or
++                len(set(targets['targets'])) != 29 or
+                 sum(name.startswith('test_pat_io_refusal_history.IoRefusalHistoryTests.') for name in targets['targets']) != 29):
+-            raise ValueError('Closed refusal56 method selection changed')
++            raise ValueError('Closed refusal29 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+         scratch_parent = Path('/tmp')
+@@ -287,7 +286,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-refusal-history-refusal56-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-refusal-history-refusal29-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

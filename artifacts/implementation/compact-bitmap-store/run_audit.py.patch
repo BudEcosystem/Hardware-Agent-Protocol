@@ -1,0 +1,153 @@
+--- full-storage-attribution/run_audit.py
++++ compact-bitmap-store/run_audit.py
+@@ -1,4 +1,4 @@
+-"""Bounded single read-only audit with frozen source and wait4 process receipt."""
++"""Single bounded independent audit; anchored group cleanup and retained receipts."""
+ import hashlib
+ import json
+ import os
+@@ -11,42 +11,116 @@
+ 
+ HERE=Path(__file__).resolve().parent
+ WORK=HERE/'audit-process01'
++SOURCES=['audit_evidence.py','run_audit.py','run_audit.py.patch','AUDIT-PLAN.md','retained_reader.py']
+ 
+ def digest(path):
+-    with path.open('rb') as f:return hashlib.file_digest(f,'sha256').hexdigest()
++    with path.open('rb') as stream:return hashlib.file_digest(stream,'sha256').hexdigest()
+ def save(path,value):
+-    with path.open('x') as f:json.dump(value,f,indent=2,sort_keys=True);f.write('\n');f.flush();os.fsync(f.fileno())
+-def limits():
+-    for key,value in [(resource.RLIMIT_CPU,40),(resource.RLIMIT_AS,512*1024**2),
++    with path.open('x') as stream:
++        json.dump(value,stream,indent=2,sort_keys=True);stream.write('\n');stream.flush();os.fsync(stream.fileno())
++def limits(cpu):
++    for key,value in [(resource.RLIMIT_CPU,cpu),(resource.RLIMIT_AS,512*1024**2),
+                       (resource.RLIMIT_FSIZE,16*1024**2),(resource.RLIMIT_NOFILE,128),(resource.RLIMIT_CORE,0)]:
+         resource.setrlimit(key,(value,value))
+ 
++def group_members(pgid):
++    members=[]
++    for entry in Path('/proc').iterdir():
++        if not entry.name.isdigit():continue
++        try:
++            fields=(entry/'stat').read_text().rsplit(')',1)[1].split()
++            if int(fields[2])==pgid:members.append(dict(pid=int(entry.name),state=fields[0]))
++        except (FileNotFoundError,ProcessLookupError,PermissionError):pass
++    return members
++
++
++def child_exited_unreaped(process):
++    # Do not call Popen.poll/wait: the owned leader anchors numeric group identity.
++    return os.waitid(os.P_PID,process.pid,os.WEXITED|os.WNOHANG|os.WNOWAIT) is not None
++
++
++def finish_owned_group(process):
++    exited=child_exited_unreaped(process)  # Raises if ownership/waitability was lost; never signal then.
++    before=[m for m in group_members(process.pid) if m['pid']!=process.pid]
++    if not exited or before:
++        try:os.killpg(process.pid,signal.SIGKILL)
++        except ProcessLookupError:pass
++    deadline=time.monotonic()+2
++    while [m for m in group_members(process.pid) if m['pid']!=process.pid] and time.monotonic()<deadline:
++        time.sleep(.02)
++    pid,status,usage=os.wait4(process.pid,0)  # Final signal precedes reap; retain CPU/RSS usage.
++    assert pid==process.pid
++    process.returncode=os.waitstatus_to_exitcode(status)
++    return usage,before,group_members(process.pid)  # Read-only audit after reap; no fallback signal.
++
++
++def run(argv,env,wall=60,cpu=40):
++    work=WORK
++    save(work/'intent.json',dict(argv=argv,environment=env,cwd=str(work),wallSeconds=wall,cpuSeconds=cpu,
++         addressSpaceBytes=512*1024**2,fileBytes=16*1024**2,descriptors=128,
++         sourceSha256={name:digest(WORK/name) for name in SOURCES},
++         interpreter=str(Path(sys.executable).resolve()),interpreterSha256=digest(Path(sys.executable).resolve())))
++    started=time.monotonic();timed_out=False;monitor_error=None;cleanup_error=None;proc=None
++    usage=None;leftovers=[];remaining=[];reaped=False
++    # Cover the Popen assignment window. The child restores the inherited mask before exec.
++    blocked={signal.SIGTERM,signal.SIGINT}
++    def child_limits():
++        limits(cpu);signal.pthread_sigmask(signal.SIG_SETMASK,prior_mask)
++    with (work/'stdout.txt').open('xb') as out,(work/'stderr.txt').open('xb') as err:
++        prior_mask=signal.pthread_sigmask(signal.SIG_BLOCK,blocked)
++        try:
++            proc=subprocess.Popen(argv,cwd=work,env=env,stdin=subprocess.DEVNULL,stdout=out,stderr=err,
++                                  start_new_session=True,preexec_fn=child_limits)
++            save(work/'started.json',dict(pid=proc.pid,processGroup=proc.pid,unix=time.time()))
++            signal.pthread_sigmask(signal.SIG_SETMASK,prior_mask)
++            while not child_exited_unreaped(proc):
++                if time.monotonic()-started>=wall:
++                    timed_out=True;break  # Cleanup signals while the leader remains anchored.
++                time.sleep(.1)
++        except BaseException as error:
++            monitor_error=error
++        finally:
++            signal.pthread_sigmask(signal.SIG_BLOCK,blocked)
++            if proc is not None:
++                try:
++                    usage,leftovers,remaining=finish_owned_group(proc);reaped=True
++                except BaseException as error:
++                    cleanup_error=error  # No unanchored retry or fallback signal.
++            try:
++                out.flush();err.flush();os.fsync(out.fileno());os.fsync(err.fileno())
++                result=dict(returnCode=None if proc is None else proc.returncode,timedOut=timed_out,reaped=reaped,
++                            elapsedSeconds=time.monotonic()-started,
++                            cpuSeconds=None if usage is None else usage.ru_utime+usage.ru_stime,
++                            peakRSSKiB=None if usage is None else usage.ru_maxrss,
++                            groupSignalAnchor='waitable unreaped owned leader; no signals after wait4',
++                            leftoverMembersBeforeReap=leftovers,groupMembersAfterCleanup=remaining,
++                            groupAbsentAfterCleanup=reaped and not remaining,
++                            monitorError=None if monitor_error is None else f'{type(monitor_error).__name__}: {monitor_error}',
++                            cleanupError=None if cleanup_error is None else f'{type(cleanup_error).__name__}: {cleanup_error}')
++                save(work/'result.json',result)
++            finally:
++                signal.pthread_sigmask(signal.SIG_SETMASK,prior_mask)
++    if cleanup_error is not None:raise cleanup_error
++    if monitor_error is not None:raise monitor_error
++    if not reaped or remaining or proc.returncode or timed_out:
++        raise RuntimeError('read-only audit failed or inconclusive; no retry')
++    return work
++
++
+ def main():
++    def interrupted(signum,_frame):raise RuntimeError('Audit runner interrupted by signal '+str(signum))
++    signal.signal(signal.SIGTERM,interrupted)
+     os.umask(0o077);assert (HERE/'attempt01/RESULTS.json').is_file();WORK.mkdir(mode=0o700)
+-    for name in ['audit_evidence.py','run_audit.py','AUDIT-PLAN.md','retained_reader.py']:
+-        with (WORK/name).open('xb') as f:f.write((HERE/name).read_bytes());f.flush();os.fsync(f.fileno())
++    for name in SOURCES:
++        with (WORK/name).open('xb') as stream:
++            stream.write((HERE/name).read_bytes());stream.flush();os.fsync(stream.fileno())
+     env={'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C','PYTHONDONTWRITEBYTECODE':'1','HMS_AUDIT_STAGE':str(HERE)}
+-    argv=[sys.executable,'-B',str(WORK/'audit_evidence.py')]
+-    save(WORK/'intent.json',dict(argv=argv,environment=env,wallSeconds=60,cpuSeconds=40,
+-        addressSpaceBytes=512*1024**2,descriptors=128,fileBytes=16*1024**2,
+-        sourceSha256={name:digest(WORK/name) for name in ['audit_evidence.py','run_audit.py','AUDIT-PLAN.md','retained_reader.py']}))
+-    started=time.monotonic();timed_out=False
+-    with (WORK/'stdout.txt').open('xb') as out,(WORK/'stderr.txt').open('xb') as err:
+-        proc=subprocess.Popen(argv,cwd=WORK,env=env,stdout=out,stderr=err,start_new_session=True,preexec_fn=limits)
+-        save(WORK/'started.json',dict(pid=proc.pid,processGroup=proc.pid,unix=time.time()))
+-        while True:
+-            pid,status,usage=os.wait4(proc.pid,os.WNOHANG)
+-            if pid:break
+-            if time.monotonic()-started>=60:
+-                timed_out=True;os.killpg(proc.pid,signal.SIGKILL);pid,status,usage=os.wait4(proc.pid,0);break
+-            time.sleep(.1)
+-        proc.returncode=os.waitstatus_to_exitcode(status)
+-        try:os.killpg(proc.pid,signal.SIGKILL)
+-        except ProcessLookupError:pass
+-        out.flush();err.flush();os.fsync(out.fileno());os.fsync(err.fileno())
+-    result=dict(returnCode=proc.returncode,reaped=True,timedOut=timed_out,elapsedSeconds=time.monotonic()-started,
+-                cpuSeconds=usage.ru_utime+usage.ru_stime,peakRSSKiB=usage.ru_maxrss)
+-    save(WORK/'result.json',result);print(json.dumps(result,sort_keys=True),flush=True)
+-    if proc.returncode or timed_out:raise SystemExit(1)
++    try:
++        run([sys.executable,'-B',str(WORK/'audit_evidence.py')],env,60,40)
++    finally:
++        assert all(digest(HERE/name)==digest(WORK/name) for name in SOURCES)
++    result=json.loads((WORK/'result.json').read_text())
++    print(json.dumps(result,sort_keys=True),flush=True)
++
+ 
+ if __name__=='__main__':main()

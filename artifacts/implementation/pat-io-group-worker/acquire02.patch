@@ -1,0 +1,11 @@
+--- artifacts/implementation/pat-io-group-worker/acquire.py
++++ artifacts/implementation/pat-io-group-worker/acquire02.py
+@@ -41,7 +41,7 @@
+  p=Path(c['database']);parts=p.relative_to(raw).parts
+  assert len(parts)==5 and parts[0]==c['testId'].split('.')[-1] and parts[1]=='group' and re.fullmatch(r'case-[0-2][0-9]',parts[2]) is not None and parts[3]=='state'
+  assert parts[4]=='authority.db' or re.fullmatch(r'synthetic-io-board-[0-9a-f]{64}\.db',parts[4])
+-log=(A/'output.log').read_text();m=re.search(r'Ran '+str(count)+r' tests in ([0-9.]+)s',log);assert m
++log=(A/'output.log').read_text();m=re.search(r'Ran '+str(count)+r' tests? in ([0-9.]+)s',log);assert m
+ rows=inventory(A);shutil.copytree(A,OUT/'attempt');assert inventory(OUT/'attempt')==rows==inventory(A)
+ proof=dict(scope='Complete terminated current-group capture/budget attempt; synthetic private SQLite only.',
+  harness=harness,harnessIndexSha256=sha(H/'index.json'),sourceIndexSha256=review['sourceIndexSha256'],targetsSha256=sha(H/'targets.json'),

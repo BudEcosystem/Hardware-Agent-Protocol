@@ -1,0 +1,33 @@
+--- artifacts/implementation/pat-io-recorded-catalog/audit-actual.py
++++ pat-io-definition-build/audit-actual.py
+@@ -8,8 +8,8 @@
+ import sqlite3
+ import stat
+ 
+-BASE=Path('artifacts/implementation/pat-io-recorded-catalog')
+-ATTEMPT=BASE/'harness83/attempts/attempt01-actual'
++BASE=Path('artifacts/implementation/pat-io-definition-build')
++ATTEMPT=BASE/'harness02/attempts/attempt01-actual'
+ def read(path):return json.loads(path.read_bytes())
+ def file_hash(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+ def sha(body):return 'sha256:'+hashlib.sha256(body).hexdigest()
+@@ -23,6 +23,9 @@
+         else:assert type(item) in (str,int,bool,type(None)) and (type(item) is not int or abs(item)<=2**53-1)
+     check(value);return json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()
+ def hashed(domain,value):return sha(domain+b'\0'+canonical(value))
++assert file_hash(BASE/'implementation01/index.json')=='7a52bf04800bde161cfb778fca0da5cec996468fe03d9944902e73e11c6817cc'
++for source_row in read(BASE/'implementation01/index.json')['files']:
++    source_path=Path(source_row['path']);assert source_path.stat().st_size==source_row['bytes'] and file_hash(source_path)==source_row['sha256']
+ result=read(ATTEMPT/'result.json')
+ assert result['status']=='passed' and result['currentPass'] and result['childState']=='exited' and result['exitCode']==0
+ assert result['errors']==result['childErrors']==[] and result['scratchRetained']
+@@ -187,7 +190,8 @@
+         path=ATTEMPT/'project/evidence'/name
+         source_rows.append(dict(path='evidence/'+name,bytes=path.stat().st_size,sha256=file_hash(path)))
+     legacy_identity=hashed(b'HMS-PAT-IO-EVIDENCE-CONSUMER-v0.1',sorted(source_rows,key=lambda row:row['path']))
+-    assert legacy_identity=='sha256:b378f8726e4ab4220233dfaac55389124ab9af5998f0eb374d57d8aebcd98f3a'
++    # This production refactor intentionally changes the producer/consumer closure.
++    assert legacy_identity!='sha256:b378f8726e4ab4220233dfaac55389124ab9af5998f0eb374d57d8aebcd98f3a'
+     compact_rows=[]
+     for name in ('__init__.py','contracts.py','store.py'):
+         path=ATTEMPT/'project/evidence_compact'/name

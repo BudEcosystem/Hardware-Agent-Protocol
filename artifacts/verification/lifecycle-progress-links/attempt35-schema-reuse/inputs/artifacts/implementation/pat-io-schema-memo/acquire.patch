@@ -1,0 +1,29 @@
+--- artifacts/implementation/pat-io-group-worker/acquire02.py
++++ artifacts/implementation/pat-io-schema-memo/acquire.py
+@@ -1,7 +1,7 @@
+ """Acquire a complete terminated group attempt, preserving raw state."""
+ import hashlib,json,re,shutil,stat,sys
+ from pathlib import Path
+-ROOT=Path.cwd().resolve();BASE=ROOT/'artifacts/implementation/pat-io-group-worker'
++ROOT=Path.cwd().resolve();BASE=ROOT/'artifacts/implementation/pat-io-schema-memo'
+ harness,name,dest=sys.argv[1:];H=BASE/harness;A=H/'attempts'/name;OUT=BASE/'results'/dest
+ assert not OUT.exists();OUT.mkdir(parents=True)
+ def read(p):return json.loads(p.read_bytes())
+@@ -23,7 +23,7 @@
+ assert r['errors']==r['childErrors']==[] and r['counts']['testsRun']==count
+ for key in ('skips','expectedFailures','unexpectedSuccesses'):assert r['counts'][key]==0
+ if r['status']=='passed':assert r['exitCode']==r['counts']['failures']==r['counts']['errors']==0
+-for prefix,folder,n in [('inputs',A/'project',217),('frozen',ROOT,220),('harness',A/'harness',6)]:
++for prefix,folder,n in [('inputs',A/'project',218),('frozen',ROOT,221),('harness',A/'harness',6)]:
+  rows=read(A/(prefix+'-before.json'));assert rows==read(A/(prefix+'-after.json')) and len(rows)==n
+  for row in rows:verify(folder/row['path'],row)
+ external=read(A/'external-before.json');assert external==read(A/'external-after.json') and len(external['files'])==159
+@@ -46,7 +46,7 @@
+ proof=dict(scope='Complete terminated current-group capture/budget attempt; synthetic private SQLite only.',
+  harness=harness,harnessIndexSha256=sha(H/'index.json'),sourceIndexSha256=review['sourceIndexSha256'],targetsSha256=sha(H/'targets.json'),
+  attempt=name,status=r['status'],counts=r['counts'],testSeconds=float(m.group(1)),elapsedSeconds=r['elapsedSeconds'],
+- sourceFilesVerified=217,frozenFilesVerified=220,externalPinsVerified=159,actualOrigins=origins['summary'],
++ sourceFilesVerified=218,frozenFilesVerified=221,externalPinsVerified=159,actualOrigins=origins['summary'],
+  bytecodeReadsRefused=len(origins['deniedBytecodeReads']),rawScratch=before['identity'],rawScratchFiles=len(rawrows),rawScratchBytes=sum(v['bytes']for v in rawrows),
+  attemptFilesAcquired=len(rows),sourceAndCompilerDriverStable=True,actualOriginHashesRechecked=True,originalsAndCompleteCopiesRetained=True,
+  sqliteConnections=len(connections),qualificationPassed=False,requiredMatrixCoverageChecked=False,completeLifecycleHistoryChecked=False,physicalMeasurementChecked=False)

@@ -1,0 +1,53 @@
+--- prior/run_attempt.py
++++ run_attempt.py
+@@ -54,7 +54,7 @@
+ scratch_parent = Path('/tmp')
+ parent_identity = directory_identity(scratch_parent)
+ assert parent_identity[2] in (0, os.getuid()) and (not parent_identity[3] & 0o022 or parent_identity[3] & stat.S_ISVTX)
+-scratch = Path(tempfile.mkdtemp(prefix='hms-vault-controls-', dir=str(scratch_parent)))
++scratch = Path(tempfile.mkdtemp(prefix='hms-vault-catalog-', dir=str(scratch_parent)))
+ scratch_identity = directory_identity(scratch)
+ assert scratch_identity[2:] == (os.getuid(), 0o700)
+ write(attempt / 'raw-scratch-before.json', dict(path=str(scratch), identity=scratch_identity, parentIdentity=parent_identity))
+@@ -72,15 +72,15 @@
+     with destination.open('xb') as stream:
+         stream.write(path.read_bytes())
+     inputs.append(dict(path=relative.as_posix(), bytes=row['bytes'], sha256=row['sha256']))
+-assert len(inputs) == 285
++assert len(inputs) == 300
+ child_path = attempt / 'attempt_child.py'
+ with child_path.open('xb') as stream:
+     stream.write((HARNESS / 'attempt_child.py').read_bytes())
+ targets = read(HARNESS / 'targets.json')
+-assert len(targets) == len(set(targets)) == 2
++assert len(targets) == len(set(targets)) == 14
+ config = dict(project=str(project), attempt=str(attempt), scratch=str(scratch),
+     externalRoots=external['roots'], expectedExternalInputs=external['files'],
+-    expectedInputs=inputs, childSha256=sha(child_path), targets=targets)
++    expectedInputs=inputs, childSha256=sha(child_path), targets=targets, expectedHost=read(SOURCE / 'identity-pins.json')['host'])
+ write(attempt / 'child-config.json', config)
+ write(attempt / 'inputs-before.json', inputs)
+ environment = dict(PATH='/usr/bin:/bin', LC_ALL='C', PYTHONDONTWRITEBYTECODE='1',
+@@ -139,11 +139,12 @@
+     counts = read(attempt / 'test-return.json')
+     origins = read(attempt / 'imports.json')
+     actual = read(attempt / 'actual-tests.json')
+-    assert counts['testsRun'] == 2 and all(counts[key] == 0 for key in counts if key != 'testsRun')
++    assert counts['testsRun'] == 14 and all(counts[key] == 0 for key in counts if key != 'testsRun')
+     assert actual['loaded'] == actual['executed'] == targets and actual['exactSelection']
+     assert origins['summary']['allOriginsMatched'] and read(attempt / 'child-errors.json') == []
+     assert read(attempt / 'compiler-before.json') == read(attempt / 'compiler-after.json')
+     assert read(attempt / 'driver-before.json') == read(attempt / 'driver-after.json')
++    assert read(attempt / 'host-before.json') == read(attempt / 'host-after.json') == {'host': config['expectedHost']}
+     assert exit_code == 0
+ except BaseException as exc:
+     errors.append('child receipts: ' + repr(exc))
+@@ -181,7 +182,7 @@
+ result = dict(status='passed' if not errors else 'failed', errors=errors, counts=counts,
+     childState='exited', exitCode=exit_code, pid=child.pid, elapsedSeconds=elapsed,
+     sourceIndexSha256=sha(SOURCE / 'index.json'), harnessIndexSha256=sha(HARNESS / 'index.json'),
+-    sourceInputs=285, inputAndExternalVerificationPassed=not any(item.startswith('final inputs') for item in errors),
++    sourceInputs=300, inputAndExternalVerificationPassed=not any(item.startswith('final inputs') for item in errors),
+     timeoutSeconds=180, maxSingleFileBytes=MAX_FILE, maxTotalScratchBytes=MAX_TOTAL,
+     scratchRetained=True, scratchBytes=total, scratchEntries=len(files), rawScratch=str(scratch), originalScratchRetained=True,
+     noWorkerLaunched=True, noPhysicalEffects=True, totalDiskQuotaEnforced=False,

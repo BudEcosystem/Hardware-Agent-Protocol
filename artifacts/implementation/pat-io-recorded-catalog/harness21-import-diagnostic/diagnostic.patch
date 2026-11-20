@@ -1,0 +1,12 @@
+--- 
++++ 
+@@ -191,6 +191,9 @@
+     write('driver-before.json', {'digest': implementation_digest()})
+     tests = unittest.defaultTestLoader.loadTestsFromNames(config['targets'])
+     loaded_ids = flatten(tests)
++    write('loader-errors.json', list(unittest.defaultTestLoader.errors))
++    for detail in unittest.defaultTestLoader.errors: print(detail, file=sys.stderr, flush=True)
++    raise RuntimeError('Import-only diagnosis; test execution intentionally prohibited')
+     if loaded_ids != config['targets']:
+         raise RuntimeError('Loaded methods do not exactly match the reviewed runs15 selection')
+     class RecordingResult(unittest.TextTestResult):

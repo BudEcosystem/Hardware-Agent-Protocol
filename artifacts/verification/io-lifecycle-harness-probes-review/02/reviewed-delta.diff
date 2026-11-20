@@ -1,0 +1,156 @@
+--- initial/run_probes.py
++++ revision02/run_probes.py
+@@ -36,24 +36,33 @@
+     lane=Path(__file__).resolve().parent;out=lane/'attempts'/args.attempt;out.mkdir(parents=True,exist_ok=False)
+     report={'profile':'hms.lifecycle-harness-probes-attempt/1','attempt':args.attempt,'status':'preparing',
+         'passed':False,'counts':None,'inputsUnchanged':None,'externalInputsUnchanged':None,'exitCode':None,
+-        'childState':'not_started','errors':[],'scope':'Original controlled bookkeeping probes only; no lifecycle or public-I/O qualification.',
++        'childState':'not_started','errors':[],'outerHarnessUnchanged':None,
++        'scope':'Original controlled bookkeeping probes only; no lifecycle or public-I/O qualification.',
+         'limits':['No OS sandbox or hard aggregate quota.','Controlled process and SQLite fixtures execute only after explicit release.',
+             'Selected validation/Python/SQLite pins and actual origins are not full host/cache/shared-library closure.',
+             'SIGKILL, host loss, storage failure or OS-uninterruptible cleanup can prevent final receipts.']}
+-    save(out/'started.json',report);process=None;before=external_before=None;runner=None;started=time.monotonic()
++    save(out/'started.json',report);process=None;before=external_before=None;runner=None;started=time.monotonic();harness_before=None
+     source=out/'source'
+     try:
+-        shutil.copyfile(Path(__file__),out/'run_probes.py')
++        harness_body=Path(__file__).read_bytes();harness_before=hashlib.sha256(harness_body).hexdigest()
++        (out/'run_probes.py').write_bytes(harness_body)
++        save(out/'outer-harness-before.json',{'executingPath':str(Path(__file__).resolve()),'executingSha256':harness_before,
++            'retainedPath':str(out/'run_probes.py'),'retainedSha256':sha(out/'run_probes.py')})
+         source.mkdir();shutil.copytree(lane/'src',source/'src');shutil.copytree(lane/'retained05',source/'retained05')
+-        for name in ('README.md','source-preparation.json','manifest.json'):shutil.copyfile(lane/name,source/name)
++        for name in ('README.md','source-preparation.json','manifest.json','approved-external-roots.json'):shutil.copyfile(lane/name,source/name)
+         retained=json.loads((source/'retained05/manifest.json').read_text())
+         for item in retained['files']:
+             path=source/'retained05'/item['path']
+             if sha(path)!=item['sha256']:raise ValueError('Retained05 input changed: '+item['path'])
+         before=rows(source);save(out/'inputs-before.json',before)
++        approved=json.loads((source/'approved-external-roots.json').read_text())
++        for item in approved['selectedMetadata']:
++            if sha(Path(item['metadataPath']))!=item['sha256']:raise ValueError('Approved external metadata changed: '+item['package'])
++        sys.path.extend(approved['roots'])
+         spec=importlib.util.spec_from_file_location('original05_metadata_functions',source/'retained05/run_attempt.py')
+         runner=importlib.util.module_from_spec(spec);spec.loader.exec_module(runner)
+         external_before,roots=runner.external_inputs();save(out/'external-before.json',external_before)
++        if roots!=approved['roots']:raise ValueError('External roots differ from explicitly approved source preparation')
+         (out/'scratch').mkdir()
+         config={'source':str(source),'attempt':str(out),'externalRoots':roots};save(out/'child-config.json',config)
+         environment={'PATH':os.pathsep.join((str(Path(sys.executable).parent),'/usr/bin','/bin')),
+@@ -93,12 +102,19 @@
+             if (out/'test-return.json').exists():report['counts']=json.loads((out/'test-return.json').read_text())
+             if (out/'cases').exists():save(out/'case-index.json',{'files':rows(out/'cases'),'rawCaseTreesRetained':True})
+             if (out/'scratch').exists():save(out/'scratch-index.json',{'files':rows(out/'scratch')})
+-        for label,fn in [('inputs-after',inputs_after),('external-after',external_after),('results-and-cases',collect)]:finalize(label,fn)
++        def harness_after():
++            if harness_before is None:return
++            executing=sha(Path(__file__));retained=sha(out/'run_probes.py')
++            save(out/'outer-harness-after.json',{'executingSha256':executing,'retainedSha256':retained,'beforeSha256':harness_before})
++            report['outerHarnessUnchanged']=executing==retained==harness_before
++        for label,fn in [('inputs-after',inputs_after),('external-after',external_after),('results-and-cases',collect),('outer-harness-after',harness_after)]:finalize(label,fn)
+         counts=report['counts'];report['elapsedSeconds']=time.monotonic()-started
++        expected_count_keys={'testsRun','failures','errors','skips','expectedFailures','unexpectedSuccesses','entryErrors'}
+         report['passed']=(report['exitCode']==0 and report['childState']=='exited' and not report['errors'] and
+-            report['inputsUnchanged'] is True and report['externalInputsUnchanged'] is True and type(counts) is dict and
+-            type(counts.get('testsRun')) is int and counts['testsRun']>0 and all(type(counts.get(k)) is int and counts[k]==0 for k in
+-                ('failures','errors','skips','expectedFailures','unexpectedSuccesses')) and counts.get('entryErrors')==[])
++            report['inputsUnchanged'] is True and report['externalInputsUnchanged'] is True and report['outerHarnessUnchanged'] is True and
++            type(counts) is dict and set(counts)==expected_count_keys and type(counts['testsRun']) is int and counts['testsRun']==13 and
++            all(type(counts[k]) is int and counts[k]==0 for k in ('failures','errors','skips','expectedFailures','unexpectedSuccesses')) and
++            type(counts['entryErrors']) is list and counts['entryErrors']==[])
+         if report['passed']:report['status']='passed'
+         elif report['status']=='running':report['status']='failed'
+         try:save(out/'result.json',report)
+--- initial/src/probe_entry.py
++++ revision02/src/probe_entry.py
+@@ -11,6 +11,7 @@
+ source=Path(config['source']).resolve();out=Path(config['attempt']).resolve()
+ sys.path[:0]=[str(source/'src')]+config['externalRoots']
+ os.environ['PROBE_INPUT_ROOT']=str(source);os.environ['PROBE_CASE_ROOT']=str(out/'cases')
++os.environ['PROBE_EXTERNAL_ROOTS']=json.dumps(config['externalRoots'])
+ (out/'cases').mkdir()
+ executed=set(); errors=[];result=None
+ 
+@@ -26,6 +27,7 @@
+     import unittest
+     import test_harness_probes
+     suite=unittest.defaultTestLoader.loadTestsFromModule(test_harness_probes)
++    if suite.countTestCases()!=13:raise RuntimeError('This frozen bookkeeping milestone requires exactly 13 methods')
+     result=unittest.TextTestRunner(verbosity=2).run(suite)
+ except BaseException as exc:
+     errors.append({'type':type(exc).__name__,'message':str(exc)[:4096]});traceback.print_exc()
+@@ -44,5 +46,5 @@
+     (out/'test-return.json').write_text(json.dumps(report,indent=2)+'\n')
+     (out/'actual-origins.json').write_text(json.dumps({'modules':origins,'executedCodeOrigins':sorted(executed),
+         'scope':'Actual origins, not full pre-execution stdlib/cache/shared-library attestation.'},indent=2)+'\n')
+-passed=(result is not None and result.testsRun>0 and result.wasSuccessful() and not result.skipped and not result.expectedFailures and not errors)
++passed=(result is not None and result.testsRun==13 and result.wasSuccessful() and not result.skipped and not result.expectedFailures and not errors)
+ raise SystemExit(0 if passed else 1)
+--- initial/src/runner_wrapper.py
++++ revision02/src/runner_wrapper.py
+@@ -9,6 +9,7 @@
+ import traceback
+ 
+ config=json.loads(Path(sys.argv[1]).read_text()); case=Path(config['case']); stage=case/'stage'
++sys.path.extend(config['externalRoots'])
+ spec=importlib.util.spec_from_file_location('retained_runner_under_test',stage/'run_attempt.py')
+ runner=importlib.util.module_from_spec(spec);spec.loader.exec_module(runner)
+ original_popen=runner.subprocess.Popen; original_write=runner.write
+--- initial/src/test_harness_probes.py
++++ revision02/src/test_harness_probes.py
+@@ -64,13 +64,14 @@
+ 
+     def run_runner(self,mode='normal',targets=None):
+         config={'case':str(self.case),'mode':mode,'targets':targets or ['test_io_lifecycle'],
+-                'childFixture':str(BASE/'src/owned_child_fixture.py')}
++                'childFixture':str(BASE/'src/owned_child_fixture.py'),
++                'externalRoots':json.loads(os.environ['PROBE_EXTERNAL_ROOTS'])}
+         path=self.case/'wrapper-config.json';path.write_text(json.dumps(config,indent=2)+'\n')
+         self.source_before=inventory(self.stage)
+         (self.case/'case-inputs-before.json').write_text(json.dumps(self.source_before,indent=2)+'\n')
+         environment={'PATH':os.pathsep.join((str(Path(sys.executable).parent),'/usr/bin','/bin')),
+                      'TMPDIR':str(self.case),'LC_ALL':'C.UTF-8','TZ':'UTC'}
+-        command=[sys.executable,'-I','-B',str(BASE/'src/runner_wrapper.py'),str(path)]
++        command=[sys.executable,'-I','-S','-B',str(BASE/'src/runner_wrapper.py'),str(path)]
+         (self.case/'wrapper-command.json').write_text(json.dumps({'argv':command,'environment':environment},indent=2)+'\n')
+         with (self.case/'wrapper.log').open('xb') as log:
+             process=subprocess.Popen(command,cwd=self.stage,env=environment,stdout=log,stderr=subprocess.STDOUT,start_new_session=True)
+@@ -261,8 +262,20 @@
+             def close(self):
+                 with sqlite3.connect(directory/'authority.db') as db:db.execute('UPDATE proof SET value=2')
+                 raise RuntimeError('controlled post-capture close failure')
+-        with self.assertRaisesRegex(RuntimeError,'controlled post-capture'):helper.close_retaining(workspace,CloseMutatesThenFails())
+-        case.capture();workspace.cleanup()
++        class ActualCleanupCase(unittest.TestCase):
++            def runTest(inner):
++                # Match the original registered LIFO order, without Runtime.setUp.
++                inner.addCleanup(workspace.cleanup)
++                inner.addCleanup(case.capture)
++                inner.addCleanup(lambda:helper.close_retaining(workspace,CloseMutatesThenFails()))
++                inner.assertTrue(case._final_captured)
++        cleanup_result=unittest.TestResult();ActualCleanupCase().run(cleanup_result)
++        (self.case/'inner-cleanup-return.json').write_text(json.dumps({'testsRun':cleanup_result.testsRun,
++            'failures':len(cleanup_result.failures),'errors':len(cleanup_result.errors),
++            'errorTracebacks':[text for _case,text in cleanup_result.errors]},indent=2)+'\n')
++        self.assertEqual(cleanup_result.testsRun,1);self.assertEqual(cleanup_result.failures,[])
++        self.assertEqual(len(cleanup_result.errors),1)
++        self.assertIn('controlled post-capture close failure',cleanup_result.errors[0][1])
+         self.assertTrue((directory/'authority.db').exists())
+         with sqlite3.connect(directory/'authority.db') as db:self.assertEqual(db.execute('SELECT value FROM proof').fetchone()[0],2)
+         with sqlite3.connect(snapshots[0]) as db:self.assertEqual(db.execute('SELECT value FROM proof').fetchone()[0],1)
+--- initial/README.md
++++ revision02/README.md
+@@ -18,9 +18,11 @@
+ After the parent explicitly releases execution, the intended invocation is:
+ 
+ ```text
+-python3 -I -B artifacts/verification/io-lifecycle-harness-probes/run_probes.py attempt01 --parent-released
++python3 -I -S -B artifacts/verification/io-lifecycle-harness-probes/revisions/02/run_probes.py attempt01 --parent-released
+ ```
+ 
+ The release flag is an assertion of prior parent authorization, not authorization itself. Do not invoke it while the hold remains. This first probe suite may expose fixture or harness errors; preserve the result and distinguish such errors from the intended fault before revising sources. Additional lifecycle driver/service/capacity/revision cases still wait for current-source smoke evidence.
+ 
+ Limits: no hardware, native endpoint, model, OS driver/service effect, live tree mutation or acquired program execution. No hard filesystem quota, hard SQLite timing bound, hostile-code sandbox, whole-host attestation or guaranteed finalization after SIGKILL/host/storage failure. Selected external package/interpreter/SQLite manifests and actual origin receipts do not attest all caches, stdlib or shared libraries. The source-copy boundary is the already retained full696/provider146-derived snapshot05, not current live public-I/O compatibility.
++
++Revision02 preserves the original root preparation and its `b787109b...` manifest. It adds an executing/retained outer-harness before/after identity gate, exactly13 closed result counts, and `-I -S -B` startup for the outer launcher and runner wrappers. The explicitly selected installed validation roots and six metadata hashes are retained in `approved-external-roots.json`; this metadata acquisition did not import the selected packages. The post-capture close-failure probe now asserts one actual inner unittest cleanup error and retains that traceback, while preserving the earlier logical snapshot and changed raw database. These remain unexecuted source corrections.

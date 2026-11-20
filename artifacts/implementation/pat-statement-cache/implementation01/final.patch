@@ -1,0 +1,42 @@
+--- baseline/hms/journal.py
++++ candidate/hms/journal.py
+@@ -210,7 +210,7 @@
+             elif not self.path.is_file():
+                 raise JournalError("MISSING_AUTHORITY_DATABASE")
+             self._db = sqlite3.connect(str(self.path), isolation_level=None,
+-                                       check_same_thread=False, timeout=0.2)
++                                       check_same_thread=False, timeout=0.2, cached_statements=256)
+             self._db.row_factory = sqlite3.Row
+             if create and page_size is not None:
+                 self._db.execute('PRAGMA page_size=1024')
+--- baseline/tests/test_vault_catalog_process.py
++++ candidate/tests/test_vault_catalog_process.py
+@@ -37,7 +37,7 @@
+         self.vault = EvidenceVault(folder/'evidence.db', expected, create=True)
+         self.addCleanup(self.vault.close)
+         consumer = VaultEvidenceStore(self.service, self.vault, create=True, owner=self.owner)
+-        self.assertEqual(consumer.consumer_identity, 'sha256:216bb5f7315dff483592a3508b913f96eef9d5c4acffd01e7ea2d2fee33d34b6')
++        self.assertEqual(consumer.consumer_identity, 'sha256:f4479f6d5b40c38e1c0645515633be63faaed2c8b1e913a1c16c522152fc6738')
+         self.emit('installed-vault', expected); mark('installation_complete')
+         def worker_checkpoint(phase, row):
+             mark('worker_'+phase)
+@@ -66,7 +66,7 @@
+         program = json.loads(self.original['preparedRun']['bundle']['documents']['inputs/candidate.json'])
+         digest = pat_digest(program)
+         bridge = VaultRecordedIoBridge(consumer, self.runtime, (evaluator,))
+-        self.assertEqual(bridge._identity, 'sha256:995e07798e3b258c14625aa61d68c14756f982cc236ab95192388bc9256ca8c0')
++        self.assertEqual(bridge._identity, 'sha256:c7bf48920c56d1e62b146e145bbf7ac377eb7ba18c4175d792738693885e2951')
+         catalog = VaultRecordedPatCatalog(bridge, create=True, owner=self.owner)
+         catalog.publish(self.owner, program)
+         recorded = catalog.record_evaluation(self.owner, digest, evaluator, original_run)
+--- baseline/tests/test_vault_original_run.py
++++ candidate/tests/test_vault_original_run.py
+@@ -30,7 +30,7 @@
+         self.vault=EvidenceVault(folder/'evidence.db',expected,create=True)
+         self.addCleanup(self.vault.close)
+         consumer=VaultEvidenceStore(self.service,self.vault,create=True,owner=self.owner)
+-        self.assertEqual(consumer.consumer_identity,'sha256:216bb5f7315dff483592a3508b913f96eef9d5c4acffd01e7ea2d2fee33d34b6')
++        self.assertEqual(consumer.consumer_identity,'sha256:f4479f6d5b40c38e1c0645515633be63faaed2c8b1e913a1c16c522152fc6738')
+         mark('installation_complete')
+         self.emit('installed-vault',expected)
+         def worker_checkpoint(phase,row):

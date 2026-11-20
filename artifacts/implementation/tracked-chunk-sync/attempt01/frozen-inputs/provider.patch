@@ -1,0 +1,85 @@
+--- statx/fixed_block.py
++++ tracked/fixed_block.py
+@@ -12,8 +12,9 @@
+ import threading
+ 
+ import mount_identity
+-
+-PROFILE = 'hms.block-image.linux-ext4.statx-mount/0.1'
++import sync_identity
++
++PROFILE = 'hms.block-image.linux-ext4.tracked-sync/0.1'
+ CHUNK_BYTES = 16 * 1024 * 1024
+ BLOCK_BYTES = 4096
+ PROGRAM_BYTES = 16
+@@ -71,6 +72,13 @@
+     try:
+         mount_identity.verify(path, fd, pin)
+     except mount_identity.MountError as error:
++        raise ImageError(str(error)) from error
++
++
++def _wait_file(fd):
++    try:
++        sync_identity.wait(fd)
++    except sync_identity.SyncError as error:
+         raise ImageError(str(error)) from error
+ 
+ 
+@@ -168,6 +176,7 @@
+         self._objects = {name: tuple(value) for name, value in expected_objects.items()}
+         self._identity = identity
+         self._count = chunks
++        self._pending_sync = (1 << chunks) - 1
+         self._capacity = chunks * CHUNK_BYTES
+         self._path = _path(path)
+         self._mutex = threading.RLock()
+@@ -206,6 +215,7 @@
+             if _read_all(self._fds['manifest'], len(self._document), 0) != self._document:
+                 raise ImageError('MANIFEST_MISMATCH')
+             self._verify()
++            _wait_file(self._fds['chunk-00'])
+         except BaseException:
+             self.close()
+             raise
+@@ -264,21 +274,36 @@
+ 
+     def read(self, block, offset, size):
+         number, position = self._range(block, offset, size)
+-        return self._perform(lambda: _read_all(self._fds[f'chunk-{number:02d}'], size, position) if size else b'')
++        def transfer():
++            if not size:
++                return b''
++            self._pending_sync |= 1 << number
++            return _read_all(self._fds[f'chunk-{number:02d}'], size, position)
++        return self._perform(transfer)
+ 
+     def write(self, block, offset, data):
+         if type(data) is not bytes:
+             raise ImageError('INVALID_DATA')
+         number, position = self._range(block, offset, len(data))
+-        return self._perform(lambda: _write_all(self._fds[f'chunk-{number:02d}'], data, position) if data else None)
++        def transfer():
++            if data:
++                self._pending_sync |= 1 << number
++                _write_all(self._fds[f'chunk-{number:02d}'], data, position)
++        return self._perform(transfer)
+ 
+     def erase(self, block):
+         return self.write(block, 0, b'\xff' * BLOCK_BYTES)
+ 
+     def sync(self):
+         def flush():
+-            for number in range(self._count):
+-                os.fsync(self._fds[f'chunk-{number:02d}'])
++            for number in range(1, self._count):
++                fd = self._fds[f'chunk-{number:02d}']
++                if self._pending_sync & (1 << number):
++                    os.fsync(fd)
++                else:
++                    _wait_file(fd)
++            os.fsync(self._fds['chunk-00'])
++            self._pending_sync = 0
+         return self._perform(flush)
+ 
+     def close(self):

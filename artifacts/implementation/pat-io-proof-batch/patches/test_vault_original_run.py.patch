@@ -1,0 +1,11 @@
+--- baseline/tests/test_vault_original_run.py
++++ candidate/tests/test_vault_original_run.py
+@@ -30,7 +30,7 @@
+         self.vault=EvidenceVault(folder/'evidence.db',expected,create=True)
+         self.addCleanup(self.vault.close)
+         consumer=VaultEvidenceStore(self.service,self.vault,create=True,owner=self.owner)
+-        self.assertEqual(consumer.consumer_identity,'sha256:0e7ff6440fdb93e941ff4b5b0f2f275558f67f1e63a3c719c66756f81b7971d5')
++        self.assertEqual(consumer.consumer_identity,'sha256:ac17f18bcff7b6d22ee811c2a11e1cb63bbc7e8c605fa877942d820fa33bac01')
+         mark('installation_complete')
+         self.emit('installed-vault',expected)
+         def worker_checkpoint(phase,row):

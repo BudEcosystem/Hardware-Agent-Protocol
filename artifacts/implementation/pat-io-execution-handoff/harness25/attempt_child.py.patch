@@ -1,0 +1,26 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-document-validation/harness16/attempt_child.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-execution-handoff/harness25/attempt_child.py
+@@ -60,7 +60,7 @@
+ def audit(event, args):
+     if event == 'subprocess.Popen':
+         executable, argv, cwd, environment = args
+-        expected = scratch / 'test_reserved_owned_group_replays_after_config_and_session_change' / 'supervisor'
++        expected = scratch / 'test_owned_group_persists_handoff_before_launch_and_replays_after_drift' / 'supervisor'
+         entry = Path(argv[3]) if type(argv) in (list,tuple) and len(argv)==7 else Path('/invalid')
+         valid = (current_test == config['targets'][0] and executable == sys.executable and
+             argv[0] == sys.executable and argv[1:3] == ['-I','-B'] and
+@@ -73,12 +73,12 @@
+         prohibited.append(event); raise RuntimeError('Network or other subprocess forbidden')
+     if event == 'sqlite3.connect':
+         path = Path(os.fsdecode(os.fspath(args[0])))
+-        work=scratch/'test_reserved_owned_group_replays_after_config_and_session_change'
++        work=scratch/'test_owned_group_persists_handoff_before_launch_and_replays_after_drift'
+         valid=(path==work/'supervisor'/'attempts.db' or (path.parent==work/'runtime' and
+             (path.name=='authority.db' or re.fullmatch(r'synthetic-io-board-[0-9a-f]{64}\.db',path.name))))
+         if current_test!=config['targets'][0] or not valid:
+             prohibited.append(event); raise RuntimeError('Only exact authority/runtime/supervisor databases may open')
+-        if len(sqlite_connections)>=9: raise RuntimeError('Declared nine parent database opens exceeded')
++        if len(sqlite_connections)>=6: raise RuntimeError('Declared six parent database opens exceeded')
+         sqlite_connections.append({'testId':current_test,'database':str(path)})
+     if event == 'exec':
+         origin = args[0].co_filename

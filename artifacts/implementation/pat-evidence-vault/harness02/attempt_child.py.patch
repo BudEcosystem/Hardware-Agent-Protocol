@@ -1,0 +1,112 @@
+--- retained-definition-harness04/attempt_child.py
++++ vault-harness01/attempt_child.py
+@@ -1,4 +1,4 @@
+-"""IoRuns15 child: isolated startup, exact selected tests and scoped origin evidence."""
++"""Vault child: exact source origins, 21 controls and one retained-data experiment."""
+ import hashlib
+ import json
+ import os
+@@ -7,10 +7,15 @@
+ import sys
+ import sysconfig
+ import traceback
++import resource
++from urllib.parse import urlsplit, unquote
+ 
+ MAX_JSON = 4 * 1024 * 1024
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_ORIGINS = 8192
++resource.setrlimit(resource.RLIMIT_FSIZE, (MAX_FILE, MAX_FILE))
++resource.setrlimit(resource.RLIMIT_CPU, (120, 120))
++resource.setrlimit(resource.RLIMIT_AS, (512 * 1024 * 1024, 512 * 1024 * 1024))
+ configuration = Path(sys.argv[1])
+ if configuration.stat().st_size > MAX_JSON:
+     raise RuntimeError('Oversized child configuration')
+@@ -57,13 +62,30 @@
+     return path.is_relative_to(stdlib) and not {'site-packages', 'dist-packages'}.intersection(path.parts)
+ 
+ 
+-CONTROL_TARGETS = ['test_pat_io_definition_build.DefinitionBuildTests.test_build_is_pure_and_does_not_read_authority_or_current_sources', 'test_pat_io_definition_build.DefinitionBuildTests.test_changed_generations_are_rederived_on_each_build', 'test_pat_io_definition_build.DefinitionBuildTests.test_invalid_proof_inputs_keep_original_refusal_type_and_code', 'test_pat_io_definition_build.DefinitionBuildTests.test_multiple_actions_share_only_their_own_instance_proof', 'test_pat_io_definition_build.DefinitionBuildTests.test_original_bundles_bindings_and_proofs_match_with_half_the_derivations', 'test_pat_io_definition_build.DefinitionBuildTests.test_public_handler_details_still_derives_a_fresh_proof_per_call', 'test_pat_io_definition_build.DefinitionBuildTests.test_returned_mutation_changes_neither_input_nor_later_builds', 'test_pat_io_installation_reuse.InstallationReuseTests.test_changed_current_source_refuses_even_with_warm_exact_input', 'test_pat_io_installation_reuse.InstallationReuseTests.test_changed_helper_bypasses_warm_result_and_runs_original_validation', 'test_pat_io_installation_reuse.InstallationReuseTests.test_concurrent_calls_keep_one_entry_and_detached_results', 'test_pat_io_installation_reuse.InstallationReuseTests.test_custom_values_and_keys_refuse_without_callbacks_or_lookup', 'test_pat_io_installation_reuse.InstallationReuseTests.test_dependency_changed_during_validation_prevents_publication', 'test_pat_io_installation_reuse.InstallationReuseTests.test_identical_object_and_bytes_reuse_semantics_but_check_source_each_time', 'test_pat_io_installation_reuse.InstallationReuseTests.test_in_place_primitive_configuration_change_uses_current_validation', 'test_pat_io_installation_reuse.InstallationReuseTests.test_integral_float_in_object_or_json_refuses_before_lookup', 'test_pat_io_installation_reuse.InstallationReuseTests.test_ninth_valid_input_evicts_oldest_with_fixed_key_and_entry_bounds', 'test_pat_io_installation_reuse.InstallationReuseTests.test_noncanonical_bytes_share_key_but_duplicate_or_oversized_json_refuses', 'test_pat_io_installation_reuse.InstallationReuseTests.test_private_schema_and_keyword_changes_disable_reuse', 'test_pat_io_installation_reuse.InstallationReuseTests.test_replaced_topology_or_generation_validator_refuses_warm_input', 'test_pat_io_installation_reuse.InstallationReuseTests.test_returned_nested_mutation_never_changes_caller_or_later_results', 'test_pat_io_installation_reuse.InstallationReuseTests.test_reuse_never_opens_authority_launches_provider_or_reads_clock']
++CONTROL_TARGETS = ['test_evidence_vault.VaultTests.test_after_commit_reply_failure_reopens_original_manifest', 'test_evidence_vault.VaultTests.test_before_commit_failure_retains_no_partial_manifest', 'test_evidence_vault.VaultTests.test_body_corruption_refuses_snapshot_and_reuse_without_repair', 'test_evidence_vault.VaultTests.test_changed_connection_cap_refused_then_original_cap_reapplied', 'test_evidence_vault.VaultTests.test_create_reopen_exact_manifest_and_replay', 'test_evidence_vault.VaultTests.test_descriptor_types_and_limits', 'test_evidence_vault.VaultTests.test_document_object_and_manifest_capacity', 'test_evidence_vault.VaultTests.test_exact_deduplication_keeps_each_reference_and_chain', 'test_evidence_vault.VaultTests.test_invalid_document_and_lease_inputs_do_not_publish', 'test_evidence_vault.VaultTests.test_live_path_replacement_refused', 'test_evidence_vault.VaultTests.test_missing_store_does_not_create_replacement', 'test_evidence_vault.VaultTests.test_original_intent_conflicts_preserve_data', 'test_evidence_vault.VaultTests.test_owner_busy_does_not_change_first_store', 'test_evidence_vault.VaultTests.test_page_capacity_rolls_back_and_control_still_completes', 'test_evidence_vault.VaultTests.test_private_directory_required', 'test_evidence_vault.VaultTests.test_reopen_refuses_retained_or_dangling_sidefile', 'test_evidence_vault.VaultTests.test_reopen_rejects_different_authority_or_store', 'test_evidence_vault.VaultTests.test_schema_shadow_and_typed_manifest_corruption_refused', 'test_evidence_vault.VaultTests.test_snapshot_is_read_only_detached_and_expires_on_release', 'test_evidence_vault.VaultTests.test_snapshot_owner_and_sqlite_reader_lock', 'test_evidence_vault.VaultTests.test_snapshot_time_bound_invalidates_handle_and_cleans_transaction', 'test_evidence_vault.VaultOriginalEvidenceTests.test_complete_retained_original_evidence_bytes']
+ 
+ def audit(event, args):
+     if event.startswith('socket.') or event in {'subprocess.Popen','os.system','os.exec','os.fork','os.forkpty','os.posix_spawn'}:
+         prohibited.append(event); raise RuntimeError('Control selection forbids network and subprocesses')
+     if event == 'sqlite3.connect':
+-        prohibited.append(event); raise RuntimeError('Pure definition/normalization tests forbid all SQLite opens')
++        supplied = str(args[0])
++        parsed = urlsplit(supplied)
++        if supplied.startswith('file:'):
++            path = Path(unquote(parsed.path)).resolve()
++            if parsed.netloc or parsed.fragment or parsed.query not in ('mode=rw', 'mode=ro&immutable=1'):
++                raise RuntimeError('Undeclared SQLite URI')
++        else:
++            path = Path(supplied).resolve()
++        fixture = Path(config['originalDatabase']).resolve()
++        if path == fixture:
++            if supplied != fixture.as_uri() + '?mode=ro&immutable=1' or current_test != CONTROL_TARGETS[-1]:
++                raise RuntimeError('Original input is read-only and actual-data-test only')
++        elif (current_test is None or not path.is_relative_to(scratch / current_test.split('.')[-1]) or
++              path.name not in ('evidence.db', 'authority.db')):
++            raise RuntimeError('SQLite outside current fresh test state')
++        sqlite_connections.append(dict(test=current_test, path=str(path), supplied=supplied))
++        if len(sqlite_connections) > 64:
++            raise RuntimeError('SQLite connection bound')
+     if event == 'exec':
+         origin = args[0].co_filename
+         remember(executed, origin)
+@@ -77,6 +99,13 @@
+                 raise RuntimeError('Executable origin outside acquired source/selected dependencies')
+     if event == 'open' and isinstance(args[0], (str, bytes)):
+         path = Path(os.fsdecode(args[0]))
++        if args[2] & (os.O_WRONLY | os.O_RDWR | os.O_CREAT):
++            target = path.resolve()
++            receipts = {'child-runtime.json', 'compiler-before.json', 'compiler-after.json',
++                'driver-before.json', 'driver-after.json', 'loader-errors.json', 'imports.json',
++                'sqlite-connections.json', 'actual-tests.json', 'test-return.json', 'child-errors.json'}
++            if not (target.is_relative_to(scratch) or target.parent == out and target.name in receipts):
++                raise RuntimeError('Write outside fresh scratch or named receipts')
+         if path.suffix == '.pyc':
+             remember(denied_bytecode, str(path))
+             raise FileNotFoundError(2, 'Use exact retained source, not cached bytecode', str(path))
+@@ -142,7 +171,7 @@
+             origin = getattr(getattr(module, '__spec__', None), 'origin', None)
+         if origin is not None:
+             add('module:' + name, origin)
+-        if (name == 'hms' or name.startswith('hms.') or name.startswith('test_') or name == 'evidence' or name.startswith('evidence.') or name == 'evidence_compact' or name.startswith('evidence_compact.') or name == 'recorded_io' or name.startswith('recorded_io.')) and origin:
++        if (name == 'hms' or name.startswith('hms.') or name.startswith('test_') or name == 'evidence' or name.startswith('evidence.') or name == 'evidence_compact' or name.startswith('evidence_compact.') or name == 'recorded_io' or name.startswith('recorded_io.') or name == 'evidence_vault' or name.startswith('evidence_vault.')) and origin:
+             if not Path(origin).resolve().is_relative_to(root):
+                 violations.append({'module': name, 'origin': str(origin), 'reason': 'project_name_outside_copy'})
+     for origin in sorted(executed):
+@@ -172,8 +201,12 @@
+ 
+ try:
+     if (not sys.flags.isolated or not sys.flags.no_site or not sys.flags.dont_write_bytecode or
+-            len(config['targets']) != 21 or len(set(config['targets'])) != 21):
++            len(config['targets']) != 22 or len(set(config['targets'])) != 22):
+         raise RuntimeError('Required child isolation flags or exact target count missing')
++    if config['targets'] != CONTROL_TARGETS:
++        raise RuntimeError('Exact literal target selection changed')
++    os.environ['HMS_VAULT_TEST_ROOT'] = str(scratch)
++    os.environ['HMS_VAULT_ORIGINAL_DATABASE'] = config['originalDatabase']
+     write('child-runtime.json', {'executable': sys.executable, 'version': sys.version,
+         'flags': repr(sys.flags), 'path': sys.path, 'cwd': str(Path.cwd()),
+         'environment': dict(os.environ), 'stdlib': str(stdlib)})
+@@ -187,7 +220,7 @@
+     write('loader-errors.json', list(unittest.defaultTestLoader.errors))
+     for detail in unittest.defaultTestLoader.errors: print(detail, file=sys.stderr, flush=True)
+     if loaded_ids != config['targets']:
+-        raise RuntimeError('Loaded methods do not exactly match the reviewed runs15 selection')
++        raise RuntimeError('Loaded methods do not exactly match the reviewed vault selection')
+     class RecordingResult(unittest.TextTestResult):
+         def startTest(self, test):
+             global current_test
+@@ -227,7 +260,7 @@
+         write('child-errors.json', errors)
+     except BaseException:
+         errors.append({'phase': 'child-errors', 'type': 'ReceiptWriteFailure'})
+-passed = (not errors and counts is not None and counts['testsRun'] == 21 and
++passed = (not errors and counts is not None and counts['testsRun'] == 22 and
+     all(counts[key] == 0 for key in counts if key != 'testsRun') and
+     loaded_ids == config['targets'] == executed_ids and origins is not None and
+     origins['summary']['allOriginsMatched'])

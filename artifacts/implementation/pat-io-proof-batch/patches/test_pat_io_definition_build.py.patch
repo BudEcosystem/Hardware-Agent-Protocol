@@ -1,0 +1,29 @@
+--- baseline/tests/test_pat_io_definition_build.py
++++ candidate/tests/test_pat_io_definition_build.py
+@@ -55,7 +55,7 @@
+         self.document = module.normalize_installation(installation())
+ 
+     def test_original_bundles_bindings_and_proofs_match_with_half_the_derivations(self):
+-        function = module.binding_proof.__wrapped__
++        function = module._topology._binding_proof_from_validated
+         before = canonical(self.document)
+         with calls_to(function) as old_calls:
+             expected = _legacy_definitions(self.document)
+@@ -79,7 +79,7 @@
+             document['handlers'].append(dict(instanceId='sim:gpio5', actionId=action, primitive='gpio_pulse'))
+         document['initialGenerations'] = generations(document['topology'])
+         document = module.normalize_installation(document)
+-        function = module.binding_proof.__wrapped__
++        function = module._topology._binding_proof_from_validated
+         with calls_to(function) as old_calls:
+             expected = _legacy_definitions(document)
+         with calls_to(function) as new_calls:
+@@ -93,7 +93,7 @@
+         first = module.definitions(self.document)
+         self.document['initialGenerations']['revision'] = 2
+         self.document['initialGenerations']['nodes']['pin5'] = 'generation:2'
+-        function = module.binding_proof.__wrapped__
++        function = module._topology._binding_proof_from_validated
+         with calls_to(function) as counts:
+             changed = module.definitions(self.document)
+         self.assertEqual(counts[function.__code__], 4)

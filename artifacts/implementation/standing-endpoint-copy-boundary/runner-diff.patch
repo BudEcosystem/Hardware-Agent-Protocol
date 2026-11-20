@@ -1,0 +1,122 @@
+--- sealed-lto/run_checks.py
++++ copy-boundary/run_checks.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Isolated LTO profile checks. Never execute an AVR image or access devices.
++"""Isolated copy/boundary checks. Never execute an AVR image or access devices.
+ 
+ Source review must precede invocation. Host compilers execute; native probes use
+ only original in-memory register models. AVR output is compile/link evidence.
+@@ -388,7 +388,40 @@
+     require(record['passed'],name+' failed; retained '+str(result_path))
+     return out.read_text()
+ 
++def native_coverage():
++    """Verify retained old case bytes; this reads source, never imports it."""
++    coverage=json.loads((BUILD/'native-coverage.json').read_text())
++    require(coverage['schema']=='hms-copy-boundary-native-coverage/1','Unknown native coverage profile')
++    require(coverage['baseline_source']=='originals/project/tests/standing_controls.c' and
++            coverage['current_source']=='project/tests/standing_controls.c','Unexpected control source path')
++    baseline=(BUILD/coverage['baseline_source']).read_bytes()
++    current=(BUILD/coverage['current_source']).read_bytes()
++    require(hashlib.sha256(baseline).hexdigest()==coverage['baseline_sha256'] and
++            hashlib.sha256(current).hexdigest()==coverage['current_sha256'],'Control source differs from reviewed profile')
++    rows=coverage['unchanged_case_bodies']
++    require(len(rows)==13 and [row['name'] for row in rows]==coverage['baseline_case_order'] and
++            len(set(coverage['baseline_case_order']))==13,'Retained control case set differs')
++    for row in rows:
++        a,b=row['baseline_span'];c,d=row['current_span']
++        require(0<=a<b<=len(baseline) and 0<=c<d<=len(current),'Invalid control body range')
++        require(baseline[a:b]==current[c:d] and hashlib.sha256(baseline[a:b]).hexdigest()==row['sha256'],
++                'Retained control body changed: '+row['name'])
++    pattern=rb'static int \(\*const cases\[\]\)\(void\)=\{([^}]+)\};'
++    for source,expected in ((baseline,coverage['baseline_case_order']),(current,coverage['current_case_order'])):
++        matches=re.findall(pattern,source)
++        require(len(matches)==1 and [part.strip().decode('ascii') for part in matches[0].split(b',')]==expected,
++                'Control invocation order differs from reviewed profile')
++    require(coverage['current_case_order']==coverage['baseline_case_order'][:2]+
++            ['encoded_time_boundaries']+coverage['baseline_case_order'][2:] and
++            coverage['expected_standing_cases']==14 and coverage['baseline_standing_assertions']==673,
++            'Unexpected standing coverage increment')
++    result={'baseline_case_bodies_verified':13,'standing_cases_required':14,
++            'baseline_observed_assertions':673,'coverage_profile_sha256':digest(BUILD/'native-coverage.json')}
++    save_new(BUILD/'native-source-coverage.json',result)
++    return result
++
+ def native():
++    coverage=native_coverage()
+     gcc=Path(shutil.which('gcc',path=ENVIRONMENT['PATH']) or '').resolve();require(gcc.is_file(),'Native GCC missing')
+     pin_installed(gcc)
+     native_tools={'gcc':str(gcc)}
+@@ -408,6 +441,10 @@
+     require(original_receipt['compiler']['path']==str(gcc) and
+             original_receipt['compiler']['sha256']==INSTALLED_PINS[str(gcc)],
+             'Original suite selected a different native compiler')
++    require(original['passed'] is True and original['pipe_smoke']=='passed' and
++            all(original['native_tests'][name]==value for name,value in
++                {'cases':26,'assertions':2548,'malformed_inputs':20000}.items()),
++            'Original finite/pipe baseline coverage changed')
+     inputs=[path for path,_ in UNITS]+['tests/reference_link.c','tests/avr_runtime_probe.c']
+     macros=['-DHMS_AVR_UART_TEST','-DHMS_AVR_USART_TEST','-DHMS_AVR_CLOCK_TEST','-DHMS_AVR_EEPROM_TEST']
+     reports={};standing_reports={}
+@@ -416,16 +453,26 @@
+         exe=BUILD/('runtime-'+mode)
+         run([gcc,*COMMON,*flags,*macros,*inputs,'-o',exe],'compile-'+mode)
+         reports[mode]=json.loads(run([exe],'probe-'+mode,sanitizer=mode=='asan'))
+-        require(reports[mode]['cases']==11 and reports[mode]['wireOracleSteps']==20000,'Probe coverage changed')
++        require(reports[mode]['cases']==11 and reports[mode]['assertions']==143471 and
++                reports[mode]['wireOracleSteps']==20000 and reports[mode]['interruptSnapshots']==256 and
++                reports[mode]['status']=='passed' and reports[mode]['targetExecuted'] is False,
++                'Probe baseline coverage changed')
+         standing_exe=BUILD/('standing-'+mode)
+         standing_inputs=['protocol/serial/frame.c','protocol/endpoint/endpoint.c',
+                          'protocol/endpoint/standing.c','protocol/endpoint/link.c',
+                          'tests/standing_fixture.c','tests/standing_controls.c']
+         run([gcc,*COMMON,*flags,*standing_inputs,'-o',standing_exe],'standing-compile-'+mode)
+         standing_reports[mode]=json.loads(run([standing_exe],'standing-probe-'+mode,sanitizer=mode=='asan'))
+-        require(standing_reports[mode]['cases']==13,'Standing control coverage changed')
++        require(standing_reports[mode]['cases']==14,'Standing control coverage changed')
++        require(type(standing_reports[mode]['assertions']) is int and
++                standing_reports[mode]['assertions']>coverage['baseline_observed_assertions'],
++                'Standing assertion coverage did not extend the retained baseline')
+         require(standing_reports[mode]['physical_qualification'] is False,'Synthetic controls overclaimed')
++    require(reports['plain']==reports['asan'],'Plain/sanitized integration reports disagree')
++    require(standing_reports['plain']==standing_reports['asan'],'Plain/sanitized standing reports disagree')
+     return {'original':original,'integration':reports,'standing':standing_reports,
++            'source_coverage':coverage,'standing_observed_assertions':standing_reports['plain']['assertions'],
++            'plain_sanitized_reports_agree':True,
+             'compiler_path':str(gcc),'compiler_sha256':digest(gcc),'compiler_version':version,
+             'selected_native_tools':native_tools}
+ 
+@@ -561,7 +608,7 @@
+             'flags':AVR_FLAGS,'link_flags':AVR_LINK_FLAGS,'lto_jobs':1,'lto_partitions':'one',
+             'retained_function_roots':functions,'retained_storage_roots':storage,
+             'charged_storage_ranges':charged,
+-            'retention_policy_changed_from_parent':True,'previously_unlinked_roots_added':[],
++            'retention_policy_changed_from_parent':False,'previously_unlinked_roots_added':[],
+             'flash_bytes':flash,'static_sram_bytes':static,'sections':sections,'allocations':allocations,
+             'limits':{'physical_flash':32768,'uno_application_flash':32256,'sram':2048,'eeprom':1024},
+             'static_plus_512_stack_bytes':static+512,'new_static_delta_from_sealed_baseline':static-1343,
+@@ -569,6 +616,7 @@
+             'static_reservation_arithmetic_fits':flash<=32256 and static+512<=2048 and static-1343<=160,
+             'pre_lto_stack_records':'pre-lto-stack-records.json; not final-image evidence',
+             'combined_foreground_isr_stack_analysis':'UNQUALIFIED: requires actual final backend/disassembly/IPA coverage and graph accounting',
++            'finite_poll_frame_boundary_review':'PENDING: inspect actual finite callee and standing branch frame lifetimes',
+             'tx_register_instruction_window_review':'PENDING: inspect exact linked sequence and max baud interval',
+             'target_runtime_fit_demonstrated':False,'target_executed':False}
+ 
+@@ -692,9 +740,12 @@
+         sources={str(p.relative_to(HERE)):digest(p) for p in sorted(PROJECT.rglob('*'))
+                  if p.is_file() and 'artifacts' not in p.relative_to(PROJECT).parts and '__pycache__' not in p.parts}
+         fixed=['run_checks.py','PLAN.md','WIRE.md','wire-vectors.json','source-pins.json',
+-               'README.md','REVIEW.md','project-source-review.json','project-source-diff.patch',
++               'README.md','REVIEW.md','project-source-review.json','project.diff',
+                'runner-owner-pins.json','RUNNER-REVIEW.md','toolchain-pins.json','retention.json','PROFILE.md',
+-               'PLUGIN-LOOKUP-REVIEW.md','plugin-lookup-source-pins.json']
++               'PLUGIN-LOOKUP-REVIEW.md','plugin-lookup-source-pins.json',
++               'CONTROLS.md','SOURCE-COVERAGE.md','INDEPENDENT-REVIEW.md','native-coverage.json',
++               'runner-input-pins.json','runner-diff.patch','runner-baseline.py',
++               'originals/project/tests/standing_controls.c','history/source-proposal/index.json']
+         fixed += [row['target'] for row in json.loads((HERE/'runner-owner-pins.json').read_text())['files']]
+         for name in fixed:sources[name]=digest(HERE/name)
+         SOURCE_PINS=sources;report['sources']=dict(sources)

@@ -1,0 +1,153 @@
+--- artifacts/implementation/pat-io-active-revocation/harness01/references/configuration32-run_attempt.py
++++ artifacts/implementation/pat-io-active-revocation/harness01/run_attempt.py
+@@ -1,4 +1,4 @@
+-"""Original isolated io-configuration32 runner. Execute only after parent review/release.
++"""Original isolated io-active-revocation38 runner. Execute only after parent review/release.
+ 
+ No project imports occur in this launcher. Seven selected distribution closures
+ are acquired independently of the compiler's five-package identity.
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '483459eb8bf976b538a15fcb9d8d554837c04475f5cc15965169ef3b6f27b5f3'
+-PREFIX = 'artifacts/implementation/pat-io-configuration-capture/implementation01/'
++FROZEN_INDEX = '766bf534925257030f48876678e8b0e2aed5c8d01b377b27f12aee528a429444'
++PREFIX = 'artifacts/implementation/pat-io-active-revocation/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -91,7 +91,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 2813:
++    if len(expected) != 5054:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -177,7 +177,7 @@
+         while selector.get_map():
+             remaining = deadline - time.monotonic()
+             if remaining <= 0:
+-                raise TimeoutError('IoConfiguration32 child exceeded original harness deadline')
++                raise TimeoutError('IoActiveRevocation38 child exceeded original harness deadline')
+             for key, _ in selector.select(min(remaining, 0.1)):
+                 block = os.read(key.fileobj.fileno(), 65536)
+                 if not block:
+@@ -190,13 +190,13 @@
+                 log.write(block)
+                 count += len(block)
+             if time.monotonic() >= deadline:
+-                raise TimeoutError('IoConfiguration32 child crossed harness deadline during pipe collection')
++                raise TimeoutError('IoActiveRevocation38 child crossed harness deadline during pipe collection')
+     remaining = deadline - time.monotonic()
+     if remaining <= 0:
+-        raise TimeoutError('IoConfiguration32 child crossed harness deadline at EOF')
++        raise TimeoutError('IoActiveRevocation38 child crossed harness deadline at EOF')
+     process.wait(timeout=remaining)
+     if time.monotonic() >= deadline:
+-        raise TimeoutError('IoConfiguration32 child crossed harness deadline at process exit')
++        raise TimeoutError('IoActiveRevocation38 child crossed harness deadline at process exit')
+     return count
+ 
+ 
+@@ -204,7 +204,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 32 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 38 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -321,13 +321,13 @@
+     started = time.monotonic()
+     record = {'profile': 'hms.io-trial-engine-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 32,
+-              'projectInputCount': 2810, 'frozenPreparationInputCount': 2813,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 38,
++              'projectInputCount': 5051, 'frozenPreparationInputCount': 5054,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+                          'retainedLogBytes': MAX_LOG, 'scratchRetentionBytes': MAX_SCRATCH_BYTES},
+-              'scope': 'Original private IoRuntime trial-engine tests; SQLite and original simulator phases only. No model, network, subprocess child, physical device, public service or qualification decision.'}
++              'scope': 'Original private IoRuntime capture and active-revocation tests; SQLite and original simulator phases only. No model, network, subprocess child, physical device, public service or qualification decision.'}
+     write_json(attempt / 'started.json', record)
+     try:
+         own_before = [row(here / name, name) for name in OWN_FILES]
+@@ -339,8 +339,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 2810:
+-            raise ValueError('Candidate project closure must contain exactly 2810 files')
++        if len(selected) != 5051:
++            raise ValueError('Candidate project closure must contain exactly 5051 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -355,9 +355,9 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 32 or len(targets['targets']) != 32 or
+-                len(set(targets['targets'])) != 32 or any(not name.startswith(('test_pat_io_trials.IoTrialTests.', 'test_pat_io_configuration_capture.IoConfigurationCaptureTests.')) for name in targets['targets'])):
+-            raise ValueError('Closed configuration32 method selection changed')
++        if (targets['testCount'] != 38 or len(targets['targets']) != 38 or
++                len(set(targets['targets'])) != 38 or any(not name.startswith(('test_pat_io_trials.IoTrialTests.', 'test_pat_io_configuration_capture.IoConfigurationCaptureTests.', 'test_pat_io_active_revocation.IoActiveRevocationTests.')) for name in targets['targets'])):
++            raise ValueError('Closed active-revocation38 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+         scratch_parent = Path('/tmp')
+@@ -366,7 +366,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-configuration-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-active-revocation-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')
+@@ -483,9 +483,12 @@
+             ids = {name.split('.')[-1]: name for name in selection['targets']}
+             methods = set(ids)
+             configured = set(selection['configurationMethods'])
+-            if len(ids) != 32 or len(configured) != 12 or not configured <= methods:
++            active = selection['activeGrantPhases']
++            if len(active) != 6 or not set(active) <= configured:
++                raise ValueError('Active grant-plan selection changed')
++            if len(ids) != 38 or len(configured) != 18 or not configured <= methods:
+                 raise ValueError('Exact configuration method selection changed')
+-            if set(expected) != methods or sum(expected.values()) != 31:
++            if set(expected) != methods or sum(expected.values()) != 37:
+                 raise ValueError('Exact trial fixture selection changed')
+             copied = attempt / 'scratch'
+             if {p.name for p in copied.iterdir()} != methods:
+@@ -511,6 +514,15 @@
+                         manifest['report']['qualificationPassed'] is not False or
+                         manifest['report']['independentOutcomeChecked'] is not False):
+                     raise ValueError('Missing closure/provenance or unexpected qualification claim')
++                if method in active:
++                    principal, deployment = 'pat-io-trial-worker', 'simulation:io-hub'
++                    target = 'sim:pwm5' if method == 'test_active_pwm_revocation_restores_all_claimed_outputs' else 'sim:gpio5'
++                    expected_authority = {'profile':'hms.pat.io-trusted-authority/0.1','principal':principal,'deployment':deployment,
++                        'initialRegistryRevision':13,'initialGrants':[{'principal':principal,'deployment':deployment,'target':'*','verb':'admin'}],
++                        'grantChanges':[{'phase':active[method],'label':'drive:adapters:before',
++                            'grants':[{'principal':principal,'deployment':deployment,'target':target,'verb':'read'}]}]}
++                    if manifest.get('expectedAuthority') != expected_authority:
++                        raise ValueError('Trusted active grant plan differs from reviewed selection')
+                 trial = workspace/'trial-0'
+                 if sorted(p.name for p in trial.iterdir()) != (['configuration', 'records', 'state'] if method in configured else ['records', 'state']):
+                     raise ValueError('Trial output layout changed')
+@@ -539,7 +551,7 @@
+                                   'configuration': configuration_summary})
+             if actual_connections != expected_connections:
+                 raise ValueError('Database connections differ from exact per-method retained state')
+-            record['fixtureSummary'] = {'testWorkspaces': 32, 'engineStates': len(summaries),
++            record['fixtureSummary'] = {'testWorkspaces': 38, 'engineStates': len(summaries),
+                 'databases': sum(len(v['databases']) for v in summaries),
+                 'records': sum(v['records'] for v in summaries),
+                 'configurationRecords': sum(v['configuration']['records'] for v in summaries if v['configuration']),

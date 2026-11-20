@@ -1,0 +1,14 @@
+--- before/check_project_links.py
++++ after/check_project_links.py
+@@ -12,6 +12,11 @@
+ 
+ def main():
+     paths = sorted(set([ROOT/'README.md', ROOT/'PROGRESS.md', *ROOT.glob('docs/*.md'),
++        *ROOT.glob('artifacts/implementation/pat-io-recorded-catalog/*.md'),
++        *ROOT.glob('artifacts/implementation/pat-io-recorded-catalog/implementation*/README.md'),
++        *ROOT.glob('artifacts/implementation/pat-io-recorded-catalog/harness*/README.md'),
++        *ROOT.glob('artifacts/implementation/pat-io-recorded-catalog/harness*/SCOPE.md'),
++        ROOT/'artifacts/implementation/pat-io-recorded-catalog/results/README.md',
+         *ROOT.glob('artifacts/verification/pat-io-recorded-catalog-design/*.md'),
+         *ROOT.glob('artifacts/implementation/pat-io-content-store/*.md'),
+         *ROOT.glob('artifacts/implementation/pat-io-content-store/implementation*/README.md'),

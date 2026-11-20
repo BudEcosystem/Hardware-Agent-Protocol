@@ -1,0 +1,17 @@
+--- artifacts/implementation/pat-io-installation-reuse/harness10/attempt_child.py
++++ artifacts/implementation/pat-io-service-config/harness10/attempt_child.py
+@@ -1,4 +1,4 @@
+-"""IoInstallation1 child: isolated startup, exact selected tests and scoped origin evidence."""
++"""IoService1 child: isolated startup, exact selected tests and scoped origin evidence."""
+ import hashlib
+ import json
+ import os
+@@ -195,7 +195,7 @@
+     tests = unittest.defaultTestLoader.loadTestsFromNames(config['targets'])
+     loaded_ids = flatten(tests)
+     if loaded_ids != config['targets']:
+-        raise RuntimeError('Loaded methods do not exactly match the reviewed installation1 selection')
++        raise RuntimeError('Loaded methods do not exactly match the reviewed service1 selection')
+     class RecordingResult(unittest.TextTestResult):
+         def startTest(self, test):
+             global current_test

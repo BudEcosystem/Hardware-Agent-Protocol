@@ -1,0 +1,31 @@
+--- original-native-accounting
++++ canonical-candidate
+@@ -23,8 +23,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '255b919194d150572c7b7876d941fb2e7d5866e36cdc119e91608da4b85ddc18'
+-PREFIX = 'artifacts/implementation/pat-native-supervisor/implementation02/'
++FROZEN_INDEX = '387d33e2992d2862b1c21902b8de09195a56b569f52c3c3e04b84ce09b2d8849'
++PREFIX = 'artifacts/implementation/pat-integer-canonical/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -282,7 +282,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parents[3] / 'artifacts/implementation/pat-native-supervisor/implementation02'
++    stage = here.parents[3] / 'artifacts/implementation/pat-integer-canonical/implementation01'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -340,7 +340,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-native-worker-accounting-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-integer-canonical-actual-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

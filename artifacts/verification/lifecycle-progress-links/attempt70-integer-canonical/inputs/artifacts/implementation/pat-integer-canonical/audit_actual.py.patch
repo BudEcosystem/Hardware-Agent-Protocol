@@ -1,0 +1,267 @@
+--- references/native-accounting-audit.py
++++ audit_actual.py
+@@ -1,4 +1,4 @@
+-"""Audit the original failed scope without opening interrupted case databases."""
++"""Audit the complete original import without opening worker case databases."""
+ import fcntl
+ import hashlib
+ import json
+@@ -6,11 +6,12 @@
+ from pathlib import Path
+ import sqlite3
+ import stat
++import re
+ 
+ BASE=Path(__file__).resolve().parent;ROOT=BASE.parents[2]
+-STAGE=ROOT/'artifacts/implementation/pat-native-supervisor/implementation02';HARNESS=BASE/'harness01';ATTEMPT=HARNESS/'attempts/attempt01-accounting'
+-PIN='255b919194d150572c7b7876d941fb2e7d5866e36cdc119e91608da4b85ddc18'
+-HPIN='34bfe3567be9944a079d8c9809b62227e0967a59875c85a8bc84a6de53651b9a'
++STAGE=BASE/'implementation01';HARNESS=BASE/'harness01';ATTEMPT=HARNESS/'attempts/attempt01-actual'
++PIN='387d33e2992d2862b1c21902b8de09195a56b569f52c3c3e04b84ce09b2d8849'
++HPIN='88a1f8019e26607ca12526c3154cfc0ff9640ca8e39fb68189133169bce6dd44'
+ METHOD='test_actual_original_matrix_import_and_cold_vault_history'
+ def read(path):return json.loads(path.read_bytes())
+ def sha(path):
+@@ -39,8 +40,8 @@
+ for folder,prefix in ((STAGE,ROOT),(HARNESS,HARNESS)):
+     for row in read(folder/'index.json')['files']:verify(prefix/row['path'],row)
+ result=read(ATTEMPT/'result.json')
+-assert result['status']=='failed' and result['currentPass'] is False and result['childState']=='exited' and result['exitCode']==1
+-assert result['counts']==dict(testsRun=1,failures=1,errors=0,skips=0,expectedFailures=0,unexpectedSuccesses=0)
++assert result['status']=='passed' and result['currentPass'] is True and result['childState']=='exited' and result['exitCode']==0
++assert result['counts']==dict(testsRun=1,failures=0,errors=0,skips=0,expectedFailures=0,unexpectedSuccesses=0)
+ assert result['errors']==result['childErrors']==[] and result['rawScratchInventoryTerminal']
+ assert result['timeoutSeconds']==180 and result['limits']['scratchRetentionBytes']==268435456
+ assert result['projectInputCount']==291 and result['frozenPreparationInputCount']==295
+@@ -65,9 +66,9 @@
+     elif 'sha256' in row:assert sha(Path(row['origin']))==row['sha256']
+ assert len(native_records)==1
+ # The held descriptor was checked in the child; never reopen its numeric path after exit.
+-assert len(native['scans'])==2 and sorted(v['calls'] for v in native['scans'])==[1,2400]
++assert len(native['scans'])==2 and sorted(v['calls'] for v in native['scans'])==[1,2426]
+ for label in ('compiler','driver'):assert read(ATTEMPT/(label+'-before.json'))==read(ATTEMPT/(label+'-after.json'))
+-assert len(read(ATTEMPT/'sqlite-connections.json'))==4
++assert len(read(ATTEMPT/'sqlite-connections.json'))==5
+ targets=read(HARNESS/'targets.json')['targets']
+ assert read(ATTEMPT/'actual-tests.json')==dict(loaded=targets,executed=targets,exactSelection=True)
+ raw=Path(result['scratchPath']);work=raw/METHOD
+@@ -84,7 +85,7 @@
+             assert stat.S_ISREG(info.st_mode) and info.st_uid==os.getuid() and info.st_nlink==1 and info.st_size==0
+             fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
+             locks.append(dict(path=path.relative_to(work).as_posix(),device=str(info.st_dev),inode=str(info.st_ino)))
+-    assert len(locks)==55
++    assert len(locks)==57
+     rows=inventory(raw);assert rows==inventory(ATTEMPT/'scratch')==read(ATTEMPT/'scratch-index.json')
+     assert len(rows)<=8192 and sum(row['bytes'] for row in rows)==result['scratchRetainedBytes']<=268435456
+     board=next((work/'runtime').glob('synthetic-io-board-*.db'))
+@@ -95,12 +96,12 @@
+         dbs.append(db);db.execute('PRAGMA query_only=ON')
+     authority,vault,supervisor,board_db=dbs
+     saved=supervisor.execute('SELECT request,record,return_bytes FROM qs_attempts LIMIT 2').fetchall()
+-    assert len(saved)==1 and saved[0][2] is None
++    assert len(saved)==1 and type(saved[0][2]) is bytes
+     request,record=map(json.loads,saved[0][:2]);archive=read(work/'worker-archive.json')
+-    assert archive['record']==record and record['state']=='archived' and record['reason']=='SUPERVISOR_DEADLINE'
+-    report=record['archive'];assert report['supervisorReason']=='SUPERVISOR_DEADLINE' and report['exitCode']==-15
+-    assert report['transportComplete'] is False and report['unresolvedEffects'] is None and report['semanticQualificationVerified'] is False
+-    assert report['evidenceIntegrity'] is report['returnDigest'] is None
++    assert archive['record']==record and record['state']=='archived' and record['reason'] is None
++    report=record['archive'];assert report['supervisorReason'] is None and report['exitCode']==0 and report['returnValidationFailure'] is None
++    assert report['transportComplete'] is True and report['unresolvedEffects'] is None and report['semanticQualificationVerified'] is False
++    assert type(report['evidenceIntegrity']) is dict and type(report['returnDigest']) is str
+     assert request['groupLimits']['maxWallMs']==60000 and len(request['bundleHeader']['caseIds'])==30
+     assert record['requestDigest']==digest(b'HMS-PAT-IO-SUPERVISOR-REQUEST-v0.1',request)
+     writer=next(row for row in locks if row['path']=='supervisor/'+record['attemptId']+'/writer.lease')
+@@ -111,10 +112,10 @@
+     assert handoff==archive['association']['receipt'] and handoff['attemptId']==record['attemptId'] and handoff['requestDigest']==record['requestDigest']
+     assert handoff['reservationDigest']==digest(b'HMS-PAT-IO-SERVICE-RUN-RESERVATION-v0.1',reservation)
+     assert handoff['supervisorAuthorityId']==supervisor.execute('SELECT authority FROM qs_meta').fetchone()[0]
+-    assert [row[0] for row in authority.execute('SELECT revision FROM iosc_versions')]==[1]
++    assert [row[0] for row in authority.execute('SELECT revision FROM iosc_versions ORDER BY revision')]==[1,2]
+     counts={name:authority.execute('SELECT count(*) FROM '+name).fetchone()[0] for name in ('evi_intents','evi_publications','operations','claims')}
+-    assert set(counts.values())=={0}
+-    assert all(vault.execute('SELECT count(*) FROM '+name).fetchone()[0]==0 for name in ('ev_manifests','ev_documents','ev_bodies'))
++    assert counts==dict(evi_intents=1,evi_publications=1,operations=0,claims=0)
++    assert [vault.execute('SELECT count(*) FROM '+name).fetchone()[0] for name in ('ev_manifests','ev_documents','ev_bodies')]==[1,4011,2798]
+     meta=json.loads(authority.execute('SELECT record FROM evi_meta').fetchone()[0])
+     assert json.loads(vault.execute('SELECT record FROM ev_meta').fetchone()[0])==meta['vault']
+     assert meta['authorityId']==meta['vault']['authorityId']==authority.execute("SELECT value FROM meta WHERE key='authority'").fetchone()[0]
+@@ -124,14 +125,14 @@
+     worker=work/'supervisor'/record['attemptId'];output=worker/'output';matrix=read(output/'matrix.json')
+     scan_rows={value['path']:value for value in native['scans']}
+     assert scan_rows[str(work/'supervisor')]==dict(path=str(work/'supervisor'),calls=1,maxFiles=262144,maxBytes=268435456)
+-    assert scan_rows[str(worker)]==dict(path=str(worker),calls=2400,maxFiles=8192,maxBytes=67108864)
++    assert scan_rows[str(worker)]==dict(path=str(worker),calls=2426,maxFiles=8192,maxBytes=67108864)
+     assert [case['caseId'] for case in matrix['cases']]==request['bundleHeader']['caseIds']
+     cases=sorted(output.glob('case-*'));manifests=sorted(output.glob('case-*/manifest.json'))
+-    assert len(cases)==30 and len(manifests)==29
++    assert len(cases)==30 and len(manifests)==30
+     for i,path in enumerate(manifests):assert read(path)['caseId']==matrix['cases'][i]['caseId']
+     assert matrix['cases'][29]['definition']['scenario']=='shared_resources'
+-    assert not (output/'result.json').exists() and not (worker/'worker-return.json').exists()
+-    phases=read(work/'phase-times.json');assert all(not row['phase'].startswith('import_') for row in phases)
++    assert (output/'result.json').is_file() and (worker/'worker-return.json').is_file()
++    phases=read(work/'phase-times.json');assert {'import_complete','warm_replay_complete','cold_changed_configuration_history_complete','test_body_complete'}<={row['phase'] for row in phases}
+     phase_map={row['phase']:row['elapsedMs'] for row in phases}
+     image=work/'supervisor'/('code-'+request['supervisorIdentity'][7:]);paths=sorted(p for p in image.rglob('*') if p.is_file())
+     assert len(paths)==265;source_rows=[]
+@@ -151,7 +152,122 @@
+     consumer=digest(b'HMS-PAT-VAULT-IMPORT-IMPLEMENTATION-v0.1',dict(vaultIdentity=vault_id,sources=package('evidence_authority',('__init__.py','contracts.py','store.py'))))
+     pins=read(STAGE/'identity-pins.json')
+     assert sorted(source_rows,key=lambda r:r['path'])==pins['sourceRows'] and legacy==pins['legacy'] and vault_id==pins['vault']==meta['vault']['implementationDigest']
+-    assert consumer==pins['consumer']==meta['consumerIdentity']=='sha256:d71915ba422d711245669bf2e076378527f276d8e716b2be772ec0379dbbb76d'
++    assert consumer==pins['consumer']==meta['consumerIdentity']=='sha256:1964ddcf3bac1182f19f383cc09807138182c91a2c4591c82e4a493fe37e1d6a'
++
++    # Independently verify publication and every retained vault body/reference.
++    def body_sha(body):return 'sha256:'+hashlib.sha256(body).hexdigest()
++    imported=read(work/'original-import.json');checks=read(work/'actual-vault-checks.json')
++    intent=imported['intent'];publication=imported['receipt'];evaluation=imported['evaluation']
++    intent_digest=digest(b'HMS-PAT-VAULT-IMPORT-INTENT-v0.1',intent)
++    publication_digest=digest(b'HMS-PAT-VAULT-PUBLICATION-v0.1',publication)
++    assert intent_digest==imported['intentDigest']==checks['intentDigest']
++    assert publication_digest==imported['receiptDigest']==checks['importReceiptDigest']
++    assert intent['sequence']==publication['sequence']==1 and intent['previousIntentDigest'] is None and publication['previousPublicationDigest'] is None
++    assert intent['consumerIdentity']==evaluation['consumerIdentity']==consumer
++    assert intent['storeId']==meta['vault']['storeId'] and publication['intentDigest']==intent_digest
++    assert intent['bindingDigest']==digest(b'HMS-PAT-VAULT-ORIGINAL-BINDING-v0.1',intent['anchor'])
++    intent_rows=authority.execute('SELECT sequence,evaluator,run,intent,record FROM evi_intents LIMIT 2').fetchall()
++    publication_rows=authority.execute('SELECT sequence,intent,record FROM evi_publications LIMIT 2').fetchall()
++    assert intent_rows==[(1,reservation['evaluatorId'],reservation['runId'],intent_digest,canonical(intent))]
++    assert publication_rows==[(1,intent_digest,canonical(publication))]
++    returned=json.loads(saved[0][2])
++    assert saved[0][2]==(worker/'worker-return.json').read_bytes()==canonical(returned)
++    assert body_sha(saved[0][2])==report['returnDigest']
++    assert returned==dict(profile='hms.pat.io-supervisor-return/0.1',attemptId=record['attemptId'],
++        bundleDigest=request['bundleDigest'],requestDigest=record['requestDigest'],
++        groupResultDigest=body_sha((output/'result.json').read_bytes()),status='captured')
++    expected_anchor=dict(authorityId=reservation['authorityId'],deployment=reservation['deployment'],
++        evaluatorId=reservation['evaluatorId'],runId=reservation['runId'],artifactDigest=reservation['artifactDigest'],
++        reservationDigest=handoff['reservationDigest'],configurationReceiptDigest=reservation['configurationReceiptDigest'],
++        configurationDigest=request['context']['configurationDigest'],configurationRevision=request['context']['configurationRevision'],
++        supervisorAuthorityId=handoff['supervisorAuthorityId'],handoffDigest=archive['association']['receiptDigest'],
++        requestDigest=record['requestDigest'],attemptId=record['attemptId'],bundleDigest=request['bundleDigest'],
++        producerIdentity=request['supervisorIdentity'],producerImplementation=request['implementation'],
++        recordDigest=digest(b'HMS-PAT-IO-ORIGINAL-RECORD-v0.1',record),returnDigest=report['returnDigest'],
++        groupResultDigest=returned['groupResultDigest'],outputClosure=report['evidenceIntegrity'])
++    assert intent['anchor']==evaluation['anchor']==expected_anchor
++    assert evaluation['outcome']=='passed' and evaluation['scope']=='complete-finite-synthetic-io-matrix'
++    assert evaluation['inspectedCases']==30 and evaluation['unresolvedEffects']==0
++    assert all(evaluation[key] is False for key in ('physicalObjectiveVerified','wallDeadlineAttested','aggregateDiskQuotaEnforced','catalogActivated'))
++    assert authority.execute('SELECT request FROM iosr_runs').fetchall()==[(canonical(request),)]
++    manifest_rows=vault.execute('SELECT sequence,intent,binding,record FROM ev_manifests LIMIT 2').fetchall()
++    assert len(manifest_rows)==1
++    sequence,stored_intent,binding,manifest_wire=manifest_rows[0]
++    manifest=json.loads(manifest_wire)
++    assert manifest_wire==canonical(manifest) and (sequence,stored_intent,binding)==(1,intent_digest,intent['bindingDigest'])
++    assert manifest['scope']=='immutable-bytes-only' and manifest['previousManifestDigest'] is None
++    assert manifest['sequence']==1 and manifest['intentDigest']==intent_digest and manifest['bindingDigest']==binding
++    assert manifest['authorityId']==meta['authorityId'] and manifest['storeId']==meta['vault']['storeId']
++    assert publication['manifestDigest']==digest(b'HMS-PAT-EVIDENCE-VAULT-MANIFEST-v0.1',manifest)
++    assert vault.execute('SELECT count(*),sum(length(body)),max(length(body)) FROM ev_bodies').fetchone()[0]==2798
++    assert vault.execute('SELECT sum(length(body)) FROM ev_bodies').fetchone()[0]<=24*1024*1024
++    bodies={}
++    for name,body in vault.execute('SELECT digest,body FROM ev_bodies LIMIT 2799'):
++        assert type(body)is bytes and len(body)<=16777216 and body_sha(body)==name and name not in bodies
++        bodies[name]=body
++    refs=vault.execute('SELECT sequence,path,digest FROM ev_documents ORDER BY path LIMIT 4012').fetchall()
++    assert len(refs)==4011 and len(bodies)==2798 and {row[2] for row in refs}==set(bodies)
++    files={};chain=hashlib.sha256(b'HMS-PAT-IO-IMPORTED-CLOSURE-v0.1\0')
++    for sequence,name,value in refs:
++        assert sequence==1 and name not in files and re.fullmatch(r'[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*',name)
++        assert all(part not in ('.','..') for part in name.split('/')) and len(name)<=288
++        body=bodies[value];files[name]=body
++        chain.update(canonical(dict(path=name,bytes=len(body),sha256=value))+b'\n')
++    closure=dict(documents=len(files),bytes=sum(map(len,files.values())),digest='sha256:'+chain.hexdigest())
++    assert closure==manifest['closure']==publication['closure']
++    assert files['evaluation.json']==canonical(evaluation) and body_sha(files['evaluation.json'])==publication['evaluationDigest']
++    assert body_sha(files['inspection/summary.json'])==evaluation['inspectionDigest']
++    inspection=json.loads(files['inspection/summary.json'])
++    assert [row['caseId'] for row in inspection['cases']]==[row['caseId'] for row in matrix['cases']]
++    assert all(inspection[key] is True for key in ('requiredMatrixCoverageChecked','independentOutcomeChecked',
++        'archiveAccountingChecked','trustedSetupMatched','implementationIdentityMatched'))
++    for i,case in enumerate(inspection['cases']):
++        body=files['inspection/case-%02d.json'%i]
++        assert hashlib.sha256(body).hexdigest()==case['inspectionSha256'] and len(body)==case['inspectionBytes']
++        assert json.loads(body)['caseId']==case['caseId'] and case['expectedResponseVerified'] is True
++    expected_files={}
++    for name,value in dict(reservation=reservation,handoff=handoff,request=request,attempt=record).items():
++        expected_files['original/control/'+name+'.json']=canonical(value)
++    expected_files['original/control/return.json']=saved[0][2]
++    source_documents=authority.execute('SELECT sequence,path,body FROM iosr_documents LIMIT 40').fetchall()
++    assert len(source_documents)<=39
++    for sequence,name,body in source_documents:
++        assert sequence==1 and re.fullmatch(r'(inputs|cases)/[A-Za-z0-9_.-]+',name) and len(body)<=65536
++        assert body==(worker/'bundle'/name).read_bytes()
++        expected_files['original/bundle/'+name]=body
++    expected_files['original/bundle/header.json']=canonical(request['bundleHeader'])
++    assert (worker/'bundle/header.json').read_bytes()==expected_files['original/bundle/header.json']
++    output_rows=inventory(output);output_chain=hashlib.sha256(b'HMS-PAT-IO-OUTPUT-CLOSURE-v0.1\0')
++    for row in sorted(output_rows,key=lambda row:tuple(row['path'].split('/'))):
++        output_chain.update(canonical(row)+b'\n')
++        expected_files['original/output/'+row['path']]=(output/row['path']).read_bytes()
++    output_closure=dict(fileCount=len(output_rows),bytes=sum(row['bytes'] for row in output_rows),orderedDigest='sha256:'+output_chain.hexdigest())
++    assert output_closure==report['evidenceIntegrity']
++    assert all(files.get(name)==body for name,body in expected_files.items())
++    inspection_names={'evaluation.json','inspection/summary.json'}|{'inspection/case-%02d.json'%i for i in range(30)}
++    assert set(files)==set(expected_files)|inspection_names
++    group=read(output/'result.json')
++    assert group['status']=='captured' and group['error'] is None and group['allMatrixCasesCaptured']
++    assert len(group['cases'])==30 and group['accounting']['charged']==inspection['accounting']
++    assert [row['caseId'] for row in group['cases']]==[row['caseId'] for row in matrix['cases']]
++    for row in group['cases']:
++        ref=row['manifest'];verify(output/ref['path'],dict(bytes=ref['bytes'],sha256=ref['sha256']))
++    assert checks['originalAttemptId']==record['attemptId'] and checks['completeCases']==30
++    assert checks['oneQualificationWorker'] and checks['realReducerUsed'] and checks['exactOriginalKeyReplay']
++    assert checks['coldVaultHistoryAfterConfigurationDrift'] and checks['authorityBusinessRowsUnchanged']
++    assert all(checks[key] is False for key in ('coldRuntimeAndSupervisorReopen','sessionDriftTested','catalogIntegrated',
++        'physicalObjectiveVerified','aggregateDiskQuotaEnforced','physicalCapacityReserved'))
++    assert checks['sourceApplicationInvocations']==0
++    storage=checks['storage']
++    assert storage==dict(authorityBytes=(work/'runtime/authority.db').stat().st_size,
++        vaultBytes=(work/'vault/evidence.db').stat().st_size,references=len(refs),bodies=len(bodies))
++    assert storage['authorityBytes']<=16777216 and storage['vaultBytes']<=15728640
++    import_observation=dict(originalImportAndPublicationAssociated=True,allVaultBodiesAndReferencesVerified=True,
++        originalBundleAndOutputBytesEqual=True,originalOutputClosure=output_closure,importedClosure=closure,
++        completeCases=30,syntheticUnresolvedEffects=0,publicationDigest=publication_digest,intentDigest=intent_digest,
++        manifestDigest=publication['manifestDigest'],inspectionSha256=evaluation['inspectionDigest'],storage=storage,
++        vaultUnreservedPageCapHeadroomBytes=15728640-storage['vaultBytes'],catalogIntegrated=False,
++        physicalObjectiveVerified=False,semanticReducerExecutedInOriginalScope=True,semanticReducerReexecutedByAudit=False)
+ 
+     # Independently derive observations; never import the observer or project code.
+     accounting=read(ATTEMPT/'worker-accounting.json')
+@@ -162,7 +278,7 @@
+     assert observed['launchFailure'] is None and observed['pid']==record['pid']
+     assert observed['argv']==launches[0]['argv'] and launches[0]['cwd']==str(image)
+     assert observed['argv'][:4]==[read(ATTEMPT/'child-runtime.json')['executable'],'-I','-B',str(image/'supervisor/worker_entry.py')]
+-    assert terminal['observedBy']=='original-poll' and terminal['returnCode']==report['exitCode']==-15
++    assert terminal['observedBy']=='original-poll' and terminal['returnCode']==report['exitCode']==0
+     assert observed['before']['afterMonotonicNs']<=observed['launchedMonotonicNs']<=terminal['snapshot']['beforeMonotonicNs']
+     for name,position,path in (('attemptDirectory',4,worker),('input',5,worker/'input.json'),('writerLease',6,worker/'writer.lease')):
+         info=path.lstat();description=observed['descriptors'][name]
+@@ -226,18 +342,18 @@
+ finally:
+     for db in reversed(dbs):db.close()
+     for fd in reversed(held):os.close(fd)
+-summary=dict(stageStatus='verified-progress-actual-scope-failed',sourceIndexSha256=PIN,harnessIndexSha256=HPIN,
+-    resultSha256=sha(ATTEMPT/'result.json'),observerControls=15,compositionControls=6,previousNativeControlsReferenced=True,productionCandidateChanged=False,publicRuntimeChanged=False,
+-    actualScopePassed=False,originalAttemptId=record['attemptId'],supervisorReason='SUPERVISOR_DEADLINE',
+-    requestedCases=30,caseDirectories=30,caseManifests=29,incompleteScenario='shared_resources',
+-    originalMaxWallMs=60000,transportComplete=False,workerUnresolvedEffects=None,importReached=False,
+-    importIntents=0,publications=0,evidenceManifests=0,sourceApplicationInvocations=0,
++summary=dict(stageStatus='verified-progress-actual-scope-passed',sourceIndexSha256=PIN,harnessIndexSha256=HPIN,
++    resultSha256=sha(ATTEMPT/'result.json'),observerControls=15,compositionControls=6,previousNativeControlsReferenced=True,publicContractTests=9,pureDifferentialCases=1668,productionCandidateChanged=True,publicRuntimeChanged=False,
++    actualScopePassed=True,originalAttemptId=record['attemptId'],supervisorReason=None,
++    requestedCases=30,caseDirectories=30,caseManifests=30,incompleteScenario=None,
++    originalMaxWallMs=60000,transportComplete=True,workerUnresolvedEffects=None,importReached=True,
++    importIntents=1,publications=1,evidenceManifests=1,sourceApplicationInvocations=0,
+     readonlySourceDatabases=hashes,workerCaseDatabasesOpened=0,ownerAndWriterLocks=locks,
+     sourceAndOriginsAndRetainedBytesVerified=True,producerImageFiles=265,legacyIdentity=legacy,vaultIdentity=vault_id,consumerIdentity=consumer,
+     sourceIdentitiesIndependentlyRecomputed=True,rawPath=str(raw),rawFiles=len(rows),rawBytes=result['scratchRetainedBytes'],
+     phaseTimes=phases,observedSpawnToSettledMs=phase_map['worker_producer_settled']-phase_map['worker_spawned'],
+-    nativeImageReceiptVerified=True,nativeOriginReopenedAfterChildExit=False,nativeRetention=native,workerResourceObservation=observation,
++    nativeImageReceiptVerified=True,nativeOriginReopenedAfterChildExit=False,nativeRetention=native,workerResourceObservation=observation,vaultImportObservation=import_observation,
+     timeoutRootCauseEstablished=False,wholeWorkerPerformanceQualified=False,catalogIntegrated=False,
+     physicalObjectiveVerified=False,aggregateDiskQuotaEnforced=False,independentReview=False,goalStatus='active')
+ with (BASE/'RESULTS.json').open('x') as stream:json.dump(summary,stream,indent=2);stream.write('\n')
+-print(json.dumps({key:summary[key] for key in ('stageStatus','observerControls','compositionControls','caseManifests','importReached','rawFiles','workerResourceObservation','goalStatus')}))
++print(json.dumps({key:summary[key] for key in ('stageStatus','publicContractTests','pureDifferentialCases','caseManifests','importReached','rawFiles','workerResourceObservation','vaultImportObservation','goalStatus')}))

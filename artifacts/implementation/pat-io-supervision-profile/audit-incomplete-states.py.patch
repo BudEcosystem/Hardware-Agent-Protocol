@@ -1,0 +1,11 @@
+--- artifacts/implementation/pat-io-supervision-recovery/audit-incomplete-states.py
++++ artifacts/implementation/pat-io-supervision-profile/audit-incomplete-states.py
+@@ -1,7 +1,7 @@
+ """Read exact terminated acquired synthetic states; never reopen a Runtime."""
+ import hashlib,json,sqlite3,sys
+ from pathlib import Path
+-B=Path.cwd()/'artifacts/implementation/pat-io-supervision-recovery'
++B=Path.cwd()/'artifacts/implementation/pat-io-supervision-profile'
+ name=sys.argv[1];folder=B/'results'/name;proof=json.loads((folder/'proof.json').read_bytes())
+ assert proof['status']in{'passed','failed'}
+ result=json.loads((folder/'attempt/result.json').read_bytes())

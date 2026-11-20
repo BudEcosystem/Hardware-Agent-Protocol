@@ -1,0 +1,22 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-service-runs/implementation01/project/hms/pat_io_configuration_capture.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-document-validation/implementation01/project/hms/pat_io_configuration_capture.py
+@@ -12,6 +12,7 @@
+ from . import pat_io_trials as trials
+ from .contracts import canonical, parse_json
+ from .pat_contracts import require
++from .pat_io_canonical_blobs import CanonicalBlobs
+ 
+ PROFILE = 'hms.pat.io-configuration-record/0.1'
+ PUBLIC_META = ('deployment', 'revision', 'version')
+@@ -103,7 +104,10 @@
+         require(len(rows) == count, 'PAT_IO_CONFIGURATION_STORAGE_CHANGED')
+         def cell(value, kind):
+             if kind == 'blob':
+-                require(type(value) is bytes and canonical(parse_json(value)) == value, 'PAT_IO_CONFIGURATION_STORAGE_DOCUMENT')
++                cache = getattr(self, '_canonical_blob_checks', None)
++                if cache is None:
++                    cache = self._canonical_blob_checks = CanonicalBlobs()
++                require(cache.is_canonical(value, canonical=canonical, parser=parse_json), 'PAT_IO_CONFIGURATION_STORAGE_DOCUMENT')
+                 return {'type': 'blob-utf8', 'value': value.decode('utf-8')}
+             require(type(value) is (int if kind == 'integer' else str), 'PAT_IO_CONFIGURATION_STORAGE_TYPE')
+             return {'type': 'integer' if kind == 'integer' else 'text', 'value': value}

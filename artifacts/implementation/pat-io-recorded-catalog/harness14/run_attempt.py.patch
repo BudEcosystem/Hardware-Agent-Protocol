@@ -1,0 +1,51 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-content-store/harness01/run_attempt.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-recorded-catalog/harness14/run_attempt.py
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = 'f19f9d9fa10ea0a62347a811a1a8e0a78de45954a759916042225125cbabd95f'
+-PREFIX = 'artifacts/implementation/pat-io-content-store/implementation01/'
++FROZEN_INDEX = '490595e7d5a5f5c2877cc81a810997f34b2070ea54948b7dd070dbed6d51a16d'
++PREFIX = 'artifacts/implementation/pat-io-recorded-catalog/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -91,7 +91,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 269:
++    if len(expected) != 277:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -240,7 +240,7 @@
+     record = {'profile': 'hms.io-group-worker-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+               'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 1,
+-              'projectInputCount': 266, 'frozenPreparationInputCount': 269,
++              'projectInputCount': 274, 'frozenPreparationInputCount': 277,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+@@ -257,8 +257,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 266:
+-            raise ValueError('Candidate project closure must contain exactly 266 files')
++        if len(selected) != 274:
++            raise ValueError('Candidate project closure must contain exactly 274 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -276,7 +276,7 @@
+         if (targets['testCount'] != 1 or
+                 len(targets['targets']) != 1 or
+                 len(set(targets['targets'])) != 1 or
+-                targets['targets'] != ['test_io_evidence_compact.CompactIoEvidenceTests.test_exact_reconstruction_deduplicates_without_dropping_references']):
++                targets['targets'] != ['test_io_recorded_catalog.RecordedIoCatalogTests.test_missing_presence_is_unavailable_without_creating_an_instance']):
+             raise ValueError('Closed runs15 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.

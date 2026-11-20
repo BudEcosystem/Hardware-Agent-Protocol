@@ -1,0 +1,49 @@
+--- prepare_harness.py
++++ prepare_harness02.py
+@@ -8,9 +8,9 @@
+ 
+ BASE = Path(__file__).resolve().parent
+ ROOT = BASE.parents[2]
+-SOURCE = BASE / 'implementation01'
++SOURCE = BASE / 'implementation02'
+ TEMPLATE = BASE.parent / 'pat-io-proof-batch/harness02'
+-HARNESS = BASE / 'harness01'
++HARNESS = BASE / 'harness02'
+ def sha(path):
+     return hashlib.sha256(path.read_bytes()).hexdigest()
+ def read(path):
+@@ -22,7 +22,7 @@
+ def dump(path, value):
+     put(path, json.dumps(value, indent=2) + '\n')
+ assert not HARNESS.exists()
+-assert sha(SOURCE / 'index.json') == 'ffe9af2582f56ab198a92f58598d378fc07a3c69cfe223c73b353a91c59c319b'
++assert sha(SOURCE / 'index.json') == '255b919194d150572c7b7876d941fb2e7d5866e36cdc119e91608da4b85ddc18'
+ assert sha(TEMPLATE / 'index.json') == '094098cab10de007e509f99895997915f6956634cb045f0d241ae333a01b08dc'
+ for row in read(TEMPLATE / 'index.json')['files']:
+     assert sha(TEMPLATE / row['path']) == row['sha256']
+@@ -42,13 +42,14 @@
+     new = old
+     if name == 'run_attempt.py':
+         new = new.replace('a7e03e59584b61e09efe40fbd093c423acfdc4c037c6d5d24273019bdda3f2b5', sha(SOURCE / 'index.json'))
+-        new = new.replace('artifacts/implementation/pat-io-proof-batch/implementation01/', 'artifacts/implementation/pat-native-supervisor/implementation01/')
++        new = new.replace('artifacts/implementation/pat-io-proof-batch/implementation01/', 'artifacts/implementation/pat-native-supervisor/implementation02/')
++        new = new.replace("stage = here.parent / 'implementation01'", "stage = here.parent / 'implementation02'")
+         new = re.sub(r'\b288\b', '291', new)
+         new = re.sub(r'\b292\b', '295', new)
+         new = new.replace("prefix='hms-io-proof-batch-actual-'", "prefix='hms-native-supervisor-actual-'")
+     else:
+         new = new.replace('import hashlib\n', 'import hashlib\nimport fcntl\nimport stat\n', 1)
+-        guard = (BASE / 'native_guard.py.inc').read_text()
++        guard = (BASE / 'native_guard02.py.inc').read_text()
+         new = new.replace('def audit(event, args):\n', guard + '\ndef audit(event, args):\n    if event.startswith(\'hms.retention.\'):\n        native_boundary(event, args)\n        return\n', 1)
+         marker = "        path = Path(origin).resolve()\n        key = (label, str(path))"
+         replacement = '''        if label == 'module:_hms_retention_native_v1':
+@@ -70,7 +71,7 @@
+     put(HARNESS / (name + '.patch'), ''.join(difflib.unified_diff(old.splitlines(True), new.splitlines(True),
+         fromfile='frozen-proof-build/' + name, tofile='native-supervisor/' + name)))
+ dump(HARNESS / 'borrowed-inputs.json', borrowed)
+-put(HARNESS / 'README.md', '# Native supervisor actual scope\n\n[Source](../implementation01/README.md), [scope](SCOPE.md). The complete original test and its limits are preserved.\n')
++put(HARNESS / 'README.md', '# Native supervisor actual scope\n\n[Source](../implementation02/README.md), [scope](SCOPE.md). The complete original test and its limits are preserved.\n')
+ put(HARNESS / 'SCOPE.md', '# Exact complete actual scope\n\nOne unchanged original 30-case worker, real reducer, authority-vault import, original-key replay, configuration revision change and vault-only cold history. No source PAT or source-runtime/supervisor cold reopen is added.\n\nOriginal bounds: worker 60 seconds, parent 180 seconds, six parent SQLite opens, 16 MiB single file, 256 MiB retained scratch, 8192 files, 8 MiB log, five-second held snapshot and 15 MiB vault. No altered keys, weakened cases, expanded limits, physical I/O, MCU execution, inference or live services.\n\nThe child authorizes one pinned native memory image and exact supervisor/attempt scan roots. Its audit hooks are cooperative and do not see per-entry native syscalls. Seals and held inode/digest are checked before load and in the final origin report. The image descriptor remains held to process exit. System library closure is not fully attested.\n')
+ dump(HARNESS / 'review.json', dict(reviewer='primary-agent', independentReview=False,
+     sourceIndexSha256=sha(SOURCE / 'index.json'), templateIndexSha256=sha(TEMPLATE / 'index.json'),

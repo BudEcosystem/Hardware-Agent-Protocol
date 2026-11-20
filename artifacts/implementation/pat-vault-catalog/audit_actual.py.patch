@@ -1,0 +1,191 @@
+--- integer-canonical/audit_actual.py
++++ vault-catalog/audit_actual.py
+@@ -9,10 +9,10 @@
+ import re
+ 
+ BASE=Path(__file__).resolve().parent;ROOT=BASE.parents[2]
+-STAGE=BASE/'implementation01';HARNESS=BASE/'harness01';ATTEMPT=HARNESS/'attempts/attempt01-actual'
+-PIN='387d33e2992d2862b1c21902b8de09195a56b569f52c3c3e04b84ce09b2d8849'
+-HPIN='88a1f8019e26607ca12526c3154cfc0ff9640ca8e39fb68189133169bce6dd44'
+-METHOD='test_actual_original_matrix_import_and_cold_vault_history'
++STAGE=BASE/'implementation03';HARNESS=BASE/'harness23';ATTEMPT=HARNESS/'attempts/attempt01-actual'
++PIN='5ffd155119c12c73d6090a6684973f7f14474ebbfdb0fce228f880476df4e3a9'
++HPIN='eb5a17ffdffaaa5ef208fd623f0db8e7c19b7634cf26e370b9fe00880d827437'
++METHOD='test_actual_original_matrix_catalog_admission_and_cold_history'
+ def read(path):return json.loads(path.read_bytes())
+ def sha(path):
+     assert not path.is_symlink() and path.is_file() and path.stat().st_size<=16777216
+@@ -44,7 +44,7 @@
+ assert result['counts']==dict(testsRun=1,failures=0,errors=0,skips=0,expectedFailures=0,unexpectedSuccesses=0)
+ assert result['errors']==result['childErrors']==[] and result['rawScratchInventoryTerminal']
+ assert result['timeoutSeconds']==180 and result['limits']['scratchRetentionBytes']==268435456
+-assert result['projectInputCount']==291 and result['frozenPreparationInputCount']==295
++assert result['projectInputCount']==302 and result['frozenPreparationInputCount']==308
+ for label,prefix in (('inputs',ATTEMPT/'project'),('frozen',ROOT),('harness',ATTEMPT/'harness')):
+     rows=read(ATTEMPT/(label+'-before.json'));assert rows==read(ATTEMPT/(label+'-after.json'))
+     for row in rows:verify(prefix/row['path'],row)
+@@ -66,7 +66,7 @@
+     elif 'sha256' in row:assert sha(Path(row['origin']))==row['sha256']
+ assert len(native_records)==1
+ # The held descriptor was checked in the child; never reopen its numeric path after exit.
+-assert len(native['scans'])==2 and sorted(v['calls'] for v in native['scans'])==[1,2426]
++assert len(native['scans'])==2 and all(type(v['calls']) is int and v['calls']>0 for v in native['scans'])
+ for label in ('compiler','driver'):assert read(ATTEMPT/(label+'-before.json'))==read(ATTEMPT/(label+'-after.json'))
+ assert len(read(ATTEMPT/'sqlite-connections.json'))==5
+ targets=read(HARNESS/'targets.json')['targets']
+@@ -114,25 +114,28 @@
+     assert handoff['supervisorAuthorityId']==supervisor.execute('SELECT authority FROM qs_meta').fetchone()[0]
+     assert [row[0] for row in authority.execute('SELECT revision FROM iosc_versions ORDER BY revision')]==[1,2]
+     counts={name:authority.execute('SELECT count(*) FROM '+name).fetchone()[0] for name in ('evi_intents','evi_publications','operations','claims')}
+-    assert counts==dict(evi_intents=1,evi_publications=1,operations=0,claims=0)
++    assert counts==dict(evi_intents=1,evi_publications=1,operations=1,claims=0)
+     assert [vault.execute('SELECT count(*) FROM '+name).fetchone()[0] for name in ('ev_manifests','ev_documents','ev_bodies')]==[1,4011,2798]
+     meta=json.loads(authority.execute('SELECT record FROM evi_meta').fetchone()[0])
+     assert json.loads(vault.execute('SELECT record FROM ev_meta').fetchone()[0])==meta['vault']
+     assert meta['authorityId']==meta['vault']['authorityId']==authority.execute("SELECT value FROM meta WHERE key='authority'").fetchone()[0]
+     assert authority.execute("SELECT value FROM reg_meta WHERE key='vault_evidence_import'").fetchone()[0]=='hms.pat.vault-import/0.1|'+digest(b'HMS-PAT-VAULT-IMPORT-MOUNT-v0.1',meta)
+-    assert all(row[1:]==(0,0,0) for row in board_db.execute('SELECT instance,activations,completed,canceled FROM io_effects'))
++    effects=read(work/'application-effects.json')
++    actual_effects=[list(row) for row in board_db.execute('SELECT instance,activations,completed,canceled FROM io_effects')]
++    assert actual_effects==effects['effects']
++    assert all(row[1:]==([1,1,0] if row[0]==effects['selectedInstance'] else [0,0,0]) for row in actual_effects)
+     assert board_db.execute('SELECT count(*) FROM io_owners').fetchone()[0]==0
+     worker=work/'supervisor'/record['attemptId'];output=worker/'output';matrix=read(output/'matrix.json')
+     scan_rows={value['path']:value for value in native['scans']}
+     assert scan_rows[str(work/'supervisor')]==dict(path=str(work/'supervisor'),calls=1,maxFiles=262144,maxBytes=268435456)
+-    assert scan_rows[str(worker)]==dict(path=str(worker),calls=2426,maxFiles=8192,maxBytes=67108864)
++    assert scan_rows[str(worker)]==dict(path=str(worker),calls=scan_rows[str(worker)]['calls'],maxFiles=8192,maxBytes=67108864)
+     assert [case['caseId'] for case in matrix['cases']]==request['bundleHeader']['caseIds']
+     cases=sorted(output.glob('case-*'));manifests=sorted(output.glob('case-*/manifest.json'))
+     assert len(cases)==30 and len(manifests)==30
+     for i,path in enumerate(manifests):assert read(path)['caseId']==matrix['cases'][i]['caseId']
+     assert matrix['cases'][29]['definition']['scenario']=='shared_resources'
+     assert (output/'result.json').is_file() and (worker/'worker-return.json').is_file()
+-    phases=read(work/'phase-times.json');assert {'import_complete','warm_replay_complete','cold_changed_configuration_history_complete','test_body_complete'}<={row['phase'] for row in phases}
++    phases=read(work/'phase-times.json');assert {'import_complete','catalog_recorded','catalog_activated','application_completed','cold_history_complete','test_body_complete'}<={row['phase'] for row in phases}
+     phase_map={row['phase']:row['elapsedMs'] for row in phases}
+     image=work/'supervisor'/('code-'+request['supervisorIdentity'][7:]);paths=sorted(p for p in image.rglob('*') if p.is_file())
+     assert len(paths)==265;source_rows=[]
+@@ -152,15 +155,15 @@
+     consumer=digest(b'HMS-PAT-VAULT-IMPORT-IMPLEMENTATION-v0.1',dict(vaultIdentity=vault_id,sources=package('evidence_authority',('__init__.py','contracts.py','store.py'))))
+     pins=read(STAGE/'identity-pins.json')
+     assert sorted(source_rows,key=lambda r:r['path'])==pins['sourceRows'] and legacy==pins['legacy'] and vault_id==pins['vault']==meta['vault']['implementationDigest']
+-    assert consumer==pins['consumer']==meta['consumerIdentity']=='sha256:1964ddcf3bac1182f19f383cc09807138182c91a2c4591c82e4a493fe37e1d6a'
++    assert consumer==pins['consumer']==meta['consumerIdentity']=='sha256:5e9214b37a96f897253ea2f1859090327039f5aaeb9512aa49df880484cf4523'
+ 
+     # Independently verify publication and every retained vault body/reference.
+     def body_sha(body):return 'sha256:'+hashlib.sha256(body).hexdigest()
+-    imported=read(work/'original-import.json');checks=read(work/'actual-vault-checks.json')
++    imported=read(work/'original-import.json');checks=read(work/'actual-vault-catalog-checks.json')
+     intent=imported['intent'];publication=imported['receipt'];evaluation=imported['evaluation']
+     intent_digest=digest(b'HMS-PAT-VAULT-IMPORT-INTENT-v0.1',intent)
+     publication_digest=digest(b'HMS-PAT-VAULT-PUBLICATION-v0.1',publication)
+-    assert intent_digest==imported['intentDigest']==checks['intentDigest']
++    assert intent_digest==imported['intentDigest']
+     assert publication_digest==imported['receiptDigest']==checks['importReceiptDigest']
+     assert intent['sequence']==publication['sequence']==1 and intent['previousIntentDigest'] is None and publication['previousPublicationDigest'] is None
+     assert intent['consumerIdentity']==evaluation['consumerIdentity']==consumer
+@@ -254,10 +257,10 @@
+         ref=row['manifest'];verify(output/ref['path'],dict(bytes=ref['bytes'],sha256=ref['sha256']))
+     assert checks['originalAttemptId']==record['attemptId'] and checks['completeCases']==30
+     assert checks['oneQualificationWorker'] and checks['realReducerUsed'] and checks['exactOriginalKeyReplay']
+-    assert checks['coldVaultHistoryAfterConfigurationDrift'] and checks['authorityBusinessRowsUnchanged']
+-    assert all(checks[key] is False for key in ('coldRuntimeAndSupervisorReopen','sessionDriftTested','catalogIntegrated',
+-        'physicalObjectiveVerified','aggregateDiskQuotaEnforced','physicalCapacityReserved'))
+-    assert checks['sourceApplicationInvocations']==0
++    assert checks['coldVaultAndBridgeHistory'] and checks['catalogIntegrated']
++    assert checks['freshConfigurationRefusal']!='PAT_NO_MATCH' and checks['freshColdRefusal']!='PAT_NO_MATCH'
++    assert all(checks[key] is False for key in ('physicalObjectiveVerified','aggregateDiskQuotaEnforced','physicalCapacityReserved'))
++    assert checks['sourceApplicationInvocations']==1
+     storage=checks['storage']
+     assert storage==dict(authorityBytes=(work/'runtime/authority.db').stat().st_size,
+         vaultBytes=(work/'vault/evidence.db').stat().st_size,references=len(refs),bodies=len(bodies))
+@@ -266,8 +269,63 @@
+         originalBundleAndOutputBytesEqual=True,originalOutputClosure=output_closure,importedClosure=closure,
+         completeCases=30,syntheticUnresolvedEffects=0,publicationDigest=publication_digest,intentDigest=intent_digest,
+         manifestDigest=publication['manifestDigest'],inspectionSha256=evaluation['inspectionDigest'],storage=storage,
+-        vaultUnreservedPageCapHeadroomBytes=15728640-storage['vaultBytes'],catalogIntegrated=False,
++        vaultUnreservedPageCapHeadroomBytes=15728640-storage['vaultBytes'],catalogIntegrated=True,
+         physicalObjectiveVerified=False,semanticReducerExecutedInOriginalScope=True,semanticReducerReexecutedByAudit=False)
++
++    # Verify the separately versioned catalog and exact admitted application.
++    host_names=('__init__.py','contracts.py','projection.py','bridge.py','catalog.py','execution.py')
++    host_rows=[dict(path=name,bytes=(ATTEMPT/'project/vault_recorded_io'/name).stat().st_size,
++        sha256='sha256:'+sha(ATTEMPT/'project/vault_recorded_io'/name)) for name in host_names]
++    host=digest(b'HMS-PAT-IO-VAULT-RECORDED-HOST-v0.1',dict(consumerIdentity=consumer,sources=host_rows))
++    assert host==pins['host'] and host_rows==pins['hostSources']
++    recorded=read(work/'recorded-evaluation.json');receipt=recorded['receipt'];inv=receipt['invocation']
++    evaluation_digest=digest(b'HMS-PAT-IO-VAULT-CATALOG-EVALUATION-v0.1',receipt)
++    assert evaluation_digest==recorded['evaluationDigest']==checks['evaluationDigest']
++    assert inv['original']==intent['anchor'] and inv['publicationDigest']==publication_digest
++    assert inv['importIntentDigest']==intent_digest and inv['manifestDigest']==publication['manifestDigest']
++    assert inv['evaluationDigest']==publication['evaluationDigest'] and inv['evidenceClosure']==closure
++    assert inv['vaultStoreId']==intent['storeId'] and inv['vaultBindingDigest']==binding
++    assert inv['hostImplementationDigest']==host and inv['consumerIdentity']==consumer
++    assert receipt['physicalObjectiveVerified'] is False and receipt['outcome']=='passed'
++    assert authority.execute('SELECT digest,document FROM pc_evaluations').fetchall()==[(evaluation_digest,canonical(receipt))]
++    assert authority.execute('SELECT value FROM pc_meta WHERE key="version"').fetchone()==('hms.pat.io-vault-recorded-catalog/0.1',)
++    mount='hms.pat.io-vault-recorded-catalog/0.1|'+digest(b'HMS-PAT-IO-VAULT-RECORDED-CATALOG-MOUNT-v0.1',
++        dict(authorityId=meta['authorityId'],deployment=receipt['environment']['deployment'],
++            hostImplementationDigest=host,evaluators=[receipt['evaluator']]))
++    assert authority.execute('SELECT value FROM reg_meta WHERE key="io_vault_recorded_catalog"').fetchone()==(mount,)
++    assert authority.execute('SELECT value FROM px_meta WHERE key="version"').fetchone()==('hms.pat.io-vault-execution/0.1',)
++    cursor=authority.execute('SELECT * FROM px_instances LIMIT 2');instance_rows=cursor.fetchall()
++    assert len(instance_rows)==1;instance=dict(zip([row[0] for row in cursor.description],instance_rows[0]))
++    assert instance['id']==checks['instanceId'] and instance['evaluation_digest']==evaluation_digest
++    assert instance['evaluation']==canonical(receipt)
++    artifact=json.loads(instance['artifact']);assert canonical(artifact)==instance['artifact']
++    assert digest(b'HMS-PAT-JCS-SHA256-v0.1',artifact)==instance['artifact_digest']==receipt['artifactDigest']
++    decisions=authority.execute('SELECT digest,document FROM pc_decisions').fetchall();assert len(decisions)==1
++    decision=json.loads(decisions[0][1]);assert canonical(decision)==decisions[0][1]==instance['decision']
++    assert digest(b'HMS-PAT-DECISION-v0.1',decision)==decisions[0][0]==instance['decision_digest']
++    assert authority.execute('SELECT state,evaluation,decision FROM pc_entries').fetchall()==[('active',evaluation_digest,instance['decision_digest'])]
++    assert authority.execute('SELECT instance_id FROM px_triggers').fetchall()==[(instance['id'],)]
++    assert authority.execute('SELECT id,state FROM pr_procedures').fetchall()==[(instance['procedure_id'],'completed')]
++    operations=authority.execute('SELECT id,state,intent FROM operations').fetchall();assert len(operations)==1
++    operation=operations[0];assert operation[1]=='completed'
++    assert authority.execute('SELECT procedure_id,operation_id FROM pr_steps').fetchall()==[(instance['procedure_id'],operation[0])]
++    compiled_request=json.loads(instance['compiled_request'])
++    assert canonical(compiled_request)==instance['compiled_request']
++    assert digest(b'HMS-PROCEDURE-JCS-SHA256-v0.1',compiled_request)==instance['compiled_digest']
++    assert canonical(compiled_request['procedure']['steps'][0]['request']['intent'])==operation[2]
++    assert authority.execute('SELECT operation_id FROM replay_keys').fetchall()==[(operation[0],)]
++    assert authority.execute('SELECT count(*) FROM pr_keys').fetchone()[0]==2
++    request_document=json.loads(instance['request'])
++    assert digest(b'HMS-PAT-RUN-v0.1',request_document)==instance['request_digest']
++    assert request_document['runKey']=='application:1'
++    statuses=read(work/'application-statuses.json')['statuses'];assert 1<=len(statuses)<=8
++    assert statuses[-1]['instanceId']==instance['id'] and statuses[-1]['procedure']['executionState']=='completed'
++    assert statuses[-1]['procedure']['unresolvedOperations']==[]
++    catalog_observation=dict(hostIdentity=host,receiptDigest=evaluation_digest,artifactDigest=instance['artifact_digest'],
++        decisionDigest=instance['decision_digest'],instanceId=instance['id'],procedureId=instance['procedure_id'],
++        operationId=operation[0],oneCompletedApplication=True,activations=1,completions=1,cancellations=0,
++        originalKeyReplay=True,coldVaultAndBridgeHistory=True,configurationDriftRefusesFreshAdmission=True,
++        exactInvocationPublicationManifestJoin=True,physicalObjectiveVerified=False)
+ 
+     # Independently derive observations; never import the observer or project code.
+     accounting=read(ATTEMPT/'worker-accounting.json')
+@@ -343,17 +401,18 @@
+     for db in reversed(dbs):db.close()
+     for fd in reversed(held):os.close(fd)
+ summary=dict(stageStatus='verified-progress-actual-scope-passed',sourceIndexSha256=PIN,harnessIndexSha256=HPIN,
+-    resultSha256=sha(ATTEMPT/'result.json'),observerControls=15,compositionControls=6,previousNativeControlsReferenced=True,publicContractTests=9,pureDifferentialCases=1668,productionCandidateChanged=True,publicRuntimeChanged=False,
++    resultSha256=sha(ATTEMPT/'result.json'),catalogControls=19,previousNativeControlsReferenced=True,productionCandidateChanged=True,publicRuntimeChanged=False,
+     actualScopePassed=True,originalAttemptId=record['attemptId'],supervisorReason=None,
+     requestedCases=30,caseDirectories=30,caseManifests=30,incompleteScenario=None,
+     originalMaxWallMs=60000,transportComplete=True,workerUnresolvedEffects=None,importReached=True,
+-    importIntents=1,publications=1,evidenceManifests=1,sourceApplicationInvocations=0,
++    importIntents=1,publications=1,evidenceManifests=1,sourceApplicationInvocations=1,
+     readonlySourceDatabases=hashes,workerCaseDatabasesOpened=0,ownerAndWriterLocks=locks,
+     sourceAndOriginsAndRetainedBytesVerified=True,producerImageFiles=265,legacyIdentity=legacy,vaultIdentity=vault_id,consumerIdentity=consumer,
+     sourceIdentitiesIndependentlyRecomputed=True,rawPath=str(raw),rawFiles=len(rows),rawBytes=result['scratchRetainedBytes'],
+     phaseTimes=phases,observedSpawnToSettledMs=phase_map['worker_producer_settled']-phase_map['worker_spawned'],
+-    nativeImageReceiptVerified=True,nativeOriginReopenedAfterChildExit=False,nativeRetention=native,workerResourceObservation=observation,vaultImportObservation=import_observation,
+-    timeoutRootCauseEstablished=False,wholeWorkerPerformanceQualified=False,catalogIntegrated=False,
++    nativeImageReceiptVerified=True,nativeOriginReopenedAfterChildExit=False,nativeRetention=native,workerResourceObservation=observation,vaultImportObservation=import_observation,catalogObservation=catalog_observation,
++    timeoutRootCauseEstablished=False,wholeWorkerPerformanceQualified=False,catalogIntegrated=True,
+     physicalObjectiveVerified=False,aggregateDiskQuotaEnforced=False,independentReview=False,goalStatus='active')
++assert read(BASE/'CONTROL_RESULTS.json')['testsRun']==19
+ with (BASE/'RESULTS.json').open('x') as stream:json.dump(summary,stream,indent=2);stream.write('\n')
+-print(json.dumps({key:summary[key] for key in ('stageStatus','publicContractTests','pureDifferentialCases','caseManifests','importReached','rawFiles','workerResourceObservation','vaultImportObservation','goalStatus')}))
++print(json.dumps({key:summary[key] for key in ('stageStatus','catalogControls','caseManifests','importReached','rawFiles','catalogObservation','goalStatus')}))

@@ -1,0 +1,20 @@
+--- inline-hierarchical-store/profile_controls.py
++++ compact-bitmap-store/profile_controls.py
+@@ -36,7 +36,7 @@
+     anchor=store.anchor
+     (WORK/'good-anchor.json').write_text(json.dumps(anchor,sort_keys=True)+'\n')
+     handle=store.open('kept',create=True);store.pwrite(handle,b'PAT',0);store.close_handle(handle);store.close()
+-    before=hashes(WORK/'good');old=dict(anchor,storeProfile='hms.hierarchical-chunk-store/0.1')
++    before=hashes(WORK/'good');old=dict(anchor,storeProfile='hms.hierarchical-chunk-store.inline512/0.1')
+     with patch.object(implementation,'Native',side_effect=AssertionError('native opened before profile check')) as native:
+         refused('old anchor profile refuses',lambda:Store.reopen(WORK/'good',old,**KW),'STORAGE_PROFILE')
+         check('anchor refusal does not instantiate native filesystem',not native.called)
+@@ -49,7 +49,7 @@
+     store=Store.create(WORK/'wrong-super','96969696969696969696969696969696',chunks=1,**KW)
+     anchor=store.anchor
+     (WORK/'wrong-super-anchor.json').write_text(json.dumps(anchor,sort_keys=True)+'\n')
+-    changed=dict(store.super,profile='hms.hierarchical-chunk-store/0.1')
++    changed=dict(store.super,profile='hms.hierarchical-chunk-store.inline512/0.1')
+     store.native.write('super',implementation._pack(changed))
+     store.native.write('super.tmp',b'RETAIN ON REFUSAL')
+     store.dispose();before=hashes(WORK/'wrong-super');observed=[]

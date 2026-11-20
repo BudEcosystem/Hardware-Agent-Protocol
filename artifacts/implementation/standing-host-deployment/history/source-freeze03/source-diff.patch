@@ -1,0 +1,400 @@
+--- originals/public/hms/journal.py
++++ project/hms/journal.py
+@@ -179,11 +179,16 @@
+     Do not put the DB on a network filesystem or restore it independently of
+     its authority/replay state. Policies must not block, do I/O, or reenter.
+     """
+-    def __init__(self, path, policy: Policy, *, clock_ms: Callable[[], int], create=False, page_size=None):
++    def __init__(self, path, policy: Policy, *, clock_ms: Callable[[], int], create=False, page_size=None,
++                 standing_profile=False):
+         # Closed opt-in layout for the compact synthetic worker. None retains
+         # the platform's existing/default layout; reopening never converts it.
+         if page_size is not None and (type(page_size) is not int or page_size != 1024):
+             raise JournalError('UNSUPPORTED_DATABASE_PAGE_SIZE')
++        if type(standing_profile) is not bool:
++            raise JournalError('UNSUPPORTED_DATABASE')
++        self.standing_profile = standing_profile
++        self.storage_version = 'hms-ledger/standing-host/0.1' if standing_profile else 'hms-ledger/0.1'
+         self.path = Path(path).resolve()
+         self.policy = policy
+         self.clock_ms = clock_ms
+@@ -224,9 +229,26 @@
+                     self._db.execute("PRAGMA foreign_keys").fetchone()[0] != 1):
+                 raise JournalError("UNSUPPORTED_DURABILITY_MODE")
+             if create:
+-                self._db.executescript("BEGIN IMMEDIATE;\n" + _DDL)
++                ddl = _DDL
++                if self.standing_profile:
++                    if (ddl.count('CREATE TABLE claims (') != 1 or ddl.count(
++                            'operation_id TEXT NOT NULL REFERENCES operations(id), fence INTEGER NOT NULL,') != 1):
++                        raise JournalError('STANDING_BASELINE_SCHEMA_CHANGED')
++                    # One physical claims table and fence history. The column's
++                    # legacy name operation_id remains for finite SQL compatibility;
++                    # in this explicit profile it references a typed common owner.
++                    ddl = ddl.replace('CREATE TABLE claims (', '''CREATE TABLE resource_owners (
++ id TEXT PRIMARY KEY, kind TEXT NOT NULL CHECK(kind IN ('finite_operation','standing_deployment')),
++ principal TEXT NOT NULL, deployment TEXT NOT NULL);
++CREATE TABLE resource_owner_instances (
++ owner_id TEXT NOT NULL REFERENCES resource_owners(id), instance_id TEXT NOT NULL,
++ PRIMARY KEY(owner_id,instance_id));
++CREATE TABLE claims (''', 1).replace(
++                        'operation_id TEXT NOT NULL REFERENCES operations(id), fence INTEGER NOT NULL,',
++                        'operation_id TEXT NOT NULL REFERENCES resource_owners(id), fence INTEGER NOT NULL,', 1)
++                self._db.executescript("BEGIN IMMEDIATE;\n" + ddl)
+                 try:
+-                    for key, value in {"version": "hms-ledger/0.1", "authority": uuid.uuid4().hex,
++                    for key, value in {"version": self.storage_version, "authority": uuid.uuid4().hex,
+                                        "owner_epoch": "0", "last_clock": "0"}.items():
+                         self._db.execute("INSERT INTO meta VALUES (?, ?)", (key, value))
+                     self._db.execute("COMMIT")
+@@ -234,7 +256,7 @@
+                     if self._db.in_transaction:
+                         self._db.execute("ROLLBACK")
+                     raise
+-            if self._meta("version") != "hms-ledger/0.1":
++            if self._meta("version") != self.storage_version:
+                 raise JournalError("UNSUPPORTED_DATABASE")
+             self.authority_id = self._meta("authority")
+             with self._transaction():
+@@ -283,6 +305,9 @@
+             self._commit_checks = _CommitChecks(threading.get_ident(), [])
+             try:
+                 yield
++                if self.standing_profile:
++                    from .standing_capacity import check
++                    check(self._db, JournalError)
+                 self._check_business_commit()
+                 self._db.execute("COMMIT")
+             except BaseException:
+@@ -477,6 +502,26 @@
+         return RecordTime(now, status)
+ 
+     def _event(self, operation_id, now, kind, payload):
++        if self.standing_profile:
++            reserved = {'recovery_unknown':2,'outcome_unknown':2,'cancel_requested':2,
++                'cancel_ack':2,'reconciled':2,'resources_released':1,'evidence_dispute':1,
++                'rejected_before_dispatch':1,'canceled_before_dispatch':1,'terminal_execution':2}
++            def category(event_kind, event_payload):
++                if event_kind == 'execution_evidence' and event_payload.get('state') in TERMINAL:
++                    return 'terminal_execution'
++                if event_kind == 'reconciled' and event_payload.get('state') == 'running':
++                    return 'ordinary'
++                return event_kind if event_kind in reserved else 'ordinary'
++            events = self._db.execute('SELECT kind,payload FROM events WHERE operation_id=?',(operation_id,)).fetchall()
++            if len(events) >= 24:
++                raise JournalError('STANDING_FINITE_EVENT_CAPACITY')
++            requested = category(kind,payload)
++            used = sum(category(e['kind'],json.loads(e['payload'])) == requested for e in events)
++            # Eight ordinary records plus16 purpose-specific loss/settlement
++            # slots. Repeated cancel/recovery traffic cannot consume release
++            # or terminal evidence slots; no history is evicted to make room.
++            if used >= (8 if requested == 'ordinary' else reserved[requested]):
++                raise JournalError('STANDING_FINITE_EVENT_CAPACITY')
+         clock_status = now.status if isinstance(now, RecordTime) else "unqualified_host_clock"
+         now = now.value if isinstance(now, RecordTime) else now
+         self._db.execute("UPDATE operations SET sequence=sequence+1 WHERE id=?", (operation_id,))
+@@ -581,6 +626,10 @@
+                 if op["digest"] != digest:
+                     raise JournalError("KEY_CONFLICT")
+                 return op
++            if self.standing_profile and self._db.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='sd_deployments'").fetchone():
++                if self._db.execute('SELECT 1 FROM sd_deployments WHERE namespace=? AND caller_key=?',
++                        (request['replayNamespace'],request['operationKey'])).fetchone():
++                    raise JournalError('KEY_CONFLICT')
+             now = self._now()
+             if _managed is not None and (self.submission_guard is None or self.submission_record is None):
+                 raise JournalError("PROCEDURE_MANAGER_UNAVAILABLE")
+@@ -605,6 +654,9 @@
+                                     (context.deployment, resource)).fetchone():
+                     raise JournalError("RESOURCE_BUSY")
+             operation_id = "op:" + uuid.uuid4().hex
++            if self.standing_profile:
++                self._create_resource_owner(operation_id, 'finite_operation', context,
++                                            (intent['instanceId'],))
+             admission_data = asdict(admission) | {"resources": sorted(admission.resources)}
+             self._db.execute("INSERT INTO operations VALUES (?, ?, ?, ?, ?, ?, 'accepted', 'not_requested', 'unverified', 0, 0, NULL, ?)",
+                              (operation_id, context.principal, context.deployment, digest,
+@@ -626,6 +678,63 @@
+             if self.submission_record is not None:
+                 self.submission_record(operation_id, _managed, now)
+             return self._operation(operation_id)
++
++    def _create_resource_owner(self, owner_id, kind, context, instances):
++        """Trusted same-transaction common owner creation, never a wire callback."""
++        if not self.standing_profile or not self._db.in_transaction:
++            raise JournalError('STANDING_SHARED_AUTHORITY_REQUIRED')
++        identifier(owner_id)
++        if kind not in {'finite_operation', 'standing_deployment'} or type(context) is not Context:
++            raise JournalError('INVALID_RESOURCE_OWNER')
++        if type(instances) is not tuple or not 1 <= len(instances) <= 32 or len(set(instances)) != len(instances):
++            raise JournalError('INVALID_RESOURCE_OWNER')
++        if hasattr(self.policy, 'affected_instances'):
++            instances = self.policy.affected_instances(instances)
++        for instance in instances:
++            identifier(instance)
++        self._db.execute('INSERT INTO resource_owners VALUES(?,?,?,?)',
++                         (owner_id, kind, context.principal, context.deployment))
++        self._db.executemany('INSERT INTO resource_owner_instances VALUES(?,?)',
++                            [(owner_id, instance) for instance in sorted(instances)])
++
++    def _reserve_standing_resources(self, owner_id, context, instances, resources):
++        """Standing and finite ownership share this DB's exclusive keys/floors.
++
++        Called only after installed standing policy checks, in the deployment
++        transaction. It neither evaluates policy nor sends endpoint work.
++        """
++        if not self.standing_profile or not self._db.in_transaction:
++            raise JournalError('STANDING_SHARED_AUTHORITY_REQUIRED')
++        if (type(resources) is not tuple or not 1 <= len(resources) <= 32 or
++                tuple(sorted(set(resources))) != resources):
++            raise JournalError('INVALID_ADMISSION')
++        for resource in resources:
++            identifier(resource)
++            if self._db.execute('SELECT 1 FROM claims WHERE deployment=? AND resource=?',
++                                (context.deployment, resource)).fetchone():
++                raise JournalError('RESOURCE_BUSY')
++        self._create_resource_owner(owner_id, 'standing_deployment', context, instances)
++        result = []
++        for resource in resources:
++            self._db.execute('INSERT OR IGNORE INTO resource_floors VALUES(?,?,0)', (context.deployment, resource))
++            fence = self._db.execute('SELECT fence FROM resource_floors WHERE deployment=? AND resource=?',
++                                     (context.deployment, resource)).fetchone()[0] + 1
++            if fence > SAFE_INTEGER:
++                raise JournalError('FENCE_EXHAUSTED')
++            self._db.execute('UPDATE resource_floors SET fence=? WHERE deployment=? AND resource=?',
++                             (fence, context.deployment, resource))
++            self._db.execute('INSERT INTO claims VALUES(?,?,?,?)', (context.deployment, resource, owner_id, fence))
++            result.append({'resource': resource, 'fence': fence})
++        return result
++
++    def _instance_claimed(self, instance_id):
++        """Common rebinding guard; suspended/unknown standing owners count."""
++        identifier(instance_id)
++        if self.standing_profile:
++            return self._db.execute('SELECT 1 FROM claims c JOIN resource_owner_instances i '
++                'ON c.operation_id=i.owner_id WHERE i.instance_id=? LIMIT 1', (instance_id,)).fetchone() is not None
++        return self._db.execute("SELECT 1 FROM claims c JOIN operations o ON c.operation_id=o.id "
++            "WHERE json_extract(CAST(o.intent AS TEXT),'$.instanceId')=? LIMIT 1", (instance_id,)).fetchone() is not None
+ 
+     def claim_dispatch(self, operation_id: str, *, _reserve=None) -> Ticket | None:
+         """Persist possible-send ownership. A ticket is not a physical receipt.
+@@ -694,6 +803,14 @@
+         return op
+ 
+     def _execution(self, op, state, evidence, now):
++        if self.standing_profile and state == 'running':
++            # Restoring a running state creates another possible future owner
++            # loss. Refuse that extension before its recovery slots are spent;
++            # terminal reconciliation keeps its distinct reserved records.
++            for kind in ('recovery_unknown','outcome_unknown'):
++                used=self._db.execute('SELECT count(*) FROM events WHERE operation_id=? AND kind=?',(op['id'],kind)).fetchone()[0]
++                if used >= 2:
++                    raise JournalError('STANDING_FINITE_RECOVERY_RESERVED')
+         if state not in SUCCESSORS.get(op["state"], set()) or state == "outcome_unknown":
+             raise JournalError("INVALID_TRANSITION")
+         data = evidence.payload()
+--- originals/public/hms/registry.py
++++ project/hms/registry.py
+@@ -453,8 +453,7 @@
+             raise JournalError("DESCRIPTION_MISMATCH")
+         if binding["mode"] == "simulation" and instance["identity_kind"] != "simulation":
+             raise JournalError("SIMULATION_IDENTITY_REQUIRED")
+-        if self._db.execute("SELECT 1 FROM claims c JOIN operations o ON c.operation_id=o.id WHERE json_extract(CAST(o.intent AS TEXT),'$.instanceId')=? LIMIT 1",
+-                            (instance["id"],)).fetchone():
++        if self.journal._instance_claimed(instance["id"]):
+             raise JournalError("RESOURCE_CLAIMS_UNRESOLVED")
+         execution = self._type(instance["type_digest"])["execution"]
+         resources = {r for action in execution["actions"].values() for r in action["resources"]}
+--- originals/public/hms/resource_catalog.py
++++ project/hms/resource_catalog.py
+@@ -95,8 +95,7 @@
+                          "RESOURCE_CATALOG_ALREADY_EXISTS")
+                 for instances in routes["adapters"].values():
+                     for instance in instances:
+-                        _require(self._db.execute("SELECT 1 FROM claims c JOIN operations o ON c.operation_id=o.id WHERE json_extract(CAST(o.intent AS TEXT),'$.instanceId')=? LIMIT 1",
+-                                                 (instance,)).fetchone() is None, "RESOURCE_CLAIMS_UNRESOLVED")
++                        _require(not self.journal._instance_claimed(instance), "RESOURCE_CLAIMS_UNRESOLVED")
+                 journal._now()  # All catalog/requirement writes follow the checkpoint.
+                 for statement in _DDL:
+                     self._db.execute(statement)
+@@ -309,8 +308,7 @@
+                          "RESOURCE_DEPENDENCY_CHANGED")
+                 # Retain Registry's per-instance claim rule as well as alias
+                 # exclusion; neither accepted nor unknown work is cleared.
+-                _require(self._db.execute("SELECT 1 FROM claims c JOIN operations o ON c.operation_id=o.id WHERE json_extract(CAST(o.intent AS TEXT),'$.instanceId')=? LIMIT 1",
+-                                         (instance,)).fetchone() is None, "RESOURCE_CLAIMS_UNRESOLVED")
++                _require(not self.journal._instance_claimed(instance), "RESOURCE_CLAIMS_UNRESOLVED")
+                 new_proof = binding_proof(saved["topology"], value, instance)
+                 binding = binding | {"generation": new_proof["bindingGeneration"], "controlGeneration": control_generation(new_proof)}
+                 self._validate_binding(next_saved, binding, new_proof)
+--- originals/public/protocol/endpoint/endpoint.c
++++ project/protocol/endpoint/endpoint.c
+@@ -1,4 +1,5 @@
+ #include "endpoint.h"
++#include "standing.h"
+ 
+ #include <string.h>
+ 
+@@ -327,6 +328,7 @@
+     e->completion_evidence_mask = description.completion_evidence_mask;
+     e->cancel_supported = description.cancel_supported; e->result_length = description.result_length; e->loss_reason = 0;
+     e->operation_simulator_only = (uint8_t)((e->flags & HMS_EP_SIMULATOR_ONLY) != 0u);
++    if (e->standing != NULL) hms_standing_finite_slot(e->standing, 1);
+     return HMS_EP_OK;
+ }
+ 
+@@ -368,9 +370,19 @@
+                             uint8_t *out, uint16_t *out_length) {
+     uint8_t status, op;
+     if (out_length != NULL) *out_length = 0;
++    if (e != NULL && e->config != NULL && e->callback_active == 0u &&
++            e->standing != NULL && p != NULL && length >= 2u &&
++            length <= HMS_EP_PAYLOAD && p[0] == 2u)
++        return hms_standing_handle(e->standing, kind, channel, session, sequence,
++                                   p, length, now, flags, out, out_length);
+     if (e == NULL || e->config == NULL || e->callback_active != 0u || p == NULL || length < 2u || length > 192u || known_opcode(p[1]) == 0u) return 0;
+     update(e, now, flags); op = p[1];
+     status = syntax(p, length);
++    /* No v1 snapshot/query/control can mistake OPEN bytes for a finite OP or
++     * expose a standing owner as an empty slot. This is the common public API,
++     * not merely a transport/host-side convention. */
++    if (e->standing != NULL && e->standing->bytes[ST_SLOT] == ST_STANDING)
++        status = HMS_EP_UNSUPPORTED;
+     if (status == 0u && (kind != 1u || channel != 0u)) status = HMS_EP_UNSUPPORTED;
+     if (status == 0u && op == OP_HELLO && session != 0u) status = HMS_EP_BOOT_MISMATCH;
+     if (status == 0u && op != OP_HELLO) {
+@@ -406,6 +418,7 @@
+             if (status == 0u && (terminal(e->receipt.execution) == 0u || e->receipt.held_mask != 0u || e->receipt.verification == HMS_EP_DISPUTED)) status = HMS_EP_BUSY;
+             if (status == 0u) {
+                 e->operation_length = 0; memset(&e->receipt, 0, sizeof(e->receipt)); e->loss_reason = 0;
++                if (e->standing != NULL) hms_standing_finite_slot(e->standing, 0);
+                 drain_state(e);
+                 if (e->call_high_water == UINT32_MAX) fault(e, 12);
+             }
+@@ -515,13 +528,11 @@
+     return 0;
+ }
+ 
+-void hms_endpoint_poll(hms_endpoint *e, uint64_t now, uint16_t flags) {
++static void poll_finite(hms_endpoint *e) {
+     uint8_t phase, status, crossed;
+     const uint8_t *p;
+     hms_ep_report report;
+     hms_ep_step_limits limits;
+-    if (e == NULL || e->config == NULL || e->callback_active != 0u) return;
+-    update(e, now, flags);
+     if (e->operation_length == 0u) return;
+     p = e->operation;
+     if (terminal(e->receipt.execution) != 0u) {
+@@ -581,3 +592,29 @@
+     if (crossed != 0u && terminal(e->receipt.execution) == 0u) e->loss_reason = crossed;
+     apply_report(e, &report);
+ }
++
++void hms_endpoint_poll(hms_endpoint *e, uint64_t now, uint16_t flags) {
++    if (e == NULL || e->config == NULL || e->callback_active != 0u) return;
++    update(e, now, flags);
++    /* Sibling services: the finite report/limits frame is not retained while
++     * the standing controller runs. Actual linked stack still needs analysis. */
++    if (e->standing != NULL && e->standing->bytes[ST_SLOT] == ST_STANDING)
++        hms_standing_poll(e->standing);
++    else poll_finite(e);
++}
++
++void hms_endpoint_refresh(hms_endpoint *e, uint64_t now, uint16_t flags) { update(e, now, flags); }
++void hms_endpoint_fresh_clock(hms_endpoint *e) { sample_clock(e); }
++uint8_t hms_endpoint_readiness(const hms_endpoint *e) { return readiness(e); }
++uint8_t hms_endpoint_bind_shared(hms_endpoint *e, const uint8_t *p) {
++    if (e->standing != NULL && e->standing->bytes[ST_SLOT] != ST_EMPTY) return HMS_EP_BUSY;
++    return bind_context(e, p);
++}
++uint8_t hms_endpoint_revoke_shared(hms_endpoint *e, const uint8_t *p) {
++    if (get16(p + 8) != 6u) return HMS_EP_RESERVED;
++    if (context_matches(e, p) == 0u) return HMS_EP_CONTEXT_MISMATCH;
++    if (e->context_valid == 0u || (e->state != HMS_EP_BOUND && e->state != HMS_EP_ARMED)) return HMS_EP_BAD_STATE;
++    invalidate(e, 6);
++    return e->state == HMS_EP_FAULT ? HMS_EP_COUNTER_EXHAUSTED : HMS_EP_OK;
++}
++void hms_endpoint_counter_fault(hms_endpoint *e) { fault(e, 12); }
+--- originals/public/protocol/endpoint/endpoint.h
++++ project/protocol/endpoint/endpoint.h
+@@ -9,6 +9,8 @@
+ #define HMS_EP_RESULTS 32u
+ #define HMS_EP_RESOURCES 8u
+ #define HMS_EP_TIME_ABSENT UINT64_MAX
++
++struct hms_standing;
+ 
+ enum hms_ep_status {
+     HMS_EP_OK, HMS_EP_UNSUPPORTED, HMS_EP_BAD_LENGTH, HMS_EP_RESERVED,
+@@ -104,6 +106,7 @@
+  * Platform qualification is a trusted input, not generated by this library. */
+ typedef struct {
+     const hms_ep_config *config;
++    struct hms_standing *standing; /* Optional candidate profile; charged glue. */
+     uint64_t boot_epoch, now_tick, armed_until;
+     uint32_t control_generation, call_high_water, response_sequence;
+     uint32_t fence_floor[HMS_EP_RESOURCES];
+--- originals/public/protocol/endpoint/link.c
++++ project/protocol/endpoint/link.c
+@@ -35,20 +35,22 @@
+     if (l->receive_partial != 0u && (now == UINT64_MAX || now < l->receive_started ||
+             now - l->receive_started >= l->receive_budget_ms)) hms_endpoint_link_reset_receive(l);
+ }
+-void hms_endpoint_link_feed(hms_endpoint_link *l, hms_endpoint *e,
+-                            uint8_t byte, uint64_t now, uint16_t flags) {
+-    uint16_t length, response_length = 0, crc;
+-    uint8_t *p;
++void hms_endpoint_link_before_feed(hms_endpoint_link *l, uint8_t byte, uint64_t now) {
+     hms_endpoint_link_check_deadline(l, now);
+     if (byte != 0x7eu && l->parser.active != 0u && l->receive_partial == 0u) {
+         l->receive_partial = 1; l->receive_started = now;
+     }
+     if (byte == 0x7eu) l->receive_partial = 0;
+-    if (hms_frame_feed(&l->parser, byte) != HMS_FRAME_READY) return;
++}
++void hms_endpoint_link_accept_ready(hms_endpoint_link *l, hms_endpoint *e,
++                                    uint64_t now, uint16_t flags) {
++    uint16_t length, response_length = 0, crc;
++    uint8_t *p;
+     p = l->parser.raw;
+     length = (uint16_t)(((uint16_t)p[18] << 8) | p[19]);
+     if (l->transmit_phase != 0u) {
+-        if (length >= 2u && (p[21] == 0x22u || p[21] == 0x12u))
++        if (length >= 2u && ((p[20] == 1u && (p[21] == 0x22u || p[21] == 0x12u)) ||
++                (p[20] == 2u && (p[21] == 0x47u || p[21] == 0x45u || p[21] == 0x12u))))
+             (void)hms_endpoint_handle(e, p[3], p[5], read64(p + 6), read32(p + 14),
+                                       p + 20, length, now, flags, NULL, &response_length);
+         return;
+@@ -65,6 +67,12 @@
+     l->transmit_length = (uint16_t)(22u + response_length); l->transmit_index = 0;
+     l->transmit_phase = 1; l->escape_pending = 0;
+ }
++void hms_endpoint_link_feed(hms_endpoint_link *l, hms_endpoint *e,
++                            uint8_t byte, uint64_t now, uint16_t flags) {
++    hms_endpoint_link_before_feed(l, byte, now);
++    if (hms_frame_feed(&l->parser, byte) == HMS_FRAME_READY)
++        hms_endpoint_link_accept_ready(l, e, now, flags);
++}
+ uint8_t hms_endpoint_link_next(hms_endpoint_link *l, uint8_t *byte) {
+     uint8_t value;
+     if (l->transmit_phase == 0u || byte == NULL) return 0;
+--- originals/public/protocol/endpoint/link.h
++++ project/protocol/endpoint/link.h
+@@ -22,8 +22,15 @@
+ /* Call even without incoming bytes; requires a qualified timer or a platform
+  * error/reset path when that timer is unavailable. No endpoint state reset. */
+ void hms_endpoint_link_check_deadline(hms_endpoint_link *link, uint64_t now_tick);
++/* Internal transport join: before_feed precedes exactly one parser feed.
++ * accept_ready is called exactly once only after that feed returned READY and
++ * the transport established continuity. One owner; consume raw synchronously.
++ * These do not validate a caller-invented READY or expose an alternate wire. */
++void hms_endpoint_link_before_feed(hms_endpoint_link *link, uint8_t byte, uint64_t now_tick);
++void hms_endpoint_link_accept_ready(hms_endpoint_link *link, hms_endpoint *endpoint,
++                                    uint64_t now_tick, uint16_t platform_flags);
+ /* One input byte, bounded work. Caller supplies qualified clock/flags.
+- * Under TX backpressure only CANCEL/REVOKE are processed, their replies may
++ * Under TX backpressure only v1 CANCEL/REVOKE and v2 STOP/SUSPEND/REVOKE are processed, their replies may
+  * be dropped; other frames are dropped before admission. One pending frame,
+  * no queue and no partial-frame replacement. */
+ void hms_endpoint_link_feed(hms_endpoint_link *link, hms_endpoint *endpoint,

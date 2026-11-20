@@ -1,0 +1,16 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-recorded-catalog/implementation03/project/tests/test_io_recorded_catalog_process.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-recorded-catalog/implementation04/project/tests/test_io_recorded_catalog_process.py
+@@ -83,7 +83,12 @@
+         self.assertEqual(self.db.execute('SELECT count(*) FROM operations').fetchone()[0], 1)
+         effects = [list(value) for value in self.runtime.io_board.db.execute('SELECT * FROM io_effects')]
+         self.emit('application-effects', dict(effects=effects, physicalObjectiveVerified=False))
+-        self.assertEqual(len(effects), 1)
++        expected_effects = {row[0]:list(row[1:]) for row in self.before_business['board']['io_effects']}
++        selected_instance = recorded['receipt']['applicability']['roleInstances']['io']
++        expected_effects[selected_instance][0] += 1
++        expected_effects[selected_instance][1] += 1
++        self.assertEqual({row[0]:row[1:] for row in effects}, expected_effects)
++        self.emit('application-effect-delta', dict(selectedInstance=selected_instance, activations=1, completions=1, cancellations=0, otherCountersUnchanged=True))
+         self.assertEqual(executor.run(self.owner, request), status)
+ 
+         self.configurations.configure(self.owner, 'config:2', self.config | {'revision':2}, expected_revision=1, runtime=self.runtime)

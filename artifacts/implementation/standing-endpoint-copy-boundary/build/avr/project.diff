@@ -1,0 +1,206 @@
+--- originals/project/protocol/endpoint/endpoint.c
++++ project/protocol/endpoint/endpoint.c
+@@ -528,7 +528,16 @@
+     return 0;
+ }
+ 
+-static void poll_finite(hms_endpoint *e) {
++/* The qualified GCC profile needs an out-of-line finite service so its
++ * report/limits frame cannot be inlined into the standing service path.
++ * Other compilers remain source-compatible; their stack boundary is unqualified
++ * until generated code is checked. The GCC build needs that check too. */
++#if defined(__GNUC__)
++#define HMS_EP_FINITE_NOINLINE __attribute__((noinline))
++#else
++#define HMS_EP_FINITE_NOINLINE
++#endif
++static void HMS_EP_FINITE_NOINLINE poll_finite(hms_endpoint *e) {
+     uint8_t phase, status, crossed;
+     const uint8_t *p;
+     hms_ep_report report;
+@@ -592,12 +601,13 @@
+     if (crossed != 0u && terminal(e->receipt.execution) == 0u) e->loss_reason = crossed;
+     apply_report(e, &report);
+ }
++#undef HMS_EP_FINITE_NOINLINE
+ 
+ void hms_endpoint_poll(hms_endpoint *e, uint64_t now, uint16_t flags) {
+     if (e == NULL || e->config == NULL || e->callback_active != 0u) return;
+     update(e, now, flags);
+-    /* Sibling services: the finite report/limits frame is not retained while
+-     * the standing controller runs. Actual linked stack still needs analysis. */
++    /* Keep the finite service behind its explicit call boundary. Generated
++     * code must confirm frame separation; combined stack still needs analysis. */
+     if (e->standing != NULL && e->standing->bytes[ST_SLOT] == ST_STANDING)
+         hms_standing_poll(e->standing);
+     else poll_finite(e);
+--- originals/project/protocol/endpoint/standing.c
++++ project/protocol/endpoint/standing.c
+@@ -112,7 +112,7 @@
+             w64(s->bytes+ST_LOSS_AT,s->endpoint->now_tick);
+             w64(s->bytes+ST_CLEANUP,s->endpoint->now_tick+s->config->cleanup_ms);
+         }else{
+-            w64(s->bytes+ST_LOSS_AT,ABSENT);w64(s->bytes+ST_CLEANUP,ABSENT);
++            memset(s->bytes+ST_LOSS_AT,0xff,8);memset(s->bytes+ST_CLEANUP,0xff,8);
+         }
+         s->bytes[ST_LOSS_COMMAND]=1u;s->bytes[ST_TARGET]=target;
+         cancel_pending(s,reason,(uint8_t)((flags_of(s)&ST_UNRESOLVED)!=0u));
+@@ -229,11 +229,11 @@
+     e->armed_until=0;e->state=HMS_EP_BOUND;e->loss_reason=0;
+     memcpy(s->arena->configuration,p+47,32);memset(s->arena->work,0,24);
+     memset(s->arena->observation,0,48);memset(s->arena->record,0,88);
+-    memcpy(s->bytes+ST_EPOCH,p+126,8);w64(s->bytes+ST_LEASE,r64(p+112));
+-    w64(s->bytes+ST_NEXT,e->now_tick);w64(s->bytes+ST_LOSS_AT,ABSENT);
+-    w64(s->bytes+ST_CLEANUP,ABSENT);w64(s->bytes+ST_QUIET_AT,ABSENT);
++    memcpy(s->bytes+ST_EPOCH,p+126,8);memmove(s->bytes+ST_LEASE,p+112,8);
++    w64(s->bytes+ST_NEXT,e->now_tick);memset(s->bytes+ST_LOSS_AT,0xff,8);
++    memset(s->bytes+ST_CLEANUP,0xff,8);memset(s->bytes+ST_QUIET_AT,0xff,8);
+     w64(s->arena->work+WORK_TRANSITION,e->now_tick);
+-    w64(s->arena->work+WORK_FEEDBACK_DEADLINE,ABSENT);
++    memset(s->arena->work+WORK_FEEDBACK_DEADLINE,0xff,8);
+     s->bytes[ST_LIFE]=ST_PREPARED;s->bytes[ST_OWNED]=p[79];s->bytes[ST_PENDING]=NONE;
+     return HMS_EP_OK;
+ }
+@@ -318,14 +318,14 @@
+     w32(s->bytes+ST_MUT,sequence);if(bump(s)==0u)return HMS_EP_COUNTER_EXHAUSTED;
+     switch(op){
+     case ST_START:s->bytes[ST_LIFE]=ST_ACTIVE;add_flags(s,ST_STARTED);break;
+-    case ST_RENEW:w64(s->bytes+ST_LEASE,r64(p+52));break;
++    case ST_RENEW:memmove(s->bytes+ST_LEASE,p+52,8);break;
+     case ST_ACKNOWLEDGE:acknowledge(s,r32(p+60));break;
+     case ST_SUSPEND_OP:loss(s,ST_SUSPEND,ST_SUSPENDED,0);break;
+     case ST_RESUME:{
+         uint16_t keep=(uint16_t)(flags_of(s)&(ST_EVER|ST_STARTED));
+         s->arena->work[WORK_OUTPUT]=s->bytes[ST_WITNESS+20];
+-        w64(s->arena->work+WORK_TRANSITION,r64(s->bytes+ST_QUIET_AT));
+-        w64(s->arena->work+WORK_FEEDBACK_DEADLINE,ABSENT);
++        memmove(s->arena->work+WORK_TRANSITION,s->bytes+ST_QUIET_AT,8);
++        memset(s->arena->work+WORK_FEEDBACK_DEADLINE,0xff,8);
+         /* Exported loss evidence advances source continuity too. Move that
+          * accepted watermark before clearing the witness, so the next sample
+          * is compared with its actual predecessor rather than pre-loss data. */
+@@ -334,8 +334,8 @@
+         memcpy(s->arena->observation[1]+OBS_SEQUENCE,s->bytes+ST_WITNESS+4,4);
+         s->arena->observation[0][OBS_PENDING]=s->arena->observation[1][OBS_PENDING]=0;
+         w16(s->bytes+ST_FLAGS,(uint16_t)(keep|ST_RESUMED));
+-        w64(s->bytes+ST_LEASE,r64(p+52));w64(s->bytes+ST_NEXT,s->endpoint->now_tick);
+-        w64(s->bytes+ST_LOSS_AT,ABSENT);w64(s->bytes+ST_CLEANUP,ABSENT);w64(s->bytes+ST_QUIET_AT,ABSENT);
++        memmove(s->bytes+ST_LEASE,p+52,8);w64(s->bytes+ST_NEXT,s->endpoint->now_tick);
++        memset(s->bytes+ST_LOSS_AT,0xff,8);memset(s->bytes+ST_CLEANUP,0xff,8);memset(s->bytes+ST_QUIET_AT,0xff,8);
+         memset(s->bytes+ST_WITNESS,0,22);w16(s->bytes+ST_REASON,0);
+         s->bytes[ST_QUIET]=s->bytes[ST_LOSS_COMMAND]=s->bytes[ST_PHASE]=s->bytes[ST_TARGET]=0;
+         s->bytes[ST_LIFE]=ST_PREPARED;break;
+@@ -481,7 +481,7 @@
+                 memcpy(out+66,s->bytes+4,124);
+                 /* Before a witness exists this storage may hold the private
+                  * loss-handoff timestamp; never publish it as quiescence. */
+-                if((flags_of(s)&ST_WITNESS_VALID)==0u)w64(out+135,ABSENT);
++                if((flags_of(s)&ST_WITNESS_VALID)==0u)memset(out+135,0xff,8);
+                 *out_length=190;
+             }
+             else if(page==1u){memcpy(out+66,s->arena->observation,48);*out_length=114;}
+@@ -630,7 +630,7 @@
+     memset(r,0,44);w32(r,high+1u);w64(r+4,before);
+     memcpy(r+12,s->arena->observation[0]+OBS_SEQUENCE,4);memcpy(r+16,s->arena->observation[0],4);
+     w16(r+20,(uint16_t)(before-r64(s->arena->observation[0]+OBS_AT)));
+-    memcpy(r+22,s->arena->observation[1]+OBS_SEQUENCE,4);w64(r+26,ABSENT);
++    memcpy(r+22,s->arena->observation[1]+OBS_SEQUENCE,4);memset(r+26,0xff,8);
+     r[38]=s->arena->work[WORK_OUTPUT];r[39]=wanted;r[40]=ST_RECORD_PENDING|8u;
+     w32(s->bytes+ST_ACT,high+1u);++s->bytes[ST_COUNT];s->bytes[ST_PENDING]=index;add_flags(s,ST_EVER);
+     /* Identity and possible-effect record exist before entering the driver. */
+@@ -645,8 +645,8 @@
+     if(r64(report+20)-r64(s->arena->observation[0]+OBS_AT)>=r16(s->arena->configuration+18)){
+         unknown(s,ST_TIMING);return;
+     }
+-    w64(r+4,r64(report+20));w16(r+20,(uint16_t)(r64(report+20)-r64(s->arena->observation[0]+OBS_AT)));
+-    w64(s->arena->work+WORK_TRANSITION,r64(report+20));s->arena->work[WORK_OUTPUT]=wanted;
++    memmove(r+4,report+20,8);w16(r+20,(uint16_t)(r64(report+20)-r64(s->arena->observation[0]+OBS_AT)));
++    memmove(s->arena->work+WORK_TRANSITION,report+20,8);s->arena->work[WORK_OUTPUT]=wanted;
+     memcpy(s->arena->work+WORK_BASELINE,s->arena->observation[0],4);
+     w64(s->arena->work+WORK_FEEDBACK_DEADLINE,r64(report+20)+r16(s->arena->configuration+26));
+ }
+@@ -679,7 +679,7 @@
+         /* Temporary lifetime-disjoint reuse: while state3 and !WITNESS_VALID,
+          * QUIET_AT is the precise loss-handoff tick, not quiescence evidence.
+          * The wire encoder still emits ABSENT. First-loss time is untouched. */
+-        w64(s->bytes+ST_QUIET_AT,r64(report+20));s->bytes[ST_LOSS_COMMAND]=3;return;
++        memmove(s->bytes+ST_QUIET_AT,report+20,8);s->bytes[ST_LOSS_COMMAND]=3;return;
+     }
+     if(state!=3u)return;
+     driver(s,ST_LOSS_OBSERVE,0,cutoff,report);
+--- originals/project/tests/standing_controls.c
++++ project/tests/standing_controls.c
+@@ -131,6 +131,64 @@
+     CHECK(w.s.bytes[ST_LIFE]==ST_DRAINING && r64(w.s.bytes+ST_LEASE)==2000u);
+     mutation_bytes(p,ST_RENEW);p64(p+52,3000);CHECK(call(p,66)==HMS_EP_BAD_STATE);
+     CHECK(r32(w.s.bytes+ST_MUT)==2u);return 1;
++}
++static int encoded_time_boundaries(void){
++    /* Full controller timelines, with literal byte oracles independent of
++     * r64/p64: cross a 32-bit carry with bit63 set, then run near UINT64_MAX.
++     * Columns are OPEN/RENEW/RESUME leases, dispatch, loss handoff, witness. */
++    static const uint64_t bases[2]={UINT64_C(0x81234567fffffff8),UINT64_C(0xffffffffffffefff)};
++    static const uint8_t expected[2][6][8]={
++        {{0x81,0x23,0x45,0x68,0,0,0x03,0xe0},{0x81,0x23,0x45,0x68,0,0,0x07,0xc8},
++         {0x81,0x23,0x45,0x68,0,0,0x0b,0xb0},{0x81,0x23,0x45,0x68,0,0,0,0x06},
++         {0x81,0x23,0x45,0x68,0,0,0,0x07},{0x81,0x23,0x45,0x68,0,0,0,0x08}},
++        {{0xff,0xff,0xff,0xff,0xff,0xff,0xf3,0xe7},{0xff,0xff,0xff,0xff,0xff,0xff,0xf7,0xcf},
++         {0xff,0xff,0xff,0xff,0xff,0xff,0xfb,0xb7},{0xff,0xff,0xff,0xff,0xff,0xff,0xf0,0x0d},
++         {0xff,0xff,0xff,0xff,0xff,0xff,0xf0,0x0e},{0xff,0xff,0xff,0xff,0xff,0xff,0xf0,0x0f}}
++    };
++    static const uint8_t absent[8]={0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff};
++    uint8_t open[134],p[66],q[49];unsigned which;uint32_t revision;
++    for(which=0;which<2u;++which){
++        uint64_t base=bases[which];
++        CHECK(setup());p64(w.arena.driver+FX_CLOCK,base);
++        memcpy(open,golden_open,sizeof(open));memcpy(open+112,expected[which][0],8);
++        CHECK(call(open,134)==HMS_EP_OK && w.length==190u);
++        CHECK(memcmp(w.s.bytes+ST_LEASE,expected[which][0],8)==0 && memcmp(w.out+95,expected[which][0],8)==0);
++        CHECK(memcmp(w.s.bytes+ST_LOSS_AT,absent,8)==0 && memcmp(w.s.bytes+ST_CLEANUP,absent,8)==0);
++        CHECK(memcmp(w.s.bytes+ST_QUIET_AT,absent,8)==0 && memcmp(w.arena.work+8,absent,8)==0);
++        cycle(base);CHECK(call(golden_start,66)==HMS_EP_OK);
++        p32(w.arena.driver+FX_DEMAND,35000);cycle(base+12u);
++        CHECK(w.s.bytes[ST_LIFE]==ST_ACTIVE && w.s.bytes[ST_PENDING]==0u);
++        CHECK(memcmp(w.arena.record[0]+4,expected[which][3],8)==0 && memcmp(w.arena.work,expected[which][3],8)==0);
++        CHECK(memcmp(w.arena.record[0]+26,absent,8)==0 && w.arena.record[0][25]==2u && w.arena.record[0][34]==0u);
++        CHECK(r64(w.arena.work+8)==base+64u && r32(w.arena.driver+FX_DISPATCHES)==1u);
++        mutation_bytes(p,ST_RENEW);memcpy(p+52,absent,8);revision=r32(w.s.bytes+ST_REV);
++        CHECK(call(p,66)==HMS_EP_LEASE_INVALID && r32(w.s.bytes+ST_REV)==revision);
++        CHECK(memcmp(w.s.bytes+ST_LEASE,expected[which][0],8)==0);
++        memcpy(p+52,expected[which][1],8);CHECK(call(p,66)==HMS_EP_OK);
++        CHECK(memcmp(w.s.bytes+ST_LEASE,expected[which][1],8)==0);
++        revision=r32(w.s.bytes+ST_REV);CHECK(call(p,66)==HMS_EP_OK && r32(w.s.bytes+ST_REV)==revision);
++        mutation_bytes(p,ST_SUSPEND_OP);p16(p+64,ST_SUSPEND);CHECK(call(p,66)==HMS_EP_OK);
++        CHECK(r64(w.s.bytes+ST_LOSS_AT)==base+14u && w.s.bytes[ST_OWNED]==3u);
++        tick(base+15u);CHECK(memcmp(w.s.bytes+ST_QUIET_AT,expected[which][4],8)==0 && w.s.bytes[ST_LOSS_COMMAND]==3u);
++        memcpy(q,golden_open,44);q[1]=ST_STATUS;memset(q+44,0,5);
++        CHECK(call(q,49)==HMS_EP_OK && memcmp(w.out+135,absent,8)==0);
++        CHECK(memcmp(w.s.bytes+ST_QUIET_AT,expected[which][4],8)==0 && r64(w.s.bytes+ST_LOSS_AT)==base+14u);
++        tick(base+16u);CHECK(w.s.bytes[ST_LIFE]==ST_SUSPENDED && w.s.bytes[ST_QUIET]==3u);
++        CHECK(memcmp(w.s.bytes+ST_QUIET_AT,expected[which][5],8)==0 && r32(w.s.bytes+ST_ACCOUNT)==2u);
++        mutation_bytes(p,ST_ACKNOWLEDGE);p32(p+60,1);CHECK(call(p,66)==HMS_EP_OK);
++        mutation_bytes(p,ST_RESUME);memcpy(p+52,expected[which][2],8);CHECK(call(p,66)==HMS_EP_OK);
++        CHECK(w.s.bytes[ST_LIFE]==ST_PREPARED && memcmp(w.s.bytes+ST_LEASE,expected[which][2],8)==0);
++        CHECK(memcmp(w.arena.work,expected[which][5],8)==0 && memcmp(w.arena.work+8,absent,8)==0);
++        CHECK(memcmp(w.s.bytes+ST_LOSS_AT,absent,8)==0 && memcmp(w.s.bytes+ST_CLEANUP,absent,8)==0 && memcmp(w.s.bytes+ST_QUIET_AT,absent,8)==0);
++        CHECK(r32(w.s.bytes+ST_ACT)==1u && r32(w.s.bytes+ST_ACK)==1u && r32(w.arena.driver+FX_DISPATCHES)==1u);
++        cycle(base+17u);mutation_bytes(p,ST_START);CHECK(call(p,66)==HMS_EP_OK);
++        cycle(base+29u);CHECK(r32(w.s.bytes+ST_ACT)==2u && r32(w.arena.driver+FX_DISPATCHES)==2u);
++        CHECK(r32(w.arena.driver+FX_LOSSES)==1u && w.s.bytes[ST_OWNED]==3u);
++    }
++    CHECK(prepared());w.arena.driver[FX_INJECT]=FX_CLOCK_LOSS;tick(12);
++    CHECK(w.s.bytes[ST_LIFE]==ST_FAULT && w.s.bytes[ST_OWNED]==3u);
++    CHECK(memcmp(w.s.bytes+ST_LOSS_AT,absent,8)==0 && memcmp(w.s.bytes+ST_CLEANUP,absent,8)==0);
++    CHECK(r32(w.arena.driver+FX_DISPATCHES)==0u);return 1;
+ }
+ static int ledger_ack_resume(void){
+     uint8_t p[66],observations[48],records[88];uint32_t activation;
+@@ -358,7 +416,7 @@
+     tick(3);tick(4);CHECK(w.s.bytes[ST_LIFE]==ST_STOPPED);return 1;
+ }
+ int main(void){
+-    static int (*const cases[])(void)={wire_and_refusals,replay_and_renewal,ledger_ack_resume,
++    static int (*const cases[])(void)={wire_and_refusals,replay_and_renewal,encoded_time_boundaries,ledger_ack_resume,
+         pending_ack_and_feedback,feedback_signed_range,source_and_clock_faults,late_dispatch_and_limits,
+         prepared_expiry_and_revoke,loss_witness_ordering,acquisition_boundaries,interrupted_feedback_ack,finite_interoperation,stop_backpressure};
+     unsigned i;

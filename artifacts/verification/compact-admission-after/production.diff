@@ -1,0 +1,136 @@
+--- before/hms/journal.py
++++ after/hms/journal.py
+@@ -43,6 +43,18 @@
+     """
+     def __init__(self):
+         super().__init__("OBSERVATION_STALE")
++
++
++class PresenceAgeExpired(JournalError):
++    """Trusted policy: matching presence expired after static authorization.
++
++    The public refusal stays DEVICE_UNAVAILABLE. A runtime may acquire one new
++    observation before fresh admission; this marker never permits dispatch or
++    refresh of a retained operation, missing presence or changed identity.
++    """
++    def __init__(self, adapter_id: str):
++        self.adapter_id = adapter_id
++        super().__init__("DEVICE_UNAVAILABLE")
+ 
+ 
+ @dataclass(frozen=True)
+--- before/hms/registry.py
++++ after/hms/registry.py
+@@ -19,7 +19,8 @@
+ from jsonschema.exceptions import SchemaError
+ 
+ from .contracts import ContractError, MAX_BYTES, SAFE_INTEGER, canonical, identifier, parse_json
+-from .journal import Admission, Context, Evidence, Journal, JournalError, ObservationAgeExpired
++from .journal import (Admission, Context, Evidence, Journal, JournalError,
++                      ObservationAgeExpired, PresenceAgeExpired)
+ from .projections import data_schema, invoke_td_input
+ 
+ FEATURES = {"durable-operations/1", "binding-generations/1", "physical-evidence/1", "host-invoke/0.1"}
+@@ -693,10 +694,18 @@
+             raise JournalError("UNCOMMISSIONED")
+         if live:
+             presence = reg._db.execute("SELECT * FROM reg_presence WHERE instance=?", (instance["id"],)).fetchone()
+-            if presence is None or now_ms >= presence["expires_ms"]:
++            if presence is None:
+                 raise JournalError("DEVICE_UNAVAILABLE")
+             if presence["session"] != intent["endpointSession"]:
+                 raise JournalError("ENDPOINT_SESSION_CHANGED")
++            if now_ms >= presence["expires_ms"]:
++                if presence["adapter"] != binding["adapterId"]:
++                    raise JournalError("DEVICE_UNAVAILABLE")
++                # Only otherwise statically authorized, exactly bound work can
++                # request a new observation. Unknown/missing identity and absent
++                # grants must never become an endpoint-I/O request.
++                self.validate_bound(context, intent, now_ms)
++                raise PresenceAgeExpired(binding["adapterId"])
+         action = reg._type(instance["type_digest"])["execution"]["actions"].get(intent["actionId"])
+         if action is None:
+             raise JournalError("UNKNOWN_ACTION")
+--- before/hms/runtime.py
++++ after/hms/runtime.py
+@@ -12,7 +12,7 @@
+ from .api_contracts import METHOD_RESULTS, validate_params, validate_result
+ from .contracts import ContractError, canonical, identifier, intent_digest, parse_invoke
+ from .installations import (LEGACY_COMPACT, definitions_for, normalize_installations, plant_filename)
+-from .journal import Context, Journal, JournalError, TERMINAL
++from .journal import Context, Journal, JournalError, PresenceAgeExpired, TERMINAL
+ from .local_adapter import LocalSimulation
+ from .procedures import ProcedureStore
+ from .registry import Registry, RegistryPolicy, bounded_int, exact, validate_type_bundle
+@@ -408,6 +408,36 @@
+                     'eventSequence': op['sequence'], 'resourceClaims': copy.deepcopy(op['claims']),
+                     'result': backend.result(op['id']) if backend is not None else None}
+ 
++    def _submit_invoke(self, context, wire):
++        """One authorized observation attempt for a fresh, expired presence.
++
++        Ordinary submit resolves retained replay and static authorization and
++        identity refusals first. Prepare and managed procedure admission do not
++        use this path. Live preconditions and resource conflicts can still fail.
++        Every failed submit has exited its transaction before transport I/O.
++        """
++        try:
++            return self.journal.submit(context, wire)
++        except PresenceAgeExpired as expired:
++            adapter_id = expired.adapter_id
++        backend = self.adapters.get(adapter_id)
++        refresh = getattr(backend, 'refresh_for_admission', None)
++        lock = self._route_locks.get(adapter_id)
++        if refresh is None or lock is None:
++            raise PresenceAgeExpired(adapter_id)
++        # Match worker order. The route lock also protects the stream while a
++        # worker exchange is outside an individual authority transaction.
++        with lock, self.journal._mutex:
++            try:
++                return self.journal.submit(context, wire)
++            except PresenceAgeExpired as expired:
++                if expired.adapter_id != adapter_id:
++                    raise
++            # Recheck above handles concurrent replay, revocation, changed
++            # binding/session and expiry without duplicating Journal rules.
++            refresh()
++            return self.journal.submit(context, wire)
++
+     def request(self, context: Context, method: str, params: dict):
+         if method not in METHOD_RESULTS:
+             raise JournalError("UNKNOWN_METHOD")
+@@ -454,7 +484,7 @@
+                 after=params.get("after", 0), limit=params.get("limit", 100))
+         if method == "invoke":
+             exact(params, {"request"})
+-            op = self.journal.submit(context, canonical(params["request"]))
++            op = self._submit_invoke(context, canonical(params["request"]))
+             return self.operation(context, op["id"])
+         if method in {"operation", "cancel"}:
+             exact(params, {"operationId"})
+--- before/hms/endpoint_binding.py
++++ after/hms/endpoint_binding.py
+@@ -248,6 +248,23 @@
+         # on transport/storage here; this is not a timing-isolation guarantee.
+         with self.journal._mutex:
+             return self._refresh_locked(force=force, initialize=initialize)
++
++    def refresh_for_admission(self):
++        """Observe an existing installation once; never provision or dispatch.
++
++        Runtime holds the route lock and authority mutex after a fresh-submit
++        static authorization check. This method is not a client API or worker
++        tick. HELLO may withdraw eligibility but cannot arm or admit a command.
++        """
++        with self.journal._mutex:
++            _require(not self.db.in_transaction, 'POLICY_REENTRANCY')
++            state = self._state()
++            _require(self.runtime.catalog.ready.get(self.adapter_id) is True and
++                     state['installed'] is True and state['boot'] is not None and
++                     state['desired'] is not None, 'ENDPOINT_INSTALLATION_REQUIRED')
++            _require(state['fault'] is None, state['fault'] or 'ENDPOINT_INHIBITED')
++            _require(self.stream is not None, 'ENDPOINT_DISCONNECTED')
++            return self._refresh_locked(force=True, initialize=False)
+ 
+     def _refresh_locked(self, *, force=False, initialize=False):
+         _require(self.stream is not None, 'ENDPOINT_DISCONNECTED')

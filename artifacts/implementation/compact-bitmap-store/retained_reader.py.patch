@@ -1,0 +1,147 @@
+--- inline-hierarchical-store/retained_reader.py
++++ compact-bitmap-store/retained_reader.py
+@@ -70,7 +70,10 @@
+         self.fds.clear()
+ 
+ def inspect(path,anchor,library_hash,*,replaced_owner=False,
+-            expected_profile='hms.hierarchical-chunk-store.inline512/0.1',library_path=None):
++            expected_profile='hms.hierarchical-chunk-store.compact-bitmap/0.1',library_path=None,
++            bitmap_encoding='compact'):
++    assert expected_profile=={'compact':'hms.hierarchical-chunk-store.compact-bitmap/0.1',
++                             'fixed512':'hms.hierarchical-chunk-store.inline512/0.1'}[bitmap_encoding]
+     image=ReadOnlyImage(path,anchor,replaced_owner=replaced_owner);native=None
+     try:
+         native=Native(image,ATTEMPT/'hierarchical-store.so' if library_path is None else library_path,library_hash);native.call('hm_mount')
+@@ -91,8 +94,17 @@
+                     for n,k,z in native.entries(directory+'/entries',8192):
+                         assert k==1;children[n]=unpack(native.read(directory+'/entries/'+n))['id']
+                 else:
+-                    assert inode['kind']=='file' and 0<=inode['size']<=16*1024**2
+-                    bits=base64.b64decode(inode['chunks'],validate=True);assert len(bits)==512
++                    assert inode['kind']=='file' and type(inode['size']) is int and 0<=inode['size']<=16*1024**2
++                    count=(inode['size']+4095)//4096
++                    length=(count+7)//8 if bitmap_encoding=='compact' else 512
++                    wire=inode['chunks'];assert type(wire) is str and len(wire)==4*((length+2)//3)
++                    bits=base64.b64decode(wire,validate=True)
++                    assert len(bits)==length and base64.b64encode(bits).decode('ascii')==wire
++                    if count%8:assert not bits[(count-1)//8]>>(count%8)
++                    if bitmap_encoding=='fixed512':assert not any(bits[(count+7)//8:])
++                    bits+=b'\0'*(512-len(bits))
++                    # Normalize for semantic comparison only after strict wire validation.
++                    inode=dict(inode,chunks=base64.b64encode(bits).decode('ascii'))
+                     body=bytearray(inode['size'])
+                     for number in range(4096):
+                         if not bits[number//8]&(1<<(number%8)):continue
+@@ -124,92 +136,24 @@
+     assert not observed['duplicates'] and all(not row['missing'] for row in observed['files'].values())
+     return {name:row['payload'] for name,row in observed['files'].items()}
+ 
+-def main():
+-    report=read(ATTEMPT/'RESULTS.json');inputs=read(ATTEMPT/'inputs.json')
+-    assert report['inputsStable'] and sum(v['checks'] for k,v in report['scopes'].items() if not k.startswith('replay_'))==96
+-    for row in inputs['files']:assert digest(ROOT/row['path'])==digest(FROZEN/row['frozen'])==row['sha256']
+-    assert digest(FROZEN/'dataset.json')==inputs['datasetSha256']
+-    assert digest(ATTEMPT/'hierarchical-store.so')==report['librarySha256']
+-    processes=[]
+-    for path in sorted(ATTEMPT.glob('*/started.json')):
+-        start=read(path);end=read(path.with_name('result.json'))
+-        assert end['reaped'] and not Path('/proc',str(start['pid'])).exists()
+-        processes.append(dict(scope=path.parent.name,pid=start['pid'],**end))
+-    for scope,row in report['scopes'].items():
+-        work=ATTEMPT/scope;checks=read(work/'checks.json')
+-        assert read(work/'stdout.txt')==checks and digest(work/'checks.json')==row['receiptSha256']
+-        assert checks['status']=='passed' and len(checks['checks'])==row['checks']
+-        assert read(work/'result.json')['returnCode']==0
+-    images={}
+-    for anchor in sorted(ATTEMPT.glob('*/*-anchor.json')):
+-        path=anchor.with_name(anchor.name.removesuffix('-anchor.json'))
+-        if not path.is_dir():continue
+-        name=str(path.relative_to(ATTEMPT))
+-        images[name]=inspect(path,anchor,report['librarySha256'],replaced_owner=name=='owner_loss/image')
+-    expected=bytearray(bytes(range(256))*32);expected[4090:4106]=b'X'*16
+-    expected=expected[:4100]+b'\0'*(12000-4100)+b'Z'
+-    assert bodies(images['data/image'])=={'data':bytes(expected)}
+-    assert bodies(images['hierarchy/image'])=={'experiment/stage/position':b'12.5 um','experiment/stage/'+'é'*127+'a':b''}
+-    assert images['hierarchy/image']['directories']=={'experiment','experiment/stage'}
+-    assert bodies(images['namespace/image'])=={'right/target':b'NEW'}
+-    assert images['namespace/image']['directories']=={'left','right'}
+-    assert bodies(images['bounds/image'])=={'f':b''}
+-    assert '/'.join(['x'*255]*16) in images['bounds/image']['directories']
+-    for phase in ['identity_reserved','inode_durable','entry_staged','entry_published']:
+-        original=images['recovery/'+phase];recovered=images['recovery/'+phase+'-recovered']
+-        wanted={'kept/new':b''} if phase=='entry_published' else {}
+-        assert bodies(original)==bodies(recovered)==wanted
+-        assert original['directories']==recovered['directories']=={'kept'}
+-        assert not recovered['unlinked'] and not recovered['pending']
+-        lineage=read(ATTEMPT/'recovery'/(phase+'-recovered-lineage.json'))
+-        assert original['backingHashes']==lineage['sourceHashes']==lineage['targetHashes']
+-        assert read(ATTEMPT/'recovery'/(phase+'-checkpoint.json'))['phase']==phase
+-    old=images['orphan_recovery/image'];new=images['orphan_recovery/recovered']
+-    assert bodies(old)==bodies(new)=={'live':b'LIVE'} and len(old['unlinked'])==2 and not new['unlinked']
+-    assert len(new['nodes'])==2
+-    assert old['backingHashes']==read(ATTEMPT/'orphan_recovery/recovered-lineage.json')['sourceHashes']
+-    corrupt=images['corruption/image'];assert corrupt['files']['dir/data']['missing']==[0] and 'super.tmp' in corrupt['root']
+-    assert corrupt['backingHashes']==read(ATTEMPT/'corruption/corrupt-image-hashes.json')
+-    graph=images['corruption/graph'];assert len(graph['duplicates'])==1 and 'super.tmp' in graph['root']
+-    assert bodies(images['owner_loss/image'])=={'data':b'A'*4096}
+-    fault=images['fault/image'];assert bodies(fault)['data'] in (b'A'*4096,b'B'+b'A'*4095)
+-    assert fault['backingHashes']==read(ATTEMPT/'fault/failed-image-hashes.json')
+-    dataset=read(FROZEN/'dataset.json');replay=None
+-    if 'replay_write/image' in images:
+-        observed=images['replay_write/image'];source=Path(dataset['sourceRoot'])
+-        raw=(ATTEMPT/'replay_write/progress.jsonl').read_bytes();lines=raw.splitlines(keepends=True)
+-        rows=[];tail=b''
+-        for index,line in enumerate(lines):
+-            if not line.endswith(b'\n'):assert index==len(lines)-1;tail=line;break
+-            rows.append(json.loads(line))
+-        directories_complete=bool(rows and 'directoriesComplete' in rows[0])
+-        if directories_complete:assert rows.pop(0)['directoriesComplete']==len(dataset['directories'])
+-        assert rows==dataset['files'][:len(rows)]
+-        actual=bodies(observed);wanted={r['path']:r for r in rows}
+-        assert set(wanted)<=set(actual)
+-        for name,row in wanted.items():assert len(actual[name])==row['bytes'] and hashlib.sha256(actual[name]).hexdigest()==row['sha256']
+-        extra=set(actual)-set(wanted)
+-        assert len(extra)<=1 and (not extra or extra=={dataset['files'][len(rows)]['path']})
+-        for name in extra:
+-            full=(source/name).read_bytes();assert full[:len(actual[name])]==actual[name]
+-        if directories_complete:assert observed['directories']==set(dataset['directories'])
+-        else:assert observed['directories']<=set(dataset['directories'])
+-        complete='replay_write' in report['scopes']
+-        if complete:assert len(rows)==4270 and not extra and not tail
+-        else:assert not (ATTEMPT/'replay_read').exists()
+-        replay=dict(completeWriterReceipt=complete,completedFileBodiesVerified=len(rows),completeBodyBytes=sum(r['bytes'] for r in rows),
+-            directoriesVerified=len(observed['directories']),extraPublishedFiles=[dict(path=n,committedBytes=len(actual[n])) for n in sorted(extra)],
+-            unlinkedInodes=sorted(observed['unlinked']),incompletePhysicalInodes=sorted(set(observed['physical'])-set(observed['nodes'])),
+-            pendingEntries=observed['pending'],partialProgressTailBytes=len(tail),dependentColdReaderRun=(ATTEMPT/'replay_read').exists())
+-    runtime=ROOT/'artifacts/verification/runtime-attempts/20261109T013550.239422Z-7faa2ecb4078/receipt.json'
+-    assert digest(runtime)=='dba009874d97e14a9d0bc7b39cbc144e7361218866bca41f6857c933dedddd4e'
+-    runtime_rows=read(runtime)['files'];assert len(runtime_rows)==244 and all(digest(ROOT/r['path'])==r['sha256'] for r in runtime_rows)
+-    result=dict(status='verified',semanticChecks=96,imagesReadOnly=len(images),processes=processes,replay=replay,publicInputsExact=244,
+-        recoveryInvoked=False,allBackingBytesUnchanged=True,physicalPowerLossTested=False,serviceStorageQualified=False,
+-        images=[dict(path=name,files=len(value['files']),directories=len(value['directories']),unlinkedInodes=sorted(value['unlinked']),
+-                     incompletePhysicalInodes=sorted(set(value['physical'])-set(value['nodes'])),pendingEntries=value['pending'],
+-                     backingHashes=value['backingHashes'],callbacks=value['callbacks']) for name,value in images.items()])
+-    with (HERE/'EVIDENCE-AUDIT.json').open('x') as f:json.dump(result,f,indent=2,sort_keys=True);f.write('\n')
+-    print(json.dumps({k:v for k,v in result.items() if k not in ('images','processes')},sort_keys=True),flush=True)
+ 
+-if __name__=='__main__':main()
++def inspect_corrupt_inode(path,anchor,library_hash,expected_disk_inode):
++    """Read exact intentionally malformed state without invoking any adapter/recovery."""
++    image=ReadOnlyImage(path,anchor);native=None
++    try:
++        native=Native(image,ATTEMPT/'hierarchical-store.so',library_hash);native.call('hm_mount')
++        superblock=unpack(native.read('super'))
++        assert superblock['profile']=='hms.hierarchical-chunk-store.compact-bitmap/0.1'
++        assert superblock['identity']==image.anchor['identity']
++        identity=expected_disk_inode['id'];directory=f'objects/b{identity%256:02x}/i{identity:016x}'
++        raw=native.read(directory+'/state');assert unpack(raw)==expected_disk_inode
++        assert native.read(directory+'/state.tmp')==b'KEEP STAGED INODE'
++        assert native.read('super.tmp')==b'KEEP STAGED SUPER'
++        assert native.read(directory+'/c00000000')==b'A'+b'\0'*4095
++        assert native.fault is None and all(native.counts[k]==0 for k in ['programCalls','erases','syncs'])
++        result=dict(diskInode=expected_disk_inode,stateSha256=hashlib.sha256(raw).hexdigest(),
++                    backingHashes=image.before,callbacks=dict(native.counts),recoveryInvoked=False)
++        image.stable();return result
++    finally:
++        if native is not None:native.dispose()
++        image.close()

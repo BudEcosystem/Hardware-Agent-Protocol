@@ -1,0 +1,141 @@
+--- artifacts/implementation/pat-io-combined-matrix/harness01/run_attempt.py
++++ artifacts/implementation/pat-io-conflict-history/harness01/run_attempt.py
+@@ -1,4 +1,4 @@
+-"""Original isolated matrix61 runner. Execute only after parent review/release.
++"""Original isolated conflict52 runner. Execute only after parent review/release.
+ 
+ No project imports occur in this launcher. Seven selected distribution closures
+ are acquired independently of the compiler's five-package identity.
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '0a34336874ffe2c3d65301e40adf2b7a9328ddb08a074e02e4e777b9528bf78a'
+-PREFIX = 'artifacts/implementation/pat-io-combined-matrix/implementation01/'
++FROZEN_INDEX = 'eccd20743c61cb37d73c3f2f0df770d4c0b7529132287426eac7b8921875c524'
++PREFIX = 'artifacts/implementation/pat-io-conflict-history/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -91,7 +91,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 7067:
++    if len(expected) != 7070:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -177,7 +177,7 @@
+         while selector.get_map():
+             remaining = deadline - time.monotonic()
+             if remaining <= 0:
+-                raise TimeoutError('CombinedMatrix61 child exceeded original harness deadline')
++                raise TimeoutError('ConflictHistory52 child exceeded original harness deadline')
+             for key, _ in selector.select(min(remaining, 0.1)):
+                 block = os.read(key.fileobj.fileno(), 65536)
+                 if not block:
+@@ -190,13 +190,13 @@
+                 log.write(block)
+                 count += len(block)
+             if time.monotonic() >= deadline:
+-                raise TimeoutError('CombinedMatrix61 child crossed harness deadline during pipe collection')
++                raise TimeoutError('ConflictHistory52 child crossed harness deadline during pipe collection')
+     remaining = deadline - time.monotonic()
+     if remaining <= 0:
+-        raise TimeoutError('CombinedMatrix61 child crossed harness deadline at EOF')
++        raise TimeoutError('ConflictHistory52 child crossed harness deadline at EOF')
+     process.wait(timeout=remaining)
+     if time.monotonic() >= deadline:
+-        raise TimeoutError('CombinedMatrix61 child crossed harness deadline at process exit')
++        raise TimeoutError('ConflictHistory52 child crossed harness deadline at process exit')
+     return count
+ 
+ 
+@@ -204,7 +204,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 61 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 52 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -225,7 +225,7 @@
+         raise SystemExit('Execution remains held: explicit parent source-review release is required.')
+     if (not args.attempt or len(args.attempt) > 64 or
+             not args.attempt.replace('-', '').replace('_', '').isalnum() or
+-            not 1 <= args.timeout_seconds <= 600):
++            not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+     stage = here.parent / 'implementation01'
+@@ -237,15 +237,15 @@
+     scratch_before = scratch_parent_before = None
+     before = external_before = frozen_before = own_before = None
+     started = time.monotonic()
+-    record = {'profile': 'hms.io-combined-matrix-pure-attempt/1', 'attempt': args.attempt,
++    record = {'profile': 'hms.io-conflict-history-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 61,
+-              'projectInputCount': 7064, 'frozenPreparationInputCount': 7067,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 52,
++              'projectInputCount': 7067, 'frozenPreparationInputCount': 7070,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+                          'retainedLogBytes': MAX_LOG, 'scratchRetentionBytes': MAX_SCRATCH_BYTES},
+-              'scope': 'Independent matrix61 pure selection for combined qualification preflight and inherited domain/timing validation; no Runtime construction, SQLite connection, network, native endpoints, model or hardware execution.'}
++              'scope': 'Thirteen original private SQLite runtime simulations plus39 inherited pure transcript tests; no network, physical endpoint, MCU, inference or live service.'}
+     write_json(attempt / 'started.json', record)
+     try:
+         own_before = [row(here / name, name) for name in OWN_FILES]
+@@ -257,8 +257,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 7064:
+-            raise ValueError('Candidate project closure must contain exactly 7064 files')
++        if len(selected) != 7067:
++            raise ValueError('Candidate project closure must contain exactly 7067 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -273,12 +273,13 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 61 or
+-                len(targets['targets']) != 61 or
+-                len(set(targets['targets'])) != 61 or
+-                sum(name.startswith('test_pat_io_contracts.IoContractTests.') for name in targets['targets']) != 31 or
+-                sum(name.startswith('test_pat_io_combined_matrix.IoCombinedMatrixTests.') for name in targets['targets']) != 30):
+-            raise ValueError('Closed matrix61 method selection changed')
++        if (targets['testCount'] != 52 or
++                len(targets['targets']) != 52 or
++                len(set(targets['targets'])) != 52 or
++                sum(name.startswith('test_pat_io_transcript.IoTranscriptTests.') for name in targets['targets']) != 39 or
++                sum(name.startswith('test_pat_io_conflict_history.IoConflictHistoryTests.') for name in targets['targets']) != 9 or
++                sum(name.startswith('test_pat_io_configuration_capture.IoConfigurationCaptureTests.') for name in targets['targets']) != 4):
++            raise ValueError('Closed conflict52 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+         scratch_parent = Path('/tmp')
+@@ -287,7 +288,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-combined-matrix-matrix61-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-conflict-history-conflict52-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')
+@@ -301,7 +302,7 @@
+         environment = {'PATH': os.pathsep.join((str(Path(sys.executable).parent), '/usr/bin', '/bin')),
+                        'TMPDIR': str(scratch), 'LC_ALL': 'C.UTF-8', 'TZ': 'UTC'}
+         config = {'project': str(tree), 'attempt': str(attempt), 'targets': targets['targets'],
+-                  'externalRoots': external_before['roots'], 'expectedInputs': before,
++                  'scratch': str(scratch), 'externalRoots': external_before['roots'], 'expectedInputs': before,
+                   'expectedExternalInputs': external_before['files'],
+                   'childSha256': digest(attempt / 'harness/attempt_child.py')}
+         write_json(attempt / 'child-config.json', config)

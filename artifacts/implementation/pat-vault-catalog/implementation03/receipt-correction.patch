@@ -1,0 +1,29 @@
+--- implementation02/tests/test_vault_catalog_inventory.py
++++ implementation03/tests/test_vault_catalog_inventory.py
+@@ -46,12 +46,12 @@
+         self.pair(); executor = self.executor(); request = self.request(); held = []
+         def observe(phase, value):
+             if phase == 'after_snapshot_ready':
+-                held.append(dict(keys=list(value), manifests=len(self.bridge._held.lease.keys()),
++                held.append(dict(keys=[list(key) for key in value], manifests=len(self.bridge._held.lease.keys()),
+                     usage=self.bridge._held.lease.usage()))
+         with patch.object(self.bridge, '_checkpoint', side_effect=observe):
+             with self.assertRaisesRegex(JournalError, 'PAT_AMBIGUOUS'): executor.run(self.owner, request)
+         self.assertEqual(len(held), 1); self.assertEqual(held[0]['manifests'], 2)
+-        self.assertEqual(held[0]['keys'], [(self.config['evaluatorId'], 'run:1'), (self.config['evaluatorId'], 'run:2')])
++        self.assertEqual(held[0]['keys'], [[self.config['evaluatorId'], 'run:1'], [self.config['evaluatorId'], 'run:2']])
+         self.assert_no_admission()
+         self.emit('complete-inventory', dict(held=held, refusal='PAT_AMBIGUOUS',
+             workerExecuted=False, semanticsVerified=False, physicalObjectiveVerified=False))
+@@ -86,9 +86,9 @@
+         request = self.request() | {'replayNamespace':self.runtime.journal.issue_namespace(user, 60000)['token']}
+         executor = self.executor(); held = []
+         def observe(phase, value):
+-            if phase == 'after_snapshot_ready': held.append(list(value))
++            if phase == 'after_snapshot_ready': held.append([list(key) for key in value])
+         with patch.object(self.bridge, '_checkpoint', side_effect=observe): result = executor.run(user, request)
+-        self.assertEqual(held, [[(self.config['evaluatorId'], 'run:1')]])
++        self.assertEqual(held, [[[self.config['evaluatorId'], 'run:1']]])
+         self.assertEqual(self.db.execute('SELECT artifact_digest FROM px_instances').fetchone()[0], self.digest)
+         self.emit('authorized-inventory', dict(instanceId=result['instanceId'], held=held,
+             unrelatedProgramPrepared=False, workerExecuted=False, semanticsVerified=False))

@@ -1,0 +1,40 @@
+--- previous/attempt_child.py
++++ namespaced/attempt_child.py
+@@ -25,7 +25,7 @@
+ config = json.loads(configuration.read_text())
+ root = Path(config['project']).resolve()
+ out = Path(config['attempt']).resolve()
+-sys.path[:0] = [str(root), str(root / 'tests'), str(root / 'supervisor')] + config['externalRoots']
++sys.path[:0] = [str(root), str(root / 'tests')] + config['externalRoots']
+ sys.dont_write_bytecode = True
+ acquired = {str((root / value['path']).resolve()): value['sha256'] for value in config['expectedInputs']}
+ external = {value['resolvedPath']: value['sha256'] for value in config['expectedExternalInputs']}
+@@ -113,7 +113,7 @@
+         raise RuntimeError('Native retention is only authorized inside an exact selected control')
+     expected = scratch / current_test.split('.')[-1] / 'supervisor'
+     if event == 'hms.retention.load.v1':
+-        artifact = root / 'supervisor/retention_scan.so'
++        artifact = root / 'hms_qualification/supervisor/retention_scan.so'
+         if (native_load is not None or args != (str(artifact), NATIVE_DIGEST, 'hms.retention.linux-cpython312-x86_64/1')
+                 or acquired.get(str(artifact)) != NATIVE_DIGEST or sha(artifact) != NATIVE_DIGEST):
+             prohibited.append(event)
+@@ -270,7 +270,9 @@
+             origin = getattr(getattr(module, '__spec__', None), 'origin', None)
+         if origin is not None:
+             add('module:' + name, origin)
+-        if (name == 'hms' or name.startswith('hms.') or name.startswith('test_') or name == 'evidence' or name.startswith('evidence.') or name == 'evidence_compact' or name.startswith('evidence_compact.') or name == 'recorded_io' or name.startswith('recorded_io.') or name == 'vault_recorded_io' or name.startswith('vault_recorded_io.') or name == 'evidence_authority' or name.startswith('evidence_authority.') or name == 'evidence_vault' or name.startswith('evidence_vault.')) and origin:
++        if name in ['attempt_ledger', 'authority_ledger', 'bundle_io', 'evidence', 'evidence_authority', 'evidence_compact', 'evidence_vault', 'io_service_execution', 'io_service_runs', 'io_service_store', 'io_services', 'qualification_supervisor', 'recorded_io', 'retention_native', 'supervisor_contracts', 'vault_recorded_io', 'worker_entry']:
++            violations.append({'module': name, 'reason': 'legacy_flat_import_forbidden'})
++        if (name == 'hms' or name.startswith('hms.') or name == 'hms_qualification' or name.startswith('hms_qualification.') or name.startswith('test_') or name == 'evidence' or name.startswith('evidence.') or name == 'evidence_compact' or name.startswith('evidence_compact.') or name == 'recorded_io' or name.startswith('recorded_io.') or name == 'vault_recorded_io' or name.startswith('vault_recorded_io.') or name == 'evidence_authority' or name.startswith('evidence_authority.') or name == 'evidence_vault' or name.startswith('evidence_vault.')) and origin:
+             if not Path(origin).resolve().is_relative_to(root):
+                 violations.append({'module': name, 'origin': str(origin), 'reason': 'project_name_outside_copy'})
+     for origin in sorted(executed):
+@@ -309,7 +311,7 @@
+         'flags': repr(sys.flags), 'path': sys.path, 'cwd': str(Path.cwd()),
+         'environment': dict(os.environ), 'stdlib': str(stdlib)})
+     import unittest
+-    from vault_recorded_io.contracts import identity as host_identity
++    from hms_qualification.vault_recorded_io.contracts import identity as host_identity
+     assert host_identity() == config['expectedHost']
+     write('host-before.json', {'host': host_identity()})
+     from hms.pat_compiler import compiler_digest, compiler_manifest

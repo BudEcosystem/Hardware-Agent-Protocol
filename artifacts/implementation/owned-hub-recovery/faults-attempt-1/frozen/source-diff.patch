@@ -1,0 +1,493 @@
+--- baseline/project/owned_hub_jobs/ledger.py
++++ candidate/project/owned_hub_jobs/ledger.py
+@@ -145,6 +145,9 @@
+ 
+ 
+ class Ledger:
++    def _checkpoint(self, phase, state):
++        """Private installed fault seam; never supplied by a job request."""
++
+     def __init__(self, root, *, create=False):
+         self.root = Path(root).absolute()
+         self.fd = self.owner = None
+@@ -231,10 +234,20 @@
+         fd = None
+         try:
+             fd = os.open('state.tmp', os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=self.fd)
+-            safe(fd, 0); write_all(fd, body); os.fsync(fd); os.close(fd); fd = None
++            safe(fd, 0); write_all(fd, body)
++            self._checkpoint('before_file_fsync', state)
++            os.fsync(fd)
++            self._checkpoint('after_file_fsync', state)
++            os.close(fd); fd = None
++            self._checkpoint('before_replace', state)
+             os.replace('state.tmp', 'state.'+str(generation % 2), src_dir_fd=self.fd, dst_dir_fd=self.fd)
++            self._checkpoint('after_replace', state)
++            self._checkpoint('before_directory_fsync', state)
+             os.fsync(self.fd)
++            self._checkpoint('after_directory_fsync', state)
++            self._checkpoint('before_publish', state)
+             self.state = parse(canonical(state))
++            self._checkpoint('after_publish', state)
+         except BaseException:
+             self.poisoned = True
+             raise
+--- baseline/project/owned_hub_jobs/provider.py
++++ candidate/project/owned_hub_jobs/provider.py
+@@ -25,7 +25,7 @@
+ HELPER_SOURCE_SHA = '94a123dad1388da22418e806d3249edab8065410a735e2f8100a8238ab0dad25'
+ MODES = {'normal', 'early_leader_exit', 'writer_lingers', 'bootstrap_failure',
+          'wrong_result', 'wrong_nonce', 'malformed', 'output_limit',
+-         'bool_count', 'float_count', 'numeric_sum', 'leading_zero_sum'}
++         'bool_count', 'float_count', 'numeric_sum', 'leading_zero_sum', 'cpu_limit'}
+ # These capture the protected imported image, not current path bytes recomputed
+ # at replay time. The runner must freeze/check source before importing it.
+ IMPORTED_SOURCE_SHA256 = hashlib.sha256(Path(__file__).read_bytes()).hexdigest()
+@@ -193,6 +193,7 @@
+         if old is not None:
+             require(old['digest'] == request_digest(value), 'KEY_CONFLICT')
+             return self._view(old)
++        require(not self.ledger.poisoned, 'CONTROL_STORAGE_UNRESOLVED')
+         self._fresh(); require(value['artifact'] == self.artifact, 'ARTIFACT_MISMATCH')
+         require(len(self.ledger.state['rows']) < MAX_KEYS, 'RETENTION_FULL')
+         require(not any(row['phase'] != 'settled' for row in self.ledger.state['rows'].values()), 'JOB_BUSY')
+@@ -324,6 +325,8 @@
+     def cancel(self, original_key):
+         self._session(); require(not self._busy, 'REENTRY')
+         row = self._row(original_key)
++        if self._finish_retained_settlement(row):
++            return self._view(row)
+         if row['phase'] == 'settled':
+             self._finish_terminal(row)
+             return self._view(row)
+@@ -368,6 +371,8 @@
+     def poll(self, original_key):
+         self._session(); require(not self._busy, 'REENTRY')
+         row = self._row(original_key)
++        if self._finish_retained_settlement(row):
++            return self._view(row)
+         if row['phase'] == 'settled':
+             self._finish_terminal(row)
+             return self._view(row)
+@@ -480,6 +485,7 @@
+             # Already-reaped recovery uses this retained live object's proven
+             # settlement, never a recovered PID or invented wait result.
+             if owned.process.returncode is None:
++                self._checkpoint('before_reap', self.ledger.get(name))
+                 self._waitable(owned)
+                 code = owned.process.wait()
+             else:
+@@ -495,6 +501,20 @@
+         owned = self._owned.get(row['id'])
+         if owned is not None:
+             self._reap_settled(row['id'], owned)
++
++    def _finish_retained_settlement(self, row):
++        owned = self._owned.get(row['id'])
++        if owned is None or owned.settlement is None:
++            return False
++        # A terminal write can fail while the kernel child is already settled.
++        # Finish only this retained object's cleanup before any stop/signal or
++        # ordinary collection. The poisoned ledger is not retried or repaired.
++        self._busy = True
++        try:
++            self._reap_settled(row['id'], owned)
++            return True
++        finally:
++            self._busy = False
+ 
+     @staticmethod
+     def _receipt(row, outcome, code, valid, result, *, recovered, observed):
+@@ -511,7 +531,10 @@
+     def reconcile(self, original_key):
+         self._session(); require(not self._busy, 'REENTRY')
+         row = self._row(original_key)
++        if self._finish_retained_settlement(row):
++            return self._view(row)
+         if row['phase'] == 'settled':
++            self._finish_terminal(row)
+             return self._view(row)
+         if row['id'] in self._owned:
+             return self.poll(original_key)
+--- baseline/project/owned_hub_jobs/worker.py
++++ candidate/project/owned_hub_jobs/worker.py
+@@ -28,6 +28,13 @@
+ 
+ def compute(launch):
+     request = launch['request']; inp = request['input']; mode = launch['installedTestMode']
++    if mode == 'cpu_limit':
++        # Installed finite fault fixture. The hard CPU limit is below this
++        # process-CPU deadline; no caller selects this mode. The waiting leader
++        # reaps the child and reports its actual signal/resource observation.
++        until = time.process_time()+request['limits']['cpuSeconds']+1
++        while time.process_time() < until:
++            pass
+     if mode == 'output_limit':
+         os.write(1, b'x' * 8192)
+         return 0
+@@ -107,7 +114,13 @@
+             os._exit(75)
+     if launch['installedTestMode'] == 'early_leader_exit':
+         return 0
+-    _, status = os.waitpid(child, 0)
++    _, status, usage = os.wait4(child, 0)
++    if launch['installedTestMode'] == 'cpu_limit':
++        diagnostic = dict(childSignal=os.WTERMSIG(status) if os.WIFSIGNALED(status) else None,
++                          childCpuSeconds=usage.ru_utime+usage.ru_stime)
++        body = json.dumps(diagnostic, sort_keys=True, separators=(',', ':')).encode('ascii')
++        if os.write(2, body) != len(body):
++            return 78
+     if os.WIFEXITED(status):
+         return os.WEXITSTATUS(status)
+     return 76
+--- baseline/run_controls.py
++++ candidate/run_controls.py
+@@ -24,11 +24,20 @@
+ BASELINE_SHA = 'dba009874d97e14a9d0bc7b39cbc144e7361218866bca41f6857c933dedddd4e'
+ RESTORE_MASK = None
+ GROUPS = {'structural': 15, 'live': 30, 'faults': 40}
++GROUPS.update(recovery=40, limits=30)
+ FILES = ['DESIGN.md', 'PLAN.md', 'README.md', 'owner_preconditions.c',
+          'helper-check01/libowner-preconditions.so', 'project/control_checks.py',
+          'project/owned_hub_jobs/__init__.py', 'project/owned_hub_jobs/contracts.py',
+          'project/owned_hub_jobs/ledger.py', 'project/owned_hub_jobs/provider.py',
+          'project/owned_hub_jobs/worker.py', 'run_controls.py']
++FILES += ['project/recovery_checks.py', 'parent-pins.json', 'baseline/index-parent.json',
++          'source-diff.patch', 'change-pins.json']
++BASELINE_FILES = ['project/owned_hub_jobs/__init__.py', 'project/owned_hub_jobs/contracts.py',
++                 'project/owned_hub_jobs/ledger.py', 'project/owned_hub_jobs/provider.py',
++                 'project/owned_hub_jobs/worker.py', 'project/control_checks.py', 'run_controls.py',
++                 'owner_preconditions.c', 'helper-check01/libowner-preconditions.so']
++FILES += ['baseline/'+name for name in BASELINE_FILES]
++PARENT_INDEX_SHA = 'a0b6be34cab423581e8f9a80efd42791e17946cc96ff7e7e5226112e1273b229'
+ HELPER = '97a1a26fe0b954efc42f52420e552c286047ebbb11c188eed69870c452c850a1'
+ 
+ 
+@@ -70,6 +79,29 @@
+     path = Path(sys.executable).absolute()
+     return dict(path=str(path), resolved=str(path.resolve()), pathSha256=digest(path),
+                 runningSha256=digest(Path('/proc/self/exe')), version=sys.version)
++
++
++def parent_baseline():
++    parent = HERE.parent/'owned-hub-jobs'
++    assert digest(parent/'index.json') == PARENT_INDEX_SHA
++    assert digest(HERE/'baseline/index-parent.json') == PARENT_INDEX_SHA
++    manifest = json.loads((parent/'index.json').read_bytes())
++    mismatches = []
++    for item in manifest['files']:
++        path = parent/item['path']
++        assert path.is_relative_to(parent) and '..' not in Path(item['path']).parts
++        if not path.is_file() or path.stat().st_size != item['bytes'] or digest(path) != item['sha256']:
++            mismatches.append(item['path'])
++    pins = json.loads((HERE/'parent-pins.json').read_bytes())
++    assert pins['indexSha256'] == PARENT_INDEX_SHA
++    indexed = {entry['path']: entry for entry in manifest['files']}
++    assert set(BASELINE_FILES) == {entry['path'] for entry in pins['files']}
++    for item in pins['files']:
++        assert indexed[item['path']]['sha256'] == item['sha256']
++        assert digest(HERE/'baseline'/item['path']) == item['sha256']
++    return dict(indexSha256=PARENT_INDEX_SHA, files=len(manifest['files']),
++                matching=len(manifest['files'])-len(mismatches), mismatches=mismatches,
++                originalCopiesMatched=True, passed=not mismatches)
+ 
+ 
+ def save(path, value):
+@@ -108,7 +140,8 @@
+     remaining = None; started = time.monotonic()
+     limits = dict(cpuSeconds=30, addressBytes=512*1024**2, fileBytes=1024**2,
+                   openFiles=128, wallSeconds=GROUPS[group])
+-    argv = [sys.executable, '-I', '-S', '-B', str(frozen/'project/control_checks.py'),
++    entry = 'recovery_checks.py' if group in ('recovery', 'limits') else 'control_checks.py'
++    argv = [sys.executable, '-I', '-S', '-B', str(frozen/'project'/entry),
+             group, str(attempt/'control-state')]
+     save(attempt/'intent.json', dict(group=group, argv=argv, limits=limits,
+         interpreterSha256=digest(Path('/proc/self/exe')),
+@@ -238,6 +271,8 @@
+     attempt = HERE/name; attempt.mkdir(mode=0o700)
+     before = public_baseline(); save(attempt/'public-before.json', before)
+     assert before['passed']
++    parent_before = parent_baseline(); save(attempt/'parent-before.json', parent_before)
++    assert parent_before['passed']
+     runtime_before = interpreter()
+     assert runtime_before['pathSha256'] == runtime_before['runningSha256']
+     save(attempt/'interpreter-before.json', runtime_before)
+@@ -267,14 +302,16 @@
+         os.close(fd)
+     try:
+         after = public_baseline(); save(attempt/'public-after.json', after)
++        parent_after = parent_baseline(); save(attempt/'parent-after.json', parent_after)
+         runtime_after = interpreter(); save(attempt/'interpreter-after.json', runtime_after)
+         result['sourceStable'] = all(digest(HERE/name) == digest(frozen/name) == sha for name, sha in pins.items())
+         result['publicBaselineStable'] = before['passed'] and after['passed']
++        result['sealedParentStable'] = parent_before['passed'] and parent_after['passed']
+         result['interpreterStable'] = runtime_before == runtime_after
+         pending = sorted(int(value) for value in signal.sigpending() & {signal.SIGINT, signal.SIGTERM})
+         result['interruptsPendingAfterCleanup'] = pending
+         result['passed'] = (result['passed'] and result['sourceStable'] and result['publicBaselineStable']
+-                            and result['interpreterStable'] and not pending)
++                            and result['sealedParentStable'] and result['interpreterStable'] and not pending)
+         save(attempt/'RESULTS.json', result)
+         print(json.dumps(result, sort_keys=True))
+     finally:
+--- /dev/null
++++ candidate/project/recovery_checks.py
+@@ -0,0 +1,208 @@
++"""New fixed recovery/limit controls. Source-only until root review.
++
++No owner is killed and no early-leader-exit fixture runs in these groups.
++Storage faults are explicit syscall-boundary exceptions, not power failures.
++"""
++import errno
++import json
++import os
++from pathlib import Path
++import signal
++import sys
++import time
++
++sys.path.insert(0, str(Path(__file__).resolve().parent))
++import control_checks as base
++from owned_hub_jobs import contracts as c, provider as p
++
++check, refused, request, drive, close, installed = (
++    base.check, base.refused, base.request, base.drive, base.close, base.installed)
++PHASES = ('before_file_fsync', 'after_file_fsync', 'before_replace', 'after_replace',
++          'before_directory_fsync', 'after_directory_fsync', 'before_publish', 'after_publish')
++
++
++def save(root, value):
++    body = json.dumps(value, sort_keys=True, indent=2)+'\n'
++    check(len(body.encode()) <= 65536)
++    with (root/'observations.json').open('x') as target:
++        os.chmod(target.name, 0o600)
++        target.write(body)
++
++
++def recovery(root):
++    observations = []
++    class TerminalInterrupted(p.HostJobs):
++        fired = False
++        def _checkpoint(self, phase, row):
++            if phase == 'reaped' and not self.fired:
++                self.fired = True
++                raise c.JobError('TERMINAL_REAP_INTERRUPTED')
++    host = installed(root/'terminal-reconcile', cls=TerminalInterrupted)
++    try:
++        value = request(host, count=1); host.start(value)
++        refused(lambda: drive(host, value), 'TERMINAL_REAP_INTERRUPTED')
++        before = host.lookup(value['key'])
++        check(before['record']['phase'] == 'settled' and before['liveOwner'])
++        owned = host._owned[before['record']['id']]
++        check(owned.process.returncode == 0)
++        after = host.reconcile(value['key'])
++        check(after['record'] == before['record'] and not after['liveOwner'])
++        check(after['ownerSettlement']['writerLeaseQuiescent'])
++        observations.append(dict(case='terminal-reconcile', terminalReceiptUnchanged=True,
++                                 retainedHandleReleased=True))
++    finally:
++        close(host)
++    for boundary in PHASES:
++        for interrupt in ('none', 'before_reap', 'reaped', 'reaped_sigint'):
++            class Compound(p.HostJobs):
++                storage_fired = False
++                reap_fired = False
++                def _checkpoint(self, phase, row):
++                    target = 'reaped' if interrupt == 'reaped_sigint' else interrupt
++                    if self.storage_fired and not self.reap_fired and phase == target:
++                        self.reap_fired = True
++                        if interrupt == 'reaped_sigint':
++                            os.kill(os.getpid(), signal.SIGINT)
++                        else:
++                            raise c.JobError('REAP_INTERRUPTED')
++                def _signal(self, owned, action):
++                    check(owned.settlement is None)
++                    return super()._signal(owned, action)
++            folder = root/(boundary+'-'+interrupt)
++            host = installed(folder, cls=Compound)
++            def fail(phase, state):
++                if phase == boundary and not host.storage_fired and any(
++                        row['phase'] == 'settled' for row in state['rows'].values()):
++                    host.storage_fired = True
++                    raise OSError(errno.ENOSPC, 'installed terminal commit fault')
++            host.ledger._checkpoint = fail
++            value = request(host, count=1)
++            try:
++                host.start(value)
++                caught = None
++                try:
++                    drive(host, value)
++                except (OSError, c.JobError, KeyboardInterrupt) as error:
++                    caught = type(error).__name__
++                    if interrupt == 'none':
++                        check(isinstance(error, OSError) and error.errno == errno.ENOSPC)
++                    elif interrupt == 'reaped_sigint':
++                        check(isinstance(error, KeyboardInterrupt))
++                    else:
++                        check(isinstance(error, c.JobError) and error.code == 'REAP_INTERRUPTED')
++                check(caught is not None and host.storage_fired and host.ledger.poisoned)
++                check(interrupt == 'none' or host.reap_fired)
++                current = host.lookup(value['key'])
++                check(host.start(value)['record'] == current['record'])
++                refused(lambda: host.start(request(host, 'new')), 'CONTROL_STORAGE_UNRESOLVED')
++                if host._owned:
++                    result = host.reconcile(value['key'])
++                    check(not result['liveOwner'] and result['controlStoragePoisoned'])
++                    check(result['record'] == current['record'])
++                check(not host._owned)
++                check(host.lookup(value['key'])['ownerSettlement']['processExitCode'] == 0)
++            finally:
++                close(host)
++            reopened = p.HostJobs(folder, owner_contract=p.OWNER_CONTRACT)
++            try:
++                restored = reopened.lookup(value['key'])
++                committed = boundary not in PHASES[:3]
++                check(restored['record']['phase'] == ('settled' if committed else 'released'))
++                final = reopened.reconcile(value['key'])
++                receipt = final['record']['receipt']
++                check(receipt['execution'] == ('completed' if committed else 'unknown'))
++                check(receipt['recovered'] is (not committed))
++                check(receipt['mayHaveActed'] and not final['liveOwner'])
++                check(receipt['outputValidated'] is committed)
++                check(reopened.start(value)['record'] == final['record'])
++                if not committed:
++                    check(receipt['result'] is None and receipt['processExitCode'] is None)
++                observations.append(dict(boundary=boundary, interruption=interrupt,
++                    caught=caught, reopenedExecution=receipt['execution'],
++                    recovered=receipt['recovered'], retainedHandlesSettled=True,
++                    poisonedFreshLaunchRefused=True))
++            finally:
++                close(reopened)
++    save(root, observations)
++
++
++def limits(root):
++    observations = []
++    host = installed(root/'bootstrap', 'bootstrap_failure')
++    try:
++        value = request(host, count=1); view = host.start(value)
++        owned = host._owned[view['record']['id']]
++        end = time.monotonic()+3
++        while host._waitable(owned) is None and time.monotonic() < end:
++            time.sleep(.002)
++        check(host._waitable(owned) is not None)
++        receipt = drive(host, value)['record']['receipt']
++        check(receipt['execution'] == 'not_started' and not receipt['mayHaveActed'])
++        check(receipt['processExitCode'] == 74 and receipt['reason'] == 'BOOTSTRAP_EXIT')
++        observations.append(dict(case='bootstrap', execution=receipt['execution'], exitCode=74))
++    finally:
++        close(host)
++    host = installed(root/'wall-after-release', 'writer_lingers')
++    try:
++        value = request(host, count=1); value['limits']['wallMs'] = 150
++        host.start(value)
++        first = host.poll(value['key'])
++        check(first['record']['phase'] == 'released' and first['record']['releaseIntent'])
++        receipt = drive(host, value)['record']['receipt']
++        check(receipt['execution'] == 'failed' and receipt['reason'] == 'WALL_LIMIT')
++        check(receipt['mayHaveActed'] and not receipt['outputValidated'])
++        observations.append(dict(case='wall-after-release', reason=receipt['reason'],
++                                 mayHaveActed=receipt['mayHaveActed']))
++    finally:
++        close(host)
++    class CpuObserved(p.HostJobs):
++        diagnostic = None
++        def _checkpoint(self, phase, row):
++            if phase == 'writer_settled':
++                self.diagnostic = json.loads(bytes(self._owned[row['id']].stderr))
++    host = installed(root/'cpu-hard-limit', 'cpu_limit', cls=CpuObserved)
++    try:
++        value = request(host, count=1)
++        value['limits'].update(cpuSeconds=1, wallMs=10000)
++        host.start(value); receipt = drive(host, value, seconds=12)['record']['receipt']
++        check(receipt['execution'] == 'failed' and receipt['reason'] == 'PROCESS_FAILED')
++        check(receipt['processExitCode'] == 76 and receipt['mayHaveActed'])
++        check(host.diagnostic['childSignal'] == signal.SIGKILL)
++        check(.8 <= host.diagnostic['childCpuSeconds'] <= 2)
++        observations.append(dict(case='cpu-hard-limit', diagnostic=host.diagnostic,
++                                 childReapedByInstalledLeader=True))
++    finally:
++        close(host)
++    host = installed(root/'retention')
++    values = []; terminal = []
++    try:
++        for number in range(16):
++            value = request(host, 'retained-'+str(number), count=1)
++            values.append(value); host.start(value)
++            terminal.append(drive(host, value)['record'])
++            check(terminal[-1]['receipt']['execution'] == 'completed')
++        check(len(host.ledger.state['rows']) == 16 and not host._owned)
++        refused(lambda: host.start(request(host, 'seventeenth', count=1)), 'RETENTION_FULL')
++        for value, record in zip(values, terminal):
++            check(host.start(value)['record'] == record)
++        check(len(host.ledger.state['rows']) == 16 and not host._owned)
++        observations.append(dict(case='retention', retained=16, seventeenthRefused=True,
++                                 historicalReplays=16))
++    finally:
++        close(host)
++    save(root, observations)
++
++
++def main():
++    assert len(sys.argv) == 3 and sys.argv[1] in ('recovery', 'limits')
++    group = sys.argv[1]; root = Path(sys.argv[2]).absolute()
++    signal.signal(signal.SIGTERM, base.terminate)
++    root.mkdir(mode=0o700)
++    started = time.monotonic()
++    {'recovery': recovery, 'limits': limits}[group](root)
++    print(json.dumps(dict(group=group, checks=base.CHECKS, status='passed',
++                          elapsedSeconds=round(time.monotonic()-started, 6)), sort_keys=True))
++
++
++if __name__ == '__main__':
++    main()
+--- /dev/null
++++ candidate/README.md
+@@ -0,0 +1,7 @@
++# Owned host recovery candidate
++
++This isolated, unexecuted increment extends the sealed owned CPU-job provider with retained-handle cleanup during terminal reconciliation and compound terminal-storage/reap controls. It also prepares finite bootstrap, post-release wall/CPU and retention-capacity controls.
++
++Read [DESIGN.md](DESIGN.md) for the corrected authority/state behavior and [PLAN.md](PLAN.md) for the bounded source-reviewed execution slice. `baseline/` and `parent-pins.json` preserve the original inputs; `source-diff.patch` and `change-pins.json` describe the increment.
++
++No public HMS source or sealed packet is changed. Actual owner-death and early-leader-exit execution await a separately owned harness. This is not a public mount, sandbox, aggregate resource reservation, GPU/hub qualification, physical driver provider or learned PAT installation.
+--- /dev/null
++++ candidate/DESIGN.md
+@@ -0,0 +1,15 @@
++# Owned CPU-job recovery increment
++
++This isolated source increment derives from the sealed `owned-hub-jobs` packet, index SHA256 `a0b6be34cab423581e8f9a80efd42791e17946cc96ff7e7e5226112e1273b229`. `parent-pins.json` and `baseline/` retain exact original production/control/runner/helper bytes. The original packet and public HMS sources remain unchanged. This increment has not been executed.
++
++The typed fixed-artifact API, one active job, sixteen retained keys, gate association, strict result validation, writer lease, pidfd/unreaped-anchor signal authority and single-thread/default-SIGCHLD/no-other-reaper contract are retained. Historical original-key replay remains before current identity or poisoned-storage checks. A new key is explicitly refused when control storage is poisoned.
++
++The correction addresses a compound failure: a terminal commit can fail while an original process has already met all settlement conditions; a synchronous exception after reap can then leave its live object retained while the durable row still says released. Ordinary stop/poll code cannot re-anchor an already-reaped child. `poll`, `cancel` and `reconcile` now finish a retained object's previously established settlement before entering any stop/signal path. That branch uses only the existing object and its settlement proof, never a persisted PID. `reconcile` also releases retained handles for a terminal receipt. Successful cleanup does not repair or retry poisoned ledger writes and does not manufacture a durable completed result.
++
++The ledger adds private no-op checkpoints before/after file fsync, replacement, directory fsync and in-memory publication. Installed controls inject `ENOSPC` exceptions at those boundaries for terminal commits. These are exact code-path fault injections, not real disk exhaustion or power failures. A failed commit poisons current launch authority regardless of how far it advanced. If a subsequent owner reads only the pre-replacement released row, reconciliation produces `unknown` with no result or exit code. If a valid terminal row reached the committed slot and remains readable after reopen, its already-validated receipt is retained. Neither case reconstructs success from lost stdout. Directory fsync success in a control is not a device power-loss durability qualification.
++
++Compound controls pair each of eight storage boundaries with no reap interruption, a synchronous before-reap exception, a synchronous post-reap exception, and a pending post-reap SIGINT. They assert retained-handle settlement, refusal of a fresh key under poison, unchanged original-key replay and the conservative reopened outcome. A separate terminal-reconcile case verifies that its published receipt remains byte-equivalent while the retained handle is released.
++
++The missing finite controls cover bootstrap failure before release, a post-release observed wall deadline, the per-process hard CPU limit, and all sixteen retained keys plus seventeenth-key refusal/replay. For CPU evidence, one private installed fixture consumes CPU until a finite process-CPU deadline above its hard limit; its waiting leader uses `wait4` to reap that child and reports its observed signal and resource usage. The normal artifact's typed arithmetic result is unchanged. Test mode is installation identity, never a caller field.
++
++No early-leader-exit or killed-owner control runs here. Root is preparing a separate ownership/subreaper harness for those cases. The existing outer runner can control only its own group; provider jobs create separate sessions. It records unresolved bounded observations on abnormal owner death and never signals a job from stored PID metadata. No universal descendant, sandbox, aggregate capacity, public provider mount, GB10/inference, physical driver/I/O or learned PAT claim is added.
+--- /dev/null
++++ candidate/PLAN.md
+@@ -0,0 +1,19 @@
++# Source review before execution
++
++No candidate worker, control or runner has been executed. Root must review the production/control diffs, fixed CPU diagnostic fixture and bounded runner before any run. All attempts use a new name and preserve frozen inputs and output. Stop after the first failure.
++
++```
++python3 -I -S -B run_controls.py structural structural-attempt-1
++python3 -I -S -B run_controls.py live live-attempt-1
++python3 -I -S -B run_controls.py faults faults-attempt-1
++python3 -I -S -B run_controls.py recovery recovery-attempt-1
++python3 -I -S -B run_controls.py limits limits-attempt-1
++```
++
++The first three groups retain the original finite controls against the changed provider. `recovery` adds one terminal-reconcile case and32 storage/reap combinations. `limits` adds bootstrap, post-release wall and hard CPU controls plus16 actual finite jobs, retention refusal and historical replay. Counts of polling assertions remain timing-dependent. Store per-case observations with the new control groups for independent retained-state review.
++
++The runner retains per-process control ceilings of CPU30s, address512MiB, file1MiB, open-FD128 and no core. Structural/live/fault/recovery/limit group wall observations are15/30/40/40/30s. On an interrupted or overdue control, send anchored TERM and allow8s for its exception/finally cleanup, then anchored KILL if needed and3s exit observation. Hold the unreaped original control anchor through all numeric group signals. The provider's own typed limits remain stricter per-process limits; no aggregate CPU/address-space/storage reservation is claimed.
++
++Before/after every group, verify the existing244-file public receipt/hash set, the complete sealed218-file parent packet, exact baseline source copies and interpreter identity. Frozen per-attempt copies include parent pins, source diffs and change pins. The prior866-test suite is not rerun by these commands. Hash observations are sequential, not atomic snapshots or transient-change detection.
++
++Storage controls inject exceptions at named operations without mounting filesystems, filling disks, changing services or killing the provider owner. Actual power-loss durability, aggregate admission, early-leader-exit and killed-owner recovery remain unqualified. The latter two are explicitly deferred to root's separate owned harness so this increment launches no intentional orphan fixture.

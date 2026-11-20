@@ -1,0 +1,166 @@
+--- artifacts/implementation/pat-io-lifecycle-semantics/implementation01/project/tests/test_pat_io_lifecycle_semantics.py
++++ artifacts/implementation/pat-io-lifecycle-semantics/implementation02/project/tests/test_pat_io_lifecycle_semantics.py
+@@ -2,6 +2,7 @@
+ import ast
+ import builtins
+ import copy
++import hashlib
+ import json
+ from pathlib import Path
+ import sqlite3
+@@ -14,6 +15,8 @@
+ from hms.pat_io_lifecycle_history import inspect_lifecycle_transcript
+ from hms.pat_io_outcome_history import inspect_trial_outcome
+ from hms.pat_io_configuration_history import inspect_configuration_history
++from hms.pat_io_transcript import SCHEMAS
++from test_pat_io_board_history import decode_tables
+ from test_pat_io_conflict_history import rewrite
+ from test_pat_io_clock_semantics import rows,receipt_attack
+ 
+@@ -47,6 +50,58 @@
+             for t in doc['value']['tables']:
+                 if t['table']==table:t['rowCount']=0
+     return edit
++
++
++def mutate_checkpoints(case,mutate):
++    """Rebuild typed/deduplicated execution pages and every sidecar association."""
++    case=copy.deepcopy(case);docs={r['path']:json.loads(case['files'][r['path']])for r in case['references']}
++    refs=[];files={};cache={};execution={}
++    def add(doc,*,reuse=False):
++        body=canonical(doc);sha=hashlib.sha256(body).hexdigest()
++        if reuse and sha in cache:return copy.deepcopy(cache[sha])
++        name='%06d.json'%len(refs);ref=dict(path=name,bytes=len(body),sha256=sha)
++        refs.append(ref);files[name]=body
++        if reuse:cache[sha]=ref
++        return copy.deepcopy(ref)
++    for old in case['references']:
++        original=docs[old['path']]
++        if original['kind']=='table_page':continue
++        doc=copy.deepcopy(original)
++        if doc['kind']=='checkpoint':
++            cp=doc['value'];tables=decode_tables(docs,original['value']);mutate(cp,tables)
++            for table in cp['tables']:
++                columns=docs[table['pages'][0]['path']]['value']['columns']
++                types=SCHEMAS[table['store']][table['table']][1].split();data=tables[table['table']]
++                def key(row):
++                    return tuple((0,0) if row[c] is None else (1,row[c]) if type(row[c]) is int else
++                        (3 if t.startswith('b') else 2,row[c].encode())for c,t in zip(columns,types))
++                data.sort(key=key);table['rowCount']=len(data);table['pages']=[]
++                for offset in range(0,max(1,len(data)),8):
++                    encoded=[[dict(type='null' if row[c] is None else {'t':'text','i':'integer','b':'blob-utf8'}[t[0]],value=row[c])
++                        for c,t in zip(columns,types)]for row in data[offset:offset+8]]
++                    page=dict(store=table['store'],table=table['table'],columns=columns,first=offset,totalRows=len(data),rows=encoded)
++                    table['pages'].append(add(dict(profile=doc['profile'],kind='table_page',value=page),reuse=True))
++        elif doc['kind']=='trial_observation':
++            doc['value'].update(evidenceRecords=len(refs),evidenceBytes=sum(r['bytes']for r in refs))
++        execution[old['path']]=add(doc)
++    def remap(value,mapping):
++        if type(value) is dict:
++            if set(value)=={'path','bytes','sha256'} and value['path']in mapping:return copy.deepcopy(mapping[value['path']])
++            return {k:remap(v,mapping)for k,v in value.items()}
++        if type(value) is list:return [remap(v,mapping)for v in value]
++        return value
++    cr=[];cf={};mapping={}
++    for old in case['configuration']['records']:
++        original=json.loads(case['configuration_files'][old['path']]);doc=remap(original,mapping)
++        if doc['kind']=='header':doc['value']['setupRecords']=[execution[r['path']]for r in original['value']['setupRecords']]
++        elif doc['kind']=='snapshot':doc['value']['checkpoint']=execution[original['value']['checkpoint']['path']]
++        body=canonical(doc);name='%06d.json'%len(cr);ref=dict(path=name,bytes=len(body),sha256=hashlib.sha256(body).hexdigest())
++        mapping[old['path']]=ref;cr.append(ref);cf[name]=body
++    pairs=[dict(checkpoint=json.loads(cf[r['path']])['value']['checkpoint'],configuration=r)for r in cr if json.loads(cf[r['path']])['kind']=='snapshot']
++    case.update(references=refs,files=files,configuration_files=cf)
++    case['configuration'].update(records=cr,snapshots=pairs,configurationBytes=sum(r['bytes']for r in cr),
++        combinedRecords=len(refs)+len(cr),combinedBytes=sum(r['bytes']for r in refs+cr))
++    return case
+ 
+ 
+ class IoLifecycleSemanticsTests(unittest.TestCase):
+@@ -141,7 +196,10 @@
+             if r['kind']=='execution_evidence':r.update(kind='outcome_unknown',payload=canonical({'reason':'io_completion_unknown'}).decode())
+         self.altered(rows('events',change),'cancel_pending')
+ 
+-    def test_unknown_cannot_release_all_claims(self):self.altered(clear_table('claims'))
++    def test_unknown_cannot_release_all_claims(self):
++        def mutate(cp,t):
++            if any(r['state']=='outcome_unknown' for r in t['operations']):t['claims']=[]
++        self.rejected(mutate_checkpoints(load(),mutate))
+ 
+     def test_unknown_claims_cannot_change_fence(self):self.altered(rows('claims',lambda r:r.update(fence=2)))
+ 
+@@ -166,7 +224,10 @@
+         self.altered(edit)
+ 
+     def test_hidden_independent_effect_cannot_be_added(self):
+-        self.altered(rows('io_effects',lambda r:r.update(activations=1) if r['instance']=='sim:gpio6' else None))
++        def mutate(cp,t):
++            if any(r['instance']=='sim:gpio5' and r['activations']for r in t['io_effects']):
++                next(r for r in t['io_effects'] if r['instance']=='sim:gpio6')['activations']=1
++        self.rejected(mutate_checkpoints(load(),mutate))
+ 
+     def test_final_report_cannot_hide_possible_effect(self):
+         def edit(doc):
+@@ -194,7 +255,10 @@
+             d=json.loads(r['admission']);d['policy_revision']='registry:14';r['admission']=canonical(d).decode()
+         self.altered(rows('operations',edit))
+ 
+-    def test_resource_floor_cannot_disappear(self):self.altered(clear_table('resource_floors'),'reopen_accepted')
++    def test_resource_floor_cannot_disappear(self):
++        def mutate(cp,t):
++            if any(r['state']=='canceled'for r in t['operations']):t['resource_floors']=[]
++        self.rejected(mutate_checkpoints(load('reopen_accepted'),mutate))
+ 
+     def test_old_intent_cannot_be_rebound_to_current_session(self):
+         case=load();opened=[json.loads(v)['value']for v in case['files'].values() if json.loads(v)['kind']=='runtime_opened']
+@@ -209,31 +273,31 @@
+         self.altered(edit,'cancel_pending')
+ 
+     def test_terminal_authority_receipt_cannot_be_missing(self):
+-        def edit(doc):
+-            v=doc['value']
+-            if doc['kind']=='table_page' and v['table']=='io_authority_receipts' and v['totalRows']==2:
+-                index=v['columns'].index('sequence');v['rows']=[r for r in v['rows'] if r[index]['value']==1];v['totalRows']=1
+-            elif doc['kind']=='checkpoint':
+-                for t in v['tables']:
+-                    if t['table']=='io_authority_receipts' and t['rowCount']==2:t['rowCount']=1
+-        self.altered(edit)
+-
+-    def test_active_board_owners_cannot_disappear(self):self.altered(clear_table('io_owners'),'cancel_pending')
++        def mutate(cp,t):t['io_authority_receipts']=[r for r in t['io_authority_receipts']if r['sequence']==1]
++        self.rejected(mutate_checkpoints(load(),mutate))
++
++    def test_active_board_owners_cannot_disappear(self):
++        def mutate(cp,t):
++            if any(r['state']=='pending'for r in t['io_receipts']):t['io_owners']=[]
++        self.rejected(mutate_checkpoints(load('cancel_pending'),mutate))
+ 
+     def test_second_step_cannot_alias_the_first_child(self):
+-        case=load();op=next(json.loads(v)['value']['operationIds'][0]for v in case['files'].values()if json.loads(v)['kind']=='trial_observation')
+-        self.rejected(rewrite(case,rows('pr_steps',lambda r:r.update(operation_id=op) if r['ordinal']==1 else None)))
++        def mutate(cp,t):
++            if t['operations']:
++                next(r for r in t['pr_steps']if r['ordinal']==1)['operation_id']=t['operations'][0]['id']
++        self.rejected(mutate_checkpoints(load(),mutate))
+ 
+     def test_declined_parent_cannot_allocate_resource_floor(self):
+         case=load('permission_before_parent');deployment=case['expected_setup']['installation']['topology']['deployment']
+-        def edit(doc):
+-            v=doc['value']
+-            if doc['kind']=='table_page' and v['table']=='resource_floors':
+-                v['rows']=[[dict(type='text',value=deployment),dict(type='text',value='atom:pin5'),dict(type='integer',value=1)]];v['totalRows']=1
+-            elif doc['kind']=='checkpoint':
+-                for t in v['tables']:
+-                    if t['table']=='resource_floors':t['rowCount']=1
+-        self.rejected(rewrite(case,edit))
++        def mutate(cp,t):
++            if cp['phase']>=2:t['resource_floors']=[dict(deployment=deployment,resource='atom:pin5',fence=1)]
++        self.rejected(mutate_checkpoints(case,mutate))
++
++    def test_checkpoint_rewriter_preserves_original_bytes_without_mutation(self):
++        for primitive in ('gpio','pwm'):
++            for name in ('completion_reply_lost','permission_before_parent','cancel_pending'):
++                case=load(name,primitive)
++                self.assertEqual(mutate_checkpoints(case,lambda cp,t:None),case)
+ 
+     def test_installed_binding_must_remain_active(self):
+         self.altered(rows('reg_bindings',lambda r:r.update(active=0)))

@@ -1,0 +1,19 @@
+--- implementation01/tests/test_vault_authority.py
++++ implementation02/tests/test_vault_authority.py
+@@ -253,3 +253,16 @@
+         with self.assertRaisesRegex(JournalError, 'CAPACITY'): self.import_fixture()
+         self.assert_preserved((1, 0, 0))
+         self.assertFalse(self.db.in_transaction); self.assertFalse(self.vault._db.in_transaction)
++
++    def test_revocation_after_seal_preserves_authority_refusal(self):
++        self.fixture()
++        def checkpoint(phase, value):
++            if phase == 'after_evidence_seal':
++                self.runtime.registry.grant(self.owner, self.owner.principal, '*', 'admin', enabled=False)
++        with patch.object(self.evidence, '_checkpoint', side_effect=checkpoint):
++            with self.assertRaisesRegex(JournalError, 'ACCESS_DENIED'): self.import_fixture()
++        self.assertEqual(self.sizes_evidence(), (1, 0, 1)); self.assertEqual(self.sizes(), (1, 1))
++        self.assertIsNone(self.vault._lease); self.assertFalse(self.vault._db.in_transaction)
++        self.assertFalse(self.db.in_transaction)
++        self.emit('revoked-after-seal', dict(intents=1, publications=0, manifests=1,
++            authorityErrorPreserved=True, leasesReleased=True, workerExecuted=False))

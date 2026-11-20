@@ -1,0 +1,68 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-document-validation/harness14/run_attempt.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-execution-handoff/harness21/run_attempt.py
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '31118f7405fcce5f4828bf4d256faea21e61b6d5bae470632376d9c8c484c4c0'
+-PREFIX = 'artifacts/implementation/pat-io-document-validation/implementation01/'
++FROZEN_INDEX = 'f53286e08e528fd764893afc6f6765128c388a349ef536c2f22b17bc521f6035'
++PREFIX = 'artifacts/implementation/pat-io-execution-handoff/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -91,7 +91,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 251:
++    if len(expected) != 255:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -204,7 +204,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 15 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 6 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -239,8 +239,8 @@
+     started = time.monotonic()
+     record = {'profile': 'hms.io-group-worker-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 15,
+-              'projectInputCount': 248, 'frozenPreparationInputCount': 251,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 6,
++              'projectInputCount': 252, 'frozenPreparationInputCount': 255,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+@@ -257,8 +257,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 248:
+-            raise ValueError('Candidate project closure must contain exactly 248 files')
++        if len(selected) != 252:
++            raise ValueError('Candidate project closure must contain exactly 252 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -273,10 +273,10 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 15 or
+-                len(targets['targets']) != 15 or
+-                len(set(targets['targets'])) != 15 or
+-                targets['targets'] != ['test_io_service_runs.IoServiceRunTests.test_added_trigger_refuses_before_any_further_reservation', 'test_io_service_runs.IoServiceRunTests.test_all_run_tables_missing_with_anchor_are_never_recreated', 'test_io_service_runs.IoServiceRunTests.test_before_commit_failure_rolls_back_run_and_all_input_documents', 'test_io_service_runs.IoServiceRunTests.test_changed_candidate_or_configuration_same_key_refuses_before_planning', 'test_io_service_runs.IoServiceRunTests.test_changed_input_bytes_refuse_and_remain_retained', 'test_io_service_runs.IoServiceRunTests.test_concurrent_changed_same_key_has_one_reservation_and_one_conflict', 'test_io_service_runs.IoServiceRunTests.test_concurrent_exact_reservations_keep_one_input_set', 'test_io_service_runs.IoServiceRunTests.test_configuration_change_preserves_old_run_and_refuses_old_pin_for_new_run', 'test_io_service_runs.IoServiceRunTests.test_configuration_changes_after_preparation_prevent_commit', 'test_io_service_runs.IoServiceRunTests.test_creation_is_explicit_and_uses_the_existing_connection', 'test_io_service_runs.IoServiceRunTests.test_cross_authority_runtime_cannot_supply_fresh_run', 'test_io_service_runs.IoServiceRunTests.test_current_administrator_can_resolve_shared_logical_run_key', 'test_io_service_runs.IoServiceRunTests.test_current_authorization_is_required_for_create_lookup_and_replay', 'test_io_service_runs.IoServiceRunTests.test_lost_reply_after_commit_replays_exact_reservation_on_reopen', 'test_io_service_runs.IoServiceRunTests.test_lowered_byte_capacity_commits_no_partial_input_set']):
++        if (targets['testCount'] != 6 or
++                len(targets['targets']) != 6 or
++                len(set(targets['targets'])) != 6 or
++                targets['targets'] != ['test_io_service_execution.IoServiceExecutionTests.test_explicit_mount_creation_shares_journal_and_pins_actual_supervisor', 'test_io_service_execution.IoServiceExecutionTests.test_fresh_configuration_drift_refuses_before_supervisor_admission', 'test_io_service_execution.IoServiceExecutionTests.test_fresh_session_drift_refuses_before_supervisor_admission', 'test_io_service_execution.IoServiceExecutionTests.test_fresh_source_identity_change_cannot_admit', 'test_io_service_execution.IoServiceExecutionTests.test_handoff_is_committed_before_any_launch_path', 'test_io_service_execution.IoServiceExecutionTests.test_interruption_after_association_before_launch_never_resumes']):
+             raise ValueError('Closed runs15 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.

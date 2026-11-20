@@ -1,0 +1,29 @@
+--- harness01/attempt_child.py
++++ harness03/attempt_child.py
+@@ -64,7 +64,7 @@
+     return path.is_relative_to(stdlib) and not {'site-packages', 'dist-packages'}.intersection(path.parts)
+ 
+ 
+-CONTROL_TARGETS = ['test_vault_recorded_catalog.VaultRecordedCatalogTests.test_original_receipt_records_vault_identity_and_promotes', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_admission_and_commit_do_no_external_reads', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_expired_recording_view_rolls_back_evaluation', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_expired_promotion_view_rolls_back_decision', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_expired_admission_view_rolls_back_instance_and_procedure', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_cold_history_works_with_closed_vault_and_fresh_admission_refuses', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_configuration_drift_preserves_history_and_refuses_new_use', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_missing_evidence_is_not_novelty_or_automatic_requalification', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_revoked_admin_before_publication_cannot_record', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_inactive_source_cannot_fall_through_to_no_match', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_legacy_catalog_and_execution_mounts_are_refused', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_small_preparation_budget_publishes_no_receipt', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_changed_catalog_inventory_before_selection_refuses', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_unresolved_original_run_prevents_reuse_after_repreparation']
++CONTROL_TARGETS = ['test_vault_recorded_catalog.VaultRecordedCatalogTests.test_expired_promotion_view_rolls_back_decision', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_expired_admission_view_rolls_back_instance_and_procedure', 'test_vault_recorded_catalog.VaultRecordedCatalogTests.test_cold_history_works_with_closed_vault_and_fresh_admission_refuses']
+ 
+ # The native open audit event omits dir_fd. Preserve the original os.open
+ # call and expose its resolved pathname only to this synchronous audit hook.
+@@ -227,7 +227,7 @@
+ 
+ try:
+     if (not sys.flags.isolated or not sys.flags.no_site or not sys.flags.dont_write_bytecode or
+-            len(config['targets']) != 14 or len(set(config['targets'])) != 14):
++            len(config['targets']) != 3 or len(set(config['targets'])) != 3):
+         raise RuntimeError('Required child isolation flags or exact target count missing')
+     if config['targets'] != CONTROL_TARGETS:
+         raise RuntimeError('Exact literal target selection changed')
+@@ -288,7 +288,7 @@
+         write('child-errors.json', errors)
+     except BaseException:
+         errors.append({'phase': 'child-errors', 'type': 'ReceiptWriteFailure'})
+-passed = (not errors and counts is not None and counts['testsRun'] == 14 and
++passed = (not errors and counts is not None and counts['testsRun'] == 3 and
+     all(counts[key] == 0 for key in counts if key != 'testsRun') and
+     loaded_ids == config['targets'] == executed_ids and origins is not None and
+     origins['summary']['allOriginsMatched'])

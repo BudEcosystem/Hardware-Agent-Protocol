@@ -1,0 +1,50 @@
+--- controls-draft02/project/tests/endpoint_equivalence.c
++++ controls-draft03/project/tests/endpoint_equivalence.c
+@@ -40,12 +40,14 @@
+ static unsigned trace_records;
+ static uint8_t *rewrite_request;
+ static uint8_t rewrite_stage,sample_variant;
+-static uint64_t rewrite_latest,rewrite_lease;
++static uint64_t rewrite_nb,rewrite_latest,rewrite_complete,rewrite_lease;
+ static void rewrite_times(uint8_t stage) {
+     if(rewrite_request!=NULL && rewrite_stage==stage){
+-        p64(rewrite_request+60,rewrite_latest);p64(rewrite_request+80,rewrite_lease);
+-        printf("C request-time-rewrite %u %llu %llu\n",(unsigned)stage,
+-            (unsigned long long)rewrite_latest,(unsigned long long)rewrite_lease);
++        p64(rewrite_request+52,rewrite_nb);p64(rewrite_request+60,rewrite_latest);
++        p64(rewrite_request+68,rewrite_complete);p64(rewrite_request+80,rewrite_lease);
++        printf("C request-time-rewrite %u %llu %llu %llu %llu\n",(unsigned)stage,
++            (unsigned long long)rewrite_nb,(unsigned long long)rewrite_latest,
++            (unsigned long long)rewrite_complete,(unsigned long long)rewrite_lease);
+     }
+ }
+ static void blob(const void *data,size_t length) {
+@@ -134,7 +136,7 @@
+     finite->sample_clock=trace_clock;finite->step=trace_finite_step;
+     standing->source_epoch=trace_epoch;standing->guard=trace_standing_guard;standing->step=trace_standing_step;
+     describe_advance=clock_advance=describes=guards=clocks=0;
+-    rewrite_request=NULL;rewrite_stage=sample_variant=0;rewrite_latest=rewrite_lease=0;
++    rewrite_request=NULL;rewrite_stage=sample_variant=0;rewrite_nb=rewrite_latest=rewrite_complete=rewrite_lease=0;
+ }
+ static uint8_t trace_handle(hms_endpoint *e,uint8_t kind,uint8_t channel,uint64_t session,uint32_t sequence,
+         const uint8_t *p,uint16_t n,uint64_t now,uint16_t flags,uint8_t *out,uint16_t *length) {
+@@ -276,7 +278,9 @@
+         p32(request+88,1);p32(request+92,1);
+         if(mode==1u)p64(request+60,base); /* Invalid capture is not repaired later. */
+         rewrite_request=request;rewrite_stage=(uint8_t)(mode<2u?1u:2u);
++        rewrite_nb=mode==1u || mode==3u?base:base+50u;
+         rewrite_latest=mode==1u || mode==3u?base+50u:base;
++        rewrite_complete=mode==1u || mode==3u?base+100u:UINT64_MAX;
+         rewrite_lease=mode==1u || mode==3u?base+300u:UINT64_MAX;
+         if(mode==3u)p32(w.arena.driver+FX_GUARD_ADVANCE,10);
+         describes=guards=clocks=0;status=call(request,96);rewrite_request=NULL;
+@@ -286,7 +290,8 @@
+         if(status==HMS_EP_OK){
+             CHECK(w.e.operation_length==96u && w.e.receipt.held_mask==3u);
+             CHECK(w.e.fence_floor[0]==1u && w.e.fence_floor[1]==1u);
+-            CHECK(r64(w.e.operation+60)==base && r64(w.e.operation+80)==UINT64_MAX);
++            CHECK(r64(w.e.operation+52)==base+50u && r64(w.e.operation+60)==base);
++            CHECK(r64(w.e.operation+68)==UINT64_MAX && r64(w.e.operation+80)==UINT64_MAX);
+             CHECK(w.e.receipt.queued_at==base && w.e.receipt.may_have_acted==0u);
+         }else{
+             CHECK(w.e.operation_length==0u && w.e.receipt.held_mask==0u && w.e.call_high_water==0u);

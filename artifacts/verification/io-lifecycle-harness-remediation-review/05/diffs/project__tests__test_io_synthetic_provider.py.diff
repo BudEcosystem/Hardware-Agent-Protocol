@@ -1,0 +1,20 @@
+--- 04/project/tests/test_io_synthetic_provider.py
++++ 05/project/tests/test_io_synthetic_provider.py
+@@ -14,7 +14,7 @@
+ from hms.synthetic_io_installation import DRIVER, PROFILE, implementation_digest, normalize_installation
+ from hms.synthetic_io_runtime import IoRuntime
+ from test_resource_topology import topology, generations
+-from io_evidence_capture import EvidenceWorkspace, snapshot_databases
++from io_evidence_capture import EvidenceWorkspace, snapshot_databases, close_retaining
+ 
+ EVIDENCE_DIRECTORY = None
+ 
+@@ -42,7 +42,7 @@
+         self.configuration = installation()
+         self.runtime = IoRuntime(self.directory,create=True,owner=self.owner,installation=self.configuration,
+             wall_clock_ms=lambda:self.wall,monotonic_ms=lambda:self.mono)
+-        self.addCleanup(lambda:self.runtime.close() if self.runtime is not None else None)
++        self.addCleanup(lambda:close_retaining(self.temp,self.runtime))
+         self.namespace = self.runtime.journal.issue_namespace(self.owner,100000)['token']
+ 
+     def tearDown(self):

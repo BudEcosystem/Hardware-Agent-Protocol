@@ -1,0 +1,120 @@
+--- artifacts/implementation/pat-io-service-authority/harness25/run_attempt.py
++++ artifacts/implementation/pat-io-service-runs/harness15/run_attempt.py
+@@ -1,4 +1,4 @@
+-"""Original isolated authority32 runner. Execute only after parent review/release.
++"""Original isolated runs14 runner. Execute only after parent review/release.
+ 
+ No project imports occur in this launcher. Seven selected distribution closures
+ are acquired independently of the compiler's seven-package identity.
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '6215ff9c5fe621a704c1996af86fc6ad80da994ffb6d92e97f7bad71afb75470'
+-PREFIX = 'artifacts/implementation/pat-io-service-authority/implementation02/'
++FROZEN_INDEX = '8086023d524443fb617b654ad7573f1ef25a7388e12f991d28457457a720ba8d'
++PREFIX = 'artifacts/implementation/pat-io-service-runs/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -91,7 +91,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 247:
++    if len(expected) != 249:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -177,7 +177,7 @@
+         while selector.get_map():
+             remaining = deadline - time.monotonic()
+             if remaining <= 0:
+-                raise TimeoutError('IoAuthority32 child exceeded original harness deadline')
++                raise TimeoutError('IoRuns14 child exceeded original harness deadline')
+             for key, _ in selector.select(min(remaining, 0.1)):
+                 block = os.read(key.fileobj.fileno(), 65536)
+                 if not block:
+@@ -190,13 +190,13 @@
+                 log.write(block)
+                 count += len(block)
+             if time.monotonic() >= deadline:
+-                raise TimeoutError('IoAuthority32 child crossed harness deadline during pipe collection')
++                raise TimeoutError('IoRuns14 child crossed harness deadline during pipe collection')
+     remaining = deadline - time.monotonic()
+     if remaining <= 0:
+-        raise TimeoutError('IoAuthority32 child crossed harness deadline at EOF')
++        raise TimeoutError('IoRuns14 child crossed harness deadline at EOF')
+     process.wait(timeout=remaining)
+     if time.monotonic() >= deadline:
+-        raise TimeoutError('IoAuthority32 child crossed harness deadline at process exit')
++        raise TimeoutError('IoRuns14 child crossed harness deadline at process exit')
+     return count
+ 
+ 
+@@ -204,7 +204,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 32 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 14 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -228,7 +228,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation02'
++    stage = here.parent / 'implementation01'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -239,8 +239,8 @@
+     started = time.monotonic()
+     record = {'profile': 'hms.io-group-worker-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 32,
+-              'projectInputCount': 244, 'frozenPreparationInputCount': 247,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 14,
++              'projectInputCount': 246, 'frozenPreparationInputCount': 249,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+@@ -257,8 +257,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 244:
+-            raise ValueError('Candidate project closure must contain exactly 244 files')
++        if len(selected) != 246:
++            raise ValueError('Candidate project closure must contain exactly 246 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -273,11 +273,11 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 32 or
+-                len(targets['targets']) != 32 or
+-                len(set(targets['targets'])) != 32 or
+-                targets['targets'] != ['test_io_service_authority.IoServiceAuthorityTests.test_added_index_refuses_and_is_retained', 'test_io_service_authority.IoServiceAuthorityTests.test_all_owned_tables_missing_with_anchor_never_reinitialize', 'test_io_service_authority.IoServiceAuthorityTests.test_before_commit_failure_rolls_back_all_configuration_rows', 'test_io_service_authority.IoServiceAuthorityTests.test_canonical_authority_bound_record_survives_runtime_reopen', 'test_io_service_authority.IoServiceAuthorityTests.test_changed_same_key_refuses_before_any_fresh_work', 'test_io_service_authority.IoServiceAuthorityTests.test_complete_descriptor_snapshot_requires_transaction_and_is_read_only', 'test_io_service_authority.IoServiceAuthorityTests.test_concurrent_changed_same_key_has_one_winner_and_one_conflict', 'test_io_service_authority.IoServiceAuthorityTests.test_concurrent_exact_mutations_commit_one_version', 'test_io_service_authority.IoServiceAuthorityTests.test_configuration_and_plan_do_not_create_device_effects_or_claims', 'test_io_service_authority.IoServiceAuthorityTests.test_configuration_change_during_planning_refuses_returned_plan', 'test_io_service_authority.IoServiceAuthorityTests.test_creation_and_history_require_current_admin_authority', 'test_io_service_authority.IoServiceAuthorityTests.test_creation_is_explicit_and_reopen_uses_no_new_connection', 'test_io_service_authority.IoServiceAuthorityTests.test_cross_authority_runtime_and_deployment_cannot_supply_configuration', 'test_io_service_authority.IoServiceAuthorityTests.test_exact_replay_precedes_source_runtime_and_later_revision_checks', 'test_io_service_authority.IoServiceAuthorityTests.test_external_configuration_drift_refuses_before_planning', 'test_io_service_authority.IoServiceAuthorityTests.test_identical_layouts_in_distinct_authorities_have_distinct_pins', 'test_io_service_authority.IoServiceAuthorityTests.test_legacy_unbound_pin_cannot_enter_authority_history', 'test_io_service_authority.IoServiceAuthorityTests.test_lost_commit_reply_replays_original_after_reopen', 'test_io_service_authority.IoServiceAuthorityTests.test_lowered_byte_capacity_refuses_before_configuration_writes', 'test_io_service_authority.IoServiceAuthorityTests.test_lowered_record_capacity_preserves_exact_replay_at_full', 'test_io_service_authority.IoServiceAuthorityTests.test_metadata_capacity_tampering_is_not_a_limit_change', 'test_io_service_authority.IoServiceAuthorityTests.test_missing_head_refuses_and_is_never_rebuilt', 'test_io_service_authority.IoServiceAuthorityTests.test_missing_permission_on_one_registration_refuses_whole_snapshot', 'test_io_service_authority.IoServiceAuthorityTests.test_mutation_header_mismatch_refuses_and_is_retained', 'test_io_service_authority.IoServiceAuthorityTests.test_non_object_receipt_refuses_and_is_retained', 'test_io_service_authority.IoServiceAuthorityTests.test_noncanonical_pin_refuses_and_is_retained', 'test_io_service_authority.IoServiceAuthorityTests.test_oversized_configuration_refuses_before_parsing', 'test_io_service_authority.IoServiceAuthorityTests.test_partial_schema_refuses_and_is_never_recreated', 'test_io_service_authority.IoServiceAuthorityTests.test_revision_compare_and_swap_and_per_evaluator_chains', 'test_io_service_authority.IoServiceAuthorityTests.test_session_change_during_planning_refuses_returned_plan', 'test_io_service_authority.IoServiceAuthorityTests.test_source_drift_blocks_fresh_plan_but_not_history_or_exact_replay', 'test_io_service_authority.IoServiceAuthorityTests.test_temp_shadow_table_refuses_before_reading_it']):
+-            raise ValueError('Closed authority32 method selection changed')
++        if (targets['testCount'] != 14 or
++                len(targets['targets']) != 14 or
++                len(set(targets['targets'])) != 14 or
++                targets['targets'] != ['test_io_service_runs.IoServiceRunTests.test_lowered_run_capacity_still_allows_exact_replay', 'test_io_service_runs.IoServiceRunTests.test_metadata_limit_tampering_cannot_widen_capacity', 'test_io_service_runs.IoServiceRunTests.test_missing_document_refuses_without_reconstruction', 'test_io_service_runs.IoServiceRunTests.test_non_blob_request_refuses_and_remains_retained', 'test_io_service_runs.IoServiceRunTests.test_non_object_receipt_refuses_and_remains_retained', 'test_io_service_runs.IoServiceRunTests.test_oversized_input_document_refuses_before_payload_read', 'test_io_service_runs.IoServiceRunTests.test_partial_schema_refuses_without_recreation', 'test_io_service_runs.IoServiceRunTests.test_reopen_replay_retains_complete_original_inputs_without_source_io', 'test_io_service_runs.IoServiceRunTests.test_reservation_performs_no_device_effects_and_claims_no_execution', 'test_io_service_runs.IoServiceRunTests.test_returned_mutation_cannot_change_retained_request_or_documents', 'test_io_service_runs.IoServiceRunTests.test_session_changes_after_preparation_prevent_commit', 'test_io_service_runs.IoServiceRunTests.test_source_drift_refuses_new_run_without_breaking_historical_replay', 'test_io_service_runs.IoServiceRunTests.test_temp_shadow_refuses_before_reading_its_contents', 'test_io_service_runs.IoServiceRunTests.test_wrong_configuration_reference_refuses_and_remains_retained']):
++            raise ValueError('Closed runs14 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+         scratch_parent = Path('/tmp')
+@@ -286,7 +286,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-snapshot-reuse-authority32-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-snapshot-reuse-runs14-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

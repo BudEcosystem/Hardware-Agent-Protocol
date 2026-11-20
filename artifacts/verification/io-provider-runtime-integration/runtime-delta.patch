@@ -1,0 +1,33 @@
+--- 696/hms/runtime.py
++++ live/hms/runtime.py
+@@ -516,3 +516,30 @@
+             return {"request": request,
+                     "requestDigest": intent_digest(intent), "admitted": False}
+         raise JournalError("UNKNOWN_METHOD")
++
++
++def open_runtime(state_dir, *, create=False, owner=None, wall_clock_ms=None,
++                 monotonic_ms=None, endpoint_fd=None, installations=None,
++                 endpoint_fds=None, io_simulation=False, io_installation=None):
++    """Open one explicitly selected installed runtime with the shared API.
++
++    The I/O profile uses its own persistent catalog and shared board. It cannot
++    be combined implicitly with the older route inventory or endpoint streams.
++    Reopening requires the same explicit profile; no failed-profile fallback
++    creates, resets, or tries another provider.
++    """
++    if type(io_simulation) is not bool:
++        raise JournalError('INVALID_RUNTIME_PROFILE')
++    if io_simulation:
++        if installations is not None or endpoint_fd is not None or endpoint_fds is not None:
++            raise JournalError('AMBIGUOUS_RUNTIME_CONFIGURATION')
++        # IoRuntime subclasses Runtime; importing only after this module has
++        # initialized avoids a partially initialized superclass import cycle.
++        from .synthetic_io_runtime import IoRuntime
++        return IoRuntime(state_dir, create=create, owner=owner, installation=io_installation,
++                         wall_clock_ms=wall_clock_ms, monotonic_ms=monotonic_ms)
++    if io_installation is not None:
++        raise JournalError('INVALID_RUNTIME_PROFILE')
++    return Runtime(state_dir, create=create, owner=owner, wall_clock_ms=wall_clock_ms,
++                   monotonic_ms=monotonic_ms, endpoint_fd=endpoint_fd,
++                   installations=installations, endpoint_fds=endpoint_fds)

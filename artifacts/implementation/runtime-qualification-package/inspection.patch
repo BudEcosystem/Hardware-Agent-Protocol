@@ -1,0 +1,39 @@
+--- candidate/inspect_package.py
++++ installed/inspect_installed.py
+@@ -9,7 +9,7 @@
+ from unittest.mock import patch
+ 
+ BASE = Path(__file__).resolve().parent
+-PROJECT = BASE / 'implementation01/project'
++PROJECT = BASE.parents[2]
+ assert sys.flags.isolated and sys.flags.dont_write_bytecode
+ approved_path = BASE.parents[2] / 'artifacts/implementation/pat-vault-catalog/harness23/references/approved-external-roots.json'
+ approved_raw = approved_path.read_bytes()
+@@ -22,7 +22,7 @@
+ for forbidden in ('supervisor', 'evidence', 'evidence_compact', 'evidence_vault',
+                   'evidence_authority', 'recorded_io', 'vault_recorded_io'):
+     assert not (PROJECT / forbidden).exists()
+-legacy = json.loads((BASE / 'implementation01/namespace-map.json').read_bytes())['modules']
++legacy = json.loads((BASE / 'references/namespace-map.json').read_bytes())['modules']
+ poisons = {}
+ for name in legacy:
+     sentinel = types.ModuleType(name)
+@@ -31,7 +31,7 @@
+ 
+ 
+ def guard(event, args):
+-    if event.startswith('socket.') or event in {
++    if event.startswith(('socket.', 'hms.retention.')) or event in {
+             'sqlite3.connect', 'subprocess.Popen', 'os.system', 'os.exec', 'os.fork',
+             'os.forkpty', 'os.posix_spawn', 'os.mkdir', 'os.remove', 'os.rename'}:
+         raise AssertionError('Package import performed an effect: ' + event)
+@@ -91,6 +91,9 @@
+             else:
+                 raise AssertionError('Changed package initializer retained eligibility')
+ assert len(drift_refusals) == 4
++from hms_qualification.supervisor import retention_native
++assert not retention_native._ATTEMPTED and retention_native._IMAGE_FD is None
++assert retention_native.MODULE_NAME not in sys.modules
+ report = dict(passed=True, importEffects=False, poisonedLegacyModules=len(poisons),
+     producerImageFiles=len(rows), packageInitializersPinned=True, origins=origins,
+     initializerDriftRefusals=drift_refusals,

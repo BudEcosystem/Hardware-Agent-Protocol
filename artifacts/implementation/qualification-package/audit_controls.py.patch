@@ -1,0 +1,76 @@
+--- previous/audit_controls.py
++++ namespaced/audit_controls.py
+@@ -12,7 +12,7 @@
+ 
+ BASE=Path(__file__).resolve().parent;ROOT=BASE.parents[2]
+ SOURCE=BASE/'implementation03'
+-SCOPES=[BASE/('harness%02d'%n) for n in (7,8,9,10,11,17,18,19,20,21)]
++SCOPES=[BASE/('harness%02d'%n) for n in tuple(range(12,22))]
+ ADMITTED={'test_admission_and_commit_do_no_external_reads',
+     'test_cold_history_works_with_closed_vault_and_fresh_admission_refuses',
+     'test_unauthorized_source_does_not_require_its_preparation',
+@@ -39,9 +39,9 @@
+     return json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()
+ def hash_value(domain,value):return 'sha256:'+hashlib.sha256(domain+b'\0'+wire(value)).hexdigest()
+ assert not (BASE/'CONTROL_RESULTS.json').exists()
+-assert sha(SOURCE/'index.json')=='5ffd155119c12c73d6090a6684973f7f14474ebbfdb0fce228f880476df4e3a9'
++assert sha(SOURCE/'index.json')=='ec6df4066c89f38328030a28e2a5bd71d137abbc67cd51cb161cc246e2e8a268'
+ for row in read(SOURCE/'index.json')['files']:verify(ROOT,row)
+-pins=read(SOURCE/'identity-pins.json');selected=read(SOURCE/'test-selection.json')['controls']
++pins=read(SOURCE/'identity-pins.json');selected=[target for scope in read(BASE/'control-selection02.json')['scopes'] for target in scope['targets']]
+ observed=[];reports=[];databases=[];missing=[];lock_count=0;files_count=0;bytes_count=0;admissions=[]
+ for harness in SCOPES:
+     for row in read(harness/'index.json')['files']:verify(harness,row)
+@@ -61,13 +61,10 @@
+     assert native['load']['sha256']==native['image']['sha256']=='ce475ab2a70fb94e84d5d2f2f4c22cb8858d3305005bd154ebda996aae0774ff'
+     assert native['image']['requestedSeals']==15 and len(native['scans'])==len(targets)
+     assert all(item['calls']>=1 for item in native['scans'])
+-    # The earlier 14-method file and every production file are unchanged in
+-    # implementation03; only the separate inventory receipt test was corrected.
++    assert result['sourceInputs']==304
+     for item in read(attempt/'inputs-before.json'):
+         verify(attempt/'project',item)
+-        if item['path']!='tests/test_vault_catalog_inventory.py':verify(SOURCE/'project',item)
+-    if harness.name in {'harness17','harness18','harness19','harness20','harness21'}:
+-        assert sha(attempt/'project/tests/test_vault_catalog_inventory.py')==sha(SOURCE/'project/tests/test_vault_catalog_inventory.py')
++        verify(SOURCE/'project',item)
+     for item in read(harness/'references/external-inputs.json')['files']:
+         path=Path(item['resolvedPath']);assert path.stat().st_size==item['bytes'] and sha(path)==item['sha256']
+     inventory=read(attempt/'scratch-index.json');raw=Path(inventory['rawPath']);copy=attempt/'scratch'
+@@ -75,12 +72,17 @@
+     assert len(inventory['files'])==result['scratchEntries'] and inventory['bytes']==result['scratchBytes']
+     assert sum(item['bytes'] for item in inventory['files'])==inventory['bytes']
+     assert {item['path'] for item in inventory['files']}=={str(p.relative_to(raw)) for p in raw.rglob('*') if p.is_file()}
++    initial=read(attempt/'raw-scratch-before.json');terminal=read(attempt/'raw-scratch-after.json')
++    assert initial['identity']==terminal['identity'] and initial['parentIdentity']==terminal['parentIdentity']
++    for path,identity in ((raw,initial['identity']),(raw.parent,initial['parentIdentity'])):
++        info=path.lstat();assert stat.S_ISDIR(info.st_mode)
++        assert [info.st_dev,info.st_ino,info.st_uid,stat.S_IMODE(info.st_mode)]==identity
+     leases=[];authority_imports={}
+     try:
+         locks=sorted(p for p in raw.rglob('*') if p.name.endswith('.owner') or p.name=='writer.lease')
+         for path in locks:
+             assert stat.S_ISREG(path.lstat().st_mode)
+-            fd=os.open(path,os.O_RDWR|os.O_NOFOLLOW|os.O_NONBLOCK)
++            fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK)
+             fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB);leases.append(fd)
+         lock_count+=len(leases)
+         for item in inventory['files']:verify(raw,item);verify(copy,item)
+@@ -171,14 +173,16 @@
+ assert observed==selected and len(observed)==19 and len(databases)==76 and len(admissions)==4 and len(missing)==2
+ # Failed scopes remain byte-retained and failed. Do not open their databases.
+ failures=[]
+-for name in ('harness01','harness02','harness03','harness12'):
++for name in ('harness02',):
+     attempt=BASE/name/'attempts/attempt01';result=read(attempt/'result.json')
+     assert result['status']=='failed' and result['childState']=='exited'
++    assert result['scratchEntries']==0 and result['scratchBytes']==0 and result['noWorkerLaunched']
+     for item in read(attempt/'scratch-index.json')['files']:verify(attempt/'scratch',item)
+     failures.append(dict(harness=name,result=result,databasesOpened=False))
+ report=dict(status='verified-controls',testsRun=19,scopes=reports,retainedFiles=files_count,retainedBytes=bytes_count,
+     originalOwnerAndWriterLocks=lock_count,readonlyDatabases=databases,admissions=admissions,intentionallyMissingBodies=missing,
+     sourceIndexSha256=sha(SOURCE/'index.json'),hostIdentity=pins['host'],failedScopesRetained=failures,
++    actualAttemptAudit='FAILED_ACTUAL_RESULTS.json',actualQualificationPassed=False,
+     fullWorkerExecuted=False,semanticQualificationSubstituted=True,physicalObjectiveVerified=False,
+     publicRuntimeChanged=False,aggregateTimingPass=False,goalStatus='active')
+ with (BASE/'CONTROL_RESULTS.json').open('x') as stream:json.dump(report,stream,indent=2);stream.write('\n')

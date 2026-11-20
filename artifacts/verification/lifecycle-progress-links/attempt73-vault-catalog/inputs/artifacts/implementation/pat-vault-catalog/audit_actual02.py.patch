@@ -1,0 +1,19 @@
+--- audit_actual.py
++++ audit_actual02.py
+@@ -37,8 +37,14 @@
+     check(value);return json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()
+ def digest(domain,value):return 'sha256:'+hashlib.sha256(domain+b'\0'+canonical(value)).hexdigest()
+ assert sha(STAGE/'index.json')==PIN and sha(HARNESS/'index.json')==HPIN
+-for folder,prefix in ((STAGE,ROOT),(HARNESS,HARNESS)):
+-    for row in read(folder/'index.json')['files']:verify(prefix/row['path'],row)
++for row in read(STAGE/'index.json')['files']:verify(ROOT/row['path'],row)
++overlay=read(BASE/'harness23-inputs-correction.json')
++assert overlay['originalIndexSha256']==HPIN
++assert overlay['invalidSelfEntry']==dict(path='index.json',bytes=0,sha256=hashlib.sha256(b'').hexdigest())
++assert {row['path'] for row in overlay['files']}=={row['path'] for row in read(HARNESS/'index.json')['files']}
++for row in overlay['files']:
++    if row['path']!='index.json':assert row in read(HARNESS/'index.json')['files']
++    verify(HARNESS/row['path'],row)
+ result=read(ATTEMPT/'result.json')
+ assert result['status']=='passed' and result['currentPass'] is True and result['childState']=='exited' and result['exitCode']==0
+ assert result['counts']==dict(testsRun=1,failures=0,errors=0,skips=0,expectedFailures=0,unexpectedSuccesses=0)

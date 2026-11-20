@@ -1,0 +1,11 @@
+--- artifacts/implementation/pat-io-supervision-recovery/audit-process.py
++++ artifacts/implementation/pat-io-supervision-profile/audit-process.py
+@@ -1,7 +1,7 @@
+ """Independent read-only association, image, output and recovery evidence."""
+ import ast,fcntl,hashlib,json,os,sqlite3,sys
+ from pathlib import Path
+-B=Path.cwd()/'artifacts/implementation/pat-io-supervision-recovery';F=B/'results'/sys.argv[1];A=F/'attempt'
++B=Path.cwd()/'artifacts/implementation/pat-io-supervision-profile';F=B/'results'/sys.argv[1];A=F/'attempt'
+ def read(p):return json.loads(p.read_bytes())
+ def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+ def digest(b):return 'sha256:'+hashlib.sha256(b).hexdigest()

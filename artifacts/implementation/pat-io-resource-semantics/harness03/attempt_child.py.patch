@@ -1,0 +1,30 @@
+--- artifacts/implementation/pat-io-clock-history/harness13/attempt_child.py
++++ artifacts/implementation/pat-io-resource-semantics/harness03/attempt_child.py
+@@ -1,4 +1,4 @@
+-"""ClockHistory48 child: isolated startup, exact selected tests and scoped origin evidence."""
++"""ResourceHistory48 child: isolated startup, exact selected tests and scoped origin evidence."""
+ import hashlib
+ import json
+ import os
+@@ -63,10 +63,10 @@
+             'os.posix_spawn'}:
+         if len(prohibited) < 64:
+             prohibited.append(event)
+-        raise RuntimeError('ClockHistory48 forbids network and subprocesses: ' + event)
++        raise RuntimeError('ResourceHistory48 forbids network and subprocesses: ' + event)
+     if event == 'sqlite3.connect':
+         prohibited.append('sqlite3.connect:forbidden')
+-        raise RuntimeError('Pure clock history selection forbids every SQLite connection')
++        raise RuntimeError('Pure resource history selection forbids every SQLite connection')
+     if event == 'exec':
+         origin = args[0].co_filename
+         remember(executed, origin)
+@@ -188,7 +188,7 @@
+     tests = unittest.defaultTestLoader.loadTestsFromNames(config['targets'])
+     loaded_ids = flatten(tests)
+     if loaded_ids != config['targets']:
+-        raise RuntimeError('Loaded methods do not exactly match the reviewed clock48 selection')
++        raise RuntimeError('Loaded methods do not exactly match the reviewed resource48 selection')
+     class RecordingResult(unittest.TextTestResult):
+         def startTest(self, test):
+             global current_test

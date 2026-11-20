@@ -1,0 +1,41 @@
+--- artifacts/implementation/pat-io-observation-history/implementation01/project/hms/pat_io_operation_history.py
++++ artifacts/implementation/pat-io-refusal-history/implementation01/project/hms/pat_io_operation_history.py
+@@ -158,7 +158,9 @@
+             'EVIDENCE_ASSERTION')
+ 
+ 
+-def _fold(transcript, setup):
++def _fold(transcript, setup, *, checked_refusals=None):
++    checked_refusals = {} if checked_refusals is None else checked_refusals
++    consumed_refusals = set()
+     model = _Model(setup)
+     openings = [(i, d['value']) for i, d in enumerate(transcript['records']) if d['kind'] == 'runtime_opened']
+     plans = [(i, d['value']['request']) for i, d in enumerate(transcript['records']) if d['kind'] == 'compiled_plan']
+@@ -298,8 +300,17 @@
+                                 label in {'cancel:after', 'cancel:after_error'}, 'CANCEL')
+                         st.update(state='canceled', cancel_state='confirmed', held=False)
+                     elif kind == 'rejected_before_dispatch':
+-                        require(state == 'accepted' and label in DRIVE and data == {'reason': 'start_or_lease_expired'} and
+-                                (now >= timing['latestStartUnixMs'] or now >= admission['lease_expires_ms']), 'PREDISPATCH_CAUSE')
++                        refusal_key = (cp['record'], op_id)
++                        if refusal_key in checked_refusals:
++                            require(checked_refusals[refusal_key] == 'ACCESS_DENIED' and state == 'accepted' and
++                                    st['held'] and st['attempt_id'] is None and label in DRIVE and
++                                    data == {'reason': 'ACCESS_DENIED'} and
++                                    timing['notBeforeUnixMs'] <= now < timing['latestStartUnixMs'] and
++                                    now < admission['lease_expires_ms'], 'PREDISPATCH_CAUSE')
++                            consumed_refusals.add(refusal_key)
++                        else:
++                            require(state == 'accepted' and label in DRIVE and data == {'reason': 'start_or_lease_expired'} and
++                                    (now >= timing['latestStartUnixMs'] or now >= admission['lease_expires_ms']), 'PREDISPATCH_CAUSE')
+                         st.update(state='rejected_before_dispatch', held=False)
+                     else:
+                         raise IoOperationHistoryError('EVENT_UNSUPPORTED')
+@@ -326,6 +337,7 @@
+         require({(r['deployment'], r['resource'], r['operation_id'], r['fence']) for r in t['claims']} ==
+                 {(model.deployment, atom, op, fence) for atom, (op, fence) in held.items()}, 'CLAIMS')
+         previous_links, previous_receipts = links, receipts
++    require(consumed_refusals == set(checked_refusals), 'UNUSED_REFUSAL')
+     return {'profile': 'hms.pat.io-operation-history-inspection/0.1', 'operationHistoryChecked': True,
+             'checkpointsChecked': len(transcript['checkpoints']), 'operationsChecked': len(states),
+             'eventsChecked': len(event_history), 'transitions': transitions,

@@ -1,0 +1,66 @@
+--- sealed-harness03/run_attempt.py
++++ new-authority-controls/run_attempt.py
+@@ -12,7 +12,7 @@
+ ROOT = Path(__file__).resolve().parents[4]
+ HARNESS = Path(__file__).resolve().parent
+ BASE = HARNESS.parent
+-SOURCE = BASE / 'implementation02'
++SOURCE = BASE / 'implementation01'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_TOTAL = 256 * 1024 * 1024
+ 
+@@ -62,21 +62,14 @@
+     with destination.open('xb') as stream:
+         stream.write(path.read_bytes())
+     inputs.append(dict(path=relative.as_posix(), bytes=row['bytes'], sha256=row['sha256']))
+-assert len(inputs) == 280
+-original = ROOT / 'artifacts/implementation/pat-io-definition-build/harness02/attempts/attempt01-actual/scratch/test_actual_original_matrix_catalog_execution_and_historical_replay/runtime/authority.db'
+-assert original.stat().st_size == 16199680 and sha(original) == 'f106c3312d0c05b69be52b5fae65edd19892b9c019bd62d6691ec3555cc93099'
+-fixture = attempt / 'original-authority.db'
+-with fixture.open('xb') as stream:
+-    stream.write(original.read_bytes())
+-fixture.chmod(0o400)
+-assert sha(fixture) == sha(original)
++assert len(inputs) == 284
+ child_path = attempt / 'attempt_child.py'
+ with child_path.open('xb') as stream:
+     stream.write((HARNESS / 'attempt_child.py').read_bytes())
+ targets = read(HARNESS / 'targets.json')
+-assert len(targets) == len(set(targets)) == 1
++assert len(targets) == len(set(targets)) == 10
+ config = dict(project=str(project), attempt=str(attempt), scratch=str(scratch),
+-    originalDatabase=str(fixture), externalRoots=external['roots'], expectedExternalInputs=external['files'],
++    externalRoots=external['roots'], expectedExternalInputs=external['files'],
+     expectedInputs=inputs, childSha256=sha(child_path), targets=targets)
+ write(attempt / 'child-config.json', config)
+ write(attempt / 'inputs-before.json', inputs)
+@@ -129,7 +122,6 @@
+     for row in inputs:
+         path = project / row['path']
+         assert path.stat().st_size == row['bytes'] and sha(path) == row['sha256']
+-    assert sha(fixture) == sha(original) == 'f106c3312d0c05b69be52b5fae65edd19892b9c019bd62d6691ec3555cc93099'
+ except BaseException as exc:
+     errors.append('final inputs: ' + repr(exc))
+ counts = origins = actual = None
+@@ -137,7 +129,7 @@
+     counts = read(attempt / 'test-return.json')
+     origins = read(attempt / 'imports.json')
+     actual = read(attempt / 'actual-tests.json')
+-    assert counts['testsRun'] == 1 and all(counts[key] == 0 for key in counts if key != 'testsRun')
++    assert counts['testsRun'] == 10 and all(counts[key] == 0 for key in counts if key != 'testsRun')
+     assert actual['loaded'] == actual['executed'] == targets and actual['exactSelection']
+     assert origins['summary']['allOriginsMatched'] and read(attempt / 'child-errors.json') == []
+     assert read(attempt / 'compiler-before.json') == read(attempt / 'compiler-after.json')
+@@ -166,11 +158,10 @@
+ result = dict(status='passed' if not errors else 'failed', errors=errors, counts=counts,
+     childState='exited', exitCode=exit_code, pid=child.pid, elapsedSeconds=elapsed,
+     sourceIndexSha256=sha(SOURCE / 'index.json'), harnessIndexSha256=sha(HARNESS / 'index.json'),
+-    sourceInputs=280, inputAndExternalVerificationPassed=not any(item.startswith('final inputs') for item in errors),
++    sourceInputs=284, inputAndExternalVerificationPassed=not any(item.startswith('final inputs') for item in errors),
+     timeoutSeconds=180, maxSingleFileBytes=MAX_FILE, maxTotalScratchBytes=MAX_TOTAL,
+     scratchRetained=True, scratchBytes=total, scratchEntries=len(files),
+     noWorkerLaunched=True, noPhysicalEffects=True, totalDiskQuotaEnforced=False,
+-    originalDataFileUnchanged=sha(fixture) == sha(original),
+     origins=None if origins is None else origins['summary'])
+ write(attempt / 'result.json', result)
+ print(json.dumps(result))

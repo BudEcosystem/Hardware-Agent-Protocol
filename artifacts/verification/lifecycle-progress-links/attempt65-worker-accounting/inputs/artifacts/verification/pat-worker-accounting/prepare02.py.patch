@@ -1,0 +1,20 @@
+--- prepare.py
++++ prepare02.py
+@@ -10,7 +10,7 @@
+ ORIGINAL = ROOT / 'artifacts/implementation/pat-io-proof-batch'
+ SOURCE = ORIGINAL / 'implementation01'
+ TEMPLATE = ORIGINAL / 'harness02'
+-HARNESS = BASE / 'harness01'
++HARNESS = BASE / 'harness02'
+ SOURCE_PIN = 'a7e03e59584b61e09efe40fbd093c423acfdc4c037c6d5d24273019bdda3f2b5'
+ TEMPLATE_PIN = '094098cab10de007e509f99895997915f6956634cb045f0d241ae333a01b08dc'
+ RESEARCH_PIN = '9a7a88ac0535e1bb22a6f496f2d6579b414a616a8d3aea5810fb3ed67647ce45'
+@@ -79,7 +79,7 @@
+             fromfile='original/'+name, tofile='accounting/'+name)))
+     write(HARNESS/name, updated)
+ dump(HARNESS/'borrowed-inputs.json', borrowed)
+-write(HARNESS/'SCOPE.md', (BASE/'DESIGN.md').read_bytes())
++write(HARNESS/'SCOPE.md', (BASE/'DESIGN.md').read_text().replace('../../implementation/', '../../../implementation/').replace('../../../research/', '../../../../research/'))
+ write(HARNESS/'README.md', '# Whole-worker accounting harness\n\n[Scope](SCOPE.md). The original frozen project is used byte-for-byte; only this harness adds observations.\n')
+ # Compare every embedded helper's AST with the already tested standalone helper.
+ child = ast.parse((HARNESS/'attempt_child.py').read_text())

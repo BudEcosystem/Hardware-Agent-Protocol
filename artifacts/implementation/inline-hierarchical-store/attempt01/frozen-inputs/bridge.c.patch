@@ -1,0 +1,11 @@
+--- prior/bridge.c
++++ inline512/bridge.c
+@@ -42,7 +42,7 @@
+         .read_size=4096,.prog_size=16,.block_size=4096,.block_count=blocks,
+         .block_cycles=-1,.cache_size=CACHE,.lookahead_size=64,
+         .read_buffer=x->rcache,.prog_buffer=x->pcache,.lookahead_buffer=x->lookahead,
+-        .name_max=NAME_MAXIMUM,.file_max=INTERNAL_MAX,.inline_max=(lfs_size_t)-1};
++        .name_max=NAME_MAXIMUM,.file_max=INTERNAL_MAX,.inline_max=512};
+     return x;
+ }
+ int hm_format(struct bridge *x) { return x->mounted ? LFS_ERR_INVAL : lfs_format(&x->fs,&x->cfg); }

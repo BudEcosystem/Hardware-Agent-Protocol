@@ -1,0 +1,73 @@
+--- harness02/attempt_child.py
++++ harness03/attempt_child.py
+@@ -1,4 +1,4 @@
+-"""Vault child: exact source origins, 21 controls and one retained-data experiment."""
++"""Vault child: exact source origins, one corrected control/quiescence method."""
+ import hashlib
+ import json
+ import os
+@@ -62,7 +62,7 @@
+     return path.is_relative_to(stdlib) and not {'site-packages', 'dist-packages'}.intersection(path.parts)
+ 
+ 
+-CONTROL_TARGETS = ['test_evidence_vault.VaultTests.test_after_commit_reply_failure_reopens_original_manifest', 'test_evidence_vault.VaultTests.test_before_commit_failure_retains_no_partial_manifest', 'test_evidence_vault.VaultTests.test_body_corruption_refuses_snapshot_and_reuse_without_repair', 'test_evidence_vault.VaultTests.test_changed_connection_cap_refused_then_original_cap_reapplied', 'test_evidence_vault.VaultTests.test_create_reopen_exact_manifest_and_replay', 'test_evidence_vault.VaultTests.test_descriptor_types_and_limits', 'test_evidence_vault.VaultTests.test_document_object_and_manifest_capacity', 'test_evidence_vault.VaultTests.test_exact_deduplication_keeps_each_reference_and_chain', 'test_evidence_vault.VaultTests.test_invalid_document_and_lease_inputs_do_not_publish', 'test_evidence_vault.VaultTests.test_live_path_replacement_refused', 'test_evidence_vault.VaultTests.test_missing_store_does_not_create_replacement', 'test_evidence_vault.VaultTests.test_original_intent_conflicts_preserve_data', 'test_evidence_vault.VaultTests.test_owner_busy_does_not_change_first_store', 'test_evidence_vault.VaultTests.test_page_capacity_rolls_back_and_control_still_completes', 'test_evidence_vault.VaultTests.test_private_directory_required', 'test_evidence_vault.VaultTests.test_reopen_refuses_retained_or_dangling_sidefile', 'test_evidence_vault.VaultTests.test_reopen_rejects_different_authority_or_store', 'test_evidence_vault.VaultTests.test_schema_shadow_and_typed_manifest_corruption_refused', 'test_evidence_vault.VaultTests.test_snapshot_is_read_only_detached_and_expires_on_release', 'test_evidence_vault.VaultTests.test_snapshot_owner_and_sqlite_reader_lock', 'test_evidence_vault.VaultTests.test_snapshot_time_bound_invalidates_handle_and_cleans_transaction', 'test_evidence_vault.VaultOriginalEvidenceTests.test_complete_retained_original_evidence_bytes']
++CONTROL_TARGETS = ['test_evidence_vault.VaultTests.test_page_capacity_rolls_back_and_control_still_completes']
+ 
+ def audit(event, args):
+     if event.startswith('socket.') or event in {'subprocess.Popen','os.system','os.exec','os.fork','os.forkpty','os.posix_spawn'}:
+@@ -78,7 +78,7 @@
+             path = Path(supplied).resolve()
+         fixture = Path(config['originalDatabase']).resolve()
+         if path == fixture:
+-            if supplied != fixture.as_uri() + '?mode=ro&immutable=1' or current_test != CONTROL_TARGETS[-1]:
++            if supplied != fixture.as_uri() + '?mode=ro&immutable=1' or current_test != 'test_evidence_vault.VaultOriginalEvidenceTests.test_complete_retained_original_evidence_bytes':
+                 raise RuntimeError('Original input is read-only and actual-data-test only')
+         elif (current_test is None or not path.is_relative_to(scratch / current_test.split('.')[-1]) or
+               path.name not in ('evidence.db', 'authority.db')):
+@@ -201,7 +201,7 @@
+ 
+ try:
+     if (not sys.flags.isolated or not sys.flags.no_site or not sys.flags.dont_write_bytecode or
+-            len(config['targets']) != 22 or len(set(config['targets'])) != 22):
++            len(config['targets']) != 1 or len(set(config['targets'])) != 1):
+         raise RuntimeError('Required child isolation flags or exact target count missing')
+     if config['targets'] != CONTROL_TARGETS:
+         raise RuntimeError('Exact literal target selection changed')
+@@ -260,7 +260,7 @@
+         write('child-errors.json', errors)
+     except BaseException:
+         errors.append({'phase': 'child-errors', 'type': 'ReceiptWriteFailure'})
+-passed = (not errors and counts is not None and counts['testsRun'] == 22 and
++passed = (not errors and counts is not None and counts['testsRun'] == 1 and
+     all(counts[key] == 0 for key in counts if key != 'testsRun') and
+     loaded_ids == config['targets'] == executed_ids and origins is not None and
+     origins['summary']['allOriginsMatched'])
+--- harness02/run_attempt.py
++++ harness03/run_attempt.py
+@@ -12,7 +12,7 @@
+ ROOT = Path(__file__).resolve().parents[4]
+ HARNESS = Path(__file__).resolve().parent
+ BASE = HARNESS.parent
+-SOURCE = BASE / 'implementation01'
++SOURCE = BASE / 'implementation02'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_TOTAL = 256 * 1024 * 1024
+ 
+@@ -74,7 +74,7 @@
+ with child_path.open('xb') as stream:
+     stream.write((HARNESS / 'attempt_child.py').read_bytes())
+ targets = read(HARNESS / 'targets.json')
+-assert len(targets) == len(set(targets)) == 22
++assert len(targets) == len(set(targets)) == 1
+ config = dict(project=str(project), attempt=str(attempt), scratch=str(scratch),
+     originalDatabase=str(fixture), externalRoots=external['roots'], expectedExternalInputs=external['files'],
+     expectedInputs=inputs, childSha256=sha(child_path), targets=targets)
+@@ -137,7 +137,7 @@
+     counts = read(attempt / 'test-return.json')
+     origins = read(attempt / 'imports.json')
+     actual = read(attempt / 'actual-tests.json')
+-    assert counts['testsRun'] == 22 and all(counts[key] == 0 for key in counts if key != 'testsRun')
++    assert counts['testsRun'] == 1 and all(counts[key] == 0 for key in counts if key != 'testsRun')
+     assert actual['loaded'] == actual['executed'] == targets and actual['exactSelection']
+     assert origins['summary']['allOriginsMatched'] and read(attempt / 'child-errors.json') == []
+     assert read(attempt / 'compiler-before.json') == read(attempt / 'compiler-after.json')

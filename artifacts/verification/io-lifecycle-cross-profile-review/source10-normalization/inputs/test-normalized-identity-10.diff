@@ -1,0 +1,28 @@
+--- snapshot09/project/tests/test_io_lifecycle.py
++++ snapshot10/project/tests/test_io_lifecycle.py
+@@ -522,6 +522,7 @@
+         from hms.synthetic_io_catalog import IoAdapterCatalog
+         from hms.synthetic_io_board import SyntheticIoBoard
+         from hms.synthetic_lifecycle_contracts import STORAGE_PROFILE, installation_digest
++        expected_lifecycle_digest = installation_digest(normalize(self.configuration))
+         class BeforeBoardCut(RuntimeError):
+             pass
+         def cut_before_board(*_args,**_kwargs):
+@@ -540,7 +541,7 @@
+         self.assertTrue(initial['ordinaryReady']); self.assertTrue(initial['lifecycleReady'])
+         self.assertTrue(all(ready==0 for _,ready in initial['ordinaryReady']+initial['lifecycleReady']))
+         self.assertTrue(all(count==0 for count in initial['counts'].values()))
+-        self.assertEqual(initial['lifecycleInstallation'],[[installation_digest(self.configuration)]])
++        self.assertEqual(initial['lifecycleInstallation'],[[expected_lifecycle_digest]])
+ 
+         ordinary_error = None
+         # Spies call the real constructors: an unfixed ordinary opener is allowed
+@@ -584,7 +585,7 @@
+                          {key:value for key,value in initial.items() if key!='ownerEpoch'})
+         self.assertIsNone(lifecycle_error)
+         runtime = self.owned['lifecycle']; self.assertIsNotNone(runtime)
+-        self.assertEqual(runtime.io_board.lifecycle_digest,installation_digest(self.configuration))
++        self.assertEqual(runtime.io_board.lifecycle_digest,expected_lifecycle_digest)
+         self.assertEqual(runtime.io_board._meta('profile'),'hms.synthetic-io-board/lifecycle/1')
+         self.assertEqual([tuple(row) for row in runtime.io_board.db.execute(
+             'SELECT revision,operation FROM io_lc_snapshots ORDER BY revision')],[(1,'')])

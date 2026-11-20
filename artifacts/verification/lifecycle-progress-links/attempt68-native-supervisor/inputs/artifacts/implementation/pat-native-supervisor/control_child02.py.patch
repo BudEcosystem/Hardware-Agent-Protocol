@@ -1,0 +1,20 @@
+--- control_child.py
++++ control_child02.py
+@@ -20,12 +20,12 @@
+ resource.setrlimit(resource.RLIMIT_FSIZE, (16777216, 16777216))
+ resource.setrlimit(resource.RLIMIT_NOFILE, (64, 64))
+ resource.setrlimit(resource.RLIMIT_CORE, (0, 0))
+-source = BASE / 'implementation01/project/supervisor'
+-for name in ('retention_native.py', 'retention_native.so'):
++source = BASE / 'implementation02/project/supervisor'
++for name in ('retention_native.py', 'retention_scan.so'):
+     (OUT / name).write_bytes((source / name).read_bytes())
+-spec = importlib.util.spec_from_file_location('retention_native', OUT / 'retention_native.py')
+-module = importlib.util.module_from_spec(spec)
+-spec.loader.exec_module(module)
++sys.path.insert(0, str(OUT))
++import retention_native as module
++assert Path(module.__file__) == OUT / 'retention_native.py'
+ fixture = OUT / 'fixture'
+ fixture.mkdir(mode=0o700)
+ (fixture / 'nested').mkdir(mode=0o700)

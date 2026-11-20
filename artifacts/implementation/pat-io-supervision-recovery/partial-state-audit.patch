@@ -1,0 +1,24 @@
+--- artifacts/implementation/pat-io-supervision-recovery/audit-states.py
++++ artifacts/implementation/pat-io-supervision-recovery/audit-partial-states.py
+@@ -8,8 +8,8 @@
+ assert result['childState']=='exited' and not Path('/proc'/Path(str(result['pid']))).exists()
+ def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+ rows=[]
+-for group_file in sorted((folder/'attempt/scratch').rglob('output/result.json')):
+- group=json.loads(group_file.read_bytes());matrix=json.loads((group_file.parent/'matrix.json').read_bytes())
++for matrix_file in sorted((folder/'attempt/scratch').rglob('output/matrix.json')):
++ group_file=matrix_file.parent/'result.json';group=json.loads(group_file.read_bytes()) if group_file.exists() else None;matrix=json.loads(matrix_file.read_bytes())
+  states=[]
+  for d in sorted(group_file.parent.glob('case-*/state')):
+   index=int(d.parent.name[5:]);assert 0<=index<len(matrix['cases'])
+@@ -32,8 +32,8 @@
+   case=matrix['cases'][index]
+   states.append(dict(caseIndex=index,caseId=case['caseId'],scenario=case.get('definition',{}).get('scenario','candidate'),
+    operations=operations,claims=claims,parents=parents,receipts=receipts,effects=effects,owners=owners,databasePins=pins))
+- rows.append(dict(groupStatus=group['status'],groupError=group['error'],completedCases=len(group['cases']),
+-  activeCaseId=group['accounting']['activeCaseId'],states=states))
++ rows.append(dict(groupStatus=group['status'] if group else 'return-unavailable',groupError=group['error'] if group else None,completedCases=len(group['cases']) if group else None,
++  activeCaseId=group['accounting']['activeCaseId'] if group else None,states=states))
+ out=dict(scope='Read-only closed synthetic state observations; no independent complete-history or qualification conclusion.',
+  attempt=name,groups=rows,sourceDatabasesUnchanged=True)
+ with (folder/'state-audit.json').open('x')as f:f.write(json.dumps(out,indent=2)+'\n')

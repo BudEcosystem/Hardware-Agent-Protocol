@@ -1,0 +1,107 @@
+--- originals/protocol/endpoint/standing.c
++++ project/protocol/endpoint/standing.c
+@@ -287,7 +287,7 @@
+     case ST_RENEW:
+         if(life!=ST_ACTIVE)return HMS_EP_BAD_STATE;
+         status=guarded(s,1);if(status!=0u)return status;
+-        if(s->bytes[ST_LIFE]!=ST_ACTIVE || lease_valid(s,r64(p+52))==0u || r64(p+52)<=r64(s->bytes+ST_LEASE))return HMS_EP_LEASE_INVALID;
++        if(s->bytes[ST_LIFE]!=ST_ACTIVE || lease_valid(s,r64(p+52))==0u || memcmp(p+52,s->bytes+ST_LEASE,8)<=0)return HMS_EP_LEASE_INVALID;
+         break;
+     case ST_ACKNOWLEDGE:
+         status=ack_valid(s,r32(p+60));if(status!=0u)return status;
+@@ -560,12 +560,14 @@
+     uint8_t *r,*o;
+     if(slot>=2u)return;
+     r=s->arena->record[slot];o=s->arena->observation[1];
+-    if(fresh(s,1)!=0u && r64(o+OBS_AT)>r64(r+4) && r32(o+OBS_SEQUENCE)>r32(r+22) && o[OBS_PENDING]!=0u){
++    if(fresh(s,1)!=0u && memcmp(o+OBS_AT,r+4,8)>0 && r32(o+OBS_SEQUENCE)>r32(r+22) && o[OBS_PENDING]!=0u){
+         if(r[39]==0u)success=(uint8_t)(ri32(o)==0);
+         else if(ri32(o)>=ri32(s->arena->configuration+12)){
+-            int64_t improvement=(int64_t)ri32(s->arena->work+WORK_BASELINE)-(int64_t)ri32(s->arena->observation[0]);
++            /* Both values came from accepted demand samples in
++             * [-100000,200000]; their difference fits [-300000,300000]. */
++            int32_t improvement=ri32(s->arena->work+WORK_BASELINE)-ri32(s->arena->observation[0]);
+             success=(uint8_t)(ri32(s->arena->configuration+8)==0 ||
+-                (fresh(s,0)!=0u && r64(s->arena->observation[0]+OBS_AT)>r64(r+4) &&
++                (fresh(s,0)!=0u && memcmp(s->arena->observation[0]+OBS_AT,r+4,8)>0 &&
+                  r32(s->arena->observation[0]+OBS_SEQUENCE)>r32(r+12) && improvement>=ri32(s->arena->configuration+8)));
+         }
+         memcpy(r+22,o+OBS_SEQUENCE,4);memcpy(r+26,o+OBS_AT,8);memcpy(r+34,o,4);
+@@ -690,7 +692,7 @@
+             evidence_ok(s,report)==0u || report[6]!=0u || report[7]!=0u ||
+             report[8]!=s->bytes[ST_OWNED] || r32(report+12)!=r32(s->bytes+ST_EPOCH+4) ||
+             r32(report+16)<=r32(s->arena->observation[1]+OBS_SEQUENCE) ||
+-            r64(s->bytes+ST_QUIET_AT)==ABSENT || r64(report+20)<=r64(s->bytes+ST_QUIET_AT) ||
++            r64(s->bytes+ST_QUIET_AT)==ABSENT || memcmp(report+20,s->bytes+ST_QUIET_AT,8)<=0 ||
+             r64(report+20)>s->endpoint->now_tick ||
+             s->endpoint->now_tick-r64(report+20)>=r16(s->arena->configuration+20) || ri32(report+28)!=0){
+         unknown(s,ST_DRIVER);s->bytes[ST_LOSS_COMMAND]=4;return;
+--- originals/tests/standing_controls.c
++++ project/tests/standing_controls.c
+@@ -159,6 +159,42 @@
+     CHECK((w.arena.record[0][40]&7u)==ST_RECORD_FAILED);
+     CHECK(w.s.bytes[ST_LIFE]==ST_DRAINING);return 1;
+ }
++static int feedback_signed_range(void){
++    uint8_t open[134];unsigned reverse;
++    for(reverse=0;reverse<2u;++reverse){
++        uint32_t before=reverse!=0u?(uint32_t)(-INT32_C(99999)):UINT32_C(200000);
++        uint32_t after=reverse!=0u?UINT32_C(200000):(uint32_t)(-INT32_C(100000));
++        CHECK(setup());memcpy(open,golden_open,sizeof(open));
++        p32(open+47,reverse!=0u?(uint32_t)(-INT32_C(100000)):UINT32_C(199999));
++        p32(open+51,before);p32(open+55,reverse!=0u?1u:300000u);
++        /* Keep a successful ON transition from immediately triggering OFF
++         * while its signed improvement and retained evidence are inspected. */
++        p16(open+69,100);CHECK(call(open,134)==HMS_EP_OK);
++        cycle(0);CHECK(call(golden_start,66)==HMS_EP_OK);
++        p32(w.arena.driver+FX_DEMAND,before);cycle(12);
++        CHECK(w.s.bytes[ST_LIFE]==ST_ACTIVE && w.s.bytes[ST_COUNT]==1u && w.s.bytes[ST_PENDING]==0u);
++        CHECK(r64(w.arena.record[0]+4)==14u && r32(w.arena.work+16)==before);
++        CHECK(r32(w.arena.driver+FX_DISPATCHES)==1u && w.arena.driver[FX_OUTPUT]==1u);
++        p32(w.arena.driver+FX_DEMAND,after);p32(w.arena.driver+FX_FEEDBACK,1000);cycle(24);
++        CHECK(r32(w.arena.observation[0])==after && r32(w.arena.record[0]+34)==1000u);
++        CHECK(r64(w.arena.record[0]+26)==25u && w.s.bytes[ST_OWNED]==3u);
++        if(reverse==0u){
++            CHECK((w.arena.record[0][40]&7u)==ST_RECORD_SUCCESS && w.s.bytes[ST_PENDING]==255u);
++            CHECK(w.s.bytes[ST_LIFE]==ST_ACTIVE && w.s.bytes[ST_COUNT]==1u);
++            CHECK(r32(w.arena.driver+FX_DISPATCHES)==1u && r32(w.arena.driver+FX_LOSSES)==0u);
++        }else{
++            CHECK((w.arena.record[0][40]&7u)==ST_RECORD_PENDING && w.s.bytes[ST_PENDING]==0u);
++            cycle(36);cycle(48);cycle(60);tick(64);
++            CHECK((w.arena.record[0][40]&7u)==ST_RECORD_FAILED && w.s.bytes[ST_PENDING]==255u);
++            CHECK(w.s.bytes[ST_LIFE]==ST_DRAINING && w.s.bytes[ST_REASON+1]==ST_FEEDBACK);
++            CHECK(r32(w.arena.driver+FX_DISPATCHES)==1u && w.s.bytes[ST_OWNED]==3u);
++            tick(65);p32(w.arena.driver+FX_FEEDBACK,0);tick(66);
++            CHECK(w.s.bytes[ST_LIFE]==ST_STOPPED && w.s.bytes[ST_QUIET]==3u);
++            CHECK(w.s.bytes[ST_COUNT]==1u && w.s.bytes[ST_OWNED]==3u && r32(w.arena.driver+FX_LOSSES)==1u);
++        }
++    }
++    return 1;
++}
+ static int source_and_clock_faults(void){
+     uint8_t p[66];uint32_t sequence;
+     CHECK(prepared());sequence=r32(w.arena.observation[0]+12);
+@@ -323,7 +359,7 @@
+ }
+ int main(void){
+     static int (*const cases[])(void)={wire_and_refusals,replay_and_renewal,ledger_ack_resume,
+-        pending_ack_and_feedback,source_and_clock_faults,late_dispatch_and_limits,
++        pending_ack_and_feedback,feedback_signed_range,source_and_clock_faults,late_dispatch_and_limits,
+         prepared_expiry_and_revoke,loss_witness_ordering,acquisition_boundaries,interrupted_feedback_ack,finite_interoperation,stop_backpressure};
+     unsigned i;
+     for(i=0;i<sizeof(cases)/sizeof(cases[0]);++i)if(cases[i]()==0)return 1;
+--- originals/tests/standing_fixture.c
++++ project/tests/standing_fixture.c
+@@ -21,7 +21,11 @@
+ }
+ static uint8_t finite_describe(void *user,uint16_t id,const uint8_t *args,uint8_t n,hms_ep_primitive *out){
+     (void)user;(void)args;if(id!=1u)return HMS_EP_UNKNOWN_PRIMITIVE;if(n!=0u)return HMS_EP_BAD_ARGUMENT;
+-    *out=(hms_ep_primitive){1000u,3u,(uint8_t)(1u<<HMS_EP_SIMULATION),1u,0u};return HMS_EP_OK;
++    /* Store fields directly: AVR otherwise copies this constant aggregate
++     * from an eight-byte SRAM-backed .rodata initializer. */
++    out->max_run_ms=1000u;out->resource_mask=3u;
++    out->completion_evidence_mask=(uint8_t)(1u<<HMS_EP_SIMULATION);
++    out->cancel_supported=1u;out->result_length=0u;return HMS_EP_OK;
+ }
+ static uint8_t finite_guard(void *user,uint16_t id,const uint8_t *args,uint8_t n){
+     (void)id;(void)n;return guard(user,args,0);

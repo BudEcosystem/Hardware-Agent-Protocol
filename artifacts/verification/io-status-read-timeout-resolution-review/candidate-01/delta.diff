@@ -1,0 +1,223 @@
+--- failed747/tests/test_io_transport.py
++++ candidate01/tests/test_io_transport.py
+@@ -21,6 +21,7 @@
+ from hms.api_contracts import METHOD_RESULTS, validate_result
+ from hms.client import Client
+ from hms.contracts import canonical, intent_digest
++from hms.ipc import IpcError
+ from test_io_synthetic_provider import installation
+ from test_multi_cli import finish_transport_failure, retain_transport_failure
+ from tests.sqlite_observer import readonly_rows
+@@ -192,12 +193,27 @@
+         return readonly_rows(self.state / entry['database'], sql, values, report=entry)
+ 
+     def wait(self, method, params, predicate, *, timeout=15):
++        if method not in {'operation', 'procedure_status'}:
++            raise ValueError('Only immutable status reads may be polled')
++        params = copy.deepcopy(params)
+         deadline = time.monotonic() + timeout
++        result = None
+         while time.monotonic() < deadline:
+-            result = self.call(method, **params)
+-            if predicate(result):
+-                return result
+-            time.sleep(.05)
++            try:
++                result = self.call(method, **params)
++            except IpcError as error:
++                if error.code != 'TRANSPORT_TIMEOUT':
++                    raise
++            else:
++                if time.monotonic() >= deadline:
++                    break
++                if predicate(result):
++                    if time.monotonic() < deadline:
++                        return result
++                    break
++            remaining = deadline - time.monotonic()
++            if remaining > 0:
++                time.sleep(min(.05, remaining))
+         raise AssertionError(('I/O state did not converge', method, result))
+ 
+     def settled(self, operation_id):
+@@ -525,3 +541,180 @@
+     @unittest.skipUnless(sdk_available(), 'Pinned MCP SDK 1.26.0 client required')
+     def test_legacy_MCP_shared_catalog_and_io_procedure(self):
+         self.run_mcp(LEGACY)
++
++    def test_status_polling_recovers_only_read_timeouts_within_original_deadline(self):
++        import threading
++        from hms.ipc import IpcError, Server
++
++        h = self.harness
++        namespace = h.call('namespace', expiresUnixMs=time.time_ns() // 1_000_000 + 600000)['token']
++        window = bounds()
++        request = h.call('prepare', **parameters('sim:gpio6', namespace, 'poll:child', window))['request']
++        parent = h.call('procedure_submit', request=sequence(namespace, 'poll:parent', window, [request]))
++        completed = h.wait('procedure_status', {'procedureId': parent['procedureId']},
++                           lambda value: value['executionState'] == 'completed')
++        child = h.settled(completed['steps'][0]['operationId'])
++        self.completed(child, 'gpio_pulse')
++
++        def business_state():
++            queries = {
++                'operations': 'SELECT * FROM operations ORDER BY id LIMIT 129',
++                'claims': 'SELECT * FROM claims ORDER BY resource LIMIT 129',
++                'keys': 'SELECT * FROM replay_keys ORDER BY namespace,caller_key LIMIT 129',
++                'links': 'SELECT * FROM io_dispatch_links ORDER BY operation LIMIT 129',
++                'procedures': 'SELECT * FROM pr_procedures ORDER BY id LIMIT 129',
++                'steps': 'SELECT * FROM pr_steps ORDER BY procedure_id,ordinal LIMIT 129',
++                'reservations': 'SELECT * FROM pr_keys ORDER BY namespace,caller_key LIMIT 129',
++                'events': 'SELECT * FROM events ORDER BY operation_id,sequence LIMIT 129',
++                'procedureEvents': 'SELECT * FROM pr_events ORDER BY procedure_id,sequence LIMIT 129',
++            }
++            result = {name: h.rows(sql) for name, sql in queries.items()}
++            for name, order in (('io_effects', 'instance'), ('io_receipts', 'operation'),
++                                ('io_owners', 'resource'), ('io_resources', 'resource')):
++                result[name] = h.rows('SELECT * FROM ' + name + ' ORDER BY ' + order + ' LIMIT 129', board=True)
++            self.assertTrue(all(len(rows) <= 128 for rows in result.values()))
++            return {name: [[json_value(value) for value in row] for row in rows] for name, rows in result.items()}
++
++        baseline = business_state()
++        self.assertEqual(len(baseline['operations']), 1)
++        self.assertEqual(len(baseline['links']), 1)
++        self.assertEqual(sum(row[1] for row in baseline['io_effects']), 1)
++        record = {'baseline': baseline, 'requests': [], 'cases': []}
++        self.report['results']['controlledPolling'] = record
++        target = h.client
++
++        class Forwarder:
++            deployment = 'simulation:io-hub'
++
++            def __init__(self):
++                self.lock = threading.Lock()
++                self.gates, self.jobs = [], []
++                self.configure('initial')
++
++            def configure(self, mode, delay=0, error=None):
++                with self.lock:
++                    gate = threading.Event()
++                    self.gates.append(gate)
++                    self.mode = {'name': mode, 'delay': delay, 'error': error, 'gate': gate, 'count': 0}
++                    return gate
++
++            def request(self, context, method, params):
++                with self.lock:
++                    mode = self.mode
++                    mode['count'] += 1
++                    number = mode['count']
++                    finished = threading.Event()
++                    self.jobs.append(finished)
++                    entry = {'mode': mode['name'], 'method': method, 'params': copy.deepcopy(params),
++                             'number': number, 'startedMonotonic': time.monotonic(), 'forwarded': False}
++                    record['requests'].append(entry)
++                try:
++                    if mode['error'] is not None:
++                        raise IpcError(mode['error'])
++                    # The real daemon and checked Client produce every success.
++                    # Only delivery of the selected read result is delayed.
++                    result = target.request(method, params)
++                    entry['forwarded'] = True
++                    entry['result'] = copy.deepcopy(result)
++                    if mode['name'] != 'delay-first' or number == 1:
++                        mode['gate'].wait(mode['delay'])
++                    return result
++                except BaseException as error:
++                    entry['error'] = {'type': type(error).__name__, 'code': getattr(error, 'code', None)}
++                    raise
++                finally:
++                    entry['finishedMonotonic'] = time.monotonic()
++                    finished.set()
++
++            def finish_mode(self, gate):
++                gate.set()
++                with self.lock:
++                    jobs = list(self.jobs)
++                for job in jobs:
++                    if not job.wait(3):
++                        raise AssertionError('Bounded status-forwarder request did not finish')
++
++        forwarder = Forwarder()
++        proxy_path = self.base / 'status-read-proxy.sock'
++        server = Server(forwarder, proxy_path)
++        thread = threading.Thread(target=server.serve_forever, name='io-status-read-proxy')
++        thread.start()
++        h.client = Client(proxy_path)
++        try:
++            for method, params, expected in (
++                    ('procedure_status', {'procedureId': parent['procedureId']}, completed),
++                    ('operation', {'operationId': child['operationId']}, child)):
++                gate = forwarder.configure('delay-first', delay=2.25)
++                call_start, wire_start = len(self.report['calls']), len(record['requests'])
++                supplied = copy.deepcopy(params)
++                recovered = h.wait(method, supplied, lambda value: value == expected)
++                forwarder.finish_mode(gate)
++                reads = self.report['calls'][call_start:]
++                forwarded = record['requests'][wire_start:]
++                self.assertEqual(recovered, expected)
++                self.assertEqual(reads[0]['error']['code'], 'TRANSPORT_TIMEOUT')
++                self.assertGreaterEqual(len(reads), 2)
++                self.assertTrue(all(row['method'] == method and row['params'] == params for row in reads))
++                self.assertTrue(all(row['method'] == method and row['params'] == params for row in forwarded))
++                self.assertEqual(supplied, params)
++                self.assertEqual(business_state(), baseline)
++                record['cases'].append({'kind': 'recovered-read', 'method': method, 'calls': len(reads),
++                                        'firstError': reads[0]['error'], 'businessUnchanged': True})
++
++            wire_start = len(record['requests'])
++            for method in METHOD_RESULTS:
++                if method not in {'operation', 'procedure_status'}:
++                    with self.assertRaises(ValueError):
++                        h.wait(method, {}, lambda _value: True)
++            self.assertEqual(len(record['requests']), wire_start)
++            record['cases'].append({'kind': 'non-status-methods-refused-before-rpc'})
++
++            params = {'procedureId': parent['procedureId']}
++            for code in ('ACCESS_DENIED', 'TRANSPORT_ERROR', 'INVALID_RESPONSE'):
++                gate = forwarder.configure('structured-error', error=code)
++                wire_start = len(record['requests'])
++                with self.assertRaises(IpcError) as caught:
++                    h.wait('procedure_status', params, lambda _value: True)
++                self.assertEqual(caught.exception.code, code)
++                forwarder.finish_mode(gate)
++                self.assertEqual(len(record['requests']) - wire_start, 1)
++                record['cases'].append({'kind': 'non-timeout-propagated', 'code': code, 'calls': 1})
++
++            # The outer budget does not shorten an in-flight fixed2s RPC, but
++            # expiration must prevent another read or acceptance of late data.
++            for mode, delay in (('timeout-exhaustion', 2.25), ('late-response', .15)):
++                gate = forwarder.configure(mode, delay=delay)
++                wire_start = len(record['requests'])
++                with self.assertRaises(AssertionError):
++                    h.wait('procedure_status', params, lambda _value: True, timeout=.05)
++                forwarder.finish_mode(gate)
++                self.assertEqual(len(record['requests']) - wire_start, 1)
++                record['cases'].append({'kind': mode, 'outerBudgetSeconds': .05, 'calls': 1})
++
++            gate = forwarder.configure('late-predicate')
++            predicates = []
++            predicate_gate = threading.Event()
++
++            def late_predicate(_value):
++                predicates.append(True)
++                predicate_gate.wait(.6)
++                return True
++
++            wire_start = len(record['requests'])
++            with self.assertRaises(AssertionError):
++                h.wait('procedure_status', params, late_predicate, timeout=.5)
++            forwarder.finish_mode(gate)
++            self.assertEqual(len(record['requests']) - wire_start, 1)
++            self.assertEqual(predicates, [True])
++            record['cases'].append({'kind': 'late-predicate-refused',
++                                    'predicateReached': True, 'outerBudgetSeconds': .5, 'calls': 1})
++            self.assertEqual(business_state(), baseline)
++            record['finalBusinessUnchanged'] = True
++        finally:
++            h.client = target
++            for gate in forwarder.gates:
++                gate.set()
++            server.close()
++            thread.join(3)
++            self.assertFalse(thread.is_alive(), 'Status-forwarder listener did not stop')
++            self.assertFalse(proxy_path.exists(), 'Owned status-forwarder socket was not removed')

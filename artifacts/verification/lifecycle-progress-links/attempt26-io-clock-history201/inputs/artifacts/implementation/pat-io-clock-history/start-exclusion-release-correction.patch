@@ -1,0 +1,11 @@
+--- implementation02/project/hms/pat_io_operation_history.py
++++ implementation03/project/hms/pat_io_operation_history.py
+@@ -307,7 +307,7 @@
+                         if target == 'canceled': st['cancel_state'] = 'confirmed'
+                         if target == 'rejected_before_start':
+                             require(op_id in checked_no_starts, 'NO_START_UNIMPLEMENTED')
+-                            consumed_no_starts.add(op_id); st['may_have_acted'] = 0
++                            consumed_no_starts.add(op_id); st.update(may_have_acted=0, held=False)
+                     elif kind == 'resources_released':
+                         closed(data, {'evidence'}, 'RELEASE')
+                         require(state in TERMINAL and st['held'] and label in DRIVE, 'RELEASE')

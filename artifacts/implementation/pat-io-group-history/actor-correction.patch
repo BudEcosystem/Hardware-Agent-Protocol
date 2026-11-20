@@ -1,0 +1,55 @@
+--- artifacts/implementation/pat-io-group-history/implementation03/project/hms/pat_io_group_history.py
++++ artifacts/implementation/pat-io-group-history/implementation04/project/hms/pat_io_group_history.py
+@@ -76,6 +76,14 @@
+ 
+ def _opening(value, compiler, case):
+     original, current = value['originalEnvironment'], value['workerEnvironment']
++    if case['kind'] == 'resource_challenge':
++        require(value['create'] is True, 'ACTOR_ENVIRONMENTS')
++        for environments in (original, current):
++            closed(environments, ('gpio', 'pwm', 'alias', 'independent'), 'ACTOR_ENVIRONMENTS')
++            require(all(type(e) is dict and e.get('compilerDigest') == compiler
++                for e in environments.values()), 'COMPILER_ASSOCIATION')
++        # The resource inspector checks each actor's complete environment.
++        return
+     require(type(original) is dict and original['compilerDigest'] == compiler, 'COMPILER_ASSOCIATION')
+     if current is None:
+         require(case['kind'] == 'fixed_challenge' and case['definition']['scenario'] in
+--- artifacts/implementation/pat-io-group-history/implementation03/project/tests/test_pat_io_group_history.py
++++ artifacts/implementation/pat-io-group-history/implementation04/project/tests/test_pat_io_group_history.py
+@@ -129,6 +129,25 @@
+         reader._opening(valid | dict(workerEnvironment=dict(compilerDigest=compiler)), compiler, dict(kind='candidate'))
+         with self.assertRaises(reader.IoGroupHistoryError):
+             reader._opening(valid | dict(workerEnvironment=dict(compilerDigest='sha256:' + '0' * 64)), compiler, dict(kind='candidate'))
++
++    def test_resource_environment_checks_all_four_original_and_current_actors(self):
++        compiler = 'sha256:' + '1' * 64
++        actors = {role: dict(compilerDigest=compiler) for role in ('gpio', 'pwm', 'alias', 'independent')}
++        valid = dict(create=True, originalEnvironment=copy.deepcopy(actors), workerEnvironment=copy.deepcopy(actors))
++        case = dict(kind='resource_challenge'); reader._opening(valid, compiler, case)
++        for field in ('originalEnvironment', 'workerEnvironment'):
++            for role in actors:
++                for failure in ('missing', 'null', 'compiler', 'field'):
++                    changed = copy.deepcopy(valid)
++                    if failure == 'missing': del changed[field][role]
++                    elif failure == 'null': changed[field][role] = None
++                    elif failure == 'compiler': changed[field][role]['compilerDigest'] = 'sha256:' + '0' * 64
++                    else: changed[field][role] = {}
++                    with self.subTest(field=field, role=role, failure=failure), self.assertRaises(reader.IoGroupHistoryError):
++                        reader._opening(changed, compiler, case)
++            changed = copy.deepcopy(valid); changed[field]['extra'] = dict(compilerDigest=compiler)
++            with self.assertRaises(reader.IoGroupHistoryError): reader._opening(changed, compiler, case)
++        with self.assertRaises(reader.IoGroupHistoryError): reader._opening(valid | dict(create=False), compiler, case)
+ 
+ 
+ class IoGroupHistoryTests(IoGroupWorkerTests):
+--- artifacts/implementation/pat-io-group-history/implementation03/project/tests/test_pat_io_group_retained.py
++++ artifacts/implementation/pat-io-group-history/implementation04/project/tests/test_pat_io_group_retained.py
+@@ -65,6 +65,6 @@
+         for i, value in enumerate(checked['inspections']):
+             (directory / ('case-%02d.json' % i)).write_bytes(canonical(value))
+         (directory / 'checks.json').write_bytes(canonical(dict(retainedSource01GroupOnly=True,
+-            correctedReaderMatchesSource02=True, sourceAndExpectedInputsUnchanged=True,
++            correctedReaderSource='implementation04', sourceAndExpectedInputsUnchanged=True,
+             independentReaderPure=True, archiveAdversariesRefused=4, currentGroupAccepted=False,
+             qualificationPassed=False)))

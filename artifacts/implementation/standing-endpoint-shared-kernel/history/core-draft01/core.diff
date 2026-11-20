@@ -1,0 +1,738 @@
+--- originals/project/protocol/endpoint/endpoint.c
++++ project/protocol/endpoint/endpoint.c
+@@ -1,5 +1,6 @@
+ #include "endpoint.h"
+ #include "standing.h"
++#include "endpoint_kernel.h"
+ 
+ #include <string.h>
+ 
+@@ -16,26 +17,12 @@
+ static uint16_t get16(const uint8_t *p) {
+     return (uint16_t)(((uint16_t)p[0] << 8) | p[1]);
+ }
+-static uint32_t get32(const uint8_t *p) {
+-    uint32_t v = 0; uint8_t i;
+-    for (i = 0; i < 4u; ++i) v = (v << 8) | p[i];
+-    return v;
+-}
+-static uint64_t get64(const uint8_t *p) {
+-    uint64_t v = 0; uint8_t i;
+-    for (i = 0; i < 8u; ++i) v = (v << 8) | p[i];
+-    return v;
+-}
++#define get32 hms_ep_read32
++#define get64 hms_ep_read64
++#define put32 hms_ep_write32
++#define put64 hms_ep_write64
+ static void put16(uint8_t *p, uint16_t v) {
+     p[0] = (uint8_t)(v >> 8); p[1] = (uint8_t)v;
+-}
+-static void put32(uint8_t *p, uint32_t v) {
+-    uint8_t i;
+-    for (i = 0; i < 4u; ++i) { p[3u - i] = (uint8_t)v; v >>= 8; }
+-}
+-static void put64(uint8_t *p, uint64_t v) {
+-    uint8_t i;
+-    for (i = 0; i < 8u; ++i) { p[7u - i] = (uint8_t)v; v >>= 8; }
+ }
+ static uint8_t bits(uint8_t v) {
+     uint8_t n = 0;
+@@ -112,7 +99,7 @@
+         flags = (uint16_t)(flags & (uint16_t)~HMS_EP_PHYSICAL_COMMISSIONED);
+         fault(e, 10);
+     }
+-    if ((flags & HMS_EP_CLOCK_QUALIFIED) == 0u || now < e->now_tick || now == HMS_EP_TIME_ABSENT) {
++    if ((flags & HMS_EP_CLOCK_QUALIFIED) == 0u || hms_ep_time_cmp(&now,&e->now_tick)<0 || now == HMS_EP_TIME_ABSENT) {
+         flags = (uint16_t)(flags & (uint16_t)~HMS_EP_CLOCK_QUALIFIED);
+         fault(e, 7);
+     } else if (e->state != HMS_EP_FAULT || (e->flags & HMS_EP_CLOCK_QUALIFIED) != 0u) {
+@@ -127,14 +114,14 @@
+             (eligible(e) == 0u || previous_mode != (flags & (HMS_EP_PHYSICAL_COMMISSIONED | HMS_EP_SIMULATOR_ONLY))))
+         invalidate(e, (flags & HMS_EP_RECONCILE) != 0u ? 11u : 10u);
+     if (e->state == HMS_EP_FAULT) reject_queued(e, e->loss_reason, 0);
+-    if (e->state == HMS_EP_ARMED && e->now_tick >= e->armed_until) {
++    if (e->state == HMS_EP_ARMED && hms_ep_time_cmp(&e->now_tick,&e->armed_until)>=0) {
+         e->armed_until = 0; e->state = HMS_EP_BOUND;
+         reject_queued(e, 4, 0);
+         if (e->operation_length != 0u && terminal(e->receipt.execution) == 0u) {
+             e->loss_reason = 4; e->state = HMS_EP_DRAINING;
+         } else if (e->receipt.held_mask != 0u) e->state = HMS_EP_DRAINING;
+     }
+-    if (e->receipt.execution == HMS_EP_QUEUED && e->now_tick >= get64(e->operation + 60))
++    if (e->receipt.execution == HMS_EP_QUEUED && hms_ep_time_cmp_encoded(&e->now_tick,e->operation + 60)>=0)
+         reject_queued(e, 1, 0);
+     drain_state(e);
+ }
+@@ -257,16 +244,16 @@
+     if (ready != 0u) return ready;
+     if (context_matches(e, p) == 0u || memcmp(e->context_digest, p + 8, 32) != 0) return HMS_EP_CONTEXT_MISMATCH;
+     if (e->context_valid == 0u || (e->state != HMS_EP_BOUND && e->state != HMS_EP_ARMED)) return HMS_EP_BAD_STATE;
+-    if (until == HMS_EP_TIME_ABSENT || until <= e->now_tick || until - e->now_tick > e->config->max_lease_ms)
++    if (until == HMS_EP_TIME_ABSENT || hms_ep_time_cmp(&until,&e->now_tick)<=0 || hms_ep_elapsed_cmp(&until,&e->now_tick,e->config->max_lease_ms)>0)
+         return HMS_EP_LEASE_INVALID;
+-    if (until > e->armed_until) e->armed_until = until;
++    if (hms_ep_time_cmp(&until,&e->armed_until)>0) e->armed_until = until;
+     e->state = HMS_EP_ARMED; inhibit_flag(e);
+     return HMS_EP_OK;
+ }
+ static const uint8_t *arguments(const uint8_t *p) {
+     return p + 88u + (uint16_t)bits(p[46]) * 4u;
+ }
+-static uint8_t admit(hms_endpoint *e, const uint8_t *p, uint16_t length) {
++static uint8_t HMS_EP_SHARED admit(hms_endpoint *e, const uint8_t *p, uint16_t length) {
+     uint32_t call = get32(p + 8), run = get32(p + 76);
+     uint64_t nb = get64(p + 52), latest = get64(p + 60), complete = get64(p + 68), lease = get64(p + 80);
+     uint8_t i, index = 0, status;
+@@ -294,13 +281,13 @@
+     if (p[48] != 0u && ((e->flags & HMS_EP_PHYSICAL_COMMISSIONED) == 0u ||
+             (description.completion_evidence_mask & ((1u << HMS_EP_CONTROLLER_MEASUREMENT) | (1u << HMS_EP_PHYSICAL_SENSOR))) == 0u))
+         return HMS_EP_UNCOMMISSIONED;
+-    if (run == 0u || run > description.max_run_ms || nb >= latest || latest > complete ||
++    if (run == 0u || run > description.max_run_ms || hms_ep_time_cmp(&nb,&latest)>=0 || hms_ep_time_cmp(&latest,&complete)>0 ||
+             complete == HMS_EP_TIME_ABSENT || lease == HMS_EP_TIME_ABSENT) return HMS_EP_BAD_TIME;
+-    if (e->now_tick >= latest) return HMS_EP_START_EXPIRED;
+-    if ((nb > e->now_tick && nb - e->now_tick > UINT32_C(0x7fffffff)) ||
+-            latest - e->now_tick > UINT32_C(0x7fffffff) || complete - e->now_tick > UINT32_C(0x7fffffff))
++    if (hms_ep_time_cmp(&e->now_tick,&latest)>=0) return HMS_EP_START_EXPIRED;
++    if ((hms_ep_time_cmp(&nb,&e->now_tick)>0 && hms_ep_elapsed_cmp(&nb,&e->now_tick,UINT32_C(0x7fffffff))>0) ||
++            hms_ep_elapsed_cmp(&latest,&e->now_tick,UINT32_C(0x7fffffff))>0 || hms_ep_elapsed_cmp(&complete,&e->now_tick,UINT32_C(0x7fffffff))>0)
+         return HMS_EP_BAD_TIME;
+-    if (complete > lease || lease > e->armed_until || lease <= e->now_tick) return HMS_EP_LEASE_INVALID;
++    if (hms_ep_time_cmp(&complete,&lease)>0 || hms_ep_time_cmp(&lease,&e->armed_until)>0 || hms_ep_time_cmp(&lease,&e->now_tick)<=0) return HMS_EP_LEASE_INVALID;
+     for (i = 0; i < 8u; ++i) if ((p[46] & ((uint8_t)1u << i)) != 0u) {
+         uint32_t fence = get32(p + 88u + (uint16_t)index * 4u);
+         if (fence == 0u || fence <= e->fence_floor[i]) return HMS_EP_STALE_FENCE;
+@@ -312,8 +299,8 @@
+     status = readiness(e); if (status != 0u) return status;
+     if (e->state != HMS_EP_ARMED || e->context_valid == 0u) return HMS_EP_BAD_STATE;
+     if (context_matches(e, p) == 0u) return HMS_EP_CONTEXT_MISMATCH;
+-    if (e->now_tick >= latest) return HMS_EP_START_EXPIRED;
+-    if (e->now_tick >= lease || lease > e->armed_until) return HMS_EP_LEASE_INVALID;
++    if (hms_ep_time_cmp(&e->now_tick,&latest)>=0) return HMS_EP_START_EXPIRED;
++    if (hms_ep_time_cmp(&e->now_tick,&lease)>=0 || hms_ep_time_cmp(&lease,&e->armed_until)>0) return HMS_EP_LEASE_INVALID;
+     /* All validation finished. One serialized owner commits every local claim
+      * before a driver can be called; callbacks cannot observe a partial grant. */
+     memcpy(e->operation, p, length); e->operation_length = (uint8_t)length;
+@@ -332,49 +319,39 @@
+     return HMS_EP_OK;
+ }
+ 
+-static uint16_t write_hello(hms_endpoint *e, uint8_t *p) {
++static uint16_t HMS_EP_SHARED write_hello(hms_endpoint *e, uint8_t *p) {
+     uint8_t i;
+     constant_copy(e, HMS_EP_INCARNATION, p + 7, 16);
+     constant_copy(e, HMS_EP_FIRMWARE, p + 23, 32);
+     constant_copy(e, HMS_EP_MANIFEST, p + 55, 32);
+-    put32(p + 87, e->control_generation); put16(p + 91, e->context_handle);
+-    memcpy(p + 93, e->context_digest, 32); p[125] = e->state; put16(p + 126, e->flags);
++    hms_ep_write_context(p + 87,e); p[125] = e->state; put16(p + 126, e->flags);
+     p[128] = e->config->resource_count; p[129] = 72; p[130] = 32; p[131] = p[132] = 1;
+-    put64(p + 133, e->now_tick); put64(p + 141, e->armed_until); put32(p + 149, e->call_high_water);
+-    p[153] = e->receipt.held_mask;
++    hms_ep_write_finite_tail(p + 133,e);
+     for (i = 0; i < 8u; ++i) put32(p + 154u + (uint16_t)i * 4u, e->fence_floor[i]);
+     return 186;
+ }
+-static uint16_t write_control(const hms_endpoint *e, uint8_t *p) {
+-    put32(p + 7, e->control_generation); put16(p + 11, e->context_handle);
+-    memcpy(p + 13, e->context_digest, 32); p[45] = e->state; put16(p + 46, e->flags);
+-    put64(p + 48, e->now_tick); put64(p + 56, e->armed_until); put32(p + 64, e->call_high_water);
+-    p[68] = e->receipt.held_mask;
++static uint16_t HMS_EP_SHARED write_control(const hms_endpoint *e, uint8_t *p) {
++    hms_ep_write_context(p + 7,e); p[45] = e->state; put16(p + 46, e->flags);
++    hms_ep_write_finite_tail(p + 48,e);
+     return 69;
+ }
+-static uint16_t write_receipt(const hms_endpoint *e, uint8_t *p) {
++static uint16_t HMS_EP_SHARED write_receipt(const hms_endpoint *e, uint8_t *p) {
+     const hms_ep_receipt *r = &e->receipt;
+     memcpy(p + 7, e->operation + 2, 42);
+     p[49] = r->execution; p[50] = r->cancellation; p[51] = r->evidence_kind;
+     p[52] = r->verification; p[53] = r->held_mask; p[54] = r->may_have_acted;
+     put16(p + 55, r->reason); put32(p + 57, r->revision);
+-    put64(p + 61, r->queued_at); put64(p + 69, r->started_at); put64(p + 77, r->terminal_at);
++    hms_ep_write64_snapshot(p + 61,&r->queued_at); hms_ep_write64_snapshot(p + 69,&r->started_at); hms_ep_write64_snapshot(p + 77,&r->terminal_at);
+     p[85] = r->result_length; memcpy(p + 86, r->result, r->result_length);
+     return (uint16_t)(86u + r->result_length);
+ }
+ 
+-uint8_t hms_endpoint_handle(hms_endpoint *e, uint8_t kind, uint8_t channel,
++static uint8_t HMS_EP_SHARED handle_finite(hms_endpoint *e, uint8_t kind, uint8_t channel,
+                             uint64_t session, uint32_t sequence,
+                             const uint8_t *p, uint16_t length,
+                             uint64_t now, uint16_t flags,
+                             uint8_t *out, uint16_t *out_length) {
+     uint8_t status, op;
+-    if (out_length != NULL) *out_length = 0;
+-    if (e != NULL && e->config != NULL && e->callback_active == 0u &&
+-            e->standing != NULL && p != NULL && length >= 2u &&
+-            length <= HMS_EP_PAYLOAD && p[0] == 2u)
+-        return hms_standing_handle(e->standing, kind, channel, session, sequence,
+-                                   p, length, now, flags, out, out_length);
+     if (e == NULL || e->config == NULL || e->callback_active != 0u || p == NULL || length < 2u || length > 192u || known_opcode(p[1]) == 0u) return 0;
+     update(e, now, flags); op = p[1];
+     status = syntax(p, length);
+@@ -440,6 +417,21 @@
+     }
+     return 1;
+ }
++
++uint8_t hms_endpoint_handle(hms_endpoint *e, uint8_t kind, uint8_t channel,
++                            uint64_t session, uint32_t sequence,
++                            const uint8_t *p, uint16_t length,
++                            uint64_t now, uint16_t flags,
++                            uint8_t *out, uint16_t *out_length) {
++    if (out_length != NULL) *out_length = 0;
++    if (e != NULL && e->config != NULL && e->callback_active == 0u &&
++            e->standing != NULL && p != NULL && length >= 2u &&
++            length <= HMS_EP_PAYLOAD && p[0] == 2u)
++        return hms_standing_handle(e->standing, kind, channel, session, sequence,
++                                   p, length, now, flags, out, out_length);
++    return handle_finite(e,kind,channel,session,sequence,p,length,now,flags,out,out_length);
++}
++
+ 
+ static void unknown_report(hms_endpoint *e, uint8_t reason) {
+     if ((e->flags & HMS_EP_CLOCK_QUALIFIED) == 0u) reason = 7;
+@@ -520,11 +512,11 @@
+     const uint8_t *p = e->operation;
+     if ((e->flags & HMS_EP_CLOCK_QUALIFIED) == 0u) return 7;
+     if (e->loss_reason != 0u) return e->loss_reason;
+-    if (e->now_tick >= get64(p + 80)) return 4;
+-    if (e->now_tick >= get64(p + 68)) return 3;
+-    if (e->receipt.started_at != HMS_EP_TIME_ABSENT && e->now_tick >= e->receipt.started_at &&
+-            e->now_tick - e->receipt.started_at >= get32(p + 76)) return 2;
+-    if (starting != 0u && e->now_tick >= get64(p + 60)) return 1;
++    if (hms_ep_time_cmp_encoded(&e->now_tick,p + 80)>=0) return 4;
++    if (hms_ep_time_cmp_encoded(&e->now_tick,p + 68)>=0) return 3;
++    if (e->receipt.started_at != HMS_EP_TIME_ABSENT && hms_ep_time_cmp(&e->now_tick,&e->receipt.started_at)>=0 &&
++            hms_ep_elapsed_cmp(&e->now_tick,&e->receipt.started_at,get32(p + 76))>=0) return 2;
++    if (starting != 0u && hms_ep_time_cmp_encoded(&e->now_tick,p + 60)>=0) return 1;
+     return 0;
+ }
+ 
+@@ -550,17 +542,17 @@
+     } else if (e->receipt.execution == HMS_EP_QUEUED) {
+         if (e->state != HMS_EP_ARMED || e->context_valid == 0u ||
+                 get32(p + 2) != e->control_generation || get16(p + 6) != e->context_handle || owns_resources(e) == 0u) { reject_queued(e, 6, 0); return; }
+-        if (e->now_tick < get64(p + 52)) return;
+-        if (e->now_tick >= get64(p + 60)) { reject_queued(e, 1, 0); return; }
+-        if (e->now_tick >= get64(p + 80)) { reject_queued(e, 4, 0); return; }
++        if (hms_ep_time_cmp_encoded(&e->now_tick,p + 52)<0) return;
++        if (hms_ep_time_cmp_encoded(&e->now_tick,p + 60)>=0) { reject_queued(e, 1, 0); return; }
++        if (hms_ep_time_cmp_encoded(&e->now_tick,p + 80)>=0) { reject_queued(e, 4, 0); return; }
+         status = guard_call(e, p);
+         if (status != 0u) { reject_queued(e, 10, 0); return; }
+         sample_clock(e);
+         if (e->receipt.execution != HMS_EP_QUEUED) return;
+         if (e->state != HMS_EP_ARMED || e->context_valid == 0u || owns_resources(e) == 0u) { reject_queued(e, 6, 0); return; }
+-        if (e->now_tick >= get64(p + 60)) { reject_queued(e, 1, 0); return; }
+-        if (e->now_tick >= get64(p + 80)) { reject_queued(e, 4, 0); return; }
+-        if (e->now_tick > UINT64_MAX - get32(p + 76)) { reject_queued(e, 2, 0); return; }
++        if (hms_ep_time_cmp_encoded(&e->now_tick,p + 60)>=0) { reject_queued(e, 1, 0); return; }
++        if (hms_ep_time_cmp_encoded(&e->now_tick,p + 80)>=0) { reject_queued(e, 4, 0); return; }
++        if (hms_ep_add_room_cmp(&e->now_tick,get32(p + 76))>0) { reject_queued(e, 2, 0); return; }
+         if (revision(e) == 0u) return;
+         e->receipt.execution = HMS_EP_RUNNING; e->receipt.may_have_acted = 1;
+         e->receipt.started_at = e->now_tick; phase = HMS_EP_START;
+@@ -569,9 +561,9 @@
+             if (e->state == HMS_EP_FAULT) e->loss_reason = 7;
+             else if (e->context_valid == 0u || get32(p + 2) != e->control_generation ||
+                      get16(p + 6) != e->context_handle || owns_resources(e) == 0u) e->loss_reason = 6;
+-            else if (e->now_tick >= get64(p + 80)) e->loss_reason = 4;
+-            else if (e->now_tick >= get64(p + 68)) e->loss_reason = 3;
+-            else if (e->now_tick >= e->receipt.started_at && e->now_tick - e->receipt.started_at >= get32(p + 76)) e->loss_reason = 2;
++            else if (hms_ep_time_cmp_encoded(&e->now_tick,p + 80)>=0) e->loss_reason = 4;
++            else if (hms_ep_time_cmp_encoded(&e->now_tick,p + 68)>=0) e->loss_reason = 3;
++            else if (hms_ep_time_cmp(&e->now_tick,&e->receipt.started_at)>=0 && hms_ep_elapsed_cmp(&e->now_tick,&e->receipt.started_at,get32(p + 76))>=0) e->loss_reason = 2;
+             else if (guard_call(e, p) != 0u) e->loss_reason = 10;
+         }
+         sample_clock(e);
+@@ -583,9 +575,9 @@
+     }
+     limits.latest_start = get64(p + 60);
+     limits.ordinary_until = get64(p + 68);
+-    if (get64(p + 80) < limits.ordinary_until) limits.ordinary_until = get64(p + 80);
++    if (hms_ep_time_cmp_encoded(&limits.ordinary_until,p + 80)>0) limits.ordinary_until = get64(p + 80);
+     if (e->receipt.started_at != HMS_EP_TIME_ABSENT &&
+-            e->receipt.started_at <= UINT64_MAX - get32(p + 76) &&
++            hms_ep_add_room_cmp(&e->receipt.started_at,get32(p + 76))<=0 &&
+             e->receipt.started_at + get32(p + 76) < limits.ordinary_until)
+         limits.ordinary_until = e->receipt.started_at + get32(p + 76);
+     memset(&report, 0, sizeof(report));
+--- originals/project/protocol/endpoint/standing.c
++++ project/protocol/endpoint/standing.c
+@@ -1,4 +1,5 @@
+ #include "standing.h"
++#include "endpoint_kernel.h"
+ #include <string.h>
+ 
+ #define ABSENT UINT64_MAX
+@@ -17,28 +18,16 @@
+ #define WORK_OUTPUT 20u
+ 
+ static uint16_t r16(const uint8_t *p) { return (uint16_t)(((uint16_t)p[0]<<8)|p[1]); }
+-static uint32_t r32(const uint8_t *p) {
+-    uint8_t i; uint32_t v=0;
+-    for(i=0;i<4u;++i) v=(v<<8)|p[i];
+-    return v;
+-}
+-static uint64_t r64(const uint8_t *p) {
+-    uint8_t i; uint64_t v=0;
+-    for(i=0;i<8u;++i) v=(v<<8)|p[i];
+-    return v;
+-}
++#define r32 hms_ep_read32
++#define r64 hms_ep_read64
++#define w32 hms_ep_write32
++#define w64 hms_ep_write64
+ /* Avoid implementation-defined unsigned-to-signed conversion. */
+ static int32_t ri32(const uint8_t *p) {
+     uint32_t v=r32(p);
+     return v<=INT32_MAX ? (int32_t)v : (int32_t)(-1-(int32_t)(UINT32_MAX-v));
+ }
+ static void w16(uint8_t *p,uint16_t v) { p[0]=(uint8_t)(v>>8);p[1]=(uint8_t)v; }
+-static void w32(uint8_t *p,uint32_t v) {
+-    uint8_t i;for(i=0;i<4u;++i){p[3u-i]=(uint8_t)v;v>>=8;}
+-}
+-static void w64(uint8_t *p,uint64_t v) {
+-    uint8_t i;for(i=0;i<8u;++i){p[7u-i]=(uint8_t)v;v>>=8;}
+-}
+ static uint8_t nz(const uint8_t *p,uint8_t n) {
+     uint8_t v=0,i;for(i=0;i<n;++i)v|=p[i];return (uint8_t)(v!=0u);
+ }
+@@ -91,7 +80,7 @@
+     uint64_t acquired=r64(o+OBS_AT),now=s->endpoint->now_tick;
+     return (uint8_t)((flags_of(s)&ready)!=0u && o[OBS_QUALITY]==1u &&
+         o[OBS_CONTINUITY]==1u && r32(o+OBS_EPOCH)==r32(s->bytes+ST_EPOCH+(uint16_t)channel*4u) &&
+-        acquired!=ABSENT && acquired<=now && now-acquired<r16(s->arena->configuration+18u+(uint16_t)channel*2u));
++        acquired!=ABSENT && hms_ep_time_cmp(&acquired,&now)<=0 && hms_ep_elapsed_cmp(&now,&acquired,r16(s->arena->configuration+18u+(uint16_t)channel*2u))<0);
+ }
+ static void cancel_pending(hms_standing *s,uint16_t reason,uint8_t unknown) {
+     uint8_t index=s->bytes[ST_PENDING];
+@@ -108,9 +97,9 @@
+         add_flags(s,ST_LOSS);
+         w16(s->bytes+ST_REASON,reason);
+         if((s->endpoint->flags&HMS_EP_CLOCK_QUALIFIED)!=0u &&
+-                s->endpoint->now_tick<ABSENT-s->config->cleanup_ms){
+-            w64(s->bytes+ST_LOSS_AT,s->endpoint->now_tick);
+-            w64(s->bytes+ST_CLEANUP,s->endpoint->now_tick+s->config->cleanup_ms);
++                hms_ep_add_room_cmp(&s->endpoint->now_tick,s->config->cleanup_ms)<0){
++            hms_ep_write64_snapshot(s->bytes+ST_LOSS_AT,&s->endpoint->now_tick);
++            hms_ep_write64_sum(s->bytes+ST_CLEANUP,&s->endpoint->now_tick,s->config->cleanup_ms);
+         }else{
+             memset(s->bytes+ST_LOSS_AT,0xff,8);memset(s->bytes+ST_CLEANUP,0xff,8);
+         }
+@@ -138,7 +127,7 @@
+         loss(s,ST_AUTHORITY,ST_STOPPED,1);return;
+     }
+     if((s->bytes[ST_LIFE]==ST_ACTIVE || s->bytes[ST_LIFE]==ST_PREPARED) &&
+-            e->now_tick>=r64(s->bytes+ST_LEASE))loss(s,ST_LEASE_LOSS,ST_SUSPENDED,1);
++            hms_ep_time_cmp_encoded(&e->now_tick,s->bytes+ST_LEASE)>=0)loss(s,ST_LEASE_LOSS,ST_SUSPENDED,1);
+ }
+ static uint8_t guarded(hms_standing *s,uint8_t require_fresh) {
+     uint8_t status=installed_guard(s,s->arena->configuration,0);
+@@ -154,8 +143,8 @@
+     return HMS_EP_OK;
+ }
+ static uint8_t lease_valid(const hms_standing *s,uint64_t until) {
+-    return (uint8_t)(until!=ABSENT && until>s->endpoint->now_tick &&
+-        until-s->endpoint->now_tick<=s->endpoint->config->max_lease_ms);
++    return (uint8_t)(until!=ABSENT && hms_ep_time_cmp(&until,&s->endpoint->now_tick)>0 &&
++        hms_ep_elapsed_cmp(&until,&s->endpoint->now_tick,s->endpoint->config->max_lease_ms)<=0);
+ }
+ static uint8_t configuration_valid(const uint8_t *c) {
+     uint8_t i;
+@@ -191,7 +180,7 @@
+         return n<=r32(s->bytes+ST_HIGH)?HMS_EP_OLD_OR_FORGOTTEN:HMS_EP_NOT_SEEN;
+     return memcmp(s->endpoint->operation+2,p+2,42)==0?HMS_EP_OK:HMS_EP_CONFLICT;
+ }
+-static uint8_t open_record(hms_standing *s,const uint8_t *p) {
++static uint8_t HMS_EP_SHARED open_record(hms_standing *s,const uint8_t *p) {
+     hms_endpoint *e=s->endpoint;
+     uint8_t i,status;uint32_t number=r32(p+8);
+     if(occupied(s)!=0u && number==r32(s->bytes+ST_HIGH))
+@@ -230,9 +219,9 @@
+     memcpy(s->arena->configuration,p+47,32);memset(s->arena->work,0,24);
+     memset(s->arena->observation,0,48);memset(s->arena->record,0,88);
+     memcpy(s->bytes+ST_EPOCH,p+126,8);memmove(s->bytes+ST_LEASE,p+112,8);
+-    w64(s->bytes+ST_NEXT,e->now_tick);memset(s->bytes+ST_LOSS_AT,0xff,8);
++    hms_ep_write64_snapshot(s->bytes+ST_NEXT,&e->now_tick);memset(s->bytes+ST_LOSS_AT,0xff,8);
+     memset(s->bytes+ST_CLEANUP,0xff,8);memset(s->bytes+ST_QUIET_AT,0xff,8);
+-    w64(s->arena->work+WORK_TRANSITION,e->now_tick);
++    hms_ep_write64_snapshot(s->arena->work+WORK_TRANSITION,&e->now_tick);
+     memset(s->arena->work+WORK_FEEDBACK_DEADLINE,0xff,8);
+     s->bytes[ST_LIFE]=ST_PREPARED;s->bytes[ST_OWNED]=p[79];s->bytes[ST_PENDING]=NONE;
+     return HMS_EP_OK;
+@@ -264,7 +253,7 @@
+         s->bytes[ST_HEAD]^=1u;--s->bytes[ST_COUNT];--n;}
+     w32(s->bytes+ST_ACK,value);
+ }
+-static uint8_t mutation(hms_standing *s,const uint8_t *p) {
++static uint8_t HMS_EP_SHARED mutation(hms_standing *s,const uint8_t *p) {
+     uint8_t status=reference(s,p),op=p[1],life=s->bytes[ST_LIFE];
+     uint32_t sequence=r32(p+44),last=r32(s->bytes+ST_MUT);
+     if(status!=0u)return status;
+@@ -334,7 +323,7 @@
+         memcpy(s->arena->observation[1]+OBS_SEQUENCE,s->bytes+ST_WITNESS+4,4);
+         s->arena->observation[0][OBS_PENDING]=s->arena->observation[1][OBS_PENDING]=0;
+         w16(s->bytes+ST_FLAGS,(uint16_t)(keep|ST_RESUMED));
+-        memmove(s->bytes+ST_LEASE,p+52,8);w64(s->bytes+ST_NEXT,s->endpoint->now_tick);
++        memmove(s->bytes+ST_LEASE,p+52,8);hms_ep_write64_snapshot(s->bytes+ST_NEXT,&s->endpoint->now_tick);
+         memset(s->bytes+ST_LOSS_AT,0xff,8);memset(s->bytes+ST_CLEANUP,0xff,8);memset(s->bytes+ST_QUIET_AT,0xff,8);
+         memset(s->bytes+ST_WITNESS,0,22);w16(s->bytes+ST_REASON,0);
+         s->bytes[ST_QUIET]=s->bytes[ST_LOSS_COMMAND]=s->bytes[ST_PHASE]=s->bytes[ST_TARGET]=0;
+@@ -403,14 +392,13 @@
+     for(i=0;i<n;++i)p[i]=e->config->constant_byte(e->config->user,which,i);
+     e->callback_active=0;
+ }
+-static uint16_t describe(hms_standing *s,uint8_t page,uint8_t *out) {
++static uint16_t HMS_EP_SHARED describe(hms_standing *s,uint8_t page,uint8_t *out) {
+     hms_endpoint *e=s->endpoint;uint8_t i;
+     if(page==0u){
+         constants(e,HMS_EP_INCARNATION,out,16);constants(e,HMS_EP_FIRMWARE,out+16,32);
+         constants(e,HMS_EP_MANIFEST,out+48,32);return 80;
+     }
+-    w32(out,e->control_generation);w16(out+4,e->context_handle);
+-    memcpy(out+6,e->context_digest,32);w64(out+38,e->now_tick);
++    hms_ep_write_context(out,e);hms_ep_write64_snapshot(out+38,&e->now_tick);
+     w16(out+46,e->flags);out[48]=e->state;out[49]=e->config->resource_count;
+     out[50]=s->bytes[ST_SLOT];out[51]=s->config->resource_mask;w16(out+52,1);
+     out[54]=2;out[55]=2;out[56]=32;out[57]=1;
+@@ -531,31 +519,30 @@
+     if(sequence==0u || sequence<old || (old!=0u && sequence>old && (old==UINT32_MAX || sequence!=old+1u))){
+         input_fault(s,channel,ST_GAP);return;
+     }
+-    if(acquired==ABSENT || acquired>s->endpoint->now_tick ||
+-            (old!=0u && acquired<r64(o+OBS_AT)) ||
+-            s->endpoint->now_tick-acquired>=r16(s->arena->configuration+18u+(uint16_t)channel*2u)){
++    if(acquired==ABSENT || hms_ep_time_cmp(&acquired,&s->endpoint->now_tick)>0 ||
++            (old!=0u && hms_ep_time_cmp_encoded(&acquired,o+OBS_AT)<0) ||
++            hms_ep_elapsed_cmp(&s->endpoint->now_tick,&acquired,r16(s->arena->configuration+18u+(uint16_t)channel*2u))>=0){
+         input_fault(s,channel,ST_STALE);return;
+     }
+     if((channel==0u && (value<-100000 || value>200000)) ||
+             (channel==1u && (value<0 || value>100000))){input_fault(s,channel,ST_QUALITY);return;}
+     if(sequence==old){
+-        if(ri32(o)!=value || r64(o+OBS_AT)!=acquired || r32(o+OBS_EPOCH)!=r32(r+12))input_fault(s,channel,ST_GAP);
++        if(ri32(o)!=value || hms_ep_time_cmp_encoded(&acquired,o+OBS_AT)!=0 || r32(o+OBS_EPOCH)!=r32(r+12))input_fault(s,channel,ST_GAP);
+         return;
+     }
+-    memcpy(o,r+28,4);memcpy(o+OBS_AT,r+20,8);memcpy(o+OBS_SEQUENCE,r+16,4);
+-    memcpy(o+OBS_EPOCH,r+12,4);o[OBS_QUALITY]=1;o[OBS_CONTINUITY]=1;o[OBS_PENDING]=1;o[23]=0;
++    hms_ep_commit_observation(o,r);
+     add_flags(s,channel==0u?ST_DEMAND_READY:ST_FEEDBACK_READY);
+ }
+ static uint8_t account_ok(hms_standing *s,uint8_t commit,uint64_t until) {
+     uint64_t total=r32(s->bytes+ST_ACCOUNT),start=r64(s->arena->work+WORK_TRANSITION);
+     if(s->arena->work[WORK_OUTPUT]!=0u){
+-        if(start==ABSENT || until<start || until-start>UINT32_MAX-total)return 0;
++        if(start==ABSENT || hms_ep_time_cmp(&until,&start)<0 || hms_ep_elapsed_cmp(&until,&start,(uint32_t)(UINT32_MAX-total))>0)return 0;
+         total+=until-start;
+     }
+     if(commit!=0u)w32(s->bytes+ST_ACCOUNT,(uint32_t)total);
+     return (uint8_t)(total<s->config->max_on_ms);
+ }
+-static void feedback(hms_standing *s) {
++static void HMS_EP_SHARED feedback(hms_standing *s) {
+     uint8_t slot=s->bytes[ST_PENDING],success=0;
+     uint8_t *r,*o;
+     if(slot>=2u)return;
+@@ -574,11 +561,11 @@
+         r[41]=(uint8_t)((s->endpoint->operation[121]==0u?HMS_EP_SIMULATION:HMS_EP_PHYSICAL_SENSOR)|8u);
+         o[OBS_PENDING]=0;
+     }
+-    if(s->endpoint->now_tick>=r64(s->arena->work+WORK_FEEDBACK_DEADLINE))success=0;
++    if(hms_ep_time_cmp_encoded(&s->endpoint->now_tick,s->arena->work+WORK_FEEDBACK_DEADLINE)>=0)success=0;
+     if(success!=0u){
+         r[40]=(uint8_t)(ST_RECORD_SUCCESS|8u|(s->endpoint->operation[121]!=0u?(HMS_EP_VERIFIED<<4):0u));
+         s->bytes[ST_PENDING]=NONE;
+-    }else if(s->endpoint->now_tick>=r64(s->arena->work+WORK_FEEDBACK_DEADLINE)){
++    }else if(hms_ep_time_cmp_encoded(&s->endpoint->now_tick,s->arena->work+WORK_FEEDBACK_DEADLINE)>=0){
+         r[40]=(uint8_t)(ST_RECORD_FAILED|8u);w16(r+42,ST_FEEDBACK);s->bytes[ST_PENDING]=NONE;
+         loss(s,ST_FEEDBACK,ST_STOPPED,1);
+     }
+@@ -587,26 +574,23 @@
+     return (uint8_t)(report_reserved(r)!=0u && r[0]==ST_REPORT_DISPATCH &&
+         r[1]==0u && r[2]==0u && r[3]==0u && r[4]==0u && r[5]==0u && r[6]==wanted &&
+         r[7]==7u && r[8]==0u && r32(r+12)==0u && r32(r+16)==0u && r32(r+28)==0u &&
+-        r64(r+20)>=before && r64(r+20)<=after && r64(r+20)<cutoff);
++        hms_ep_time_cmp_encoded(&before,r+20)<=0 && hms_ep_time_cmp_encoded(&after,r+20)>=0 && hms_ep_time_cmp_encoded(&cutoff,r+20)>0);
+ }
+ static uint64_t dispatch_cutoff(const hms_standing *s) {
+-    uint8_t i;uint64_t cutoff=r64(s->bytes+ST_LEASE),at,candidate;
++    uint8_t i;uint64_t cutoff=r64(s->bytes+ST_LEASE);
+     uint16_t window=r16(s->arena->configuration+26);
+     if(cutoff<=window)return 0;
+     /* Actual handoff plus the complete response window must fit the lease. */
+     cutoff=cutoff-window+1u;
+     for(i=0;i<2u;++i){
+         uint16_t age=r16(s->arena->configuration+18u+(uint16_t)i*2u);
+-        at=r64(s->arena->observation[i]+OBS_AT);
+-        candidate=at<ABSENT-age?at+age:ABSENT;
+-        if(candidate<cutoff)cutoff=candidate;
++        hms_ep_cutoff_min(&cutoff,s->arena->observation[i]+OBS_AT,age);
+     }
+     if(s->arena->work[WORK_OUTPUT]!=0u){
+         uint32_t used=r32(s->bytes+ST_ACCOUNT),left;
+         if(used>=s->config->max_on_ms)return 0;
+-        left=s->config->max_on_ms-used;at=r64(s->arena->work+WORK_TRANSITION);
+-        candidate=at<ABSENT-left?at+left:ABSENT;
+-        if(candidate<cutoff)cutoff=candidate;
++        left=s->config->max_on_ms-used;
++        hms_ep_cutoff_min(&cutoff,s->arena->work+WORK_TRANSITION,left);
+     }
+     return cutoff;
+ }
+@@ -624,56 +608,55 @@
+     if(account_ok(s,0,s->endpoint->now_tick)==0u){loss(s,ST_ACCOUNT_LOSS,ST_STOPPED,1);return;}
+     before=s->endpoint->now_tick;
+     cutoff=dispatch_cutoff(s);
+-    if(before>=cutoff){loss(s,ST_TIMING,ST_STOPPED,1);return;}
+-    if(before>=ABSENT-r16(s->arena->configuration+26)){unknown(s,ST_COUNTER);return;}
++    if(hms_ep_time_cmp(&before,&cutoff)>=0){loss(s,ST_TIMING,ST_STOPPED,1);return;}
++    if(hms_ep_add_room_cmp(&before,r16(s->arena->configuration+26))>=0){unknown(s,ST_COUNTER);return;}
+     index=(uint8_t)(((unsigned)s->bytes[ST_HEAD]+s->bytes[ST_COUNT])&1u);r=s->arena->record[index];
+-    memset(r,0,44);w32(r,high+1u);w64(r+4,before);
++    memset(r,0,44);w32(r,high+1u);hms_ep_write64_snapshot(r+4,&before);
+     memcpy(r+12,s->arena->observation[0]+OBS_SEQUENCE,4);memcpy(r+16,s->arena->observation[0],4);
+-    w16(r+20,(uint16_t)(before-r64(s->arena->observation[0]+OBS_AT)));
++    hms_ep_write_age(r+20,&before,s->arena->observation[0]+OBS_AT);
+     memcpy(r+22,s->arena->observation[1]+OBS_SEQUENCE,4);memset(r+26,0xff,8);
+     r[38]=s->arena->work[WORK_OUTPUT];r[39]=wanted;r[40]=ST_RECORD_PENDING|8u;
+     w32(s->bytes+ST_ACT,high+1u);++s->bytes[ST_COUNT];s->bytes[ST_PENDING]=index;add_flags(s,ST_EVER);
+     /* Identity and possible-effect record exist before entering the driver. */
+     driver(s,ST_SET_OUTPUT,wanted,cutoff,report);
+     if(s->bytes[ST_LIFE]!=ST_ACTIVE || (s->endpoint->flags&HMS_EP_CLOCK_QUALIFIED)==0u ||
+-            s->endpoint->now_tick>=cutoff || dispatch_report(report,wanted,before,s->endpoint->now_tick,cutoff)==0u){
++            hms_ep_time_cmp(&s->endpoint->now_tick,&cutoff)>=0 || dispatch_report(report,wanted,before,s->endpoint->now_tick,cutoff)==0u){
+         r[40]=(uint8_t)((r[40]&0xf8u)|ST_RECORD_UNKNOWN);w16(r+42,ST_DRIVER);unknown(s,ST_DRIVER);return;
+     }
+     if(account_ok(s,1,r64(report+20))==0u){unknown(s,ST_ACCOUNT_LOSS);return;}
+     /* Actual dispatch time can be later than pre-call time. Preserve exact
+      * demand age relative to it, refusing overflow/freshness loss. */
+-    if(r64(report+20)-r64(s->arena->observation[0]+OBS_AT)>=r16(s->arena->configuration+18)){
++    if(hms_ep_elapsed_encoded_cmp(report+20,s->arena->observation[0]+OBS_AT,r16(s->arena->configuration+18))>=0){
+         unknown(s,ST_TIMING);return;
+     }
+-    memmove(r+4,report+20,8);w16(r+20,(uint16_t)(r64(report+20)-r64(s->arena->observation[0]+OBS_AT)));
++    memmove(r+4,report+20,8);hms_ep_write_encoded_age(r+20,report+20,s->arena->observation[0]+OBS_AT);
+     memmove(s->arena->work+WORK_TRANSITION,report+20,8);s->arena->work[WORK_OUTPUT]=wanted;
+     memcpy(s->arena->work+WORK_BASELINE,s->arena->observation[0],4);
+-    w64(s->arena->work+WORK_FEEDBACK_DEADLINE,r64(report+20)+r16(s->arena->configuration+26));
+-}
+-static void evaluate(hms_standing *s,uint8_t *report) {
++    hms_ep_write64_encoded_sum(s->arena->work+WORK_FEEDBACK_DEADLINE,report+20,r16(s->arena->configuration+26));
++}
++static void HMS_EP_SHARED evaluate(hms_standing *s,uint8_t *report) {
+     uint8_t wanted=s->arena->work[WORK_OUTPUT];
+-    uint64_t elapsed;
+     if(s->bytes[ST_LIFE]!=ST_ACTIVE || s->bytes[ST_PENDING]!=NONE || s->arena->observation[0][OBS_PENDING]==0u)return;
+     s->arena->observation[0][OBS_PENDING]=0;
+     if(fresh(s,0)==0u || fresh(s,1)==0u){loss(s,ST_STALE,ST_STOPPED,1);return;}
+     if(ri32(s->arena->observation[0])>=ri32(s->arena->configuration+4))wanted=1;
+     else if(ri32(s->arena->observation[0])<=ri32(s->arena->configuration))wanted=0;
+     if(wanted==s->arena->work[WORK_OUTPUT])return;
+-    if(s->endpoint->now_tick<r64(s->arena->work+WORK_TRANSITION)){unknown(s,ST_CLOCK);return;}
+-    elapsed=s->endpoint->now_tick-r64(s->arena->work+WORK_TRANSITION);
+-    if(elapsed<r16(s->arena->configuration+(wanted==0u?22u:24u)))return;
++    if(hms_ep_time_cmp_encoded(&s->endpoint->now_tick,s->arena->work+WORK_TRANSITION)<0){unknown(s,ST_CLOCK);return;}
++    if(hms_ep_elapsed_cmp_encoded(&s->endpoint->now_tick,s->arena->work+WORK_TRANSITION,
++            r16(s->arena->configuration+(wanted==0u?22u:24u)))<0)return;
+     transition(s,wanted,report);
+ }
+-static void loss_service(hms_standing *s,uint8_t *report) {
++static void HMS_EP_SHARED loss_service(hms_standing *s,uint8_t *report) {
+     uint64_t before=s->endpoint->now_tick,cutoff=r64(s->bytes+ST_CLEANUP);
+     uint8_t state=s->bytes[ST_LOSS_COMMAND];
+     if(s->bytes[ST_QUIET]==s->bytes[ST_OWNED] || state==4u)return;
+-    if(cutoff!=ABSENT && before>=cutoff){unknown(s,ST_TIMING);s->bytes[ST_LOSS_COMMAND]=4;return;}
++    if(cutoff!=ABSENT && hms_ep_time_cmp(&before,&cutoff)>=0){unknown(s,ST_TIMING);s->bytes[ST_LOSS_COMMAND]=4;return;}
+     if(state==1u){
+         s->bytes[ST_LOSS_COMMAND]=2;add_flags(s,ST_LOSS_POSSIBLE);
+         driver(s,ST_LOSS_OUTPUT,0,cutoff,report);
+         if((s->endpoint->flags&HMS_EP_CLOCK_QUALIFIED)==0u || cutoff==ABSENT ||
+-                s->endpoint->now_tick>=cutoff || dispatch_report(report,0,before,s->endpoint->now_tick,cutoff)==0u){
++                hms_ep_time_cmp(&s->endpoint->now_tick,&cutoff)>=0 || dispatch_report(report,0,before,s->endpoint->now_tick,cutoff)==0u){
+             unknown(s,ST_DRIVER);s->bytes[ST_LOSS_COMMAND]=4;return;
+         }
+         /* Temporary lifetime-disjoint reuse: while state3 and !WITNESS_VALID,
+@@ -684,17 +667,17 @@
+     if(state!=3u)return;
+     driver(s,ST_LOSS_OBSERVE,0,cutoff,report);
+     if((s->endpoint->flags&HMS_EP_CLOCK_QUALIFIED)==0u){s->bytes[ST_LOSS_COMMAND]=4;return;}
+-    if(cutoff==ABSENT || s->endpoint->now_tick>=cutoff){unknown(s,ST_TIMING);s->bytes[ST_LOSS_COMMAND]=4;return;}
++    if(cutoff==ABSENT || hms_ep_time_cmp(&s->endpoint->now_tick,&cutoff)>=0){unknown(s,ST_TIMING);s->bytes[ST_LOSS_COMMAND]=4;return;}
+     if(report[0]==ST_REPORT_NONE)return;
+     if((s->endpoint->flags&HMS_EP_CLOCK_QUALIFIED)==0u || cutoff==ABSENT ||
+-            s->endpoint->now_tick>=cutoff || report_reserved(report)==0u ||
++            hms_ep_time_cmp(&s->endpoint->now_tick,&cutoff)>=0 || report_reserved(report)==0u ||
+             report[0]!=ST_REPORT_QUIET || report[1]!=1u || report[2]!=1u || report[5]!=1u ||
+             evidence_ok(s,report)==0u || report[6]!=0u || report[7]!=0u ||
+             report[8]!=s->bytes[ST_OWNED] || r32(report+12)!=r32(s->bytes+ST_EPOCH+4) ||
+             r32(report+16)<=r32(s->arena->observation[1]+OBS_SEQUENCE) ||
+             r64(s->bytes+ST_QUIET_AT)==ABSENT || memcmp(report+20,s->bytes+ST_QUIET_AT,8)<=0 ||
+-            r64(report+20)>s->endpoint->now_tick ||
+-            s->endpoint->now_tick-r64(report+20)>=r16(s->arena->configuration+20) || ri32(report+28)!=0){
++            hms_ep_time_cmp_encoded(&s->endpoint->now_tick,report+20)<0 ||
++            hms_ep_elapsed_cmp_encoded(&s->endpoint->now_tick,report+20,r16(s->arena->configuration+20))>=0 || ri32(report+28)!=0){
+         unknown(s,ST_DRIVER);s->bytes[ST_LOSS_COMMAND]=4;return;
+     }
+     s->bytes[ST_WITNESS]=1;s->bytes[ST_WITNESS+1]=1;
+@@ -705,12 +688,12 @@
+      * bound when the loss command took effect before this observation. */
+     if(s->arena->work[WORK_OUTPUT]!=0u){
+         uint64_t duration=s->endpoint->now_tick-r64(s->arena->work+WORK_TRANSITION);
+-        if(s->endpoint->now_tick<r64(s->arena->work+WORK_TRANSITION) ||
++        if(hms_ep_time_cmp_encoded(&s->endpoint->now_tick,s->arena->work+WORK_TRANSITION)<0 ||
+                 duration>UINT32_MAX-r32(s->bytes+ST_ACCOUNT)){unknown(s,ST_COUNTER);return;}
+         w32(s->bytes+ST_ACCOUNT,r32(s->bytes+ST_ACCOUNT)+(uint32_t)duration);
+     }
+     add_flags(s,ST_WITNESS_VALID);s->bytes[ST_QUIET]=s->bytes[ST_OWNED];
+-    w64(s->bytes+ST_QUIET_AT,s->endpoint->now_tick);
++    hms_ep_write64_snapshot(s->bytes+ST_QUIET_AT,&s->endpoint->now_tick);
+     s->bytes[ST_LIFE]=s->bytes[ST_TARGET];(void)bump(s);
+ }
+ void hms_standing_poll(hms_standing *s) {
+@@ -733,7 +716,7 @@
+         feedback(s);if((flags_of(s)&ST_LOSS)!=0u)return;
+     }
+     phase=s->bytes[ST_PHASE];
+-    if(phase==0u && s->endpoint->now_tick<r64(s->bytes+ST_NEXT))return;
++    if(phase==0u && hms_ep_time_cmp_encoded(&s->endpoint->now_tick,s->bytes+ST_NEXT)<0)return;
+     if(phase<2u){
+         driver(s,phase,0,r64(s->bytes+ST_LEASE),report);
+         if((flags_of(s)&ST_LOSS)==0u)accept_observation(s,phase,report);
+@@ -742,8 +725,8 @@
+         evaluate(s,report);
+         if((flags_of(s)&ST_LOSS)==0u){
+             s->bytes[ST_PHASE]=0;
+-            if(s->endpoint->now_tick>=ABSENT-r16(s->arena->configuration+16)){unknown(s,ST_COUNTER);return;}
+-            w64(s->bytes+ST_NEXT,s->endpoint->now_tick+r16(s->arena->configuration+16));
++            if(hms_ep_add_room_cmp(&s->endpoint->now_tick,r16(s->arena->configuration+16))>=0){unknown(s,ST_COUNTER);return;}
++            hms_ep_write64_sum(s->bytes+ST_NEXT,&s->endpoint->now_tick,r16(s->arena->configuration+16));
+         }
+     }
+ }
+--- originals/project/protocol/endpoint/endpoint_kernel.c
++++ project/protocol/endpoint/endpoint_kernel.c
+@@ -0,0 +1,78 @@
++#include "endpoint_kernel.h"
++#include <string.h>
++
++uint32_t hms_ep_read32(const uint8_t *p) {
++    uint32_t value=0;uint8_t i;
++    for(i=0;i<4u;++i)value=(value<<8)|p[i];
++    return value;
++}
++uint64_t hms_ep_read64(const uint8_t *p) {
++    uint64_t value=0;uint8_t i;
++    for(i=0;i<8u;++i)value=(value<<8)|p[i];
++    return value;
++}
++static void write16(uint8_t *p,uint16_t value) {
++    p[0]=(uint8_t)(value>>8);p[1]=(uint8_t)value;
++}
++void hms_ep_write32(uint8_t *p,uint32_t value) {
++    uint8_t i;for(i=0;i<4u;++i){p[3u-i]=(uint8_t)value;value>>=8;}
++}
++void hms_ep_write64(uint8_t *p,uint64_t value) {
++    uint8_t i;for(i=0;i<8u;++i){p[7u-i]=(uint8_t)value;value>>=8;}
++}
++void hms_ep_write64_snapshot(uint8_t *p,const uint64_t *source) {
++    uint64_t value=*source;hms_ep_write64(p,value);
++}
++void hms_ep_write64_sum(uint8_t *p,const uint64_t *source,uint32_t delta) {
++    uint64_t value=*source+delta;hms_ep_write64(p,value);
++}
++void hms_ep_write64_encoded_sum(uint8_t *p,const uint8_t *source,uint32_t delta) {
++    uint64_t value=hms_ep_read64(source)+delta;hms_ep_write64(p,value);
++}
++void hms_ep_write_context(uint8_t *p,const hms_endpoint *e) {
++    /* Keep individual reads/stores in order, including if p aliases e. */
++    hms_ep_write32(p,e->control_generation);write16(p+4,e->context_handle);
++    memcpy(p+6,e->context_digest,32);
++}
++void hms_ep_write_finite_tail(uint8_t *p,const hms_endpoint *e) {
++    hms_ep_write64_snapshot(p,&e->now_tick);
++    hms_ep_write64_snapshot(p+8,&e->armed_until);
++    hms_ep_write32(p+16,e->call_high_water);p[20]=e->receipt.held_mask;
++}
++void hms_ep_commit_observation(uint8_t *o,const uint8_t *report) {
++    memcpy(o,report+28,4);memcpy(o+4,report+20,8);memcpy(o+12,report+16,4);
++    memcpy(o+16,report+12,4);o[20]=1;o[21]=1;o[22]=1;o[23]=0;
++}
++static int8_t compare(uint64_t left,uint64_t right) {
++    if(left<right)return -1;
++    return (int8_t)(left>right);
++}
++int8_t hms_ep_time_cmp(const uint64_t *left,const uint64_t *right) {
++    return compare(*left,*right);
++}
++int8_t hms_ep_time_cmp_encoded(const uint64_t *left,const uint8_t *right) {
++    return compare(*left,hms_ep_read64(right));
++}
++int8_t hms_ep_elapsed_cmp(const uint64_t *end,const uint64_t *start,uint32_t bound) {
++    return compare(*end-*start,bound);
++}
++int8_t hms_ep_elapsed_cmp_encoded(const uint64_t *end,const uint8_t *start,uint32_t bound) {
++    return compare(*end-hms_ep_read64(start),bound);
++}
++int8_t hms_ep_elapsed_encoded_cmp(const uint8_t *end,const uint8_t *start,uint32_t bound) {
++    return compare(hms_ep_read64(end)-hms_ep_read64(start),bound);
++}
++int8_t hms_ep_add_room_cmp(const uint64_t *value,uint32_t delta) {
++    return compare(*value,UINT64_MAX-delta);
++}
++void hms_ep_cutoff_min(uint64_t *cutoff,const uint8_t *base,uint32_t delta) {
++    uint64_t at=hms_ep_read64(base);
++    uint64_t candidate=at<UINT64_MAX-delta?at+delta:UINT64_MAX;
++    if(candidate<*cutoff)*cutoff=candidate;
++}
++void hms_ep_write_age(uint8_t *p,const uint64_t *end,const uint8_t *start) {
++    uint16_t value=(uint16_t)(*end-hms_ep_read64(start));write16(p,value);
++}
++void hms_ep_write_encoded_age(uint8_t *p,const uint8_t *end,const uint8_t *start) {
++    uint16_t value=(uint16_t)(hms_ep_read64(end)-hms_ep_read64(start));write16(p,value);
++}
+--- originals/project/protocol/endpoint/endpoint_kernel.h
++++ project/protocol/endpoint/endpoint_kernel.h
+@@ -0,0 +1,37 @@
++#ifndef HMS_ENDPOINT_KERNEL_H
++#define HMS_ENDPOINT_KERNEL_H
++#include "endpoint.h"
++
++/* Private implementation leaves, not protocol/driver ABI. The selected GCC
++ * profile requires sharing; generated code must still check clones/frames.
++ * Other compilers remain source-compatible, without a qualified size bound. */
++#if defined(__GNUC__)
++#define HMS_EP_SHARED __attribute__((noinline))
++#else
++#define HMS_EP_SHARED
++#endif
++
++uint32_t HMS_EP_SHARED hms_ep_read32(const uint8_t *);
++uint64_t HMS_EP_SHARED hms_ep_read64(const uint8_t *);
++void HMS_EP_SHARED hms_ep_write32(uint8_t *,uint32_t);
++void HMS_EP_SHARED hms_ep_write64(uint8_t *,uint64_t);
++void HMS_EP_SHARED hms_ep_write64_snapshot(uint8_t *,const uint64_t *);
++void HMS_EP_SHARED hms_ep_write64_sum(uint8_t *,const uint64_t *,uint32_t);
++void HMS_EP_SHARED hms_ep_write64_encoded_sum(uint8_t *,const uint8_t *,uint32_t);
++void HMS_EP_SHARED hms_ep_write_context(uint8_t *,const hms_endpoint *);
++void HMS_EP_SHARED hms_ep_write_finite_tail(uint8_t *,const hms_endpoint *);
++void HMS_EP_SHARED hms_ep_commit_observation(uint8_t *,const uint8_t *);
++
++/* Three-way unsigned comparisons; ABSENT and ordering policy stay at callers.
++ * Differences are modulo2^64 exactly, even when end<start. No callbacks/state
++ * writes occur in these leaves. uint32 bounds do not narrow timestamp values. */
++int8_t HMS_EP_SHARED hms_ep_time_cmp(const uint64_t *,const uint64_t *);
++int8_t HMS_EP_SHARED hms_ep_time_cmp_encoded(const uint64_t *,const uint8_t *);
++int8_t HMS_EP_SHARED hms_ep_elapsed_cmp(const uint64_t *,const uint64_t *,uint32_t);
++int8_t HMS_EP_SHARED hms_ep_elapsed_cmp_encoded(const uint64_t *,const uint8_t *,uint32_t);
++int8_t HMS_EP_SHARED hms_ep_elapsed_encoded_cmp(const uint8_t *,const uint8_t *,uint32_t);
++int8_t HMS_EP_SHARED hms_ep_add_room_cmp(const uint64_t *,uint32_t);
++void HMS_EP_SHARED hms_ep_cutoff_min(uint64_t *,const uint8_t *,uint32_t);
++void HMS_EP_SHARED hms_ep_write_age(uint8_t *,const uint64_t *,const uint8_t *);
++void HMS_EP_SHARED hms_ep_write_encoded_age(uint8_t *,const uint8_t *,const uint8_t *);
++#endif

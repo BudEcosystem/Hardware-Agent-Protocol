@@ -1,0 +1,99 @@
+--- 06/run_attempt.py
++++ 07/run_attempt.py
+@@ -8,6 +8,8 @@
+ import shutil
+ import subprocess
+ import sys
++import stat
++import tempfile
+ import time
+ import traceback
+ import _sqlite3
+@@ -84,6 +86,14 @@
+     names = {'testsRun','failures','errors','skips','expectedFailures','unexpectedSuccesses'}
+     return (type(value) is dict and set(value)==names and all(type(value[k]) is int and value[k]>=0 for k in names)
+             and value['testsRun']>0 and all(value[k]==0 for k in names-{'testsRun'}))
++
++
++def scratch_identity(path):
++    info=path.lstat()
++    if not stat.S_ISDIR(info.st_mode) or stat.S_ISLNK(info.st_mode):
++        raise ValueError('Raw scratch must be an actual directory')
++    return {'path':str(path),'device':info.st_dev,'inode':info.st_ino,'uid':info.st_uid,
++            'gid':info.st_gid,'mode':stat.S_IMODE(info.st_mode)}
+ 
+ 
+ def main():
+@@ -111,6 +121,7 @@
+                   'Catchable failures attempt finalization; SIGKILL/host loss/full storage can prevent receipts.',
+                   'Lifecycle public result profile and mounting remain unsupported.']}
+     process=None; before=external_before=None; started=time.monotonic(); tree=attempt/'project'
++    raw_scratch=None; raw_identity=None
+     write(attempt/'started.json',record)
+     try:
+         write(attempt/'parent-runtime.json',{'executable':sys.executable,'version':sys.version,
+@@ -131,9 +142,24 @@
+         before=files(tree); external_before,roots=external_inputs()
+         if any(row['kind']!='file' for row in before):raise ValueError('Source symlinks are unsupported')
+         write(attempt/'inputs-before.json',before); write(attempt/'external-before.json',external_before)
+-        for name in ('evidence','scratch'):(attempt/name).mkdir(mode=0o700,parents=True,exist_ok=True)
++        (attempt/'evidence').mkdir(mode=0o700)
++        # Real private state below the trusted sticky /tmp ancestor; no symlink
++        # alias and no chmod of shared repository or production directories.
++        parent=Path('/tmp'); parent_info=parent.lstat()
++        if (not stat.S_ISDIR(parent_info.st_mode) or stat.S_ISLNK(parent_info.st_mode) or
++            parent_info.st_uid not in {0,os.getuid()} or
++            (stat.S_IMODE(parent_info.st_mode)&0o022 and not parent_info.st_mode&stat.S_ISVTX)):
++            raise ValueError('Trusted /tmp scratch ancestor is unavailable')
++        raw_scratch=Path(tempfile.mkdtemp(prefix='hms-lifecycle-proof-',dir=str(parent)))
++        record['rawScratchPath']=str(raw_scratch)
++        record['rawScratchPolicy']='Never deleted by this runner; producer must explicitly acquire raw outputs before OS /tmp cleanup.'
++        raw_identity=scratch_identity(raw_scratch)
++        if raw_identity['uid']!=os.getuid() or raw_identity['mode']!=0o700:
++            raise ValueError('Owned raw scratch must have current UID and mode0700')
++        write(attempt/'raw-scratch-before.json',{'identity':raw_identity,'parent':scratch_identity(parent),
++            'retentionPolicy':record['rawScratchPolicy']})
+         environment={'PATH':os.pathsep.join((str(Path(sys.executable).parent),'/usr/bin','/bin')),
+-                     'TMPDIR':str(attempt/'scratch'),'LC_ALL':'C.UTF-8','TZ':'UTC'}
++                     'TMPDIR':str(raw_scratch),'LC_ALL':'C.UTF-8','TZ':'UTC'}
+         config={'project':str(tree),'attempt':str(attempt),'targets':targets,'externalRoots':roots,
+                 'expectedInputs':before,'expectedExternalInputs':external_before}
+         write(attempt/'child-config.json',config); write(attempt/'environment.json',environment)
+@@ -171,19 +197,32 @@
+             after,_=external_inputs(); write(attempt/'external-after.json',after)
+             record.update(externalInputCount=len(external_before),externalInputsUnchanged=external_before==after)
+         def outputs():
+-            for name in ('evidence','scratch'):
+-                if (attempt/name).exists():
+-                    rows=files(attempt/name); write(attempt/(name+'-index.json'),rows); record[name+'Files']=len(rows)
++            if (attempt/'evidence').exists():
++                rows=files(attempt/'evidence');write(attempt/'evidence-index.json',rows);record['evidenceFiles']=len(rows)
++        def scratch_after():
++            if raw_scratch is None:return
++            record['rawScratchRetained']=raw_scratch.exists()
++            actual=scratch_identity(raw_scratch)
++            write(attempt/'raw-scratch-after.json',{'identity':actual,'before':raw_identity,
++                'childState':record['childState'],'retentionPolicy':record['rawScratchPolicy']})
++            record['rawScratchIdentityUnchanged']=actual==raw_identity
++            if actual!=raw_identity:raise ValueError('Raw scratch identity changed; refuse to inventory replacement')
++            rows=files(raw_scratch);write(attempt/'scratch-index.json',rows)
++            record['scratchFiles']=len(rows)
++            record['rawScratchInventoryTerminal']=record['childState'] in {'exited','not_started'}
+         def counts():
+             if (attempt/'test-return.json').exists():record['counts']=json.loads((attempt/'test-return.json').read_text())
+             if (attempt/'imports.json').exists():record['importReceipt']=json.loads((attempt/'imports.json').read_text())
+         def own_sources():
+             record['runnerUnchanged']=(sha(Path(__file__))==sha(attempt/'run_attempt.py') and sha(stage/'attempt_child.py')==sha(attempt/'attempt_child.py'))
+-        for label,fn in [('inputs-after',after_inputs),('external-after',after_external),('retained-outputs',outputs),('child-receipts',counts),('runner-stability',own_sources)]:finalize(label,fn)
++        for label,fn in [('inputs-after',after_inputs),('external-after',after_external),('retained-outputs',outputs),
++                         ('raw-scratch-after',scratch_after),('child-receipts',counts),('runner-stability',own_sources)]:finalize(label,fn)
+         imported=record.get('importReceipt',{})
+         record['currentPass']=(record['exitCode']==0 and record['childState']=='exited' and not record['errors'] and
+             valid_counts(record['counts']) and record['inputsUnchanged'] is True and record['externalInputsUnchanged'] is True and
+-            record['runnerUnchanged'] is True and imported.get('complete') is True and imported.get('allProjectOriginsMatched') is True)
++            record['runnerUnchanged'] is True and record.get('rawScratchRetained') is True and
++            record.get('rawScratchIdentityUnchanged') is True and record.get('rawScratchInventoryTerminal') is True and
++            imported.get('complete') is True and imported.get('allProjectOriginsMatched') is True)
+         if record['currentPass']:record['status']='passed'
+         elif record['status'] in {'running','launching','preparing'}:record['status']='failed'
+         try:write(attempt/'result.json',record)

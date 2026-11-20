@@ -1,0 +1,131 @@
+--- harness02/run_attempt.py
++++ harness03/run_attempt.py
+@@ -1,4 +1,4 @@
+-"""Original isolated resolver29 runner. Execute only after parent review/release.
++"""Original isolated resolver1 runner. Execute only after parent review/release.
+ 
+ No project imports occur in this launcher. Seven selected distribution closures
+ are acquired independently of the compiler's five-package identity.
+@@ -20,10 +20,11 @@
+ import traceback
+ import _sqlite3
+ 
++SELECTED_TARGET = 'test_pat_io_bindings.IoPatBindingTests.test_selection_is_select_only_with_no_files_clocks_or_provider_calls'
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '7aa0ddb4983da572c08bedd7c1abbeb324b2b6e7234d5187dd05b2cbadab5c11'
+-PREFIX = 'artifacts/implementation/pat-io-binding-resolver/implementation02/'
++FROZEN_INDEX = 'd7d47e0ccb66b0f52dac476a692fa69d8d38241dce5d9c72e091d45298a2d196'
++PREFIX = 'artifacts/implementation/pat-io-binding-resolver/implementation03/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -94,7 +95,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 163:
++    if len(expected) != 162:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -180,7 +181,7 @@
+         while selector.get_map():
+             remaining = deadline - time.monotonic()
+             if remaining <= 0:
+-                raise TimeoutError('Resolver29 child exceeded original harness deadline')
++                raise TimeoutError('Resolver1 child exceeded original harness deadline')
+             for key, _ in selector.select(min(remaining, 0.1)):
+                 block = os.read(key.fileobj.fileno(), 65536)
+                 if not block:
+@@ -193,13 +194,13 @@
+                 log.write(block)
+                 count += len(block)
+             if time.monotonic() >= deadline:
+-                raise TimeoutError('Resolver29 child crossed harness deadline during pipe collection')
++                raise TimeoutError('Resolver1 child crossed harness deadline during pipe collection')
+     remaining = deadline - time.monotonic()
+     if remaining <= 0:
+-        raise TimeoutError('Resolver29 child crossed harness deadline at EOF')
++        raise TimeoutError('Resolver1 child crossed harness deadline at EOF')
+     process.wait(timeout=remaining)
+     if time.monotonic() >= deadline:
+-        raise TimeoutError('Resolver29 child crossed harness deadline at process exit')
++        raise TimeoutError('Resolver1 child crossed harness deadline at process exit')
+     return count
+ 
+ 
+@@ -207,7 +208,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 29 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 1 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -232,7 +233,7 @@
+             args.timeout_seconds != 600):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation02'
++    stage = here.parent / 'implementation03'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -240,16 +241,16 @@
+     scratch = scratch_before = scratch_parent_before = None
+     before = external_before = frozen_before = own_before = None
+     started = time.monotonic()
+-    record = {'profile': 'hms.io-pat-binding-attempt/1', 'attempt': args.attempt,
++    record = {'profile': 'hms.io-pat-binding-focused-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 29,
+-              'projectInputCount': 155, 'frozenCandidateInputCount': 163,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 1,
++              'projectInputCount': 155, 'frozenCandidateInputCount': 162,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+                          'retainedLogBytes': MAX_LOG, 'scratchRetentionBytes': MAX_SCRATCH_BYTES, 'evidenceRetentionBytes': MAX_EVIDENCE_BYTES,
+                          'evidenceFiles': MAX_EVIDENCE_FILES},
+-              'scope': 'Exact29 resolver methods on original private SQLite/IoRuntime fixtures; no provider tick, public/live mount, native endpoint, lifecycle, qualification, model inference or physical execution.'}
++              'scope': 'One selected resolver method on original private SQLite/IoRuntime fixtures; no provider tick, public/live mount, native endpoint, lifecycle, qualification, model inference or physical execution.'}
+     write_json(attempt / 'started.json', record)
+     try:
+         own_before = [row(here / name, name) for name in OWN_FILES]
+@@ -277,10 +278,8 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 29 or len(targets['targets']) != 29 or
+-                len(set(targets['targets'])) != 29 or
+-                any(not name.startswith('test_pat_io_bindings.IoPatBindingTests.') for name in targets['targets'])):
+-            raise ValueError('Closed resolver29 method selection changed')
++        if targets['testCount'] != 1 or targets['targets'] != [SELECTED_TARGET]:
++            raise ValueError('Closed resolver1 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+         scratch_parent = Path('/tmp')
+@@ -405,9 +404,9 @@
+             selection = read_json(attempt / 'harness/targets.json')
+             expected_states = selection['expectedStates']
+             expected_methods = {name.split('.')[-1] for name in selection['targets']}
+-            if (set(expected_states) != expected_methods or len(expected_methods) != 29 or
+-                    sum(map(len, expected_states.values())) != 33 or
+-                    selection['expectedStateSnapshots'] != 33 or selection['expectedDatabasesPerState'] != 2):
++            if (set(expected_states) != expected_methods or len(expected_methods) != 1 or
++                    sum(map(len, expected_states.values())) != 1 or
++                    selection['expectedStateSnapshots'] != 1 or selection['expectedDatabasesPerState'] != 2):
+                 raise ValueError('Closed per-case evidence selection changed')
+             actual = {value['path'] for value in rows}
+             expected_paths, summaries = set(), []
+@@ -455,7 +454,7 @@
+                                       'sourceDirectory': str(source_directory)})
+             if actual != expected_paths:
+                 raise ValueError('Missing or extra per-case retained evidence')
+-            record['captureSummary'] = {'exactMethods': 29, 'stateSnapshots': len(summaries),
++            record['captureSummary'] = {'exactMethods': 1, 'stateSnapshots': len(summaries),
+                                         'databases': sum(len(value['databases']) for value in summaries),
+                                         'allExpectedCaptured': True}
+             write_json(attempt / 'capture-summary.json', {'summary': record['captureSummary'], 'states': summaries})

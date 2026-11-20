@@ -1,0 +1,11 @@
+--- sealed-parent/run_checks.py
++++ run_checks.py
+@@ -356,7 +356,7 @@
+                          'tests/standing_fixture.c','tests/standing_controls.c']
+         run([gcc,*COMMON,*flags,*standing_inputs,'-o',standing_exe],'standing-compile-'+mode)
+         standing_reports[mode]=json.loads(run([standing_exe],'standing-probe-'+mode,sanitizer=mode=='asan'))
+-        require(standing_reports[mode]['cases']==12,'Standing control coverage changed')
++        require(standing_reports[mode]['cases']==13,'Standing control coverage changed')
+         require(standing_reports[mode]['physical_qualification'] is False,'Synthetic controls overclaimed')
+     return {'original':original,'integration':reports,'standing':standing_reports,
+             'compiler_path':str(gcc),'compiler_sha256':digest(gcc),'compiler_version':version,

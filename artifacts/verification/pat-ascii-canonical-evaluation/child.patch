@@ -1,0 +1,97 @@
+--- previous/child.py
++++ current/child.py
+@@ -55,10 +55,11 @@
+     assert all(isinstance(node, (ast.FunctionDef, ast.ClassDef)) for node in tree.body)
+     exec(compile(tree, str(BASE / name), 'exec'), namespace)
+     if helpers:
+-        exec(compile(verify(BASE / 'candidate_helpers.py'), str(BASE / 'candidate_helpers.py'), 'exec'), namespace)
++        exec(compile(verify(BASE / helpers), str(BASE / helpers), 'exec'), namespace)
+     return namespace
+-reference = load('reference_functions.py')
+-candidate = load('candidate_functions.py', helpers=True)
++reference = load('reference_functions.py', helpers='reference_helpers.py')
++oracle = load('oracle_functions.py')
++candidate = load('candidate_functions.py', helpers='candidate_helpers.py')
+ assert candidate['_fast_allowed']()
+ def outcome(function, value):
+     try:
+@@ -80,6 +81,8 @@
+         return (lambda value: namespace['canonical'](namespace['parse_json'](value))) if parse else namespace['canonical']
+     wanted, actual = outcome(function(reference), value), outcome(function(candidate), value)
+     assert actual == wanted, (label, wanted, actual)
++    if candidate['_fast_allowed']() and reference['_fast_allowed']():
++        assert outcome(function(oracle), value) == wanted, ('vendor-reference', label)
+     if expected is not None:
+         assert (wanted[0] == 'accepted') is expected, (label, wanted)
+     row = dict(id=label, status=wanted[0])
+@@ -117,7 +120,7 @@
+ class Trap: __str__=__repr__=__iter__=__len__=__bool__=forbidden
+ class TrapList(list): __iter__=__len__=forbidden
+ class TrapDict(dict): items=__iter__=__len__=forbidden
+-class TrapStr(str): encode=__len__=forbidden
++class TrapStr(str): encode=__len__=isascii=forbidden
+ class TrapInt(int): __abs__=forbidden
+ class TrapFloat(float): is_integer=forbidden
+ for i,value in enumerate((Trap(),TrapList([1]),TrapDict(a=1),TrapStr('a'),TrapInt(1),TrapFloat(0.1))):
+@@ -215,6 +218,46 @@
+ assert prepared==original and prepared is not original and prepared['z'] is not original['z'] and prepared['z'][0] is not original['z'][0]
+ prepared['z'][0]['é']=9;assert original['z'][0]['é']==1
+ 
++ascii_rng = random.Random(76131)
++ascii_scalars = [None, True, False, 0, -1, 2**53-1, -(2**53-1), '', 'é😀', '\x00', '\ue000']
++def ascii_generated(depth=0):
++    if depth == 5 or ascii_rng.randrange(3) == 0: return ascii_rng.choice(ascii_scalars)
++    values = [ascii_generated(depth+1) for _ in range(ascii_rng.randrange(6))]
++    if ascii_rng.randrange(2): return values
++    return {str(i) + chr(ascii_rng.randrange(128)): value for i, value in enumerate(values)}
++for i in range(200): compare(ascii_generated(), 'ascii-generated-' + str(i), True)
++compare({chr(i): i for i in range(127, -1, -1)}, 'all-ascii-field-order', True)
++
++# The added route keeps detached containers and delegates key sorting to C.
++ascii_original = {'z': [{'value': 'é😀', 'b': 2, 'a': 1}], 'a': [0]}
++ascii_prepared = candidate['_ascii_integer_tree'](ascii_original)
++assert ascii_prepared == ascii_original and ascii_prepared is not ascii_original
++assert ascii_prepared['z'] is not ascii_original['z'] and ascii_prepared['z'][0] is not ascii_original['z'][0]
++ascii_prepared['z'][0]['value'] = 'changed'
++assert ascii_original['z'][0]['value'] == 'é😀'
++ascii_routes = []
++for label, value, use_utf16, use_vendor in [
++    ('ascii-fields', {'z': 1, 'A': 2, 'a': 3, '': 4, '\x7f': 5}, False, False),
++    ('unicode-values', ascii_original, False, False),
++    ('nested-unicode-field', {'a': [{'é': 1}]}, True, False),
++    ('astral-order', {'\ue000': 1, '\U00010000': 2}, True, False),
++    ('float-before-unicode', {'a': 0.1, 'z': {'é': 1}}, False, True),
++    ('float-after-unicode', {'a': {'é': 1}, 'z': 0.1}, True, True),
++]:
++    calls = []
++    utf16_code = candidate['_integer_tree'].__code__
++    vendor_code = rfc8785.dumps.__code__
++    def route_profile(frame, event, arg):
++        if event == 'call' and frame.f_code in (utf16_code, vendor_code):
++            calls.append('utf16' if frame.f_code is utf16_code else 'vendor')
++    sys.setprofile(route_profile)
++    try: encoded = candidate['canonical'](value)
++    finally: sys.setprofile(None)
++    assert ('utf16' in calls) is use_utf16 and ('vendor' in calls) is use_vendor
++    compare(value, 'ascii-route-' + label, True)
++    assert encoded == oracle['canonical'](value)
++    ascii_routes.append(dict(input=label, utf16Fallback=use_utf16, vendorFallback=use_vendor))
++
+ documents=[json.loads(verify(path)) for path in sorted((BASE/'documents').glob('*.json'))]
+ assert len(documents)==8
+ before=json.dumps(documents,sort_keys=True,ensure_ascii=True)
+@@ -237,12 +280,13 @@
+     assert hashlib.sha256(Path(row['path']).read_bytes()).hexdigest()==row['sha256']
+ medians={label:statistics.median(row['cpuNanoseconds'] for row in samples if row['implementation']==label) for label in ('reference','candidate')}
+ result=dict(status='passed',differentialCases=len(cases),cases=cases,unicodeScalarValues=unicode_scalars,
+-    fallbackChecks=fallbacks,originalEncoderRouting=routes,upstreamVectors=vectors,
++    fallbackChecks=fallbacks,originalEncoderRouting=routes,asciiRoutes=ascii_routes,detachedAsciiContainers=True,upstreamVectors=vectors,
+     customHooksInvoked=len(hooks),prohibitedAttempts=denied,inputsUnchanged=True,documentInputsUnchanged=True,
+     projectPackageImported=False,workerExecuted=False,productionChanged=False,physicalObjectiveVerified=False,
+     extractedParserAndCanonicalizerTested=True,referenceValidationUnchanged=True,
+     benchmarkRounds=9,callsPerSample=256,samples=samples,medianCpuNanoseconds=medians,
+     candidateToReferenceMedianCpuRatio=medians['candidate']/medians['reference'],
++    referenceIsCurrentGuardedEncoder=True,vendorOracleCheckedOnUnmodifiedDependencies=True,
+     timingQualified=False,pythonVersion=sys.version,systemLibraryClosureAttested=False)
+ encoded=json.dumps(result,indent=2,allow_nan=False);assert len(encoded.encode())<=4194304
+ print(encoded)

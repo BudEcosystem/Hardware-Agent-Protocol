@@ -1,0 +1,18 @@
+--- implementation01/project/hms/pat_io_board_history.py
++++ implementation02/project/hms/pat_io_board_history.py
+@@ -336,11 +336,11 @@
+                             require(atom not in seen_fences or fence > seen_fences[atom][0], 'PAT_IO_HISTORY_FENCE_REUSE')
+                             seen_fences[atom] = (fence, operation_id)
+                     else:
+-                        key = (cp['record'], operation_id)
+-                        require(key in checked_no_starts, 'PAT_IO_HISTORY_NO_START_CAUSE_UNIMPLEMENTED')
+-                        require(checked_no_starts[key] == result['reason'] == 'duration_budget_excluded',
++                        cause_key = (cp['record'], operation_id)
++                        require(cause_key in checked_no_starts, 'PAT_IO_HISTORY_NO_START_CAUSE_UNIMPLEMENTED')
++                        require(checked_no_starts[cause_key] == result['reason'] == 'duration_budget_excluded',
+                                 'PAT_IO_HISTORY_NO_START_CAUSE')
+-                        consumed_no_starts.add(key)
++                        consumed_no_starts.add(cause_key)
+                 elif state == 'completed':
+                     require(epoch == opened['ownerEpoch'] and value['dueMonoMs'] <= now < timing['latestCompletionUnixMs'] and
+                             now < value['budgetOriginMonoMs'] + timing['maxRunMs'] and now < lease, 'PAT_IO_HISTORY_COMPLETION_TIME')

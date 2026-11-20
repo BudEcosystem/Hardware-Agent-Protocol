@@ -1,0 +1,22 @@
+--- harness01/child.py
++++ harness02/child.py
+@@ -28,7 +28,7 @@
+ for path,digest in allowed.items():assert sha(Path(path))==digest
+ stdlib=Path(sysconfig.get_path('stdlib')).resolve()
+ roots=read(ROOT/'artifacts/implementation/pat-native-supervisor/harness02/references/approved-external-roots.json')['roots']
+-sys.path[:0]=[str(PROJECT),str(PROJECT/'tests')]+roots
++sys.path[:0]=[str(PROJECT),str(PROJECT/'tests'),str(PROJECT/'supervisor')]+roots
+ os.environ['HMS_PRECOMMIT_TEST_ROOT']=str(SCRATCH/'new')
+ (SCRATCH/'new').mkdir(mode=0o700)
+ (SCRATCH/'legacy').mkdir(mode=0o700)
+@@ -96,6 +96,10 @@
+ log=io.StringIO();started=time.monotonic_ns()
+ result=unittest.TextTestRunner(stream=log,verbosity=2,resultclass=RetainedResult).run(suite)
+ elapsed=time.monotonic_ns()-started
++with (ATTEMPT/'tests.log').open('x') as stream:stream.write(log.getvalue())
++with (ATTEMPT/'tests-before-verification.json').open('x') as stream:
++    json.dump(dict(testsRun=result.testsRun,failures=len(result.failures),errors=len(result.errors),skips=len(result.skipped),
++        ids=ids,postRunVerificationComplete=False),stream,indent=2);stream.write('\n')
+ from evidence_vault.contracts import identity as vault_identity
+ from evidence.contracts import identity as legacy_identity
+ pins=read(SOURCE/'identity-pins.json')

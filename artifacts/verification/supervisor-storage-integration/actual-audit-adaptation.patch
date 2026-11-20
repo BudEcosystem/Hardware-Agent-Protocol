@@ -1,0 +1,139 @@
+--- original/audit_actual.py
++++ split/audit_actual.py
+@@ -9,9 +9,9 @@
+ import re
+ 
+ BASE=Path(__file__).resolve().parent;ROOT=BASE.parents[2]
+-STAGE=BASE/'implementation01';HARNESS=BASE/'harness01';ATTEMPT=HARNESS/'attempts/attempt01-actual'
+-PIN='7ecd42fec5cef9374573ae8b3d0747060bdc8c4cd8ca552e9c3de4d64a2ec23e'
+-HPIN='74204ea2477aa497bfce9a6c667455b4ec5fb622f49c07663a7c87b3c583d933'
++STAGE=ROOT/'artifacts/implementation/supervisor-storage-bindings/implementation01';HARNESS=BASE/'harness01';ATTEMPT=HARNESS/'attempts/attempt01-actual'
++PIN='ffcace54bb02211d47e2f69febfb2f7f1566d6ee6dcb8264a3f10ecef5a8534f'
++HPIN='b53a90f96fbe5e15b4531c3b3474eb212d98a3d0fcb14f06111e82f1434e5873'
+ METHOD='test_actual_original_matrix_catalog_admission_and_cold_history'
+ def read(path):return json.loads(path.read_bytes())
+ def sha(path):
+@@ -44,7 +44,7 @@
+ assert result['counts']==dict(testsRun=1,failures=0,errors=0,skips=0,expectedFailures=0,unexpectedSuccesses=0)
+ assert result['errors']==result['childErrors']==[] and result['rawScratchInventoryTerminal']
+ assert result['timeoutSeconds']==180 and result['limits']['scratchRetentionBytes']==268435456
+-assert result['projectInputCount']==304 and result['frozenPreparationInputCount']==313
++assert result['projectInputCount']==309 and result['frozenPreparationInputCount']==312
+ for label,prefix in (('inputs',ATTEMPT/'project'),('frozen',ROOT),('harness',ATTEMPT/'harness')):
+     rows=read(ATTEMPT/(label+'-before.json'));assert rows==read(ATTEMPT/(label+'-after.json'))
+     for row in rows:verify(prefix/row['path'],row)
+@@ -66,7 +66,7 @@
+     elif 'sha256' in row:assert sha(Path(row['origin']))==row['sha256']
+ assert len(native_records)==1
+ # The held descriptor was checked in the child; never reopen its numeric path after exit.
+-assert len(native['scans'])==2 and all(type(v['calls']) is int and v['calls']>0 for v in native['scans'])
++assert len(native['scans'])==3 and all(type(v['calls']) is int and v['calls']>0 for v in native['scans'])
+ for label in ('compiler','driver'):assert read(ATTEMPT/(label+'-before.json'))==read(ATTEMPT/(label+'-after.json'))
+ assert len(read(ATTEMPT/'sqlite-connections.json'))==5
+ targets=read(HARNESS/'targets.json')['targets']
+@@ -85,16 +85,34 @@
+             assert stat.S_ISREG(info.st_mode) and info.st_uid==os.getuid() and info.st_nlink==1 and info.st_size==0
+             fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
+             locks.append(dict(path=path.relative_to(work).as_posix(),device=str(info.st_dev),inode=str(info.st_ino)))
+-    assert len(locks)==57
++    assert len(locks)==58
+     rows=inventory(raw);assert rows==inventory(ATTEMPT/'scratch')==read(ATTEMPT/'scratch-index.json')
+     assert len(rows)<=8192 and sum(row['bytes'] for row in rows)==result['scratchRetainedBytes']<=268435456
+     board=next((work/'runtime').glob('synthetic-io-board-*.db'))
+-    for path in (work/'runtime/authority.db',work/'vault/evidence.db',work/'supervisor/attempts.db',board):
++    for path in (work/'runtime/authority.db',work/'vault/evidence.db',work/'supervisor-control/attempts.db',board):
+         assert not any(os.path.lexists(str(path)+suffix) for suffix in ('-journal','-wal','-shm'))
+         hashes[path.relative_to(work).as_posix()]=sha(path)
+         db=sqlite3.connect(path.as_uri()+'?mode=ro&immutable=1',uri=True,isolation_level=None)
+         dbs.append(db);db.execute('PRAGMA query_only=ON')
+     authority,vault,supervisor,board_db=dbs
++    stored_binding=supervisor.execute('SELECT version,binding FROM qs_meta LIMIT 2').fetchall()
++    assert len(stored_binding)==1 and stored_binding[0][0]==3
++    storage_binding=json.loads(stored_binding[0][1])
++    assert canonical(storage_binding)==stored_binding[0][1] and storage_binding==read(work/'storage-binding.json')
++    for name in ('control','bulk'):
++        path=work/('supervisor-'+name);info=path.lstat()
++        assert storage_binding[name]==dict(path=str(path),uid=os.getuid(),device=str(info.st_dev),inode=str(info.st_ino))
++        assert stat.S_ISDIR(info.st_mode) and stat.S_IMODE(info.st_mode)==0o700
++    for name,key in (('bulk.owner','bulkOwner'),('storage.json','bulkManifest')):
++        path=work/'supervisor-bulk'/name;info=path.lstat()
++        assert storage_binding[key]==dict(device=str(info.st_dev),inode=str(info.st_ino))
++        assert stat.S_ISREG(info.st_mode) and info.st_nlink==1 and info.st_uid==os.getuid() and stat.S_IMODE(info.st_mode)==0o600
++    marker=(work/'supervisor-bulk/storage.json').read_bytes()
++    assert marker==canonical({k:storage_binding[k] for k in ('profile','bindingId','control','bulk')})
++    assert hashlib.sha256(marker).hexdigest()==storage_binding['manifestSha256']
++    assert storage_binding['profile']=='hms.supervisor.storage-split/0.1'
++    assert len([r for r in locks if r['path']=='supervisor-bulk/bulk.owner'])==1
++
+     saved=supervisor.execute('SELECT request,record,return_bytes FROM qs_attempts LIMIT 2').fetchall()
+     assert len(saved)==1 and type(saved[0][2]) is bytes
+     request,record=map(json.loads,saved[0][:2]);archive=read(work/'worker-archive.json')
+@@ -104,7 +122,7 @@
+     assert type(report['evidenceIntegrity']) is dict and type(report['returnDigest']) is str
+     assert request['groupLimits']['maxWallMs']==60000 and len(request['bundleHeader']['caseIds'])==30
+     assert record['requestDigest']==digest(b'HMS-PAT-IO-SUPERVISOR-REQUEST-v0.1',request)
+-    writer=next(row for row in locks if row['path']=='supervisor/'+record['attemptId']+'/writer.lease')
++    writer=next(row for row in locks if row['path']=='supervisor-bulk/'+record['attemptId']+'/writer.lease')
+     assert record['lease']=={key:writer[key] for key in ('device','inode')}
+     assert authority.execute('SELECT count(*) FROM iose_handoffs').fetchone()[0]==authority.execute('SELECT count(*) FROM iosr_runs').fetchone()[0]==1
+     handoff=json.loads(authority.execute('SELECT receipt FROM iose_handoffs').fetchone()[0])
+@@ -125,9 +143,13 @@
+     assert actual_effects==effects['effects']
+     assert all(row[1:]==([1,1,0] if row[0]==effects['selectedInstance'] else [0,0,0]) for row in actual_effects)
+     assert board_db.execute('SELECT count(*) FROM io_owners').fetchone()[0]==0
+-    worker=work/'supervisor'/record['attemptId'];output=worker/'output';matrix=read(output/'matrix.json')
++    worker=work/'supervisor-bulk'/record['attemptId'];output=worker/'output';matrix=read(output/'matrix.json')
+     scan_rows={value['path']:value for value in native['scans']}
+-    assert scan_rows[str(work/'supervisor')]==dict(path=str(work/'supervisor'),calls=1,maxFiles=262144,maxBytes=268435456)
++    assert scan_rows[str(work/'supervisor-control')]==dict(path=str(work/'supervisor-control'),calls=1,maxFiles=262144,maxBytes=268435456)
++    bulk_scan=scan_rows[str(work/'supervisor-bulk')]
++    assert bulk_scan['calls']==1 and bulk_scan['maxFiles']==262142
++    assert 0<268435456-bulk_scan['maxBytes']<=(work/'supervisor-control/attempts.db').stat().st_size
++    assert set(scan_rows)=={str(work/'supervisor-control'),str(work/'supervisor-bulk'),str(worker)}
+     assert scan_rows[str(worker)]==dict(path=str(worker),calls=scan_rows[str(worker)]['calls'],maxFiles=8192,maxBytes=67108864)
+     assert [case['caseId'] for case in matrix['cases']]==request['bundleHeader']['caseIds']
+     cases=sorted(output.glob('case-*'));manifests=sorted(output.glob('case-*/manifest.json'))
+@@ -137,8 +159,8 @@
+     assert (output/'result.json').is_file() and (worker/'worker-return.json').is_file()
+     phases=read(work/'phase-times.json');assert {'import_complete','catalog_recorded','catalog_activated','application_completed','cold_history_complete','test_body_complete'}<={row['phase'] for row in phases}
+     phase_map={row['phase']:row['elapsedMs'] for row in phases}
+-    image=work/'supervisor'/('code-'+request['supervisorIdentity'][7:]);paths=sorted(p for p in image.rglob('*') if p.is_file())
+-    assert len(paths)==267;source_rows=[]
++    image=work/'supervisor-bulk'/('code-'+request['supervisorIdentity'][7:]);paths=sorted(p for p in image.rglob('*') if p.is_file())
++    assert len(paths)==268;source_rows=[]
+     assert {'hms_qualification/__init__.py','hms_qualification/supervisor/__init__.py'} <= {p.relative_to(image).as_posix() for p in paths}
+     for path in paths:
+         relative=path.relative_to(image).as_posix();value=sha(path)
+@@ -156,7 +178,7 @@
+     consumer=digest(b'HMS-PAT-VAULT-IMPORT-IMPLEMENTATION-v0.1',dict(vaultIdentity=vault_id,sources=package('hms_qualification/evidence_authority',('__init__.py','contracts.py','store.py'))))
+     pins=read(STAGE/'identity-pins.json')
+     assert legacy==pins['legacy'] and vault_id==pins['vault']==meta['vault']['implementationDigest']
+-    assert consumer==pins['consumer']==meta['consumerIdentity']=='sha256:f4479f6d5b40c38e1c0645515633be63faaed2c8b1e913a1c16c522152fc6738'
++    assert consumer==pins['consumer']==meta['consumerIdentity']=='sha256:f4388ad262775cadd0fe2832ff001a70b9251d369578fcea6e5641cd5f22da9e'
+ 
+     # Independently verify publication and every retained vault body/reference.
+     def body_sha(body):return 'sha256:'+hashlib.sha256(body).hexdigest()
+@@ -402,18 +424,18 @@
+     for db in reversed(dbs):db.close()
+     for fd in reversed(held):os.close(fd)
+ summary=dict(stageStatus='verified-progress-actual-scope-passed',sourceIndexSha256=PIN,harnessIndexSha256=HPIN,
+-    resultSha256=sha(ATTEMPT/'result.json'),catalogControls=19,previousNativeControlsReferenced=True,productionCandidateChanged=True,publicRuntimeChanged=False,
++    resultSha256=sha(ATTEMPT/'result.json'),controlChecks=71,previousNativeControlsReferenced=True,productionCandidateChanged=False,storageBinding=storage_binding,diagnosticBatchingChanged=True,originalBatchedControlProfilePassed=False,publicRuntimeChanged=False,
+     actualScopePassed=True,originalAttemptId=record['attemptId'],supervisorReason=None,
+     requestedCases=30,caseDirectories=30,caseManifests=30,incompleteScenario=None,
+     originalMaxWallMs=60000,transportComplete=True,workerUnresolvedEffects=None,importReached=True,
+     importIntents=1,publications=1,evidenceManifests=1,sourceApplicationInvocations=1,
+     readonlySourceDatabases=hashes,workerCaseDatabasesOpened=0,ownerAndWriterLocks=locks,
+-    sourceAndOriginsAndRetainedBytesVerified=True,producerImageFiles=267,legacyIdentity=legacy,vaultIdentity=vault_id,consumerIdentity=consumer,
++    sourceAndOriginsAndRetainedBytesVerified=True,producerImageFiles=268,legacyIdentity=legacy,vaultIdentity=vault_id,consumerIdentity=consumer,
+     sourceIdentitiesIndependentlyRecomputed=True,rawPath=str(raw),rawFiles=len(rows),rawBytes=result['scratchRetainedBytes'],
+     phaseTimes=phases,observedSpawnToSettledMs=phase_map['worker_producer_settled']-phase_map['worker_spawned'],
+     nativeImageReceiptVerified=True,nativeOriginReopenedAfterChildExit=False,nativeRetention=native,workerResourceObservation=observation,vaultImportObservation=import_observation,catalogObservation=catalog_observation,
+     timeoutRootCauseEstablished=False,wholeWorkerPerformanceQualified=False,catalogIntegrated=True,
+     physicalObjectiveVerified=False,aggregateDiskQuotaEnforced=False,independentReview=False,goalStatus='active')
+-assert read(BASE/'CONTROL_RESULTS.json')['testsRun']==19
+-with (BASE/'RESULTS.json').open('x') as stream:json.dump(summary,stream,indent=2);stream.write('\n')
+-print(json.dumps({key:summary[key] for key in ('stageStatus','catalogControls','caseManifests','importReached','rawFiles','catalogObservation','goalStatus')}))
++assert read(BASE/'CONTROL_AUDIT.json')['tests']==71
++with (BASE/'ACTUAL_RESULTS.json').open('x') as stream:json.dump(summary,stream,indent=2);stream.write('\n')
++print(json.dumps({key:summary[key] for key in ('stageStatus','controlChecks','caseManifests','importReached','rawFiles','catalogObservation','goalStatus')}))

@@ -1,0 +1,14 @@
+--- artifacts/implementation/pat-io-configuration-capture/implementation01/project/hms/pat_io_transcript.py
++++ artifacts/implementation/pat-io-configuration-history/implementation01/project/hms/pat_io_transcript.py
+@@ -237,6 +237,11 @@
+             if state in {'baseline', 'after_reopen'}:
+                 require(label == state and value['phase'] == phase, 'PAT_IO_TRANSCRIPT_PHASE')
+                 state = 'ready'
++            elif state == 'final_report':
++                # Diagnostic re-capture may repeat the final snapshot. It may
++                # introduce no changed table, phase, clock or intervening action.
++                require(docs[index-1]['kind'] == 'checkpoint' and value == checkpoints[-1]['value'],
++                        'PAT_IO_TRANSCRIPT_PHASE')
+             elif state == 'after_call':
+                 expected_label = active['label'] + (':after' if active['returned'] else ':after_error')
+                 require(label == expected_label and value['phase'] == phase, 'PAT_IO_TRANSCRIPT_PHASE')

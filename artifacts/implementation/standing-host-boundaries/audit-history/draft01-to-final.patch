@@ -1,0 +1,109 @@
+--- audit-draft01/audit_retained.py
++++ audit-final/audit_retained.py
+@@ -1,7 +1,8 @@
+ """Original stdlib-only audit of the stopped three-profile retained prefix.
+ 
+ Review before execution. Imports no candidate, launches/signals no process,
+-opens authority DBs read-only/immutable/query_only, writes only new AUDIT.json.
++opens authority DBs read-only/immutable/query_only, publishes new AUDIT.json from
++one exclusive temporary file. Require terminal0 as well as the complete receipt.
+ Audit success means retained evidence joins, not that the failed matrix passed.
+ """
+ import hashlib
+@@ -176,6 +177,7 @@
+ 
+ def audit_database(path,name,interpreter_sha,evidence=None,failed=False):
+     before=digest(path);size=path.stat().st_size;need(size<=(32 if failed else 1)*1024*1024,'Profile DB file ceiling')
++    need(not any(Path(str(path)+suffix).exists() for suffix in ('-journal','-wal','-shm')),'Closed retained database has no recovery sidecar')
+     db=sqlite3.connect(path.resolve().as_uri()+'?mode=ro&immutable=1',uri=True)
+     try:
+         db.execute('PRAGMA query_only=ON');need(db.execute('PRAGMA query_only').fetchone()[0]==1,'Read-only audit connection')
+@@ -276,7 +278,7 @@
+             'conflicts':len(conflicts),'retainedClaims':len(owned),'retired':row['retired'],'openState':row['openState'],
+             'mutationSequence':row['mutationSequence'],'hasFullCaseSnapshot':evidence is not None}
+     finally:
+-        db.close();need(digest(path)==before,'Read-only DB bytes unchanged')
++        db.close();need(digest(path)==before and not any(Path(str(path)+suffix).exists() for suffix in ('-journal','-wal','-shm')),'Read-only DB bytes/sidecar absence unchanged')
+ 
+ 
+ def audit_trace(entries,route,conflicts):
+@@ -286,7 +288,7 @@
+         need(set(entry)=={'direction','session','sequence','raw'},'Trace shape');uint(entry['session']);uint(entry['sequence'],2**32-1)
+         body=bytes.fromhex(entry['raw']);need(2<=len(body)<=192 and body[0]==2,'Original bounded v2 body')
+         if entry['direction']=='request':
+-            need(entry['sequence']>last_tx and entry['session']==1,'Strict original request continuity');last_tx=entry['sequence'];requests.append(entry)
++            need(entry['sequence']>last_tx and entry['session']==(0 if body[1]==1 else 1),'Strict original request continuity; DESCRIBE is session-independent');last_tx=entry['sequence'];requests.append(entry)
+             need(body[1] in (1,16,18,64,65,66,67,68,69,70,71,72),'Closed wire opcodes')
+         else:
+             need(entry['direction']=='response' and len(body)>=66 and entry['session']==1 and entry['sequence']>last_rx,'Decoded response continuity')
+@@ -321,6 +323,14 @@
+         need(native['9']==(1 if row['openState']=='accepted' else 0),'Retained endpoint high-water after empty slot')
+     if name in {'driver_expiry_after_possible','storage_open_after'}:
+         need(row['openState']=='possible' and row['transportUncertain'] and row['recoveryRequired'] and native['9']==0,'Committed possibility is not retried/not-seen is not absence authority')
++        need(all(native[str(n)]==0 for n in (3,4,5,6,7,10,11,12,13,14,15,23,24,25)) and native['8']==2,'Never-handed native OPEN remains completely empty')
++    if name=='boot_after_acceptance':
++        need(all(native[str(n)]==0 for n in (3,4,5,6,7,9,10,11,12,13,14,15,23,24,25)) and native['8']==1,'Different boot empty slot cannot release old claims')
++    if name=='dispute_retention':
++        state=bytes.fromhex(row['lastStatus']['response'])[66:]
++        need(native['5']==5 and native['14']==native['15']==native['23']==3 and native['13']==row['mutationSequence']==1 and
++             native['12']==row['revision']==u32(state,1) and native['6']==u16(state,96) and native['10']==row['highWater']==0 and
++             native['11']==row['acknowledged']==0,'Stopped native witness coexists with retained host dispute and claims')
+     if name=='refused_sequence_original_key':
+         need([(m['state'],m['endpointSequence']) for m in mutations]==[('refused',1),('accepted',1),('accepted',2)],'Definitive refusal consumes no sequence/false novelty retained')
+     if name=='automatic_ack_revision_refusal':
+@@ -343,6 +353,7 @@
+ 
+ def main():
+     need(len(sys.argv)==1 and not sys.flags.optimize,'Fixed assertion-enabled audit')
++    audit_source_sha=digest(Path(__file__))
+     need(digest(HERE/'SOURCE-REVIEW.json')==REVIEW_SHA and digest(HERE/'AUDIT-INPUT-PINS.json')==INPUT_SHA,'Pinned source/audit input inventory')
+     review=data(HERE/'SOURCE-REVIEW.json',False);inputs=data(HERE/'source-pins.json',False);pins=data(HERE/'AUDIT-INPUT-PINS.json',False)
+     need(len(review['files'])==306 and pins['originalSourceReviewSha256']==REVIEW_SHA,'Original306 source set')
+@@ -427,7 +438,7 @@
+             'observedSuccessElapsedNs':result['controlObservedElapsedMonotonicNs'],'finalElapsedNs':result['elapsedMonotonicNs']})
+     need(len(all_cases)==18 and len(identities)==22 and len(set(identities))==22 and attempt_file_count==995,'Actual prefix18cases/19native+3outer/995files')
+     for entry in pins['attempts']:inventory(HERE/entry['path'],entry['files'])
+-    audit_source_sha=digest(Path(__file__))
++    need(digest(Path(__file__))==audit_source_sha,'Auditor source stable from start to end')
+     result={'profile':'hms.standing-boundary-retained-audit/0.1','passed':True,'meaning':'retained evidence audit passed; candidate matrix stopped on failure',
+         'checks':checks,'attempts':attempts,'completedProfiles':2,'failedProfiles':1,'completedCases':18,
+         'completedProfileControlChecks':258,'completedCaseChecks':252,'failedProfilePartialChecks':209,
+@@ -438,10 +449,14 @@
+         'actualOwnerDeathTestedHere':False,'storageScope':'living-owner synchronous COMMIT/rollback exceptions and configured SQLITE_FULL only',
+         'partialMutationFailureHasNoFullNativeSnapshot':True,'originalSourceReviewSha256':REVIEW_SHA,'auditInputPinsSha256':INPUT_SHA,
+         'auditSourceSha256':audit_source_sha,'publicFilesReverified':244,'sealedParentFilesReverified':4530}
+-    destination=HERE/'AUDIT.json';body=canon(result)
+-    with destination.open('xb') as out:out.write(body);out.flush();os.fsync(out.fileno())
++    destination=HERE/'AUDIT.json';temporary=HERE/'.AUDIT.json.pending';body=canon(result)
++    # The complete fsynced bytes become visible without overwriting any final
++    # receipt. A failed publication retains its evidence; never auto-retry.
++    with temporary.open('xb') as out:out.write(body);out.flush();os.fsync(out.fileno())
++    os.link(temporary,destination,follow_symlinks=False)
+     fd=os.open(HERE,os.O_RDONLY|os.O_DIRECTORY)
+-    try:os.fsync(fd)
++    try:
++        os.fsync(fd);temporary.unlink();os.fsync(fd)
+     finally:os.close(fd)
+     print(json.dumps({'passed':True,'completedCases':18,'failedCapacityProfile':True,'checks':checks,'attemptFiles':995,'ownedIdentities':22},sort_keys=True))
+ 
+--- audit-draft01/AUDIT-PLAN.md
++++ audit-final/AUDIT-PLAN.md
+@@ -1,9 +1,16 @@
+ # Retained-prefix audit plan
+ 
+ Status: auditor source prepared, not executed. This audit never imports candidate
+-modules, compiles, launches or signals a process. Its only write is a new exclusive
+-`AUDIT.json`; all SQLite connections use URI`mode=ro&immutable=1` and`query_only=ON`,
++modules, compiles, launches or signals a process. Its only output is a new exclusive
++`AUDIT.json`, published from one exclusive`.AUDIT.json.pending` temporary using a
++non-overwriting hard link after file fsync; all SQLite connections use URI`mode=ro&immutable=1` and`query_only=ON`,
+ and each DB is hashed before and after the read.
++
++The auditor hashes its own source at the beginning and end. Root must verify the
++reviewed source pin before launch and require terminal0 plus a complete canonical
++receipt. A post-publication directory-fsync failure can leave complete verified
++bytes but a nonzero command result; that is not a successful audit invocation.
++Failed temporary/final outputs are retained, never automatically overwritten.
+ 
+ The actual matrix stopped at the mutation profile's unchanged30-second wall
+ limit. Negative passed8 cases/136 checks; storage passed10 cases/122 checks.

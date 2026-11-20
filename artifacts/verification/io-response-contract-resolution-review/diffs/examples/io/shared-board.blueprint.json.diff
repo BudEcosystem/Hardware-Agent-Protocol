@@ -1,0 +1,20 @@
+--- artifacts/verification/io-provider-runtime-integration/attempts/20261107T005504.237197Z-360d486cb278/inputs-before/examples/io/shared-board.blueprint.json
++++ examples/io/shared-board.blueprint.json
+@@ -62,7 +62,7 @@
+           "svcA"
+         ],
+         "properties": {
+-          "driverProfile": "sqlite-finite-io/1"
++          "driverProfile": "synthetic-io-hub/0.1"
+         }
+       },
+       "driverB": {
+@@ -72,7 +72,7 @@
+           "svcB"
+         ],
+         "properties": {
+-          "driverProfile": "sqlite-finite-io/1"
++          "driverProfile": "synthetic-io-hub/0.1"
+         }
+       },
+       "pin5": {

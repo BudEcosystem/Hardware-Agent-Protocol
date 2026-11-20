@@ -1,0 +1,101 @@
+--- artifacts/implementation/standing-host-history-cost/review-history/root-read01/history_cost_controls.py
++++ artifacts/implementation/standing-host-history-cost/history_cost_controls.py
+@@ -24,7 +24,6 @@
+ from hms.standing_store import StandingStore
+ from hms.standing_wire import Opcode
+ from hms.standing_capacity import check as capacity_check
+-from hms.contracts import canonical
+ IMPORT_FINISHED=time.monotonic_ns()
+ 
+ checks=0
+@@ -49,7 +48,9 @@
+ 
+ 
+ def save(path,value):
+-    data=canonical(value)
++    # Diagnostic receipts are outside the application's64KiB canonical domain.
++    # Keep its production parser/encoder unmodified and bound this closed report.
++    data=json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=False,allow_nan=False).encode('utf-8')
+     if len(data)>1024*1024:raise RuntimeError('Bounded evidence exceeded')
+     temporary=Path(str(path)+'.pending')
+     with temporary.open('wb') as out:out.write(data);out.flush();os.fsync(out.fileno())
+@@ -72,21 +73,24 @@
+         return self.rows[key]
+     def call(self,label,action,*args,**kwargs):
+         row=self._row(label,self.phase);row['calls']+=1
+-        frame=[time.monotonic_ns(),0];self.stack.append(frame)
+-        try:return action(*args,**kwargs)
++        frame=[time.monotonic_ns(),0]
++        try:
++            self.stack.append(frame)
++            return action(*args,**kwargs)
+         except BaseException:
+             row['errors']+=1;raise
+         finally:
+             elapsed=time.monotonic_ns()-frame[0]
+-            self.stack.pop();row['inclusiveNs']+=elapsed;row['exclusiveNs']+=elapsed-frame[1]
++            if self.stack and self.stack[-1] is frame:self.stack.pop()
++            row['inclusiveNs']+=elapsed;row['exclusiveNs']+=elapsed-frame[1]
+             if self.stack:self.stack[-1][1]+=elapsed
+     def held(self,label,phase,began):
+         row=self._row(label+'.held',phase);row['calls']+=1
+         row['inclusiveNs']+=time.monotonic_ns()-began
+         # Held lifetimes overlap arbitrary method scopes. No exclusive meaning.
+     def count(self,label,phases):return sum(row['calls'] for (phase,name),row in self.rows.items() if name==label and phase in phases)
+-    def export(self):
+-        if self.stack:raise RuntimeError('Unfinished timed method')
++    def export(self,*,partial=False):
++        if self.stack and not partial:raise RuntimeError('Unfinished timed method')
+         return [{'phase':phase,'method':label,'calls':row['calls'],'errors':row['errors'],
+                  'inclusiveNs':str(row['inclusiveNs']),
+                  'exclusiveNs':None if label.endswith('.held') else str(row['exclusiveNs'])}
+@@ -160,6 +164,7 @@
+ 
+ 
+ def history_cost(f):
++    application_setup_began=time.monotonic_ns()
+     row=f.host.prepare(OWNER,f.request());require(row['openState']=='prepared')
+     row=f.host.open(OWNER,row['id']);require(row['openState']=='accepted')
+     identifier=row['id'];f.cycle(0);before=snapshot(f)
+@@ -211,6 +216,8 @@
+         'retainedClaims':len(retained_claims),'mutationSequence':row['mutationSequence'],
+         'collected':row['collected'],'acknowledged':row['acknowledged'],'highWater':row['highWater'],
+         'loopElapsedNs':str(loop_elapsed),'iterations':iterations,'initialNative':before,
++        'applicationSetupElapsedNs':str(loop_started-application_setup_began),
++        'moduleToLoopsSetupNs':str(loop_started-MODULE_STARTED),
+         'intrusiveInstrumentation':True,'instrumentationOverheadKnown':False,
+         'exclusiveMeaning':'Inclusive method wall span minus directly nested measured method spans; includes unmeasured work and unknown probe overhead.',
+         'heldMeaning':'Successful context enter return to exit invocation; overlapping lifetime, not additive CPU or exclusive time.',
+@@ -234,7 +241,6 @@
+             identifier,diagnostic=history_cost(f)
+             diagnostic['candidateImportsElapsedNs']=str(IMPORT_FINISHED-MODULE_STARTED)
+             diagnostic['fixtureSetupElapsedNs']=str(fixture_elapsed)
+-            diagnostic['moduleToLoopsSetupNs']=str(began+fixture_elapsed-MODULE_STARTED)
+             tables=[r[0] for r in f.journal._db.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name")]
+             record={'case':'history_cost','native':snapshot(f),'route':f.store.route(),
+                 'tableCounts':{table:f.journal._db.execute('SELECT count(*) FROM "'+table+'"').fetchone()[0] for table in tables},
+@@ -242,11 +248,13 @@
+                 'nativeStartIdentity':native_identity,'ownerEpoch':f.journal.owner_epoch,'authority':f.journal.authority_id,
+                 'deploymentId':identifier,'publicWriterRecords':True,'directSQLPopulation':False}
+             require(f.policy._held_image is None and f.driver._lease is None and f.catalog._selection is None and f.producer._held is None)
+-            diagnostic['metrics']=METER.export();record['diagnostic']=diagnostic
++            record['diagnostic']=diagnostic
+             METER.set_phase('cleanup')
+         require(len(guardian.records)==reap_count+1)
+         native_reap=copy.deepcopy(guardian.records[-1])
+         require(native_reap['reaped'] and native_reap['exitCode']==0 and all(native_reap[key]==value for key,value in native_identity.items()))
++        diagnostic['metrics']=METER.export()
++        diagnostic['metricScope']='Candidate imports timed separately; method probes include setup,32loops,final validation and fixture close. Uninstrumented publication belongs to fixture setup wall time.'
+         record['nativeReap']=native_reap;save(state/'history_cost/evidence.json',record)
+         results.append({'case':'history_cost','checks':checks-previous_checks,'passed':True,
+             'nativeStartIdentity':native_identity,'nativeReap':native_reap,
+@@ -270,7 +278,8 @@
+             FINAL_REPORT={'passed':failure is None and not errors and empty and closed and not pending and clean,
+                 'profile':'history-cost','cases':results,'checks':checks,'failure':failure,'cleanupErrors':errors,
+                 'ownerEmpty':empty,'ownerClosed':closed,'interruptsPending':pending,'nativeChildrenReaped':guardian.records,
+-                'diagnostic':diagnostic,'partialMetrics':METER.export() if failure is not None else None,
++                'diagnostic':diagnostic,'partialMetrics':METER.export(partial=True) if failure is not None else None,
++                'interruptedMetricFrames':len(METER.stack),
+                 'actualOwnerDeath':False,'productionChanged':False,'full128RecordQualification':False,
+                 'physicalEligible':False,'protectedCapacity':False,'publicMountEligible':False}
+             save(FINAL_DESTINATION,FINAL_REPORT);print(json.dumps(FINAL_REPORT,sort_keys=True))

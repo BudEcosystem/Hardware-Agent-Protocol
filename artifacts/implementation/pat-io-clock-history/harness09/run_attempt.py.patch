@@ -1,0 +1,22 @@
+--- artifacts/implementation/pat-io-clock-history/harness05/run_attempt.py
++++ artifacts/implementation/pat-io-clock-history/harness09/run_attempt.py
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = 'c33c4ce245f95cf087201ffa7eedd5290a554f69aa5c2ad8301b5998d591a01e'
+-PREFIX = 'artifacts/implementation/pat-io-clock-history/implementation02/'
++FROZEN_INDEX = 'f98de6d5d3c76335cb74032da5641750a21d6de37af8004f2738f0797aba5ff9'
++PREFIX = 'artifacts/implementation/pat-io-clock-history/implementation03/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -228,7 +228,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation02'
++    stage = here.parent / 'implementation03'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'

@@ -1,0 +1,75 @@
+--- artifacts/implementation/pat-io-pending-recovery/implementation01/project/hms/pat_io_authorized_history.py
++++ artifacts/implementation/pat-io-recovery-history/implementation01/project/hms/pat_io_authorized_history.py
+@@ -30,7 +30,7 @@
+     return {r['operation']:parse_json(r['document']) for r in tables['io_receipts']}
+ 
+ 
+-def _guards(transcript, snapshots, permissions, denied):
++def _guards(transcript, snapshots, permissions, denied, *, recovery=None):
+     """Derive each observed adapter phase from its before state and trusted grants.
+ 
+ Unchanged configuration and fresh after-phase observations rule out a substituted
+@@ -38,6 +38,8 @@
+ An unknown outcome with a still-pending receipt needs the separate recovery-stop
+ profile; this checker refuses it explicitly instead of guessing its stop cause.
+ """
++    recovery = {} if recovery is None else recovery
++    consumed_recovery = set()
+     frames = {s['checkpoint']['record']:s for s in snapshots}
+     before = {}
+     checked_causes = {}
+@@ -73,31 +75,40 @@
+                     require(canonical(actual) == canonical(receipt), 'HISTORICAL_RECEIPT_CHANGED')
+                     continue
+                 operation = old_ops[op_id]
+-                require(operation['state'] == 'running', 'PENDING_RECOVERY_UNSUPPORTED')
+                 intent = receipt['intent']; timing = intent['timing']; instance = intent['instanceId']
+                 require(intent['endpointSession'] == frames[cp['record']]['value']['session'] == presence[instance]['session'] and
+                         now < presence[instance]['expires_ms'], 'GUARD_CONTEXT')
+                 require(all(observations[instance,p]['receipt']['ticksMs'] == now for p in ('ready','value')), 'GUARD_CONTEXT')
+-                # Cancellation precedes temporal/permission vetoes; the temporal
+-                # veto precedes permissions; all vetoes precede due completion.
+-                if operation['cancel_state'] == 'requested':
+-                    reason = 'client_cancel'
+-                elif now >= timing['latestCompletionUnixMs'] or now >= receipt['budgetOriginMonoMs'] + timing['maxRunMs']:
+-                    reason = 'execution_deadline'
+-                elif now >= parse_json(operation['admission'])['lease_expires_ms']:
+-                    reason = 'lease_expired'
+-                elif not permission['invokes']:
+-                    reason = 'authority_or_binding_lost'
++                key = (cp['record'],op_id)
++                if key in recovery:
++                    prior_state, state, reason = recovery[key]
++                    require(operation['state'] == prior_state and (prior_state,state,reason) in {
++                        ('running','pending',None), ('outcome_unknown','pending',None),
++                        ('outcome_unknown','canceled','reconciliation_stop')}, 'RECOVERY_HANDOFF')
++                    consumed_recovery.add(key)
+                 else:
+-                    reason = None
+-                state = 'canceled' if reason else 'completed' if now >= receipt['dueMonoMs'] else 'pending'
++                    require(operation['state'] == 'running', 'PENDING_RECOVERY_UNSUPPORTED')
++                    # Cancellation precedes temporal/permission vetoes; the temporal
++                    # veto precedes permissions; all vetoes precede due completion.
++                    if operation['cancel_state'] == 'requested':
++                        reason = 'client_cancel'
++                    elif now >= timing['latestCompletionUnixMs'] or now >= receipt['budgetOriginMonoMs'] + timing['maxRunMs']:
++                        reason = 'execution_deadline'
++                    elif now >= parse_json(operation['admission'])['lease_expires_ms']:
++                        reason = 'lease_expired'
++                    elif not permission['invokes']:
++                        reason = 'authority_or_binding_lost'
++                    else:
++                        reason = None
++                    state = 'canceled' if reason else 'completed' if now >= receipt['dueMonoMs'] else 'pending'
+                 require(actual['state'] == state and actual['result']['reason'] == reason and
+                         actual['sequence'] == (1 if state == 'pending' else 2), 'GUARD_OUTCOME')
+-                if reason == 'authority_or_binding_lost':
++                if reason in {'authority_or_binding_lost','reconciliation_stop'}:
+                     checked_causes[cp['record'],op_id] = reason
+                 guards.append({'phase':phase,'operationId':op_id,'clock':now,
+                     'invocationPermitted':permission['invokes'],'expectedState':state,'expectedReason':reason})
+     require(not before, 'PHASE_PAIRING')
++    require(consumed_recovery == set(recovery), 'UNUSED_RECOVERY_HANDOFF')
+     return checked_causes, guards
+ 
+ 

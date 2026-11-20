@@ -1,0 +1,25 @@
+{
+  "additionalSourceFiles": 5273,
+  "bytes": 35511366,
+  "extensions": [
+    ".S",
+    ".asm",
+    ".css",
+    ".def",
+    ".diff",
+    ".freeze01",
+    ".freeze02",
+    ".html",
+    ".inc",
+    ".ipynb",
+    ".ld",
+    ".lds",
+    ".patch",
+    ".proto",
+    ".pyi",
+    ".rst",
+    ".s",
+    ".typed"
+  ],
+  "credentialPatternPaths": []
+}

@@ -1,0 +1,11 @@
+--- artifacts/implementation/pat-io-supervision/acquire.py
++++ artifacts/implementation/pat-io-supervision/acquire-failed-setup.py
+@@ -38,7 +38,7 @@
+ connections=read(A/'sqlite-connections.json')
+ if count==160: assert connections==[]
+ else:
+- assert count==1 and len(connections)==2
++ assert count==1 and (len(connections)==2 if r['status']=='passed' else 0<=len(connections)<=2)
+  for c in connections:
+   assert c['testId']==targets[0]
+   assert Path(c['database'])==raw/'test_complete_owned_gpio_group_retains_inputs_before_launch_and_replays'/'supervisor'/'attempts.db'

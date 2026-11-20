@@ -1,0 +1,30 @@
+--- artifacts/implementation/pat-io-page-encoding/harness03/attempt_child.py
++++ artifacts/implementation/pat-io-page-encoding/harness05/attempt_child.py
+@@ -210,7 +210,26 @@
+             global current_test
+             super().stopTest(test)
+             current_test = None
+-    result = unittest.TextTestRunner(verbosity=2, resultclass=RecordingResult).run(tests)
++    import cProfile
++    import time
++    profiler = cProfile.Profile()
++    profile_wall, profile_cpu = time.monotonic(), time.process_time()
++    profiler.enable()
++    try:
++        result = unittest.TextTestRunner(verbosity=2, resultclass=RecordingResult).run(tests)
++    finally:
++        profiler.disable()
++        wall_seconds, cpu_seconds = time.monotonic() - profile_wall, time.process_time() - profile_cpu
++        profile_rows = []
++        for entry in profiler.getstats():
++            code = entry.code
++            label = code if isinstance(code, str) else code.co_filename + ':' + str(code.co_firstlineno) + ':' + code.co_name
++            profile_rows.append(dict(label=label, calls=entry.callcount, recursiveCalls=entry.reccallcount,
++                                     cumulativeSeconds=entry.totaltime, selfSeconds=entry.inlinetime))
++        profile_rows.sort(key=lambda row: (-row['cumulativeSeconds'], row['label']))
++        write('profile.json', dict(scope='Instrumented exact full GPIO history target after imports; incomplete capture remains failed. Timings include profiler overhead.',
++            wallSeconds=wall_seconds, cpuSeconds=cpu_seconds, totalFunctions=len(profile_rows),
++            top100=profile_rows[:100], top100Self=sorted(profile_rows, key=lambda row: (-row['selfSeconds'], row['label']))[:100]))
+     counts = {'testsRun': result.testsRun, 'failures': len(result.failures), 'errors': len(result.errors),
+         'skips': len(result.skipped), 'expectedFailures': len(result.expectedFailures),
+         'unexpectedSuccesses': len(result.unexpectedSuccesses)}

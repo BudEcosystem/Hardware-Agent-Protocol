@@ -1,0 +1,101 @@
+--- original/protocol/endpoint/link.c
++++ candidate/protocol/endpoint/link.c
+@@ -35,16 +35,17 @@
+     if (l->receive_partial != 0u && (now == UINT64_MAX || now < l->receive_started ||
+             now - l->receive_started >= l->receive_budget_ms)) hms_endpoint_link_reset_receive(l);
+ }
+-void hms_endpoint_link_feed(hms_endpoint_link *l, hms_endpoint *e,
+-                            uint8_t byte, uint64_t now, uint16_t flags) {
+-    uint16_t length, response_length = 0, crc;
+-    uint8_t *p;
++void hms_endpoint_link_before_feed(hms_endpoint_link *l, uint8_t byte, uint64_t now) {
+     hms_endpoint_link_check_deadline(l, now);
+     if (byte != 0x7eu && l->parser.active != 0u && l->receive_partial == 0u) {
+         l->receive_partial = 1; l->receive_started = now;
+     }
+     if (byte == 0x7eu) l->receive_partial = 0;
+-    if (hms_frame_feed(&l->parser, byte) != HMS_FRAME_READY) return;
++}
++void hms_endpoint_link_accept_ready(hms_endpoint_link *l, hms_endpoint *e,
++                                    uint64_t now, uint16_t flags) {
++    uint16_t length, response_length = 0, crc;
++    uint8_t *p;
+     p = l->parser.raw;
+     length = (uint16_t)(((uint16_t)p[18] << 8) | p[19]);
+     if (l->transmit_phase != 0u) {
+@@ -65,6 +66,12 @@
+     l->transmit_length = (uint16_t)(22u + response_length); l->transmit_index = 0;
+     l->transmit_phase = 1; l->escape_pending = 0;
+ }
++void hms_endpoint_link_feed(hms_endpoint_link *l, hms_endpoint *e,
++                            uint8_t byte, uint64_t now, uint16_t flags) {
++    hms_endpoint_link_before_feed(l, byte, now);
++    if (hms_frame_feed(&l->parser, byte) == HMS_FRAME_READY)
++        hms_endpoint_link_accept_ready(l, e, now, flags);
++}
+ uint8_t hms_endpoint_link_next(hms_endpoint_link *l, uint8_t *byte) {
+     uint8_t value;
+     if (l->transmit_phase == 0u || byte == NULL) return 0;
+--- original/protocol/endpoint/link.h
++++ candidate/protocol/endpoint/link.h
+@@ -22,6 +22,13 @@
+ /* Call even without incoming bytes; requires a qualified timer or a platform
+  * error/reset path when that timer is unavailable. No endpoint state reset. */
+ void hms_endpoint_link_check_deadline(hms_endpoint_link *link, uint64_t now_tick);
++/* Internal transport join: before_feed precedes exactly one parser feed.
++ * accept_ready is called exactly once only after that feed returned READY and
++ * the transport established continuity. One owner; consume raw synchronously.
++ * These do not validate a caller-invented READY or expose an alternate wire. */
++void hms_endpoint_link_before_feed(hms_endpoint_link *link, uint8_t byte, uint64_t now_tick);
++void hms_endpoint_link_accept_ready(hms_endpoint_link *link, hms_endpoint *endpoint,
++                                    uint64_t now_tick, uint16_t platform_flags);
+ /* One input byte, bounded work. Caller supplies qualified clock/flags.
+  * Under TX backpressure only CANCEL/REVOKE are processed, their replies may
+  * be dropped; other frames are dropped before admission. One pending frame,
+--- original/protocol/platform/avr_uart.c
++++ candidate/protocol/platform/avr_uart.c
+@@ -101,9 +101,9 @@
+     rx->loss = 0; rx->trigger_valid = 0;
+ }
+ 
+-hms_avr_uart_result hms_avr_uart_frame_step(hms_avr_uart *rx,
++hms_avr_uart_result hms_avr_uart_frame_step_hook(hms_avr_uart *rx,
+     hms_frame_parser *parser, hms_avr_uart_event *event,
+-    hms_frame_result *frame_result) {
++    hms_frame_result *frame_result, void (*before_feed)(void *, uint8_t), void *user) {
+     uint8_t saved, tail;
+     hms_frame_result result;
+     if (rx == NULL || parser == NULL || event == NULL || frame_result == NULL)
+@@ -131,6 +131,7 @@
+     rx->tail = (uint8_t)((tail + 1u) & (HMS_AVR_UART_CAPACITY - 1u));
+     rx->count = (uint8_t)(rx->count - 1u);
+     restore(saved);
++    if (before_feed != NULL) before_feed(user, event->byte);
+     result = feed(parser, event->byte);
+     saved = save_cli();
+     if (rx->loss != 0u) {
+@@ -143,3 +144,9 @@
+     restore(saved);
+     return HMS_AVR_UART_BYTE;
+ }
++
++hms_avr_uart_result hms_avr_uart_frame_step(hms_avr_uart *rx,
++    hms_frame_parser *parser, hms_avr_uart_event *event,
++    hms_frame_result *frame_result) {
++    return hms_avr_uart_frame_step_hook(rx, parser, event, frame_result, NULL, NULL);
++}
+--- original/protocol/platform/avr_uart.h
++++ candidate/protocol/platform/avr_uart.h
+@@ -80,5 +80,12 @@
+ hms_avr_uart_result hms_avr_uart_frame_step(hms_avr_uart *rx,
+     hms_frame_parser *parser, hms_avr_uart_event *event,
+     hms_frame_result *frame_result);
++/* Same continuity gate with an optional bounded foreground hook immediately
++ * before parser feed, after restoring SREG. Hook may reset that parser to apply
++ * an absolute assembly deadline; it must not feed/dispatch/reenter. A loss
++ * during hook/feed still suppresses READY at the final masked check. */
++hms_avr_uart_result hms_avr_uart_frame_step_hook(hms_avr_uart *rx,
++    hms_frame_parser *parser, hms_avr_uart_event *event,
++    hms_frame_result *frame_result, void (*before_feed)(void *, uint8_t), void *user);
+ 
+ #endif

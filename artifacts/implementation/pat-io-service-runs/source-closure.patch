@@ -1,0 +1,11 @@
+--- authority/supervisor/supervisor_contracts.py
++++ runs/supervisor/supervisor_contracts.py
+@@ -17,7 +17,7 @@
+ DEFAULT_LIMITS = {'maxRetainedBytes': 256*1024*1024, 'attemptReservationBytes': 64*1024*1024,
+     'maxArchives': 32, 'maxFilesPerAttempt': 8192, 'maxStreamBytes': 65536,
+     'maxFileBytes': 64*1024*1024, 'stopGraceMs': 1000, 'settleGraceMs': 1000}
+-SOURCE_FILES = ('supervisor_contracts.py', 'attempt_ledger.py', 'qualification_supervisor.py', 'worker_entry.py', 'bundle_io.py', 'io_services.py', 'io_service_store.py')
++SOURCE_FILES = ('supervisor_contracts.py', 'attempt_ledger.py', 'qualification_supervisor.py', 'worker_entry.py', 'bundle_io.py', 'io_services.py', 'io_service_store.py', 'io_service_runs.py')
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs', 'rpds-py', 'typing_extensions', 'idna')
+ 
+ class SupervisorError(JournalError):

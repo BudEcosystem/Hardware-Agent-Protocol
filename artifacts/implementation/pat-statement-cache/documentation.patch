@@ -1,0 +1,247 @@
+--- previous/README.md
++++ current/README.md
+@@ -4,19 +4,24 @@
+ 
+ **Current status:** the executable local simulation runtime combines the registry, admission policy, durable journal, checked API/SDK and `hctl` CLI. A native Harness overlay exercises real tool/PTC calls at a pinned commit in an isolated checkout, with full artifact and aggregate builds passing. A local MCP projection supports current and legacy clients over stdio. The runtime can mount multiple local and compact C simulation routes under one authority, with immutable operation routing, durable mappings, receipt reconciliation and host-process recovery. An explicitly selected shared-board GPIO/PWM simulation also uses the same public tools and resource admission. Primary-source research and checked WoT descriptions support the design. Real adapters, complete commissioned firmware, production Harness integration and physical validation remain unfinished. The user goal remains active. [Progress and requirement audit](PROGRESS.md) records the evidence and remaining work.
+ 
+-The [PAT foundation is now integrated into the main runtime](artifacts/implementation/runtime-pat-foundation/README.md).
+-All **861 tests pass**, preserving the original 748 tests and adding 113 checks.
+-Eight production modules are exact copies of the verified candidate, covering
+-commit-time validation, compiler identity, static resource validation and compact
+-simulation storage. Public qualification, prompt learning and physical I/O,
+-driver and intelligence-hub providers remain unfinished.
+-
+-The [prepared-statement comparison](artifacts/verification/pat-statement-cache-evaluation/README.md)
+-passes 62 checks across the complete capture query set, exact baseline pages and
+-warmed authorization guards. A 256-entry authority cache has 38.46% lower median
+-local capture CPU across nine fixed pairs. This supports a separate worker
+-integration candidate; the public runtime and full-worker qualification status
+-are unchanged. The [binding review](research/host-contract/sqlite-cache-binding/README.md)
++The [PAT foundation](artifacts/implementation/runtime-pat-foundation/README.md)
++provides commit-time validation, compiler identity and static resource checks.
++The new [statement-cache integration](artifacts/implementation/pat-statement-cache/README.md)
++passes **nineteen catalog controls and the complete thirty-case worker → vault →
++catalog → PAT application flow**. One simulated application completes once, with
++original-key replay, configuration drift refusal and cold history intact.
++
++The worker completes in about 57.7 seconds under the original 60-second limit;
++the parent completes in 141.1 seconds under 180 seconds. The only production
++change is a 256-statement authority Journal cache. That same edit is now in the
++public runtime, where a new full run passes **all 861 original tests** with 161
++stable inputs. The namespace qualification package remains isolated, and public
++qualification, prompt learning and physical device/driver/hub providers remain
++unfinished. One successful local run does not qualify deployment timing.
++
++The preceding [local comparison](artifacts/verification/pat-statement-cache-evaluation/README.md)
++passes 62 checks and observes 38.46% lower median capture CPU; this is not a
++whole-worker speedup claim. The [binding review](research/host-contract/sqlite-cache-binding/README.md)
+ adds 4,025 fully read LF lines and records cursor/memory lifetime constraints.
+ 
+ The [current worker diagnostic](artifacts/verification/qualification-current-profile/README.md)
+@@ -37,7 +42,7 @@
+ pass, but its actual thirty-case qualification hit the original worker deadline:
+ 25 case manifests were retained, with no evidence publication or PAT application.
+ The failure is preserved separately from catalog controls; public integration
+-remains unfinished. The main runtime's 861-test source is unchanged.
++remains unfinished. That failed attempt remains retained; the later cache candidate above completes the same matrix.
+ 
+ The earlier isolated [authority-vault catalog](artifacts/implementation/pat-vault-catalog/README.md)
+ passes 19 controls and the complete thirty-case worker → vault → catalog → PAT
+--- previous/docs/pat-foundation.md
++++ current/docs/pat-foundation.md
+@@ -1,4 +1,12 @@
+ # Parameterized PAT compiler and promotion catalog
++
++The latest [statement-cache integration](../artifacts/implementation/pat-statement-cache/README.md)
++passes the original thirty-case qualification, vault publication, catalog promotion
++and one completed simulated PAT application, plus nineteen catalog controls.
++The exact Journal cache setting is integrated into the public runtime; a new
++861-test run preserves every prior test identity and all 161 input snapshots.
++Public qualification installation and its storage-capacity requirements remain
++unfinished. Earlier stage notes below retain their historical scope.
+ 
+ The [main-runtime integration](../artifacts/implementation/runtime-pat-foundation/README.md)
+ passes all 861 tests. Compiler identity now uses the explicit `/0.2` profile and
+--- previous/docs/pat-foundation.md
++++ current/docs/pat-foundation.md
+@@ -20,9 +20,8 @@
+ distinguishes reusable compiled SQL from current data and authorization. The
+ [complete-query-set comparison](../artifacts/verification/pat-statement-cache-evaluation/README.md)
+ now passes 62 checks and its fixed local performance screen, including warmed-SQL
+-authorizer refusals. Worker integration and the original full qualification gate
+-remain next; no public compiler or runtime source changes follow from this local
+-result alone.
++authorizer refusals. The full integration above supplies the subsequent worker
++and public-runtime evidence; the local result alone did not authorize adoption.
+ 
+ A [pure ASCII-field encoder experiment](../artifacts/verification/pat-ascii-canonical-evaluation/README.md)
+ passes 1,875 differential cases but is not adopted: its measured median CPU benefit
+--- previous/docs/pat-foundation.md
++++ current/docs/pat-foundation.md
+@@ -35,7 +35,7 @@
+ image. Its actual full qualification hit the original deadline after writing
+ 25 case manifests; it published no qualification evidence or application.
+ Package checks and catalog controls are narrower evidence. It is not mounted
+-in the public runtime, and the existing full 861-test source is unchanged.
++in the public runtime. Its failed receipt is retained alongside the later successful candidate.
+ 
+ Status: experimental host libraries, 2026-11-07. The typed compiler and local
+ catalog implement part of the [prompt-to-PAT architecture](prompt-to-pat.md).
+--- previous/docs/prompt-to-pat.md
++++ current/docs/prompt-to-pat.md
+@@ -1,4 +1,12 @@
+ # Natural-language applications and Programs as Tools
++
++The latest [complete integration](../artifacts/implementation/pat-statement-cache/README.md)
++passes all thirty qualification cases, publishes their evidence, promotes the
++constructed PAT and completes one simulated application with original-key replay
++and drift refusal. Nineteen catalog controls and the new full 861-test public
++runtime check pass. This verifies another part of deterministic reuse; prompt
++synthesis, experience-driven learning and persistent Arduino installation still
++need implementation. Earlier stages retain their historical status below.
+ 
+ The [main-runtime foundation integration](../artifacts/implementation/runtime-pat-foundation/README.md)
+ now passes all 861 tests. It brings the verified commit boundary, compiler identity
+--- previous/docs/prompt-to-pat.md
++++ current/docs/prompt-to-pat.md
+@@ -25,7 +25,7 @@
+ matches 410 cases and exact retained page bytes, but fails its performance screen
+ and remains uninstalled. The subsequent [prepared-statement comparison](../artifacts/verification/pat-statement-cache-evaluation/README.md)
+ passes 62 checks with fresh context reads and warmed authorizer refusals, supporting
+-a separate complete-worker integration candidate. Current PAT applicability,
++the subsequently completed integration above. Current PAT applicability,
+ evidence, public service installation and actual learning remain required.
+ 
+ The newer [package candidate](../artifacts/implementation/qualification-package/README.md)
+--- previous/docs/io-driver-hub-control.md
++++ current/docs/io-driver-hub-control.md
+@@ -1,4 +1,12 @@
+ # Device I/O, drivers and intelligence-hub control
++
++The latest [worker and runtime integration](../artifacts/implementation/pat-statement-cache/README.md)
++passes the complete thirty-case simulated qualification-to-application flow and
++a fresh full 861-test runtime run. It preserves the resource graph, current
++binding checks and lifecycle boundaries while changing one Journal cache setting.
++The protocol's device I/O, driver and intelligence-host providers remain required;
++this simulated application does not physically qualify those providers. Earlier
++stage notes below describe their original scopes.
+ 
+ The [main-runtime foundation](../artifacts/implementation/runtime-pat-foundation/README.md)
+ now passes 861 tests, including existing public I/O, CLI/MCP and crash recovery
+--- previous/docs/io-driver-hub-control.md
++++ current/docs/io-driver-hub-control.md
+@@ -23,8 +23,8 @@
+ matches 410 cases but is slower in the fixed local measurement, so it remains
+ unadopted. The [compiled-statement comparison](../artifacts/verification/pat-statement-cache-evaluation/README.md)
+ passes 62 local checks, preserving fresh device/configuration reads and warmed
+-authorization refusals. Its lower local CPU cost supports a separate worker
+-candidate; actual device, driver and hub providers still require implementation
++authorization refusals. The subsequent complete worker now passes; actual
++device, driver and hub providers still require implementation
+ and qualification under their own resource and lifecycle contracts.
+ 
+ The [qualification package candidate](../artifacts/implementation/qualification-package/README.md)
+--- previous/PROGRESS.md
++++ current/PROGRESS.md
+@@ -1,4 +1,45 @@
+ # Goal progress — 2026-11-09
++
++Status: **active, incomplete — full statement-cache integration and public
++regressions pass**. The preceding continuation made progress: it sealed the
++62-check local cache evaluation and its full binding-source reading. The new
++[integration](artifacts/implementation/pat-statement-cache/README.md) changes only
++`cached_statements=256` on the authority Journal connection. Board connections,
++capture SQL, guards, durability, the worker entry and the thirty-case matrix stay
++unchanged. Two current test files receive recomputed identity expectations; all
++other 301 candidate project files are exact. The source has 313 frozen inputs.
++
++All **nineteen catalog controls pass** in their ten original bounded scopes.
++The independent retained-state calculation opens 76 read-only databases under
++99 original locks and verifies 1,149 files. These controls retain their declared
++substituted semantic oracle. The separate actual run uses the real worker and
++reducer, completes **all thirty cases**, publishes one vault manifest, promotes
++one PAT and completes one simulated GPIO application. Original-key replay,
++configuration drift refusal and cold vault/bridge history pass.
++
++The worker finishes in **57.7 seconds** under its original 60-second limit; the
++parent finishes in **141.1 seconds** under 180 seconds. The full-flow audit verifies
++4,266 retained files, 267 image files, 57 original locks and four parent databases;
++it opens no worker case database. All 4,011 vault references and 2,798 bodies join
++the original request, publication, decision and single completed application.
++One local pass does not establish deployment timing or the cause of prior failures.
++
++The exact Journal edit is now applied to the public runtime. A fresh **861-test
++run passes**, preserving the exact preceding test identities/order, all 161 stable
++inputs and all 160 unchanged earlier inputs besides Journal. No second cache
++benchmark or unchanged qualification attempt ran. Original failed namespace and
++profiling attempts remain failed and retained. Review is by the primary agent;
++no independent reviewer or physical execution is claimed.
++
++[Next work](artifacts/implementation/pat-statement-cache/NEXT.md) prepares the
++qualification-package integration while preserving the requirement for hard
++aggregate storage limits, backed control continuation capacity, caps before
++recovery and control-only recovery. Public qualification, native Harness
++installation, prompt synthesis/learning, persistent MCU applications, actual
++I/O/driver/hub providers, microscope commissioning and the remaining research and
++home/laboratory/manufacturing scope remain unfinished.
++
++## Earlier continuation: local statement-cache evaluation
+ 
+ Status: **active, incomplete — statement-cache screen passes; worker integration
+ is next**. The preceding continuation was progress: it rejected the slower SQL
+--- previous/scripts/check_project_links.py
++++ current/scripts/check_project_links.py
+@@ -12,6 +12,9 @@
+ 
+ def main():
+     paths = sorted(set([ROOT/'README.md', ROOT/'PROGRESS.md', *ROOT.glob('docs/*.md'),
++        *ROOT.glob('artifacts/implementation/pat-statement-cache/*.md'),
++        *ROOT.glob('artifacts/implementation/pat-statement-cache/implementation*/README.md'),
++        ROOT/'artifacts/implementation/pat-statement-cache/harness01/SCOPE.md',
+         *ROOT.glob('artifacts/verification/pat-statement-cache-evaluation/*.md'),
+         *ROOT.glob('artifacts/verification/pat-statement-cache-evaluation/evaluation*/PLAN.md'),
+         *ROOT.glob('research/host-contract/sqlite-cache-binding/*.md'),
+--- previous/artifacts/implementation/pat-statement-cache/README.md
++++ current/artifacts/implementation/pat-statement-cache/README.md
+@@ -44,10 +44,12 @@
+ and 15,458,304 bytes respectively, within their existing bounds. These observations
+ do not establish hard aggregate storage enforcement or reserved control capacity.
+ 
+-The same Journal edit has been applied to the public runtime; its full regression
+-verification is pending. The other 160 inputs to the previous 861-test receipt
+-were unchanged before the new run. The isolated qualification package is not yet
+-installed as a public qualification service.
++The same Journal edit is now verified in the public runtime: **all 861 tests
++pass**, preserving the exact previous test identities and order, with 161 stable
++input snapshots. Only Journal changed from the preceding receipt; the other 160
++inputs remain exact. [Runtime verification](RUNTIME_RESULTS.json). The full-flow
++audit predates this public edit; the runtime report records its later validation.
++The isolated qualification package is not yet installed as a public service.
+ 
+ Copied frozen harness READMEs and patch files retain their originating stage's
+ narrative and old paths. [Documentation provenance](documentation-overlay.json)
+--- previous/artifacts/implementation/pat-statement-cache/NEXT.md
++++ current/artifacts/implementation/pat-statement-cache/NEXT.md
+@@ -1,4 +1,4 @@
+-# Complete public verification, then integrate the qualification boundary
++# Integrate the qualification boundary and continue device providers
+ 
+ First finish and audit the new full public-runtime regression receipt. The only
+ public edit is the exact Journal connection option from the successful candidate.
+--- previous/artifacts/implementation/pat-statement-cache/NEXT.md
++++ current/artifacts/implementation/pat-statement-cache/NEXT.md
+@@ -1,10 +1,9 @@
+ # Integrate the qualification boundary and continue device providers
+ 
+-First finish and audit the new full public-runtime regression receipt. The only
+-public edit is the exact Journal connection option from the successful candidate.
+-Preserve all 861 test identities and all 161 input snapshots; resolve any actual
+-failure without overwriting receipts or weakening tests. No repeat local cache
+-benchmark or unchanged full worker is planned.
++The new full public-runtime regression receipt passes all 861 original tests
++with 161 stable inputs. The only public edit is the exact Journal connection
++option from the successful candidate. Preserve that receipt and its exact source
++identity. No repeat local cache benchmark or unchanged full worker is planned.
+ 
+ The complete namespaced worker now passes once under the original limits. Its
+ 57.7-second observation does not qualify real-time operation or a new deployment.

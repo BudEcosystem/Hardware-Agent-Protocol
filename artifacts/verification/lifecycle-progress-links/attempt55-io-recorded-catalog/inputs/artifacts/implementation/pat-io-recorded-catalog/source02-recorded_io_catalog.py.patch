@@ -1,0 +1,13 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-recorded-catalog/implementation01/project/recorded_io/catalog.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-recorded-catalog/implementation02/project/recorded_io/catalog.py
+@@ -16,8 +16,8 @@
+ from . import contracts, projection
+ from .contracts import require, checked
+ 
+-RECEIPT = 'hms.pat.io-recorded-evaluation/0.1'
+-DOMAIN = b'HMS-PAT-IO-RECORDED-EVALUATION-v0.1'
++RECEIPT = 'hms.pat.io-catalog-evaluation/0.1'
++DOMAIN = b'HMS-PAT-IO-CATALOG-EVALUATION-v0.1'
+ ANCHOR = 'io_recorded_catalog'
+ _TABLES = ('pc_meta', 'pc_deployments', 'pc_artifacts', 'pc_entries', 'pc_evaluations',
+            'pc_evaluation_conflicts', 'pc_decisions', 'pc_events')

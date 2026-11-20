@@ -1,0 +1,74 @@
+--- harness05/attempt_child.py
++++ harness07/attempt_child.py
+@@ -10,6 +10,8 @@
+ import resource
+ import stat
+ import threading
++import cProfile
++import pstats
+ from urllib.parse import urlsplit, unquote
+ 
+ MAX_JSON = 4 * 1024 * 1024
+@@ -64,7 +66,7 @@
+     return path.is_relative_to(stdlib) and not {'site-packages', 'dist-packages'}.intersection(path.parts)
+ 
+ 
+-CONTROL_TARGETS = ['test_vault_authority.VaultAuthorityTests.test_mount_requires_real_authority_and_admin_and_exact_vault', 'test_vault_authority.VaultAuthorityTests.test_publication_and_cold_replay_preserve_original_receipt', 'test_vault_authority.VaultAuthorityTests.test_transport_success_does_not_publish_without_semantic_success', 'test_vault_authority.VaultAuthorityTests.test_before_intent_commit_rolls_back_without_evidence', 'test_vault_authority.VaultAuthorityTests.test_after_intent_commit_resumes_same_intent', 'test_vault_authority.VaultAuthorityTests.test_after_seal_resumes_without_original_archive_or_new_worker', 'test_vault_authority.VaultAuthorityTests.test_before_publication_commit_keeps_unpublished_manifest', 'test_vault_authority.VaultAuthorityTests.test_lost_publication_reply_reconciles_exact_receipt', 'test_vault_authority.VaultAuthorityTests.test_expired_snapshot_before_commit_rolls_back_publication', 'test_vault_authority.VaultAuthorityTests.test_revocation_after_inspection_keeps_intent_unpublished']
++CONTROL_TARGETS = ['test_vault_authority.VaultAuthorityTests.test_after_seal_resumes_without_original_archive_or_new_worker']
+ 
+ # The native open audit event omits dir_fd. Preserve the original os.open
+ # call and expose its resolved pathname only to this synchronous audit hook.
+@@ -129,7 +131,7 @@
+             target = opened[1] if opened is not None and opened[0] == os.fsdecode(args[0]) else path.resolve()
+             receipts = {'child-runtime.json', 'compiler-before.json', 'compiler-after.json',
+                 'driver-before.json', 'driver-after.json', 'loader-errors.json', 'imports.json',
+-                'sqlite-connections.json', 'actual-tests.json', 'test-return.json', 'child-errors.json'}
++                'sqlite-connections.json', 'actual-tests.json', 'test-return.json', 'child-errors.json', 'profile.json'}
+             if not (target.is_relative_to(scratch) or target.parent == out and target.name in receipts):
+                 raise RuntimeError('Write outside fresh scratch or named receipts')
+         if path.suffix == '.pyc':
+@@ -227,7 +229,7 @@
+ 
+ try:
+     if (not sys.flags.isolated or not sys.flags.no_site or not sys.flags.dont_write_bytecode or
+-            len(config['targets']) != 10 or len(set(config['targets'])) != 10):
++            len(config['targets']) != 1 or len(set(config['targets'])) != 1):
+         raise RuntimeError('Required child isolation flags or exact target count missing')
+     if config['targets'] != CONTROL_TARGETS:
+         raise RuntimeError('Exact literal target selection changed')
+@@ -245,14 +247,26 @@
+     for detail in unittest.defaultTestLoader.errors: print(detail, file=sys.stderr, flush=True)
+     if loaded_ids != config['targets']:
+         raise RuntimeError('Loaded methods do not exactly match the reviewed vault selection')
++    profiler = cProfile.Profile()
+     class RecordingResult(unittest.TextTestResult):
+         def startTest(self, test):
+             global current_test
+             current_test = test.id()
+             executed_ids.append(test.id())
+             super().startTest(test)
++            profiler.enable()
+         def stopTest(self, test):
+             global current_test
++            profiler.disable()
++            stats = pstats.Stats(profiler)
++            rows = []
++            for (filename, line, name), (primitive, calls, own, cumulative, callers) in stats.stats.items():
++                rows.append(dict(file=filename, line=line, function=name, primitiveCalls=primitive,
++                    calls=calls, ownSeconds=own, cumulativeSeconds=cumulative))
++            rows.sort(key=lambda row: row['cumulativeSeconds'], reverse=True)
++            write('profile.json', dict(scope='Diagnostic single control method, not qualification or real-time evidence',
++                method=test.id(), totalCalls=stats.total_calls, primitiveCalls=stats.prim_calls,
++                totalSeconds=stats.total_tt, functions=rows[:160]))
+             super().stopTest(test)
+             current_test = None
+     result = unittest.TextTestRunner(verbosity=2, resultclass=RecordingResult).run(tests)
+@@ -284,7 +298,7 @@
+         write('child-errors.json', errors)
+     except BaseException:
+         errors.append({'phase': 'child-errors', 'type': 'ReceiptWriteFailure'})
+-passed = (not errors and counts is not None and counts['testsRun'] == 10 and
++passed = (not errors and counts is not None and counts['testsRun'] == 1 and
+     all(counts[key] == 0 for key in counts if key != 'testsRun') and
+     loaded_ids == config['targets'] == executed_ids and origins is not None and
+     origins['summary']['allOriginsMatched'])

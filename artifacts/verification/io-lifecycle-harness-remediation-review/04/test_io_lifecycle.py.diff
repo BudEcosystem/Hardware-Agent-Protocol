@@ -1,0 +1,44 @@
+--- 03/test_io_lifecycle.py
++++ 04/test_io_lifecycle.py
+@@ -17,6 +17,7 @@
+ from hms.synthetic_lifecycle_runtime import LifecycleRuntime
+ from test_io_synthetic_provider import installation as ordinary_installation
+ from test_resource_topology import node, pin, generations
++from io_evidence_capture import EvidenceWorkspace, snapshot_databases
+ 
+ EVIDENCE_DIRECTORY = None
+ 
+@@ -44,7 +45,7 @@
+ 
+ class LifecycleTests(unittest.TestCase):
+     def setUp(self):
+-        self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
++        self.temp = EvidenceWorkspace(); self.addCleanup(self.temp.cleanup)
+         self.directory = Path(self.temp.name)/'runtime'; self.wall = self.mono = 1000
+         self.owner = Context('owner','simulation:io-hub'); self.configuration = installation()
+         self.runtime = None; self._capture_number = 0; self._final_captured = False
+@@ -62,16 +63,16 @@
+             return
+         if label == 'final' and self._final_captured:
+             return
++        target = EVIDENCE_DIRECTORY/self._testMethodName/('%02d-'%self._capture_number+label)
++        self._capture_number += 1
++        try:
++            snapshot_databases(self.directory,target,{'wallMs':self.wall,'monotonicMs':self.mono,
++                'installation':self.configuration,'scope':'Original controlled-clock SQLite model; no physical/native timing proof.'})
++        except BaseException as exc:
++            self.temp.failed(exc)
++            raise
+         if label == 'final':
+             self._final_captured = True
+-        target = EVIDENCE_DIRECTORY/self._testMethodName/('%02d-'%self._capture_number+label)
+-        self._capture_number += 1; target.mkdir(parents=True)
+-        for path in sorted(self.directory.glob('*.db')):
+-            with sqlite3.connect('file:'+str(path)+'?mode=ro',uri=True) as source:
+-                with sqlite3.connect(target/path.name) as dest:
+-                    source.backup(dest)
+-        (target/'context.json').write_text(json.dumps({'wallMs':self.wall,'monotonicMs':self.mono,
+-            'installation':self.configuration,'scope':'Original controlled-clock SQLite model; no physical/native timing proof.'},indent=2)+'\n')
+ 
+     @property
+     def adapter(self):

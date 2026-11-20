@@ -1,0 +1,186 @@
+--- artifacts/implementation/standing-host-boundaries/run_checks.py
++++ artifacts/implementation/standing-host-history-cost/run_checks.py
+@@ -1,4 +1,4 @@
+-"""Fixed review-gated owner for explicit standing-host boundary profiles.
++"""Fixed review-gated owner for the original32-loop history-cost diagnostic.
+ 
+ No compiler, qualification rerun, device or caller executable selection.
+ """
+@@ -15,21 +15,15 @@
+ 
+ HERE=Path(__file__).resolve().parent
+ REPO=HERE.parents[2]
+-GUARDIAN_SHA='b9451d90c845f86b9e41cfc527c3fb7fa0ed8e7e58b65ab0cd5c0bc0d2a60792'
++GUARDIAN_SHA='cf682bcfae001f5e1d33cad603ec4a7e3911dc4eab8557714b6973deec7bb206'
+ HELPER_SHA='a6ee94bcf3dc03df19f0dd07a81663badd4875ef1a6c429afbc55d7b2373b977'
+ ENV={'LANG':'C','LC_ALL':'C','PATH':'/usr/bin:/bin'}
+ FINAL_DESTINATION=None
+ FINAL_REPORT=None
+-PROFILES={
+-    'negative':['expired_qualification','driver_expiry_after_possible','installed_context_change',
+-        'boot_after_acceptance','retired_without_terminal_proof','refused_sequence_original_key',
+-        'automatic_ack_revision_refusal','dispute_retention'],
+-    'storage':['storage_'+phase+'_'+when for phase in ('prepare','open','collection','retire') for when in ('before','after')]+
+-        ['rollback_exception','sqlite_page_exhaustion'],
+-    'mutation':['mutation_capacity'],'episodes':['episode_capacity'],
+-    'activations':['activation_capacity'],'keys':['retained_keys'],'fixed':['fixed_writer_capacity'],
+-    'accounting':['accounting_model']}
+-CAPACITY_PROFILES=frozenset(('mutation','episodes','activations','keys','fixed'))
++PROFILE='history-cost'
++EXPECTED_CASES=['history_cost']
++EXPECTED_LOOPS=32
++EXPECTED_VALIDATIONS=sum(4*n+6 for n in range(EXPECTED_LOOPS))
+ 
+ 
+ def require(value,message):
+@@ -67,15 +61,16 @@
+ 
+ def main():
+     global FINAL_DESTINATION,FINAL_REPORT
+-    require(not sys.flags.optimize and len(sys.argv) in (2,4) and sys.argv[1] in PROFILES,'Fixed profile invocation; assertions required')
+-    profile=sys.argv[1];expected_cases=PROFILES[profile]
++    require(not sys.flags.optimize and len(sys.argv) in (2,4) and sys.argv[1]==PROFILE,'Fixed profile invocation; assertions required')
++    profile=PROFILE;expected_cases=EXPECTED_CASES
++    require(EXPECTED_VALIDATIONS==2176,'Fixed diagnostic arithmetic')
+     attempt_number=1
+     if len(sys.argv)==4:
+         require(sys.argv[2]=='--attempt' and sys.argv[3].isascii() and sys.argv[3].isdigit(),'Explicit bounded attempt required')
+         attempt_number=int(sys.argv[3])
+         require(1<=attempt_number<=16 and str(attempt_number)==sys.argv[3],'Attempt must be canonical1..16')
+-    expected_native=0 if profile=='accounting' else len(expected_cases)
+-    file_bytes=(32 if profile in CAPACITY_PROFILES else 1)*1024*1024
++    expected_native=1
++    file_bytes=1024*1024
+     def interrupted(signum,_):raise RuntimeError('Runner interrupted '+str(signum))
+     signal.signal(signal.SIGINT,interrupted);signal.signal(signal.SIGTERM,interrupted)
+     os.umask(0o077)
+@@ -97,7 +92,7 @@
+                 pins[row['path']]==row['sha256'],'Reviewed source changed')
+     prior_results=[]
+     for number in range(1,attempt_number):
+-        path=HERE/('boundary-'+profile+'-attempt'+str(number).zfill(2))/'RESULTS.json'
++        path=HERE/('history-cost-attempt'+str(number).zfill(2))/'RESULTS.json'
+         require(path.is_file() and not path.is_symlink(),'Prior explicit attempt receipt missing')
+         prior_results.append({'path':str(path.relative_to(HERE)),'sha256':digest(path)})
+     def stable():
+@@ -106,10 +101,10 @@
+         require({str(f.relative_to(parent)) for f in parent.rglob('*') if f.is_file()}=={r['path'] for r in parent_rows}|{'index.json'},'Parent inventory changed')
+         for row in parent_rows:require(digest(parent/row['path'])==row['sha256'],'Parent bytes changed: '+row['path'])
+         second=REPO/inputs['secondParentPacket']['path']
+-        require(digest(second/'index.json')==inputs['secondParentPacket']['indexSha256'],'Owner-death index changed')
++        require(digest(second/'index.json')==inputs['secondParentPacket']['indexSha256'],'Boundary evidence index changed')
+         second_rows=json.loads((second/'index.json').read_bytes())['files']
+-        require({str(f.relative_to(second)) for f in second.rglob('*') if f.is_file()}=={r['path'] for r in second_rows}|{'index.json'},'Owner-death inventory changed')
+-        for row in second_rows:require(digest(second/row['path'])==row['sha256'],'Owner-death bytes changed: '+row['path'])
++        require({str(f.relative_to(second)) for f in second.rglob('*') if f.is_file()}=={r['path'] for r in second_rows}|{'index.json'},'Boundary evidence inventory changed')
++        for row in second_rows:require(digest(second/row['path'])==row['sha256'],'Boundary evidence bytes changed: '+row['path'])
+         require(digest(public)==inputs['publicReceipt']['sha256'],'Public receipt changed')
+         public_rows=json.loads(public.read_bytes())['files'];require(len(public_rows)==244,'Public inventory changed')
+         for row in public_rows:require(digest(REPO/row['path'])==row['sha256'],'Public input changed')
+@@ -122,7 +117,7 @@
+         for row in prior_results:require(digest(HERE/row['path'])==row['sha256'],'Earlier attempt result changed')
+         require(digest(interpreter)==digest('/proc/self/exe')==runtime,'Interpreter changed')
+     stable()
+-    attempt=HERE/('boundary-'+profile+'-attempt'+str(attempt_number).zfill(2));attempt.mkdir(mode=0o700)
++    attempt=HERE/('history-cost-attempt'+str(attempt_number).zfill(2));attempt.mkdir(mode=0o700)
+     FINAL_DESTINATION=attempt/'RESULTS.json';FINAL_REPORT={'passed':False,'phase':'preparation'}
+     save(FINAL_DESTINATION,FINAL_REPORT,replace=True)
+     frozen=attempt/'frozen';frozen.mkdir()
+@@ -133,13 +128,15 @@
+     require(native==parent/'host-attempt04/standing-host-pipe' and evidence==parent/'host-attempt04/qualification','Original root required')
+     original_manifest=json.loads((evidence/'manifest.json').read_bytes())
+     require(original_manifest['argv']==[str(evidence/original_manifest['binaryPath'])],'Original qualifier argv changed')
+-    argv=[str(interpreter),'-I','-B',str(frozen/'boundary_controls.py'),profile,str(attempt/'state'),str(native),str(evidence),str(evidence/'manifest.json'),str(frozen/'owner/libharness-owner.so')]
+-    save(attempt/'intent.json',{'profile':'hms.standing-host-boundary-attempt/0.1','controlProfile':profile,
++    argv=[str(interpreter),'-I','-B',str(frozen/'history_cost_controls.py'),profile,str(attempt/'state'),str(native),str(evidence),str(evidence/'manifest.json'),str(frozen/'owner/libharness-owner.so')]
++    save(attempt/'intent.json',{'profile':'hms.standing-host-history-cost-attempt/0.1','controlProfile':profile,
+         'attemptNumber':attempt_number,'priorProfileAttemptResults':prior_results,'sourcePins':pins,
+         'parentPacket':inputs['parentPacket'],'secondParentPacket':inputs['secondParentPacket'],
+         'publicReceipt':inputs['publicReceipt'],'interpreter':str(interpreter),
+         'interpreterSha256':runtime,'argv':argv,'nativeImageSha256':digest(native),'originalQualificationRoot':str(evidence),
+         'originalQualificationRunId':original_manifest['runId'],'qualificationRerun':False,'cases':expected_cases,
++        'diagnosticLoops':EXPECTED_LOOPS,'expectedMutationValidationCalls':EXPECTED_VALIDATIONS,
++        'productionChanged':False,'full128RecordQualification':False,
+         'expectedInnerReaps':expected_native,'expectedOuterReaps':1,'wallSeconds':30,'cpuSeconds':30,
+         'addressBytes':512*1024*1024,'childCpuSeconds':5,'childAddressBytes':256*1024*1024,
+         'fileBytes':file_bytes,'nativeChildFileBytes':1024*1024,'stateDiskBytes':96*1024*1024,'openFiles':64,'cleanupSeconds':8,'termGraceSeconds':3,
+@@ -177,7 +174,7 @@
+                 os.chdir(frozen)
+                 os.execve('/proc/self/fd/'+str(held),argv,ENV)
+             control_started=time.monotonic_ns()
+-            child=guardian.fork(fixed_child,cpu_seconds=30,address_bytes=512*1024*1024,file_bytes=file_bytes)
++            child=guardian.fork(fixed_child,cpu_seconds=30,address_bytes=512*1024*1024)
+             save(attempt/'control.started.json',guardian.handles[child]['identity'])
+             while guardian.status(child) is None:
+                 require(time.monotonic_ns()-control_started<30_000_000_000,'CONTROL_WALL_LIMIT')
+@@ -203,17 +200,41 @@
+             require(digest(directory/'evidence.json')==case['evidenceSha256'],'Case evidence changed')
+             evidence_row=json.loads((directory/'evidence.json').read_bytes())
+             require(evidence_row['case']==case['case'],'Case evidence name mismatch')
+-            if profile!='accounting':
+-                require(digest(directory/'authority.db')==case['databaseSha256'],'Case database changed')
+-                require(evidence_row['publicWriterRecords'] is True and evidence_row['directSQLPopulation'] is False,'Real public-writer scope mismatch')
+-                require(set(evidence_row['native'])=={str(n) for n in range(28)},'Native snapshot scope mismatch')
+-                require(evidence_row['nativeStartIdentity']==case['nativeStartIdentity'] and evidence_row['nativeReap']==case['nativeReap'],'Case native evidence mismatch')
+-                require(all(case['nativeReap'][key]==value for key,value in case['nativeStartIdentity'].items()),'Case native identity/exit join failed')
+-                joined_reaps.append(case['nativeReap'])
+-            else:
+-                require(case['databaseSha256'] is None and not (directory/'authority.db').exists(),'Accounting must remain non-durable model')
+-                require(evidence_row['publicWriterRecords'] is False and evidence_row['directSQLPopulation'] is True and
+-                        evidence_row['durableCapacityEstablished'] is False,'Accounting evidence scope mismatch')
++            require(digest(directory/'authority.db')==case['databaseSha256'],'Case database changed')
++            require(evidence_row['publicWriterRecords'] is True and evidence_row['directSQLPopulation'] is False,'Real public-writer scope mismatch')
++            require(set(evidence_row['native'])=={str(n) for n in range(28)} and
++                    all(type(value) is int and 0<=value<2**64 for value in evidence_row['native'].values()),'Native snapshot scope/type mismatch')
++            require(evidence_row['nativeStartIdentity']==case['nativeStartIdentity'] and evidence_row['nativeReap']==case['nativeReap'],'Case native evidence mismatch')
++            require(all(case['nativeReap'][key]==value for key,value in case['nativeStartIdentity'].items()),'Case native identity/exit join failed')
++            joined_reaps.append(case['nativeReap'])
++            diagnostic=evidence_row['diagnostic']
++            require(inner['diagnostic']==diagnostic,'Inner/evidence diagnostic mismatch')
++            expected={'loopCount':EXPECTED_LOOPS,'mutationValidationCalls':EXPECTED_VALIDATIONS,
++                'retainedMutations':EXPECTED_LOOPS,'neverHandedOffRecords':EXPECTED_LOOPS,
++                'retainedClaims':3,'mutationSequence':0,'collected':0,'acknowledged':0,'highWater':0}
++            require(all(type(diagnostic.get(key)) is int and diagnostic[key]==value for key,value in expected.items()),'Exact original32-loop history-cost result required')
++            require(evidence_row['tableCounts']['sd_mutations']==EXPECTED_LOOPS and evidence_row['tableCounts']['claims']==3 and
++                    evidence_row['tableCounts']['sd_activations']==evidence_row['tableCounts']['sd_activation_versions']==0,'Retained original records/claims mismatch')
++            native_state=evidence_row['native']
++            require(native_state['0']==native_state['1']==native_state['2']==native_state['10']==native_state['11']==native_state['13']==0 and
++                    native_state['5']==native_state['9']==1 and native_state['14']==3 and native_state['21']==1,'Native never-handoff prefix mismatch')
++            trace=evidence_row['trace'];require(type(trace) is list and 0<len(trace)<=2048,'Bounded original raw trace required')
++            requests={};responses={};last_tx=last_rx=0;effect_counts={1:0,16:0,64:0,67:0}
++            for packet in trace:
++                require(type(packet) is dict and set(packet)=={'direction','session','sequence','raw'},'Trace packet shape')
++                require(type(packet['sequence']) is int and 0<packet['sequence']<2**32 and type(packet['session']) is int,'Trace integer fields')
++                body=bytes.fromhex(packet['raw']);require(2<=len(body)<=192 and body[0]==2,'Bounded original v2 body')
++                if packet['direction']=='request':
++                    opcode=body[1]
++                    require(opcode in effect_counts and packet['sequence']>last_tx and packet['session']==(0 if opcode==1 else 1),'No START handoff or repeated original request')
++                    last_tx=packet['sequence'];requests[last_tx]=body;effect_counts[opcode]+=1
++                else:
++                    require(packet['direction']=='response' and len(body)>=66 and packet['sequence']>last_rx and packet['session']==1,'Original decoded response continuity')
++                    last_rx=packet['sequence'];request_sequence=int.from_bytes(body[2:6],'big')
++                    require(request_sequence in requests and request_sequence not in responses and body[1]==requests[request_sequence][1]|128,'Response joins one original request')
++                    responses[request_sequence]=body
++            require(set(requests)==set(responses) and effect_counts[16]==effect_counts[64]==1 and
++                    last_tx==evidence_row['route']['tx'] and last_rx==evidence_row['route']['rx'],'Complete initial BIND/OPEN and read-only loop trace')
+         require(joined_reaps==records,'Native reaps must match every ordered named case exactly')
+         for owned in records:
+             require(not Path('/proc',str(owned['pid'])).exists(),'Previously owned PID still exists; no signal authority inferred')
+@@ -252,6 +273,8 @@
+             'innerReaps':0 if inner is None else len(inner['nativeChildrenReaped']),
+             'actualOwnerDeath':False,'controlProfile':profile,'attemptNumber':attempt_number,
+             'priorProfileAttemptResults':prior_results,'historicalPossibleEffectsResent':False if passed else None,
++            'diagnosticOnly':True,'productionChanged':False,'full128RecordQualification':False,
++            'diagnostic':None if inner is None else inner.get('diagnostic'),
+             'fullSimultaneousCapacityEstablished':False,'logicalCeilingBytes':16*1024*1024,'fileBytes':file_bytes,
+             'observedStateHighBytes':observed_state_bytes,'observedStateHighFiles':observed_state_files,
+             'diskMonitorIsObservedNotKernelQuota':True,
+@@ -261,7 +284,7 @@
+             save(FINAL_DESTINATION,FINAL_REPORT,replace=True)
+             print(json.dumps(FINAL_REPORT,sort_keys=True))
+         finally:signal.pthread_sigmask(signal.SIG_SETMASK,previous)
+-    require(FINAL_REPORT['passed'],'Boundary run failed; preserve original attempt')
++    require(FINAL_REPORT['passed'],'History-cost diagnostic failed; preserve original attempt')
+ 
+ 
+ if __name__=='__main__':

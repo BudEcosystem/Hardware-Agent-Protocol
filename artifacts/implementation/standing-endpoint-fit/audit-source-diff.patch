@@ -1,0 +1,29 @@
+--- sealed-controller/audit_retained.py
++++ fit/audit_retained.py
+@@ -100,7 +100,7 @@
+             for mode in ('plain','asan'):
+                 standing = native['standing'][mode]; integration = native['integration'][mode]
+                 assert standing == read(folder/('standing-probe-'+mode+'.stdout'))
+-                assert standing == dict(assertions=638,cases=12,physical_qualification=False)
++                assert standing == dict(assertions=673,cases=13,physical_qualification=False)
+                 assert integration == read(folder/('probe-'+mode+'.stdout'))
+                 assert integration['cases'] == 11 and integration['assertions'] == 143471 and integration['wireOracleSteps'] == 20000
+         attempts.append(dict(receipt=path.name,sha256=digest(path),stage=report['stage'],attempt=report['attempt'],
+@@ -118,7 +118,7 @@
+     latest_avr = max(matching['avr'],key=lambda report:report['attempt'])
+     if not latest_avr['requested_checks_completed']:
+         assert latest_avr.get('error') and any(not command['passed'] for command in latest_avr['commands'])
+-    original = read(HERE/'source-pins.json')['files']; assert len(original) == 30
++    original = read(HERE/'source-pins.json')['files']; assert len(original) == 36
+     for row in original:
+         assert digest(ROOT/row['source']) == digest(HERE/'originals'/row['copy']) == row['sha256']
+     for pid,tick in identities:
+@@ -133,7 +133,7 @@
+     assert all(digest(ROOT/row['path']) == row['sha256'] for row in baseline['files'])
+     assert snapshot() == before
+     result = dict(passed=True,auditSourceSha256=digest(Path(__file__)),attempts=attempts,totalCommands=total_commands,
+-                  observedOwnedIdentitiesAbsent=len(identities),currentProjectFiles=36,originalCopies=30,publicInputsExact=244,
++                  observedOwnedIdentitiesAbsent=len(identities),currentProjectFiles=36,originalCopies=36,publicInputsExact=244,
+                   currentSourcesNativeCompleted=True,currentSourcesAvrAttempt=latest_avr['attempt'],
+                   currentSourcesAvrCompleted=latest_avr['requested_checks_completed'],
+                   avrResourceArithmeticAudited=False,targetFitEstablished=False,

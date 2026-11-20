@@ -1,0 +1,31 @@
+--- artifacts/implementation/pat-io-run-bundle/implementation02/project/hms/pat_io_run_bundle.py
++++ artifacts/implementation/pat-io-run-bundle/implementation03/project/hms/pat_io_run_bundle.py
+@@ -118,9 +118,10 @@
+     for item in ids: _digest(item)
+     _require(len(set(ids)) == len(ids), 'CASES')
+     paths = _paths(len(ids))
+-    _require(type(documents) is dict and len(documents) == len(paths) and set(documents) == set(paths), 'CLOSURE')
++    _require(type(documents) is dict and len(documents) == len(paths), 'CLOSURE')
+     _require(all(type(k) is str and type(v) is bytes and 0 < len(v) <= MAX_DOCUMENT_BYTES
+         for k, v in documents.items()), 'DOCUMENT')
++    _require(set(documents) == set(paths), 'CLOSURE')
+     _integer(value['inputBytes'], 1, MAX_INPUT_BYTES, 'INPUT_BYTES')
+     _require(sum(map(len, documents.values())) == value['inputBytes'], 'INPUT_BYTES')
+     manifest = value['manifest']
+--- artifacts/implementation/pat-io-run-bundle/implementation02/project/tests/test_pat_io_run_bundle.py
++++ artifacts/implementation/pat-io-run-bundle/implementation03/project/tests/test_pat_io_run_bundle.py
+@@ -130,6 +130,14 @@
+         changed = copy.deepcopy(self.original); changed['documents']['extra.json'] = b'{}'
+         with self.assertRaisesRegex(bundle.IoRunBundleError, 'CLOSURE'): self.parse(changed)
+ 
++    def test_mapping_key_subclasses_refuse_before_hash_or_equality_callbacks(self):
++        class PathKey(str): pass
++        changed = copy.deepcopy(self.original); path = 'inputs/authority.json'
++        raw = changed['documents'].pop(path); changed['documents'][PathKey(path)] = raw
++        with patch.object(PathKey, '__hash__', side_effect=AssertionError('caller hash')), \
++             patch.object(PathKey, '__eq__', side_effect=AssertionError('caller equality')):
++            with self.assertRaisesRegex(bundle.IoRunBundleError, 'DOCUMENT'): self.parse(changed)
++
+     def test_changed_content_cannot_reuse_retained_manifest_or_digest(self):
+         changed = copy.deepcopy(self.original)
+         changed['documents']['inputs/authority.json'] = changed['documents']['inputs/authority.json'].replace(b'13', b'14')

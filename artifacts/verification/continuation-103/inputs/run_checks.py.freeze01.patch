@@ -1,0 +1,62 @@
+--- run_checks-draft01.py
++++ run_checks.py
+@@ -20,6 +20,11 @@
+ ENV={'LANG':'C','LC_ALL':'C','PATH':'/usr/bin:/bin'}
+ FINAL_DESTINATION=None
+ FINAL_REPORT=None
++EXPECTED_CASES=[('open-prepared','OPEN','prepared'),('open-possible','OPEN','possible'),('open-reply','OPEN','reply'),
++    ('start-prepared','START','prepared'),('start-possible','START','possible'),('start-reply','START','reply'),
++    ('collection-before-ack','COLLECTION','collection'),('ack-prepared','ACK','prepared'),
++    ('ack-possible','ACK','possible'),('ack-reply','ACK','reply'),('retire-prepared','RETIRE','prepared'),
++    ('retire-possible','RETIRE','possible'),('retire-reply','RETIRE','reply')]
+ 
+ 
+ def require(value,message):
+@@ -111,6 +116,7 @@
+         'physicalEligible':False,'protectedCapacity':False,'publicMountEligible':False,'candidatePreviouslyExecuted':False})
+     guardian=Guardian(frozen/'owner/libharness-owner.so');held=None;child=None;record=None;inner=None
+     reason=None;began=time.monotonic_ns();held_before=held_after=None
++    control_started=control_terminal=None
+     try:
+         held=os.open(interpreter,os.O_RDONLY|os.O_CLOEXEC);fcntl.flock(held,fcntl.LOCK_SH|fcntl.LOCK_NB)
+         held_before=fd_snapshot(held);require(held_before['sha256']==runtime,'Held interpreter differs')
+@@ -124,11 +130,14 @@
+                         except OSError:pass
+                 os.chdir(frozen)
+                 os.execve('/proc/self/fd/'+str(held),argv,ENV)
++            control_started=time.monotonic_ns()
+             child=guardian.fork(fixed_child,cpu_seconds=30,address_bytes=512*1024*1024)
+             save(attempt/'control.started.json',guardian.handles[child]['identity'])
+             while guardian.status(child) is None:
+-                require(time.monotonic_ns()-began<30_000_000_000,'CONTROL_WALL_LIMIT')
++                require(time.monotonic_ns()-control_started<30_000_000_000,'CONTROL_WALL_LIMIT')
+                 time.sleep(.005)
++            control_terminal=time.monotonic_ns()
++            require(control_terminal-control_started<=30_000_000_000,'CONTROL_TERMINAL_OBSERVED_AFTER_WALL_LIMIT')
+             record=guardian.reap(child)
+             out.flush();err.flush();os.fsync(out.fileno());os.fsync(err.fileno())
+         require(record['exitCode']==0,'Control process failed')
+@@ -137,7 +146,9 @@
+         require(inner['ownerEmpty'] and inner['ownerClosed'] and not inner['cleanupErrors'] and not inner['interruptsPending'],'Inner cleanup failed')
+         require(inner['actualOwnerDeath'] and inner['nativePeerSurvivedOwner'] and inner['historicalPossibleEffectsResent'] is False,'Inner effect classification failed')
+         expected=[]
+-        require(len({case['case'] for case in inner['cases']})==13,'Duplicate case')
++        require([(case['case'],case['operation'],case['cut']) for case in inner['cases']]==EXPECTED_CASES,'Exact ordered thirteen-cut matrix required')
++        require(len({(r['pid'],r['startTicks']) for r in inner['childrenReaped']})==39 and
++                all(r['parent']==child for r in inner['childrenReaped']),'Inner children must be distinct direct owned children')
+         for case in inner['cases']:
+             require(case['passed'] and case['actualOwnerDeath'] and case['nativePeerSurvivedOwner'] and case['historicalPossibleEffectsResent'] is False,'Case failed')
+             for role,exit_code in [('native',0),('owner',-signal.SIGKILL),('recovery',0)]:
+@@ -173,7 +184,11 @@
+         FINAL_REPORT={'passed':passed,'reason':reason,'cleanupErrors':cleanup_errors,'interruptsPending':pending,
+             'ownerEmpty':empty,'ownerClosed':closed,'outerChildrenReaped':guardian.records,'unexpectedChildrenObserved':adopted,
+             'controlExit':record,'heldInterpreterBefore':held_before,'heldInterpreterAfter':held_after,
+-            'elapsedMonotonicNs':str(time.monotonic_ns()-began),'innerCases':0 if inner is None else len(inner['cases']),
++            'elapsedMonotonicNs':str(time.monotonic_ns()-began),
++            'controlStartedMonotonicNs':None if control_started is None else str(control_started),
++            'controlTerminalObservedMonotonicNs':None if control_terminal is None else str(control_terminal),
++            'controlObservedElapsedMonotonicNs':None if control_terminal is None else str(control_terminal-control_started),
++            'innerCases':0 if inner is None else len(inner['cases']),
+             'innerReaps':0 if inner is None else len(inner['childrenReaped']),
+             'actualOwnerDeath':passed,'nativePeerSurvivedOwner':passed,'historicalPossibleEffectsResent':False if passed else None,
+             'publicInputsExact':244,'parentPacketStable':not any(e.startswith('stable:') for e in cleanup_errors),

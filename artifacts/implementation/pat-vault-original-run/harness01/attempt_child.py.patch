@@ -1,0 +1,35 @@
+--- prior-actual/attempt_child.py
++++ vault-actual/attempt_child.py
+@@ -60,7 +60,7 @@
+ def audit(event, args):
+     if event == 'subprocess.Popen':
+         executable, argv, cwd, environment = args
+-        expected = scratch / 'test_actual_original_matrix_catalog_execution_and_historical_replay' / 'supervisor'
++        expected = scratch / 'test_actual_original_matrix_import_and_cold_vault_history' / 'supervisor'
+         entry = Path(argv[3]) if type(argv) in (list,tuple) and len(argv)==7 else Path('/invalid')
+         valid = (current_test == config['targets'][0] and executable == sys.executable and
+             argv[0] == sys.executable and argv[1:3] == ['-I','-B'] and
+@@ -73,11 +73,11 @@
+         prohibited.append(event); raise RuntimeError('Network or other subprocess forbidden')
+     if event == 'sqlite3.connect':
+         path = Path(os.fsdecode(os.fspath(args[0])))
+-        work=scratch/'test_actual_original_matrix_catalog_execution_and_historical_replay'
+-        valid=(path==work/'supervisor'/'attempts.db' or (path.parent==work/'runtime' and
++        work=scratch/'test_actual_original_matrix_import_and_cold_vault_history'
++        valid=(path==work/'vault'/'evidence.db' or path==work/'supervisor'/'attempts.db' or (path.parent==work/'runtime' and
+             (path.name=='authority.db' or re.fullmatch(r'synthetic-io-board-[0-9a-f]{64}\.db',path.name))))
+         if current_test!=config['targets'][0] or not valid:
+-            prohibited.append(event); raise RuntimeError('Only exact authority/runtime/supervisor databases may open')
++            prohibited.append(event); raise RuntimeError('Only exact authority/runtime/supervisor/vault databases may open')
+         if len(sqlite_connections)>=6: raise RuntimeError('Declared six parent database opens exceeded')
+         sqlite_connections.append({'testId':current_test,'database':str(path)})
+     if event == 'exec':
+@@ -158,7 +158,7 @@
+             origin = getattr(getattr(module, '__spec__', None), 'origin', None)
+         if origin is not None:
+             add('module:' + name, origin)
+-        if (name == 'hms' or name.startswith('hms.') or name.startswith('test_') or name == 'evidence' or name.startswith('evidence.') or name == 'evidence_compact' or name.startswith('evidence_compact.') or name == 'recorded_io' or name.startswith('recorded_io.')) and origin:
++        if (name == 'hms' or name.startswith('hms.') or name.startswith('test_') or name == 'evidence' or name.startswith('evidence.') or name == 'evidence_compact' or name.startswith('evidence_compact.') or name == 'evidence_vault' or name.startswith('evidence_vault.') or name == 'evidence_authority' or name.startswith('evidence_authority.') or name == 'recorded_io' or name.startswith('recorded_io.')) and origin:
+             if not Path(origin).resolve().is_relative_to(root):
+                 violations.append({'module': name, 'origin': str(origin), 'reason': 'project_name_outside_copy'})
+     for origin in sorted(executed):

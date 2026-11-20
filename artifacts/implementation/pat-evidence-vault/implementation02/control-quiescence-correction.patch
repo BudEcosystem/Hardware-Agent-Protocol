@@ -1,0 +1,12 @@
+--- implementation01/project/tests/test_evidence_vault.py
++++ implementation02/project/tests/test_evidence_vault.py
+@@ -188,6 +188,9 @@
+             journal.record_execution(ticket, 'completed', evidence('completed'))
+             current = journal.status(CONTEXT, operation['id'])
+             self.assertEqual(current['state'], 'completed')
++            self.assertEqual(len(current['claims']), 1)
++            journal.release_resources(operation['id'], evidence('resources_quiescent'))
++            current = journal.status(CONTEXT, operation['id'])
+             self.assertFalse(current['claims'])
+             self.assertEqual(journal.submit(CONTEXT, request(namespace))['id'], operation['id'])
+             self.assertEqual(policy.admissions, 1)

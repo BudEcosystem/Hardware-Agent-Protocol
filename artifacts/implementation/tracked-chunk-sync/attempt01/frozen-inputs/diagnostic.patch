@@ -1,0 +1,54 @@
+--- prior/diagnostic.py
++++ candidate/diagnostic.py
+@@ -19,6 +19,7 @@
+         library_hash='7049dc14940b0f686f5cbe682e85f70944a8074936786e7f962c6ee29ed321de')
+ IDENTITY='92929292929292929292929292929292'
+ EXPECTED={}
++SYNC_COUNTS=dict(fsync=0,wait=0)
+ STEPS=[]
+ 
+ def save(name,value):
+@@ -105,9 +106,32 @@
+         assert observed==value
+         operation('close_handle',store.close_handle,handle,store=store)
+ 
++def install_sync_counters():
++    import hierarchical_store as implementation
++    original_loader=implementation._block_module
++    class Proxy:
++        def __init__(self,original):self.original=original
++        def __getattr__(self,name):return getattr(self.original,name)
++        def fsync(self,fd):
++            SYNC_COUNTS['fsync']+=1
++            return self.original.fsync(fd)
++    def loader(path,wanted):
++        module=original_loader(path,wanted)
++        module.os=Proxy(module.os)
++        if hasattr(module,'_wait_file'):
++            original_wait=module._wait_file
++            def wait(fd):
++                SYNC_COUNTS['wait']+=1
++                return original_wait(fd)
++            module._wait_file=wait
++        return module
++    implementation._block_module=loader
++
++
+ def main():
+     os.umask(0o077);started=time.monotonic()
+-    if MODE=='nested':install_nested()
++    assert MODE=='coarse'
++    install_sync_counters()
+     TRACE.phase='fresh'
+     store=operation('create_store',hierarchy.HierarchicalStore.create,WORK/'image',IDENTITY,chunks=8,**KW)
+     save('anchor.json',store.anchor)
+@@ -143,7 +167,8 @@
+     report=dict(status='passed',mode=MODE,directories=20,files=40,payloadBytes=sum(len(v) for v in EXPECTED.values()),
+         expectedFiles=expected,firstOwnerCallbacks=first,coldOwnerCallbacks=cold,backingHashes=backing,
+         spans=TRACE.totals,steps=STEPS,elapsedSeconds=time.monotonic()-started,cpuSeconds=usage.ru_utime+usage.ru_stime,
+-        peakRSSKiB=usage.ru_maxrss,fullWorkflowQualified=False,checksDisabled=False,fsyncDisabled=False)
++        peakRSSKiB=usage.ru_maxrss,fullWorkflowQualified=False,checksDisabled=False,
++        durabilityBarriersDisabled=False,providerSyncCalls=SYNC_COUNTS)
+     save('diagnostic.json',report)
+     print(json.dumps({k:v for k,v in report.items() if k not in ['spans','steps','expectedFiles','backingHashes']},sort_keys=True),flush=True)
+ 

@@ -1,0 +1,52 @@
+--- artifacts/implementation/pat-io-group-worker/implementation01/project/hms/pat_io_group_worker.py
++++ artifacts/implementation/pat-io-group-worker/implementation02/project/hms/pat_io_group_worker.py
+@@ -82,12 +82,15 @@
+                 operation_keys={s['stepId']:'group:negative:child:'+str(i) for i,s in enumerate(artifact['steps'])},
+                 context=decoded | {'deployment':options['installation']['topology']['deployment']})
+         except PatError as error:
+-            require(error.code == expected['errorCode'], 'PAT_IO_GROUP_NEGATIVE_OUTCOME')
++            expected_code = ('PAT_NOT_APPLICABLE' if expected['staticOutcome']=='not_applicable'
++                             else expected['errorCode'])
++            require(error.code == expected_code, 'PAT_IO_GROUP_NEGATIVE_OUTCOME')
+             code = error.code
+         else:
+             require(False, 'PAT_IO_GROUP_NEGATIVE_ACCEPTED')
+         return dict(profile='hms.pat.io-negative-capture/0.1',caseId=case['caseId'],
+-            programDigest=case['programDigest'], errorCode=code, executionPerformed=False,
++            programDigest=case['programDigest'], staticOutcome=expected['staticOutcome'],
++            errorCode=code, executionPerformed=False,
+             operationIds=[], schedulerTicks=0, qualificationPassed=False)
+     engine = ConflictIoTrialEngine(directory,artifact,options['installation'],descriptor,group_budget=ticket)
+     try:
+--- artifacts/implementation/pat-io-group-worker/implementation01/project/tests/test_pat_io_group_worker.py
++++ artifacts/implementation/pat-io-group-worker/implementation02/project/tests/test_pat_io_group_worker.py
+@@ -37,6 +37,18 @@
+ class IoGroupBudgetTests(GroupFixture,unittest.TestCase):
+     def budget(self,limits=None):
+         return IoGroupBudget(self.matrix(limits),started=time.monotonic())
++
++    def test_negative_preflight_distinguishes_refused_and_not_applicable(self):
++        from hms.pat_io_group_worker import _candidate
++        options=self.options(); cases=[c for c in self.matrix()['cases'] if c['kind']=='candidate' and
++                                      c['domainCase']['expected']['staticOutcome']!='applicable']
++        self.assertEqual(len(cases),4)
++        with patch('hms.pat_io_group_worker.ConflictIoTrialEngine',side_effect=AssertionError('negative runtime')):
++            for case in cases:
++                result=_candidate(None,case,options,None);expected=case['domainCase']['expected']
++                self.assertEqual(result['staticOutcome'],expected['staticOutcome'])
++                self.assertEqual(result['errorCode'],'PAT_NOT_APPLICABLE' if expected['staticOutcome']=='not_applicable' else expected['errorCode'])
++                self.assertFalse(result['executionPerformed']);self.assertEqual(result['operationIds'],[])
+ 
+     def test_exact_case_order_cannot_skip_or_run_two_engines(self):
+         b=self.budget();cases=self.matrix()['cases']
+@@ -143,7 +155,9 @@
+             self.assertEqual(manifest['caseId'],case['caseId'])
+             state_bytes+=row['retainedStateBytes'];operations+=row['operationCount'];ticks+=row['schedulerTicks']
+             if not manifest['executionPerformed']:
+-                self.assertEqual(manifest['errorCode'],case['domainCase']['expected']['errorCode'])
++                expected=case['domainCase']['expected']
++                self.assertEqual(manifest['staticOutcome'],expected['staticOutcome'])
++                self.assertEqual(manifest['errorCode'],'PAT_NOT_APPLICABLE' if expected['staticOutcome']=='not_applicable' else expected['errorCode'])
+                 self.assertFalse((self.directory/('case-%02d'%index)/'state').exists());continue
+             self.assertTrue(manifest['closed']);self.assertFalse(manifest['report']['unresolvedOperations'])
+             for stream,records in [('records',manifest['records']),('configuration',manifest['configuration']['records'])]:

@@ -1,0 +1,43 @@
+--- freeze_source03.py
++++ freeze_source04.py
+@@ -7,7 +7,7 @@
+ 
+ BASE = Path(__file__).resolve().parent
+ ROOT = BASE.parents[2]
+-STAGE = BASE / 'implementation01'
++STAGE = BASE / 'implementation02'
+ PROJECT = STAGE / 'project'
+ PRIOR = BASE.parent / 'pat-io-proof-batch/implementation01'
+ def sha(path):
+@@ -27,8 +27,8 @@
+                  sha256=sha(PROJECT / folder / name)) for name in names]
+ assert not (STAGE / 'index.json').exists()
+ assert sha(PRIOR / 'index.json') == 'a7e03e59584b61e09efe40fbd093c423acfdc4c037c6d5d24273019bdda3f2b5'
+-assert read(BASE / 'controls01/result.json')['status'] == 'passed'
+-for row in read(BASE / 'controls01/inputs.json'):
++assert read(BASE / 'controls02/result.json')['status'] == 'passed'
++for row in read(BASE / 'controls02/inputs.json'):
+     assert sha(BASE / row['path']) == row['sha256']
+ old = read(PRIOR / 'identity-pins.json')
+ assert digest(b'HMS-PAT-IO-EVIDENCE-CONSUMER-v0.1', sorted(old['sourceRows'], key=lambda row: row['path'])) == old['legacy']
+@@ -54,7 +54,7 @@
+     assert previous.stat().st_size == row['bytes'] and sha(previous) == row['sha256']
+     current = external[name] if name.startswith('dependencies/') else PROJECT / name
+     rows.append(dict(path=name, bytes=current.stat().st_size, sha256=sha(current)))
+-for name in ('retention_native.py', 'retention_scanmodule.c', 'retention_native.so'):
++for name in ('retention_native.py', 'retention_scanmodule.c', 'retention_scan.so'):
+     rows += package('supervisor', (name,))
+ rows.sort(key=lambda row: row['path'])
+ assert len(rows) == len({row['path'] for row in rows}) == 270
+@@ -73,9 +73,9 @@
+ changed = [row['path'] for row in baseline if sha(PROJECT / row['path']) != row['sha256']]
+ assert set(changed) == {'supervisor/attempt_ledger.py', 'supervisor/supervisor_contracts.py', 'tests/test_vault_original_run.py'}
+ write(STAGE / 'source-review.json', dict(reviewer='primary-agent', independentReview=False,
+-    changedInheritedFiles=changed, newFiles=['supervisor/retention_native.py', 'supervisor/retention_scanmodule.c', 'supervisor/retention_native.so'],
++    changedInheritedFiles=changed, newFiles=['supervisor/retention_native.py', 'supervisor/retention_scanmodule.c', 'supervisor/retention_scan.so'],
+     unchangedInheritedFiles=285, nativeBinaryUnchangedFromBinding=True,
+-    nativeBinarySha256=sha(PROJECT / 'supervisor/retention_native.so'),
++    nativeBinarySha256=sha(PROJECT / 'supervisor/retention_scan.so'),
+     wrapperControlsSixScopesPassed=True, actualOriginalScopeUnchanged=True,
+     caseMatrix=30, workerMaxWallMs=60000, parentMaxSeconds=180,
+     nativePerEntryPythonAudit=False, strictNewProfile=True, rootAndOpenedChildChecksStrengthened=True,

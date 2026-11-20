@@ -1,0 +1,13 @@
+--- ported/hms/synthetic_io_runtime.py
++++ live/hms/synthetic_io_runtime.py
+@@ -1,7 +1,7 @@
+-"""Staged I/O bootstrap reusing original Runtime scheduling/API and Journal logic.
++"""Shared-board I/O bootstrap reusing Runtime scheduling/API and Journal logic.
+ 
+-This explicit class accepts only the new shared-board installation. It is not
+-mounted in the stock daemon, CLI, MCP or existing installation profile.
++This class accepts only its closed shared-board installation. The runtime
++factory and daemon select it explicitly; ordinary API/tool methods are shared.
+ """
+ import threading
+ import time

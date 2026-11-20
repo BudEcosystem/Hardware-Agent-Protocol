@@ -1,0 +1,17 @@
+--- artifacts/implementation/pat-io-supervision-recovery/harness03/attempt_child.py
++++ artifacts/implementation/pat-io-installation-reuse/harness03/attempt_child.py
+@@ -1,4 +1,4 @@
+-"""IoRecovery1 child: isolated startup, exact selected tests and scoped origin evidence."""
++"""IoInstallation1 child: isolated startup, exact selected tests and scoped origin evidence."""
+ import hashlib
+ import json
+ import os
+@@ -199,7 +199,7 @@
+     tests = unittest.defaultTestLoader.loadTestsFromNames(config['targets'])
+     loaded_ids = flatten(tests)
+     if loaded_ids != config['targets']:
+-        raise RuntimeError('Loaded methods do not exactly match the reviewed recovery1 selection')
++        raise RuntimeError('Loaded methods do not exactly match the reviewed installation1 selection')
+     class RecordingResult(unittest.TextTestResult):
+         def startTest(self, test):
+             global current_test

@@ -1,0 +1,35 @@
+--- audit_evidence.py
++++ audit_evidence_v2.py
+@@ -117,7 +117,9 @@
+     assert sum(TARGETS.values())==149
+     assert report['scopes']['mount-controls']['checks']==52 and report['scopes']['profile-controls']['checks']==8
+     assert read(ATTEMPT/'provider-controls/stdout.txt')==report['scopes']['provider-controls']==dict(tests=24,failures=0,errors=0,passed=True)
+-    assert not (ATTEMPT/'provider-controls/stderr.txt').read_bytes()
++    # Reviewed unittest progress plus the expected CPython test13 fork warning.
++    # Bind exact bytes; do not discard arbitrary stderr or change the test result.
++    assert digest(ATTEMPT/'provider-controls/stderr.txt') == '2b9c206ae57a84935b8e6671df5970b283455f72639845139455836c922011d2'
+     spec=importlib.util.spec_from_file_location('hms_compact_retained_reader',Path(__file__).parent/'retained_reader.py')
+     reader=importlib.util.module_from_spec(spec);spec.loader.exec_module(reader)
+     images={};extra_callbacks={};corrupt_images={}
+--- run_audit.py
++++ run_audit_v2.py
+@@ -10,8 +10,8 @@
+ import time
+ 
+ HERE=Path(__file__).resolve().parent
+-WORK=HERE/'audit-process01'
+-SOURCES=['audit_evidence.py','run_audit.py','run_audit.py.patch','AUDIT-PLAN.md','retained_reader.py']
++WORK=HERE/'audit-process02'
++SOURCES=['audit_evidence_v2.py','run_audit_v2.py','audit-correction02.patch','AUDIT-PLAN.md','AUDIT-REVIEW02.md','retained_reader.py']
+ 
+ def digest(path):
+     with path.open('rb') as stream:return hashlib.file_digest(stream,'sha256').hexdigest()
+@@ -116,7 +116,7 @@
+             stream.write((HERE/name).read_bytes());stream.flush();os.fsync(stream.fileno())
+     env={'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C','PYTHONDONTWRITEBYTECODE':'1','HMS_AUDIT_STAGE':str(HERE)}
+     try:
+-        run([sys.executable,'-B',str(WORK/'audit_evidence.py')],env,60,40)
++        run([sys.executable,'-B',str(WORK/'audit_evidence_v2.py')],env,60,40)
+     finally:
+         assert all(digest(HERE/name)==digest(WORK/name) for name in SOURCES)
+     result=json.loads((WORK/'result.json').read_text())

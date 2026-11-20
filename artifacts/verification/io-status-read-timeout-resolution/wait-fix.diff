@@ -1,0 +1,42 @@
+--- controlled-before/tests/test_io_transport.py
++++ controlled-after/tests/test_io_transport.py
+@@ -21,6 +21,7 @@
+ from hms.api_contracts import METHOD_RESULTS, validate_result
+ from hms.client import Client
+ from hms.contracts import canonical, intent_digest
++from hms.ipc import IpcError
+ from test_io_synthetic_provider import installation
+ from test_multi_cli import finish_transport_failure, retain_transport_failure
+ from tests.sqlite_observer import readonly_rows
+@@ -192,12 +193,27 @@
+         return readonly_rows(self.state / entry['database'], sql, values, report=entry)
+ 
+     def wait(self, method, params, predicate, *, timeout=15):
++        if method not in {'operation', 'procedure_status'}:
++            raise ValueError('Only immutable status reads may be polled')
++        params = copy.deepcopy(params)
+         deadline = time.monotonic() + timeout
++        result = None
+         while time.monotonic() < deadline:
+-            result = self.call(method, **params)
+-            if predicate(result):
+-                return result
+-            time.sleep(.05)
++            try:
++                result = self.call(method, **params)
++            except IpcError as error:
++                if error.code != 'TRANSPORT_TIMEOUT':
++                    raise
++            else:
++                if time.monotonic() >= deadline:
++                    break
++                if predicate(result):
++                    if time.monotonic() < deadline:
++                        return result
++                    break
++            remaining = deadline - time.monotonic()
++            if remaining > 0:
++                time.sleep(min(.05, remaining))
+         raise AssertionError(('I/O state did not converge', method, result))
+ 
+     def settled(self, operation_id):

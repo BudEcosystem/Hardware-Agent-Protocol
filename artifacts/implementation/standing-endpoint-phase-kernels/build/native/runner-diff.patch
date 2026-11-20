@@ -1,0 +1,157 @@
+--- runner-baseline.py
++++ run_checks.py
+@@ -1,5 +1,5 @@
+ #!/usr/bin/env python3
+-"""Isolated shared-kernel checks. Never execute an AVR image or access devices.
++"""Isolated phase-kernel checks. Never execute an AVR image or access devices.
+ 
+ Source review must precede invocation. Host compilers execute; native probes use
+ only original in-memory register models. AVR output is compile/link evidence.
+@@ -37,9 +37,10 @@
+          ('protocol/platform/avr_clock.c','clock'),('protocol/platform/avr_eeprom.c','eeprom'),
+          ('protocol/platform/boot_epoch.c','boot'),('protocol/platform/avr_runtime.c','runtime')]
+ COMMON = ['-std=c11','-g','-Wall','-Wextra','-Wconversion','-Werror','-Wvla','-fno-common']
++BYTE_FLAGS = ['-DHMS_EP_BYTE_BACKEND=1']
+ LTO_FLAGS = ['-flto=1','-flto-partition=one','-ffat-lto-objects','-fuse-linker-plugin',
+              '-save-temps=obj','-fdump-ipa-cgraph','-fdump-ipa-inline']
+-AVR_FLAGS = ['-mmcu=atmega328p','-DF_CPU=16000000UL',*COMMON,'-Os','-ffunction-sections',
++AVR_FLAGS = ['-mmcu=atmega328p','-DF_CPU=16000000UL',*COMMON,*BYTE_FLAGS,'-Os','-ffunction-sections',
+              '-fdata-sections','-fno-optimize-sibling-calls','-fstack-usage','-MD',*LTO_FLAGS]
+ AVR_LINK_FLAGS = [flag for flag in AVR_FLAGS if flag != '-MD']
+ commands = []
+@@ -392,7 +393,7 @@
+ def native_coverage():
+     """Verify retained old case bytes; this reads source, never imports it."""
+     coverage=json.loads((BUILD/'native-coverage.json').read_text())
+-    require(coverage['schema']=='hms-shared-kernel-native-coverage/1','Unknown native coverage profile')
++    require(coverage['schema']=='hms-phase-kernel-native-coverage/1','Unknown native coverage profile')
+     require(coverage['baseline_source']=='originals/project/tests/standing_controls.c' and
+             coverage['current_source']=='project/tests/standing_controls.c','Unexpected control source path')
+     baseline=(BUILD/coverage['baseline_source']).read_bytes()
+@@ -415,8 +416,16 @@
+     require(coverage['current_case_order']==coverage['baseline_case_order'] and
+             coverage['expected_standing_cases']==14 and coverage['baseline_standing_assertions']==766 and
+             baseline==current,'Original fourteen standing controls must remain byte-exact')
++    additional=coverage['other_unchanged_functions']
++    require(len(additional)==5,'Original numeric/finite group coverage differs')
++    for row in additional:
++        old=(BUILD/row['baseline_source']).read_bytes();new=(BUILD/row['current_source']).read_bytes()
++        a,b=row['baseline_span'];c,d=row['current_span']
++        require(0<=a<b<=len(old) and 0<=c<d<=len(new),'Invalid unchanged function range')
++        require(old[a:b]==new[c:d] and hashlib.sha256(old[a:b]).hexdigest()==row['sha256'],
++                'Original numeric/finite group changed: '+row['name'])
+     result={'baseline_case_bodies_verified':14,'standing_cases_required':14,
+-            'baseline_observed_assertions':766,'coverage_profile_sha256':digest(BUILD/'native-coverage.json')}
++            'baseline_observed_assertions':766,'other_original_functions_verified':5,'coverage_profile_sha256':digest(BUILD/'native-coverage.json')}
+     save_new(BUILD/'native-source-coverage.json',result)
+     return result
+ 
+@@ -451,7 +460,7 @@
+     for mode in ('plain','asan'):
+         flags=['-O2'] if mode=='plain' else ['-O1','-fsanitize=address,undefined','-fno-omit-frame-pointer','-fno-pie','-no-pie']
+         exe=BUILD/('runtime-'+mode)
+-        run([gcc,*COMMON,*flags,*macros,*inputs,'-o',exe],'compile-'+mode)
++        run([gcc,*COMMON,*BYTE_FLAGS,*flags,*macros,*inputs,'-o',exe],'compile-'+mode)
+         reports[mode]=json.loads(run([exe],'probe-'+mode,sanitizer=mode=='asan'))
+         require(reports[mode]['cases']==11 and reports[mode]['assertions']==143471 and
+                 reports[mode]['wireOracleSteps']==20000 and reports[mode]['interruptSnapshots']==256 and
+@@ -461,49 +470,61 @@
+         standing_inputs=['protocol/serial/frame.c','protocol/endpoint/endpoint.c',
+                          'protocol/endpoint/standing.c','protocol/endpoint/link.c','protocol/endpoint/endpoint_kernel.c',
+                          'tests/standing_fixture.c','tests/standing_controls.c']
+-        run([gcc,*COMMON,*flags,*standing_inputs,'-o',standing_exe],'standing-compile-'+mode)
++        run([gcc,*COMMON,*BYTE_FLAGS,*flags,*standing_inputs,'-o',standing_exe],'standing-compile-'+mode)
+         standing_reports[mode]=json.loads(run([standing_exe],'standing-probe-'+mode,sanitizer=mode=='asan'))
+         require(standing_reports[mode]['cases']==14,'Standing control coverage changed')
+         require(type(standing_reports[mode]['assertions']) is int and
+                 standing_reports[mode]['assertions']==coverage['baseline_observed_assertions'],
+                 'Original standing assertion coverage changed')
+         require(standing_reports[mode]['physical_qualification'] is False,'Synthetic controls overclaimed')
+-        kernel_exe=BUILD/('kernel-'+mode)
+-        run([gcc,*COMMON,*flags,'protocol/endpoint/endpoint_kernel.c','tests/kernel_controls.c','-o',kernel_exe],
+-            'kernel-compile-'+mode)
+-        kernel_reports[mode]=json.loads(run([kernel_exe],'kernel-probe-'+mode,sanitizer=mode=='asan'))
+-        require(kernel_reports[mode]['cases']==3 and type(kernel_reports[mode]['assertions']) is int and
+-                kernel_reports[mode]['assertions']>1000 and kernel_reports[mode]['physical_qualification'] is False,
+-                'Kernel controls incomplete or overclaimed')
++        kernel_reports[mode]={}
++        for backend in (1,0):
++            label='byte' if backend else 'fallback'
++            kernel_exe=BUILD/('kernel-'+label+'-'+mode)
++            run([gcc,*COMMON,'-DHMS_EP_BYTE_BACKEND='+str(backend),*flags,
++                 'protocol/endpoint/endpoint_kernel.c','tests/kernel_controls.c','-o',kernel_exe],
++                'kernel-compile-'+label+'-'+mode)
++            result=json.loads(run([kernel_exe],'kernel-probe-'+label+'-'+mode,sanitizer=mode=='asan'))
++            require(result['cases']==6 and result['old_cases']==3 and result['backend']==backend and
++                    type(result['assertions']) is int and result['assertions']>13014 and
++                    result['physical_qualification'] is False,'Kernel controls incomplete or wrong backend')
++            kernel_reports[mode][label]=result
++        require({k:v for k,v in kernel_reports[mode]['byte'].items() if k!='backend'}==
++                {k:v for k,v in kernel_reports[mode]['fallback'].items() if k!='backend'},
++                'Byte/fallback kernel control coverage differs')
+         trace_outputs={}
+-        for domain in ('baseline','candidate'):
++        for domain in ('baseline','candidate','fallback'):
+             baseline=domain=='baseline'
+             prefix=BUILD/'originals/project' if baseline else PROJECT
++            # phase_access includes exactly the selected standing.c and exposes
++            # one native-only accounting control. It never enters AVR UNITS.
+             trace_inputs=[str(prefix/path) for path in ('protocol/serial/frame.c','protocol/endpoint/endpoint.c',
+-                'protocol/endpoint/standing.c','protocol/endpoint/link.c','tests/standing_fixture.c')]
+-            if not baseline:trace_inputs.append(str(PROJECT/'protocol/endpoint/endpoint_kernel.c'))
++                'protocol/endpoint/link.c','protocol/endpoint/endpoint_kernel.c','tests/standing_fixture.c')]
++            trace_inputs.append(str(PROJECT/'tests/phase_access.c'))
+             trace_exe=BUILD/('equivalence-'+domain+'-'+mode)
+-            defines=['-DHMS_EQ_BASELINE'] if baseline else []
++            backend=1 if domain=='candidate' else 0
++            defines=['-DHMS_EP_BYTE_BACKEND='+str(backend),'-DHMS_EQ_EXPECTED_BACKEND='+str(backend)]
++            if baseline:defines.append('-DHMS_EQ_BASELINE')
+             run([gcc,*COMMON,*flags,*defines,*trace_inputs,'tests/endpoint_equivalence.c','-o',trace_exe],
+                 'equivalence-compile-'+domain+'-'+mode)
+             trace_outputs[domain]=run([trace_exe],'equivalence-probe-'+domain+'-'+mode,sanitizer=mode=='asan')
+-        require(trace_outputs['baseline']==trace_outputs['candidate'],
+-                'Baseline/candidate complete state, callback, effect or response trace differs')
++        require(trace_outputs['baseline']==trace_outputs['candidate']==trace_outputs['fallback'],
++                'Baseline/byte/fallback complete state, callback, effect or response trace differs')
+         trace=trace_outputs['candidate'];summary=json.loads(trace.splitlines()[-1])
+-        require(summary['equivalence_cases']==16 and summary['old_cases']==14 and
+-                summary['physical_qualification'] is False and summary['added_assertions']>0 and
++        require(summary['equivalence_cases']==20 and summary['old_cases']==14 and
++                summary['physical_qualification'] is False and summary['added_assertions']>475 and
+                 summary['assertions']==766+summary['added_assertions'] and summary['trace_records']>0,
+                 'Differential trace coverage incomplete')
+         equivalence_traces[mode]=hashlib.sha256(trace.encode('utf-8')).hexdigest()
+         equivalence_reports[mode]={'summary':summary,'complete_trace_sha256':equivalence_traces[mode],
+-            'baseline_matches_candidate':True,'raw_outputs_retained':True}
++            'baseline_matches_candidate':True,'baseline_matches_fallback':True,'raw_outputs_retained':True}
+     require(reports['plain']==reports['asan'],'Plain/sanitized integration reports disagree')
+     require(standing_reports['plain']==standing_reports['asan'],'Plain/sanitized standing reports disagree')
+     require(kernel_reports['plain']==kernel_reports['asan'],'Plain/sanitized kernel reports disagree')
+     require(equivalence_reports['plain']==equivalence_reports['asan'],'Plain/sanitized complete traces disagree')
+     return {'original':original,'integration':reports,'standing':standing_reports,
+             'kernel':kernel_reports,'equivalence':equivalence_reports,
+-            'source_coverage':coverage,'standing_observed_assertions':standing_reports['plain']['assertions'],
++            'source_coverage':coverage,'selected_candidate_backend':1,'scalar_fallback_controls':True,'standing_observed_assertions':standing_reports['plain']['assertions'],
+             'plain_sanitized_reports_agree':True,
+             'compiler_path':str(gcc),'compiler_sha256':digest(gcc),'compiler_version':version,
+             'selected_native_tools':native_tools}
+@@ -649,7 +670,7 @@
+             'pre_lto_stack_records':'pre-lto-stack-records.json; not final-image evidence',
+             'combined_foreground_isr_stack_analysis':'UNQUALIFIED: requires actual final backend/disassembly/IPA coverage and graph accounting',
+             'finite_poll_frame_boundary_review':'PENDING: inspect actual finite callee and standing branch frame lifetimes',
+-            'shared_kernel_phase_review':'PENDING: inspect sharing/clones, finite handle route and every new caller/callee frame',
++            'shared_kernel_phase_review':'PENDING: inspect byte-loop lowering, phase boundaries, aliases/clones and every caller/callee frame',
+             'tx_register_instruction_window_review':'PENDING: inspect exact linked sequence and max baud interval',
+             'target_runtime_fit_demonstrated':False,'target_executed':False}
+ 
+@@ -778,8 +799,8 @@
+                'PLUGIN-LOOKUP-REVIEW.md','plugin-lookup-source-pins.json',
+                'CONTROLS.md','SOURCE-COVERAGE.md','INDEPENDENT-REVIEW.md','native-coverage.json',
+                'runner-input-pins.json','runner-diff.patch','runner-baseline.py',
+-               'parent-pins.json','endpoint-transformations.json','standing-transformations.json']
+-        fixed += [str(path.relative_to(HERE)) for path in sorted((HERE/'originals/project').rglob('*')) if path.is_file()]
++               'baseline-pins.json','proposal-index.json','CORE-DRAFT01.md','CONTROLS-DRAFT01.md']
++        fixed += [str(path.relative_to(HERE)) for path in sorted((HERE/'originals').rglob('*')) if path.is_file()]
+         fixed += [str(path.relative_to(HERE)) for path in sorted((HERE/'history').rglob('*')) if path.is_file()]
+         fixed += [row['target'] for row in json.loads((HERE/'runner-owner-pins.json').read_text())['files']]
+         for name in fixed:sources[name]=digest(HERE/name)

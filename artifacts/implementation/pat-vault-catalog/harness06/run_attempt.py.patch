@@ -1,0 +1,20 @@
+--- harness01/run_attempt.py
++++ harness06/run_attempt.py
+@@ -77,7 +77,7 @@
+ with child_path.open('xb') as stream:
+     stream.write((HARNESS / 'attempt_child.py').read_bytes())
+ targets = read(HARNESS / 'targets.json')
+-assert len(targets) == len(set(targets)) == 14
++assert len(targets) == len(set(targets)) == 2
+ config = dict(project=str(project), attempt=str(attempt), scratch=str(scratch),
+     externalRoots=external['roots'], expectedExternalInputs=external['files'],
+     expectedInputs=inputs, childSha256=sha(child_path), targets=targets, expectedHost=read(SOURCE / 'identity-pins.json')['host'])
+@@ -139,7 +139,7 @@
+     counts = read(attempt / 'test-return.json')
+     origins = read(attempt / 'imports.json')
+     actual = read(attempt / 'actual-tests.json')
+-    assert counts['testsRun'] == 14 and all(counts[key] == 0 for key in counts if key != 'testsRun')
++    assert counts['testsRun'] == 2 and all(counts[key] == 0 for key in counts if key != 'testsRun')
+     assert actual['loaded'] == actual['executed'] == targets and actual['exactSelection']
+     assert origins['summary']['allOriginsMatched'] and read(attempt / 'child-errors.json') == []
+     assert read(attempt / 'compiler-before.json') == read(attempt / 'compiler-after.json')

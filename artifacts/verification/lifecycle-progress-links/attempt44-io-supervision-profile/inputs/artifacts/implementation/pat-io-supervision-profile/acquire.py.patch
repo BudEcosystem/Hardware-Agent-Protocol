@@ -1,0 +1,11 @@
+--- artifacts/implementation/pat-io-supervision-recovery/acquire.py
++++ artifacts/implementation/pat-io-supervision-profile/acquire.py
+@@ -1,7 +1,7 @@
+ """Acquire a complete terminated group attempt, preserving raw state."""
+ import hashlib,json,re,shutil,stat,sys
+ from pathlib import Path
+-ROOT=Path.cwd().resolve();BASE=ROOT/'artifacts/implementation/pat-io-supervision-recovery'
++ROOT=Path.cwd().resolve();BASE=ROOT/'artifacts/implementation/pat-io-supervision-profile'
+ harness,name,dest=sys.argv[1:];H=BASE/harness;A=H/'attempts'/name;OUT=BASE/'results'/dest
+ assert not OUT.exists();OUT.mkdir(parents=True)
+ def read(p):return json.loads(p.read_bytes())

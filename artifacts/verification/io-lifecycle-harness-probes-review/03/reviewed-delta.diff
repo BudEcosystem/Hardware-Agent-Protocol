@@ -1,0 +1,48 @@
+--- before/stage-runner
++++ after/stage-runner
+@@ -12,7 +12,7 @@
+ import traceback
+ import _sqlite3
+ 
+-PACKAGES = ('jsonschema','referencing','jsonschema-specifications','attrs','rpds-py','typing_extensions')
++PACKAGES = ('jsonschema','referencing','jsonschema-specifications','attrs','rpds-py','typing_extensions','idna')
+ ALLOWED_TARGETS = {'test_io_lifecycle','test_io_synthetic_provider','test_io_api_contracts',
+                    'test_resource_topology','test_io_resource_admission','test_registry_review','test_journal'}
+ 
+--- before/outer-runner
++++ after/outer-runner
+@@ -48,18 +48,18 @@
+         (out/'run_probes.py').write_bytes(harness_body)
+         save(out/'outer-harness-before.json',{'executingPath':str(Path(__file__).resolve()),'executingSha256':harness_before,
+             'retainedPath':str(out/'run_probes.py'),'retainedSha256':sha(out/'run_probes.py')})
+-        source.mkdir();shutil.copytree(lane/'src',source/'src');shutil.copytree(lane/'retained05',source/'retained05')
++        source.mkdir();shutil.copytree(lane/'src',source/'src');shutil.copytree(lane/'retained06',source/'retained06')
+         for name in ('README.md','source-preparation.json','manifest.json','approved-external-roots.json'):shutil.copyfile(lane/name,source/name)
+-        retained=json.loads((source/'retained05/manifest.json').read_text())
++        retained=json.loads((source/'retained06/manifest.json').read_text())
+         for item in retained['files']:
+-            path=source/'retained05'/item['path']
+-            if sha(path)!=item['sha256']:raise ValueError('Retained05 input changed: '+item['path'])
++            path=source/'retained06'/item['path']
++            if sha(path)!=item['sha256']:raise ValueError('Retained06 input changed: '+item['path'])
+         before=rows(source);save(out/'inputs-before.json',before)
+         approved=json.loads((source/'approved-external-roots.json').read_text())
+         for item in approved['selectedMetadata']:
+             if sha(Path(item['metadataPath']))!=item['sha256']:raise ValueError('Approved external metadata changed: '+item['package'])
+         sys.path.extend(approved['roots'])
+-        spec=importlib.util.spec_from_file_location('original05_metadata_functions',source/'retained05/run_attempt.py')
++        spec=importlib.util.spec_from_file_location('original06_metadata_functions',source/'retained06/run_attempt.py')
+         runner=importlib.util.module_from_spec(spec);spec.loader.exec_module(runner)
+         external_before,roots=runner.external_inputs();save(out/'external-before.json',external_before)
+         if roots!=approved['roots']:raise ValueError('External roots differ from explicitly approved source preparation')
+--- before/probe-methods
++++ after/probe-methods
+@@ -15,7 +15,7 @@
+ 
+ BASE=Path(os.environ['PROBE_INPUT_ROOT']).resolve()
+ OUT=Path(os.environ['PROBE_CASE_ROOT']).resolve()
+-FROZEN=BASE/'retained05'
++FROZEN=BASE/'retained06'
+ 
+ 
+ def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()

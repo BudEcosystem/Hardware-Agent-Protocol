@@ -1,0 +1,12 @@
+--- original/controls.py
++++ candidate/controls.py
+@@ -7,7 +7,8 @@
+ import sys
+ import time
+ 
+-from hierarchical_store import HierarchicalStore as Store, Reject, StorageError, NativeError
++from candidate import HierarchicalStore as Store
++from hierarchical_store import Reject, StorageError, NativeError
+ from hierarchical_store import CHUNK, MAX_FILE, _pack
+ 
+ HERE=Path(__file__).resolve().parent

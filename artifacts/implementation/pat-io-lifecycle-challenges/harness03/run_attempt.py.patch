@@ -1,0 +1,122 @@
+--- artifacts/implementation/pat-io-authority-challenges/harness01/run_attempt.py
++++ artifacts/implementation/pat-io-lifecycle-challenges/harness03/run_attempt.py
+@@ -1,4 +1,4 @@
+-"""Original isolated authority76 runner. Execute only after parent review/release.
++"""Original isolated lifecycle5 runner. Execute only after parent review/release.
+ 
+ No project imports occur in this launcher. Seven selected distribution closures
+ are acquired independently of the compiler's five-package identity.
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '709cbe3024ba8b08dacc601b24b06e1e9a105c1fc2d94958ff29c9c0dd0d0d79'
+-PREFIX = 'artifacts/implementation/pat-io-authority-challenges/implementation01/'
++FROZEN_INDEX = '0a3360ba3a6e9ee0fd5c9db8d8a38ef64761b9bda69969fae42264e4556c2e87'
++PREFIX = 'artifacts/implementation/pat-io-lifecycle-challenges/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -91,7 +91,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 7671:
++    if len(expected) != 8104:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -177,7 +177,7 @@
+         while selector.get_map():
+             remaining = deadline - time.monotonic()
+             if remaining <= 0:
+-                raise TimeoutError('AuthorityChallenge76 child exceeded original harness deadline')
++                raise TimeoutError('LifecycleChallenge5 child exceeded original harness deadline')
+             for key, _ in selector.select(min(remaining, 0.1)):
+                 block = os.read(key.fileobj.fileno(), 65536)
+                 if not block:
+@@ -190,13 +190,13 @@
+                 log.write(block)
+                 count += len(block)
+             if time.monotonic() >= deadline:
+-                raise TimeoutError('AuthorityChallenge76 child crossed harness deadline during pipe collection')
++                raise TimeoutError('LifecycleChallenge5 child crossed harness deadline during pipe collection')
+     remaining = deadline - time.monotonic()
+     if remaining <= 0:
+-        raise TimeoutError('AuthorityChallenge76 child crossed harness deadline at EOF')
++        raise TimeoutError('LifecycleChallenge5 child crossed harness deadline at EOF')
+     process.wait(timeout=remaining)
+     if time.monotonic() >= deadline:
+-        raise TimeoutError('AuthorityChallenge76 child crossed harness deadline at process exit')
++        raise TimeoutError('LifecycleChallenge5 child crossed harness deadline at process exit')
+     return count
+ 
+ 
+@@ -204,7 +204,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 76 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 5 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -237,15 +237,15 @@
+     scratch_before = scratch_parent_before = None
+     before = external_before = frozen_before = own_before = None
+     started = time.monotonic()
+-    record = {'profile': 'hms.io-authority-challenges-attempt/1', 'attempt': args.attempt,
++    record = {'profile': 'hms.io-lifecycle-challenges-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 76,
+-              'projectInputCount': 7668, 'frozenPreparationInputCount': 7671,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 5,
++              'projectInputCount': 8101, 'frozenPreparationInputCount': 8104,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+                          'retainedLogBytes': MAX_LOG, 'scratchRetentionBytes': MAX_SCRATCH_BYTES},
+-              'scope': 'Six original authority/binding cases, one pre-runtime refusal,30 revised matrix and39 unchanged transcript methods; no network, physical endpoint, MCU, inference or live service.'}
++              'scope': 'Five original fixed lifecycle cases; no network, physical endpoint, MCU, inference or live service.'}
+     write_json(attempt / 'started.json', record)
+     try:
+         own_before = [row(here / name, name) for name in OWN_FILES]
+@@ -257,8 +257,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 7668:
+-            raise ValueError('Candidate project closure must contain exactly 7668 files')
++        if len(selected) != 8101:
++            raise ValueError('Candidate project closure must contain exactly 8101 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -273,13 +273,11 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 76 or
+-                len(targets['targets']) != 76 or
+-                len(set(targets['targets'])) != 76 or
+-                sum(name.startswith('test_pat_io_authority_challenges.IoAuthorityChallengeTests.') for name in targets['targets']) != 7 or
+-                sum(name.startswith('test_pat_io_combined_matrix.IoCombinedMatrixTests.') for name in targets['targets']) != 30 or
+-                sum(name.startswith('test_pat_io_transcript.') for name in targets['targets']) != 39):
+-            raise ValueError('Closed authority76 method selection changed')
++        if (targets['testCount'] != 5 or
++                len(targets['targets']) != 5 or
++                len(set(targets['targets'])) != 5 or
++                targets['targets'] != ['test_pat_io_lifecycle_challenges.IoLifecycleChallengeTests.test_gpio_pending_reply_lost', 'test_pat_io_lifecycle_challenges.IoLifecycleChallengeTests.test_gpio_permission_after_completion', 'test_pat_io_lifecycle_challenges.IoLifecycleChallengeTests.test_gpio_permission_before_dispatch', 'test_pat_io_lifecycle_challenges.IoLifecycleChallengeTests.test_gpio_permission_before_parent', 'test_pat_io_lifecycle_challenges.IoLifecycleChallengeTests.test_gpio_permission_pending']):
++            raise ValueError('Closed lifecycle5 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+         scratch_parent = Path('/tmp')
+@@ -288,7 +286,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-authority-challenges-authority76-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-lifecycle-challenges-lifecycle5-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

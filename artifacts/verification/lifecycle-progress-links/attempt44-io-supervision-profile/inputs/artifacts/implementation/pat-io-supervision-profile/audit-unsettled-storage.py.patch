@@ -1,0 +1,11 @@
+--- artifacts/implementation/pat-io-supervision-recovery/audit-unsettled-storage.py
++++ artifacts/implementation/pat-io-supervision-profile/audit-unsettled-storage.py
+@@ -1,7 +1,7 @@
+ """Inspect closed retained databases without changing their bytes or opening Runtime."""
+ import hashlib,json,sqlite3,sys
+ from pathlib import Path
+-B=Path.cwd()/'artifacts/implementation/pat-io-supervision-recovery';name=sys.argv[1];F=B/'results'/name
++B=Path.cwd()/'artifacts/implementation/pat-io-supervision-profile';name=sys.argv[1];F=B/'results'/name
+ proof=json.loads((F/'proof.json').read_bytes());result=json.loads((F/'attempt/result.json').read_bytes())
+ assert result['childState']=='exited'and not(Path('/proc')/str(result['pid'])).exists()
+ root=F/'attempt/scratch';rows=[]

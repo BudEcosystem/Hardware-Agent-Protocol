@@ -1,0 +1,187 @@
+--- previous/README.md
++++ current/README.md
+@@ -3,6 +3,15 @@
+ An independent research and design project for agents operating physical devices, from tiny microcontrollers and microscope retrofits to instrument fleets and industrial cells. Intended agent host: the adjacent `Bud-Meta-Harness` repository. This project is **not an implementation of Anthropic's unpublished MHS specification**.
+ 
+ **Current status:** the executable local simulation runtime combines the registry, admission policy, durable journal, checked API/SDK and `hctl` CLI. A native Harness overlay exercises real tool/PTC calls at a pinned commit in an isolated checkout, with full artifact and aggregate builds passing. A local MCP projection supports current and legacy clients over stdio. The runtime can mount multiple local and compact C simulation routes under one authority, with immutable operation routing, durable mappings, receipt reconciliation and host-process recovery. An explicitly selected shared-board GPIO/PWM simulation also uses the same public tools and resource admission. Primary-source research and checked WoT descriptions support the design. Real adapters, complete commissioned firmware, production Harness integration and physical validation remain unfinished. The user goal remains active. [Progress and requirement audit](PROGRESS.md) records the evidence and remaining work.
++
++The [qualification libraries are installed in the main project](artifacts/implementation/runtime-qualification-package/README.md):
++40 additional host modules and 42 package files retain the exact qualified source.
++The installed identity inspection matches the successful candidate, including its
++267-file worker image. A new full public run passes **866 tests**, preserving all
++861 prior tests and adding five original vault commit checks, with **244 stable
++inputs** including native C and binary files. [Library guide](docs/qualification-libraries.md).
++Public qualification/PAT service mounting, prompt learning and physical providers
++remain unfinished; the native supervisor retains its explicit host/ABI profile.
+ 
+ The [PAT foundation](artifacts/implementation/runtime-pat-foundation/README.md)
+ provides commit-time validation, compiler identity and static resource checks.
+@@ -14,10 +23,10 @@
+ The worker completes in about 57.7 seconds under the original 60-second limit;
+ the parent completes in 141.1 seconds under 180 seconds. The only production
+ change is a 256-statement authority Journal cache. That same edit is now in the
+-public runtime, where a new full run passes **all 861 original tests** with 161
+-stable inputs. The namespace qualification package remains isolated, and public
+-qualification, prompt learning and physical device/driver/hub providers remain
+-unfinished. One successful local run does not qualify deployment timing.
++public runtime, where the preceding full run passed **861 tests** with 161
++stable inputs. The subsequent library installation above extends that coverage.
++Public qualification, prompt learning and physical device/driver/hub providers
++remain unfinished. One successful local run does not qualify deployment timing.
+ 
+ The preceding [local comparison](artifacts/verification/pat-statement-cache-evaluation/README.md)
+ passes 62 checks and observes 38.46% lower median capture CPU; this is not a
+--- previous/docs/pat-foundation.md
++++ current/docs/pat-foundation.md
+@@ -1,4 +1,12 @@
+ # Parameterized PAT compiler and promotion catalog
++
++The [qualification-library installation](../artifacts/implementation/runtime-qualification-package/README.md)
++brings the complete verified finite-I/O host modules and explicit qualification
++package into the main project without changing their bytes. Installed identities
++match the successful candidate; all 866 public tests pass, including five original
++held-vault commit checks and all 861 previous tests. Runtime receipts now capture
++244 inputs, including the native binary and C source. Public service ownership,
++storage enforcement and PAT tool mounting remain unfinished. [Installed guide](qualification-libraries.md).
+ 
+ The latest [statement-cache integration](../artifacts/implementation/pat-statement-cache/README.md)
+ passes the original thirty-case qualification, vault publication, catalog promotion
+--- previous/docs/prompt-to-pat.md
++++ current/docs/prompt-to-pat.md
+@@ -1,4 +1,11 @@
+ # Natural-language applications and Programs as Tools
++
++The [installed qualification libraries](qualification-libraries.md) now provide
++the verified worker, reduction, vault, publication and deterministic catalog code
++in the main project. All 866 public tests pass; five added checks preserve the
++held-evidence requirement through admission commit. This supplies implementation
++for the qualification boundary. The owned public service, prompt synthesis,
++experience-driven learning and persistent Arduino installation remain unfinished.
+ 
+ The latest [complete integration](../artifacts/implementation/pat-statement-cache/README.md)
+ passes all thirty qualification cases, publishes their evidence, promotes the
+--- previous/docs/io-driver-hub-control.md
++++ current/docs/io-driver-hub-control.md
+@@ -1,4 +1,11 @@
+ # Device I/O, drivers and intelligence-hub control
++
++The [qualification libraries](qualification-libraries.md) are now installed in
++the main project with the same identities as the successful simulated worker.
++All 866 public tests pass. Existing device/driver/hub resource contracts and
++public methods are unchanged; concrete providers still need implementation and
++physical qualification. The native supervisor's explicit host/ABI profile does
++not establish portability or timing on another intelligence hub.
+ 
+ The latest [worker and runtime integration](../artifacts/implementation/pat-statement-cache/README.md)
+ passes the complete thirty-case simulated qualification-to-application flow and
+--- previous/docs/control-storage.md
++++ current/docs/control-storage.md
+@@ -1,4 +1,11 @@
+ # Control storage for devices, drivers and the intelligence hub
++
++The [qualification-library installation](qualification-libraries.md) now places
++the verified vault and publication code in the main project. Five original
++held-vault commit checks join the public suite, which passes all 866 tests.
++This preserves evidence validity through commit; it does not add aggregate
++storage enforcement or backed control capacity. Public qualification mounting
++still requires the complete storage and recovery profile described here.
+ 
+ The [main-runtime foundation](../artifacts/implementation/runtime-pat-foundation/README.md)
+ now includes the verified business-commit checks and opt-in compact SQLite layout,
+--- previous/PROGRESS.md
++++ current/PROGRESS.md
+@@ -1,4 +1,39 @@
+ # Goal progress — 2026-11-09
++
++Status: **active, incomplete — qualification libraries installed; 866 public
++tests pass**. The preceding turn made verified progress: the full thirty-case
++simulated qualification-to-PAT flow and all 861 public runtime tests passed.
++The new [library installation](artifacts/implementation/runtime-qualification-package/README.md)
++copies 40 missing host modules and 42 qualification-package files byte-for-byte
++from that sealed candidate. All 43 existing host modules and seven schemas remain
++exact. Public Runtime/CLI/MCP methods and default startup behavior are unchanged.
++
++The installed import inspection exactly matches the candidate identity report:
++39 origins, 17 poisoned legacy names, four initializer-drift refusals and a
++267-file worker image. It permits no database, process, network, native-image
++load or file-write effect. The native supervisor remains the explicit
++Linux/CPython 3.12/x86-64 profile; no additional processor or ABI is qualified.
++The unchanged complete worker is not repeated for the source relocation.
++
++Five original held-vault commit tests are now selected explicitly in the public
++suite. Their class AST is exact; their table binding and inherited methods are
++verified, with only the existing public workspace setup differing from the
++retained harness. The new complete run passes **866 distinct tests**, retaining
++all 861 prior test identities and their relative order. No failures or skips
++occur. All **244 inputs** remain stable. Among the prior 161 inputs, only the
++receipt runner changes, adding coverage for qualification Python, C and native
++binary files; the other 160 remain unchanged.
++
++Dedicated worker/process/crash tests retain their original bounded harnesses.
++The library installation is not a public qualification service or a physical
++provider. [Next work](artifacts/implementation/runtime-qualification-package/NEXT.md)
++integrates real service ownership and reproducible configuration with an
++enforceable storage/recovery profile, then typed PAT tools. Prompt synthesis and
++learning, persistent MCU programs, physical I/O/driver/hub providers, native
++Harness installation, microscope commissioning and the remaining research and
++home/laboratory/manufacturing scenarios stay in scope. The goal remains active.
++
++## Earlier continuation: complete statement-cache integration
+ 
+ Status: **active, incomplete — full statement-cache integration and public
+ regressions pass**. The preceding continuation made progress: it sealed the
+--- previous/scripts/check_project_links.py
++++ current/scripts/check_project_links.py
+@@ -12,6 +12,7 @@
+ 
+ def main():
+     paths = sorted(set([ROOT/'README.md', ROOT/'PROGRESS.md', *ROOT.glob('docs/*.md'),
++        *ROOT.glob('artifacts/implementation/runtime-qualification-package/*.md'),
+         *ROOT.glob('artifacts/implementation/pat-statement-cache/*.md'),
+         *ROOT.glob('artifacts/implementation/pat-statement-cache/implementation*/README.md'),
+         ROOT/'artifacts/implementation/pat-statement-cache/harness01/SCOPE.md',
+--- previous/docs/qualification-libraries.md
++++ current/docs/qualification-libraries.md
+@@ -50,7 +50,9 @@
+ replacement or owner mismatch. Their method bodies are unchanged; inherited
+ Journal checks continue to run in their original public suite. Dedicated worker
+ and crash suites retain their bounded harnesses and are not added to default
+-test discovery. The full public regression result is pending.
++test discovery. The full public regression passes **866 tests** with no failures
++or skips: all 861 previous tests plus those five checks. All 244 captured inputs
++remain stable, including every installed package file. [Verification](../artifacts/implementation/runtime-qualification-package/RUNTIME_RESULTS.json).
+ 
+ For the user's prompt-to-PAT system, these libraries supply qualification and
+ deterministic reuse mechanisms. Natural-language synthesis, experience-driven
+--- previous/artifacts/implementation/runtime-qualification-package/README.md
++++ current/artifacts/implementation/runtime-qualification-package/README.md
+@@ -27,7 +27,10 @@
+ the [runner diff](runtime-runner.patch). The frozen public inventory contains
+ **244 inputs**: the prior 161 paths plus 82 library files and one test module.
+ Only the receipt runner changed among the old paths. [Frozen inputs](inputs.json).
+-The full 866-test regression is pending.
++The full regression passes **866 distinct tests** with no failures or skips,
++preserving all 861 prior identities and their relative order. Every one of the
++244 inputs remains stable. [Runtime audit](RUNTIME_RESULTS.json) verifies input
++snapshots, output hashes, exact added test identities and installed source.
+ 
+ The [plan](PLAN.md) preserves the complete user goal. Public qualification still
+ needs enforceable storage and recovery guarantees; prompt learning, persistent
+--- previous/artifacts/implementation/runtime-qualification-package/NEXT.md
++++ current/artifacts/implementation/runtime-qualification-package/NEXT.md
+@@ -1,10 +1,10 @@
+ # Own qualification as a service and continue physical providers
+ 
+-Finish and audit the full public regression: 861 existing tests plus five exact
+-held-vault commit checks, with all 244 inputs stable. The installed package must
+-retain the qualified candidate's complete implementation identities. Do not
+-rerun the unchanged thirty-case worker as a substitute for checking relocation,
+-input coverage and public-runtime regressions.
++The full public regression passes: 861 existing tests plus five exact
++held-vault commit checks, with all 244 inputs stable. The installed package
++retains the qualified candidate's complete implementation identities. Preserve
++this receipt and source closure. The unchanged thirty-case worker was not
++repeated; relocation, input coverage and public regressions are verified.
+ 
+ Next integrate trusted service ownership and reproducible configuration around
+ the actual installed supervisor, reducer, vault, publication, catalog and PAT

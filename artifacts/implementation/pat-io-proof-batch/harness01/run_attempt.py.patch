@@ -1,0 +1,77 @@
+--- reviewed-pure/run_attempt.py
++++ proof-batch/run_attempt.py
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '7a52bf04800bde161cfb778fca0da5cec996468fe03d9944902e73e11c6817cc'
+-PREFIX = 'artifacts/implementation/pat-io-definition-build/implementation01/'
++FROZEN_INDEX = 'a7e03e59584b61e09efe40fbd093c423acfdc4c037c6d5d24273019bdda3f2b5'
++PREFIX = 'artifacts/implementation/pat-io-proof-batch/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -91,7 +91,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 278:
++    if len(expected) != 292:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -204,7 +204,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 21 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 63 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -239,8 +239,8 @@
+     started = time.monotonic()
+     record = {'profile': 'hms.io-group-worker-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 21,
+-              'projectInputCount': 275, 'frozenPreparationInputCount': 278,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 63,
++              'projectInputCount': 288, 'frozenPreparationInputCount': 292,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+@@ -257,8 +257,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 275:
+-            raise ValueError('Candidate project closure must contain exactly 275 files')
++        if len(selected) != 288:
++            raise ValueError('Candidate project closure must contain exactly 288 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -273,10 +273,10 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 21 or
+-                len(targets['targets']) != 21 or
+-                len(set(targets['targets'])) != 21 or
+-                targets['targets'] != ['test_pat_io_definition_build.DefinitionBuildTests.test_build_is_pure_and_does_not_read_authority_or_current_sources', 'test_pat_io_definition_build.DefinitionBuildTests.test_changed_generations_are_rederived_on_each_build', 'test_pat_io_definition_build.DefinitionBuildTests.test_invalid_proof_inputs_keep_original_refusal_type_and_code', 'test_pat_io_definition_build.DefinitionBuildTests.test_multiple_actions_share_only_their_own_instance_proof', 'test_pat_io_definition_build.DefinitionBuildTests.test_original_bundles_bindings_and_proofs_match_with_half_the_derivations', 'test_pat_io_definition_build.DefinitionBuildTests.test_public_handler_details_still_derives_a_fresh_proof_per_call', 'test_pat_io_definition_build.DefinitionBuildTests.test_returned_mutation_changes_neither_input_nor_later_builds', 'test_pat_io_installation_reuse.InstallationReuseTests.test_changed_current_source_refuses_even_with_warm_exact_input', 'test_pat_io_installation_reuse.InstallationReuseTests.test_changed_helper_bypasses_warm_result_and_runs_original_validation', 'test_pat_io_installation_reuse.InstallationReuseTests.test_concurrent_calls_keep_one_entry_and_detached_results', 'test_pat_io_installation_reuse.InstallationReuseTests.test_custom_values_and_keys_refuse_without_callbacks_or_lookup', 'test_pat_io_installation_reuse.InstallationReuseTests.test_dependency_changed_during_validation_prevents_publication', 'test_pat_io_installation_reuse.InstallationReuseTests.test_identical_object_and_bytes_reuse_semantics_but_check_source_each_time', 'test_pat_io_installation_reuse.InstallationReuseTests.test_in_place_primitive_configuration_change_uses_current_validation', 'test_pat_io_installation_reuse.InstallationReuseTests.test_integral_float_in_object_or_json_refuses_before_lookup', 'test_pat_io_installation_reuse.InstallationReuseTests.test_ninth_valid_input_evicts_oldest_with_fixed_key_and_entry_bounds', 'test_pat_io_installation_reuse.InstallationReuseTests.test_noncanonical_bytes_share_key_but_duplicate_or_oversized_json_refuses', 'test_pat_io_installation_reuse.InstallationReuseTests.test_private_schema_and_keyword_changes_disable_reuse', 'test_pat_io_installation_reuse.InstallationReuseTests.test_replaced_topology_or_generation_validator_refuses_warm_input', 'test_pat_io_installation_reuse.InstallationReuseTests.test_returned_nested_mutation_never_changes_caller_or_later_results', 'test_pat_io_installation_reuse.InstallationReuseTests.test_reuse_never_opens_authority_launches_provider_or_reads_clock']):
++        if (targets['testCount'] != 63 or
++                len(targets['targets']) != 63 or
++                len(set(targets['targets'])) != 63 or
++                targets['targets'] != ['test_pat_io_definition_build.DefinitionBuildTests.test_build_is_pure_and_does_not_read_authority_or_current_sources', 'test_pat_io_definition_build.DefinitionBuildTests.test_changed_generations_are_rederived_on_each_build', 'test_pat_io_definition_build.DefinitionBuildTests.test_invalid_proof_inputs_keep_original_refusal_type_and_code', 'test_pat_io_definition_build.DefinitionBuildTests.test_multiple_actions_share_only_their_own_instance_proof', 'test_pat_io_definition_build.DefinitionBuildTests.test_original_bundles_bindings_and_proofs_match_with_half_the_derivations', 'test_pat_io_definition_build.DefinitionBuildTests.test_public_handler_details_still_derives_a_fresh_proof_per_call', 'test_pat_io_definition_build.DefinitionBuildTests.test_returned_mutation_changes_neither_input_nor_later_builds', 'test_pat_io_installation_reuse.InstallationReuseTests.test_changed_current_source_refuses_even_with_warm_exact_input', 'test_pat_io_installation_reuse.InstallationReuseTests.test_changed_helper_bypasses_warm_result_and_runs_original_validation', 'test_pat_io_installation_reuse.InstallationReuseTests.test_concurrent_calls_keep_one_entry_and_detached_results', 'test_pat_io_installation_reuse.InstallationReuseTests.test_custom_values_and_keys_refuse_without_callbacks_or_lookup', 'test_pat_io_installation_reuse.InstallationReuseTests.test_dependency_changed_during_validation_prevents_publication', 'test_pat_io_installation_reuse.InstallationReuseTests.test_identical_object_and_bytes_reuse_semantics_but_check_source_each_time', 'test_pat_io_installation_reuse.InstallationReuseTests.test_in_place_primitive_configuration_change_uses_current_validation', 'test_pat_io_installation_reuse.InstallationReuseTests.test_integral_float_in_object_or_json_refuses_before_lookup', 'test_pat_io_installation_reuse.InstallationReuseTests.test_ninth_valid_input_evicts_oldest_with_fixed_key_and_entry_bounds', 'test_pat_io_installation_reuse.InstallationReuseTests.test_noncanonical_bytes_share_key_but_duplicate_or_oversized_json_refuses', 'test_pat_io_installation_reuse.InstallationReuseTests.test_private_schema_and_keyword_changes_disable_reuse', 'test_pat_io_installation_reuse.InstallationReuseTests.test_replaced_topology_or_generation_validator_refuses_warm_input', 'test_pat_io_installation_reuse.InstallationReuseTests.test_returned_nested_mutation_never_changes_caller_or_later_results', 'test_pat_io_installation_reuse.InstallationReuseTests.test_reuse_never_opens_authority_launches_provider_or_reads_clock', 'test_resource_topology.ResourceTopologyTests.test_alias_depth_and_node_count_limits_refuse_without_truncation', 'test_resource_topology.ResourceTopologyTests.test_all_graph_cycle_classes_and_multiple_parent_refuse', 'test_resource_topology.ResourceTopologyTests.test_bus_address_bounds_duplicate_and_cross_bus_refuse', 'test_resource_topology.ResourceTopologyTests.test_bus_raw_and_addressed_share_controller_and_pins', 'test_resource_topology.ResourceTopologyTests.test_closed_shape_duplicate_consumer_and_carrier_refusals', 'test_resource_topology.ResourceTopologyTests.test_consumer_and_lifecycle_claim_bounds_are_separate', 'test_resource_topology.ResourceTopologyTests.test_electrical_range_mode_and_exact_integer_refusals', 'test_resource_topology.ResourceTopologyTests.test_exact_atom_coverage_duplicate_purpose_and_namespace_refuse', 'test_resource_topology.ResourceTopologyTests.test_generations_close_exactly_and_do_not_claim_historical_nonreuse', 'test_resource_topology.ResourceTopologyTests.test_gpio_pwm_overlap_and_independent_pad_have_exact_atoms', 'test_resource_topology.ResourceTopologyTests.test_lifecycle_covers_sibling_action_of_rebound_instance_without_locking_unrelated_instance', 'test_resource_topology.ResourceTopologyTests.test_lifecycle_scope_is_reverse_dependencies_not_whole_hub', 'test_resource_topology.ResourceTopologyTests.test_missing_and_wrong_kind_references_including_unused_access_refuse', 'test_resource_topology.ResourceTopologyTests.test_missing_or_shrunken_pwm_alias_refuses', 'test_resource_topology.ResourceTopologyTests.test_order_normalization_and_detachment', 'test_resource_topology.ResourceTopologyTests.test_relevant_electrical_and_driver_implementation_changes_visible', 'test_resource_topology.ResourceTopologyTests.test_schema_outputs_and_pure_calls_do_not_open_authority', 'test_resource_topology.ResourceTopologyTests.test_scoped_identity_excludes_unrelated_properties_and_structural_containment', 'test_resource_topology.ResourceTopologyTests.test_sibling_expansion_overflow_refuses_even_when_direct_dependents_fit', 'test_resource_topology.ResourceTopologyTests.test_unrelated_generation_is_ignored_relevant_generation_changes_binding', 'test_resource_topology.ResourceTopologyTests.test_unsupported_and_oversized_objects_refuse_before_copy_or_recursive_walk', 'test_resource_schema_memo.ResourceSchemaMemoTests.test_binding_identity_tracks_changed_electrical_inputs_after_warmup', 'test_resource_schema_memo.ResourceSchemaMemoTests.test_exact_bytes_and_reordered_object_keys_reuse_only_schema_success', 'test_resource_schema_memo.ResourceSchemaMemoTests.test_exact_changed_footprint_is_revalidated_and_rejected', 'test_resource_schema_memo.ResourceSchemaMemoTests.test_generations_still_require_exact_current_topology_and_node_closure', 'test_resource_schema_memo.ResourceSchemaMemoTests.test_lru_capacity_and_eviction_are_bounded_without_truncating_input', 'test_resource_schema_memo.ResourceSchemaMemoTests.test_returned_nested_data_cannot_mutate_cache_or_other_results', 'test_resource_schema_memo.ResourceSchemaMemoTests.test_schema_invalid_documents_are_never_cached', 'test_resource_schema_memo.ResourceSchemaMemoTests.test_schema_replacement_cannot_inherit_cached_success', 'test_resource_schema_memo.ResourceSchemaMemoTests.test_schema_success_does_not_suppress_repeated_graph_failure', 'test_resource_schema_memo.ResourceSchemaMemoTests.test_warm_entry_does_not_accept_integral_float_bool_or_duplicate_json_keys', 'test_resource_schema_memo.ResourceSchemaMemoTests.test_warm_snapshot_remains_pure_and_does_not_consult_caller_copy_hooks', 'test_pat_io_proof_batch.ProofBatchTests.test_concurrent_builds_keep_distinct_static_inputs', 'test_pat_io_proof_batch.ProofBatchTests.test_each_call_observes_changed_generation_and_topology', 'test_pat_io_proof_batch.ProofBatchTests.test_exact_build_with_one_validation_and_four_separate_proofs', 'test_pat_io_proof_batch.ProofBatchTests.test_fixed_interleaved_build_measurements', 'test_pat_io_proof_batch.ProofBatchTests.test_invalid_inputs_preserve_original_first_refusal', 'test_pat_io_proof_batch.ProofBatchTests.test_public_handler_calls_never_use_private_build_snapshot', 'test_pat_io_proof_batch.ProofBatchTests.test_public_proof_matches_original_body_for_gpio_pwm_bus_and_generations', 'test_pat_io_proof_batch.ProofBatchTests.test_replaced_public_proof_helper_keeps_original_call_path', 'test_pat_io_proof_batch.ProofBatchTests.test_returned_mutations_do_not_alias_other_instances_or_future_calls', 'test_pat_io_proof_batch.ProofBatchTests.test_untrusted_topology_value_refuses_without_copy_hook']):
+             raise ValueError('Closed runs15 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+@@ -286,7 +286,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-snapshot-reuse-runs15-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-proof-batch-pure-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

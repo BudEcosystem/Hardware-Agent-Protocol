@@ -1,0 +1,72 @@
+--- precommit/harness03/child.py
++++ batch/harness01/child.py
+@@ -7,19 +7,18 @@
+ import resource
+ import sys
+ import sysconfig
+-import tempfile
+ import time
+ import unittest
+ from urllib.parse import unquote, urlsplit
+ 
+ HARNESS=Path(__file__).resolve().parent;BASE=HARNESS.parent;ROOT=BASE.parents[2]
+-SOURCE=BASE/'implementation03';PROJECT=SOURCE/'project'
++SOURCE=BASE/'implementation01';PROJECT=SOURCE/'project'
+ ATTEMPT=Path(sys.argv[1]).resolve();SCRATCH=ATTEMPT/'scratch'
+ def read(path):return json.loads(path.read_bytes())
+ def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+ assert sys.flags.isolated and sys.flags.no_site and sys.flags.dont_write_bytecode
+ assert ATTEMPT==HARNESS/'attempts/attempt01' and SCRATCH.is_dir()
+-assert sha(SOURCE/'index.json')=='2f1d6c5aeaf63e960058f9b838b5ecd1080fc17d78f207f0d0b14c248da2dad4'
++assert sha(SOURCE/'index.json')=='71595be27f62d50424ec996a2fdd4b4cad1732f7315026d4009c5213cd657171'
+ inputs=read(SOURCE/'index.json')['files']
+ external_path=ROOT/'artifacts/verification/pat-native-worker-accounting/harness01/attempts/attempt01-accounting/external-before.json'
+ external=read(external_path)['files']
+@@ -31,7 +30,10 @@
+ sys.path[:0]=[str(PROJECT),str(PROJECT/'tests'),str(PROJECT/'supervisor')]+roots
+ os.environ['HMS_PRECOMMIT_TEST_ROOT']=str(SCRATCH/'new')
+ (SCRATCH/'new').mkdir(mode=0o700)
+-(SCRATCH/'legacy').mkdir(mode=0o700)
++os.environ['HMS_BATCH_VAULT_TEST_ROOT']=str(SCRATCH/'batch')
++os.environ['HMS_VAULT_TEST_ROOT']=str(SCRATCH/'single')
++(SCRATCH/'batch').mkdir(mode=0o700)
++(SCRATCH/'single').mkdir(mode=0o700)
+ resource.setrlimit(resource.RLIMIT_CPU,(45,45))
+ resource.setrlimit(resource.RLIMIT_AS,(512*1024*1024,512*1024*1024))
+ resource.setrlimit(resource.RLIMIT_FSIZE,(8*1024*1024,8*1024*1024))
+@@ -70,31 +72,13 @@
+         executed.add(str(path))
+ sys.addaudithook(audit)
+ 
+-class RetainedDirectory:
+-    serial=0
+-    current='setup'
+-    def __init__(self,*args,**kwargs):
+-        type(self).serial+=1
+-        path=SCRATCH/'legacy'/(type(self).current+'-'+str(type(self).serial))
+-        path.mkdir(mode=0o700);self.name=str(path)
+-    def __enter__(self):return self.name
+-    def __exit__(self,*args):pass
+-    def cleanup(self):pass
+-tempfile.TemporaryDirectory=RetainedDirectory
+-
+-class RetainedResult(unittest.TextTestResult):
+-    def startTest(self,test):
+-        RetainedDirectory.current=test.id().rsplit('.',1)[-1]
+-        super().startTest(test)
+-
+ selection=read(SOURCE/'test-selection.json')
+-ids=['test_business_precommit.'+name for name in selection['newTests']]
+-ids+=['test_journal.'+name for name in selection['legacyTests']]
+-assert len(ids)==len(set(ids))==51
++ids=selection['ids']
++assert len(ids)==len(set(ids))==60
+ suite=unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromName(name) for name in ids)
+-assert suite.countTestCases()==51
++assert suite.countTestCases()==60
+ log=io.StringIO();started=time.monotonic_ns()
+-result=unittest.TextTestRunner(stream=log,verbosity=2,resultclass=RetainedResult).run(suite)
++result=unittest.TextTestRunner(stream=log,verbosity=2).run(suite)
+ elapsed=time.monotonic_ns()-started
+ with (ATTEMPT/'tests.log').open('x') as stream:stream.write(log.getvalue())
+ with (ATTEMPT/'tests-before-verification.json').open('x') as stream:

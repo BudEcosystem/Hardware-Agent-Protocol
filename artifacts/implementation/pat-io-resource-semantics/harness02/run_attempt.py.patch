@@ -1,0 +1,105 @@
+--- artifacts/implementation/pat-io-clock-history/harness10/run_attempt.py
++++ artifacts/implementation/pat-io-resource-semantics/harness02/run_attempt.py
+@@ -1,4 +1,4 @@
+-"""Original isolated clock73 runner. Execute only after parent review/release.
++"""Original isolated resource73 runner. Execute only after parent review/release.
+ 
+ No project imports occur in this launcher. Seven selected distribution closures
+ are acquired independently of the compiler's five-package identity.
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = 'f98de6d5d3c76335cb74032da5641750a21d6de37af8004f2738f0797aba5ff9'
+-PREFIX = 'artifacts/implementation/pat-io-clock-history/implementation03/'
++FROZEN_INDEX = '045897b786682b0e676a376e1292bd86309f22bd9a73744fd86e9df841e7c639'
++PREFIX = 'artifacts/implementation/pat-io-resource-semantics/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -91,7 +91,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 8025:
++    if len(expected) != 7668:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -177,7 +177,7 @@
+         while selector.get_map():
+             remaining = deadline - time.monotonic()
+             if remaining <= 0:
+-                raise TimeoutError('ClockHistory73 child exceeded original harness deadline')
++                raise TimeoutError('ResourceHistory73 child exceeded original harness deadline')
+             for key, _ in selector.select(min(remaining, 0.1)):
+                 block = os.read(key.fileobj.fileno(), 65536)
+                 if not block:
+@@ -190,13 +190,13 @@
+                 log.write(block)
+                 count += len(block)
+             if time.monotonic() >= deadline:
+-                raise TimeoutError('ClockHistory73 child crossed harness deadline during pipe collection')
++                raise TimeoutError('ResourceHistory73 child crossed harness deadline during pipe collection')
+     remaining = deadline - time.monotonic()
+     if remaining <= 0:
+-        raise TimeoutError('ClockHistory73 child crossed harness deadline at EOF')
++        raise TimeoutError('ResourceHistory73 child crossed harness deadline at EOF')
+     process.wait(timeout=remaining)
+     if time.monotonic() >= deadline:
+-        raise TimeoutError('ClockHistory73 child crossed harness deadline at process exit')
++        raise TimeoutError('ResourceHistory73 child crossed harness deadline at process exit')
+     return count
+ 
+ 
+@@ -228,7 +228,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation03'
++    stage = here.parent / 'implementation01'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -237,10 +237,10 @@
+     scratch_before = scratch_parent_before = None
+     before = external_before = frozen_before = own_before = None
+     started = time.monotonic()
+-    record = {'profile': 'hms.io-clock-history-attempt/1', 'attempt': args.attempt,
++    record = {'profile': 'hms.io-resource-semantics-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+               'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 73,
+-              'projectInputCount': 8022, 'frozenPreparationInputCount': 8025,
++              'projectInputCount': 7665, 'frozenPreparationInputCount': 7668,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+@@ -257,8 +257,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 8022:
+-            raise ValueError('Candidate project closure must contain exactly 8022 files')
++        if len(selected) != 7665:
++            raise ValueError('Candidate project closure must contain exactly 7665 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -278,7 +278,7 @@
+                 len(set(targets['targets'])) != 73 or
+                 sum(name.startswith('test_pat_io_board_history.') for name in targets['targets']) != 35 or
+                 sum(name.startswith('test_pat_io_operation_history.') for name in targets['targets']) != 38):
+-            raise ValueError('Closed clock73 method selection changed')
++            raise ValueError('Closed resource73 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+         scratch_parent = Path('/tmp')
+@@ -287,7 +287,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-clock-history-clock73-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-resource-semantics-resource73-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

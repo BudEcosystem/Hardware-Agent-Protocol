@@ -1,0 +1,57 @@
+--- implementation01/evidence_authority/store.py
++++ implementation02/evidence_authority/store.py
+@@ -7,7 +7,7 @@
+ from contextlib import contextmanager
+ 
+ from hms.contracts import canonical, SAFE_INTEGER
+-from hms.journal import Journal
++from hms.journal import Journal, JournalError
+ from hms.registry import _resource_stored_row
+ import io_service_execution as execution_module
+ import io_services as services
+@@ -292,10 +292,26 @@
+                   archive.output_closure(outputs) == intent['anchor']['outputClosure'], 'ASSOCIATION_CHANGED')
+         return manifest, files, evaluation
+ 
++    @contextmanager
++    def _snapshot(self, intent_digest, binding_digest):
++        # The byte-vault normalizes exceptions thrown into its context manager.
++        # Authority refusals belong to this importer. Let the vault validate and
++        # release its held snapshot normally, then re-raise the original refusal.
++        # A vault expiry/cleanup failure still takes precedence; nothing commits
++        # or becomes eligible because an authority exception was deferred here.
++        refusal = None
++        with self.vault.snapshot(intent_digest, binding_digest) as snapshot:
++            try:
++                yield snapshot
++            except JournalError as error:
++                refusal = error
++        if refusal is not None:
++            raise refusal
++
+     def _published(self, context, key, state):
+         item = state['keys'][key]; record = state['publications'][item['intentDigest']]
+         original = self._original(state['execution'], key)
+-        with self.vault.snapshot(item['intentDigest'], item['intent']['bindingDigest']) as snapshot:
++        with self._snapshot(item['intentDigest'], item['intent']['bindingDigest']) as snapshot:
+             manifest, files, evaluation = self._validated_files(item, original, snapshot)
+             receipt = record['receipt']
+             c.require(receipt['manifestDigest'] == c.hash_value(MANIFEST_DOMAIN, manifest) and
+@@ -339,7 +355,7 @@
+             # A sealed-but-unpublished manifest is re-inspected from its retained
+             # bytes. Only absence of THIS intent permits the original archive read.
+             try:
+-                with self.vault.snapshot(item['intentDigest'], item['intent']['bindingDigest']) as snapshot:
++                with self._snapshot(item['intentDigest'], item['intent']['bindingDigest']) as snapshot:
+                     _, retained, _ = self._validated_files(item, original, snapshot)
+             except vault_contracts.VaultError as error:
+                 if error.code != 'PAT_EVIDENCE_VAULT_MANIFEST_UNAVAILABLE': raise
+@@ -361,7 +377,7 @@
+                 self.vault.seal(item['intentDigest'], item['intent']['bindingDigest'], inspected['documents'])
+             self._checkpoint('after_evidence_seal', item)
+             c.require(c.identity() == self.consumer_identity, 'IMPLEMENTATION_CHANGED')
+-            with self.vault.snapshot(item['intentDigest'], item['intent']['bindingDigest']) as snapshot:
++            with self._snapshot(item['intentDigest'], item['intent']['bindingDigest']) as snapshot:
+                 with self.journal._transaction(): current = self._authorized(context)
+                 current_original = self._original(current['execution'], key)
+                 manifest, files, evaluation = self._validated_files(item, current_original, snapshot)

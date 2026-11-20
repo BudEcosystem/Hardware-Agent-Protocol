@@ -1,0 +1,14 @@
+--- artifacts/implementation/pat-io-supervision/implementation02/project/tests/test_io_supervisor_contracts.py
++++ artifacts/implementation/pat-io-supervision/implementation03/project/tests/test_io_supervisor_contracts.py
+@@ -34,8 +34,9 @@
+         cls.request=contracts.prepare_request(cls.bundle,context=cls.context)
+ 
+     def root(self,label='root'):
+-        p=Path(os.environ['TMPDIR'])/self._testMethodName/label
+-        p.mkdir(mode=0o700,parents=True); return p
++        parent=Path(os.environ['TMPDIR'])/self._testMethodName
++        parent.mkdir(mode=0o700)
++        p=parent/label; p.mkdir(mode=0o700); return p
+ 
+     def retained(self):
+         root=self.root(); fd=os.open(root,os.O_RDONLY|os.O_DIRECTORY)

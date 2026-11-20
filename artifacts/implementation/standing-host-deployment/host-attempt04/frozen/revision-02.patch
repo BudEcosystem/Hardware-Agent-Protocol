@@ -1,0 +1,704 @@
+--- history/source-freeze01/CAPACITY-REVIEW.md
++++ CAPACITY-REVIEW.md
+@@ -95,3 +95,14 @@
+ An unknown/disputed effect cannot become retireable merely because capacity is
+ low. Complete negative controls for reserve edges remain outstanding; arithmetic
+ and source checks are not execution evidence.
++
++
++Source revision02 adds no tables, quotas or raised ceilings. A never-handed-off
++mutation adds a closed settlement string and longer state label (under64 bytes),
++so its prepared576+ordinary-reply598+settlement64 <=1238-byte bound remains below
++1536. The original lost-RETIRE bound is unchanged. Prepared OPEN settlement uses
++the existing OPEN/state envelope fields, releases only claims, and retains the
++owner/original key and allocated floors. Owner epochs now accept exactly the
++same safe-integer domain as Journal (up to16 decimal digits), covered by the
++existing scalar-growth headroom. Native malformed response evidence uses the
++existing16-conflict partition and cannot consume a new unbounded history.
+--- history/source-freeze01/PLAN.md
++++ PLAN.md
+@@ -7,7 +7,7 @@
+ 
+ The new files are a strict v2 codec, native pipe bridge, closed installation
+ contracts, shared-profile logical accounting, standing store/coordinator,
+-literal PAT compiler/catalog, original native fixture, ten original controls and
++literal PAT compiler/catalog, original native fixture, eighteen original controls and
+ one bounded runner. The copied Journal, Registry and ResourceCatalog are the
+ only public Python modules changed in the candidate. Source copies and exact
+ diffs identify every overlay separately; public originals remain unchanged.
+@@ -22,7 +22,15 @@
+ 
+ Host operations are explicit pristine initialize, prepare, one-shot OPEN,
+ START/RENEW/SUSPEND/RESUME/STOP/RETIRE, collect, read-only reconcile and common
+-REVOKE. One Journal-attached route mutex serializes senders; blocking transport
++REVOKE, and explicit never-handed-off abandonment. A durable `prepared` record
++may be settled only before it was marked `possible`; exact same-boot STATUS
++joins verify that its endpoint sequence was not consumed. The original key/body
++remain retained as `never_handed_off`. No `possible` original can use this path.
++Prepared OPEN abandonment additionally requires no common REVOKE outbox and
++matching empty descriptor/counters. Allocated host numbers/fences never regress;
++confirmed endpoint floors are derived separately from accepted OPEN history,
++allowing explicit unused allocation gaps without accepting endpoint-ahead drift.
++One Journal-attached route mutex serializes senders; blocking transport
+ never holds the Journal authority mutex or an open authority transaction.
+ Source/driver/qualification snapshots are acquired before transactions and held
+ through commit. The last veto after possible-send COMMIT only withdraws already
+@@ -50,7 +58,7 @@
+    one original no-fork child reaped and no remaining handles. Only then publish
+    the original receipt/manifest consumed by the PAT producer.
+ 3. Compile the actual native standing pipe using the same endpoint sources.
+-4. Run the original ten host controls against that owned image and original
++4. Run the original eighteen host controls against that owned image and original
+    qualification bundle.
+ 
+ The selected GCC13, cc1, collect2, assembler, linker and interpreter files are
+@@ -77,11 +85,13 @@
+ are per process; the fixed reviewed original qualification has no fork.
+ `spawnCount` records association and is not a kernel process quota. Descendant
+ ownership requires the living guardian and is not universal containment.
+-SIGINT/TERM are masked during cleanup/publication; pending delivery and terminal
++Every native fixture must return its joined cleanEOF exit0; reaping a crashed
++fixture is not a successful case. Both inner results and outer reduction check
++those original exit records. SIGINT/TERM are masked during cleanup/publication; pending delivery and terminal
+ unmask failure force failure receipts. Cleanup actions are independently tried
+ and errors retained. Neither runner death nor host power loss is qualified.
+ 
+-The ten proposed controls are:
++The eighteen proposed controls are:
+ 
+ - prepare→OPEN→START→activation/feedback→commit→ACK→STOP/episode→RETIRE;
+ - finite/standing conflicts in both directions, direct Registry aliases and
+@@ -95,16 +105,31 @@
+   bounded loss cleanup;
+ - committed suspension episode followed by explicit RESUME then separate START;
+ - finite ordinary event exhaustion with retained cancellation/terminal/release
+-  slots, plus refusal of an unknown writer table.
++  slots, plus refusal of an unknown writer table;
++- explicit settlement of a prepared START after reopen, preserving its key/body
++  and admitting a separate new START without retrying the old original;
++- explicit never-handed-off OPEN settlement and subsequent deployment with
++  higher allocated numbers/fences against unchanged confirmed endpoint floors;
++- wrong-identity successful OPEN reply injected into the real queued native
++  frame with a valid FCS, durable raw conflict and sticky dispute after reopen;
++- malformed STATUS state injected on the actual stream with the same durable
++  conflict/unknown retention;
++- finite admission and dispatch withdrawal at the last business commit check;
++- standing owner epoch recovery beyond the32-bit range, sharing Journal's
++  safe-integer owner epoch domain;
++- prepared automatic ACK settlement followed by a separately admitted ACK key;
++- possible common REVOKE with prepared OPEN refusing abandonment and preserving
++  claims/uncertainty, even when the native counters show no received OPEN.
+ 
+ These use real native processes and deterministic private ticks. Fault injection
+ raises inside the living host or deliberately discards a processed reply; it
+ **does not kill the host owner**. Remaining required qualification includes actual
+-owner death at committed OPEN, START, collection-before-ACK and ACK handoff;
++owner death after committed prepared OPEN and prepared mutation/ACK reservation,
++and at possible OPEN, START, collection-before-ACK and ACK handoff;
+ retained endpoint continuity while the ledger owner dies; lost-RETIRE recovery;
+ wrong-response retirement/dispute controls; refused-sequence reuse; automatic ACK
+ revision refusal; episode/mutation/key/full logical capacity edges; metadata
+ headroom and storage failure combinations. These remain failed/unimplemented
+ completion gates until separately implemented and executed with actual ownership
+-and cleanup evidence. The initial ten-case run, if approved, is a partial
++and cleanup evidence. The initial eighteen-case run, if approved, is a partial
+ validation step and must be labelled that way.
+--- history/source-freeze01/README.md
++++ README.md
+@@ -33,3 +33,9 @@
+ adds the host standing lifecycle path; it does not complete natural-language
+ synthesis, broad learned-domain qualification, physical Arduino deployment or a
+ GB10/GPU service.
++
++
++Revision02 preserves the first full source freeze under `history/source-freeze01`.
++[REVISION-02.md](REVISION-02.md) and `revision-02.patch` document the independent
++review corrections. All eighteen controls remain source-only; live-owner fault
++exceptions still do not substitute for actual killed-owner evidence.
+--- history/source-freeze01/WIRE-BRIDGE-NOTES.md
++++ WIRE-BRIDGE-NOTES.md
+@@ -118,3 +118,16 @@
+ and source faults, EOF behavior and no automatic service. No mock endpoint,
+ physical qualification, durable driver queue, production control side channel,
+ or native resource-ownership table was added.
++
++
++## Source revision02: private actual-wire negative controls
++
++The preserved first source freeze remains in `history/source-freeze01`. Private
++control16 now accepts `(mode<<8)|targetOpcode`, with mode1 (wrong returned intent
++digest) or mode2 (invalid zero owned-mask in a live state page), and target
++standing opcodes0x40..0x48. It alters one matching successful queued reply from
++the actual endpoint, recomputes its transport FCS, then clears the fault. The
++host receives those bytes through its original AF_UNIX/frame decoder. It does
++not create another endpoint, change application request fields or alter the
++original qualification controls. Mode0 is not exposed; absent an installed
++private fault the native output is unchanged. No control has been executed.
+--- history/source-freeze01/project/hms/standing_contracts.py
++++ project/hms/standing_contracts.py
+@@ -252,7 +252,9 @@
+             'bindingGeneration':'native-binding:1','calibrationRevision':'native-calibration:1',
+             'descriptionDigest':identity('HMS-STANDING-FINITE-CAPABILITY-v0.1',installation)}
+         require(all(intent[key]==value for key,value in expected.items()),'FINITE_BINDING_CHANGED')
+-        self.journal._require_at_commit(self.check_image)
++        def final_finite_authority():
++            self.fresh(context)
++        self.journal._require_at_commit(final_finite_authority)
+         return Admission(self.resources(intent['instanceId']), 'standing-test:1',
+                          min(now_ms + 1000, intent['timing']['latestCompletionUnixMs']))
+ 
+--- history/source-freeze01/project/hms/standing_endpoint.py
++++ project/hms/standing_endpoint.py
+@@ -93,11 +93,36 @@
+     def _check_images(self):
+         self.policy.check_image();self.driver.check()
+ 
++    def _response_owner(self,request):
++        with self.journal._mutex:
++            rows=self.journal._db.execute('SELECT id FROM sd_deployments ORDER BY id LIMIT 17').fetchall()
++            c.require(len(rows)<=16,'CAPACITY')
++            live=[self.store.row(row[0]) for row in rows if not self.store.row(row[0])['retired']]
++            c.require(len(live)<=1,'ENDPOINT_SLOT_BUSY')
++            if not live:
++                return None
++            row=live[0]
++            c.require(request.reference is None or request.reference==self.store.reference(row),'TRANSPORT_ASSOCIATION')
++            return row['id']
++
+     def _exchange(self, request):
+         c.require(not self.journal._db.in_transaction,'TRANSPORT_IN_TRANSACTION')
++        owner=self._response_owner(request)
+         self._checkpoint('before_exchange',request)
+-        frame=self.stream.exchange(request,self.store.receive)
+-        response=w.decode_response(frame,request)
++        def receive(frame):
++            try:
++                self.store.receive(frame)
++            except JournalError as error:
++                if owner is not None and error.code in {'STANDING_FRAME','STANDING_BOOT_OR_RESPONSE_REPLAY'}:
++                    self.store.record_transport_conflict(owner,request,frame)
++                raise
++        frame=self.stream.exchange(request,receive)
++        try:
++            response=w.decode_response(frame,request)
++        except w.WireError as error:
++            if owner is not None:
++                self.store.record_transport_conflict(owner,request,frame)
++            raise JournalError('STANDING_EVIDENCE_CONFLICT') from error
+         self._checkpoint('after_exchange',response)
+         return response
+ 
+@@ -271,10 +296,12 @@
+                     with self.journal._transaction():
+                         item,_=self.store.reserve_mutation(context,identifier,key,opcode,
+                             lease_until=lease,ack=ack,admission_check=check)
++                    self._checkpoint('after_mutation_reservation_commit',copy.deepcopy(item))
+                     return self._send_mutation(identifier,item,ordinary=True,admission_check=check)
+             with self.journal._transaction():
+                 item,_=self.store.reserve_mutation(context,identifier,key,opcode,
+                     lease_until=lease,ack=ack,admission_check=None)
++            self._checkpoint('after_mutation_reservation_commit',copy.deepcopy(item))
+             return self._send_mutation(identifier,item,ordinary=False)
+ 
+     def _send_mutation(self,identifier,item,*,ordinary,admission_check=None):
+@@ -310,21 +337,33 @@
+             # crash here, exact committed prefix remains and no ACK was sent.
+             self._checkpoint('after_collection_before_ack',copy.deepcopy(row))
+             if acknowledge and row['collected']>row['acknowledged'] and not row['effectUnknown']:
+-                key='ack:'+str(row['collected'])+':'+str(row['revision'])
+-                prior=self._prior_mutation(context,identifier,key,w.Opcode.ACK)
+-                if prior is not None:
+-                    return row
++                base='ack:'+str(row['collected'])+':'+str(row['revision'])
++                key=base
++                for _ in range(128):
++                    prior=self._prior_mutation(context,identifier,key,w.Opcode.ACK)
++                    if prior is None:
++                        break
++                    if prior['state']!='never_handed_off':
++                        return row
++                    # Explicitly abandoned originals remain replayable. A new
++                    # caller-requested collect may admit a new ACK identity,
++                    # but never resends a prepared/possible/refused old body.
++                    key=base+':after:'+str(prior['number'])
++                else:
++                    raise JournalError('STANDING_MUTATION_CAPACITY')
+                 loss=self.store.state(row)['lifecycle'] in (4,5)
+                 if loss:
+                     with self.journal._transaction():
+                         item,_=self.store.reserve_mutation(context,identifier,key,w.Opcode.ACK,
+                             ack=row['collected'],admission_check=None)
++                    self._checkpoint('after_mutation_reservation_commit',copy.deepcopy(item))
+                     self._send_mutation(identifier,item,ordinary=False)
+                 else:
+                     with self._extension(context,row) as check:
+                         with self.journal._transaction():
+                             item,_=self.store.reserve_mutation(context,identifier,key,w.Opcode.ACK,
+                                 ack=row['collected'],admission_check=check)
++                        self._checkpoint('after_mutation_reservation_commit',copy.deepcopy(item))
+                         self._send_mutation(identifier,item,ordinary=True,admission_check=check)
+             return self.store.row(identifier)
+ 
+@@ -342,6 +381,30 @@
+                 return self.store.reconcile_retirement(identifier,request,response,caps_request,caps_response)
+             raise JournalError('STANDING_RECONCILIATION_UNRESOLVED')
+ 
++    def abandon_prepared(self,context,identifier,*,mutation_key=None):
++        """Explicitly settle a never-possible original; never resume its send."""
++        with self._route_lock:
++            row=self.store.row(identifier);self.store.access(context,row)
++            self.policy.authorize(context,'cancel',self.store.installation['instanceId'])
++            if mutation_key is None:
++                if row['openState']=='never_handed_off':
++                    return row
++                c.require(row['openState']=='prepared' and row['revoke'] is None,'NEVER_HANDED_OFF_REQUIRED')
++                request,response=self._query(w.status(self.store.reference(row)))
++                caps_request,caps=self._descriptor()
++                return self.store.abandon_prepared_open(context,identifier,request,response,caps_request,caps)
++            validate_identifier(mutation_key)
++            with self.journal._mutex:
++                found=self.journal._db.execute('SELECT number FROM sd_mutations WHERE deployment_id=? AND host_key=?',
++                    (identifier,mutation_key)).fetchone()
++                c.require(found is not None,'MUTATION_NOT_FOUND')
++                item=self.store.mutation(identifier,found[0])
++            if item['state']=='never_handed_off':
++                return item
++            c.require(item['state']=='prepared','NEVER_HANDED_OFF_REQUIRED')
++            request,response=self._query(w.status(self.store.reference(row)))
++            return self.store.abandon_prepared_mutation(context,identifier,item['number'],request,response)
++
+     def revoke(self,context,identifier):
+         """Bounded common loss command even when mutation acceptance is unknown."""
+         with self._route_lock:
+--- history/source-freeze01/project/hms/standing_store.py
++++ project/hms/standing_store.py
+@@ -132,13 +132,14 @@
+         c.require(row['namespace']==row['request']['replayNamespace'] and row['key']==row['request']['deploymentKey'],'IDENTITY')
+         for key in ('recoveryRequired','transportUncertain','sequenceUncertain','effectUnknown','disputed','everPossiblyActed','retired'):
+             c.require(type(row[key]) is bool,'STORED_RECORD')
+-        for key in ('collected','acknowledged','highWater','mutationSequence','revision','hostRevision','openTx','ownerEpoch'):
++        for key in ('collected','acknowledged','highWater','mutationSequence','revision','hostRevision','openTx'):
+             c.uint(row[key],2**32-1)
++        c.uint(row['ownerEpoch'],c.SAFE_INTEGER)
+         c.require(row['acknowledged']<=row['collected']<=row['highWater']<=row['request']['limits']['activationCap'],'PREFIX')
+         opened = w.Open.parse(c.hex_bytes(row['open'],134))
+         c.require(opened.reference.intent_digest.hex()==row['mapping']['deploymentDigest'][7:] and
+                   row['mapping']['requestDigest']==row['requestDigest'],'IDENTITY')
+-        c.require(row['openState'] in {'prepared','possible','accepted','refused'},'OUTBOX_STATE')
++        c.require(row['openState'] in {'prepared','possible','accepted','refused','never_handed_off'},'OUTBOX_STATE')
+         if row['revoke'] is not None:
+             revoke=row['revoke'];c.exact(revoke,('body','tx','state','reply'))
+             c.uint(revoke['tx'],2**32-1,1)
+@@ -214,8 +215,10 @@
+                 c.require(self.db.execute('SELECT 1 FROM '+table+' WHERE namespace=? AND '+field+'=?',
+                     (request['replayNamespace'],request['deploymentKey'])).fetchone() is None,'KEY_CONFLICT')
+         route=self.route();c.require(route['generation']>0 and route['handle']>0 and route['bind'] is None,'BIND_REQUIRED')
+-        c.require(capabilities['slot_kind']==0 and capabilities['standing_high_water']<=route['standingFloor'] and
+-                  list(capabilities['fence_floors'])==route['fences'],'ENDPOINT_COUNTER_DRIFT')
++        confirmed_high,confirmed_fences=self._confirmed_route_counters()
++        c.require(capabilities['slot_kind']==0 and capabilities['standing_high_water']==confirmed_high and
++                  list(capabilities['fence_floors'])==confirmed_fences and capabilities['finite_high_water']==0,
++                  'ENDPOINT_COUNTER_DRIFT')
+         c.require(capabilities['generation']==route['generation'] and capabilities['handle']==route['handle'] and
+                   capabilities['context_digest'].hex()==route['contextDigest'],'CONTEXT_CHANGED')
+         c.require(route['standingFloor']<2**32-1,'COUNTER_EXHAUSTED')
+@@ -418,8 +421,10 @@
+         c.uint(number,128,1)
+         item=self._read('sd_mutations','deployment_id=? AND number=?',(identifier,number),1536)
+         required={'number','hostKey','opcode','endpointSequence','body','bodyDigest','tx','leaseUntil','ack','state','reply'}
+-        c.require(type(item) is dict and required<=set(item)<=required|{'retirementEvidence'},'MUTATION_RECORD')
+-        c.require(item['number']==number and item['state'] in {'prepared','possible','accepted','refused'},'MUTATION_RECORD')
++        c.require(type(item) is dict and required<=set(item)<=required|{'retirementEvidence','settlement'},'MUTATION_RECORD')
++        c.require(item['number']==number and item['state'] in {'prepared','possible','accepted','refused','never_handed_off'},'MUTATION_RECORD')
++        if item['state']=='never_handed_off':
++            c.require(item.get('settlement')=='durable-prepared-never-possible','MUTATION_RECORD')
+         for key in ('number','endpointSequence','tx'):
+             c.uint(item[key],2**32-1,1)
+         c.uint(item['ack'],2**32-1);c.uint(item['leaseUntil'])
+@@ -512,7 +517,7 @@
+         for (prior_number,) in self.db.execute('SELECT number FROM sd_mutations WHERE deployment_id=? AND endpoint_sequence=?',
+                                                (identifier,row['mutationSequence']+1)).fetchall():
+             prior=self.mutation(identifier,prior_number)
+-            c.require(prior['body']!=payload.hex(),'REUSE_ORIGINAL_CONTROL_KEY')
++            c.require(prior['state']=='never_handed_off' or prior['body']!=payload.hex(),'REUSE_ORIGINAL_CONTROL_KEY')
+         frame=self.reserve_frame(payload)
+         item={'number':count+1,'hostKey':host_key,'opcode':int(opcode),'endpointSequence':row['mutationSequence']+1,
+               'body':payload.hex(),'bodyDigest':c.sha(payload),'tx':frame.frame.sequence,'leaseUntil':lease_until,
+@@ -788,6 +793,7 @@
+             c.require(item is not None and item['state']=='prepared','OUTBOX_STATE')
+             item['state']='possible'
+             row['transportUncertain']=row['recoveryRequired']=True
++            row['everPossiblyActed']=True
+             self._save(row);self._checkpoint('before_revoke_handoff_commit',copy.deepcopy(item))
+         self._checkpoint('after_revoke_handoff_commit',copy.deepcopy(item))
+         return w.Request(Frame(1,0,int(row['mapping']['boot']),item['tx'],bytes.fromhex(item['body'])))
+@@ -816,6 +822,94 @@
+         c.require(valid,'EVIDENCE_CONFLICT')
+         return self.row(identifier)
+ 
++    def _confirmed_route_counters(self):
++        """Allocated but never-handed-off OPEN numbers/fences remain gaps."""
++        high=0;fences=[0]*8
++        for (identifier,) in self.db.execute('SELECT id FROM sd_deployments ORDER BY id LIMIT 17').fetchall():
++            row=self.row(identifier)
++            if row['openState']=='accepted':
++                high=max(high,row['mapping']['standingNumber'])
++                fences=[max(a,b) for a,b in zip(fences,row['mapping']['fences'])]
++        return high,fences
++
++    def record_transport_conflict(self,identifier,request,frame):
++        """Retain a real received frame rejected before semantic store ingress."""
++        with self.journal._transaction():
++            row=self.row(identifier)
++            c.require(not row['retired'],'RETIRED')
++            c.require(type(request) is w.Request and request.frame.session in (0,int(row['mapping']['boot'])),
++                      'TRANSPORT_ASSOCIATION')
++            c.require(request.reference is None or request.reference==self.reference(row),'TRANSPORT_ASSOCIATION')
++            response={'raw':frame.payload,'session':frame.session,'response_sequence':frame.sequence}
++            self._latch_conflict(row,'TRANSPORT_RESPONSE_ASSOCIATION',request,response)
++            row['sequenceUncertain']=True
++            self._save(row)
++        return self.row(identifier)
++
++    def abandon_prepared_mutation(self,context,identifier,number,request,response):
++        """Explicit settlement proves never possible; never sends this body."""
++        with self.journal._transaction():
++            row=self.row(identifier);self.access(context,row)
++            self.policy.authorize(context,'cancel',self.installation['instanceId'])
++            item=self.mutation(identifier,number)
++            if item['state']=='never_handed_off':
++                return item
++            c.require(item['state']=='prepared' and not row['retired'],'NEVER_HANDED_OFF_REQUIRED')
++            c.require([pending['number'] for pending in self.pending(identifier)]==[number],'SEQUENCE_UNRESOLVED')
++            checked=self._checked_response(request,response)
++            valid=(checked is not None and request.frame.payload==w.status(self.reference(row)) and
++                   checked['status']==0 and 'state' in checked and
++                   checked['state']['mutation_sequence']==row['mutationSequence'] and
++                   item['endpointSequence']==row['mutationSequence']+1)
++            if valid:
++                valid=self._state_record(row,request,checked)
++            else:
++                self._latch_conflict(row,'NEVER_HANDED_OFF_ASSOCIATION',request,response)
++            if valid:
++                item['state']='never_handed_off';item['settlement']='durable-prepared-never-possible'
++                item['reply']=self.envelope(request,checked)
++                self._write('sd_mutations','deployment_id=? AND number=?',(identifier,number),item,1536)
++                row['sequenceUncertain']=False
++                row['transportUncertain']=bool(row['revoke'] and row['revoke']['state']=='possible')
++                row['recoveryRequired']=row['effectUnknown'] or row['disputed'] or row['revoke'] is not None
++            self._save(row);self._checkpoint('before_never_handed_off_commit',copy.deepcopy(item))
++        c.require(valid,'NEVER_HANDED_OFF_UNRESOLVED')
++        return self.mutation(identifier,number)
++
++    def abandon_prepared_open(self,context,identifier,request,response,caps_request,caps_response):
++        """Close only a never-possible deployment; retain key and all floors."""
++        with self.journal._transaction():
++            row=self.row(identifier);self.access(context,row)
++            self.policy.authorize(context,'cancel',self.installation['instanceId'])
++            if row['openState']=='never_handed_off':
++                return row
++            c.require(row['openState']=='prepared' and not row['everPossiblyActed'] and
++                      not row['retired'] and row['openReply'] is None and row['revoke'] is None and not self.pending(identifier),
++                      'NEVER_HANDED_OFF_REQUIRED')
++            checked=self._checked_response(request,response);descriptor=self._checked_response(caps_request,caps_response)
++            high,fences=self._confirmed_route_counters();route=self.route()
++            valid=(checked is not None and descriptor is not None and request.frame.payload==w.status(self.reference(row)) and
++                   checked['status']==w.Status.NOT_SEEN and checked['prefix']['revision']==0 and
++                   caps_request.frame.payload==w.describe(1) and descriptor['status']==0 and 'capabilities' in descriptor)
++            if valid:
++                caps=descriptor['capabilities'];ref=self.reference(row);prefix=checked['prefix']
++                valid=((prefix['generation'],prefix['handle'],prefix['standing_number'],prefix['intent_digest'])==
++                       (ref.generation,ref.handle,ref.standing_number,ref.intent_digest) and
++                       descriptor['session']==int(row['mapping']['boot']) and caps['slot_kind']==0 and
++                       caps['standing_high_water']==high and list(caps['fence_floors'])==fences and caps['finite_high_water']==0 and
++                       caps['generation']==route['generation'] and caps['handle']==route['handle'] and
++                       caps['context_digest'].hex()==route['contextDigest'] and not row['disputed'] and not row['effectUnknown'])
++            if valid:
++                row['openState']='never_handed_off';row['openReply']=self.envelope(request,checked)
++                row['lastStatus']=self.envelope(caps_request,descriptor)
++                row['retired']=True;row['recoveryRequired']=row['transportUncertain']=row['sequenceUncertain']=False
++                self.db.execute('DELETE FROM claims WHERE operation_id=?',(identifier,))
++            else:
++                self._latch_conflict(row,'NEVER_HANDED_OFF_ASSOCIATION',request,response)
++            self._save(row);self._checkpoint('before_never_handed_off_open_commit',copy.deepcopy(row))
++        c.require(valid,'NEVER_HANDED_OFF_UNRESOLVED')
++        return self.row(identifier)
++
+     def conflicts(self,identifier):
+         with self.journal._mutex:
+             return [self._read('sd_conflicts','deployment_id=? AND number=?',(identifier,n),1536)
+--- history/source-freeze01/project/tests/standing_host_controls.py
++++ project/tests/standing_host_controls.py
+@@ -39,7 +39,11 @@
+ class LostReplyHost(StandingHost):
+     lose=None
+     between_descriptor=None
++    reserved_fault=False
+     def _checkpoint(self,phase,value=None):
++        if phase=='after_mutation_reservation_commit' and self.reserved_fault:
++            self.reserved_fault=False
++            raise JournalError('CONTROL_MUTATION_RESERVED')
+         if phase=='after_exchange':
+             if self.between_descriptor is not None and value['opcode']==Opcode.DESCRIBE and value['page']==0:
+                 hook=self.between_descriptor;self.between_descriptor=None;hook()
+@@ -127,6 +131,7 @@
+     row=f.host.prepare(OWNER,f.request());f.host.lose=Opcode.OPEN
+     refusal('CONTROL_LOST_AFTER_RX_COMMIT',f.host.open,OWNER,row['id'])
+     require(f.store.row(row['id'])['openState']=='possible' and f.snapshot(9)==1)
++    refusal('STANDING_NEVER_HANDED_OFF_REQUIRED',f.host.abandon_prepared,OWNER,row['id'])
+     received=f.store.route()['rx'];f.reopen()
+     require(f.store.row(row['id'])['recoveryRequired'])
+     before=f.snapshot(22);require(f.host.open(OWNER,row['id'])['openState']=='possible');require(f.snapshot(22)==before)
+@@ -138,6 +143,8 @@
+     identifier=transition(f);f.host.lose=Opcode.ACK
+     refusal('CONTROL_LOST_AFTER_RX_COMMIT',f.host.collect,OWNER,identifier)
+     row=f.store.row(identifier);require(row['collected']==1 and row['acknowledged']==0 and f.snapshot(11)==1)
++    pending=f.store.pending(identifier)
++    refusal('STANDING_NEVER_HANDED_OFF_REQUIRED',f.host.abandon_prepared,OWNER,identifier,mutation_key=pending[0]['hostKey'])
+     f.reopen();before=f.snapshot(13)
+     row=f.host.reconcile(OWNER,identifier)
+     require(row['acknowledged']==1 and not row['transportUncertain'] and f.snapshot(13)==before)
+@@ -214,8 +221,128 @@
+     require(not f.journal._db.execute("SELECT 1 FROM sqlite_master WHERE name='arbitrary_writer'").fetchone())
+ 
+ 
++def prepared_mutation_recovery(f):
++    identifier=opened(f);f.host.reserved_fault=True
++    refusal('CONTROL_MUTATION_RESERVED',f.host.mutate,OWNER,identifier,'start-original',Opcode.START)
++    original=f.store.pending(identifier)[0]
++    require(original['state']=='prepared' and f.snapshot(13)==0)
++    f.reopen();f.host.reconcile(OWNER,identifier)
++    require(f.store.row(identifier)['sequenceUncertain'])
++    before=f.snapshot(22)
++    require(f.host.mutate(OWNER,identifier,'start-original',Opcode.START)['state']=='prepared')
++    require(f.snapshot(22)==before and f.snapshot(13)==0)
++    settled=f.host.abandon_prepared(OWNER,identifier,mutation_key='start-original')
++    require(settled['state']=='never_handed_off' and settled['body']==original['body'] and settled['tx']==original['tx'])
++    require(not f.store.pending(identifier) and f.snapshot(13)==0)
++    before=f.snapshot(22)
++    require(f.host.mutate(OWNER,identifier,'start-original',Opcode.START)['state']=='never_handed_off')
++    require(f.snapshot(22)==before)
++    f.host.mutate(OWNER,identifier,'start-new',Opcode.START)
++    require(f.snapshot(13)==1 and f.snapshot(5)==2)
++    stop(f,identifier,5);f.host.mutate(OWNER,identifier,'retire',Opcode.RETIRE)
++
++
++def prepared_open_recovery(f):
++    original=f.host.prepare(OWNER,f.request('never-open'))
++    allocated=f.store.route();require(allocated['standingFloor']==1 and allocated['fences'][:2]==[1,1])
++    f.reopen();before=f.snapshot(22)
++    require(f.host.open(OWNER,original['id'])['openState']=='prepared' and f.snapshot(22)==before)
++    refusal('STANDING_RECONCILIATION_UNRESOLVED',f.host.reconcile,OWNER,original['id'])
++    settled=f.host.abandon_prepared(OWNER,original['id'])
++    require(settled['retired'] and settled['openState']=='never_handed_off' and not settled['everPossiblyActed'])
++    require(f.store.route()['fences']==allocated['fences'] and f.snapshot(9)==0 and f.snapshot(0)==0)
++    require(not f.journal._db.execute('SELECT 1 FROM claims').fetchone())
++    identifier=opened(f,'replacement-explicit')
++    row=f.store.row(identifier)
++    require(row['mapping']['standingNumber']==2 and row['mapping']['fences'][:2]==[2,2] and f.snapshot(9)==2)
++    stop(f,identifier,5);f.host.mutate(OWNER,identifier,'retire',Opcode.RETIRE)
++    before=f.snapshot(22)
++    require(f.host.prepare(OWNER,f.request('never-open'))['id']==original['id'] and f.snapshot(22)==before)
++
++
++def wrong_identity_stream(f):
++    row=f.host.prepare(OWNER,f.request());f.command(16,(1<<8)|int(Opcode.OPEN))
++    refusal('STANDING_EVIDENCE_CONFLICT',f.host.open,OWNER,row['id'])
++    conflicted=f.store.row(row['id']);evidence=f.store.conflicts(row['id'])
++    require(conflicted['openState']=='possible' and conflicted['disputed'] and conflicted['effectUnknown'])
++    require(len(evidence)==1 and evidence[0]['reason']=='TRANSPORT_RESPONSE_ASSOCIATION')
++    raw=bytes.fromhex(evidence[0]['evidence']['response'])
++    require(raw[18:50]!=f.store.reference(row).intent_digest and int(evidence[0]['evidence']['rx'])==f.store.route()['rx'])
++    require(f.snapshot(9)==1 and f.snapshot(0)==0)
++    f.reopen();current=f.host.reconcile(OWNER,row['id'])
++    require(current['disputed'] and current['effectUnknown'] and current['recoveryRequired'])
++    require(f.store.conflicts(row['id'])==evidence)
++    refusal('STANDING_RECOVERY_REQUIRED',f.host.mutate,OWNER,row['id'],'forbidden-start',Opcode.START)
++    f.host.revoke(OWNER,row['id']);f.cycle(5)
++    require(f.journal._db.execute('SELECT count(*) FROM claims').fetchone()[0]==3)
++
++
++def malformed_state_stream(f):
++    identifier=active(f);f.command(16,(2<<8)|int(Opcode.STATUS))
++    refusal('STANDING_EVIDENCE_CONFLICT',f.host.status,OWNER,identifier)
++    evidence=f.store.conflicts(identifier)
++    require(len(evidence)==1 and bytes.fromhex(evidence[0]['evidence']['response'])[158]==0)
++    f.reopen();row=f.host.reconcile(OWNER,identifier)
++    require(row['effectUnknown'] and row['disputed'] and f.store.conflicts(identifier)==evidence)
++    f.host.revoke(OWNER,identifier);f.cycle(5)
++    require(f.journal._db.execute('SELECT count(*) FROM claims').fetchone()[0]==3)
++
++
++def finite_final_guard(f):
++    def withdraw(*_):f.policy.enabled=False
++    f.journal.submission_record=withdraw
++    with f.policy.hold_image():
++        refusal('STANDING_AUTHORITY_WITHDRAWN',f.journal.submit,OWNER,f.finite_request())
++    require(f.journal._db.execute('SELECT count(*) FROM operations').fetchone()[0]==0)
++    f.policy.enabled=True;f.journal.submission_record=None
++    with f.policy.hold_image():operation=f.journal.submit(OWNER,f.finite_request())
++    with f.policy.hold_image():
++        refusal('STANDING_AUTHORITY_WITHDRAWN',f.journal.claim_dispatch,operation['id'],_reserve=withdraw)
++    saved=f.journal.status(OWNER,operation['id'])
++    require(saved['state']=='accepted' and not saved['may_have_acted'] and len(saved['claims'])==3 and f.snapshot(0)==0)
++    f.journal.request_cancel(OWNER,operation['id'])
++    require(not f.journal._db.execute('SELECT 1 FROM claims').fetchone())
++
++
++def owner_epoch_domain(f):
++    row=f.host.prepare(OWNER,f.request())
++    with f.journal._transaction():
++        f.journal._set_meta('owner_epoch',str(2**32))
++    f.reopen();current=f.store.row(row['id'])
++    require(f.journal.owner_epoch==2**32+1 and current['ownerEpoch']==2**32+1 and current['recoveryRequired'])
++    settled=f.host.abandon_prepared(OWNER,row['id'])
++    require(settled['retired'] and settled['openState']=='never_handed_off' and f.snapshot(9)==0)
++
++
++def prepared_ack_recovery(f):
++    identifier=transition(f);f.host.reserved_fault=True
++    refusal('CONTROL_MUTATION_RESERVED',f.host.collect,OWNER,identifier)
++    original=f.store.pending(identifier)[0]
++    require(original['opcode']==Opcode.ACK and original['state']=='prepared' and f.snapshot(11)==0)
++    f.reopen();f.host.reconcile(OWNER,identifier)
++    f.host.abandon_prepared(OWNER,identifier,mutation_key=original['hostKey'])
++    row=f.host.collect(OWNER,identifier)
++    require(row['collected']==row['acknowledged']==1 and f.snapshot(11)==1 and f.snapshot(13)==2)
++    require(f.store.mutation(identifier,original['number'])['state']=='never_handed_off')
++    stop(f,identifier);f.host.mutate(OWNER,identifier,'retire',Opcode.RETIRE)
++
++
++def prepared_open_revoke_uncertain(f):
++    row=f.host.prepare(OWNER,f.request());f.store.fault='after_revoke_handoff_commit'
++    refusal('CONTROL_STORAGE_BOUNDARY',f.host.revoke,OWNER,row['id'])
++    current=f.store.row(row['id'])
++    require(current['openState']=='prepared' and current['revoke']['state']=='possible' and current['transportUncertain'])
++    f.reopen();before=f.snapshot(22)
++    refusal('STANDING_NEVER_HANDED_OFF_REQUIRED',f.host.abandon_prepared,OWNER,row['id'])
++    current=f.store.row(row['id'])
++    require(current['revoke']['state']=='possible' and current['transportUncertain'] and not current['retired'])
++    require(f.snapshot(22)==before and f.journal._db.execute('SELECT count(*) FROM claims').fetchone()[0]==3)
++
++
+ CASES=(vertical,shared_authority,open_reply_loss,ack_reply_loss,collection_rollback,
+-       expiry_after_commit,boot_between_pages,renewal_withdrawal,loss_episode_resume,finite_reserve)
++       expiry_after_commit,boot_between_pages,renewal_withdrawal,loss_episode_resume,finite_reserve,
++       prepared_mutation_recovery,prepared_open_recovery,wrong_identity_stream,malformed_state_stream,finite_final_guard,owner_epoch_domain,prepared_ack_recovery,
++       prepared_open_revoke_uncertain)
+ 
+ def publish(path,value):
+     temporary=Path(str(path)+'.pending')
+@@ -257,7 +384,9 @@
+                     if label=='close':closed=True
+                 except BaseException as error:errors.append(label+': '+type(error).__name__+': '+str(error))
+             pending=sorted(int(s) for s in signal.sigpending()&{signal.SIGINT,signal.SIGTERM})
+-            result={'passed':failure is None and not errors and empty and closed and not pending,
++            clean_exits=all(record['reaped'] and record['exitCode']==0 for record in guardian.records)
++            result={'passed':failure is None and not errors and empty and closed and not pending and clean_exits,
++                'nativeExpectedCleanExits':clean_exits,
+                 'cases':results,'checks':checks,'failure':failure,'cleanupErrors':errors,
+                 'ownerEmpty':empty,'ownerClosed':closed,'interruptsPending':pending,
+                 'nativeChildrenReaped':guardian.records,'physicalEligible':False,'protectedCapacity':False,
+--- history/source-freeze01/project/tests/standing_host_fixture.py
++++ project/tests/standing_host_fixture.py
+@@ -152,7 +152,8 @@
+         if self.stream is not None:self.stream.close();self.stream=None
+         if self.control is not None:self.control.close();self.control=None
+         if self.pid is not None and self.pid in self.guardian.handles:
+-            self.guardian.wait_exit(self.pid)
++            result=self.guardian.wait_exit(self.pid)
++            assert result['pid']==self.pid and result['reaped'] and result['exitCode']==0, 'Native fixture did not exit cleanly on EOF'
+         self.pid=None
+ 
+     def __enter__(self):return self
+--- history/source-freeze01/project/tests/standing_host_pipe.c
++++ project/tests/standing_host_pipe.c
+@@ -22,6 +22,7 @@
+ static hms_ep_config finite_config;
+ static hms_st_config standing_config;
+ static hms_endpoint_link link_state;
++static uint16_t corrupt_next_reply; /* Private deterministic receive-fault control. */
+ 
+ static uint32_t read32(const uint8_t *p) { return hms_st_fixture_read32(p); }
+ static uint64_t read64(const uint8_t *p) { return hms_st_fixture_read64(p); }
+@@ -52,12 +53,36 @@
+     }
+     return 1;
+ }
++static void corrupt_queued_reply(void) {
++    uint8_t *p = link_state.transmit;
++    uint16_t n, crc = UINT16_C(0xffff), i;
++    uint8_t mode = (uint8_t)(corrupt_next_reply >> 8);
++    if (corrupt_next_reply == 0u || link_state.transmit_phase != 1u ||
++            link_state.transmit_length < 88u || p[20] != 2u || p[26] != 0u ||
++            p[21] != (uint8_t)((corrupt_next_reply & 0xffu) | 0x80u)) return;
++    if (mode == 2u && (link_state.transmit_length != 212u || p[27] != 0u)) return;
++    /* Alter the actual queued reply, then recompute transport FCS. The real
++     * host decoder therefore receives a valid frame with contradictory or
++     * malformed semantic evidence; no alternate endpoint is substituted. */
++    if (mode == 1u) p[38] ^= 1u; /* First byte of returned intent digest. */
++    else p[178] = 0u; /* State owned_mask may never be zero for a live slot. */
++    n = (uint16_t)(link_state.transmit_length - 2u);
++    for (i = 0; i < n; ++i) {
++        uint8_t bit;
++        crc ^= p[i];
++        for (bit = 0; bit < 8u; ++bit)
++            crc = (uint16_t)((crc >> 1) ^ ((crc & 1u) != 0u ? UINT16_C(0x8408) : 0u));
++    }
++    crc ^= UINT16_C(0xffff); p[n] = (uint8_t)crc; p[n + 1u] = (uint8_t)(crc >> 8);
++    corrupt_next_reply = 0;
++}
+ static int flush_wire(void) {
+     /* Maximum serial wire frame = 2 * (20 + 192 + 2) + 2 = 430.
+      * One fixed buffer merely batches original link output on the native host;
+      * it is neither endpoint storage nor an alternate framing implementation. */
+     uint8_t wire[430], byte;
+     size_t length = 0;
++    corrupt_queued_reply();
+     while (hms_endpoint_link_next(&link_state, &byte) != 0u) {
+         if (length == sizeof(wire)) return 0;
+         wire[length++] = byte;
+@@ -65,6 +90,7 @@
+     return length == 0u || write_all(STDOUT_FILENO, wire, length);
+ }
+ static int initialize(uint64_t boot, uint8_t reconciliation) {
++    corrupt_next_reply = 0;
+     hms_st_fixture_init(&arena, &finite_config, &standing_config);
+     if (reconciliation != 0u) put_flags((uint16_t)(flags() | HMS_EP_RECONCILE));
+     hms_endpoint_link_init(&link_state);
+@@ -171,6 +197,12 @@
+             if (argument == 0u || argument <= endpoint.boot_epoch || link_state.receive_partial != 0u ||
+                     link_state.transmit_phase != 0u) accepted = 0;
+             else accepted = initialize(argument, 1);
++            break;
++        case 16:
++            if ((argument >> 8) < 1u || (argument >> 8) > 2u ||
++                    (argument & 0xffu) < 0x40u || (argument & 0xffu) > 0x48u || corrupt_next_reply != 0u)
++                accepted = 0;
++            else corrupt_next_reply = (uint16_t)argument;
+             break;
+         default: accepted = 0; break;
+     }
+--- history/source-freeze01/run_checks.py
++++ run_checks.py
+@@ -96,7 +96,9 @@
+     origin=json.loads((HERE/'source-pins.json').read_bytes())
+     names=sorted({row['project'] for row in origin['files'] if row['project'] is not None}|set(NEW))
+     files=['project/'+name for name in names]+['owner/guardian.py','owner/libharness-owner.so',
+-        'run_checks.py','PLAN.md','README.md','CAPACITY-REVIEW.md','source-pins.json','SOURCE-REVIEW.json','source-diff.patch']
++        'run_checks.py','PLAN.md','README.md','CAPACITY-REVIEW.md','source-pins.json','SOURCE-REVIEW.json','source-diff.patch','REVISION-02.md','revision-02.patch']
++    reviewed=json.loads((HERE/'SOURCE-REVIEW.json').read_bytes())
++    require(all(digest(HERE/row['path'])==row['sha256'] for row in reviewed['files']),'Reviewed source bytes changed')
+     pins={}
+     for name in files:
+         source=HERE/name;target=frozen/name;target.parent.mkdir(parents=True,exist_ok=True)
+@@ -235,7 +237,8 @@
+         control=run([interpreter,'-I','-B',project/'tests/standing_host_controls.py',attempt/'state',pipe,evidence,
+                      evidence/'manifest.json',frozen/'owner/libharness-owner.so'],'host-controls')
+         output=json.loads((attempt/'host-controls.stdout').read_bytes())
+-        require(output['passed'] and len(output['cases'])==10 and len(output['nativeChildrenReaped'])==10 and
++        require(output['passed'] and len(output['cases'])==18 and len(output['nativeChildrenReaped'])==18 and
++                output['nativeExpectedCleanExits'] and all(r['reaped'] and r['exitCode']==0 for r in output['nativeChildrenReaped']) and
+                 not (attempt/'host-controls.stderr').read_bytes(),'HOST_CONTROL_RESULT')
+     except BaseException as error:
+         reason=type(error).__name__+': '+str(error)

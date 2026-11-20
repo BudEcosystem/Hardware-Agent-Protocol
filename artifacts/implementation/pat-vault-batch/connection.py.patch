@@ -1,0 +1,42 @@
+--- prior/evidence_vault/connection.py
++++ batch/evidence_vault/connection.py
+@@ -166,3 +166,39 @@
+     def documents(self):
+         self.check(self._owner)
+         return dict(self._files)
++
++
++class _BatchSnapshot(_Snapshot):
++    """One held read transaction covering an exact bounded manifest inventory."""
++    def __init__(self, owner, records, usage, lifetime_ms):
++        self._owner = owner
++        self._thread = threading.get_ident()
++        self._records = {key: (wire, tuple(sorted(files.items())))
++                         for key, (wire, files) in records.items()}
++        self._keys = tuple(sorted(self._records))
++        self._usage = tuple(sorted(usage.items()))
++        self._deadline = time.monotonic_ns() + lifetime_ms * 1000000
++        self._active = True
++
++    def keys(self):
++        self.check(self._owner)
++        return self._keys
++
++    def usage(self):
++        self.check(self._owner)
++        return dict(self._usage)
++
++    def _member(self, intent_digest, binding_digest):
++        self.check(self._owner)
++        c.digest(intent_digest); c.digest(binding_digest)
++        key = intent_digest, binding_digest
++        c.require(key in self._records, 'SNAPSHOT_MEMBER_UNAVAILABLE')
++        return self._records[key]
++
++    def manifest(self, intent_digest, binding_digest):
++        wire, _ = self._member(intent_digest, binding_digest)
++        return c.document(wire, c.RECORD_BYTES)
++
++    def documents(self, intent_digest, binding_digest):
++        _, files = self._member(intent_digest, binding_digest)
++        return dict(files)

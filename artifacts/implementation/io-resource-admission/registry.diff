@@ -1,0 +1,198 @@
+--- baseline/hms/registry.py
++++ staged/hms/registry.py
+@@ -220,6 +220,17 @@
+ ]
+ 
+ 
++def _parse_binding(wire):
++    binding = parse_json(wire)
++    exact(binding, {"profile", "instanceId", "generation", "typeDigest", "calibrationRevision", "controlGeneration",
++                    "mode", "adapterId", "resourceMap", "argumentSchemas"})
++    if binding["profile"] != "hms.binding/0.1" or binding["mode"] not in {"simulation", "uncommissioned"}:
++        raise ContractError("unsupported binding mode")
++    for field in ("instanceId", "generation", "calibrationRevision", "controlGeneration", "adapterId"):
++        identifier(binding[field])
++    return binding
++
++
+ class Registry:
+     def __init__(self, journal: Journal, *, monotonic_ms: Callable[[], int], bootstrap_owner: Context | None = None):
+         self.journal = journal
+@@ -243,9 +254,20 @@
+                                  (bootstrap_owner.principal, bootstrap_owner.deployment))
+             elif bootstrap_owner is not None:
+                 raise JournalError("REGISTRY_ALREADY_INITIALIZED")
+-            if self._meta("version") != "hms.registry/0.1":
+-                raise JournalError("UNSUPPORTED_REGISTRY")
++            self._storage_profile()
+         self.deployment = self._meta("deployment")
++
++    def _storage_profile(self):
++        """Read current storage requirements; never reinterpret damaged state as legacy."""
++        version = self._meta("version")
++        if version not in {"hms.registry/0.1", "hms.registry/resource-roots/0.1"}:
++            raise JournalError("UNSUPPORTED_REGISTRY")
++        resource_tables = {"reg_resource_requirements", "reg_resource_instances", "rc_catalog", "rc_generations", "rc_tokens", "rc_proofs"}
++        present = {row[0] for row in self._db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
++        if ((version == "hms.registry/0.1" and resource_tables & present) or
++                (version == "hms.registry/resource-roots/0.1" and not resource_tables <= present)):
++            raise JournalError("RESOURCE_STORAGE_PARTIAL")
++        return version
+ 
+     def _meta(self, key):
+         row = self._db.execute("SELECT value FROM reg_meta WHERE key=?", (key,)).fetchone()
+@@ -357,45 +379,45 @@
+ 
+     @provisioning_errors
+     def bind(self, owner: Context, wire: bytes):
+-        binding = parse_json(wire)
+-        exact(binding, {"profile", "instanceId", "generation", "typeDigest", "calibrationRevision", "controlGeneration",
+-                        "mode", "adapterId", "resourceMap", "argumentSchemas"})
+-        if binding["profile"] != "hms.binding/0.1" or binding["mode"] not in {"simulation", "uncommissioned"}:
+-            raise ContractError("unsupported binding mode")
+-        for field in ("instanceId", "generation", "calibrationRevision", "controlGeneration", "adapterId"):
+-            identifier(binding[field])
++        binding = _parse_binding(wire)
+         with self.journal._transaction():
+-            self.authorize(owner, "admin", "*")
+-            instance = self._instance(binding["instanceId"])
+-            if instance["deployment"] != owner.deployment or instance["type_digest"] != binding["typeDigest"]:
+-                raise JournalError("DESCRIPTION_MISMATCH")
+-            if binding["mode"] == "simulation" and instance["identity_kind"] != "simulation":
+-                raise JournalError("SIMULATION_IDENTITY_REQUIRED")
+-            if self._db.execute("SELECT 1 FROM claims c JOIN operations o ON c.operation_id=o.id WHERE json_extract(CAST(o.intent AS TEXT),'$.instanceId')=? LIMIT 1",
+-                                (instance["id"],)).fetchone():
+-                raise JournalError("RESOURCE_CLAIMS_UNRESOLVED")
+-            execution = self._type(instance["type_digest"])["execution"]
+-            resources = {r for action in execution["actions"].values() for r in action["resources"]}
+-            if type(binding["resourceMap"]) is not dict or set(binding["resourceMap"]) != resources:
+-                raise ContractError("binding must resolve every resource role")
+-            for resource in binding["resourceMap"].values():
+-                identifier(resource)
+-            if type(binding["argumentSchemas"]) is not dict or set(binding["argumentSchemas"]) != set(execution["actions"]):
+-                raise ContractError("binding must define every action envelope")
+-            for schema in binding["argumentSchemas"].values():
+-                schema_profile(schema)
+-            encoded = canonical(binding)
+-            digest = hashlib.sha256(encoded).hexdigest()
+-            if self._db.execute("SELECT 1 FROM reg_binding_history WHERE instance=? AND generation=?",
+-                                (instance["id"], binding["generation"])).fetchone():
+-                raise JournalError("BINDING_GENERATION_REUSED")
+-            self._db.execute("INSERT INTO reg_binding_history VALUES (?, ?, ?, ?)", (instance["id"], binding["generation"], digest, encoded))
+-            self._db.execute("INSERT OR REPLACE INTO reg_bindings VALUES (?, ?, ?, 1)",
+-                             (instance["id"], binding["generation"], encoded))
+-            self._db.execute("DELETE FROM reg_observations WHERE instance=?", (instance["id"],))
+-            self._db.execute("DELETE FROM reg_streams WHERE instance=?", (instance["id"],))
+-            self._db.execute("DELETE FROM reg_presence WHERE instance=?", (instance["id"],))
+-            self._bump()
++            self._bind_in_tx(owner, binding)
++
++    def _bind_in_tx(self, owner, binding):
++        if not self._db.in_transaction:
++            raise JournalError("BINDING_TRANSACTION_REQUIRED")
++        binding = _parse_binding(canonical(binding))
++        self.authorize(owner, "admin", "*")
++        instance = self._instance(binding["instanceId"])
++        if instance["deployment"] != owner.deployment or instance["type_digest"] != binding["typeDigest"]:
++            raise JournalError("DESCRIPTION_MISMATCH")
++        if binding["mode"] == "simulation" and instance["identity_kind"] != "simulation":
++            raise JournalError("SIMULATION_IDENTITY_REQUIRED")
++        if self._db.execute("SELECT 1 FROM claims c JOIN operations o ON c.operation_id=o.id WHERE json_extract(CAST(o.intent AS TEXT),'$.instanceId')=? LIMIT 1",
++                            (instance["id"],)).fetchone():
++            raise JournalError("RESOURCE_CLAIMS_UNRESOLVED")
++        execution = self._type(instance["type_digest"])["execution"]
++        resources = {r for action in execution["actions"].values() for r in action["resources"]}
++        if type(binding["resourceMap"]) is not dict or set(binding["resourceMap"]) != resources:
++            raise ContractError("binding must resolve every resource role")
++        for resource in binding["resourceMap"].values():
++            identifier(resource)
++        if type(binding["argumentSchemas"]) is not dict or set(binding["argumentSchemas"]) != set(execution["actions"]):
++            raise ContractError("binding must define every action envelope")
++        for schema in binding["argumentSchemas"].values():
++            schema_profile(schema)
++        encoded = canonical(binding)
++        digest = hashlib.sha256(encoded).hexdigest()
++        if self._db.execute("SELECT 1 FROM reg_binding_history WHERE instance=? AND generation=?",
++                            (instance["id"], binding["generation"])).fetchone():
++            raise JournalError("BINDING_GENERATION_REUSED")
++        self._db.execute("INSERT INTO reg_binding_history VALUES (?, ?, ?, ?)", (instance["id"], binding["generation"], digest, encoded))
++        self._db.execute("INSERT OR REPLACE INTO reg_bindings VALUES (?, ?, ?, 1)",
++                         (instance["id"], binding["generation"], encoded))
++        self._db.execute("DELETE FROM reg_observations WHERE instance=?", (instance["id"],))
++        self._db.execute("DELETE FROM reg_streams WHERE instance=?", (instance["id"],))
++        self._db.execute("DELETE FROM reg_presence WHERE instance=?", (instance["id"],))
++        self._bump()
+ 
+     def invalidate(self, owner: Context, instance_id: str):
+         """Invalidate queued admission; running work requires its adapter policy."""
+@@ -655,7 +677,8 @@
+ 
+ class RegistryPolicy:
+     """Mandatory admission backed by the same database transaction as the journal."""
+-    def __init__(self, *, installed_support=None, installed_plan_support=None):
++    def __init__(self, *, installed_support=None, installed_plan_support=None,
++                 resource_resolver=None, managed_resource_adapters=()):
+         self.registry = None
+         # The executing runtime supplies a pure installed-handler check. A
+         # standalone registry policy may model contracts without an executor.
+@@ -665,6 +688,18 @@
+         self._installed_support = installed_support
+         self._installed_plan_support = installed_plan_support
+         self.procedure_guard = None
++        if type(managed_resource_adapters) not in {tuple, list} or len(managed_resource_adapters) > 16:
++            raise ContractError("invalid managed resource adapters")
++        self._managed_resource_adapters = frozenset(identifier(item) for item in managed_resource_adapters)
++        self._resource_resolver = resource_resolver
++        if resource_resolver is not None and not callable(resource_resolver):
++            raise ContractError("invalid resource resolver")
++
++    def attach_resource_resolver(self, resolver):
++        """Trusted setup only; this does not change persistent route requirements."""
++        if self._resource_resolver is not None or not callable(resolver):
++            raise JournalError("RESOURCE_RESOLVER_ALREADY_ATTACHED")
++        self._resource_resolver = resolver
+ 
+     def attach(self, registry):
+         if self.registry is not None:
+@@ -722,7 +757,40 @@
+                 observation = reg._observation(instance["id"], predicate["property"], predicate["maxAgeMs"], predicate["evidenceKind"])
+                 if canonical(observation["value"]) != canonical(predicate["equals"]):
+                     raise JournalError("PRECONDITION_FAILED")
+-        resources = tuple(sorted({binding["resourceMap"][r] for r in action["resources"]}))
++        aware = reg._storage_profile() == "hms.registry/resource-roots/0.1"
++        requirement = reg._db.execute("SELECT profile FROM reg_resource_requirements WHERE adapter=?",
++                                      (binding["adapterId"],)).fetchone() if aware else None
++        instance_requirement = reg._db.execute("SELECT adapter,profile FROM reg_resource_instances WHERE instance=?",
++                                               (instance["id"],)).fetchone() if aware else None
++        managed = requirement is not None or instance_requirement is not None or binding["adapterId"] in self._managed_resource_adapters
++        if aware or managed:
++            if instance_requirement is not None:
++                if instance_requirement["profile"] != "hms.resource-roots/0.1":
++                    raise JournalError("RESOURCE_PROFILE_UNSUPPORTED")
++                if instance_requirement["adapter"] != binding["adapterId"]:
++                    raise JournalError("RESOURCE_ROUTE_MISMATCH")
++            if managed and requirement is None:
++                raise JournalError("RESOURCE_ROUTE_UNREGISTERED")
++            if requirement is not None and requirement["profile"] != "hms.resource-roots/0.1":
++                raise JournalError("RESOURCE_PROFILE_UNSUPPORTED")
++            if self._resource_resolver is None:
++                raise JournalError("RESOURCE_RESOLVER_REQUIRED")
++            before, active_transaction = reg._db.total_changes, reg._db.in_transaction
++            resources = self._resource_resolver(context, intent, binding, action, live=live)
++            if reg._db.total_changes != before or reg._db.in_transaction != active_transaction:
++                raise JournalError("RESOURCE_RESOLVER_MUTATED_AUTHORITY")
++            if resources is None and not managed:
++                # Only a trusted catalog that checked its complete retained
++                # inventory may declare this instance/route legacy-unmanaged.
++                resources = tuple(sorted({binding["resourceMap"][r] for r in action["resources"]}))
++            if (type(resources) is not tuple or not 1 <= len(resources) <= 32 or
++                    any(type(item) is not str for item in resources) or
++                    tuple(sorted(set(resources))) != resources):
++                raise JournalError("RESOURCE_INVALID_RESOLUTION")
++            for resource in resources:
++                identifier(resource)
++        else:
++            resources = tuple(sorted({binding["resourceMap"][r] for r in action["resources"]}))
+         support = self._installed_support if live else self._installed_plan_support
+         if support is not None:
+             support(intent, binding, resources)

@@ -1,0 +1,76 @@
+--- artifacts/verification/io-provider-runtime-integration/attempts/20261107T005504.237197Z-360d486cb278/inputs-before/hms/api_contracts.py
++++ hms/api_contracts.py
+@@ -11,7 +11,7 @@
+ from jsonschema import Draft202012Validator, validators
+ from jsonschema.exceptions import SchemaError
+ 
+-from .contracts import ContractError, canonical, intent_digest, parse_invoke
++from .contracts import ContractError, canonical, identifier, intent_digest, parse_invoke
+ from .journal import JournalError
+ 
+ _SCHEMA = json.loads((Path(__file__).resolve().parents[1] / "schemas/local-api.schema.json").read_text())
+@@ -62,6 +62,52 @@
+     _require(not {"physical_verified", "verification_failed"} <= assertions)
+     if "physical_verified" in assertions:
+         _require(value["kind"] in {"sensor", "controller"})
++
++
++def _synthetic_io_result(operation, output):
++    """Check a historical finite-I/O receipt projection, never current pad state.
++
++    Activation can precede cancellation. A completed board cycle can also be
++    retained before authority settlement, so the reverse state implication is
++    deliberately absent. Receipt identity/authenticity is checked by the
++    installed adapter; this boundary establishes only typed profile consistency.
++    """
++    _require(set(output) == {"profile", "primitive", "result", "safeIdleState", "receiptDigest"})
++    _require(output["profile"] == "hms.synthetic-io-result/1")
++    _require(type(output["primitive"]) is str and output["primitive"] in {"gpio_pulse", "pwm_burst"})
++    digest = output["receiptDigest"]
++    _require(type(digest) is str and len(digest) == 71 and digest.startswith("sha256:") and
++             all(character in "0123456789abcdef" for character in digest[7:]))
++    result = output["result"]
++    _require(type(result) is dict and set(result) == {"activationCommitted", "cycleCompleted", "safeIdle", "reason"})
++    _require(all(type(result[key]) is bool for key in ("activationCommitted", "cycleCompleted", "safeIdle")))
++    _require(result["activationCommitted"] and result["safeIdle"] and operation["mayHaveActed"])
++    if result["cycleCompleted"]:
++        _require(result["reason"] is None)
++    else:
++        identifier(result["reason"])
++    if operation["executionState"] == "completed":
++        _require(result["cycleCompleted"])
++    elif operation["executionState"] in {"canceled", "failed"}:
++        _require(not result["cycleCompleted"])
++    idle = output["safeIdleState"]
++    _require(type(idle) is dict and 1 <= len(idle) <= 32)
++    shapes = {
++        "pin": {"kind": "pin", "mode": "high_impedance", "level": None},
++        "timer": {"kind": "timer", "enabled": False, "frequencyHz": 0, "resolutionBits": 0},
++        "timer_channel": {"kind": "timer_channel", "enabled": False, "dutyPermille": 0},
++    }
++    kinds = []
++    for resource, leaf in idle.items():
++        identifier(resource)
++        _require(type(leaf) is dict and type(leaf.get("kind")) is str and leaf["kind"] in shapes)
++        expected = shapes[leaf["kind"]]
++        _require(set(leaf) == set(expected))
++        # Canonicalization alone would equate 0.0 with 0; retain exact types.
++        _require(all(type(leaf[key]) is type(value) and leaf[key] == value for key, value in expected.items()))
++        kinds.append(leaf["kind"])
++    _require(sorted(kinds) == (["pin"] if output["primitive"] == "gpio_pulse" else
++                               ["pin", "timer", "timer_channel"]))
+ 
+ 
+ def _description(result):
+@@ -231,7 +277,10 @@
+                 _require(result["result"] is not None and result["result"]["evidenceKind"] in {"sensor", "controller"})
+             if not result["mayHaveActed"]:
+                 _require(result["result"] is None and result["effectVerification"] == "unverified")
+-            if result["result"] is not None and result["result"]["evidenceKind"] == "simulation":
++            if result["result"] is not None and "profile" in result["result"]["output"]:
++                _require(result["result"]["evidenceKind"] == "simulation")
++                _synthetic_io_result(result, result["result"]["output"])
++            elif result["result"] is not None and result["result"]["evidenceKind"] == "simulation":
+                 _require(result["effectVerification"] != "verified")
+                 output = result["result"]["output"]
+                 _require(type(output.get("effectCommitted")) is bool)

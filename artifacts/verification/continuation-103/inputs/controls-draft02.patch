@@ -1,0 +1,198 @@
+--- draft01
++++ draft02
+@@ -33,6 +33,7 @@
+ CASES=CASES[:6]+(('collection-before-ack','COLLECTION','collection'),)+CASES[6:]
+ IMMUTABLE=('id','principal','deployment','namespace','key','request','requestDigest','mapping','open','openTx')
+ MUTATION_IDENTITY=('number','hostKey','opcode','endpointSequence','body','bodyDigest','tx','leaseUntil','ack')
++NATIVE_IMAGE_SHA='5ab180cb56526a352691583bbcec4033b85af0c38c6d46057b1f4ae0cd607399'
+ READ_ONLY={int(Opcode.DESCRIBE),int(Opcode.STATUS)}
+ SELECTORS=(0,1,2,5,7,8,9,10,11,13,21,22)
+ FINAL_PATH=None
+@@ -85,11 +86,15 @@
+     limits={'sd_mutations':(8,1536),'sd_activations':(2,1024),'sd_activation_versions':(4,1024),'sd_episodes':(2,1536)}
+     records={}
+     for table,(count,maximum) in limits.items():
+-        rows=journal._db.execute('SELECT document FROM '+table+' WHERE deployment_id=? ORDER BY rowid LIMIT ?',
++        keys={'sd_mutations':('number','host_key','endpoint_sequence'),
++              'sd_activations':('number',),'sd_activation_versions':('number','version'),
++              'sd_episodes':('episode_key',)}[table]
++        rows=journal._db.execute('SELECT '+','.join(keys)+',document FROM '+table+
++                                ' WHERE deployment_id=? ORDER BY '+','.join(keys)+' LIMIT ?',
+                                 (identifier,count+1)).fetchall()
+         require(len(rows)<=count,'Snapshot row cap')
+-        require(all(type(r[0]) is bytes and len(r[0])<=maximum for r in rows),'Snapshot record cap')
+-        records[table]=[r[0].hex() for r in rows]
++        require(all(type(r[-1]) is bytes and len(r[-1])<=maximum for r in rows),'Snapshot record cap')
++        records[table]=[{'key':dict(zip(keys,tuple(r)[:-1])),'document':r[-1].hex()} for r in rows]
+     claims=[dict(r) for r in journal._db.execute('SELECT resource,fence FROM claims WHERE operation_id=? ORDER BY resource LIMIT 4',(identifier,))]
+     aliases=[r[0] for r in journal._db.execute('SELECT instance_id FROM resource_owner_instances WHERE owner_id=? ORDER BY instance_id LIMIT 3',(identifier,))]
+     require(len(claims)<=3 and len(aliases)==2,'Snapshot ownership cap')
+@@ -106,6 +111,7 @@
+     def __init__(self,directory,wire,pipe,evidence,manifest,hook,*,create):
+         self.journal=self.stream=None;self.hook=hook;self.audit=[]
+         self.installation=installation(pipe,evidence/manifest['binaryPath'])
++        require(self.installation['driverImageDigest']=='sha256:'+NATIVE_IMAGE_SHA,'Installed native image changed')
+         self.policy=c.InstalledPolicy(OWNER,self.installation)
+         self.driver=InstalledNativeDriver(pipe,self.installation)
+         self.stream=LocalEndpointStream(wire);os.close(wire)
+@@ -146,11 +152,28 @@
+         require(not errors,('Assembly cleanup',errors))
+ 
+ 
++def released(assembly):
++    require(not assembly.journal._db.in_transaction and assembly.policy._held_image is None and
++            assembly.driver._lease is None and assembly.catalog._selection is None and
++            assembly.producer._held is None,'Stage must release all image/evidence leases')
++
++
++def check_audit(entries):
++    require(type(entries) is list and len(entries)<=64,'Audit bound')
++    previous=0
++    for entry in entries:
++        require(type(entry) is dict and set(entry)=={'opcode','tx','body','bodySha256'})
++        require(type(entry['opcode']) is int and type(entry['tx']) is int and previous<entry['tx']<2**32)
++        body=bytes.fromhex(entry['body'])
++        require(2<=len(body)<=192 and body[0]==2 and body[1]==entry['opcode'] and sha(body)==entry['bodySha256'])
++        previous=entry['tx']
++
++
+ def owner_work(case,directory,wire,notice,gate,pipe,evidence,manifest):
+     name,operation,cut=case;assembly=None;occurred=False;stage_number=0
+     def stage(label):
+         nonlocal stage_number
+-        require(not assembly.journal._db.in_transaction and assembly.policy._held_image is None)
++        released(assembly)
+         write_record(notice,{'kind':'stage','case':name,'number':stage_number,'stage':label})
+         require(os.read(gate,1)==b'G','Stage gate EOF');stage_number+=1
+     def hook(a,phase,value):
+@@ -163,7 +186,7 @@
+         if operation not in ('OPEN','COLLECTION') and cut!='reply' and value['opcode']!=int(getattr(Opcode,operation)):return
+         require(not occurred,'Duplicate death cut');occurred=True
+         view=snapshot(a);row=view['row']
+-        mutations=[json.loads(bytes.fromhex(raw)) for raw in view['records']['sd_mutations']]
++        mutations=[json.loads(bytes.fromhex(raw['document'])) for raw in view['records']['sd_mutations']]
+         item=mutations[-1] if operation not in ('OPEN','COLLECTION') else None
+         if item is not None:require(item['opcode']==int(getattr(Opcode,operation)))
+         pointer=save(directory/'checkpoint.json',view)
+@@ -200,9 +223,11 @@
+         require(reopened['installationDigest']==before['installationDigest'] and reopened['producerIdentity']==before['producerIdentity'])
+         old=copy.deepcopy(before['row']);new=copy.deepcopy(reopened['row'])
+         for field in ('ownerEpoch','recoveryRequired','hostRevision'):old.pop(field);new.pop(field)
+-        require(old==new and reopened['row']['recoveryRequired'])
++        require(old==new and reopened['row']['recoveryRequired'] is True)
++        require(reopened['row']['ownerEpoch']==reopened['ownerEpoch']==before['row']['ownerEpoch']+1 and
++                reopened['row']['hostRevision']==before['row']['hostRevision']+1,'Exact reopen field changes')
+         row=reopened['row'];identifier=row['id'];host=assembly.host;store=assembly.store
+-        items=[json.loads(bytes.fromhex(raw)) for raw in before['records']['sd_mutations']]
++        items=[json.loads(bytes.fromhex(raw['document'])) for raw in before['records']['sd_mutations']]
+         original=items[-1] if operation not in ('OPEN','COLLECTION') else None
+         require(host.prepare(OWNER,row['request'])['id']==identifier)
+         if operation=='OPEN':host.open(OWNER,identifier)
+@@ -212,10 +237,11 @@
+             refusal('STANDING_RECONCILIATION_UNRESOLVED',host.reconcile,OWNER,identifier)
+         else:host.reconcile(OWNER,identifier)
+         observed=snapshot(assembly);save(directory/'observed.json',observed)
++        check_audit(assembly.audit)
+         require(all(entry['opcode'] in READ_ONLY for entry in assembly.audit),'Historical effect resent')
+         read_count=len(assembly.audit)
+         pointer=save(directory/'read-only-audit.json',{'case':name,'audit':assembly.audit,'observedSnapshotSha256':sha((directory/'observed.json').read_bytes())})
+-        require(not assembly.journal._db.in_transaction and assembly.policy._held_image is None)
++        released(assembly)
+         write_record(notice,{'kind':'recovery-stage','case':name,'stage':'read-only-complete',**pointer})
+         require(os.read(gate,1)==b'G','Recovery gate EOF')
+         if cut=='prepared':
+@@ -228,7 +254,10 @@
+                 require(settled['state']=='never_handed_off')
+                 require(all(settled[k]==original[k] for k in MUTATION_IDENTITY))
+                 if operation=='ACK':host.collect(OWNER,identifier)
+-                else:host.mutate(OWNER,identifier,'new-'+operation.lower(),getattr(Opcode,operation))
++                else:
++                    host.mutate(OWNER,identifier,'new-'+operation.lower(),getattr(Opcode,operation))
++                    next_item=store.mutation(identifier,original['number']+1)
++                    require(next_item['state']=='accepted' and next_item['hostKey']=='new-'+operation.lower())
+                 retained=store.mutation(identifier,original['number']);require(retained['state']=='never_handed_off')
+                 require(all(retained[k]==original[k] for k in MUTATION_IDENTITY))
+                 if operation in ('START','RETIRE'):
+@@ -300,6 +329,8 @@
+     executable=os.open(pipe,os.O_RDONLY|os.O_CLOEXEC);fcntl.flock(executable,fcntl.LOCK_SH|fcntl.LOCK_NB)
+     before=os.fstat(executable);body=os.pread(executable,2*1024*1024+1,0)
+     require(stat.S_ISREG(before.st_mode) and len(body)==before.st_size<=2*1024*1024)
++    signature=lambda value:(value.st_dev,value.st_ino,value.st_size,value.st_mtime_ns,value.st_ctime_ns)
++    require(sha(body)==NATIVE_IMAGE_SHA and signature(os.fstat(executable))==signature(before),'Held native image changed')
+     image=sha(body);identities={};reaps={};stage_trace=[];record_start=len(guardian.records)
+     owned_fds=[];logs=[];native=None;failure=None
+     def launch(role,work,keep):
+@@ -345,13 +376,15 @@
+         require(sha(checkpoint_body)==notice['sha256'] and len(checkpoint_body)==notice['bytes'])
+         checkpoint=load(directory/'checkpoint.json');require(checkpoint['row']['id']==notice['deployment'])
+         require(checkpoint['row']['revoke'] is None and len(checkpoint['claims'])==3)
+-        selected=[json.loads(bytes.fromhex(raw)) for raw in checkpoint['records']['sd_mutations']]
++        selected=[json.loads(bytes.fromhex(raw['document'])) for raw in checkpoint['records']['sd_mutations']]
+         require(notice['mutation']==(selected[-1]['number'] if operation not in ('OPEN','COLLECTION') else None))
+         if operation=='OPEN':require(checkpoint['row']['openState']==('prepared' if cut=='prepared' else 'possible'))
+         elif operation!='COLLECTION':require(selected[-1]['state']==('prepared' if cut=='prepared' else 'possible'))
+         else:require(checkpoint['row']['collected']==1 and checkpoint['row']['acknowledged']==0)
+         pre=observations(control)
+         require(tuple(pre[str(k)] for k in (5,9,10,11,13))==expected_native(operation,cut))
++        require((pre['0'],pre['1'],pre['2'])==((0,0,0) if operation in ('OPEN','START') else
++                (1,1,0) if operation=='RETIRE' else (1,0,1)),'Exact fixed driver cut counters')
+         require(set(guardian.refresh())=={native,owner} and guardian.status(native) is None and guardian.status(owner) is None)
+         guardian.send(owner,signal.SIGKILL);reaps['owner']=guardian.wait_exit(owner)
+         require(reaps['owner']['exitCode']==-signal.SIGKILL)
+@@ -370,6 +403,8 @@
+         audit_body=c.bounded_file(directory/'read-only-audit.json',128*1024)
+         require(sha(audit_body)==recovery_notice['sha256'] and len(audit_body)==recovery_notice['bytes'])
+         audit_view=load(directory/'read-only-audit.json')
++        require(audit_view['case']==name and audit_view['observedSnapshotSha256']==sha(c.bounded_file(directory/'observed.json',128*1024)))
++        check_audit(audit_view['audit'])
+         require(all(entry['opcode'] in READ_ONLY for entry in audit_view['audit']))
+         readonly_native=observations(control)
+         require({k:v for k,v in readonly_native.items() if k!='22'}=={k:v for k,v in pre.items() if k!='22'})
+@@ -378,6 +413,9 @@
+         reaps['recovery']=guardian.wait_exit(recovery);require(reaps['recovery']['exitCode']==0,'Recovery failed')
+         os.close(continue_write);owned_fds.remove(continue_write);os.close(recovery_read);owned_fds.remove(recovery_read)
+         result=load(directory/'recovery.json');require(result['passed'])
++        check_audit(result['audit'])
++        require(result['readOnlyAuditCount']==len(audit_view['audit']) and
++                result['audit'][:result['readOnlyAuditCount']]==audit_view['audit'])
+         require(guardian.status(native) is None and set(guardian.refresh())=={native})
+         final_native=observations(control)
+         # Native control state cannot change during historical replay. Only the
+@@ -387,6 +425,8 @@
+         else:
+             effect=result['allowedExplicitEffects'];expected={int(Opcode.START):(2,1,0,0,1),int(Opcode.ACK):(2,1,1,1,2),int(Opcode.RETIRE):(0,1,0,0,0)}
+             require(len(effect)==1 and tuple(final_native[str(k)] for k in (5,9,10,11,13))==expected[effect[0]])
++            require(all(final_native[str(k)]==pre[str(k)] for k in (0,1,2,7,8,9,21)),
++                    'Explicit acceptance changed driver/clock/context counters')
+         parent.close();control.close()
+         reaps['native']=guardian.wait_exit(native);require(reaps['native']['exitCode']==0,'Native EOF exit required')
+         require(guardian.empty() and len(guardian.records)-record_start==3)
+@@ -398,7 +438,7 @@
+             'recoveryStage':recovery_notice,'nativeAfterRecovery':final_native,
+             'actualOwnerDeath':True,'nativePeerSurvivedOwner':True,'historicalPossibleEffectsResent':False,
+             'evidence':{name:sha((directory/name).read_bytes()) for name in ('checkpoint.json','reopened.json','observed.json','read-only-audit.json','recovery.json')}}
+-        save(directory/'CASE-RESULT.json',value);return value
++        # Publish only after the complete descriptor cleanup/unmask succeeds.
+     except BaseException as error:
+         failure=type(error).__name__+': '+str(error)
+         save(directory/'CASE-FAILURE.json',{'case':name,'failure':failure,'identities':identities,'reaps':reaps,'stages':stage_trace})
+@@ -418,6 +458,7 @@
+         try:
+             require(not errors,('Case cleanup',errors))
+         finally:signal.pthread_sigmask(signal.SIG_SETMASK,previous)
++    return value
+ 
+ 
+ def main():
+@@ -431,7 +472,10 @@
+     save(FINAL_PATH,FINAL_REPORT,replace=True)
+     guardian=Guardian(helper);cases=[];failure=None
+     try:
+-        for case in CASES:cases.append(run_case(guardian,case,state,pipe,evidence,manifest))
++        for case in CASES:
++            result=run_case(guardian,case,state,pipe,evidence,manifest)
++            save(state/case[0]/'CASE-RESULT.json',result,replace=True)
++            cases.append(result)
+     except BaseException as error:failure=type(error).__name__+': '+str(error)
+     finally:
+         previous=signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGINT,signal.SIGTERM})

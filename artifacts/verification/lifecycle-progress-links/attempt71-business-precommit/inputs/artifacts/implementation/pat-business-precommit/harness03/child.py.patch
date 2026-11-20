@@ -1,0 +1,30 @@
+--- harness02/child.py
++++ harness03/child.py
+@@ -13,13 +13,13 @@
+ from urllib.parse import unquote, urlsplit
+ 
+ HARNESS=Path(__file__).resolve().parent;BASE=HARNESS.parent;ROOT=BASE.parents[2]
+-SOURCE=BASE/'implementation02';PROJECT=SOURCE/'project'
++SOURCE=BASE/'implementation03';PROJECT=SOURCE/'project'
+ ATTEMPT=Path(sys.argv[1]).resolve();SCRATCH=ATTEMPT/'scratch'
+ def read(path):return json.loads(path.read_bytes())
+ def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+ assert sys.flags.isolated and sys.flags.no_site and sys.flags.dont_write_bytecode
+ assert ATTEMPT==HARNESS/'attempts/attempt01' and SCRATCH.is_dir()
+-assert sha(SOURCE/'index.json')=='cba0cb23d44b102c7e3e4cd8e2ae767e7511024e1311376691154caaa9bfdebd'
++assert sha(SOURCE/'index.json')=='2f1d6c5aeaf63e960058f9b838b5ecd1080fc17d78f207f0d0b14c248da2dad4'
+ inputs=read(SOURCE/'index.json')['files']
+ external_path=ROOT/'artifacts/verification/pat-native-worker-accounting/harness01/attempts/attempt01-accounting/external-before.json'
+ external=read(external_path)['files']
+@@ -90,9 +90,9 @@
+ selection=read(SOURCE/'test-selection.json')
+ ids=['test_business_precommit.'+name for name in selection['newTests']]
+ ids+=['test_journal.'+name for name in selection['legacyTests']]
+-assert len(ids)==len(set(ids))==50
++assert len(ids)==len(set(ids))==51
+ suite=unittest.TestSuite(unittest.defaultTestLoader.loadTestsFromName(name) for name in ids)
+-assert suite.countTestCases()==50
++assert suite.countTestCases()==51
+ log=io.StringIO();started=time.monotonic_ns()
+ result=unittest.TextTestRunner(stream=log,verbosity=2,resultclass=RetainedResult).run(suite)
+ elapsed=time.monotonic_ns()-started

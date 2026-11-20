@@ -1,0 +1,178 @@
+--- hms/standing_contracts.py
++++ hms/standing_contracts.py
+@@ -163,10 +163,41 @@
+     for name in resources:
+         identifier(name)
+     require(value['slotResource'] not in resources, 'FOOTPRINT')
++    # GPIO alias proofs describe physical footprints only. The installed
++    # endpoint slot is an additional exclusive lifecycle atom, never a pin.
++    slot = topology['atoms'].get(value['slotResource'])
++    require(slot is not None and slot['purpose'] == 'lifecycle' and
++            topology['nodes'][slot['node']]['kind'] == 'driver', 'SLOT_RESOURCE')
++    driver = slot['node']
++    require(topology['nodes'][driver]['properties']['implementationDigest'] ==
++            value['driverSourceDigest'], 'SLOT_DRIVER_IDENTITY')
+     for instance in (value['instanceId'], value['finiteInstanceId']):
+         proof = binding_proof(topology, generations, instance)
+         require(set(proof['expandedClaims']) == {'control'}, 'FOOTPRINT')
+-        require(set(proof['expandedClaims']['control']) == set(resources + [value['slotResource']]), 'FOOTPRINT')
++        require(set(proof['expandedClaims']['control']) == set(resources), 'FOOTPRINT')
++        require(driver in proof['dependencies'], 'SLOT_DEPENDENCY')
++        # Require the installed driver on each participating alias's explicit
++        # dependency path. A sibling alias or descriptive containment cannot
++        # supply authority for an otherwise unrelated acquisition/output path.
++        aliases = set()
++        pending = list(proof['actionRoots']['control'])
++        while pending:
++            alias = pending.pop()
++            if alias in aliases:
++                continue
++            aliases.add(alias)
++            pending.extend(name for name in topology['aliases'][alias]['includes']
++                           if name in topology['aliases'])
++        for alias in aliases:
++            dependencies = set()
++            pending = list(topology['nodes'][topology['aliases'][alias]['node']]['requires'])
++            while pending:
++                dependency = pending.pop()
++                if dependency in dependencies:
++                    continue
++                dependencies.add(dependency)
++                pending.extend(topology['nodes'][dependency]['requires'])
++            require(driver in dependencies, 'SLOT_DEPENDENCY')
+     endpoint = value['endpoint']
+     exact(endpoint, ('incarnationHex', 'firmwareHex', 'manifestHex', 'boot', 'kernel', 'mask', 'epochs'))
+     hex_bytes(endpoint['incarnationHex'], 16, nonzero=True)
+@@ -242,8 +273,9 @@
+ 
+     def resources(self, instance):
+         require(instance in {self.installation['instanceId'], self.installation['finiteInstanceId']}, 'INSTANCE')
+-        proof = binding_proof(self.installation['topology'], self.installation['generations'], instance)
+-        return tuple(sorted(proof['expandedClaims']['control']))
++        installation = parse_installation(self.installation)
++        proof = binding_proof(installation['topology'], installation['generations'], instance)
++        return tuple(sorted(proof['expandedClaims']['control'] + [installation['slotResource']]))
+ 
+     def admit(self, context, intent, now_ms):
+         installation, proof = self.fresh(context)
+--- hms/standing_store.py
++++ hms/standing_store.py
+@@ -236,7 +236,7 @@
+         c.require(route['standingFloor']<2**32-1,'COUNTER_EXHAUSTED')
+         route['standingFloor']+=1
+         owner='standing:'+uuid.uuid4().hex
+-        resources=tuple(sorted(proof['expandedClaims']['control']))
++        resources=self.policy.resources(installation['instanceId'])
+         claims=self.journal._reserve_standing_resources(owner,context,(installation['instanceId'],),resources)
+         for i in range(2):
+             c.require(route['fences'][i]<2**32-1,'COUNTER_EXHAUSTED');route['fences'][i]+=1
+--- tests/standing_host_controls.py
++++ tests/standing_host_controls.py
+@@ -19,6 +19,8 @@
+ from hms.registry import Registry
+ from hms.demo import type_bundle,object_schema
+ from hms.standing_capacity import check as capacity_check
++from hms import standing_contracts as installed_contracts
++from hms import resource_topology as graph
+ 
+ checks=0
+ FINAL_DESTINATION=None
+@@ -106,15 +108,40 @@
+ 
+ 
+ def shared_authority(f):
++    physical=set(f.installation['hardwareResources'])
++    actual=physical|{f.installation['slotResource']}
++    require(len(physical)==2 and len(actual)==3)
++    for instance in (f.installation['instanceId'],f.installation['finiteInstanceId']):
++        proof=graph.binding_proof(f.installation['topology'],f.installation['generations'],instance)
++        require(set(proof['expandedClaims']['control'])==physical)
++        require(set(f.policy.resources(instance))==actual)
++    invalid=copy.deepcopy(f.installation);invalid['slotResource']='atom:service'
++    refusal('STANDING_SLOT_RESOURCE',installed_contracts.parse_installation,invalid)
++    invalid=copy.deepcopy(f.installation)
++    invalid['topology']['nodes']['output-access']['requires']=[]
++    invalid['generations']['topologyDigest']=graph.topology_digest(invalid['topology'])
++    refusal('STANDING_SLOT_DEPENDENCY',installed_contracts.parse_installation,invalid)
++    invalid=copy.deepcopy(f.installation)
++    invalid['topology']['nodes']['driver']['properties']['implementationDigest']='sha256:'+'0'*64
++    invalid['generations']['topologyDigest']=graph.topology_digest(invalid['topology'])
++    refusal('STANDING_SLOT_DRIVER_IDENTITY',installed_contracts.parse_installation,invalid)
+     with f.policy.hold_image():
+         operation=f.journal.submit(OWNER,f.finite_request())
++    require({claim['resource'] for claim in operation['claims']}==actual)
++    for target in ('driver','service'):
++        with f.journal._transaction():refusal('STANDING_CLAIMS_UNRESOLVED',f.policy.require_lifecycle_quiescent,OWNER,target)
+     refusal('RESOURCE_BUSY',f.host.prepare,OWNER,f.request())
+     require(f.journal._instance_claimed('native:standing') and f.journal._instance_claimed('native:finite'))
+     f.journal.request_cancel(OWNER,operation['id'])
+     identifier=opened(f)
++    row=f.store.row(identifier)
++    require(set(row['mapping']['resourceProof']['expandedClaims']['control'])==physical)
++    require({claim['resource'] for claim in row['mapping']['claims']}==actual)
++    require({entry[0] for entry in f.journal._db.execute('SELECT resource FROM claims WHERE operation_id=?',(identifier,))}==actual)
+     with f.policy.hold_image():refusal('RESOURCE_BUSY',f.journal.submit,OWNER,f.finite_request('second'))
+     require(f.journal._instance_claimed('native:finite'))
+-    with f.journal._transaction():refusal('STANDING_CLAIMS_UNRESOLVED',f.policy.require_lifecycle_quiescent,OWNER,'driver')
++    for target in ('driver','service'):
++        with f.journal._transaction():refusal('STANDING_CLAIMS_UNRESOLVED',f.policy.require_lifecycle_quiescent,OWNER,target)
+     registry=Registry(f.journal,monotonic_ms=lambda:1000,bootstrap_owner=OWNER)
+     bundle=type_bundle('standing-alias','control',object_schema({}),{'type':'integer'},unit='1',effect='setpoint',resource='slot')
+     digest=registry.publish_type(OWNER,canonical(bundle))
+@@ -203,12 +230,30 @@
+         operation=f.journal.submit(OWNER,f.finite_request())
+         ticket=f.journal.claim_dispatch(operation['id'])
+     evidence=Evidence('simulation','native:standing-route','native:trace',('running',))
+-    for _ in range(6):f.journal.record_execution(ticket,'running',evidence)
+-    refusal('STANDING_FINITE_EVENT_CAPACITY',f.journal.record_execution,ticket,'running',evidence)
++    f.journal.record_execution(ticket,'running',evidence)
++    # Test-only trusted storage fill: this nonreserved kind exercises the
++    # ordinary accounting partition, not additional execution transitions.
++    def fill(index):
++        with f.journal._transaction():
++            f.journal._event(operation['id'],f.journal._record_now(),
++                             'control_capacity_fill',{'testOnly':True,'index':index})
++    for index in range(5):fill(index)
++    def retained_events():
++        return [tuple(row) for row in f.journal._db.execute(
++            'SELECT sequence,kind,payload FROM events WHERE operation_id=? ORDER BY sequence',(operation['id'],))]
++    before=retained_events();saved=canonical(f.journal.status(OWNER,operation['id']))
++    require([row[1] for row in before]==['accepted','dispatch_claimed','execution_evidence']+['control_capacity_fill']*5)
++    require(len(before)==8 and f.journal.status(OWNER,operation['id'])['state']=='running')
++    refusal('STANDING_FINITE_EVENT_CAPACITY',fill,5)
++    require(retained_events()==before and canonical(f.journal.status(OWNER,operation['id']))==saved)
+     f.journal.request_cancel(OWNER,operation['id'])
+     f.journal.acknowledge_cancel(ticket,True,Evidence('simulation','native:standing-route','native:trace',('cancel_ack',)))
+     f.journal.record_execution(ticket,'canceled',Evidence('simulation','native:standing-route','native:trace',('terminated',)))
+     f.journal.release_resources(operation['id'],Evidence('simulation','native:standing-route','native:trace',('resources_quiescent',)))
++    after=retained_events()
++    require(len(after)==12 and after[:8]==before and [row[1] for row in after[8:]]==
++            ['cancel_requested','cancel_ack','execution_evidence','resources_released'])
++    require(f.journal.status(OWNER,operation['id'])['state']=='canceled')
+     with f.journal._transaction():
+         summary=capacity_check(f.journal._db,JournalError)
+         require(summary['maxLogicalBytes']==16*1024*1024 and summary['finiteOwners'][operation['id']]<=64*1024)
+--- tests/standing_host_fixture.py
++++ tests/standing_host_fixture.py
+@@ -30,8 +30,8 @@
+     driver=c.identity('HMS-STANDING-PIPE-SOURCES-v0.1',pins)
+     nodes={'hub':node('hub',contains=('board','service')),
+         'board':node('board',contains=('demand','output','demand-access','output-access')),
+-        'service':node('service',{'serviceProfile':'native-standing-pipe/0.1'},contains=('driver',),requires=('hub',)),
+-        'driver':node('driver',{'driverProfile':'native-standing-pipe/0.1','implementationDigest':driver},requires=('service',)),
++        'service':node('service',{'serviceProfile':'synthetic-service/0.1'},contains=('driver',),requires=('hub',)),
++        'driver':node('driver',{'driverProfile':'synthetic-io-hub/0.1','implementationDigest':driver},requires=('service',)),
+         'demand-access':node('gpio_access',{'pin':'demand'},requires=('driver',)),
+         'output-access':node('gpio_access',{'pin':'output'},requires=('driver',))}
+     for name in ('demand','output'):
+@@ -41,8 +41,8 @@
+     atoms={name:{'node':which,'purpose':purpose} for name,which,purpose in (
+         ('atom:demand','demand','exclusive_hardware'),('atom:output','output','exclusive_hardware'),
+         ('atom:slot','driver','lifecycle'),('atom:service','service','lifecycle'))}
+-    aliases={'alias:demand':{'node':'demand-access','includes':['atom:demand','atom:slot']},
+-             'alias:output':{'node':'output-access','includes':['atom:output','atom:slot']}}
++    aliases={'alias:demand':{'node':'demand-access','includes':['atom:demand']},
++             'alias:output':{'node':'output-access','includes':['atom:output']}}
+     topology={'profile':graph.PROFILE,'topologyId':'native:standing-host','deployment':OWNER.deployment,
+         'nodes':nodes,'atoms':atoms,'aliases':aliases,'consumers':[{'instanceId':name,'actionId':'control',
+             'rootAliases':['alias:demand','alias:output'],'requires':[]} for name in ('native:standing','native:finite')]}

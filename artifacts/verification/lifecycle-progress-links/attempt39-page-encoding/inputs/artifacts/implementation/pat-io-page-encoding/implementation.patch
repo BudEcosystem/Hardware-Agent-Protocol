@@ -1,0 +1,62 @@
+--- artifacts/implementation/pat-io-group-history/implementation04/project/hms/pat_io_configuration_capture.py
++++ artifacts/implementation/pat-io-page-encoding/implementation01/project/hms/pat_io_configuration_capture.py
+@@ -55,8 +55,11 @@
+                 'PAT_IO_CONFIGURATION_EVIDENCE_LIMIT')
+ 
+     def _write(self, kind, value, *, reuse=False):
+-        data = canonical({'profile': self._record_profile, 'kind': kind, 'value': value})
+-        sha = hashlib.sha256(data).hexdigest()
++        if reuse and kind == 'table_page':
++            data, sha = self._page_encodings.encode(self._record_profile, value)
++        else:
++            data = canonical({'profile': self._record_profile, 'kind': kind, 'value': value})
++            sha = hashlib.sha256(data).hexdigest()
+         if not (reuse and sha in self._objects): self._reserve(len(data))
+         # Preserve combined reservation before the original wall/group check.
+         # The base writer stores this exact envelope without encoding it again.
+@@ -65,8 +68,11 @@
+ 
+     def _configuration_write(self, kind, value, *, reuse=False):
+         self._check_budget()
+-        data = canonical({'profile': PROFILE, 'kind': kind, 'value': value})
+-        sha = hashlib.sha256(data).hexdigest()
++        if reuse and kind == 'table_page':
++            data, sha = self._page_encodings.encode(PROFILE, value)
++        else:
++            data = canonical({'profile': PROFILE, 'kind': kind, 'value': value})
++            sha = hashlib.sha256(data).hexdigest()
+         if reuse and sha in self._configuration_cache:
+             return copy.deepcopy(self._configuration_cache[sha])
+         self._reserve(len(data))
+--- artifacts/implementation/pat-io-group-history/implementation04/project/hms/pat_io_trials.py
++++ artifacts/implementation/pat-io-page-encoding/implementation01/project/hms/pat_io_trials.py
+@@ -17,6 +17,7 @@
+ from .pat_compiler import compile_pat, evaluation_environment
+ from .pat_contracts import PatError, integer, pat_digest, require, snapshot
+ from .pat_io_group_budget import IoTrialBudget
++from .pat_io_page_encoding import PageEncodings
+ from .pat_io_bindings import IoRegistryPatBindings
+ from .pat_io_contracts import IoSequencePolicy
+ from .pat_simulation_contracts import _tag
+@@ -90,6 +91,7 @@
+         self._lower_attempted = False
+         self.ticks = self.phase = self.output_bytes = 0
+         self.records, self._objects = [], {}
++        self._page_encodings = PageEncodings()
+         self._started = time.monotonic()
+         self.document = normalize_installation(installation)
+         self.artifact = snapshot(artifact)
+@@ -121,8 +123,11 @@
+ 
+     def _write(self, kind, value, *, reuse=False):
+         self._check_budget()
+-        data = canonical({'profile': self._record_profile, 'kind': kind, 'value': value})
+-        digest = hashlib.sha256(data).hexdigest()
++        if reuse and kind == 'table_page':
++            data, digest = self._page_encodings.encode(self._record_profile, value)
++        else:
++            data = canonical({'profile': self._record_profile, 'kind': kind, 'value': value})
++            digest = hashlib.sha256(data).hexdigest()
+         return self._write_record(data, digest, reuse=reuse)
+ 
+     def _write_record(self, data, digest, *, reuse):

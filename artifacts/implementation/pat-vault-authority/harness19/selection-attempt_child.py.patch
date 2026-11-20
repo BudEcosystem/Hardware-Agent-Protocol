@@ -1,0 +1,29 @@
+--- harness05/attempt_child.py
++++ harness13/attempt_child.py
+@@ -64,7 +64,7 @@
+     return path.is_relative_to(stdlib) and not {'site-packages', 'dist-packages'}.intersection(path.parts)
+ 
+ 
+-CONTROL_TARGETS = ['test_vault_authority.VaultAuthorityTests.test_mount_requires_real_authority_and_admin_and_exact_vault', 'test_vault_authority.VaultAuthorityTests.test_publication_and_cold_replay_preserve_original_receipt', 'test_vault_authority.VaultAuthorityTests.test_transport_success_does_not_publish_without_semantic_success', 'test_vault_authority.VaultAuthorityTests.test_before_intent_commit_rolls_back_without_evidence', 'test_vault_authority.VaultAuthorityTests.test_after_intent_commit_resumes_same_intent', 'test_vault_authority.VaultAuthorityTests.test_after_seal_resumes_without_original_archive_or_new_worker', 'test_vault_authority.VaultAuthorityTests.test_before_publication_commit_keeps_unpublished_manifest', 'test_vault_authority.VaultAuthorityTests.test_lost_publication_reply_reconciles_exact_receipt', 'test_vault_authority.VaultAuthorityTests.test_expired_snapshot_before_commit_rolls_back_publication', 'test_vault_authority.VaultAuthorityTests.test_revocation_after_inspection_keeps_intent_unpublished']
++CONTROL_TARGETS = ['test_vault_authority.VaultAuthorityTests.test_configuration_change_after_seal_prevents_publication', 'test_vault_authority.VaultAuthorityTests.test_original_attempt_change_after_seal_prevents_publication']
+ 
+ # The native open audit event omits dir_fd. Preserve the original os.open
+ # call and expose its resolved pathname only to this synchronous audit hook.
+@@ -227,7 +227,7 @@
+ 
+ try:
+     if (not sys.flags.isolated or not sys.flags.no_site or not sys.flags.dont_write_bytecode or
+-            len(config['targets']) != 10 or len(set(config['targets'])) != 10):
++            len(config['targets']) != 2 or len(set(config['targets'])) != 2):
+         raise RuntimeError('Required child isolation flags or exact target count missing')
+     if config['targets'] != CONTROL_TARGETS:
+         raise RuntimeError('Exact literal target selection changed')
+@@ -284,7 +284,7 @@
+         write('child-errors.json', errors)
+     except BaseException:
+         errors.append({'phase': 'child-errors', 'type': 'ReceiptWriteFailure'})
+-passed = (not errors and counts is not None and counts['testsRun'] == 10 and
++passed = (not errors and counts is not None and counts['testsRun'] == 2 and
+     all(counts[key] == 0 for key in counts if key != 'testsRun') and
+     loaded_ids == config['targets'] == executed_ids and origins is not None and
+     origins['summary']['allOriginsMatched'])

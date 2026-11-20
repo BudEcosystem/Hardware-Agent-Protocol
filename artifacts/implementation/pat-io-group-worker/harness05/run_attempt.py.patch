@@ -1,0 +1,98 @@
+--- artifacts/implementation/pat-io-group-worker/harness01/run_attempt.py
++++ artifacts/implementation/pat-io-group-worker/harness05/run_attempt.py
+@@ -1,4 +1,4 @@
+-"""Original isolated group11 runner. Execute only after parent review/release.
++"""Original isolated group12 runner. Execute only after parent review/release.
+ 
+ No project imports occur in this launcher. Seven selected distribution closures
+ are acquired independently of the compiler's seven-package identity.
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '84d21cc5515a9be0d8c8112b1c1c49a747e3088a243ca82eead659009c3e1408'
+-PREFIX = 'artifacts/implementation/pat-io-group-worker/implementation01/'
++FROZEN_INDEX = 'b9359ddff03ac8f7f29a82b3eea1af949afc8db4e1b1b06a2d759fa6c9669d99'
++PREFIX = 'artifacts/implementation/pat-io-group-worker/implementation02/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -177,7 +177,7 @@
+         while selector.get_map():
+             remaining = deadline - time.monotonic()
+             if remaining <= 0:
+-                raise TimeoutError('IoGroup11 child exceeded original harness deadline')
++                raise TimeoutError('IoGroup12 child exceeded original harness deadline')
+             for key, _ in selector.select(min(remaining, 0.1)):
+                 block = os.read(key.fileobj.fileno(), 65536)
+                 if not block:
+@@ -190,13 +190,13 @@
+                 log.write(block)
+                 count += len(block)
+             if time.monotonic() >= deadline:
+-                raise TimeoutError('IoGroup11 child crossed harness deadline during pipe collection')
++                raise TimeoutError('IoGroup12 child crossed harness deadline during pipe collection')
+     remaining = deadline - time.monotonic()
+     if remaining <= 0:
+-        raise TimeoutError('IoGroup11 child crossed harness deadline at EOF')
++        raise TimeoutError('IoGroup12 child crossed harness deadline at EOF')
+     process.wait(timeout=remaining)
+     if time.monotonic() >= deadline:
+-        raise TimeoutError('IoGroup11 child crossed harness deadline at process exit')
++        raise TimeoutError('IoGroup12 child crossed harness deadline at process exit')
+     return count
+ 
+ 
+@@ -204,7 +204,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 11 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 12 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -228,7 +228,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation01'
++    stage = here.parent / 'implementation02'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -239,7 +239,7 @@
+     started = time.monotonic()
+     record = {'profile': 'hms.io-group-worker-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 11,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 12,
+               'projectInputCount': 217, 'frozenPreparationInputCount': 220,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+@@ -273,11 +273,11 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 11 or
+-                len(targets['targets']) != 11 or
+-                len(set(targets['targets'])) != 11 or
+-                targets['targets'] != ['test_pat_io_group_worker.IoGroupBudgetTests.test_case_tick_and_admission_limits_include_rejected_probe_reservations', 'test_pat_io_group_worker.IoGroupBudgetTests.test_closed_state_counts_toward_derived_closure_and_stops_on_overflow', 'test_pat_io_group_worker.IoGroupBudgetTests.test_combined_bytes_are_charged_before_any_writer', 'test_pat_io_group_worker.IoGroupBudgetTests.test_combined_records_include_reserved_terminal_and_span_cases', 'test_pat_io_group_worker.IoGroupBudgetTests.test_deadline_is_group_origin_and_regression_also_refuses', 'test_pat_io_group_worker.IoGroupBudgetTests.test_exact_case_order_cannot_skip_or_run_two_engines', 'test_pat_io_group_worker.IoGroupBudgetTests.test_incomplete_group_cannot_emit_success_or_reuse_terminal_reservation', 'test_pat_io_group_worker.IoGroupBudgetTests.test_mismatched_evidence_and_ticks_cannot_finish_a_ticket', 'test_pat_io_group_worker.IoGroupBudgetTests.test_program_mismatch_and_stale_ticket_refuse', 'test_pat_io_group_worker.IoGroupWorkerTests.test_changed_implementation_refuses_before_group_output', 'test_pat_io_group_worker.IoGroupWorkerTests.test_parameterized_matrix_refuses_before_runtime_or_output']):
+-            raise ValueError('Closed group11 method selection changed')
++        if (targets['testCount'] != 12 or
++                len(targets['targets']) != 12 or
++                len(set(targets['targets'])) != 12 or
++                targets['targets'] != ['test_pat_io_group_worker.IoGroupBudgetTests.test_negative_preflight_distinguishes_refused_and_not_applicable', 'test_pat_io_group_worker.IoGroupBudgetTests.test_case_tick_and_admission_limits_include_rejected_probe_reservations', 'test_pat_io_group_worker.IoGroupBudgetTests.test_closed_state_counts_toward_derived_closure_and_stops_on_overflow', 'test_pat_io_group_worker.IoGroupBudgetTests.test_combined_bytes_are_charged_before_any_writer', 'test_pat_io_group_worker.IoGroupBudgetTests.test_combined_records_include_reserved_terminal_and_span_cases', 'test_pat_io_group_worker.IoGroupBudgetTests.test_deadline_is_group_origin_and_regression_also_refuses', 'test_pat_io_group_worker.IoGroupBudgetTests.test_exact_case_order_cannot_skip_or_run_two_engines', 'test_pat_io_group_worker.IoGroupBudgetTests.test_incomplete_group_cannot_emit_success_or_reuse_terminal_reservation', 'test_pat_io_group_worker.IoGroupBudgetTests.test_mismatched_evidence_and_ticks_cannot_finish_a_ticket', 'test_pat_io_group_worker.IoGroupBudgetTests.test_program_mismatch_and_stale_ticket_refuse', 'test_pat_io_group_worker.IoGroupWorkerTests.test_changed_implementation_refuses_before_group_output', 'test_pat_io_group_worker.IoGroupWorkerTests.test_parameterized_matrix_refuses_before_runtime_or_output']):
++            raise ValueError('Closed group12 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+         scratch_parent = Path('/tmp')
+@@ -286,7 +286,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-group-worker-group11-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-group-worker-group12-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

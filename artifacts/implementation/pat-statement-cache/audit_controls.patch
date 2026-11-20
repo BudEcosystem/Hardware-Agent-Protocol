@@ -1,0 +1,44 @@
+--- baseline/audit_controls.py
++++ candidate/audit_controls.py
+@@ -11,7 +11,7 @@
+ import stat
+ 
+ BASE=Path(__file__).resolve().parent;ROOT=BASE.parents[2]
+-SOURCE=BASE/'implementation03'
++SOURCE=BASE/'implementation01'
+ SCOPES=[BASE/('harness%02d'%n) for n in tuple(range(12,22))]
+ ADMITTED={'test_admission_and_commit_do_no_external_reads',
+     'test_cold_history_works_with_closed_vault_and_fresh_admission_refuses',
+@@ -39,9 +39,9 @@
+     return json.dumps(value,sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()
+ def hash_value(domain,value):return 'sha256:'+hashlib.sha256(domain+b'\0'+wire(value)).hexdigest()
+ assert not (BASE/'CONTROL_RESULTS.json').exists()
+-assert sha(SOURCE/'index.json')=='ec6df4066c89f38328030a28e2a5bd71d137abbc67cd51cb161cc246e2e8a268'
++assert sha(SOURCE/'index.json')=='7ecd42fec5cef9374573ae8b3d0747060bdc8c4cd8ca552e9c3de4d64a2ec23e'
+ for row in read(SOURCE/'index.json')['files']:verify(ROOT,row)
+-pins=read(SOURCE/'identity-pins.json');selected=[target for scope in read(BASE/'control-selection02.json')['scopes'] for target in scope['targets']]
++pins=read(SOURCE/'identity-pins.json');selected=[target for scope in read(BASE/'control-selection.json')['scopes'] for target in scope['targets']]
+ observed=[];reports=[];databases=[];missing=[];lock_count=0;files_count=0;bytes_count=0;admissions=[]
+ for harness in SCOPES:
+     for row in read(harness/'index.json')['files']:verify(harness,row)
+@@ -171,18 +171,10 @@
+         resultSha256=sha(attempt/'result.json'),sourceIndexSha256=result['sourceIndexSha256'],
+         harnessIndexSha256=sha(harness/'index.json'),files=len(inventory['files']),bytes=inventory['bytes']))
+ assert observed==selected and len(observed)==19 and len(databases)==76 and len(admissions)==4 and len(missing)==2
+-# Failed scopes remain byte-retained and failed. Do not open their databases.
+-failures=[]
+-for name in ('harness02',):
+-    attempt=BASE/name/'attempts/attempt01';result=read(attempt/'result.json')
+-    assert result['status']=='failed' and result['childState']=='exited'
+-    assert result['scratchEntries']==0 and result['scratchBytes']==0 and result['noWorkerLaunched']
+-    for item in read(attempt/'scratch-index.json')['files']:verify(attempt/'scratch',item)
+-    failures.append(dict(harness=name,result=result,databasesOpened=False))
+ report=dict(status='verified-controls',testsRun=19,scopes=reports,retainedFiles=files_count,retainedBytes=bytes_count,
+     originalOwnerAndWriterLocks=lock_count,readonlyDatabases=databases,admissions=admissions,intentionallyMissingBodies=missing,
+-    sourceIndexSha256=sha(SOURCE/'index.json'),hostIdentity=pins['host'],failedScopesRetained=failures,
+-    actualAttemptAudit='FAILED_ACTUAL_RESULTS.json',actualQualificationPassed=False,
++    sourceIndexSha256=sha(SOURCE/'index.json'),hostIdentity=pins['host'],failedScopesRetained=[],
++    actualAttemptAudit=None,actualQualificationPassed=None,
+     fullWorkerExecuted=False,semanticQualificationSubstituted=True,physicalObjectiveVerified=False,
+     publicRuntimeChanged=False,aggregateTimingPass=False,goalStatus='active')
+ with (BASE/'CONTROL_RESULTS.json').open('x') as stream:json.dump(report,stream,indent=2);stream.write('\n')

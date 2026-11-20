@@ -1,0 +1,21 @@
+--- harness02/attempt_child.py
++++ harness03/attempt_child.py
+@@ -72,14 +72,16 @@
+     elif event.startswith('socket.') or event in {'os.system','os.exec','os.fork','os.forkpty','os.posix_spawn'}:
+         prohibited.append(event); raise RuntimeError('Network or other subprocess forbidden')
+     if event == 'sqlite3.connect':
+-        path = Path(os.fsdecode(os.fspath(args[0])))
++        supplied = os.fsdecode(os.fspath(args[0]))
+         work=scratch/'test_actual_original_matrix_import_and_cold_vault_history'
++        vault = work/'vault'/'evidence.db'
++        path = vault if supplied == vault.as_uri() + '?mode=rw' else Path(supplied)
+         valid=(path==work/'vault'/'evidence.db' or path==work/'supervisor'/'attempts.db' or (path.parent==work/'runtime' and
+             (path.name=='authority.db' or re.fullmatch(r'synthetic-io-board-[0-9a-f]{64}\.db',path.name))))
+         if current_test!=config['targets'][0] or not valid:
+             prohibited.append(event); raise RuntimeError('Only exact authority/runtime/supervisor/vault databases may open')
+         if len(sqlite_connections)>=6: raise RuntimeError('Declared six parent database opens exceeded')
+-        sqlite_connections.append({'testId':current_test,'database':str(path)})
++        sqlite_connections.append({'testId':current_test,'database':str(path),'supplied':supplied})
+     if event == 'exec':
+         origin = args[0].co_filename
+         remember(executed, origin)

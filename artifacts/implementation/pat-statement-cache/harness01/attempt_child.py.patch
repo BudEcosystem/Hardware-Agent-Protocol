@@ -1,0 +1,42 @@
+--- original/attempt_child.py
++++ namespaced/attempt_child.py
+@@ -19,7 +19,7 @@
+ config = json.loads(configuration.read_text())
+ root = Path(config['project']).resolve()
+ out = Path(config['attempt']).resolve()
+-sys.path[:0] = [str(root), str(root / 'tests'), str(root / 'supervisor')] + config['externalRoots']
++sys.path[:0] = [str(root), str(root / 'tests')] + config['externalRoots']
+ sys.dont_write_bytecode = True
+ acquired = {str((root / value['path']).resolve()): value['sha256'] for value in config['expectedInputs']}
+ external = {value['resolvedPath']: value['sha256'] for value in config['expectedExternalInputs']}
+@@ -82,7 +82,7 @@
+         raise RuntimeError('Native retention is only authorized inside the exact actual test')
+     expected = scratch / 'test_actual_original_matrix_catalog_admission_and_cold_history' / 'supervisor'
+     if event == 'hms.retention.load.v1':
+-        artifact = root / 'supervisor/retention_scan.so'
++        artifact = root / 'hms_qualification/supervisor/retention_scan.so'
+         if (native_load is not None or args != (str(artifact), NATIVE_DIGEST, 'hms.retention.linux-cpython312-x86_64/1')
+                 or acquired.get(str(artifact)) != NATIVE_DIGEST or sha(artifact) != NATIVE_DIGEST):
+             prohibited.append(event)
+@@ -133,8 +133,8 @@
+         valid = (current_test == config['targets'][0] and executable == sys.executable and
+             argv[0] == sys.executable and argv[1:3] == ['-I','-B'] and
+             entry.name == 'worker_entry.py' and entry.parent.name == 'supervisor' and
+-            entry.parent.parent.parent == expected and re.fullmatch(r'code-[0-9a-f]{64}',entry.parent.parent.name) and
+-            str(cwd) == str(entry.parent.parent) and all(type(v) is str and v.isdecimal() for v in argv[4:]) and
++            entry.parent.parent.name == 'hms_qualification' and entry.parents[3] == expected and re.fullmatch(r'code-[0-9a-f]{64}',entry.parents[2].name) and
++            str(cwd) == str(entry.parents[2]) and all(type(v) is str and v.isdecimal() for v in argv[4:]) and
+             environment == {'LANG':'C.UTF-8','LC_ALL':'C.UTF-8'})
+         if not valid: prohibited.append(event); raise RuntimeError('Only exact owned I/O entry may launch')
+         if accounting_launch_audit:
+@@ -424,7 +424,9 @@
+             origin = getattr(getattr(module, '__spec__', None), 'origin', None)
+         if origin is not None:
+             add('module:' + name, origin)
+-        if (name == 'hms' or name.startswith('hms.') or name.startswith('test_') or name == 'evidence' or name.startswith('evidence.') or name == 'evidence_compact' or name.startswith('evidence_compact.') or name == 'evidence_vault' or name.startswith('evidence_vault.') or name == 'evidence_authority' or name.startswith('evidence_authority.') or name == 'vault_recorded_io' or name.startswith('vault_recorded_io.') or name == 'recorded_io' or name.startswith('recorded_io.')) and origin:
++        if name in ['attempt_ledger', 'authority_ledger', 'bundle_io', 'evidence', 'evidence_authority', 'evidence_compact', 'evidence_vault', 'io_service_execution', 'io_service_runs', 'io_service_store', 'io_services', 'qualification_supervisor', 'recorded_io', 'retention_native', 'supervisor_contracts', 'vault_recorded_io', 'worker_entry']:
++            violations.append({'module': name, 'reason': 'legacy_flat_import_forbidden'})
++        if (name == 'hms' or name.startswith('hms.') or name == 'hms_qualification' or name.startswith('hms_qualification.') or name.startswith('test_') or name == 'evidence' or name.startswith('evidence.') or name == 'evidence_compact' or name.startswith('evidence_compact.') or name == 'evidence_vault' or name.startswith('evidence_vault.') or name == 'evidence_authority' or name.startswith('evidence_authority.') or name == 'vault_recorded_io' or name.startswith('vault_recorded_io.') or name == 'recorded_io' or name.startswith('recorded_io.')) and origin:
+             if not Path(origin).resolve().is_relative_to(root):
+                 violations.append({'module': name, 'origin': str(origin), 'reason': 'project_name_outside_copy'})
+     for origin in sorted(executed):

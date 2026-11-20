@@ -1,0 +1,140 @@
+--- artifacts/implementation/pat-io-page-encoding/implementation01/project/hms/resource_topology.py
++++ artifacts/implementation/pat-io-snapshot-reuse/implementation01/project/hms/resource_topology.py
+@@ -16,7 +16,7 @@
+ 
+ from jsonschema import Draft202012Validator
+ 
+-from .contracts import ContractError, canonical, identifier, parse_json
++from .contracts import ContractError, MAX_BYTES, canonical, identifier, parse_json
+ from .journal import JournalError
+ 
+ PROFILE = "hms.resource-topology/0.1"
+@@ -35,11 +35,11 @@
+     Draft202012Validator.check_schema(_schema)
+     _VALIDATORS[_profile] = Draft202012Validator(_schema)
+ 
+-# Only successful JSON Schema checks are reused. The exact bounded bytes and
+-# validator object identify an entry; callers still get a fresh parsed tree and
+-# every topology/generation/authority-dependent semantic check runs normally.
+-# Eight carrier-sized keys retain at most 512 KiB of document bytes. Validators
+-# are private import-time objects; this cache is not a deployment attestation.
++# Successful JSON Schema checks retain an immutable snapshot, keyed by exact
++# bounded canonical bytes and validator identity. Callers get detached built-in
++# containers; every graph/generation/authority-dependent semantic check remains.
++# Eight entries retain at most512KiB of byte keys plus their bounded frozen trees.
++# Validators are private import-time objects; this is not deployment attestation.
+ _SCHEMA_MEMO_LIMIT = 8
+ _SCHEMA_MEMO = OrderedDict()
+ _SCHEMA_MEMO_LOCK = threading.Lock()
+@@ -76,8 +76,45 @@
+             _strict_tree(child)
+ 
+ 
++def _freeze_snapshot(value):
++    """Only called on a bounded parsed/strict/schema-checked built-in tree."""
++    if type(value) is dict:
++        return ('dict', tuple((key, _freeze_snapshot(child)) for key, child in value.items()))
++    if type(value) is list:
++        return ('list', tuple(_freeze_snapshot(child) for child in value))
++    return value
++
++
++def _thaw_snapshot(value):
++    # Frozen entries contain no caller objects or copy hooks.
++    if type(value) is tuple:
++        if value[0] == 'dict':
++            return {key: _thaw_snapshot(child) for key, child in value[1]}
++        return [_thaw_snapshot(child) for child in value[1]]
++    return value
++
++
++def _cached_snapshot(profile, encoded):
++    validator = _VALIDATORS[profile]
++    key = (profile, encoded)
++    with _SCHEMA_MEMO_LOCK:
++        entry = _SCHEMA_MEMO.get(key)
++        if entry is not None and entry[0] is validator:
++            _SCHEMA_MEMO.move_to_end(key)
++            return entry[1]
++    return None
++
++
+ def _snapshot(value, profile):
+     if type(value) is bytes:
++        # A byte hit can only match a previously accepted canonical carrier.
++        # Oversized bytes must reach the original bounded parser without hashing
++        # or retaining a new unbounded key. Noncanonical carriers take that same
++        # original parse/strict/encode path below.
++        if len(value) <= MAX_BYTES:
++            cached = _cached_snapshot(profile, value)
++            if cached is not None:
++                return _thaw_snapshot(cached)
+         value = parse_json(value)
+         _strict_tree(value)
+         encoded = canonical(value)
+@@ -87,19 +124,24 @@
+         # types: inspect the original before accepting its detached JSON copy.
+         encoded = canonical(value)
+         _strict_tree(value)
++        cached = _cached_snapshot(profile, encoded)
++        if cached is not None:
++            return _thaw_snapshot(cached)
+         value = parse_json(encoded)
+         _strict_tree(value)
+         # Reuse the bounded canonical bytes that produced this detached tree.
+     validator = _VALIDATORS[profile]
+     key = (profile, encoded)
+     with _SCHEMA_MEMO_LOCK:
+-        if _SCHEMA_MEMO.get(key) is validator:
++        entry = _SCHEMA_MEMO.get(key)
++        if entry is not None and entry[0] is validator:
+             _SCHEMA_MEMO.move_to_end(key)
+             return value
+     _require(next(validator.iter_errors(value), None) is None, "RESOURCE_INVALID_DOCUMENT")
++    frozen = _freeze_snapshot(value)
+     with _SCHEMA_MEMO_LOCK:
+         if _VALIDATORS[profile] is validator:
+-            _SCHEMA_MEMO[key] = validator
++            _SCHEMA_MEMO[key] = (validator, frozen)
+             _SCHEMA_MEMO.move_to_end(key)
+             while len(_SCHEMA_MEMO) > _SCHEMA_MEMO_LIMIT:
+                 _SCHEMA_MEMO.popitem(last=False)
+--- artifacts/implementation/pat-io-page-encoding/implementation01/project/hms/synthetic_io_installation.py
++++ artifacts/implementation/pat-io-snapshot-reuse/implementation01/project/hms/synthetic_io_installation.py
+@@ -41,7 +41,7 @@
+ 
+ def normalize_installation(value):
+     raw = parse_json(value) if type(value) is bytes else value
+-    canonical(raw)  # Bound the original tree before walking or copying it.
++    encoded = canonical(raw)  # Bound the original tree before walking or copying it.
+     pending = [raw]
+     while pending:
+         item = pending.pop()
+@@ -50,7 +50,7 @@
+             pending.extend(item.values())
+         elif type(item) is list:
+             pending.extend(item)
+-    value = parse_json(canonical(raw))
++    value = parse_json(encoded)
+     exact(value, {'profile', 'driver', 'driverDigest', 'boardId', 'topology', 'initialGenerations', 'routes', 'handlers'})
+     require(value['profile'] == PROFILE and value['driver'] == DRIVER, 'IO_INSTALLATION_PROFILE')
+     require(value['driverDigest'] == implementation_digest(), 'IO_DRIVER_CHANGED')
+--- artifacts/implementation/pat-io-page-encoding/implementation01/project/tests/test_pat_io_encoding.py
++++ artifacts/implementation/pat-io-snapshot-reuse/implementation01/project/tests/test_pat_io_encoding.py
+@@ -155,14 +155,14 @@
+             self.assertEqual(engine.records[index], expected)
+             self.assertEqual((engine.record_directory / expected['path']).read_bytes(), data)
+ 
+-    def test_topology_snapshot_encodes_once_for_objects_and_bytes_and_detaches(self):
++    def test_topology_snapshot_encodes_objects_and_reuses_warm_bytes_and_detaches(self):
+         value = topology()
+         original = copy.deepcopy(value)
+         for carrier in (value, canonical(value)):
+             with self.subTest(carrier=type(carrier).__name__), \
+                  patch.object(graph, 'canonical', wraps=canonical) as encode:
+                 result = graph._snapshot(carrier, graph.PROFILE)
+-                self.assertEqual(encode.call_count, 1)
++                self.assertEqual(encode.call_count, 0 if type(carrier) is bytes else 1)
+                 self.assertEqual(result, original)
+             result['nodes']['pin5']['properties']['electrical']['modes'].clear()
+         self.assertEqual(value, original)

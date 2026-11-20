@@ -1,0 +1,11 @@
+--- 696/hms/state_path.py
++++ live/hms/state_path.py
+@@ -20,7 +20,7 @@
+     membership alone never makes a writable ancestor trusted in this profile.
+     """
+     if (type(database_names) not in (tuple, list) or any(type(name) is not str or
+-            re.fullmatch(r'simulated-plant-[0-9a-f]{64}\.db', name) is None for name in database_names)):
++            re.fullmatch(r'(?:simulated-plant|synthetic-io-board)-[0-9a-f]{64}\.db', name) is None for name in database_names)):
+         raise JournalError("INVALID_STATE_FILE_NAME")
+     path = Path(os.path.abspath(path))
+     if path == Path("/"):

@@ -1,0 +1,96 @@
+--- artifacts/verification/multi-adapter-code-review/sources/tests/test_multi_cli.py
++++ tests/test_multi_cli.py
+@@ -1,6 +1,7 @@
+ """Named installation CLI over real Unix sockets and original native fixtures."""
+ import contextlib
+ import io
++import hashlib
+ import json
+ import os
+ from pathlib import Path
+@@ -17,11 +18,18 @@
+ from hms.client import Client
+ from hms.contracts import canonical
+ from hms.installations import ROLES, manifest_for
++from hms.ipc import IpcError
+ from test_multi_adapter import BINARY, ROOT, installation, scenario
++
++
++LAST_REPORT = None
+ 
+ 
+ class MultiCliTests(unittest.TestCase):
+     def test_named_streams_mixed_scenarios_and_offline_reopen(self):
++        global LAST_REPORT
++        LAST_REPORT = {'passed': False, 'refusals': [], 'scenarios': [], 'replayedResults': 0,
++                       'scope': 'Mixed CLI functional integration with bounded exact-request retries after confirmed pre-admission freshness refusals; no latency or availability guarantee.'}
+         with tempfile.TemporaryDirectory(prefix='hms-multi-cli-') as temporary:
+             base = Path(temporary)
+             configs = [installation('cli-local'), installation('cli-c1', compact=True),
+@@ -72,17 +80,38 @@
+                 self.assertEqual(len(json.loads(result.stdout)['items']), 9)
+                 client = Client(address)
+                 def checked(method, params):
+-                    try:
+-                        return client.request(method, params)
+-                    except Exception as error:
+-                        with sqlite3.connect(base / 'state' / 'authority.db') as db:
+-                            observations = [(r[0], r[1], json.loads(r[2])) for r in db.execute(
+-                                'SELECT instance,property,document FROM reg_observations WHERE property=?', ('ready',))]
+-                            states = [(r[0], {k:v for k,v in json.loads(r[1]).items() if k in ('fault','lastTick','clockAnchor')})
+-                                      for r in db.execute('SELECT adapter, document FROM ep_state')]
+-                        self.fail(repr({'method': method, 'instance': params.get('instanceId'), 'error': str(error),
+-                                        'observations': observations, 'endpointStates': states,
+-                                        'monoNow': time.monotonic_ns() // 1000000}))
++                    wire = canonical(params)
++                    envelope = params['request'] if method == 'invoke' else params
++                    namespace, key = envelope['replayNamespace'], envelope['operationKey']
++                    with sqlite3.connect(base / 'state' / 'authority.db') as db:
++                        before = tuple(db.execute('SELECT count(*) FROM ' + table).fetchone()[0]
++                                       for table in ('operations', 'claims', 'ep_commands'))
++                    deadline = time.monotonic() + 3
++                    while True:
++                        self.assertEqual(canonical(params), wire)
++                        try:
++                            return client.request(method, params)
++                        except IpcError as error:
++                            if error.code not in {'OBSERVATION_STALE', 'DEVICE_UNAVAILABLE'}:
++                                raise
++                            # These are fresh admissions, with this test as sole
++                            # caller. Verify the refusal left no key, operation,
++                            # resource claim or compact dispatch mapping before
++                            # resubmitting the identical envelope. Never retry
++                            # transport uncertainty or change intent/key/time.
++                            with sqlite3.connect(base / 'state' / 'authority.db') as db:
++                                after = tuple(db.execute('SELECT count(*) FROM ' + table).fetchone()[0]
++                                              for table in ('operations', 'claims', 'ep_commands'))
++                                found = db.execute('SELECT operation_id FROM replay_keys WHERE namespace=? AND caller_key=?',
++                                                   (namespace, key)).fetchone()
++                            self.assertEqual(after, before)
++                            self.assertIsNone(found)
++                            LAST_REPORT['refusals'].append({'method': method, 'operationKey': key,
++                                'code': error.code, 'paramsSha256': hashlib.sha256(wire).hexdigest(),
++                                'countsBefore': before, 'countsAfter': after, 'replayKeyAbsent': True})
++                            if time.monotonic() >= deadline:
++                                self.fail('Freshness did not recover within bounded retry window: ' + repr(LAST_REPORT['refusals']))
++                            time.sleep(.05)
+                 namespace = client.request('namespace', {'expiresUnixMs': time.time_ns() // 1000000 + 30000})['token']
+                 records = []
+                 for config in configs:
+@@ -104,6 +133,7 @@
+                         self.assertFalse(state['resourceClaims'])
+                         self.assertEqual(state['result']['evidenceKind'], 'simulation')
+                         records.append((request, state))
++                        LAST_REPORT['scenarios'].append({'request': request, 'accepted': accepted, 'completed': state})
+                 stop()
+                 start(False)  # Stored catalog, no compact streams supplied.
+                 for request, completed in records:
+@@ -112,6 +142,8 @@
+                     status = client.request('operation', {'operationId': replay['operationId']})
+                     self.assertEqual(status['result'], completed['result'])
+                     self.assertEqual(status['executionState'], 'completed')
++                    LAST_REPORT['replayedResults'] += 1
++                LAST_REPORT['passed'] = True
+             finally:
+                 stop()
+                 for stream in sockets:

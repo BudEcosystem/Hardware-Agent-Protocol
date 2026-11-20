@@ -1,0 +1,38 @@
+--- integer-canonical/attempt_child.py
++++ harness22/attempt_child.py
+@@ -80,7 +80,7 @@
+     if current_test != config['targets'][0]:
+         prohibited.append(event)
+         raise RuntimeError('Native retention is only authorized inside the exact actual test')
+-    expected = scratch / 'test_actual_original_matrix_import_and_cold_vault_history' / 'supervisor'
++    expected = scratch / 'test_actual_original_matrix_catalog_admission_and_cold_history' / 'supervisor'
+     if event == 'hms.retention.load.v1':
+         artifact = root / 'supervisor/retention_scan.so'
+         if (native_load is not None or args != (str(artifact), NATIVE_DIGEST, 'hms.retention.linux-cpython312-x86_64/1')
+@@ -128,7 +128,7 @@
+         return
+     if event == 'subprocess.Popen':
+         executable, argv, cwd, environment = args
+-        expected = scratch / 'test_actual_original_matrix_import_and_cold_vault_history' / 'supervisor'
++        expected = scratch / 'test_actual_original_matrix_catalog_admission_and_cold_history' / 'supervisor'
+         entry = Path(argv[3]) if type(argv) in (list,tuple) and len(argv)==7 else Path('/invalid')
+         valid = (current_test == config['targets'][0] and executable == sys.executable and
+             argv[0] == sys.executable and argv[1:3] == ['-I','-B'] and
+@@ -144,7 +144,7 @@
+         prohibited.append(event); raise RuntimeError('Network or other subprocess forbidden')
+     if event == 'sqlite3.connect':
+         supplied = os.fsdecode(os.fspath(args[0]))
+-        work=scratch/'test_actual_original_matrix_import_and_cold_vault_history'
++        work=scratch/'test_actual_original_matrix_catalog_admission_and_cold_history'
+         vault = work/'vault'/'evidence.db'
+         path = vault if supplied == vault.as_uri() + '?mode=rw' else Path(supplied)
+         valid=(path==work/'vault'/'evidence.db' or path==work/'supervisor'/'attempts.db' or (path.parent==work/'runtime' and
+@@ -424,7 +424,7 @@
+             origin = getattr(getattr(module, '__spec__', None), 'origin', None)
+         if origin is not None:
+             add('module:' + name, origin)
+-        if (name == 'hms' or name.startswith('hms.') or name.startswith('test_') or name == 'evidence' or name.startswith('evidence.') or name == 'evidence_compact' or name.startswith('evidence_compact.') or name == 'evidence_vault' or name.startswith('evidence_vault.') or name == 'evidence_authority' or name.startswith('evidence_authority.') or name == 'recorded_io' or name.startswith('recorded_io.')) and origin:
++        if (name == 'hms' or name.startswith('hms.') or name.startswith('test_') or name == 'evidence' or name.startswith('evidence.') or name == 'evidence_compact' or name.startswith('evidence_compact.') or name == 'evidence_vault' or name.startswith('evidence_vault.') or name == 'evidence_authority' or name.startswith('evidence_authority.') or name == 'vault_recorded_io' or name.startswith('vault_recorded_io.') or name == 'recorded_io' or name.startswith('recorded_io.')) and origin:
+             if not Path(origin).resolve().is_relative_to(root):
+                 violations.append({'module': name, 'origin': str(origin), 'reason': 'project_name_outside_copy'})
+     for origin in sorted(executed):

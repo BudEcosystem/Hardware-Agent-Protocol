@@ -1,0 +1,62 @@
+--- artifacts/implementation/pat-io-group-history/implementation01/project/hms/pat_io_group_history.py
++++ artifacts/implementation/pat-io-group-history/implementation02/project/hms/pat_io_group_history.py
+@@ -72,6 +72,19 @@
+ 
+ def digest(domain, value):
+     return 'sha256:' + hashlib.sha256(domain + b'\0' + canonical(value)).hexdigest()
++
++
++def _opening(value, compiler, case):
++    original, current = value['originalEnvironment'], value['workerEnvironment']
++    require(type(original) is dict and original['compilerDigest'] == compiler, 'COMPILER_ASSOCIATION')
++    if current is None:
++        require(case['kind'] == 'fixed_challenge' and case['definition']['scenario'] in
++            {'full_authority_withdrawal', 'binding_pending'} and value['create'] is False and
++            same(value['bindingResolution'], dict(status='unavailable', exception='PatError',
++                code='PAT_BINDING_NOT_APPLICABLE')), 'RESOLUTION_ABSENCE')
++        # The complete authority inspector must independently prove this cause.
++    else:
++        require(type(current) is dict and current['compilerDigest'] == compiler, 'COMPILER_ASSOCIATION')
+ 
+ 
+ def _candidate(manifest, data, expected):
+@@ -217,8 +230,7 @@
+                     if kind == 'records':
+                         raw_docs.append(doc)
+                         if doc['kind'] == 'runtime_opened':
+-                            require(all(doc['value'][k]['compilerDigest'] == identity['compilerDigest'] for k in
+-                                ('originalEnvironment', 'workerEnvironment')), 'COMPILER_ASSOCIATION')
++                            _opening(doc['value'], identity['compilerDigest'], case)
+             data = dict(references=refs, files=record_files, configuration=manifest['configuration'], configuration_files=config_files)
+             board = 'synthetic-io-board-' + hashlib.sha256(setup['installation']['boardId'].encode()).hexdigest() + '.db'
+             for filename in ('authority.db', 'authority.db.owner', board, board + '.owner'):
+--- artifacts/implementation/pat-io-group-history/implementation01/project/tests/test_pat_io_group_history.py
++++ artifacts/implementation/pat-io-group-history/implementation02/project/tests/test_pat_io_group_history.py
+@@ -109,6 +109,27 @@
+         imports += [a.name for n in ast.walk(tree) if isinstance(n, ast.Import) for a in n.names]
+         self.assertFalse(set(imports) & set(forbidden))
+ 
++    def test_absent_current_environment_requires_exact_authority_reopen_context(self):
++        compiler = 'sha256:' + '1' * 64
++        valid = dict(originalEnvironment=dict(compilerDigest=compiler), workerEnvironment=None, create=False,
++            bindingResolution=dict(status='unavailable', exception='PatError', code='PAT_BINDING_NOT_APPLICABLE'))
++        for name in ('full_authority_withdrawal', 'binding_pending'):
++            case = dict(kind='fixed_challenge', definition=dict(scenario=name))
++            reader._opening(valid, compiler, case)
++            for key, value in (('create', True), ('originalEnvironment', None),
++                    ('originalEnvironment', dict(compilerDigest='sha256:' + '0' * 64)),
++                    ('bindingResolution', dict(status='unavailable', exception='PatError', code='arbitrary'))):
++                with self.subTest(name=name, key=key), self.assertRaises(reader.IoGroupHistoryError):
++                    reader._opening(valid | {key: value}, compiler, case)
++        for name in ('cancel_pending', 'binding_before_dispatch', 'wall_clock_regression'):
++            with self.subTest(name=name), self.assertRaises(reader.IoGroupHistoryError):
++                reader._opening(valid, compiler, dict(kind='fixed_challenge', definition=dict(scenario=name)))
++        with self.assertRaises(reader.IoGroupHistoryError):
++            reader._opening(valid, compiler, dict(kind='candidate'))
++        reader._opening(valid | dict(workerEnvironment=dict(compilerDigest=compiler)), compiler, dict(kind='candidate'))
++        with self.assertRaises(reader.IoGroupHistoryError):
++            reader._opening(valid | dict(workerEnvironment=dict(compilerDigest='sha256:' + '0' * 64)), compiler, dict(kind='candidate'))
++
+ 
+ class IoGroupHistoryTests(IoGroupWorkerTests):
+     def full_history(self, pwm):

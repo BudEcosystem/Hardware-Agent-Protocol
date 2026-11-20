@@ -1,0 +1,58 @@
+--- original/fixed_block.py
++++ candidate/fixed_block.py
+@@ -11,7 +11,9 @@
+ import sys
+ import threading
+ 
+-PROFILE = 'hms.block-image.linux-ext4/0.1'
++import mount_identity
++
++PROFILE = 'hms.block-image.linux-ext4.statx-mount/0.1'
+ CHUNK_BYTES = 16 * 1024 * 1024
+ BLOCK_BYTES = 4096
+ PROGRAM_BYTES = 16
+@@ -59,23 +61,17 @@
+ 
+ 
+ def _host(path, fd):
+-    if sys.platform != 'linux':
+-        raise ImageError('UNSUPPORTED_HOST')
+-    dev = os.fstat(fd).st_dev
+-    expected_dev = f'{os.major(dev)}:{os.minor(dev)}'
+-    with open('/proc/self/mountinfo') as stream:
+-        body = stream.read(1024 * 1024 + 1)
+-    if len(body) > 1024 * 1024:
+-        raise ImageError('MOUNT_INVENTORY_BOUND')
+-    matches = []
+-    for line in body.splitlines():
+-        fields = line.split()
+-        mount = re.sub(r'\\([0-7]{3})', lambda m: chr(int(m[1], 8)), fields[4])
+-        if fields[2] == expected_dev and (str(path) == mount or str(path).startswith(mount.rstrip('/') + '/')):
+-            matches.append((len(mount), fields[fields.index('-') + 1], fields[0]))
+-    if not matches or max(matches)[1] != 'ext4':
+-        raise ImageError('UNSUPPORTED_FILESYSTEM')
+-    return max(matches)
++    try:
++        return mount_identity.admit(path, fd)
++    except mount_identity.MountError as error:
++        raise ImageError(str(error)) from error
++
++
++def _host_current(path, fd, pin):
++    try:
++        mount_identity.verify(path, fd, pin)
++    except mount_identity.MountError as error:
++        raise ImageError(str(error)) from error
+ 
+ 
+ def _write_all(fd, data, offset):
+@@ -235,8 +231,7 @@
+         _private(named, True)
+         if (named.st_dev, named.st_ino) != self._root_pin:
+             raise ImageError('DIRECTORY_REPLACED')
+-        if _host(self._path, self._root) != self._host_pin:
+-            raise ImageError('MOUNT_CHANGED')
++        _host_current(self._path, self._root, self._host_pin)
+         if set(os.listdir(self._root)) != set(self._fds):
+             raise ImageError('INVENTORY_CHANGED')
+         for name, fd in self._fds.items():

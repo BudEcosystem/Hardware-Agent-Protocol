@@ -1,0 +1,15 @@
+--- snapshot10/project/hms/synthetic_io_runtime.py
++++ snapshot11/project/hms/synthetic_io_runtime.py
+@@ -39,6 +39,12 @@
+         try:
+             self.journal = Journal(self.directory/'authority.db',self.policy,clock_ms=self.wall_clock_ms,create=create)
+             self.registry = Registry(self.journal,monotonic_ms=self.monotonic_ms,bootstrap_owner=owner if create else None)
++            # Ordinary bootstrap must not provision a board for another installed
++            # storage profile. LifecycleCatalog deliberately nests IoAdapterCatalog
++            # through its own bootstrap, so the boundary belongs here.
++            with self.journal._mutex:
++                require(self.registry._storage_profile() in {
++                    'hms.registry/0.1','hms.registry/resource-roots/0.1'}, 'IO_REGISTRY_PROFILE')
+             self.policy.attach(self.registry); self.deployment = self.registry.deployment
+             self.catalog = IoAdapterCatalog(self.journal,self.registry,create=create,owner=owner,installation=document)
+             self.policy.attach_resource_resolver(self.catalog.resources.resolve)

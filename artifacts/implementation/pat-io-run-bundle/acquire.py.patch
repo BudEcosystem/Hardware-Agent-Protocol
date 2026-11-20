@@ -1,0 +1,42 @@
+--- artifacts/implementation/pat-io-snapshot-reuse/acquire.py
++++ artifacts/implementation/pat-io-run-bundle/acquire.py
+@@ -1,7 +1,7 @@
+ """Acquire a complete terminated group attempt, preserving raw state."""
+ import hashlib,json,re,shutil,stat,sys
+ from pathlib import Path
+-ROOT=Path.cwd().resolve();BASE=ROOT/'artifacts/implementation/pat-io-snapshot-reuse'
++ROOT=Path.cwd().resolve();BASE=ROOT/'artifacts/implementation/pat-io-run-bundle'
+ harness,name,dest=sys.argv[1:];H=BASE/harness;A=H/'attempts'/name;OUT=BASE/'results'/dest
+ assert not OUT.exists();OUT.mkdir(parents=True)
+ def read(p):return json.loads(p.read_bytes())
+@@ -23,7 +23,7 @@
+ assert r['errors']==r['childErrors']==[] and r['counts']['testsRun']==count
+ for key in ('skips','expectedFailures','unexpectedSuccesses'):assert r['counts'][key]==0
+ if r['status']=='passed':assert r['exitCode']==r['counts']['failures']==r['counts']['errors']==0
+-for prefix,folder,n in [('inputs',A/'project',228),('frozen',ROOT,231),('harness',A/'harness',6)]:
++for prefix,folder,n in [('inputs',A/'project',230),('frozen',ROOT,233),('harness',A/'harness',6)]:
+  rows=read(A/(prefix+'-before.json'));assert rows==read(A/(prefix+'-after.json')) and len(rows)==n
+  for row in rows:verify(folder/row['path'],row)
+ external=read(A/'external-before.json');assert external==read(A/'external-after.json') and len(external['files'])==159
+@@ -35,7 +35,7 @@
+ actual=read(A/'actual-tests.json');targets=read(H/'targets.json')['targets'];assert actual['loaded']==actual['executed']==targets and len(targets)==count
+ raw=Path(r['scratchPath']);before=read(A/'raw-scratch-before.json');assert identity(raw)==before['identity'] and identity(raw.parent)==before['parent']
+ rawrows=inventory(raw);assert rawrows==inventory(A/'scratch')==read(A/'scratch-index.json');assert sum(v['bytes']for v in rawrows)<=16*1024*1024
+-connections=read(A/'sqlite-connections.json')
++connections=read(A/'sqlite-connections.json'); assert connections==[]
+ for c in connections:
+  assert c['testId']in targets
+  p=Path(c['database']);parts=p.relative_to(raw).parts
+@@ -48,10 +48,10 @@
+  assert filename=='authority.db'or re.fullmatch(r'synthetic-io-board-[0-9a-f]{64}\.db',filename)
+ log=(A/'output.log').read_text();m=re.search(r'Ran '+str(count)+r' tests? in ([0-9.]+)s',log);assert m
+ rows=inventory(A);shutil.copytree(A,OUT/'attempt');assert inventory(OUT/'attempt')==rows==inventory(A)
+-proof=dict(scope='Complete terminated current-group capture/budget attempt; synthetic private SQLite only.',
++proof=dict(scope='Complete terminated pure input-bundle and regression attempt; no SQLite connection or device execution.',
+  harness=harness,harnessIndexSha256=sha(H/'index.json'),sourceIndexSha256=review['sourceIndexSha256'],targetsSha256=sha(H/'targets.json'),
+  attempt=name,status=r['status'],counts=r['counts'],testSeconds=float(m.group(1)),elapsedSeconds=r['elapsedSeconds'],
+- sourceFilesVerified=228,frozenFilesVerified=231,externalPinsVerified=159,actualOrigins=origins['summary'],
++ sourceFilesVerified=230,frozenFilesVerified=233,externalPinsVerified=159,actualOrigins=origins['summary'],
+  bytecodeReadsRefused=len(origins['deniedBytecodeReads']),rawScratch=before['identity'],rawScratchFiles=len(rawrows),rawScratchBytes=sum(v['bytes']for v in rawrows),
+  attemptFilesAcquired=len(rows),sourceAndCompilerDriverStable=True,actualOriginHashesRechecked=True,originalsAndCompleteCopiesRetained=True,
+  sqliteConnections=len(connections),qualificationPassed=False,requiredMatrixCoverageChecked=False,completeLifecycleHistoryChecked=False,physicalMeasurementChecked=False)

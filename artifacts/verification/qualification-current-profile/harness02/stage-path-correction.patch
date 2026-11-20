@@ -1,0 +1,11 @@
+--- harness01/run_attempt.py
++++ harness02/run_attempt.py
+@@ -282,7 +282,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parents[3] / 'artifacts/implementation/qualification-package/implementation03'
++    stage = here.parents[3] / 'artifacts/verification/qualification-current-profile/implementation01'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'

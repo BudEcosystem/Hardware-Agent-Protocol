@@ -1,0 +1,29 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-content-store/harness01/attempt_child.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-recorded-catalog/harness98/attempt_child.py
+@@ -57,7 +57,7 @@
+     return path.is_relative_to(stdlib) and not {'site-packages', 'dist-packages'}.intersection(path.parts)
+ 
+ 
+-CONTROL_TARGETS = ['test_io_evidence_compact.CompactIoEvidenceTests.test_exact_reconstruction_deduplicates_without_dropping_references']
++CONTROL_TARGETS = ['test_io_recorded_catalog.RecordedIoCatalogTests.test_rehashed_cross_run_invocation_cannot_borrow_another_import']
+ 
+ def audit(event, args):
+     if event.startswith('socket.') or event in {'subprocess.Popen','os.system','os.exec','os.fork','os.forkpty','os.posix_spawn'}:
+@@ -149,7 +149,7 @@
+             origin = getattr(getattr(module, '__spec__', None), 'origin', None)
+         if origin is not None:
+             add('module:' + name, origin)
+-        if (name == 'hms' or name.startswith('hms.') or name.startswith('test_') or name == 'evidence' or name.startswith('evidence.') or name == 'evidence_compact' or name.startswith('evidence_compact.')) and origin:
++        if (name == 'hms' or name.startswith('hms.') or name.startswith('test_') or name == 'evidence' or name.startswith('evidence.') or name == 'evidence_compact' or name.startswith('evidence_compact.') or name == 'recorded_io' or name.startswith('recorded_io.')) and origin:
+             if not Path(origin).resolve().is_relative_to(root):
+                 violations.append({'module': name, 'origin': str(origin), 'reason': 'project_name_outside_copy'})
+     for origin in sorted(executed):
+@@ -191,6 +191,8 @@
+     write('driver-before.json', {'digest': implementation_digest()})
+     tests = unittest.defaultTestLoader.loadTestsFromNames(config['targets'])
+     loaded_ids = flatten(tests)
++    write('loader-errors.json', list(unittest.defaultTestLoader.errors))
++    for detail in unittest.defaultTestLoader.errors: print(detail, file=sys.stderr, flush=True)
+     if loaded_ids != config['targets']:
+         raise RuntimeError('Loaded methods do not exactly match the reviewed runs15 selection')
+     class RecordingResult(unittest.TextTestResult):

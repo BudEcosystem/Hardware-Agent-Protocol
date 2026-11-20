@@ -1,0 +1,28 @@
+--- artifacts/implementation/pat-io-service-config/harness11/attempt_child.py
++++ artifacts/implementation/pat-io-service-authority/harness13/attempt_child.py
+@@ -60,7 +60,7 @@
+ def audit(event, args):
+     if event == 'subprocess.Popen':
+         executable, argv, cwd, environment = args
+-        expected = scratch / 'test_configured_owned_group_retains_service_identity_and_replays' / 'supervisor'
++        expected = scratch / 'test_authority_configured_owned_group_reopens_and_replays' / 'supervisor'
+         entry = Path(argv[3]) if type(argv) in (list,tuple) and len(argv)==7 else Path('/invalid')
+         valid = (current_test == config['targets'][0] and executable == sys.executable and
+             argv[0] == sys.executable and argv[1:3] == ['-I','-B'] and
+@@ -73,10 +73,12 @@
+         prohibited.append(event); raise RuntimeError('Network or other subprocess forbidden')
+     if event == 'sqlite3.connect':
+         path = Path(os.fsdecode(os.fspath(args[0])))
+-        expected = scratch / 'test_configured_owned_group_retains_service_identity_and_replays' / 'supervisor' / 'attempts.db'
+-        if current_test != config['targets'][0] or path != expected:
+-            prohibited.append(event); raise RuntimeError('Only the exact private supervisor ledger may open in this test process')
+-        if len(sqlite_connections)>=16: raise RuntimeError('Too many parent ledger opens')
++        work=scratch/'test_authority_configured_owned_group_reopens_and_replays'
++        valid=(path==work/'supervisor'/'attempts.db' or (path.parent==work/'runtime' and
++            (path.name=='authority.db' or re.fullmatch(r'synthetic-io-board-[0-9a-f]{64}\.db',path.name))))
++        if current_test!=config['targets'][0] or not valid:
++            prohibited.append(event); raise RuntimeError('Only exact authority/runtime/supervisor databases may open')
++        if len(sqlite_connections)>=6: raise RuntimeError('Declared six parent database opens exceeded')
+         sqlite_connections.append({'testId':current_test,'database':str(path)})
+     if event == 'exec':
+         origin = args[0].co_filename

@@ -1,0 +1,53 @@
+--- failed52/tests/test_io_transport.py
++++ tests/test_io_transport.py
+@@ -463,16 +463,46 @@
+                 self.assertEqual(paused['executionState'], 'interrupted')
+                 self.assertIsNone(paused['steps'][0]['operationId'])
+                 self.assertEqual(await probe.call('procedure_submit', {'request': future_request}), paused)
+-                resumed = await probe.call('procedure_resume', {'procedureId': future_parent['procedureId']})
+-                self.assertEqual(resumed['executionState'], 'accepted')
++                # Reopening rotates the board session; an immutable unstarted
++                # child cannot be rebound to that new session by resuming it.
++                session = h.rows("SELECT value FROM io_meta WHERE key='session'", board=True)[0][0]
++                self.assertNotEqual(session, future_child['intent']['endpointSession'])
++
++                def resume_business_state():
++                    queries = {
++                        'counts': ('SELECT (SELECT count(*) FROM operations), (SELECT count(*) FROM claims), '
++                                   '(SELECT count(*) FROM io_dispatch_links), '
++                                   '(SELECT count(*) FROM pr_steps WHERE operation_id IS NOT NULL)'),
++                        'replayKeys': 'SELECT namespace,caller_key,operation_id FROM replay_keys ORDER BY namespace,caller_key LIMIT 129',
++                        'procedureKeys': 'SELECT namespace,caller_key,procedure_id,step_id FROM pr_keys ORDER BY namespace,caller_key LIMIT 129',
++                    }
++                    result = {name: h.rows(sql) for name, sql in queries.items()}
++                    result['effects'] = h.rows('SELECT instance,activations,completed,canceled FROM io_effects ORDER BY instance LIMIT 129', board=True)
++                    self.assertTrue(all(len(rows) <= 128 for rows in result.values()))
++                    return result
++
++                before_resume = resume_business_state()
++                self.assertEqual(before_resume['counts'], [(4, 0, 3, 2)])
++                self.assertFalse(any(row[:2] == (namespace, future_child['operationKey']) for row in before_resume['replayKeys']))
++                self.assertIn((namespace, future_child['operationKey'], future_parent['procedureId'], 'step:0'), before_resume['procedureKeys'])
++                refused = await probe.call('procedure_resume', {'procedureId': future_parent['procedureId']},
++                                           error='IO_SESSION_CHANGED')
++                unchanged = await probe.call('procedure_status', {'procedureId': future_parent['procedureId']})
++                self.assertEqual(unchanged, paused)
++                self.assertIsNone(unchanged['steps'][0]['operationId'])
++                after_resume = resume_business_state()
++                self.assertEqual(after_resume, before_resume)
++                self.report['results'].update(interruptedProcedure=paused,
++                    refusedResume={'response': refused, 'statusAfter': unchanged,
++                                   'originalSession': future_child['intent']['endpointSession'], 'currentSession': session,
++                                   'before': before_resume, 'after': after_resume})
+                 canceled = await probe.call('procedure_cancel', {'procedureId': future_parent['procedureId']})
+                 self.assertTrue(canceled['cancelRequested'])
+                 final = await probe.call('procedure_status', {'procedureId': future_parent['procedureId']})
+                 self.assertEqual(final['executionState'], 'canceled')
+                 self.assertIsNone(final['steps'][0]['operationId'])
+                 self.assertEqual(await probe.call('invoke', {'request': request}), done)
+-                self.report['results'].update(interruptedProcedure=paused, resumedProcedure=resumed,
+-                                              canceledProcedure=final)
++                self.report['results']['canceledProcedure'] = final
+             h.stop()
+             after = h.snapshot('MCP-reopen-resume-cancel')
+             self.assert_counts(after, {'sim:gpio5': (1, 1, 0), 'sim:pwm5': (1, 1, 0), 'sim:gpio6': (1, 1, 0)})

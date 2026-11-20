@@ -1,0 +1,15 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-recorded-catalog/implementation01/project/tests/test_io_recorded_catalog.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-recorded-catalog/implementation02/project/tests/test_io_recorded_catalog.py
+@@ -10,10 +10,10 @@
+ from hms.pat_catalog import PatCatalog, _hash
+ from hms.pat_compiler import compiler_digest
+ from hms.pat_contracts import pat_digest
++from test_io_evidence_compact import CompactIoEvidenceTests
++from test_io_service_runs import business
+ from evidence import reducer
+ from evidence_compact.store import CompactIoEvidenceStore
+-from test_io_evidence_compact import CompactIoEvidenceTests
+-from test_io_service_runs import business
+ from recorded_io.bridge import RecordedIoBridge
+ from recorded_io.catalog import RecordedPatCatalog, DOMAIN
+ from recorded_io.execution import RecordedPatExecutionStore

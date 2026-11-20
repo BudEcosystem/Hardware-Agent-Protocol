@@ -1,0 +1,31 @@
+--- implementation01/supervisor/io_service_store.py
++++ implementation02/supervisor/io_service_store.py
+@@ -99,7 +99,8 @@
+         self.registry.authorize(context, 'admin', '*')
+ 
+     def _anchor(self):
+-        return _resource_stored_row(self._db, 'reg_meta', {'key': ANCHOR}, {'value': ('text', 128)})
++        row = _resource_stored_row(self._db, 'reg_meta', {'key': ANCHOR}, {'value': ('text', 128)})
++        return None if row is None else dict(row)
+ 
+     @staticmethod
+     def _anchor_value(meta):
+@@ -108,7 +109,7 @@
+     def _authority_profile(self):
+         for table, expected in [('meta', 'hms-ledger/0.1'), ('reg_meta', 'hms.registry/resource-roots/0.1')]:
+             row = _resource_stored_row(self._db, table, {'key': 'version'}, {'value': ('text', 128)})
+-            require(row == {'value': expected}, 'AUTHORITY_MISMATCH')
++            require(row is not None and row['value'] == expected, 'AUTHORITY_MISMATCH')
+ 
+     def _schema(self, *, allow_absent=False):
+         require(self._db.execute("SELECT 1 FROM sqlite_temp_master WHERE name GLOB 'iosc_*' OR tbl_name GLOB 'iosc_*' LIMIT 1").fetchone() is None, 'SCHEMA')
+@@ -164,7 +165,8 @@
+         anchor = self._anchor(); require(anchor is not None, 'INVALID_RETAINED')
+         authority = _resource_stored_row(self._db, 'meta', {'key': 'authority'}, {'value': ('text', 32)})
+         deployment = _resource_stored_row(self._db, 'reg_meta', {'key': 'deployment'}, {'value': ('text', 128)})
+-        require(authority == {'value': self.authority_id} and deployment == {'value': self.deployment}, 'AUTHORITY_MISMATCH')
++        require(authority is not None and authority['value'] == self.authority_id and
++                deployment is not None and deployment['value'] == self.deployment, 'AUTHORITY_MISMATCH')
+         rows = self._scan('iosc_meta', {'singleton': ('integer', 1), 'record': ('blob', 4096)}, 1)
+         require(len(rows) == 1, 'INVALID_RETAINED'); meta = _document(rows[0]['record'], 4096)
+         services.exact(meta, {'profile', 'authorityId', 'deployment', 'maxRevisions', 'maxDataBytes', 'createdAtUnixMs'})

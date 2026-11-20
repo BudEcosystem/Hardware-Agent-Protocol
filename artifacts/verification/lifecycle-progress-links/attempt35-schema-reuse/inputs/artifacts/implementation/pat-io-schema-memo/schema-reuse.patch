@@ -1,0 +1,54 @@
+--- artifacts/implementation/pat-io-group-worker/implementation02/project/hms/resource_topology.py
++++ artifacts/implementation/pat-io-schema-memo/implementation01/project/hms/resource_topology.py
+@@ -7,10 +7,12 @@
+ from __future__ import annotations
+ 
+ import copy
++from collections import OrderedDict
+ from functools import wraps
+ import hashlib
+ import json
+ from pathlib import Path
++import threading
+ 
+ from jsonschema import Draft202012Validator
+ 
+@@ -33,6 +35,15 @@
+     Draft202012Validator.check_schema(_schema)
+     _VALIDATORS[_profile] = Draft202012Validator(_schema)
+ 
++# Only successful JSON Schema checks are reused. The exact bounded bytes and
++# validator object identify an entry; callers still get a fresh parsed tree and
++# every topology/generation/authority-dependent semantic check runs normally.
++# Eight carrier-sized keys retain at most 512 KiB of document bytes. Validators
++# are private import-time objects; this cache is not a deployment attestation.
++_SCHEMA_MEMO_LIMIT = 8
++_SCHEMA_MEMO = OrderedDict()
++_SCHEMA_MEMO_LOCK = threading.Lock()
++
+ 
+ class ResourceTopologyError(JournalError):
+     """Stable refusal without interpreting a document as authority."""
+@@ -76,8 +87,20 @@
+         _strict_tree(value)
+         value = parse_json(encoded)
+     _strict_tree(value)
+-    canonical(value)  # Existing canonical carrier bound: 65,536 bytes.
+-    _require(next(_VALIDATORS[profile].iter_errors(value), None) is None, "RESOURCE_INVALID_DOCUMENT")
++    encoded = canonical(value)  # Existing canonical carrier bound: 65,536 bytes.
++    validator = _VALIDATORS[profile]
++    key = (profile, encoded)
++    with _SCHEMA_MEMO_LOCK:
++        if _SCHEMA_MEMO.get(key) is validator:
++            _SCHEMA_MEMO.move_to_end(key)
++            return value
++    _require(next(validator.iter_errors(value), None) is None, "RESOURCE_INVALID_DOCUMENT")
++    with _SCHEMA_MEMO_LOCK:
++        if _VALIDATORS[profile] is validator:
++            _SCHEMA_MEMO[key] = validator
++            _SCHEMA_MEMO.move_to_end(key)
++            while len(_SCHEMA_MEMO) > _SCHEMA_MEMO_LIMIT:
++                _SCHEMA_MEMO.popitem(last=False)
+     return value
+ 
+ 

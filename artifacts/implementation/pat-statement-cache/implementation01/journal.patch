@@ -1,0 +1,11 @@
+--- baseline/hms/journal.py
++++ candidate/hms/journal.py
+@@ -210,7 +210,7 @@
+             elif not self.path.is_file():
+                 raise JournalError("MISSING_AUTHORITY_DATABASE")
+             self._db = sqlite3.connect(str(self.path), isolation_level=None,
+-                                       check_same_thread=False, timeout=0.2)
++                                       check_same_thread=False, timeout=0.2, cached_statements=256)
+             self._db.row_factory = sqlite3.Row
+             if create and page_size is not None:
+                 self._db.execute('PRAGMA page_size=1024')

@@ -1,0 +1,13 @@
+--- artifacts/implementation/pat-io-run-bundle/implementation01/project/tests/test_pat_io_run_bundle.py
++++ artifacts/implementation/pat-io-run-bundle/implementation02/project/tests/test_pat_io_run_bundle.py
+@@ -229,8 +229,9 @@
+         with patch('hms.pat_io_group_worker._source_identity', return_value={}):
+             with self.assertRaisesRegex(PatError, 'PAT_IO_GROUP_IMPLEMENTATION_CHANGED'): self.fresh()
+         parsed = self.parse(); identity = parsed['expected_inputs']['implementation'] | dict(workerDigest='sha256:'+'f'*64)
+-        with patch('hms.pat_io_group_worker._identities', return_value=identity):
++        with patch('hms.pat_io_group_setup._identities', return_value=identity) as changed:
+             with self.assertRaisesRegex(bundle.IoRunBundleError, 'FRESH_MISMATCH'): self.fresh()
++        changed.assert_called_once()
+ 
+     def test_group_limits_keep_original_exact_types_and_maxima(self):
+         from hms.pat_io_combined_matrix import CEILINGS

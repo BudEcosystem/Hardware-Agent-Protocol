@@ -1,0 +1,98 @@
+--- artifacts/implementation/pat-io-lifecycle-semantics/harness01/run_attempt.py
++++ artifacts/implementation/pat-io-lifecycle-semantics/harness02/run_attempt.py
+@@ -1,4 +1,4 @@
+-"""Original isolated lifecycle57 runner. Execute only after parent review/release.
++"""Original isolated lifecycle58 runner. Execute only after parent review/release.
+ 
+ No project imports occur in this launcher. Seven selected distribution closures
+ are acquired independently of the compiler's five-package identity.
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '14e731f9e5fa81ce78d663049e9d54326e5511411dc42ceee7930672c388067e'
+-PREFIX = 'artifacts/implementation/pat-io-lifecycle-semantics/implementation01/'
++FROZEN_INDEX = '9171613b64444be9d79b10576852cda6411a0a46c7adcd1138e8e983948ee1d4'
++PREFIX = 'artifacts/implementation/pat-io-lifecycle-semantics/implementation02/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -177,7 +177,7 @@
+         while selector.get_map():
+             remaining = deadline - time.monotonic()
+             if remaining <= 0:
+-                raise TimeoutError('LifecycleHistory57 child exceeded original harness deadline')
++                raise TimeoutError('LifecycleHistory58 child exceeded original harness deadline')
+             for key, _ in selector.select(min(remaining, 0.1)):
+                 block = os.read(key.fileobj.fileno(), 65536)
+                 if not block:
+@@ -190,13 +190,13 @@
+                 log.write(block)
+                 count += len(block)
+             if time.monotonic() >= deadline:
+-                raise TimeoutError('LifecycleHistory57 child crossed harness deadline during pipe collection')
++                raise TimeoutError('LifecycleHistory58 child crossed harness deadline during pipe collection')
+     remaining = deadline - time.monotonic()
+     if remaining <= 0:
+-        raise TimeoutError('LifecycleHistory57 child crossed harness deadline at EOF')
++        raise TimeoutError('LifecycleHistory58 child crossed harness deadline at EOF')
+     process.wait(timeout=remaining)
+     if time.monotonic() >= deadline:
+-        raise TimeoutError('LifecycleHistory57 child crossed harness deadline at process exit')
++        raise TimeoutError('LifecycleHistory58 child crossed harness deadline at process exit')
+     return count
+ 
+ 
+@@ -204,7 +204,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 57 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 58 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -228,7 +228,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation01'
++    stage = here.parent / 'implementation02'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -239,7 +239,7 @@
+     started = time.monotonic()
+     record = {'profile': 'hms.io-lifecycle-semantics-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 57,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 58,
+               'projectInputCount': 7755, 'frozenPreparationInputCount': 7758,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+@@ -273,11 +273,11 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 57 or
+-                len(targets['targets']) != 57 or
+-                len(set(targets['targets'])) != 57 or
+-                sum(name.startswith('test_pat_io_lifecycle_semantics.') for name in targets['targets']) != 57):
+-            raise ValueError('Closed lifecycle57 method selection changed')
++        if (targets['testCount'] != 58 or
++                len(targets['targets']) != 58 or
++                len(set(targets['targets'])) != 58 or
++                sum(name.startswith('test_pat_io_lifecycle_semantics.') for name in targets['targets']) != 58):
++            raise ValueError('Closed lifecycle58 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+         scratch_parent = Path('/tmp')
+@@ -286,7 +286,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-lifecycle-semantics-lifecycle57-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-lifecycle-semantics-lifecycle58-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

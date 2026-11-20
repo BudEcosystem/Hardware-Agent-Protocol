@@ -1,0 +1,17 @@
+--- artifacts/implementation/pat-io-supervision-recovery/audit-partial-states.py
++++ artifacts/implementation/pat-io-supervision-recovery/audit-incomplete-states.py
+@@ -13,7 +13,13 @@
+  states=[]
+  for d in sorted(group_file.parent.glob('case-*/state')):
+   index=int(d.parent.name[5:]);assert 0<=index<len(matrix['cases'])
+-  authority=d/'authority.db';boards=list(d.glob('synthetic-io-board-*.db'));assert len(boards)==1
++  authority=d/'authority.db';boards=list(d.glob('synthetic-io-board-*.db'))
++  if not authority.is_file() or len(boards)!=1:
++   case=matrix['cases'][index]
++   states.append(dict(caseIndex=index,caseId=case['caseId'],scenario=case.get('definition',{}).get('scenario','candidate'),
++    inspected=False,reason='Incomplete authority/board construction; no logical state inferred',operations=None,claims=None,parents=None,receipts=None,effects=None,owners=None,
++    databasePins={p.name:sha(p) for p in d.glob('*.db')}))
++   continue
+   assert not list(d.glob('*-wal')) and not list(d.glob('*-journal'))
+   pins={p.name:sha(p)for p in (authority,*boards)}
+   db=sqlite3.connect(authority.as_uri()+'?mode=ro&immutable=1',uri=True)

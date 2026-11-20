@@ -1,0 +1,12 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-recorded-catalog/implementation01/project/tests/test_io_recorded_catalog_process.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-recorded-catalog/implementation02/project/tests/test_io_recorded_catalog_process.py
+@@ -77,7 +77,8 @@
+             clock[0] += 20
+         self.emit('application-statuses', dict(statuses=statuses, ticks=len(statuses), clock=clock[0]))
+         self.assertEqual(status['procedure']['executionState'], 'completed', status)
+-        self.assertEqual(status['procedure']['completionContract'], 'satisfied', status)
++        self.assertEqual(status['procedure']['unresolvedOperations'], [], status)
++        self.assertTrue(all(step['executionState'] == 'completed' for step in status['procedure']['steps']), status)
+         self.assertEqual(self.db.execute('SELECT count(*) FROM px_instances').fetchone()[0], 1)
+         self.assertEqual(self.db.execute('SELECT count(*) FROM operations').fetchone()[0], 1)
+         effects = [list(value) for value in self.runtime.io_board.db.execute('SELECT * FROM io_effects')]

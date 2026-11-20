@@ -1,0 +1,167 @@
+--- original/run_attempt.py
++++ split/run_attempt.py
+@@ -23,8 +23,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '7ecd42fec5cef9374573ae8b3d0747060bdc8c4cd8ca552e9c3de4d64a2ec23e'
+-PREFIX = 'artifacts/implementation/pat-statement-cache/implementation01/'
++FROZEN_INDEX = 'ffcace54bb02211d47e2f69febfb2f7f1566d6ee6dcb8264a3f10ecef5a8534f'
++PREFIX = 'artifacts/implementation/supervisor-storage-bindings/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -93,7 +93,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 313:
++    if len(expected) != 312:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -221,7 +221,8 @@
+ 
+ def acquire_process_quiescence(scratch):
+     """Hold actual owner/writer locks through inventory; no PID authority."""
+-    root = scratch / PROCESS_METHOD / 'supervisor'
++    root = scratch / PROCESS_METHOD / 'supervisor-control'
++    bulk = scratch / PROCESS_METHOD / 'supervisor-bulk'
+     held, proof = [], {'scope':'owner and exact writer lease, not exit-code attestation','records':[]}
+     try:
+         if not root.exists():
+@@ -247,14 +248,18 @@
+             meta=db.execute('SELECT typeof(record),length(record) FROM qs_attempts LIMIT 2').fetchall()
+             if len(meta)>1 or any(t!='blob' or n>65536 for t,n in meta):raise RuntimeError('Unexpected process ledger record closure')
+             records=db.execute('SELECT id,record FROM qs_attempts LIMIT 2').fetchall()
++            binding_meta=db.execute('SELECT version,binding FROM qs_meta LIMIT 2').fetchall()
++            if len(binding_meta)!=1 or binding_meta[0][0]!=3 or type(binding_meta[0][1]) is not bytes or len(binding_meta[0][1])>16384:raise RuntimeError('Invalid split storage metadata')
++            binding=json.loads(binding_meta[0][1])
+         finally:db.close()
+         if row(ledger,'attempts.db')!=before:raise RuntimeError('Read-only ledger changed')
++        proof['storageBinding']=hold_storage_binding(binding,root,bulk,held)
+         for identifier,raw in records:
+             record=json.loads(raw)
+             if not re.fullmatch(r'[0-9a-f]{32}',identifier) or record['attemptId']!=identifier:raise RuntimeError('Attempt association')
+             lease=record['lease'];entry={'attemptId':identifier,'state':record['state'],'lease':lease}
+             if lease is not None:
+-                fd=os.open(root/identifier/'writer.lease',os.O_RDWR|os.O_NOFOLLOW);held.append(fd);info=os.fstat(fd)
++                fd=os.open(bulk/identifier/'writer.lease',os.O_RDWR|os.O_NOFOLLOW);held.append(fd);info=os.fstat(fd)
+                 if (not stat.S_ISREG(info.st_mode) or info.st_uid!=os.getuid() or info.st_nlink!=1 or stat.S_IMODE(info.st_mode)!=0o600 or
+                     lease!={'device':str(info.st_dev),'inode':str(info.st_ino)}):raise RuntimeError('Writer lease identity unknown')
+                 fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB);entry['writerQuiescent']=True
+@@ -267,6 +272,29 @@
+     except BaseException:
+         for fd in held:os.close(fd)
+         raise
++
++
++def hold_storage_binding(binding,control,bulk,held):
++    """Check original bound objects while the control owner remains locked."""
++    if set(binding)!={'profile','bindingId','control','bulk','bulkOwner','bulkManifest','manifestSha256'} or binding['profile']!='hms.supervisor.storage-split/0.1':raise RuntimeError('Invalid storage binding')
++    if not re.fullmatch(r'[0-9a-f]{32}',binding['bindingId']):raise RuntimeError('Invalid binding id')
++    for name,path in [('control',control),('bulk',bulk)]:
++        info=path.lstat()
++        expected=dict(path=str(path),uid=os.getuid(),device=str(info.st_dev),inode=str(info.st_ino))
++        if not stat.S_ISDIR(info.st_mode) or stat.S_IMODE(info.st_mode)!=0o700 or info.st_uid!=os.getuid() or binding[name]!=expected:raise RuntimeError('Original storage root changed')
++    for name,key in [('bulk.owner','bulkOwner'),('storage.json','bulkManifest')]:
++        path=bulk/name;fd=os.open(path,(os.O_RDWR if name=='bulk.owner' else os.O_RDONLY)|os.O_NOFOLLOW|os.O_CLOEXEC)
++        held.append(fd);info=os.fstat(fd)
++        if not stat.S_ISREG(info.st_mode) or info.st_uid!=os.getuid() or info.st_nlink!=1 or stat.S_IMODE(info.st_mode)!=0o600 or binding[key]!=dict(device=str(info.st_dev),inode=str(info.st_ino)):raise RuntimeError('Storage marker identity changed')
++        if name=='bulk.owner':
++            if info.st_size!=0:raise RuntimeError('Bulk owner content')
++            fcntl.flock(fd,fcntl.LOCK_EX|fcntl.LOCK_NB)
++        else:
++            if not 0<info.st_size<=16384:raise RuntimeError('Storage marker size')
++            body=os.pread(fd,16385,0)
++            expected=json.dumps({k:binding[k] for k in ('profile','bindingId','control','bulk')},sort_keys=True,separators=(',',':'),ensure_ascii=False).encode()
++            if body!=expected or hashlib.sha256(body).hexdigest()!=binding['manifestSha256']:raise RuntimeError('Storage marker bytes changed')
++    return dict(bindingId=binding['bindingId'],control=binding['control'],bulk=binding['bulk'],bulkOwnerHeld=True,manifestExact=True)
+ 
+ 
+ def main():
+@@ -282,7 +310,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parents[3] / 'artifacts/implementation/pat-statement-cache/implementation01'
++    stage = here.parents[3] / 'artifacts/implementation/supervisor-storage-bindings/implementation01'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -294,7 +322,7 @@
+     record = {'profile': 'hms.io-group-worker-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+               'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 1,
+-              'projectInputCount': 304, 'frozenPreparationInputCount': 313,
++              'projectInputCount': 309, 'frozenPreparationInputCount': 312,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+@@ -311,8 +339,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 304:
+-            raise ValueError('Candidate project closure must contain exactly 304 files')
++        if len(selected) != 309:
++            raise ValueError('Candidate project closure must contain exactly 309 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -330,7 +358,7 @@
+         if (targets['testCount'] != 1 or
+                 len(targets['targets']) != 1 or
+                 len(set(targets['targets'])) != 1 or
+-                targets['targets'] != ['test_vault_catalog_process.VaultCatalogProcessTests.test_actual_original_matrix_catalog_admission_and_cold_history']):
++                targets['targets'] != ['test_storage_actual.SplitVaultCatalogProcessTests.test_actual_original_matrix_catalog_admission_and_cold_history']):
+             raise ValueError('Closed service1 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+--- original/attempt_child.py
++++ split/attempt_child.py
+@@ -13,6 +13,8 @@
+ MAX_JSON = 4 * 1024 * 1024
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_ORIGINS = 8192
++import resource
++resource.setrlimit(resource.RLIMIT_FSIZE,(MAX_FILE,MAX_FILE))
+ configuration = Path(sys.argv[1])
+ if configuration.stat().st_size > MAX_JSON:
+     raise RuntimeError('Oversized child configuration')
+@@ -80,7 +82,7 @@
+     if current_test != config['targets'][0]:
+         prohibited.append(event)
+         raise RuntimeError('Native retention is only authorized inside the exact actual test')
+-    expected = scratch / 'test_actual_original_matrix_catalog_admission_and_cold_history' / 'supervisor'
++    expected = scratch / 'test_actual_original_matrix_catalog_admission_and_cold_history' / 'supervisor-bulk'
+     if event == 'hms.retention.load.v1':
+         artifact = root / 'hms_qualification/supervisor/retention_scan.so'
+         if (native_load is not None or args != (str(artifact), NATIVE_DIGEST, 'hms.retention.linux-cpython312-x86_64/1')
+@@ -105,7 +107,7 @@
+                  and type(args[1]) is int and type(args[2]) is int)
+         if valid:
+             path = Path(os.fsdecode(args[0]))
+-            root_scan = path == expected
++            root_scan = path in (expected,expected.with_name('supervisor-control'))
+             attempt_scan = path.parent == expected and re.fullmatch(r'[0-9a-f]{32}', path.name) is not None
+             valid = ((root_scan or attempt_scan) and 0 <= args[1] <= (262144 if root_scan else 8192)
+                      and 0 <= args[2] <= (268435456 if root_scan else 67108864))
+@@ -128,7 +130,7 @@
+         return
+     if event == 'subprocess.Popen':
+         executable, argv, cwd, environment = args
+-        expected = scratch / 'test_actual_original_matrix_catalog_admission_and_cold_history' / 'supervisor'
++        expected = scratch / 'test_actual_original_matrix_catalog_admission_and_cold_history' / 'supervisor-bulk'
+         entry = Path(argv[3]) if type(argv) in (list,tuple) and len(argv)==7 else Path('/invalid')
+         valid = (current_test == config['targets'][0] and executable == sys.executable and
+             argv[0] == sys.executable and argv[1:3] == ['-I','-B'] and
+@@ -147,7 +149,7 @@
+         work=scratch/'test_actual_original_matrix_catalog_admission_and_cold_history'
+         vault = work/'vault'/'evidence.db'
+         path = vault if supplied == vault.as_uri() + '?mode=rw' else Path(supplied)
+-        valid=(path==work/'vault'/'evidence.db' or path==work/'supervisor'/'attempts.db' or (path.parent==work/'runtime' and
++        valid=(path==work/'vault'/'evidence.db' or path==work/'supervisor-control'/'attempts.db' or (path.parent==work/'runtime' and
+             (path.name=='authority.db' or re.fullmatch(r'synthetic-io-board-[0-9a-f]{64}\.db',path.name))))
+         if current_test!=config['targets'][0] or not valid:
+             prohibited.append(event); raise RuntimeError('Only exact authority/runtime/supervisor/vault databases may open')

@@ -1,0 +1,19 @@
+--- precommit/harness03/run.py
++++ batch/harness01/run.py
+@@ -9,14 +9,14 @@
+ import time
+ 
+ BASE=Path(__file__).resolve().parent;ROOT=BASE.parents[3]
+-SOURCE=BASE.parent/'implementation03';ATTEMPT=BASE/'attempts/attempt01'
++SOURCE=BASE.parent/'implementation01';ATTEMPT=BASE/'attempts/attempt01'
+ def read(path):return json.loads(path.read_bytes())
+ def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+ def write(path,value):
+     with path.open('x') as stream:json.dump(value,stream,indent=2);stream.write('\n')
+ assert sys.flags.isolated and sys.flags.no_site and sys.flags.dont_write_bytecode
+ assert not ATTEMPT.exists()
+-assert sha(SOURCE/'index.json')=='2f1d6c5aeaf63e960058f9b838b5ecd1080fc17d78f207f0d0b14c248da2dad4'
++assert sha(SOURCE/'index.json')=='71595be27f62d50424ec996a2fdd4b4cad1732f7315026d4009c5213cd657171'
+ inputs=read(SOURCE/'index.json')['files']
+ for row in inputs:
+     path=ROOT/row['path'];assert path.stat().st_size==row['bytes'] and sha(path)==row['sha256']

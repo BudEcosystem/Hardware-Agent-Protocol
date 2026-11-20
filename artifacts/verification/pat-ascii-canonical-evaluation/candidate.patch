@@ -1,0 +1,41 @@
+--- reference_helpers.py
++++ candidate_helpers.py
+@@ -78,13 +78,36 @@
+     raise _UseReference
+ 
+ 
++class _UseUtf16Order(Exception):
++    pass
++
++
++def _ascii_integer_tree(value):
++    """Detach validated containers whose field names use ASCII ordering."""
++    kind = type(value)
++    if kind is dict:
++        if not all(key.isascii() for key in value):
++            raise _UseUtf16Order
++        return {key: _ascii_integer_tree(child) for key, child in value.items()}
++    if kind is list:
++        return [_ascii_integer_tree(child) for child in value]
++    if value is None or kind in (bool, int, str):
++        return value
++    raise _UseReference
++
++
+ def _canonical_bytes(value):
+     if not _fast_allowed():
+         return rfc8785.dumps(value)
+     try:
+-        ordered = _integer_tree(value)
++        try:
++            ordered = _ascii_integer_tree(value)
++            sort_keys = True
++        except _UseUtf16Order:
++            ordered = _integer_tree(value)
++            sort_keys = False
+     except _UseReference:
+         return rfc8785.dumps(value)
+     encoder = json.JSONEncoder(ensure_ascii=False, allow_nan=False,
+-        check_circular=True, sort_keys=False, skipkeys=False, separators=(',', ':'))
++        check_circular=True, sort_keys=sort_keys, skipkeys=False, separators=(',', ':'))
+     return encoder.encode(ordered).encode('utf-8')

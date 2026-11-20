@@ -1,0 +1,52 @@
+--- 696/hms/cli.py
++++ live/hms/cli.py
+@@ -29,6 +29,9 @@
+     initialization.add_argument('--init-simulation', action='store_true')
+     initialization.add_argument('--init-compact-simulation', action='store_true')
+     initialization.add_argument('--init-multi-simulation', action='store_true')
++    initialization.add_argument('--init-io-simulation', action='store_true')
++    serve.add_argument('--io-simulation', action='store_true', help='Open the installed shared-board GPIO/PWM simulation')
++    serve.add_argument('--io-installation-file', type=Path, help='Bounded shared-board installation; required when initializing I/O')
+     serve.add_argument('--installations-file', type=Path, help='Bounded JSON list of installed simulation routes')
+     serve.add_argument('--endpoint-fd', type=int, help='Inherited connected Unix stream for the original compact C simulator')
+     serve.add_argument('--endpoint-route', action='append', default=[], metavar='ADAPTER=FD',
+@@ -69,7 +72,19 @@
+ 
+ 
+ def _serve(args) -> int:
+-    from .runtime import Runtime
++    from .runtime import open_runtime
++    io_mode = args.init_io_simulation or args.io_simulation
++    if ((io_mode and (args.init_simulation or args.init_compact_simulation or args.init_multi_simulation or
++                     args.installations_file is not None or args.endpoint_fd is not None or args.endpoint_route)) or
++            (args.io_installation_file is not None and not io_mode)):
++        raise JournalError('INVALID_IO_INITIALIZATION')
++    if args.init_io_simulation and args.io_installation_file is None:
++        raise JournalError('IO_INSTALLATION_REQUIRED')
++    io_installation = None
++    if args.io_installation_file is not None:
++        from .synthetic_io_installation import normalize_installation
++        with args.io_installation_file.open('rb') as source:
++            io_installation = normalize_installation(source.read(MAX_BYTES + 1))
+     if args.init_compact_simulation and args.endpoint_fd is None or args.init_simulation and args.endpoint_fd is not None:
+         raise JournalError('INVALID_ENDPOINT_INITIALIZATION')
+     if ((args.init_multi_simulation and (args.installations_file is None or args.endpoint_fd is not None)) or
+@@ -89,12 +104,14 @@
+         if adapter in routes:
+             raise JournalError('DUPLICATE_ENDPOINT_ROUTE')
+         routes[adapter] = int(descriptor)
+-    create = args.init_simulation or args.init_compact_simulation or args.init_multi_simulation
+-    deployment = ('simulation:multi' if args.init_multi_simulation else
++    create = args.init_simulation or args.init_compact_simulation or args.init_multi_simulation or args.init_io_simulation
++    deployment = (io_installation['topology']['deployment'] if args.init_io_simulation else
++                  'simulation:multi' if args.init_multi_simulation else
+                   'simulation:compact' if args.endpoint_fd is not None else 'simulation:local')
+     owner = Context(f'posix:{os.getuid()}', deployment) if create else None
+-    runtime = Runtime(args.state_dir, create=create, owner=owner, endpoint_fd=args.endpoint_fd,
+-                      installations=installations, endpoint_fds=routes)
++    runtime = open_runtime(args.state_dir, create=create, owner=owner, endpoint_fd=args.endpoint_fd,
++                           installations=installations, endpoint_fds=None if io_mode else routes,
++                           io_simulation=io_mode, io_installation=io_installation)
+     server = None
+     handlers = {}
+     try:

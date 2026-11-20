@@ -1,0 +1,12 @@
+--- baseline/scripts/check_runtime.py
++++ installed/scripts/check_runtime.py
+@@ -85,6 +85,9 @@
+ def input_paths(root):
+     endpoint_receipt = root / "artifacts/verification/endpoint-scenarios.json"
+     paths = set([*root.glob("hms/**/*.py"), *root.glob("tests/**/*.py"),
++                 *root.glob("hms_qualification/**/*.py"),
++                 *root.glob("hms_qualification/**/*.c"),
++                 *root.glob("hms_qualification/**/*.so"),
+                  *root.glob("schemas/*.json"), *root.glob("examples/**/*.json"),
+                  *root.glob("tests/fixtures/**/*.json"), *root.glob("protocol/serial/*.py"),
+                  *[root / name for name in (

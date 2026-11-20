@@ -1,0 +1,207 @@
+--- originals/selection-reuse/run_checks.py
++++ run_checks.py
+@@ -1,4 +1,4 @@
+-"""Fixed review-gated owner for pure equivalence and actual native freshness controls.
++"""Fixed review-gated owner for the complete original mutation-capacity workload.
+ 
+ No compiler, qualification rerun, device or caller executable selection.
+ """
+@@ -15,14 +15,13 @@
+ 
+ HERE=Path(__file__).resolve().parent
+ REPO=HERE.parents[2]
+-GUARDIAN_SHA='cf682bcfae001f5e1d33cad603ec4a7e3911dc4eab8557714b6973deec7bb206'
++GUARDIAN_SHA='b9451d90c845f86b9e41cfc527c3fb7fa0ed8e7e58b65ab0cd5c0bc0d2a60792'
+ HELPER_SHA='a6ee94bcf3dc03df19f0dd07a81663badd4875ef1a6c429afbc55d7b2373b977'
+ ENV={'LANG':'C','LC_ALL':'C','PATH':'/usr/bin:/bin'}
+ FINAL_DESTINATION=None
+ FINAL_REPORT=None
+-PROFILES={'pure':['compiler_equivalence'],'live':['management_replays','final_evidence_withdrawal','final_artifact_change',
+-    'renewal_withdrawal','expiry_after_commit','shared_authority','finite_policy_replacement',
+-    'prepared_mutation_recovery','common_revoke_remains_unresolved']}
++PROFILES={'mutation':['mutation_capacity']}
++WORKLOAD_SHA='01e91d85d9da351af7f1c8dc8cd42bf375898959ff1264754408311042517e5d'
+ 
+ 
+ def require(value,message):
+@@ -67,8 +66,8 @@
+         require(sys.argv[2]=='--attempt' and sys.argv[3].isascii() and sys.argv[3].isdigit(),'Explicit bounded attempt required')
+         attempt_number=int(sys.argv[3])
+         require(1<=attempt_number<=16 and str(attempt_number)==sys.argv[3],'Attempt must be canonical1..16')
+-    expected_native=0 if profile=='pure' else len(expected_cases)
+-    file_bytes=1024*1024
++    expected_native=1
++    file_bytes=32*1024*1024
+     def interrupted(signum,_):raise RuntimeError('Runner interrupted '+str(signum))
+     signal.signal(signal.SIGINT,interrupted);signal.signal(signal.SIGTERM,interrupted)
+     os.umask(0o077)
+@@ -90,7 +89,7 @@
+                 pins[row['path']]==row['sha256'],'Reviewed source changed')
+     prior_results=[]
+     for number in range(1,attempt_number):
+-        path=HERE/('selection-reuse-'+profile+'-attempt'+str(number).zfill(2))/'RESULTS.json'
++        path=HERE/('selection-capacity-'+profile+'-attempt'+str(number).zfill(2))/'RESULTS.json'
+         require(path.is_file() and not path.is_symlink(),'Prior explicit attempt receipt missing')
+         prior_results.append({'path':str(path.relative_to(HERE)),'sha256':digest(path)})
+     def stable():
+@@ -99,15 +98,18 @@
+         require({str(f.relative_to(parent)) for f in parent.rglob('*') if f.is_file()}=={r['path'] for r in parent_rows}|{'index.json'},'Parent inventory changed')
+         for row in parent_rows:require(digest(parent/row['path'])==row['sha256'],'Parent bytes changed: '+row['path'])
+         second=REPO/inputs['secondParentPacket']['path']
+-        require(digest(second/'index.json')==inputs['secondParentPacket']['indexSha256'],'Boundary evidence index changed')
++        require(digest(second/'index.json')==inputs['secondParentPacket']['indexSha256'],'Validated selection-reuse index changed')
+         second_rows=json.loads((second/'index.json').read_bytes())['files']
+-        require({str(f.relative_to(second)) for f in second.rglob('*') if f.is_file()}=={r['path'] for r in second_rows}|{'index.json'},'Boundary evidence inventory changed')
+-        for row in second_rows:require(digest(second/row['path'])==row['sha256'],'Boundary evidence bytes changed: '+row['path'])
+-        proposal=REPO/inputs['proposalPacket']['path']
+-        require(digest(proposal/'index.json')==inputs['proposalPacket']['indexSha256'],'Reviewed proposal changed')
+-        proposal_rows=json.loads((proposal/'index.json').read_bytes())['files']
+-        require({str(f.relative_to(proposal)) for f in proposal.rglob('*') if f.is_file()}=={r['path'] for r in proposal_rows}|{'index.json'},'Proposal inventory changed')
+-        for row in proposal_rows:require(digest(proposal/row['path'])==row['sha256'],'Proposal source copy changed')
++        require({str(f.relative_to(second)) for f in second.rglob('*') if f.is_file()}=={r['path'] for r in second_rows}|{'index.json'},'Validated selection-reuse inventory changed')
++        for row in second_rows:require(digest(second/row['path'])==row['sha256'],'Validated selection-reuse bytes changed: '+row['path'])
++        third=REPO/inputs['thirdParentPacket']['path']
++        require(digest(third/'index.json')==inputs['thirdParentPacket']['indexSha256'],'Original capacity packet changed')
++        third_rows=json.loads((third/'index.json').read_bytes())['files']
++        require({str(f.relative_to(third)) for f in third.rglob('*') if f.is_file()}=={r['path'] for r in third_rows}|{'index.json'},'Original capacity inventory changed')
++        for row in third_rows:require(digest(third/row['path'])==row['sha256'],'Original capacity byte changed')
++        for packet in (parent,second,third):
++            require(not any(f.is_symlink() for f in packet.rglob('*')),'Parent symlink appeared')
++        require(digest(REPO/inputs['previousReceipt']['path'])==inputs['previousReceipt']['sha256'],'Continuation106 receipt changed')
+         require(digest(public)==inputs['publicReceipt']['sha256'],'Public receipt changed')
+         public_rows=json.loads(public.read_bytes())['files'];require(len(public_rows)==244,'Public inventory changed')
+         for row in public_rows:require(digest(REPO/row['path'])==row['sha256'],'Public input changed')
+@@ -120,7 +122,7 @@
+         for row in prior_results:require(digest(HERE/row['path'])==row['sha256'],'Earlier attempt result changed')
+         require(digest(interpreter)==digest('/proc/self/exe')==runtime,'Interpreter changed')
+     stable()
+-    attempt=HERE/('selection-reuse-'+profile+'-attempt'+str(attempt_number).zfill(2));attempt.mkdir(mode=0o700)
++    attempt=HERE/('selection-capacity-'+profile+'-attempt'+str(attempt_number).zfill(2));attempt.mkdir(mode=0o700)
+     FINAL_DESTINATION=attempt/'RESULTS.json';FINAL_REPORT={'passed':False,'phase':'preparation'}
+     save(FINAL_DESTINATION,FINAL_REPORT,replace=True)
+     frozen=attempt/'frozen';frozen.mkdir()
+@@ -131,16 +133,16 @@
+     require(native==parent/'host-attempt04/standing-host-pipe' and evidence==parent/'host-attempt04/qualification','Original root required')
+     original_manifest=json.loads((evidence/'manifest.json').read_bytes())
+     require(original_manifest['argv']==[str(evidence/original_manifest['binaryPath'])],'Original qualifier argv changed')
+-    argv=[str(interpreter),'-I','-B',str(frozen/'selection_reuse_controls.py'),profile,str(attempt/'state'),str(native),str(evidence),str(evidence/'manifest.json'),str(frozen/'owner/libharness-owner.so')]
+-    save(attempt/'intent.json',{'profile':'hms.standing-host-selection-reuse-attempt/0.1','controlProfile':profile,
++    argv=[str(interpreter),'-I','-B',str(frozen/'capacity_controls.py'),profile,str(attempt/'state'),str(native),str(evidence),str(evidence/'manifest.json'),str(frozen/'owner/libharness-owner.so')]
++    save(attempt/'intent.json',{'profile':'hms.standing-host-selection-capacity-attempt/0.1','controlProfile':profile,
+         'attemptNumber':attempt_number,'priorProfileAttemptResults':prior_results,'sourcePins':pins,
+         'parentPacket':inputs['parentPacket'],'secondParentPacket':inputs['secondParentPacket'],
+-        'proposalPacket':inputs['proposalPacket'],
++        'thirdParentPacket':inputs['thirdParentPacket'],'previousReceipt':inputs['previousReceipt'],
+         'publicReceipt':inputs['publicReceipt'],'interpreter':str(interpreter),
+         'interpreterSha256':runtime,'argv':argv,'nativeImageSha256':digest(native),'originalQualificationRoot':str(evidence),
+         'originalQualificationRunId':original_manifest['runId'],'qualificationRerun':False,'cases':expected_cases,
+-        'privateCompilationReuseCandidate':True,
+-        'productionChanged':True,'full128RecordQualification':False,
++        'productionChangedFromSelectionReuse':False,'originalWorkloadSha256':WORKLOAD_SHA,
++        'full128RecordWorkloadRequested':True,'fullSimultaneousCapacityEstablished':False,
+         'expectedInnerReaps':expected_native,'expectedOuterReaps':1,'wallSeconds':30,'cpuSeconds':30,
+         'addressBytes':512*1024*1024,'childCpuSeconds':5,'childAddressBytes':256*1024*1024,
+         'fileBytes':file_bytes,'nativeChildFileBytes':1024*1024,'stateDiskBytes':96*1024*1024,'openFiles':64,'cleanupSeconds':8,'termGraceSeconds':3,
+@@ -178,7 +180,7 @@
+                 os.chdir(frozen)
+                 os.execve('/proc/self/fd/'+str(held),argv,ENV)
+             control_started=time.monotonic_ns()
+-            child=guardian.fork(fixed_child,cpu_seconds=30,address_bytes=512*1024*1024)
++            child=guardian.fork(fixed_child,cpu_seconds=30,address_bytes=512*1024*1024,file_bytes=file_bytes)
+             save(attempt/'control.started.json',guardian.handles[child]['identity'])
+             while guardian.status(child) is None:
+                 require(time.monotonic_ns()-control_started<30_000_000_000,'CONTROL_WALL_LIMIT')
+@@ -188,9 +190,13 @@
+             require(control_terminal-control_started<=30_000_000_000,'CONTROL_TERMINAL_OBSERVED_AFTER_WALL_LIMIT')
+             record=guardian.reap(child)
+             out.flush();err.flush();os.fsync(out.fileno());os.fsync(err.fileno())
++        observe_disk()
++        inner_path=attempt/'state/CONTROL-RESULTS.json'
++        if inner_path.exists():
++            require(inner_path.is_file() and not inner_path.is_symlink() and inner_path.stat().st_size<=1024*1024,'Bounded inner receipt')
++            inner=json.loads(inner_path.read_bytes())
+         require(record['exitCode']==0,'Control process failed')
+-        observe_disk()
+-        inner=json.loads((attempt/'state/CONTROL-RESULTS.json').read_bytes())
++        require(inner is not None,'Missing inner receipt')
+         require(inner['passed'] and inner['profile']==profile and [case['case'] for case in inner['cases']]==expected_cases,'Inner exact case matrix failed')
+         require(inner['ownerEmpty'] and inner['ownerClosed'] and not inner['cleanupErrors'] and not inner['interruptsPending'],'Inner cleanup failed')
+         records=inner['nativeChildrenReaped']
+@@ -204,22 +210,19 @@
+             require(digest(directory/'evidence.json')==case['evidenceSha256'],'Case evidence changed')
+             evidence_row=json.loads((directory/'evidence.json').read_bytes())
+             require(evidence_row['case']==case['case'],'Case evidence name mismatch')
+-            if profile=='pure':
+-                require(case['databaseSha256'] is None and case['nativeStartIdentity'] is None and case['nativeReap'] is None,'Pure case owns no native process or DB')
+-                require(evidence_row['publicParseCalls']==5 and evidence_row['privateParseCalls']==1 and
+-                    evidence_row['oldOracleSha256']=='b1734acbe443501124b2a6965aa9768abd1eb3c3966e57f4945ebc10f801d726','Exact old/new compilation count and oracle')
+-                vectors=evidence_row['vectors']
+-                require(len(vectors)==34 and len({r['case'] for r in vectors})==34 and
+-                    sum(r['outcome']=='ok' for r in vectors)==6 and sum(r['outcome']=='error' for r in vectors)==28,'Exact equivalence vector matrix')
+-                require(evidence_row['timingMeasured'] is False,'No pure timing claim')
+-                continue
+             require(digest(directory/'authority.db')==case['databaseSha256'],'Case database changed')
+             require(set(evidence_row['native'])=={str(n) for n in range(28)} and
+                     all(type(value) is int and 0<=value<2**64 for value in evidence_row['native'].values()),'All28 bounded native selectors')
+             require(evidence_row['nativeStartIdentity']==case['nativeStartIdentity'] and evidence_row['nativeReap']==case['nativeReap'],'Per-case native association')
+             require(all(case['nativeReap'][key]==value for key,value in case['nativeStartIdentity'].items()),'Exact registered identity/reap')
+-            require(evidence_row['legacyChecks']==case['legacyChecks'],'Preserved legacy assertion count')
+-            if case['case']=='management_replays':require(evidence_row['selectionParseCalls']==3,'Complete fresh selection parse count')
++            require(evidence_row['originalChecks']==case['originalChecks']==inner['originalChecks'],'Unchanged original assertion count')
++            notes=evidence_row['boundaryNotes']
++            require(evidence_row['originalWorkloadSha256']==inner['originalWorkloadSha256']==WORKLOAD_SHA and
++                    evidence_row['publicWriterRecords'] is True and evidence_row['directSQLPopulation'] is False,'Exact original public-writer workload')
++            require(evidence_row['tableCounts']['sd_mutations']==128 and evidence_row['tableCounts']['claims']==0 and
++                    notes['ordinaryFull']['retainedMutations']==120 and notes['commonRevoke']['retainedMutations']==126 and
++                    notes['terminal']['retainedMutations']==128,'Complete120/126/128 capacity progression')
++            require(notes['commonRevoke']['outbox']['state']=='accepted' and notes['commonRevoke']['outbox']['reply'] is not None,'Separate accepted common REVOKE receipt')
+             trace=evidence_row['trace'];require(type(trace) is list and 0<len(trace)<=2048,'Bounded actual trace')
+             tx=rx=0;requests={};responses=set()
+             for packet in trace:
+@@ -237,6 +240,9 @@
+             require(set(requests)==responses and tx<=evidence_row['route']['tx'] and rx<=evidence_row['route']['rx'],'Complete actual request/reply record')
+             joined_reaps.append(case['nativeReap'])
+         require(joined_reaps==records,'Native reaps must match every ordered named case exactly')
++        require(inner['full128RecordWorkloadCompleted'] is True and inner['productionChangedFromSelectionReuse'] is False and
++                inner['fullSimultaneousCapacityEstablished'] is False,'Exact bounded completion scope')
++        require(inner['partialEvidenceFile'] is None,'Passing workload has complete final evidence')
+         for owned in records:
+             require(not Path('/proc',str(owned['pid'])).exists(),'Previously owned PID still exists; no signal authority inferred')
+         require(not (attempt/'control.stderr').read_bytes(),'Unexpected control stderr')
+@@ -270,12 +276,14 @@
+             'controlStartedMonotonicNs':None if control_started is None else str(control_started),
+             'controlTerminalObservedMonotonicNs':None if control_terminal is None else str(control_terminal),
+             'controlObservedElapsedMonotonicNs':None if control_terminal is None else str(control_terminal-control_started),
+-            'innerCases':0 if inner is None else len(inner['cases']),
+-            'innerReaps':0 if inner is None else len(inner['nativeChildrenReaped']),
++            'innerReceiptObserved':inner is not None,
++            'innerCases':None if inner is None else len(inner.get('cases',[])),
++            'innerReaps':None if inner is None else len(inner.get('nativeChildrenReaped',[])),
+             'actualOwnerDeath':False,'controlProfile':profile,'attemptNumber':attempt_number,
+             'priorProfileAttemptResults':prior_results,'historicalPossibleEffectsResent':False if passed else None,
+-            'privateCompilationReuseCandidate':True,'productionChanged':True,'full128RecordQualification':False,
+-            'legacyChecks':None if inner is None else inner.get('legacyChecks'),
++            'productionChangedFromSelectionReuse':False,'originalWorkloadSha256':WORKLOAD_SHA,
++            'full128RecordWorkloadCompleted':passed,'oldCapacityFailureRemainsFailed':True,
++            'originalChecks':None if inner is None else inner.get('originalChecks'),
+             'fullSimultaneousCapacityEstablished':False,'logicalCeilingBytes':16*1024*1024,'fileBytes':file_bytes,
+             'observedStateHighBytes':observed_state_bytes,'observedStateHighFiles':observed_state_files,
+             'diskMonitorIsObservedNotKernelQuota':True,
+@@ -285,7 +293,7 @@
+             save(FINAL_DESTINATION,FINAL_REPORT,replace=True)
+             print(json.dumps(FINAL_REPORT,sort_keys=True))
+         finally:signal.pthread_sigmask(signal.SIG_SETMASK,previous)
+-    require(FINAL_REPORT['passed'],'Selection reuse controls failed; preserve original attempt')
++    require(FINAL_REPORT['passed'],'Original mutation capacity failed; preserve attempt and limits')
+ 
+ 
+ if __name__=='__main__':
+@@ -293,7 +301,7 @@
+     except BaseException as error:
+         signal.pthread_sigmask(signal.SIG_BLOCK,{signal.SIGINT,signal.SIGTERM})
+         if FINAL_DESTINATION is not None:
+-            FINAL_REPORT['passed']=False;FINAL_REPORT['actualOwnerDeath']=False
++            FINAL_REPORT['passed']=False;FINAL_REPORT['actualOwnerDeath']=False;FINAL_REPORT['full128RecordWorkloadCompleted']=False
+             FINAL_REPORT['terminalFailure']=type(error).__name__+': '+str(error)
+             FINAL_REPORT['terminalPendingSignals']=sorted(int(s) for s in signal.sigpending()&{signal.SIGINT,signal.SIGTERM})
+             save(FINAL_DESTINATION,FINAL_REPORT,replace=True)

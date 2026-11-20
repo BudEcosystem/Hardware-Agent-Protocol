@@ -1,0 +1,76 @@
+--- captured-before/tests/test_endpoint_cli.py
++++ after/tests/test_endpoint_cli.py
+@@ -25,6 +25,7 @@
+ from unittest.mock import patch
+ 
+ from hms.client import Client
++from hms.api_contracts import validate_result
+ from hms.contracts import canonical
+ from hms.endpoint_wire import Execution, Opcode, Operation, Receipt, Request, decode_response
+ from protocol.serial.frame import Decoder, encode
+@@ -282,7 +283,7 @@
+         self.assertEqual((info.st_dev, info.st_ino), self.socket_identity)
+         self.socket_path.unlink()
+ 
+-    def cli(self, *args):
++    def _cli_process(self, *args):
+         command = [sys.executable, '-B', '-m', 'hms', '--socket', str(self.socket_path), *args]
+         entry = {'arguments': list(args), 'started': self._times()}
+         self.report['cliCalls'].append(entry)
+@@ -294,6 +295,10 @@
+             raise
+         finally:
+             entry['finished'] = self._times()
++        return result, entry
++
++    def cli(self, *args):
++        result, entry = self._cli_process(*args)
+         self.assertEqual(result.returncode, 0, result.stderr.decode(errors='replace'))
+         body = json.loads(result.stdout)
+         entry['result'] = copy.deepcopy(body)
+@@ -409,8 +414,44 @@
+                                            (admitted['operationId'],)), before)
+             self.assertEqual(len(self.relay.op_frames()), index)
+             self.assertEqual(self.relay.op_frames()[-1][1], original_wire)
+-            observed = self.cli('observe', instance, 'value', '--max-age-ms', '10000', '--evidence-kind', 'simulation')
++            # This query remains after both replays with the original limit.
++            # Recovery retains the original sample; elapsed CLI/process work
++            # can make it correctly too old for a strict fresh-read request.
++            process, observation_call = self._cli_process(
++                'observe', instance, 'value', '--max-age-ms', '10000', '--evidence-kind', 'simulation')
++            observe_params = {'instanceId': instance, 'property': 'value', 'evidenceKind': 'simulation'}
++            scenario['freshness'] = {'strictMaxAgeMs': 10000, 'strictExitCode': process.returncode}
++            if process.returncode == 0:
++                observed = json.loads(process.stdout)
++                observation_call['result'] = copy.deepcopy(observed)
++                validate_result('observe', observed, observe_params | {'maxAgeMs': 10000})
++                scenario['freshness'].update(strictOutcome='fresh', projection='strict')
++            else:
++                self.assertEqual(process.returncode, 1, process.stderr.decode(errors='replace'))
++                self.assertEqual(process.stdout, b'')
++                self.assertEqual(json.loads(process.stderr), {'error': {'code': 'OBSERVATION_STALE'}})
++                scenario['freshness'].update(strictOutcome='OBSERVATION_STALE', projection='historical',
++                                            historicalReadStarted=self._times())
++                observed = self.client.request('observe', observe_params)
++                scenario['freshness']['historicalReadFinished'] = self._times()
++                validate_result('observe', observed, observe_params)
+             scenario.update(observation=copy.deepcopy(observed), observationObserved=self._times())
++            self.assertEqual(observed['quality'], 'valid')
++            self.assertIs(type(observed['ageUpperBoundMs']), int)
++            scenario['freshness']['ageUpperBoundMs'] = observed['ageUpperBoundMs']
++            if process.returncode == 0:
++                self.assertGreaterEqual(observed['ageUpperBoundMs'], 0)
++                self.assertLessEqual(observed['ageUpperBoundMs'], 10000)
++            else:
++                self.assertGreater(observed['ageUpperBoundMs'], 10000)
++            self.assertEqual(observed['instanceId'], instance)
++            self.assertEqual(observed['propertyId'], 'value')
++            self.assertEqual(observed['source'], 'endpoint:compact-simulation')
++            self.assertEqual(observed['evidenceKind'], 'simulation')
++            for field in ('endpointSession', 'bindingGeneration', 'controlGeneration', 'calibrationRevision'):
++                self.assertEqual(observed[field], request['intent'][field])
++            self.assertEqual(observed['acquisition']['clockDomain'], 'compact-boot-monotonic')
++            self.assertEqual(observed['acquisition']['clockEpoch'], request['intent']['endpointSession'])
+             self.assertEqual(observed['value'], value)
+             self.assertEqual(observed['acquisition']['ticksMs'], completed['result']['output']['sampleTick'])
+             scenario.update(passed=True, executionState=completed['executionState'],

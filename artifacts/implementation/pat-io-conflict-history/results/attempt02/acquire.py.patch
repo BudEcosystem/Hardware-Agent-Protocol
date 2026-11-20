@@ -1,0 +1,100 @@
+--- artifacts/implementation/pat-io-conflict-history/results/attempt01/acquire.py
++++ artifacts/implementation/pat-io-conflict-history/results/attempt02/acquire.py
+@@ -1,4 +1,4 @@
+-"""Acquire terminal conflict52 evidence; stdlib data inspection only."""
++"""Acquire terminal conflict48 evidence; stdlib data inspection only."""
+ import hashlib
+ import json
+ from pathlib import Path
+@@ -7,7 +7,7 @@
+ import stat
+ 
+ ROOT=Path.cwd().resolve(); BASE=ROOT/'artifacts/implementation/pat-io-conflict-history'
+-SOURCE=BASE/'harness01/attempts/attempt01-conflict52'; OUT=BASE/'results/attempt01'
++SOURCE=BASE/'harness02/attempts/attempt02-conflict48'; OUT=BASE/'results/attempt02'
+ def read(p): return json.loads(p.read_bytes())
+ def sha(p): return hashlib.sha256(p.read_bytes()).hexdigest()
+ def verify(p,row):
+@@ -48,48 +48,45 @@
+ seals=[]
+ for folder,pin,rooted in [
+     (BASE/'implementation01','eccd20743c61cb37d73c3f2f0df770d4c0b7529132287426eac7b8921875c524',True),
+-    (BASE/'harness01','1874885a7b2c42dd8a721505f16fb36a619cc8b7d6afcaee04ef56ae61569ac5',False),
++    (BASE/'harness02','4b717fa60a5a9592de1ee6e952c4ffb8c38c34e5579ff881d0e74d93b74cfc1a',False),
+     (ROOT/'artifacts/implementation/pat-io-combined-matrix/implementation01','0a34336874ffe2c3d65301e40adf2b7a9328ddb08a074e02e4e777b9528bf78a',True)]:
+     assert sha(folder/'index.json')==pin; indexed=read(folder/'index.json')['files']
+     for row in indexed: verify((ROOT if rooted else folder)/row['path'],row)
+     seals.append(dict(index=(folder/'index.json').relative_to(ROOT).as_posix(),sha256=pin,filesVerified=len(indexed)))
+ result=read(SOURCE/'result.json')
+ assert result['childState']=='exited' and not Path('/proc/'+str(result['pid'])).exists()
+-assert result['timeoutSeconds']==180 and result['status'] in {'passed','failed'} and result['counts']['testsRun']==52
++assert result['timeoutSeconds']==180 and result['status'] in {'passed','failed'} and result['counts']['testsRun']==48
+ for prefix,root,count in [('inputs',SOURCE/'project',7067),('frozen',ROOT,7070),('harness',SOURCE/'harness',6)]:
+     rows=read(SOURCE/(prefix+'-before.json')); assert rows==read(SOURCE/(prefix+'-after.json')) and len(rows)==count
+     for row in rows: verify(root/row['path'],row)
+ external=read(SOURCE/'external-before.json'); assert external==read(SOURCE/'external-after.json') and len(external['files'])==159
+ for row in external['files']: verify(Path(row['resolvedPath']),row)
+-assert sha(SOURCE/'harness/targets.json')=='a7dbc697f01b13f86ffbf56fe68066bb348a8f08ed7501a62574d2797366bb65'
++assert sha(SOURCE/'harness/targets.json')=='083ba21385798a11695c84f9a9f34258ec54b045fc7806438ffd0536b5879cb0'
+ targets=read(SOURCE/'harness/targets.json')['targets']; actual=read(SOURCE/'actual-tests.json')
+-assert actual['loaded']==actual['executed']==targets and len(set(targets))==52
++assert actual['loaded']==actual['executed']==targets and len(set(targets))==48
+ origins=read(SOURCE/'imports.json')
+ assert origins['violations']==origins['prohibitedAttempts']==[] and origins['summary']['allOriginsMatched']
+ for row in origins['records']:
+     if 'sha256' in row: assert sha(Path(row['origin']))==row['sha256']
+ for name in ['compiler','driver']: assert read(SOURCE/(name+'-before.json'))==read(SOURCE/(name+'-after.json'))
+-log=(SOURCE/'output.log').read_text(); match=re.search(r'Ran 52 tests in ([0-9.]+)s',log); assert match
++log=(SOURCE/'output.log').read_text(); match=re.search(r'Ran 48 tests in ([0-9.]+)s',log); assert match
+ passed=result['status']=='passed'
+ if passed:
+     assert result['currentPass'] and result['exitCode']==0 and result['errors']==result['childErrors']==[]
+-    assert result['counts']==dict(testsRun=52,failures=0,errors=0,skips=0,expectedFailures=0,unexpectedSuccesses=0)
++    assert result['counts']==dict(testsRun=48,failures=0,errors=0,skips=0,expectedFailures=0,unexpectedSuccesses=0)
+     assert log.endswith('\nOK\n')
+     assert [line.split('(')[1].split(')')[0] for line in log.splitlines() if line.endswith(' ... ok')]==targets
+ raw=Path(result['scratchPath']); before=read(SOURCE/'raw-scratch-before.json')
+ assert identity(raw)==before['identity'] and identity(raw.parent)==before['parent']
+ raw_rows=inventory(raw)
+ assert len(raw_rows)<=8192
+-assert not passed and result['counts']==dict(testsRun=52,failures=0,errors=0,skips=0,expectedFailures=0,unexpectedSuccesses=0)
+-assert result['errors']==[{'phase':'scratch-retention','type':'ValueError','message':'Retained tree exceeds collection bound'}]
+-assert sum(r['bytes'] for r in raw_rows)>16*1024*1024
+-assert not (SOURCE/'scratch').exists() and not (SOURCE/'scratch-index.json').exists()
+-with (OUT/'raw-scratch-index.json').open('x') as stream: stream.write(json.dumps(raw_rows,indent=2)+'\n')
++assert passed and sum(r['bytes'] for r in raw_rows)<=16*1024*1024
++assert raw_rows==inventory(SOURCE/'scratch')==read(SOURCE/'scratch-index.json')
+ runtime=[t for t in targets if not t.startswith('test_pat_io_transcript.')]
+-assert len(runtime)==13
++assert len(runtime)==9
+ expected_connections=set(); summaries=[]
+ for test in runtime:
+-    method=test.split('.')[-1]; retained=raw/method; manifest=read(retained/'engine-0.json')
++    method=test.split('.')[-1]; retained=SOURCE/'scratch'/method; manifest=read(retained/'engine-0.json')
+     original=raw/method/'trial-0'; trial=retained/'trial-0'
+     assert manifest['testId']==test and manifest['directory']==str(original) and manifest['closed'] and not manifest['cleanupErrors']
+     new=test.startswith('test_pat_io_conflict_history.')
+@@ -122,18 +119,18 @@
+     summaries.append(dict(testId=test,executionRecords=len(docs),configurationRecords=len(cd),checkpoints=len(cps),tablePageReferences=page_refs,
+         profile='0.2' if new else '0.1',independentConflictChecked=bool(inspections),report=manifest['report']))
+ actual_connections={(row['testId'],row['database']) for row in read(SOURCE/'sqlite-connections.json')}
+-assert actual_connections==expected_connections and len(actual_connections)==26
+-if passed:
++assert actual_connections==expected_connections and len(actual_connections)==18
++if passed and True:
+     attacks=read(SOURCE/'scratch/test_conflict_gpio_completed_rejects_rehashed_false_claims/engine-0.json')
+     assert attacks['rehashedRefusals']==15 and attacks['privateGuardChecks']==2 and attacks['purityChecked']
+ rows=inventory(SOURCE); shutil.copytree(SOURCE,OUT/'attempt'); assert inventory(OUT/'attempt')==rows==inventory(SOURCE)
+-proof=dict(scope='Actual52 selected tests:39 inherited pure transcript tests, four inherited runtime cases and nine new conflict/replay captures.',
++proof=dict(scope='48 selected tests:39 inherited pure transcript methods and nine new conflict/replay captures.',
+     status=result['status'],currentPass=result['currentPass'],counts=result['counts'],testSeconds=float(match.group(1)),elapsedSeconds=result['elapsedSeconds'],
+     preparationSeals=seals,projectFilesVerified=7067,frozenFilesVerified=7070,activeHarnessFilesVerified=6,externalFilesVerified=159,
+     originSummary=origins['summary'],actualOriginFileHashesRechecked=True,bytecodeReadsRefused=len(origins['deniedBytecodeReads']),
+     compilerAndDriverStable=True,methodOrderVerified=True,attemptFilesAcquired=len(rows),rawScratch=before['identity'],rawScratchOriginalRetained=True,
+-    rawScratchFiles=len(raw_rows),rawScratchBytes=sum(r['bytes'] for r in raw_rows),runtimeCases=summaries,exactDatabasePathsChecked=26,
+-    rawScratchCopied=False,rawScratchHashInventoryRetained=True,retentionLimitExceeded=True,
++    rawScratchFiles=len(raw_rows),rawScratchBytes=sum(r['bytes'] for r in raw_rows),runtimeCases=summaries,exactDatabasePathsChecked=18,
++    rawScratchCopied=True,rawScratchHashInventoryRetained=True,retentionLimitExceeded=False,
+     independentReview=False,configurationAttested=False,compilerIdentityAttested=False,physicalMeasurementChecked=False,
+     requiredOutcomesVerified=False,actualAggregateStorageEnforced=False,qualificationPassed=False,
+     limitations=['This is one versioned worker/checker extension, not the complete candidate fault/resource matrix.',

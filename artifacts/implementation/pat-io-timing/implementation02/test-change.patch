@@ -1,0 +1,11 @@
+--- implementation01/test_pat_io_contracts.py
++++ implementation02/test_pat_io_contracts.py
+@@ -286,6 +286,8 @@
+     def test_empty_applicability_and_enum_hole_selection_refuse(self):
+         value = program(); value['parameters']['duration'] = parameter(1, 100, 'ms', [1, 100])
+         value['applicability']['all'].append({'field': 'parameters.duration', 'op': 'equals', 'literal': 50})
++        self.refuses(value, 'PAT_INVALID_PREDICATE')
++        value['applicability']['all'][-1] = {'field': 'parameters.duration', 'op': 'range', 'minimum': 50, 'maximum': 50}
+         self.refuses(value, 'PAT_IO_EMPTY_APPLICABILITY')
+ 
+     def test_matrix_sparse_boundaries_holes_and_applicability_remain_distinct(self):

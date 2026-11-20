@@ -1,0 +1,61 @@
+--- snapshot08/project/tests/test_io_resource_admission.py
++++ snapshot09/project/tests/test_io_resource_admission.py
+@@ -657,10 +657,55 @@
+         def method(tree, name):
+             cls = next(item for item in tree.body if isinstance(item, ast.ClassDef) and item.name == 'Registry')
+             return next(item for item in cls.body if isinstance(item, ast.FunctionDef) and item.name == name)
++        def shape(node):
++            return ast.dump(node, include_attributes=False)
++        expected = ast.parse('''
++@provisioning_errors
++def bind(self, owner: Context, wire: bytes):
++    binding = _parse_binding(wire)
++    with self.journal._transaction():
++        self._bind_in_tx(owner, binding)
++
++def _bind_in_tx(self, owner, binding):
++    if not self._db.in_transaction:
++        raise JournalError("BINDING_TRANSACTION_REQUIRED")
++    binding = _binding_value(binding)
++    self.authorize(owner, "admin", "*")
++    self._bind_checked_in_tx(binding, owner.deployment)
++
++def _bind_checked_in_tx(self, binding, deployment):
++    pass
++''')
++        wrapper = method(after, '_bind_in_tx')
++        helper = method(after, '_bind_checked_in_tx')
++        # Guard the complete normal administrative path, including parse-before-
++        # transaction, validation-before-authorization and exact delegation args.
++        self.assertEqual(shape(method(after, 'bind')), shape(expected.body[0]))
++        self.assertEqual(shape(wrapper), shape(expected.body[1]))
++        self.assertEqual(shape(helper.args), shape(expected.body[2].args))
++        self.assertEqual(helper.decorator_list, [])
++        self.assertIsNone(helper.returns)
++        self.assertIsInstance(helper.body[0], ast.Expr)
++        self.assertIsInstance(helper.body[0].value, ast.Constant)
++        self.assertIsInstance(helper.body[0].value.value, str)
++        self.assertEqual(shape(helper.body[1]), shape(expected.body[1].body[0]))
++        class OriginalDeployment(ast.NodeTransformer):
++            def __init__(self):
++                self.replacements = 0
++            def visit_Name(self, node):
++                if node.id == 'deployment' and isinstance(node.ctx, ast.Load):
++                    self.replacements += 1
++                    return ast.Attribute(value=ast.Name(id='owner', ctx=ast.Load()),
++                                         attr='deployment', ctx=ast.Load())
++                return node
++        normalize = OriginalDeployment()
++        tail = [normalize.visit(copy.deepcopy(item)) for item in helper.body[2:]]
++        self.assertEqual(normalize.replacements, 1)
+         old = next(item for item in method(before, 'bind').body if isinstance(item, ast.With)).body
+-        new = method(after, '_bind_in_tx').body[-len(old):]
+-        self.assertEqual([ast.dump(item, include_attributes=False) for item in old],
+-                         [ast.dump(item, include_attributes=False) for item in new])
++        self.assertEqual(len(old), 20)
++        # No statement deletion/reordering or other name normalization is allowed.
++        composed = [wrapper.body[2]] + tail
++        self.assertEqual([shape(item) for item in old], [shape(item) for item in composed])
+ 
+     def test_extracted_binding_keeps_original_integral_float_refusal(self):
+         path = Path(self.temp.name) / 'legacy-binding-scalars.db'

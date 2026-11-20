@@ -1,0 +1,130 @@
+--- pure65/run_attempt.py
++++ pure39/run_attempt.py
+@@ -1,4 +1,4 @@
+-"""Original isolated pure65 runner. Execute only after parent review/release.
++"""Original isolated pure39 runner. Execute only after parent review/release.
+ 
+ No project imports occur in this launcher. Seven selected distribution closures
+ are acquired independently of the compiler's five-package identity.
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = 'bd255e36907847007697849d0e7be691f5b3646e859e8a0680b9bd9a10150eb9'
+-PREFIX = 'artifacts/implementation/pat-io-timing/implementation02/'
++FROZEN_INDEX = '8ea7b1487af35dc4a8ac18f0be840fe694dfbc110595d668caf9502e4c0a2cdc'
++PREFIX = 'artifacts/implementation/pat-io-transcript/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -91,7 +91,7 @@
+         raise ValueError('Frozen source-preparation index changed')
+     value = read_json(index)
+     expected = value['files']
+-    if len(expected) != 164:
++    if len(expected) != 2803:
+         raise ValueError('Frozen inventory count changed')
+     actual = []
+     for expected_row in expected:
+@@ -177,7 +177,7 @@
+         while selector.get_map():
+             remaining = deadline - time.monotonic()
+             if remaining <= 0:
+-                raise TimeoutError('Pure65 child exceeded original harness deadline')
++                raise TimeoutError('Pure39 child exceeded original harness deadline')
+             for key, _ in selector.select(min(remaining, 0.1)):
+                 block = os.read(key.fileobj.fileno(), 65536)
+                 if not block:
+@@ -190,13 +190,13 @@
+                 log.write(block)
+                 count += len(block)
+             if time.monotonic() >= deadline:
+-                raise TimeoutError('Pure65 child crossed harness deadline during pipe collection')
++                raise TimeoutError('Pure39 child crossed harness deadline during pipe collection')
+     remaining = deadline - time.monotonic()
+     if remaining <= 0:
+-        raise TimeoutError('Pure65 child crossed harness deadline at EOF')
++        raise TimeoutError('Pure39 child crossed harness deadline at EOF')
+     process.wait(timeout=remaining)
+     if time.monotonic() >= deadline:
+-        raise TimeoutError('Pure65 child crossed harness deadline at process exit')
++        raise TimeoutError('Pure39 child crossed harness deadline at process exit')
+     return count
+ 
+ 
+@@ -204,7 +204,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 65 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 39 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -228,7 +228,7 @@
+             not 1 <= args.timeout_seconds <= 600):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation02'
++    stage = here.parent / 'implementation01'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -237,15 +237,15 @@
+     scratch_before = scratch_parent_before = None
+     before = external_before = frozen_before = own_before = None
+     started = time.monotonic()
+-    record = {'profile': 'hms.io-timing-pure-attempt/1', 'attempt': args.attempt,
++    record = {'profile': 'hms.io-transcript-pure-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 65,
+-              'projectInputCount': 157, 'frozenPreparationInputCount': 164,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 39,
++              'projectInputCount': 2800, 'frozenPreparationInputCount': 2803,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+                          'retainedLogBytes': MAX_LOG, 'scratchRetentionBytes': MAX_SCRATCH_BYTES},
+-              'scope': 'Pure compiler/fixed-unit/I/O static contract tests only; no Runtime construction, SQLite connection, network, native endpoints, model or hardware execution.'}
++              'scope': 'Pure transcript checks over copied original trial20 data only; no Runtime construction, SQLite connection, network, native endpoints, model or hardware execution.'}
+     write_json(attempt / 'started.json', record)
+     try:
+         own_before = [row(here / name, name) for name in OWN_FILES]
+@@ -257,8 +257,8 @@
+         frozen_before = frozen_inputs(stage)
+         write_json(attempt / 'frozen-before.json', frozen_before)
+         selected = [value for value in frozen_before if value['path'].startswith(PREFIX + 'project/')]
+-        if len(selected) != 157:
+-            raise ValueError('Candidate project closure must contain exactly 157 files')
++        if len(selected) != 2800:
++            raise ValueError('Candidate project closure must contain exactly 2800 files')
+         for value in selected:
+             relative = safe_relative(value['path'][len(PREFIX + 'project/'):])
+             target = tree / relative
+@@ -273,13 +273,10 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 65 or len(targets['targets']) != 65 or
+-                len(set(targets['targets'])) != 65 or
+-                sum(name.startswith('test_pat_compiler.PatCompilerTests.') for name in targets['targets']) != 20 or
+-                sum(name.startswith('test_pat_fixed_schema_units.FixedSchemaUnitTests.') for name in targets['targets']) != 14 or
+-                sum(name.startswith('test_pat_io_contracts.IoContractTests.') for name in targets['targets']) != 31 or
+-                any('test_all_three_families_compile_and_execute_across_two_local_aliases' in name for name in targets['targets'])):
+-            raise ValueError('Closed pure65 method selection changed')
++        if (targets['testCount'] != 39 or len(targets['targets']) != 39 or
++                len(set(targets['targets'])) != 39 or
++                any(not name.startswith('test_pat_io_transcript.IoTranscriptTests.') for name in targets['targets'])):
++            raise ValueError('Closed pure39 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+         scratch_parent = Path('/tmp')
+@@ -288,7 +285,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-timing-pure-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-transcript-pure-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

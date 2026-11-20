@@ -1,0 +1,12 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-recorded-catalog/implementation02/project/recorded_io/projection.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-recorded-catalog/implementation03/project/recorded_io/projection.py
+@@ -68,7 +68,8 @@
+     return rows[0]
+ 
+ def schema(db):
+-    suffix = " FROM main.sqlite_master WHERE name GLOB 'iosc_*' OR tbl_name GLOB 'iosc_*' OR name GLOB 'iosr_*' OR tbl_name GLOB 'iosr_*' OR name GLOB 'iose_*' OR tbl_name GLOB 'iose_*' OR name GLOB 'ioec_*' OR tbl_name GLOB 'ioec_*' LIMIT 33"
++    # Prefix ranges preserve schema ownership without SQL function callbacks.
++    suffix = " FROM main.sqlite_master WHERE (name COLLATE BINARY >= 'iosc_' AND name COLLATE BINARY < 'iosc`') OR (tbl_name COLLATE BINARY >= 'iosc_' AND tbl_name COLLATE BINARY < 'iosc`') OR (name COLLATE BINARY >= 'iosr_' AND name COLLATE BINARY < 'iosr`') OR (tbl_name COLLATE BINARY >= 'iosr_' AND tbl_name COLLATE BINARY < 'iosr`') OR (name COLLATE BINARY >= 'iose_' AND name COLLATE BINARY < 'iose`') OR (tbl_name COLLATE BINARY >= 'iose_' AND tbl_name COLLATE BINARY < 'iose`') OR (name COLLATE BINARY >= 'ioec_' AND name COLLATE BINARY < 'ioec`') OR (tbl_name COLLATE BINARY >= 'ioec_' AND tbl_name COLLATE BINARY < 'ioec`') LIMIT 33"
+     types = db.execute('SELECT typeof(name),typeof(type),typeof(tbl_name),typeof(sql)' + suffix).fetchall()
+     require(len(types) == 22 and all(tuple(row[:3]) == ('text', 'text', 'text') and row[3] in ('text', 'null')
+                                    for row in types), 'SCHEMA_CHANGED')

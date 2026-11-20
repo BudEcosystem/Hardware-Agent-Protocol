@@ -1,0 +1,26 @@
+--- artifacts/implementation/pat-io-group-worker/harness08/attempt_child.py
++++ artifacts/implementation/pat-io-group-worker/harness09/attempt_child.py
+@@ -210,7 +210,22 @@
+             global current_test
+             super().stopTest(test)
+             current_test = None
+-    result = unittest.TextTestRunner(verbosity=2, resultclass=RecordingResult).run(tests)
++    import cProfile
++    profiler = cProfile.Profile()
++    profiler.enable()
++    try:
++        result = unittest.TextTestRunner(verbosity=2, resultclass=RecordingResult).run(tests)
++    finally:
++        profiler.disable()
++        profile_rows = []
++        for entry in profiler.getstats():
++            code = entry.code
++            label = code if isinstance(code, str) else code.co_filename + ':' + str(code.co_firstlineno) + ':' + code.co_name
++            profile_rows.append(dict(label=label, calls=entry.callcount, recursiveCalls=entry.reccallcount,
++                                     cumulativeSeconds=entry.totaltime, selfSeconds=entry.inlinetime))
++        profile_rows.sort(key=lambda row: (-row['cumulativeSeconds'], row['label']))
++        write('profile.json', dict(scope='cProfile around the one exact bounded record-cutoff test, after imports; timings include profiler overhead.',
++                                  totalFunctions=len(profile_rows), top100=profile_rows[:100]))
+     counts = {'testsRun': result.testsRun, 'failures': len(result.failures), 'errors': len(result.errors),
+         'skips': len(result.skipped), 'expectedFailures': len(result.expectedFailures),
+         'unexpectedSuccesses': len(result.unexpectedSuccesses)}

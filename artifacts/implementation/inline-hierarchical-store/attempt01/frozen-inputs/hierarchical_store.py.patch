@@ -1,0 +1,11 @@
+--- prior/hierarchical_store.py
++++ inline512/hierarchical_store.py
+@@ -14,7 +14,7 @@
+ from chunk_store_base import CHUNK, MAX_FILE, MAX_HANDLES, MAX_TRANSFER, MAP_BYTES, INTERNAL_MAX
+ from native import Native
+ 
+-PROFILE='hms.hierarchical-chunk-store/0.1'
++PROFILE='hms.hierarchical-chunk-store.inline512/0.1'
+ MAX_INODES=8192
+ MAX_DEPTH=32
+ MAX_PATH=4095

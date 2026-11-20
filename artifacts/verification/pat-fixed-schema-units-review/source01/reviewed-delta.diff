@@ -1,0 +1,24 @@
+--- baseline/pat_compiler.py
++++ candidate/pat_compiler.py
+@@ -195,6 +195,21 @@
+         properties = schemas[0]["properties"]
+         require(type(metadata[action_id]) is dict and set(metadata[action_id]) == set(properties), "PAT_METADATA_REQUIRED")
+         for argument, info in metadata[action_id].items():
++            # Only trusted installed metadata may choose fixed schema semantics.
++            # The tag is hashed with the metadata; no unit or companion is inferred.
++            if type(info) is dict and "profile" in info:
++                closed(info, {"profile", "unit", "frame", "unitArgument", "frameArgument"},
++                       "PAT_METADATA_REQUIRED")
++                require(type(info["profile"]) is str and
++                        info["profile"] == "hms.pat.argument.fixed-schema-unit/0.1",
++                        "PAT_METADATA_MISMATCH")
++                require(all(schema["properties"][argument]["type"] in {"integer", "number"}
++                            for schema in schemas), "PAT_METADATA_MISMATCH")
++                semantic(info["unit"], "PAT_METADATA_MISMATCH")
++                require(info["unit"] is not None, "PAT_METADATA_REQUIRED")
++                require(info["frame"] is None and info["unitArgument"] is None and
++                        info["frameArgument"] is None, "PAT_METADATA_MISMATCH")
++                continue
+             closed(info, {"unit", "frame", "unitArgument", "frameArgument"}, "PAT_METADATA_REQUIRED")
+             semantic(info["unit"], "PAT_METADATA_MISMATCH")
+             semantic(info["frame"], "PAT_METADATA_MISMATCH")

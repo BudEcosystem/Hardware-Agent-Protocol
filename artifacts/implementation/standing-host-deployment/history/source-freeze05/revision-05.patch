@@ -1,0 +1,177 @@
+--- source-freeze04/PLAN.md
++++ source-freeze05/PLAN.md
+@@ -1,9 +1,11 @@
+ # Source review and bounded execution plan
+ 
+-Status: **unexecuted**. Root review of the frozen source packet and runner is
+-required before imports, compilers, native evaluator or host controls run. No
+-part of this source preparation executed candidate code. Partial control success
+-must not be reported as completion of the full approved standing host plan.
++Status: **revised source unexecuted; first attempt failed**. Root attempt01
++completed both native compiles and the original12-case/638-assertion evaluator,
++then failed schema validation during fixture construction before a native fixture
++launched. Its outputs and freeze04 remain retained. Root review is required before
++the revised fixed attempt02 runs. Partial control success must not be reported as
++completion of the full approved standing host plan.
+ 
+ The new files are a strict v2 codec, native pipe bridge, closed installation
+ contracts, shared-profile logical accounting, standing store/coordinator,
+@@ -45,7 +47,9 @@
+ ambiguity never authorizes a new original body. Catalog withdrawal blocks fresh
+ extension; it cannot prove the existing output stopped.
+ 
+-`run_checks.py` has one fixed invocation and creates a new `host-attempt01`.
++`run_checks.py` has one fixed invocation and creates a new `host-attempt02`.
++It verifies the retained attempt01 result and uses distinct qualification run
++and attempt identities ending in`:2`; no earlier provenance is reused.
+ Existing attempt directories are never overwritten. It freezes all copied/new
+ project inputs, owner bytes and review documents; hashes the public244 receipt
+ and every original before and after each command. It performs four fixed owned
+--- source-freeze04/README.md
++++ source-freeze05/README.md
+@@ -1,6 +1,6 @@
+ # Standing host deployment source candidate
+ 
+-Status: **source prepared, unexecuted, not qualified, not complete**. This isolated
++Status: **first attempt failed; revised source unexecuted, not qualified, not complete**. This isolated
+ vertical path uses the copied actual standing C endpoint and its original native
+ fixture. No public input or sealed parent packet is changed. It does not expose
+ a physical/public mount or claim protected control-storage capacity.
+@@ -9,8 +9,9 @@
+ profile and cumulative limits. It supplies no program, driver path, raw endpoint
+ packet or qualification result. A separate literal standing PAT compiler/catalog
+ selects the installed synthetic configuration from an original native evaluator
+-attempt. That attempt does not exist yet in this candidate; only the reviewed
+-runner can produce it by actually running the fixed original controls.
++attempt. Root attempt01 produced the actual original12-case/638-assertion
++evaluator evidence, then failed fixture construction before any native fixture
++launched. The revised runner must produce fresh attempt02 qualification provenance.
+ 
+ The copied Journal gains an explicit storage version and one shared finite and
+ standing claims authority. The same claims/fence table protects both instance
+@@ -49,4 +50,9 @@
+ Revision04 preserves freeze03 and keeps common REVOKE uncertainty independent
+ of standing replies. [REVISION-04.md](REVISION-04.md) and `revision-04.patch`
+ record the narrow correction. The current proposed run has twenty cases;
+-all remain unexecuted, with the same outstanding completion gates.
++that freeze was executed in failed attempt01, without reaching a host case.
++
++Revision05 preserves freeze04 and attempt01, corrects only two synthetic topology
++profile labels in the fixture, and assigns a distinct fixed attempt02. See
++[REVISION-05.md](REVISION-05.md). All twenty host cases and limits remain intact;
++the revised source has not been executed.
+--- source-freeze04/project/tests/standing_host_fixture.py
++++ source-freeze05/project/tests/standing_host_fixture.py
+@@ -30,8 +30,8 @@
+     driver=c.identity('HMS-STANDING-PIPE-SOURCES-v0.1',pins)
+     nodes={'hub':node('hub',contains=('board','service')),
+         'board':node('board',contains=('demand','output','demand-access','output-access')),
+-        'service':node('service',{'serviceProfile':'native-standing-pipe/0.1'},contains=('driver',),requires=('hub',)),
+-        'driver':node('driver',{'driverProfile':'native-standing-pipe/0.1','implementationDigest':driver},requires=('service',)),
++        'service':node('service',{'serviceProfile':'synthetic-service/0.1'},contains=('driver',),requires=('hub',)),
++        'driver':node('driver',{'driverProfile':'synthetic-io-hub/0.1','implementationDigest':driver},requires=('service',)),
+         'demand-access':node('gpio_access',{'pin':'demand'},requires=('driver',)),
+         'output-access':node('gpio_access',{'pin':'output'},requires=('driver',))}
+     for name in ('demand','output'):
+--- source-freeze04/run_checks.py
++++ source-freeze05/run_checks.py
+@@ -23,6 +23,8 @@
+ GUARDIAN_SHA='cf682bcfae001f5e1d33cad603ec4a7e3911dc4eab8557714b6973deec7bb206'
+ HELPER_SHA='a6ee94bcf3dc03df19f0dd07a81663badd4875ef1a6c429afbc55d7b2373b977'
+ ENV={'LANG':'C','LC_ALL':'C','PATH':'/usr/bin:/bin'}
++PRIOR_RESULT=HERE/'host-attempt01/RESULTS.json'
++PRIOR_RESULT_SHA='cfbbc3228cedcacf17d52c89ed9f6d8a8bcd241406c2ec184d3035737420f9b9'
+ FINAL_DESTINATION=None
+ FINAL_REPORT=None
+ BACKEND=Path('/usr/libexec/gcc/x86_64-linux-gnu/13')
+@@ -88,7 +90,8 @@
+     os.umask(0o077);baseline()
+     require(digest(HERE/'owner/guardian.py')==GUARDIAN_SHA and digest(HERE/'owner/libharness-owner.so')==HELPER_SHA,'Owner source changed')
+     from guardian import Guardian
+-    attempt=HERE/'host-attempt01';attempt.mkdir(mode=0o700)
++    require(digest(PRIOR_RESULT)==PRIOR_RESULT_SHA,'Prior attempt result changed')
++    attempt=HERE/'host-attempt02';attempt.mkdir(mode=0o700)
+     FINAL_DESTINATION=attempt/'RESULTS.json'
+     FINAL_REPORT={'passed':False,'phase':'preparation','reason':None}
+     replace_result(FINAL_DESTINATION,FINAL_REPORT)
+@@ -96,7 +99,7 @@
+     origin=json.loads((HERE/'source-pins.json').read_bytes())
+     names=sorted({row['project'] for row in origin['files'] if row['project'] is not None}|set(NEW))
+     files=['project/'+name for name in names]+['owner/guardian.py','owner/libharness-owner.so',
+-        'run_checks.py','PLAN.md','README.md','CAPACITY-REVIEW.md','source-pins.json','SOURCE-REVIEW.json','source-diff.patch','REVISION-02.md','revision-02.patch','REVISION-03.md','revision-03.patch','REVISION-04.md','revision-04.patch']
++        'run_checks.py','PLAN.md','README.md','CAPACITY-REVIEW.md','source-pins.json','SOURCE-REVIEW.json','source-diff.patch','REVISION-02.md','revision-02.patch','REVISION-03.md','revision-03.patch','REVISION-04.md','revision-04.patch','REVISION-05.md','revision-05.patch']
+     reviewed=json.loads((HERE/'SOURCE-REVIEW.json').read_bytes())
+     require(all(digest(HERE/row['path'])==row['sha256'] for row in reviewed['files']),'Reviewed source bytes changed')
+     pins={}
+@@ -119,7 +122,9 @@
+         'processScope':'Per-process rlimits and observed wall bound; original qualification image has no fork; spawnCount is an association, not a kernel process quota',
+         'fixedCommands':4,'commandWallSeconds':30,
+         'cleanupSeconds':8,'cpuSeconds':30,'addressBytes':512*1024*1024,'fileBytes':1024*1024,
+-        'openFiles':64,'physicalEligible':False,'protectedCapacity':False,'candidatePreviouslyExecuted':False})
++        'openFiles':64,'physicalEligible':False,'protectedCapacity':False,'candidatePreviouslyExecuted':True,
++        'priorAttemptResult':{'path':'host-attempt01/RESULTS.json','sha256':PRIOR_RESULT_SHA},
++        'attemptName':'host-attempt02','revisedSourcePreviouslyExecuted':False})
+     project=frozen/'project';evidence=attempt/'qualification';evidence.mkdir()
+     # This authorized runner imports only after freezing its complete candidate.
+     # Qualification bytes are then produced by the actual original child below.
+@@ -132,6 +137,7 @@
+ 
+     def stable():
+         baseline()
++        require(digest(PRIOR_RESULT)==PRIOR_RESULT_SHA,'Prior attempt result changed')
+         for row in origin['files']:
+             require(digest(HERE/row['copy'])==digest(REPO/row['source'])==row['sha256'],'Original source preservation changed')
+         require(digest(interpreter)==digest('/proc/self/exe')==runtime,'Interpreter changed')
+@@ -206,7 +212,7 @@
+     try:
+         qualification=evidence/'standing-controls'
+         run([gcc,*COMMON,*CORE,'tests/standing_controls.c','-o',qualification],'compile-qualification')
+-        common={'evaluatorId':EVALUATOR,'runId':'native-standing-original:1','attemptId':'native-standing-attempt:1',
++        common={'evaluatorId':EVALUATOR,'runId':'native-standing-original:2','attemptId':'native-standing-attempt:2',
+             'runnerDigest':runner_digest,'domainDigest':DOMAIN_DIGEST,'sourcePins':SOURCE_PINS,
+             'binaryPath':'standing-controls','binaryDigest':'sha256:'+digest(qualification),'argv':[str(qualification)]}
+         reservation={'profile':'hms.standing-native-reservation/0.1',**common,'limits':RUN_LIMITS,'state':'reserved'}
+--- source-freeze04/source-pins.json
++++ source-freeze05/source-pins.json
+@@ -1,6 +1,6 @@
+ {
+   "baselineFiles": 244,
+-  "candidateExecuted": false,
++  "candidateExecuted": true,
+   "files": [
+     {
+       "bytes": 115504,
+@@ -2075,5 +2075,6 @@
+       "source": "artifacts/implementation/standing-endpoint-controller/RESULTS-REVIEW.md"
+     }
+   ],
+-  "profile": "hms.standing-host-source-pins/0.1"
++  "profile": "hms.standing-host-source-pins/0.1",
++  "sourceCopiesCapturedBeforeExecution": true
+ }
+--- /dev/null
++++ source-freeze05/REVISION-05.md
+@@ -0,0 +1,23 @@
++# Fixture topology profile correction and distinct retry provenance
++
++Status: source-only correction after root attempt01 failed. All275 freeze04
++inputs and its source review are preserved under `history/source-freeze04`;
++attempt01 outputs remain unchanged. Root reported clean owner close/empty and
++four outer reaps, successful native builds and the original12-case/638-assertion
++evaluator. Host controls failed before launching a native fixture.
++
++The fixture supplied an invented `native-standing-pipe/0.1` profile for service
++and driver nodes. The unchanged resource-topology schema requires respectively
++`synthetic-service/0.1` and `synthetic-io-hub/0.1` (schema lines238–243 and287–297).
++The fixture now declares those existing synthetic profiles. Driver source/image
++identity and the actual owned native pipe remain separately bound as before.
++No schema, production guard, control count, or resource cap is relaxed.
++
++The reviewed launcher now exclusively creates `host-attempt02`, verifies the
++retained attempt01 result hash before/after commands, and uses distinct original
++qualification `runId` and `attemptId` values ending in`:2`. Its intent accurately
++records previous candidate execution and that this revision has not yet run.
++The old reservation/receipt/manifest and failed attempt are never overwritten or
++reused as the new evaluator attempt. All twenty proposed host cases remain.
++`revision-05.patch` is the exact delta; actual owner-death and other completion
++gates remain outstanding. No retry was executed during this source correction.

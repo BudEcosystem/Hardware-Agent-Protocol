@@ -1,0 +1,49 @@
+--- artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/pat_io_configuration_capture.py
++++ artifacts/implementation/pat-io-encoding/implementation01/project/hms/pat_io_configuration_capture.py
+@@ -58,7 +58,10 @@
+         data = canonical({'profile': self._record_profile, 'kind': kind, 'value': value})
+         sha = hashlib.sha256(data).hexdigest()
+         if not (reuse and sha in self._objects): self._reserve(len(data))
+-        return super()._write(kind, value, reuse=reuse)
++        # Preserve combined reservation before the original wall/group check.
++        # The base writer stores this exact envelope without encoding it again.
++        self._check_budget()
++        return self._write_record(data, sha, reuse=reuse)
+ 
+     def _configuration_write(self, kind, value, *, reuse=False):
+         self._check_budget()
+--- artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/pat_io_trials.py
++++ artifacts/implementation/pat-io-encoding/implementation01/project/hms/pat_io_trials.py
+@@ -123,6 +123,10 @@
+         self._check_budget()
+         data = canonical({'profile': self._record_profile, 'kind': kind, 'value': value})
+         digest = hashlib.sha256(data).hexdigest()
++        return self._write_record(data, digest, reuse=reuse)
++
++    def _write_record(self, data, digest, *, reuse):
++        """Store an internal encoded envelope after its caller's budget check."""
+         if reuse and digest in self._objects:
+             return copy.deepcopy(self._objects[digest])
+         require(len(self.records) < MAX_RECORDS and self.output_bytes + len(data) <= MAX_OUTPUT_BYTES,
+--- artifacts/implementation/pat-io-group-efficiency/implementation01/project/hms/resource_topology.py
++++ artifacts/implementation/pat-io-encoding/implementation01/project/hms/resource_topology.py
+@@ -79,6 +79,8 @@
+ def _snapshot(value, profile):
+     if type(value) is bytes:
+         value = parse_json(value)
++        _strict_tree(value)
++        encoded = canonical(value)
+     else:
+         # Reject unsupported Python objects and bound the original tree before
+         # traversing it recursively. Canonical encoding does not mutate scalar
+@@ -86,8 +88,8 @@
+         encoded = canonical(value)
+         _strict_tree(value)
+         value = parse_json(encoded)
+-    _strict_tree(value)
+-    encoded = canonical(value)  # Existing canonical carrier bound: 65,536 bytes.
++        _strict_tree(value)
++        # Reuse the bounded canonical bytes that produced this detached tree.
+     validator = _VALIDATORS[profile]
+     key = (profile, encoded)
+     with _SCHEMA_MEMO_LOCK:

@@ -1,0 +1,65 @@
+--- artifacts/implementation/pat-io-active-revocation/implementation01/project/hms/pat_io_configuration_history.py
++++ artifacts/implementation/pat-io-authorized-history/implementation01/project/hms/pat_io_configuration_history.py
+@@ -358,8 +358,6 @@
+         if row['state'] == 'rejected_before_dispatch': require(row['may_have_acted'] == 0, 'REFUSAL_EFFECT')
+         if row['may_have_acted']:
+             require(identity in links and row['attempt_id'] is not None, 'DISPATCH_LINK')
+-        if row['state'] in {'dispatching','running','outcome_unknown'}:
+-            require(authority.invokes(intent['instanceId'],intent['actionId']), 'ACTIVE_REVOCATION_UNSUPPORTED')
+     for identity,row in old_links.items(): require(links[identity] == row, 'DECISION_CHANGED')
+     require(set(links) <= set(operations), 'DISPATCH_LINK')
+     for identity,row in old_parents.items():
+@@ -411,7 +409,7 @@
+     return operations,parents,links,namespaces
+ 
+ 
+-def inspect_configuration_history(references, files, configuration, configuration_files, *, expected_setup, expected_authority):
++def _validated_configuration_history(references, files, configuration, configuration_files, *, expected_setup, expected_authority):
+     """Inspect bounded acquired data; expected setup and grants must be trusted.
+ 
+ No filesystem/clock/SQL/provider operation occurs here. Full source attestation,
+@@ -427,6 +425,7 @@
+         static_config = ('reg_types','reg_instances','reg_capabilities','reg_bindings','reg_binding_history','reg_resource_requirements','reg_resource_instances')
+         static_execution = ('rt_catalog','rt_adapters','rt_io_installation','rc_catalog','rc_generations','rc_tokens','rc_proofs')
+         fixed = None; dynamic = None; previous = previous_snapshot = None
++        permissions, denied = {}, []
+         for snapshot in snapshots:
+             execution = _tables(transcript,snapshot['checkpoint']); config = snapshot['tables']
+             current = ([config[k] for k in static_config],[execution[k] for k in static_execution],snapshot['resolver'])
+@@ -440,15 +439,35 @@
+                         {k:v for k,v in previous_snapshot['value'].items() if k!='checkpoint'}, 'FINAL_CHANGED')
+             presence = dynamic.checkpoint(snapshot,authority,execution)
+             previous = _decisions(program,authority,snapshot,execution,presence,previous,calls,counters)
++            permission = authority.invokes(*model.target)
++            permissions[snapshot['checkpoint']['record']] = {
++                'invokes':permission, 'read':authority.allowed('read',model.target[0])}
++            for row in execution['operations']:
++                if row['state'] in {'dispatching','running','outcome_unknown'} and not permission:
++                    denied.append((snapshot['checkpoint']['record'],row['id']))
+             previous_snapshot = snapshot
+         require(authority.index == len(authority.changes), 'GRANT_PLAN')
+-        return {'profile':'hms.pat.io-configuration-inspection/0.1','configurationHistoryChecked':True,
++        result = {'profile':'hms.pat.io-configuration-inspection/0.1','configurationHistoryChecked':True,
+             'trustedGrantPlanMatched':True,'authorizationDecisionsChecked':True,
+             'configurationSnapshots':len(snapshots),'configurationRecords':len(configuration['records']),
+             'decisions':counters,'configurationAttested':False,'compilerIdentityAttested':False,
+             'observationSampleSemanticsChecked':False,'activeRevocationChecked':False,'operationHistoryChecked':False,'procedureHistoryChecked':False,
+             'boardHistoryChecked':False,'independentOutcomeChecked':False,'qualificationPassed':False}
++        return transcript, snapshots, permissions, denied, result
+     except IoConfigurationError: raise
+     except IoTranscriptError as error: raise IoConfigurationError('TRANSCRIPT') from error
+     except (IoCorrespondenceError,IoHistoryError,ResourceTopologyError,ContractError,KeyError,TypeError,ValueError,IndexError,UnicodeError,RecursionError) as error:
+         raise IoConfigurationError('SHAPE') from error
++
++
++def inspect_configuration_history(references, files, configuration, configuration_files, *, expected_setup, expected_authority):
++    """Validate configuration decisions; active withdrawal needs the composed checker.
++
++The private validated-data handoff never turns denied invocation into approval.
++This standalone API preserves its original active-revocation refusal.
++"""
++    _, _, _, denied, result = _validated_configuration_history(
++        references,files,configuration,configuration_files,
++        expected_setup=expected_setup,expected_authority=expected_authority)
++    require(not denied, 'ACTIVE_REVOCATION_UNSUPPORTED')
++    return result

@@ -1,0 +1,190 @@
+--- previous/scripts/audit_endpoint_evidence.py
++++ current/scripts/audit_endpoint_evidence.py
+@@ -4,12 +4,15 @@
+ import hashlib
+ import json
+ from pathlib import Path
++import tarfile
+ 
+ ROOT = Path(__file__).resolve().parents[1]
+ DEST = ROOT / 'artifacts/verification'
+ checks = 0
+ unique = set()
+ receipts = []
++toolchain_members = {}
++historical_toolchain_checks = []
+ 
+ 
+ def digest(path):
+@@ -33,6 +36,71 @@
+ def records(items, base=ROOT):
+     for item in items:
+         verify(base / item['path'], item['sha256'])
++
++
++def historical_toolchain(archive, files):
++    """Verify retained compiler bytes without requiring an old temporary install.
++
++    Existing installed paths must still match. Missing paths are recorded as
++    archive-only checks; no compiler is extracted, installed or executed.
++    """
++    global checks
++    archive_path = ROOT / archive['path']
++    verify(archive_path, archive['sha256'])
++    key = (str(archive_path), archive['sha256'])
++    cached = toolchain_members.setdefault(key, {})
++    needed = {item['archive_member'] for item in files.values()} - cached.keys()
++    if needed:
++        found, links = {}, {}
++        with tarfile.open(archive_path, 'r|bz2') as source:
++            for member in source:
++                if member.name not in needed:
++                    continue
++                if member.name in found or member.name in links:
++                    raise ValueError('Duplicate pinned toolchain member: ' + member.name)
++                if member.islnk():
++                    target = Path(member.linkname)
++                    if target.is_absolute() or '..' in target.parts:
++                        raise ValueError('Unsupported toolchain hard-link target')
++                    links[member.name] = member.linkname
++                    continue
++                if not member.isfile() or not 0 <= member.size <= 64 * 1024 * 1024:
++                    raise ValueError('Unexpected pinned toolchain member: ' + member.name)
++                hasher, size = hashlib.sha256(), 0
++                with source.extractfile(member) as stream:
++                    while data := stream.read(1024 * 1024):
++                        hasher.update(data); size += len(data)
++                if size != member.size:
++                    raise ValueError('Incomplete toolchain member: ' + member.name)
++                found[member.name] = hasher.hexdigest()
++        if found.keys() | links.keys() != needed:
++            raise ValueError('Pinned toolchain archive is missing selected members')
++        # Hard links are archive-root references. Resolve only to another
++        # explicitly selected, hashed member; never to a filesystem path.
++        for name in links:
++            target, seen = name, set()
++            while target in links:
++                if target in seen or len(seen) >= 16:
++                    raise ValueError('Cyclic or excessive toolchain hard links')
++                seen.add(target); target = links[target]
++            expected = found.get(target, cached.get(target))
++            if expected is None:
++                raise ValueError('Toolchain hard link has no selected hashed target')
++            found[name] = expected
++        verify(archive_path, archive['sha256'])
++        cached.update(found)
++    for path, item in files.items():
++        if cached[item['archive_member']] != item['sha256']:
++            raise ValueError('Historical toolchain archive member differs: ' + item['archive_member'])
++        checks += 1
++        installed = Path(path)
++        present = installed.exists() or installed.is_symlink()
++        if present:
++            verify(installed, item['sha256'])
++        historical_toolchain_checks.append(dict(historicalPath=path,
++            archive=archive['path'], archiveMember=item['archive_member'],
++            sha256=item['sha256'], installedPathPresent=present,
++            verification='archive_and_installed_path' if present else 'archive_only'))
+ 
+ 
+ def main():
+@@ -98,6 +166,22 @@
+     # snapshots, while the current runtime gate above still checks live files.
+     records(prior_696['outputs'])
+     for item in prior_696['files_before'] + prior_696['files_after']:
++        verify(ROOT / item['snapshot_path'], item['sha256'])
++    checkpoint_748 = read(DEST / 'runtime-748-checkpoint/index.json')
++    records(checkpoint_748['files'])
++    records(checkpoint_748['references'])
++    prior_748 = read(ROOT / checkpoint_748['references'][0]['path'])
++    if (prior_748['tests'], prior_748['failures'], prior_748['errors'], prior_748['skipped']) != (748, 0, 0, 0):
++        raise ValueError('Historical748 checkpoint is not the passing baseline')
++    if (not prior_748['passed'] or not prior_748['inputs_stable'] or not prior_748['compiler_identity_stable'] or
++            prior_748['expected_failures'] or prior_748['unexpected_successes'] or
++            len(prior_748['files_before']) != 151 or len(prior_748['files_after']) != 151):
++        raise ValueError('Historical748 checkpoint input proof differs')
++    # The public PAT foundation changes selected source identities. Historical
++    # I/O recovery remains tied to its exact 748-test source snapshots; today's
++    # complete runtime is independently checked against current files above.
++    records(prior_748['outputs'])
++    for item in prior_748['files_before'] + prior_748['files_after']:
+         verify(ROOT / item['snapshot_path'], item['sha256'])
+     runtime_369 = read(DEST / 'runtime-369-snapshot/index.json')
+     records(runtime_369['files'])
+@@ -302,8 +386,7 @@
+     if not boot['passed'] or boot['avr']['executed'] or boot['avr']['linked_firmware']:
+         raise ValueError('Unexpected boot allocator build/qualification claim')
+     records(boot['files']); records(boot['outputs']); records([boot['avr']['toolchain_archive']])
+-    for path, item in boot['avr']['toolchain_files'].items():
+-        verify(Path(path), item['sha256'])
++    historical_toolchain(boot['avr']['toolchain_archive'], boot['avr']['toolchain_files'])
+     boot_review = read(DEST / 'boot-epoch-review/review.json')
+     if not boot_review['passed'] or boot_review['sourceReview']['blockingFindings']:
+         raise ValueError('Boot allocator review failed')
+@@ -314,21 +397,21 @@
+         raise ValueError('Unexpected AVR EEPROM result or execution claim')
+     records(eeprom['files']); records(eeprom['outputs'])
+     records([eeprom['avr']['toolchain_archive'], eeprom['host_compiler']])
+-    for path, item in eeprom['avr']['archive_verified_files'].items():
+-        verify(Path(path), item['sha256'])
++    historical_toolchain(eeprom['avr']['toolchain_archive'], eeprom['avr']['archive_verified_files'])
+     eeprom_review = read(DEST / 'avr-eeprom-review/review.json')
+     if not eeprom_review['passed'] or eeprom_review['independentNativeResults']['target_executed']:
+         raise ValueError('Unexpected independent EEPROM review result')
+     for key in ('inputs', 'sourceSnapshots', 'outputs'):
+         records(eeprom_review[key])
+-    records([eeprom_review['authorReceipt'], eeprom_review['hostCompiler'], eeprom_review['objdump']])
++    records([eeprom_review['authorReceipt'], eeprom_review['hostCompiler']])
++    objdump = eeprom_review['objdump']
++    historical_toolchain(eeprom['avr']['toolchain_archive'], {objdump['path']: objdump})
+     uart = read(DEST / 'avr-uart/review.json')
+     if not uart['passed'] or uart['avr']['executed']:
+         raise ValueError('UART producer scope or result mismatch')
+     records(uart['files']); records(uart['outputs'])
+     records([uart['avr']['toolchain_archive'], uart['host_compiler']])
+-    for path, item in uart['avr']['archive_verified_files'].items():
+-        verify(Path(path), item['sha256'])
++    historical_toolchain(uart['avr']['toolchain_archive'], uart['avr']['archive_verified_files'])
+     uart_review = read(DEST / 'avr-uart-review/review.json')
+     if (not uart_review['passed'] or uart_review['blocking_findings'] or
+             uart_review['target_executed'] or uart_review['emulator_executed']):
+@@ -726,7 +809,15 @@
+     worker_review = read(DEST / 'pat-simulation-worker/review.json')
+     if not worker_review['passed'] or worker_review['tests'] != 16 or worker_review['inputCount'] != 43:
+         raise ValueError('PAT simulation worker proof differs')
+-    records(worker_review['sourcePins'])
++    # This historical worker proof predates compiler identity /0.2. Its exact
++    # inputs remain in the full748 snapshot; the current runtime gate above
++    # separately verifies the integrated worker and compiler.
++    worker_baseline = {row['path']: row for row in prior_748['files_before']}
++    for item in worker_review['sourcePins']:
++        archived = worker_baseline[item['path']]
++        if archived['sha256'] != item['sha256']:
++            raise ValueError('Historical worker source differs from full748 snapshot')
++        verify(ROOT / archived['snapshot_path'], item['sha256'])
+     resource_design = read(DEST / 'io-driver-hub-resource-design/index.json')
+     records(resource_design['files'])
+     focused = {}
+@@ -1234,10 +1325,10 @@
+     recovery_core = {path: value for path, value in recovery_map.items()
+                      if path != 'artifacts/verification/io-status-read-timeout-resolution/run.py'}
+     if (len(recovery_core) != 151 or recovery_core != {
+-            row['path']: (row['sha256'], row['bytes']) for row in runtime['files_before']} or
++            row['path']: (row['sha256'], row['bytes']) for row in prior_748['files_before']} or
+             sorted(path for path in final_io_core if final_io_core[path] != recovery_core.get(path)) !=
+             ['tests/test_io_transport.py']):
+-        raise ValueError('I/O recovery core differs from current full run or changed production')
++        raise ValueError('I/O recovery core differs from its historical full748 run or changed production')
+     records([io_recovery['sourceComparison'], io_recovery['finalTransportReport']])
+     io_recovery_source = read(ROOT / io_recovery['sourceComparison']['path'])
+     if (io_recovery_source['changedCoreInputsFromFailed747'] != ['tests/test_io_transport.py'] or
+@@ -1467,7 +1558,9 @@
+         'scope': 'Retained input/output hash consistency for the current Python runtime and original endpoint/platform primitives. Current runtime receipt includes sequential before/after source snapshots and immutable outputs. Prior primitive Harness, compact host/MCP and installed-support evidence uses explicit 241/278/280/289/315-test source archives and frozen fixtures; those receipts do not validate subsequent procedure changes. Independent glue/catalog reviews and intermediate effect/start proofs use their exact historical source copies; current regression coverage is separate. Historical Harness flows remain single-route scenarios. Built-file hashes establish stability during their recorded Harness run, not hashes captured at the earlier build time. No tests or acquired programs executed by this audit.',
+         'hash_assertions_verified': checks, 'unique_files_verified': len(unique),
+         'receipts': receipts, 'auditor_sha256': digest(Path(__file__).resolve()),
++        'historical_toolchain_checks': historical_toolchain_checks,
+         'summary': {'python_tests': runtime['tests'], 'native_cases': native['native_tests'],
++                    'historical_748_checkpoint_tests': prior_748['tests'],
+                     'historical_696_checkpoint_tests': prior_696['tests'],
+                     'multi_adapter_independent_cases': multi_review['tests'][0]['cases'],
+                     'multi_adapter_independent_realtime_scenarios': multi_review['tests'][1]['completed_scenarios'],

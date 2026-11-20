@@ -1,0 +1,106 @@
+--- prior/evidence_vault/store.py
++++ batch/evidence_vault/store.py
+@@ -9,7 +9,7 @@
+ 
+ from hms.contracts import canonical
+ from . import contracts as c
+-from .connection import _Connection, _Snapshot
++from .connection import _Connection, _Snapshot, _BatchSnapshot
+ 
+ DOMAIN = b'HMS-PAT-EVIDENCE-VAULT-MANIFEST-v0.1'
+ _DDL = {
+@@ -263,3 +263,94 @@
+             raise c.VaultError('DATABASE') from error
+         except (OSError, ValueError, TypeError, KeyError, IndexError, RecursionError) as error:
+             raise c.VaultError('INVALID') from error
++
++    @contextmanager
++    def snapshot_many(self, requests, *, lifetime_ms=c.MAX_LEASE_MS,
++                      max_documents=c.MAX_STORE_DOCUMENTS, max_bytes=c.MAX_STORE_BYTES):
++        """Hold every requested manifest or fail before yielding any view.
++
++        Requests are exact (intent_digest, binding_digest) tuples in an exact
++        tuple, with distinct intents. Limits cover the complete selected set;
++        repeated bodies are charged per reference even though immutable bytes
++        are shared in memory. Charge is each manifest's wire bytes plus 512,
++        plus each reference's body bytes, UTF-8 path bytes and 512. This logical
++        bound is not a measured Python-heap bound or a capacity reservation.
++        Metadata and capacity preflight precede fetching selected body blobs.
++        The lifetime begins after validation; callers must check at commit and
++        promptly release the held transaction. Single and batch leases exclude
++        each other. This does not establish semantic qualification.
++        """
++        try:
++            c.require(type(requests) is tuple, 'REQUESTS')
++            c.number(len(requests), 1, min(c.MAX_MANIFESTS, self._expected['maxManifests']))
++            c.number(lifetime_ms, 1, c.MAX_LEASE_MS)
++            c.number(max_documents, 1, c.MAX_STORE_DOCUMENTS)
++            c.number(max_bytes, 1, c.MAX_STORE_BYTES)
++            intents = set()
++            for pair in requests:
++                c.require(type(pair) is tuple and len(pair) == 2, 'REQUESTS')
++                intent, binding = pair
++                c.digest(intent); c.digest(binding)
++                c.require(intent not in intents, 'DUPLICATE_INTENT')
++                intents.add(intent)
++            keys = tuple(sorted(requests))
++            document_limit = min(max_documents, self._expected['maxDocuments'])
++            byte_limit = min(max_bytes, self._expected['maxExpandedBytes'])
++            with self._mutex:
++                self._ready()
++                self._db.execute('PRAGMA query_only=ON')
++                try:
++                    self._db.execute('BEGIN')
++                    state = self._state()
++                    count = charge = expanded = 0
++                    for intent, binding in keys:
++                        item = state['keys'].get(intent)
++                        c.require(item is not None, 'MANIFEST_UNAVAILABLE')
++                        c.require(item['record']['bindingDigest'] == binding, 'KEY_CONFLICT')
++                        refs = state['groups'][item['record']['sequence']]
++                        count += len(refs)
++                        expanded += sum(row['bytes'] for row in refs.values())
++                        charge += len(item['wire']) + 512 + sum(row['bytes'] + len(name.encode('utf-8')) + 512
++                                                              for name, row in refs.items())
++                        c.require(count <= document_limit and charge <= byte_limit, 'SNAPSHOT_CAPACITY')
++                    records, bodies = {}, {}
++                    for intent, binding in keys:
++                        item, files = self._read(state, intent, binding)
++                        refs = state['groups'][item['record']['sequence']]
++                        shared = {}
++                        for name, body in files.items():
++                            digest = refs[name]['sha256']
++                            if digest in bodies:
++                                c.require(bodies[digest] == body, 'BODY_CONFLICT')
++                            else:
++                                bodies[digest] = body
++                            shared[name] = bodies[digest]
++                        records[(intent, binding)] = item['wire'], shared
++                    usage = dict(manifests=len(keys), documents=count, expandedBodyBytes=expanded,
++                        uniqueBodies=len(bodies), uniqueBodyBytes=sum(map(len, bodies.values())),
++                        chargedBytes=charge, documentLimit=document_limit, byteLimit=byte_limit)
++                    lease = _BatchSnapshot(self, records, usage, lifetime_ms)
++                    self._lease = lease
++                    try:
++                        yield lease
++                        lease.check(self)
++                        self._identities()
++                    finally:
++                        lease._active = False
++                        self._lease = None
++                finally:
++                    try:
++                        if self._db.in_transaction:
++                            self._db.execute('ROLLBACK')
++                        self._db.execute('PRAGMA query_only=OFF')
++                    except BaseException:
++                        self._poisoned = True
++                        raise
++        except c.VaultError:
++            raise
++        except c.JournalError as error:
++            raise c.VaultError('INVALID') from error
++        except sqlite3.Error as error:
++            raise c.VaultError('DATABASE') from error
++        except (OSError, ValueError, TypeError, KeyError, IndexError, RecursionError) as error:
++            raise c.VaultError('INVALID') from error

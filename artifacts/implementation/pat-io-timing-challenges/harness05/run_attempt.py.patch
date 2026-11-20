@@ -1,0 +1,106 @@
+--- artifacts/implementation/pat-io-timing-challenges/harness01/run_attempt.py
++++ artifacts/implementation/pat-io-timing-challenges/harness05/run_attempt.py
+@@ -1,4 +1,4 @@
+-"""Original isolated timing9 runner. Execute only after parent review/release.
++"""Original isolated regression77 runner. Execute only after parent review/release.
+ 
+ No project imports occur in this launcher. Seven selected distribution closures
+ are acquired independently of the compiler's five-package identity.
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = 'adb63bce663e249d06b1c46bec3d04fed6d1111e43796dd56c9567211bcbd381'
+-PREFIX = 'artifacts/implementation/pat-io-timing-challenges/implementation01/'
++FROZEN_INDEX = '6a7531015ffe1e5a758e7cbe27d94f54a6a9134e8e423d14e40b45154a7e46a0'
++PREFIX = 'artifacts/implementation/pat-io-timing-challenges/implementation02/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -177,7 +177,7 @@
+         while selector.get_map():
+             remaining = deadline - time.monotonic()
+             if remaining <= 0:
+-                raise TimeoutError('TimingChallenges9 child exceeded original harness deadline')
++                raise TimeoutError('TimingRegression77 child exceeded original harness deadline')
+             for key, _ in selector.select(min(remaining, 0.1)):
+                 block = os.read(key.fileobj.fileno(), 65536)
+                 if not block:
+@@ -190,13 +190,13 @@
+                 log.write(block)
+                 count += len(block)
+             if time.monotonic() >= deadline:
+-                raise TimeoutError('TimingChallenges9 child crossed harness deadline during pipe collection')
++                raise TimeoutError('TimingRegression77 child crossed harness deadline during pipe collection')
+     remaining = deadline - time.monotonic()
+     if remaining <= 0:
+-        raise TimeoutError('TimingChallenges9 child crossed harness deadline at EOF')
++        raise TimeoutError('TimingRegression77 child crossed harness deadline at EOF')
+     process.wait(timeout=remaining)
+     if time.monotonic() >= deadline:
+-        raise TimeoutError('TimingChallenges9 child crossed harness deadline at process exit')
++        raise TimeoutError('TimingRegression77 child crossed harness deadline at process exit')
+     return count
+ 
+ 
+@@ -204,7 +204,7 @@
+     names = {'testsRun', 'failures', 'errors', 'skips', 'expectedFailures', 'unexpectedSuccesses'}
+     return (type(value) is dict and set(value) == names and
+             all(type(value[key]) is int and value[key] >= 0 for key in names) and
+-            value['testsRun'] == 9 and all(value[key] == 0 for key in names - {'testsRun'}))
++            value['testsRun'] == 77 and all(value[key] == 0 for key in names - {'testsRun'}))
+ 
+ 
+ def scratch_identity(path):
+@@ -228,7 +228,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation01'
++    stage = here.parent / 'implementation02'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'
+@@ -239,13 +239,13 @@
+     started = time.monotonic()
+     record = {'profile': 'hms.io-timing-challenges-attempt/1', 'attempt': args.attempt,
+               'status': 'preparing', 'currentPass': False, 'childState': 'not_started',
+-              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 9,
++              'exitCode': None, 'counts': None, 'errors': [], 'expectedTests': 77,
+               'projectInputCount': 7070, 'frozenPreparationInputCount': 7073,
+               'timeoutSeconds': args.timeout_seconds, 'totalDiskQuotaEnforced': False,
+               'limits': {'singleAcquiredFileBytes': MAX_FILE, 'inventoryFiles': MAX_FILES,
+                          'inputInventoryBytes': MAX_INPUT_BYTES, 'jsonReceiptBytes': MAX_JSON,
+                          'retainedLogBytes': MAX_LOG, 'scratchRetentionBytes': MAX_SCRATCH_BYTES},
+-              'scope': 'Eight original GPIO timing cases and one pre-runtime refusal method; no network, physical endpoint, MCU, inference or live service.'}
++              'scope': '77 unchanged pure configuration/refusal history tests; no runtime construction or SQL connection; no network, physical endpoint, MCU, inference or live service.'}
+     write_json(attempt / 'started.json', record)
+     try:
+         own_before = [row(here / name, name) for name in OWN_FILES]
+@@ -273,11 +273,12 @@
+         external_before = selected_external(approved)
+         write_json(attempt / 'external-before.json', external_before)
+         targets = read_json(attempt / 'harness/targets.json')
+-        if (targets['testCount'] != 9 or
+-                len(targets['targets']) != 9 or
+-                len(set(targets['targets'])) != 9 or
+-                sum(name.startswith('test_pat_io_timing_challenges.GpioTimingChallengeTests.') for name in targets['targets']) != 9):
+-            raise ValueError('Closed timing9 method selection changed')
++        if (targets['testCount'] != 77 or
++                len(targets['targets']) != 77 or
++                len(set(targets['targets'])) != 77 or
++                sum(name.startswith('test_pat_io_configuration_history.IoConfigurationHistoryTests.') for name in targets['targets']) != 48 or
++                sum(name.startswith('test_pat_io_refusal_history.IoRefusalHistoryTests.') for name in targets['targets']) != 29):
++            raise ValueError('Closed regression77 method selection changed')
+         # Reuse the reviewed source08 ancestor/ownership checks; never chmod
+         # a shared ancestor or delete the original raw scratch root.
+         scratch_parent = Path('/tmp')
+@@ -286,7 +287,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-timing-challenges-timing9-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-timing-challenges-regression77-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

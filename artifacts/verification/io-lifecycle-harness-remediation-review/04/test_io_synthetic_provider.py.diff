@@ -1,0 +1,45 @@
+--- 03/test_io_synthetic_provider.py
++++ 04/test_io_synthetic_provider.py
+@@ -14,6 +14,7 @@
+ from hms.synthetic_io_installation import DRIVER, PROFILE, implementation_digest, normalize_installation
+ from hms.synthetic_io_runtime import IoRuntime
+ from test_resource_topology import topology, generations
++from io_evidence_capture import EvidenceWorkspace, snapshot_databases
+ 
+ EVIDENCE_DIRECTORY = None
+ 
+@@ -33,9 +34,9 @@
+ 
+ class SyntheticIoProviderTests(unittest.TestCase):
+     def setUp(self):
+-        self.temp = tempfile.TemporaryDirectory(); self.addCleanup(self.temp.cleanup)
++        self.temp = EvidenceWorkspace(); self.addCleanup(self.temp.cleanup)
+         self.directory = Path(self.temp.name)/'runtime'
+-        self._captured = False; self.addCleanup(self.capture)
++        self._captured = False; self._capture_number = 0; self.addCleanup(self.capture)
+         self.wall = 1000; self.mono = 1000
+         self.owner = Context('owner','simulation:io-hub')
+         self.configuration = installation()
+@@ -52,14 +53,15 @@
+             return
+         if self._captured:
+             return
++        target = EVIDENCE_DIRECTORY/self._testMethodName/('%02d-final'%self._capture_number)
++        self._capture_number += 1
++        try:
++            snapshot_databases(self.directory,target,{'wallMs':getattr(self,'wall',None),'monotonicMs':getattr(self,'mono',None),
++                'installation':getattr(self,'configuration',None),'databaseFiles':sorted(path.name for path in self.directory.glob('*.db'))})
++        except BaseException as exc:
++            self.temp.failed(exc)
++            raise
+         self._captured = True
+-        target = EVIDENCE_DIRECTORY/self._testMethodName; target.mkdir()
+-        for path in sorted(self.directory.glob('*.db')):
+-            with sqlite3.connect('file:'+str(path)+'?mode=ro',uri=True) as source:
+-                with sqlite3.connect(target/path.name) as copy_db:
+-                    source.backup(copy_db)
+-        (target/'context.json').write_text(json.dumps({'wallMs':getattr(self,'wall',None),'monotonicMs':getattr(self,'mono',None),
+-            'installation':getattr(self,'configuration',None),'databaseFiles':sorted(path.name for path in self.directory.glob('*.db'))},indent=2)+'\n')
+ 
+     def advance(self, amount):
+         self.wall += amount; self.mono += amount

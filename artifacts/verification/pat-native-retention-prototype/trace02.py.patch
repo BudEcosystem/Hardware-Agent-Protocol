@@ -1,0 +1,26 @@
+--- trace.py
++++ trace02.py
+@@ -18,7 +18,7 @@
+ assert read(BASE/'attempt01/result.json')['status']=='passed'
+ for row in read(BASE/'inputs.json')['files']:
+     assert (BASE/row['path']).stat().st_size==row['bytes'] and sha(BASE/row['path'])==row['sha256']
+-OUT=BASE/'trace01';OUT.mkdir(mode=0o700,exist_ok=False)
++OUT=BASE/'trace02';OUT.mkdir(mode=0o700,exist_ok=False)
+ tracer=Path(shutil.which('strace')).resolve();binary=BASE/'build01/scan'
+ environment={'PATH':'/usr/bin:/bin','LANG':'C.UTF-8','LC_ALL':'C.UTF-8'}
+ resource.setrlimit(resource.RLIMIT_CORE,(0,0));resource.setrlimit(resource.RLIMIT_FSIZE,(1048576,1048576))
+@@ -71,6 +71,14 @@
+             assert (parent=='AT_FDCWD' and path_==str(path)) or (int(parent) in directory_fds and path_=='nested')
+             if int(fd)>=0:directory_fds.add(int(fd))
+             open_records.append(call)
++        elif name_=='fstat':
++            fd=int(line.split('(',1)[1].split(',',1)[0])
++            assert (fd in directory_fds and 'S_IFDIR' in line) or (fd==1 and 'S_IFIFO' in line)
++        elif name_=='fcntl':
++            match=re.fullmatch(r'fcntl\(([0-9]+), (F_GETFL|F_SETFD)(?:, (FD_CLOEXEC))?\)\s+= (.*)',line);assert match,line
++            fd,operation,argument,result_=match.groups();assert int(fd) in directory_fds
++            if operation=='F_GETFL':assert argument is None and 'O_DIRECTORY' in result_
++            else:assert argument=='FD_CLOEXEC' and result_=='0'
+         elif name_=='newfstatat':
+             if line.startswith('newfstatat(1, "",'):
+                 assert 'AT_EMPTY_PATH' in line

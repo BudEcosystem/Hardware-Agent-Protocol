@@ -1,0 +1,22 @@
+--- artifacts/implementation/pat-io-snapshot-reuse/harness03/run_attempt.py
++++ artifacts/implementation/pat-io-snapshot-reuse/harness07/run_attempt.py
+@@ -21,8 +21,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = '121d71b66df982c9c0a530a56f5cea200b67339284fadd152e2e399e5aae58e3'
+-PREFIX = 'artifacts/implementation/pat-io-snapshot-reuse/implementation01/'
++FROZEN_INDEX = '994feaf97781c64c8bc4b236bf426a7b29ff051eac798616d07bc0128d6ea306'
++PREFIX = 'artifacts/implementation/pat-io-snapshot-reuse/implementation02/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -228,7 +228,7 @@
+             not 1 <= args.timeout_seconds <= 180):
+         raise SystemExit('Invalid attempt name or bounded timeout')
+     here = Path(__file__).resolve().parent
+-    stage = here.parent / 'implementation01'
++    stage = here.parent / 'implementation02'
+     attempt = here / 'attempts' / args.attempt
+     attempt.mkdir(parents=True, mode=0o700, exist_ok=False)
+     tree = attempt / 'project'

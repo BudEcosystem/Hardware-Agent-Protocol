@@ -1,0 +1,12 @@
+--- artifacts/implementation/pat-io-snapshot-reuse/implementation01/project/tests/test_pat_io_snapshot_reuse.py
++++ artifacts/implementation/pat-io-snapshot-reuse/implementation02/project/tests/test_pat_io_snapshot_reuse.py
+@@ -110,7 +110,8 @@
+         with patch.object(graph, '_dag', wraps=graph._dag) as dag, \
+              patch.object(graph, 'parse_json', side_effect=AssertionError('warm parse')):
+             self.assertEqual(graph.parse_topology(raw), expected)
+-            self.assertEqual(dag.call_count, 2)
++            self.assertEqual([call.args[1] for call in dag.call_args_list],
++                ['RESOURCE_CONTAINMENT_CYCLE', 'RESOURCE_DEPENDENCY_CYCLE', 'RESOURCE_ALIAS_CYCLE'])
+         value['nodes']['svcA']['requires'].append('driverA'); raw = canonical(value)
+         for _ in range(2):
+             with self.assertRaisesRegex(graph.ResourceTopologyError, 'RESOURCE_DEPENDENCY_CYCLE'):

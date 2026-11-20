@@ -1,0 +1,133 @@
+--- previous/hms/pat_io_bindings.py
++++ authority/hms/pat_io_bindings.py
+@@ -387,3 +387,29 @@
+     def for_roles(self, context, artifact, role_instances):
+         with self.journal._mutex:
+             return self._resolve(context, artifact, explicit=role_instances)
++
++    @_refusals
++    def configured_snapshot(self, context):
++        """Read every explicitly registered instance in the owning transaction.
++
++        This is a complete configured inventory, not a routing/uniqueness query.
++        Every instance needs read and invoke permission for all installed actions.
++        Unavailable or missing entries refuse the entire snapshot. Presence is
++        typed session provenance; effect admission still checks actual freshness.
++        """
++        with self.journal._mutex:
++            self._context(context)
++            before = self._db.total_changes
++            saved, ready = self._inventory()
++            result = {}; size = 0
++            for instance in sorted(self._registrations):
++                expected = self._semantics[instance]
++                generation = self._minimal(context, instance, sorted(expected))
++                _require(generation is not None, 'PAT_BINDING_UNAVAILABLE')
++                descriptor = self._descriptor(instance, generation, saved, ready)
++                _require(_same(descriptor['argumentMetadata'], expected), 'PAT_BINDING_METADATA_CHANGED')
++                size += len(_output_wire(descriptor, MAX_DESCRIPTOR_BYTES))
++                _require(size <= MAX_CACHE_BYTES, 'PAT_BINDING_OUTPUT_LIMIT')
++                result[instance] = copy.deepcopy(descriptor)
++            _require(self._db.in_transaction and self._db.total_changes == before, 'PAT_RESOLVER_IMPURE')
++            return result
+--- previous/supervisor/io_services.py
++++ authority/supervisor/io_services.py
+@@ -24,6 +24,7 @@
+ 
+ CONFIG_PROFILE = 'hms.pat.io-simulation-services/0.1'
+ PIN_PROFILE = 'hms.pat.io-service-pin/0.1'
++AUTHORITY_PIN_PROFILE = 'hms.pat.io-service-pin/0.2'
+ _DESCRIPTOR_FIELDS = {'type', 'binding', 'endpointSession', 'driverProfile', 'driverDigest',
+                       'installationDigest', 'argumentMetadata'}
+ 
+@@ -151,9 +152,13 @@
+ @errors
+ def parse_service_pin(value):
+     value = snapshot(value)
++    require(type(value) is dict, 'PIN')
++    bound = value.get('profile') == AUTHORITY_PIN_PROFILE
+     exact(value, {'profile', 'policy', 'deployment', 'evaluatorId', 'configurationDigest',
+-                  'configurationRevision', 'installationDigest', 'implementation', 'supervisorIdentity'}, 'PIN')
+-    require(value['profile'] == PIN_PROFILE and value['policy'] == POLICY, 'PIN')
++                  'configurationRevision', 'installationDigest', 'implementation', 'supervisorIdentity'} |
++                  ({'authorityId'} if bound else set()), 'PIN')
++    require(value['profile'] in (PIN_PROFILE, AUTHORITY_PIN_PROFILE) and value['policy'] == POLICY, 'PIN')
++    if bound: _authority_id(value['authorityId'])
+     name(value['deployment']); name(value['evaluatorId']); integer(value['configurationRevision'])
+     require(value['deployment'].startswith('simulation:'), 'SIMULATION_REQUIRED')
+     for key in ('configurationDigest', 'installationDigest', 'supervisorIdentity'): digest(value[key])
+@@ -163,19 +168,27 @@
+     return value
+ 
+ 
+-def _pin_context(config):
+-    return dict(policy=config['policy'], deployment=config['deployment'], evaluatorId=config['evaluatorId'],
+-                configurationDigest=configuration_digest(config), configurationRevision=config['revision'],
+-                installationDigest=config['installationDigest'])
+-
+-
+-@errors
+-def prepare_service_pin(configuration, installation):
++def _authority_id(value):
++    require(type(value) is str and re.fullmatch(r'[0-9a-f]{32}', value), 'AUTHORITY_ID')
++
++
++def _pin_context(config, authority_id=None):
++    if authority_id is not None: _authority_id(authority_id)
++    configuration_id = configuration_digest(config) if authority_id is None else _hash(
++        b'HMS-PAT-IO-AUTHORITY-SERVICE-CONFIG-v0.1', dict(authorityId=authority_id, configuration=parse_configuration(config)))
++    result = dict(policy=config['policy'], deployment=config['deployment'], evaluatorId=config['evaluatorId'],
++                  configurationDigest=configuration_id, configurationRevision=config['revision'], installationDigest=config['installationDigest'])
++    return result if authority_id is None else result | dict(authorityId=authority_id)
++
++
++@errors
++def prepare_service_pin(configuration, installation, *, authority_id=None):
+     """Derive a candidate setup pin from installed code; retaining it is separate."""
+     config = parse_configuration(configuration)
+     _installation(config, installation)
+     implementation = _identities()
+-    return parse_service_pin(dict(profile=PIN_PROFILE, **_pin_context(config), implementation=implementation,
++    return parse_service_pin(dict(profile=PIN_PROFILE if authority_id is None else AUTHORITY_PIN_PROFILE,
++                                  **_pin_context(config, authority_id), implementation=implementation,
+                                   supervisorIdentity=supervisor_identity(implementation)))
+ 
+ 
+@@ -225,7 +238,7 @@
+     config = parse_configuration(value['configuration']); pin = parse_service_pin(value['servicePin'])
+     require(canonical(config) == value['configuration'] and canonical(pin) == value['servicePin'], 'CANONICAL')
+     require(same(pin, parse_service_pin(expected_pin)), 'PIN_CHANGED')
+-    require(all(same(pin[key], item) for key, item in _pin_context(config).items()), 'CONFIGURATION_CHANGED')
++    require(all(same(pin[key], item) for key, item in _pin_context(config, pin.get('authorityId')).items()), 'CONFIGURATION_CHANGED')
+     name(expected_run_id)
+     context = {key: pin[key] for key in ('deployment', 'evaluatorId', 'configurationDigest', 'configurationRevision')}
+     context['runId'] = expected_run_id
+@@ -261,7 +274,7 @@
+     def __init__(self, configuration, installation, *, expected_pin):
+         config = parse_configuration(configuration); document, _ = _installation(config, installation)
+         pin = parse_service_pin(expected_pin)
+-        require(same(prepare_service_pin(config, document), pin), 'PIN_CHANGED')
++        require(same(prepare_service_pin(config, document, authority_id=pin.get('authorityId')), pin), 'PIN_CHANGED')
+         self._configuration = canonical(config); self._installation = canonical(document); self._pin = canonical(pin)
+ 
+     @errors
+@@ -269,7 +282,7 @@
+         config = parse_configuration(self._configuration); pin = parse_service_pin(self._pin)
+         artifact, instance = _assignment(config, snapshot(candidate)); name(run_id)
+         document, expected = _installation(config, self._installation)
+-        require(same(prepare_service_pin(config, document), pin), 'PIN_CHANGED')
++        require(same(prepare_service_pin(config, document, authority_id=pin.get('authorityId')), pin), 'PIN_CHANGED')
+         descriptors = _descriptors(config, document, expected, trusted_descriptors)
+         challenges = {role: dict(actionId=row['actionId'], descriptor=descriptors[row['instanceId']])
+                       for role, row in config['challengeBindings'].items()}
+--- previous/supervisor/supervisor_contracts.py
++++ authority/supervisor/supervisor_contracts.py
+@@ -17,7 +17,7 @@
+ DEFAULT_LIMITS = {'maxRetainedBytes': 256*1024*1024, 'attemptReservationBytes': 64*1024*1024,
+     'maxArchives': 32, 'maxFilesPerAttempt': 8192, 'maxStreamBytes': 65536,
+     'maxFileBytes': 64*1024*1024, 'stopGraceMs': 1000, 'settleGraceMs': 1000}
+-SOURCE_FILES = ('supervisor_contracts.py', 'attempt_ledger.py', 'qualification_supervisor.py', 'worker_entry.py', 'bundle_io.py', 'io_services.py')
++SOURCE_FILES = ('supervisor_contracts.py', 'attempt_ledger.py', 'qualification_supervisor.py', 'worker_entry.py', 'bundle_io.py', 'io_services.py', 'io_service_store.py')
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs', 'rpds-py', 'typing_extensions', 'idna')
+ 
+ class SupervisorError(JournalError):

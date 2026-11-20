@@ -1,0 +1,15 @@
+--- prior/scripts/check_project_links.py
++++ scripts/check_project_links.py
+@@ -12,6 +12,12 @@
+ 
+ def main():
+     paths = sorted(set([ROOT/'README.md', ROOT/'PROGRESS.md', *ROOT.glob('docs/*.md'),
++        *ROOT.glob('artifacts/implementation/pat-io-supervision-recovery/*.md'),
++        ROOT/'artifacts/implementation/pat-io-supervision-recovery/implementation01/README.md',
++        *ROOT.glob('artifacts/implementation/pat-io-supervision-recovery/harness*/README.md'),
++        *ROOT.glob('artifacts/implementation/pat-io-supervision-recovery/harness*/SCOPE.md'),
++        ROOT/'artifacts/implementation/pat-io-supervision-recovery/results/README.md',
++        *ROOT.glob('artifacts/implementation/pat-io-supervision-recovery/results/*/README.md'),
+         *ROOT.glob('spec/*.md'), ROOT/'research/PLAN.md', ROOT/'integration/harness/README.md',
+         ROOT/'integration/harness/revalidation-335a82eb/README.md', ROOT/'protocol/serial/README.md',
+         ROOT/'integration/harness/compact-endpoint/README.md', ROOT/'protocol/platform/README.md',

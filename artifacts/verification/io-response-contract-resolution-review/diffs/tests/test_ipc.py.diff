@@ -1,0 +1,29 @@
+--- artifacts/verification/io-provider-runtime-integration/attempts/20261107T005504.237197Z-360d486cb278/inputs-before/tests/test_ipc.py
++++ tests/test_ipc.py
+@@ -200,8 +200,8 @@
+                 deployment = 'simulation:local'
+ 
+                 def __init__(self, state_dir, *, create=False, owner=None, endpoint_fd=None,
+-                             installations=None, endpoint_fds=None):
+-                    instances.append((state_dir, create, owner, endpoint_fd))
++                             installations=None, endpoint_fds=None, io_simulation=False, io_installation=None):
++                    instances.append((state_dir, create, owner, endpoint_fd, io_simulation, io_installation))
+ 
+                 def start(self):
+                     events.append('runtime-start')
+@@ -221,13 +221,14 @@
+                 def close(self):
+                     events.append('transport-close')
+ 
+-            with self.subTest(initialize=initialize), patch.dict('sys.modules', {'hms.runtime': SimpleNamespace(Runtime=Runtime)}):
++            with self.subTest(initialize=initialize), patch.dict('sys.modules', {'hms.runtime': SimpleNamespace(open_runtime=Runtime)}):
+                 with patch.object(cli, 'Server', Server), contextlib.redirect_stdout(io.StringIO()) as output:
+                     args = ['serve', '--state-dir', '/private/state', '--socket', '/private/control.sock']
+                     self.assertEqual(cli.main(args + (['--init-simulation'] if initialize else [])), 0)
+                 self.assertEqual(events, ['bind', 'runtime-start', 'serve', 'transport-close', 'runtime-close'])
+                 self.assertEqual(instances[0][:2], (Path('/private/state'), initialize))
+                 self.assertIsNone(instances[0][3])
++                self.assertEqual(instances[0][4:], (False, None))
+                 if initialize:
+                     self.assertEqual(instances[0][2].principal, f'posix:{os.getuid()}')
+                 else:

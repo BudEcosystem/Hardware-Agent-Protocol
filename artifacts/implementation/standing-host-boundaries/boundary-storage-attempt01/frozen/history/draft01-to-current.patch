@@ -1,0 +1,230 @@
+--- draft01/boundary_controls.py
++++ revised/boundary_controls.py
+@@ -34,7 +34,7 @@
+ def require(value,message='boundary assertion'):
+     global checks
+     checks+=1
+-    if not value:raise AssertionError(message+' #'+str(checks))
++    if not value:raise AssertionError(str(message)+' #'+str(checks))
+ 
+ 
+ def refused(code,action,*args,**kwargs):
+@@ -84,6 +84,7 @@
+ class TraceFixture(Fixture):
+     def __init__(self,*args,**kwargs):
+         self.retained_trace=[]
++        self.boundary_notes={}
+         super().__init__(*args,**kwargs)
+     def attach(self,*,create):
+         super().attach(create=create)
+@@ -122,7 +123,7 @@
+ def injected(_):raise JournalError('CONTROL_PREPARED_BOUNDARY')
+ 
+ 
+-def snapshot(f):return {str(n):f.snapshot(n) for n in range(27)}
++def snapshot(f):return {str(n):f.snapshot(n) for n in range(28)}
+ 
+ 
+ def claims(f,identifier):
+@@ -326,8 +327,10 @@
+         refused('CONTROL_PREPARED_BOUNDARY',f.host.mutate,OWNER,identifier,key,Opcode.START)
+         item=f.host.abandon_prepared(OWNER,identifier,mutation_key=key)
+         require(item['state']=='never_handed_off' and item['endpointSequence']==1)
++        require(f.store.pending(identifier)==[] and f.snapshot(13)==0)
+     f.host.mutate(OWNER,identifier,'start',Opcode.START)
+     require(f.snapshot(13)==1 and f.snapshot(0)==0)
++    f.boundary_notes['ordinaryFull']={'retainedMutations':120,'nativeMutationSequence':f.snapshot(13)}
+     refused('STANDING_MUTATION_CAPACITY',f.host.mutate,OWNER,identifier,'ordinary-overflow',Opcode.RENEW)
+     f.command(3,35000);f.cycle(12);f.cycle(24)
+     row=f.host.collect(OWNER,identifier,acknowledge=False)
+@@ -337,17 +340,26 @@
+         once(f.host,'after_mutation_reservation_commit',injected)
+         refused('CONTROL_PREPARED_BOUNDARY',f.host.mutate,OWNER,identifier,key,Opcode.STOP)
+         f.host.abandon_prepared(OWNER,identifier,mutation_key=key)
++        require(f.store.pending(identifier)==[] and f.snapshot(13)==1)
+     require(f.journal._db.execute('SELECT count(*) FROM sd_mutations').fetchone()[0]==126)
+     refused('STANDING_LOSS_CONTINUATION_RESERVED',f.host.mutate,OWNER,identifier,'stop-overflow',Opcode.STOP)
+     # Separate bounded common loss outbox remains available when standing loss
+     # identities are exhausted. Its accepted receipt permits ACK+RETIRE only.
+-    f.host.revoke(OWNER,identifier);f.cycle(40)
++    common=f.host.revoke(OWNER,identifier)
++    require(common['revoke']['state']=='accepted' and common['revoke']['reply'] is not None)
++    common_reply=f.store.decode(common['revoke']['reply'])
++    require(common_reply['opcode']==Opcode.REVOKE and common_reply['status']==0)
++    f.boundary_notes['commonRevoke']={'retainedMutations':126,'nativeMutationSequence':f.snapshot(13),
++        'outbox':copy.deepcopy(common['revoke'])}
++    f.cycle(40)
+     row=f.host.collect(OWNER,identifier)
+     require(row['acknowledged']==1 and f.store.mutation(identifier,127)['opcode']==int(Opcode.ACK))
+     row=f.host.mutate(OWNER,identifier,'retire',Opcode.RETIRE)
+-    require(row['retired'] and claims(f,identifier)==[])
++    require(row['retired'] and claims(f,identifier)==[] and row['revoke']['state']=='accepted')
+     require(f.journal._db.execute('SELECT count(*) FROM sd_mutations').fetchone()[0]==128)
+     require(f.store.mutation(identifier,128)['state']=='accepted')
++    f.boundary_notes['terminal']={'retainedMutations':128,'ackEndpointSequence':f.store.mutation(identifier,127)['endpointSequence'],
++        'retireEndpointSequence':f.store.mutation(identifier,128)['endpointSequence']}
+     before=f.snapshot(22);original=f.host.mutate(OWNER,identifier,'never-start:0',Opcode.START)
+     require(original['state']=='never_handed_off' and f.snapshot(22)==before)
+ 
+@@ -540,7 +552,7 @@
+         db.execute('CREATE TABLE external_writer(value BLOB)')
+         refused('STANDING_UNBOUNDED_WRITER_SCHEMA',capacity_check,db,JournalError)
+         db.execute('DROP TABLE external_writer')
+-        report={'profile':'checker-only-in-memory-adversarial-rows','charged':full,'overflowTables':outcomes,
++        report={'case':'accounting_model','profile':'checker-only-in-memory-adversarial-rows','charged':full,'overflowTables':outcomes,
+             'directSQLPopulation':True,'publicWriterRecords':False,'durableCapacityEstablished':False,
+             'wholeGateIndependentOfPartitions':False,
+             'reason':'Partition ceilings sum to16MiB, so violating the total necessarily violates at least one partition.'}
+@@ -581,6 +593,8 @@
+                     'databaseSha256':None})
+                 continue
+             with TraceFixture(guardian,state/name,pipe,evidence,manifest,host_class=ProbeHost,store_class=ProbeStore) as f:
++                native_identity=copy.deepcopy(guardian.handles[f.pid]['identity'])
++                reap_count=len(guardian.records)
+                 if name.startswith('storage_'):
+                     _,phase,when=name.split('_');storage_boundary(f,phase,when=='after')
+                 else:globals()[name](f)
+@@ -588,11 +602,18 @@
+                 record={'case':name,'native':snapshot(f),'route':f.store.route(),
+                     'tableCounts':{table:f.journal._db.execute('SELECT count(*) FROM "'+table+'"').fetchone()[0] for table in tables},
+                     'capacity':capacity_check(f.journal._db,JournalError),'trace':f.host.trace or [],
++                    'boundaryNotes':f.boundary_notes,'nativeStartIdentity':native_identity,
+                     'ownerEpoch':f.journal.owner_epoch,'authority':f.journal.authority_id,
+                     'publicWriterRecords':True,'directSQLPopulation':False}
+-                save(f.directory/'evidence.json',record)
+-                require(f.policy._held_image is None and f.driver._lease is None and f.catalog._selection is None)
++                require(f.policy._held_image is None and f.driver._lease is None and f.catalog._selection is None and f.producer._held is None)
++            require(len(guardian.records)==reap_count+1)
++            native_reap=copy.deepcopy(guardian.records[-1])
++            require(native_reap['reaped'] and native_reap['exitCode']==0 and
++                all(native_reap[key]==value for key,value in native_identity.items()))
++            record['nativeReap']=native_reap
++            save(state/name/'evidence.json',record)
+             results.append({'case':name,'checks':checks-previous_checks,'passed':True,
++                'nativeStartIdentity':native_identity,'nativeReap':native_reap,
+                 'elapsedMonotonicNs':str(time.monotonic_ns()-began),
+                 'evidenceSha256':hashlib.sha256((state/name/'evidence.json').read_bytes()).hexdigest(),
+                 'databaseSha256':hashlib.sha256((state/name/'authority.db').read_bytes()).hexdigest()})
+--- draft01/run_checks.py
++++ revised/run_checks.py
+@@ -67,8 +67,13 @@
+ 
+ def main():
+     global FINAL_DESTINATION,FINAL_REPORT
+-    require(not sys.flags.optimize and len(sys.argv)==2 and sys.argv[1] in PROFILES,'Fixed profile invocation; assertions required')
++    require(not sys.flags.optimize and len(sys.argv) in (2,4) and sys.argv[1] in PROFILES,'Fixed profile invocation; assertions required')
+     profile=sys.argv[1];expected_cases=PROFILES[profile]
++    attempt_number=1
++    if len(sys.argv)==4:
++        require(sys.argv[2]=='--attempt' and sys.argv[3].isascii() and sys.argv[3].isdigit(),'Explicit bounded attempt required')
++        attempt_number=int(sys.argv[3])
++        require(1<=attempt_number<=16 and str(attempt_number)==sys.argv[3],'Attempt must be canonical1..16')
+     expected_native=0 if profile=='accounting' else len(expected_cases)
+     file_bytes=(32 if profile in CAPACITY_PROFILES else 1)*1024*1024
+     def interrupted(signum,_):raise RuntimeError('Runner interrupted '+str(signum))
+@@ -86,7 +91,15 @@
+     frozen_names=[row['path'] for row in reviewed['files']]+['SOURCE-REVIEW.json']
+     require(len(frozen_names)==len(set(frozen_names)),'Duplicate input inventory')
+     pins={name:digest(HERE/name) for name in frozen_names}
+-    for row in reviewed['files']:require(pins[row['path']]==row['sha256'],'Reviewed source changed')
++    for row in reviewed['files']:
++        path=HERE/row['path']
++        require(path.is_file() and not path.is_symlink() and path.stat().st_size==row['bytes'] and
++                pins[row['path']]==row['sha256'],'Reviewed source changed')
++    prior_results=[]
++    for number in range(1,attempt_number):
++        path=HERE/('boundary-'+profile+'-attempt'+str(number).zfill(2))/'RESULTS.json'
++        require(path.is_file() and not path.is_symlink(),'Prior explicit attempt receipt missing')
++        prior_results.append({'path':str(path.relative_to(HERE)),'sha256':digest(path)})
+     def stable():
+         require(digest(parent_index)==inputs['parentPacket']['indexSha256'],'Parent packet index changed')
+         parent_rows=json.loads(parent_index.read_bytes())['files']
+@@ -102,10 +115,14 @@
+         for row in public_rows:require(digest(REPO/row['path'])==row['sha256'],'Public input changed')
+         for row in inputs['copies']+inputs['originalProvenance']:
+             require(digest(REPO/row['source'])==digest(HERE/row['copy'])==row['sha256'],'Original input changed')
+-        for name,pin in pins.items():require(digest(HERE/name)==pin,'Prepared input changed: '+name)
++        for row in reviewed['files']:
++            path=HERE/row['path']
++            require(path.is_file() and not path.is_symlink() and path.stat().st_size==row['bytes'],'Reviewed input type/length changed')
++        for name,pin in pins.items():require(not (HERE/name).is_symlink() and digest(HERE/name)==pin,'Prepared input changed: '+name)
++        for row in prior_results:require(digest(HERE/row['path'])==row['sha256'],'Earlier attempt result changed')
+         require(digest(interpreter)==digest('/proc/self/exe')==runtime,'Interpreter changed')
+     stable()
+-    attempt=HERE/('boundary-'+profile+'-attempt01');attempt.mkdir(mode=0o700)
++    attempt=HERE/('boundary-'+profile+'-attempt'+str(attempt_number).zfill(2));attempt.mkdir(mode=0o700)
+     FINAL_DESTINATION=attempt/'RESULTS.json';FINAL_REPORT={'passed':False,'phase':'preparation'}
+     save(FINAL_DESTINATION,FINAL_REPORT,replace=True)
+     frozen=attempt/'frozen';frozen.mkdir()
+@@ -117,7 +134,8 @@
+     original_manifest=json.loads((evidence/'manifest.json').read_bytes())
+     require(original_manifest['argv']==[str(evidence/original_manifest['binaryPath'])],'Original qualifier argv changed')
+     argv=[str(interpreter),'-I','-B',str(frozen/'boundary_controls.py'),profile,str(attempt/'state'),str(native),str(evidence),str(evidence/'manifest.json'),str(frozen/'owner/libharness-owner.so')]
+-    save(attempt/'intent.json',{'profile':'hms.standing-host-boundary-attempt/0.1','controlProfile':profile,'sourcePins':pins,
++    save(attempt/'intent.json',{'profile':'hms.standing-host-boundary-attempt/0.1','controlProfile':profile,
++        'attemptNumber':attempt_number,'priorProfileAttemptResults':prior_results,'sourcePins':pins,
+         'parentPacket':inputs['parentPacket'],'secondParentPacket':inputs['secondParentPacket'],
+         'publicReceipt':inputs['publicReceipt'],'interpreter':str(interpreter),
+         'interpreterSha256':runtime,'argv':argv,'nativeImageSha256':digest(native),'originalQualificationRoot':str(evidence),
+@@ -127,7 +145,7 @@
+         'fileBytes':file_bytes,'nativeChildFileBytes':1024*1024,'stateDiskBytes':96*1024*1024,'openFiles':64,'cleanupSeconds':8,'termGraceSeconds':3,
+         'dependencyScope':'Exact copied host sources/native images/helper and held interpreter; trusted Python stdlib/loader/validation packages, no complete runtime closure',
+         'processScope':'Per-process rlimits and observed wall bounds; living sole-thread Guardian, no kernel aggregate quota or universal containment',
+-        'physicalEligible':False,'protectedCapacity':False,'publicMountEligible':False,'candidatePreviouslyExecuted':False})
++        'physicalEligible':False,'protectedCapacity':False,'publicMountEligible':False,'controlProfilePreviouslyExecuted':bool(prior_results)})
+     guardian=Guardian(frozen/'owner/libharness-owner.so');held=None;child=None;record=None;inner=None
+     reason=None;began=time.monotonic_ns();held_before=held_after=None
+     control_started=control_terminal=None
+@@ -178,12 +196,25 @@
+         require(len(records)==expected_native and len({(r['pid'],r['startTicks']) for r in records})==len(records),'Exact distinct native ownership required')
+         require(all(r['parent']==child and r['reaped'] and r['exitCode']==0 for r in records),'Native clean EOF exit required')
+         require(inner['actualOwnerDeath'] is False,'This profile injects living-owner exceptions only')
++        joined_reaps=[]
+         for case in inner['cases']:
+             require(case['passed'],'Case failed')
+             directory=attempt/'state'/case['case']
+             require(digest(directory/'evidence.json')==case['evidenceSha256'],'Case evidence changed')
+-            if profile!='accounting':require(digest(directory/'authority.db')==case['databaseSha256'],'Case database changed')
+-            else:require(case['databaseSha256'] is None and not (directory/'authority.db').exists(),'Accounting must remain non-durable model')
++            evidence_row=json.loads((directory/'evidence.json').read_bytes())
++            require(evidence_row['case']==case['case'],'Case evidence name mismatch')
++            if profile!='accounting':
++                require(digest(directory/'authority.db')==case['databaseSha256'],'Case database changed')
++                require(evidence_row['publicWriterRecords'] is True and evidence_row['directSQLPopulation'] is False,'Real public-writer scope mismatch')
++                require(set(evidence_row['native'])=={str(n) for n in range(28)},'Native snapshot scope mismatch')
++                require(evidence_row['nativeStartIdentity']==case['nativeStartIdentity'] and evidence_row['nativeReap']==case['nativeReap'],'Case native evidence mismatch')
++                require(all(case['nativeReap'][key]==value for key,value in case['nativeStartIdentity'].items()),'Case native identity/exit join failed')
++                joined_reaps.append(case['nativeReap'])
++            else:
++                require(case['databaseSha256'] is None and not (directory/'authority.db').exists(),'Accounting must remain non-durable model')
++                require(evidence_row['publicWriterRecords'] is False and evidence_row['directSQLPopulation'] is True and
++                        evidence_row['durableCapacityEstablished'] is False,'Accounting evidence scope mismatch')
++        require(joined_reaps==records,'Native reaps must match every ordered named case exactly')
+         for owned in records:
+             require(not Path('/proc',str(owned['pid'])).exists(),'Previously owned PID still exists; no signal authority inferred')
+         require(not (attempt/'control.stderr').read_bytes(),'Unexpected control stderr')
+@@ -219,7 +250,8 @@
+             'controlObservedElapsedMonotonicNs':None if control_terminal is None else str(control_terminal-control_started),
+             'innerCases':0 if inner is None else len(inner['cases']),
+             'innerReaps':0 if inner is None else len(inner['nativeChildrenReaped']),
+-            'actualOwnerDeath':False,'controlProfile':profile,'historicalPossibleEffectsResent':False if passed else None,
++            'actualOwnerDeath':False,'controlProfile':profile,'attemptNumber':attempt_number,
++            'priorProfileAttemptResults':prior_results,'historicalPossibleEffectsResent':False if passed else None,
+             'fullSimultaneousCapacityEstablished':False,'logicalCeilingBytes':16*1024*1024,'fileBytes':file_bytes,
+             'observedStateHighBytes':observed_state_bytes,'observedStateHighFiles':observed_state_files,
+             'diskMonitorIsObservedNotKernelQuota':True,
+--- draft01/PLAN.md
++++ revised/PLAN.md
+@@ -14,7 +14,11 @@
+ pidfds, signal masks, settlement and reaping are unchanged.
+ 
+ The root launcher has eight exact choices, each creating its own exclusive
+-`boundary-<profile>-attempt01` directory. Run sequentially, stop at first failure:
++`boundary-<profile>-attempt01` directory by default. The only optional flag is
++`--attempt N`, a canonical integer1..16 selecting an exclusive directory. It
++requires and pins every earlier result for that same profile; it never selects
++an attempt automatically or overwrites a directory. A subsequent attempt still
++requires review of the corrected exact source. Run sequentially, stop at first failure:
+ 
+ ```
+ python3 -I -B run_checks.py negative

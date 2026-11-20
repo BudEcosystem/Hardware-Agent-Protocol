@@ -1,0 +1,2762 @@
+--- baseline/hms/contracts.py
++++ integrated/hms/contracts.py
+@@ -119,13 +119,105 @@
+ def canonical(value) -> bytes:
+     check_tree(value)
+     try:
+-        result = rfc8785.dumps(value)
++        result = _canonical_bytes(value)
+     except (ValueError, UnicodeError, RecursionError) as error:
+         raise ContractError("cannot canonicalize JSON") from error
+     if len(result) > MAX_BYTES:
+         raise ContractError("canonical value exceeds byte limit")
+     return result
+ 
++
++# Integer-only canonical byte path; original validation and float fallback remain.
++from types import FunctionType as _FunctionType
++
++_FAST_IMPL = rfc8785._impl
++
++
++def _fast_anchor(function):
++    if type(function) is not _FunctionType:
++        return None
++    keywords = function.__kwdefaults__
++    return (function, function.__code__, function.__defaults__, keywords,
++            None if keywords is None else tuple(keywords.items()))
++
++
++def _fast_same(function, anchor):
++    matched = (anchor is not None and type(function) is _FunctionType and
++            function is anchor[0] and function.__code__ is anchor[1] and
++            function.__defaults__ is anchor[2] and function.__kwdefaults__ is anchor[3])
++    if not matched or anchor[4] is None:
++        return matched
++    keywords = function.__kwdefaults__
++    return (type(keywords) is dict and len(keywords) == len(anchor[4]) and
++            all(type(key) is str for key in keywords) and
++            all(key in keywords and keywords[key] is value for key, value in anchor[4]))
++
++
++_FAST_FUNCTIONS = tuple((namespace, name, _fast_anchor(namespace[name]))
++    for namespace, names in (
++        (globals(), ('check_tree',)),
++        (vars(rfc8785), ('dumps', 'dump')),
++        (vars(_FAST_IMPL), ('dumps', 'dump', '_serialize_str', '_serialize_float')),
++        (vars(json.JSONEncoder), ('__init__', 'default', 'encode', 'iterencode')))
++    for name in names)
++_FAST_CONSTANTS = (MAX_BYTES, MAX_DEPTH, MAX_NODES, SAFE_INTEGER,
++                   _FAST_IMPL._INT_MIN, _FAST_IMPL._INT_MAX)
++_FAST_ESCAPES = tuple(_FAST_IMPL._ESCAPE_DCT.items())
++_FAST_IDENTITIES = tuple((namespace, name, namespace[name])
++    for namespace, names in (
++        (vars(_FAST_IMPL), ('_ESCAPE', 'BytesIO')),
++        (vars(json), ('JSONEncoder',)),
++        (vars(json.encoder), ('JSONEncoder', 'c_make_encoder', 'encode_basestring')))
++    for name in names)
++
++
++def _fast_allowed():
++    if json.encoder.c_make_encoder is None:
++        return False
++    constants = (MAX_BYTES, MAX_DEPTH, MAX_NODES, SAFE_INTEGER,
++                 _FAST_IMPL._INT_MIN, _FAST_IMPL._INT_MAX)
++    if any(type(value) is not int for value in constants) or constants != _FAST_CONSTANTS:
++        return False
++    if any(not _fast_same(namespace.get(name), anchor) for namespace, name, anchor in _FAST_FUNCTIONS):
++        return False
++    if any(namespace.get(name) is not expected for namespace, name, expected in _FAST_IDENTITIES):
++        return False
++    escapes = _FAST_IMPL._ESCAPE_DCT
++    if type(escapes) is not dict or len(escapes) != len(_FAST_ESCAPES):
++        return False
++    if not all(type(key) is str and type(value) is str for key, value in escapes.items()):
++        return False
++    return all(escapes.get(key) == value for key, value in _FAST_ESCAPES)
++
++
++class _UseReference(Exception):
++    pass
++
++
++def _integer_tree(value):
++    kind = type(value)
++    if kind is dict:
++        # The original check_tree has already bounded and validated every key.
++        return {key: _integer_tree(value[key])
++                for key in sorted(value, key=lambda key: key.encode('utf-16be'))}
++    if kind is list:
++        return [_integer_tree(child) for child in value]
++    if value is None or kind in (bool, int, str):
++        return value
++    # A float anywhere sends the whole original value to the original encoder.
++    raise _UseReference
++
++
++def _canonical_bytes(value):
++    if not _fast_allowed():
++        return rfc8785.dumps(value)
++    try:
++        ordered = _integer_tree(value)
++    except _UseReference:
++        return rfc8785.dumps(value)
++    encoder = json.JSONEncoder(ensure_ascii=False, allow_nan=False,
++        check_circular=True, sort_keys=False, skipkeys=False, separators=(',', ':'))
++    return encoder.encode(ordered).encode('utf-8')
+ 
+ _SCHEMA = json.loads((Path(__file__).resolve().parents[1] /
+                      "schemas/invoke.schema.json").read_text())
+--- baseline/hms/journal.py
++++ integrated/hms/journal.py
+@@ -113,6 +113,14 @@
+ class RecordTime:
+     value: int
+     status: str
++
++
++@dataclass
++class _CommitChecks:
++    thread: int
++    callbacks: list
++    checking: bool = False
++    violated: bool = False
+ 
+ 
+ class Policy(Protocol):
+@@ -171,7 +179,11 @@
+     Do not put the DB on a network filesystem or restore it independently of
+     its authority/replay state. Policies must not block, do I/O, or reenter.
+     """
+-    def __init__(self, path, policy: Policy, *, clock_ms: Callable[[], int], create=False):
++    def __init__(self, path, policy: Policy, *, clock_ms: Callable[[], int], create=False, page_size=None):
++        # Closed opt-in layout for the compact synthetic worker. None retains
++        # the platform's existing/default layout; reopening never converts it.
++        if page_size is not None and (type(page_size) is not int or page_size != 1024):
++            raise JournalError('UNSUPPORTED_DATABASE_PAGE_SIZE')
+         self.path = Path(path).resolve()
+         self.policy = policy
+         self.clock_ms = clock_ms
+@@ -179,6 +191,7 @@
+         self._closed = False
+         self._poisoned = False
+         self._observed_clock = 0
++        self._commit_checks = None
+         # Trusted procedure-manager hooks, called only inside submit's existing
+         # transaction. They must not perform I/O, reenter, sample authority time,
+         # or commit. The record hook makes the child link atomic with admission.
+@@ -199,6 +212,10 @@
+             self._db = sqlite3.connect(str(self.path), isolation_level=None,
+                                        check_same_thread=False, timeout=0.2)
+             self._db.row_factory = sqlite3.Row
++            if create and page_size is not None:
++                self._db.execute('PRAGMA page_size=1024')
++            if page_size is not None and self._db.execute('PRAGMA page_size').fetchone()[0] != page_size:
++                raise JournalError('UNSUPPORTED_DATABASE_PAGE_SIZE')
+             if self._db.execute("PRAGMA journal_mode=DELETE").fetchone()[0] != "delete":
+                 raise JournalError("UNSUPPORTED_DURABILITY_MODE")
+             self._db.execute("PRAGMA synchronous=EXTRA")
+@@ -238,6 +255,7 @@
+ 
+     def close(self):
+         with self._mutex:
++            self._reject_commit_reentry()
+             if not self._closed:
+                 if self._db is not None:
+                     self._db.close()
+@@ -253,6 +271,7 @@
+     @contextmanager
+     def _transaction(self):
+         with self._mutex:
++            self._reject_commit_reentry()
+             if self._closed:
+                 raise JournalError("CLOSED")
+             if self._poisoned:
+@@ -261,8 +280,10 @@
+                 raise JournalError("POLICY_REENTRANCY")
+             self._db.execute("BEGIN IMMEDIATE")
+             self._transaction_start_changes = self._db.total_changes
++            self._commit_checks = _CommitChecks(threading.get_ident(), [])
+             try:
+                 yield
++                self._check_business_commit()
+                 self._db.execute("COMMIT")
+             except BaseException:
+                 if self._db.in_transaction:
+@@ -279,6 +300,92 @@
+                     if self._db.in_transaction:
+                         self._db.execute("ROLLBACK")
+                 raise
++            finally:
++                self._commit_checks = None
++
++    def _reject_commit_reentry(self):
++        state = self._commit_checks
++        if state is not None and state.checking:
++            state.violated = True
++            raise JournalError("COMMIT_CHECK_REENTRANCY")
++
++    def _require_at_commit(self, check):
++        """Register a trusted bounded check for this business transaction.
++
++        This is an installed-service API, never a wire callback. Acquire evidence
++        outside the authority transaction and retain its owner through commit.
++        The callback must return None or raise; it may inspect held state and
++        bounded main-database rows, but must not do file/provider I/O, reenter,
++        sample authority time or replace connection hooks. It is not a sandbox.
++        Reusing the same callable object is idempotent; at most 64 are accepted.
++        A batch evidence view should register one check for the entire inventory.
++        """
++        with self._mutex:
++            self._reject_commit_reentry()
++            state = self._commit_checks
++            if (state is None or state.thread != threading.get_ident() or
++                    self._closed or self._poisoned or not self._db.in_transaction):
++                raise JournalError("COMMIT_CHECK_TRANSACTION_REQUIRED")
++            if not callable(check):
++                state.violated = True
++                raise JournalError("COMMIT_CHECK_INVALID")
++            if any(check is previous for previous in state.callbacks):
++                return
++            if len(state.callbacks) >= 64:
++                state.violated = True
++                raise JournalError("COMMIT_CHECK_LIMIT")
++            state.callbacks.append(check)
++
++    def _check_business_commit(self):
++        """Last synchronous check before COMMIT, not a real-time guarantee.
++
++        Clock-floor commits deliberately bypass this boundary. A failed check
++        rolls back business writes; the existing refusal path retains observed
++        time. COMMIT can block or its reply can be lost: reconcile the original
++        operation identity, never infer a rollback from a later exception.
++        """
++        self._reject_commit_reentry()
++        state = self._commit_checks
++        if state.violated:
++            raise JournalError("COMMIT_CHECK_IMPURE")
++        if not state.callbacks:
++            return
++        if (state.thread != threading.get_ident() or not self._db.in_transaction or
++                getattr(self, "_pat_evidence_guard", None) is not None):
++            raise JournalError("COMMIT_CHECK_TRANSACTION_REQUIRED")
++        connection = self._db
++        before = connection.total_changes
++        # Share the catalog's reentry marker so an evidence verifier cannot
++        # replace this connection authorizer and then restore it to None.
++        evidence_guard = {"denied": False}
++
++        def authorize(action, first, second, database, source):
++            if action in {sqlite3.SQLITE_SELECT, sqlite3.SQLITE_READ} and database in {None, "main"}:
++                return sqlite3.SQLITE_OK
++            if (action == sqlite3.SQLITE_FUNCTION and first is None and
++                    second in {"typeof", "length"} and database is None):
++                return sqlite3.SQLITE_OK
++            state.violated = True
++            return sqlite3.SQLITE_DENY
++
++        state.checking = True
++        self._pat_evidence_guard = evidence_guard
++        try:
++            connection.set_authorizer(authorize)
++            for check in tuple(state.callbacks):
++                if check() is not None:
++                    raise JournalError("COMMIT_CHECK_INVALID_RESPONSE")
++        finally:
++            try:
++                connection.set_authorizer(None)
++            finally:
++                if self._pat_evidence_guard is not evidence_guard:
++                    state.violated = True
++                self._pat_evidence_guard = None
++                state.checking = False
++            if (state.violated or evidence_guard["denied"] or self._db is not connection or self._commit_checks is not state or
++                    not connection.in_transaction or connection.total_changes != before):
++                raise JournalError("COMMIT_CHECK_IMPURE")
+ 
+     def _meta(self, key):
+         row = self._db.execute("SELECT value FROM meta WHERE key=?", (key,)).fetchone()
+@@ -290,6 +397,7 @@
+         self._db.execute("UPDATE meta SET value=? WHERE key=?", (value, key))
+ 
+     def _clock(self):
++        self._reject_commit_reentry()
+         try:
+             value = self.clock_ms()
+         except Exception as error:
+--- baseline/hms/pat_compiler.py
++++ integrated/hms/pat_compiler.py
+@@ -13,6 +13,7 @@
+ import platform
+ from pathlib import Path
+ import re
++import stat
+ 
+ from jsonschema import Draft202012Validator
+ from jsonschema.exceptions import SchemaError
+@@ -26,29 +27,68 @@
+ from .registry import schema_profile, validate_type_bundle
+ 
+ 
++_IDENTITY_PACKAGES = ("jsonschema", "referencing", "jsonschema-specifications",
++                      "attrs", "rpds-py", "typing_extensions", "idna")
++_IDENTITY_MAX_FILES = 8192
++_IDENTITY_MAX_FILE_BYTES = 16 * 1024 * 1024
++_IDENTITY_MAX_BYTES = 256 * 1024 * 1024
++
++
++def _identity_file(path, budget):
++    """Bound identity acquisition; this is trusted setup, never pure lowering."""
++    info = path.lstat()
++    require(stat.S_ISREG(info.st_mode), "PAT_COMPILER_IDENTITY_UNAVAILABLE")
++    require(budget[0] < _IDENTITY_MAX_FILES and
++            info.st_size <= _IDENTITY_MAX_FILE_BYTES and
++            budget[1] + info.st_size <= _IDENTITY_MAX_BYTES,
++            "PAT_COMPILER_IDENTITY_LIMIT")
++    with path.open("rb") as stream:
++        data = stream.read(min(_IDENTITY_MAX_FILE_BYTES,
++                               _IDENTITY_MAX_BYTES - budget[1]) + 1)
++    require(len(data) == info.st_size, "PAT_COMPILER_IDENTITY_UNAVAILABLE")
++    budget[0] += 1
++    budget[1] += len(data)
++    return hashlib.sha256(data).hexdigest()
++
++
+ def _identity():
++    try:
++        return _collect_identity()
++    except (OSError, importlib.metadata.PackageNotFoundError) as error:
++        raise PatError("PAT_COMPILER_IDENTITY_UNAVAILABLE") from error
++
++
++def _collect_identity():
+     root = Path(__file__).resolve().parents[1]
+     paths = ["hms/pat_contracts.py", "hms/pat_compiler.py", "hms/pat_catalog.py",
+              "hms/pat_execution.py", "hms/pat_bindings.py", "hms/contracts.py",
+              "hms/procedures.py", "hms/registry.py", "hms/journal.py", "hms/projections.py",
+              "hms/_vendor/rfc8785/__init__.py", "hms/_vendor/rfc8785/_impl.py",
+              "schemas/invoke.schema.json", "research/protocols/wot-artifacts/td-schema-1.1.json"]
+-    sources = [{"path": path, "sha256": hashlib.sha256((root / path).read_bytes()).hexdigest()}
++    budget = [0, 0]
++    sources = [{"path": path, "sha256": _identity_file(root / path, budget)}
+                for path in paths]
+     dependencies = []
+-    for package in ("jsonschema", "referencing", "jsonschema-specifications", "attrs", "rpds-py"):
++    for package in _IDENTITY_PACKAGES:
+         distribution = importlib.metadata.distribution(package)
++        entries = distribution.files
++        require(entries is not None and 0 < len(entries) <= _IDENTITY_MAX_FILES,
++                "PAT_COMPILER_IDENTITY_UNAVAILABLE")
+         files = []
+-        for item in sorted(distribution.files or [], key=str):
++        seen = set()
++        for item in sorted(entries, key=str):
+             # The specifications loader reads the entire schemas subtree,
+             # including extensionless vocabulary resources. Hash those bytes
+             # alongside code; exclude pycache, paths and RECORD ordering.
+             schema_resource = (package == "jsonschema-specifications" and
+                                item.parts[:2] == ("jsonschema_specifications", "schemas"))
+             if item.suffix in {".py", ".json", ".so", ".pyd"} or schema_resource:
++                require(not item.is_absolute() and ".." not in item.parts and
++                        "__pycache__" not in item.parts and str(item) not in seen,
++                        "PAT_COMPILER_IDENTITY_UNAVAILABLE")
++                seen.add(str(item))
+                 path = distribution.locate_file(item)
+-                require(path.is_file(), "PAT_COMPILER_IDENTITY_UNAVAILABLE")
+-                files.append({"path": str(item), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()})
++                files.append({"path": str(item), "sha256": _identity_file(path, budget)})
+         require(bool(files), "PAT_COMPILER_IDENTITY_UNAVAILABLE")
+         dependencies.append({"package": package, "version": distribution.version, "files": files})
+     # Package file closures exceed the host message budget on some installations;
+@@ -59,7 +99,7 @@
+         packages.append({"package": dependency["package"], "version": dependency["version"],
+                          "fileCount": len(dependency["files"]),
+                          "codeDigest": "sha256:" + hashlib.sha256(closure).hexdigest()})
+-    return {"profile": "hms.pat-compiler-identity/0.1", "sources": sources, "packages": packages,
++    return {"profile": "hms.pat-compiler-identity/0.2", "sources": sources, "packages": packages,
+             "pythonImplementation": platform.python_implementation(), "pythonVersion": platform.python_version()}
+ 
+ 
+@@ -67,7 +107,7 @@
+ # underneath an imported module is unsupported; reload a new trusted deployment.
+ _COMPILER_MANIFEST = _identity()
+ COMPILER_DIGEST = "sha256:" + hashlib.sha256(
+-    b"HMS-PAT-COMPILER-SHA256-v0.1\0" + canonical(_COMPILER_MANIFEST)).hexdigest()
++    b"HMS-PAT-COMPILER-SHA256-v0.2\0" + canonical(_COMPILER_MANIFEST)).hexdigest()
+ 
+ 
+ def compiler_digest():
+@@ -76,6 +116,17 @@
+ 
+ def compiler_manifest():
+     return copy.deepcopy(_COMPILER_MANIFEST)
++
++
++def verify_compiler_identity():
++    """Recheck source and seven selected packages at a trusted setup boundary.
++
++    Pure compilation keeps the imported identity. This check neither reloads
++    changed code nor attests imported origins, the OS or linked system libraries.
++    Additional optional validation packages need a separately reviewed closure.
++    """
++    require(_identity() == _COMPILER_MANIFEST, "PAT_COMPILER_IMPLEMENTATION_CHANGED")
++    return compiler_manifest()
+ 
+ 
+ def _input_errors(function):
+@@ -195,6 +246,21 @@
+         properties = schemas[0]["properties"]
+         require(type(metadata[action_id]) is dict and set(metadata[action_id]) == set(properties), "PAT_METADATA_REQUIRED")
+         for argument, info in metadata[action_id].items():
++            # Only trusted installed metadata may choose fixed schema semantics.
++            # The tag is hashed with the metadata; no unit or companion is inferred.
++            if type(info) is dict and "profile" in info:
++                closed(info, {"profile", "unit", "frame", "unitArgument", "frameArgument"},
++                       "PAT_METADATA_REQUIRED")
++                require(type(info["profile"]) is str and
++                        info["profile"] == "hms.pat.argument.fixed-schema-unit/0.1",
++                        "PAT_METADATA_MISMATCH")
++                require(all(schema["properties"][argument]["type"] in {"integer", "number"}
++                            for schema in schemas), "PAT_METADATA_MISMATCH")
++                semantic(info["unit"], "PAT_METADATA_MISMATCH")
++                require(info["unit"] is not None, "PAT_METADATA_REQUIRED")
++                require(info["frame"] is None and info["unitArgument"] is None and
++                        info["frameArgument"] is None, "PAT_METADATA_MISMATCH")
++                continue
+             closed(info, {"unit", "frame", "unitArgument", "frameArgument"}, "PAT_METADATA_REQUIRED")
+             semantic(info["unit"], "PAT_METADATA_MISMATCH")
+             semantic(info["frame"], "PAT_METADATA_MISMATCH")
+--- baseline/hms/pat_simulation_worker.py
++++ integrated/hms/pat_simulation_worker.py
+@@ -25,8 +25,8 @@
+ from .installations import (definitions_for, installation_digest, legacy_installation,
+                             normalize_installations, resource_map)
+ from .journal import Context, JournalError, TERMINAL
+-from .pat_compiler import (compiler_digest, compiler_manifest, compile_pat,
+-                           evaluation_environment)
++from .pat_compiler import (compiler_digest, compile_pat,
++                           evaluation_environment, verify_compiler_identity)
+ from .pat_contracts import (PatError, closed, integer, name, require, snapshot)
+ from .pat_simulation_contracts import (CEILINGS, FAN_METADATA, POLICY, _limits,
+     decode_case_input, generate_cases, matrix_digest, qualify_fan_contract)
+@@ -67,7 +67,7 @@
+                     _ROOT / 'research/protocols/wot-artifacts/td-schema-1.1.json'})
+     rows = [{'path': str(p.relative_to(_ROOT)), 'sha256': hashlib.sha256(p.read_bytes()).hexdigest()}
+             for p in paths]
+-    manifest = compiler_manifest()
++    manifest = verify_compiler_identity()
+     by_path = {row['path']: row['sha256'] for row in rows}
+     require(all(by_path.get(row['path']) == row['sha256'] for row in manifest['sources']),
+             'PAT_SIM_IMPLEMENTATION_CHANGED')
+--- baseline/hms/resource_topology.py
++++ integrated/hms/resource_topology.py
+@@ -7,14 +7,16 @@
+ from __future__ import annotations
+ 
+ import copy
++from collections import OrderedDict
+ from functools import wraps
+ import hashlib
+ import json
+ from pathlib import Path
++import threading
+ 
+ from jsonschema import Draft202012Validator
+ 
+-from .contracts import ContractError, canonical, identifier, parse_json
++from .contracts import ContractError, MAX_BYTES, canonical, identifier, parse_json
+ from .journal import JournalError
+ 
+ PROFILE = "hms.resource-topology/0.1"
+@@ -33,6 +35,15 @@
+     Draft202012Validator.check_schema(_schema)
+     _VALIDATORS[_profile] = Draft202012Validator(_schema)
+ 
++# Successful JSON Schema checks retain an immutable snapshot, keyed by exact
++# bounded canonical bytes and validator identity. Callers get detached built-in
++# containers; every graph/generation/authority-dependent semantic check remains.
++# Eight entries retain at most512KiB of byte keys plus their bounded frozen trees.
++# Validators are private import-time objects; this is not deployment attestation.
++_SCHEMA_MEMO_LIMIT = 8
++_SCHEMA_MEMO = OrderedDict()
++_SCHEMA_MEMO_LOCK = threading.Lock()
++
+ 
+ class ResourceTopologyError(JournalError):
+     """Stable refusal without interpreting a document as authority."""
+@@ -65,19 +76,75 @@
+             _strict_tree(child)
+ 
+ 
++def _freeze_snapshot(value):
++    """Only called on a bounded parsed/strict/schema-checked built-in tree."""
++    if type(value) is dict:
++        return ('dict', tuple((key, _freeze_snapshot(child)) for key, child in value.items()))
++    if type(value) is list:
++        return ('list', tuple(_freeze_snapshot(child) for child in value))
++    return value
++
++
++def _thaw_snapshot(value):
++    # Frozen entries contain no caller objects or copy hooks.
++    if type(value) is tuple:
++        if value[0] == 'dict':
++            return {key: _thaw_snapshot(child) for key, child in value[1]}
++        return [_thaw_snapshot(child) for child in value[1]]
++    return value
++
++
++def _cached_snapshot(profile, encoded):
++    validator = _VALIDATORS[profile]
++    key = (profile, encoded)
++    with _SCHEMA_MEMO_LOCK:
++        entry = _SCHEMA_MEMO.get(key)
++        if entry is not None and entry[0] is validator:
++            _SCHEMA_MEMO.move_to_end(key)
++            return entry[1]
++    return None
++
++
+ def _snapshot(value, profile):
+     if type(value) is bytes:
++        # A byte hit can only match a previously accepted canonical carrier.
++        # Oversized bytes must reach the original bounded parser without hashing
++        # or retaining a new unbounded key. Noncanonical carriers take that same
++        # original parse/strict/encode path below.
++        if len(value) <= MAX_BYTES:
++            cached = _cached_snapshot(profile, value)
++            if cached is not None:
++                return _thaw_snapshot(cached)
+         value = parse_json(value)
++        _strict_tree(value)
++        encoded = canonical(value)
+     else:
+         # Reject unsupported Python objects and bound the original tree before
+         # traversing it recursively. Canonical encoding does not mutate scalar
+         # types: inspect the original before accepting its detached JSON copy.
+         encoded = canonical(value)
+         _strict_tree(value)
++        cached = _cached_snapshot(profile, encoded)
++        if cached is not None:
++            return _thaw_snapshot(cached)
+         value = parse_json(encoded)
+-    _strict_tree(value)
+-    canonical(value)  # Existing canonical carrier bound: 65,536 bytes.
+-    _require(next(_VALIDATORS[profile].iter_errors(value), None) is None, "RESOURCE_INVALID_DOCUMENT")
++        _strict_tree(value)
++        # Reuse the bounded canonical bytes that produced this detached tree.
++    validator = _VALIDATORS[profile]
++    key = (profile, encoded)
++    with _SCHEMA_MEMO_LOCK:
++        entry = _SCHEMA_MEMO.get(key)
++        if entry is not None and entry[0] is validator:
++            _SCHEMA_MEMO.move_to_end(key)
++            return value
++    _require(next(validator.iter_errors(value), None) is None, "RESOURCE_INVALID_DOCUMENT")
++    frozen = _freeze_snapshot(value)
++    with _SCHEMA_MEMO_LOCK:
++        if _VALIDATORS[profile] is validator:
++            _SCHEMA_MEMO[key] = (validator, frozen)
++            _SCHEMA_MEMO.move_to_end(key)
++            while len(_SCHEMA_MEMO) > _SCHEMA_MEMO_LIMIT:
++                _SCHEMA_MEMO.popitem(last=False)
+     return value
+ 
+ 
+@@ -310,6 +377,10 @@
+     consumers = [row for row in document["consumers"] if row["instanceId"] == instance_id]
+     _require(consumers, "RESOURCE_UNKNOWN_CONSUMER")
+     atoms, closures = _atom_index(document), _alias_closures(document)
++    return _binding_proof_from_validated(document, current, instance_id, consumers, atoms, closures)
++
++
++def _binding_proof_from_validated(document, current, instance_id, consumers, atoms, closures):
+     details = {row["actionId"]: _consumer_details(document, row, atoms, closures) for row in consumers}
+     nodes = set().union(*(value["nodes"] for value in details.values()))
+     aliases = set().union(*(value["aliases"] for value in details.values()))
+@@ -334,6 +405,36 @@
+     return copy.deepcopy(result)
+ 
+ 
++class _BindingProofBuild:
++    """One pure definition call's detached static snapshot; never live authority.
++
++    Construction is lazy so the original first-handler refusal order remains.
++    The enclosing pure build must not mutate its input or validation helpers.
++    This private object must not escape that build or serve public proof calls.
++    """
++    __slots__ = ('topology', 'generations', 'document', 'current', 'atoms', 'closures')
++
++    def __init__(self, topology, generations):
++        self.topology, self.generations = topology, generations
++        self.document = self.current = self.atoms = self.closures = None
++
++    @_errors
++    def __call__(self, instance_id):
++        identifier(instance_id)
++        if self.document is None:
++            document = parse_topology(self.topology)
++            current = _generations(document, self.generations)
++            self.document, self.current = document, current
++        document, current = self.document, self.current
++        consumers = [row for row in document["consumers"] if row["instanceId"] == instance_id]
++        _require(consumers, "RESOURCE_UNKNOWN_CONSUMER")
++        if self.atoms is None:
++            atoms, closures = _atom_index(document), _alias_closures(document)
++            self.atoms, self.closures = atoms, closures
++        return _binding_proof_from_validated(document, current, instance_id, consumers, self.atoms, self.closures)
++
++
++
+ @_errors
+ def generation_change_claims(topology, target):
+     """Resolve refuse-if-busy scope for every action of each rebound instance.
+--- baseline/hms/synthetic_io_board.py
++++ integrated/hms/synthetic_io_board.py
+@@ -29,7 +29,8 @@
+ 
+ 
+ class SyntheticIoBoard:
+-    def __init__(self, path, installation, *, authority_id, owner_epoch, clock_epoch, create=False):
++    def __init__(self, path, installation, *, authority_id, owner_epoch, clock_epoch, create=False, page_size=None):
++        require(page_size is None or (type(page_size) is int and page_size == 1024), 'IO_BOARD_PAGE_SIZE')
+         self.installation = normalize_installation(installation)
+         self.installation_digest = installation_digest(self.installation)
+         self.authority_id = identifier(authority_id)
+@@ -67,6 +68,10 @@
+                 require(self.path.is_file() and not self.path.is_symlink(), 'IO_BOARD_MISSING')
+             self.db = sqlite3.connect(str(self.path), isolation_level=None, check_same_thread=False, timeout=0.2)
+             self.db.row_factory = sqlite3.Row
++            if create and page_size is not None:
++                self.db.execute('PRAGMA page_size=1024')
++            require(page_size is None or self.db.execute('PRAGMA page_size').fetchone()[0] == page_size,
++                    'IO_BOARD_PAGE_SIZE')
+             self.db.execute('PRAGMA journal_mode=DELETE'); self.db.execute('PRAGMA synchronous=EXTRA')
+             if create:
+                 self._create()
+--- baseline/hms/synthetic_io_installation.py
++++ integrated/hms/synthetic_io_installation.py
+@@ -6,9 +6,13 @@
+ from __future__ import annotations
+ 
+ import copy
++from collections import OrderedDict
++import threading
++from types import FunctionType
+ import hashlib
+ from pathlib import Path
+ 
++from . import contracts as _contracts, resource_topology as _topology, resource_catalog as _catalog, registry as _registry
+ from .contracts import canonical, identifier, parse_json
+ from .demo import object_schema, type_bundle
+ from .journal import JournalError
+@@ -20,6 +24,7 @@
+ DRIVER = 'sqlite-finite-io/1'
+ PRIMITIVES = {'gpio_pulse': 'gpio_access', 'pwm_burst': 'pwm_access'}
+ MAX_DURATION_MS = 5000
++_DEFINITION_BINDING_PROOF = binding_proof
+ 
+ 
+ def require(condition, code):
+@@ -41,7 +46,7 @@
+ 
+ def normalize_installation(value):
+     raw = parse_json(value) if type(value) is bytes else value
+-    canonical(raw)  # Bound the original tree before walking or copying it.
++    encoded = canonical(raw)  # Bound the original tree before walking or copying it.
+     pending = [raw]
+     while pending:
+         item = pending.pop()
+@@ -50,10 +55,22 @@
+             pending.extend(item.values())
+         elif type(item) is list:
+             pending.extend(item)
+-    value = parse_json(canonical(raw))
++    value = parse_json(encoded)
+     exact(value, {'profile', 'driver', 'driverDigest', 'boardId', 'topology', 'initialGenerations', 'routes', 'handlers'})
+     require(value['profile'] == PROFILE and value['driver'] == DRIVER, 'IO_INSTALLATION_PROFILE')
+-    require(value['driverDigest'] == implementation_digest(), 'IO_DRIVER_CHANGED')
++    current_source = implementation_digest()  # Never memoize the current source check.
++    require(value['driverDigest'] == current_source, 'IO_DRIVER_CHANGED')
++    cached = _cached_normalization(encoded, current_source)
++    if cached is not None:
++        return _thaw_normalization(cached)
++    result = _normalize_validated(value)
++    _remember_normalization(encoded, current_source, result)
++    return result
++
++
++def _normalize_validated(value):
++    # Original pure semantic validation, after the unchanged bounded/type/profile
++    # and fresh source checks. This path remains the fallback for changed helpers.
+     document = parse_topology(value['topology'])
+     require(document['deployment'].startswith('simulation:'), 'IO_SIMULATION_DEPLOYMENT_REQUIRED')
+     generations = parse_generations(document, value['initialGenerations'])
+@@ -106,6 +123,13 @@
+ 
+ 
+ def handler_details(document, instance, action):
++    # Public callers always derive a fresh proof from this document.
++    return _handler_details(document, instance, action, None)[0]
++
++
++def _handler_details(document, instance, action, proof, build=None):
++    # definitions() may share one pure, freshly derived instance proof while
++    # building that instance's actions. Nothing survives the build call.
+     row = next((item for item in document['handlers'] if item['instanceId'] == instance and item['actionId'] == action), None)
+     require(row is not None, 'IO_HANDLER_UNSUPPORTED')
+     topology = document['topology']
+@@ -120,9 +144,17 @@
+         channel = topology['nodes'][details['channel']]['properties']
+         details.update(pin=channel['pin'], timer=channel['timer'])
+         details['timerEnvelope'] = copy.deepcopy(topology['nodes'][channel['timer']]['properties'])
+-    proof = binding_proof(topology, document['initialGenerations'], instance)
++    if proof is None:
++        if build is None or binding_proof is not _DEFINITION_BINDING_PROOF:
++            proof = binding_proof(topology, document['initialGenerations'], instance)
++        else:
++            # This cell belongs only to the enclosing pure definitions() call.
++            # First-handler lookup still precedes all topology validation.
++            if build[0] is None:
++                build[0] = _topology._BindingProofBuild(topology, document['initialGenerations'])
++            proof = build[0](instance)
+     details['claims'] = proof['expandedClaims'][action]
+-    return details
++    return details, proof
+ 
+ 
+ def argument_schema(details):
+@@ -139,12 +171,13 @@
+ 
+ def definitions(document):
+     """Return original I/O type bundles and proof-derived exact bindings."""
+-    result = {}
++    result = {}; build = [None]
+     instances = sorted({row['instanceId'] for row in document['handlers']})
+     for instance in instances:
+-        bundle = None; resources = {}
++        bundle = None; resources = {}; proof = None
+         for row in (item for item in document['handlers'] if item['instanceId'] == instance):
+-            action = row['actionId']; detail = handler_details(document, instance, action)
++            action = row['actionId']
++            detail, proof = _handler_details(document, instance, action, proof, build)
+             role = 'io-root:' + action
+             part = type_bundle('finite-io-' + hashlib.sha256(instance.encode()).hexdigest()[:16], action,
+                 argument_schema(detail), {'type': 'integer', 'minimum': 0, 'maximum': 9007199254740991},
+@@ -159,7 +192,6 @@
+                 bundle['td']['actions'].update(part['td']['actions'])
+             resources[role] = detail['root']
+         digest = validate_type_bundle(bundle)
+-        proof = binding_proof(document['topology'], document['initialGenerations'], instance)
+         adapter = next(key for key, values in document['routes']['adapters'].items() if instance in values)
+         binding = {'profile': 'hms.binding/0.1', 'instanceId': instance, 'generation': proof['bindingGeneration'],
+             'typeDigest': digest, 'calibrationRevision': 'synthetic:finite-io:1', 'controlGeneration': control_generation(proof),
+@@ -167,3 +199,139 @@
+             'argumentSchemas': {key: copy.deepcopy(item['inputSchema']) for key, item in bundle['execution']['actions'].items()}}
+         result[instance] = {'type': bundle, 'binding': binding, 'proof': proof}
+     return result
++
++
++# Only exact already-validated immutable data is retained. Every caller still
++# bounds/encodes its original input, rejects floats, detaches/parses it, checks
++# the closed profile and recomputes the installed source identity before lookup.
++# Eight keys retain at most512KiB plus their bounded frozen normalized trees.
++# This is not an RSS limit, authority cache, source attestation or disk quota.
++_NORMALIZATION_LIMIT = 8
++_NORMALIZATION_KEY_LIMIT = 8 * 65536
++_NORMALIZATION_MEMO = OrderedDict()
++_NORMALIZATION_KEY_BYTES = 0
++_NORMALIZATION_LOCK = threading.Lock()
++
++
++def _freeze_normalization(value, depth=0):
++    if depth > 32:
++        return None
++    kind = type(value)
++    if kind is dict:
++        if len(value)>16384 or not all(type(key)is str for key in value):return None
++        rows=tuple((key,_freeze_normalization(child,depth+1))for key,child in value.items())
++        return None if any(child is None for _,child in rows) else ('dict',rows)
++    if kind is list:
++        if len(value)>16384:return None
++        rows=tuple(_freeze_normalization(child,depth+1)for child in value)
++        return None if any(child is None for child in rows) else ('list',rows)
++    if kind in (str,int,bool,float,type(None)):
++        return ('scalar',kind,value)
++    if kind in (set,frozenset) and len(value)<=16384 and all(type(item)is str for item in value):
++        return ('set',kind,frozenset(value))
++    return None
++
++
++def _same_normalization_config(value, frozen):
++    if frozen is None:return False
++    if frozen[0]=='dict':
++        if type(value)is not dict or len(value)!=len(frozen[1]) or not all(type(key)is str for key in value):return False
++        return all(key in value and _same_normalization_config(value[key],child)for key,child in frozen[1])
++    if frozen[0]=='list':
++        return type(value)is list and len(value)==len(frozen[1]) and all(_same_normalization_config(a,b)for a,b in zip(value,frozen[1]))
++    if frozen[0]=='set':
++        return type(value)is frozen[1] and all(type(item)is str for item in value) and frozenset(value)==frozen[2]
++    return type(value)is frozen[1] and value==frozen[2]
++
++
++def _thaw_normalization(frozen):
++    if frozen[0]=='dict':return {key:_thaw_normalization(child)for key,child in frozen[1]}
++    if frozen[0]=='list':return [_thaw_normalization(child)for child in frozen[1]]
++    # Accepted normalization results contain only JSON scalars, never sets.
++    assert frozen[0]=='scalar'
++    return frozen[2]
++
++
++def _function_anchor(function):
++    if type(function)is not FunctionType:return None
++    cells=tuple(cell.cell_contents for cell in function.__closure__ or ())
++    children=tuple((child,child.__code__ if type(child)is FunctionType else None)for child in cells)
++    return (function,function.__code__,function.__defaults__,function.__kwdefaults__,children)
++
++
++def _same_normalization_function(function, anchor):
++    if anchor is None or function is not anchor[0] or type(function)is not FunctionType:return False
++    if function.__code__ is not anchor[1] or function.__defaults__ is not anchor[2] or function.__kwdefaults__ is not anchor[3]:return False
++    cells=function.__closure__ or ()
++    if len(cells)!=len(anchor[4]):return False
++    for cell,(expected,code) in zip(cells,anchor[4]):
++        actual=cell.cell_contents
++        if actual is not expected or code is not None and (type(actual)is not FunctionType or actual.__code__ is not code):return False
++    return True
++
++
++def _normalization_allowed(source):
++    if source != _NORMALIZATION_IMPORTED_SOURCE:return False
++    for namespace,name,anchor in _NORMALIZATION_FUNCTIONS:
++        if not _same_normalization_function(namespace.get(name),anchor):return False
++    for namespace,name,frozen in _NORMALIZATION_CONSTANTS:
++        if not _same_normalization_config(namespace.get(name),frozen):return False
++    for profile,validator,schema,method,type_checker,keywords,format_checker in _NORMALIZATION_VALIDATORS:
++        if _topology._VALIDATORS.get(profile) is not validator:return False
++        if not _same_normalization_config(validator.schema,schema):return False
++        cls=type(validator)
++        if not _same_normalization_function(cls.iter_errors,method) or cls.TYPE_CHECKER is not type_checker or validator.format_checker is not format_checker:return False
++        current=cls.VALIDATORS
++        if type(current)is not dict or len(current)!=len(keywords) or not all(type(key)is str for key in current):return False
++        if any(not _same_normalization_function(current.get(key),anchor)for key,anchor in keywords):return False
++    return True
++
++
++def _cached_normalization(encoded, source):
++    global _NORMALIZATION_KEY_BYTES
++    with _NORMALIZATION_LOCK:
++        if not _normalization_allowed(source):
++            _NORMALIZATION_MEMO.clear();_NORMALIZATION_KEY_BYTES=0
++            return None
++        frozen=_NORMALIZATION_MEMO.get(encoded)
++        if frozen is not None:_NORMALIZATION_MEMO.move_to_end(encoded)
++        return frozen
++
++
++def _remember_normalization(encoded, source, value):
++    global _NORMALIZATION_KEY_BYTES
++    with _NORMALIZATION_LOCK:
++        if not _normalization_allowed(source):
++            _NORMALIZATION_MEMO.clear();_NORMALIZATION_KEY_BYTES=0
++            return
++        frozen=_freeze_normalization(value)
++        if frozen is None:return
++        if encoded in _NORMALIZATION_MEMO:
++            _NORMALIZATION_MEMO.move_to_end(encoded)
++            return
++        while _NORMALIZATION_MEMO and (len(_NORMALIZATION_MEMO)>=_NORMALIZATION_LIMIT or
++                _NORMALIZATION_KEY_BYTES+len(encoded)>_NORMALIZATION_KEY_LIMIT):
++            old,_=_NORMALIZATION_MEMO.popitem(last=False);_NORMALIZATION_KEY_BYTES-=len(old)
++        if len(encoded)<=_NORMALIZATION_KEY_LIMIT:
++            _NORMALIZATION_MEMO[encoded]=frozen;_NORMALIZATION_KEY_BYTES+=len(encoded)
++
++
++# Imported code is trusted; these conservative guards disable reuse when selected
++# validation dependencies change. They are not complete Python-process attestation.
++# In-place mutation of private validator machinery retains the original fallback
++# semantics; runtime configuration is installed through explicit source/schema
++# versions and validator replacement, not through a public mutation API.
++_NORMALIZATION_FUNCTIONS = tuple((namespace,name,_function_anchor(value))
++    for namespace in (globals(),vars(_topology),vars(_catalog),vars(_registry),vars(_contracts))
++    for name,value in tuple(namespace.items()) if type(value)is FunctionType)
++_NORMALIZATION_CONSTANTS = tuple((namespace,name,_freeze_normalization(namespace[name]))for namespace,names in (
++    (globals(),('PROFILE','DRIVER','PRIMITIVES','MAX_DURATION_MS','_NORMALIZATION_LIMIT','_NORMALIZATION_KEY_LIMIT')),
++    (vars(_topology),('PROFILE','GENERATION_PROFILE','PROOF_PROFILE','MAX_DEPTH','MAX_CLAIMS','_PHYSICAL','_ACCESS')),
++    (vars(_contracts),('MAX_BYTES','MAX_DEPTH','MAX_NODES','SAFE_INTEGER')))
++    for name in names)
++_NORMALIZATION_VALIDATORS = tuple((profile,validator,_freeze_normalization(validator.schema),
++    _function_anchor(type(validator).iter_errors),type(validator).TYPE_CHECKER,
++    tuple((key,_function_anchor(function))for key,function in type(validator).VALIDATORS.items()),validator.format_checker)
++    for profile in (_topology.PROFILE,_topology.GENERATION_PROFILE)
++    for validator in (_topology._VALIDATORS[profile],))
++_NORMALIZATION_IMPORTED_SOURCE = implementation_digest()
+--- baseline/hms/synthetic_io_runtime.py
++++ integrated/hms/synthetic_io_runtime.py
+@@ -19,7 +19,11 @@
+ 
+ class IoRuntime(Runtime):
+     def __init__(self, state_dir, *, create=False, owner=None, installation=None,
+-                 wall_clock_ms=None, monotonic_ms=None):
++                 wall_clock_ms=None, monotonic_ms=None, storage_profile=None):
++        require(storage_profile is None or
++                (type(storage_profile) is str and storage_profile == 'hms.sqlite.compact/0.1'),
++                'IO_STORAGE_PROFILE')
++        page_size = 1024 if storage_profile is not None else None
+         document = normalize_installation(installation) if installation is not None else None
+         if create:
+             require(document is not None and owner is not None and owner.deployment == document['topology']['deployment'],
+@@ -37,7 +41,8 @@
+         self.adapters = {}
+         self.directory = private_state_directory(state_dir,create=create)
+         try:
+-            self.journal = Journal(self.directory/'authority.db',self.policy,clock_ms=self.wall_clock_ms,create=create)
++            self.journal = Journal(self.directory/'authority.db',self.policy,clock_ms=self.wall_clock_ms,
++                create=create,page_size=page_size)
+             self.registry = Registry(self.journal,monotonic_ms=self.monotonic_ms,bootstrap_owner=owner if create else None)
+             self.policy.attach(self.registry); self.deployment = self.registry.deployment
+             self.catalog = IoAdapterCatalog(self.journal,self.registry,create=create,owner=owner,installation=document)
+@@ -50,7 +55,8 @@
+                 require(self.journal._db.execute('SELECT 1 FROM operations WHERE may_have_acted=1 LIMIT 1').fetchone() is None,
+                         'IO_BOARD_MISSING_WITH_EFFECT_HISTORY')
+             self.io_board = SyntheticIoBoard(path,self.catalog.document,create=new_board,
+-                authority_id=self.journal.authority_id,owner_epoch=self.journal.owner_epoch,clock_epoch=self.registry.receipt_epoch)
++                authority_id=self.journal.authority_id,owner_epoch=self.journal.owner_epoch,
++                clock_epoch=self.registry.receipt_epoch,page_size=page_size)
+             # One board object and one recovery pass, regardless of route count.
+             for route in self.catalog.installations:
+                 adapter = route['adapterId']; self._route_locks[adapter] = threading.RLock()
+--- baseline/tests/test_pat_compiler.py
++++ integrated/tests/test_pat_compiler.py
+@@ -241,7 +241,8 @@
+         for row in identity["sources"]:
+             self.assertEqual(row["sha256"], hashlib.sha256((ROOT / row["path"]).read_bytes()).hexdigest())
+         self.assertEqual({row["package"] for row in identity["packages"]},
+-                         {"jsonschema", "referencing", "jsonschema-specifications", "attrs", "rpds-py"})
++                         {"jsonschema", "referencing", "jsonschema-specifications", "attrs", "rpds-py",
++                          "typing_extensions", "idna"})
+         self.assertTrue(all(row["fileCount"] > 0 for row in identity["packages"]))
+         identity["sources"].clear()
+         self.assertTrue(compiler_manifest()["sources"])
+--- baseline/tests/test_pat_compiler_identity.py
++++ integrated/tests/test_pat_compiler_identity.py
+@@ -0,0 +1,205 @@
++"""Bounded seven-package setup identity; no runtime, SQL or device execution."""
++from contextlib import contextmanager
++import copy
++import hashlib
++import importlib.metadata
++import io
++from pathlib import Path
++import stat
++import tempfile
++from types import SimpleNamespace
++import unittest
++from unittest.mock import patch
++
++from hms import pat_compiler as compiler
++from hms.contracts import canonical
++from hms.pat_contracts import PatError
++from hms.pat_simulation_worker import simulation_identities
++from test_pat_compiler import artifact, compile_fixture, descriptor
++
++
++@contextmanager
++def distribution_override(package, *, files=None, version=None, resource=None, target=None):
++    actual = importlib.metadata.distribution
++    original = actual(package)
++    class Distribution:
++        def locate_file(self, item):
++            return resource if target is not None and str(item) == target else original.locate_file(item)
++    replacement = Distribution()
++    replacement.files = original.files if files is None else files
++    replacement.version = original.version if version is None else version
++    with patch.object(compiler.importlib.metadata, 'distribution',
++                      side_effect=lambda name: replacement if name == package else actual(name)):
++        yield
++
++
++def packages(manifest):
++    return {row['package']: row for row in manifest['packages']}
++
++
++class CompilerIdentityTests(unittest.TestCase):
++    def refuses(self, callback, code='PAT_COMPILER_IDENTITY_UNAVAILABLE'):
++        with self.assertRaises(PatError) as caught:
++            callback()
++        self.assertEqual(caught.exception.code, code)
++
++    def test_profile_and_digest_domain_version_are_explicit(self):
++        manifest = compiler.compiler_manifest()
++        self.assertEqual(manifest['profile'], 'hms.pat-compiler-identity/0.2')
++        self.assertEqual(set(packages(manifest)), {'jsonschema', 'referencing',
++            'jsonschema-specifications', 'attrs', 'rpds-py', 'typing_extensions', 'idna'})
++        expected = 'sha256:' + hashlib.sha256(
++            b'HMS-PAT-COMPILER-SHA256-v0.2\0' + canonical(manifest)).hexdigest()
++        self.assertEqual(compiler.compiler_digest(), expected)
++        old_domain = 'sha256:' + hashlib.sha256(
++            b'HMS-PAT-COMPILER-SHA256-v0.1\0' + canonical(manifest)).hexdigest()
++        self.assertNotEqual(expected, old_domain)
++
++    def test_both_previously_omitted_code_closures_change_identity(self):
++        for package, target in [('typing_extensions', 'typing_extensions.py'),
++                                ('idna', 'idna/core.py')]:
++            with self.subTest(package=package), tempfile.TemporaryDirectory() as directory:
++                original = importlib.metadata.distribution(package)
++                resource = Path(directory) / 'retained.py'
++                resource.write_bytes(original.locate_file(target).read_bytes())
++                with distribution_override(package, resource=resource, target=target):
++                    before = compiler._identity()
++                    self.assertEqual(before, compiler.compiler_manifest())
++                    resource.write_bytes(resource.read_bytes() + b'\n# changed fixture bytes\n')
++                    after = compiler._identity()
++                    left, right = packages(before), packages(after)
++                    self.assertNotEqual(left.pop(package)['codeDigest'], right.pop(package)['codeDigest'])
++                    self.assertEqual(left, right)
++                    self.refuses(compiler.verify_compiler_identity, 'PAT_COMPILER_IMPLEMENTATION_CHANGED')
++                self.assertEqual(compiler.verify_compiler_identity(), before)
++
++    def test_optional_distribution_version_changes_identity(self):
++        for package in ('typing_extensions', 'idna'):
++            with self.subTest(package=package), distribution_override(package, version='fixture:changed'):
++                self.refuses(compiler.verify_compiler_identity, 'PAT_COMPILER_IMPLEMENTATION_CHANGED')
++
++    def test_missing_either_selected_distribution_is_a_structured_refusal(self):
++        actual = importlib.metadata.distribution
++        for package in ('typing_extensions', 'idna'):
++            def lookup(name):
++                if name == package:
++                    raise importlib.metadata.PackageNotFoundError(name)
++                return actual(name)
++            with self.subTest(package=package), patch.object(
++                    compiler.importlib.metadata, 'distribution', side_effect=lookup):
++                self.refuses(compiler._identity)
++
++    def test_missing_selected_optional_file_is_a_structured_refusal(self):
++        with tempfile.TemporaryDirectory() as directory:
++            for package, target in [('typing_extensions', 'typing_extensions.py'), ('idna', 'idna/core.py')]:
++                with self.subTest(package=package), distribution_override(package,
++                        target=target, resource=Path(directory)/'missing'):
++                    self.refuses(compiler._identity)
++
++    def test_missing_source_is_a_structured_refusal(self):
++        actual = Path.lstat
++        def lstat(path):
++            if path.name == 'pat_contracts.py':
++                raise FileNotFoundError('fixture source unavailable')
++            return actual(path)
++        with patch.object(Path, 'lstat', lstat):
++            self.refuses(compiler._identity)
++
++    def test_reordered_distribution_inventory_preserves_identity(self):
++        original = importlib.metadata.distribution('idna')
++        with distribution_override('idna', files=list(reversed(original.files))):
++            self.assertEqual(compiler.verify_compiler_identity(), compiler.compiler_manifest())
++
++    def test_duplicate_code_record_refuses(self):
++        original = importlib.metadata.distribution('idna')
++        item = next(item for item in original.files if str(item) == 'idna/core.py')
++        with distribution_override('idna', files=[*original.files, item]):
++            self.refuses(compiler._identity)
++
++    def test_absolute_parent_and_cache_code_paths_refuse_before_read(self):
++        for path in ('/fixture.py', '../fixture.py', 'idna/__pycache__/fixture.py'):
++            with self.subTest(path=path), distribution_override('idna',
++                    files=[importlib.metadata.PackagePath(path)]):
++                self.refuses(compiler._identity)
++
++    def test_empty_and_oversized_distribution_inventory_refuse(self):
++        for files in ([], [importlib.metadata.PackagePath('idna/core.py')] * 8193):
++            with self.subTest(size=len(files)), distribution_override('idna', files=files):
++                self.refuses(compiler._identity)
++
++    def test_selected_file_symlink_and_directory_refuse(self):
++        with tempfile.TemporaryDirectory() as directory:
++            root = Path(directory); target = root/'data'; target.write_bytes(b'retained data')
++            link = root/'link'; link.symlink_to(target)
++            for resource in (link, root):
++                with self.subTest(resource=resource), distribution_override('typing_extensions',
++                        target='typing_extensions.py', resource=resource):
++                    self.refuses(compiler._identity)
++
++    def test_file_count_and_byte_limits_refuse_without_widening(self):
++        for limit, value in [('_IDENTITY_MAX_FILES', 1), ('_IDENTITY_MAX_FILE_BYTES', 1),
++                             ('_IDENTITY_MAX_BYTES', 1)]:
++            with self.subTest(limit=limit), patch.object(compiler, limit, value):
++                self.refuses(compiler._identity, 'PAT_COMPILER_IDENTITY_LIMIT')
++        self.assertEqual((compiler._IDENTITY_MAX_FILES, compiler._IDENTITY_MAX_FILE_BYTES,
++            compiler._IDENTITY_MAX_BYTES), (8192, 16*1024*1024, 256*1024*1024))
++
++    def test_acquisition_checks_exact_size_and_bounds_the_actual_read(self):
++        reads = []
++        class Stream(io.BytesIO):
++            def read(self, size):
++                reads.append(size)
++                return super().read(size)
++        class FixturePath:
++            def lstat(self):
++                return SimpleNamespace(st_mode=stat.S_IFREG, st_size=1)
++            def open(self, mode):
++                assert mode == 'rb'
++                return Stream(b'grew')
++        with patch.object(compiler, '_IDENTITY_MAX_FILE_BYTES', 2):
++            self.refuses(lambda: compiler._identity_file(FixturePath(), [0, 0]))
++        self.assertEqual(reads, [3])
++
++    def test_valid_setup_recheck_is_detached_and_preserves_imported_identity(self):
++        expected = compiler.compiler_manifest()
++        actual = compiler.verify_compiler_identity()
++        self.assertEqual(actual, expected)
++        actual['sources'].clear(); actual['packages'].clear()
++        self.assertEqual(compiler.compiler_manifest(), expected)
++
++    def test_setup_recheck_refuses_changed_source_without_refreshing_cached_identity(self):
++        before = compiler.compiler_manifest(); changed = copy.deepcopy(before)
++        changed['sources'][0]['sha256'] = '0' * 64
++        digest = compiler.compiler_digest()
++        with patch.object(compiler, '_identity', return_value=changed):
++            self.refuses(compiler.verify_compiler_identity, 'PAT_COMPILER_IMPLEMENTATION_CHANGED')
++        self.assertEqual(compiler.compiler_manifest(), before)
++        self.assertEqual(compiler.compiler_digest(), digest)
++
++    def test_worker_setup_rechecks_dependency_bytes_before_returning_identity(self):
++        before = simulation_identities()
++        original = importlib.metadata.distribution('idna')
++        with tempfile.TemporaryDirectory() as directory:
++            resource = Path(directory)/'fixture-data'
++            resource.write_bytes(original.locate_file('idna/core.py').read_bytes() + b'\n# changed\n')
++            with distribution_override('idna', target='idna/core.py', resource=resource):
++                self.refuses(simulation_identities, 'PAT_COMPILER_IMPLEMENTATION_CHANGED')
++        self.assertEqual(simulation_identities(), before)
++
++    def test_lowered_policy_limits_still_have_distinct_identity(self):
++        from hms.pat_simulation_contracts import CEILINGS
++        before = simulation_identities()
++        limits = dict(CEILINGS); limits['maxCases'] -= 1
++        after = simulation_identities(limits)
++        self.assertNotEqual(before['policyDigest'], after['policyDigest'])
++        self.assertEqual({k: v for k, v in before.items() if k != 'policyDigest'},
++                         {k: v for k, v in after.items() if k != 'policyDigest'})
++
++    def test_lowering_does_not_invoke_setup_acquisition(self):
++        value, binding = artifact(), descriptor()
++        with patch.object(compiler, '_identity', side_effect=AssertionError('identity I/O during lowering')), \
++             patch.object(Path, 'open', side_effect=AssertionError('file I/O during lowering')), \
++             patch('time.time', side_effect=AssertionError('clock during lowering')):
++            result = compile_fixture(value, bindings={'fan': binding})
++        self.assertEqual(result['compilerDigest'], compiler.compiler_digest())
++        self.assertEqual(result['report']['stepCount'], 2)
+--- baseline/tests/test_pat_fixed_schema_units.py
++++ integrated/tests/test_pat_fixed_schema_units.py
+@@ -0,0 +1,320 @@
++"""Pure fixed-schema unit grammar; original fixtures, no provider qualification.
++
++These tests do not open a Runtime or execute a device model. Driver/install
++identities are explicit fixture labels, never current installed attestations.
++"""
++import copy
++import hashlib
++import json
++from pathlib import Path
++import unittest
++from unittest.mock import patch
++
++from hms import pat_compiler as compiler
++from hms.contracts import canonical
++from hms.demo import object_schema, type_bundle
++from hms.pat_contracts import PatError
++from hms.registry import validate_type_bundle
++
++ROOT = Path(__file__).resolve().parents[1]
++FIXED = "hms.pat.argument.fixed-schema-unit/0.1"
++
++
++def fixed(unit):
++    return {"profile": FIXED, "unit": unit, "frame": None,
++            "unitArgument": None, "frameArgument": None}
++
++
++def legacy(unit=None, frame=None, unit_argument=None, frame_argument=None):
++    return {"unit": unit, "frame": frame, "unitArgument": unit_argument,
++            "frameArgument": frame_argument}
++
++
++def fixed_case(pwm=False):
++    value = json.loads((ROOT / "tests/fixtures/pat-compiler.json").read_text())
++    properties = {"durationMs": {"type": "integer", "minimum": 1, "maximum": 4999}}
++    units = {"durationMs": "ms"}
++    params = {"durationMs": 21}
++    if pwm:
++        properties.update(frequencyHz={"type": "integer", "minimum": 100, "maximum": 10000},
++                          dutyPermille={"type": "integer", "minimum": 0, "maximum": 1000},
++                          resolutionBits={"type": "integer", "const": 8})
++        units.update(frequencyHz="Hz", dutyPermille="permille", resolutionBits="bit")
++        params.update(frequencyHz=1500, dutyPermille=375, resolutionBits=8)
++    else:
++        properties["level"] = {"type": "integer", "minimum": 0, "maximum": 1}
++        units["level"] = "1"
++        params["level"] = 1
++    bundle = type_bundle("fixed-schema-fixture", "apply", object_schema(properties),
++                         {"type": "integer", "minimum": 0, "maximum": 1},
++                         unit="1", effect="fixture-only", resource="fixture-resource")
++    digest = validate_type_bundle(bundle)
++    binding = {"profile": "hms.binding/0.1", "instanceId": "fixture:fixed-units",
++        "generation": "binding:7", "typeDigest": digest, "calibrationRevision": "fixture:1",
++        "controlGeneration": "control:9", "mode": "simulation", "adapterId": "fixture:route",
++        "resourceMap": {"fixture-resource": "fixture:shared-resource"},
++        "argumentSchemas": {"apply": copy.deepcopy(bundle["execution"]["actions"]["apply"]["inputSchema"])}}
++    descriptor = {"type": bundle, "binding": binding, "endpointSession": "fixture:session:1",
++        "driverProfile": "fixture-fixed-units/1", "driverDigest": "sha256:" + "a" * 64,
++        "installationDigest": "sha256:" + "b" * 64,
++        "argumentMetadata": {"apply": {key: fixed(unit) for key, unit in units.items()}}}
++    value.update(name="fixed-schema-unit-fixture", taskKind="fixture.units",
++                 inputProfile="fixture.fixed-units/1")
++    value["parameters"] = {}
++    for key, schema in properties.items():
++        domain = ({"type": "integer", "minimum": schema["const"], "maximum": schema["const"]}
++                  if "const" in schema else copy.deepcopy(schema))
++        value["parameters"][key] = {"valueSchema": domain, "unit": units[key], "frame": None}
++    value["roles"] = {"fan": {"capabilityFamily": "sim:fixed-schema-fixture", "actions": ["apply"],
++                               "driverProfiles": ["fixture-fixed-units/1"]}}
++    value["timingBudget"] = {"latestStartOffsetMs": 500, "latestCompletionOffsetMs": 6000,
++                              "maxRunSumMs": 5000}
++    value["steps"] = [{"stepId": "initial", "role": "fan", "actionId": "apply",
++        "arguments": {key: {"parameter": key} for key in properties},
++        "timing": {"notBeforeOffsetMs": 0, "latestStartOffsetMs": 500,
++                   "maxRunMs": 5000, "latestCompletionOffsetMs": 6000}}]
++    value["effectBudget"]["maxInvocations"] = 1
++    value["outcomeContract"]["requiredCompletedSteps"] = ["initial"]
++    return {"artifact": value, "parameters": params, "bindings": {"fan": descriptor}}
++
++
++def lower(case):
++    value = case["artifact"]
++    return compiler.compile_pat(value, case["parameters"], case["bindings"], origin_ms=1000,
++        caller_deadline_ms=10000, replay_namespace="fixture:replay", procedure_key="fixture:parent",
++        operation_keys={step["stepId"]: "fixture:child:" + step["stepId"] for step in value["steps"]},
++        context={"taskKind": value["taskKind"], "inputProfile": value["inputProfile"],
++                 "evidenceMode": "simulation", "deployment": "fixture:deployment"})
++
++
++def environment(case):
++    return compiler.evaluation_environment(case["artifact"], case["bindings"],
++                                           deployment="fixture:deployment")
++
++
++def info(case, key="durationMs"):
++    return case["bindings"]["fan"]["argumentMetadata"]["apply"][key]
++
++
++def intent(result):
++    return result["request"]["procedure"]["steps"][0]["request"]["intent"]
++
++
++class FixedSchemaUnitTests(unittest.TestCase):
++    def refuse_both(self, case, code=None):
++        for call in (lower, environment):
++            with self.subTest(call=call.__name__):
++                if code is None:
++                    with self.assertRaises(PatError):
++                        call(case)
++                else:
++                    with self.assertRaisesRegex(PatError, code):
++                        call(case)
++
++    def test_gpio_shaped_contract_retains_exact_arguments_keys_and_bounds(self):
++        case = fixed_case(); result = lower(case)
++        self.assertEqual(intent(result)["arguments"], {"durationMs": 21, "level": 1})
++        self.assertEqual(intent(result)["timing"], {"notBeforeUnixMs": 1000, "latestStartUnixMs": 1500,
++                                                  "maxRunMs": 5000, "latestCompletionUnixMs": 7000})
++        self.assertEqual(result["request"]["procedureKey"], "fixture:parent")
++        self.assertEqual(result["request"]["procedure"]["steps"][0]["request"]["operationKey"],
++                         "fixture:child:initial")
++        self.assertEqual(intent(result)["bindingGeneration"], "binding:7")
++        self.assertEqual(intent(result)["controlGeneration"], "control:9")
++        self.assertFalse(result["report"]["admitted"])
++        self.assertFalse(result["report"]["physicalObjectiveVerified"])
++        self.assertEqual(result["report"]["unitConversions"], [])
++        self.assertEqual(result["report"]["frameConversions"], [])
++
++    def test_pwm_shaped_contract_has_explicit_hz_permille_bit_and_ms(self):
++        case = fixed_case(pwm=True); result = lower(case)
++        self.assertEqual(intent(result)["arguments"], case["parameters"])
++        self.assertEqual({key: row["unit"] for key, row in
++                          case["bindings"]["fan"]["argumentMetadata"]["apply"].items()},
++                         {"durationMs": "ms", "frequencyHz": "Hz", "dutyPermille": "permille",
++                          "resolutionBits": "bit"})
++        self.assertTrue(all(type(x) is int for x in intent(result)["arguments"].values()))
++        for key in ("patDigest", "compilerDigest", "evaluationEnvironment", "environmentDigest", "dependencies"):
++            self.assertEqual(environment(case)[key], result[key])
++
++    def test_argument_spelling_cannot_infer_units(self):
++        case = fixed_case(); descriptor = case["bindings"]["fan"]
++        for schema in (descriptor["type"]["execution"]["actions"]["apply"]["inputSchema"],
++                       descriptor["binding"]["argumentSchemas"]["apply"]):
++            schema["properties"]["q9"] = schema["properties"].pop("durationMs")
++            schema["required"] = ["q9" if key == "durationMs" else key for key in schema["required"]]
++        # Rebuild the TD from the new schema: no fake type digest or stale projection.
++        schema = descriptor["type"]["execution"]["actions"]["apply"]["inputSchema"]
++        descriptor["type"] = type_bundle("fixed-schema-fixture", "apply", schema,
++            {"type": "integer", "minimum": 0, "maximum": 1}, unit="1",
++            effect="fixture-only", resource="fixture-resource")
++        descriptor["binding"]["typeDigest"] = validate_type_bundle(descriptor["type"])
++        descriptor["argumentMetadata"]["apply"]["q9"] = descriptor["argumentMetadata"]["apply"].pop("durationMs")
++        case["artifact"]["steps"][0]["arguments"]["q9"] = case["artifact"]["steps"][0]["arguments"].pop("durationMs")
++        self.assertEqual(intent(lower(case))["arguments"], {"q9": 21, "level": 1})
++        info(case, "q9")["unit"] = "1"
++        self.refuse_both(case, "PAT_SEMANTICS_MISMATCH")
++
++    def test_literals_use_registered_units_without_synthesized_companions(self):
++        case = fixed_case(pwm=True)
++        for key, value in case["parameters"].items():
++            case["artifact"]["steps"][0]["arguments"][key] = {"literal": value}
++        expected = copy.deepcopy(case["parameters"])
++        case["parameters"] = {}; case["artifact"]["parameters"] = {}
++        self.assertEqual(intent(lower(case))["arguments"], expected)
++        self.assertEqual(set(intent(lower(case))["arguments"]), set(expected))
++        for wrong in (True, 21.0, -1, 5000):
++            broken = copy.deepcopy(case)
++            broken["artifact"]["steps"][0]["arguments"]["durationMs"] = {"literal": wrong}
++            self.refuse_both(broken)
++
++    def test_tagged_metadata_is_closed_bounded_and_exactly_typed(self):
++        changes = [{"profile": value} for value in (None, True, 1, 1.0, {}, "unknown", FIXED + ".next")]
++        changes += [{"unit": value} for value in (None, True, 1, 1.0, {}, "", "m" * 129)]
++        changes += [{"scale": 1000}, {"converter": "arbitrary:callback"}, {"schemaDigest": "sha256:" + "c" * 64}]
++        for change in changes:
++            case = fixed_case(); info(case).update(change)
++            with self.subTest(change=change):
++                self.refuse_both(case)
++        for missing in ("profile", "unit", "frame", "unitArgument", "frameArgument"):
++            case = fixed_case(); info(case).pop(missing)
++            with self.subTest(missing=missing):
++                self.refuse_both(case)
++        case = fixed_case(); info(case)["unit"] = "m" * 65536
++        self.refuse_both(case)
++
++    def test_fixed_units_require_numeric_type_and_binding_schemas(self):
++        for kind, schema in (("string", {"type": "string", "maxLength": 10}),
++                             ("boolean", {"type": "boolean"}), ("null", {"type": "null"})):
++            case = fixed_case()
++            case["bindings"]["fan"]["binding"]["argumentSchemas"]["apply"]["properties"]["durationMs"] = schema
++            with self.subTest(binding_kind=kind):
++                self.refuse_both(case, "PAT_METADATA_MISMATCH")
++        # A tagged entry cannot be attached to a legacy string companion either.
++        case = json.loads((ROOT / "tests/fixtures/pat-environment.json").read_text())["fan"]
++        case["bindings"]["fan"]["argumentMetadata"]["set_level"]["unit"] = fixed("1")
++        self.refuse_both(case, "PAT_METADATA_MISMATCH")
++
++    def test_fixed_frame_and_companion_fields_must_all_be_null(self):
++        for field in ("frame", "unitArgument", "frameArgument"):
++            for value in (False, 0, "level", "frame:device", {}):
++                case = fixed_case(); info(case)[field] = value
++                with self.subTest(field=field, value=value):
++                    self.refuse_both(case, "PAT_METADATA_MISMATCH")
++
++    def test_parameter_units_are_exact_with_no_conversion_or_dimensionless_alias(self):
++        for key, wrong in (("durationMs", "s"), ("frequencyHz", "kHz"),
++                           ("dutyPermille", "percent"), ("resolutionBits", "1"),
++                           ("durationMs", "1"), ("frequencyHz", "hz")):
++            case = fixed_case(pwm=True); case["artifact"]["parameters"][key]["unit"] = wrong
++            with self.subTest(key=key, unit=wrong):
++                self.refuse_both(case, "PAT_SEMANTICS_MISMATCH")
++        case = fixed_case(); case["artifact"]["parameters"]["durationMs"]["frame"] = "frame:device"
++        self.refuse_both(case, "PAT_SEMANTICS_MISMATCH")
++
++    def test_bool_float_and_declared_schema_numeric_aliases_are_not_normalized(self):
++        for key in ("level", "durationMs"):
++            for wrong in (True, 1.0):
++                case = fixed_case(); case["parameters"][key] = wrong
++                with self.subTest(key=key, value=wrong), self.assertRaises(PatError):
++                    lower(case)
++        for field, wrong in (("minimum", True), ("maximum", 4999.0)):
++            case = fixed_case(); case["artifact"]["parameters"]["durationMs"]["valueSchema"][field] = wrong
++            with self.subTest(field=field):
++                self.refuse_both(case)
++
++    def test_whole_domains_and_enum_holes_survive_narrow_applicability(self):
++        for target in ("type-domain", "binding-domain", "binding-enum-hole"):
++            case = fixed_case()
++            case["artifact"]["applicability"]["all"].append(
++                {"field": "parameters.durationMs", "op": "equals", "literal": 21})
++            if target == "type-domain":
++                case["artifact"]["parameters"]["durationMs"]["valueSchema"]["maximum"] = 5000
++            else:
++                schema = case["bindings"]["fan"]["binding"]["argumentSchemas"]["apply"]["properties"]["durationMs"]
++                if target == "binding-domain":
++                    schema["maximum"] = 100
++                else:
++                    schema["enum"] = [1, 21, 4999]
++            with self.subTest(target=target):
++                self.refuse_both(case, "PAT_ARGUMENT_DOMAIN")
++        case = fixed_case(pwm=True)
++        case["artifact"]["parameters"]["resolutionBits"]["valueSchema"]["maximum"] = 9
++        self.refuse_both(case, "PAT_ARGUMENT_DOMAIN")
++
++    def test_profile_and_unit_are_committed_to_metadata_and_environment(self):
++        case = fixed_case(); first = lower(case); metadata = case["bindings"]["fan"]["argumentMetadata"]
++        digest = "sha256:" + hashlib.sha256(canonical(metadata)).hexdigest()
++        self.assertEqual(first["dependencies"][0]["metadataDigest"], digest)
++        self.assertEqual(first["evaluationEnvironment"]["roles"]["fan"]["argumentMetadataDigest"], digest)
++        # The dimensionless level keeps identical semantics/arguments in both forms,
++        # but its explicit metadata profile still changes dependency identity.
++        info(case, "level").pop("profile")
++        second = lower(case)
++        self.assertEqual(first["request"], second["request"])
++        self.assertEqual(first["requestDigest"], second["requestDigest"])
++        self.assertNotEqual(first["environmentDigest"], second["environmentDigest"])
++        self.assertNotEqual(first["runBindingDigest"], second["runBindingDigest"])
++        info(case)["unit"] = "ticks"
++        case["artifact"]["parameters"]["durationMs"]["unit"] = "ticks"
++        third = lower(case)
++        self.assertEqual(second["request"], third["request"])
++        self.assertNotEqual(second["dependencies"][0]["metadataDigest"], third["dependencies"][0]["metadataDigest"])
++        self.assertNotEqual(second["environmentDigest"], third["environmentDigest"])
++        manifest = compiler.compiler_manifest()
++        source = next(row for row in manifest["sources"] if row["path"] == "hms/pat_compiler.py")
++        self.assertEqual(source["sha256"], hashlib.sha256((ROOT / source["path"]).read_bytes()).hexdigest())
++
++    def test_sessions_determinism_detachment_and_call_time_purity_remain(self):
++        case = fixed_case(); original = copy.deepcopy(case); first = lower(case)
++        with patch("pathlib.Path.read_bytes", side_effect=AssertionError("file I/O")), \
++             patch("pathlib.Path.read_text", side_effect=AssertionError("file I/O")), \
++             patch("time.time_ns", side_effect=AssertionError("wall clock")), \
++             patch("time.monotonic", side_effect=AssertionError("monotonic clock")), \
++             patch("sqlite3.connect", side_effect=AssertionError("database")):
++            self.assertEqual(first, lower(case))
++            self.assertEqual(environment(case)["environmentDigest"], first["environmentDigest"])
++        self.assertEqual(case, original)
++        first["dependencies"][0]["metadataDigest"] = "changed"
++        self.assertEqual(case, original)
++        case["bindings"]["fan"]["endpointSession"] = "fixture:session:2"
++        second = lower(case); clean = lower(original)
++        self.assertEqual(clean["environmentDigest"], second["environmentDigest"])
++        self.assertNotEqual(clean["dependencies"], second["dependencies"])
++        self.assertNotEqual(clean["requestDigest"], second["requestDigest"])
++        self.assertNotEqual(clean["runBindingDigest"], second["runBindingDigest"])
++
++    def test_legacy_companion_units_and_frames_still_require_exact_wire_arguments(self):
++        families = json.loads((ROOT / "tests/fixtures/pat-environment.json").read_text())
++        for family in ("fan", "focus", "inspection"):
++            case = copy.deepcopy(families[family]); result = lower(case)
++            self.assertEqual(result["report"]["unitConversions"], [])
++            self.assertEqual(result["report"]["frameConversions"], [])
++        for family, argument in (("fan", "unit"), ("focus", "frame")):
++            case = copy.deepcopy(families[family])
++            case["artifact"]["steps"][0]["arguments"][argument] = {"literal": "wrong"}
++            with self.subTest(family=family):
++                self.refuse_both(case)
++        case = copy.deepcopy(families["fan"])
++        case["bindings"]["fan"]["argumentMetadata"]["set_level"]["level"]["unitArgument"] = None
++        self.refuse_both(case, "PAT_METADATA_REQUIRED")
++        case = copy.deepcopy(families["focus"])
++        case["bindings"]["fan"]["argumentMetadata"]["move_absolute"]["position"]["frameArgument"] = None
++        self.refuse_both(case, "PAT_METADATA_REQUIRED")
++
++    def test_unprofiled_nondimensionless_metadata_still_refuses_in_mixed_action(self):
++        for unit in ("ms", "Hz", "permille", "bit"):
++            case = fixed_case(); info(case)["unit"] = unit
++            case["artifact"]["parameters"]["durationMs"]["unit"] = unit
++            info(case).pop("profile")
++            with self.subTest(unit=unit):
++                self.refuse_both(case, "PAT_METADATA_REQUIRED")
++        case = fixed_case()
++        case["bindings"]["fan"]["argumentMetadata"]["apply"]["level"] = legacy("1")
++        self.assertEqual(intent(lower(case))["arguments"], {"durationMs": 21, "level": 1})
++        info(case, "level")["unit"] = None
++        self.refuse_both(case, "PAT_METADATA_REQUIRED")
++
++
++if __name__ == "__main__":
++    unittest.main()
+--- baseline/tests/test_resource_schema_memo.py
++++ integrated/tests/test_resource_schema_memo.py
+@@ -0,0 +1,111 @@
++"""Exact schema reuse preserves typed input, detachment and semantic refusals."""
++from collections import OrderedDict
++import copy
++import json
++import unittest
++from unittest.mock import patch
++
++from hms import resource_topology as graph
++from hms.contracts import canonical
++from test_resource_topology import topology, generations
++
++
++class CountingValidator:
++    def __init__(self, original):
++        self.original=original;self.calls=0
++    def iter_errors(self, value):
++        self.calls+=1
++        return self.original.iter_errors(value)
++
++
++class ResourceSchemaMemoTests(unittest.TestCase):
++    def setUp(self):
++        memo=patch.object(graph,'_SCHEMA_MEMO',OrderedDict());memo.start();self.addCleanup(memo.stop)
++        self.validator=CountingValidator(graph._VALIDATORS[graph.PROFILE])
++        validators=dict(graph._VALIDATORS);validators[graph.PROFILE]=self.validator
++        p=patch.object(graph,'_VALIDATORS',validators);p.start();self.addCleanup(p.stop)
++
++    def test_exact_bytes_and_reordered_object_keys_reuse_only_schema_success(self):
++        value=topology();before=canonical(value)
++        a=graph.parse_topology(value)
++        b=graph.parse_topology(dict(reversed(list(value.items()))))
++        c=graph.parse_topology(json.dumps(value).encode())
++        self.assertEqual(a,b);self.assertEqual(a,c);self.assertEqual(self.validator.calls,1)
++        self.assertEqual(canonical(value),before)
++
++    def test_returned_nested_data_cannot_mutate_cache_or_other_results(self):
++        value=topology();expected=graph.parse_topology(value)
++        result=graph.parse_topology(value);result['nodes']['pin5']['properties']['electrical']['modes'].clear()
++        self.assertEqual(graph.parse_topology(value),expected)
++        self.assertEqual(self.validator.calls,1)
++        self.assertTrue(all(type(key[1])is bytes for key in graph._SCHEMA_MEMO))
++
++    def test_warm_entry_does_not_accept_integral_float_bool_or_duplicate_json_keys(self):
++        value=topology();graph.parse_topology(value)
++        for wrong in (3300.0,True):
++            changed=copy.deepcopy(value);changed['nodes']['pin5']['properties']['electrical']['nominalMilliVolt']=wrong
++            with self.subTest(wrong=wrong),self.assertRaises(graph.ResourceTopologyError):graph.parse_topology(changed)
++        raw=canonical(value).replace(b'"nominalMilliVolt":3300',b'"nominalMilliVolt":3300.0',1)
++        with self.assertRaises(graph.ResourceTopologyError):graph.parse_topology(raw)
++        raw=canonical(value).replace(b'"topologyId":',b'"topologyId":"duplicate","topologyId":',1)
++        with self.assertRaises(graph.ResourceTopologyError):graph.parse_topology(raw)
++
++    def test_schema_invalid_documents_are_never_cached(self):
++        value=topology();value['unexpected']=True
++        for _ in range(2):
++            with self.assertRaises(graph.ResourceTopologyError):graph.parse_topology(value)
++        self.assertEqual(self.validator.calls,2);self.assertEqual(len(graph._SCHEMA_MEMO),0)
++
++    def test_schema_success_does_not_suppress_repeated_graph_failure(self):
++        value=topology();value['nodes']['svcA']['requires'].append('driverA')
++        for _ in range(2):
++            with self.assertRaisesRegex(graph.ResourceTopologyError,'RESOURCE_DEPENDENCY_CYCLE'):graph.parse_topology(value)
++        self.assertEqual(self.validator.calls,1)
++
++    def test_exact_changed_footprint_is_revalidated_and_rejected(self):
++        value=topology();graph.parse_topology(value)
++        value['aliases']['alias:pwm5']['includes']=['atom:pin5']
++        for _ in range(2):
++            with self.assertRaisesRegex(graph.ResourceTopologyError,'RESOURCE_ALIAS_FOOTPRINT'):graph.parse_topology(value)
++        self.assertEqual(self.validator.calls,2)
++
++    def test_schema_replacement_cannot_inherit_cached_success(self):
++        value=topology();graph.parse_topology(value)
++        class Reject:
++            def iter_errors(self, value):return iter([object()])
++        graph._VALIDATORS[graph.PROFILE]=Reject()
++        with self.assertRaisesRegex(graph.ResourceTopologyError,'RESOURCE_INVALID_DOCUMENT'):graph.parse_topology(value)
++
++    def test_lru_capacity_and_eviction_are_bounded_without_truncating_input(self):
++        values=[]
++        for i in range(9):
++            value=topology();value['topologyId']='fixture:'+str(i);values.append(value)
++            graph.parse_topology(value)
++        self.assertEqual(len(graph._SCHEMA_MEMO),8);self.assertEqual(self.validator.calls,9)
++        self.assertLessEqual(sum(len(key[1])for key in graph._SCHEMA_MEMO),8*65536)
++        graph.parse_topology(values[-1]);self.assertEqual(self.validator.calls,9)
++        graph.parse_topology(values[0]);self.assertEqual(self.validator.calls,10)
++
++    def test_generations_still_require_exact_current_topology_and_node_closure(self):
++        value=topology();current=generations(value)
++        graph.parse_generations(value,current);graph.parse_generations(value,current)
++        changed=copy.deepcopy(value);changed['topologyId']='changed:topology'
++        with self.assertRaisesRegex(graph.ResourceTopologyError,'RESOURCE_TOPOLOGY_CHANGED'):graph.parse_generations(changed,current)
++        current=generations(value);del current['nodes']['pin5']
++        for _ in range(2):
++            with self.assertRaisesRegex(graph.ResourceTopologyError,'RESOURCE_GENERATION_CLOSURE'):graph.parse_generations(value,current)
++
++    def test_binding_identity_tracks_changed_electrical_inputs_after_warmup(self):
++        value=topology();before=graph.binding_proof(value,generations(value),'sim:gpio5')
++        value['nodes']['pin5']['properties']['electrical']['nominalMilliVolt']=3000
++        after=graph.binding_proof(value,generations(value),'sim:gpio5')
++        self.assertNotEqual(before['closureDigest'],after['closureDigest'])
++        self.assertEqual(before['expandedClaims'],after['expandedClaims'])
++
++    def test_warm_snapshot_remains_pure_and_does_not_consult_caller_copy_hooks(self):
++        value=topology();expected=graph.parse_topology(value)
++        with patch('pathlib.Path.read_bytes',side_effect=AssertionError('file I/O')), \
++             patch('sqlite3.connect',side_effect=AssertionError('authority I/O')), \
++             patch('time.monotonic',side_effect=AssertionError('clock')), \
++             patch('copy.deepcopy',side_effect=AssertionError('caller copy hook')):
++            self.assertEqual(graph.parse_topology(value),expected)
+--- baseline/tests/test_pat_io_installation_reuse.py
++++ integrated/tests/test_pat_io_installation_reuse.py
+@@ -0,0 +1,217 @@
++"""Pure normalization reuse: exact inputs, fresh identity, isolated results."""
++from collections import OrderedDict
++from contextlib import contextmanager
++import copy
++import json
++import sys
++import threading
++import unittest
++from unittest.mock import patch
++
++from hms import resource_topology as graph
++from hms import synthetic_io_installation as module
++from hms.contracts import ContractError, canonical
++from hms.journal import JournalError
++from test_io_synthetic_provider import installation
++
++
++@contextmanager
++def calls_to(*functions):
++    # Observe original functions without replacing any validation dependency.
++    counts = {function.__code__: 0 for function in functions}
++    previous = sys.getprofile()
++    def observe(frame, event, arg):
++        if event == 'call' and frame.f_code in counts:
++            counts[frame.f_code] += 1
++    sys.setprofile(observe)
++    try:
++        yield counts
++    finally:
++        sys.setprofile(previous)
++
++
++class InstallationReuseTests(unittest.TestCase):
++    def setUp(self):
++        for name, value in (('_NORMALIZATION_MEMO', OrderedDict()), ('_NORMALIZATION_KEY_BYTES', 0)):
++            change = patch.object(module, name, value)
++            change.start(); self.addCleanup(change.stop)
++        self.value = installation()
++
++    def test_identical_object_and_bytes_reuse_semantics_but_check_source_each_time(self):
++        with calls_to(module._normalize_validated, module.implementation_digest) as counts:
++            expected = module.normalize_installation(self.value)
++            self.assertEqual(module.normalize_installation(self.value), expected)
++            self.assertEqual(module.normalize_installation(canonical(self.value)), expected)
++        self.assertEqual(counts[module._normalize_validated.__code__], 1)
++        self.assertEqual(counts[module.implementation_digest.__code__], 3)
++        self.assertEqual(len(module._NORMALIZATION_MEMO), 1)
++
++    def test_returned_nested_mutation_never_changes_caller_or_later_results(self):
++        original = canonical(self.value)
++        expected = module.normalize_installation(self.value)
++        changed = module.normalize_installation(self.value)
++        changed['topology']['nodes']['pin5']['properties']['electrical']['modes'].clear()
++        changed['routes']['adapters'].clear(); changed['handlers'].clear()
++        self.assertEqual(canonical(self.value), original)
++        self.assertEqual(module.normalize_installation(self.value), expected)
++        self.value['handlers'][0]['primitive'] = 'unsupported'
++        with self.assertRaisesRegex(JournalError, 'IO_HANDLER_UNSUPPORTED'):
++            module.normalize_installation(self.value)
++        self.assertEqual(len(module._NORMALIZATION_MEMO), 1)
++
++    def test_integral_float_in_object_or_json_refuses_before_lookup(self):
++        module.normalize_installation(self.value)
++        self.value['topology']['nodes']['pin5']['properties']['electrical']['nominalMilliVolt'] = 3300.0
++        with patch.object(module, '_cached_normalization', side_effect=AssertionError('lookup')):
++            for value in (self.value, json.dumps(self.value).encode()):
++                with self.assertRaisesRegex(JournalError, 'IO_INTEGER_CONFIGURATION_REQUIRED'):
++                    module.normalize_installation(value)
++
++    def test_custom_values_and_keys_refuse_without_callbacks_or_lookup(self):
++        called = []
++        class Key(str):
++            def __hash__(self): called.append('hash'); return super().__hash__()
++            def __eq__(self, other): called.append('equal'); return super().__eq__(other)
++        class Value:
++            def __deepcopy__(self, memo): called.append('copy'); raise AssertionError('copy')
++            def __iter__(self): called.append('iter'); raise AssertionError('iter')
++        keyed = copy.deepcopy(self.value); keyed[Key('boardId')] = keyed.pop('boardId')
++        valued = copy.deepcopy(self.value); valued['boardId'] = Value()
++        called.clear()
++        with patch.object(module, '_cached_normalization', side_effect=AssertionError('lookup')):
++            for value in (keyed, valued):
++                with self.assertRaises(ContractError): module.normalize_installation(value)
++        self.assertEqual(called, []); self.assertFalse(module._NORMALIZATION_MEMO)
++
++    def test_changed_current_source_refuses_even_with_warm_exact_input(self):
++        module.normalize_installation(self.value)
++        with patch.object(module, 'implementation_digest', return_value='sha256:' + '0' * 64) as identity, \
++             patch.object(module, '_cached_normalization', side_effect=AssertionError('lookup')):
++            with self.assertRaisesRegex(JournalError, 'IO_DRIVER_CHANGED'):
++                module.normalize_installation(self.value)
++            identity.assert_called_once_with()
++
++    def test_changed_helper_bypasses_warm_result_and_runs_original_validation(self):
++        module.normalize_installation(self.value)
++        with patch.object(graph, '_dag', side_effect=JournalError('HELPER_CHANGED')) as helper:
++            with self.assertRaisesRegex(JournalError, 'HELPER_CHANGED'):
++                module.normalize_installation(self.value)
++            helper.assert_called_once()
++        self.assertFalse(module._NORMALIZATION_MEMO)
++        self.assertEqual(module._NORMALIZATION_KEY_BYTES, 0)
++
++    def test_replaced_topology_or_generation_validator_refuses_warm_input(self):
++        class Reject:
++            def iter_errors(self, value): return iter([object()])
++        for profile in (graph.PROFILE, graph.GENERATION_PROFILE):
++            module.normalize_installation(self.value)
++            with patch.dict(graph._VALIDATORS, {profile: Reject()}):
++                with self.assertRaisesRegex(graph.ResourceTopologyError, 'RESOURCE_INVALID_DOCUMENT'):
++                    module.normalize_installation(self.value)
++            self.assertFalse(module._NORMALIZATION_MEMO)
++
++    def test_dependency_changed_during_validation_prevents_publication(self):
++        class Reject:
++            def iter_errors(self, value): return iter([object()])
++        original = graph._VALIDATORS[graph.PROFILE]
++        previous = sys.getprofile(); changed = []
++        def swap(frame, event, arg):
++            if frame.f_code is module._normalize_validated.__code__ and event == 'return':
++                graph._VALIDATORS[graph.PROFILE] = Reject(); changed.append(True)
++        sys.setprofile(swap)
++        try:
++            result = module.normalize_installation(self.value)
++        finally:
++            sys.setprofile(previous)
++        try:
++            self.assertEqual(changed, [True]); self.assertEqual(result['boardId'], 'board')
++            self.assertFalse(module._NORMALIZATION_MEMO)
++            with self.assertRaisesRegex(graph.ResourceTopologyError, 'RESOURCE_INVALID_DOCUMENT'):
++                module.normalize_installation(self.value)
++        finally:
++            graph._VALIDATORS[graph.PROFILE] = original
++
++    def test_in_place_primitive_configuration_change_uses_current_validation(self):
++        module.normalize_installation(self.value)
++        with patch.dict(module.PRIMITIVES, {'gpio_pulse': 'pwm_access'}):
++            with self.assertRaisesRegex(JournalError, 'IO_HANDLER_TYPE_MISMATCH'):
++                module.normalize_installation(self.value)
++        self.assertFalse(module._NORMALIZATION_MEMO)
++
++    def test_private_schema_and_keyword_changes_disable_reuse(self):
++        expected = module.normalize_installation(self.value)
++        validator = graph._VALIDATORS[graph.PROFILE]
++        # These private mutations test memo bypass only. Existing graph snapshot
++        # caching does not promise revalidation after in-place schema mutation.
++        with patch.dict(validator.schema, {'title': 'diagnostic change'}), \
++             calls_to(module._normalize_validated) as counts:
++            self.assertEqual(module.normalize_installation(self.value), expected)
++            self.assertFalse(module._NORMALIZATION_MEMO)
++        self.assertEqual(counts[module._normalize_validated.__code__], 1)
++        module.normalize_installation(self.value)
++        original = type(validator).VALIDATORS['type']
++        def keyword(*args, **kwargs): return original(*args, **kwargs)
++        with patch.dict(type(validator).VALIDATORS, {'type': keyword}), \
++             calls_to(module._normalize_validated) as counts:
++            self.assertEqual(module.normalize_installation(self.value), expected)
++            self.assertFalse(module._NORMALIZATION_MEMO)
++        self.assertEqual(counts[module._normalize_validated.__code__], 1)
++
++    def test_ninth_valid_input_evicts_oldest_with_fixed_key_and_entry_bounds(self):
++        variants = []
++        for number in range(9):
++            value = copy.deepcopy(self.value)
++            value['topology']['topologyId'] = 'topology:reuse:' + str(number)
++            value['initialGenerations']['topologyDigest'] = graph.topology_digest(value['topology'])
++            variants.append(value)
++            module.normalize_installation(value)
++        self.assertEqual(len(module._NORMALIZATION_MEMO), 8)
++        self.assertLessEqual(module._NORMALIZATION_KEY_BYTES, 8 * 65536)
++        self.assertEqual(module._NORMALIZATION_KEY_BYTES, sum(map(len, module._NORMALIZATION_MEMO)))
++        self.assertNotIn(canonical(variants[0]), module._NORMALIZATION_MEMO)
++        with calls_to(module._normalize_validated) as counts:
++            module.normalize_installation(variants[0])
++        self.assertEqual(counts[module._normalize_validated.__code__], 1)
++        pending = list(module._NORMALIZATION_MEMO.values())
++        while pending:
++            value = pending.pop()
++            self.assertIn(type(value), (tuple, str, int, bool, float, type(None), type))
++            if type(value) is tuple: pending.extend(value)
++
++    def test_noncanonical_bytes_share_key_but_duplicate_or_oversized_json_refuses(self):
++        with calls_to(module._normalize_validated, module.implementation_digest) as counts:
++            expected = module.normalize_installation(self.value)
++            self.assertEqual(module.normalize_installation(json.dumps(self.value, indent=2).encode()), expected)
++        self.assertEqual(counts[module._normalize_validated.__code__], 1)
++        self.assertEqual(counts[module.implementation_digest.__code__], 2)
++        with patch.object(module, '_cached_normalization', side_effect=AssertionError('lookup')):
++            for value in (b' ' * 65537, b'{"profile":1,"profile":2}'):
++                with self.assertRaises(ContractError): module.normalize_installation(value)
++
++    def test_reuse_never_opens_authority_launches_provider_or_reads_clock(self):
++        expected = module.normalize_installation(self.value)
++        with patch('sqlite3.connect', side_effect=AssertionError('authority')), \
++             patch('subprocess.Popen', side_effect=AssertionError('provider')), \
++             patch('time.monotonic', side_effect=AssertionError('clock')), \
++             calls_to(module._normalize_validated, module.implementation_digest) as counts:
++            self.assertEqual(module.normalize_installation(self.value), expected)
++        self.assertEqual(counts[module._normalize_validated.__code__], 0)
++        self.assertEqual(counts[module.implementation_digest.__code__], 1)
++
++    def test_concurrent_calls_keep_one_entry_and_detached_results(self):
++        barrier = threading.Barrier(2, timeout=5)
++        results, failures = [], []
++        def normalize():
++            try:
++                barrier.wait(); results.append(module.normalize_installation(self.value))
++            except BaseException as error: failures.append(error)
++        threads = [threading.Thread(target=normalize) for _ in range(2)]
++        for thread in threads: thread.start()
++        for thread in threads: thread.join(10)
++        self.assertTrue(all(not thread.is_alive() for thread in threads))
++        self.assertEqual(failures, []); self.assertEqual(len(results), 2)
++        self.assertEqual(results[0], results[1]); self.assertIsNot(results[0], results[1])
++        results[0]['handlers'].clear()
++        self.assertTrue(results[1]['handlers'])
++        self.assertEqual(module.normalize_installation(self.value), results[1])
++        self.assertEqual(len(module._NORMALIZATION_MEMO), 1)
+--- baseline/tests/test_pat_io_definition_build.py
++++ integrated/tests/test_pat_io_definition_build.py
+@@ -0,0 +1,142 @@
++"""Differential checks for one-call pure instance-proof reuse."""
++import copy
++import hashlib
++import json
++from pathlib import Path
++import sqlite3
++import sys
++import tempfile
++import time
++import unittest
++from unittest.mock import patch
++
++from hms import synthetic_io_installation as module
++from hms.contracts import canonical
++from hms.synthetic_io_installation import (handler_details, type_bundle, argument_schema,
++    validate_type_bundle, binding_proof, control_generation)
++from test_io_synthetic_provider import installation
++from test_resource_topology import generations
++from test_pat_io_installation_reuse import calls_to
++
++def _legacy_definitions(document):
++    """Return original I/O type bundles and proof-derived exact bindings."""
++    result = {}
++    instances = sorted({row['instanceId'] for row in document['handlers']})
++    for instance in instances:
++        bundle = None; resources = {}
++        for row in (item for item in document['handlers'] if item['instanceId'] == instance):
++            action = row['actionId']; detail = handler_details(document, instance, action)
++            role = 'io-root:' + action
++            part = type_bundle('finite-io-' + hashlib.sha256(instance.encode()).hexdigest()[:16], action,
++                argument_schema(detail), {'type': 'integer', 'minimum': 0, 'maximum': 9007199254740991},
++                unit='1', effect=detail['primitive'], resource=role)
++            part['execution']['actions'][action]['preconditions'] = []
++            part['execution']['capabilities'] = ['sim:finite-gpio-pwm']
++            part['td']['description'] = 'Original finite synthetic I/O; value counts activations, not measured electrical state.'
++            if bundle is None:
++                bundle = part
++            else:
++                bundle['execution']['actions'].update(part['execution']['actions'])
++                bundle['td']['actions'].update(part['td']['actions'])
++            resources[role] = detail['root']
++        digest = validate_type_bundle(bundle)
++        proof = binding_proof(document['topology'], document['initialGenerations'], instance)
++        adapter = next(key for key, values in document['routes']['adapters'].items() if instance in values)
++        binding = {'profile': 'hms.binding/0.1', 'instanceId': instance, 'generation': proof['bindingGeneration'],
++            'typeDigest': digest, 'calibrationRevision': 'synthetic:finite-io:1', 'controlGeneration': control_generation(proof),
++            'mode': 'simulation', 'adapterId': adapter, 'resourceMap': resources,
++            'argumentSchemas': {key: copy.deepcopy(item['inputSchema']) for key, item in bundle['execution']['actions'].items()}}
++        result[instance] = {'type': bundle, 'binding': binding, 'proof': proof}
++    return result
++
++
++class DefinitionBuildTests(unittest.TestCase):
++    def setUp(self):
++        self.document = module.normalize_installation(installation())
++
++    def test_original_bundles_bindings_and_proofs_match_with_half_the_derivations(self):
++        function = module._topology._binding_proof_from_validated
++        before = canonical(self.document)
++        with calls_to(function) as old_calls:
++            expected = _legacy_definitions(self.document)
++        with calls_to(function) as new_calls:
++            actual = module.definitions(self.document)
++        self.assertEqual(canonical(actual), canonical(expected))
++        self.assertEqual(canonical(self.document), before)
++        self.assertEqual(old_calls[function.__code__], 8)
++        self.assertEqual(new_calls[function.__code__], 4)
++
++    def test_multiple_actions_share_only_their_own_instance_proof(self):
++        document = copy.deepcopy(self.document)
++        original = next(row for row in document['topology']['consumers'] if row['instanceId'] == 'sim:gpio5')
++        for action in ('pulse_alternate', 'pulse_auxiliary'):
++            document['topology']['consumers'].append(original | {'actionId': action})
++            document['handlers'].append(dict(instanceId='sim:gpio5', actionId=action, primitive='gpio_pulse'))
++        document['initialGenerations'] = generations(document['topology'])
++        document = module.normalize_installation(document)
++        function = module._topology._binding_proof_from_validated
++        with calls_to(function) as old_calls:
++            expected = _legacy_definitions(document)
++        with calls_to(function) as new_calls:
++            actual = module.definitions(document)
++        self.assertEqual(canonical(actual), canonical(expected))
++        self.assertEqual(old_calls[function.__code__], 10)
++        self.assertEqual(new_calls[function.__code__], 4)
++        self.assertEqual(set(actual['sim:gpio5']['proof']['expandedClaims']), {'gpio_pulse', 'pulse_alternate', 'pulse_auxiliary'})
++
++    def test_changed_generations_are_rederived_on_each_build(self):
++        first = module.definitions(self.document)
++        self.document['initialGenerations']['revision'] = 2
++        self.document['initialGenerations']['nodes']['pin5'] = 'generation:2'
++        function = module._topology._binding_proof_from_validated
++        with calls_to(function) as counts:
++            changed = module.definitions(self.document)
++        self.assertEqual(counts[function.__code__], 4)
++        self.assertEqual(changed, _legacy_definitions(self.document))
++        self.assertNotEqual(first['sim:gpio5']['binding']['generation'], changed['sim:gpio5']['binding']['generation'])
++        self.assertEqual(first['sim:gpio6'], changed['sim:gpio6'])
++
++    def test_returned_mutation_changes_neither_input_nor_later_builds(self):
++        expected = _legacy_definitions(self.document)
++        before = canonical(self.document)
++        changed = module.definitions(self.document)
++        changed['sim:gpio5']['proof']['expandedClaims']['gpio_pulse'].clear()
++        changed['sim:pwm5']['type']['execution']['actions'].clear()
++        changed['sim:gpio6']['binding']['resourceMap'].clear()
++        self.assertEqual(canonical(self.document), before)
++        self.assertEqual(module.definitions(self.document), expected)
++
++    def test_invalid_proof_inputs_keep_original_refusal_type_and_code(self):
++        values = []
++        value = copy.deepcopy(self.document); del value['initialGenerations']['nodes']['pin5']; values.append(value)
++        value = copy.deepcopy(self.document); value['initialGenerations']['revision'] = True; values.append(value)
++        value = copy.deepcopy(self.document); value['topology']['nodes']['pin5']['properties']['electrical']['nominalMilliVolt'] = 3300.0; values.append(value)
++        def refused(function, value):
++            try:
++                function(value)
++            except Exception as error:
++                return type(error), getattr(error, 'code', None), str(error)
++            self.fail('Invalid proof accepted')
++        for value in values:
++            with self.subTest(value=value['initialGenerations']['revision']):
++                self.assertEqual(refused(module.definitions, value), refused(_legacy_definitions, value))
++
++    def test_public_handler_details_still_derives_a_fresh_proof_per_call(self):
++        function = module.binding_proof.__wrapped__
++        with calls_to(function) as counts:
++            first = module.handler_details(self.document, 'sim:gpio5', 'gpio_pulse')
++            second = module.handler_details(self.document, 'sim:gpio5', 'gpio_pulse')
++        self.assertEqual(counts[function.__code__], 2)
++        self.assertEqual(first, second)
++        first['claims'].clear()
++        self.assertEqual(second['claims'], ['atom:pin5'])
++
++    def test_build_is_pure_and_does_not_read_authority_or_current_sources(self):
++        expected = _legacy_definitions(self.document)
++        denied = AssertionError('Unexpected external access during pure definition build')
++        with (patch.object(Path, 'read_bytes', side_effect=denied),
++              patch.object(sqlite3, 'connect', side_effect=denied),
++              patch.object(time, 'monotonic', side_effect=denied),
++              patch.object(time, 'time', side_effect=denied),
++              patch.object(module, 'implementation_digest', side_effect=denied)):
++            self.assertEqual(module.definitions(self.document), expected)
+--- baseline/tests/test_pat_io_proof_batch.py
++++ integrated/tests/test_pat_io_proof_batch.py
+@@ -0,0 +1,131 @@
++"""One-call topology reuse with exact baseline references and bounded timings."""
++from concurrent.futures import ThreadPoolExecutor
++import copy
++import json
++from pathlib import Path
++import statistics
++import tempfile
++import time
++import unittest
++from unittest.mock import patch
++
++from hms import resource_topology as graph
++from hms import synthetic_io_installation as module
++from hms.contracts import canonical
++from _reference_definition_build import reference_binding_proof, reference_definitions
++from test_io_synthetic_provider import installation
++from test_pat_io_installation_reuse import calls_to
++from test_resource_topology import generations, topology, with_bus
++
++
++def outcome(function, value):
++    try: return ('returned', function(value))
++    except Exception as error:
++        return ('refused', type(error), getattr(error, 'code', None), str(error))
++
++
++class ProofBatchTests(unittest.TestCase):
++    def setUp(self):
++        self.document = module.normalize_installation(installation())
++
++    def test_exact_build_with_one_validation_and_four_separate_proofs(self):
++        functions=(graph.parse_topology.__wrapped__,graph._generations,graph._atom_index,
++                   graph._alias_closures,graph._binding_proof_from_validated)
++        before=canonical(self.document)
++        with calls_to(*functions) as old:
++            expected=reference_definitions(self.document)
++        with calls_to(*functions) as new:
++            actual=module.definitions(self.document)
++        self.assertEqual(canonical(actual),canonical(expected))
++        self.assertEqual(canonical(self.document),before)
++        self.assertEqual([old[f.__code__] for f in functions],[4,4,8,8,4])
++        self.assertEqual([new[f.__code__] for f in functions],[1,1,2,2,4])
++
++    def test_public_proof_matches_original_body_for_gpio_pwm_bus_and_generations(self):
++        for document in (topology(),with_bus()):
++            current=generations(document)
++            for revision in (1,2):
++                current['revision']=revision
++                current['nodes']['pin5']='generation:'+str(revision)
++                for instance in sorted({row['instanceId'] for row in document['consumers']}):
++                    with self.subTest(instance=instance,revision=revision):
++                        expected=reference_binding_proof(document,current,instance)
++                        self.assertEqual(canonical(graph.binding_proof(document,current,instance)),canonical(expected))
++
++    def test_invalid_inputs_preserve_original_first_refusal(self):
++        cases=[]
++        for field in ('handlers','topology','initialGenerations','routes'):
++            value=copy.deepcopy(self.document);del value[field];cases.append(value)
++        value=copy.deepcopy(self.document);value['handlers']=[];cases.append(value)
++        value=copy.deepcopy(self.document);value['handlers'][0]['actionId']='unknown';del value['initialGenerations'];cases.append(value)
++        value=copy.deepcopy(self.document);del value['initialGenerations']['nodes']['pin5'];cases.append(value)
++        value=copy.deepcopy(self.document);value['initialGenerations']['revision']=True;cases.append(value)
++        value=copy.deepcopy(self.document);value['initialGenerations']['topologyDigest']='sha256:'+'0'*64;cases.append(value)
++        value=copy.deepcopy(self.document);value['topology']['nodes']['pin5']['properties']['electrical']['nominalMilliVolt']=3300.0;cases.append(value)
++        value=copy.deepcopy(self.document);value['topology']['aliases']['alias:gpio5']['includes']=[];cases.append(value)
++        value=copy.deepcopy(self.document);value['routes']['adapters']={};cases.append(value)
++        value=copy.deepcopy(self.document);value['handlers'].append(dict(instanceId='zz:missing',actionId='pulse',primitive='gpio_pulse'));cases.append(value)
++        value=copy.deepcopy(self.document);value['topology']['nodes']['pin5']['properties'].clear();value['initialGenerations']['revision']=False;cases.append(value)
++        for i,value in enumerate(cases):
++            with self.subTest(case=i):self.assertEqual(outcome(module.definitions,value),outcome(reference_definitions,value))
++
++    def test_each_call_observes_changed_generation_and_topology(self):
++        original=module.definitions(self.document)
++        self.document['initialGenerations']['revision']=2
++        self.document['initialGenerations']['nodes']['pin5']='generation:2'
++        changed=module.definitions(self.document)
++        self.assertEqual(changed,reference_definitions(self.document))
++        self.assertNotEqual(original['sim:gpio5'],changed['sim:gpio5'])
++        self.assertEqual(original['sim:gpio6'],changed['sim:gpio6'])
++        self.document['topology']['nodes']['pin5']['properties']['electrical']['nominalMilliVolt']=3000
++        self.document['initialGenerations']=generations(self.document['topology'])
++        current=module.definitions(self.document)
++        self.assertEqual(current,reference_definitions(self.document))
++        self.assertNotEqual(changed['sim:gpio5']['proof']['closureDigest'],current['sim:gpio5']['proof']['closureDigest'])
++
++    def test_returned_mutations_do_not_alias_other_instances_or_future_calls(self):
++        before=canonical(self.document);expected=reference_definitions(self.document)
++        actual=module.definitions(self.document)
++        actual['sim:gpio5']['proof']['dependencies'].clear()
++        actual['sim:gpio5']['proof']['expandedClaims']['gpio_pulse'].clear()
++        actual['sim:gpio5']['binding']['argumentSchemas'].clear()
++        self.assertEqual(actual['sim:pwm5'],expected['sim:pwm5'])
++        self.assertEqual(canonical(self.document),before)
++        self.assertEqual(module.definitions(self.document),expected)
++
++    def test_public_handler_calls_never_use_private_build_snapshot(self):
++        function=graph.parse_topology.__wrapped__
++        with patch.object(graph,'_BindingProofBuild',side_effect=AssertionError('public snapshot reuse')):
++            with calls_to(function) as counts:
++                first=module.handler_details(self.document,'sim:gpio5','gpio_pulse')
++                self.document['initialGenerations']['nodes']['pin5']='generation:2'
++                second=module.handler_details(self.document,'sim:gpio5','gpio_pulse')
++        self.assertEqual(counts[function.__code__],2)
++        self.assertEqual(first,second)
++
++    def test_replaced_public_proof_helper_keeps_original_call_path(self):
++        expected=reference_definitions(self.document);original=module.binding_proof
++        with patch.object(module,'binding_proof',wraps=original) as observed, \
++             patch.object(graph,'_BindingProofBuild',side_effect=AssertionError('bypassed helper')):
++            actual=module.definitions(self.document)
++        self.assertEqual(actual,expected);self.assertEqual(observed.call_count,4)
++
++    def test_concurrent_builds_keep_distinct_static_inputs(self):
++        documents=[]
++        for revision in range(1,5):
++            value=copy.deepcopy(self.document);value['initialGenerations']['revision']=revision
++            value['initialGenerations']['nodes']['pin5']='generation:'+str(revision);documents.append(value)
++        expected=[reference_definitions(value) for value in documents]
++        with ThreadPoolExecutor(max_workers=4) as executor:
++            actual=list(executor.map(module.definitions,documents))
++        self.assertEqual(actual,expected)
++        self.assertEqual(len({value['sim:gpio5']['proof']['bindingGeneration'] for value in actual}),4)
++
++    def test_untrusted_topology_value_refuses_without_copy_hook(self):
++        called=[]
++        class Invalid:
++            def __deepcopy__(self,memo):called.append(True);raise AssertionError('untrusted copy')
++        self.document['topology']['nodes']['hub']['properties']=Invalid()
++        self.assertEqual(outcome(module.definitions,self.document),outcome(reference_definitions,self.document))
++        self.assertEqual(called,[])
++
+--- baseline/tests/_reference_definition_build.py
++++ integrated/tests/_reference_definition_build.py
+@@ -0,0 +1,72 @@
++"""Exact baseline bodies for independent differential comparison."""
++import copy
++import hashlib
++from hms.synthetic_io_installation import (_handler_details, type_bundle, argument_schema,
++    validate_type_bundle, control_generation)
++from hms.resource_topology import (_errors, identifier, parse_topology, _generations,
++    _require, _atom_index, _alias_closures, _consumer_details, _hash,
++    PROOF_PROFILE, _VALIDATORS, canonical)
++
++def reference_definitions(document):
++    """Return original I/O type bundles and proof-derived exact bindings."""
++    result = {}
++    instances = sorted({row['instanceId'] for row in document['handlers']})
++    for instance in instances:
++        bundle = None; resources = {}; proof = None
++        for row in (item for item in document['handlers'] if item['instanceId'] == instance):
++            action = row['actionId']
++            detail, proof = _handler_details(document, instance, action, proof)
++            role = 'io-root:' + action
++            part = type_bundle('finite-io-' + hashlib.sha256(instance.encode()).hexdigest()[:16], action,
++                argument_schema(detail), {'type': 'integer', 'minimum': 0, 'maximum': 9007199254740991},
++                unit='1', effect=detail['primitive'], resource=role)
++            part['execution']['actions'][action]['preconditions'] = []
++            part['execution']['capabilities'] = ['sim:finite-gpio-pwm']
++            part['td']['description'] = 'Original finite synthetic I/O; value counts activations, not measured electrical state.'
++            if bundle is None:
++                bundle = part
++            else:
++                bundle['execution']['actions'].update(part['execution']['actions'])
++                bundle['td']['actions'].update(part['td']['actions'])
++            resources[role] = detail['root']
++        digest = validate_type_bundle(bundle)
++        adapter = next(key for key, values in document['routes']['adapters'].items() if instance in values)
++        binding = {'profile': 'hms.binding/0.1', 'instanceId': instance, 'generation': proof['bindingGeneration'],
++            'typeDigest': digest, 'calibrationRevision': 'synthetic:finite-io:1', 'controlGeneration': control_generation(proof),
++            'mode': 'simulation', 'adapterId': adapter, 'resourceMap': resources,
++            'argumentSchemas': {key: copy.deepcopy(item['inputSchema']) for key, item in bundle['execution']['actions'].items()}}
++        result[instance] = {'type': bundle, 'binding': binding, 'proof': proof}
++    return result
++
++
++@_errors
++def reference_binding_proof(topology, generations, instance_id):
++    """Return scoped static binding evidence; no authority or qualification claim."""
++    identifier(instance_id)
++    document = parse_topology(topology)
++    current = _generations(document, generations)
++    consumers = [row for row in document["consumers"] if row["instanceId"] == instance_id]
++    _require(consumers, "RESOURCE_UNKNOWN_CONSUMER")
++    atoms, closures = _atom_index(document), _alias_closures(document)
++    details = {row["actionId"]: _consumer_details(document, row, atoms, closures) for row in consumers}
++    nodes = set().union(*(value["nodes"] for value in details.values()))
++    aliases = set().union(*(value["aliases"] for value in details.values()))
++    claims = set().union(*(value["claims"] for value in details.values()))
++    dependencies = {key: current["nodes"][key] for key in sorted(nodes)}
++    # Containment is descriptive. Keep it in the full topology provenance but
++    # exclude child lists from executable identity and exclusive-claim closure.
++    identity = {"profile": "hms.resource-executable-closure/0.1", "deployment": document["deployment"],
++        "topologyId": document["topologyId"], "instanceId": instance_id, "consumers": consumers,
++        "nodes": {key: {field: document["nodes"][key][field] for field in ("kind", "requires", "properties")} for key in sorted(nodes)},
++        "aliases": {key: document["aliases"][key] for key in sorted(aliases)},
++        "atoms": {key: document["atoms"][key] for key in sorted(claims)}, "dependencies": dependencies}
++    digest = _hash(b"HMS-RESOURCE-EXECUTABLE-CLOSURE-v0.1", identity)
++    result = {"profile": PROOF_PROFILE, "instanceId": instance_id,
++        "bindingGeneration": "resource-binding:" + digest.removeprefix("sha256:"),
++        "topologyDigest": current["topologyDigest"],
++        "actionRoots": {row["actionId"]: row["rootAliases"] for row in consumers},
++        "expandedClaims": {key: sorted(value["claims"]) for key, value in details.items()},
++        "dependencies": dependencies, "closureDigest": digest}
++    _require(next(_VALIDATORS[PROOF_PROFILE].iter_errors(result), None) is None, "RESOURCE_INVALID_PROOF")
++    canonical(result)
++    return copy.deepcopy(result)
+--- baseline/tests/test_business_precommit.py
++++ integrated/tests/test_business_precommit.py
+@@ -0,0 +1,372 @@
++"""Real Journal business-commit checks; no device or worker effects."""
++import json
++import os
++from pathlib import Path
++import sqlite3
++import threading
++import tempfile
++import unittest
++from unittest.mock import patch
++
++from hms.journal import Journal, JournalError
++from journal_support import CONTEXT, TestPolicy, request
++
++
++TABLES = ('operations', 'replay_keys', 'resource_floors', 'claims', 'events')
++
++
++class _CommitReply:
++    """Test-only connection proxy: one failure before or after actual COMMIT."""
++    def __init__(self, connection, after):
++        self.connection, self.after, self.armed = connection, after, True
++
++    def __getattr__(self, name):
++        return getattr(self.connection, name)
++
++    def execute(self, sql, *args):
++        if sql == 'COMMIT' and self.armed:
++            self.armed = False
++            if self.after:
++                self.connection.execute(sql, *args)
++            raise OSError('injected commit reply failure')
++        return self.connection.execute(sql, *args)
++
++
++class BusinessCommitTests(unittest.TestCase):
++    def setUp(self):
++        retained = os.environ.get('HMS_PRECOMMIT_TEST_ROOT')
++        if retained is None:
++            temporary = tempfile.TemporaryDirectory(prefix='hms-precommit-')
++            self.addCleanup(temporary.cleanup)
++            self.root = Path(temporary.name)
++        else:
++            self.root = Path(retained) / self._testMethodName
++            self.root.mkdir(mode=0o700)
++        self.now = 1000
++        self.policy = TestPolicy()
++        self.journal = Journal(self.root/'authority.db', self.policy, clock_ms=lambda: self.now, create=True)
++        self.namespace = self.journal.issue_namespace(CONTEXT, 4000)['token']
++        self.wire = request(self.namespace)
++        self.trace, self.calls = [], []
++        self.journal._db.set_trace_callback(self.trace.append)
++
++    def tearDown(self):
++        counts = self.counts()
++        self.assertIsNone(self.journal._commit_checks)
++        self.assertFalse(self.journal._db.in_transaction)
++        retained = dict(counts=counts, calls=self.calls, trace=self.trace,
++            authority=self.journal.authority_id, floor=self.journal._meta('last_clock'),
++            inTransaction=False, checkStateCleared=True)
++        self.journal.close()
++        with (self.root/'observations.json').open('x') as stream:
++            json.dump(retained, stream, indent=2); stream.write('\n')
++
++    def counts(self):
++        return {name:len(self.journal._db.execute('SELECT * FROM '+name+' LIMIT 1024').fetchall()) for name in TABLES}
++
++    def empty(self):
++        self.assertEqual(self.counts(), dict.fromkeys(TABLES, 0))
++
++    def code(self, expected, function, *args):
++        with self.assertRaises(JournalError) as caught:
++            function(*args)
++        self.assertEqual(caught.exception.code, expected)
++
++    def submit(self):
++        return self.journal.submit(CONTEXT, self.wire)
++
++    def arm(self, check):
++        original = self.policy.admit
++        def admit(*args):
++            admission = original(*args)
++            self.journal._require_at_commit(check)
++            return admission
++        self.policy.admit = admit
++
++    def record(self):
++        self.calls.append('checked')
++
++    def late(self, action):
++        original = self.journal._event
++        def event(*args):
++            original(*args)
++            action()
++        self.journal._event = event
++
++    def test_check_sees_complete_admission_and_precedes_commit(self):
++        def check():
++            self.assertEqual(self.counts(), dict.fromkeys(TABLES, 1))
++            self.assertTrue(self.journal._db.in_transaction)
++            self.trace.append('CHECK_FINISHED')
++            self.record()
++        self.arm(check)
++        result = self.submit()
++        self.assertEqual(result['state'], 'accepted')
++        self.assertEqual(self.calls, ['checked'])
++        position = self.trace.index('CHECK_FINISHED')
++        self.assertEqual(self.trace[position + 1], 'COMMIT')
++
++    def test_valid_early_but_invalid_at_commit_rolls_back_every_business_row(self):
++        valid = [True]
++        def check():
++            self.record()
++            if not valid[0]:
++                raise JournalError('EVIDENCE_EXPIRED')
++        check()
++        self.arm(check)
++        self.late(lambda: valid.__setitem__(0, False))
++        self.code('EVIDENCE_EXPIRED', self.submit)
++        self.empty()
++        self.assertEqual(self.calls, ['checked', 'checked'])
++
++    def test_floor_commit_survives_business_refusal(self):
++        self.now = 1200
++        def refuse():
++            self.record()
++            raise JournalError('EVIDENCE_EXPIRED')
++        self.arm(refuse)
++        self.code('EVIDENCE_EXPIRED', self.submit)
++        self.empty()
++        self.assertEqual(self.journal._meta('last_clock'), '1200')
++        self.assertEqual(self.calls, ['checked'])
++        self.assertEqual(self.trace.count('COMMIT'), 1)
++        self.assertEqual(self.trace.count('ROLLBACK'), 1)
++        self.now = 1100
++        self.code('CLOCK_REGRESSION', self.submit)
++
++    def test_registration_survives_clock_floor_transaction_restart(self):
++        self.now = 1200
++        with self.journal._transaction():
++            self.journal._require_at_commit(self.record)
++            self.assertEqual(self.journal._now(), 1200)
++            self.assertEqual(self.calls, [])
++            self.journal._set_meta('test', 'ignored missing row')
++        self.assertEqual(self.calls, ['checked'])
++        self.assertEqual(self.trace.count('COMMIT'), 2)
++
++    def test_observed_clock_retained_on_refused_recording_transaction(self):
++        def refuse():
++            self.record()
++            raise JournalError('EVIDENCE_EXPIRED')
++        with self.assertRaises(JournalError):
++            with self.journal._transaction():
++                self.journal._require_at_commit(refuse)
++                self.now = 1500
++                self.journal._record_now()
++                self.journal._db.execute("INSERT INTO meta VALUES ('business','refused')")
++        self.assertEqual(self.journal._meta('last_clock'), '1500')
++        self.assertIsNone(self.journal._db.execute("SELECT value FROM meta WHERE key='business'").fetchone())
++        self.assertEqual(self.calls, ['checked'])
++
++    def test_body_exception_never_runs_commit_checks_and_next_scope_is_clean(self):
++        with self.assertRaisesRegex(OSError, 'body'):
++            with self.journal._transaction():
++                self.journal._require_at_commit(self.record)
++                raise OSError('body')
++        self.assertEqual(self.calls, [])
++        self.submit()
++        self.assertEqual(self.calls, [])
++
++    def test_check_baseexception_rolls_back_and_releases_scope(self):
++        def interrupt():
++            self.record()
++            raise KeyboardInterrupt('test only')
++        self.arm(interrupt)
++        with self.assertRaises(KeyboardInterrupt):
++            self.submit()
++        self.empty()
++        self.assertIsNone(self.journal._commit_checks)
++
++    def test_same_callable_registration_is_idempotent(self):
++        callback = self.record
++        with self.journal._transaction():
++            for _ in range(100):
++                self.journal._require_at_commit(callback)
++        self.assertEqual(self.calls, ['checked'])
++
++    def test_multiple_checks_run_in_registration_order(self):
++        with self.journal._transaction():
++            for number in range(64):
++                self.journal._require_at_commit(lambda number=number: self.calls.append(number))
++        self.assertEqual(self.calls, list(range(64)))
++
++    def test_swallowed_registration_limit_taints_transaction(self):
++        with self.assertRaises(JournalError) as caught:
++            with self.journal._transaction():
++                for _ in range(64):
++                    self.journal._require_at_commit(lambda: None)
++                self.code('COMMIT_CHECK_LIMIT', self.journal._require_at_commit, lambda: None)
++                self.journal._db.execute("INSERT INTO meta VALUES ('business','refused')")
++        self.assertEqual(caught.exception.code, 'COMMIT_CHECK_IMPURE')
++        self.assertIsNone(self.journal._db.execute("SELECT value FROM meta WHERE key='business'").fetchone())
++
++    def test_invalid_registration_cannot_be_swallowed_into_commit(self):
++        with self.assertRaises(JournalError) as caught:
++            with self.journal._transaction():
++                self.code('COMMIT_CHECK_INVALID', self.journal._require_at_commit, None)
++        self.assertEqual(caught.exception.code, 'COMMIT_CHECK_IMPURE')
++
++    def test_outside_transaction_registration_refused(self):
++        self.code('COMMIT_CHECK_TRANSACTION_REQUIRED', self.journal._require_at_commit, self.record)
++        self.submit()
++        self.assertEqual(self.calls, [])
++
++    def test_other_thread_cannot_register_into_owner_transaction(self):
++        started, finished = threading.Event(), threading.Event()
++        result = []
++        def other():
++            started.set()
++            try:
++                self.journal._require_at_commit(self.record)
++            except JournalError as error:
++                result.append(error.code)
++            finally:
++                finished.set()
++        with self.journal._transaction():
++            worker = threading.Thread(target=other)
++            worker.start()
++            self.assertTrue(started.wait(1))
++            self.assertFalse(finished.is_set())
++        worker.join(2)
++        self.assertFalse(worker.is_alive())
++        self.assertEqual(result, ['COMMIT_CHECK_TRANSACTION_REQUIRED'])
++        self.assertEqual(self.calls, [])
++
++    def test_non_none_result_is_not_success(self):
++        self.arm(lambda: True)
++        self.code('COMMIT_CHECK_INVALID_RESPONSE', self.submit)
++        self.empty()
++
++    def test_swallowed_sql_write_and_transaction_attempts_cannot_commit(self):
++        statements = ["INSERT INTO meta VALUES ('bad','write')", "UPDATE meta SET value=value",
++            "DELETE FROM meta WHERE key='absent'", 'COMMIT', 'ROLLBACK', 'SAVEPOINT injected',
++            'BEGIN', 'PRAGMA user_version', "ATTACH DATABASE ':memory:' AS other",
++            'CREATE TEMP TABLE extra(a)', 'SELECT random()']
++        for sql in statements:
++            with self.subTest(sql=sql):
++                def check():
++                    try:
++                        self.journal._db.execute(sql).fetchall()
++                    except sqlite3.DatabaseError:
++                        self.calls.append(sql)
++                self.policy = TestPolicy()
++                self.journal.policy = self.policy
++                self.arm(check)
++                self.code('COMMIT_CHECK_IMPURE', self.submit)
++                self.empty()
++        self.assertEqual(self.calls, statements)
++
++    def test_bounded_main_reads_and_metadata_functions_allowed(self):
++        def check():
++            row = self.journal._db.execute('SELECT typeof(intent),length(intent) FROM main.operations LIMIT 1').fetchone()
++            self.assertEqual(row[0], 'blob')
++            self.assertGreater(row[1], 1)
++            self.record()
++        self.arm(check)
++        self.submit()
++        self.assertEqual(self.calls, ['checked'])
++
++    def test_temp_reads_denied_even_when_swallowed(self):
++        self.journal._db.execute('CREATE TEMP TABLE untrusted(a)')
++        def check():
++            try:
++                self.journal._db.execute('SELECT a FROM temp.untrusted').fetchall()
++            except sqlite3.DatabaseError:
++                self.record()
++        self.arm(check)
++        self.code('COMMIT_CHECK_IMPURE', self.submit)
++        self.empty()
++
++    def test_swallowed_reentry_close_clock_and_registration_refused(self):
++        def transaction():
++            with self.journal._transaction():
++                self.fail('reentered')
++        actions = [transaction, self.journal.close, self.journal._clock,
++            self.journal._check_business_commit, lambda: self.journal._require_at_commit(self.record)]
++        for action in actions:
++            with self.subTest(action=action.__name__):
++                def check():
++                    self.code('COMMIT_CHECK_REENTRANCY', action)
++                self.policy = TestPolicy()
++                self.journal.policy = self.policy
++                self.arm(check)
++                self.code('COMMIT_CHECK_IMPURE', self.submit)
++                self.empty()
++
++    def test_commit_failure_before_sql_commit_rolls_back(self):
++        self.arm(self.record)
++        self.journal._db = _CommitReply(self.journal._db, False)
++        with self.assertRaisesRegex(OSError, 'reply'):
++            self.submit()
++        self.empty()
++        self.assertEqual(self.calls, ['checked'])
++        self.assertFalse(self.journal._poisoned)
++
++    def test_lost_reply_after_commit_replays_original_without_rechecking(self):
++        self.arm(self.record)
++        self.journal._db = _CommitReply(self.journal._db, True)
++        with self.assertRaisesRegex(OSError, 'reply'):
++            self.submit()
++        self.assertEqual(self.counts(), dict.fromkeys(TABLES, 1))
++        operation = self.journal._db.execute('SELECT id FROM operations').fetchone()[0]
++        def forbidden(*args):
++            self.fail('original key replay must not readmit')
++        self.policy.admit = forbidden
++        self.journal.clock_ms = forbidden
++        self.assertEqual(self.submit()['id'], operation)
++        self.assertEqual(self.calls, ['checked'])
++
++    def test_cold_original_key_replay_does_not_install_old_checks(self):
++        self.arm(self.record)
++        first = self.submit()
++        self.journal.close()
++        self.journal = Journal(self.root/'authority.db', self.policy, clock_ms=lambda: self.now)
++        self.policy.denied.add('invoke')
++        self.assertEqual(self.submit()['id'], first['id'])
++        self.assertEqual(self.calls, ['checked'])
++        self.assertEqual(self.counts(), dict.fromkeys(TABLES, 1))
++
++    def test_readonly_guard_removed_after_success_and_refusal(self):
++        self.arm(self.record)
++        first = self.submit()
++        self.journal.request_cancel(CONTEXT, first['id'])
++        self.assertEqual(self.journal.status(CONTEXT, first['id'])['state'], 'canceled')
++        def refuse():
++            raise JournalError('EXPIRED')
++        self.arm(refuse)
++        self.wire = request(self.namespace, 'second')
++        self.code('EXPIRED', self.submit)
++        with self.journal._transaction():
++            self.journal._db.execute("INSERT INTO meta VALUES ('after','available')")
++        self.assertEqual(self.journal._meta('after'), 'available')
++
++    def test_existing_evidence_authorizer_scope_is_not_replaced(self):
++        self.arm(self.record)
++        marker = {'denied': False}
++        self.late(lambda: setattr(self.journal, '_pat_evidence_guard', marker))
++        try:
++            self.code('COMMIT_CHECK_TRANSACTION_REQUIRED', self.submit)
++            self.empty()
++            self.assertEqual(self.calls, [])
++            self.assertIs(self.journal._pat_evidence_guard, marker)
++        finally:
++            self.journal._pat_evidence_guard = None
++
++    def test_nested_catalog_verifier_cannot_replace_commit_authorizer(self):
++        from types import SimpleNamespace
++        from hms.pat_catalog import PatCatalog
++        catalog = object.__new__(PatCatalog)
++        catalog.journal, catalog._db = self.journal, self.journal._db
++        evaluator = SimpleNamespace(verify_evidence=lambda *args: self.fail('nested verifier entered'))
++        def check():
++            self.code('PAT_EVIDENCE_REENTRANT', catalog._verify_evidence, evaluator, CONTEXT, {})
++            # Even after swallowing the nested failure, COMMIT remains denied.
++            with self.assertRaises(sqlite3.DatabaseError):
++                self.journal._db.execute('COMMIT')
++            self.record()
++        self.arm(check)
++        self.code('COMMIT_CHECK_IMPURE', self.submit)
++        self.empty()
++        self.assertEqual(self.calls, ['checked'])
++        self.assertIsNone(self.journal._pat_evidence_guard)
++
+--- baseline/tests/test_io_compact_storage.py
++++ integrated/tests/test_io_compact_storage.py
+@@ -0,0 +1,127 @@
++"""Fresh compact-store layout, retained state, rollback and owner recovery."""
++import hashlib
++from pathlib import Path
++import tempfile
++import unittest
++from unittest.mock import patch
++
++from hms.contracts import canonical
++from hms.journal import Context, Journal, JournalError
++from hms.synthetic_io_board import SyntheticIoBoard
++from hms.synthetic_io_runtime import IoRuntime
++import test_io_synthetic_provider as io_fixture
++from hms.synthetic_io_installation import normalize_installation
++
++PROFILE='hms.sqlite.compact/0.1'
++
++
++class StorageProfileInputTests(unittest.TestCase):
++    def test_unsupported_profiles_and_page_sizes_refuse_before_opening_state(self):
++        with patch('os.open',side_effect=AssertionError('state open')):
++            for value in (False,True,1024,{},'unsupported'):
++                with self.subTest(profile=value),self.assertRaisesRegex(JournalError,'IO_STORAGE_PROFILE'):
++                    IoRuntime('/unused',storage_profile=value)
++            for value in (False,True,1024.0,'1024',4096,512):
++                with self.subTest(pageSize=value),self.assertRaisesRegex(JournalError,'UNSUPPORTED_DATABASE_PAGE_SIZE'):
++                    Journal('/unused',None,clock_ms=lambda:1000,page_size=value)
++                with self.subTest(boardPageSize=value),self.assertRaisesRegex(JournalError,'IO_BOARD_PAGE_SIZE'):
++                    SyntheticIoBoard('/unused',{},authority_id='a',owner_epoch=1,clock_epoch='c',page_size=value)
++
++
++class CompactStorageTests(unittest.TestCase):
++    @classmethod
++    def setUpClass(cls):
++        cls.document = normalize_installation(io_fixture.installation())
++
++    request=io_fixture.SyntheticIoProviderTests.request
++    submit=io_fixture.SyntheticIoProviderTests.submit
++    status=io_fixture.SyntheticIoProviderTests.status
++    receipt=io_fixture.SyntheticIoProviderTests.receipt
++    assert_idle=io_fixture.SyntheticIoProviderTests.assert_idle
++
++    def setUp(self):
++        temporary = tempfile.TemporaryDirectory(prefix='hms-compact-store-')
++        self.addCleanup(temporary.cleanup)
++        self.workspace = Path(temporary.name)
++        self.runtime=None;self.wall=self.mono=1000;self.owner=Context('owner','simulation:io-hub')
++        self.addCleanup(lambda:self.runtime.close()if self.runtime is not None else None)
++
++    def open(self,*,compact=True,label='compact'):
++        parent=self.workspace/label;parent.mkdir(mode=0o700);self.directory=parent/'state'
++        self.runtime=IoRuntime(self.directory,create=True,owner=self.owner,installation=self.document,
++            wall_clock_ms=lambda:self.wall,monotonic_ms=lambda:self.mono,storage_profile=PROFILE if compact else None)
++        self.namespace=self.runtime.journal.issue_namespace(self.owner,100000)['token']
++
++    def reopen(self,*,compact=True):
++        self.runtime.close();self.runtime=None
++        self.runtime=IoRuntime(self.directory,installation=self.document,
++            wall_clock_ms=lambda:self.wall,monotonic_ms=lambda:self.mono,storage_profile=PROFILE if compact else None)
++
++    def pins(self):
++        return {p.name:hashlib.sha256(p.read_bytes()).hexdigest()for p in self.directory.glob('*.db')}
++
++    def assert_layout(self,size):
++        for db in (self.runtime.journal._db,self.runtime.io_board.db):
++            self.assertEqual(db.execute('PRAGMA page_size').fetchone()[0],size)
++            self.assertEqual(db.execute('PRAGMA journal_mode').fetchone()[0],'delete')
++            self.assertEqual(db.execute('PRAGMA synchronous').fetchone()[0],3)
++            self.assertEqual(db.execute('PRAGMA integrity_check').fetchone()[0],'ok')
++        self.assertEqual(self.runtime.journal._db.execute('PRAGMA foreign_keys').fetchone()[0],1)
++        for p in self.directory.glob('*.db'):
++            with p.open('rb')as stream:header=stream.read(100)
++            self.assertEqual(header[:16],b'SQLite format 3\0');self.assertEqual(int.from_bytes(header[16:18],'big'),size)
++
++    def test_fresh_compact_layout_keeps_durability_owner_exclusion_and_rollback(self):
++        self.open();self.assert_layout(1024);authority=self.runtime.journal.authority_id
++        with self.assertRaisesRegex(JournalError,'OWNER_BUSY'):
++            Journal(self.directory/'authority.db',self.runtime.policy,clock_ms=lambda:self.wall,page_size=1024)
++        with self.assertRaisesRegex(RuntimeError,'rollback'):
++            with self.runtime.journal._transaction():
++                self.runtime.journal._db.execute("INSERT INTO meta VALUES ('probe','rollback')")
++                raise RuntimeError('rollback')
++        self.assertIsNone(self.runtime.journal._db.execute("SELECT 1 FROM meta WHERE key='probe'").fetchone())
++        self.reopen();self.assertEqual(self.runtime.journal.authority_id,authority);self.assert_layout(1024)
++
++    def test_default_store_refuses_compact_expectation_without_database_rewrite(self):
++        self.open(compact=False,label='default');self.assert_layout(4096)
++        self.runtime.close();self.runtime=None;before=self.pins()
++        with self.assertRaisesRegex(JournalError,'UNSUPPORTED_DATABASE_PAGE_SIZE'):
++            IoRuntime(self.directory,installation=self.document,storage_profile=PROFILE,
++                wall_clock_ms=lambda:self.wall,monotonic_ms=lambda:self.mono)
++        self.assertEqual(self.pins(),before)
++
++    def test_board_mismatch_refuses_without_rewriting_retained_board(self):
++        self.open(compact=False,label='default');self.assert_layout(4096)
++        board=self.runtime.io_board;args=dict(authority_id=board.authority_id,owner_epoch=board.owner_epoch,clock_epoch=board.clock_epoch)
++        path=board.path;self.runtime.close();self.runtime=None;before=self.pins()
++        with self.assertRaisesRegex(JournalError,'IO_BOARD_PAGE_SIZE'):
++            SyntheticIoBoard(path,self.document,page_size=1024,**args)
++        self.assertEqual(self.pins(),before)
++
++    def test_default_opener_preserves_existing_compact_layout(self):
++        self.open();authority=self.runtime.journal.authority_id
++        self.reopen(compact=False);self.assert_layout(1024);self.assertEqual(self.runtime.journal.authority_id,authority)
++
++    def test_pending_effects_reopen_stop_once_and_reconcile_with_original_claims(self):
++        self.open();first=self.submit(duration=100);second=self.submit('sim:gpio6',key='second:active',duration=100)
++        self.runtime.tick();session=self.runtime.io_board.session;epoch=self.runtime.journal.owner_epoch
++        self.reopen();self.assert_layout(1024)
++        self.assertEqual(self.runtime.journal.owner_epoch,epoch+1);self.assertNotEqual(self.runtime.io_board.session,session)
++        for operation in (first,second):
++            self.assertEqual(self.status(operation)['state'],'outcome_unknown');self.assertTrue(self.status(operation)['claims'])
++            self.assertEqual(self.receipt(operation)['result']['reason'],'board_owner_reopened')
++            self.assertEqual(self.receipt(operation)['sequence'],2);self.assert_idle(self.receipt(operation))
++        self.runtime.tick()
++        for operation in (first,second):
++            self.assertEqual(self.status(operation)['state'],'canceled');self.assertEqual(self.status(operation)['claims'],[])
++        self.assertEqual(self.runtime.io_board.db.execute('SELECT sum(activations),sum(completed),sum(canceled) FROM io_effects').fetchone()[:],(2,0,2))
++        self.assertEqual(self.runtime.io_board.db.execute('SELECT count(*) FROM io_receipt_versions').fetchone()[0],4)
++
++    def test_completed_original_key_replays_after_reopen_without_new_effect(self):
++        self.open();wire=canonical(self.request());operation=self.runtime.journal.submit(self.owner,wire)
++        self.runtime.tick();self.wall+=20;self.mono+=20;self.runtime.tick()
++        self.assertEqual(self.status(operation)['state'],'completed');self.reopen();self.assert_layout(1024)
++        self.assertEqual(self.runtime.journal.submit(self.owner,wire)['id'],operation['id'])
++        self.assertEqual(self.status(operation)['state'],'completed')
++        self.assertEqual(self.runtime.journal._db.execute('SELECT count(*) FROM operations').fetchone()[0],1)
++        self.assertEqual(self.runtime.io_board.db.execute('SELECT sum(activations),sum(completed),sum(canceled) FROM io_effects').fetchone()[:],(1,1,0))
+--- /dev/null
++++ integrated/tests/test_integer_canonical.py
+@@ -0,0 +1,95 @@
++"""Public canonical carrier bytes remain identical to the reference encoder."""
++import copy
++import json
++import random
++import unittest
++from unittest.mock import patch
++
++from hms import contracts
++from hms._vendor import rfc8785
++
++
++class IntegerCanonicalTests(unittest.TestCase):
++    def test_unicode_key_order_uses_utf16_and_preserves_escapes(self):
++        value = {'\ue000': 1, '\U0001f600': 2, 'a': '\x00\b\t\n\f\r"\\/'}
++        expected = b'{"a":"\\u0000\\b\\t\\n\\f\\r\\"\\\\/","\xf0\x9f\x98\x80":2,"\xee\x80\x80":1}'
++        self.assertEqual(contracts.canonical(value), expected)
++        self.assertEqual(expected, rfc8785.dumps(value))
++
++    def test_fixed_generated_trees_match_reference_without_mutating_inputs(self):
++        rng = random.Random(20261109)
++        scalars = [None, True, False, 0, -1, contracts.SAFE_INTEGER,
++                   -contracts.SAFE_INTEGER, '', '\x00', '\ue000', '\U0001f600']
++        def tree(depth):
++            if depth == 0 or rng.randrange(3) == 0:
++                return rng.choice(scalars)
++            children = [tree(depth - 1) for _ in range(rng.randrange(5))]
++            return children if rng.randrange(2) else {
++                str(i) + rng.choice(['a', '\ue000', '\U0001f600']): child
++                for i, child in enumerate(children)}
++        for _ in range(300):
++            value = tree(4)
++            before = copy.deepcopy(value)
++            self.assertEqual(contracts.canonical(value), rfc8785.dumps(value))
++            self.assertEqual(value, before)
++
++    def test_nested_float_uses_reference_for_entire_value(self):
++        value = {'integer': 1, 'nested': [0.1, 0.0, 1e-7, 1e-20]}
++        expected = rfc8785.dumps(value)
++        with patch.object(rfc8785, 'dumps', wraps=rfc8785.dumps) as reference:
++            self.assertEqual(contracts.canonical(value), expected)
++        reference.assert_called_once_with(value)
++
++    def test_float_bytes_match_reference_without_changed_helpers(self):
++        for number in (0.1, 0.0, 1.0, 1e-7, 1e-6, 1.2345678901234567):
++            value = {'number': [number]}
++            self.assertEqual(contracts.canonical(value), rfc8785.dumps(value))
++
++    def test_integer_fast_path_is_used_only_with_unchanged_dependencies(self):
++        self.assertTrue(contracts._fast_allowed())
++        with patch.object(json.encoder, 'c_make_encoder', None):
++            self.assertFalse(contracts._fast_allowed())
++            self.assertEqual(contracts.canonical({'a': 1}), b'{"a":1}')
++        with patch.object(contracts, 'MAX_BYTES', contracts.MAX_BYTES - 1):
++            self.assertFalse(contracts._fast_allowed())
++            self.assertEqual(contracts.canonical({'a': 1}), b'{"a":1}')
++        self.assertTrue(contracts._fast_allowed())
++
++    def test_replaced_encoder_bypasses_fast_path(self):
++        class UnexpectedEncoder:
++            def __init__(self, **kwargs):
++                raise AssertionError('changed encoder must not be used')
++        with patch.object(json, 'JSONEncoder', UnexpectedEncoder):
++            self.assertFalse(contracts._fast_allowed())
++            self.assertEqual(contracts.canonical({'a': 1}), b'{"a":1}')
++
++    def test_reference_function_code_change_disables_fast_path(self):
++        function = rfc8785.dumps
++        original = function.__code__
++        def changed(value):
++            return b'changed reference'
++        try:
++            function.__code__ = changed.__code__
++            self.assertFalse(contracts._fast_allowed())
++            self.assertEqual(contracts.canonical({'a': 1}), b'changed reference')
++        finally:
++            function.__code__ = original
++        self.assertTrue(contracts._fast_allowed())
++
++    def test_invalid_values_and_encoded_size_still_refuse(self):
++        cycle = []; cycle.append(cycle)
++        for value in (contracts.SAFE_INTEGER + 1, -0.0, float('nan'), float('inf'),
++                      '\ud800', {1: 'non-string key'}, cycle,
++                      '\x00' * (contracts.MAX_BYTES // 6 + 1)):
++            with self.subTest(kind=type(value).__name__), self.assertRaises(contracts.ContractError):
++                contracts.canonical(value)
++
++    def test_custom_objects_are_rejected_without_invoking_hooks(self):
++        calls = []
++        class Custom(str):
++            def encode(self, *args, **kwargs):
++                calls.append('encode')
++                raise AssertionError('custom hook')
++        with self.assertRaises(contracts.ContractError):
++            contracts.canonical({'value': Custom('not a built-in string')})
++        self.assertEqual(calls, [])

@@ -1,0 +1,113 @@
+--- baseline/hms/standing_pat.py
++++ candidate/hms/standing_pat.py
+@@ -91,12 +91,17 @@
+ def installed_artifact(installation):
+     """Return the only configuration/domain supported by this compiler."""
+     installed = parse_installation(installation)
++    return _artifact_record(installed, installation_digest(installed))
++
++
++def _artifact_record(installed, installed_digest):
++    """Shared pure construction; callers own their validation sequence."""
+     return document({'profile': PROFILE, 'id': 'standing-native-golden-v1',
+         'taskKind': TASK_KIND, 'inputProfile': INPUT_PROFILE, 'parameters': {},
+         'kernel': 1, 'configuration': CONFIGURATION, 'limits': LIMITS,
+         'evidenceMode': 'simulation', 'outagePolicy': 'bounded-local-continuation',
+         'placement': {'routeId': installed['routeId'], 'instanceId': installed['instanceId']},
+-        'requirements': {'installationDigest': installation_digest(installed),
++        'requirements': {'installationDigest': installed_digest,
+             'driverImageDigest': installed['driverImageDigest'],
+             'driverSourceDigest': installed['driverSourceDigest'],
+             'qualificationImageDigest': installed['qualificationImageDigest'],
+@@ -107,6 +112,13 @@
+ def parse_artifact(value, installation):
+     artifact = document(value)
+     expected = installed_artifact(installation)
++    _match_artifact(artifact, expected)
++    installed = parse_installation(installation)
++    _qualified_endpoint(installed)
++    return artifact
++
++
++def _match_artifact(artifact, expected):
+     exact(artifact, expected)
+     # Labels are metadata, never domains. Multiple compatible promoted labels
+     # still make selection ambiguous; an original run cannot be reassociated.
+@@ -114,13 +126,14 @@
+         identifier(artifact[key])
+         expected[key] = artifact[key]
+     _same_typed(artifact, expected, 'PAT_DOMAIN_UNQUALIFIED')
+-    installed = parse_installation(installation)
++
++
++def _qualified_endpoint(installed):
+     endpoint = installed['endpoint']
+     require(endpoint['boot'] == 1 and endpoint['epochs'] == [1, 1] and
+             endpoint['incarnationHex'] == bytes(range(0xa0, 0xb0)).hex() and
+             endpoint['firmwareHex'] == bytes(range(0xb0, 0xd0)).hex() and
+             endpoint['manifestHex'] == bytes(range(0xc0, 0xe0)).hex(), 'PAT_INSTALLATION_UNQUALIFIED')
+-    return artifact
+ 
+ 
+ def artifact_digest(artifact):
+@@ -144,12 +157,18 @@
+ def compile_artifact(value, installation):
+     artifact = parse_artifact(value, installation)
+     installed = parse_installation(installation)
++    return _compile_record(artifact, installed, installation_digest)
++
++
++def _compile_record(artifact, installed, digest_installation):
++    # The resolver is one of the two installed pure helpers below. It runs at
++    # the original field-construction position; no authority callback enters.
+     compiler = identity('HMS-STANDING-COMPILER-v0.1', {'profile': COMPILER,
+         'hostImplementationDigest': installed['hostImplementationDigest'],
+         'sourceDigest': SOURCE_DIGEST, 'domainDigest': DOMAIN_DIGEST})
+     configuration = _configuration()
+     result = {'profile': COMPILER, 'artifactDigest': artifact_digest(artifact),
+-        'compilerDigest': compiler, 'installationDigest': installation_digest(installed),
++        'compilerDigest': compiler, 'installationDigest': digest_installation(installed),
+         'hostImplementationDigest': installed['hostImplementationDigest'],
+         'driverImageDigest': installed['driverImageDigest'], 'driverSourceDigest': installed['driverSourceDigest'],
+         'qualificationImageDigest': installed['qualificationImageDigest'], 'sourceDigest': SOURCE_DIGEST,
+@@ -157,6 +176,31 @@
+         'kernel': 1, 'resourceMask': 3, 'sourceEpochs': [1, 1], 'limits': LIMITS,
+         'evidenceMode': 'simulation', 'physicalEligible': False, 'protectedCapacity': False}
+     return Compiled(canonical(result), configuration)
++
++
++class _CatalogCompilationInput:
++    """One private pure call's detached snapshot, never retained authority."""
++    __slots__ = ('_installed',)
++
++    def __init__(self, installation):
++        self._installed = parse_installation(installation)
++
++    def identity(self, installed):
++        require(installed is self._installed, 'COMPILATION_SNAPSHOT')
++        return identity('HMS-STANDING-INSTALLATION-v0.1', installed)
++
++
++def _compile_catalog_artifact(value, installation):
++    # Preserve artifact-document-first refusal order. The snapshot is created
++    # at the old first installation-validation point and ends at this return.
++    # It is never carried over a DB/evidence/policy callback or another call.
++    artifact = document(value)
++    snapshot = _CatalogCompilationInput(installation)
++    installed = snapshot._installed
++    expected = _artifact_record(installed, snapshot.identity(installed))
++    _match_artifact(artifact, expected)
++    _qualified_endpoint(installed)
++    return _compile_record(artifact, installed, snapshot.identity)
+ 
+ 
+ def _relative(name):
+@@ -431,7 +475,7 @@
+     def _compiled(self, row, installation):
+         artifact = document(bytes(row['document']))
+         require(artifact_digest(artifact) == row['digest'], 'ARTIFACT_CHANGED')
+-        return artifact, compile_artifact(artifact, installation)
++        return artifact, _compile_catalog_artifact(artifact, installation)
+ 
+     def _evidence_guard(self, context, held, artifact, compilation):
+         expected = canonical(compilation.document)

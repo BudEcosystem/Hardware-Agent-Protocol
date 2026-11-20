@@ -1,0 +1,11 @@
+--- freeze_source.py
++++ freeze_source02.py
+@@ -31,7 +31,7 @@
+ for row in read(BASE / 'controls01/inputs.json'):
+     assert sha(BASE / row['path']) == row['sha256']
+ old = read(PRIOR / 'identity-pins.json')
+-assert digest(b'HMS-PAT-IO-EVIDENCE-CONSUMER-v0.1', old['sourceRows']) == old['legacy']
++assert digest(b'HMS-PAT-IO-EVIDENCE-CONSUMER-v0.1', sorted(old['sourceRows'], key=lambda row: row['path'])) == old['legacy']
+ external = {}
+ for name in ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs', 'rpds-py', 'typing_extensions', 'idna'):
+     distribution = importlib.metadata.distribution(name)

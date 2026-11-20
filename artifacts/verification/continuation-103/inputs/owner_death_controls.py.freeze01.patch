@@ -1,0 +1,34 @@
+--- owner_death_controls-draft02.py
++++ owner_death_controls.py
+@@ -83,6 +83,7 @@
+     ids=journal._db.execute('SELECT id FROM sd_deployments ORDER BY id LIMIT 2').fetchall()
+     require(len(ids)==1,'One deployment required');identifier=ids[0][0]
+     row=store.row(identifier)
++    require(row['disputed'] is False and row['effectUnknown'] is False,'Unexpected dispute/driver uncertainty in clean fixed setup')
+     limits={'sd_mutations':(8,1536),'sd_activations':(2,1024),'sd_activation_versions':(4,1024),'sd_episodes':(2,1536)}
+     records={}
+     for table,(count,maximum) in limits.items():
+@@ -414,8 +415,13 @@
+         os.close(continue_write);owned_fds.remove(continue_write);os.close(recovery_read);owned_fds.remove(recovery_read)
+         result=load(directory/'recovery.json');require(result['passed'])
+         check_audit(result['audit'])
+-        require(result['readOnlyAuditCount']==len(audit_view['audit']) and
++        require(result['case']==name and result['historicalPossibleEffectsResent'] is False and
++                result['readOnlyAuditCount']==len(audit_view['audit']) and
+                 result['audit'][:result['readOnlyAuditCount']]==audit_view['audit'])
++        expected_effects=([int(getattr(Opcode,operation))] if cut=='prepared' and operation in ('START','ACK','RETIRE')
++                          else [int(Opcode.ACK)] if operation=='COLLECTION' else [])
++        require(result['allowedExplicitEffects']==expected_effects and
++                [entry['opcode'] for entry in result['audit'][result['readOnlyAuditCount']:] if entry['opcode'] not in READ_ONLY]==expected_effects)
+         require(guardian.status(native) is None and set(guardian.refresh())=={native})
+         final_native=observations(control)
+         # Native control state cannot change during historical replay. Only the
+@@ -430,6 +436,8 @@
+         parent.close();control.close()
+         reaps['native']=guardian.wait_exit(native);require(reaps['native']['exitCode']==0,'Native EOF exit required')
+         require(guardian.empty() and len(guardian.records)-record_start==3)
++        require(all((directory/(role+'.'+suffix)).stat().st_size==0 for role in ('native','owner','recovery')
++                    for suffix in ('stdout','stderr')),'Successful fixed child logs must be empty')
+         after=os.fstat(executable);require((before.st_dev,before.st_ino,before.st_size,before.st_mtime_ns,before.st_ctime_ns)==
+             (after.st_dev,after.st_ino,after.st_size,after.st_mtime_ns,after.st_ctime_ns) and sha(os.pread(executable,2*1024*1024+1,0))==image)
+         value={'case':name,'operation':operation,'cut':cut,'passed':True,'nativeImageSha256':image,

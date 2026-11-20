@@ -1,0 +1,115 @@
+--- original/qualification_supervisor.py
++++ artifacts/implementation/pat-io-supervision/implementation01/project/supervisor/qualification_supervisor.py
+@@ -15,10 +15,10 @@
+ 
+ from hms.contracts import canonical
+ from hms import pat_simulation_worker as worker
+-from hms.pat_simulation_evidence import _records
++from bundle_io import retain_bundle, output_integrity, launch_input
+ from attempt_ledger import AttemptLedger, tree_usage
+ from supervisor_contracts import (SOURCE_FILES, SupervisorError, require, digest, document,
+-    parse_request, validate_fresh, run_key, request_digest, safe_file, read_file, write_file, same, runtime_files)
++    parse_request, validate_fresh, run_key, request_digest, safe_file, read_file, write_file, same, runtime_files, snapshot_bundle)
+ 
+ 
+ def _directory(parent, name, *, create=False):
+@@ -36,6 +36,9 @@
+     """Bounded unique original-source/resource inventory, before admission."""
+     rows = [(row['path'], worker._ROOT / row['path'], row['sha256'])
+             for row in worker._IMPORTED_IDENTITY['sources']]
++    # The conservative I/O driver identity also includes this non-Python input.
++    manifest = worker._ROOT / 'protocol/endpoint/scenario-manifest.json'
++    rows.append(('protocol/endpoint/scenario-manifest.json', manifest, hashlib.sha256(manifest.read_bytes()).hexdigest()))
+     rows += [('supervisor/' + name, Path(__file__).with_name(name),
+               hashlib.sha256(Path(__file__).with_name(name).read_bytes()).hexdigest()) for name in SOURCE_FILES]
+     # -I excludes the user's site directory. Copy only the already installed
+@@ -105,29 +108,6 @@
+     return target
+ 
+ 
+-def _evidence(directory, request, result):
+-    """Bounded complete byte/hash closure check, not semantic qualification."""
+-    output = _directory(directory, 'output')
+-    evidence = None
+-    try:
+-        evidence = _directory(output, 'evidence')
+-        names = []
+-        with os.scandir(evidence) as entries:
+-            for entry in entries:
+-                require(len(names) < 4096 and re.fullmatch(r'[0-9]{6}\.json', entry.name) is not None,
+-                        'QUALIFICATION_EVIDENCE_INVALID')
+-                names.append(entry.name)
+-        require(sorted(names) == ['%06d.json' % i for i in range(len(names))], 'QUALIFICATION_EVIDENCE_INVALID')
+-        files = []; remaining = request['trust']['input']['limits']['maxOutputBytes']
+-        for name in sorted(names):
+-            body = read_file(evidence, name, maximum=min(65536, remaining))
+-            remaining -= len(body); files.append({'path': 'evidence/' + name, 'body': body})
+-        _records(result, files)
+-        return {'recordCount': len(files), 'bytes': sum(len(f['body']) for f in files),
+-                'orderedDigest': digest(b''.join(hashlib.sha256(f['body']).digest() for f in files))}
+-    finally:
+-        if evidence is not None: os.close(evidence)
+-        os.close(output)
+ 
+ 
+ class QualificationSupervisor:
+@@ -153,7 +133,7 @@
+     def _checkpoint(self, phase, row):
+         """Private test crash seam. Production caller supplies no callbacks."""
+ 
+-    def execute(self, value):
++    def execute(self, value, bundle=None):
+         request = parse_request(value)
+         old = self.lookup(*run_key(request))
+         if old is not None:
+@@ -162,22 +142,24 @@
+         require(self._execution.acquire(blocking=False), 'QUALIFICATION_BUSY')
+         try:
+             # Source/config validation precedes admission writes, never replay.
+-            request = validate_fresh(request)
++            bundle = snapshot_bundle(bundle)
++            request = validate_fresh(request, bundle)
+             image_charge=_image_charge(self.ledger,request)
+             row, created = self.ledger.admit(request,_image_charge=image_charge)
+             if not created: return row
+             self._checkpoint('admitted', row)
+-            return self._launch(row)
++            return self._launch(row, bundle)
+         finally: self._execution.release()
+ 
+-    def _launch(self, row):
++    def _launch(self, row, bundle):
+         identifier = row['record']['attemptId']; request = row['request']
+         directory = lease = input_fd = None
+         process = None
+         try:
+             image = _image(self.ledger, request)
+             directory = _directory(self.ledger.fd, identifier, create=True)
+-            write_file(directory, 'input.json', canonical(request))
++            retain_bundle(directory, request, bundle)
++            write_file(directory, 'input.json', canonical(launch_input(request, identifier)))
+             output = _directory(directory, 'output', create=True); os.close(output)
+             lease = os.open('writer.lease', os.O_RDWR | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=directory)
+             info = safe_file(lease); fcntl.flock(lease, fcntl.LOCK_EX | fcntl.LOCK_NB)
+@@ -221,7 +203,7 @@
+                 os.set_blocking(stream.fileno(), False); selector.register(stream, selectors.EVENT_READ, name)
+                 fd = os.open(name + '.log', os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600, dir_fd=directory)
+                 safe_file(fd); logs[name] = fd
+-            deadline = started + request['trust']['input']['limits']['workerDeadlineMs'] / 1000
++            deadline = started + request['groupLimits']['maxWallMs'] / 1000
+             while True:
+                 now = time.monotonic()
+                 if reason is None:
+@@ -350,10 +332,8 @@
+             body = None; integrity = None; failure = None
+             try:
+                 body = read_file(directory, 'worker-return.json')
+-                result = document(body); cap = row['request']['trust']['input']
+-                for key in ('attemptId', 'environmentDigest', 'matrixDigest', 'identities', 'configuration'):
+-                    require(same(result[key], cap[key]), 'QUALIFICATION_RESULT_ASSOCIATION')
+-                integrity = _evidence(directory, row['request'], result)
++                result = document(body)
++                integrity = output_integrity(directory, row['request'], result, identifier)
+             except Exception as error:
+                 failure = getattr(error, 'code', 'QUALIFICATION_RETURN_UNAVAILABLE')
+             usage = None

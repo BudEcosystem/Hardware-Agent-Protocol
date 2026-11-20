@@ -1,0 +1,25 @@
+--- root-reviewed-runner-draft01.py
++++ current-run_checks.py
+@@ -490,7 +490,7 @@
+         require(trace_outputs['baseline']==trace_outputs['candidate'],
+                 'Baseline/candidate complete state, callback, effect or response trace differs')
+         trace=trace_outputs['candidate'];summary=json.loads(trace.splitlines()[-1])
+-        require(summary['equivalence_cases']==15 and summary['old_cases']==14 and
++        require(summary['equivalence_cases']==16 and summary['old_cases']==14 and
+                 summary['physical_qualification'] is False and summary['added_assertions']>0 and
+                 summary['assertions']==766+summary['added_assertions'] and summary['trace_records']>0,
+                 'Differential trace coverage incomplete')
+@@ -778,11 +778,9 @@
+                'PLUGIN-LOOKUP-REVIEW.md','plugin-lookup-source-pins.json',
+                'CONTROLS.md','SOURCE-COVERAGE.md','INDEPENDENT-REVIEW.md','native-coverage.json',
+                'runner-input-pins.json','runner-diff.patch','runner-baseline.py',
+-               'parent-pins.json','endpoint-transformations.json','standing-transformations.json',
+-               'history/core-draft01/index.json']
++               'parent-pins.json','endpoint-transformations.json','standing-transformations.json']
+         fixed += [str(path.relative_to(HERE)) for path in sorted((HERE/'originals/project').rglob('*')) if path.is_file()]
+-        fixed += [str(path.relative_to(HERE)) for path in sorted((HERE/'history/core-draft01').rglob('*'))
+-                  if path.is_file() and path.name!='index.json']
++        fixed += [str(path.relative_to(HERE)) for path in sorted((HERE/'history').rglob('*')) if path.is_file()]
+         fixed += [row['target'] for row in json.loads((HERE/'runner-owner-pins.json').read_text())['files']]
+         for name in fixed:sources[name]=digest(HERE/name)
+         SOURCE_PINS=sources;report['sources']=dict(sources)

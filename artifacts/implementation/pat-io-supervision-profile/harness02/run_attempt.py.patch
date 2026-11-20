@@ -1,0 +1,22 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-supervision-recovery/harness02/run_attempt.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-supervision-profile/harness02/run_attempt.py
+@@ -23,8 +23,8 @@
+ 
+ PACKAGES = ('jsonschema', 'referencing', 'jsonschema-specifications', 'attrs',
+             'rpds-py', 'typing_extensions', 'idna')
+-FROZEN_INDEX = 'd1c5ac0d86c77bd195ffebfcf75dc6e1c95ecf7a0814416073cfba691fb5685c'
+-PREFIX = 'artifacts/implementation/pat-io-supervision-recovery/implementation01/'
++FROZEN_INDEX = '3ce18e62eb1aaf0af2feb5a672f8010196f56f9999cf7afa6a0b6ddc657d288c'
++PREFIX = 'artifacts/implementation/pat-io-supervision-profile/implementation01/'
+ MAX_FILE = 16 * 1024 * 1024
+ MAX_INPUT_BYTES = 256 * 1024 * 1024
+ MAX_FILES = 8192
+@@ -340,7 +340,7 @@
+                 (scratch_parent_before['mode'] & 0o022 and
+                  not scratch_parent_before['mode'] & stat.S_ISVTX)):
+             raise ValueError('Trusted /tmp scratch ancestor is unavailable')
+-        scratch = Path(tempfile.mkdtemp(prefix='hms-io-snapshot-reuse-recovery1-', dir=str(scratch_parent)))
++        scratch = Path(tempfile.mkdtemp(prefix='hms-io-supervision-worker-profile-', dir=str(scratch_parent)))
+         record['scratchPath'] = str(scratch)
+         record['rawScratchPolicy'] = ('Never deleted by this runner; raw outputs must be '
+                                       'explicitly acquired before operating-system /tmp cleanup.')

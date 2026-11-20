@@ -1,0 +1,52 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-document-validation/implementation01/project/supervisor/attempt_ledger.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-execution-handoff/implementation01/project/supervisor/attempt_ledger.py
+@@ -21,6 +21,9 @@
+     'running': {'stopping', 'interrupted', 'archived'},
+     'stopping': {'interrupted', 'archived'}, 'interrupted': {'archived'}, 'archived': set()}
+ 
++
++ATTEMPT_SQL = "CREATE TABLE qs_attempts(\n                        id TEXT PRIMARY KEY, deployment TEXT NOT NULL, evaluator TEXT NOT NULL, run TEXT NOT NULL,\n                        request BLOB NOT NULL CHECK(typeof(request)='blob' AND length(request) BETWEEN 1 AND 65536),\n                        digest TEXT NOT NULL, record BLOB NOT NULL CHECK(typeof(record)='blob' AND length(record) BETWEEN 1 AND 65536),\n                        return_bytes BLOB CHECK(return_bytes IS NULL OR (typeof(return_bytes)='blob' AND length(return_bytes) BETWEEN 0 AND 65536)),\n                        active INTEGER NOT NULL CHECK(active IN (0,1)), UNIQUE(deployment,evaluator,run))"
++INDEX_SQL = 'CREATE UNIQUE INDEX qs_singleflight ON qs_attempts(active) WHERE active=1'
+ 
+ def _validate_record(record, request, result):
+     """Bounded retained control consistency, not producer authentication."""
+@@ -153,18 +156,10 @@
+                 names={'qs_meta','qs_attempts'} if table_count else set()
+                 if not names:
+                     require(not exists, 'QUALIFICATION_SCHEMA_INVALID')
+-                    self.db.execute('CREATE TABLE qs_meta(version INTEGER NOT NULL CHECK(version=1))')
+-                    self.db.execute('INSERT INTO qs_meta VALUES(1)')
+-                    self.db.execute('''CREATE TABLE qs_attempts(
+-                        id TEXT PRIMARY KEY, deployment TEXT NOT NULL, evaluator TEXT NOT NULL, run TEXT NOT NULL,
+-                        request BLOB NOT NULL CHECK(typeof(request)='blob' AND length(request) BETWEEN 1 AND 65536),
+-                        digest TEXT NOT NULL, record BLOB NOT NULL CHECK(typeof(record)='blob' AND length(record) BETWEEN 1 AND 65536),
+-                        return_bytes BLOB CHECK(return_bytes IS NULL OR (typeof(return_bytes)='blob' AND length(return_bytes) BETWEEN 0 AND 65536)),
+-                        active INTEGER NOT NULL CHECK(active IN (0,1)), UNIQUE(deployment,evaluator,run))''')
+-                    self.db.execute('CREATE UNIQUE INDEX qs_singleflight ON qs_attempts(active) WHERE active=1')
+-                require(self.db.execute('SELECT typeof(version) FROM qs_meta LIMIT 2').fetchall() == [('integer',)],
+-                        'QUALIFICATION_SCHEMA_INVALID')
+-                require(self.db.execute('SELECT version FROM qs_meta LIMIT 2').fetchall()==[(1,)],'QUALIFICATION_SCHEMA_INVALID')
++                    self._create_metadata()
++                    self.db.execute(ATTEMPT_SQL)
++                    self.db.execute(INDEX_SQL)
++                self._check_metadata()
+                 # Reopening never silently resumes or relaunches an old producer.
+                 active=self.db.execute('SELECT rowid,typeof(id),length(id) FROM qs_attempts WHERE active=1 LIMIT 2').fetchall()
+                 require(len(active)<=1,'QUALIFICATION_LEDGER_INVALID')
+@@ -179,6 +174,16 @@
+         except BaseException:
+             self.close()
+             raise
++
++    def _create_metadata(self):
++        self.db.execute('CREATE TABLE qs_meta(version INTEGER NOT NULL CHECK(version=1))')
++        self.db.execute('INSERT INTO qs_meta VALUES(1)')
++
++    def _check_metadata(self):
++        require(self.db.execute('SELECT typeof(version) FROM qs_meta LIMIT 2').fetchall() == [('integer',)],
++                'QUALIFICATION_SCHEMA_INVALID')
++        require(self.db.execute('SELECT version FROM qs_meta LIMIT 2').fetchall() == [(1,)],
++                'QUALIFICATION_SCHEMA_INVALID')
+ 
+     @contextmanager
+     def transaction(self):

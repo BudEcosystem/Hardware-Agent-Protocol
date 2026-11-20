@@ -1,0 +1,263 @@
+--- audit-parent.py
++++ audit_retained.py
+@@ -11,8 +11,12 @@
+ 
+ HERE = Path(__file__).resolve().parent
+ ROOT = HERE.parents[2]
+-PARENT_AUDIT_SHA256 = 'd4f96f6cbea251dfb56a564759d9d0734be5dd358fe8f8e5018731e5c59feda1'
+-CURRENT_REVIEW_SHA256 = '6c1a5fc11d1b5c6dc57d49e8dcc618434a2e6036e703ce3b5ee2c8446c68940c'
++PARENT_AUDIT_SHA256 = '892c961d48d24e097c34fb11d3b18555574712740421c07374d0b4a9822262ff'
++CURRENT_REVIEW_SHA256 = '8a2b1fafb71d84ae49fc83cf6edcf07520613f7d46fbe2d46e52958d64a3f7d5'
++NATIVE_RECEIPT_SHA256 = '44a4b3ccd0c9ae75bc6e3d578cc15f16e38c4b1cec7007a2a6b190bbd7e0383f'
++AVR_RECEIPT_SHA256 = 'b8a911b2a15ea4e8aa41791f80bb0d5193b2a1fa5ccbe7f418169a9b3a92d81f'
++AVR_MAP_SHA256 = '12336960e81dbb8d6dd998ea2d061fabb5db1df8a509a1bd8d9a50585610328c'
++TRACE_SHA256 = '6eda3f924f18792751bd0ff643d1c53cb7bc3684c94a828de5c4f91572f0adc2'
+ 
+ 
+ def digest(path):
+@@ -70,10 +74,10 @@
+         'PLUGIN-LOOKUP-REVIEW.md','plugin-lookup-source-pins.json',
+         'CONTROLS.md','SOURCE-COVERAGE.md','INDEPENDENT-REVIEW.md','native-coverage.json',
+         'runner-input-pins.json','runner-diff.patch','runner-baseline.py',
+-        'parent-pins.json','endpoint-transformations.json','standing-transformations.json']
++        'baseline-pins.json','proposal-index.json','CORE-DRAFT01.md','CONTROLS-DRAFT01.md']
+     fixed += [str(path.relative_to(HERE)) for path in (HERE/'project').rglob('*') if path.is_file()
+               and 'artifacts' not in path.relative_to(HERE/'project').parts and '__pycache__' not in path.parts]
+-    for prefix in ('originals/project','history'):
++    for prefix in ('originals','history'):
+         fixed += [str(path.relative_to(HERE)) for path in (HERE/prefix).rglob('*') if path.is_file()]
+     fixed += [row['target'] for row in read(HERE/'runner-owner-pins.json')['files']]
+     assert len(fixed) == len(set(fixed))
+@@ -83,11 +87,12 @@
+ def native_plan():
+     names = ['native-version']+['native-program-'+name for name in ('cc1','as','ld','collect2')]+['original-native']
+     for mode in ('plain','asan'):
+-        names += [prefix+'-'+mode for prefix in ('compile','probe','standing-compile','standing-probe',
+-                                                'kernel-compile','kernel-probe')]
+-        for domain in ('baseline','candidate'):
++        names += [prefix+'-'+mode for prefix in ('compile','probe','standing-compile','standing-probe')]
++        for backend in ('byte','fallback'):
++            names += ['kernel-'+phase+'-'+backend+'-'+mode for phase in ('compile','probe')]
++        for domain in ('baseline','candidate','fallback'):
+             names += ['equivalence-'+phase+'-'+domain+'-'+mode for phase in ('compile','probe')]
+-    assert len(names) == 26
++    assert len(names) == 34
+     return names
+ 
+ 
+@@ -113,6 +118,9 @@
+     for row in original_receipt['outputs']:
+         assert digest(contained(folder/'project',row['path'])) == row['sha256']
+     assert native['plain_sanitized_reports_agree'] and native['standing_observed_assertions'] == 766
++    assert native['selected_candidate_backend'] == 1 and native['scalar_fallback_controls'] is True
++    assert '-DHMS_EP_BYTE_BACKEND=1' in original_receipt['plain_flags']
++    assert '-DHMS_EP_BYTE_BACKEND=1' in original_receipt['sanitized_flags']
+     for key in ('standing','integration','kernel','equivalence'):
+         assert native[key]['plain'] == native[key]['asan']
+     traces = []; observed = {}
+@@ -123,39 +131,68 @@
+         assert integration == read(folder/('probe-'+mode+'.stdout'))
+         assert integration == dict(assertions=143471,cases=11,interruptSnapshots=256,
+                                    status='passed',targetExecuted=False,wireOracleSteps=20000)
+-        kernel = native['kernel'][mode]
+-        assert kernel == read(folder/('kernel-probe-'+mode+'.stdout'))
+-        assert kernel['cases'] == 3 and type(kernel['assertions']) is int and kernel['assertions'] > 1000
+-        assert kernel['physical_qualification'] is False
++        kernels = native['kernel'][mode]
++        for label,backend in (('byte',1),('fallback',0)):
++            kernel = kernels[label]
++            assert kernel == read(folder/('kernel-probe-'+label+'-'+mode+'.stdout'))
++            assert kernel['cases'] == 6 and kernel['old_cases'] == 3 and kernel['backend'] == backend
++            assert type(kernel['assertions']) is int and kernel['assertions'] == 86889
++            assert kernel['physical_qualification'] is False
++        assert {k:v for k,v in kernels['byte'].items() if k!='backend'} == {
++            k:v for k,v in kernels['fallback'].items() if k!='backend'}
+         baseline = (folder/('equivalence-probe-baseline-'+mode+'.stdout')).read_bytes()
+         candidate = (folder/('equivalence-probe-candidate-'+mode+'.stdout')).read_bytes()
+-        assert baseline == candidate and candidate.endswith(b'\n')
++        fallback = (folder/('equivalence-probe-fallback-'+mode+'.stdout')).read_bytes()
++        assert baseline == candidate == fallback and candidate.endswith(b'\n')
+         summary = json.loads(candidate.splitlines()[-1]); eq = native['equivalence'][mode]
+-        assert summary == eq['summary'] and summary['equivalence_cases'] == 16 and summary['old_cases'] == 14
+-        assert type(summary['added_assertions']) is int and summary['added_assertions'] > 0
++        assert summary == eq['summary'] and summary['equivalence_cases'] == 20 and summary['old_cases'] == 14
++        assert type(summary['added_assertions']) is int and summary['added_assertions'] == 851
+         assert summary['assertions'] == 766+summary['added_assertions']
+-        assert type(summary['trace_records']) is int and summary['trace_records'] > 0
++        assert type(summary['trace_records']) is int and summary['trace_records'] == 1177
+         assert summary['physical_qualification'] is False
+         records = [line.split(b' ',3)[1] for line in candidate.splitlines() if line.startswith(b'S ')]
+         assert records == [str(index).encode('ascii') for index in range(1,summary['trace_records']+1)]
+-        assert eq['baseline_matches_candidate'] and eq['raw_outputs_retained']
+-        assert hashlib.sha256(candidate).hexdigest() == eq['complete_trace_sha256']
++        assert eq['baseline_matches_candidate'] and eq['baseline_matches_fallback'] and eq['raw_outputs_retained']
++        assert hashlib.sha256(candidate).hexdigest() == eq['complete_trace_sha256'] == TRACE_SHA256
+         traces.append(candidate)
+-        observed = dict(standingCases=14,standingAssertions=766,kernelCases=3,kernelAssertions=kernel['assertions'],
+-            equivalenceCases=16,equivalenceAssertions=summary['assertions'],addedAssertions=summary['added_assertions'],
+-            traceRecords=summary['trace_records'],completeTraceSha256=eq['complete_trace_sha256'])
++        observed = dict(standingCases=14,standingAssertions=766,kernelCases=6,kernelAssertions=kernel['assertions'],kernelBackends=[1,0],
++            equivalenceCases=20,equivalenceAssertions=summary['assertions'],addedAssertions=summary['added_assertions'],
++            traceRecords=summary['trace_records'],completeTraceSha256=eq['complete_trace_sha256'],
++            differentialDomains=['exact-parent-scalar','candidate-byte','candidate-scalar-fallback'],sixTracesEqual=True)
+     assert traces[0] == traces[1]
+     assert native['source_coverage'] == read(folder/'native-source-coverage.json')
+     assert native['source_coverage'] == dict(baseline_case_bodies_verified=14,
+-        baseline_observed_assertions=766,standing_cases_required=14,
++        baseline_observed_assertions=766,standing_cases_required=14,other_original_functions_verified=5,
+         coverage_profile_sha256=digest(folder/'native-coverage.json'))
+     return observed
+ 
+ 
++def check_compile_selection(command, folder):
++    name=command['name']; argv=command['argv']
++    defines=[arg for arg in argv if arg.startswith('-DHMS_EP_BYTE_BACKEND=')]
++    if name.startswith(('avr-compile-','standing-compile-')) or name in ('avr-link','compile-plain','compile-asan'):
++        assert defines == ['-DHMS_EP_BYTE_BACKEND=1']
++    elif name.startswith('kernel-compile-'):
++        backend='1' if name.startswith('kernel-compile-byte-') else '0'
++        assert defines == ['-DHMS_EP_BYTE_BACKEND='+backend]
++    elif name.startswith('equivalence-compile-'):
++        domain=name.removeprefix('equivalence-compile-').rsplit('-',1)[0]
++        assert domain in ('baseline','candidate','fallback')
++        backend='1' if domain=='candidate' else '0'
++        assert defines == ['-DHMS_EP_BYTE_BACKEND='+backend]
++        assert '-DHMS_EQ_EXPECTED_BACKEND='+backend in argv
++        assert ('-DHMS_EQ_BASELINE' in argv) == (domain=='baseline')
++        prefix=folder/'originals/project' if domain=='baseline' else folder/'project'
++        assert str(prefix/'protocol/endpoint/endpoint_kernel.c') in argv
++        assert str(folder/'project/tests/phase_access.c') in argv
++        assert not any(arg.endswith('/protocol/endpoint/standing.c') or arg=='protocol/endpoint/standing.c' for arg in argv)
++
++
+ def check_avr(report, folder):
++    assert digest(folder/'runtime.map') == AVR_MAP_SHA256
+     inventory = read(folder/'lto-artifacts.json')
+     assert not inventory['final_stack_evidence_complete'] and not inventory['target_runtime_fit_demonstrated']
+-    assert len(inventory['files']) == report['lto_artifacts']['files']
++    assert len(inventory['files']) == report['lto_artifacts']['files'] == 58
+     assert inventory['possible_backend_stack_files'] == report['lto_artifacts']['possible_backend_stack_files']
+     seen = set()
+     for row in inventory['files']:
+@@ -244,8 +281,9 @@
+ 
+ 
+ def main(expected_native, expected_avr):
++    assert (expected_native,expected_avr) == (NATIVE_RECEIPT_SHA256,AVR_RECEIPT_SHA256)
+     before = snapshot(); attempts = []; identities = set(); total_commands = 0; reports = []
+-    expected_sources = fixed_sources()
++    expected_sources = fixed_sources(); assert len(expected_sources) == 139
+     receipts = sorted(HERE.glob('checks-*.json'))
+     assert [path.name for path in receipts] == ['checks-avr.json','checks-native.json']
+     assert digest(HERE/'checks-native.json') == expected_native
+@@ -301,6 +339,7 @@
+         failures = []
+         for command in commands:
+             name = command['name']; result = read(folder/(name+'.result.json'))
++            check_compile_selection(command,folder)
+             assert command == result
+             intent = read(folder/(name+'.intent.json')); started = read(folder/(name+'.started.json'))
+             assert all(result[key] == value for key,value in intent.items())
+@@ -354,42 +393,59 @@
+                              failures=failures,observed=observed))
+         reports.append(report)
+     total_reaps = sum(len(report['owned_children_reaped']) for report in reports)
+-    assert total_commands <= total_reaps == len(identities)
++    assert total_commands == total_reaps == len(identities) == 58
+     current = read(HERE/'project-source-review.json')
+     assert digest(HERE/'project-source-review.json') == CURRENT_REVIEW_SHA256
+-    assert len(current['project_sha256']) == 40 and len(current['original_project_sha256']) == 36
++    assert len(current['project_sha256']) == 41 and len(current['original_project_sha256']) == 40
+     assert all(digest(HERE/'project'/name) == pin for name,pin in current['project_sha256'].items())
+-    assert digest(HERE/'project.diff') == current['reviews_and_inputs']['project.diff']
++    assert digest(HERE/'project.diff') == current['project_delta_sha256']
+     assert digest(HERE/'run_checks.py') == current['runner_sha256']
+-    assert digest(HERE/'runner-diff.patch') == current['runner_diff_sha256']
+-    assert all(digest(HERE/name) == value for name,value in current['reviews_and_inputs'].items())
++    assert digest(HERE/'runner-diff.patch') == current['runner_delta_sha256']
++    prepared=current['all_other_prepared_files_sha256']
++    assert len(prepared) == 138 and all(digest(contained(HERE,name)) == value for name,value in prepared.items())
++    assert expected_sources == dict(prepared,**{'project-source-review.json':CURRENT_REVIEW_SHA256})
+     for report in reports:
+         assert {name.removeprefix('project/'):pin for name,pin in report['sources'].items()
+                 if name.startswith('project/')} == current['project_sha256']
+     by_stage = {report['stage']:report for report in reports}; assert len(by_stage) == 2
++    assert by_stage['native']['requested_checks_completed'] and len(by_stage['native']['commands']) == 34
++    assert not by_stage['avr']['requested_checks_completed'] and len(by_stage['avr']['commands']) == 24
++    assert by_stage['avr']['commands'][-1]['name'] == 'avr-link'
++    avr_observed=next(attempt['observed'] for attempt in attempts if attempt['stage']=='avr')
++    assert avr_observed['reportedRegionOverflowBytes'] == [6418]
++    assert not avr_observed['linkedElfPresent'] and not avr_observed['linkCommandPassed']
++    assert not avr_observed['resourceArithmeticAudited']
+     parents = [
+-        ('artifacts/implementation/standing-endpoint-copy-boundary','49ae3507a68d994d0fc9454146850358b793511fa585f8e96e3f607b54e90a6c'),
+-        ('artifacts/design/standing-endpoint-size-reduction','570f0d5e84d268d88f4a3ad50df21e6fe1f293d64adc41a0d0fc66eed35191d2')]
++        ('artifacts/implementation/standing-endpoint-shared-kernel','0a4a518555e08415a9d893bba106616323a3f1a237b61bf0bc171ee8f2979909'),
++        ('artifacts/design/standing-endpoint-phase-size','358207f52b904bcb6bb717e83b06846904ac56b9d4b295b85a68cd8f03559a27')]
+     parent_counts = {name:verify_index(ROOT/name,pin) for name,pin in parents}
+     assert digest(ROOT/parents[0][0]/'audit_retained.py') == PARENT_AUDIT_SHA256
+-    originals = read(HERE/'source-pins.json')['originals']; assert len(originals) == 36
+-    for row in originals:
+-        source = contained(ROOT,row['source']); target = contained(HERE,row['target'])
++    assert digest(HERE/'audit-parent.py') == PARENT_AUDIT_SHA256
++    source_pins=read(HERE/'source-pins.json');originals=source_pins['originals'];assert len(originals) == 40
++    assert originals == current['original_project_sha256'] and source_pins['project'] == current['project_sha256']
++    for name,pin in originals.items():
++        assert digest(contained(HERE/'originals/project',name)) == digest(contained(ROOT/parents[0][0]/'project',name)) == pin
++    baseline=read(HERE/'baseline-pins.json')
++    assert baseline['parentIndexSha256'] == parents[0][1] and len(baseline['projectFiles']) == 40
++    for row in baseline['projectFiles']:
++        source=contained(ROOT,row['source']);target=contained(HERE,row['copy'])
+         assert digest(source) == digest(target) == row['sha256'] and target.stat().st_size == row['bytes']
+-    for name,pin in current['original_project_sha256'].items():
+-        assert digest(HERE/'originals/project'/name) == pin
+-    for name,row in read(HERE/'runner-input-pins.json')['copies'].items():
+-        assert digest(contained(HERE,name)) == digest(contained(ROOT,row['source'])) == row['sha256']
+-        assert (HERE/name).stat().st_size == row['bytes']
++    runner_pins=read(HERE/'runner-input-pins.json')
++    for key in ('runner','baseline','delta'):
++        row=runner_pins[key];assert digest(contained(HERE,row['path'])) == row['sha256']
++    assert digest(HERE/'runner-baseline.py') == digest(HERE/'originals/run_checks.py') == digest(ROOT/parents[0][0]/'run_checks.py')
++    for row in read(HERE/'runner-owner-pins.json')['files']:
++        assert digest(contained(HERE,row['target'])) == digest(contained(ROOT,row['source'])) == row['sha256']
++        assert (HERE/row['target']).stat().st_size == row['bytes']
+     history_counts = {}
+-    for name in ('core-draft01','controls-draft01','controls-draft02'):
+-        history_counts[name] = verify_index(HERE/'history'/name,current['reviews_and_inputs']['history/'+name+'/index.json'])
++    for name in ('core-draft01','controls-draft01','controls-draft02','controls-draft03'):
++        history_counts[name] = verify_index(HERE/'history'/name,prepared['history/'+name+'/index.json'])
+     coverage = read(HERE/'native-coverage.json')
+     baseline = (HERE/coverage['baseline_source']).read_bytes()
+     active = (HERE/coverage['current_source']).read_bytes()
+     assert hashlib.sha256(baseline).hexdigest() == coverage['baseline_sha256']
+     assert hashlib.sha256(active).hexdigest() == coverage['current_sha256']
+-    assert coverage['schema'] == 'hms-shared-kernel-native-coverage/1'
++    assert coverage['schema'] == 'hms-phase-kernel-native-coverage/1'
+     assert len(coverage['unchanged_case_bodies']) == 14 and baseline == active
+     assert coverage['baseline_case_order'] == coverage['current_case_order']
+     assert [row['name'] for row in coverage['unchanged_case_bodies']] == coverage['baseline_case_order']
+@@ -397,6 +453,12 @@
+         a,b = row['baseline_span']; c,d = row['current_span']
+         assert baseline[a:b] == active[c:d]
+         assert hashlib.sha256(baseline[a:b]).hexdigest() == row['sha256']
++    assert len(coverage['other_unchanged_functions']) == 5
++    for row in coverage['other_unchanged_functions']:
++        old=contained(HERE,row['baseline_source']).read_bytes();new=contained(HERE,row['current_source']).read_bytes()
++        a,b=row['baseline_span'];c,d=row['current_span']
++        assert 0<=a<b<=len(old) and 0<=c<d<=len(new)
++        assert old[a:b] == new[c:d] and hashlib.sha256(old[a:b]).hexdigest() == row['sha256']
+     for pid,tick in identities:
+         try:
+             tail = (Path('/proc')/str(pid)/'stat').read_text().rsplit(')',1)[1].split()
+@@ -411,9 +473,9 @@
+     assert fixed_sources() == expected_sources
+     result = dict(passed=True,auditSourceSha256=digest(Path(__file__)),parentAuditSha256=PARENT_AUDIT_SHA256,
+                   attempts=attempts,totalCommands=total_commands,totalReaps=total_reaps,
+-                  observedOwnedIdentitiesAbsent=len(identities),currentProjectFiles=40,originalCopies=36,
++                  observedOwnedIdentitiesAbsent=len(identities),currentProjectFiles=41,originalCopies=40,
+                   frozenInputsExact=len(expected_sources),publicInputsExact=244,parentFilesExact=parent_counts,
+-                  oldStandingCaseBodiesExact=14,historyFilesExact=history_counts,
++                  oldStandingCaseBodiesExact=14,otherOldControlBodiesExact=5,historyFilesExact=history_counts,
+                   currentSourcesNativeCompleted=by_stage['native']['requested_checks_completed'],
+                   currentSourcesAvrCompleted=by_stage['avr']['requested_checks_completed'],
+                   targetFitEstablished=False,combinedStackProof=False,

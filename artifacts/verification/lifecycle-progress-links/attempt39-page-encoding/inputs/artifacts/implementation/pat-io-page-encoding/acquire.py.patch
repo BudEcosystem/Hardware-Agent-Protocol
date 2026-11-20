@@ -1,0 +1,38 @@
+--- artifacts/implementation/pat-io-group-history/acquire.py
++++ artifacts/implementation/pat-io-page-encoding/acquire.py
+@@ -1,7 +1,7 @@
+ """Acquire a complete terminated group attempt, preserving raw state."""
+ import hashlib,json,re,shutil,stat,sys
+ from pathlib import Path
+-ROOT=Path.cwd().resolve();BASE=ROOT/'artifacts/implementation/pat-io-group-history'
++ROOT=Path.cwd().resolve();BASE=ROOT/'artifacts/implementation/pat-io-page-encoding'
+ harness,name,dest=sys.argv[1:];H=BASE/harness;A=H/'attempts'/name;OUT=BASE/'results'/dest
+ assert not OUT.exists();OUT.mkdir(parents=True)
+ def read(p):return json.loads(p.read_bytes())
+@@ -23,7 +23,7 @@
+ assert r['errors']==r['childErrors']==[] and r['counts']['testsRun']==count
+ for key in ('skips','expectedFailures','unexpectedSuccesses'):assert r['counts'][key]==0
+ if r['status']=='passed':assert r['exitCode']==r['counts']['failures']==r['counts']['errors']==0
+-for prefix,folder,n in [('inputs',A/'project',225),('frozen',ROOT,228),('harness',A/'harness',6)]:
++for prefix,folder,n in [('inputs',A/'project',227),('frozen',ROOT,230),('harness',A/'harness',6)]:
+  rows=read(A/(prefix+'-before.json'));assert rows==read(A/(prefix+'-after.json')) and len(rows)==n
+  for row in rows:verify(folder/row['path'],row)
+ external=read(A/'external-before.json');assert external==read(A/'external-after.json') and len(external['files'])==159
+@@ -43,7 +43,7 @@
+  if c['testId']in ['test_io_compact_storage.CompactStorageTests.test_board_mismatch_refuses_without_rewriting_retained_board', 'test_io_compact_storage.CompactStorageTests.test_completed_original_key_replays_after_reopen_without_new_effect', 'test_io_compact_storage.CompactStorageTests.test_default_opener_preserves_existing_compact_layout', 'test_io_compact_storage.CompactStorageTests.test_default_store_refuses_compact_expectation_without_database_rewrite', 'test_io_compact_storage.CompactStorageTests.test_fresh_compact_layout_keeps_durability_owner_exclusion_and_rollback', 'test_io_compact_storage.CompactStorageTests.test_pending_effects_reopen_stop_once_and_reconcile_with_original_claims']:
+   assert len(parts)==4 and parts[1]in{'compact','default'}and parts[2]=='state';filename=parts[3]
+  else:
+-  assert c['testId']in ['test_pat_io_group_history.IoGroupHistoryTests.test_complete_gpio_history', 'test_pat_io_group_history.IoGroupHistoryTests.test_complete_pwm_history']
++  assert c['testId']in ['test_pat_io_group_history.IoGroupHistoryTests.test_complete_gpio_history', 'test_pat_io_group_history.IoGroupHistoryTests.test_complete_pwm_history', 'test_pat_io_group_worker.IoGroupWorkerTests.test_record_limit_retains_partial_attempt_and_stops_later_cases']
+   assert len(parts)==5 and parts[1]=='group'and re.fullmatch(r'case-[0-2][0-9]',parts[2])is not None and parts[3]=='state';filename=parts[4]
+  assert filename=='authority.db'or re.fullmatch(r'synthetic-io-board-[0-9a-f]{64}\.db',filename)
+ log=(A/'output.log').read_text();m=re.search(r'Ran '+str(count)+r' tests? in ([0-9.]+)s',log);assert m
+@@ -51,7 +51,7 @@
+ proof=dict(scope='Complete terminated current-group capture/budget attempt; synthetic private SQLite only.',
+  harness=harness,harnessIndexSha256=sha(H/'index.json'),sourceIndexSha256=review['sourceIndexSha256'],targetsSha256=sha(H/'targets.json'),
+  attempt=name,status=r['status'],counts=r['counts'],testSeconds=float(m.group(1)),elapsedSeconds=r['elapsedSeconds'],
+- sourceFilesVerified=225,frozenFilesVerified=228,externalPinsVerified=159,actualOrigins=origins['summary'],
++ sourceFilesVerified=227,frozenFilesVerified=230,externalPinsVerified=159,actualOrigins=origins['summary'],
+  bytecodeReadsRefused=len(origins['deniedBytecodeReads']),rawScratch=before['identity'],rawScratchFiles=len(rawrows),rawScratchBytes=sum(v['bytes']for v in rawrows),
+  attemptFilesAcquired=len(rows),sourceAndCompilerDriverStable=True,actualOriginHashesRechecked=True,originalsAndCompleteCopiesRetained=True,
+  sqliteConnections=len(connections),qualificationPassed=False,requiredMatrixCoverageChecked=False,completeLifecycleHistoryChecked=False,physicalMeasurementChecked=False)

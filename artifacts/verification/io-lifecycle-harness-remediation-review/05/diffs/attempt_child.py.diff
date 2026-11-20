@@ -1,0 +1,52 @@
+--- 04/attempt_child.py
++++ 05/attempt_child.py
+@@ -1,6 +1,5 @@
+ """Original test child; isolated startup, scoped origin receipts, no child processes."""
+ import hashlib
+-import importlib.util
+ import json
+ import os
+ from pathlib import Path
+@@ -14,15 +13,19 @@
+ # These explicit selected package roots are not an OS sandbox.
+ sys.path[:0]=[str(root),str(root/'tests')]+config['externalRoots']
+ sys.dont_write_bytecode=True
+-executed=set(); resource_reads=set(); errors=[]; counts=None
++executed=set(); resource_reads=set(); denied_bytecode=set(); errors=[]; counts=None
+ 
+ 
+ def audit(event,args):
+     if event.startswith('socket.') or event in {'subprocess.Popen','os.system','os.exec','os.fork','os.forkpty','os.posix_spawn'}:
+         raise RuntimeError('Staged lifecycle test forbids network and child-process use')
+     if event=='exec':executed.add(args[0].co_filename)
+-    if event=='open' and isinstance(args[0],str):
+-        path=Path(args[0])
++    if event=='open' and isinstance(args[0],(str,bytes)):
++        path=Path(os.fsdecode(args[0]))
++        if path.suffix=='.pyc':
++            denied_bytecode.add(str(path))
++            # SourceLoader falls back on OSError; sourceless bytecode refuses.
++            raise FileNotFoundError(2,'Use exact retained source instead of an unpinned bytecode cache',str(path))
+         if path.is_absolute() and any(path.is_relative_to(Path(base)) for base in config['externalRoots']):
+             resource_reads.add(str(path))
+ 
+@@ -50,9 +53,6 @@
+         if not isinstance(origin,str) or origin.startswith('<') or origin in {'built-in','frozen'}:
+             rows.append({'source':label,'origin':str(origin),'kind':'interpreter_or_synthetic'});return
+         path=Path(origin).resolve()
+-        if path.suffix=='.pyc':
+-            try:path=Path(importlib.util.source_from_cache(str(path))).resolve()
+-            except ValueError:pass
+         key=(label,str(path))
+         if key in seen:return
+         seen.add(key)
+@@ -81,7 +81,8 @@
+     for origin in sorted(executed):add('executed_code',origin)
+     for origin in sorted(resource_reads):add('selected_external_read',origin)
+     return {'profile':'hms.lifecycle-actual-origins/1','complete':True,'allProjectOriginsMatched':not violations,
+-            'records':rows,'violations':violations,'limits':'Actual file hashes are not a pre-execution pin of all stdlib/shared libraries; synthetic/frozen origins remain explicitly distinct.'}
++            'records':rows,'violations':violations,'deniedBytecodeReads':sorted(denied_bytecode),
++            'limits':'Post-hook bytecode reads refuse; pre-hook stdlib remains outside pre-execution pins. Actual file hashes are not a pre-execution pin of all stdlib/shared libraries; synthetic/frozen origins remain explicitly distinct.'}
+ 
+ 
+ try:

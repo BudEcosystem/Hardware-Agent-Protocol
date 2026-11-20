@@ -1,0 +1,11 @@
+--- artifacts/implementation/pat-io-supervision/implementation01/project/supervisor/supervisor_contracts.py
++++ artifacts/implementation/pat-io-supervision/implementation02/project/supervisor/supervisor_contracts.py
+@@ -37,7 +37,7 @@
+     def checked(*args, **kwargs):
+         try: return function(*args, **kwargs)
+         except SupervisorError: raise
+-        except (ContractError, KeyError, TypeError, ValueError, IndexError, RecursionError) as error:
++        except (JournalError, ContractError, KeyError, TypeError, ValueError, IndexError, RecursionError) as error:
+             raise SupervisorError('QUALIFICATION_INVALID') from error
+     return checked
+ 

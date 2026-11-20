@@ -1,0 +1,313 @@
+--- before/tests/test_endpoint_cli.py
++++ tests/test_endpoint_cli.py
+@@ -26,55 +26,11 @@
+ from hms.contracts import canonical
+ from hms.endpoint_wire import Execution, Opcode, Operation, Receipt, Request, decode_response
+ from protocol.serial.frame import Decoder, encode
++from tests.sqlite_observer import admission_snapshot, readonly_rows
+ 
+ ROOT = Path(__file__).resolve().parents[1]
+ BINARY = ROOT / 'artifacts/verification/endpoint-scenarios-build/endpoint-scenarios-pipe'
+ LAST_REPORT = {'schema': 'hms-endpoint-cli-observer-tests/1', 'cases': {}}
+-
+-
+-def readonly_rows(path, query, params=(), *, timeout=3.0, report=None):
+-    """Bounded test-observer reads; never retry commands or change their timing.
+-
+-    Only SQLite BUSY can retry. Every attempt opens mode=ro and closes on both
+-    success and failure. The three-second budget belongs to this observer,
+-    independently of all operation, lease and freshness deadlines.
+-    """
+-    if type(timeout) not in {int, float} or not 0 < timeout <= 3.0:
+-        raise ValueError('invalid observer read budget')
+-    entry = report if report is not None else {}
+-    entry.update(query=query, parameters=list(params), readBudgetSeconds=timeout,
+-                 attempts=0, busyRetries=0, succeeded=False)
+-    started = time.monotonic()
+-    deadline = started + timeout
+-    busy = None
+-    try:
+-        while True:
+-            remaining = deadline - time.monotonic()
+-            if remaining <= 0 and busy is not None:
+-                raise busy
+-            entry['attempts'] += 1
+-            try:
+-                with contextlib.closing(sqlite3.connect(Path(path).resolve().as_uri() + '?mode=ro',
+-                        uri=True, timeout=max(0, min(.1, remaining)))) as database:
+-                    rows = database.execute(query, params).fetchall()
+-                entry.update(succeeded=True, rowCount=len(rows))
+-                return rows
+-            except sqlite3.OperationalError as error:
+-                code = getattr(error, 'sqlite_errorcode', None)
+-                if code is None or code & 0xff != sqlite3.SQLITE_BUSY:
+-                    raise
+-                busy = error
+-                remaining = deadline - time.monotonic()
+-                if remaining <= 0:
+-                    raise
+-                entry['busyRetries'] += 1
+-                time.sleep(min(.01, remaining))
+-    except sqlite3.Error as error:
+-        entry['error'] = {'message': str(error), 'code': getattr(error, 'sqlite_errorcode', None),
+-                          'name': getattr(error, 'sqlite_errorname', None)}
+-        raise
+-    finally:
+-        entry['elapsedSeconds'] = time.monotonic() - started
+ 
+ 
+ class ReplyGate:
+@@ -484,6 +440,65 @@
+         self.assertEqual(connect.call_count, 1)
+         self.assertEqual(report['busyRetries'], 0)
+ 
++    def test_admission_counts_and_key_use_one_snapshot_during_writer_commit(self):
++        # WAL permits the writer to commit while this SELECT retains its read
++        # snapshot. A view pauses after reading an operations row and before
++        # the remaining count/key subqueries; no production code is involved.
++        tables = ('operation_rows', 'claims', 'ep_commands', 'pr_procedures', 'pr_keys')
++        with contextlib.closing(sqlite3.connect(self.path)) as database:
++            self.assertEqual(database.execute('PRAGMA journal_mode=WAL').fetchone(), ('wal',))
++            for table in tables:
++                database.execute('CREATE TABLE ' + table + '(number INTEGER NOT NULL)')
++                database.execute('INSERT INTO ' + table + ' VALUES (1)')
++            database.execute('CREATE TABLE replay_keys(namespace TEXT, caller_key TEXT)')
++            database.execute('CREATE VIEW operations AS SELECT number FROM operation_rows WHERE hold_reader(number)=1')
++            database.commit()
++        reader_paused, writer_committed = threading.Event(), threading.Event()
++        writer_errors = []
++        original_connect = sqlite3.connect
++
++        def hold_reader(number):
++            if not reader_paused.is_set():
++                reader_paused.set()
++                if not writer_committed.wait(2):
++                    raise AssertionError('controlled writer did not commit during the SELECT')
++            return 1
++
++        def connect(*args, **kwargs):
++            database = original_connect(*args, **kwargs)
++            database.create_function('hold_reader', 1, hold_reader)
++            return database
++
++        def write_after_reader_pauses():
++            try:
++                if not reader_paused.wait(2):
++                    raise AssertionError('reader did not reach the operations subquery')
++                with contextlib.closing(original_connect(self.path)) as database:
++                    for table in tables:
++                        database.execute('INSERT INTO ' + table + ' VALUES (2)')
++                    database.execute('INSERT INTO replay_keys VALUES (?,?)', ('namespace', 'key'))
++                    database.commit()
++                writer_committed.set()
++            except BaseException as error:
++                writer_errors.append(error)
++
++        thread = threading.Thread(target=write_after_reader_pauses)
++        thread.start()
++        try:
++            with patch.object(sqlite3, 'connect', connect):
++                report = {}
++                self.assertEqual(admission_snapshot(self.path, 'namespace', 'key', procedures=True, report=report),
++                                 ((1, 1, 1, 1, 1), False))
++                self.assertTrue(writer_committed.is_set())
++                self.assertEqual(report['attempts'], 1)
++                self.assertEqual(admission_snapshot(self.path, 'namespace', 'key', procedures=True),
++                                 ((2, 2, 2, 2, 2), True))
++                self.assertEqual(admission_snapshot(self.path, 'namespace', 'key'), ((2, 2, 2), True))
++        finally:
++            thread.join(3)
++        self.assertFalse(thread.is_alive())
++        self.assertEqual(writer_errors, [])
++
+ 
+ if __name__ == '__main__':
+     unittest.main()
+--- before/tests/test_multi_cli.py
++++ tests/test_multi_cli.py
+@@ -24,6 +24,7 @@
+ from hms.installations import ROLES, manifest_for
+ from hms.ipc import IpcError
+ from test_multi_adapter import BINARY, ROOT, installation, scenario
++from tests.sqlite_observer import admission_snapshot
+ 
+ 
+ LAST_REPORT = None
+@@ -131,6 +132,7 @@
+         global LAST_REPORT
+         LAST_REPORT = {'passed': False, 'refusals': [], 'scenarios': [], 'replayedResults': 0,
+                        'attemptedScenarios': [], 'requestHistory': [], 'processOutput': [],
++                       'observerReads': [],
+                        'scope': 'Mixed CLI functional integration with bounded exact-request retries after confirmed pre-admission freshness refusals; no latency or availability guarantee.'}
+         with tempfile.TemporaryDirectory(prefix='hms-multi-cli-') as temporary:
+             base = Path(temporary)
+@@ -185,14 +187,16 @@
+                 self.assertEqual(result.returncode, 0, result.stderr)
+                 self.assertEqual(len(json.loads(result.stdout)['items']), 9)
+                 client = Client(address)
++                def observed_admission(namespace, key):
++                    entry = {'database': 'authority.db'}
++                    LAST_REPORT['observerReads'].append(entry)
++                    return admission_snapshot(base / 'state' / 'authority.db', namespace, key, report=entry)
+                 def checked(method, params):
+                     LAST_REPORT['requestHistory'].append({'method': method, 'params': copy.deepcopy(params)})
+                     wire = canonical(params)
+                     envelope = params['request'] if method == 'invoke' else params
+                     namespace, key = envelope['replayNamespace'], envelope['operationKey']
+-                    with sqlite3.connect(base / 'state' / 'authority.db') as db:
+-                        before = tuple(db.execute('SELECT count(*) FROM ' + table).fetchone()[0]
+-                                       for table in ('operations', 'claims', 'ep_commands'))
++                    before, _ = observed_admission(namespace, key)
+                     deadline = time.monotonic() + 3
+                     while True:
+                         self.assertEqual(canonical(params), wire)
+@@ -206,13 +210,9 @@
+                             # resource claim or compact dispatch mapping before
+                             # resubmitting the identical envelope. Never retry
+                             # transport uncertainty or change intent/key/time.
+-                            with sqlite3.connect(base / 'state' / 'authority.db') as db:
+-                                after = tuple(db.execute('SELECT count(*) FROM ' + table).fetchone()[0]
+-                                              for table in ('operations', 'claims', 'ep_commands'))
+-                                found = db.execute('SELECT operation_id FROM replay_keys WHERE namespace=? AND caller_key=?',
+-                                                   (namespace, key)).fetchone()
++                            after, found = observed_admission(namespace, key)
+                             self.assertEqual(after, before)
+-                            self.assertIsNone(found)
++                            self.assertFalse(found)
+                             LAST_REPORT['refusals'].append({'method': method, 'operationKey': key,
+                                 'code': error.code, 'paramsSha256': hashlib.sha256(wire).hexdigest(),
+                                 'countsBefore': before, 'countsAfter': after, 'replayKeyAbsent': True})
+--- before/tests/test_procedure_transport.py
++++ tests/test_procedure_transport.py
+@@ -13,7 +13,6 @@
+ import select
+ import signal
+ import socket
+-import sqlite3
+ import stat
+ import subprocess
+ import sys
+@@ -34,6 +33,7 @@
+ from tests.test_endpoint_mcp import LEGACY, MODERN, ModernStdio, sdk_available
+ from test_multi_adapter import BINARY, ROOT, MultiHarness, installation, scenario
+ from test_multi_cli import finish_transport_failure, retain_transport_failure
++from tests.sqlite_observer import admission_snapshot, readonly_rows
+ 
+ 
+ LAST_REPORT = {'schema': 'hms-procedure-transport-tests/1', 'cases': {},
+@@ -43,7 +43,8 @@
+ def new_report(name):
+     report = {'passed': False, 'daemonStarts': [], 'daemonExits': [], 'cliCalls': [], 'refusals': [],
+               'mcpMessages': [], 'mcpClosures': [], 'catalogs': [], 'validatedToolReplies': 0,
+-              'requestHistory': [], 'observedStatuses': {}, 'processOutput': [], 'cliAttempts': []}
++              'requestHistory': [], 'observedStatuses': {}, 'processOutput': [], 'cliAttempts': [],
++              'observerReads': []}
+     LAST_REPORT['cases'][name] = report
+     return report
+ 
+@@ -123,9 +124,16 @@
+         else:
+             assert not self.path.exists()
+ 
+-    def rows(self, sql, values=()):
+-        with sqlite3.connect(f'file:{self.state / "authority.db"}?mode=ro', uri=True, timeout=1) as db:
+-            return db.execute(sql, values).fetchall()
++    def rows(self, sql, values=(), *, database='authority.db'):
++        entry = {'database': database}
++        self.report['observerReads'].append(entry)
++        return readonly_rows(self.state / database, sql, values, report=entry)
++
++    def admission_snapshot(self, namespace, key):
++        entry = {'database': 'authority.db'}
++        self.report['observerReads'].append(entry)
++        return admission_snapshot(self.state / 'authority.db', namespace, key,
++                                  procedures=True, report=entry)
+ 
+     def call(self, method, **params):
+         entry = {'method':method,'params':copy.deepcopy(params)}
+@@ -159,8 +167,7 @@
+         params = dict(instanceId=instance, actionId=action, arguments=arguments,
+             operationKey=key, replayNamespace=namespace, requiredEffect='capability_completion', timing=bounds)
+         wire = canonical(params)
+-        tables = ('operations','claims','ep_commands','pr_procedures','pr_keys')
+-        before = [self.rows('SELECT count(*) FROM ' + table)[0][0] for table in tables]
++        before, _ = self.admission_snapshot(namespace, key)
+         deadline = time.monotonic() + 3
+         while True:
+             assert canonical(params) == wire
+@@ -172,9 +179,9 @@
+                 # Only prepare is retried, and only after proving no authority
+                 # admission/key/claim/dispatch mapping changed. No invoke,
+                 # parent submit, transport uncertainty, or changed intent retry.
+-                after = [self.rows('SELECT count(*) FROM ' + table)[0][0] for table in tables]
++                after, found = self.admission_snapshot(namespace, key)
+                 assert after == before
+-                assert not self.rows('SELECT operation_id FROM replay_keys WHERE namespace=? AND caller_key=?', (namespace,key))
++                assert not found
+                 self.report['refusals'].append({'method': 'prepare', 'code': error.code,
+                     'paramsSha256': hashlib.sha256(wire).hexdigest(), 'countsBefore': before,
+                     'countsAfter': after, 'replayKeyAbsent': True})
+@@ -212,14 +219,14 @@
+             'oneOpPerNativeChild': True, 'exactMatchToDurableTransmittedFrames': True,
+             'wireHex': [raw.hex() for _,raw in operations],
+             'scope': 'External original-byte relay handoff evidence; no independent physical effect counter.'}
+-        with sqlite3.connect(f'file:{self.state / plant_filename(self.local)}?mode=ro', uri=True) as db:
+-            devices = {instance: {'value':json.loads(value),'effectCount':effects}
+-                       for instance,value,effects in db.execute('SELECT id,value,effects FROM devices')}
+-            assert devices[self.local['instances']['fan']] == {'value':25,'effectCount':1}
+-            assert all(devices[self.local['instances'][role]] == {'value':0,'effectCount':0}
+-                       for role in ('focus','inspection'))
+-            self.report['sqlitePlantEvidence'] = {'devices':devices,
+-                'scope':'Original persistent SQLite simulation effect counts, not physical evidence.'}
++        devices = {instance: {'value':json.loads(value),'effectCount':effects}
++                   for instance,value,effects in self.rows('SELECT id,value,effects FROM devices',
++                                                          database=plant_filename(self.local))}
++        assert devices[self.local['instances']['fan']] == {'value':25,'effectCount':1}
++        assert all(devices[self.local['instances'][role]] == {'value':0,'effectCount':0}
++                   for role in ('focus','inspection'))
++        self.report['sqlitePlantEvidence'] = {'devices':devices,
++            'scope':'Original persistent SQLite simulation effect counts, not physical evidence.'}
+ 
+     def close(self):
+         try:
+--- before/tests/test_runtime_ipc.py
++++ tests/test_runtime_ipc.py
+@@ -3,7 +3,6 @@
+ from pathlib import Path
+ import select
+ import socket
+-import sqlite3
+ import subprocess
+ import sys
+ import tempfile
+@@ -13,6 +12,7 @@
+ 
+ from hms.contracts import intent_digest
+ from test_multi_cli import finish_transport_failure, retain_transport_failure
++from tests.sqlite_observer import readonly_rows
+ 
+ ROOT = Path(__file__).resolve().parents[1]
+ LAST_REPORT = {'schema': 'hms-runtime-ipc-transport-tests/1', 'cases': {}}
+@@ -27,7 +27,7 @@
+         self.state = self.path / 'state'
+         self.socket = self.path / 'control.sock'
+         self.process = None
+-        self.report = {'passed':False,'commands':[],'processOutput':[],'readiness':[]}
++        self.report = {'passed':False,'commands':[],'processOutput':[],'readiness':[], 'observerReads':[]}
+         LAST_REPORT['cases'][self.id()] = self.report
+         self.addCleanup(lambda: finish_transport_failure(self.report))
+         self.addCleanup(self.stop_server)
+@@ -133,9 +133,10 @@
+ 
+     def plant_rows(self):
+         # Verify persisted world state independently of the CLI's self-report.
+-        with sqlite3.connect(f'file:{self.state / "simulated-plant.db"}?mode=ro', uri=True) as db:
+-            return {instance: (json.loads(value), effects) for instance, value, effects in
+-                    db.execute('SELECT id,value,effects FROM devices')}
++        entry = {'database': 'simulated-plant.db'}
++        self.report['observerReads'].append(entry)
++        rows = readonly_rows(self.state / 'simulated-plant.db', 'SELECT id,value,effects FROM devices', report=entry)
++        return {instance: (json.loads(value), effects) for instance, value, effects in rows}
+ 
+     def test_three_scenarios_prepare_invoke_replay_and_clean_reopen(self):
+         self.start_server(initialize=True)

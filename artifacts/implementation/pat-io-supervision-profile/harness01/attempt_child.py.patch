@@ -1,0 +1,33 @@
+--- /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-supervision-recovery/harness02/attempt_child.py
++++ /home/bud/Desktop/bud/hms/artifacts/implementation/pat-io-supervision-profile/harness01/attempt_child.py
+@@ -210,7 +210,29 @@
+             global current_test
+             super().stopTest(test)
+             current_test = None
+-    result = unittest.TextTestRunner(verbosity=2, resultclass=RecordingResult).run(tests)
++    import cProfile
++    import resource
++    import time
++    profiler=cProfile.Profile()
++    started_wall,started_cpu=time.monotonic(),time.process_time()
++    children_before=resource.getrusage(resource.RUSAGE_CHILDREN)
++    profiler.enable()
++    try:
++        result = unittest.TextTestRunner(verbosity=2, resultclass=RecordingResult).run(tests)
++    finally:
++        profiler.disable()
++        wall,cpu=time.monotonic()-started_wall,time.process_time()-started_cpu
++        children_after=resource.getrusage(resource.RUSAGE_CHILDREN)
++        profile_rows=[]
++        for entry in profiler.getstats():
++            code=entry.code
++            label=code if isinstance(code,str) else code.co_filename+':'+str(code.co_firstlineno)+':'+code.co_name
++            profile_rows.append(dict(label=label,calls=entry.callcount,recursiveCalls=entry.reccallcount,cumulativeSeconds=entry.totaltime,selfSeconds=entry.inlinetime))
++        profile_rows.sort(key=lambda r:(-r['cumulativeSeconds'],r['label']))
++        write('profile.json',dict(scope='Instrumented original full PWM test in a fresh diagnostic fixture, unchanged source and request. Parent profile only; timings include instrumentation and are not benchmark or qualification evidence.',
++            wallSeconds=wall,parentCpuSeconds=cpu,childUserSeconds=children_after.ru_utime-children_before.ru_utime,
++            childSystemSeconds=children_after.ru_stime-children_before.ru_stime,totalFunctions=len(profile_rows),
++            top100=profile_rows[:100],top100Self=sorted(profile_rows,key=lambda r:(-r['selfSeconds'],r['label']))[:100]))
+     counts = {'testsRun': result.testsRun, 'failures': len(result.failures), 'errors': len(result.errors),
+         'skips': len(result.skipped), 'expectedFailures': len(result.expectedFailures),
+         'unexpectedSuccesses': len(result.unexpectedSuccesses)}

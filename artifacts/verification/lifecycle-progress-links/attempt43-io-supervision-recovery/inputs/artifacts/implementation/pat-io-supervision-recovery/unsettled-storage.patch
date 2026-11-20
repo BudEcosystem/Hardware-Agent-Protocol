@@ -1,0 +1,28 @@
+--- artifacts/implementation/pat-io-supervision-recovery/audit-storage.py
++++ artifacts/implementation/pat-io-supervision-recovery/audit-unsettled-storage.py
+@@ -7,7 +7,12 @@
+ root=F/'attempt/scratch';rows=[]
+ def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+ for p in sorted(root.rglob('*.db')):
+- assert p.is_file()and not p.is_symlink();assert not p.with_name(p.name+'-wal').exists()and not p.with_name(p.name+'-journal').exists()
++ assert p.is_file()and not p.is_symlink()
++ sidecars=[p.with_name(p.name+suffix)for suffix in ('-wal','-journal','-shm')if p.with_name(p.name+suffix).exists()]
++ if sidecars:
++  rows.append(dict(path=p.relative_to(root).as_posix(),sha256=sha(p),bytes=p.stat().st_size,logicalInspectionSkipped=True,
++   reason='Retained transaction sidecar; no SQLite open or recovery',sidecars=[dict(path=q.relative_to(root).as_posix(),bytes=q.stat().st_size,sha256=sha(q))for q in sidecars]))
++  continue
+  pin=sha(p)
+  db=sqlite3.connect(p.resolve().as_uri()+'?mode=ro&immutable=1',uri=True)
+  try:
+@@ -22,8 +27,8 @@
+  rows.append(dict(path=p.relative_to(root).as_posix(),sha256=pin,bytes=p.stat().st_size,pageSize=size,
+   pageCount=pages,payloadBytes=payload,unusedBytes=unused,integrity=integrity))
+ out=dict(scope='Read-only layout/integrity observations on complete terminated retained states; no physical power-loss or quota attestation.',
+- attempt=name,databases=rows,totalBytes=sum(r['bytes']for r in rows),payloadBytes=sum(r['payloadBytes']for r in rows),
+- unusedBytes=sum(r['unusedBytes']for r in rows),rawScratchBytes=proof['rawScratchBytes'],databaseBytesUnchanged=True)
++ attempt=name,databases=rows,totalBytes=sum(r['bytes']for r in rows),payloadBytes=sum(r.get('payloadBytes')or 0 for r in rows),
++ unusedBytes=sum(r.get('unusedBytes')or 0 for r in rows),rawScratchBytes=proof['rawScratchBytes'],databaseBytesUnchanged=True,logicalInspectionSkipped=sum(bool(r.get('logicalInspectionSkipped'))for r in rows),knownPayloadOnly=True)
+ with(F/'storage-audit.json').open('x')as f:f.write(json.dumps(out,indent=2)+'\n')
+-print(json.dumps(dict(attempt=name,databases=len(rows),pageSizes=sorted({r['pageSize']for r in rows}),
++print(json.dumps(dict(attempt=name,databases=len(rows),pageSizes=sorted({r['pageSize']for r in rows if 'pageSize'in r}),
+  totalBytes=out['totalBytes'],payloadBytes=out['payloadBytes'],unusedBytes=out['unusedBytes'])))
