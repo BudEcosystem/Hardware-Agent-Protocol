@@ -110,7 +110,7 @@ bhms conformance conformance-device
 ```
 
 ```text output
-claim core: supported; 17 MUST rows need review evidence
+claim core: supported; 19 MUST rows need review evidence
 claim leases: supported
 claim events: supported
 claim programs: supported
@@ -128,7 +128,7 @@ claim ws: supported
 claim gateway: supported
 ```
 
-"17 MUST rows need review evidence" are `inspection` requirements (documentation, configuration, code review): no test
+"19 MUST rows need review evidence" are `inspection` requirements (documentation, configuration, code review): no test
 run can pass them, and a claim must attach the review.
 
 ## The compact profile
@@ -164,7 +164,7 @@ bhms conformance conformance-device:principals --device-command "node sdk/typesc
 ```
 
 ```text output
-claim core: supported; 17 MUST rows need review evidence
+claim core: supported; 19 MUST rows need review evidence
 claim authority: supported
 ```
 

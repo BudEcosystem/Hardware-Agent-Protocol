@@ -1,0 +1,557 @@
+{
+  "formatVersion": 1,
+  "conformance": {
+    "protocolVersion": "2026-11-15",
+    "profiles": [
+      "compact"
+    ],
+    "profilesNotApplicable": {},
+    "transport": "unix",
+    "target": "compact-gateway",
+    "implementation": {
+      "name": "compact-conformance",
+      "version": "0.1.0",
+      "commit": "unknown"
+    },
+    "schemaDigest": "sha256:06fd2b93d91c62785053e1e2d125138c9e93ffac183abb4bbab0ba05aa33540d",
+    "devices": "simulated",
+    "seed": 43608,
+    "strict": false,
+    "allowUnproven": false,
+    "reportKind": "conformance",
+    "authority": "single-principal: every authenticated caller has full authority",
+    "only": [],
+    "command": "bhms conformance compact-gateway --profile compact --json /tmp/hap-compact-conformance.json",
+    "runnerPython": "3.12.3",
+    "epoch": "ccdbc0e016ddfe94"
+  },
+  "claims": {
+    "compact": {
+      "claimable": true,
+      "failed": [],
+      "unproven": [],
+      "needsReview": [
+        "BHMS-CMP-036",
+        "BHMS-CMP-052",
+        "BHMS-CMP-053",
+        "BHMS-SEC-050"
+      ]
+    }
+  },
+  "fatal": "",
+  "summary": {
+    "passed": 22,
+    "failed": 0,
+    "skipped": 5,
+    "not-applicable": 0,
+    "mustFailed": 0,
+    "mustUnproven": 0
+  },
+  "checks": [
+    {
+      "check": "compact.endpoint-frame-rules",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-001",
+        "BHMS-CMP-002",
+        "BHMS-CMP-003"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 0.407
+    },
+    {
+      "check": "compact.endpoint-sessions",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-021",
+        "BHMS-CMP-023"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 0.611
+    },
+    {
+      "check": "compact.endpoint-replay-ring",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-031",
+        "BHMS-CMP-032",
+        "BHMS-CMP-035"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 0.661
+    },
+    {
+      "check": "compact.endpoint-fences",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-040"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 0.046
+    },
+    {
+      "check": "compact.endpoint-stop",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-050",
+        "BHMS-CMP-051"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 0.209
+    },
+    {
+      "check": "compact.endpoint-value-quality",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-060"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 0.004
+    },
+    {
+      "check": "compact.gateway-refuses-lossy-values",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-010"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 0.009
+    },
+    {
+      "check": "compact.gateway-layout-indices",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-011"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 0.107
+    },
+    {
+      "check": "compact.gateway-handles-and-fences",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-030",
+        "BHMS-CMP-041"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 0.183
+    },
+    {
+      "check": "compact.gateway-new-session-before-exhaustion",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-030"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 0.586
+    },
+    {
+      "check": "compact.gateway-observation-epoch",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-060"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 0.024
+    },
+    {
+      "check": "compact.gateway-lost-reply",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-033"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 0.539
+    },
+    {
+      "check": "compact.gateway-reboot-and-epochs",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-020",
+        "BHMS-CMP-022"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 3.574
+    },
+    {
+      "check": "compact.gateway-restart-reconciles",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-034"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 1.582
+    },
+    {
+      "check": "compact.gateway-stop-token",
+      "status": "passed",
+      "requirements": [
+        "BHMS-CMP-050"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 1.114
+    },
+    {
+      "check": "compact.layout-rules",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-070",
+        "BHMS-DEV-071"
+      ],
+      "profile": "compact",
+      "generic": true,
+      "message": "",
+      "seconds": 0.001
+    }
+  ],
+  "requirements": [
+    {
+      "id": "BHMS-DEV-070",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "schema",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.layout-rules"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-071",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.layout-rules"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-001",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.endpoint-frame-rules"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-002",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.endpoint-frame-rules"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-003",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.endpoint-frame-rules"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-010",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.gateway-refuses-lossy-values"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-011",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.gateway-layout-indices"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-020",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.gateway-reboot-and-epochs"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-021",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.endpoint-sessions"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-022",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.gateway-reboot-and-epochs"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-023",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.endpoint-sessions"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-030",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.gateway-handles-and-fences",
+        "compact.gateway-new-session-before-exhaustion"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-031",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.endpoint-replay-ring"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-032",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.endpoint-replay-ring"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-033",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.gateway-lost-reply"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-034",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.gateway-restart-reconciles"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-035",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.endpoint-replay-ring"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-036",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: the reference endpoints declare no measured action; the gateway's mapping is shown by tests/test_compact_v02.py::test_a_measured_result_is_verified_by_a_fresh_verified_by_reading",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-040",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.endpoint-fences"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-041",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.gateway-handles-and-fences"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-050",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.endpoint-stop",
+        "compact.gateway-stop-token"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-051",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.endpoint-stop"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-052",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: the reference endpoints cannot be made to finish after their bound but within the link allowance on the fixture's links without starving the bridge's silence detector; shown by tests/test_compact_v02.py",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-053",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: a token wrap needs 255 unconfirmed stops in one session; shown by tests/test_compact_v02.py",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-060",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "compact",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "compact.endpoint-value-quality",
+        "compact.gateway-observation-epoch"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CMP-061",
+      "level": "SHOULD",
+      "profile": "compact",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: endpoint behaviour (SHOULD): the read callback reports the age it can bound",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-050",
+      "level": "MUST",
+      "profile": "compact",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: that a link is an exclusively owned physical line is deployment review; the gateway itself refuses any networked compact port at configuration load (tests/test_compact_gateway.py::test_a_networked_compact_link_is_refused_at_configuration_load)",
+      "checks": [],
+      "unproven": false
+    }
+  ],
+  "exitCode": 0
+}

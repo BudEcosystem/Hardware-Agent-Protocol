@@ -1,0 +1,4103 @@
+{
+  "formatVersion": 1,
+  "conformance": {
+    "protocolVersion": "2026-11-13",
+    "profiles": [
+      "core",
+      "leases",
+      "events",
+      "programs",
+      "registry",
+      "authority",
+      "ws"
+    ],
+    "profilesNotApplicable": {},
+    "transport": "ws",
+    "target": "conformance-device:principals",
+    "implementation": {
+      "name": "conformance-device",
+      "version": "0.1.0",
+      "commit": "unknown"
+    },
+    "schemaDigest": "sha256:06fd2b93d91c62785053e1e2d125138c9e93ffac183abb4bbab0ba05aa33540d",
+    "devices": "simulated",
+    "seed": 43476,
+    "strict": false,
+    "allowUnproven": false,
+    "reportKind": "conformance",
+    "authority": "multi-principal: a scope policy is enforced",
+    "only": [],
+    "command": "bhms conformance conformance-device:principals --protocol-version 2026-11-13 --json /tmp/hap-ts-v01-conformance.json --device-command 'node /home/bud/Desktop/bud/hms/sdk/typescript/dist/src/testing/conformanceDevice.js'",
+    "runnerPython": "3.12.3",
+    "epoch": "b147f5e1be6ea8c8"
+  },
+  "claims": {
+    "core": {
+      "claimable": true,
+      "failed": [],
+      "unproven": [],
+      "needsReview": [
+        "BHMS-LIF-053",
+        "BHMS-LIF-071",
+        "BHMS-TRN-021",
+        "BHMS-TRN-050",
+        "BHMS-DEV-031",
+        "BHMS-DEV-050",
+        "BHMS-DEV-051",
+        "BHMS-OPS-036",
+        "BHMS-ERR-002",
+        "BHMS-SEC-002",
+        "BHMS-SEC-004",
+        "BHMS-SEC-042",
+        "BHMS-CNF-001",
+        "BHMS-CNF-002",
+        "BHMS-CNF-003",
+        "BHMS-CNF-005",
+        "BHMS-CNF-006"
+      ]
+    },
+    "leases": {
+      "claimable": true,
+      "failed": [],
+      "unproven": [],
+      "needsReview": []
+    },
+    "events": {
+      "claimable": true,
+      "failed": [],
+      "unproven": [],
+      "needsReview": []
+    },
+    "programs": {
+      "claimable": true,
+      "failed": [],
+      "unproven": [],
+      "needsReview": []
+    },
+    "registry": {
+      "claimable": true,
+      "failed": [],
+      "unproven": [],
+      "needsReview": []
+    },
+    "authority": {
+      "claimable": true,
+      "failed": [],
+      "unproven": [],
+      "needsReview": []
+    },
+    "ws": {
+      "claimable": true,
+      "failed": [],
+      "unproven": [],
+      "needsReview": []
+    }
+  },
+  "fatal": "",
+  "summary": {
+    "passed": 175,
+    "failed": 0,
+    "skipped": 21,
+    "not-applicable": 25,
+    "mustFailed": 0,
+    "mustUnproven": 0
+  },
+  "checks": [
+    {
+      "check": "arguments.refusals-from-description",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-043",
+        "BHMS-DEV-044",
+        "BHMS-OPS-040",
+        "BHMS-ERR-003",
+        "BHMS-ERR-011"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.032
+    },
+    {
+      "check": "arguments.unexecutable-refusals",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-040",
+        "BHMS-ERR-004",
+        "BHMS-DEV-044"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.016
+    },
+    {
+      "check": "arguments.vectors-refusals",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-043",
+        "BHMS-DEV-044",
+        "BHMS-SEC-030",
+        "BHMS-OPS-040",
+        "BHMS-ERR-004"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.041
+    },
+    {
+      "check": "arguments.vectors-accepted",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-043",
+        "BHMS-DEV-044"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.119
+    },
+    {
+      "check": "authority.default-deny",
+      "status": "passed",
+      "requirements": [
+        "BHMS-SEC-010",
+        "BHMS-AUTH-002",
+        "BHMS-DEV-010"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "",
+      "seconds": 0.022
+    },
+    {
+      "check": "authority.scope-refusals",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AUTH-002",
+        "BHMS-AUTH-012"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "",
+      "seconds": 0.019
+    },
+    {
+      "check": "authority.effective-envelope",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AUTH-010",
+        "BHMS-AUTH-011"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "",
+      "seconds": 0.038
+    },
+    {
+      "check": "authority.stop-scope-independence",
+      "status": "passed",
+      "requirements": [
+        "BHMS-SEC-040",
+        "BHMS-AUTH-020"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "",
+      "seconds": 0.045
+    },
+    {
+      "check": "authority.ownership",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-054",
+        "BHMS-OPS-062",
+        "BHMS-LSE-005"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "",
+      "seconds": 0.014
+    },
+    {
+      "check": "authority.key-isolation",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AUTH-014",
+        "BHMS-OPS-030"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "",
+      "seconds": 0.014
+    },
+    {
+      "check": "authority.policy-changes",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AUTH-013",
+        "BHMS-SEC-012",
+        "BHMS-SEC-011"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "",
+      "seconds": 2.819
+    },
+    {
+      "check": "authority.hazardous-needs-literal-scope",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AUTH-003"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "",
+      "seconds": 0.109
+    },
+    {
+      "check": "authority.read-revocation-ends-delivery",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-042"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "",
+      "seconds": 2.526
+    },
+    {
+      "check": "authority.programs-need-authority",
+      "status": "passed",
+      "requirements": [
+        "BHMS-PRG-006",
+        "BHMS-PRG-021"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "",
+      "seconds": 0.021
+    },
+    {
+      "check": "authority.operator-resolution",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-100",
+        "BHMS-OPS-101",
+        "BHMS-OPS-102"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "",
+      "seconds": 0.066
+    },
+    {
+      "check": "authority.budget-total",
+      "status": "not-applicable",
+      "requirements": [
+        "BHMS-AUTH-030",
+        "BHMS-AUTH-031",
+        "BHMS-AUTH-032",
+        "BHMS-AUTH-033",
+        "BHMS-AUTH-035"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "introduced after 2026-11-13, the version this run tests",
+      "seconds": 0.0
+    },
+    {
+      "check": "authority.budget-survives-restart",
+      "status": "not-applicable",
+      "requirements": [
+        "BHMS-AUTH-034"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "introduced after 2026-11-13, the version this run tests",
+      "seconds": 0.0
+    },
+    {
+      "check": "authority.program-grant",
+      "status": "not-applicable",
+      "requirements": [
+        "BHMS-PRG-023"
+      ],
+      "profile": "authority",
+      "generic": false,
+      "message": "introduced after 2026-11-13, the version this run tests",
+      "seconds": 0.0
+    },
+    {
+      "check": "descriptions.digest-and-immutability",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-020",
+        "BHMS-DEV-021",
+        "BHMS-LIF-002"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.019
+    },
+    {
+      "check": "descriptions.list-text-filter",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-013"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.015
+    },
+    {
+      "check": "descriptions.unknown-device-hint",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-014"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.002
+    },
+    {
+      "check": "descriptions.stale-digest",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-022"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.005
+    },
+    {
+      "check": "descriptions.static-rules",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-032",
+        "BHMS-DEV-034",
+        "BHMS-DEV-040",
+        "BHMS-DEV-041",
+        "BHMS-DEV-042"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.001
+    },
+    {
+      "check": "descriptions.hazardous-actions-require-lease",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-033"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.0
+    },
+    {
+      "check": "descriptions.stop-and-disconnect-claims",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-060"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.0,
+      "warnings": [
+        "pump-1 has irreversible or hazardous actions but declares stop 'unsupported'"
+      ]
+    },
+    {
+      "check": "descriptions.size-and-summary",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-011"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.003
+    },
+    {
+      "check": "descriptions.events-declared",
+      "status": "passed",
+      "requirements": [
+        "BHMS-EVT-003"
+      ],
+      "profile": "events",
+      "generic": true,
+      "message": "",
+      "seconds": 0.005
+    },
+    {
+      "check": "devices.status-follows-reachability",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-012"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.112
+    },
+    {
+      "check": "devices.description-change",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-023"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.004
+    },
+    {
+      "check": "descriptions.duration-bounds",
+      "status": "not-applicable",
+      "requirements": [
+        "BHMS-DEV-036"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "introduced after 2026-11-13, the version this run tests",
+      "seconds": 0.0
+    },
+    {
+      "check": "events.read-order-and-stability",
+      "status": "passed",
+      "requirements": [
+        "BHMS-EVT-001",
+        "BHMS-EVT-010",
+        "BHMS-EVT-012"
+      ],
+      "profile": "events",
+      "generic": false,
+      "message": "",
+      "seconds": 0.023
+    },
+    {
+      "check": "events.recorded-types",
+      "status": "passed",
+      "requirements": [
+        "BHMS-EVT-002"
+      ],
+      "profile": "events",
+      "generic": false,
+      "message": "",
+      "seconds": 0.045
+    },
+    {
+      "check": "events.listen-replay-then-live",
+      "status": "passed",
+      "requirements": [
+        "BHMS-EVT-020",
+        "BHMS-LIF-041"
+      ],
+      "profile": "events",
+      "generic": false,
+      "message": "",
+      "seconds": 0.564
+    },
+    {
+      "check": "events.no-notification-without-listen",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-045"
+      ],
+      "profile": "events",
+      "generic": false,
+      "message": "",
+      "seconds": 0.658
+    },
+    {
+      "check": "security.schema-validation-bounds",
+      "status": "not-applicable",
+      "requirements": [
+        "BHMS-SEC-021"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "a device server validates only the schemas of its own devices; foreign schemas are validated by gateways and clients",
+      "seconds": 0.0
+    },
+    {
+      "check": "leases.grant-renew-release",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LSE-002",
+        "BHMS-LSE-003",
+        "BHMS-LSE-006"
+      ],
+      "profile": "leases",
+      "generic": false,
+      "message": "",
+      "seconds": 0.339
+    },
+    {
+      "check": "leases.parameter-bounds",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LSE-004",
+        "BHMS-LSE-007",
+        "BHMS-LSE-001"
+      ],
+      "profile": "leases",
+      "generic": false,
+      "message": "",
+      "seconds": 0.038
+    },
+    {
+      "check": "leases.enforcement-at-admission",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LSE-010",
+        "BHMS-LSE-007"
+      ],
+      "profile": "leases",
+      "generic": false,
+      "message": "",
+      "seconds": 0.416
+    },
+    {
+      "check": "leases.held-lease-blocks-everyone",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LSE-014",
+        "BHMS-LSE-007",
+        "BHMS-LSE-010"
+      ],
+      "profile": "leases",
+      "generic": false,
+      "message": "",
+      "seconds": 0.033
+    },
+    {
+      "check": "leases.key-lookup-before-lease",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-033"
+      ],
+      "profile": "leases",
+      "generic": false,
+      "message": "",
+      "seconds": 0.561
+    },
+    {
+      "check": "transport.connection-close-keeps-state",
+      "status": "passed",
+      "requirements": [
+        "BHMS-TRN-005"
+      ],
+      "profile": "leases",
+      "generic": false,
+      "message": "",
+      "seconds": 0.516
+    },
+    {
+      "check": "leases.loss-behaviour",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LSE-012"
+      ],
+      "profile": "leases",
+      "generic": false,
+      "message": "",
+      "seconds": 2.59
+    },
+    {
+      "check": "lifecycle.nan-tokens",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-001"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.305
+    },
+    {
+      "check": "lifecycle.invalid-utf8-and-truncation",
+      "status": "skipped",
+      "requirements": [
+        "BHMS-LIF-001"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "unproven: this binding cannot carry the malformed frame of vector 'invalid-utf8' (UnicodeDecodeError: 'utf-8' codec can't decode byte 0xe9 in position 198: invalid continuation byte)",
+      "seconds": 0.001
+    },
+    {
+      "check": "lifecycle.request-id-rules",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-010"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.605
+    },
+    {
+      "check": "transport.batch-rejected",
+      "status": "passed",
+      "requirements": [
+        "BHMS-TRN-002"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.303
+    },
+    {
+      "check": "lifecycle.params-and-meta-required",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-011"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.511
+    },
+    {
+      "check": "lifecycle.unknown-and-unadvertised-methods",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-013"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.001
+    },
+    {
+      "check": "lifecycle.notifications-get-no-response",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-014",
+        "BHMS-LIF-051"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.552
+    },
+    {
+      "check": "lifecycle.closed-params",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-015"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.008
+    },
+    {
+      "check": "lifecycle.meta-keys",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-016",
+        "BHMS-LIF-017",
+        "BHMS-AUTH-001"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.005
+    },
+    {
+      "check": "lifecycle.version-negotiation",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-019",
+        "BHMS-ERR-011"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.001
+    },
+    {
+      "check": "lifecycle.discover",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-020",
+        "BHMS-LIF-021",
+        "BHMS-LIF-023",
+        "BHMS-LIF-024",
+        "BHMS-LIF-025",
+        "BHMS-TRN-004"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.002
+    },
+    {
+      "check": "lifecycle.core-methods-implemented",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-020"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.044
+    },
+    {
+      "check": "lifecycle.stateless-connection",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-030"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.005
+    },
+    {
+      "check": "lifecycle.minted-identifiers",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-031"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.007
+    },
+    {
+      "check": "lifecycle.cursors-and-ordering",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-060",
+        "BHMS-LIF-061",
+        "BHMS-LIF-062"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.009
+    },
+    {
+      "check": "lifecycle.extensions",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-070"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.0
+    },
+    {
+      "check": "vectors.canonical-digests",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-002"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.001
+    },
+    {
+      "check": "lifecycle.cancel-request-keeps-work",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-050",
+        "BHMS-TRN-012",
+        "BHMS-TRN-032",
+        "BHMS-LIF-044"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 1.072
+    },
+    {
+      "check": "lifecycle.subscription-stream",
+      "status": "passed",
+      "requirements": [
+        "BHMS-LIF-040",
+        "BHMS-LIF-041",
+        "BHMS-LIF-044",
+        "BHMS-LIF-046",
+        "BHMS-OBS-020",
+        "BHMS-OPS-090"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.575
+    },
+    {
+      "check": "lifecycle.earlier-version-behaviour",
+      "status": "not-applicable",
+      "requirements": [
+        "BHMS-LIF-026"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "introduced after 2026-11-13, the version this run tests",
+      "seconds": 0.0
+    },
+    {
+      "check": "observations.read-semantics",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OBS-012",
+        "BHMS-OBS-004",
+        "BHMS-OBS-005",
+        "BHMS-OBS-010"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.01
+    },
+    {
+      "check": "observations.stale-and-invalid-sensors",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OBS-001",
+        "BHMS-OBS-003",
+        "BHMS-OBS-010"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.014
+    },
+    {
+      "check": "observations.retained-after-effect",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OBS-006",
+        "BHMS-OBS-011"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.062
+    },
+    {
+      "check": "observations.subscription-delivery",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OBS-021",
+        "BHMS-OBS-022",
+        "BHMS-LIF-043"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 1.428
+    },
+    {
+      "check": "observations.required-fresh",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OBS-030"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.047
+    },
+    {
+      "check": "observations.evidence-not-stronger",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OBS-002"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.029
+    },
+    {
+      "check": "operations.completion-evidence",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-006",
+        "BHMS-OPS-008",
+        "BHMS-OPS-001",
+        "BHMS-OPS-002",
+        "BHMS-OPS-053",
+        "BHMS-LIF-046"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.047
+    },
+    {
+      "check": "operations.idempotency",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-030",
+        "BHMS-OPS-031",
+        "BHMS-OPS-035",
+        "BHMS-OPS-037",
+        "BHMS-OPS-040"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.047
+    },
+    {
+      "check": "operations.concurrent-same-key",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-032"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.015
+    },
+    {
+      "check": "operations.cancel-queued",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-050",
+        "BHMS-OPS-006",
+        "BHMS-OPS-001"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.011
+    },
+    {
+      "check": "operations.cancel-states",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-051",
+        "BHMS-OPS-053",
+        "BHMS-OPS-062",
+        "BHMS-OPS-001"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.015
+    },
+    {
+      "check": "operations.wait-semantics",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-060",
+        "BHMS-OPS-061",
+        "BHMS-OPS-063"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 1.325
+    },
+    {
+      "check": "operations.require-verified",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-007"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.1
+    },
+    {
+      "check": "operations.device-fault",
+      "status": "passed",
+      "requirements": [
+        "BHMS-ERR-012",
+        "BHMS-OPS-009",
+        "BHMS-ERR-004"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.011
+    },
+    {
+      "check": "operations.deadline-before-dispatch",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-070"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.913
+    },
+    {
+      "check": "operations.deadline-while-running",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-071"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.206
+    },
+    {
+      "check": "operations.max-duration",
+      "status": "passed",
+      "requirements": [
+        "BHMS-DEV-030"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 5.012
+    },
+    {
+      "check": "operations.lost-reply-becomes-unknown",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-004",
+        "BHMS-OPS-042",
+        "BHMS-OPS-002"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.017
+    },
+    {
+      "check": "operations.journal-unwritable",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-003",
+        "BHMS-AUTH-025",
+        "BHMS-SEC-041"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.009
+    },
+    {
+      "check": "operations.restart-recovery",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-034",
+        "BHMS-OPS-063",
+        "BHMS-OPS-080",
+        "BHMS-OPS-081",
+        "BHMS-OPS-005",
+        "BHMS-LSE-003",
+        "BHMS-OBS-004",
+        "BHMS-DEV-001",
+        "BHMS-EVT-011",
+        "BHMS-LIF-045"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.265
+    },
+    {
+      "check": "operations.lease-expiry-before-dispatch",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-041"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 1.025
+    },
+    {
+      "check": "operations.cancel-is-not-confirmation",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-052"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 1.514
+    },
+    {
+      "check": "operations.reconcile-on-return",
+      "status": "passed",
+      "requirements": [
+        "BHMS-OPS-082"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.553
+    },
+    {
+      "check": "operations.late-terminal-report",
+      "status": "not-applicable",
+      "requirements": [
+        "BHMS-OPS-072"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "introduced after 2026-11-13, the version this run tests",
+      "seconds": 0.0
+    },
+    {
+      "check": "programs.validation-refusals",
+      "status": "passed",
+      "requirements": [
+        "BHMS-PRG-001",
+        "BHMS-PRG-002",
+        "BHMS-PRG-003",
+        "BHMS-PRG-004",
+        "BHMS-PRG-005"
+      ],
+      "profile": "programs",
+      "generic": false,
+      "message": "",
+      "seconds": 0.031
+    },
+    {
+      "check": "programs.execution-order-and-effects",
+      "status": "passed",
+      "requirements": [
+        "BHMS-PRG-007",
+        "BHMS-PRG-010",
+        "BHMS-PRG-015",
+        "BHMS-PRG-016"
+      ],
+      "profile": "programs",
+      "generic": false,
+      "message": "",
+      "seconds": 0.059
+    },
+    {
+      "check": "programs.step-failure-stops",
+      "status": "passed",
+      "requirements": [
+        "BHMS-PRG-011",
+        "BHMS-PRG-016"
+      ],
+      "profile": "programs",
+      "generic": false,
+      "message": "",
+      "seconds": 0.017
+    },
+    {
+      "check": "programs.assert-and-wait-until",
+      "status": "passed",
+      "requirements": [
+        "BHMS-PRG-013"
+      ],
+      "profile": "programs",
+      "generic": false,
+      "message": "",
+      "seconds": 0.268
+    },
+    {
+      "check": "programs.cancel",
+      "status": "passed",
+      "requirements": [
+        "BHMS-PRG-014"
+      ],
+      "profile": "programs",
+      "generic": false,
+      "message": "",
+      "seconds": 0.015
+    },
+    {
+      "check": "programs.restart-never-resumes",
+      "status": "passed",
+      "requirements": [
+        "BHMS-PRG-017"
+      ],
+      "profile": "programs",
+      "generic": false,
+      "message": "",
+      "seconds": 0.448
+    },
+    {
+      "check": "programs.registry",
+      "status": "passed",
+      "requirements": [
+        "BHMS-PRG-020",
+        "BHMS-PRG-022",
+        "BHMS-PRG-007"
+      ],
+      "profile": "registry",
+      "generic": false,
+      "message": "",
+      "seconds": 0.026
+    },
+    {
+      "check": "programs.max-duration-enforced",
+      "status": "passed",
+      "requirements": [
+        "BHMS-PRG-012"
+      ],
+      "profile": "programs",
+      "generic": false,
+      "message": "",
+      "seconds": 2.718
+    },
+    {
+      "check": "stop.semantics",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AUTH-020",
+        "BHMS-AUTH-021",
+        "BHMS-AUTH-023",
+        "BHMS-AUTH-024",
+        "BHMS-AUTH-022"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.08
+    },
+    {
+      "check": "stop.closed-parameters",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AUTH-026",
+        "BHMS-LIF-015"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.011
+    },
+    {
+      "check": "stop.not-blocked-by-load",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AUTH-020"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.183
+    },
+    {
+      "check": "stop.target-validation",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AUTH-026",
+        "BHMS-LIF-015"
+      ],
+      "profile": "core",
+      "generic": false,
+      "message": "",
+      "seconds": 0.007
+    },
+    {
+      "check": "transport.concurrent-requests",
+      "status": "passed",
+      "requirements": [
+        "BHMS-TRN-003"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 1.509
+    },
+    {
+      "check": "transport.message-size-limit",
+      "status": "passed",
+      "requirements": [
+        "BHMS-TRN-004"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 20.039,
+      "warnings": [
+        "the WebSocket server closed the connection (1009) instead of answering -32600; the spec asks for -32600 on every binding"
+      ]
+    },
+    {
+      "check": "transport.stdio-exit-on-eof",
+      "status": "not-applicable",
+      "requirements": [
+        "BHMS-TRN-011"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "stdio binding only",
+      "seconds": 0.0
+    },
+    {
+      "check": "transport.socket-framing",
+      "status": "not-applicable",
+      "requirements": [
+        "BHMS-TRN-020"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "Unix-socket and TCP bindings only",
+      "seconds": 0.0
+    },
+    {
+      "check": "transport.ws-subprotocol",
+      "status": "passed",
+      "requirements": [
+        "BHMS-TRN-030"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.003
+    },
+    {
+      "check": "transport.ws-auth",
+      "status": "not-applicable",
+      "requirements": [
+        "BHMS-TRN-031"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "loopback target: bearer authentication is mandatory only beyond loopback",
+      "seconds": 0.0
+    },
+    {
+      "check": "transport.stdio-opens-no-listeners",
+      "status": "not-applicable",
+      "requirements": [
+        "BHMS-SEC-003"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "stdio binding only",
+      "seconds": 0.0
+    },
+    {
+      "check": "limits.bounded-requests",
+      "status": "passed",
+      "requirements": [
+        "BHMS-SEC-060"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.006
+    },
+    {
+      "check": "transport.unix-socket-permissions",
+      "status": "not-applicable",
+      "requirements": [
+        "BHMS-TRN-022"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "Unix-socket and TCP bindings only",
+      "seconds": 0.0
+    },
+    {
+      "check": "transport.no-token-in-logs",
+      "status": "passed",
+      "requirements": [],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.0
+    },
+    {
+      "check": "security.credentials-required",
+      "status": "passed",
+      "requirements": [
+        "BHMS-SEC-001"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.006
+    },
+    {
+      "check": "transport.credential-carrier",
+      "status": "not-applicable",
+      "requirements": [
+        "BHMS-SEC-005",
+        "BHMS-SEC-006"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "introduced after 2026-11-13, the version this run tests",
+      "seconds": 0.0
+    },
+    {
+      "check": "observers.all-traffic",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AUTH-022",
+        "BHMS-DEV-011",
+        "BHMS-ERR-001",
+        "BHMS-ERR-003",
+        "BHMS-ERR-005",
+        "BHMS-ERR-006",
+        "BHMS-ERR-007",
+        "BHMS-ERR-010",
+        "BHMS-ERR-012",
+        "BHMS-EVT-030",
+        "BHMS-LIF-003",
+        "BHMS-LIF-012",
+        "BHMS-LIF-041",
+        "BHMS-LIF-052",
+        "BHMS-OBS-001",
+        "BHMS-OBS-005",
+        "BHMS-OPS-001",
+        "BHMS-OPS-002",
+        "BHMS-OPS-004",
+        "BHMS-OPS-005",
+        "BHMS-OPS-006",
+        "BHMS-OPS-008",
+        "BHMS-OPS-009",
+        "BHMS-TRN-001"
+      ],
+      "profile": "core",
+      "generic": true,
+      "message": "",
+      "seconds": 0.0
+    }
+  ],
+  "requirements": [
+    {
+      "id": "BHMS-LIF-001",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.nan-tokens"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-002",
+      "level": "MUST",
+      "profile": "core",
+      "method": "schema",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.digest-and-immutability",
+        "vectors.canonical-digests"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-003",
+      "level": "MUST",
+      "profile": "core",
+      "method": "schema",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-010",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.request-id-rules"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-011",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.params-and-meta-required"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-012",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-013",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.unknown-and-unadvertised-methods"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-014",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.notifications-get-no-response"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-015",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.closed-params",
+        "stop.closed-parameters",
+        "stop.target-validation"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-016",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.meta-keys"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-017",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.meta-keys"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-019",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.version-negotiation"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-020",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.discover",
+        "lifecycle.core-methods-implemented"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-021",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.discover"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-022",
+      "level": "SHOULD",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: client behaviour (SHOULD)",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-023",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.discover"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-024",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.discover"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-025",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.discover"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-026",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-030",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.stateless-connection"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-031",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.minted-identifiers"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-040",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.subscription-stream"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-041",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "events.listen-replay-then-live",
+        "lifecycle.subscription-stream",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-042",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.read-revocation-ends-delivery"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-043",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observations.subscription-delivery"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-044",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.cancel-request-keeps-work",
+        "lifecycle.subscription-stream"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-045",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "events.no-notification-without-listen",
+        "operations.restart-recovery"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-046",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.subscription-stream",
+        "operations.completion-evidence"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-050",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.cancel-request-keeps-work"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-051",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.notifications-get-no-response"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-052",
+      "level": "MUST",
+      "profile": "core",
+      "method": "transport",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-053",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: client behaviour",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-060",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.cursors-and-ordering"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-061",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.cursors-and-ordering"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-062",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.cursors-and-ordering"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-070",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.extensions"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LIF-071",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: review of each extension against the core guarantees",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-001",
+      "level": "MUST",
+      "profile": "core",
+      "method": "transport",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-002",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "transport.batch-rejected"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-003",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "transport.concurrent-requests"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-004",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.discover",
+        "transport.message-size-limit"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-005",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "transport.connection-close-keeps-state"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-010",
+      "level": "MUST",
+      "profile": "core",
+      "method": "transport",
+      "status": "not-applicable",
+      "reason": "stdio framing only; the other bindings frame messages themselves",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-011",
+      "level": "SHOULD",
+      "profile": "core",
+      "method": "transport",
+      "status": "not-applicable",
+      "reason": "stdio binding only",
+      "checks": [
+        "transport.stdio-exit-on-eof"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-012",
+      "level": "MUST",
+      "profile": "core",
+      "method": "transport",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.cancel-request-keeps-work"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-013",
+      "level": "SHOULD",
+      "profile": "core",
+      "method": "inspection",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-020",
+      "level": "MUST",
+      "profile": "core",
+      "method": "transport",
+      "status": "not-applicable",
+      "reason": "Unix-socket and TCP bindings only",
+      "checks": [
+        "transport.socket-framing"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-021",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: refusal to start a non-loopback TCP listener without TLS is a start-up behaviour of the implementation",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-022",
+      "level": "MUST",
+      "profile": "core",
+      "method": "transport",
+      "status": "not-applicable",
+      "reason": "Unix-socket and TCP bindings only",
+      "checks": [
+        "transport.unix-socket-permissions"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-030",
+      "level": "MUST",
+      "profile": "ws",
+      "method": "transport",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "transport.ws-subprotocol"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-031",
+      "level": "MUST",
+      "profile": "ws",
+      "method": "transport",
+      "status": "not-applicable",
+      "reason": "loopback target: bearer authentication is mandatory only beyond loopback",
+      "checks": [
+        "transport.ws-auth"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-032",
+      "level": "MUST",
+      "profile": "ws",
+      "method": "transport",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.cancel-request-keeps-work"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-TRN-050",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: custom transports are documented and reviewed; the runner suite passing over one is the evidence",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-001",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.restart-recovery"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-010",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.default-deny"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-011",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.size-and-summary",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-012",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "devices.status-follows-reachability"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-013",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.list-text-filter"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-014",
+      "level": "SHOULD",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.unknown-device-hint"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-020",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.digest-and-immutability"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-021",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.digest-and-immutability"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-022",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.stale-digest"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-023",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "devices.description-change"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-030",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.max-duration"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-031",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: review of each measured action's evidence path",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-032",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.static-rules"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-033",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.hazardous-actions-require-lease"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-034",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.static-rules"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-035",
+      "level": "SHOULD",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: review of measurement-like action outputs for a validity indicator (SHOULD)",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-036",
+      "level": "MUST",
+      "profile": "core",
+      "method": "schema",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-040",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.static-rules"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-041",
+      "level": "MUST",
+      "profile": "core",
+      "method": "schema",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.static-rules"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-042",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.static-rules"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-043",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "arguments.refusals-from-description",
+        "arguments.vectors-refusals",
+        "arguments.vectors-accepted"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-044",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "arguments.refusals-from-description",
+        "arguments.unexecutable-refusals",
+        "arguments.vectors-refusals",
+        "arguments.vectors-accepted"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-050",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: review of driver acquisition effects (the transaction property of the conformance device is exercised by observations.retained-after-effect)",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-051",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: review of evidence declarations against driver behaviour",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-DEV-060",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.stop-and-disconnect-claims"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OBS-001",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observations.stale-and-invalid-sensors",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OBS-002",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observations.evidence-not-stronger"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OBS-003",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observations.stale-and-invalid-sensors"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OBS-004",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observations.read-semantics",
+        "operations.restart-recovery"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OBS-005",
+      "level": "MUST",
+      "profile": "core",
+      "method": "schema",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observations.read-semantics",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OBS-006",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observations.retained-after-effect"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OBS-010",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observations.read-semantics",
+        "observations.stale-and-invalid-sensors"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OBS-011",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observations.retained-after-effect"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OBS-012",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observations.read-semantics"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OBS-020",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.subscription-stream"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OBS-021",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observations.subscription-delivery"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OBS-022",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observations.subscription-delivery"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OBS-030",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observations.required-fresh"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-001",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.completion-evidence",
+        "operations.cancel-queued",
+        "operations.cancel-states",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-002",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.completion-evidence",
+        "operations.lost-reply-becomes-unknown",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-003",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.journal-unwritable"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-004",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.lost-reply-becomes-unknown",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-005",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.restart-recovery",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-006",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.completion-evidence",
+        "operations.cancel-queued",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-007",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.require-verified"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-008",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.completion-evidence",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-009",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.device-fault",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-030",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.key-isolation",
+        "operations.idempotency"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-031",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.idempotency"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-032",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.concurrent-same-key"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-033",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "leases.key-lookup-before-lease"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-034",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.restart-recovery"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-035",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.idempotency"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-036",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: client behaviour (key reuse and retention)",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-037",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.idempotency"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-040",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "arguments.refusals-from-description",
+        "arguments.unexecutable-refusals",
+        "arguments.vectors-refusals",
+        "operations.idempotency"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-041",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.lease-expiry-before-dispatch"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-042",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.lost-reply-becomes-unknown"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-050",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.cancel-queued"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-051",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.cancel-states"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-052",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.cancel-is-not-confirmation"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-053",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.completion-evidence",
+        "operations.cancel-states"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-054",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.ownership"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-060",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.wait-semantics"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-061",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.wait-semantics"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-062",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.ownership",
+        "operations.cancel-states"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-063",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.wait-semantics",
+        "operations.restart-recovery"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-070",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.deadline-before-dispatch"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-071",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.deadline-while-running"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-072",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-080",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.restart-recovery"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-081",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.restart-recovery"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-082",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.reconcile-on-return"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-090",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.subscription-stream"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-100",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.operator-resolution"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-101",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.operator-resolution"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-OPS-102",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.operator-resolution"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LSE-001",
+      "level": "MUST",
+      "profile": "leases",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "leases.parameter-bounds"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LSE-002",
+      "level": "MUST",
+      "profile": "leases",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "leases.grant-renew-release"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LSE-003",
+      "level": "MUST",
+      "profile": "leases",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "leases.grant-renew-release",
+        "operations.restart-recovery"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LSE-004",
+      "level": "MUST",
+      "profile": "leases",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "leases.parameter-bounds"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LSE-005",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.ownership"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LSE-006",
+      "level": "MUST",
+      "profile": "leases",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "leases.grant-renew-release"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LSE-007",
+      "level": "MUST",
+      "profile": "leases",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "leases.parameter-bounds",
+        "leases.enforcement-at-admission",
+        "leases.held-lease-blocks-everyone"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LSE-010",
+      "level": "MUST",
+      "profile": "leases",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "leases.enforcement-at-admission",
+        "leases.held-lease-blocks-everyone"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LSE-012",
+      "level": "MUST",
+      "profile": "leases",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "leases.loss-behaviour"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-LSE-014",
+      "level": "MUST",
+      "profile": "leases",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "leases.held-lease-blocks-everyone"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-001",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "lifecycle.meta-keys"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-002",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.default-deny",
+        "authority.scope-refusals"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-003",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.hazardous-needs-literal-scope"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-010",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.effective-envelope"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-011",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.effective-envelope"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-012",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.scope-refusals"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-013",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.policy-changes"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-015",
+      "level": "SHOULD",
+      "profile": "authority",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: policy review: `bhms gateway check-policy <config>` reports principals that can act on a device they cannot stop and scopes that match nothing (SHOULD)",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-020",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.stop-scope-independence",
+        "stop.semantics",
+        "stop.not-blocked-by-load"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-021",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "stop.semantics"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-022",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "stop.semantics",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-023",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "stop.semantics"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-024",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "stop.semantics"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-025",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.journal-unwritable"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-026",
+      "level": "MUST",
+      "profile": "core",
+      "method": "schema",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "stop.closed-parameters",
+        "stop.target-validation"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-027",
+      "level": "SHOULD",
+      "profile": "core",
+      "method": "inspection",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-030",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-031",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-032",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-033",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-034",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "fault",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AUTH-035",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-001",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.validation-refusals"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-002",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.validation-refusals"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-003",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.validation-refusals"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-004",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.validation-refusals"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-005",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.validation-refusals"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-006",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.programs-need-authority"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-007",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "schema",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.execution-order-and-effects",
+        "programs.registry"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-010",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.execution-order-and-effects"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-011",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.step-failure-stops"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-012",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.max-duration-enforced"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-013",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.assert-and-wait-until"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-014",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.cancel"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-015",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.execution-order-and-effects"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-016",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.execution-order-and-effects",
+        "programs.step-failure-stops"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-017",
+      "level": "MUST",
+      "profile": "programs",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.restart-never-resumes"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-020",
+      "level": "MUST",
+      "profile": "registry",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.registry"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-021",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.programs-need-authority"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-022",
+      "level": "MAY",
+      "profile": "programs",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "programs.registry"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-PRG-023",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-EVT-001",
+      "level": "MUST",
+      "profile": "events",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "events.read-order-and-stability"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-EVT-002",
+      "level": "MUST",
+      "profile": "events",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "events.recorded-types"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-EVT-003",
+      "level": "MUST",
+      "profile": "events",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "descriptions.events-declared"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-EVT-010",
+      "level": "MUST",
+      "profile": "events",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "events.read-order-and-stability"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-EVT-011",
+      "level": "MUST",
+      "profile": "events",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.restart-recovery"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-EVT-012",
+      "level": "MUST",
+      "profile": "events",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "events.read-order-and-stability"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-EVT-013",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "not-applicable",
+      "reason": "not-applicable: in v0.1 `read` is one global scope: no principal can read some devices but not others, so there is no event to hide; the row applies once a per-device read scope exists (a request without read scope is refused outright)",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-EVT-020",
+      "level": "MUST",
+      "profile": "events",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "events.listen-replay-then-live"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-EVT-030",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-ERR-001",
+      "level": "MUST",
+      "profile": "core",
+      "method": "schema",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-ERR-002",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: client SDKs dispatch on bhmsCode (code review and SDK unit test)",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-ERR-003",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "arguments.refusals-from-description",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-ERR-004",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "arguments.unexecutable-refusals",
+        "arguments.vectors-refusals",
+        "operations.device-fault"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-ERR-005",
+      "level": "MAY",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-ERR-006",
+      "level": "MUST",
+      "profile": "core",
+      "method": "schema",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-ERR-007",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-ERR-010",
+      "level": "MUST",
+      "profile": "core",
+      "method": "schema",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-ERR-011",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "arguments.refusals-from-description",
+        "lifecycle.version-negotiation"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-ERR-012",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.device-fault",
+        "observers.all-traffic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-001",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "security.credentials-required"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-002",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: constant-time comparison and hashed storage need code review; transport.no-token-in-logs reports token leaks in captured logs as a warning, never as a pass",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-003",
+      "level": "MUST",
+      "profile": "core",
+      "method": "transport",
+      "status": "not-applicable",
+      "reason": "stdio binding only",
+      "checks": [
+        "transport.stdio-opens-no-listeners"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-004",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: deployment configuration of non-loopback listeners",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-005",
+      "level": "MUST",
+      "profile": "core",
+      "method": "transport",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-006",
+      "level": "MUST",
+      "profile": "core",
+      "method": "transport",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-007",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-010",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.default-deny"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-021",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "not-applicable",
+      "reason": "a device server validates only the schemas of its own devices; foreign schemas are validated by gateways and clients",
+      "checks": [
+        "security.schema-validation-bounds"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-030",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "arguments.vectors-refusals"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-040",
+      "level": "MUST",
+      "profile": "authority",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "authority.stop-scope-independence"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-041",
+      "level": "MUST",
+      "profile": "core",
+      "method": "fault",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "operations.journal-unwritable"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-042",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: documentation and tool descriptions never call software stop an emergency stop",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-060",
+      "level": "MUST",
+      "profile": "core",
+      "method": "wire",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "limits.bounded-requests"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CNF-001",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: a property of the report the runner writes (tests/test_conformance_runner.py::test_report_states_what_bhms_cnf_001_to_005_require), not of the target",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CNF-002",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: a property of the report the runner writes (tests/test_conformance_runner.py::test_report_states_what_bhms_cnf_001_to_005_require), not of the target",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CNF-003",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: a property of the report the runner writes (tests/test_conformance_runner.py::test_report_states_what_bhms_cnf_001_to_005_require), not of the target",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CNF-004",
+      "level": "MAY",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: a property of the report the runner writes: the exit status is non-zero while any MUST row of a claimed profile failed",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CNF-005",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: a property of the report the runner writes (tests/test_conformance_runner.py::test_report_states_what_bhms_cnf_001_to_005_require), not of the target",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CNF-006",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: the validator is a library of the implementation and cannot be driven over the wire; the Python SDK asserts it in tests/test_schema_examples.py (index method: inspection)",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-CNF-007",
+      "level": "MUST",
+      "profile": "core",
+      "method": "inspection",
+      "status": "not-applicable",
+      "reason": "introduced in 2026-11-15; this run tests 2026-11-13",
+      "checks": [],
+      "unproven": false
+    }
+  ],
+  "exitCode": 0
+}

@@ -1,0 +1,1627 @@
+
+> @bhms/sdk@0.1.0 test
+> npm run build && node --test dist/test/
+
+
+> @bhms/sdk@0.1.0 build
+> tsc -p tsconfig.json
+
+TAP version 13
+# Subtest: standard request credentials replace the stdio parent for one request only, without invalid-token fallback
+ok 1 - standard request credentials replace the stdio parent for one request only, without invalid-token fallback
+  ---
+  duration_ms: 42.490287
+  ...
+# Subtest: a request credential conflicts with the unix transport identity
+ok 2 - a request credential conflicts with the unix transport identity
+  ---
+  duration_ms: 10.091452
+  ...
+# Subtest: a request credential conflicts with the ws transport identity
+ok 3 - a request credential conflicts with the ws transport identity
+  ---
+  duration_ms: 3.622999
+  ...
+# Subtest: a headerless loopback WebSocket authenticates each request separately
+ok 4 - a headerless loopback WebSocket authenticates each request separately
+  ---
+  duration_ms: 109.133443
+  ...
+# Subtest: TLS listener promises and outbound credential transport checks fail before opening a connection
+ok 5 - TLS listener promises and outbound credential transport checks fail before opening a connection
+  ---
+  duration_ms: 1.938241
+  ...
+# Subtest: budget admission is atomic across racing calls and same-key replay never charges twice
+ok 6 - budget admission is atomic across racing calls and same-key replay never charges twice
+  ---
+  duration_ms: 78.78516
+  ...
+# Subtest: lifetime budgets survive history pruning, key reuse and restart
+ok 7 - lifetime budgets survive history pruning, key reuse and restart
+  ---
+  duration_ms: 86.309316
+  ...
+# Subtest: only proven no-effect outcomes release a budget; unknown outcomes remain charged
+ok 8 - only proven no-effect outcomes release a budget; unknown outcomes remain charged
+  ---
+  duration_ms: 17.679322
+  ...
+# Subtest: program grants retain budgets on each derived step
+ok 9 - program grants retain budgets on each derived step
+  ---
+  duration_ms: 21.730878
+  ...
+# Subtest: unmeasurable quantities fail closed and absolute unit conversions count
+ok 10 - unmeasurable quantities fail closed and absolute unit conversions count
+  ---
+  duration_ms: 18.73675
+  ...
+# Subtest: rolling budgets expire at the admission window boundary; changing a total preserves prior usage
+ok 11 - rolling budgets expire at the admission window boundary; changing a total preserves prior usage
+  ---
+  duration_ms: 10.710916
+  ...
+# Subtest: policy budgets reject duplicate IDs, bad units, and unmeasurable known actions
+ok 12 - policy budgets reject duplicate IDs, bad units, and unmeasurable known actions
+  ---
+  duration_ms: 6.542494
+  ...
+# Subtest: extension org.bhms/conformance version 2: faults, devices, and no authority for a single-principal server
+ok 13 - extension org.bhms/conformance version 2: faults, devices, and no authority for a single-principal server
+  ---
+  duration_ms: 60.297537
+  ...
+# Subtest: axis-1 declares overdrive (hazardous, clamp lease) and the three guard actions that differ only in onLeaseLoss
+ok 14 - axis-1 declares overdrive (hazardous, clamp lease) and the three guard actions that differ only in onLeaseLoss
+  ---
+  duration_ms: 37.807104
+  ...
+# Subtest: losing the lease of guard_hold calls the device hold command (holds += 1); guard_cancel is canceled, guard_finish completes (BHMS-LSE-012)
+ok 15 - losing the lease of guard_hold calls the device hold command (holds += 1); guard_cancel is canceled, guard_finish completes (BHMS-LSE-012)
+  ---
+  duration_ms: 132.120472
+  ...
+# Subtest: fault change_description: new digest, devicesListChanged, STALE for the old digest, not undone by none, survives a restart
+ok 16 - fault change_description: new digest, devicesListChanged, STALE for the old digest, not undone by none, survives a restart
+  ---
+  duration_ms: 83.352985
+  ...
+# Subtest: faults bad_digest / good_digest: the served digest is not the digest of the description, until good_digest
+ok 17 - faults bad_digest / good_digest: the served digest is not the digest of the description, until good_digest
+  ---
+  duration_ms: 21.218545
+  ...
+# Subtest: fault hostile_text: name, description, pulse description and the fault error carry the injected instruction; none removes it
+ok 18 - fault hostile_text: name, description, pulse description and the fault error carry the injected instruction; none removes it
+  ---
+  duration_ms: 19.138398
+  ...
+# Subtest: fault hostile_schema: each variant breaks exactly one rule, with a correct digest; an unknown or missing variant is refused
+ok 19 - fault hostile_schema: each variant breaks exactly one rule, with a correct digest; an unknown or missing variant is refused
+  ---
+  duration_ms: 81.824804
+  ...
+# Subtest: fault deaf_next: the next slow_move ignores cancellation and completes (BHMS-OPS-052); the one after honours it
+ok 20 - fault deaf_next: the next slow_move ignores cancellation and completes (BHMS-OPS-052); the one after honours it
+  ---
+  duration_ms: 360.003959
+  ...
+# Subtest: counters carry trace: the traceparent/tracestate of the last request that had one (BHMS-LIF-018)
+ok 21 - counters carry trace: the traceparent/tracestate of the last request that had one (BHMS-LIF-018)
+  ---
+  duration_ms: 4.360278
+  ...
+# Subtest: the command log and recorded results survive in <state-dir>/command-log.json
+ok 22 - the command log and recorded results survive in <state-dir>/command-log.json
+  ---
+  duration_ms: 28.838442
+  ...
+# Subtest: the walker's limits are the spec's: depth 32 (root = 0), 10 000 schemas including the root
+ok 23 - the walker's limits are the spec's: depth 32 (root = 0), 10 000 schemas including the root
+  ---
+  duration_ms: 60.680653
+  ...
+# Subtest: checkUnits (the server's description validation) uses the same walker: same bounds for every keyword, same wording
+ok 24 - checkUnits (the server's description validation) uses the same walker: same bounds for every keyword, same wording
+  ---
+  duration_ms: 22.144769
+  ...
+# Subtest: the walk is pre-order, names paths, tolerates non-schemas, is iterative and bounded by its limits
+ok 25 - the walk is pre-order, names paths, tolerates non-schemas, is iterative and bounded by its limits
+  ---
+  duration_ms: 388.988465
+  ...
+# Subtest: the reference text of a refusal is Python's repr: quotes, escapes and non-printable characters
+ok 26 - the reference text of a refusal is Python's repr: quotes, escapes and non-printable characters
+  ---
+  duration_ms: 0.700187
+  ...
+# Subtest: the g- operationKey prefix is reserved for gateways (BHMS-OPS-037): refused for an ordinary principal, allowed under --gateway
+ok 27 - the g- operationKey prefix is reserved for gateways (BHMS-OPS-037): refused for an ordinary principal, allowed under --gateway
+  ---
+  duration_ms: 78.772668
+  ...
+# Subtest: PolicyTable: tokens resolve by digest, capability.authority follows the policy shape, invalid documents are refused
+ok 28 - PolicyTable: tokens resolve by digest, capability.authority follows the policy shape, invalid documents are refused
+  ---
+  duration_ms: 1.319725
+  ...
+# Subtest: multi-principal server: capabilities.authority is {} and the effective envelope narrows device bounds (BHMS-AUTH-010/011)
+ok 29 - multi-principal server: capabilities.authority is {} and the effective envelope narrows device bounds (BHMS-AUTH-010/011)
+  ---
+  duration_ms: 93.212445
+  ...
+# Subtest: setPolicy applies to later requests at once, records policy.changed, revokes the leases of a principal that lost lease; running work continues (BHMS-AUTH-013, SEC-012)
+ok 30 - setPolicy applies to later requests at once, records policy.changed, revokes the leases of a principal that lost lease; running work continues (BHMS-AUTH-013, SEC-012)
+  ---
+  duration_ms: 415.323217
+  ...
+# Subtest: read revocation ends delivery on an open subscription (BHMS-LIF-042)
+ok 31 - read revocation ends delivery on an open subscription (BHMS-LIF-042)
+  ---
+  duration_ms: 211.130328
+  ...
+# Subtest: a stop scope without read stops what it names; a principal with neither stop nor read learns nothing (BHMS-SEC-040, DEV-010)
+ok 32 - a stop scope without read stops what it names; a principal with neither stop nor read learns nothing (BHMS-SEC-040, DEV-010)
+  ---
+  duration_ms: 10.524039
+  ...
+# Subtest: the same operationKey from two principals is two operations; cancel and lease use by another principal are refused
+ok 33 - the same operationKey from two principals is two operations; cancel and lease use by another principal are refused
+  ---
+  duration_ms: 19.502328
+  ...
+# Subtest: a hazardous action is granted only by a scope naming it literally (BHMS-AUTH-003)
+ok 34 - a hazardous action is granted only by a scope naming it literally (BHMS-AUTH-003)
+  ---
+  duration_ms: 73.649491
+  ...
+# Subtest: --principals: the device process serves the policy file and SIGHUP applies its current content
+ok 35 - --principals: the device process serves the policy file and SIGHUP applies its current content
+  ---
+  duration_ms: 404.468455
+  ...
+# Subtest: a stdio server opens no listening socket, not even for its journal lock (BHMS-SEC-003)
+ok 36 - a stdio server opens no listening socket, not even for its journal lock (BHMS-SEC-003)
+  ---
+  duration_ms: 2145.844531
+  ...
+# Subtest: WebSocket: an upgrade that does not offer the bhms subprotocol is refused at the handshake (BHMS-TRN-030)
+ok 37 - WebSocket: an upgrade that does not offer the bhms subprotocol is refused at the handshake (BHMS-TRN-030)
+  ---
+  duration_ms: 5.591039
+  ...
+# Subtest: restart keeps the epoch, the operations, the keys and the fence counter
+ok 38 - restart keeps the epoch, the operations, the keys and the fence counter
+  ---
+  duration_ms: 179.699484
+  ...
+# Subtest: a memory server presents a new epoch on every start
+ok 39 - a memory server presents a new epoch on every start
+  ---
+  duration_ms: 13.957294
+  ...
+# Subtest: a torn journal tail (crash mid-write) is ignored
+ok 40 - a torn journal tail (crash mid-write) is ignored
+  ---
+  duration_ms: 53.653861
+  ...
+# Subtest: BHMS-OPS-003: accepted and dispatching are committed before the handler runs
+ok 41 - BHMS-OPS-003: accepted and dispatching are committed before the handler runs
+  ---
+  duration_ms: 6.004787
+  ...
+# Subtest: one fsync per invoke, on the dispatching record, before the handler runs (as the Python journal: Task 12b)
+ok 42 - one fsync per invoke, on the dispatching record, before the handler runs (as the Python journal: Task 12b)
+  ---
+  duration_ms: 29.528554
+  ...
+# Subtest: a queued accepted is fsynced before it is answered or notified; an immediate one is covered by its dispatching fsync (Ruling R57)
+ok 43 - a queued accepted is fsynced before it is answered or notified; an immediate one is covered by its dispatching fsync (Ruling R57)
+  ---
+  duration_ms: 40.864292
+  ...
+# Subtest: when the dispatch record cannot be written nothing is dispatched: rejected INTERNAL, mayHaveActed false
+ok 44 - when the dispatch record cannot be written nothing is dispatched: rejected INTERNAL, mayHaveActed false
+  ---
+  duration_ms: 5.457578
+  ...
+# Subtest: BHMS-OPS-003: a dispatching record written but not made durable sends nothing and ends failed, mayHaveActed false (Task 12b)
+ok 45 - BHMS-OPS-003: a dispatching record written but not made durable sends nothing and ends failed, mayHaveActed false (Task 12b)
+  ---
+  duration_ms: 6.190311
+  ...
+# Subtest: kill -9 mid-operation: after restart the operation is unknown (DEADLINE_EXCEEDED), inhibits its resources until a confirmed stop
+ok 46 - kill -9 mid-operation: after restart the operation is unknown (DEADLINE_EXCEEDED), inhibits its resources until a confirmed stop
+  ---
+  duration_ms: 185.333824
+  ...
+# Subtest: hang_next + restart-free: inject works while the journal is read-only
+ok 47 - hang_next + restart-free: inject works while the journal is read-only
+  ---
+  duration_ms: 19.181118
+  ...
+# Subtest: the example server over stdio
+ok 48 - the example server over stdio
+  ---
+  duration_ms: 242.113948
+  ...
+# Subtest: a WebSocket listener without a configured token generates one (mode 0600) and requires it
+ok 49 - a WebSocket listener without a configured token generates one (mode 0600) and requires it
+  ---
+  duration_ms: 146.11322
+  ...
+# Subtest: valid example actions.invoke.request.json validates and round-trips canonically
+ok 50 - valid example actions.invoke.request.json validates and round-trips canonically
+  ---
+  duration_ms: 12.256153
+  ...
+# Subtest: valid example actions.invoke.response.json validates and round-trips canonically
+ok 51 - valid example actions.invoke.response.json validates and round-trips canonically
+  ---
+  duration_ms: 3.36169
+  ...
+# Subtest: valid example agent.bhms_cancel.input.json validates and round-trips canonically
+ok 52 - valid example agent.bhms_cancel.input.json validates and round-trips canonically
+  ---
+  duration_ms: 0.458099
+  ...
+# Subtest: valid example agent.bhms_describe.input.json validates and round-trips canonically
+ok 53 - valid example agent.bhms_describe.input.json validates and round-trips canonically
+  ---
+  duration_ms: 0.481965
+  ...
+# Subtest: valid example agent.bhms_describe.topic.input.json validates and round-trips canonically
+ok 54 - valid example agent.bhms_describe.topic.input.json validates and round-trips canonically
+  ---
+  duration_ms: 0.466779
+  ...
+# Subtest: valid example agent.bhms_describe.topic.result.json validates and round-trips canonically
+ok 55 - valid example agent.bhms_describe.topic.result.json validates and round-trips canonically
+  ---
+  duration_ms: 0.53181
+  ...
+# Subtest: valid example agent.bhms_find.input.json validates and round-trips canonically
+ok 56 - valid example agent.bhms_find.input.json validates and round-trips canonically
+  ---
+  duration_ms: 0.683845
+  ...
+# Subtest: valid example agent.bhms_find.result.json validates and round-trips canonically
+ok 57 - valid example agent.bhms_find.result.json validates and round-trips canonically
+  ---
+  duration_ms: 1.438988
+  ...
+# Subtest: valid example agent.bhms_invoke.input.json validates and round-trips canonically
+ok 58 - valid example agent.bhms_invoke.input.json validates and round-trips canonically
+  ---
+  duration_ms: 1.011498
+  ...
+# Subtest: valid example agent.bhms_operation.input.json validates and round-trips canonically
+ok 59 - valid example agent.bhms_operation.input.json validates and round-trips canonically
+  ---
+  duration_ms: 0.774497
+  ...
+# Subtest: valid example agent.bhms_read.input.json validates and round-trips canonically
+ok 60 - valid example agent.bhms_read.input.json validates and round-trips canonically
+  ---
+  duration_ms: 0.509318
+  ...
+# Subtest: valid example agent.bhms_run_program.input.json validates and round-trips canonically
+ok 61 - valid example agent.bhms_run_program.input.json validates and round-trips canonically
+  ---
+  duration_ms: 0.563374
+  ...
+# Subtest: valid example agent.bhms_stop.input.json validates and round-trips canonically
+ok 62 - valid example agent.bhms_stop.input.json validates and round-trips canonically
+  ---
+  duration_ms: 0.501844
+  ...
+# Subtest: valid example agent.function-result.ok.json validates and round-trips canonically
+ok 63 - valid example agent.function-result.ok.json validates and round-trips canonically
+  ---
+  duration_ms: 0.793228
+  ...
+# Subtest: valid example agent.function-result.refusal.json validates and round-trips canonically
+ok 64 - valid example agent.function-result.refusal.json validates and round-trips canonically
+  ---
+  duration_ms: 0.600431
+  ...
+# Subtest: valid example devices.describe.request.json validates and round-trips canonically
+ok 65 - valid example devices.describe.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.850652
+  ...
+# Subtest: valid example devices.describe.response.json validates and round-trips canonically
+ok 66 - valid example devices.describe.response.json validates and round-trips canonically
+  ---
+  duration_ms: 2.732993
+  ...
+# Subtest: valid example devices.list.request.json validates and round-trips canonically
+ok 67 - valid example devices.list.request.json validates and round-trips canonically
+  ---
+  duration_ms: 1.130483
+  ...
+# Subtest: valid example devices.list.response.json validates and round-trips canonically
+ok 68 - valid example devices.list.response.json validates and round-trips canonically
+  ---
+  duration_ms: 0.8234
+  ...
+# Subtest: valid example error.batch-rejected.json validates and round-trips canonically
+ok 69 - valid example error.batch-rejected.json validates and round-trips canonically
+  ---
+  duration_ms: 0.848774
+  ...
+# Subtest: valid example error.busy.json validates and round-trips canonically
+ok 70 - valid example error.busy.json validates and round-trips canonically
+  ---
+  duration_ms: 1.006442
+  ...
+# Subtest: valid example error.device-unavailable.json validates and round-trips canonically
+ok 71 - valid example error.device-unavailable.json validates and round-trips canonically
+  ---
+  duration_ms: 0.949566
+  ...
+# Subtest: valid example error.fenced.json validates and round-trips canonically
+ok 72 - valid example error.fenced.json validates and round-trips canonically
+  ---
+  duration_ms: 3.064702
+  ...
+# Subtest: valid example error.internal.json validates and round-trips canonically
+ok 73 - valid example error.internal.json validates and round-trips canonically
+  ---
+  duration_ms: 0.795396
+  ...
+# Subtest: valid example error.invalid-argument.json validates and round-trips canonically
+ok 74 - valid example error.invalid-argument.json validates and round-trips canonically
+  ---
+  duration_ms: 0.774591
+  ...
+# Subtest: valid example error.key-conflict.json validates and round-trips canonically
+ok 75 - valid example error.key-conflict.json validates and round-trips canonically
+  ---
+  duration_ms: 0.749986
+  ...
+# Subtest: valid example error.lease-conflict.json validates and round-trips canonically
+ok 76 - valid example error.lease-conflict.json validates and round-trips canonically
+  ---
+  duration_ms: 0.762396
+  ...
+# Subtest: valid example error.lease-expired.json validates and round-trips canonically
+ok 77 - valid example error.lease-expired.json validates and round-trips canonically
+  ---
+  duration_ms: 0.729227
+  ...
+# Subtest: valid example error.lease-required.json validates and round-trips canonically
+ok 78 - valid example error.lease-required.json validates and round-trips canonically
+  ---
+  duration_ms: 0.705493
+  ...
+# Subtest: valid example error.method-not-found.json validates and round-trips canonically
+ok 79 - valid example error.method-not-found.json validates and round-trips canonically
+  ---
+  duration_ms: 0.579728
+  ...
+# Subtest: valid example error.out-of-range-budget.json validates and round-trips canonically
+ok 80 - valid example error.out-of-range-budget.json validates and round-trips canonically
+  ---
+  duration_ms: 0.822662
+  ...
+# Subtest: valid example error.out-of-range.json validates and round-trips canonically
+ok 81 - valid example error.out-of-range.json validates and round-trips canonically
+  ---
+  duration_ms: 0.922016
+  ...
+# Subtest: valid example error.stale.json validates and round-trips canonically
+ok 82 - valid example error.stale.json validates and round-trips canonically
+  ---
+  duration_ms: 0.888628
+  ...
+# Subtest: valid example error.unauthorized.json validates and round-trips canonically
+ok 83 - valid example error.unauthorized.json validates and round-trips canonically
+  ---
+  duration_ms: 0.762344
+  ...
+# Subtest: valid example error.unit-mismatch.json validates and round-trips canonically
+ok 84 - valid example error.unit-mismatch.json validates and round-trips canonically
+  ---
+  duration_ms: 0.739338
+  ...
+# Subtest: valid example error.unknown-action.json validates and round-trips canonically
+ok 85 - valid example error.unknown-action.json validates and round-trips canonically
+  ---
+  duration_ms: 0.754506
+  ...
+# Subtest: valid example error.unknown-device.json validates and round-trips canonically
+ok 86 - valid example error.unknown-device.json validates and round-trips canonically
+  ---
+  duration_ms: 1.938296
+  ...
+# Subtest: valid example error.unsupported-version.json validates and round-trips canonically
+ok 87 - valid example error.unsupported-version.json validates and round-trips canonically
+  ---
+  duration_ms: 0.775081
+  ...
+# Subtest: valid example error.unsupported.json validates and round-trips canonically
+ok 88 - valid example error.unsupported.json validates and round-trips canonically
+  ---
+  duration_ms: 0.707291
+  ...
+# Subtest: valid example event.operation-late-report.json validates and round-trips canonically
+ok 89 - valid example event.operation-late-report.json validates and round-trips canonically
+  ---
+  duration_ms: 0.532794
+  ...
+# Subtest: valid example events.read.request.json validates and round-trips canonically
+ok 90 - valid example events.read.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.463039
+  ...
+# Subtest: valid example events.read.response.json validates and round-trips canonically
+ok 91 - valid example events.read.response.json validates and round-trips canonically
+  ---
+  duration_ms: 0.6129
+  ...
+# Subtest: invalid example invalid-action-hazardous-without-lease.json is rejected for the stated reason
+ok 92 - invalid example invalid-action-hazardous-without-lease.json is rejected for the stated reason
+  ---
+  duration_ms: 1.115769
+  ...
+# Subtest: invalid example invalid-action-input-numeric-without-unit.json is rejected for the stated reason
+ok 93 - invalid example invalid-action-input-numeric-without-unit.json is rejected for the stated reason
+  ---
+  duration_ms: 0.66778
+  ...
+# Subtest: invalid example invalid-action-input-open-schema.json is rejected for the stated reason
+ok 94 - invalid example invalid-action-input-open-schema.json is rejected for the stated reason
+  ---
+  duration_ms: 0.632871
+  ...
+# Subtest: invalid example invalid-action-max-duration-above-a-day.json is rejected for the stated reason
+ok 95 - invalid example invalid-action-max-duration-above-a-day.json is rejected for the stated reason
+  ---
+  duration_ms: 0.668151
+  ...
+# Subtest: invalid example invalid-action-on-lease-loss-stop.json is rejected for the stated reason
+ok 96 - invalid example invalid-action-on-lease-loss-stop.json is rejected for the stated reason
+  ---
+  duration_ms: 0.636753
+  ...
+# Subtest: invalid example invalid-agent-describe-both.json is rejected for the stated reason
+ok 97 - invalid example invalid-agent-describe-both.json is rejected for the stated reason
+  ---
+  duration_ms: 0.340263
+  ...
+# Subtest: invalid example invalid-agent-function-result-multiline.json is rejected for the stated reason
+ok 98 - invalid example invalid-agent-function-result-multiline.json is rejected for the stated reason
+  ---
+  duration_ms: 0.239621
+  ...
+# Subtest: invalid example invalid-agent-invoke-camelcase.json is rejected for the stated reason
+ok 99 - invalid example invalid-agent-invoke-camelcase.json is rejected for the stated reason
+  ---
+  duration_ms: 0.236491
+  ...
+# Subtest: invalid example invalid-agent-invoke-gateway-key.json is rejected for the stated reason
+ok 100 - invalid example invalid-agent-invoke-gateway-key.json is rejected for the stated reason
+  ---
+  duration_ms: 0.362537
+  ...
+# Subtest: invalid example invalid-agent-stop-no-target.json is rejected for the stated reason
+ok 101 - invalid example invalid-agent-stop-no-target.json is rejected for the stated reason
+  ---
+  duration_ms: 0.303537
+  ...
+# Subtest: invalid example invalid-description-bad-digest.json is rejected for the stated reason
+ok 102 - invalid example invalid-description-bad-digest.json is rejected for the stated reason
+  ---
+  duration_ms: 0.989425
+  ...
+# Subtest: invalid example invalid-discover-empty-versions.json is rejected for the stated reason
+ok 103 - invalid example invalid-discover-empty-versions.json is rejected for the stated reason
+  ---
+  duration_ms: 3.929635
+  ...
+# Subtest: invalid example invalid-error-bhms-code-without-data.json is rejected for the stated reason
+ok 104 - invalid example invalid-error-bhms-code-without-data.json is rejected for the stated reason
+  ---
+  duration_ms: 0.48592
+  ...
+# Subtest: invalid example invalid-error-code-mismatch.json is rejected for the stated reason
+ok 105 - invalid example invalid-error-code-mismatch.json is rejected for the stated reason
+  ---
+  duration_ms: 0.634892
+  ...
+# Subtest: invalid example invalid-error-data-missing-hint.json is rejected for the stated reason
+ok 106 - invalid example invalid-error-data-missing-hint.json is rejected for the stated reason
+  ---
+  duration_ms: 0.664339
+  ...
+# Subtest: invalid example invalid-error-device-fault-as-response.json is rejected for the stated reason
+ok 107 - invalid example invalid-error-device-fault-as-response.json is rejected for the stated reason
+  ---
+  duration_ms: 0.539671
+  ...
+# Subtest: invalid example invalid-error-unknown-code.json is rejected for the stated reason
+ok 108 - invalid example invalid-error-unknown-code.json is rejected for the stated reason
+  ---
+  duration_ms: 0.677356
+  ...
+# Subtest: invalid example invalid-invoke-authority-claim.json is rejected for the stated reason
+ok 109 - invalid example invalid-invoke-authority-claim.json is rejected for the stated reason
+  ---
+  duration_ms: 0.430567
+  ...
+# Subtest: invalid example invalid-invoke-derived-key-prefix.json is rejected for the stated reason
+ok 110 - invalid example invalid-invoke-derived-key-prefix.json is rejected for the stated reason
+  ---
+  duration_ms: 0.32193
+  ...
+# Subtest: invalid example invalid-lease-fence-zero.json is rejected for the stated reason
+ok 111 - invalid example invalid-lease-fence-zero.json is rejected for the stated reason
+  ---
+  duration_ms: 0.232616
+  ...
+# Subtest: invalid example invalid-listen-result-without-end-reason.json is rejected for the stated reason
+ok 112 - invalid example invalid-listen-result-without-end-reason.json is rejected for the stated reason
+  ---
+  duration_ms: 0.240258
+  ...
+# Subtest: invalid example invalid-meta-authorization-not-bearer.json is rejected for the stated reason
+ok 113 - invalid example invalid-meta-authorization-not-bearer.json is rejected for the stated reason
+  ---
+  duration_ms: 0.321885
+  ...
+# Subtest: invalid example invalid-missing-meta.json is rejected for the stated reason
+ok 114 - invalid example invalid-missing-meta.json is rejected for the stated reason
+  ---
+  duration_ms: 0.208148
+  ...
+# Subtest: invalid example invalid-missing-protocol-version.json is rejected for the stated reason
+ok 115 - invalid example invalid-missing-protocol-version.json is rejected for the stated reason
+  ---
+  duration_ms: 0.197141
+  ...
+# Subtest: invalid example invalid-null-request-id.json is rejected for the stated reason
+ok 116 - invalid example invalid-null-request-id.json is rejected for the stated reason
+  ---
+  duration_ms: 0.33668
+  ...
+# Subtest: invalid example invalid-observation-invalid-with-value.json is rejected for the stated reason
+ok 117 - invalid example invalid-observation-invalid-with-value.json is rejected for the stated reason
+  ---
+  duration_ms: 0.40588
+  ...
+# Subtest: invalid example invalid-observation-number-without-unit.json is rejected for the stated reason
+ok 118 - invalid example invalid-observation-number-without-unit.json is rejected for the stated reason
+  ---
+  duration_ms: 0.351772
+  ...
+# Subtest: invalid example invalid-operation-action-without-device.json is rejected for the stated reason
+ok 119 - invalid example invalid-operation-action-without-device.json is rejected for the stated reason
+  ---
+  duration_ms: 0.919576
+  ...
+# Subtest: invalid example invalid-operation-completed-without-result.json is rejected for the stated reason
+ok 120 - invalid example invalid-operation-completed-without-result.json is rejected for the stated reason
+  ---
+  duration_ms: 0.906974
+  ...
+# Subtest: invalid example invalid-operation-key-with-space.json is rejected for the stated reason
+ok 121 - invalid example invalid-operation-key-with-space.json is rejected for the stated reason
+  ---
+  duration_ms: 0.892297
+  ...
+# Subtest: invalid example invalid-operation-rejected-with-effect.json is rejected for the stated reason
+ok 122 - invalid example invalid-operation-rejected-with-effect.json is rejected for the stated reason
+  ---
+  duration_ms: 0.913085
+  ...
+# Subtest: invalid example invalid-operation-result-while-running.json is rejected for the stated reason
+ok 123 - invalid example invalid-operation-result-while-running.json is rejected for the stated reason
+  ---
+  duration_ms: 0.677026
+  ...
+# Subtest: invalid example invalid-operation-unknown-effect-verified.json is rejected for the stated reason
+ok 124 - invalid example invalid-operation-unknown-effect-verified.json is rejected for the stated reason
+  ---
+  duration_ms: 0.713112
+  ...
+# Subtest: invalid example invalid-operation-unknown-without-error.json is rejected for the stated reason
+ok 125 - invalid example invalid-operation-unknown-without-error.json is rejected for the stated reason
+  ---
+  duration_ms: 0.639014
+  ...
+# Subtest: invalid example invalid-policy-budget-without-quantity.json is rejected for the stated reason
+ok 126 - invalid example invalid-policy-budget-without-quantity.json is rejected for the stated reason
+  ---
+  duration_ms: 0.898803
+  ...
+# Subtest: invalid example invalid-program-dynamic-device.json is rejected for the stated reason
+ok 127 - invalid example invalid-program-dynamic-device.json is rejected for the stated reason
+  ---
+  duration_ms: 0.297112
+  ...
+# Subtest: invalid example invalid-program-repeat-over-limit.json is rejected for the stated reason
+ok 128 - invalid example invalid-program-repeat-over-limit.json is rejected for the stated reason
+  ---
+  duration_ms: 0.567164
+  ...
+# Subtest: invalid example invalid-program-run-both-sources.json is rejected for the stated reason
+ok 129 - invalid example invalid-program-run-both-sources.json is rejected for the stated reason
+  ---
+  duration_ms: 3.245173
+  ...
+# Subtest: invalid example invalid-program-unknown-step-kind.json is rejected for the stated reason
+ok 130 - invalid example invalid-program-unknown-step-kind.json is rejected for the stated reason
+  ---
+  duration_ms: 0.743985
+  ...
+# Subtest: invalid example invalid-property-numeric-without-unit.json is rejected for the stated reason
+ok 131 - invalid example invalid-property-numeric-without-unit.json is rejected for the stated reason
+  ---
+  duration_ms: 0.383302
+  ...
+# Subtest: invalid example invalid-reserved-meta-key.json is rejected for the stated reason
+ok 132 - invalid example invalid-reserved-meta-key.json is rejected for the stated reason
+  ---
+  duration_ms: 0.470178
+  ...
+# Subtest: invalid example invalid-resolve-claims-verified.json is rejected for the stated reason
+ok 133 - invalid example invalid-resolve-claims-verified.json is rejected for the stated reason
+  ---
+  duration_ms: 0.538227
+  ...
+# Subtest: invalid example invalid-resolve-no-effect-claims-proof.json is rejected for the stated reason
+ok 134 - invalid example invalid-resolve-no-effect-claims-proof.json is rejected for the stated reason
+  ---
+  duration_ms: 2.012597
+  ...
+# Subtest: invalid example invalid-result-missing-result-type.json is rejected for the stated reason
+ok 135 - invalid example invalid-result-missing-result-type.json is rejected for the stated reason
+  ---
+  duration_ms: 0.290314
+  ...
+# Subtest: invalid example invalid-result-type-input-required.json is rejected for the stated reason
+ok 136 - invalid example invalid-result-type-input-required.json is rejected for the stated reason
+  ---
+  duration_ms: 0.265865
+  ...
+# Subtest: invalid example invalid-safety-stop-bound-above-a-day.json is rejected for the stated reason
+ok 137 - invalid example invalid-safety-stop-bound-above-a-day.json is rejected for the stated reason
+  ---
+  duration_ms: 0.267349
+  ...
+# Subtest: invalid example invalid-scope-program-grant-short-digest.json is rejected for the stated reason
+ok 138 - invalid example invalid-scope-program-grant-short-digest.json is rejected for the stated reason
+  ---
+  duration_ms: 0.33378
+  ...
+# Subtest: invalid example invalid-stop-both-targets.json is rejected for the stated reason
+ok 139 - invalid example invalid-stop-both-targets.json is rejected for the stated reason
+  ---
+  duration_ms: 0.364366
+  ...
+# Subtest: invalid example invalid-stop-confirmed-without-evidence.json is rejected for the stated reason
+ok 140 - invalid example invalid-stop-confirmed-without-evidence.json is rejected for the stated reason
+  ---
+  duration_ms: 0.289959
+  ...
+# Subtest: invalid example invalid-stop-without-reason.json is rejected for the stated reason
+ok 141 - invalid example invalid-stop-without-reason.json is rejected for the stated reason
+  ---
+  duration_ms: 0.312212
+  ...
+# Subtest: valid example leases.acquire.request.json validates and round-trips canonically
+ok 142 - valid example leases.acquire.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.447469
+  ...
+# Subtest: valid example leases.acquire.response.json validates and round-trips canonically
+ok 143 - valid example leases.acquire.response.json validates and round-trips canonically
+  ---
+  duration_ms: 0.433105
+  ...
+# Subtest: valid example leases.release.request.json validates and round-trips canonically
+ok 144 - valid example leases.release.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.39885
+  ...
+# Subtest: valid example leases.release.response.json validates and round-trips canonically
+ok 145 - valid example leases.release.response.json validates and round-trips canonically
+  ---
+  duration_ms: 0.422069
+  ...
+# Subtest: valid example leases.renew.request.json validates and round-trips canonically
+ok 146 - valid example leases.renew.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.469465
+  ...
+# Subtest: valid example leases.renew.response.json validates and round-trips canonically
+ok 147 - valid example leases.renew.response.json validates and round-trips canonically
+  ---
+  duration_ms: 0.43035
+  ...
+# Subtest: valid example notifications.cancelled.json validates and round-trips canonically
+ok 148 - valid example notifications.cancelled.json validates and round-trips canonically
+  ---
+  duration_ms: 0.301273
+  ...
+# Subtest: valid example notifications.devices.listChanged.json validates and round-trips canonically
+ok 149 - valid example notifications.devices.listChanged.json validates and round-trips canonically
+  ---
+  duration_ms: 0.314999
+  ...
+# Subtest: valid example notifications.event.json validates and round-trips canonically
+ok 150 - valid example notifications.event.json validates and round-trips canonically
+  ---
+  duration_ms: 0.446495
+  ...
+# Subtest: valid example notifications.observation.json validates and round-trips canonically
+ok 151 - valid example notifications.observation.json validates and round-trips canonically
+  ---
+  duration_ms: 0.553109
+  ...
+# Subtest: valid example notifications.operation.json validates and round-trips canonically
+ok 152 - valid example notifications.operation.json validates and round-trips canonically
+  ---
+  duration_ms: 0.833319
+  ...
+# Subtest: valid example notifications.subscriptions.acknowledged.json validates and round-trips canonically
+ok 153 - valid example notifications.subscriptions.acknowledged.json validates and round-trips canonically
+  ---
+  duration_ms: 0.655306
+  ...
+# Subtest: valid example operation.failed-deadline.json validates and round-trips canonically
+ok 154 - valid example operation.failed-deadline.json validates and round-trips canonically
+  ---
+  duration_ms: 0.741632
+  ...
+# Subtest: valid example operation.failed-device-fault.json validates and round-trips canonically
+ok 155 - valid example operation.failed-device-fault.json validates and round-trips canonically
+  ---
+  duration_ms: 4.826165
+  ...
+# Subtest: valid example operation.failed-unverified.json validates and round-trips canonically
+ok 156 - valid example operation.failed-unverified.json validates and round-trips canonically
+  ---
+  duration_ms: 0.818914
+  ...
+# Subtest: valid example operation.program-child.json validates and round-trips canonically
+ok 157 - valid example operation.program-child.json validates and round-trips canonically
+  ---
+  duration_ms: 0.941981
+  ...
+# Subtest: valid example operations.cancel.request.json validates and round-trips canonically
+ok 158 - valid example operations.cancel.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.46084
+  ...
+# Subtest: valid example operations.cancel.response.json validates and round-trips canonically
+ok 159 - valid example operations.cancel.response.json validates and round-trips canonically
+  ---
+  duration_ms: 0.799497
+  ...
+# Subtest: valid example operations.get.request.json validates and round-trips canonically
+ok 160 - valid example operations.get.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.529603
+  ...
+# Subtest: valid example operations.get.response.json validates and round-trips canonically
+ok 161 - valid example operations.get.response.json validates and round-trips canonically
+  ---
+  duration_ms: 1.642323
+  ...
+# Subtest: valid example operations.list.request.json validates and round-trips canonically
+ok 162 - valid example operations.list.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.514081
+  ...
+# Subtest: valid example operations.list.response.json validates and round-trips canonically
+ok 163 - valid example operations.list.response.json validates and round-trips canonically
+  ---
+  duration_ms: 2.26822
+  ...
+# Subtest: valid example operations.resolve.request.json validates and round-trips canonically
+ok 164 - valid example operations.resolve.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.57349
+  ...
+# Subtest: valid example operations.resolve.response.json validates and round-trips canonically
+ok 165 - valid example operations.resolve.response.json validates and round-trips canonically
+  ---
+  duration_ms: 1.30683
+  ...
+# Subtest: valid example operations.wait.request.json validates and round-trips canonically
+ok 166 - valid example operations.wait.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.429346
+  ...
+# Subtest: valid example operations.wait.response.json validates and round-trips canonically
+ok 167 - valid example operations.wait.response.json validates and round-trips canonically
+  ---
+  duration_ms: 1.546633
+  ...
+# Subtest: valid example policy.gateway-budgets.json validates and round-trips canonically
+ok 168 - valid example policy.gateway-budgets.json validates and round-trips canonically
+  ---
+  duration_ms: 0.70027
+  ...
+# Subtest: valid example policy.gateway.json validates and round-trips canonically
+ok 169 - valid example policy.gateway.json validates and round-trips canonically
+  ---
+  duration_ms: 0.699786
+  ...
+# Subtest: valid example programs.get.request.json validates and round-trips canonically
+ok 170 - valid example programs.get.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.453976
+  ...
+# Subtest: valid example programs.get.response.json validates and round-trips canonically
+ok 171 - valid example programs.get.response.json validates and round-trips canonically
+  ---
+  duration_ms: 3.62375
+  ...
+# Subtest: valid example programs.list.request.json validates and round-trips canonically
+ok 172 - valid example programs.list.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.489882
+  ...
+# Subtest: valid example programs.list.response.json validates and round-trips canonically
+ok 173 - valid example programs.list.response.json validates and round-trips canonically
+  ---
+  duration_ms: 0.702889
+  ...
+# Subtest: valid example programs.register.request.json validates and round-trips canonically
+ok 174 - valid example programs.register.request.json validates and round-trips canonically
+  ---
+  duration_ms: 3.945924
+  ...
+# Subtest: valid example programs.register.response.json validates and round-trips canonically
+ok 175 - valid example programs.register.response.json validates and round-trips canonically
+  ---
+  duration_ms: 0.683883
+  ...
+# Subtest: valid example programs.run.request.json validates and round-trips canonically
+ok 176 - valid example programs.run.request.json validates and round-trips canonically
+  ---
+  duration_ms: 2.492391
+  ...
+# Subtest: valid example programs.run.response.json validates and round-trips canonically
+ok 177 - valid example programs.run.response.json validates and round-trips canonically
+  ---
+  duration_ms: 0.771719
+  ...
+# Subtest: valid example properties.read.request.json validates and round-trips canonically
+ok 178 - valid example properties.read.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.395982
+  ...
+# Subtest: valid example properties.read.response.json validates and round-trips canonically
+ok 179 - valid example properties.read.response.json validates and round-trips canonically
+  ---
+  duration_ms: 0.452915
+  ...
+# Subtest: valid example server.discover.request.json validates and round-trips canonically
+ok 180 - valid example server.discover.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.341147
+  ...
+# Subtest: valid example server.discover.response.json validates and round-trips canonically
+ok 181 - valid example server.discover.response.json validates and round-trips canonically
+  ---
+  duration_ms: 1.253687
+  ...
+# Subtest: valid example stop.request.json validates and round-trips canonically
+ok 182 - valid example stop.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.458053
+  ...
+# Subtest: valid example stop.response.json validates and round-trips canonically
+ok 183 - valid example stop.response.json validates and round-trips canonically
+  ---
+  duration_ms: 0.572306
+  ...
+# Subtest: valid example subscriptions.listen.request.json validates and round-trips canonically
+ok 184 - valid example subscriptions.listen.request.json validates and round-trips canonically
+  ---
+  duration_ms: 0.578631
+  ...
+# Subtest: valid example subscriptions.listen.response.json validates and round-trips canonically
+ok 185 - valid example subscriptions.listen.response.json validates and round-trips canonically
+  ---
+  duration_ms: 0.336775
+  ...
+# Subtest: description digests in the examples are real (BHMS-DEV-021)
+ok 186 - description digests in the examples are real (BHMS-DEV-021)
+  ---
+  duration_ms: 1.925963
+  ...
+# Subtest: program digests in the examples are real
+ok 187 - program digests in the examples are real
+  ---
+  duration_ms: 0.872314
+  ...
+# Subtest: canonical JSON follows RFC 8785 ordering and number formats
+ok 188 - canonical JSON follows RFC 8785 ordering and number formats
+  ---
+  duration_ms: 1.267995
+  ...
+# Subtest: the error table equals the schema's x-bhms-errors
+ok 189 - the error table equals the schema's x-bhms-errors
+  ---
+  duration_ms: 0.61723
+  ...
+# Subtest: the packaged schema is the spec schema, byte for byte
+ok 190 - the packaged schema is the spec schema, byte for byte
+  ---
+  duration_ms: 1.32978
+  ...
+# Subtest: requestDigest follows the §6.4 intent formula and equals the Python reference's digest of the invoke example
+ok 191 - requestDigest follows the §6.4 intent formula and equals the Python reference's digest of the invoke example
+  ---
+  duration_ms: 124.922563
+  ...
+# Subtest: generated types are fresh (scripts/gen-types.mjs --check)
+ok 192 - generated types are fresh (scripts/gen-types.mjs --check)
+  ---
+  duration_ms: 66.7006
+  ...
+# Subtest: LSE-014: a held lease refuses every request that does not present it, the holder included, and never names the holder
+ok 193 - LSE-014: a held lease refuses every request that does not present it, the holder included, and never names the holder
+  ---
+  duration_ms: 92.525929
+  ...
+# Subtest: LSE-014 with LSE-007/010: a lease supplied with an action that does not require one is always validated
+ok 194 - LSE-014 with LSE-007/010: a lease supplied with an action that does not require one is always validated
+  ---
+  duration_ms: 13.622861
+  ...
+# Subtest: LSE-014 before dispatch: an operation queued while the resource was free is rejected when a lease holds it at dispatch
+ok 195 - LSE-014 before dispatch: an operation queued while the resource was free is rejected when a lease holds it at dispatch
+  ---
+  duration_ms: 162.210023
+  ...
+# Subtest: LSE-014: stop needs no lease and is not blocked by one
+ok 196 - LSE-014: stop needs no lease and is not blocked by one
+  ---
+  duration_ms: 11.077415
+  ...
+# Subtest: LSE-014 in programs: a step on a resource the program's lease holds presents that lease; without one it is refused
+ok 197 - LSE-014 in programs: a step on a resource the program's lease holds presents that lease; without one it is refused
+  ---
+  duration_ms: 21.454702
+  ...
+# Subtest: PRG-006 with LSE-014: a program whose lease covers only part of a step's resources is refused at programs/run, naming the step
+ok 198 - PRG-006 with LSE-014: a program whose lease covers only part of a step's resources is refused at programs/run, naming the step
+  ---
+  duration_ms: 17.877395
+  ...
+# Subtest: DEV-033: a hazardous action without requiresLease is refused when it is declared
+ok 199 - DEV-033: a hazardous action without requiresLease is refused when it is declared
+  ---
+  duration_ms: 1.115923
+  ...
+# Subtest: OPS-008: a result outside its declared output range ends failed with OUT_OF_RANGE naming result.<member>, the value kept as evidence
+ok 200 - OPS-008: a result outside its declared output range ends failed with OUT_OF_RANGE naming result.<member>, the value kept as evidence
+  ---
+  duration_ms: 8.203334
+  ...
+# Subtest: OPS-008: a result of the wrong shape stays INTERNAL
+ok 201 - OPS-008: a result of the wrong shape stays INTERNAL
+  ---
+  duration_ms: 9.575216
+  ...
+# Subtest: DEV-013: the text filter is an any-word search over id, name, summary, tags and capabilities; capability * lists everything
+ok 202 - DEV-013: the text filter is an any-word search over id, name, summary, tags and capabilities; capability * lists everything
+  ---
+  duration_ms: 17.469766
+  ...
+# Subtest: DEV-014: UNKNOWN_DEVICE names the visible ids that differ only in case or by a namespace, never an invisible one
+ok 203 - DEV-014: UNKNOWN_DEVICE names the visible ids that differ only in case or by a namespace, never an invisible one
+  ---
+  duration_ms: 7.287452
+  ...
+# Subtest: OPS-082: when a device returns to online its unknown operations are reconciled from device evidence, once, and audited
+ok 204 - OPS-082: when a device returns to online its unknown operations are reconciled from device evidence, once, and audited
+  ---
+  duration_ms: 13.555739
+  ...
+# Subtest: OPS-082: a device that cannot say what happened (amnesia) leaves the operation unknown; nothing is assumed
+ok 205 - OPS-082: a device that cannot say what happened (amnesia) leaves the operation unknown; nothing is assumed
+  ---
+  duration_ms: 208.130967
+  ...
+# Subtest: OPS-082: the reconcile hook runs once per return and a hook that hangs is bounded by reconcileTimeoutS
+ok 206 - OPS-082: the reconcile hook runs once per return and a hook that hangs is bounded by reconcileTimeoutS
+  ---
+  duration_ms: 205.268842
+  ...
+# Subtest: B9: a failed liveness probe makes the device offline (new work DEVICE_UNAVAILABLE) until evidence of life brings it back
+ok 207 - B9: a failed liveness probe makes the device offline (new work DEVICE_UNAVAILABLE) until evidence of life brings it back
+  ---
+  duration_ms: 188.445257
+  ...
+# Subtest: B9: periodic liveness probing is off unless an interval is given
+ok 208 - B9: periodic liveness probing is off unless an interval is given
+  ---
+  duration_ms: 103.776962
+  ...
+# Subtest: OPS-100: operations/resolve is advertised and needs operations:resolve (or admin); the owner and a reader are refused
+ok 209 - OPS-100: operations/resolve is advertised and needs operations:resolve (or admin); the owner and a reader are refused
+  ---
+  duration_ms: 15.360541
+  ...
+# Subtest: OPS-102: an operator's resolution is a report after the unchanged history, marked with the operator, audited, and final
+ok 210 - OPS-102: an operator's resolution is a report after the unchanged history, marked with the operator, audited, and final
+  ---
+  duration_ms: 15.578213
+  ...
+# Subtest: OPS-102: completed resolutions carry a checked result and at most an unverified effect; proof of no effect goes with effect none
+ok 211 - OPS-102: completed resolutions carry a checked result and at most an unverified effect; proof of no effect goes with effect none
+  ---
+  duration_ms: 40.840406
+  ...
+# Subtest: OPS-101: the device is asked first and its evidence wins over the operator's statement
+ok 212 - OPS-101: the device is asked first and its evidence wins over the operator's statement
+  ---
+  duration_ms: 9.2471
+  ...
+# Subtest: the conformance device declares the amnesia fault after hostile_schema, as the Python device does
+ok 213 - the conformance device declares the amnesia fault after hostile_schema, as the Python device does
+  ---
+  duration_ms: 5.395885
+  ...
+# Subtest: an int output bound is kept when the result is in range
+ok 214 - an int output bound is kept when the result is in range
+  ---
+  duration_ms: 4.390941
+  ...
+# Subtest: reconciliation of an operation that required a verified effect: a completion the device cannot verify ends failed UNVERIFIED, as in Python
+ok 215 - reconciliation of an operation that required a verified effect: a completion the device cannot verify ends failed UNVERIFIED, as in Python
+  ---
+  duration_ms: 6.16586
+  ...
+# Subtest: LSE-014 / OPS-041: a lease taken by another principal while the dispatch-time freshness read runs refuses the queued operation
+ok 216 - LSE-014 / OPS-041: a lease taken by another principal while the dispatch-time freshness read runs refuses the queued operation
+  ---
+  duration_ms: 87.496939
+  ...
+# Subtest: LSE-010 / OPS-041: a lease revoked while the dispatch-time freshness read runs refuses the queued operation (Python test_lease_revoked_during_predispatch_checks_rejects)
+ok 217 - LSE-010 / OPS-041: a lease revoked while the dispatch-time freshness read runs refuses the queued operation (Python test_lease_revoked_during_predispatch_checks_rejects)
+  ---
+  duration_ms: 85.480305
+  ...
+# Subtest: DEV-031 / OPS-006: an observation that does not confirm, or is not measured, is reported evidence, never measured
+ok 218 - DEV-031 / OPS-006: an observation that does not confirm, or is not measured, is reported evidence, never measured
+  ---
+  duration_ms: 5.725392
+  ...
+# Subtest: OPS-006: completionEvidence none records evidence {kind: none}, as in Python
+ok 219 - OPS-006: completionEvidence none records evidence {kind: none}, as in Python
+  ---
+  duration_ms: 2.709825
+  ...
+# Subtest: OPS-006: the journal refuses effect verified unless every observation is measured and valid
+ok 220 - OPS-006: the journal refuses effect verified unless every observation is measured and valid
+  ---
+  duration_ms: 3.23516
+  ...
+# Subtest: Ruling R45: a resolution refusal names the member at fault, not the resolution object
+ok 221 - Ruling R45: a resolution refusal names the member at fault, not the resolution object
+  ---
+  duration_ms: 8.362231
+  ...
+# Subtest: a stop bound is at most one day (safety.stopMaxDurationMs, as a program's maxDurationMs; Task 12b)
+ok 222 - a stop bound is at most one day (safety.stopMaxDurationMs, as a program's maxDurationMs; Task 12b)
+  ---
+  duration_ms: 0.51286
+  ...
+# Subtest: DEV-036: action durations are bounded at declaration, including effect-free actions
+ok 223 - DEV-036: action durations are bounded at declaration, including effect-free actions
+  ---
+  duration_ms: 0.383446
+  ...
+# Subtest: OPS-072: a late return after lease hold preserves the failed operation and records evidence
+ok 224 - OPS-072: a late return after lease hold preserves the failed operation and records evidence
+  ---
+  duration_ms: 4.546536
+  ...
+# Subtest: /home/bud/Desktop/bud/hms/sdk/typescript/dist/test/harness.js
+ok 8 - /home/bud/Desktop/bud/hms/sdk/typescript/dist/test/harness.js
+  ---
+  duration_ms: 141.453895
+  ...
+# Subtest: /home/bud/Desktop/bud/hms/sdk/typescript/dist/test/helpers.js
+ok 9 - /home/bud/Desktop/bud/hms/sdk/typescript/dist/test/helpers.js
+  ---
+  duration_ms: 70.211568
+  ...
+# Subtest: discover: identity, capabilities, epoch and principal
+ok 227 - discover: identity, capabilities, epoch and principal
+  ---
+  duration_ms: 589.65684
+  ...
+# Subtest: devices: list, filter, describe and verify the digest
+ok 228 - devices: list, filter, describe and verify the digest
+  ---
+  duration_ms: 8.063497
+  ...
+# Subtest: invoke: completes verified, replays on the same key, KEY_CONFLICT on another intent
+ok 229 - invoke: completes verified, replays on the same key, KEY_CONFLICT on another intent
+  ---
+  duration_ms: 27.381655
+  ...
+# Subtest: errors: out of range, unit mismatch, unknown action, lease required
+ok 230 - errors: out of range, unit mismatch, unknown action, lease required
+  ---
+  duration_ms: 2.868489
+  ...
+# Subtest: leases: acquire, use for clamp, renew, release
+ok 231 - leases: acquire, use for clamp, renew, release
+  ---
+  duration_ms: 54.227327
+  ...
+# Subtest: properties, cancel of a slow move, stop
+ok 232 - properties, cancel of a slow move, stop
+  ---
+  duration_ms: 55.484354
+  ...
+# Subtest: subscriptions: acknowledged first, operation notifications tagged, events replayed
+ok 233 - subscriptions: acknowledged first, operation notifications tagged, events replayed
+  ---
+  duration_ms: 4.654276
+  ...
+# Subtest: programs cross-language: the TS client registers and runs a program on the Python device
+ok 234 - programs cross-language: the TS client registers and runs a program on the Python device
+  ---
+  duration_ms: 8.12403
+  ...
+# Subtest: byte-for-byte parity: the TS and Python conformance devices describe themselves with identical digests
+ok 235 - byte-for-byte parity: the TS and Python conformance devices describe themselves with identical digests
+  ---
+  duration_ms: 20.817375
+  ...
+# Subtest: contract v2 parity: extension declaration, counters shape and the description digest under every description-changing fault
+ok 236 - contract v2 parity: extension declaration, counters shape and the description digest under every description-changing fault
+  ---
+  duration_ms: 249.20411
+  ...
+# handler axis-1/pulse raised (operation op-18e9d9c2b681af0568d4884ad1): injected adapter crash after the device acted
+# Traceback (most recent call last):
+#   File "/home/bud/Desktop/bud/hms/sdk/python/src/bhms/server/executor.py", line 542, in _run
+#     outcome = unsent if unsent is not None else ("returned", await self._call(execution))
+#                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#   File "/home/bud/Desktop/bud/hms/sdk/python/src/bhms/server/executor.py", line 529, in _call
+#     return await handler(*args, **kwargs)
+#            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#   File "/home/bud/Desktop/bud/hms/sdk/python/src/bhms/testing/conformance_device.py", line 371, in pulse
+#     return await sim.end(ctx.operation_id, {"pulses": sim.pulses}, ctx.cancelled)
+#            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+#   File "/home/bud/Desktop/bud/hms/sdk/python/src/bhms/testing/conformance_device.py", line 211, in end
+#     raise RuntimeError("injected adapter crash after the device acted")
+# RuntimeError: injected adapter crash after the device acted
+# Subtest: Task 7b parity: word search, capability *, UNKNOWN_DEVICE hints, LSE-014 refusals and operator resolutions answer as the Python device does
+ok 237 - Task 7b parity: word search, capability *, UNKNOWN_DEVICE hints, LSE-014 refusals and operator resolutions answer as the Python device does
+  ---
+  duration_ms: 24.788479
+  ...
+# Subtest: schemaBoundsProblem answers exactly like bhms.protocol.schema.schema_bounds_problem on a corpus of boundary cases
+ok 238 - schemaBoundsProblem answers exactly like bhms.protocol.schema.schema_bounds_problem on a corpus of boundary cases
+  ---
+  duration_ms: 569.528989
+  ...
+# Subtest: a Python client (strict) drives the TypeScript conformance device over stdio
+ok 239 - a Python client (strict) drives the TypeScript conformance device over stdio
+  ---
+  duration_ms: 859.101504
+  ...
+# Subtest: a TS client drives a TS server over stdio (subprocess), including stdin EOF shutdown
+ok 240 - a TS client drives a TS server over stdio (subprocess), including stdin EOF shutdown
+  ---
+  duration_ms: 90.722619
+  ...
+# Subtest: TS server: nothing but BHMS messages on stdout, exits on stdin EOF
+ok 241 - TS server: nothing but BHMS messages on stdout, exits on stdin EOF
+  ---
+  duration_ms: 308.69943
+  ...
+# Subtest: TS client and TS server over a Unix-domain socket; a server refuses TCP (no credential, BHMS-SEC-001)
+ok 242 - TS client and TS server over a Unix-domain socket; a server refuses TCP (no credential, BHMS-SEC-001)
+  ---
+  duration_ms: 102.281145
+  ...
+# Subtest: TS client and TS server over WebSocket: bearer token required, the principal is admin only with it
+ok 243 - TS client and TS server over WebSocket: bearer token required, the principal is admin only with it
+  ---
+  duration_ms: 119.627995
+  ...
+# Subtest: CRITICAL 1: after a write failure and recovery the committed operations and fences survive a restart
+ok 244 - CRITICAL 1: after a write failure and recovery the committed operations and fences survive a restart
+  ---
+  duration_ms: 181.088847
+  ...
+# Subtest: CRITICAL 2: startup prune keeps the recovery writes and removes pruned keys from memory
+ok 245 - CRITICAL 2: startup prune keeps the recovery writes and removes pruned keys from memory
+  ---
+  duration_ms: 49.51408
+  ...
+# Subtest: IMPORTANT 3: a second server on the same state directory is refused; a stale lock is taken over
+ok 246 - IMPORTANT 3: a second server on the same state directory is refused; a stale lock is taken over
+  ---
+  duration_ms: 2096.457425
+  ...
+# Subtest: a JournalStore keeps its live state: recovery after a failed write does not lose earlier commits
+ok 247 - a JournalStore keeps its live state: recovery after a failed write does not lose earlier commits
+  ---
+  duration_ms: 30.955139
+  ...
+# Subtest: IMPORTANT 4 (BHMS-LIF-001): invalid UTF-8 is a parse error, not U+FFFD
+ok 248 - IMPORTANT 4 (BHMS-LIF-001): invalid UTF-8 is a parse error, not U+FFFD
+  ---
+  duration_ms: 49.514897
+  ...
+# Subtest: IMPORTANT 5 (BHMS-EVT-002): a device.epoch event per device at start
+ok 249 - IMPORTANT 5 (BHMS-EVT-002): a device.epoch event per device at start
+  ---
+  duration_ms: 4.296122
+  ...
+# Subtest: IMPORTANT 6: stop writes a stop history entry on the queued operations it cancels
+ok 250 - IMPORTANT 6: stop writes a stop history entry on the queued operations it cancels
+  ---
+  duration_ms: 7.096795
+  ...
+# Subtest: IMPORTANT 7 (OBS-006): a transaction property keeps its retained sample after an effectful operation settles
+ok 251 - IMPORTANT 7 (OBS-006): a transaction property keeps its retained sample after an effectful operation settles
+  ---
+  duration_ms: 29.365933
+  ...
+# Subtest: IMPORTANT 8 / N2 / N3 (SEC-001): no credential-less TCP; refusal happens before the store is opened
+ok 252 - IMPORTANT 8 / N2 / N3 (SEC-001): no credential-less TCP; refusal happens before the store is opened
+  ---
+  duration_ms: 9.23883
+  ...
+# Subtest: OPS-033: the key lookup precedes the waitMs range check, and a refused range creates no operation
+ok 253 - OPS-033: the key lookup precedes the waitMs range check, and a refused range creates no operation
+  ---
+  duration_ms: 7.042967
+  ...
+# Subtest: N1: the journal lock is a kernel-held socket: live holder refused, concurrent starters yield one winner, SIGKILL frees it
+ok 254 - N1: the journal lock is a kernel-held socket: live holder refused, concurrent starters yield one winner, SIGKILL frees it
+  ---
+  duration_ms: 4658.716523
+  ...
+# Subtest: N1 flock capability: no flock(1) at all (ENOENT) warns that SEC-003 does not hold, then locks with the socket (second starter refused)
+ok 255 - N1 flock capability: no flock(1) at all (ENOENT) warns that SEC-003 does not hold, then locks with the socket (second starter refused)
+  ---
+  duration_ms: 6.401327
+  ...
+# Subtest: N1 flock capability: a flock that rejects its arguments (no -n, an unknown option) is detected without -E and falls back with a warning
+ok 256 - N1 flock capability: a flock that rejects its arguments (no -n, an unknown option) is detected without -E and falls back with a warning
+  ---
+  duration_ms: 22.798725
+  ...
+# Subtest: N1 flock capability: a held lock (silent exit 1, as util-linux and busybox both do) is retried for about two seconds, then reported as in use
+ok 257 - N1 flock capability: a held lock (silent exit 1, as util-linux and busybox both do) is retried for about two seconds, then reported as in use
+  ---
+  duration_ms: 2040.78009
+  ...
+# Subtest: N1 flock capability: a lock whose previous holder is still tearing down is acquired inside the retry window
+ok 258 - N1 flock capability: a lock whose previous holder is still tearing down is acquired inside the retry window
+  ---
+  duration_ms: 23.228466
+  ...
+# Subtest: N1: path mode (macOS fallback): a dead holder's socket file is taken over, our own stale file included; a live holder is refused
+ok 259 - N1: path mode (macOS fallback): a dead holder's socket file is taken over, our own stale file included; a live holder is refused
+  ---
+  duration_ms: 21.751811
+  ...
+# Subtest: N4: event retention prunes the store's events too, and compaction drops them from the journal
+ok 260 - N4: event retention prunes the store's events too, and compaction drops them from the journal
+  ---
+  duration_ms: 208.940955
+  ...
+# Subtest: /home/bud/Desktop/bud/hms/sdk/typescript/dist/test/paths.js
+ok 13 - /home/bud/Desktop/bud/hms/sdk/typescript/dist/test/paths.js
+  ---
+  duration_ms: 65.359158
+  ...
+# Subtest: every invalid program vector is refused before any step, with the program path, creating no operation
+ok 262 - every invalid program vector is refused before any step, with the program path, creating no operation
+  ---
+  duration_ms: 158.898015
+  ...
+# Subtest: ordered program: derived-key children in order, step history, progress, digest and effect
+ok 263 - ordered program: derived-key children in order, step history, progress, digest and effect
+  ---
+  duration_ms: 58.513427
+  ...
+# Subtest: repeat, references, saveAs and output: scopes, selectors, literal escape and evaluated result
+ok 264 - repeat, references, saveAs and output: scopes, selectors, literal escape and evaluated result
+  ---
+  duration_ms: 48.279728
+  ...
+# Subtest: a failing step stops the program: DEVICE_FAULT with mayHaveActed, earlier effects stay, no later step
+ok 265 - a failing step stops the program: DEVICE_FAULT with mayHaveActed, earlier effects stay, no later step
+  ---
+  duration_ms: 17.296001
+  ...
+# Subtest: assert false is STALE with the message as hint; waitUntil ignores invalid samples and times out
+ok 266 - assert false is STALE with the message as hint; waitUntil ignores invalid samples and times out
+  ---
+  duration_ms: 269.676642
+  ...
+# Subtest: operations/cancel and stop end a running program and cancel its running child; no later step starts
+ok 267 - operations/cancel and stop end a running program and cancel its running child; no later step starts
+  ---
+  duration_ms: 39.388353
+  ...
+# Subtest: maxDurationMs is enforced at run time: no further step starts and the program fails DEADLINE_EXCEEDED
+ok 268 - maxDurationMs is enforced at run time: no further step starts and the program fails DEADLINE_EXCEEDED
+  ---
+  duration_ms: 128.453675
+  ...
+# Subtest: registry: content-addressed, idempotent, immutable; digest and inline runs share one intent; authority is re-checked
+ok 269 - registry: content-addressed, idempotent, immutable; digest and inline runs share one intent; authority is re-checked
+  ---
+  duration_ms: 20.637109
+  ...
+# Subtest: a program that needs a lease requires one covering its steps (BHMS-PRG-006)
+ok 270 - a program that needs a lease requires one covering its steps (BHMS-PRG-006)
+  ---
+  duration_ms: 57.324946
+  ...
+# Subtest: verified children carry their measured evidence up to the program (BHMS-PRG-016, BHMS-OPS-006)
+ok 271 - verified children carry their measured evidence up to the program (BHMS-PRG-016, BHMS-OPS-006)
+  ---
+  duration_ms: 47.126467
+  ...
+# Subtest: programs are never resumed: kill -9 between steps => failed INTERNAL 'server restarted', no step runs after restart
+ok 272 - programs are never resumed: kill -9 between steps => failed INTERNAL 'server restarted', no step runs after restart
+  ---
+  duration_ms: 486.638755
+  ...
+# Subtest: PRG-023: exact program grants authorize reviewed steps only, never direct calls or a changed program
+ok 273 - PRG-023: exact program grants authorize reviewed steps only, never direct calls or a changed program
+  ---
+  duration_ms: 60.091908
+  ...
+# Subtest: PRG-023: nested hazardous steps and transaction reads retain leases and policy bounds
+ok 274 - PRG-023: nested hazardous steps and transaction reads retain leases and policy bounds
+  ---
+  duration_ms: 11.401423
+  ...
+# Subtest: the client exposes every method of the schema
+ok 275 - the client exposes every method of the schema
+  ---
+  duration_ms: 4.687852
+  ...
+# Subtest: discover: capabilities, limits and epoch; programs advertised with the spec limits
+ok 276 - discover: capabilities, limits and epoch; programs advertised with the spec limits
+  ---
+  duration_ms: 57.285948
+  ...
+# Subtest: lifecycle: missing _meta, unknown member, unsupported version and unknown method
+ok 277 - lifecycle: missing _meta, unknown member, unsupported version and unknown method
+  ---
+  duration_ms: 13.654848
+  ...
+# Subtest: devices: ordered list, filters, pagination, describe digest and STALE pin
+ok 278 - devices: ordered list, filters, pagination, describe digest and STALE pin
+  ---
+  duration_ms: 28.976701
+  ...
+# Subtest: a device declared after start changes the listing and notifies listChanged
+ok 279 - a device declared after start changes the listing and notifies listChanged
+  ---
+  duration_ms: 13.608152
+  ...
+# Subtest: invoke: verified completion, history, replay, KEY_CONFLICT and exactly one device effect
+ok 280 - invoke: verified completion, history, replay, KEY_CONFLICT and exactly one device effect
+  ---
+  duration_ms: 45.588108
+  ...
+# Subtest: OPS-033: the key lookup precedes everything else, even after the lease is gone
+ok 281 - OPS-033: the key lookup precedes everything else, even after the lease is gone
+  ---
+  duration_ms: 63.160421
+  ...
+# Subtest: OPS-032: concurrent requests with one key make exactly one operation
+ok 282 - OPS-032: concurrent requests with one key make exactly one operation
+  ---
+  duration_ms: 17.297007
+  ...
+# Subtest: admission errors name the field and the bound; nothing is created
+ok 283 - admission errors name the field and the bound; nothing is created
+  ---
+  duration_ms: 44.356457
+  ...
+# Subtest: leases: all-or-nothing, conflict, renew keeps the fence, release, fences increase, fenced after stop
+ok 284 - leases: all-or-nothing, conflict, renew keeps the fence, release, fences increase, fenced after stop
+  ---
+  duration_ms: 68.250448
+  ...
+# Subtest: a lease that expires while clamp runs cancels it (onLeaseLoss cancel)
+ok 285 - a lease that expires while clamp runs cancels it (onLeaseLoss cancel)
+  ---
+  duration_ms: 55.573365
+  ...
+# Subtest: properties: quality, staleness, maxAge, fresh, transaction authority, unknown property
+ok 286 - properties: quality, staleness, maxAge, fresh, transaction authority, unknown property
+  ---
+  duration_ms: 8.677063
+  ...
+# Subtest: OBS-006: after an effectful operation settles, the next read acquires a new sample
+ok 287 - OBS-006: after an effectful operation settles, the next read acquires a new sample
+  ---
+  duration_ms: 24.515227
+  ...
+# Subtest: requiresFresh: dispense needs a valid pressure; a stale sensor is STALE naming requiresFresh[0]
+ok 288 - requiresFresh: dispense needs a valid pressure; a stale sensor is STALE naming requiresFresh[0]
+  ---
+  duration_ms: 16.858209
+  ...
+# Subtest: require verified: a disagreeing encoder fails UNVERIFIED with mayHaveActed
+ok 289 - require verified: a disagreeing encoder fails UNVERIFIED with mayHaveActed
+  ---
+  duration_ms: 46.48926
+  ...
+# Subtest: faults: DEVICE_FAULT is an operation error, crash is unknown and inhibits until reconciled
+ok 290 - faults: DEVICE_FAULT is an operation error, crash is unknown and inhibits until reconciled
+  ---
+  duration_ms: 9.62242
+  ...
+# Subtest: cancel: queued ops cancel without effect, running ops confirm, unsupported is refused, settled unchanged
+ok 291 - cancel: queued ops cancel without effect, running ops confirm, unsupported is refused, settled unchanged
+  ---
+  duration_ms: 8.742879
+  ...
+# Subtest: cancelling the invoke request does not cancel the operation (BHMS-LIF-050)
+ok 292 - cancelling the invoke request does not cancel the operation (BHMS-LIF-050)
+  ---
+  duration_ms: 154.333775
+  ...
+# Subtest: operations/wait returns on settle or timeout without an error; limits are enforced
+ok 293 - operations/wait returns on settle or timeout without an error; limits are enforced
+  ---
+  duration_ms: 304.688562
+  ...
+# Subtest: operations/list: createdAt descending, keyset pagination
+ok 294 - operations/list: createdAt descending, keyset pagination
+  ---
+  duration_ms: 25.642985
+  ...
+# Subtest: deadlines: a deadline shorter than the action fails DEADLINE_EXCEEDED, never completed; an expired queue entry is rejected
+ok 295 - deadlines: a deadline shorter than the action fails DEADLINE_EXCEEDED, never completed; an expired queue entry is rejected
+  ---
+  duration_ms: 504.63339
+  ...
+# Subtest: stop: confirmed with evidence, cancels queued and running work, unknown device does not fail the request
+ok 296 - stop: confirmed with evidence, cancels queued and running work, unknown device does not fail the request
+  ---
+  duration_ms: 30.741021
+  ...
+# Subtest: authority: invoke patterns, hazardous literal rule, read-only principals, invisible devices
+ok 297 - authority: invoke patterns, hazardous literal rule, read-only principals, invisible devices
+  ---
+  duration_ms: 6.061611
+  ...
+# Subtest: journal read-only: ordinary work is BUSY, stop still works and says degraded-audit, inject always works
+ok 298 - journal read-only: ordinary work is BUSY, stop still works and says degraded-audit, inject always works
+  ---
+  duration_ms: 35.657691
+  ...
+# Subtest: subscriptions: acknowledged first with refusals, tagged notifications, no unrequested types, shutdown end
+ok 299 - subscriptions: acknowledged first with refusals, tagged notifications, no unrequested types, shutdown end
+  ---
+  duration_ms: 5.858014
+  ...
+# Subtest: subscriptions: observation rate floor, quality change delivered at once
+ok 300 - subscriptions: observation rate floor, quality change delivered at once
+  ---
+  duration_ms: 405.066612
+  ...
+# Subtest: subscriptions: revoked read scope ends delivery with endReason unauthorized
+ok 301 - subscriptions: revoked read scope ends delivery with endReason unauthorized
+  ---
+  duration_ms: 2.631444
+  ...
+# Subtest: events: cursors in order, resume after, gap on a reset log, live replay without duplicates
+ok 302 - events: cursors in order, resume after, gap on a reset log, live replay without duplicates
+  ---
+  duration_ms: 4.336635
+  ...
+# Subtest: I-JSON: a result with an unsafe integer fails INTERNAL and is never completed
+ok 303 - I-JSON: a result with an unsafe integer fails INTERNAL and is never completed
+  ---
+  duration_ms: 2.902631
+  ...
+# Subtest: output schema violations never complete
+ok 304 - output schema violations never complete
+  ---
+  duration_ms: 3.021968
+  ...
+# Subtest: a handler crash after dispatch is unknown, and a duration bound without cancel support is unknown too
+ok 305 - a handler crash after dispatch is unknown, and a duration bound without cancel support is unknown too
+  ---
+  duration_ms: 456.430318
+  ...
+# Subtest: offline device: DEVICE_UNAVAILABLE is retry same-key friendly and status shows in the listing
+ok 306 - offline device: DEVICE_UNAVAILABLE is retry same-key friendly and status shows in the listing
+  ---
+  duration_ms: 9.809838
+  ...
+# Subtest: concurrent requests are correlated by id and may finish out of order
+ok 307 - concurrent requests are correlated by id and may finish out of order
+  ---
+  duration_ms: 47.361058
+  ...
+# Subtest: a BhmsError maps to its JSON-RPC code and back; any other error is INTERNAL without detail
+ok 308 - a BhmsError maps to its JSON-RPC code and back; any other error is INTERNAL without detail
+  ---
+  duration_ms: 5.33556
+  ...
+# Subtest: malformed frames, batches and oversize frames are answered with id null and the session keeps going
+ok 309 - malformed frames, batches and oversize frames are answered with id null and the session keeps going
+  ---
+  duration_ms: 54.731929
+  ...
+# Subtest: a cancelled request gets no response but its handler keeps running (BHMS-LIF-050/051)
+ok 310 - a cancelled request gets no response but its handler keeps running (BHMS-LIF-050/051)
+  ---
+  duration_ms: 162.932135
+  ...
+# Subtest: a request timeout is DEADLINE_EXCEEDED with mayHaveActed and cancels on the wire
+ok 311 - a request timeout is DEADLINE_EXCEEDED with mayHaveActed and cancels on the wire
+  ---
+  duration_ms: 21.745616
+  ...
+# Subtest: streams: notifications are tagged with the request id; the result ends the stream
+ok 312 - streams: notifications are tagged with the request id; the result ends the stream
+  ---
+  duration_ms: 2.811971
+  ...
+# Subtest: cancelling a client stream stops the server generator and sends nothing more
+ok 313 - cancelling a client stream stops the server generator and sends nothing more
+  ---
+  duration_ms: 51.985081
+  ...
+# Subtest: Unix-domain sockets: mode 0600, concurrent requests, newline framing
+ok 314 - Unix-domain sockets: mode 0600, concurrent requests, newline framing
+  ---
+  duration_ms: 9.680655
+  ...
+# Subtest: TCP listeners bind only loopback (BHMS-TRN-021)
+ok 315 - TCP listeners bind only loopback (BHMS-TRN-021)
+  ---
+  duration_ms: 7.030328
+  ...
+# Subtest: WebSocket: subprotocol bhms, bearer token required (401 otherwise), one message per frame
+ok 316 - WebSocket: subprotocol bhms, bearer token required (401 otherwise), one message per frame
+  ---
+  duration_ms: 71.310299
+  ...
+# Subtest: v0.2 discovery exposes grants and budget balances, while v0.1 hides them and enforces the same limits
+ok 317 - v0.2 discovery exposes grants and budget balances, while v0.1 hides them and enforces the same limits
+  ---
+  duration_ms: 61.655344
+  ...
+# Subtest: client falls back to an older server unless the caller pinned a version
+ok 318 - client falls back to an older server unless the caller pinned a version
+  ---
+  duration_ms: 2.80083
+  ...
+# Subtest: the v0.2 client uses the standard bearer carrier over loopback TCP and the gate removes it before dispatch
+ok 319 - the v0.2 client uses the standard bearer carrier over loopback TCP and the gate removes it before dispatch
+  ---
+  duration_ms: 24.306277
+  ...
+1..319
+# tests 319
+# suites 0
+# pass 319
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 9684.144451

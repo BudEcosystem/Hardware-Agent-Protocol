@@ -1,0 +1,470 @@
+{
+  "formatVersion": 1,
+  "conformance": {
+    "protocolVersion": "2026-11-15",
+    "profiles": [
+      "agent"
+    ],
+    "profilesNotApplicable": {},
+    "transport": "mcp",
+    "target": "agent-bridge",
+    "implementation": {
+      "name": "conformance-device",
+      "version": "0.1.0",
+      "commit": "unknown"
+    },
+    "schemaDigest": "sha256:06fd2b93d91c62785053e1e2d125138c9e93ffac183abb4bbab0ba05aa33540d",
+    "devices": "simulated",
+    "seed": 43610,
+    "strict": false,
+    "allowUnproven": false,
+    "reportKind": "conformance",
+    "authority": "multi-principal: a scope policy is enforced",
+    "only": [],
+    "command": "bhms conformance agent-bridge --json /tmp/hap-agent-conformance.json",
+    "runnerPython": "3.12.3",
+    "epoch": "715814e3cfef7654"
+  },
+  "claims": {
+    "agent": {
+      "claimable": true,
+      "failed": [],
+      "unproven": [],
+      "needsReview": []
+    }
+  },
+  "fatal": "",
+  "summary": {
+    "passed": 22,
+    "failed": 0,
+    "skipped": 1,
+    "not-applicable": 0,
+    "mustFailed": 0,
+    "mustUnproven": 0
+  },
+  "checks": [
+    {
+      "check": "agent.tool-surface",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AGT-001",
+        "BHMS-AGT-051",
+        "BHMS-AGT-031"
+      ],
+      "profile": "agent",
+      "generic": false,
+      "message": "",
+      "seconds": 0.006
+    },
+    {
+      "check": "agent.no-authority-from-arguments",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AGT-002",
+        "BHMS-SEC-031"
+      ],
+      "profile": "agent",
+      "generic": false,
+      "message": "",
+      "seconds": 0.011
+    },
+    {
+      "check": "agent.results-and-summaries",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AGT-010",
+        "BHMS-AGT-011",
+        "BHMS-AGT-012",
+        "BHMS-AGT-013",
+        "BHMS-OPS-055"
+      ],
+      "profile": "agent",
+      "generic": false,
+      "message": "",
+      "seconds": 0.147
+    },
+    {
+      "check": "agent.refusals",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AGT-020",
+        "BHMS-AGT-021"
+      ],
+      "profile": "agent",
+      "generic": false,
+      "message": "",
+      "seconds": 0.041
+    },
+    {
+      "check": "agent.find-no-match",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AGT-015"
+      ],
+      "profile": "agent",
+      "generic": false,
+      "message": "",
+      "seconds": 0.008
+    },
+    {
+      "check": "agent.describe-topic",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AGT-016"
+      ],
+      "profile": "agent",
+      "generic": false,
+      "message": "",
+      "seconds": 0.004
+    },
+    {
+      "check": "agent.freshness-and-keys",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AGT-014",
+        "BHMS-AGT-030",
+        "BHMS-AGT-041"
+      ],
+      "profile": "agent",
+      "generic": false,
+      "message": "",
+      "seconds": 0.117
+    },
+    {
+      "check": "agent.wait-and-leases",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AGT-032",
+        "BHMS-AGT-040"
+      ],
+      "profile": "agent",
+      "generic": false,
+      "message": "",
+      "seconds": 1.749
+    },
+    {
+      "check": "agent.programs-and-stop",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AGT-001",
+        "BHMS-OPS-055"
+      ],
+      "profile": "agent",
+      "generic": false,
+      "message": "",
+      "seconds": 0.024
+    },
+    {
+      "check": "agent.function-tools-equal-mcp",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AGT-050"
+      ],
+      "profile": "agent",
+      "generic": false,
+      "message": "",
+      "seconds": 0.007
+    },
+    {
+      "check": "agent.hostile-text-is-data",
+      "status": "passed",
+      "requirements": [
+        "BHMS-SEC-020"
+      ],
+      "profile": "agent",
+      "generic": false,
+      "message": "",
+      "seconds": 0.03
+    },
+    {
+      "check": "agent.describe-shows-budgets",
+      "status": "passed",
+      "requirements": [
+        "BHMS-AGT-017"
+      ],
+      "profile": "agent",
+      "generic": false,
+      "message": "",
+      "seconds": 0.017
+    }
+  ],
+  "requirements": [
+    {
+      "id": "BHMS-OPS-055",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.results-and-summaries",
+        "agent.programs-and-stop"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-001",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.tool-surface",
+        "agent.programs-and-stop"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-002",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.no-authority-from-arguments"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-010",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.results-and-summaries"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-011",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.results-and-summaries"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-012",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.results-and-summaries"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-013",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.results-and-summaries"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-014",
+      "level": "SHOULD",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.freshness-and-keys"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-015",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.find-no-match"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-016",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.describe-topic"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-017",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.describe-shows-budgets"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-020",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.refusals"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-021",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.refusals"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-030",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.freshness-and-keys"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-031",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.tool-surface"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-032",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.wait-and-leases"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-033",
+      "level": "SHOULD",
+      "profile": "agent",
+      "method": "inspection",
+      "status": "skipped",
+      "reason": "inspection: bridge behaviour (SHOULD): the bounded wait of bhms_stop (tests/test_bridge_core.py)",
+      "checks": [],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-040",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.wait-and-leases"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-041",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.freshness-and-keys"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-050",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.function-tools-equal-mcp"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-AGT-051",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.tool-surface"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-020",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.hostile-text-is-data"
+      ],
+      "unproven": false
+    },
+    {
+      "id": "BHMS-SEC-031",
+      "level": "MUST",
+      "profile": "agent",
+      "method": "agent",
+      "status": "passed",
+      "reason": "",
+      "checks": [
+        "agent.no-authority-from-arguments"
+      ],
+      "unproven": false
+    }
+  ],
+  "exitCode": 0
+}

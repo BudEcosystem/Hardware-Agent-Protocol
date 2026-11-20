@@ -396,6 +396,7 @@ _EXACT: dict[str, tuple[str, ...]] = {
         "stop.semantics",
     ),
     "any-version-accepted": (
+        "lifecycle.earlier-version-behaviour",
         "lifecycle.params-and-meta-required",
         "lifecycle.version-negotiation",
     ),
