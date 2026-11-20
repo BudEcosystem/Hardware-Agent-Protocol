@@ -9,6 +9,7 @@ import { test } from "node:test";
 import { BhmsError } from "../src/errors.js";
 import { Client } from "../src/client.js";
 import { digest } from "../src/canonical.js";
+import { Principal } from "../src/server/authority.js";
 import { DeviceServer } from "../src/server/server.js";
 import { memoryPair } from "../src/transport/memory.js";
 import type { Operation, Program } from "../src/generated/types.js";
@@ -264,4 +265,62 @@ test("programs are never resumed: kill -9 between steps => failed INTERNAL 'serv
       assert.equal((await client.operationsGet(opId)).operation.state, "failed");
     } finally { await client.close(); await srv.close(200); }
   } finally { rmSync(stateDir, { recursive: true, force: true }); }
+});
+
+test("PRG-023: exact program grants authorize reviewed steps only, never direct calls or a changed program", async () => {
+  const r = await rig();
+  try {
+    const program = prog(vectors.valid.ordered);
+    const grant = `programs:run:${digest(program)}`;
+    const client = await r.connect({ principal: "reviewed", scopes: ["read", grant] });
+    assert.deepEqual(client.discovered!.principal?.scopes, ["read"], "v0.1 discovery omits v0.2 grant scopes");
+    await assert.rejects(client.actionsInvoke("axis-1", "pulse", { count: 1 }), code("UNAUTHORIZED"));
+    const ran = (await client.programsRun({ program, arguments: {}, waitMs: 5000 })).operation;
+    assert.equal(ran.state, "completed", JSON.stringify(ran.error));
+    await assert.rejects(client.actionsInvoke("axis-1", "pulse", { count: 1 }), code("UNAUTHORIZED"));
+    await assert.rejects(client.programsRun({ program: { ...program, name: "different" }, arguments: {} }), code("UNAUTHORIZED"));
+    await assert.rejects(client.programsRegister(program), code("UNAUTHORIZED"));
+    const info = (await r.client.programsRegister(program)).info;
+    assert.equal((await client.programsRun({ digest: info.digest, arguments: {}, waitMs: 5000 })).operation.state, "completed");
+    const broad = await r.connect({ principal: "broad", scopes: ["read", "programs:run"] });
+    await assert.rejects(broad.programsRun({ program, arguments: {} }), code("UNAUTHORIZED"));
+  } finally { await r.close(); }
+});
+
+
+test("PRG-023: nested hazardous steps and transaction reads retain leases and policy bounds", async () => {
+  const r = await rig({ policy: (peer) => new Principal(peer.principal, peer.scopes ?? [],
+    peer.principal === "bounded" ? { "pump-1/dispense": { volume: { maximum: 100 } } } : {}) });
+  const make = (steps: unknown[]): Program => ({
+    bhmsProgram: "2026-11-13", name: "reviewed_steps", description: "reviewed finite steps",
+    input: { type: "object", properties: {}, additionalProperties: false }, maxDurationMs: 120_000, steps,
+  }) as Program;
+  try {
+    let calls = 0;
+    r.server.devices.get("axis-1")!.action("hazard", { effect: "hazardous", idempotency: "relative",
+      requiresLease: true, resources: ["axis-1/motion"], maxDurationMs: 1000 }, () => { calls++; return {}; });
+    const reviewed = make([{ kind: "repeat", times: 2, steps: [
+      { kind: "invoke", deviceId: "axis-1", action: "hazard", arguments: {} },
+      { kind: "read", deviceId: "axis-1", property: "fifo", fresh: true, maxAgeMs: 1000, timeoutMs: 1000, saveAs: "reading" },
+    ] }]);
+    const client = await r.connect({ principal: "reviewed", scopes: ["read", "lease", `programs:run:${digest(reviewed)}`] });
+    await assert.rejects(client.programsRun({ program: reviewed, arguments: {} }), code("LEASE_REQUIRED"));
+    const lease = (await client.leasesAcquire(["axis-1/motion"], 30_000)).lease;
+    await assert.rejects(client.propertiesRead("axis-1", "fifo", { fresh: true }), code("UNAUTHORIZED"));
+    const ran = (await client.programsRun({ program: reviewed, arguments: {}, leaseId: lease.leaseId, waitMs: 5000 })).operation;
+    assert.equal(ran.state, "completed", JSON.stringify(ran.error));
+    assert.equal(calls, 2);
+    assert.equal((await counters(r.client)).fifo_reads, 2);
+    await assert.rejects(client.actionsInvoke("axis-1", "hazard", {}, { leaseId: lease.leaseId }), code("UNAUTHORIZED"));
+    const dose = make([{ kind: "invoke", deviceId: "pump-1", action: "dispense", arguments: { volume: 200 } }]);
+    const bounded = await r.connect({ principal: "bounded", scopes: ["read", `programs:run:${digest(dose)}`] });
+    await assert.rejects(bounded.programsRun({ program: dose, arguments: {} }), code("OUT_OF_RANGE"));
+    const referenced = { ...dose, input: { type: "object", additionalProperties: false,
+      properties: { dose: { type: "number", minimum: 1, maximum: 200, "x-bhms-unit": "uL" } }, required: ["dose"] },
+      steps: [{ kind: "invoke", deviceId: "pump-1", action: "dispense", arguments: { volume: "${dose}" } }],
+    } as Program;
+    const boundedInput = await r.connect({ principal: "bounded", scopes: ["read", `programs:run:${digest(referenced)}`] });
+    await assert.rejects(boundedInput.programsRun({ program: referenced, arguments: { dose: 1 } }), code("OUT_OF_RANGE"));
+    assert.equal((await bounded.operationsList()).operations.length, 0, "invalid programs create no operation");
+  } finally { await r.close(); }
 });

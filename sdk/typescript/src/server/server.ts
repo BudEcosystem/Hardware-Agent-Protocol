@@ -685,7 +685,7 @@ export class DeviceServer {
           serverInfo: { name: this.name, version: this.opts.version, ...(this.opts.title ? { title: this.opts.title } : {}) },
           capabilities: this.capabilities(), epoch: this.epoch,
           limits: { maxMessageBytes: ctx.session.maxMessageBytes, maxPageSize: max, maxWaitMs: this.opts.maxWaitMs },
-          principal: principal.wire(),
+          principal: principal.wire((p._meta as Record<string, unknown>)["bhms/protocolVersion"] as string),
         };
         if (this.opts.instructions) result.instructions = this.opts.instructions;
         return result;

@@ -109,6 +109,13 @@ schemes fail before opening the store when TLS is unavailable, and client connec
 credentials over remote plaintext TCP/WebSocket. The client carrier and raw TCP path still need
 migration before v0.2 negotiation is enabled.
 
+Digest-scoped program grants now authorize the exact reviewed program, including nested steps
+and fresh transaction reads, while preserving leases and policy bounds. They grant no direct
+action/read/registration permission and are omitted from v0.1 discovery. Budget enforcement
+and full version negotiation remain pending. Program validation now intersects literal arguments,
+input-reference bounds, and argument defaults with the caller's policy before any step runs
+(BHMS-PRG-005); the dispatch-time check remains in place.
+
 Action declarations now enforce BHMS-DEV-036. Late terminal reports append
 correction history and `operation.late_report` events; a lease revoked under `onLeaseLoss: hold`
 ends the operation immediately, preserving that outcome when its handler later returns.

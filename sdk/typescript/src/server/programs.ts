@@ -33,7 +33,7 @@ import { canonicalString, digest } from "../canonical.js";
 import type { ActionsInvokeParams, Observation, Operation } from "../generated/types.js";
 import { validateDef, type JsonSchema } from "../schema.js";
 import { SDK_PROTOCOL_VERSION as PROTOCOL_VERSION } from "../version.js";
-import type { Principal } from "./authority.js";
+import { emptyEnvelope, type Principal } from "./authority.js";
 import type { Device, ActionSpec, PropertySpec } from "./device.js";
 import { intentDigest } from "./executor.js";
 import type { Lease } from "./leases.js";
@@ -41,7 +41,7 @@ import { OperationRecord, unknownError, type Effect, type TransitionOptions } fr
 import type { DeviceServer } from "./server.js";
 import { StoreError, type StoredOperation, type StoredProgram } from "./store.js";
 import { iso, mono, newId } from "./time.js";
-import { admitArguments, checkUnits } from "./validation.js";
+import { admitArguments, checkUnits, effectiveBounds, emptyEnvelopeMember } from "./validation.js";
 
 type Obj = Record<string, any>; // eslint-disable-line @typescript-eslint/no-explicit-any
 
@@ -147,6 +147,20 @@ export interface Plan {
    * lease holds any of its resources (BHMS-LSE-014), which must then cover all of them (BHMS-PRG-006).
    */
   sharedSteps: Array<{ path: string; action: string; resources: string[] }>;
+}
+
+/** Literal permissions used only by the run whose digest was granted (BHMS-PRG-023). */
+function grantedPrincipal(principal: Principal, program: Obj): Principal {
+  const scopes: string[] = [];
+  const pending: unknown[] = Array.isArray(program.steps) ? [...program.steps] : [];
+  while (pending.length) {
+    const step = pending.pop() as Obj | undefined;
+    if (!step || typeof step !== "object") continue;
+    if (step.kind === "repeat" && Array.isArray(step.steps)) pending.push(...step.steps);
+    const member = step.kind === "invoke" ? step.action : ["read", "waitUntil"].includes(step.kind) ? step.property : undefined;
+    if (typeof step.deviceId === "string" && typeof member === "string") scopes.push(`invoke:${step.deviceId}/${member}`);
+  }
+  return principal.withScopes(scopes);
 }
 
 class Validator {
@@ -282,7 +296,7 @@ class Validator {
       }
       step.device = device;
       step.action = action;
-      this.arguments(action, raw.arguments, `${path}.arguments`, defined, local);
+      this.arguments(device.deviceId, action, raw.arguments, `${path}.arguments`, defined, local);
       this.effects.push(action.effect);
       this.devices.add(device.deviceId);
       for (const r of action.resources) this.resources.add(r);
@@ -340,8 +354,11 @@ class Validator {
     return count * bodyWorst;
   }
 
-  private arguments(action: ActionSpec, args: Obj, path: string, defined: Set<string>, local: Set<string>): void {
+  private arguments(deviceId: string, action: ActionSpec, args: Obj, path: string, defined: Set<string>, local: Set<string>): void {
     const members = (action.input.properties ?? {}) as Record<string, Obj>;
+    const policy = this.principal.boundsFor(deviceId, action.name);
+    const empty = policy ? emptyEnvelopeMember(action.input, policy) : undefined;
+    if (empty !== undefined) throw emptyEnvelope(deviceId, action.name, empty, `${path}.${empty}`);
     for (const name of Object.keys(args)) {
       if (!(name in members)) {
         throw this.fail("INVALID_ARGUMENT", `${path}.${name}`, `${name} is not an argument of ${action.name}`, `${action.name} accepts only: ${Object.keys(members).sort().join(", ") || "no members"}`);
@@ -350,16 +367,22 @@ class Validator {
     for (const name of (action.input.required ?? []) as string[]) {
       if (!(name in args)) throw this.fail("INVALID_ARGUMENT", `${path}.${name}`, `${path}.${name} is required`, `add ${name} to the step arguments`);
     }
+    for (const [name, node] of Object.entries(members)) {
+      if (!(name in args) && "default" in node) {
+        const single = { type: "object", additionalProperties: false, properties: { [name]: node } };
+        admitArguments(single as JsonSchema, {}, path, policy?.[name] ? { [name]: policy[name] } : undefined);
+      }
+    }
     for (const [name, value] of Object.entries(args)) {
       this.refs(value, `${path}.${name}`, defined, local);
       const found = reference(value);
       if (found) {
-        if (found[0] in this.inputs && !found[1]) this.inputEnvelope(members[name], this.inputs[found[0]], `${path}.${name}`);
+        if (found[0] in this.inputs && !found[1]) this.inputEnvelope({ ...members[name], ...(policy?.[name] ? effectiveBounds(members[name], policy[name]) : {}) }, this.inputs[found[0]], `${path}.${name}`);
         continue; // saved results are checked when the step is admitted
       }
       if (references(value).length > 0) continue;
       const single = { type: "object", additionalProperties: false, properties: { [name]: members[name] } };
-      admitArguments(single as JsonSchema, { [name]: value }, path);
+      admitArguments(single as JsonSchema, { [name]: value }, path, policy?.[name] ? { [name]: policy[name] } : undefined);
     }
   }
 
@@ -520,7 +543,12 @@ export class ProgramRunner {
       if (!stored) throw new BhmsError("INVALID_ARGUMENT", `no registered program ${programDigest}`, { field: "digest", hint: "register it with programs/register, or send it inline (BHMS-PRG-020)" });
       program = stored.program;
     }
-    if (!principal.has("programs:run")) throw new BhmsError("UNAUTHORIZED", "programs/run needs the programs:run scope", { hint: "missing scope programs:run" });
+    if (!principal.canRunProgram(programDigest)) {
+      throw new BhmsError("UNAUTHORIZED", "the principal may not run this program", {
+        field: "program", hint: `missing scope programs:run or the exact grant programs:run:${programDigest}`,
+      });
+    }
+    if (principal.programGrant(programDigest)) principal = grantedPrincipal(principal, program);
     const plan = this.validate(principal, program);
     const { admitted, differs } = admitArguments(plan.program.input, params.arguments);
     let lease: Lease | undefined;

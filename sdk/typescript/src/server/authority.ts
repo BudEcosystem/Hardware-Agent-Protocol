@@ -45,6 +45,13 @@ export class Principal {
     return this.bounds[`${deviceId}/${action}`];
   }
 
+  /** A digest-scoped grant authorizes only a run of that exact program. */
+  canRunProgram(digest: string): boolean { return this.has("programs:run") || this.programGrant(digest); }
+  programGrant(digest: string): boolean { return this.scopes.includes(`programs:run:${digest}`); }
+  withScopes(scopes: readonly string[]): Principal {
+    return new Principal(this.id, [...this.scopes, ...scopes], this.bounds, this.gateway);
+  }
+
   get admin(): boolean { return this.scopes.includes("admin"); }
   has(scope: string): boolean { return this.admin || this.scopes.includes(scope); }
   get canRead(): boolean { return this.has("read"); }
@@ -82,7 +89,9 @@ export class Principal {
   /** Whether the principal holds any stop scope at all. */
   get hasAnyStop(): boolean { return this.has("stop") || this.scopes.some((s) => s.startsWith("stop:")); }
 
-  wire(): { id: string; scopes: string[] } { return { id: this.id, scopes: [...this.scopes] }; }
+  wire(version?: string): { id: string; scopes: string[] } {
+    return { id: this.id, scopes: this.scopes.filter((scope) => version !== "2026-11-13" || !scope.startsWith("programs:run:")) };
+  }
 }
 
 export type Policy = (peer: Peer) => Principal;
