@@ -44,6 +44,7 @@ import { loadSchema, validateDef } from "../schema.js";
 import { listenUnix, type Listener } from "../transport/socket.js";
 import { stdioServerTransport } from "../transport/stdio.js";
 import { listenWebSocket, type WsListener } from "../transport/websocket.js";
+import { BudgetLedger, budgetMatches, budgetUnit } from "./budgets.js";
 import { Principal, PolicyTable, defaultPolicy, tokenDigest, type Policy, type PolicyDocument } from "./authority.js";
 import { Device, DescriptionError, type DeviceOptions } from "./device.js";
 import { EventLog } from "./events.js";
@@ -212,6 +213,7 @@ export class DeviceServer {
   leases!: LeaseManager;
   executor!: Executor;
   programs?: ProgramRunner;
+  budgets!: BudgetLedger;
   readonly programLimits: ProgramLimits;
 
   constructor(readonly name: string, options: DeviceServerOptions = {}) {
@@ -236,8 +238,19 @@ export class DeviceServer {
     const principals = { ...doc.principals };
     if (this.opts.token && !("token" in principals)) principals.token = { tokens: [tokenDigest(this.opts.token)], scopes: ["admin"] };
     const table = new PolicyTable({ principals });
+    this.checkBudgetPolicy(table);
     this.table = table;
     this.policy = (peer) => table.principalFor(peer);
+  }
+
+  private checkBudgetPolicy(table: PolicyTable): void {
+    for (const principal of table.principals) for (const budget of principal.budgets) {
+      for (const dev of this.devices.values()) for (const action of dev.actions.values()) {
+        if (budgetMatches(budget, dev.deviceId, action.name) && !budgetUnit(budget, action.input)) {
+          throw new RangeError(`budget ${budget.id} cannot measure ${dev.deviceId}/${action.name} (BHMS-AUTH-031)`);
+        }
+      }
+    }
   }
 
   /**
@@ -312,9 +325,11 @@ export class DeviceServer {
     if (this.started) return;
     for (const dev of this.devices.values()) dev.description(); // fail fast on invalid declarations
     this.table?.checkBounds((id) => this.devices.get(id)?.description()); // a policy never widens a device bound (BHMS-SEC-011)
+    if (this.table) this.checkBudgetPolicy(this.table);
     this.store = this.openStore();
     await this.store.acquire?.();
     const loaded = this.store.load();
+    this.budgets = new BudgetLedger(this.store);
     this.journal = new Journal(this.store);
     this.journal.onWriteFailure = (e) => this.journalFailed(e);
     this.journal.adopt(loaded.ops);

@@ -10,6 +10,14 @@ without an upgrade header must authenticate each request; other listeners still 
 Native TLS listeners are unavailable: `wss://`, `https://` and `tcps://` listener URLs are refused before opening the store.
 Clients sending credentials to remote hosts must use TLS.
 
+Policy principals can carry `budgets` with `id`, `action` (`<deviceGlob>/<actionGlob>`), `quantity`
+(a JSON Pointer), `unit`, `total`, and optional `windowMs`. Matching admitted actions reserve the absolute
+quantity, converted to the budget unit, in the operation's journal record. Replay does not charge twice;
+program steps consume the same totals. Unknown outcomes retain their reservation, while proven no-effect
+failures release it. Lifetime totals survive both restarts and operation-history pruning. A policy reload
+with the same principal and budget ID retains usage. v0.1 discovery omits budgets; enforcement still applies.
+Regenerate the shared unit table with `python3 scripts/gen-budget-units.py` from this SDK directory.
+
 ## Migrating to this release (hardening round, spec/bhms/CHANGELOG.md "Unreleased")
 
 The TypeScript SDK follows the Python reference (`docs/bhms/migration.md`). What can break code that worked before:

@@ -208,6 +208,8 @@ export class Executor {
     }
     let rec: OperationRecord;
     try {
+      // No await between the balance check and the atomic accepted+reservation record.
+      bounds.budgetCharges = srv.budgets.charges(principal, device.deviceId, spec.name, admitted, spec.input);
       rec = srv.journal.create(bounds); // the intent is durable before anything is dispatched (BHMS-OPS-003)
     } catch (e) {
       if (e instanceof StoreError) { srv.journalFailed(e); throw srv.journalBusy(); }

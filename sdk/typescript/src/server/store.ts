@@ -47,6 +47,26 @@ export class StoreSyncError extends StoreError {
   }
 }
 
+/** A reservation is written atomically in the operation's journal record. */
+export interface BudgetCharge { budgetId: string; amount: number; atMs: number }
+export interface BudgetReservation extends BudgetCharge { principal: string; operationId: string }
+
+class Reservations {
+  private readonly rows = new Map<string, BudgetReservation>();
+  all(): BudgetReservation[] { return structuredClone([...this.rows.values()]); }
+  put(row: BudgetReservation): void { this.rows.set(JSON.stringify([row.principal, row.budgetId, row.operationId]), structuredClone(row)); }
+  update(rec: StoredOperation): void {
+    const op = rec.op;
+    const released = op.state === "rejected" || (op.state === "failed" && op.error?.mayHaveActed === false)
+      || (op.state === "canceled" && op.effect === "none");
+    for (const charge of rec.budgetCharges ?? []) {
+      const row = { ...charge, principal: rec.principal, operationId: rec.id };
+      if (released) this.rows.delete(JSON.stringify([row.principal, row.budgetId, row.operationId]));
+      else this.put(row);
+    }
+  }
+}
+
 /** Everything about an operation that must survive a restart. */
 export interface StoredOperation {
   id: string;
@@ -63,6 +83,7 @@ export interface StoredOperation {
   maxDurationMs: number;
   /** Arguments as admitted (defaults applied, quantities unwrapped); what the handler receives. */
   admitted: Record<string, unknown>;
+  budgetCharges?: BudgetCharge[];
   inhibitionLifted?: boolean;
   /** Absolute wall-clock deadline in epoch milliseconds. */
   deadlineMs?: number;
@@ -90,6 +111,7 @@ export interface Store {
   /** Take any exclusive ownership of the underlying storage; awaited before `load()`. */
   acquire?(): Promise<void>;
   load(): LoadedState;
+  budgetReservations(): BudgetReservation[];
   /** Commit an operation record; `sync` makes it survive a power loss before this returns (the `dispatching` record). */
   writeOp(rec: StoredOperation, sync: boolean): void;
   writeFence(n: number): void;
@@ -115,6 +137,8 @@ export class MemoryStore implements Store {
   readonly durable = false;
   readonly epoch = newEpoch();
   private ops = new Map<string, StoredOperation>();
+  private readonly reservations = new Reservations();
+  budgetReservations(): BudgetReservation[] { return this.reservations.all(); }
   private events: Event[] = [];
   private fence = 0;
   private _writable = true;
@@ -129,6 +153,7 @@ export class MemoryStore implements Store {
   writeOp(rec: StoredOperation, _sync: boolean): void {
     if (!this._writable) throw new StoreError("the journal is read-only");
     this.ops.set(rec.id, structuredClone(rec));
+    this.reservations.update(rec);
   }
   writeFence(n: number): void {
     if (!this._writable) throw new StoreError("the journal is read-only");
@@ -271,6 +296,8 @@ export class JournalStore implements Store {
   private release?: () => Promise<void>;
   /** The live content of the journal: every committed write is applied here, so compaction never loses state. */
   private readonly ops = new Map<string, StoredOperation>();
+  private readonly reservations = new Reservations();
+  budgetReservations(): BudgetReservation[] { return this.reservations.all(); }
   private events: Event[] = [];
   private fence = 0;
   private readonly programs = new Map<string, StoredProgram>();
@@ -313,7 +340,11 @@ export class JournalStore implements Store {
           throw new StoreError(`the journal ${this.path} is corrupt at line ${i + 1}; refusing to start (restore it or move it aside)`);
         }
         if (rec.k === "hdr") epoch = rec.epoch as string;
-        else if (rec.k === "op") this.ops.set((rec.rec as StoredOperation).id, rec.rec as StoredOperation);
+        else if (rec.k === "op") {
+          const op = rec.rec as StoredOperation;
+          this.ops.set(op.id, op); this.reservations.update(op);
+        }
+        else if (rec.k === "budget") this.reservations.put(rec.row as BudgetReservation);
         else if (rec.k === "fence") this.fence = Math.max(this.fence, rec.n as number);
         else if (rec.k === "ev") this.events.push(rec.ev as Event);
         else if (rec.k === "prog") this.programs.set((rec.p as StoredProgram).digest, rec.p as StoredProgram);
@@ -329,6 +360,7 @@ export class JournalStore implements Store {
   private rewrite(): void {
     const tmp = `${this.path}.tmp`;
     const lines = [JSON.stringify({ k: "hdr", epoch: this.epoch, v: 1 }), JSON.stringify({ k: "fence", n: this.fence })];
+    for (const row of this.reservations.all()) lines.push(JSON.stringify({ k: "budget", row }));
     for (const rec of this.ops.values()) lines.push(JSON.stringify({ k: "op", rec }));
     for (const p of this.programs.values()) lines.push(JSON.stringify({ k: "prog", p }));
     for (const ev of this.events) lines.push(JSON.stringify({ k: "ev", ev }));
@@ -396,10 +428,14 @@ export class JournalStore implements Store {
     try {
       this.append({ k: "op", rec }, sync);
     } catch (e) {
-      if (e instanceof StoreSyncError) this.ops.set(rec.id, structuredClone(rec)); // written: a restart may find it
+      if (e instanceof StoreSyncError) {
+        this.ops.set(rec.id, structuredClone(rec));
+        this.reservations.update(rec); // written: a restart may find it
+      }
       throw e;
     }
     this.ops.set(rec.id, structuredClone(rec)); // only a committed write is part of the live state
+    this.reservations.update(rec);
   }
 
   writeFence(n: number): void {

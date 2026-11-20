@@ -111,8 +111,9 @@ migration before v0.2 negotiation is enabled.
 
 Digest-scoped program grants now authorize the exact reviewed program, including nested steps
 and fresh transaction reads, while preserving leases and policy bounds. They grant no direct
-action/read/registration permission and are omitted from v0.1 discovery. Budget enforcement
-and full version negotiation remain pending. Program validation now intersects literal arguments,
+action/read/registration permission and are omitted from v0.1 discovery. Budgets now count reservations atomically with accepted operations, survive pruning and restart,
+and release only on proof of no effect. They apply to direct actions and derived program steps,
+including v0.1 requests. Full version negotiation and v0.2 discovery remain pending. Program validation now intersects literal arguments,
 input-reference bounds, and argument defaults with the caller's policy before any step runs
 (BHMS-PRG-005); the dispatch-time check remains in place.
 

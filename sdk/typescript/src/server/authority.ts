@@ -14,6 +14,8 @@
  * Thread-safety: principals are immutable snapshots.
  */
 import { createHash, timingSafeEqual } from "node:crypto";
+import type { Budget } from "../generated/types.js";
+import { checkedBudgets } from "./budgets.js";
 import { BhmsError } from "../errors.js";
 import type { Peer } from "../jsonrpc/session.js";
 import type { JsonSchema } from "../schema.js";
@@ -33,8 +35,10 @@ export class Principal {
   readonly bounds: PolicyBounds;
   /** A gateway may use the `g-` idempotency-key prefix, which is reserved for gateways (BHMS-OPS-037). */
   readonly gateway: boolean;
-  constructor(id: string, scopes: readonly string[], bounds: PolicyBounds = {}, gateway = false) {
+  readonly budgets: readonly Budget[];
+  constructor(id: string, scopes: readonly string[], bounds: PolicyBounds = {}, gateway = false, budgets: readonly Budget[] = []) {
     this.gateway = gateway;
+    this.budgets = checkedBudgets(budgets);
     this.id = id;
     this.scopes = [...new Set(scopes)];
     this.bounds = bounds;
@@ -49,7 +53,7 @@ export class Principal {
   canRunProgram(digest: string): boolean { return this.has("programs:run") || this.programGrant(digest); }
   programGrant(digest: string): boolean { return this.scopes.includes(`programs:run:${digest}`); }
   withScopes(scopes: readonly string[]): Principal {
-    return new Principal(this.id, [...this.scopes, ...scopes], this.bounds, this.gateway);
+    return new Principal(this.id, [...this.scopes, ...scopes], this.bounds, this.gateway, this.budgets);
   }
 
   get admin(): boolean { return this.scopes.includes("admin"); }
@@ -108,7 +112,7 @@ export function tokenDigest(token: string): string {
 }
 
 /** One principal of a policy document (the `GatewayPolicy` of the schema). */
-export interface PolicyPrincipalDocument { tokens?: string[]; uids?: number[]; scopes: string[]; bounds?: Record<string, Record<string, PolicyBound>> }
+export interface PolicyPrincipalDocument { budgets?: Budget[]; tokens?: string[]; uids?: number[]; scopes: string[]; bounds?: Record<string, Record<string, PolicyBound>> }
 /** A policy document: `{"principals": {name: {tokens?, uids?, scopes, bounds?}}}` (`GatewayPolicy` of the schema). */
 export interface PolicyDocument { principals: Record<string, PolicyPrincipalDocument> }
 
@@ -150,7 +154,7 @@ export class PolicyTable {
       for (const [key, members] of Object.entries(spec.bounds ?? {})) {
         if (typeof members !== "object" || members === null || key.lastIndexOf("/") < 1) throw invalidPolicy(`principal ${JSON.stringify(name)}: bounds key ${JSON.stringify(key)} is "<deviceId>/<action>"`);
       }
-      return { principal: new Principal(name, spec.scopes, structuredClone(spec.bounds ?? {})), digests: tokens.map((t) => Buffer.from(t)) };
+      return { principal: new Principal(name, spec.scopes, structuredClone(spec.bounds ?? {}), false, spec.budgets ?? []), digests: tokens.map((t) => Buffer.from(t)) };
     });
   }
 
