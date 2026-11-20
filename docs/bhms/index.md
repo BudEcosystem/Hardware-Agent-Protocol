@@ -6,7 +6,7 @@ programs and people that discover, observe and operate physical devices, with du
 evidence and a stop that never waits.
 
 **Status.** Protocol version `2026-11-15` (v0.2; servers also serve `2026-11-13`, v0.1). The Python SDK, gateway, agent
-bridges and conformance runner implement v0.2; the TypeScript SDK implements v0.1 until its v0.2 port; the C library for
+bridges, conformance runner and TypeScript SDK implement v0.2 (with v0.1 compatibility); the C library for
 microcontrollers speaks BHMS-Compact version 2 (unchanged in v0.2). All are tested against simulated devices and
 host-built firmware. No physical device has been validated yet; every example here runs against simulations.
 

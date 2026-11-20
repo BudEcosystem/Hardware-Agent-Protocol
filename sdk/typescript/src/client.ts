@@ -32,14 +32,14 @@ import type {
   ProgramsRunResult, PropertiesReadResult, StopResult, SubscriptionFilter,
 } from "./generated/types.js";
 import { METHODS } from "./generated/types.js";
-import { SDK_PROTOCOL_VERSION as PROTOCOL_VERSION } from "./version.js";
+import { SDK_PROTOCOL_VERSION as PROTOCOL_VERSION, SUPPORTED_VERSIONS } from "./version.js";
 import { Session, type ClientStream, type Notification, type Transport } from "./jsonrpc/session.js";
 import { loadSchema, validateDef } from "./schema.js";
 import { spawnServer } from "./transport/stdio.js";
 import { BEARER_KEY, connectSocket } from "./transport/socket.js";
 import { connectWebSocket } from "./transport/websocket.js";
 
-export const SUPPORTED_VERSIONS: readonly string[] = [PROTOCOL_VERSION];
+export { SUPPORTED_VERSIONS } from "./version.js";
 export const DEFAULT_CLIENT_INFO = { name: "bhms-typescript", version: "0.1.0" } as const;
 
 /** Protocol method name to the {@link Client} method that exposes it (asserted complete by test/client.test.ts). */
@@ -143,6 +143,7 @@ export class Client {
   private readonly timeoutMs: number;
   private dispose?: () => void;
   private bearer?: string;
+  private readonly pinnedVersion: boolean;
 
   private constructor(readonly session: Session, options: ClientOptions) {
     this.clientInfo = options.clientInfo ?? { ...DEFAULT_CLIENT_INFO };
@@ -150,6 +151,7 @@ export class Client {
     this.timeoutMs = options.timeoutMs ?? 30_000;
     this.version = options.protocolVersion ?? PROTOCOL_VERSION;
     this.bearer = options.bearer;
+    this.pinnedVersion = options.protocolVersion !== undefined;
   }
 
   /** Open `target` (see module docs), discover the server and return a ready client. */
@@ -193,7 +195,7 @@ export class Client {
   }
 
   private meta(): Record<string, unknown> {
-    return { "bhms/protocolVersion": this.version, "bhms/clientInfo": this.clientInfo, ...(this.bearer ? { [BEARER_KEY]: this.bearer } : {}) };
+    return { "bhms/protocolVersion": this.version, "bhms/clientInfo": this.clientInfo, ...(this.bearer ? { [BEARER_KEY]: `Bearer ${this.bearer}` } : {}) };
   }
 
   private params(wire: Record<string, unknown>): Record<string, unknown> {
@@ -239,7 +241,7 @@ export class Client {
     try {
       result = (await this.callOnce("server/discover", {}, options, undefined)) as DiscoverResult;
     } catch (e) {
-      if (!(e instanceof BhmsError) || e.bhmsCode !== "UNSUPPORTED_VERSION" || !Array.isArray(e.bound)) throw e;
+      if (this.pinnedVersion || !(e instanceof BhmsError) || e.bhmsCode !== "UNSUPPORTED_VERSION" || !Array.isArray(e.bound)) throw e;
       const common = (e.bound as string[]).filter((v) => SUPPORTED_VERSIONS.includes(v)).sort().pop();
       if (!common) throw e;
       this.version = common;

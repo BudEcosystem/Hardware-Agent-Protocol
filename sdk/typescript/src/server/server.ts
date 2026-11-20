@@ -38,7 +38,7 @@ import { join } from "node:path";
 import { BhmsError, JsonRpcError } from "../errors.js";
 import type { ActionsInvokeParams, DeviceStop, DevicesListFilter, Event } from "../generated/types.js";
 import { METHODS } from "../generated/types.js";
-import { SDK_PROTOCOL_VERSION as PROTOCOL_VERSION } from "../version.js";
+import { SDK_PROTOCOL_VERSION as PROTOCOL_VERSION, SUPPORTED_VERSIONS } from "../version.js";
 import { Session, type RequestContext, type Transport, type HandlerResult, METHOD_NOT_FOUND } from "../jsonrpc/session.js";
 import { loadSchema, validateDef } from "../schema.js";
 import { listenUnix, type Listener } from "../transport/socket.js";
@@ -662,9 +662,9 @@ export class DeviceServer {
     // Authenticate before schema diagnostics: they include invalid values and must never echo credentials.
     this.authenticate(ctx);
     const version = (meta as Record<string, unknown>)["bhms/protocolVersion"];
-    if (version !== PROTOCOL_VERSION) {
+    if (typeof version !== "string" || !SUPPORTED_VERSIONS.includes(version)) {
       throw new BhmsError("UNSUPPORTED_VERSION", `protocol version ${JSON.stringify(version)} is not served`, {
-        field: "_meta.bhms/protocolVersion", bound: [PROTOCOL_VERSION], hint: `retry with a supported version: ${PROTOCOL_VERSION}`,
+        field: "_meta.bhms/protocolVersion", bound: [...SUPPORTED_VERSIONS], hint: `retry with a supported version: ${PROTOCOL_VERSION}`,
       });
     }
     if (spec?.capability !== undefined && !this.advertises(spec.capability)) {
@@ -696,12 +696,18 @@ export class DeviceServer {
     switch (method) {
       case "server/discover": {
         const result: Record<string, unknown> = {
-          resultType: "complete", supportedVersions: [PROTOCOL_VERSION],
+          resultType: "complete", supportedVersions: [...SUPPORTED_VERSIONS],
           serverInfo: { name: this.name, version: this.opts.version, ...(this.opts.title ? { title: this.opts.title } : {}) },
           capabilities: this.capabilities(), epoch: this.epoch,
           limits: { maxMessageBytes: ctx.session.maxMessageBytes, maxPageSize: max, maxWaitMs: this.opts.maxWaitMs },
           principal: principal.wire((p._meta as Record<string, unknown>)["bhms/protocolVersion"] as string),
         };
+        if ((p._meta as Record<string, unknown>)["bhms/protocolVersion"] !== "2026-11-13") {
+          const caps = result.capabilities as Record<string, unknown>;
+          if (caps.authority || principal.budgets.length) caps.authority = { budgets: true };
+          if (this.programs) (caps.programs as Record<string, unknown>).grants = true;
+          if (principal.budgets.length) (result.principal as Record<string, unknown>).budgets = principal.budgets.map((b) => this.budgets.state(principal.id, b));
+        }
         if (this.opts.instructions) result.instructions = this.opts.instructions;
         return result;
       }

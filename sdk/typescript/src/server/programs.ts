@@ -32,7 +32,7 @@ import { BhmsError } from "../errors.js";
 import { canonicalString, digest } from "../canonical.js";
 import type { ActionsInvokeParams, Observation, Operation } from "../generated/types.js";
 import { validateDef, type JsonSchema } from "../schema.js";
-import { SDK_PROTOCOL_VERSION as PROTOCOL_VERSION } from "../version.js";
+import { SDK_PROTOCOL_VERSION as PROTOCOL_VERSION, SUPPORTED_VERSIONS } from "../version.js";
 import { emptyEnvelope, type Principal } from "./authority.js";
 import type { Device, ActionSpec, PropertySpec } from "./device.js";
 import { intentDigest } from "./executor.js";
@@ -198,8 +198,8 @@ class Validator {
       if (e instanceof BhmsError) throw this.fail("INVALID_ARGUMENT", e.field ? `program.${e.field}` : "program", e.message, e.hint);
       throw e;
     }
-    if (program.bhmsProgram !== PROTOCOL_VERSION) {
-      throw this.fail("INVALID_ARGUMENT", "program.bhmsProgram", `programs for ${program.bhmsProgram} are not served`, "write the program for a supported protocol version", [PROTOCOL_VERSION]);
+    if (!SUPPORTED_VERSIONS.includes(program.bhmsProgram)) {
+      throw this.fail("INVALID_ARGUMENT", "program.bhmsProgram", `programs for ${program.bhmsProgram} are not served`, "write the program for a supported protocol version", [...SUPPORTED_VERSIONS]);
     }
     try {
       checkUnits(program.input, "program.input");

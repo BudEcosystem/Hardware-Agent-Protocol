@@ -336,7 +336,7 @@ test("multi-principal server: capabilities.authority is {} and the effective env
   try {
     const agent = await connect("agent");
     clients.push(agent);
-    assert.deepEqual(agent.discovered!.capabilities.authority, {});
+    assert.deepEqual(agent.discovered!.capabilities.authority, { budgets: true });
     assert.equal(agent.discovered!.principal?.id, "agent");
     await assert.rejects(agent.actionsInvoke("axis-1", "move_to", { position: 150 }), code("OUT_OF_RANGE", (e) => e.field === "arguments.position" && (e.bound as { maximum: number }).maximum === 100));
     const ok = await agent.actionsInvoke("axis-1", "move_to", { position: 100 }, { waitMs: 2000 });
@@ -500,7 +500,7 @@ test("--principals: the device process serves the policy file and SIGHUP applies
       child.once("exit", () => reject(new Error(`device exited: ${text}`)));
     });
     const agent = await Client.connect(`ws://${address}`, { token: TOKENS.agent, strict: true });
-    assert.deepEqual(agent.discovered!.capabilities.authority, {});
+    assert.deepEqual(agent.discovered!.capabilities.authority, { budgets: true });
     assert.equal((await agent.actionsInvoke("axis-1", "pulse", { count: 1 }, { waitMs: 1000 })).operation.state, "completed");
     writeFileSync(file, JSON.stringify(policy(["read"])));
     child.kill("SIGHUP");

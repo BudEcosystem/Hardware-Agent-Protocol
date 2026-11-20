@@ -273,7 +273,7 @@ test("PRG-023: exact program grants authorize reviewed steps only, never direct 
     const program = prog(vectors.valid.ordered);
     const grant = `programs:run:${digest(program)}`;
     const client = await r.connect({ principal: "reviewed", scopes: ["read", grant] });
-    assert.deepEqual(client.discovered!.principal?.scopes, ["read"], "v0.1 discovery omits v0.2 grant scopes");
+    assert.deepEqual(client.discovered!.principal?.scopes, ["read", grant], "v0.2 discovery includes program grants");
     await assert.rejects(client.actionsInvoke("axis-1", "pulse", { count: 1 }), code("UNAUTHORIZED"));
     const ran = (await client.programsRun({ program, arguments: {}, waitMs: 5000 })).operation;
     assert.equal(ran.state, "completed", JSON.stringify(ran.error));

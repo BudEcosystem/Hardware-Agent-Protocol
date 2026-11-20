@@ -25,7 +25,7 @@ test("discover: capabilities, limits and epoch; programs advertised with the spe
     assert.equal(d.capabilities.operations.durable, false);
     assert.equal(d.capabilities.leases?.minTtlMs, 50);
     assert.equal(d.capabilities.observations?.minIntervalMs, 20);
-    assert.deepEqual(d.capabilities.programs, { registry: true, limits: { maxSteps: 256, maxRepeat: 1000, maxDepth: 4, maxExecutedSteps: 4096, maxVariables: 64, maxProgramBytes: 65536, maxDurationMs: 3_600_000 } });
+    assert.deepEqual(d.capabilities.programs, { registry: true, grants: true, limits: { maxSteps: 256, maxRepeat: 1000, maxDepth: 4, maxExecutedSteps: 4096, maxVariables: 64, maxProgramBytes: 65536, maxDurationMs: 3_600_000 } });
     assert.ok(d.limits.maxMessageBytes >= 1_048_576);
     assert.deepEqual((await r.client.programsList()).programs, []);
   } finally { await r.close(); }
@@ -38,7 +38,7 @@ test("lifecycle: missing _meta, unknown member, unsupported version and unknown 
     r.server.serve(s);
     const raw = new Session(c, { role: "client" }).start();
     await assert.rejects(raw.request("devices/list", {}), code("INVALID_ARGUMENT", (e) => e.field === "_meta.bhms/protocolVersion"));
-    await assert.rejects(raw.request("devices/list", { _meta: { "bhms/protocolVersion": "1999-01-01" } }), code("UNSUPPORTED_VERSION", (e) => JSON.stringify(e.bound) === '["2026-11-13"]' && e.field === "_meta.bhms/protocolVersion"));
+    await assert.rejects(raw.request("devices/list", { _meta: { "bhms/protocolVersion": "1999-01-01" } }), code("UNSUPPORTED_VERSION", (e) => JSON.stringify(e.bound) === '["2026-11-15","2026-11-13"]' && e.field === "_meta.bhms/protocolVersion"));
     await assert.rejects(raw.request("devices/list", { _meta: { "bhms/protocolVersion": "2026-11-13" }, bogus: 1 }), code("INVALID_ARGUMENT", (e) => e.field === "bogus"));
     await assert.rejects(raw.request("nope/nothing", { _meta: { "bhms/protocolVersion": "2026-11-13" } }), (e: unknown) => e instanceof JsonRpcError && e.code === -32601);
     const ok = await raw.request("devices/list", { _meta: { "bhms/protocolVersion": "2026-11-13" } });

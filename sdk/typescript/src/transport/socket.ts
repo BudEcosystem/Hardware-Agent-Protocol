@@ -67,12 +67,13 @@ export function listenUnix(path: string, onTransport: (t: Transport) => void, ma
   });
 }
 
-/** The `_meta` key a client uses to present the bearer token on every request over raw TCP (an extension key, BHMS-LIF-016). */
-export const BEARER_KEY = "org.bhms.sdk/bearer";
+/** Standard per-request credential carrier (BHMS-SEC-005). Value: `Bearer <token>`. */
+export const BEARER_KEY = "bhms/authorization";
+const LEGACY_BEARER_KEY = "org.bhms.sdk/bearer";
 
 /**
  * Wraps a transport so that every request except `server/discover` must carry the bearer token in
- * `params._meta["org.bhms.sdk/bearer"]` (BHMS-SEC-001: a network transport without a valid credential is rejected). A request
+ * `params._meta["bhms/authorization"]` (BHMS-SEC-001: a network transport without a valid credential is rejected). A request
  * without it is answered `UNAUTHORIZED` here and never reaches the session.
  */
 class BearerGate implements Transport {
@@ -86,7 +87,18 @@ class BearerGate implements Transport {
   start(sink: TransportSink): void {
     this.inner.start({
       ...sink,
-      message: (text) => { if (this.admit(text)) sink.message(text); },
+      message: (text) => {
+        if (!this.admit(text)) return;
+        // The gate has authenticated this single-token transport; do not forward credentials to handlers.
+        try {
+          const msg = JSON.parse(text);
+          if (msg?.params?._meta && typeof msg.params._meta === "object") {
+            delete msg.params._meta[BEARER_KEY]; delete msg.params._meta[LEGACY_BEARER_KEY];
+            text = JSON.stringify(msg);
+          }
+        } catch { /* the session handles malformed JSON */ }
+        sink.message(text);
+      },
       oversize: () => sink.oversize(),
       invalidUtf8: () => sink.invalidUtf8(),
       closed: (e) => sink.closed(e),
@@ -97,8 +109,13 @@ class BearerGate implements Transport {
     let msg: { id?: unknown; method?: unknown; params?: { _meta?: Record<string, unknown> } };
     try { msg = JSON.parse(text); } catch { return true; } // the session answers a parse error
     if (typeof msg !== "object" || msg === null || Array.isArray(msg) || typeof msg.method !== "string" || !("id" in msg)) return true;
-    if (msg.method === "server/discover") return true;
-    const presented = msg.params?._meta?.[BEARER_KEY];
+    const meta = msg.params?._meta;
+    const standard = meta?.[BEARER_KEY];
+    const legacy = meta?.[LEGACY_BEARER_KEY];
+    if (msg.method === "server/discover" && standard === undefined && legacy === undefined && meta?.["bhms/protocolVersion"] !== "2026-11-15") return true;
+    const presented = standard !== undefined
+      ? typeof standard === "string" && legacy === undefined ? /^Bearer ([A-Za-z0-9._~+/=-]+)$/.exec(standard)?.[1] : undefined
+      : meta?.["bhms/protocolVersion"] !== "2026-11-15" ? legacy : undefined;
     const a = Buffer.from(typeof presented === "string" ? presented : "");
     const b = Buffer.from(this.token);
     if (a.length === b.length && timingSafeEqual(a, b)) return true;

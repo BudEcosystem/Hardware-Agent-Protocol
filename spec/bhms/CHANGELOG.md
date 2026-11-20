@@ -61,7 +61,7 @@ evidence that caused it. Requirement index: 285 rows (23 added, §14.6).
   `_meta` key `bhms/authorization`; TRN-021 and TRN-031 amended; Ruling R56).** One standard carrier, `"Bearer <token>"`, for raw
   TCP, a loopback WebSocket without the header, and stdio; refused beside a transport credential; never logged or forwarded; sent
   only over TLS or local transports. Python: `DeviceServer.listen("tcp://...")` (and `tcps://` with TLS) now serves, the client
-  sends the carrier on TCP. The TypeScript SDK's `_meta["org.bhms.sdk/bearer"]` moves to it in Task 15b. Evidence: Task 8
+  sends the carrier on TCP. The TypeScript SDK's `_meta["org.bhms.sdk/bearer"]` has migrated to it in Task 15b. Evidence: Task 8
   deferral (SDK-private carrier; Python had none); Task 14 learning 10 (`wss://` on loopback served plain text).
 - **TLS model (BHMS-SEC-004 amended).** Native TLS (gateway `[gateway] tls_cert`/`tls_key`; a device server's `SSLContext`) or
   the proxy model (plain loopback behind a TLS-terminating proxy); an MCP bridge on Streamable HTTP is a server too. The gateway
@@ -100,35 +100,32 @@ evidence that caused it. Requirement index: 285 rows (23 added, §14.6).
   `dispatching` without a barrier). The `wrap-an-instrument` guide's liveness probe uses `*IDN?`, so an injected lost `*OPC?`
   no longer makes the device offline under load.
 
-### TS SDK to follow (Task 15b)
+### TypeScript SDK v0.2 (Task 15b)
 
-Port in progress: the server recognizes the standard request credential, rejects conflicting
-transport credentials, authenticates before schema errors can echo a token, and reauthenticates
-subscriptions. Headerless loopback WebSockets require a credential on every request. TLS listener
-schemes fail before opening the store when TLS is unavailable, and client connections refuse
-credentials over remote plaintext TCP/WebSocket. The client carrier and raw TCP path still need
-migration before v0.2 negotiation is enabled.
+The SDK now negotiates `2026-11-15` and `2026-11-13`. Discovery exposes grants and budget
+balances only to v0.2 requests; protection rules apply to both revisions. Clients fall back
+to v0.1 servers unless the caller pins a version.
 
-Digest-scoped program grants now authorize the exact reviewed program, including nested steps
-and fresh transaction reads, while preserving leases and policy bounds. They grant no direct
-action/read/registration permission and are omitted from v0.1 discovery. Budgets now count reservations atomically with accepted operations, survive pruning and restart,
-and release only on proof of no effect. They apply to direct actions and derived program steps,
-including v0.1 requests. Full version negotiation and v0.2 discovery remain pending. Program validation now intersects literal arguments,
-input-reference bounds, and argument defaults with the caller's policy before any step runs
-(BHMS-PRG-005); the dispatch-time check remains in place.
+The server authenticates standard request credentials before schema diagnostics, rejects
+conflicting credentials, and reauthenticates subscriptions. Headerless loopback WebSockets
+require a credential on each request. The TCP gate accepts the standard carrier, removes it
+before dispatch, and accepts the legacy SDK carrier only for older requests. TLS listener
+schemes fail before opening the store when TLS is unavailable; clients refuse credentials
+over remote plaintext TCP/WebSocket.
 
-Action declarations now enforce BHMS-DEV-036. Late terminal reports append
-correction history and `operation.late_report` events; a lease revoked under `onLeaseLoss: hold`
-ends the operation immediately, preserving that outcome when its handler later returns.
-Regression coverage includes duration boundaries, late returns after duration expiry, and
-terminal immutability after lease hold. Version negotiation remains v0.1 until the rest of
-this port is complete.
+Digest-scoped grants authorize only the reviewed program, including nested steps and fresh
+transaction reads. Program validation checks literal arguments, input-reference bounds and
+defaults against policy before any step runs. Budgets reserve charges atomically with accepted
+operations, survive pruning and restart, and release only on proof of no effect. They count
+direct actions and derived program steps alike.
 
-Every row of §14.6, the version list (`2026-11-15` and `2026-11-13`, BHMS-LIF-026), budgets in the device server
-(BHMS-AUTH-030..035; the same rules, the same refusal), program-scoped grants (BHMS-PRG-023), late reports (BHMS-OPS-072),
-BHMS-DEV-036 at description build, the carrier (BHMS-SEC-005/006, replacing `org.bhms.sdk/bearer`), hints (BHMS-ERR-007) and
-the `tcps://`/`wss://` refusals (BHMS-SEC-007). Until then the TypeScript SDK serves and speaks `2026-11-13` only
-(`SDK_PROTOCOL_VERSION`); its types are regenerated from this schema.
+Action declarations enforce the one-day duration cap. Late terminal reports append correction
+history and `operation.late_report` events. Lease loss under `onLeaseLoss: hold` ends the operation;
+a later handler result cannot replace that outcome.
+
+Validation: 319 TypeScript tests passed. The v0.2 multi-principal conformance run passed 104 checks
+and 188 requirements with zero MUST failures; 19 core MUST rows still require inspection evidence.
+These are simulated-device results, not physical validation.
 
 ### Also in v0.2: the Task 7b and 12b rounds (formerly "Unreleased")
 

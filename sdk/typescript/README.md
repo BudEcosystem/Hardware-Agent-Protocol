@@ -1,7 +1,7 @@
 # @bhms/sdk (TypeScript)
 
-Client, device server and conformance device for the BHMS protocol. The v0.2 port from the Python reference is in progress;
-version negotiation remains `2026-11-13` until the port is complete.
+Client, device server and conformance device for the BHMS protocol. The SDK negotiates v0.2 (`2026-11-15`) and retains v0.1 (`2026-11-13`) compatibility.
+Each request selects its revision; v0.1 discovery omits new fields while retaining all device-protection rules.
 
 The server accepts `_meta["bhms/authorization"] = "Bearer <token>"` on stdio and headerless loopback WebSockets.
 Each credential authenticates only its own request; invalid credentials never fall back to the parent or connection identity.
