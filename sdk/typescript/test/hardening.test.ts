@@ -662,3 +662,55 @@ test("a stop bound is at most one day (safety.stopMaxDurationMs, as a program's 
   dev.onStop({ evidence: "measured", maxDurationMs: 86_400_000 }, () => undefined);
   assert.equal(dev.description().safety.stopMaxDurationMs, 86_400_000);
 });
+
+
+test("DEV-036: action durations are bounded at declaration, including effect-free actions", () => {
+  const srv = new DeviceServer("duration-bounds", { store: "memory" });
+  const dev = srv.device("test-1");
+  for (const duration of [-1, 0.5, NaN, Infinity, 86_400_001]) {
+    assert.throws(() => dev.action("invalid", { effect: "none", idempotency: "idempotent", maxDurationMs: duration }, async () => ({})),
+      (e: unknown) => e instanceof DescriptionError && e.message.includes("BHMS-DEV-036"));
+  }
+  for (const duration of [0, 86_400_000]) {
+    dev.action("valid", { effect: "none", idempotency: "idempotent", maxDurationMs: duration }, async () => ({}));
+  }
+});
+
+test("OPS-072: a late return after lease hold preserves the failed operation and records evidence", async () => {
+  let finish!: () => void;
+  let entered!: () => void;
+  const started = new Promise<void>((resolve) => { entered = resolve; });
+  const pending = new Promise<void>((resolve) => { finish = resolve; });
+  const t = await custom((srv) => {
+    const dev = srv.device("rig-1", { resources: ["rig-1/motor"] });
+    dev.onHold(() => undefined);
+    dev.action("move", { effect: "reversible", idempotency: "absolute", maxDurationMs: 10_000,
+      requiresLease: true, onLeaseLoss: "hold" }, async () => { entered(); await pending; return {}; });
+  });
+  try {
+    const lease = (await t.client.leasesAcquire(["rig-1/motor"], 30_000)).lease;
+    const op = (await t.client.actionsInvoke("rig-1", "move", {}, { leaseId: lease.leaseId })).operation;
+    await started;
+    t.srv.leases.revokeCovering(["rig-1/motor"]);
+    const before = (await t.client.operationsGet(op.operationId)).operation;
+    assert.equal(before.state, "failed");
+    assert.equal(before.error?.bhmsCode, "LEASE_EXPIRED");
+    const reported = new Promise<void>((resolve) => {
+      const listener = (event: { type: string; operationId?: string }) => {
+        if (event.type === "operation.late_report" && event.operationId === op.operationId) {
+          t.srv.events.listeners.delete(listener);
+          resolve();
+        }
+      };
+      t.srv.events.listeners.add(listener);
+    });
+    finish();
+    await reported;
+    const after = (await t.client.operationsGet(op.operationId)).operation;
+    assert.equal(after.state, before.state);
+    assert.deepEqual(after.error, before.error);
+    assert.equal(after.effect, before.effect);
+    assert.deepEqual(after.result, before.result);
+    assert.ok(after.history?.some((entry) => entry.kind === "correction" && entry.detail?.includes("late completed")));
+  } finally { finish(); await t.close(); }
+});

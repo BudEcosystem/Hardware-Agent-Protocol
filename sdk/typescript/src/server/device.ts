@@ -38,7 +38,7 @@ import type { DeviceServer } from "./server.js";
 
 const DEVICE_ID = /^[A-Za-z0-9][A-Za-z0-9._:/-]{0,127}$/;
 const NAME = /^[a-z][a-z0-9_]{0,63}$/;
-const CORE_EVENT_TYPES = new Set(["device.online", "device.offline", "device.degraded", "device.replaced", "device.epoch", "device.fault", "operation.state", "operation.resolved", "stop", "lease.revoked", "lease.expired", "policy.changed"]);
+const CORE_EVENT_TYPES = new Set(["device.online", "device.offline", "device.degraded", "device.replaced", "device.epoch", "device.fault", "operation.state", "operation.resolved", "operation.late_report", "stop", "lease.revoked", "lease.expired", "policy.changed"]);
 const SUMMARY_HARD_LIMIT = 4096;
 
 /** `safety.stopMaxDurationMs` is at most one day (§4.7), the bound of a program's `maxDurationMs`. */
@@ -261,6 +261,10 @@ export class Device {
     if (!NAME.test(name)) throw new DescriptionError(`action name ${JSON.stringify(name)} must be snake_case (${NAME.source})`);
     const effectful = options.effect !== "none";
     if (effectful && options.maxDurationMs === undefined) throw new DescriptionError(`action ${name}: maxDurationMs is required for effect ${options.effect} (BHMS-DEV-030)`);
+    const duration = options.maxDurationMs ?? 1000;
+    if (!Number.isInteger(duration) || duration < 0 || duration > MAX_STOP_DURATION_MS) {
+      throw new DescriptionError(`action ${name}: maxDurationMs must be an integer from 0 to ${MAX_STOP_DURATION_MS} (BHMS-DEV-036)`);
+    }
     const resources = options.resources ?? (effectful ? [...this.resources] : []);
     const unknown = resources.filter((r) => !this.resources.includes(r));
     if (unknown.length > 0) throw new DescriptionError(`action ${name}: resources ${unknown.join(", ")} are not declared by the device (BHMS-DEV-032)`);

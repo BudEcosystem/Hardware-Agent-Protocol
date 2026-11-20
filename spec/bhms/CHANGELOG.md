@@ -102,6 +102,13 @@ evidence that caused it. Requirement index: 285 rows (23 added, §14.6).
 
 ### TS SDK to follow (Task 15b)
 
+Port in progress: action declarations now enforce BHMS-DEV-036. Late terminal reports append
+correction history and `operation.late_report` events; a lease revoked under `onLeaseLoss: hold`
+ends the operation immediately, preserving that outcome when its handler later returns.
+Regression coverage includes duration boundaries, late returns after duration expiry, and
+terminal immutability after lease hold. Version negotiation remains v0.1 until the rest of
+this port is complete.
+
 Every row of §14.6, the version list (`2026-11-15` and `2026-11-13`, BHMS-LIF-026), budgets in the device server
 (BHMS-AUTH-030..035; the same rules, the same refusal), program-scoped grants (BHMS-PRG-023), late reports (BHMS-OPS-072),
 BHMS-DEV-036 at description build, the carrier (BHMS-SEC-005/006, replacing `org.bhms.sdk/bearer`), hints (BHMS-ERR-007) and

@@ -618,6 +618,10 @@ test("a handler crash after dispatch is unknown, and a duration bound without ca
     assert.equal(late.state, "failed", "a late return is recorded as a reconciliation to failed, never completed");
     assert.equal(late.error?.bhmsCode, "DEADLINE_EXCEEDED");
     assert.ok((late.history ?? []).some((h) => h.kind === "reconciliation"));
+    assert.ok((late.history ?? []).some((h) => h.kind === "correction" && h.detail?.includes("late completed")));
+    const reports = await r.client.eventsRead({ types: ["operation.late_report"] });
+    assert.deepEqual(reports.events.filter((e) => e.operationId === op.operationId).map((e) => e.data),
+      [{ outcome: "completed", evidence: "reported", state: "failed" }]);
   } finally { await r.close(); }
 });
 

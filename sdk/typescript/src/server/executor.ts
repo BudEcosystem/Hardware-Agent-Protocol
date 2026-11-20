@@ -465,6 +465,23 @@ export class Executor {
   }
 
   private settle(exec: Execution, outcome: Outcome): void {
+    const late = exec.rec.terminal || exec.rec.state === "unknown" || exec.deadlineHit || exec.leaseLossFail;
+    this.settleOutcome(exec, outcome);
+    // Unexpected handler crashes are not device terminal reports.
+    if (!late || (outcome.kind === "throw" && !(outcome.error instanceof Canceled) && !(outcome.error instanceof DeviceFault))) return;
+    const reported = outcome.kind === "return" ? "completed" : outcome.error instanceof Canceled ? "canceled" : "failed";
+    const evidence = outcome.kind === "return"
+      ? exec.confirmed.length > 0 && exec.confirmed.every(Boolean) ? "measured" : exec.spec.completionEvidence === "none" ? "none" : "reported"
+      : "reported";
+    const detail = `late ${reported} report after the operation ended ${exec.rec.state} (evidence ${evidence})`;
+    this.server.journal.annotate(exec.rec, "correction", detail);
+    this.server.events.append("operation.late_report", {
+      severity: "warning", deviceId: exec.device.deviceId, operationId: exec.rec.id,
+      message: detail, data: { outcome: reported, evidence, state: exec.rec.state },
+    });
+  }
+
+  private settleOutcome(exec: Execution, outcome: Outcome): void {
     const { rec, spec, device } = exec;
     const srv = this.server;
     if (rec.terminal) return;
@@ -617,6 +634,9 @@ export class Executor {
       if (policy === "finish") continue;
       if (policy === "hold") {
         exec.leaseLossFail = true;
+        this.fail(exec, "LEASE_EXPIRED", "the lease ended while the action ran and the device was held", {
+          effect: "unknown", hint: "reacquire the lease and check the device state before retrying",
+        });
         void Promise.resolve().then(() => exec.device.holdHandler?.()).catch((e: unknown) => this.server.log(`hold handler failed: ${String(e)}`));
       }
       if (rec.data.cancelSupported || policy === "hold") {
